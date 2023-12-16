@@ -28,6 +28,52 @@ along with GCC; see the file COPYING3.  If not see
 
 using namespace json;
 
+/* Print a JSON string to PP, escaping '"', control characters,
+   and embedded null bytes.
+   The string is required to be UTF-8 encoded.  */
+
+static void
+print_escaped_json_string (pretty_printer *pp,
+			   const char *utf8_str,
+			   size_t len)
+{
+  pp_character (pp, '"');
+  for (size_t i = 0; i != len; ++i)
+    {
+      char ch = utf8_str[i];
+      switch (ch)
+	{
+	case '"':
+	  pp_string (pp, "\\\"");
+	  break;
+	case '\\':
+	  pp_string (pp, "\\\\");
+	  break;
+	case '\b':
+	  pp_string (pp, "\\b");
+	  break;
+	case '\f':
+	  pp_string (pp, "\\f");
+	  break;
+	case '\n':
+	  pp_string (pp, "\\n");
+	  break;
+	case '\r':
+	  pp_string (pp, "\\r");
+	  break;
+	case '\t':
+	  pp_string (pp, "\\t");
+	  break;
+	case '\0':
+	  pp_string (pp, "\\0");
+	  break;
+	default:
+	  pp_character (pp, ch);
+	}
+    }
+  pp_character (pp, '"');
+}
+
 /* class json::value.  */
 
 /* Dump this json::value tree to OUTF.
@@ -85,9 +131,7 @@ object::print (pretty_printer *pp, bool formatted) const
 	}
       map_t &mut_map = const_cast<map_t &> (m_map);
       value *value = *mut_map.get (key);
-      pp_doublequote (pp);
-      pp_string (pp, key); // FIXME: escaping?
-      pp_doublequote (pp);
+      print_escaped_json_string (pp, key, strlen (key));
       pp_string (pp, ": ");
       const int indent = strlen (key) + 4;
       if (formatted)
@@ -284,41 +328,7 @@ void
 string::print (pretty_printer *pp,
 	       bool formatted ATTRIBUTE_UNUSED) const
 {
-  pp_character (pp, '"');
-  for (size_t i = 0; i != m_len; ++i)
-    {
-      char ch = m_utf8[i];
-      switch (ch)
-	{
-	case '"':
-	  pp_string (pp, "\\\"");
-	  break;
-	case '\\':
-	  pp_string (pp, "\\\\");
-	  break;
-	case '\b':
-	  pp_string (pp, "\\b");
-	  break;
-	case '\f':
-	  pp_string (pp, "\\f");
-	  break;
-	case '\n':
-	  pp_string (pp, "\\n");
-	  break;
-	case '\r':
-	  pp_string (pp, "\\r");
-	  break;
-	case '\t':
-	  pp_string (pp, "\\t");
-	  break;
-	case '\0':
-	  pp_string (pp, "\\0");
-	  break;
-	default:
-	  pp_character (pp, ch);
-	}
-    }
-  pp_character (pp, '"');
+  print_escaped_json_string (pp, m_utf8, m_len);
 }
 
 /* class json::literal, a subclass of json::value.  */
@@ -388,13 +398,17 @@ test_writing_objects ()
   object obj;
   obj.set_string ("foo", "bar");
   obj.set_string ("baz", "quux");
+  obj.set_string ("\"\\\b\f\n\r\t", "value for awkward key");
+
   /* This test relies on json::object writing out key/value pairs
      in key-insertion order.  */
   ASSERT_PRINT_EQ (obj, true,
 		   "{\"foo\": \"bar\",\n"
-		   " \"baz\": \"quux\"}");
+		   " \"baz\": \"quux\",\n"
+		   " \"\\\"\\\\\\b\\f\\n\\r\\t\": \"value for awkward key\"}");
   ASSERT_PRINT_EQ (obj, false,
-		   "{\"foo\": \"bar\", \"baz\": \"quux\"}");
+		   "{\"foo\": \"bar\", \"baz\": \"quux\""
+		   ", \"\\\"\\\\\\b\\f\\n\\r\\t\": \"value for awkward key\"}");
 }
 
 /* Verify that JSON arrays are written correctly.  */
