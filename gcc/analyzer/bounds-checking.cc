@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "diagnostic-core.h"
 #include "diagnostic-diagram.h"
+#include "diagnostic-format-sarif.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/region-model.h"
@@ -108,6 +109,23 @@ public:
 	(make_unique<oob_region_creation_event_capacity> (byte_capacity,
 							  loc_info,
 							  *this));
+  }
+
+  void maybe_add_sarif_properties (sarif_object &result_obj)
+    const override
+  {
+    sarif_property_bag &props = result_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/out_of_bounds/"
+    props.set_string (PROPERTY_PREFIX "dir",
+		      get_dir () == DIR_READ ? "read" : "write");
+    props.set (PROPERTY_PREFIX "model", m_model.to_json ());
+    props.set (PROPERTY_PREFIX "region", m_reg->to_json ());
+    props.set (PROPERTY_PREFIX "diag_arg", tree_to_json (m_diag_arg));
+    if (m_sval_hint)
+      props.set (PROPERTY_PREFIX "sval_hint", m_sval_hint->to_json ());
+    props.set (PROPERTY_PREFIX "region_creation_event_id",
+	       diagnostic_event_id_to_json (m_region_creation_event_id));
+#undef PROPERTY_PREFIX
   }
 
   virtual enum access_direction get_dir () const = 0;
@@ -220,6 +238,21 @@ public:
 	    && m_out_of_bounds_bits == other.m_out_of_bounds_bits);
   }
 
+  void maybe_add_sarif_properties (sarif_object &result_obj)
+    const override
+  {
+    out_of_bounds::maybe_add_sarif_properties (result_obj);
+    sarif_property_bag &props = result_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/concrete_out_of_bounds/"
+    props.set (PROPERTY_PREFIX "out_of_bounds_bits",
+	       m_out_of_bounds_bits.to_json ());
+    byte_range out_of_bounds_bytes (0, 0);
+    if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
+      props.set (PROPERTY_PREFIX "out_of_bounds_bytes",
+		 out_of_bounds_bytes.to_json ());
+#undef PROPERTY_PREFIX
+  }
+
   bool get_out_of_bounds_bytes (byte_range *out) const
   {
     return m_out_of_bounds_bits.as_byte_range (out);
@@ -269,6 +302,19 @@ public:
 	(make_unique<oob_region_creation_event_capacity> (m_byte_bound,
 							  loc_info,
 							  *this));
+  }
+
+  void maybe_add_sarif_properties (sarif_object &result_obj)
+    const final override
+  {
+    concrete_out_of_bounds::maybe_add_sarif_properties (result_obj);
+    sarif_property_bag &props = result_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/concrete_past_the_end/"
+    props.set (PROPERTY_PREFIX "bit_bound",
+	       tree_to_json (m_bit_bound));
+    props.set (PROPERTY_PREFIX "byte_bound",
+	       tree_to_json (m_byte_bound));
+#undef PROPERTY_PREFIX
   }
 
 protected:
@@ -860,6 +906,18 @@ public:
 	    && pending_diagnostic::same_tree_p (m_offset, other.m_offset)
 	    && pending_diagnostic::same_tree_p (m_num_bytes, other.m_num_bytes)
 	    && pending_diagnostic::same_tree_p (m_capacity, other.m_capacity));
+  }
+
+  void maybe_add_sarif_properties (sarif_object &result_obj)
+    const final override
+  {
+    out_of_bounds::maybe_add_sarif_properties (result_obj);
+    sarif_property_bag &props = result_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/symbolic_past_the_end/"
+    props.set (PROPERTY_PREFIX "offset", tree_to_json (m_offset));
+    props.set (PROPERTY_PREFIX "num_bytes", tree_to_json (m_num_bytes));
+    props.set (PROPERTY_PREFIX "capacity", tree_to_json (m_capacity));
+#undef PROPERTY_PREFIX
   }
 
 protected:

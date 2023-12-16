@@ -237,6 +237,8 @@ struct bit_range
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
 
+  json::object *to_json () const;
+
   bool empty_p () const
   {
     return m_size_in_bits == 0;
@@ -310,6 +312,8 @@ struct byte_range
 
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
+
+  json::object *to_json () const;
 
   bool empty_p () const
   {

@@ -235,6 +235,21 @@ bit_range::dump () const
   pp_flush (&pp);
 }
 
+/* Generate a JSON value for this bit_range.
+   This is intended for debugging the analyzer rather
+   than serialization.  */
+
+json::object *
+bit_range::to_json () const
+{
+  json::object *obj = new json::object ();
+  obj->set ("start_bit_offset",
+	    bit_offset_to_json (m_start_bit_offset));
+  obj->set ("size_in_bits",
+	    bit_offset_to_json (m_size_in_bits));
+  return obj;
+}
+
 /* If OTHER is a subset of this, return true and, if OUT is
    non-null, write to *OUT the relative range of OTHER within this.
    Otherwise return false.  */
@@ -482,6 +497,21 @@ byte_range::dump () const
   dump_to_pp (&pp);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* Generate a JSON value for this byte_range.
+   This is intended for debugging the analyzer rather
+   than serialization.  */
+
+json::object *
+byte_range::to_json () const
+{
+  json::object *obj = new json::object ();
+  obj->set ("start_byte_offset",
+	    byte_offset_to_json (m_start_byte_offset));
+  obj->set ("size_in_bytes",
+	    byte_offset_to_json (m_size_in_bytes));
+  return obj;
 }
 
 /* If OTHER is a subset of this, return true and write

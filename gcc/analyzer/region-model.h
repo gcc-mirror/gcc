@@ -175,6 +175,8 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
+  json::object *to_json () const;
+
   bool can_merge_with_p (const region_to_value_map &other,
 			 region_to_value_map *out) const;
 
@@ -277,6 +279,8 @@ class region_model
   void dump (bool simple) const;
 
   void debug () const;
+
+  json::object *to_json () const;
 
   void validate () const;
 

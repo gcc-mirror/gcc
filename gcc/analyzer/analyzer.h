@@ -415,6 +415,18 @@ extern void log_stashed_constants (logger *logger);
 
 extern FILE *get_or_create_any_logfile ();
 
+extern json::value *
+tree_to_json (tree node);
+
+extern json::value *
+diagnostic_event_id_to_json (const diagnostic_event_id_t &);
+
+extern json::value *
+bit_offset_to_json (const bit_offset_t &offset);
+
+extern json::value *
+byte_offset_to_json (const byte_offset_t &offset);
+
 } // namespace ana
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,

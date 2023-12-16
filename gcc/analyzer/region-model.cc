@@ -211,6 +211,31 @@ region_to_value_map::dump (bool simple) const
   pp_flush (&pp);
 }
 
+/* Generate a JSON value for this region_to_value_map.
+   This is intended for debugging the analyzer rather than
+   serialization.  */
+
+json::object *
+region_to_value_map::to_json () const
+{
+  json::object *map_obj = new json::object ();
+
+  auto_vec<const region *> regs;
+  for (iterator iter = begin (); iter != end (); ++iter)
+    regs.safe_push ((*iter).first);
+  regs.qsort (region::cmp_ptr_ptr);
+
+  unsigned i;
+  const region *reg;
+  FOR_EACH_VEC_ELT (regs, i, reg)
+    {
+      label_text reg_desc = reg->get_desc ();
+      const svalue *sval = *get (reg);
+      map_obj->set (reg_desc.get (), sval->to_json ());
+    }
+
+  return map_obj;
+}
 
 /* Attempt to merge THIS with OTHER, writing the result
    to OUT.
@@ -427,6 +452,22 @@ DEBUG_FUNCTION void
 region_model::debug () const
 {
   dump (true);
+}
+
+/* Generate a JSON value for this region_model.
+   This is intended for debugging the analyzer rather than
+   serialization.  */
+
+json::object *
+region_model::to_json () const
+{
+  json::object *model_obj = new json::object ();
+  model_obj->set ("store", m_store.to_json ());
+  model_obj->set ("constraints", m_constraints->to_json ());
+  if (m_current_frame)
+    model_obj->set ("current_frame", m_current_frame->to_json ());
+  model_obj->set ("dynamic_extents", m_dynamic_extents.to_json ());
+  return model_obj;
 }
 
 /* Assert that this object is valid.  */
