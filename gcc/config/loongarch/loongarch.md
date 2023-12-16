@@ -2893,6 +2893,16 @@
   [(set_attr "type" "shift,shift")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "rotrsi3_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(sign_extend:DI
+	  (rotatert:SI (match_operand:SI 1 "register_operand" "r,r")
+		       (match_operand:SI 2 "arith_operand" "r,I"))))]
+  "TARGET_64BIT"
+  "rotr%i2.w\t%0,%1,%2"
+  [(set_attr "type" "shift,shift")
+   (set_attr "mode" "SI")])
+
 ;; The following templates were added to generate "bstrpick.d + alsl.d"
 ;; instruction pairs.
 ;; It is required that the values of const_immalsl_operand and
