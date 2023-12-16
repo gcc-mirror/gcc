@@ -831,7 +831,7 @@
 			  vfsqrt,vfrecp,vfmerge,vfcvtitof,vfcvtftoi,vfwcvtitof,\
 			  vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
 			  vfclass,vired,viwred,vfredu,vfredo,vfwredu,vfwredo,\
-			  vimovxv,vfmovfv,vlsegde,vlsegdff")
+			  vimovxv,vfmovfv,vlsegde,vlsegdff,vmiota")
 	   (const_int 7)
 	 (eq_attr "type" "vldm,vstm,vmalu,vmalu")
 	   (const_int 5)
