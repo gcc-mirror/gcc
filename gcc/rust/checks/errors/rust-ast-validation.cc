@@ -107,6 +107,11 @@ ASTValidation::visit (AST::Function &function)
     rust_error_at (function.get_locus (), ErrorCode::E0379,
 		   "functions in traits cannot be declared const");
 
+  // may change soon
+  if (qualifiers.is_async () && context.back () == Context::TRAIT_IMPL)
+    rust_error_at (function.get_locus (), ErrorCode::E0706,
+		   "functions in traits cannot be declared %<async%>");
+
   if (valid_context.find (context.back ()) == valid_context.end ()
       && function.has_self_param ())
     rust_error_at (
