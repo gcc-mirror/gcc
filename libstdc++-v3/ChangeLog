@@ -1,3 +1,21 @@
+2023-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/objects/char/2.cc: Use dg-output.
+	* testsuite/27_io/objects/wchar_t/2.cc: Use dg-output.
+
+2023-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_S): Fix order
+	of arguments to std::format_to.
+	* testsuite/20_util/duration/io.cc: Test subsecond duration with
+	floating-point rep.
+
 2023-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

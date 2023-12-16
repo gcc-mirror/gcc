@@ -1,3 +1,68 @@
+2023-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (__sync_fetch_and_add, __sync_fetch_and_sub,
+	__sync_fetch_and_or, __sync_fetch_and_and, __sync_fetch_and_xor,
+	__sync_fetch_and_nand, __sync_add_and_fetch, __sync_sub_and_fetch,
+	__sync_or_and_fetch, __sync_and_and_fetch, __sync_xor_and_fetch,
+	__sync_nand_and_fetch, __sync_bool_compare_and_swap,
+	__sync_val_compare_and_swap, __sync_lock_test_and_set,
+	__sync_lock_release, __atomic_load_n, __atomic_load, __atomic_store_n,
+	__atomic_store, __atomic_exchange_n, __atomic_exchange,
+	__atomic_compare_exchange_n, __atomic_compare_exchange,
+	__atomic_add_fetch, __atomic_sub_fetch, __atomic_and_fetch,
+	__atomic_xor_fetch, __atomic_or_fetch, __atomic_nand_fetch,
+	__atomic_fetch_add, __atomic_fetch_sub, __atomic_fetch_and,
+	__atomic_fetch_xor, __atomic_fetch_or, __atomic_fetch_nand,
+	__atomic_test_and_set, __atomic_clear, __atomic_thread_fence,
+	__atomic_signal_fence, __atomic_always_lock_free,
+	__atomic_is_lock_free, __builtin_add_overflow,
+	__builtin_sadd_overflow, __builtin_saddl_overflow,
+	__builtin_saddll_overflow, __builtin_uadd_overflow,
+	__builtin_uaddl_overflow, __builtin_uaddll_overflow,
+	__builtin_sub_overflow, __builtin_ssub_overflow,
+	__builtin_ssubl_overflow, __builtin_ssubll_overflow,
+	__builtin_usub_overflow, __builtin_usubl_overflow,
+	__builtin_usubll_overflow, __builtin_mul_overflow,
+	__builtin_smul_overflow, __builtin_smull_overflow,
+	__builtin_smulll_overflow, __builtin_umul_overflow,
+	__builtin_umull_overflow, __builtin_umulll_overflow,
+	__builtin_add_overflow_p, __builtin_sub_overflow_p,
+	__builtin_mul_overflow_p, __builtin_alloca,
+	__builtin_alloca_with_align, __builtin_alloca_with_align_and_max,
+	__builtin_speculation_safe_value, __builtin_nan, __builtin_nand32,
+	__builtin_nand64, __builtin_nand128, __builtin_nanf, __builtin_nanl,
+	__builtin_nanf@var{n}, __builtin_nanf@var{n}x, __builtin_nans,
+	__builtin_nansd32, __builtin_nansd64, __builtin_nansd128,
+	__builtin_nansf, __builtin_nansl, __builtin_nansf@var{n},
+	__builtin_nansf@var{n}x, __builtin_ffs, __builtin_clz, __builtin_ctz,
+	__builtin_clrsb, __builtin_popcount, __builtin_parity,
+	__builtin_bswap16, __builtin_bswap32, __builtin_bswap64,
+	__builtin_bswap128, __builtin_extend_pointer,
+	__builtin_goacc_parlevel_id, __builtin_goacc_parlevel_size, vec_clrl,
+	vec_clrr, vec_mulh, vec_mul, vec_div, vec_dive, vec_mod,
+	__builtin_rx_mvtc): Use @var{...} around parameter names.
+	(vec_rl, vec_sl, vec_sr, vec_sra): Likewise.  Use @var{...} also
+	around A, B and R in description.
+
+2023-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112733
+	* fold-const.cc (multiple_of_p): Pass SIGNED rather than
+	UNSIGNED for wi::multiple_of_p on widest_int arguments.
+
+2023-12-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Do not
+	set Grand Ridge depending on RAO-INT.
+	* config/i386/i386.h: Remove PTA_RAOINT from PTA_GRANDRIDGE.
+	* doc/invoke.texi: Adjust documentation.
+
 2023-12-12  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/112891
