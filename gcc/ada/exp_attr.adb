@@ -3563,6 +3563,14 @@ package body Exp_Attr is
       --  Start of processing for Finalization_Size
 
       begin
+         --  If the prefix is the dereference of an access value subject to
+         --  pragma No_Heap_Finalization, then no header has been added.
+
+         if Nkind (Pref) = N_Explicit_Dereference
+           and then No_Heap_Finalization (Etype (Prefix (Pref)))
+         then
+            Rewrite (N, Make_Integer_Literal (Loc, 0));
+
          --  An object of a class-wide type first requires a runtime check to
          --  determine whether it is actually controlled or not. Depending on
          --  the outcome of this check, the Finalization_Size of the object
@@ -3578,7 +3586,7 @@ package body Exp_Attr is
          --
          --  and the attribute reference is replaced with a reference to Size.
 
-         if Is_Class_Wide_Type (Ptyp) then
+         elsif Is_Class_Wide_Type (Ptyp) then
             Size := Make_Temporary (Loc, 'S');
 
             Insert_Actions (N, New_List (
