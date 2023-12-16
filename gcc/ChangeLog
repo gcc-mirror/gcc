@@ -1,3 +1,66 @@
+2023-12-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111917
+	* tree-ssa-loop-unswitch.c (hoist_guard): Always insert
+	new conditional after last stmt.
+
+2023-12-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111614
+	* tree-ssa-reassoc.c (undistribute_bitref_for_vector): Properly
+	convert the first vector when required.
+
+2023-12-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111764
+	* tree-vect-loop.c (check_reduction_path): Remove the attempt
+	to allow x + x via special-casing of assigns.
+
+2023-12-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111818
+	* tree-ssa.c (maybe_optimize_var): When clearing
+	DECL_NOT_GIMPLE_REG_P always rewrite into SSA.
+
+2023-12-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110298
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely):
+	Clear number of iterations info before cleaning up the CFG.
+
+2023-12-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/110295
+	* dwarf2out.c (process_scope_var): Continue processing
+	the decl after setting a parent in case the existing DIE
+	was in limbo.
+
+2023-12-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-09  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (two conversions in a row): Use element_precision
+	to DTRT for VECTOR_TYPE.
+
 2023-12-12  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
