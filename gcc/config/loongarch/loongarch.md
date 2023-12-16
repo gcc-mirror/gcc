@@ -2903,6 +2903,18 @@
   [(set_attr "type" "shift,shift")
    (set_attr "mode" "SI")])
 
+;; Expand left rotate to right rotate.
+(define_expand "rotl<mode>3"
+  [(set (match_dup 3)
+	(neg:SI (match_operand:SI 2 "register_operand")))
+   (set (match_operand:GPR 0 "register_operand")
+	(rotatert:GPR (match_operand:GPR 1 "register_operand")
+		      (match_dup 3)))]
+  ""
+  {
+    operands[3] = gen_reg_rtx (SImode);
+  });
+
 ;; The following templates were added to generate "bstrpick.d + alsl.d"
 ;; instruction pairs.
 ;; It is required that the values of const_immalsl_operand and

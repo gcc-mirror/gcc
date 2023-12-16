@@ -268,6 +268,35 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
+;; Expand left rotate to right rotate.
+(define_expand "vrotl<mode>3"
+  [(set (match_dup 3)
+	(neg:IVEC (match_operand:IVEC 2 "register_operand")))
+   (set (match_operand:IVEC 0 "register_operand")
+	(rotatert:IVEC (match_operand:IVEC 1 "register_operand")
+		       (match_dup 3)))]
+  ""
+  {
+    operands[3] = gen_reg_rtx (<MODE>mode);
+  });
+
+;; Expand left rotate with a scalar amount to right rotate: negate the
+;; scalar before broadcasting it because scalar negation is cheaper than
+;; vector negation.
+(define_expand "rotl<mode>3"
+  [(set (match_dup 3)
+	(neg:SI (match_operand:SI 2 "register_operand")))
+   (set (match_dup 4)
+	(vec_duplicate:IVEC (subreg:<IVEC:UNITMODE> (match_dup 3) 0)))
+   (set (match_operand:IVEC 0 "register_operand")
+	(rotatert:IVEC (match_operand:IVEC 1 "register_operand")
+		       (match_dup 4)))]
+  ""
+  {
+    operands[3] = gen_reg_rtx (SImode);
+    operands[4] = gen_reg_rtx (<MODE>mode);
+  });
+
 ;; <x>vrotri.{b/h/w/d}
 
 (define_insn "rotr<mode>3"
