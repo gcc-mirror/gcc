@@ -1,3 +1,12 @@
+2023-12-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111253
+	* c-pretty-print.cc (c_pretty_printer::primary_expression):
+	Only dump gimple_assign_single_p SSA def RHS.
+
 2023-05-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
