@@ -69,8 +69,8 @@ TEST_CMP (nugt)
 
 /* { dg-final { scan-assembler-times {\txvfcmp\.ceq\.s} 3 } } */
 /* { dg-final { scan-assembler-times {\txvfcmp\.ceq\.d} 3 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cne\.s} 3 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cne\.d} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cune\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cune\.d} 3 } } */
 /* { dg-final { scan-assembler-times {\txvfcmp\.slt\.s} 6 } } */
 /* { dg-final { scan-assembler-times {\txvfcmp\.slt\.d} 6 } } */
 /* { dg-final { scan-assembler-times {\txvfcmp\.sle\.s} 6 } } */

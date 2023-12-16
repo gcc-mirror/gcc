@@ -32,9 +32,7 @@
   UNSPEC_LASX_XVBITREVI
   UNSPEC_LASX_XVBITSET
   UNSPEC_LASX_XVBITSETI
-  UNSPEC_LASX_XVFCMP_CAF
   UNSPEC_LASX_XVFCLASS
-  UNSPEC_LASX_XVFCMP_CUNE
   UNSPEC_LASX_XVFCVT
   UNSPEC_LASX_XVFCVTH
   UNSPEC_LASX_XVFCVTL
@@ -44,17 +42,6 @@
   UNSPEC_LASX_XVFRINT
   UNSPEC_LASX_XVFRSQRT
   UNSPEC_LASX_XVFRSQRTE
-  UNSPEC_LASX_XVFCMP_SAF
-  UNSPEC_LASX_XVFCMP_SEQ
-  UNSPEC_LASX_XVFCMP_SLE
-  UNSPEC_LASX_XVFCMP_SLT
-  UNSPEC_LASX_XVFCMP_SNE
-  UNSPEC_LASX_XVFCMP_SOR
-  UNSPEC_LASX_XVFCMP_SUEQ
-  UNSPEC_LASX_XVFCMP_SULE
-  UNSPEC_LASX_XVFCMP_SULT
-  UNSPEC_LASX_XVFCMP_SUN
-  UNSPEC_LASX_XVFCMP_SUNE
   UNSPEC_LASX_XVFTINT_U
   UNSPEC_LASX_XVCLO
   UNSPEC_LASX_XVSAT_S
@@ -1480,69 +1467,6 @@
   "xvfclass.<flasxfmt>\t%u0,%u1"
   [(set_attr "type" "simd_fclass")
    (set_attr "mode" "<MODE>")])
-
-(define_insn "lasx_xvfcmp_caf_<flasxfmt>"
-  [(set (match_operand:<VIMODE256> 0 "register_operand" "=f")
-	(unspec:<VIMODE256> [(match_operand:FLASX 1 "register_operand" "f")
-			     (match_operand:FLASX 2 "register_operand" "f")]
-			    UNSPEC_LASX_XVFCMP_CAF))]
-  "ISA_HAS_LASX"
-  "xvfcmp.caf.<flasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lasx_xvfcmp_cune_<FLASX:flasxfmt>"
-  [(set (match_operand:<VIMODE256> 0 "register_operand" "=f")
-	(unspec:<VIMODE256> [(match_operand:FLASX 1 "register_operand" "f")
-			     (match_operand:FLASX 2 "register_operand" "f")]
-			    UNSPEC_LASX_XVFCMP_CUNE))]
-  "ISA_HAS_LASX"
-  "xvfcmp.cune.<FLASX:flasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
-
-
-(define_int_iterator FSC256_UNS [UNSPEC_LASX_XVFCMP_SAF UNSPEC_LASX_XVFCMP_SUN
-				 UNSPEC_LASX_XVFCMP_SOR UNSPEC_LASX_XVFCMP_SEQ
-				 UNSPEC_LASX_XVFCMP_SNE UNSPEC_LASX_XVFCMP_SUEQ
-				 UNSPEC_LASX_XVFCMP_SUNE UNSPEC_LASX_XVFCMP_SULE
-				 UNSPEC_LASX_XVFCMP_SULT UNSPEC_LASX_XVFCMP_SLE
-				 UNSPEC_LASX_XVFCMP_SLT])
-
-(define_int_attr fsc256
-  [(UNSPEC_LASX_XVFCMP_SAF  "saf")
-   (UNSPEC_LASX_XVFCMP_SUN  "sun")
-   (UNSPEC_LASX_XVFCMP_SOR  "sor")
-   (UNSPEC_LASX_XVFCMP_SEQ  "seq")
-   (UNSPEC_LASX_XVFCMP_SNE  "sne")
-   (UNSPEC_LASX_XVFCMP_SUEQ "sueq")
-   (UNSPEC_LASX_XVFCMP_SUNE "sune")
-   (UNSPEC_LASX_XVFCMP_SULE "sule")
-   (UNSPEC_LASX_XVFCMP_SULT "sult")
-   (UNSPEC_LASX_XVFCMP_SLE  "sle")
-   (UNSPEC_LASX_XVFCMP_SLT  "slt")])
-
-(define_insn "lasx_xvfcmp_<vfcond:fcc>_<FLASX:flasxfmt>"
-  [(set (match_operand:<VIMODE256> 0 "register_operand" "=f")
-	(vfcond:<VIMODE256> (match_operand:FLASX 1 "register_operand" "f")
-			    (match_operand:FLASX 2 "register_operand" "f")))]
-  "ISA_HAS_LASX"
-  "xvfcmp.<vfcond:fcc>.<FLASX:flasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
-
-(define_insn "lasx_xvfcmp_<fsc256>_<FLASX:flasxfmt>"
-  [(set (match_operand:<VIMODE256> 0 "register_operand" "=f")
-	(unspec:<VIMODE256> [(match_operand:FLASX 1 "register_operand" "f")
-			     (match_operand:FLASX 2 "register_operand" "f")]
-			    FSC256_UNS))]
-  "ISA_HAS_LASX"
-  "xvfcmp.<fsc256>.<FLASX:flasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
 
 (define_mode_attr fint256
   [(V8SF "v8si")

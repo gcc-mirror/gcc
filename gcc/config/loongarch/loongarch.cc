@@ -11161,7 +11161,6 @@ static void
 loongarch_expand_lsx_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
 {
   machine_mode cmp_mode = GET_MODE (op0);
-  int unspec = -1;
   bool negate = false;
 
   switch (cmp_mode)
@@ -11203,66 +11202,9 @@ loongarch_expand_lsx_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
 
     case E_V4SFmode:
     case E_V2DFmode:
-      switch (cond)
-	{
-	case UNORDERED:
-	case ORDERED:
-	case EQ:
-	case NE:
-	case UNEQ:
-	case UNLE:
-	case UNLT:
-	  break;
-	case LTGT: cond = NE; break;
-	case UNGE: cond = UNLE; std::swap (op0, op1); break;
-	case UNGT: cond = UNLT; std::swap (op0, op1); break;
-	case LE: unspec = UNSPEC_LSX_VFCMP_SLE; break;
-	case LT: unspec = UNSPEC_LSX_VFCMP_SLT; break;
-	case GE: unspec = UNSPEC_LSX_VFCMP_SLE; std::swap (op0, op1); break;
-	case GT: unspec = UNSPEC_LSX_VFCMP_SLT; std::swap (op0, op1); break;
-	default:
-		 gcc_unreachable ();
-	}
-      if (unspec < 0)
-	loongarch_emit_binary (cond, dest, op0, op1);
-      else
-	{
-	  rtx x = gen_rtx_UNSPEC (GET_MODE (dest),
-				  gen_rtvec (2, op0, op1), unspec);
-	  emit_insn (gen_rtx_SET (dest, x));
-	}
-      break;
-
     case E_V8SFmode:
     case E_V4DFmode:
-      switch (cond)
-	{
-	case UNORDERED:
-	case ORDERED:
-	case EQ:
-	case NE:
-	case UNEQ:
-	case UNLE:
-	case UNLT:
-	  break;
-	case LTGT: cond = NE; break;
-	case UNGE: cond = UNLE; std::swap (op0, op1); break;
-	case UNGT: cond = UNLT; std::swap (op0, op1); break;
-	case LE: unspec = UNSPEC_LASX_XVFCMP_SLE; break;
-	case LT: unspec = UNSPEC_LASX_XVFCMP_SLT; break;
-	case GE: unspec = UNSPEC_LASX_XVFCMP_SLE; std::swap (op0, op1); break;
-	case GT: unspec = UNSPEC_LASX_XVFCMP_SLT; std::swap (op0, op1); break;
-	default:
-		 gcc_unreachable ();
-	}
-      if (unspec < 0)
-	loongarch_emit_binary (cond, dest, op0, op1);
-      else
-	{
-	  rtx x = gen_rtx_UNSPEC (GET_MODE (dest),
-				  gen_rtvec (2, op0, op1), unspec);
-	  emit_insn (gen_rtx_SET (dest, x));
-	}
+      loongarch_emit_binary (cond, dest, op0, op1);
       break;
 
     default:

@@ -34,9 +34,7 @@
   UNSPEC_LSX_VBITSETI
   UNSPEC_LSX_BRANCH_V
   UNSPEC_LSX_BRANCH
-  UNSPEC_LSX_VFCMP_CAF
   UNSPEC_LSX_VFCLASS
-  UNSPEC_LSX_VFCMP_CUNE
   UNSPEC_LSX_VFCVT
   UNSPEC_LSX_VFCVTH
   UNSPEC_LSX_VFCVTL
@@ -46,17 +44,6 @@
   UNSPEC_LSX_VFRINT
   UNSPEC_LSX_VFRSQRT
   UNSPEC_LSX_VFRSQRTE
-  UNSPEC_LSX_VFCMP_SAF
-  UNSPEC_LSX_VFCMP_SEQ
-  UNSPEC_LSX_VFCMP_SLE
-  UNSPEC_LSX_VFCMP_SLT
-  UNSPEC_LSX_VFCMP_SNE
-  UNSPEC_LSX_VFCMP_SOR
-  UNSPEC_LSX_VFCMP_SUEQ
-  UNSPEC_LSX_VFCMP_SULE
-  UNSPEC_LSX_VFCMP_SULT
-  UNSPEC_LSX_VFCMP_SUN
-  UNSPEC_LSX_VFCMP_SUNE
   UNSPEC_LSX_VFTINT_U
   UNSPEC_LSX_VSAT_S
   UNSPEC_LSX_VSAT_U
@@ -1375,76 +1362,6 @@
   "ISA_HAS_LSX"
   "vfclass.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fclass")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vfcmp_caf_<flsxfmt>"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(unspec:<VIMODE> [(match_operand:FLSX 1 "register_operand" "f")
-			  (match_operand:FLSX 2 "register_operand" "f")]
-			 UNSPEC_LSX_VFCMP_CAF))]
-  "ISA_HAS_LSX"
-  "vfcmp.caf.<flsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vfcmp_cune_<FLSX:flsxfmt>"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(unspec:<VIMODE> [(match_operand:FLSX 1 "register_operand" "f")
-			  (match_operand:FLSX 2 "register_operand" "f")]
-			 UNSPEC_LSX_VFCMP_CUNE))]
-  "ISA_HAS_LSX"
-  "vfcmp.cune.<FLSX:flsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
-(define_code_iterator vfcond [unordered ordered eq ne le lt uneq unle unlt])
-
-(define_code_attr fcc
-  [(unordered "cun")
-   (ordered   "cor")
-   (eq	      "ceq")
-   (ne	      "cne")
-   (uneq      "cueq")
-   (unle      "cule")
-   (unlt      "cult")
-   (le	      "cle")
-   (lt	      "clt")])
-
-(define_int_iterator FSC_UNS [UNSPEC_LSX_VFCMP_SAF UNSPEC_LSX_VFCMP_SUN UNSPEC_LSX_VFCMP_SOR
-			      UNSPEC_LSX_VFCMP_SEQ UNSPEC_LSX_VFCMP_SNE UNSPEC_LSX_VFCMP_SUEQ
-			      UNSPEC_LSX_VFCMP_SUNE UNSPEC_LSX_VFCMP_SULE UNSPEC_LSX_VFCMP_SULT
-			      UNSPEC_LSX_VFCMP_SLE UNSPEC_LSX_VFCMP_SLT])
-
-(define_int_attr fsc
-  [(UNSPEC_LSX_VFCMP_SAF  "saf")
-   (UNSPEC_LSX_VFCMP_SUN  "sun")
-   (UNSPEC_LSX_VFCMP_SOR  "sor")
-   (UNSPEC_LSX_VFCMP_SEQ  "seq")
-   (UNSPEC_LSX_VFCMP_SNE  "sne")
-   (UNSPEC_LSX_VFCMP_SUEQ "sueq")
-   (UNSPEC_LSX_VFCMP_SUNE "sune")
-   (UNSPEC_LSX_VFCMP_SULE "sule")
-   (UNSPEC_LSX_VFCMP_SULT "sult")
-   (UNSPEC_LSX_VFCMP_SLE  "sle")
-   (UNSPEC_LSX_VFCMP_SLT  "slt")])
-
-(define_insn "lsx_vfcmp_<vfcond:fcc>_<FLSX:flsxfmt>"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(vfcond:<VIMODE> (match_operand:FLSX 1 "register_operand" "f")
-			 (match_operand:FLSX 2 "register_operand" "f")))]
-  "ISA_HAS_LSX"
-  "vfcmp.<vfcond:fcc>.<FLSX:flsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vfcmp_<fsc>_<FLSX:flsxfmt>"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(unspec:<VIMODE> [(match_operand:FLSX 1 "register_operand" "f")
-			  (match_operand:FLSX 2 "register_operand" "f")]
-			 FSC_UNS))]
-  "ISA_HAS_LSX"
-  "vfcmp.<fsc>.<FLSX:flsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_fcmp")
    (set_attr "mode" "<MODE>")])
 
 (define_mode_attr fint
