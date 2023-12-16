@@ -1,3 +1,26 @@
+2023-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/print.cc (__write_to_terminal) [_WIN32]: If handle
+	does not refer to the console then just write to it using normal
+	file I/O.
+	* testsuite/27_io/print/2.cc (as_printed_to_terminal): Print
+	error message on failure.
+	(test_utf16_transcoding): Adjust for as_printed_to_terminal
+	modifying its argument.
+
+2023-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (vprint_unicode) [_WIN32]: Use RAII guard.
+	(vprint_unicode) [!_WIN32]: Just call vprint_nonunicode.
+	* include/std/print (vprint_unicode) [!_WIN32]: Likewise.
+
+2023-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (vprint_nonunicode, vprint_unicode): Do
+	not insert padding.
+	* testsuite/27_io/basic_ostream/print/1.cc: Adjust expected
+	behaviour.
+
 2023-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/107760

@@ -1,3 +1,17 @@
+2023-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70435
+	PR c++/88061
+	* pt.cc (tsubst_function_decl): Propagate DECL_SECTION_NAME
+	via set_decl_section_name.
+	(tsubst_decl) <case VAR_DECL>: Likewise.
+
+2023-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109715
+	* mangle.cc (get_abi_tags): Strip TEMPLATE_DECL before looking
+	up the abi_tag attribute.
+
 2023-12-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/112482

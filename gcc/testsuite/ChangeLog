@@ -1,3 +1,154 @@
+2023-12-15  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* gcc.target/riscv/cv-elw-elw-compile-1.c: Create test for cv.elw.
+	* lib/target-supports.exp: Add proc for the XCVelw extension.
+
+2023-12-15  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/partial/pr112773.c: Add
+	-fno-vect-cost-model.
+
+2023-12-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/110201
+	* gcc.target/riscv/zknd32.c: Verify diagnostics are issued for
+	invalid builtin arguments.
+	* gcc.target/riscv/zknd64.c: Likewise.
+	* gcc.target/riscv/zkne32.c: Likewise.
+	* gcc.target/riscv/zkne64.c: Likewise.
+	* gcc.target/riscv/zksed32.c: Likewise.
+	* gcc.target/riscv/zksed64.c: Likewise.
+	* gcc.target/riscv/zknd32-2.c: New test
+	* gcc.target/riscv/zknd64-2.c: Likewise.
+	* gcc.target/riscv/zkne32-2.c: Likewise.
+	* gcc.target/riscv/zkne64-2.c: Likewise.
+	* gcc.target/riscv/zksed32-2.c: Likewise.
+	* gcc.target/riscv/zksed64-2.c: Likewise.
+	Co-authored-by: Liao Shihua <shihua@iscas.ac.cn>
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	* g++.target/aarch64/pr103147-10.C: Add -fno-schedule-insns{,2}
+	to dg-options.
+	* gcc.target/aarch64/pr103147-10.c: Likewise.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/stack_clash_1_128.c: Allow ldp/stp saves
+	of SVE registers.
+	* gcc.target/aarch64/sve/pcs/struct_3_128.c: Likewise.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/auto-init-padding-1.c: Add -O to options,
+	adjust test to work with optimizations enabled.
+	* gcc.target/aarch64/auto-init-padding-2.c: Add -O to options.
+	* gcc.target/aarch64/auto-init-padding-3.c: Add -O to options,
+	adjust test to work with optimizations enabled.
+	* gcc.target/aarch64/auto-init-padding-4.c: Likewise.
+	* gcc.target/aarch64/auto-init-padding-9.c: Likewise.
+
+2023-12-15  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/arch-31.c: New test.
+	* gcc.target/riscv/arch-32.c: New test.
+	* gcc.target/riscv/predef-32.c: New test.
+	* gcc.target/riscv/predef-33.c: New test.
+
+2023-12-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112946
+	* gm2/iso/fail/badassignment.mod: New test.
+	* gm2/iso/fail/badexpression.mod: New test.
+	* gm2/iso/fail/badexpression2.mod: New test.
+
+2023-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70435
+	PR c++/88061
+	* g++.dg/ext/attr-section1.C: New test.
+	* g++.dg/ext/attr-section1a.C: New test.
+	* g++.dg/ext/attr-section2.C: New test.
+	* g++.dg/ext/attr-section2a.C: New test.
+	* g++.dg/ext/attr-section2b.C: New test.
+
+2023-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109715
+	* g++.dg/abi/abi-tag25.C: New test.
+	* g++.dg/abi/abi-tag25a.C: New test.
+
+2023-12-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/gomp/pr87887-1.c: Fixed test.
+	* gcc.dg/gomp/pr89246-1.c: Likewise.
+	* gcc.dg/gomp/simd-clones-2.c: Likewise.
+
+2023-12-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/memmove.c: Add new test.
+	* gcc.target/aarch64/memmove2.c: Likewise.
+
+2023-12-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/bug-1.c: New test.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/112906
+	* gcc.target/aarch64/sve/acle/general/pr112906.c: New test.
+
+2023-12-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/pr110279-2.c: Don't '#include <stdio.h>'.  Remove
+	'__attribute_noinline__'.
+
+2023-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113024
+	* gcc.dg/tree-ssa/pr113024.c: New test.
+
+2023-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113003
+	* gcc.dg/bitint-54.c: New test.
+
+2023-12-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-1.c: Remove xfail of M2.
+	* gcc.target/riscv/rvv/autovec/partial/slp-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-5.c: Ditto.
+
+2023-12-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/pr112943.c: Require dfp.
+
+2023-12-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/112824
+	* gcc.target/i386/pieces-memset-45.c: Remove
+	-mprefer-vector-width=256.
+	* g++.target/i386/pr112824-1.C: New test.
+
+2023-12-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/pr112988-1.c: Adapt test.
+
+2023-12-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112387
+	* gcc.dg/vect/costmodel/riscv/rvv/pr112387.c: Moved to...
+	* gcc.dg/vect/costmodel/riscv/rvv/pr112387-1.c: ...here.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr112387-2.c: New test.
+
+2023-12-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111153
+	* gcc.dg/vect/costmodel/riscv/rvv/pr111153.c: Moved to...
+	* gcc.dg/vect/costmodel/riscv/rvv/pr11153-2.c: ...here.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr111153-1.c: New test.
+
 2023-12-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96395

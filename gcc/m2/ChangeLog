@@ -1,3 +1,26 @@
+2023-12-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112946
+	* gm2-compiler/M2Check.mod (checkConstMeta): New procedure
+	function.
+	(checkConstEquivalence): New procedure function.
+	(doCheckPair): Add call to checkConstEquivalence.
+	* gm2-compiler/M2GenGCC.mod (ResolveConstantExpressions): Call
+	FoldBecomes with reduced parameters.
+	(FoldBecomes): Re-write.
+	(TryDeclareConst): New procedure.
+	(RemoveQuads): New procedure.
+	(DeclaredOperandsBecomes): New procedure function.
+	(TypeCheckBecomes): New procedure function.
+	(PerformFoldBecomes): New procedure.
+	* gm2-compiler/M2Range.mod (FoldAssignment): Call
+	AssignmentTypeCompatible to check des expr compatibility.
+	* gm2-compiler/M2SymInit.mod (CheckReadBeforeInitQuad): Remove
+	parameter lst.
+	(FilterCheckReadBeforeInitQuad): Remove parameter lst.
+	(CheckReadBeforeInitFirstBasicBlock): Remove parameter lst.
+	Call FilterCheckReadBeforeInitQuad without lst.
+
 2023-12-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/112921

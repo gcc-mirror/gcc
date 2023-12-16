@@ -1,3 +1,7 @@
+2023-12-15  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_STRUCT_UNORD.
+
 2023-12-10  Tom Tromey  <tom@tromey.com>
 
 	* dwarf2.def (DW_IDX_GNU_internal, DW_IDX_GNU_external): Comment.

@@ -1,3 +1,9 @@
+2023-12-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/112783
+	* intrinsic.texi: Fix where no COMPLEX allowed.
+	* invoke.texi: Clarify -fdev-math.
+
 2023-12-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/112873

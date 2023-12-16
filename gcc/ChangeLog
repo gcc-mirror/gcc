@@ -1,3 +1,261 @@
+2023-12-15  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* config/riscv/constraints.md: CVP2 -> CV_alu_pow2.
+	* config/riscv/corev.md: Likewise.
+
+2023-12-15  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* common/config/riscv/riscv-common.cc: Add XCVelw.
+	* config/riscv/corev.def: Likewise.
+	* config/riscv/corev.md: Likewise.
+	* config/riscv/riscv-builtins.cc (AVAIL): Likewise.
+	* config/riscv/riscv-ftypes.def: Likewise.
+	* config/riscv/riscv.opt: Likewise.
+	* doc/extend.texi: Add XCVelw builtin documentation.
+	* doc/sourcebuild.texi: Likewise.
+
+2023-12-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/110201
+	* config/riscv/constraints.md (D03, DsA): Remove unused constraints.
+	* config/riscv/predicates.md (const_0_3_operand): New predicate.
+	(const_0_10_operand): Likewise.
+	* config/riscv/crypto.md (riscv_aes32dsi): Use new predicate.  Drop
+	unnecessary constraint.
+	(riscv_aes32dsmi, riscv_aes64im, riscv_aes32esi): Likewise.
+	(riscv_aes32esmi, *riscv_<sm4_op>_si): Likewise.
+	(riscv_<sm4_op>_di_extend, riscv_<sm4_op>_si): Likewise.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	* config.gcc: Add aarch64-ldp-fusion.o to extra_objs for aarch64.
+	* config/aarch64/aarch64-passes.def: Add copies of pass_ldp_fusion
+	before and after RA.
+	* config/aarch64/aarch64-protos.h (make_pass_ldp_fusion): Declare.
+	* config/aarch64/aarch64.opt (-mearly-ldp-fusion): New.
+	(-mlate-ldp-fusion): New.
+	(--param=aarch64-ldp-alias-check-limit): New.
+	(--param=aarch64-ldp-writeback): New.
+	* config/aarch64/t-aarch64: Add rule for aarch64-ldp-fusion.o.
+	* config/aarch64/aarch64-ldp-fusion.cc: New file.
+	* doc/invoke.texi (AArch64 Options): Document new
+	-m{early,late}-ldp-fusion options.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-ldpstp.md: Abstract ldp/stp
+	representation from peepholes, allowing use of new form.
+	* config/aarch64/aarch64-modes.def (V2x4QImode): Define.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_finish_ldpstp_peephole): Declare.
+	(aarch64_swap_ldrstr_operands): Delete declaration.
+	(aarch64_gen_load_pair): Adjust parameters.
+	(aarch64_gen_store_pair): Likewise.
+	* config/aarch64/aarch64-simd.md (load_pair<DREG:mode><DREG2:mode>):
+	Delete.
+	(vec_store_pair<DREG:mode><DREG2:mode>): Delete.
+	(load_pair<VQ:mode><VQ2:mode>): Delete.
+	(vec_store_pair<VQ:mode><VQ2:mode>): Delete.
+	* config/aarch64/aarch64.cc (aarch64_pair_mode_for_mode): New.
+	(aarch64_gen_store_pair): Adjust to use new unspec form of stp.
+	Drop second mem from parameters.
+	(aarch64_gen_load_pair): Likewise.
+	(aarch64_pair_mem_from_base): New.
+	(aarch64_save_callee_saves): Emit REG_CFA_OFFSET notes for
+	frame-related saves.  Adjust call to aarch64_gen_store_pair
+	(aarch64_restore_callee_saves): Adjust calls to
+	aarch64_gen_load_pair to account for change in interface.
+	(aarch64_process_components): Likewise.
+	(aarch64_classify_address): Handle 32-byte pair mems in
+	LDP_STP_N case.
+	(aarch64_print_operand): Likewise.
+	(aarch64_copy_one_block_and_progress_pointers): Adjust calls to
+	account for change in aarch64_gen_{load,store}_pair interface.
+	(aarch64_set_one_block_and_progress_pointer): Likewise.
+	(aarch64_finish_ldpstp_peephole): New.
+	(aarch64_gen_adjusted_ldpstp): Adjust to use generation helper.
+	* config/aarch64/aarch64.md (ldpstp): New attribute.
+	(load_pair_sw_<SX:mode><SX2:mode>): Delete.
+	(load_pair_dw_<DX:mode><DX2:mode>): Delete.
+	(load_pair_dw_<TX:mode><TX2:mode>): Delete.
+	(*load_pair_<ldst_sz>): New.
+	(*load_pair_16): New.
+	(store_pair_sw_<SX:mode><SX2:mode>): Delete.
+	(store_pair_dw_<DX:mode><DX2:mode>): Delete.
+	(store_pair_dw_<TX:mode><TX2:mode>): Delete.
+	(*store_pair_<ldst_sz>): New.
+	(*store_pair_16): New.
+	(*load_pair_extendsidi2_aarch64): Adjust to use new form.
+	(*zero_extendsidi2_aarch64): Likewise.
+	* config/aarch64/iterators.md (VPAIR): New.
+	* config/aarch64/predicates.md (aarch64_mem_pair_operand): Change to
+	a special predicate derived from aarch64_mem_pair_operator.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_ldpstp_operand_mode_p): Declare.
+	* config/aarch64/aarch64.cc (aarch64_gen_storewb_pair): Build RTL
+	directly instead of invoking named pattern.
+	(aarch64_gen_loadwb_pair): Likewise.
+	(aarch64_ldpstp_operand_mode_p): New.
+	* config/aarch64/aarch64.md (loadwb_pair<GPI:mode>_<P:mode>): Replace with
+	...
+	(*loadwb_post_pair_<ldst_sz>): ... this. Generalize as described
+	in cover letter.
+	(loadwb_pair<GPF:mode>_<P:mode>): Delete (superseded by the
+	above).
+	(*loadwb_post_pair_16): New.
+	(*loadwb_pre_pair_<ldst_sz>): New.
+	(loadwb_pair<TX:mode>_<P:mode>): Delete.
+	(*loadwb_pre_pair_16): New.
+	(storewb_pair<GPI:mode>_<P:mode>): Replace with ...
+	(*storewb_pre_pair_<ldst_sz>): ... this.  Generalize as
+	described in cover letter.
+	(*storewb_pre_pair_16): New.
+	(storewb_pair<GPF:mode>_<P:mode>): Delete.
+	(*storewb_post_pair_<ldst_sz>): New.
+	(storewb_pair<TX:mode>_<P:mode>): Delete.
+	(*storewb_post_pair_16): New.
+	* config/aarch64/predicates.md (aarch64_mem_pair_operator): New.
+	(pmode_plus_operator): New.
+	(aarch64_ldp_reg_operand): New.
+	(aarch64_stp_reg_operand): New.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_print_address_internal): Handle SVE
+	modes when printing ldp/stp addresses.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_const_zero_rtx_p): New.
+	* config/aarch64/aarch64.cc (aarch64_const_zero_rtx_p): New.
+	Use it ...
+	(aarch64_print_operand): ... here.  Recognize CONST0_RTXes in
+	modes other than VOIDmode.
+
+2023-12-15  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc:
+	(riscv_implied_info): Add zvfbfmin item.
+	(riscv_ext_version_table): Ditto.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv.opt:
+	(MASK_ZVFBFMIN): New macro.
+	(MASK_VECTOR_ELEN_BF_16): Ditto.
+	(TARGET_ZVFBFMIN): Ditto.
+
+2023-12-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.opt (aarch64_mops_memmove_size_threshold):
+	Change default.
+	* config/aarch64/aarch64.md (cpymemdi): Add a parameter.
+	(movmemdi): Call aarch64_expand_cpymem.
+	* config/aarch64/aarch64.cc (aarch64_copy_one_block): Rename function,
+	simplify, support storing generated loads/stores.
+	(aarch64_expand_cpymem): Support expansion of memmove.
+	* config/aarch64/aarch64-protos.h (aarch64_expand_cpymem): Add bool arg.
+
+2023-12-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (shuffle_merge_patterns): Fix bug.
+
+2023-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.h (struct bitint_info): Add abi_limb_mode member, adjust
+	comment.
+	* target.def (bitint_type_info): Mention abi_limb_mode instead of
+	limb_mode.
+	* varasm.cc (output_constant): Use abi_limb_mode rather than
+	limb_mode.
+	* stor-layout.cc (finish_bitfield_representative): Likewise.  Assert
+	that if precision is smaller or equal to abi_limb_mode precision or
+	if info.big_endian is different from WORDS_BIG_ENDIAN, info.limb_mode
+	must be the same as info.abi_limb_mode.
+	(layout_type): Use abi_limb_mode rather than limb_mode.
+	* gimple-fold.cc (clear_padding_bitint_needs_padding_p): Likewise.
+	(clear_padding_type): Likewise.
+	* config/i386/i386.cc (ix86_bitint_type_info): Also set
+	info->abi_limb_mode.
+	* doc/tm.texi: Regenerated.
+
+2023-12-15  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (extract_base_bit_offset): Add VARIABLE_OFFSET parameter.
+	(omp_get_attachment, omp_group_last, omp_group_base,
+	omp_directive_maps_explicitly): Add GOMP_MAP_STRUCT_UNORD support.
+	(omp_accumulate_sibling_list): Update calls to extract_base_bit_offset.
+	Support GOMP_MAP_STRUCT_UNORD.
+	(omp_build_struct_sibling_lists, gimplify_scan_omp_clauses,
+	gimplify_adjust_omp_clauses, gimplify_omp_target_update): Add
+	GOMP_MAP_STRUCT_UNORD support.
+	* omp-low.cc (lower_omp_target): Add GOMP_MAP_STRUCT_UNORD support.
+	* tree-pretty-print.cc (dump_omp_clause): Likewise.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/112906
+	* config/aarch64/aarch64-sve.md (@aarch64_vec_duplicate_vq<mode>_le):
+	Use force_reload_address to reload addresses that aren't suitable for
+	ld1rq in the pre-RA splitter.
+
+2023-12-15  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/112906
+	* emit-rtl.cc (address_reload_context::emit_autoinc): New.
+	(force_reload_address): New.
+	* emit-rtl.h (struct address_reload_context): Declare.
+	(force_reload_address): Declare.
+	* lra-constraints.cc (class lra_autoinc_reload_context): New.
+	(emit_inc): Drop IN parameter, invoke
+	code moved to emit-rtl.cc:address_reload_context::emit_autoinc.
+	(curr_insn_transform): Drop redundant IN parameter in call to
+	emit_inc.
+	* recog.h (class recog_data_saver): New.
+
+2023-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113024
+	* match.pd (two conversions in a row): Simplify scalar integer
+	sign-extension followed by truncation.
+
+2023-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113003
+	* gimple-lower-bitint.cc (arith_overflow_arg_kind): New function.
+	(gimple_lower_bitint): Use it to catch .{ADD,SUB,MUL}_OVERFLOW
+	calls with large/huge INTEGER_CST arguments.
+
+2023-12-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific) <nvptx-*-none>: Update nvptx-tools
+	Github link.
+
+2023-12-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/112824
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Sync ix86_move_max/ix86_store_max with prefer_vector_width when
+	it is explicitly set.
+
+2023-12-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Do not
+	set Grand Ridge depending on RAO-INT.
+	* config/i386/i386.h: Remove PTA_RAOINT from PTA_GRANDRIDGE.
+	* doc/invoke.texi: Adjust documentation.
+
+2023-12-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112387
+	* config/riscv/riscv.cc: Adapt generic cost model same ARM SVE.
+
+2023-12-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111153
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters):
+	Remove address cost for select_vl/decrement IV.
+
 2023-12-14  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/111260
