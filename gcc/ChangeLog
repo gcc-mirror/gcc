@@ -1,3 +1,79 @@
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112733
+	* fold-const.cc (multiple_of_p): Pass SIGNED rather than
+	UNSIGNED for wi::multiple_of_p on widest_int arguments.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112845
+	* config/i386/i386.md (movabsq $(i32 << shift), r64 peephole2): FAIL
+	if the new immediate is ix86_endbr_immediate_operand.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112837
+	* config/i386/i386.cc (ix86_elim_entry_set_got): Before checking
+	for UNSPEC_SET_GOT check that SET_SRC is UNSPEC.  Use SET_SRC and
+	SET_DEST macros instead of XEXP, rename vec variable to set.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112816
+	* config/i386/sse.md (signbit<mode>2): Force operands[1] into a REG.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111408
+	* config/i386/i386.md (*jcc_bt<mode>_mask): Add (const_int 0) as
+	expected second operand of bt_comparison_operator.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111967
+	* gimple-range-cache.cc (block_range_cache::set_bb_range): Grow
+	m_ssa_ranges to num_ssa_names rather than num_ssa_names + 1.
+	(block_range_cache::dump): Iterate from 1 rather than 0.  Don't use
+	ssa_name (x) unless m_ssa_ranges[x] is non-NULL.  Iterate to
+	m_ssa_ranges.length () rather than num_ssa_names.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/112339
+	* attribs.cc (attribute_ignored_p): Only return true for
+	attr_namespace_ignored_p if as is NULL.
+	(decl_attributes): Never add ignored attributes.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110731
+	* wide-int.cc (wi::divmod_internal): Always unpack dividend and
+	divisor as UNSIGNED regardless of sgn.
+
 2023-12-15  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

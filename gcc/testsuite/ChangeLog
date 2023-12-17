@@ -1,3 +1,83 @@
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112727
+	* c-c++-common/ubsan/pr112727.c: New test.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112733
+	* gcc.dg/pr112733.c: New test.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112845
+	* gcc.dg/pr112845.c: New file.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112837
+	* gcc.dg/pr112837.c: New test.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112816
+	* gcc.target/i386/sse2-pr112816.c: New test.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112795
+	* g++.dg/ext/unroll-5.C: New test.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111408
+	* gcc.c-torture/execute/pr111408.c: New test.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111967
+	* gcc.dg/tree-ssa/pr111967.c: New test.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/112339
+	* c-c++-common/ubsan/Wno-attributes-1.c: New test.
+
+2023-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110731
+	* gcc.dg/pr110731.c: New test.
+
 2023-12-15  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
