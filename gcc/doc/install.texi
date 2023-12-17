@@ -158,10 +158,6 @@ package-specific installation instructions.
 We recommend you browse the entire generic installation instructions before
 you proceed.
 
-Lists of successful builds for released versions of GCC are
-available at @uref{https://gcc.gnu.org/buildstat.html}.
-These lists are updated as new information becomes available.
-
 The installation procedure itself is broken into five steps.
 
 @ifinfo
@@ -3286,9 +3282,6 @@ Before you install GCC, we encourage you to run the testsuites and to
 compare your results with results from a similar configuration that have
 been submitted to the
 @uref{https://gcc.gnu.org/ml/gcc-testresults/,,gcc-testresults mailing list}.
-Some of these archived results are linked from the build status lists
-at @uref{https://gcc.gnu.org/buildstat.html}, although not everyone who
-reports a successful build runs the testsuites and submits the results.
 This step is optional and may require you to download additional software,
 but it can give you confidence in your new GCC installation or point out
 problems before you install and start using your new GCC@.
@@ -3593,51 +3586,7 @@ Alternatively, there are prebuilt online versions of the manuals for
 released versions of GCC on
 @uref{https://gcc.gnu.org/onlinedocs/,,the GCC web site}.
 
-If you are bootstrapping a released version of GCC then please
-quickly review the build status page for your release, available from
-@uref{https://gcc.gnu.org/buildstat.html}.
-If your system is not listed for the version of GCC that you built,
-send a note to
-@email{gcc@@gcc.gnu.org} indicating
-that you successfully built and installed GCC@.
-Include the following information:
-
-@itemize @bullet
-@item
-Output from running @file{@var{srcdir}/config.guess}.  Do not send
-that file itself, just the one-line output from running it.
-
-@item
-The output of @samp{gcc -v} for your newly installed @command{gcc}.
-This tells us which version of GCC you built and the options you passed to
-configure.
-
-@item
-If the build was for GNU/Linux, also include:
-@itemize @bullet
-@item
-The distribution name and version (e.g., Red Hat 7.1 or Debian 2.2.3);
-this information should be available from @file{/etc/issue}.
-
-@item
-The version of the Linux kernel, available from @samp{uname --version}
-or @samp{uname -a}.
-
-@item
-The version of glibc you used; for RPM-based systems like Red Hat,
-Mandrake, and SuSE type @samp{rpm -q glibc} to get the glibc version,
-and on systems like Debian and Progeny use @samp{dpkg -l libc6}.
-@end itemize
-For other systems, you can include similar information if you think it is
-relevant.
-
-@item
-Any other information that you think would be useful to people building
-GCC on the same configuration.  The new entry in the build status list
-will include a link to the archived copy of your message.
-@end itemize
-
-We'd also like to know if the
+If you built GCC yourself we would like to know if the
 @ifnothtml
 @ref{Specific, host/target specific installation notes}
 @end ifnothtml
