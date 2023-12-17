@@ -1,3 +1,9 @@
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* d-attribs.cc (attr_target_exclusions): Make
+	target/target_clones exclusion target-dependent.
+	(attr_target_clones_exclusions): Ditto.
+
 2023-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Make-lang.in (D_FRONTEND_OBJS): Rename d/common-string.o to

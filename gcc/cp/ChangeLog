@@ -1,3 +1,20 @@
+2023-12-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/106363
+	* module.cc (module_state::write_cluster): Don't skip first
+	depset for bindings.
+
+2023-12-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113031
+	* constexpr.cc (cxx_fold_indirect_ref_1): Check for CLASS_TYPE
+	before using CLASSTYPE_AS_BASE.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* decl2.cc (check_classfn): Update comment to include
+	target_version attributes.
+
 2023-12-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/70435

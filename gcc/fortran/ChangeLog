@@ -1,3 +1,26 @@
+2023-12-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112459
+	* trans-array.cc (gfc_trans_array_constructor_value): Replace
+	gfc_notification_std with explicit logical expression that
+	selects F2003/2008 and excludes -std=default/gnu.
+	* trans-expr.cc (gfc_conv_expr): Ditto.
+
+2023-12-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112834
+	PR fortran/111853
+	* match.cc (build_associate_name): Fix whitespace issues.
+	(select_type_set_tmp): If the selector is of unknown type, go
+	the SELECT TYPE selector to see if this is a function and, if
+	the result is available, use its typespec.
+	* parse.cc (parse_associate): Again, use the function result if
+	the type of the selector result is unknown.
+	* trans-stmt.cc (trans_associate_var): The expression has to be
+	of type class, for class_target to be true. Convert and fix
+	class functions. Pass the fixed expression.
+	* resolve.cc (gfc_expression_rank): Avoid null dereference.
+
 2023-12-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/112783

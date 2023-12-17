@@ -1,3 +1,72 @@
+2023-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/print.cc (__open_terminal(FILE*)): Avoid fileno
+	macro.
+
+2023-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt:
+	Updated.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (remove_pointer): Use __remove_pointer
+	built-in trait.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_object): Use __is_object built-in
+	trait.
+	(is_object_v): Likewise.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_function): Use __is_function
+	built-in trait.
+	(is_function_v): Likewise. Optimize its implementation.  Move
+	this under is_const_v as this depends on is_const_v.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_reference): Use __is_reference
+	built-in trait.
+	(is_reference_v): Likewise.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_member_object_pointer): Use
+	__is_member_object_pointer built-in trait.
+	(is_member_object_pointer_v): Likewise.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_member_function_pointer): Use
+	__is_member_function_pointer built-in trait.
+	(is_member_function_pointer_v): Likewise.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_member_pointer): Use
+	__is_member_pointer built-in trait.
+	(is_member_pointer_v): Likewise.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_scoped_enum): Use
+	__is_scoped_enum built-in trait.
+	(is_scoped_enum_v): Likewise.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_bounded_array_v): Use
+	__is_bounded_array built-in trait.
+
+2023-12-16  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_array): Use __is_array built-in
+	trait.
+	(is_array_v): Likewise.
+
 2023-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++23/print.cc (__write_to_terminal) [_WIN32]: If handle

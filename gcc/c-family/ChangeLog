@@ -1,3 +1,25 @@
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* c-attribs.cc (attr_target_exclusions): Make
+	target/target_clones exclusion target-dependent.
+	(attr_target_clones_exclusions): Ditto, and add target_version.
+	(attr_target_version_exclusions): New.
+	(c_common_attribute_table): Add target_version.
+	(handle_target_version_attribute): New.
+	(handle_target_attribute): Amend comment.
+	(handle_target_clones_attribute): Ditto.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* c-attribs.cc (attr_always_inline_exclusions): New.
+	(attr_target_exclusions): Ditto.
+	(attr_target_clones_exclusions): Ditto.
+	(c_common_attribute_table): Add new exclusion lists.
+	(handle_noinline_attribute): Remove custom exclusion handling.
+	(handle_always_inline_attribute): Ditto.
+	(handle_target_attribute): Ditto.
+	(handle_target_clones_attribute): Ditto.
+
 2023-12-13  Patrick Palka  <ppalka@redhat.com>
 
 	* c.opt: Add -fdiagnostics-all-candidates.

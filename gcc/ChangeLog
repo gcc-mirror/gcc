@@ -1,3 +1,91 @@
+2023-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (print_escaped_json_string): New, taken from
+	string::print.
+	(object::print): Use it for printing keys.
+	(string::print): Move implementation to
+	print_escaped_json_string.
+	(selftest::test_writing_objects): Add a key containing
+	quote, backslash, and control characters.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-feature-deps.h (fmv_deps_<FEAT_NAME>):
+	Define aarch64_feature_flags mask foreach FMV feature.
+	* config/aarch64/aarch64-option-extensions.def: Use new macros
+	to define FMV feature extensions.
+	* config/aarch64/aarch64.cc (aarch64_option_valid_attribute_p):
+	Check for target_version attribute after processing target
+	attribute.
+	(aarch64_fmv_feature_data): New.
+	(aarch64_parse_fmv_features): New.
+	(aarch64_process_target_version_attr): New.
+	(aarch64_option_valid_version_attribute_p): New.
+	(get_feature_mask_for_version): New.
+	(compare_feature_masks): New.
+	(aarch64_compare_version_priority): New.
+	(build_ifunc_arg_type): New.
+	(make_resolver_func): New.
+	(add_condition_to_bb): New.
+	(dispatch_function_versions): New.
+	(aarch64_generate_version_dispatcher_body): New.
+	(aarch64_get_function_versions_dispatcher): New.
+	(aarch64_common_function_versions): New.
+	(aarch64_mangle_decl_assembler_name): New.
+	(TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P): New implementation.
+	(TARGET_OPTION_EXPANDED_CLONES_ATTRIBUTE): New implementation.
+	(TARGET_OPTION_FUNCTION_VERSIONS): New implementation.
+	(TARGET_COMPARE_VERSION_PRIORITY): New implementation.
+	(TARGET_GENERATE_VERSION_DISPATCHER_BODY): New implementation.
+	(TARGET_GET_FUNCTION_VERSIONS_DISPATCHER): New implementation.
+	(TARGET_MANGLE_DECL_ASSEMBLER_NAME): New implementation.
+	* config/aarch64/aarch64.h (TARGET_HAS_FMV_TARGET_ATTRIBUTE):
+	Set target macro.
+	* config/arm/aarch-common.h (enum aarch_parse_opt_result): Add
+	new value to report duplicate FMV feature.
+	* common/config/aarch64/cpuinfo.h: New file.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* attribs.cc (decl_attributes): Pass attribute name to target.
+	(is_function_default_version): Update comment to specify
+	incompatibility with target_version attributes.
+	* cgraphclones.cc (cgraph_node::create_version_clone_with_body):
+	Call valid_version_attribute_p for target_version attributes.
+	* defaults.h (TARGET_HAS_FMV_TARGET_ATTRIBUTE): New macro.
+	* target.def (valid_version_attribute_p): New hook.
+	* doc/tm.texi.in: Add new hook.
+	* doc/tm.texi: Regenerate.
+	* multiple_target.cc (create_dispatcher_calls): Remove redundant
+	is_function_default_version check.
+	(expand_target_clones): Use target macro to pick attribute name.
+	* targhooks.cc (default_target_option_valid_version_attribute_p):
+	New.
+	* targhooks.h (default_target_option_valid_version_attribute_p):
+	New.
+	* tree.h (DECL_FUNCTION_VERSIONED): Update comment to include
+	target_version attributes.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(struct aarch64_option_extension): Remove unused field.
+	(all_extensions): Ditto.
+	(aarch64_get_extension_string_for_isa_flags): Remove filtering
+	of features without native detection.
+	* config/aarch64/driver-aarch64.cc (host_detect_local_cpu):
+	Explicitly add expected features that lack cpuinfo detection.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_get_extension_string_for_isa_flags): Fix generation of
+	the "+nocrypto" extension.
+	* config/aarch64/aarch64.h (AARCH64_ISA_CRYPTO): Remove.
+	(TARGET_CRYPTO): Remove.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Don't use TARGET_CRYPTO.
+
 2023-12-15  Mary Bennett  <mary.bennett@embecosm.com>
 
 	* config/riscv/constraints.md: CVP2 -> CV_alu_pow2.

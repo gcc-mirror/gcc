@@ -1,3 +1,60 @@
+2023-12-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/106363
+	* g++.dg/modules/pr106363_a.C: New test.
+	* g++.dg/modules/pr106363_b.C: New test.
+
+2023-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112792
+	* c-c++-common/analyzer/out-of-bounds-pr112792.c: New test.
+
+2023-12-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112459
+	* gfortran.dg/pr112459.f90: New test.
+
+2023-12-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112834
+	PR fortran/111853
+	* gfortran.dg/associate_63.f90 : New test.
+	* gfortran.dg/pr111853.f90 : New test.
+
+2023-12-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113031
+	* g++.dg/cpp0x/pr113031.C: New test.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/options_set_17.c: Reorder expected flags.
+	* gcc.target/aarch64/cpunative/native_cpu_0.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_13.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_16.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_17.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_18.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_19.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_20.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_21.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_22.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_6.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_7.c: Ditto.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* g++.target/i386/mvc2.C:
+	* g++.target/i386/mvc3.C:
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/options_set_28.c: New test.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/options_set_4.c: Add terminating newline.
+	* gcc.target/aarch64/options_set_27.c: New test.
+
 2023-12-15  Mary Bennett  <mary.bennett@embecosm.com>
 
 	* gcc.target/riscv/cv-elw-elw-compile-1.c: Create test for cv.elw.

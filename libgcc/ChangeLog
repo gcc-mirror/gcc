@@ -1,3 +1,17 @@
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/cpuinfo.c (enum CPUFeatures): Move to shared
+	copy in gcc/common
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+	    Pavel Iliin  <Pavel.Iliin@arm.com>
+
+	* config/aarch64/t-aarch64: Include cpuinfo.c
+	* config/aarch64/cpuinfo.c: New file
+	(__init_cpu_features_constructor) New.
+	(__init_cpu_features_resolver) New.
+	(__init_cpu_features) New.
+
 2023-12-11  Lipeng Zhu  <lipeng.zhu@intel.com>
 
 	* gthr-posix.h (__GTHREAD_RWLOCK_INIT): New macro.

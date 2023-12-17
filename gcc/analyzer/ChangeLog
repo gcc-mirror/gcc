@@ -1,3 +1,115 @@
+2023-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.cc: Include "tree-pretty-print.h" and
+	"diagnostic-event-id.h".
+	(tree_to_json): New.
+	(diagnostic_event_id_to_json): New.
+	(bit_offset_to_json): New.
+	(byte_offset_to_json): New.
+	* analyzer.h (tree_to_json): New decl.
+	(diagnostic_event_id_to_json): New decl.
+	(bit_offset_to_json): New decl.
+	(byte_offset_to_json): New decl.
+	* bounds-checking.cc: Include "diagnostic-format-sarif.h".
+	(out_of_bounds::maybe_add_sarif_properties): New.
+	(concrete_out_of_bounds::maybe_add_sarif_properties): New.
+	(concrete_past_the_end::maybe_add_sarif_properties): New.
+	(symbolic_past_the_end::maybe_add_sarif_properties): New.
+	* region-model.cc (region_to_value_map::to_json): New.
+	(region_model::to_json): New.
+	* region-model.h (region_to_value_map::to_json): New decl.
+	(region_model::to_json): New decl.
+	* store.cc (bit_range::to_json): New.
+	(byte_range::to_json): New.
+	* store.h (bit_range::to_json): New decl.
+	(byte_range::to_json): New decl.
+
+2023-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112792
+	* bounds-checking.cc
+	(out_of_bounds::oob_region_creation_event_capacity): Rename
+	"capacity" to "byte_capacity".  Layout fix.
+	(out_of_bounds::::add_region_creation_events): Rename
+	"capacity" to "byte_capacity".
+	(class concrete_out_of_bounds): Rename m_out_of_bounds_range to
+	m_out_of_bounds_bits and convert from a byte_range to a bit_range.
+	(concrete_out_of_bounds::get_out_of_bounds_bytes): New.
+	(concrete_past_the_end::concrete_past_the_end): Rename param
+	"byte_bound" to "bit_bound".  Initialize m_byte_bound.
+	(concrete_past_the_end::subclass_equal_p): Update for renaming
+	of m_byte_bound to m_bit_bound.
+	(concrete_past_the_end::m_bit_bound): New field.
+	(concrete_buffer_overflow::concrete_buffer_overflow): Convert
+	param "range" from byte_range to bit_range.  Rename param
+	"byte_bound" to "bit_bound".
+	(concrete_buffer_overflow::emit): Update for bits vs bytes.
+	(concrete_buffer_overflow::describe_final_event): Split
+	into...
+	(concrete_buffer_overflow::describe_final_event_as_bytes): ...this
+	(concrete_buffer_overflow::describe_final_event_as_bits): ...and
+	this.
+	(concrete_buffer_over_read::concrete_buffer_over_read): Convert
+	param "range" from byte_range to bit_range.  Rename param
+	"byte_bound" to "bit_bound".
+	(concrete_buffer_over_read::emit): Update for bits vs bytes.
+	(concrete_buffer_over_read::describe_final_event): Split into...
+	(concrete_buffer_over_read::describe_final_event_as_bytes):
+	...this
+	(concrete_buffer_over_read::describe_final_event_as_bits): ...and
+	this.
+	(concrete_buffer_underwrite::concrete_buffer_underwrite): Convert
+	param "range" from byte_range to bit_range.
+	(concrete_buffer_underwrite::describe_final_event): Split into...
+	(concrete_buffer_underwrite::describe_final_event_as_bytes):
+	...this
+	(concrete_buffer_underwrite::describe_final_event_as_bits): ...and
+	this.
+	(concrete_buffer_under_read::concrete_buffer_under_read): Convert
+	param "range" from byte_range to bit_range.
+	(concrete_buffer_under_read::describe_final_event): Split into...
+	(concrete_buffer_under_read::describe_final_event_as_bytes):
+	...this
+	(concrete_buffer_under_read::describe_final_event_as_bits): ...and
+	this.
+	(region_model::check_region_bounds): Use bits for concrete values,
+	and rename locals to indicate whether we're dealing with bits or
+	bytes.  Specifically, replace "num_bytes_sval" with
+	"num_bits_sval", and get it from reg's "get_bit_size_sval".
+	Replace "num_bytes_tree" with "num_bits_tree".  Rename "capacity"
+	to "byte_capacity".  Rename "cst_capacity_tree" to
+	"cst_byte_capacity_tree".  Replace "offset" and
+	"num_bytes_unsigned" with "bit_offset" and "num_bits_unsigned"
+	respectively, converting from byte_offset_t to bit_offset_t.
+	Replace "out" and "read_bytes" with "bits_outside" and "read_bits"
+	respectively, converting from byte_range to bit_range.  Convert
+	"buffer" from byte_range to bit_range.  Replace "byte_bound" with
+	"bit_bound".
+	* region.cc (region::get_bit_size_sval): New.
+	(offset_region::get_bit_offset): New.
+	(offset_region::get_bit_size_sval): New.
+	(sized_region::get_bit_size_sval): New.
+	(bit_range_region::get_bit_size_sval): New.
+	* region.h (region::get_bit_size_sval): New vfunc.
+	(offset_region::get_bit_offset): New decl.
+	(offset_region::get_bit_size_sval): New decl.
+	(sized_region::get_bit_size_sval): New decl.
+	(bit_range_region::get_bit_size_sval): New decl.
+	* store.cc (bit_range::intersects_p): New, based on
+	byte_range::intersects_p.
+	(bit_range::exceeds_p): New, based on byte_range::exceeds_p.
+	(bit_range::falls_short_of_p): New, based on
+	byte_range::falls_short_of_p.
+	(byte_range::intersects_p): Delete.
+	(byte_range::exceeds_p): Delete.
+	(byte_range::falls_short_of_p): Delete.
+	* store.h (bit_range::intersects_p): New overload.
+	(bit_range::exceeds_p): New.
+	(bit_range::falls_short_of_p): New.
+	(byte_range::intersects_p): Delete.
+	(byte_range::exceeds_p): Delete.
+	(byte_range::falls_short_of_p): Delete.
+
 2023-12-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/112655

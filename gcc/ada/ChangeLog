@@ -1,3 +1,20 @@
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc-interface/utils.cc (attr_target_exclusions): Make
+	target/target_clones exclusion target-dependent.
+	(attr_target_clones_exclusions): Ditto.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc-interface/utils.cc (attr_noinline_exclusions): New.
+	(attr_always_inline_exclusions): Ditto.
+	(attr_target_exclusions): Ditto.
+	(attr_target_clones_exclusions): Ditto.
+	(gnat_internal_attribute_table): Add new exclusion lists.
+	(handle_noinline_attribute): Remove custom exclusion handling.
+	(handle_target_attribute): Ditto.
+	(handle_target_clones_attribute): Ditto.
+
 2023-12-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* terminals.c [__FreeBSD__]: Include <libutil.h>.
