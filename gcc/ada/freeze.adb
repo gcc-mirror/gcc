@@ -7327,17 +7327,21 @@ package body Freeze is
 
          if Is_Composite_Type (E) then
 
-            --  AI95-117 requires that all new primitives of a tagged type must
-            --  inherit the convention of the full view of the type. Inherited
-            --  and overriding operations are defined to inherit the convention
-            --  of their parent or overridden subprogram (also specified in
-            --  AI-117), which will have occurred earlier (in Derive_Subprogram
-            --  and New_Overloaded_Entity). Here we set the convention of
+            --  AI95-117 requires that all new primitives of a tagged type
+            --  must inherit the convention of the full view of the
+            --  type. Inherited and overriding operations are defined to
+            --  inherit the convention of their parent or overridden
+            --  subprogram (also specified in AI-117), which will have
+            --  occurred earlier (in Derive_Subprogram and
+            --  New_Overloaded_Entity). Here we set the convention of
             --  primitives that are still convention Ada, which will ensure
-            --  that any new primitives inherit the type's convention. Class-
-            --  wide types can have a foreign convention inherited from their
-            --  specific type, but are excluded from this since they don't have
-            --  any associated primitives.
+            --  that any new primitives inherit the type's convention. We
+            --  don't do this for primitives that are internal to avoid
+            --  potential problems in the case of nested subprograms and
+            --  convention C. In addition, class-wide types can have a
+            --  foreign convention inherited from their specific type, but
+            --  are excluded from this since they don't have any associated
+            --  primitives.
 
             if Is_Tagged_Type (E)
               and then not Is_Class_Wide_Type (E)
@@ -7350,7 +7354,9 @@ package body Freeze is
                begin
                   Prim := First_Elmt (Prim_List);
                   while Present (Prim) loop
-                     if Convention (Node (Prim)) = Convention_Ada then
+                     if Convention (Node (Prim)) = Convention_Ada
+                       and then Comes_From_Source (Node (Prim))
+                     then
                         Set_Convention (Node (Prim), Convention (E));
                      end if;
 
