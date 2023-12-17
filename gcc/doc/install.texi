@@ -4121,29 +4121,12 @@ longer a multiple of 2 bytes.
 @end html
 @anchor{hppa-hp-hpux}
 @heading hppa*-hp-hpux*
-Support for HP-UX version 9 and older was discontinued in GCC 3.4.
-
-We require using gas/binutils on all hppa platforms.  Version 2.19 or
+We require using gas on all hppa platforms.  Version 2.19 or
 later is recommended.
 
 It may be helpful to configure GCC with the
 @uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}} and
 @option{--with-as=@dots{}} options to ensure that GCC can find GAS@.
-
-The HP assembler should not be used with GCC.  It is rarely tested and may
-not work.  It shouldn't be used with any languages other than C due to its
-many limitations.
-
-Specifically, @option{-g} does not work (HP-UX uses a peculiar debugging
-format which GCC does not know about).  It also inserts timestamps
-into each object file it creates, causing the 3-stage comparison test to
-fail during a bootstrap.  You should be able to continue by saying
-@samp{make all-host all-target} after getting the failure from @samp{make}.
-
-Various GCC features are not supported.  For example, it does not support weak
-symbols or alias definitions.  As a result, explicit template instantiations
-are required when using C++.  This makes it difficult if not impossible to
-build many C++ applications.
 
 There are two default scheduling models for instructions.  These are
 PROCESSOR_7100LC and PROCESSOR_8000.  They are selected from the pa-risc
@@ -4269,9 +4252,7 @@ options, including program core dumps.  Binutils 2.14 corrects a
 problem on the 64-bit port resulting from HP's non-standard use of
 the .init and .fini sections for array initializers and finalizers.
 
-Although the HP and GNU linkers are both supported for the
-@samp{hppa64-hp-hpux11*} target, it is strongly recommended that the
-HP linker be used for link editing on this target.
+Only the HP linker is supported for the @samp{hppa64-hp-hpux11*} target.
 
 At this time, the GNU linker does not support the creation of long
 branch stubs.  As a result, it cannot successfully link binaries
