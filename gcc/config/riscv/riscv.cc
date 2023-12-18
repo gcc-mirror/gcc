@@ -2371,7 +2371,7 @@ riscv_expand_op (enum rtx_code code, machine_mode mode, rtx op0, rtx op1,
 
 static void
 riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
-				  int multiplier)
+				  HOST_WIDE_INT multiplier)
 {
   if (multiplier == 0)
     {
@@ -2380,7 +2380,7 @@ riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
     }
 
   bool neg_p = multiplier < 0;
-  int multiplier_abs = abs (multiplier);
+  unsigned HOST_WIDE_INT multiplier_abs = abs (multiplier);
 
   if (multiplier_abs == 1)
     {
@@ -2475,8 +2475,10 @@ void
 riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
 {
   poly_int64 value = rtx_to_poly_int64 (src);
-  int offset = value.coeffs[0];
-  int factor = value.coeffs[1];
+  /* It use HOST_WIDE_INT intead of int since 32bit type is not enough
+     for e.g. (const_poly_int:DI [549755813888, 549755813888]).  */
+  HOST_WIDE_INT offset = value.coeffs[0];
+  HOST_WIDE_INT factor = value.coeffs[1];
   int vlenb = BYTES_PER_RISCV_VECTOR.coeffs[1];
   int div_factor = 0;
   /* Calculate (const_poly_int:MODE [m, n]) using scalar instructions.
