@@ -5,7 +5,7 @@
 #include "abi-tag25.C"
 
 // { dg-warning "mangled name" "" { target *-*-* } 5 }
-// { dg-warning "mangled name" "" { target *-*-* } 11 }
+// { dg-warning "mangled name" "" { target c++14 } 11 }
 
 // { dg-final { scan-assembler "_Z3funIiEvv" } }
 // { dg-final { scan-assembler "_Z3varIiE" { target c++14 } } }
