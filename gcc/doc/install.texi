@@ -3742,8 +3742,6 @@ information have to.
 @item
 @uref{#hppa-hp-hpux,,hppa*-hp-hpux*}
 @item
-@uref{#hppa-hp-hpux10,,hppa*-hp-hpux10}
-@item
 @uref{#hppa-hp-hpux11,,hppa*-hp-hpux11}
 @item
 @uref{#x-x-linux-gnu,,*-*-linux-gnu}
@@ -4155,26 +4153,8 @@ More specific information to @samp{hppa*-hp-hpux*} targets follows.
 @html
 <hr />
 @end html
-@anchor{hppa-hp-hpux10}
-@heading hppa*-hp-hpux10
-For hpux10.20, we @emph{highly} recommend you pick up the latest sed patch
-@code{PHCO_19798} from HP@.
-
-The C++ ABI has changed incompatibly in GCC 4.0.  COMDAT subspaces are
-used for one-only code and data.  This resolves many of the previous
-problems in using C++ on this target.  However, the ABI is not compatible
-with the one implemented under HP-UX 11 using secondary definitions.
-
-@html
-<hr />
-@end html
 @anchor{hppa-hp-hpux11}
 @heading hppa*-hp-hpux11
-GCC 3.0 and up support HP-UX 11.  GCC 2.95.x is not supported and cannot
-be used to compile GCC 3.0 and up.
-
-The libffi library haven't been ported to 64-bit HP-UX@ and doesn't build.
-
 Refer to @uref{binaries.html,,binaries} for information about obtaining
 precompiled GCC binaries for HP-UX@.  Precompiled binaries must be obtained
 to build the Ada language as it cannot be bootstrapped using C@.  Ada is
