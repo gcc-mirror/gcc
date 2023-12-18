@@ -503,7 +503,7 @@
 ;; Widening instructions have group-overlap constraints.  Those are only
 ;; valid for certain register-group sizes.  This attribute marks the
 ;; alternatives not matching the required register-group size as disabled.
-(define_attr "group_overlap" "none,W21,W42,W84,W43,W86,W87"
+(define_attr "group_overlap" "none,W21,W42,W84,W43,W86,W87,W0"
   (const_string "none"))
 
 (define_attr "group_overlap_valid" "no,yes"
@@ -524,9 +524,9 @@
 
          ;; According to RVV ISA:
          ;; The destination EEW is greater than the source EEW, the source EMUL is at least 1,
-	 ;; and the overlap is in the highest-numbered part of the destination register group
-	 ;; (e.g., when LMUL=8, vzext.vf4 v0, v6 is legal, but a source of v0, v2, or v4 is not).
-	 ;; So the source operand should have LMUL >= 1.
+         ;; and the overlap is in the highest-numbered part of the destination register group
+         ;; (e.g., when LMUL=8, vzext.vf4 v0, v6 is legal, but a source of v0, v2, or v4 is not).
+         ;; So the source operand should have LMUL >= 1.
          (and (eq_attr "group_overlap" "W43")
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 4
 			   && riscv_get_v_regno_alignment (GET_MODE (operands[3])) >= 1"))
@@ -535,6 +535,12 @@
          (and (eq_attr "group_overlap" "W86,W87")
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 8
 			   && riscv_get_v_regno_alignment (GET_MODE (operands[3])) >= 1"))
+	 (const_string "no")
+
+         ;; W21 supports highest-number overlap for source LMUL = 1.
+         ;; For 'wv' variant, we can also allow wide source operand overlaps dest operand.
+         (and (eq_attr "group_overlap" "W0")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) > 1"))
 	 (const_string "no")
         ]
        (const_string "yes")))
