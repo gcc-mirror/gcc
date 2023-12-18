@@ -11917,7 +11917,7 @@ package body Exp_Util is
 
                         --  When this routine is called while the itype
                         --  is being created, the entity might not yet be
-                        --  decorated with the associated node, but should
+                        --  decorated with the associated node, but will
                         --  have the related expression.
 
                         if Present (Associated_Node_For_Itype (Subt)) then
@@ -11925,21 +11925,10 @@ package body Exp_Util is
                              Possible_Side_Effect_In_SPARK
                                (Associated_Node_For_Itype (Subt));
 
-                        elsif Present (Related_Expression (Subt)) then
+                        else
                            return
                              Possible_Side_Effect_In_SPARK
                                (Related_Expression (Subt));
-
-                        --  When the itype doesn't have any indication of its
-                        --  origin (which currently only happens for packed
-                        --  array types created by freezing that shouldn't
-                        --  be picked by GNATprove anyway), then we can
-                        --  conservatively assume that the expression can
-                        --  be kept as it appears in the source code.
-
-                        else
-                           pragma Assert (Is_Packed_Array_Impl_Type (Subt));
-                           return False;
                         end if;
                      else
                         return True;

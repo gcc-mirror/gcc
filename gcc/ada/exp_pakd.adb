@@ -541,8 +541,12 @@ package body Exp_Pakd is
 
          if Is_Itype (Typ) then
             Set_Parent (Decl, Associated_Node_For_Itype (Typ));
+            Set_Associated_Node_For_Itype
+              (PAT, Associated_Node_For_Itype (Typ));
          else
             Set_Parent (Decl, Declaration_Node (Typ));
+            Set_Associated_Node_For_Itype
+              (PAT, Declaration_Node (Typ));
          end if;
 
          if Scope (Typ) /= Current_Scope then
