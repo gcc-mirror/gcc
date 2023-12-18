@@ -1251,6 +1251,33 @@ gfc_check_same_strlen (const gfc_expr *a, const gfc_expr *b, const char *name)
      }
 }
 
+/* Check size of an array argument against a required size.
+   Returns true if the requirement is satisfied or if the size cannot be
+   determined, otherwise return false and raise a gfc_error  */
+
+static bool
+array_size_check (gfc_expr *a, int n, long size_min)
+{
+  bool ok = true;
+  mpz_t size;
+
+  if (gfc_array_size (a, &size))
+    {
+      HOST_WIDE_INT sz = gfc_mpz_get_hwi (size);
+      if (size_min >= 0 && sz < size_min)
+	{
+	  gfc_error ("Size of %qs argument of %qs intrinsic at %L "
+		     "too small (%wd/%ld)",
+		     gfc_current_intrinsic_arg[n]->name,
+		     gfc_current_intrinsic, &a->where, sz, size_min);
+	  ok = false;
+	}
+      mpz_clear (size);
+    }
+
+  return ok;
+}
+
 
 /***** Check functions *****/
 
@@ -6539,6 +6566,27 @@ gfc_check_date_and_time (gfc_expr *date, gfc_expr *time,
 	return false;
       if (!variable_check (values, 3, false))
 	return false;
+      if (!array_size_check (values, 3, 8))
+	return false;
+
+      if (values->ts.kind != gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2018, "VALUES argument of "
+			      "DATE_AND_TIME at %L has non-default kind",
+			      &values->where))
+	return false;
+
+      /* F2018:16.9.59 DATE_AND_TIME
+	 "VALUES shall be a rank-one array of type integer
+	 with a decimal exponent range of at least four."
+	 This is a hard limit also required by the implementation in
+	 libgfortran.  */
+      if (values->ts.kind < 2)
+	{
+	  gfc_error ("VALUES argument of DATE_AND_TIME at %L must have "
+		     "a decimal exponent range of at least four",
+		     &values->where);
+	  return false;
+	}
     }
 
   return true;

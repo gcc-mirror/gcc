@@ -4729,22 +4729,22 @@ end program test_ctime
 @item @emph{Description}:
 @code{DATE_AND_TIME(DATE, TIME, ZONE, VALUES)} gets the corresponding date and
 time information from the real-time system clock.  @var{DATE} is
-@code{INTENT(OUT)} and has form ccyymmdd.  @var{TIME} is @code{INTENT(OUT)} and
-has form hhmmss.sss.  @var{ZONE} is @code{INTENT(OUT)} and has form (+-)hhmm,
-representing the difference with respect to Coordinated Universal Time (UTC).
-Unavailable time and date parameters return blanks.
+@code{INTENT(OUT)} and of the form ccyymmdd.  @var{TIME} is @code{INTENT(OUT)}
+and of the form hhmmss.sss.  @var{ZONE} is @code{INTENT(OUT)} and of the form
+(+-)hhmm, representing the difference with respect to Coordinated Universal
+Time (UTC).  Unavailable time and date parameters return blanks.
 
 @var{VALUES} is @code{INTENT(OUT)} and provides the following:
 
 @multitable @columnfractions .15 .70
-@item @code{VALUE(1)}: @tab The year
-@item @code{VALUE(2)}: @tab The month
-@item @code{VALUE(3)}: @tab The day of the month
-@item @code{VALUE(4)}: @tab Time difference with UTC in minutes
-@item @code{VALUE(5)}: @tab The hour of the day
-@item @code{VALUE(6)}: @tab The minutes of the hour
-@item @code{VALUE(7)}: @tab The seconds of the minute
-@item @code{VALUE(8)}: @tab The milliseconds of the second
+@item @code{VALUES(1)}: @tab The year, including the century
+@item @code{VALUES(2)}: @tab The month of the year
+@item @code{VALUES(3)}: @tab The day of the month
+@item @code{VALUES(4)}: @tab The time difference from UTC in minutes
+@item @code{VALUES(5)}: @tab The hour of the day
+@item @code{VALUES(6)}: @tab The minutes of the hour
+@item @code{VALUES(7)}: @tab The seconds of the minute
+@item @code{VALUES(8)}: @tab The milliseconds of the second
 @end multitable
 
 @item @emph{Standard}:
@@ -4758,13 +4758,14 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{DATE}  @tab (Optional) The type shall be @code{CHARACTER(LEN=8)}
-or larger, and of default kind.
-@item @var{TIME}  @tab (Optional) The type shall be @code{CHARACTER(LEN=10)}
-or larger, and of default kind.
-@item @var{ZONE}  @tab (Optional) The type shall be @code{CHARACTER(LEN=5)}
-or larger, and of default kind.
-@item @var{VALUES}@tab (Optional) The type shall be @code{INTEGER(8)}.
+@item @var{DATE}  @tab (Optional) Scalar of type default @code{CHARACTER}.
+Recommended length is 8 or larger.
+@item @var{TIME}  @tab (Optional) Scalar of type default @code{CHARACTER}.
+Recommended length is 10 or larger.
+@item @var{ZONE}  @tab (Optional) Scalar of type default @code{CHARACTER}.
+Recommended length is 5 or larger.
+@item @var{VALUES}@tab (Optional) Rank-1 array of type @code{INTEGER} with
+a decimal exponent range of at least four and array size at least 8.
 @end multitable
 
 @item @emph{Return value}:
