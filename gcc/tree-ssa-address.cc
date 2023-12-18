@@ -369,9 +369,6 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr,
       && !valid_mem_ref_p (TYPE_MODE (type), TYPE_ADDR_SPACE (type), addr))
     return NULL_TREE;
 
-  if (addr->step && integer_onep (addr->step))
-    addr->step = NULL_TREE;
-
   if (addr->offset)
     addr->offset = fold_convert (alias_ptr_type, addr->offset);
   else

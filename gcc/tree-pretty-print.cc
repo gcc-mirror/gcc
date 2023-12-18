@@ -2002,7 +2002,9 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  }
 	else if (tclass == tcc_type)
 	  {
-	    if (TYPE_NAME (node))
+	    if ((flags & TDF_GIMPLE) && node == sizetype)
+	      pp_string (pp, "__SIZETYPE__");
+	    else if (TYPE_NAME (node))
 	      {
 		if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
 		  pp_tree_identifier (pp, TYPE_NAME (node));
@@ -2014,11 +2016,22 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	      }
 	    else if (TREE_CODE (node) == VECTOR_TYPE)
 	      {
-		pp_string (pp, "vector");
-		pp_left_paren (pp);
-		pp_wide_integer (pp, TYPE_VECTOR_SUBPARTS (node));
-		pp_string (pp, ") ");
-		dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
+		if (flags & TDF_GIMPLE)
+		  {
+		    dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
+		    pp_string (pp, " [[gnu::vector_size(");
+		    pp_wide_integer
+		      (pp, tree_to_poly_uint64 (TYPE_SIZE_UNIT (node)));
+		    pp_string (pp, ")]]");
+		  }
+		else
+		  {
+		    pp_string (pp, "vector");
+		    pp_left_paren (pp);
+		    pp_wide_integer (pp, TYPE_VECTOR_SUBPARTS (node));
+		    pp_string (pp, ") ");
+		    dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
+		  }
 	      }
 	    else if (TREE_CODE (node) == INTEGER_TYPE)
 	      {
