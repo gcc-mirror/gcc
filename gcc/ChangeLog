@@ -1,3 +1,45 @@
+2023-12-17  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (alslsi3_extend): New
+	define_insn.
+
+2023-12-17  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/112936
+	* config/loongarch/loongarch-def.cc
+	(loongarch_rtx_cost_data::loongarch_rtx_cost_data): Update
+	instruction costs per micro-benchmark results.
+	(loongarch_rtx_cost_optimize_size): Set all instruction costs
+	to (COSTS_N_INSNS (1) + 1).
+	* config/loongarch/loongarch.cc (loongarch_rtx_costs): Remove
+	special case for multiplication when optimizing for size.
+	Adjust division cost when TARGET_64BIT && !TARGET_DIV32.
+	Account the extra cost when TARGET_CHECK_ZERO_DIV and
+	optimizing for speed.
+
+2023-12-17  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-def.cc (rtl.h): Include.
+	(COSTS_N_INSNS): Remove the macro definition.
+
+2023-12-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <hppa*-hp-hpux*>: Remove a note on
+	GCC 4.3.
+	Remove details on how the HP assembler, which we document as not
+	working, breaks.
+	<hppa*-hp-hpux11>: Note that only the HP linker is supported.
+
+2023-12-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR other/69374
+	* doc/install.texi (Installing GCC): Remove reference to
+	buildstat.html.
+	(Testing): Ditto.
+	(Final install): Remove section on submitting information for
+	buildstat.html. Adjust the request for feedback.
+
 2023-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* json.cc (print_escaped_json_string): New, taken from
