@@ -113,11 +113,11 @@ f_2 (void)
   int va3;
 #pragma acc declare device_resident(va3)
 
-#ifndef __cplusplus
+#if 0
   /* TODO PR90868
 
-     C: "error: variable '[...]' used more than once with '#pragma acc declare'".  */
-#else
+     "error: variable '[...]' used more than once with '#pragma acc declare'".  */
+
   extern int ve0;
 #pragma acc declare create(ve0)
 
@@ -196,8 +196,7 @@ f_data (void)
 #if 0
     /* TODO PR90868
 
-       C: "error: variable '[...]' used more than once with '#pragma acc declare'".
-       C++: ICE during gimplification.  */
+       "error: variable '[...]' used more than once with '#pragma acc declare'".  */
 
     extern int ve0;
 # pragma acc declare create(ve0)
