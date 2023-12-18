@@ -10750,7 +10750,7 @@ loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
 	  gcc_unreachable ();
 	}
     }
-  temp = gen_reg_rtx (imode);
+
   if (imode == GET_MODE (same))
     temp2 = same;
   else if (GET_MODE_SIZE (imode) >= UNITS_PER_WORD)
@@ -10775,7 +10775,8 @@ loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
       else
 	temp2 = lowpart_subreg (imode, same, GET_MODE (same));
     }
-  emit_move_insn (temp, temp2);
+
+  temp = force_reg (imode, temp2);
 
   switch (vmode)
     {
@@ -10997,35 +10998,29 @@ loongarch_expand_vector_init (rtx target, rtx vals)
 			 to reduce the number of instructions.  */
 		      if (i == 1)
 			{
-			  op0 = gen_reg_rtx (imode);
-			  emit_move_insn (op0, val_hi[0]);
-			  op1 = gen_reg_rtx (imode);
-			  emit_move_insn (op1, val_hi[1]);
+			  op0 = force_reg (imode, val_hi[0]);
+			  op1 = force_reg (imode, val_hi[1]);
 			  emit_insn (
 			    loongarch_vec_repl2_256 (target_hi, op0, op1));
 			}
 		      else if (i > 1)
 			{
-			  op0 = gen_reg_rtx (imode);
-			  emit_move_insn (op0, val_hi[i]);
+			  op0 = force_reg (imode, val_hi[i]);
 			  emit_insn (
 			    loongarch_vec_set256 (target_hi, op0, GEN_INT (i)));
 			}
 		    }
 		  else
 		    {
+		      op0 = force_reg (imode, val_hi[i]);
 		      /* Assign the lowest element of val_hi to all elements
 			 of target_hi.  */
 		      if (i == 0)
 			{
-			  op0 = gen_reg_rtx (imode);
-			  emit_move_insn (op0, val_hi[0]);
 			  emit_insn (loongarch_vec_repl1_256 (target_hi, op0));
 			}
 		      else if (!rtx_equal_p (val_hi[i], val_hi[0]))
 			{
-			  op0 = gen_reg_rtx (imode);
-			  emit_move_insn (op0, val_hi[i]);
 			  emit_insn (
 			    loongarch_vec_set256 (target_hi, op0, GEN_INT (i)));
 			}
@@ -11033,18 +11028,15 @@ loongarch_expand_vector_init (rtx target, rtx vals)
 		}
 	      if (!lo_same && !half_same)
 		{
+		  op0 = force_reg (imode, val_lo[i]);
 		  /* Assign the lowest element of val_lo to all elements
 		     of target_lo.  */
 		  if (i == 0)
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val_lo[0]);
 		      emit_insn (loongarch_vec_repl1_128 (target_lo, op0));
 		    }
 		  else if (!rtx_equal_p (val_lo[i], val_lo[0]))
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val_lo[i]);
 		      emit_insn (
 			loongarch_vec_set128 (target_lo, op0, GEN_INT (i)));
 		    }
@@ -11076,16 +11068,13 @@ loongarch_expand_vector_init (rtx target, rtx vals)
 		     reduce the number of instructions.  */
 		  if (i == 1)
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val[0]);
-		      op1 = gen_reg_rtx (imode);
-		      emit_move_insn (op1, val[1]);
+		      op0 = force_reg (imode, val[0]);
+		      op1 = force_reg (imode, val[1]);
 		      emit_insn (loongarch_vec_repl2_128 (target, op0, op1));
 		    }
 		  else if (i > 1)
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val[i]);
+		      op0 = force_reg (imode, val[i]);
 		      emit_insn (
 			loongarch_vec_set128 (target, op0, GEN_INT (i)));
 		    }
@@ -11098,18 +11087,15 @@ loongarch_expand_vector_init (rtx target, rtx vals)
 			loongarch_vec_mirror (target, target, const0_rtx));
 		      return;
 		    }
+		  op0 = force_reg (imode, val[i]);
 		  /* Assign the lowest element of val to all elements of
 		     target.  */
 		  if (i == 0)
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val[0]);
 		      emit_insn (loongarch_vec_repl1_128 (target, op0));
 		    }
 		  else if (!rtx_equal_p (val[i], val[0]))
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val[i]);
 		      emit_insn (
 			loongarch_vec_set128 (target, op0, GEN_INT (i)));
 		    }
