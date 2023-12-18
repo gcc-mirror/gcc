@@ -1687,7 +1687,9 @@ dump_omp_atomic_memory_order (pretty_printer *pp, enum omp_memory_order mo)
 static void
 dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
 {
-  if (TREE_CODE (node) == MEM_REF && (flags & TDF_GIMPLE))
+  if ((TREE_CODE (node) == MEM_REF
+       || TREE_CODE (node) == TARGET_MEM_REF)
+      && (flags & TDF_GIMPLE))
     {
       pp_string (pp, "__MEM <");
       dump_generic_node (pp, TREE_TYPE (node),
@@ -1715,6 +1717,26 @@ dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
 	  pp_string (pp, " + ");
 	  dump_generic_node (pp, TREE_OPERAND (node, 1),
 			     spc, flags | TDF_SLIM, false);
+	}
+      if (TREE_CODE (node) == TARGET_MEM_REF)
+	{
+	  if (TREE_OPERAND (node, 2))
+	    {
+	      /* INDEX * STEP  */
+	      pp_string (pp, " + ");
+	      dump_generic_node (pp, TREE_OPERAND (node, 2),
+				 spc, flags | TDF_SLIM, false);
+	      pp_string (pp, " * ");
+	      dump_generic_node (pp, TREE_OPERAND (node, 3),
+				 spc, flags | TDF_SLIM, false);
+	    }
+	  if (TREE_OPERAND (node, 4))
+	    {
+	      /* INDEX2  */
+	      pp_string (pp, " + ");
+	      dump_generic_node (pp, TREE_OPERAND (node, 4),
+				 spc, flags | TDF_SLIM, false);
+	    }
 	}
       pp_right_paren (pp);
     }
