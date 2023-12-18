@@ -1,3 +1,21 @@
+2023-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112727
+	* cp-gimplify.c (cp_fold): If SAVE_EXPR has been previously
+	folded, unshare_expr what is returned.
+
+2023-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112795
+	* parser.c (cp_parser_pragma_unroll): Use fold_non_dependent_expr
+	instead of maybe_constant_value.
+
 2023-09-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106310
