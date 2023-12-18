@@ -1197,10 +1197,12 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 	  osi.tos = NULL;
 	}
 
-      /* First pass: walk UD chains, compute object sizes that
-	 can be computed.  osi.reexamine bitmap at the end will
-	 contain what variables were found in dependency cycles
-	 and therefore need to be reexamined.  */
+      /* First pass: walk UD chains, compute object sizes that can be computed.
+	 osi.reexamine bitmap at the end will contain versions of SSA_NAMES
+	 that need to be reexamined.  For both static and dynamic size
+	 computation, reexamination is for propagation across dependency loops.
+	 The dynamic case has the additional use case where the computed
+	 expression needs to be gimplified.  */
       osi.pass = 0;
       osi.changed = false;
       collect_object_sizes_for (&osi, ptr);
@@ -1835,11 +1837,16 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
       gcc_unreachable ();
     }
 
-  if (! reexamine || object_sizes_unknown_p (object_size_type, varno))
+  /* Dynamic sizes use placeholder temps to return an answer, so it is always
+     safe to set COMPUTED for them.  */
+  if ((object_size_type & OST_DYNAMIC)
+      || !reexamine || object_sizes_unknown_p (object_size_type, varno))
     {
       bitmap_set_bit (computed[object_size_type], varno);
       if (!(object_size_type & OST_DYNAMIC))
 	bitmap_clear_bit (osi->reexamine, varno);
+      else if (reexamine)
+	bitmap_set_bit (osi->reexamine, varno);
     }
   else
     {
