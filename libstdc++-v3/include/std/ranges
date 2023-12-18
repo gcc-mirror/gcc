@@ -9389,6 +9389,8 @@ namespace __detail
     struct _To
     {
       template<typename _Range, typename... _Args>
+	requires requires { ranges::to<_Cont>(std::declval<_Range>(),
+					      std::declval<_Args>()...); }
 	constexpr auto
 	operator()(_Range&& __r, _Args&&... __args) const
 	{
@@ -9431,6 +9433,8 @@ namespace __detail
     struct _To2
     {
       template<typename _Range, typename... _Args>
+	requires requires { ranges::to<_Cont>(std::declval<_Range>(),
+					      std::declval<_Args>()...); }
 	constexpr auto
 	operator()(_Range&& __r, _Args&&... __args) const
 	{

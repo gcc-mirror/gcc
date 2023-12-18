@@ -448,6 +448,24 @@ test_constexpr()
   static_assert(x == 6);
 }
 
+void
+test_sfinae()
+{
+  // PR libstdc++/112802
+  [](auto x) {
+    static_assert(!requires { std::ranges::to<std::vector<int>>()(x); });
+    static_assert(!requires { std::ranges::to<std::vector>()(x); });
+  }(0);
+}
+
+void
+test_composition()
+{
+  // PR libstdc++/113068
+  auto adaptor = std::ranges::to<std::string>() | std::ranges::to<std::string>();
+  auto str = adaptor(" ");
+}
+
 int main()
 {
   test_p1206r7_examples();
@@ -460,4 +478,6 @@ int main()
   test_lwg3984();
   test_nodiscard();
   test_constexpr();
+  test_sfinae();
+  test_composition();
 }
