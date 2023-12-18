@@ -10728,7 +10728,7 @@ loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
   machine_mode vmode = GET_MODE (target);
   machine_mode imode = GET_MODE_INNER (vmode);
   rtx same = XVECEXP (vals, 0, 0);
-  rtx temp, temp2;
+  rtx temp;
 
   if (CONST_INT_P (same) && nvar == 0
       && loongarch_signed_immediate_p (INTVAL (same), 10, 0))
@@ -10752,17 +10752,17 @@ loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
     }
 
   if (imode == GET_MODE (same))
-    temp2 = same;
+    temp = same;
   else if (GET_MODE_SIZE (imode) >= UNITS_PER_WORD)
     {
       if (GET_CODE (same) == MEM)
 	{
 	  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
 	  loongarch_emit_move (reg_tmp, same);
-	  temp2 = simplify_gen_subreg (imode, reg_tmp, GET_MODE (reg_tmp), 0);
+	  temp = simplify_gen_subreg (imode, reg_tmp, GET_MODE (reg_tmp), 0);
 	}
       else
-	temp2 = simplify_gen_subreg (imode, same, GET_MODE (same), 0);
+	temp = simplify_gen_subreg (imode, same, GET_MODE (same), 0);
     }
   else
     {
@@ -10770,13 +10770,13 @@ loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
 	{
 	  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
 	  loongarch_emit_move (reg_tmp, same);
-	  temp2 = lowpart_subreg (imode, reg_tmp, GET_MODE (reg_tmp));
+	  temp = lowpart_subreg (imode, reg_tmp, GET_MODE (reg_tmp));
 	}
       else
-	temp2 = lowpart_subreg (imode, same, GET_MODE (same));
+	temp = lowpart_subreg (imode, same, GET_MODE (same));
     }
 
-  temp = force_reg (imode, temp2);
+  temp = force_reg (imode, temp);
 
   switch (vmode)
     {
@@ -11122,8 +11122,8 @@ loongarch_expand_vector_init (rtx target, rtx vals)
       return;
     }
 
-  /* Loongson is the only cpu with vectors with more elements.  */
-  gcc_assert (0);
+  /* No LoongArch CPU supports vectors with more elements as at now.  */
+  gcc_unreachable ();
 }
 
 /* Implement HARD_REGNO_CALLER_SAVE_MODE.  */
