@@ -9621,10 +9621,10 @@ riscv_regmode_natural_size (machine_mode mode)
 
   if (riscv_v_ext_mode_p (mode))
     {
+      poly_uint64 size = GET_MODE_SIZE (mode);
       if (riscv_v_ext_tuple_mode_p (mode))
 	{
-	  poly_uint64 size
-	    = GET_MODE_SIZE (riscv_vector::get_subpart_mode (mode));
+	  size = GET_MODE_SIZE (riscv_vector::get_subpart_mode (mode));
 	  if (known_lt (size, BYTES_PER_RISCV_VECTOR))
 	    return size;
 	}
@@ -9634,8 +9634,14 @@ riscv_regmode_natural_size (machine_mode mode)
 	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
 	    return BYTES_PER_RISCV_VECTOR;
 	}
-      if (!GET_MODE_SIZE (mode).is_constant ())
+      if (!size.is_constant ())
 	return BYTES_PER_RISCV_VECTOR;
+      else if (!riscv_v_ext_vls_mode_p (mode))
+	/* For -march=rv64gc_zve32f, the natural vector register size
+	   is 32bits which is smaller than scalar register size, so we
+	   return minimum size between vector register size and scalar
+	   register size.  */
+	return MIN (size.to_constant (), UNITS_PER_WORD);
     }
   return UNITS_PER_WORD;
 }
