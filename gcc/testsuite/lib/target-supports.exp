@@ -11569,13 +11569,14 @@ proc check_vect_support_and_set_flags { } {
         }
     } elseif [istarget amdgcn-*-*] {
         set dg-do-what-default run
-    } elseif [istarget riscv64-*-*] {
+    } elseif [istarget riscv*-*-*] {
 	if [check_effective_target_riscv_v] {
 	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-vector-abi"
 	    set dg-do-what-default run
 	} else {
-	    lappend DEFAULT_VECTCFLAGS "-march=rv64gcv_zvfh" "-mabi=lp64d"
-	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-autovec-preference=scalable"
+	    foreach item [add_options_for_riscv_v ""] {
+		lappend DEFAULT_VECTCFLAGS $item
+	    }
 	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-vector-abi"
 	    set dg-do-what-default compile
 	}
