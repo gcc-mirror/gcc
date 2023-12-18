@@ -1061,6 +1061,8 @@ else version (MIPS64)
     enum TLS_DTV_OFFSET = 0x8000;
 else version (IBMZ_Any)
     enum TLS_DTV_OFFSET = 0x0;
+else version (LoongArch64)
+    enum TLS_DTV_OFFSET = 0x0;
 else
     static assert( false, "Platform not supported." );
 
