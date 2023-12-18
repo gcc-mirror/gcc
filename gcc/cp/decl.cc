@@ -8097,12 +8097,13 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
     }
 
   tree ctx = TREE_VALUE (TREE_VALUE (attr));
-  tree simd = omp_get_context_selector (ctx, "construct", "simd");
+  tree simd = omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
+					OMP_TRAIT_CONSTRUCT_SIMD);
   if (simd)
     {
       TREE_VALUE (simd)
 	= c_omp_declare_simd_clauses_to_numbers (DECL_ARGUMENTS (decl),
-						 TREE_VALUE (simd));
+						 OMP_TS_PROPERTIES (simd));
       /* FIXME, adjusting simd args unimplemented.  */
       return true;
     }
@@ -8195,7 +8196,8 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	}
       else
 	{
-	  tree construct = omp_get_context_selector (ctx, "construct", NULL);
+	  tree construct
+	    = omp_get_context_selector_list (ctx, OMP_TRAIT_SET_CONSTRUCT);
 	  omp_mark_declare_variant (match_loc, variant, construct);
 	  if (!omp_context_selector_matches (ctx))
 	    return true;

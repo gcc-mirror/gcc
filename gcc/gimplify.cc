@@ -14480,12 +14480,17 @@ omp_construct_selector_matches (enum tree_code *constructs, int nconstructs,
   if (tree attr = lookup_attribute ("omp declare variant variant",
 				    DECL_ATTRIBUTES (current_function_decl)))
     {
-      enum tree_code variant_constructs[5];
-      int variant_nconstructs = 0;
-      if (!target_seen)
-	variant_nconstructs
-	  = omp_construct_traits_to_codes (TREE_VALUE (attr),
-					   variant_constructs);
+      tree selectors = TREE_VALUE (attr);
+      int variant_nconstructs = list_length (selectors);
+      enum tree_code *variant_constructs = NULL;
+      if (!target_seen && variant_nconstructs)
+	{
+	  variant_constructs
+	    = (enum tree_code *) alloca (variant_nconstructs
+					 * sizeof (enum tree_code));
+	  omp_construct_traits_to_codes (selectors, variant_nconstructs,
+					 variant_constructs);
+	}
       for (int i = 0; i < variant_nconstructs; i++)
 	{
 	  ++cnt;

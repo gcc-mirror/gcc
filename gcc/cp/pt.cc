@@ -11888,18 +11888,20 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
       tree chain = TREE_CHAIN (val);
       location_t match_loc = cp_expr_loc_or_input_loc (TREE_PURPOSE (chain));
       tree ctx = copy_list (TREE_VALUE (val));
-      tree simd = get_identifier ("simd");
-      tree condition = get_identifier ("condition");
       for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
 	{
-	  const char *set = IDENTIFIER_POINTER (OMP_TSS_ID (tss));
+	  enum omp_tss_code set = OMP_TSS_CODE (tss);
 	  tree selectors = NULL_TREE;
 	  for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss); ts;
 	       ts = TREE_CHAIN (ts))
 	    {
 	      tree properties = NULL_TREE;
 	      tree scoreval = NULL_TREE;
-	      if (OMP_TS_ID (ts) == simd && set[0] == 'c')
+	      /* FIXME: The body of this loop should really be dispatching
+		 according to omp_ts_map[OMP_TS_CODE (TS)].tp_type instead
+		 of having hard-wired knowledge of specific selectors.  */
+	      if (OMP_TS_CODE (ts) == OMP_TRAIT_CONSTRUCT_SIMD
+		  && set == OMP_TRAIT_SET_CONSTRUCT)
 		{
 		  tree clauses = OMP_TS_PROPERTIES (ts);
 		  clauses = tsubst_omp_clauses (clauses,
@@ -11944,7 +11946,8 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 		    else if (OMP_TP_VALUE (p))
 		      {
 			bool allow_string
-			  = (OMP_TS_ID (ts) != condition || set[0] != 'u');
+			  = (OMP_TS_CODE (ts) != OMP_TRAIT_USER_CONDITION
+			     || set != OMP_TRAIT_SET_USER);
 			tree v = OMP_TP_VALUE (p);
 			if (TREE_CODE (v) == STRING_CST && allow_string)
 			  continue;
@@ -11968,7 +11971,7 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 			OMP_TP_VALUE (p) = v;
 		      }
 		}
-	      selectors = make_trait_selector (OMP_TS_ID (ts), scoreval,
+	      selectors = make_trait_selector (OMP_TS_CODE (ts), scoreval,
 					       properties, selectors);
 	    }
 	  OMP_TSS_TRAIT_SELECTORS (tss) = nreverse (selectors);

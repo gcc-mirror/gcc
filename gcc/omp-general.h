@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "gomp-constants.h"
 #include "omp-api.h"
+#include "omp-selectors.h"
 
 /*  Flags for an OpenACC loop.  */
 
@@ -135,8 +136,18 @@ struct omp_for_data
 #define OMP_TP_VALUE(NODE) \
   TREE_VALUE (NODE)
 
-extern tree make_trait_set_selector (tree, tree, tree);
-extern tree make_trait_selector (tree, tree, tree, tree);
+#define OMP_TSS_CODE(t)						\
+  ((enum omp_tss_code) TREE_INT_CST_LOW (OMP_TSS_ID (t)))
+#define OMP_TSS_NAME(t)			\
+  (omp_tss_map[OMP_TSS_CODE (t)])
+
+#define OMP_TS_CODE(t)						\
+  ((enum omp_ts_code) TREE_INT_CST_LOW (OMP_TS_ID (t)))
+#define OMP_TS_NAME(t)			\
+  (omp_ts_map[OMP_TS_CODE (t)].name)
+
+extern tree make_trait_set_selector (enum omp_tss_code, tree, tree);
+extern tree make_trait_selector (enum omp_ts_code, tree, tree, tree);
 extern tree make_trait_property (tree, tree, tree);
 
 extern tree omp_find_clause (tree clauses, enum omp_clause_code kind);
@@ -153,13 +164,15 @@ extern gimple *omp_build_barrier (tree lhs);
 extern tree find_combined_omp_for (tree *, int *, void *);
 extern poly_uint64 omp_max_vf (void);
 extern int omp_max_simt_vf (void);
-extern int omp_construct_traits_to_codes (tree, enum tree_code *);
+extern void omp_construct_traits_to_codes (tree, int, enum tree_code *);
 extern tree omp_check_context_selector (location_t loc, tree ctx);
 extern void omp_mark_declare_variant (location_t loc, tree variant,
 				      tree construct);
 extern int omp_context_selector_matches (tree);
-extern int omp_context_selector_set_compare (const char *, tree, tree);
-extern tree omp_get_context_selector (tree, const char *, const char *);
+extern int omp_context_selector_set_compare (enum omp_tss_code, tree, tree);
+extern tree omp_get_context_selector (tree, enum omp_tss_code,
+				      enum omp_ts_code);
+extern tree omp_get_context_selector_list (tree, enum omp_tss_code);
 extern tree omp_resolve_declare_variant (tree);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);
