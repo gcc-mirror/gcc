@@ -1331,7 +1331,7 @@ expand_const_vector (rtx target, rtx src)
 		  rtx tmp2 = gen_reg_rtx (new_mode);
 		  base2 = gen_int_mode (rtx_to_poly_int64 (base2), new_smode);
 		  expand_vec_series (tmp2, base2,
-				     gen_int_mode (step1, new_smode));
+				     gen_int_mode (step2, new_smode));
 		  rtx shifted_tmp2 = expand_simple_binop (
 		    new_mode, ASHIFT, tmp2,
 		    gen_int_mode (builder.inner_bits_size (), Pmode), NULL_RTX,
