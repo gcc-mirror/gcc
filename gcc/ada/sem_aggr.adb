@@ -2099,14 +2099,25 @@ package body Sem_Aggr is
 
       --  Disable the warning for GNAT Mode to allow for easier transition.
 
+      --  We don't warn about obsolescent usage of parentheses in generic
+      --  instances for two reasons:
+      --
+      --  1. An equivalent warning has been emitted in the corresponding
+      --     definition.
+      --  2. In cases where a generic definition specifies a version older than
+      --     Ada 2022 through a pragma and rightfully uses parentheses for
+      --     an array aggregate, an incorrect warning would be raised in
+      --     instances of that generic that are in Ada 2022 or later if we
+      --     didn't filter out the instance case.
+
       if Ada_Version_Explicit >= Ada_2022
         and then Warn_On_Obsolescent_Feature
         and then not GNAT_Mode
         and then not Is_Homogeneous_Aggregate (N)
-        and then not Is_Enum_Array_Aggregate (N)
         and then Is_Parenthesis_Aggregate (N)
         and then Nkind (Parent (N)) /= N_Qualified_Expression
         and then Comes_From_Source (N)
+        and then not In_Instance
       then
          Error_Msg_N
            ("?j?array aggregate using () is an" &

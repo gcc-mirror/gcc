@@ -159,8 +159,7 @@ package body Exp_Imgv is
                    Make_Component_Definition (Loc,
                      Aliased_Present    => False,
                      Subtype_Indication => New_Occurrence_Of (Ctyp, Loc))),
-             Expression          => Make_Aggregate (Loc, Expressions => V,
-                                      Is_Enum_Array_Aggregate => True)));
+             Expression          => Make_Aggregate (Loc, Expressions => V)));
       end Append_Table_To;
 
    --  Start of Build_Enumeration_Image_Tables
