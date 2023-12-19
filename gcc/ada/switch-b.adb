@@ -703,7 +703,7 @@ package body Switch.B is
                      elsif Src_Path_Name = null then
                         Osint.Fail
                           ("RTS path not valid: missing adainclude directory");
-                     elsif Lib_Path_Name = null then
+                     else pragma Assert (Lib_Path_Name = null);
                         Osint.Fail
                           ("RTS path not valid: missing adalib directory");
                      end if;

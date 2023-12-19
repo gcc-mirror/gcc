@@ -274,7 +274,7 @@ package body Switch.C is
                      Osint.Fail ("RTS path not valid: missing "
                                  & "adainclude directory");
 
-                  elsif RTS_Lib_Path_Name = null then
+                  else pragma Assert (RTS_Lib_Path_Name = null);
                      Osint.Fail ("RTS path not valid: missing "
                                  & "adalib directory");
                   end if;

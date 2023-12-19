@@ -4508,7 +4508,7 @@ package body Make is
                      Make_Failed
                        ("RTS path not valid: missing adainclude directory");
 
-                  elsif Lib_Path_Name = null then
+                  else pragma Assert (Lib_Path_Name = null);
                      Make_Failed
                        ("RTS path not valid: missing adalib directory");
                   end if;
