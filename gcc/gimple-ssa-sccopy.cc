@@ -140,7 +140,6 @@ public:
   auto_vec<vec<gimple *>> compute_sccs (vec<gimple *> &stmts);
 
 private:
-  unsigned curr_generation = 0;
   vertex* vertices; /* Indexed by SSA_NAME_VERSION.  */
   auto_vec<unsigned> worklist; /* DFS stack.  */
   auto_vec<unsigned> stack; /* Tarjan stack.  */
