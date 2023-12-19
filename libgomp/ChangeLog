@@ -1,3 +1,9 @@
+2023-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/declare-variant-1.c: Restrict the test to x86,
+	drop because of that unneeded target selector from other directives
+	and remove the aarch64 specific ones.
+
 2023-12-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* testsuite/libgomp.c/declare-variant-1.c: Fixed test.

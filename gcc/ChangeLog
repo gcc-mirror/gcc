@@ -1,3 +1,104 @@
+2023-12-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/112918
+	* lra-constraints.cc (SMALL_REGISTER_CLASS_P): Move before in_class_p.
+	(in_class_p): Restrict condition for narrowing class in case of
+	allow_all_reload_class_changes_p.
+	(process_alt_operands): Pass true for
+	allow_all_reload_class_changes_p in calls of in_class_p.
+	(curr_insn_transform): Ditto for reg operand win.
+
+2023-12-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (redundant compare peephole2):
+	New peephole2 pattern.
+
+2023-12-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_encode_section_info): Replace
+	SYMBOL_REF_LOCAL_P with decl_binds_to_current_def_p.
+
+2023-12-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/113054
+	* gimple-ssa-sccopy.cc: Wrap the local types
+	with an anonymous namespace.
+
+2023-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111975
+	* tree-pretty-print.cc (dump_generic_node): Dump
+	sizetype as __SIZETYPE__ with TDF_GIMPLE.
+	Dump unnamed vector types as T [[gnu::vector_size(n)]] with
+	TDF_GIMPLE.
+	* tree-ssa-address.cc (create_mem_ref_raw): Never generate
+	a NULL STEP when INDEX is specified.
+
+2023-12-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <hppa*-hp-hpux10>: Remove section.
+	(Specific) <hppa*-hp-hpux11>: Remove references to GCC 2.95 and
+	3.0. Also libffi has been ported now.
+
+2023-12-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112432
+	* config/riscv/riscv.md (none,W21,W42,W84,W43,W86,W87): Add W0.
+	(none,W21,W42,W84,W43,W86,W87,W0): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/111975
+	* tree-pretty-print.cc (dump_mem_ref): Use TDF_GIMPLE path
+	also for TARGET_MEM_REF and amend it.
+
+2023-12-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_regmode_natural_size): Fix ICE for
+	FIXED-VLMAX of -march=rv32gc_zve32f.
+
+2023-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113013
+	* tree-object-size.cc (alloc_object_size): Return size_unknown if
+	corresponding argument(s) don't have integral type or have integral
+	type with higher precision than sizetype.  Don't check arg1 >= 0
+	uselessly.  Compare argument indexes against gimple_call_num_args
+	in unsigned type rather than int.  Formatting fixes.
+
+2023-12-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Take step2
+	instead of step1 for second series.
+
+2023-12-18  liushuyu  <liushuyu011@gmail.com>
+
+	* config.gcc: Add loongarch-d.o to d_target_objs for LoongArch
+	architecture.
+	* config/loongarch/t-loongarch: Add object target for loongarch-d.cc.
+	* config/loongarch/loongarch-d.cc
+	(loongarch_d_target_versions): add interface function to define builtin
+	D versions for LoongArch architecture.
+	(loongarch_d_handle_target_float_abi): add interface function to define
+	builtin D traits for LoongArch architecture.
+	(loongarch_d_register_target_info): add interface function to register
+	loongarch_d_handle_target_float_abi function.
+	* config/loongarch/loongarch-d.h
+	(loongarch_d_target_versions): add function prototype.
+	(loongarch_d_register_target_info): Likewise.
+
+2023-12-18  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/vector.md: Add viota avl_type attribute.
+
+2023-12-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_expand_mult_with_const_int):
+	Change int into HOST_WIDE_INT.
+	(riscv_legitimize_poly_move): Ditto.
+
 2023-12-17  Xi Ruoyao  <xry111@xry111.site>
 
 	* config/loongarch/loongarch.md (alslsi3_extend): New

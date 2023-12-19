@@ -1,3 +1,61 @@
+2023-12-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96580
+	* gfortran.dg/date_and_time_2.f90: New test.
+	* gfortran.dg/date_and_time_3.f90: New test.
+	* gfortran.dg/date_and_time_4.f90: New test.
+
+2023-12-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/unaligned-2.c: New test.
+
+2023-12-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112432-42.c: Moved to...
+	* gcc.target/riscv/rvv/base/pr112431-42.c: ...here.
+
+2023-12-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112432
+	* gcc.target/riscv/rvv/base/pr112432-42.c: New test.
+
+2023-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/111975
+	* gcc.dg/gimplefe-52.c: New testcase.
+
+2023-12-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Add RV32.
+
+2023-12-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/bug-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/bug-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/bug-6.c: New test.
+
+2023-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113013
+	* gcc.dg/pr113013.c: New test.
+
+2023-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/abi/abi-tag25a.C: Expect second dg-warning only for c++14
+	and later.
+
+2023-12-18  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/cpymem-1.c: Fix checks.
+
+2023-12-18  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/autovec/bug-2.c: New test.
+
+2023-12-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/bug-3.c: New test.
+
 2023-12-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/97592

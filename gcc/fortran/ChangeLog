@@ -1,3 +1,11 @@
+2023-12-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96580
+	* check.cc (array_size_check): New helper function.
+	(gfc_check_date_and_time): Use it for checking minimum size of
+	VALUES argument.  Update kind check to Fortran 2018.
+	* intrinsic.texi: Fix documentation of DATE_AND_TIME.
+
 2023-12-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/97592

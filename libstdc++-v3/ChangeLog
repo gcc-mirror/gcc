@@ -1,3 +1,12 @@
+2023-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/112802
+	PR libstdc++/113068
+	* include/std/ranges (__detail::_To::operator()): Add constraints.
+	(__detail::_To2::operator()): Likewise.
+	* testsuite/std/ranges/conv/1.cc (test_sfinae): New test.
+	(test_composition): New test.
+
 2023-12-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++23/print.cc (__open_terminal(FILE*)): Avoid fileno

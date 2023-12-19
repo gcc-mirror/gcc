@@ -1,3 +1,9 @@
+2023-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/111975
+	* gimple-parser.cc (c_parser_gimple_postfix_expression):
+	Parse TARGET_MEM_REF extended operands for __MEM.
+
 2023-12-13  Jason Merrill  <jason@redhat.com>
 
 	* c-typeck.cc (convert_for_assignment): Adjust call to

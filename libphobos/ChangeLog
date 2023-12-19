@@ -1,3 +1,22 @@
+2023-12-18  Yang Yujie  <yangyujie@loongson.cn>
+
+	* m4/druntime/cpu.m4: Support loongarch* targets.
+	* libdruntime/Makefile.am: Same.
+	* libdruntime/Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2023-12-18  Yang Yujie  <yangyujie@loongson.cn>
+
+	* libdruntime/config/loongarch/switchcontext.S: New file.
+
+2023-12-18  liushuyu  <liushuyu011@gmail.com>
+
+	* configure.tgt: Enable libphobos for LoongArch architecture.
+	* libdruntime/gcc/sections/elf.d: Add TLS_DTV_OFFSET constant for
+	LoongArch64.
+	* libdruntime/gcc/unwind/generic.d: Add __aligned__ constant for
+	LoongArch64.
+
 2023-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 2bbf64907c.

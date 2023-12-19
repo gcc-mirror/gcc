@@ -1,3 +1,9 @@
+2023-12-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96580
+	* intrinsics/date_and_time.c (date_and_time): Handle VALUES argument
+	for kind=2 and kind=16 (if available).
+
 2023-12-11  Lipeng Zhu  <lipeng.zhu@intel.com>
 
 	* io/async.c (DEBUG_LINE): New macro.
