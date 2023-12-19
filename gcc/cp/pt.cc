@@ -1646,6 +1646,12 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 int comparing_specializations;
 int comparing_dependent_aliases;
 
+/* Whether we are comparing template arguments during partial ordering
+   (and therefore want the comparison to look through dependent alias
+   template specializations).  */
+
+static int comparing_for_partial_ordering;
+
 /* Returns true iff two spec_entry nodes are equivalent.  */
 
 bool
@@ -1894,6 +1900,11 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	default:
 	  if (tree canonical = TYPE_CANONICAL (arg))
 	    val = iterative_hash_object (TYPE_HASH (canonical), val);
+	  else if (tree ti = TYPE_TEMPLATE_INFO (arg))
+	    {
+	      val = iterative_hash_template_arg (TI_TEMPLATE (ti), val);
+	      val = iterative_hash_template_arg (TI_ARGS (ti), val);
+	    }
 	  break;
 	}
 
@@ -9322,7 +9333,7 @@ class_nttp_const_wrapper_p (tree t)
 /* Returns 1 if template args OT and NT are equivalent.  */
 
 int
-template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
+template_args_equal (tree ot, tree nt)
 {
   if (nt == ot)
     return 1;
@@ -9345,7 +9356,7 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
      During partial ordering, however, we need to treat them normally so we can
      order uses of the same alias with different cv-qualification (79960).  */
   auto cso = make_temp_override (comparing_dependent_aliases);
-  if (!partial_order)
+  if (!comparing_for_partial_ordering)
     ++comparing_dependent_aliases;
 
   if (TREE_CODE (nt) == TREE_VEC || TREE_CODE (ot) == TREE_VEC)
@@ -9393,8 +9404,7 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
 
 bool
 comp_template_args (tree oldargs, tree newargs,
-		    tree *oldarg_ptr /* = NULL */, tree *newarg_ptr /* = NULL */,
-		    bool partial_order /* = false */)
+		    tree *oldarg_ptr /* = NULL */, tree *newarg_ptr /* = NULL */)
 {
   if (oldargs == newargs)
     return true;
@@ -9410,7 +9420,7 @@ comp_template_args (tree oldargs, tree newargs,
       tree nt = TREE_VEC_ELT (newargs, i);
       tree ot = TREE_VEC_ELT (oldargs, i);
 
-      if (! template_args_equal (ot, nt, partial_order))
+      if (! template_args_equal (ot, nt))
 	{
 	  if (oldarg_ptr != NULL)
 	    *oldarg_ptr = ot;
@@ -9422,10 +9432,13 @@ comp_template_args (tree oldargs, tree newargs,
   return true;
 }
 
-inline bool
+static bool
 comp_template_args_porder (tree oargs, tree nargs)
 {
-  return comp_template_args (oargs, nargs, NULL, NULL, true);
+  ++comparing_for_partial_ordering;
+  bool equal = comp_template_args (oargs, nargs);
+  --comparing_for_partial_ordering;
+  return equal;
 }
 
 /* Implement a freelist interface for objects of type T.
@@ -28726,6 +28739,19 @@ any_template_arguments_need_structural_equality_p (tree args)
 		   on the DECL_CONTEXT of the function parameter, which can get
 		   mutated after the fact by duplicate_decls), so just require
 		   structural equality in this case (PR52830).  */
+		return true;
+	      else if (TYPE_P (arg)
+		       && TYPE_STRUCTURAL_EQUALITY_P (arg)
+		       && dependent_alias_template_spec_p (arg, nt_transparent))
+		/* Require structural equality for specializations written
+		   in terms of a dependent alias template specialization.  */
+		return true;
+	      else if (CLASS_TYPE_P (arg)
+		       && TYPE_TEMPLATE_INFO (arg)
+		       && TYPE_STRUCTURAL_EQUALITY_P (arg))
+		/* Require structural equality for specializations written
+		   in terms of a class template specialization that itself
+		   needs structural equality.  */
 		return true;
 	    }
 	}
