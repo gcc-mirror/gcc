@@ -5684,6 +5684,27 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (VECTOR_TYPE_P (type))
        (view_convert @c0)
        (convert @c0))))))))
+
+/* This is for VEC_COND_EXPR
+   Optimize A < B ? A : B to MIN (A, B)
+	    A > B ? A : B to MAX (A, B).  */
+(for cmp (lt le ungt unge gt ge unlt unle)
+     minmax (min min min min max max max max)
+     MINMAX (MIN_EXPR MIN_EXPR MIN_EXPR MIN_EXPR MAX_EXPR MAX_EXPR MAX_EXPR MAX_EXPR)
+ (simplify
+  (vec_cond (cmp @0 @1) @0 @1)
+   (if (VECTOR_INTEGER_TYPE_P (type)
+       && target_supports_op_p (type, MINMAX, optab_vector))
+    (minmax @0 @1))))
+
+(for cmp (lt le ungt unge gt ge unlt unle)
+     minmax (max max max max min min min min)
+     MINMAX (MAX_EXPR MAX_EXPR MAX_EXPR MAX_EXPR MIN_EXPR MIN_EXPR MIN_EXPR MIN_EXPR)
+ (simplify
+  (vec_cond (cmp @0 @1) @1 @0)
+   (if (VECTOR_INTEGER_TYPE_P (type)
+       && target_supports_op_p (type, MINMAX, optab_vector))
+    (minmax @0 @1))))
 #endif
 
 (for cnd (cond vec_cond)
