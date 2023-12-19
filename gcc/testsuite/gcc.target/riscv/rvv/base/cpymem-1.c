@@ -85,12 +85,31 @@ void f2 (__INT32_TYPE__* a, __INT32_TYPE__* b, int l)
 */
 
 /*
-** f3: { target { any-opts "-mcmodel=medany" } }
+** f3: { target { { any-opts "-mcmodel=medany" } && { no-opts "-march=rv64gcv_zvl512b" "-march=rv64gcv_zvl256b" "-march=rv64gcv_zvl1024b" "--param=riscv-autovec-lmul=dynamic" "--param=riscv-autovec-lmul=m8" "--param=riscv-autovec-lmul=m4" "--param=riscv-autovec-preference=fixed-vlmax" } } }
+**        lla\s+[ta][0-7],a_a
 **        lla\s+[ta][0-7],a_b
-**        vsetivli\s+zero,16,e32,m4,ta,ma
+**        vsetivli\s+zero,16,e32,m8,ta,ma
+**        vle32.v\s+v\d+,0\([ta][0-7]\)
+**        vse32\.v\s+v\d+,0\([ta][0-7]\)
+**        ret
+*/
+
+/*
+** f3: { target { { any-opts "-mcmodel=medany"  } && { no-opts "-march=rv64gcv_zvl512b" "-march=rv64gcv_zvl256b" "-march=rv64gcv" "-march=rv64gc_zve64d" "-march=rv64gc_zve32f" } } }
+**        lla\s+[ta][0-7],a_b
+**        vsetivli\s+zero,16,e32,m(f2|1|4),ta,ma
 **        vle32.v\s+v\d+,0\([ta][0-7]\)
 **        lla\s+[ta][0-7],a_a
 **        vse32\.v\s+v\d+,0\([ta][0-7]\)
+**        ret
+*/
+
+/*
+** f3: { target { { any-opts "-mcmodel=medany --param=riscv-autovec-preference=fixed-vlmax" } && { no-opts "-march=rv64gcv_zvl1024b" } } }
+**        lla\s+[ta][0-7],a_a
+**        lla\s+[ta][0-7],a_b
+**        vl(1|2|4)re32\.v\s+v\d+,0\([ta][0-7]\)
+**        vs(1|2|4)r\.v\s+v\d+,0\([ta][0-7]\)
 **        ret
 */
 

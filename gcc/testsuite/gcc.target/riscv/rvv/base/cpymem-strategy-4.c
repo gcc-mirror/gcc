@@ -3,4 +3,5 @@
 
 #include "cpymem-strategy.h"
 
-/* { dg-final { scan-assembler-times {v[ls]+e[0-9]+\.v\tv[0-9]+\,0\([a-z0-9]+\)} 4 } } */
+/* { dg-final { scan-assembler-times {v[ls]+e[0-9]+\.v\tv[0-9]+\,0\([a-z0-9]+\)} 4 { target { no-opts "--param=riscv-autovec-preference=fixed-vlmax" } } } } */
+/* { dg-final { scan-assembler-times {v[ls]+e[0-9]+\.v\tv[0-9]+\,0\([a-z0-9]+\)} 2 { target { any-opts "--param=riscv-autovec-preference=fixed-vlmax" } } } } */
