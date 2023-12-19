@@ -64,8 +64,13 @@ typedef struct __ifunc_arg_t {
 static inline bool
 has_lse2 (unsigned long hwcap, const __ifunc_arg_t *features)
 {
+  /* Check for LSE2.  */
   if (hwcap & HWCAP_USCAT)
     return true;
+  /* No point checking further for atomic 128-bit load/store if LSE
+     prerequisite not met.  */
+  if (!(hwcap & HWCAP_ATOMICS))
+    return false;
   if (!(hwcap & HWCAP_CPUID))
     return false;
 
@@ -99,9 +104,11 @@ has_lse128 (unsigned long hwcap, const __ifunc_arg_t *features)
      support in older kernels as it is of CPU feature absence.  Try fallback
      method to guarantee LSE128 is not implemented.
 
-     In the absence of HWCAP_CPUID, we are unable to check for LSE128.  */
-  if (!(hwcap & HWCAP_CPUID))
-    return false;
+     In the absence of HWCAP_CPUID, we are unable to check for LSE128.
+     If feature check available, check LSE2 prerequisite before proceeding.  */
+  if (!(hwcap & HWCAP_CPUID) || !(hwcap & HWCAP_USCAT))
+     return false;
+
   unsigned long isar0;
   asm volatile ("mrs %0, ID_AA64ISAR0_EL1" : "=r" (isar0));
   if (AT_FEAT_FIELD (isar0) >= 3)
