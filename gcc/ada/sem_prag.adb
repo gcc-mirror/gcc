@@ -20771,96 +20771,124 @@ package body Sem_Prag is
                   raise Pragma_Exit;
                end if;
 
+               Found := False;
                --  Loop to find matching procedures or functions (Ada 2022)
 
-               E := Entity (Id);
+               Outer_Loop :
+               for Process_Functions in Boolean loop
 
-               Found := False;
-               while Present (E)
-                 and then Scope (E) = Current_Scope
-               loop
-                  --  Ada 2022 (AI12-0269): A function can be No_Return
+                  --  We make two passes over the Homonym list, first looking
+                  --  at procedures and then at functions. This is done
+                  --  in order to get the desired behavior in the pre-Ada2022
+                  --  case. There are two subcases of the pre-Ada2022 case -
+                  --  either we found a non-function candidate in the first
+                  --  pass or we didn't. If we found one, then exit early
+                  --  (i.e., skip the second pass); we want to silently ignore
+                  --  any functions. But if we didn't find one then we do not
+                  --  want to exit early because looking at functions will
+                  --  allow us (if we find one) to generate a more useful
+                  --  error message ("this is an Ada 2022 construct" instead of
+                  --  "name could not be resolved").
 
-                  if Ekind (E) in E_Generic_Procedure | E_Procedure
-                                   | E_Generic_Function | E_Function
-                  then
-                     --  Check that the pragma is not applied to a body.
-                     --  First check the specless body case, to give a
-                     --  different error message. These checks do not apply
-                     --  if Relaxed_RM_Semantics, to accommodate other Ada
-                     --  compilers. Disable these checks under -gnatd.J.
+                  exit Outer_Loop when Found and Ada_Version < Ada_2022;
 
-                     if not Debug_Flag_Dot_JJ then
-                        if Nkind (Parent (Declaration_Node (E))) =
-                            N_Subprogram_Body
-                          and then not Relaxed_RM_Semantics
+                  E := Entity (Id);
+
+                  while Present (E)
+                    and then Scope (E) = Current_Scope
+                  loop
+                     --  Ada 2022 (AI12-0269): A function can be No_Return
+
+                     if (if Process_Functions
+                           then Ekind (E) in E_Generic_Function | E_Function
+                           else Ekind (E) in E_Generic_Procedure | E_Procedure)
+
+                        --  if From_Aspect_Specification, then only one
+                        --  candidate should be considered.
+
+                        and then (not From_Aspect_Specification (N)
+                                   or else E = Entity (Id)
+                                   or else No (Entity (Id)))
+
+                     then
+                        --  Check that the pragma is not applied to a body.
+                        --  First check the specless body case, to give a
+                        --  different error message. These checks do not apply
+                        --  if Relaxed_RM_Semantics, to accommodate other Ada
+                        --  compilers. Disable these checks under -gnatd.J.
+
+                        if not Debug_Flag_Dot_JJ then
+                           if Nkind (Parent (Declaration_Node (E))) =
+                               N_Subprogram_Body
+                             and then not Relaxed_RM_Semantics
+                           then
+                              Error_Pragma
+                                ("pragma% requires separate spec and must "
+                                 & "come before body");
+                           end if;
+
+                           --  Now the "specful" body case
+
+                           if Rep_Item_Too_Late (E, N) then
+                              raise Pragma_Exit;
+                           end if;
+                        end if;
+
+                        if Check_No_Return (E, N) then
+                           Set_No_Return (E);
+                        end if;
+
+                        --  A pragma that applies to a Ghost entity becomes
+                        --  Ghost for the purposes of legality checks and
+                        --  removal of ignored Ghost code.
+
+                        Mark_Ghost_Pragma (N, E);
+
+                        --  Capture the entity of the first Ghost procedure
+                        --  being processed for error detection purposes.
+
+                        if Is_Ghost_Entity (E) then
+                           if No (Ghost_Id) then
+                              Ghost_Id := E;
+                           end if;
+
+                        --  Otherwise the subprogram is non-Ghost. It is
+                        --  illegal to mix references to Ghost and non-Ghost
+                        --  entities (SPARK RM 6.9).
+
+                        elsif Present (Ghost_Id)
+                          and then not Ghost_Error_Posted
                         then
-                           Error_Pragma
-                             ("pragma% requires separate spec and must come "
-                              & "before body");
+                           Ghost_Error_Posted := True;
+
+                           Error_Msg_Name_1 := Pname;
+                           Error_Msg_N
+                             ("pragma % cannot mention ghost and non-ghost "
+                              & "procedures", N);
+
+                           Error_Msg_Sloc := Sloc (Ghost_Id);
+                           Error_Msg_NE
+                             ("\& # declared as ghost", N, Ghost_Id);
+
+                           Error_Msg_Sloc := Sloc (E);
+                           Error_Msg_NE ("\& # declared as non-ghost", N, E);
                         end if;
 
-                        --  Now the "specful" body case
+                        --  Set flag on any alias as well
 
-                        if Rep_Item_Too_Late (E, N) then
-                           raise Pragma_Exit;
-                        end if;
-                     end if;
-
-                     if Check_No_Return (E, N) then
-                        Set_No_Return (E);
-                     end if;
-
-                     --  A pragma that applies to a Ghost entity becomes Ghost
-                     --  for the purposes of legality checks and removal of
-                     --  ignored Ghost code.
-
-                     Mark_Ghost_Pragma (N, E);
-
-                     --  Capture the entity of the first Ghost procedure being
-                     --  processed for error detection purposes.
-
-                     if Is_Ghost_Entity (E) then
-                        if No (Ghost_Id) then
-                           Ghost_Id := E;
+                        if Is_Overloadable (E)
+                          and then Present (Alias (E))
+                          and then Check_No_Return (Alias (E), N)
+                        then
+                           Set_No_Return (Alias (E));
                         end if;
 
-                     --  Otherwise the subprogram is non-Ghost. It is illegal
-                     --  to mix references to Ghost and non-Ghost entities
-                     --  (SPARK RM 6.9).
-
-                     elsif Present (Ghost_Id)
-                       and then not Ghost_Error_Posted
-                     then
-                        Ghost_Error_Posted := True;
-
-                        Error_Msg_Name_1 := Pname;
-                        Error_Msg_N
-                          ("pragma % cannot mention ghost and non-ghost "
-                           & "procedures", N);
-
-                        Error_Msg_Sloc := Sloc (Ghost_Id);
-                        Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
-
-                        Error_Msg_Sloc := Sloc (E);
-                        Error_Msg_NE ("\& # declared as non-ghost", N, E);
+                        Found := True;
                      end if;
 
-                     --  Set flag on any alias as well
-
-                     if Is_Overloadable (E)
-                       and then Present (Alias (E))
-                       and then Check_No_Return (Alias (E), N)
-                     then
-                        Set_No_Return (Alias (E));
-                     end if;
-
-                     Found := True;
-                  end if;
-
-                  exit when From_Aspect_Specification (N);
-                  E := Homonym (E);
-               end loop;
+                     E := Homonym (E);
+                  end loop;
+               end loop Outer_Loop;
 
                --  If entity in not in current scope it may be the enclosing
                --  subprogram body to which the aspect applies.
