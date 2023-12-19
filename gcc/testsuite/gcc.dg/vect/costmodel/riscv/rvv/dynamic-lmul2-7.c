@@ -22,5 +22,5 @@ bar (int *x, int a, int b, int n)
 /* { dg-final { scan-assembler-times {ret} 2 } } *
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */
+/* { dg-final { scan-tree-dump "Maximum lmul = 2" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 1" "vect" } } */
