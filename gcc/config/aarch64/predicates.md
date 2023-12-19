@@ -323,7 +323,7 @@
 (define_special_predicate "aarch64_stp_reg_operand"
   (ior (match_operand 0 "aarch64_ldp_reg_operand")
        (and (match_code "const_int,const,const_vector,const_double")
-	    (match_test "aarch64_const_zero_rtx_p (op)"))
+	    (match_test "aarch64_const_zero_rtx_p (op)")
 	    (ior
 	      (match_test "GET_MODE (op) == VOIDmode")
 	      (and
@@ -331,7 +331,7 @@
 		(ior
 		  (match_test "mode == VOIDmode")
 		  (match_test "known_eq (GET_MODE_SIZE (mode),
-					 GET_MODE_SIZE (GET_MODE (op)))"))))))
+					 GET_MODE_SIZE (GET_MODE (op)))")))))))
 
 ;; Used for storing two 64-bit values in an AdvSIMD register using an STP
 ;; as a 128-bit vec_concat.
