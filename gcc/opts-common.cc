@@ -1907,14 +1907,14 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
     diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind, loc);
   if (imply)
     {
-      const struct cl_option *option = &cl_options[opt_index];
-
       /* -Werror=foo implies -Wfoo.  */
+      const struct cl_option *option = &cl_options[opt_index];
+      HOST_WIDE_INT value = 1;
+
       if (option->var_type == CLVC_INTEGER
 	  || option->var_type == CLVC_ENUM
 	  || option->var_type == CLVC_SIZE)
 	{
-	  HOST_WIDE_INT value = 1;
 
 	  if (arg && *arg == '\0' && !option->cl_missing_ok)
 	    arg = NULL;
@@ -1961,11 +1961,11 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 		  return;
 		}
 	    }
-
-	  handle_generated_option (opts, opts_set,
-				   opt_index, arg, value, lang_mask,
-				   kind, loc, handlers, false, dc);
 	}
+
+      handle_generated_option (opts, opts_set,
+			       opt_index, arg, value, lang_mask,
+			       kind, loc, handlers, false, dc);
     }
 }
 
