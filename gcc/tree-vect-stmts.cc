@@ -11476,7 +11476,9 @@ vectorizable_load (vec_info *vinfo,
 				      - (group_size * vf - gap), nunits))
 			  /* DR will be unused.  */
 			  ltype = NULL_TREE;
-			else if (alignment_support_scheme == dr_aligned)
+			else if (known_ge (vect_align,
+					   tree_to_poly_uint64
+					     (TYPE_SIZE_UNIT (vectype))))
 			  /* Aligned access to excess elements is OK if
 			     at least one element is accessed in the
 			     scalar loop.  */
