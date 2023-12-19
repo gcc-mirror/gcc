@@ -26919,8 +26919,6 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   tree gen_tmpl;
   bool pattern_defined;
   location_t saved_loc = input_location;
-  int saved_unevaluated_operand = cp_unevaluated_operand;
-  int saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
   bool external_p;
   bool deleted_p;
 
@@ -27157,8 +27155,6 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   pop_deferring_access_checks ();
   pop_tinst_level ();
   input_location = saved_loc;
-  cp_unevaluated_operand = saved_unevaluated_operand;
-  c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
 
   return d;
 }

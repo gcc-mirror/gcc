@@ -8553,6 +8553,39 @@ pop_from_top_level (void)
   free_saved_scope = s;
 }
 
+namespace {
+
+/* Helper class for saving/restoring relevant global flags for the
+   function-local case of maybe_push_to_top_level.  */
+
+struct local_state_t
+{
+  int cp_unevaluated_operand;
+  int c_inhibit_evaluation_warnings;
+
+  static local_state_t
+  save_and_clear ()
+  {
+    local_state_t s;
+    s.cp_unevaluated_operand = ::cp_unevaluated_operand;
+    ::cp_unevaluated_operand = 0;
+    s.c_inhibit_evaluation_warnings = ::c_inhibit_evaluation_warnings;
+    ::c_inhibit_evaluation_warnings = 0;
+    return s;
+  }
+
+  void
+  restore () const
+  {
+    ::cp_unevaluated_operand = this->cp_unevaluated_operand;
+    ::c_inhibit_evaluation_warnings = this->c_inhibit_evaluation_warnings;
+  }
+};
+
+vec<local_state_t> local_state_stack;
+
+} // anon namespace
+
 /* Like push_to_top_level, but not if D is function-local.  Returns whether we
    did push to top.  */
 
@@ -8572,8 +8605,7 @@ maybe_push_to_top_level (tree d)
     {
       gcc_assert (!processing_template_decl);
       push_function_context ();
-      cp_unevaluated_operand = 0;
-      c_inhibit_evaluation_warnings = 0;
+      local_state_stack.safe_push (local_state_t::save_and_clear ());
     }
 
   return push_to_top;
@@ -8587,7 +8619,10 @@ maybe_pop_from_top_level (bool push_to_top)
   if (push_to_top)
     pop_from_top_level ();
   else
-    pop_function_context ();
+    {
+      local_state_stack.pop ().restore ();
+      pop_function_context ();
+    }
 }
 
 /* Push into the scope of the namespace NS, even if it is deeply
