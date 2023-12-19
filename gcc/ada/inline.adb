@@ -1819,6 +1819,7 @@ package body Inline is
 
       begin
          if Present (Spec_Id)
+           and then Is_List_Member (Unit_Declaration_Node (Spec_Id))
            and then Has_Hide_Unhide_Pragma
              (Next (Unit_Declaration_Node (Spec_Id)))
          then
@@ -1829,7 +1830,9 @@ package body Inline is
                Subp_Body : constant N_Subprogram_Body_Id :=
                  Unit_Declaration_Node (Body_Id);
             begin
-               return Has_Hide_Unhide_Pragma (Next (Subp_Body))
+               return
+                 (Is_List_Member (Subp_Body)
+                   and then Has_Hide_Unhide_Pragma (Next (Subp_Body)))
                  or else
                    Has_Hide_Unhide_Pragma (First (Declarations (Subp_Body)));
             end;
