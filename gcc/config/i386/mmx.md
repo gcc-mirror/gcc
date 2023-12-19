@@ -1339,7 +1339,10 @@
 	    (match_operand:V2SF 1 "register_operand") 0)
 	  (match_dup 2)))]
   "TARGET_MMX_WITH_SSE"
-  "operands[2] = GEN_INT (GET_MODE_UNIT_BITSIZE (V2SFmode)-1);")
+{
+  operands[1] = force_reg (V2SFmode, operands[1]);
+  operands[2] = GEN_INT (GET_MODE_UNIT_BITSIZE (V2SFmode)-1);
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -2482,7 +2485,10 @@
 	    (match_operand:VHF_32_64 1 "register_operand") 0)
 	  (match_dup 2)))]
   "TARGET_SSE2"
-  "operands[2] = GEN_INT (GET_MODE_UNIT_BITSIZE (<MODE>mode)-1);")
+{
+  operands[1] = force_reg (<MODE>mode, operands[1]);
+  operands[2] = GEN_INT (GET_MODE_UNIT_BITSIZE (<MODE>mode)-1);
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
