@@ -1380,15 +1380,15 @@ expand_const_vector (rtx target, rtx src)
 	  rtx base1 = builder.elt (1);
 	  rtx base2 = builder.elt (2);
 
-	  scalar_mode elem_mode = GET_MODE_INNER (mode);
-	  rtx step = simplify_binary_operation (MINUS, elem_mode, base2, base1);
+	  rtx step = simplify_binary_operation (MINUS, builder.inner_mode (),
+						base2, base1);
 
 	  /* Step 1 - { base1, base1 + step, base1 + step * 2, ... }  */
 	  rtx tmp = gen_reg_rtx (mode);
 	  expand_vec_series (tmp, base1, step);
 	  /* Step 2 - { base0, base1, base1 + step, base1 + step * 2, ... }  */
 	  if (!rtx_equal_p (base0, const0_rtx))
-	    base0 = force_reg (elem_mode, base0);
+	    base0 = force_reg (builder.inner_mode (), base0);
 
 	  insn_code icode = optab_handler (vec_shl_insert_optab, mode);
 	  gcc_assert (icode != CODE_FOR_nothing);
