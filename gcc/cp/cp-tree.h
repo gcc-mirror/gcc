@@ -552,7 +552,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    2: DECL_THIS_EXTERN (in VAR_DECL, FUNCTION_DECL or PARM_DECL)
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
       DECL_CONSTRAINT_VAR_P (in a PARM_DECL)
-      TEMPLATE_DECL_COMPLEX_ALIAS_P (in TEMPLATE_DECL)
       DECL_INSTANTIATING_NSDMI_P (in a FIELD_DECL)
       USING_DECL_UNRELATED_P (in USING_DECL)
    3: DECL_IN_AGGR_P.
@@ -3699,10 +3698,6 @@ struct GTY(()) lang_decl {
 /* Nonzero for TYPE_DECL means that it was written 'using name = type'.  */
 #define TYPE_DECL_ALIAS_P(NODE) \
   DECL_LANG_FLAG_6 (TYPE_DECL_CHECK (NODE))
-
-/* Nonzero for TEMPLATE_DECL means that it is a 'complex' alias template.  */
-#define TEMPLATE_DECL_COMPLEX_ALIAS_P(NODE) \
-  DECL_LANG_FLAG_2 (TEMPLATE_DECL_CHECK (NODE))
 
 /* Nonzero for a type which is an alias for another type; i.e, a type
    which declaration was written 'using name-of-type =
@@ -7528,7 +7523,7 @@ extern tree tsubst_argument_pack		(tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_template_args		(tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_template_arg			(tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_function_parms		(tree, tree, tsubst_flags_t, tree);
-extern tree most_general_template		(tree);
+extern tree most_general_template		(const_tree);
 extern tree get_mostly_instantiated_function_type (tree);
 extern bool problematic_instantiation_changed	(void);
 extern void record_last_problematic_instantiation (void);
