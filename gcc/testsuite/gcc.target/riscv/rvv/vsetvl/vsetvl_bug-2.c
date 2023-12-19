@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d --param=riscv-autovec-lmul=m4 -O3 -fomit-frame-pointer -funroll-loops" } */
+/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv64gcv_zvl256b -mabi=lp64d --param=riscv-autovec-lmul=m4 -O3 -fomit-frame-pointer -funroll-loops" } */
 
 int safe_lshift_func_int32_t_s_s_left, safe_lshift_func_int32_t_s_s_right,
     safe_sub_func_uint64_t_u_u_ui2, safe_mul_func_uint64_t_u_u_ui2, g_79_2,

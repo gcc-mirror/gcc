@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv64gcv -mabi=lp64d -fno-schedule-insns -fno-schedule-insns2" } */
 
 #include "riscv_vector.h"
 

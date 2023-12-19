@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 --param riscv-autovec-lmul=m2 -fno-vect-cost-model" } */
+/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv64gcv -mabi=lp64d -O3 --param riscv-autovec-lmul=m2 -fno-vect-cost-model" } */
 
 #include <stdint-gcc.h>
 
