@@ -166,6 +166,11 @@ void g()
   ip(24)[f(25)-25] = 0;
   last=0;
 
+  // even with swapped operands
+  (f(20)-20)[afn(21)].memfn(f(22),23);
+  (f(24)-24)[ip(25)] = 0;
+  last=0;
+
   // a << b
   aref(24) << f(25);
   iref(26) << f(27);
