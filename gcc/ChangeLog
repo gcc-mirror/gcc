@@ -1,3 +1,15 @@
+2023-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113013
+	* tree-object-size.cc (alloc_object_size): Return size_unknown if
+	corresponding argument(s) don't have integral type or have integral
+	type with higher precision than sizetype.  Don't check arg1 >= 0
+	uselessly.  Compare argument indexes against gimple_call_num_args
+	in unsigned type rather than int.  Formatting fixes.
+
 2023-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
