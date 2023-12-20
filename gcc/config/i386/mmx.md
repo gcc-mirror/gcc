@@ -6342,6 +6342,201 @@
   DONE;
 })
 
+(define_expand "usdot_prodv8qi"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V8QI 1 "register_operand")
+   (match_operand:V8QI 2 "register_operand")
+   (match_operand:V2SI 3 "register_operand")]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
+{
+  operands[1] = force_reg (V8QImode, operands[1]);
+  operands[2] = force_reg (V8QImode, operands[2]);
+  operands[3] = force_reg (V2SImode, operands[3]);
+
+  if ((TARGET_AVX512VNNI && TARGET_AVX512VL)
+     || TARGET_AVXVNNI)
+    {
+      rtx op1 = lowpart_subreg (V16QImode, operands[1], V8QImode);
+      rtx op2 = lowpart_subreg (V16QImode, operands[2], V8QImode);
+      rtx op3 = lowpart_subreg (V4SImode, operands[3], V2SImode);
+      rtx op0 = gen_reg_rtx (V4SImode);
+
+      emit_insn (gen_usdot_prodv16qi (op0, op1, op2, op3));
+      emit_move_insn (operands[0], lowpart_subreg (V2SImode, op0, V4SImode));
+     }
+   else
+     {
+      rtx op1 = gen_reg_rtx (V8HImode);
+      rtx op2 = gen_reg_rtx (V8HImode);
+      rtx op3 = gen_reg_rtx (V4SImode);
+      rtx op0 = gen_reg_rtx (V4SImode);
+      rtx op0_1 = gen_reg_rtx (V4SImode);
+
+      emit_move_insn (op3, CONST0_RTX (V4SImode));
+      emit_insn (gen_zero_extendv8qiv8hi2 (op1, operands[1]));
+      emit_insn (gen_extendv8qiv8hi2 (op2, operands[2]));
+      emit_insn (gen_sdot_prodv8hi (op0, op1, op2, op3));
+
+      /* vec_perm (op0, 2, 3, 0, 1);  */
+      emit_insn (gen_sse2_pshufd (op0_1, op0, GEN_INT (78)));
+      emit_insn (gen_addv4si3 (op0, op0, op0_1));
+      emit_insn (gen_addv2si3 (operands[0], operands[3],
+			       lowpart_subreg (V2SImode, op0, V4SImode)));
+     }
+    DONE;
+})
+
+(define_expand "sdot_prodv8qi"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V8QI 1 "register_operand")
+   (match_operand:V8QI 2 "register_operand")
+   (match_operand:V2SI 3 "register_operand")]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
+{
+  operands[1] = force_reg (V8QImode, operands[1]);
+  operands[2] = force_reg (V8QImode, operands[2]);
+  operands[3] = force_reg (V2SImode, operands[3]);
+
+  if (TARGET_AVXVNNIINT8)
+    {
+      rtx op1 = lowpart_subreg (V16QImode, operands[1], V8QImode);
+      rtx op2 = lowpart_subreg (V16QImode, operands[2], V8QImode);
+      rtx op3 = lowpart_subreg (V4SImode, operands[3], V2SImode);
+      rtx op0 = gen_reg_rtx (V4SImode);
+
+      emit_insn (gen_sdot_prodv16qi (op0, op1, op2, op3));
+      emit_move_insn (operands[0], lowpart_subreg (V2SImode, op0, V4SImode));
+    }
+  else
+    {
+      rtx op1 = gen_reg_rtx (V8HImode);
+      rtx op2 = gen_reg_rtx (V8HImode);
+      rtx op3 = gen_reg_rtx (V4SImode);
+      rtx op0 = gen_reg_rtx (V4SImode);
+      rtx op0_1 = gen_reg_rtx (V4SImode);
+
+      emit_move_insn (op3, CONST0_RTX (V4SImode));
+      emit_insn (gen_extendv8qiv8hi2 (op1, operands[1]));
+      emit_insn (gen_extendv8qiv8hi2 (op2, operands[2]));
+      emit_insn (gen_sdot_prodv8hi (op0, op1, op2, op3));
+
+      /* vec_perm (op0, 2, 3, 0, 1);  */
+      emit_insn (gen_sse2_pshufd (op0_1, op0, GEN_INT (78)));
+      emit_insn (gen_addv4si3 (op0, op0, op0_1));
+      emit_insn (gen_addv2si3 (operands[0], operands[3],
+			       lowpart_subreg (V2SImode, op0, V4SImode)));
+    }
+  DONE;
+
+})
+
+(define_expand "udot_prodv8qi"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V8QI 1 "register_operand")
+   (match_operand:V8QI 2 "register_operand")
+   (match_operand:V2SI 3 "register_operand")]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
+{
+  operands[1] = force_reg (V8QImode, operands[1]);
+  operands[2] = force_reg (V8QImode, operands[2]);
+  operands[3] = force_reg (V2SImode, operands[3]);
+
+  if (TARGET_AVXVNNIINT8)
+    {
+      rtx op1 = lowpart_subreg (V16QImode, operands[1], V8QImode);
+      rtx op2 = lowpart_subreg (V16QImode, operands[2], V8QImode);
+      rtx op3 = lowpart_subreg (V4SImode, operands[3], V2SImode);
+      rtx op0 = gen_reg_rtx (V4SImode);
+
+      emit_insn (gen_udot_prodv16qi (op0, op1, op2, op3));
+      emit_move_insn (operands[0], lowpart_subreg (V2SImode, op0, V4SImode));
+    }
+  else
+    {
+      rtx op1 = gen_reg_rtx (V8HImode);
+      rtx op2 = gen_reg_rtx (V8HImode);
+      rtx op3 = gen_reg_rtx (V4SImode);
+      rtx op0 = gen_reg_rtx (V4SImode);
+      rtx op0_1 = gen_reg_rtx (V4SImode);
+
+      emit_move_insn (op3, CONST0_RTX (V4SImode));
+      emit_insn (gen_zero_extendv8qiv8hi2 (op1, operands[1]));
+      emit_insn (gen_zero_extendv8qiv8hi2 (op2, operands[2]));
+      emit_insn (gen_sdot_prodv8hi (op0, op1, op2, op3));
+
+      /* vec_perm (op0, 2, 3, 0, 1);  */
+      emit_insn (gen_sse2_pshufd (op0_1, op0, GEN_INT (78)));
+      emit_insn (gen_addv4si3 (op0, op0, op0_1));
+      emit_insn (gen_addv2si3 (operands[0], operands[3],
+			       lowpart_subreg (V2SImode, op0, V4SImode)));
+    }
+  DONE;
+
+})
+
+(define_expand "usdot_prodv4hi"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V4HI 1 "register_operand")
+   (match_operand:V4HI 2 "register_operand")
+   (match_operand:V2SI 3 "register_operand")]
+  "TARGET_AVXVNNIINT16 && TARGET_MMX_WITH_SSE"
+{
+  operands[1] = force_reg (V4HImode, operands[1]);
+  operands[2] = force_reg (V4HImode, operands[2]);
+  operands[3] = force_reg (V2SImode, operands[3]);
+
+  rtx op1 = lowpart_subreg (V8HImode, operands[1], V4HImode);
+  rtx op2 = lowpart_subreg (V8HImode, operands[2], V4HImode);
+  rtx op3 = lowpart_subreg (V4SImode, operands[3], V2SImode);
+  rtx op0 = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_usdot_prodv8hi (op0, op1, op2, op3));
+  emit_move_insn (operands[0], lowpart_subreg (V2SImode, op0, V4SImode));
+  DONE;
+})
+
+(define_expand "udot_prodv4hi"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V4HI 1 "register_operand")
+   (match_operand:V4HI 2 "register_operand")
+   (match_operand:V2SI 3 "register_operand")]
+  "TARGET_AVXVNNIINT16 && TARGET_MMX_WITH_SSE"
+{
+  operands[1] = force_reg (V4HImode, operands[1]);
+  operands[2] = force_reg (V4HImode, operands[2]);
+  operands[3] = force_reg (V2SImode, operands[3]);
+
+  rtx op1 = lowpart_subreg (V8HImode, operands[1], V4HImode);
+  rtx op2 = lowpart_subreg (V8HImode, operands[2], V4HImode);
+  rtx op3 = lowpart_subreg (V4SImode, operands[3], V2SImode);
+  rtx op0 = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_udot_prodv8hi (op0, op1, op2, op3));
+  emit_move_insn (operands[0], lowpart_subreg (V2SImode, op0, V4SImode));
+  DONE;
+})
+
+(define_expand "sdot_prodv4hi"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V4HI 1 "register_operand")
+   (match_operand:V4HI 2 "register_operand")
+   (match_operand:V2SI 3 "register_operand")]
+  "TARGET_MMX_WITH_SSE"
+{
+  operands[1] = force_reg (V4HImode, operands[1]);
+  operands[2] = force_reg (V4HImode, operands[2]);
+  operands[3] = force_reg (V2SImode, operands[3]);
+
+  rtx op1 = lowpart_subreg (V8HImode, operands[1], V4HImode);
+  rtx op2 = lowpart_subreg (V8HImode, operands[2], V4HImode);
+  rtx op3 = lowpart_subreg (V4SImode, operands[3], V2SImode);
+  rtx op0 = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_sdot_prodv8hi (op0, op1, op2, op3));
+  emit_move_insn (operands[0], lowpart_subreg (V2SImode, op0, V4SImode));
+  DONE;
+})
+
 (define_insn_and_split "mmx_pmovmskb"
   [(set (match_operand:SI 0 "register_operand" "=r,r,jr")
 	(unspec:SI [(match_operand:V8QI 1 "register_operand" "y,x,x")]
