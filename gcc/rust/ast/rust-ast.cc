@@ -60,16 +60,8 @@ SingleASTNode::SingleASTNode (SingleASTNode const &other)
       external_item = other.external_item->clone_external_item ();
       break;
 
-    case TRAIT:
-      trait_item = other.trait_item->clone_trait_item ();
-      break;
-
-    case IMPL:
-      impl_item = other.impl_item->clone_associated_item ();
-      break;
-
-    case TRAIT_IMPL:
-      trait_impl_item = other.trait_impl_item->clone_trait_impl_item ();
+    case ASSOC_ITEM:
+      assoc_item = other.assoc_item->clone_associated_item ();
       break;
 
     case TYPE:
@@ -100,16 +92,8 @@ SingleASTNode::operator= (SingleASTNode const &other)
       external_item = other.external_item->clone_external_item ();
       break;
 
-    case TRAIT:
-      trait_item = other.trait_item->clone_trait_item ();
-      break;
-
-    case IMPL:
-      impl_item = other.impl_item->clone_associated_item ();
-      break;
-
-    case TRAIT_IMPL:
-      trait_impl_item = other.trait_impl_item->clone_trait_impl_item ();
+    case ASSOC_ITEM:
+      assoc_item = other.assoc_item->clone_associated_item ();
       break;
 
     case TYPE:
@@ -140,16 +124,8 @@ SingleASTNode::accept_vis (ASTVisitor &vis)
       external_item->accept_vis (vis);
       break;
 
-    case TRAIT:
-      trait_item->accept_vis (vis);
-      break;
-
-    case IMPL:
-      impl_item->accept_vis (vis);
-      break;
-
-    case TRAIT_IMPL:
-      trait_impl_item->accept_vis (vis);
+    case ASSOC_ITEM:
+      assoc_item->accept_vis (vis);
       break;
 
     case TYPE:
@@ -171,12 +147,8 @@ SingleASTNode::is_error ()
       return stmt == nullptr;
     case EXTERN:
       return external_item == nullptr;
-    case TRAIT:
-      return trait_item == nullptr;
-    case IMPL:
-      return impl_item == nullptr;
-    case TRAIT_IMPL:
-      return trait_impl_item == nullptr;
+    case ASSOC_ITEM:
+      return assoc_item == nullptr;
     case TYPE:
       return type == nullptr;
     }
@@ -198,12 +170,8 @@ SingleASTNode::as_string () const
       return "Stmt: " + stmt->as_string ();
     case EXTERN:
       return "External Item: " + external_item->as_string ();
-    case TRAIT:
-      return "Trait Item: " + trait_item->as_string ();
-    case IMPL:
-      return "Impl Item: " + impl_item->as_string ();
-    case TRAIT_IMPL:
-      return "Trait Impl Item: " + trait_impl_item->as_string ();
+    case ASSOC_ITEM:
+      return "Associated Item: " + assoc_item->as_string ();
     case TYPE:
       return "Type: " + type->as_string ();
     }
