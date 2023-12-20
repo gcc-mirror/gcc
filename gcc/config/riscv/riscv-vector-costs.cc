@@ -123,7 +123,7 @@ compute_local_program_points (
       /* Collect the stmts that is vectorized and mark their program point.  */
       for (i = 0; i < nbbs; i++)
 	{
-	  int point = 0;
+	  int point = 1;
 	  basic_block bb = bbs[i];
 	  vec<stmt_point> program_points = vNULL;
 	  if (dump_enabled_p ())
@@ -300,13 +300,13 @@ max_number_of_live_regs (const basic_block bb,
   unsigned int i;
   unsigned int live_point = 0;
   auto_vec<unsigned int> live_vars_vec;
-  live_vars_vec.safe_grow_cleared (max_point + 1, true);
+  live_vars_vec.safe_grow_cleared (max_point, true);
   for (hash_map<tree, pair>::iterator iter = live_ranges.begin ();
        iter != live_ranges.end (); ++iter)
     {
       tree var = (*iter).first;
       pair live_range = (*iter).second;
-      for (i = live_range.first; i <= live_range.second; i++)
+      for (i = live_range.first + 1; i <= live_range.second; i++)
 	{
 	  machine_mode mode = TYPE_MODE (TREE_TYPE (var));
 	  unsigned int nregs
@@ -485,7 +485,7 @@ update_local_live_ranges (
 	      if (!program_points_per_bb.get (e->src))
 		continue;
 	      unsigned int max_point
-		= (*program_points_per_bb.get (e->src)).length () - 1;
+		= (*program_points_per_bb.get (e->src)).length ();
 	      live_range = live_ranges->get (def);
 	      if (!live_range)
 		continue;
@@ -571,7 +571,7 @@ preferred_new_lmul_p (loop_vec_info other_loop_vinfo)
 	{
 	  basic_block bb = (*iter).first;
 	  unsigned int max_point
-	    = (*program_points_per_bb.get (bb)).length () - 1;
+	    = (*program_points_per_bb.get (bb)).length () + 1;
 	  if ((*iter).second.is_empty ())
 	    continue;
 	  /* We prefer larger LMUL unless it causes register spillings.  */
