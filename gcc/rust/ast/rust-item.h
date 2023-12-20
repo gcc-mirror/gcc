@@ -1289,9 +1289,7 @@ protected:
 class LetStmt;
 
 // Rust function declaration AST node
-class Function : public VisItem,
-		 virtual public AssociatedItem,
-		 public TraitImplItem
+class Function : public VisItem, public TraitImplItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
@@ -2314,9 +2312,7 @@ protected:
 
 /* "Constant item" AST node - used for constant, compile-time expressions
  * within module scope (like constexpr) */
-class ConstantItem : public VisItem,
-		     virtual public AssociatedItem,
-		     public TraitImplItem
+class ConstantItem : public VisItem, public TraitImplItem
 {
   // either has an identifier or "_" - maybe handle in identifier?
   // bool identifier_is_underscore;

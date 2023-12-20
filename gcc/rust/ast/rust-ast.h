@@ -1657,8 +1657,22 @@ public:
   virtual location_t get_locus () const = 0;
 };
 
+// Abstract base class for items used in a trait impl
+class TraitImplItem : public AssociatedItem
+{
+protected:
+  virtual TraitImplItem *clone_associated_item_impl () const override = 0;
+
+public:
+  // Unique pointer custom clone function
+  std::unique_ptr<TraitImplItem> clone_trait_impl_item () const
+  {
+    return std::unique_ptr<TraitImplItem> (clone_associated_item_impl ());
+  }
+};
+
 // Item used in trait declarations - abstract base class
-class TraitItem : virtual public AssociatedItem
+class TraitItem : public TraitImplItem
 {
 protected:
   TraitItem (location_t locus)
@@ -1687,20 +1701,6 @@ public:
 
   NodeId get_node_id () const { return node_id; }
   location_t get_locus () const override { return locus; }
-};
-
-// Abstract base class for items used in a trait impl
-class TraitImplItem : virtual public AssociatedItem
-{
-protected:
-  virtual TraitImplItem *clone_associated_item_impl () const override = 0;
-
-public:
-  // Unique pointer custom clone function
-  std::unique_ptr<TraitImplItem> clone_trait_impl_item () const
-  {
-    return std::unique_ptr<TraitImplItem> (clone_associated_item_impl ());
-  }
 };
 
 // Abstract base class for an item used inside an extern block
@@ -1831,9 +1831,7 @@ public:
     ITEM,
     STMT,
     EXTERN,
-    TRAIT,
-    IMPL,
-    TRAIT_IMPL,
+    ASSOC_ITEM,
     TYPE,
   };
 
@@ -1845,9 +1843,7 @@ private:
   std::unique_ptr<Item> item;
   std::unique_ptr<Stmt> stmt;
   std::unique_ptr<ExternalItem> external_item;
-  std::unique_ptr<TraitItem> trait_item;
-  std::unique_ptr<AssociatedItem> impl_item;
-  std::unique_ptr<TraitImplItem> trait_impl_item;
+  std::unique_ptr<AssociatedItem> assoc_item;
   std::unique_ptr<Type> type;
 
 public:
@@ -1867,16 +1863,8 @@ public:
     : kind (EXTERN), external_item (std::move (item))
   {}
 
-  SingleASTNode (std::unique_ptr<TraitItem> item)
-    : kind (TRAIT), trait_item (std::move (item))
-  {}
-
   SingleASTNode (std::unique_ptr<AssociatedItem> item)
-    : kind (IMPL), impl_item (std::move (item))
-  {}
-
-  SingleASTNode (std::unique_ptr<TraitImplItem> trait_impl_item)
-    : kind (TRAIT_IMPL), trait_impl_item (std::move (trait_impl_item))
+    : kind (ASSOC_ITEM), assoc_item (std::move (item))
   {}
 
   SingleASTNode (std::unique_ptr<Type> type)
@@ -1936,7 +1924,8 @@ public:
   std::unique_ptr<TraitItem> take_trait_item ()
   {
     rust_assert (!is_error ());
-    return std::move (trait_item);
+    return std::unique_ptr<TraitItem> (
+      static_cast<TraitItem *> (assoc_item.release ()));
   }
 
   std::unique_ptr<ExternalItem> take_external_item ()
@@ -1945,16 +1934,22 @@ public:
     return std::move (external_item);
   }
 
-  std::unique_ptr<AssociatedItem> take_impl_item ()
+  std::unique_ptr<AssociatedItem> take_assoc_item ()
   {
     rust_assert (!is_error ());
-    return std::move (impl_item);
+    return std::move (assoc_item);
+  }
+
+  std::unique_ptr<AssociatedItem> take_impl_item ()
+  {
+    return take_assoc_item ();
   }
 
   std::unique_ptr<TraitImplItem> take_trait_impl_item ()
   {
     rust_assert (!is_error ());
-    return std::move (trait_impl_item);
+    return std::unique_ptr<TraitImplItem> (
+      static_cast<TraitImplItem *> (assoc_item.release ()));
   }
 
   std::unique_ptr<Type> take_type ()

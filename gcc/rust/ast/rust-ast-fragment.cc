@@ -153,14 +153,12 @@ void
 Fragment::assert_single_fragment (SingleASTNode::NodeType expected) const
 {
   static const std::map<SingleASTNode::NodeType, const char *> str_map = {
-    {SingleASTNode::NodeType::IMPL, "impl"},
+    {SingleASTNode::NodeType::ASSOC_ITEM, "associated item"},
     {SingleASTNode::NodeType::ITEM, "item"},
     {SingleASTNode::NodeType::TYPE, "type"},
     {SingleASTNode::NodeType::EXPRESSION, "expr"},
     {SingleASTNode::NodeType::STMT, "stmt"},
     {SingleASTNode::NodeType::EXTERN, "extern"},
-    {SingleASTNode::NodeType::TRAIT, "trait"},
-    {SingleASTNode::NodeType::TRAIT_IMPL, "trait impl"},
   };
 
   auto actual = nodes[0].get_kind ();
