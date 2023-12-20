@@ -1,3 +1,166 @@
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* ipa-strub.cc (gsi_insert_finally_seq_after_call): Likewise.
+	(pass_ipa_strub::adjust_at_calls_call): Likewise.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.cc (process_command): Use LD_PIE_SPEC only if defined.
+
+2023-12-19  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/113069
+	* gimple-ssa-sccopy.cc (scc_discovery): Remove unused member.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* omp-general.cc (vendor_properties): Add "hpe".
+	(atomic_default_mem_order_properties): Add "acquire" and "release".
+	(omp_context_selector_matches): Handle "acquire" and "release".
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* omp-selectors.h: New file.
+	* omp-general.h: Include omp-selectors.h.
+	(OMP_TSS_CODE, OMP_TSS_NAME): New.
+	(OMP_TS_CODE, OMP_TS_NAME): New.
+	(make_trait_set_selector, make_trait_selector): Adjust declarations.
+	(omp_construct_traits_to_codes): Likewise.
+	(omp_context_selector_set_compare): Likewise.
+	(omp_get_context_selector): Likewise.
+	(omp_get_context_selector_list): New.
+	* omp-general.cc (omp_construct_traits_to_codes): Pass length in
+	as argument instead of returning it.  Make it table-driven.
+	(omp_tss_map): New.
+	(kind_properties, vendor_properties, extension_properties): New.
+	(atomic_default_mem_order_properties): New.
+	(omp_ts_map): New.
+	(omp_check_context_selector): Simplify lookup and dispatch logic.
+	(omp_mark_declare_variant): Ignore variants with unknown construct
+	selectors.  Adjust for new representation.
+	(make_trait_set_selector, make_trait_selector): Adjust for new
+	representations.
+	(omp_context_selector_matches): Simplify dispatch logic.  Avoid
+	fixed-sized buffers and adjust call to omp_construct_traits_to_codes.
+	(omp_context_selector_props_compare): Adjust for new representations
+	and simplify dispatch logic.
+	(omp_context_selector_set_compare): Likewise.
+	(omp_context_selector_compare): Likewise.
+	(omp_get_context_selector): Adjust for new representations, and split
+	out...
+	(omp_get_context_selector_list): New function.
+	(omp_lookup_tss_code): New.
+	(omp_lookup_ts_code): New.
+	(omp_context_compute_score): Adjust for new representations.  Avoid
+	fixed-sized buffers and magic numbers.  Adjust call to
+	omp_construct_traits_to_codes.
+	* gimplify.cc (omp_construct_selector_matches): Avoid use of
+	fixed-size buffer.  Adjust call to omp_construct_traits_to_codes.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* omp-general.h (OMP_TP_NAMELIST_NODE): New.
+	* omp-general.cc (omp_context_name_list_prop): Move earlier
+	in the file, and adjust for new representation.
+	(omp_check_context_selector): Adjust this too.
+	(omp_context_selector_props_compare): Likewise.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* omp-general.h (OMP_TS_SCORE_NODE): New.
+	(OMP_TSS_ID, OMP_TSS_TRAIT_SELECTORS): New.
+	(OMP_TS_ID, OMP_TS_SCORE, OMP_TS_PROPERTIES): New.
+	(OMP_TP_NAME, OMP_TP_VALUE): New.
+	(make_trait_set_selector): Declare.
+	(make_trait_selector): Declare.
+	(make_trait_property): Declare.
+	(omp_constructor_traits_to_codes): Rename to
+	omp_construct_traits_to_codes.
+	* omp-general.cc (omp_constructor_traits_to_codes): Rename
+	to omp_construct_traits_to_codes.  Use new accessors.
+	(omp_check_context_selector): Use new accessors.
+	(make_trait_set_selector): New.
+	(make_trait_selector): New.
+	(make_trait_property): New.
+	(omp_context_name_list_prop): Use new accessors.
+	(omp_context_selector_matches): Use new accessors.
+	(omp_context_selector_props_compare): Use new accessors.
+	(omp_context_selector_set_compare): Use new accessors.
+	(omp_get_context_selector): Use new accessors.
+	(omp_context_compute_score): Use new accessors.
+	* gimplify.cc (omp_construct_selector_matches): Adjust for renaming
+	of omp_constructor_traits_to_codes.
+
+2023-12-19  David Faust  <david.faust@oracle.com>
+
+	PR debug/111735
+	* btfout.cc (btf_fwd_to_enum_p): New.
+	(btf_asm_type_ref): Special case references to enum forwards.
+	(btf_asm_type): Special case enum forwards. Rename btf_size_type to
+	btf_size, and change chained ifs switching on btf_kind into else ifs.
+
+2023-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113080
+	* tree-scalar-evolution.cc (expression_expensive_p): Allow
+	a tiny bit of growth due to expansion of shared trees.
+	(final_value_replacement_loop): Add comment.
+
+2023-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113073
+	* tree-vect-stmts.cc (vectorizable_load): Properly ensure
+	to exempt only vector-size aligned overreads.
+
+2023-12-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc
+	(ix86_convert_const_wide_int_to_broadcast): Remove static.
+	(ix86_expand_move): Don't attempt to convert wide constants
+	to SSE using ix86_convert_const_wide_int_to_broadcast here.
+	(ix86_split_long_move): Always un-cprop multi-word constants.
+	* config/i386/i386-expand.h
+	(ix86_convert_const_wide_int_to_broadcast): Prototype here.
+	* config/i386/i386-features.cc: Include i386-expand.h.
+	(timode_scalar_chain::convert_insn): When converting TImode to
+	V1TImode, try ix86_convert_const_wide_int_to_broadcast.
+
+2023-12-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Use builder.inner_mode ().
+
+2023-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112816
+	* config/i386/mmx.md (signbitv2sf2, signbit<mode>2): Force operands[1]
+	into a REG.
+
+2023-12-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113061
+	* config/aarch64/predicates.md (aarch64_stp_reg_operand): Fix
+	parentheses to match intent.
+
+2023-12-19  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR rtl-optimization/112525
+	PR target/30271
+	* dse.cc (get_group_info): Add arg_pointer_rtx as frame_related.
+	(check_mem_read_rtx): Add parameter to indicate if it is checking mem
+	for call insn.
+	(scan_insn): Add mem checking on call usage.
+
+2023-12-19  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-functions.def (REQUIRED_EXTENSIONS):
+					Add new macro for match function.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_FUNCTION):
+					Add one more parameter for macro expanding.
+	(handle_pragma_vector): Add match function calls.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext):
+				Add enum defination for required extension.
+	(struct function_group_info): Add one more parameter for checking required-ext.
+
 2023-12-18  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/112918

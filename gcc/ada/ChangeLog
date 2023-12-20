@@ -1,3 +1,218 @@
+2023-12-19  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/Make-lang.in (ada.html, ada.install-html): Add.
+
+2023-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Remove a short-circuit
+	for subtypes without aspects when it comes to predicates.
+	* sem_util.adb (Inherit_Predicate_Flags): Deal with private subtypes
+	whose full view is an Itype.
+
+2023-12-19  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch13.adb (Valid_Default_Iterator): Check all interfaces for
+	valid iterator type. Also improve error reporting.
+
+2023-12-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Container_Aggregate): In the Add_Named
+	case, issue an error if the container aggregate is written as a
+	positional aggregate, since such an aggregate must have named
+	associations.
+
+2023-12-19  Sheri Bernstein  <bernstein@adacore.com>
+
+	* libgnat/a-comlin.adb (Argument_Count): Rewrite code so there is
+	only one return, to remove Improper_Returns violation.
+	(Command_Name): Add pragma to exempt Improper_Returns violation.
+
+2023-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Rework last comment.
+
+2023-12-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Association): Call
+	Preanalyze_And_Resolve instead of Analyze_And_Resolve on a key
+	expression of an iterated association.
+
+2023-12-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch9.adb, sem_ch10.adb, sem_util.adb: Fix comments.
+
+2023-12-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sinput.adb, sinput.ads (Get_Logical_Line_Number_Img): Remove.
+
+2023-12-19  Patrick Bernardi  <bernardi@adacore.com>
+
+	* bindgen.adb (Command_Line_Used): New object.
+	(Gen_Main): Only generate references to symbols used by
+	Ada.Command_Line if the package is used by the partition.
+	(Gen_Output_File_Ada): Ditto.
+	(Resolve_Binder_Options): Check if Ada.Command_Line is in the
+	closure of the partition.
+
+2023-12-19  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* libgnat/i-cstrin.adb (Value): Optimize.
+
+2023-12-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Is_Unconstrained_Or_Tagged_Item): Update comment
+	and body.
+
+2023-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Is_Constr_Subt_For_UN_Aliased): Rename into...
+	(Is_Constr_Array_Subt_With_Bounds): ...this.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Adjust to above
+	renaming and remove now redundant test.
+	* sem_ch3.adb (Analyze_Object_Declaration): Likewise, but set
+	Is_Constr_Array_Subt_With_Bounds only on arrays.
+	* gen_il-fields.ads (Opt_Field_Enum): Apply same renaming.
+	* gen_il-gen-gen_entities.adb (Entity_Kind): Likewise.
+	* gen_il-internals.adb (Image): Remove specific processing for
+	Is_Constr_Subt_For_UN_Aliased.
+	* treepr.adb (Image): Likewise.
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Adjust to renaming
+	and remove now redundant tests.
+	* gcc-interface/trans.cc (Identifier_to_gnu): Likewise.
+	(Call_to_gnu): Likewise.
+
+2023-12-19  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnat/s-rident.ads: Remove No_Dynamic_Priorities from
+	Restricted_Tasking.
+
+2023-12-19  Patrick Bernardi  <bernardi@adacore.com>
+
+	* argv.c: Do not include adaint.h if LIGHT_RUNTIME is defined.
+	* bindgen.adb (Gen_Main): Simplify command line argument and exit
+	handling by requiring the runtime to always provide the required
+	symbols if command line argument and exit code is enabled.
+	* targparm.ads: Update comments to reflect changes to gnatbind.
+
+2023-12-19  Ronan Desplanques  <desplanques@adacore.com>
+	    Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Initialize_Component): Use corresponding record
+	types of concurrent types.
+	* exp_util.ads (Make_Tag_Assignment_From_Type): Add precondition
+	and extend documentation.
+
+2023-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Is_Ignored_Transient): Rename into...
+	(Is_Ignored_For_Finalization): ...this.
+	* gen_il-fields.ads (Opt_Field_Enum): Adjust to above renaming.
+	* gen_il-gen-gen_entities.adb (Object_Kind): Likewise.
+	* exp_aggr.adb (Expand_Array_Aggregate): Likewise.
+	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Likewise.
+	* exp_util.adb (Requires_Cleanup_Actions): Likewise.
+	* exp_ch4.adb (Expand_N_If_Expression): Move down declaration of
+	variable Optimize_Return_Stmt.
+	(Process_Transient_In_Expression): Turn procedure into a child of...
+	(Process_Transients_In_Expression): ...this procedure.
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Remove obsolete setting
+	of Is_Ignored_Transient flag on the temporary if within a dependent
+	expression of a conditional expression.
+
+2023-12-19  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Aggregate): New procedure for the
+	special expansion.
+	(Expand_SPARK): Call the new expansion procedure.
+	* sem_util.adb (Is_Container_Aggregate): Implement missing test.
+
+2023-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Copy_Generic_Node): Add guard for Ancestor_Type.
+
+2023-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gen_il-fields.ads (Aggregate_Bounds): Rename to
+	Aggregate_Bounds_Or_Ancestor_Type.
+	* gen_il-gen-gen_nodes.adb (Aggregate_Bounds): Likewise.
+	* sem_aggr.adb (Resolve_Record_Aggregate): Remove obsolete bypass.
+	* sem_ch12.adb (Check_Generic_Actuals): Add decoration.
+	(Copy_Generic_Node): For an extension aggregate, restore only the
+	full view, if any.  For a full aggregate, restore the full view as
+	well as that of its Ancestor_Type, if any, and up to the root type.
+	(Save_References_In_Aggregate): For a full aggregate of a local
+	derived tagged type with a global ancestor, set Ancestor_Type to
+	this ancestor.  For a full aggregate of a global derived tagged
+	type, set Ancestor_Type to the parent type.
+	* sinfo-utils.ads (Aggregate_Bounds): New function renaming.
+	(Ancestor_Type): Likewise.
+	(Set_Aggregate_Bounds): New procedure renaming.
+	(Set_Ancestor_Type): Likewise.
+	* sinfo.ads (Ancestor_Type): Document new field.
+
+2023-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_If_Expression): Also add missing calls to
+	Process_Transients_In_Expression on the code path implementing the
+	special optimization for an unidimensional array type and
+	dependent expressions with static bounds.
+
+2023-12-19  Steve Baird  <baird@adacore.com>
+
+	* sem_ch8.adb (Is_Actual_Subp_Of_Inst): After calling
+	Enclosing_Declaration, add a check for the case where one more
+	Parent call is needed to get the enclosing declaration.
+
+2023-12-19  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.adb (Build_Default_Subtype_OK): Relax
+	known-at-compile-time requirement.
+	* sem_util.ads (Build_Default_Subtype_OK): Bring documentation
+	comment up-to-date.
+
+2023-12-19  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Fix doc for
+	pragma Ignore_Pragma, in the case where it follows another
+	configuration pragma that it names, which causes the preceding
+	pragma to be ignored after parsing.
+	* errout.adb (Should_Ignore_Pragma_SPARK_Mode): New query.
+	(SPARK_Msg_N): Do nothing if SPARK_Mode is ignored.
+	(SPARK_Msg_NE): Same.
+	* gnat-style.texi: Regenerate.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2023-12-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Check correct mode
+	variable for GNATprove.
+	* sem_prag.adb (Refined_State): Call SPARK_Msg_NE which checks
+	value of SPARK_Mode before issuing a message.
+	* sem_res.adb (Resolve_Entity_Name): Remove legality check for
+	SPARK RM 6.1.9(1), moved to GNATprove.
+
+2023-12-19  Steve Baird  <baird@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Child_Unit): Introduce a new nested
+	function Adjusted_Inst_Par_Ekind to cope with cases where either
+	a- the visibility of a compiler-generated renaming is incorrect;
+	or b- we are inside of a generic parent unit G1 that has a child
+	unit G1.G2, so instantiation of G1.G2 is permitted.
+
+2023-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Process_If_Case_Statements): Rename into...
+	(Process_Transients_In_Expression): ...this and beef up comment.
+	(Expand_N_Case_Expression): Call Process_Transients_In_Expression
+	unconditionally on the list of actions of each alternative.
+	(Expand_N_Expression_With_Actions): Do not deal with actions in
+	nested subexpressions, but call Process_Transients_In_Expression
+	on the list of actions only.
+	(Expand_N_If_Expression): Adjust to above renaming.  Add missing
+	calls to Process_Transients_In_Expression in the case when an EWA
+	is not used because of Minimize_Expression_With_Actions.
+
 2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* gcc-interface/utils.cc (attr_target_exclusions): Make

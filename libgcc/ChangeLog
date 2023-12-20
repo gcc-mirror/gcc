@@ -1,3 +1,9 @@
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* strub.c (ATTRIBUTE_NOINLINE): New.
+	(ATTRIBUTE_STRUB_CALLABLE): Add it.
+	(__strub_dummy_force_no_leaf): Drop it.
+
 2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* config/aarch64/cpuinfo.c (enum CPUFeatures): Move to shared

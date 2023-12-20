@@ -1,3 +1,38 @@
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.h: Include omp-selectors.h.
+	(enum gfc_omp_trait_property_kind): Delete, and replace all
+	references with equivalent omp_tp_type enumerators.
+	(struct gfc_omp_trait_property): Update for omp_tp_type.
+	(struct gfc_omp_selector): Replace string name with new enumerator.
+	(struct gfc_omp_set_selector): Likewise.
+	* openmp.cc (gfc_free_omp_trait_property_list): Update for
+	omp_tp_type.
+	(omp_construct_selectors): Delete.
+	(omp_device_selectors): Delete.
+	(omp_implementation_selectors): Delete.
+	(omp_user_selectors): Delete.
+	(gfc_ignore_trait_property_extension): New.
+	(gfc_ignore_trait_property_extension_list): New.
+	(gfc_match_omp_selector): Adjust for new representations and simplify
+	dispatch logic.  Uniformly warn instead of sometimes error when an
+	unknown selector is found.
+	(gfc_match_omp_context_selector): Adjust for new representations.
+	Adjust error messages for extraneous/incorrect score.
+	(gfc_match_omp_context_selector_specification): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Adjust for
+	new representations.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_declare_varaint): Adjust for
+	new namelist property representation.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Use new
+	constructors.
+
 2023-12-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/96580

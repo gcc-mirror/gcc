@@ -1,3 +1,556 @@
+2023-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113063
+	* g++.dg/cpp2a/spaceship-synth16.C: New test.
+
+2023-12-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/102420
+	* g++.dg/cpp0x/constexpr-memfn2.C: New test.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/gomp/declare-variant-2.c: Don't expect error on
+	"acquire" and "release".
+	* gfortran.dg/gomp/declare-variant-2a.f90: Likewise.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/gomp/declare-variant-1.c: Expect warning on
+	unknown selectors.
+	* c-c++-common/gomp/declare-variant-2.c: Likewise.  Also adjust
+	messages for score errors.
+	* c-c++-common/gomp/declare-variant-no-score.c: New.
+	* gfortran.dg/gomp/declare-variant-1.f90: Expect warning on
+	unknown selectors.
+	* gfortran.dg/gomp/declare-variant-2.f90: Likewise.  Also adjust
+	messages for score errors.
+	* gfortran.dg/gomp/declare-variant-no-score.f90: New.
+
+2023-12-19  David Faust  <david.faust@oracle.com>
+
+	PR debug/111735
+	* gcc.dg/debug/btf/btf-forward-2.c: New test.
+
+2023-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90679
+	* g++.dg/cpp0x/alias-decl-75a.C: New test.
+	* g++.dg/cpp0x/alias-decl-75b.C: New test.
+
+2023-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90679
+	* g++.dg/cpp0x/alias-decl-76.C: New test.
+
+2023-12-19  Marc Poulhiès  <poulhies@adacore.com>
+
+	* g++.target/i386/excess-precision-12.C: call std::abort instead of abort.
+
+2023-12-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Adapt for RISC-V.
+
+2023-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113080
+	* gcc.dg/tree-ssa/sccp-3.c: New testcase.
+
+2023-12-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/movti-2.c: New test case.
+	* gcc.target/i386/movti-3.c: Likewise.
+
+2023-12-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c++/90868
+	* c-c++-common/goacc/declare-1.c: Adjust.
+	* c-c++-common/goacc/declare-2.c: Likewise.
+
+2023-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112816
+	* gcc.target/i386/sse2-pr112816-2.c: New test.
+
+2023-12-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113061
+	* gfortran.dg/PR113061.f90: New test.
+
+2023-12-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_prop-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_prop-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-100.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-101.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-102.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-103.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-104.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-105.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-106.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-107.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-108.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-109.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-17.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-18.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-19.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-20.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-21.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-22.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-23.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-24.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-25.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-26.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-27.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-28.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-29.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-30.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-31.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-32.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-33.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-34.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-35.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-36.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-37.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-38.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-39.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-40.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-41.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-42.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-43.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-44.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-45.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-46.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-47.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-48.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-49.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-50.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-51.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-52.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-53.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-54.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-55.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-56.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-57.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-58.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-59.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-60.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-61.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-62.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-63.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-64.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-65.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-66.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-67.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-68.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-69.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-70.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-71.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-72.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-73.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-74.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-75.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-76.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-77.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-78.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-79.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-80.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-81.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-82.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-83.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-84.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-85.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-86.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-87.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-88.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-89.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-90.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-91.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-92.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-93.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-94.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-95.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-96.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-97.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-98.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-99.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/dump-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/ffload-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/ffload-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/ffload-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/ffload-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/ffload-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/ffload-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-17.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr108270.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109399.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109547.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109615.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109743-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109743-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109743-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109743-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109748.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109773-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109773-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr109974.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr111037-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr111037-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr111037-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr111037-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr111234.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr111255.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr111927.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr111947.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr112092-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr112092-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr112713-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr112713-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr112776.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr112813-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr112929-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/pr112988-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-17.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-18.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-19.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-20.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-21.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-22.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-23.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-24.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-25.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-26.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-27.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-28.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-29.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-30.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-31.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-32.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-33.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-34.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-35.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-36.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-37.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-38.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-39.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-40.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-41.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-42.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-43.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-44.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-45.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-46.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-17.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-18.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-19.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-20.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-21.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-22.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-23.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-24.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-25.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-26.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-27.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-28.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_complex_loop-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_complex_loop-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-17.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-18.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-19.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-20.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-21.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-22.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-23.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-24.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-25.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-26.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-27.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-28.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-17.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-18.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-19.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-20.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-21.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-22.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-23.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-24.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-25.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-26.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-27.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-28.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-17.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-18.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-19.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-17.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-18.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-19.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-20.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-21.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-22.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-23.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-24.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_int.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-1.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-10.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-11.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-12.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-13.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-14.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-15.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-16.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-17.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-18.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-19.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-2.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-20.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-3.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-4.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-5.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-6.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-7.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-8.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-9.c: Force scalable vector.
+	* gcc.target/riscv/rvv/vsetvl/wredsum_vlmax.c: Force scalable vector.
+
+2023-12-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-7.c: Adapt test.
+
+2023-12-19  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/cpymem-1.c: Fix checks under medany.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-3.c: Fix checks.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-4.c: Ditto.
+
+2023-12-19  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR rtl-optimization/112525
+	PR target/30271
+	* gcc.target/powerpc/pr112525.c: New test.
+	* gcc.target/powerpc/pr30271.c: New test.
+
+2023-12-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Remove 256/512/1024 vectors.
+
+2023-12-19  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/cpymem-2.c: Fix checks.
+
 2023-12-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/96580

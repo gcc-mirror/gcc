@@ -1,3 +1,25 @@
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (omp_construct_selectors): Delete.
+	(omp_device_selectors): Delete.
+	(omp_implementation_selectors): Delete.
+	(omp_user_selectors): Delete.
+	(c_parser_omp_context_selector): Adjust for new representations
+	and simplify dispatch logic.  Uniformly warn instead of sometimes
+	error when an unknown selector is found.  Adjust error messages
+	for extraneous/incorrect score.
+	(c_parser_omp_context_selector_specification): Likewise.
+	(c_finish_omp_declare_variant): Adjust for new representations.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_context_selector): Adjust for new
+	namelist property representation.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_context_selector): Use new constructors.
+
 2023-12-18  Richard Biener  <rguenther@suse.de>
 
 	PR c/111975
