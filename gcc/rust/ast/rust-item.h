@@ -1289,7 +1289,7 @@ protected:
 class LetStmt;
 
 // Rust function declaration AST node
-class Function : public VisItem, public TraitImplItem
+class Function : public VisItem, public AssociatedItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
@@ -1436,7 +1436,7 @@ protected:
 };
 
 // Rust type alias (i.e. typedef) AST node
-class TypeAlias : public VisItem, public TraitImplItem
+class TypeAlias : public VisItem, public AssociatedItem
 {
   Identifier new_type_name;
 
@@ -2312,7 +2312,7 @@ protected:
 
 /* "Constant item" AST node - used for constant, compile-time expressions
  * within module scope (like constexpr) */
-class ConstantItem : public VisItem, public TraitImplItem
+class ConstantItem : public VisItem, public AssociatedItem
 {
   // either has an identifier or "_" - maybe handle in identifier?
   // bool identifier_is_underscore;
@@ -3484,7 +3484,7 @@ class TraitImpl : public Impl
   TypePath trait_path;
 
   // bool has_impl_items;
-  std::vector<std::unique_ptr<TraitImplItem>> impl_items;
+  std::vector<std::unique_ptr<AssociatedItem>> impl_items;
 
 public:
   std::string as_string () const override;
@@ -3494,7 +3494,7 @@ public:
 
   // Mega-constructor
   TraitImpl (TypePath trait_path, bool is_unsafe, bool has_exclam,
-	     std::vector<std::unique_ptr<TraitImplItem>> impl_items,
+	     std::vector<std::unique_ptr<AssociatedItem>> impl_items,
 	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     std::unique_ptr<Type> trait_type, WhereClause where_clause,
 	     Visibility vis, std::vector<Attribute> inner_attrs,
@@ -3513,7 +3513,7 @@ public:
   {
     impl_items.reserve (other.impl_items.size ());
     for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_trait_impl_item ());
+      impl_items.push_back (e->clone_associated_item ());
   }
 
   // Overloaded assignment operator with vector clone
@@ -3526,7 +3526,7 @@ public:
 
     impl_items.reserve (other.impl_items.size ());
     for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_trait_impl_item ());
+      impl_items.push_back (e->clone_associated_item ());
 
     return *this;
   }
@@ -3541,11 +3541,11 @@ public:
   bool is_exclam () const { return has_exclam; }
 
   // TODO: think of better way to do this
-  const std::vector<std::unique_ptr<TraitImplItem>> &get_impl_items () const
+  const std::vector<std::unique_ptr<AssociatedItem>> &get_impl_items () const
   {
     return impl_items;
   }
-  std::vector<std::unique_ptr<TraitImplItem>> &get_impl_items ()
+  std::vector<std::unique_ptr<AssociatedItem>> &get_impl_items ()
   {
     return impl_items;
   }

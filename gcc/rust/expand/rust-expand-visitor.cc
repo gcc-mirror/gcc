@@ -957,7 +957,7 @@ ExpandVisitor::visit (AST::TraitImpl &impl)
   if (impl.has_where_clause ())
     expand_where_clause (impl.get_where_clause ());
 
-  std::function<std::unique_ptr<AST::TraitImplItem> (AST::SingleASTNode)>
+  std::function<std::unique_ptr<AST::AssociatedItem> (AST::SingleASTNode)>
     extractor
     = [] (AST::SingleASTNode node) { return node.take_trait_impl_item (); };
 

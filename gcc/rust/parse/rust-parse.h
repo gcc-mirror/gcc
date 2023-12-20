@@ -171,7 +171,7 @@ public:
   std::unique_ptr<AST::ExternalItem> parse_external_item ();
   std::unique_ptr<AST::TraitItem> parse_trait_item ();
   std::unique_ptr<AST::AssociatedItem> parse_inherent_impl_item ();
-  std::unique_ptr<AST::TraitImplItem> parse_trait_impl_item ();
+  std::unique_ptr<AST::AssociatedItem> parse_trait_impl_item ();
   AST::PathInExpression parse_path_in_expression ();
   std::vector<std::unique_ptr<AST::LifetimeParam>> parse_lifetime_params ();
   AST::Visibility parse_visibility ();
@@ -353,7 +353,7 @@ private:
   std::unique_ptr<AST::AssociatedItem>
   parse_inherent_impl_function_or_method (AST::Visibility vis,
 					  AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::TraitImplItem>
+  std::unique_ptr<AST::AssociatedItem>
   parse_trait_impl_function_or_method (AST::Visibility vis,
 				       AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExternBlock>

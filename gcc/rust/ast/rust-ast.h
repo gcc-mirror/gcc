@@ -1657,22 +1657,8 @@ public:
   virtual location_t get_locus () const = 0;
 };
 
-// Abstract base class for items used in a trait impl
-class TraitImplItem : public AssociatedItem
-{
-protected:
-  virtual TraitImplItem *clone_associated_item_impl () const override = 0;
-
-public:
-  // Unique pointer custom clone function
-  std::unique_ptr<TraitImplItem> clone_trait_impl_item () const
-  {
-    return std::unique_ptr<TraitImplItem> (clone_associated_item_impl ());
-  }
-};
-
 // Item used in trait declarations - abstract base class
-class TraitItem : public TraitImplItem
+class TraitItem : public AssociatedItem
 {
 protected:
   TraitItem (location_t locus)
@@ -1945,11 +1931,9 @@ public:
     return take_assoc_item ();
   }
 
-  std::unique_ptr<TraitImplItem> take_trait_impl_item ()
+  std::unique_ptr<AssociatedItem> take_trait_impl_item ()
   {
-    rust_assert (!is_error ());
-    return std::unique_ptr<TraitImplItem> (
-      static_cast<TraitImplItem *> (assoc_item.release ()));
+    return take_assoc_item ();
   }
 
   std::unique_ptr<Type> take_type ()

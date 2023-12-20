@@ -49,7 +49,7 @@ private:
    * fn clone(&self) -> Self { <clone_expr> }
    *
    */
-  std::unique_ptr<TraitImplItem> clone_fn (std::unique_ptr<Expr> &&clone_expr);
+  std::unique_ptr<AssociatedItem> clone_fn (std::unique_ptr<Expr> &&clone_expr);
 
   /**
    * Create the Clone trait implementation for a type
@@ -59,7 +59,7 @@ private:
    * }
    *
    */
-  std::unique_ptr<Item> clone_impl (std::unique_ptr<TraitImplItem> &&clone_fn,
+  std::unique_ptr<Item> clone_impl (std::unique_ptr<AssociatedItem> &&clone_fn,
 				    std::string name);
 
   virtual void visit_struct (StructStruct &item);
