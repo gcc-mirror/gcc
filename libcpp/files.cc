@@ -181,7 +181,8 @@ static bool read_file_guts (cpp_reader *pfile, _cpp_file *file,
 static bool read_file (cpp_reader *pfile, _cpp_file *file,
 		       location_t loc);
 static struct cpp_dir *search_path_head (cpp_reader *, const char *fname,
-				 int angle_brackets, enum include_type);
+					 int angle_brackets, enum include_type,
+					 bool suppress_diagnostic = false);
 static const char *dir_name_of_file (_cpp_file *file);
 static void open_file_failed (cpp_reader *pfile, _cpp_file *file, int,
 			      location_t);
@@ -1041,7 +1042,7 @@ _cpp_mark_file_once_only (cpp_reader *pfile, _cpp_file *file)
    nothing left in the path, returns NULL.  */
 static struct cpp_dir *
 search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,
-		  enum include_type type)
+		  enum include_type type, bool suppress_diagnostic)
 {
   cpp_dir *dir;
   _cpp_file *file;
@@ -1070,7 +1071,7 @@ search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,
     return make_cpp_dir (pfile, dir_name_of_file (file),
 			 pfile->buffer ? pfile->buffer->sysp : 0);
 
-  if (dir == NULL)
+  if (dir == NULL && !suppress_diagnostic)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "no include path in which to search for %s", fname);
 
@@ -2164,7 +2165,10 @@ bool
 _cpp_has_header (cpp_reader *pfile, const char *fname, int angle_brackets,
 		 enum include_type type)
 {
-  cpp_dir *start_dir = search_path_head (pfile, fname, angle_brackets, type);
+  cpp_dir *start_dir = search_path_head (pfile, fname, angle_brackets, type,
+					 /* suppress_diagnostic = */ true);
+  if (!start_dir)
+    return false;
   _cpp_file *file = _cpp_find_file (pfile, fname, start_dir, angle_brackets,
 				    _cpp_FFK_HAS_INCLUDE, 0);
   return file->err_no != ENOENT;

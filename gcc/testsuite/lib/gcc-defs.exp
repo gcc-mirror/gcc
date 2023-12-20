@@ -280,6 +280,7 @@ if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
 
 proc dg-additional-options { args } {
     upvar dg-extra-tool-flags extra-tool-flags
+    global srcdir
 
     if { [llength $args] > 3 } {
 	error "[lindex $args 0]: too many arguments"
