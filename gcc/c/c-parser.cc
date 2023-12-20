@@ -12478,8 +12478,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 {
   struct c_expr orig_expr;
   tree ident, idx;
-  location_t sizeof_arg_loc[3], comp_loc;
-  tree sizeof_arg[3];
+  location_t sizeof_arg_loc[6], comp_loc;
+  tree sizeof_arg[6];
   unsigned int literal_zero_mask;
   unsigned int i;
   vec<tree, va_gc> *exprlist;
@@ -12512,7 +12512,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  {
 	    matching_parens parens;
 	    parens.consume_open (parser);
-	    for (i = 0; i < 3; i++)
+	    for (i = 0; i < 6; i++)
 	      {
 		sizeof_arg[i] = NULL_TREE;
 		sizeof_arg_loc[i] = UNKNOWN_LOCATION;
@@ -12577,6 +12577,13 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 				      "not permitted in intervening code");
 		  parser->omp_for_parse_state->fail = true;
 		}
+	      if (warn_calloc_transposed_args)
+		if (tree attr = lookup_attribute ("alloc_size",
+						  TYPE_ATTRIBUTES
+						    (TREE_TYPE (expr.value))))
+		  if (TREE_VALUE (attr) && TREE_CHAIN (TREE_VALUE (attr)))
+		    warn_for_calloc (sizeof_arg_loc, expr.value, exprlist,
+				     sizeof_arg, attr);
 	    }
 
 	  start = expr.get_start ();
@@ -12861,7 +12868,7 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
 	vec_safe_push (orig_types, expr.original_type);
       if (locations)
 	locations->safe_push (expr.get_location ());
-      if (++idx < 3
+      if (++idx < 6
 	  && sizeof_arg != NULL
 	  && (expr.original_code == SIZEOF_EXPR
 	      || expr.original_code == PAREN_SIZEOF_EXPR))

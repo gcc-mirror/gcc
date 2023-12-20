@@ -6054,6 +6054,19 @@ build_c_cast (location_t loc, tree type, tree expr)
 			    c_addr_space_name (as_to),
 			    c_addr_space_name (as_from));
 	    }
+
+	  /* Warn of new allocations that are not big enough for the target
+	     type.  */
+	  if (warn_alloc_size && TREE_CODE (value) == CALL_EXPR)
+	    if (tree fndecl = get_callee_fndecl (value))
+	      if (DECL_IS_MALLOC (fndecl))
+		{
+		  tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (fndecl));
+		  tree alloc_size = lookup_attribute ("alloc_size", attrs);
+		  if (alloc_size)
+		    warn_for_alloc_size (loc, TREE_TYPE (type), value,
+					 alloc_size);
+		}
 	}
 
       /* Warn about possible alignment problems.  */
@@ -7277,32 +7290,15 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
       /* Warn of new allocations that are not big enough for the target
 	 type.  */
-      tree fndecl;
-      if (warn_alloc_size
-	  && TREE_CODE (rhs) == CALL_EXPR
-	  && (fndecl = get_callee_fndecl (rhs)) != NULL_TREE
-	  && DECL_IS_MALLOC (fndecl))
-	{
-	  tree fntype = TREE_TYPE (fndecl);
-	  tree fntypeattrs = TYPE_ATTRIBUTES (fntype);
-	  tree alloc_size = lookup_attribute ("alloc_size", fntypeattrs);
-	  if (alloc_size)
+      if (warn_alloc_size && TREE_CODE (rhs) == CALL_EXPR)
+	if (tree fndecl = get_callee_fndecl (rhs))
+	  if (DECL_IS_MALLOC (fndecl))
 	    {
-	      tree args = TREE_VALUE (alloc_size);
-	      int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
-	      /* For calloc only use the second argument.  */
-	      if (TREE_CHAIN (args))
-		idx = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
-	      tree arg = CALL_EXPR_ARG (rhs, idx);
-	      if (TREE_CODE (arg) == INTEGER_CST
-		  && !VOID_TYPE_P (ttl) && TYPE_SIZE_UNIT (ttl)
-		  && INTEGER_CST == TREE_CODE (TYPE_SIZE_UNIT (ttl))
-		  && tree_int_cst_lt (arg, TYPE_SIZE_UNIT (ttl)))
-		 warning_at (location, OPT_Walloc_size, "allocation of "
-			     "insufficient size %qE for type %qT with "
-			     "size %qE", arg, ttl, TYPE_SIZE_UNIT (ttl));
+	      tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (fndecl));
+	      tree alloc_size = lookup_attribute ("alloc_size", attrs);
+	      if (alloc_size)
+		warn_for_alloc_size (location, ttl, rhs, alloc_size);
 	    }
-	}
 
       /* See if the pointers point to incompatible address spaces.  */
       asl = TYPE_ADDR_SPACE (ttl);

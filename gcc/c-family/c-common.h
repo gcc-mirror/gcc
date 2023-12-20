@@ -1599,6 +1599,9 @@ extern void warn_about_parentheses (location_t,
 extern void warn_for_unused_label (tree label);
 extern void warn_for_div_by_zero (location_t, tree divisor);
 extern void warn_for_memset (location_t, tree, tree, int);
+extern void warn_for_calloc (location_t *, tree, vec<tree, va_gc> *,
+			     tree *, tree);
+extern void warn_for_alloc_size (location_t, tree, tree, tree);
 extern void warn_for_sign_compare (location_t,
 				   tree orig_op0, tree orig_op1,
 				   tree op0, tree op1,

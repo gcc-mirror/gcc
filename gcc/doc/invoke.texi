@@ -328,7 +328,7 @@ Objective-C and Objective-C++ Dialects}.
 -pedantic-errors -fpermissive
 -w  -Wextra  -Wall  -Wabi=@var{n}
 -Waddress  -Wno-address-of-packed-member  -Waggregate-return
--Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
+-Walloc-size  -Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
 -Walloca  -Walloca-larger-than=@var{byte-size}
 -Wno-aggressive-loop-optimizations
 -Warith-conversion
@@ -344,6 +344,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wc++20-compat
 -Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
 -Wno-c++20-extensions  -Wno-c++23-extensions
+-Wcalloc-transposed-args
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual
 -Wchar-subscripts
 -Wclobbered  -Wcomment
@@ -8260,8 +8261,7 @@ Warn about calls to allocation functions decorated with attribute
 @code{alloc_size} that specify insufficient size for the target type of
 the pointer the result is assigned to, including those to the built-in
 forms of the functions @code{aligned_alloc}, @code{alloca},
-@code{calloc},
-@code{malloc}, and @code{realloc}.
+@code{calloc}, @code{malloc}, and @code{realloc}.
 
 @opindex Wno-alloc-zero
 @opindex Walloc-zero
@@ -8273,6 +8273,21 @@ forms of the functions @code{aligned_alloc}, @code{alloca}, @code{calloc},
 when called with a zero size differs among implementations (and in the case
 of @code{realloc} has been deprecated) relying on it may result in subtle
 portability bugs and should be avoided.
+
+@opindex Wcalloc-transposed-args
+@opindex Wno-calloc-transposed-args
+@item -Wcalloc-transposed-args
+Warn about calls to allocation functions decorated with attribute
+@code{alloc_size} with two arguments, which use @code{sizeof} operator
+as the earlier size argument and don't use it as the later size argument.
+This is a coding style warning.  The first argument to @code{calloc} is
+documented to be number of elements in array, while the second argument
+is size of each element, so @code{calloc (@var{n}, sizeof (int))} is preferred
+over @code{calloc (sizeof (int), @var{n})}.  If @code{sizeof} in the earlier
+argument and not the latter is intentional, the warning can be suppressed
+by using @code{calloc (sizeof (struct @var{S}) + 0, n)} or
+@code{calloc (1 * sizeof (struct @var{S}), 4)} or using @code{sizeof} in the
+later argument as well.
 
 @opindex Walloc-size-larger-than=
 @opindex Wno-alloc-size-larger-than
