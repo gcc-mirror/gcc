@@ -6952,6 +6952,7 @@ extern bool merge_default_template_args		(tree, tree, bool);
 extern tree duplicate_decls			(tree, tree,
 						 bool hiding = false,
 						 bool was_hidden = false);
+extern void mark_label_addressed		(tree);
 extern tree declare_local_label			(tree);
 extern tree define_label			(location_t, tree);
 extern void check_goto				(tree);

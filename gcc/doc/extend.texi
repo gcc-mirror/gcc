@@ -419,6 +419,9 @@ relies on them being always the same,
 prevent inlining and cloning.  If @code{&&foo} is used in a static
 variable initializer, inlining and cloning is forbidden.
 
+Unlike a normal goto, in GNU C++ a computed goto will not call
+destructors for objects that go out of scope.
+
 @node Nested Functions
 @section Nested Functions
 @cindex nested functions

@@ -9190,6 +9190,8 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    = make_location (start_loc, start_loc, parser->lexer);
 	  /* Create an expression representing the address.  */
 	  expression = finish_label_address_expr (identifier, combined_loc);
+	  if (TREE_CODE (expression) == ADDR_EXPR)
+	    mark_label_addressed (identifier);
 	  if (cp_parser_non_integral_constant_expression (parser,
 							  NIC_ADDR_LABEL))
 	    expression = error_mark_node;
