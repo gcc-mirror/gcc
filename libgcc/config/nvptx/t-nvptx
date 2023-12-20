@@ -2,6 +2,9 @@ LIB2ADD=$(srcdir)/config/nvptx/reduction.c \
 	$(srcdir)/config/nvptx/mgomp.c \
 	$(srcdir)/config/nvptx/atomic.c
 
+# Until we have libstdc++-v3/libsupc++ proper.
+LIB2ADD += $(srcdir)/c++-minimal/guard.c
+
 LIB2ADDEH=
 LIB2FUNCS_EXCLUDE=__main
 

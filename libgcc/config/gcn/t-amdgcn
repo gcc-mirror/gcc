@@ -8,6 +8,9 @@ LIB2ADD += $(srcdir)/config/gcn/atomic.c \
 	   $(srcdir)/config/gcn/lib2-bswapti2.c \
 	   $(srcdir)/config/gcn/unwind-gcn.c
 
+# Until we have libstdc++-v3/libsupc++ proper.
+LIB2ADD += $(srcdir)/c++-minimal/guard.c
+
 LIB2ADDEH=
 LIB2FUNCS_EXCLUDE=__main
 
