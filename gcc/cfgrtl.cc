@@ -2092,7 +2092,13 @@ commit_one_edge_insertion (edge e)
 	delete_insn (before);
     }
   else
-    gcc_assert (!JUMP_P (last));
+    /* Some builtin expanders, such as those for memset and memcpy,
+       may generate loops and conditionals, and those may get emitted
+       into edges.  That's ok while expanding to rtl, basic block
+       boundaries will be identified and split afterwards.  ???  Need
+       we check whether the destination labels of any inserted jumps
+       are also part of the inserted sequence?  */
+    gcc_assert (!JUMP_P (last) || currently_expanding_to_rtl);
 }
 
 /* Update the CFG for all queued instructions.  */
