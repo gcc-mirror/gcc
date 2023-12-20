@@ -1,15 +1,14 @@
 // { dg-do compile { target c++11 } }
 
-#include <testsuite_tr1.h>
-
-using namespace __gnu_test;
-
 #define SA(X) static_assert((X),#X)
-#define SA_TEST_CATEGORY(TRAIT, X, expect) \
-  SA(TRAIT(X) == expect);                  \
-  SA(TRAIT(const X) == expect);            \
-  SA(TRAIT(volatile X) == expect);         \
-  SA(TRAIT(const volatile X) == expect)
+
+#define SA_TEST_CATEGORY(TRAIT, TYPE, EXPECT)	\
+  SA(TRAIT(TYPE) == EXPECT);			\
+  SA(TRAIT(const TYPE) == EXPECT);		\
+  SA(TRAIT(volatile TYPE) == EXPECT);		\
+  SA(TRAIT(const volatile TYPE) == EXPECT)
+
+class ClassType { };
 
 SA_TEST_CATEGORY(__is_array, int[2], true);
 SA_TEST_CATEGORY(__is_array, int[], true);
