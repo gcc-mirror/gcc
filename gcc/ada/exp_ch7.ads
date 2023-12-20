@@ -35,6 +35,13 @@ package Exp_Ch7 is
    -- Finalization Management --
    -----------------------------
 
+   procedure Attach_Object_To_Master_Node
+     (Obj_Decl    : Node_Id;
+      Master_Node : Entity_Id);
+   --  Generate code to attach an object denoted by its declaration Obj_Decl
+   --  to a master node denoted by Master_Node. The code is inserted after
+   --  the object is initialized.
+
    procedure Build_Anonymous_Master (Ptr_Typ : Entity_Id);
    --  Build a finalization master for an anonymous access-to-controlled type
    --  denoted by Ptr_Typ. The master is inserted in the declarations of the

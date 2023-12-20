@@ -927,6 +927,7 @@ package Rtsfind is
 
      RE_Attach_Object_To_Master,         -- System.Finalization_Primitives
      RE_Attach_Object_To_Node,           -- System.Finalization_Primitives
+     RE_Chain_Node_To_Master,            -- System.Finalization_Primitives
      RE_Finalize_Master,                 -- System.Finalization_Primitives
      RE_Finalize_Object,                 -- System.Finalization_Primitives
      RE_Finalization_Scope_Master,       -- System.Finalization_Primitives
@@ -2579,6 +2580,7 @@ package Rtsfind is
 
      RE_Attach_Object_To_Master          => System_Finalization_Primitives,
      RE_Attach_Object_To_Node            => System_Finalization_Primitives,
+     RE_Chain_Node_To_Master             => System_Finalization_Primitives,
      RE_Finalize_Master                  => System_Finalization_Primitives,
      RE_Finalize_Object                  => System_Finalization_Primitives,
      RE_Finalization_Scope_Master        => System_Finalization_Primitives,

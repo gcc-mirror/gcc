@@ -14980,6 +14980,10 @@ package body Exp_Ch4 is
            Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj_Id);
          Insert_Action (Hook_Context, Master_Node_Decl);
 
+         --  Generate the attachment of the object to the Master_Node
+
+         Attach_Object_To_Master_Node (Obj_Decl, Master_Node_Id);
+
          --  When the node is part of a return statement, there is no need
          --  to insert a finalization call, as the general finalization
          --  mechanism (see Build_Finalizer) would take care of the master

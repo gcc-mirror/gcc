@@ -515,6 +515,13 @@ package body Exp_Ch7 is
    --  of the formal of Proc, or force a conversion to the class-wide type in
    --  the case where the operation is abstract.
 
+   function Make_Address_For_Finalize
+     (Loc     : Source_Ptr;
+      Obj_Ref : Node_Id;
+      Obj_Typ : Entity_Id) return Node_Id;
+   --  Build the address of an object denoted by Obj_Ref and Obj_Typ for use as
+   --  the actual parameter in a call to a Finalize_Address procedure.
+
    function Make_Call
      (Loc       : Source_Ptr;
       Proc_Id   : Entity_Id;
@@ -561,6 +568,327 @@ package body Exp_Ch7 is
    --    begin
    --       [Deep_]Finalize (Acc_Typ (V).all);
    --    end;
+
+   ----------------------------------
+   -- Attach_Object_To_Master_Node --
+   ----------------------------------
+
+   procedure Attach_Object_To_Master_Node
+     (Obj_Decl    : Node_Id;
+      Master_Node : Entity_Id)
+   is
+      Loc     : constant Source_Ptr := Sloc (Obj_Decl);
+      Obj_Id  : constant Entity_Id  := Defining_Entity (Obj_Decl);
+      Func_Id : constant Entity_Id  :=
+                  (if Is_Return_Object (Obj_Id)
+                   then Return_Applies_To (Scope (Obj_Id))
+                   else Empty);
+
+      function Build_BIP_Cleanup_Stmts
+         (Func_Id  : Entity_Id;
+          Obj_Addr : Node_Id) return Node_Id;
+      --  Func_Id denotes a build-in-place function. Generate the following
+      --  cleanup code:
+      --
+      --    if BIPallocform > Secondary_Stack'Pos
+      --      and then BIPfinalizationmaster /= null
+      --    then
+      --       declare
+      --          type Ptr_Typ is access Fun_Typ;
+      --          for Ptr_Typ'Storage_Pool
+      --            use Base_Pool (BIPfinalizationmaster);
+      --       begin
+      --          Free (Ptr_Typ (Obj_Addr));
+      --       end;
+      --    end if;
+      --
+      --  Fun_Typ is the return type of the Func_Id.
+
+      -----------------------------
+      -- Build_BIP_Cleanup_Stmts --
+      -----------------------------
+
+      function Build_BIP_Cleanup_Stmts
+        (Func_Id  : Entity_Id;
+         Obj_Addr : Node_Id) return Node_Id
+      is
+         Decls      : constant List_Id := New_List;
+         Fin_Mas_Id : constant Entity_Id :=
+                        Build_In_Place_Formal
+                          (Func_Id, BIP_Finalization_Master);
+         Func_Typ   : constant Entity_Id := Etype (Func_Id);
+
+         Cond      : Node_Id;
+         Free_Blk  : Node_Id;
+         Free_Stmt : Node_Id;
+         Pool_Id   : Entity_Id;
+         Ptr_Typ   : Entity_Id;
+
+      begin
+         --  Generate:
+         --    Pool_Id renames Base_Pool (BIPfinalizationmaster.all).all;
+
+         Pool_Id := Make_Temporary (Loc, 'P');
+
+         Append_To (Decls,
+           Make_Object_Renaming_Declaration (Loc,
+             Defining_Identifier => Pool_Id,
+             Subtype_Mark        =>
+               New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc),
+             Name                =>
+               Make_Explicit_Dereference (Loc,
+                 Prefix =>
+                   Make_Function_Call (Loc,
+                     Name                   =>
+                       New_Occurrence_Of (RTE (RE_Base_Pool), Loc),
+                     Parameter_Associations => New_List (
+                       Make_Explicit_Dereference (Loc,
+                         Prefix =>
+                           New_Occurrence_Of (Fin_Mas_Id, Loc)))))));
+
+         --  Create an access type which uses the storage pool of the
+         --  caller's finalization master.
+
+         --  Generate:
+         --    type Ptr_Typ is access Func_Typ;
+
+         Ptr_Typ := Make_Temporary (Loc, 'P');
+
+         Append_To (Decls,
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier => Ptr_Typ,
+             Type_Definition     =>
+               Make_Access_To_Object_Definition (Loc,
+                 Subtype_Indication => New_Occurrence_Of (Func_Typ, Loc))));
+
+         --  Perform minor decoration in order to set the master and the
+         --  storage pool attributes.
+
+         Mutate_Ekind (Ptr_Typ, E_Access_Type);
+         Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
+         Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
+
+         if Debug_Generated_Code then
+            Set_Debug_Info_Needed (Pool_Id);
+         end if;
+
+         --  Create an explicit free statement. Note that the free uses the
+         --  caller's pool expressed as a renaming.
+
+         Free_Stmt :=
+           Make_Free_Statement (Loc,
+             Expression =>
+               Unchecked_Convert_To (Ptr_Typ, Obj_Addr));
+
+         Set_Storage_Pool (Free_Stmt, Pool_Id);
+
+         --  Create a block to house the dummy type and the instantiation as
+         --  well as to perform the cleanup the temporary.
+
+         --  Generate:
+         --    declare
+         --       <Decls>
+         --    begin
+         --       Free (Ptr_Typ (Obj_Addr));
+         --    end;
+
+         Free_Blk :=
+           Make_Block_Statement (Loc,
+             Declarations               => Decls,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Free_Stmt)));
+
+         --  Generate:
+         --    if BIPfinalizationmaster /= null then
+
+         Cond :=
+           Make_Op_Ne (Loc,
+             Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
+             Right_Opnd => Make_Null (Loc));
+
+         --  For unconstrained or tagged results, escalate the condition to
+         --  include the allocation format. Generate:
+
+         --    if BIPallocform > Secondary_Stack'Pos
+         --      and then BIPfinalizationmaster /= null
+         --    then
+
+         if Needs_BIP_Alloc_Form (Func_Id) then
+            declare
+               Alloc : constant Entity_Id :=
+                         Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
+            begin
+               Cond :=
+                 Make_And_Then (Loc,
+                   Left_Opnd  =>
+                     Make_Op_Gt (Loc,
+                       Left_Opnd  => New_Occurrence_Of (Alloc, Loc),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc,
+                           UI_From_Int
+                             (BIP_Allocation_Form'Pos (Secondary_Stack)))),
+
+                   Right_Opnd => Cond);
+            end;
+         end if;
+
+         --  Generate:
+         --    if <Cond> then
+         --       <Free_Blk>
+         --    end if;
+
+         return
+           Make_If_Statement (Loc,
+             Condition       => Cond,
+             Then_Statements => New_List (Free_Blk));
+      end Build_BIP_Cleanup_Stmts;
+
+      Fin_Id             : Entity_Id;
+      Master_Node_Attach : Node_Id;
+      Master_Node_Ins    : Node_Id;
+      Obj_Ref            : Node_Id;
+      Obj_Typ            : Entity_Id;
+
+   begin
+      --  Finalize_Address is not generated in CodePeer mode because the
+      --  body contains address arithmetic. So we don't want to generate
+      --  the attach in this case.
+
+      if CodePeer_Mode then
+         return;
+      end if;
+
+      --  When the transient object is initialized by an aggregate, the
+      --  attachment must occur after the last aggregate assignment takes
+      --  place. Only then is the object considered initialized. Likewise
+      --  if we have a build-in-place call: we must attach only after it.
+
+      if Ekind (Obj_Id) in E_Constant | E_Variable then
+         if Present (Last_Aggregate_Assignment (Obj_Id)) then
+            Master_Node_Ins := Last_Aggregate_Assignment (Obj_Id);
+         elsif Present (BIP_Initialization_Call (Obj_Id)) then
+            Master_Node_Ins := BIP_Initialization_Call (Obj_Id);
+         else
+            Master_Node_Ins := Obj_Decl;
+         end if;
+
+      else
+         Master_Node_Ins := Obj_Decl;
+      end if;
+
+      --  Handle the object type and the reference to the object
+
+      Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
+      Obj_Typ := Etype (Obj_Id);
+      if not Is_Class_Wide_Type (Obj_Typ) then
+         Obj_Typ := Base_Type (Obj_Typ);
+      end if;
+
+      if Is_Access_Type (Obj_Typ) then
+         Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
+         Obj_Typ := Available_View (Designated_Type (Obj_Typ));
+      end if;
+
+      --  If we are dealing with a return object of a build-in-place
+      --  function, generate the following cleanup statements:
+
+      --    if BIPallocform > Secondary_Stack'Pos
+      --      and then BIPfinalizationmaster /= null
+      --    then
+      --       declare
+      --          type Ptr_Typ is access Obj_Typ;
+      --          for Ptr_Typ'Storage_Pool use
+      --                Base_Pool (BIPfinalizationmaster.all).all;
+      --       begin
+      --          Free (Ptr_Typ (Obj'Address));
+      --       end;
+      --    end if;
+
+      --  The generated code effectively detaches the temporary from the
+      --  caller finalization master and deallocates the object.
+
+      if Present (Func_Id)
+        and then Is_Build_In_Place_Function (Func_Id)
+        and then Needs_BIP_Finalization_Master (Func_Id)
+      then
+         declare
+            Ptr_Typ   : constant Node_Id := Make_Temporary (Loc, 'P');
+            Param     : constant Entity_Id :=
+                          Make_Defining_Identifier (Loc, Name_V);
+
+            Fin_Body  : Node_Id;
+            Fin_Stmts : List_Id;
+
+         begin
+            Fin_Stmts := Make_Finalize_Address_Stmts (Obj_Typ);
+
+            Append_To (Fin_Stmts,
+              Build_BIP_Cleanup_Stmts
+                (Func_Id, New_Occurrence_Of (Param, Loc)));
+
+            Fin_Id :=
+              Make_Defining_Identifier (Loc,
+                Make_TSS_Name_Local
+                  (Obj_Typ, TSS_Finalize_Address));
+
+            Fin_Body :=
+              Make_Subprogram_Body (Loc,
+                Specification =>
+                 Make_Procedure_Specification (Loc,
+                   Defining_Unit_Name => Fin_Id,
+
+                   Parameter_Specifications => New_List (
+                     Make_Parameter_Specification (Loc,
+                       Defining_Identifier => Param,
+                       Parameter_Type =>
+                         New_Occurrence_Of (RTE (RE_Address), Loc)))),
+
+             Declarations => New_List (
+               Make_Full_Type_Declaration (Loc,
+                 Defining_Identifier => Ptr_Typ,
+                 Type_Definition     =>
+                   Make_Access_To_Object_Definition (Loc,
+                     All_Present        => True,
+                     Subtype_Indication =>
+                       New_Occurrence_Of (Obj_Typ, Loc)))),
+
+               Handled_Statement_Sequence =>
+                 Make_Handled_Sequence_Of_Statements (Loc,
+                   Statements => Fin_Stmts));
+
+            Insert_After_And_Analyze
+              (Master_Node_Ins, Fin_Body, Suppress => All_Checks);
+
+            Master_Node_Ins := Fin_Body;
+         end;
+
+      else
+         Fin_Id := Finalize_Address (Obj_Typ);
+
+         if No (Fin_Id) and then Ekind (Obj_Typ) = E_Class_Wide_Subtype then
+            Fin_Id := TSS (Obj_Typ, TSS_Finalize_Address);
+         end if;
+      end if;
+
+      --  Now build the attachment call that will initialize the object's
+      --  Master_Node using the object's address and finalization procedure.
+
+      Master_Node_Attach :=
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Occurrence_Of (RTE (RE_Attach_Object_To_Node), Loc),
+          Parameter_Associations => New_List (
+            Make_Address_For_Finalize (Loc, Obj_Ref, Obj_Typ),
+            Make_Attribute_Reference (Loc,
+              Prefix         =>
+                New_Occurrence_Of (Fin_Id, Loc),
+              Attribute_Name => Name_Unrestricted_Access),
+            New_Occurrence_Of (Master_Node, Loc)));
+
+      Insert_After_And_Analyze
+        (Master_Node_Ins, Master_Node_Attach, Suppress => All_Checks);
+   end Attach_Object_To_Master_Node;
 
    --------------------------------
    -- Allows_Finalization_Master --
@@ -2152,11 +2480,10 @@ package body Exp_Ch7 is
 
                --  Conversely, if one of the above cases created a Master_Node,
                --  finalization actions are required for the associated object.
-               --  Note that we need to make sure that we will not process both
-               --  the Master_Node and the associated object here.
 
-               elsif Present (Finalization_Master_Node_Or_Object (Obj_Id)) then
-                  pragma Assert (Is_RTE (Obj_Typ, RE_Master_Node));
+               elsif Ekind (Obj_Id) = E_Variable
+                 and then Is_RTE (Obj_Typ, RE_Master_Node)
+               then
                   Processing_Actions (Decl);
 
                --  Ignored Ghost objects do not need any cleanup actions
@@ -2335,17 +2662,8 @@ package body Exp_Ch7 is
         (Decl         : Node_Id;
          Is_Protected : Boolean := False)
       is
-         Def_Id   : constant Entity_Id := Defining_Identifier (Decl);
-         Obj_Id   : constant Entity_Id :=
-           (if Is_RTE (Etype (Def_Id), RE_Master_Node)
-            then Finalization_Master_Node_Or_Object (Def_Id)
-            else Def_Id);
-         Obj_Decl : constant Entity_Id := Declaration_Node (Obj_Id);
-         Func_Id  : constant Entity_Id :=
-                      (if Is_Return_Object (Obj_Id)
-                       then Return_Applies_To (Scope (Obj_Id))
-                       else Empty);
-         Loc      : constant Source_Ptr := Sloc (Obj_Decl);
+         Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
+         Loc    : constant Source_Ptr := Sloc (Decl);
 
          Init_Typ : Entity_Id;
          --  The initialization type of the related object declaration. Note
@@ -2355,26 +2673,6 @@ package body Exp_Ch7 is
          Obj_Typ : Entity_Id;
          --  The type of the related object declaration
 
-         function Build_BIP_Cleanup_Stmts
-            (Func_Id  : Entity_Id;
-             Obj_Addr : Node_Id) return Node_Id;
-         --  Func_Id denotes a build-in-place function. Generate the following
-         --  cleanup code:
-         --
-         --    if BIPallocfrom > Secondary_Stack'Pos
-         --      and then BIPfinalizationmaster /= null
-         --    then
-         --       declare
-         --          type Ptr_Typ is access Fun_Typ;
-         --          for Ptr_Typ'Storage_Pool
-         --            use Base_Pool (BIPfinalizationmaster);
-         --       begin
-         --          Free (Ptr_Typ (Obj_Addr));
-         --       end;
-         --    end if;
-         --
-         --  Fun_Typ is the return type of the Func_Id.
-
          procedure Find_Last_Init
            (Last_Init   : out Node_Id;
             Body_Insert : out Node_Id);
@@ -2382,153 +2680,6 @@ package body Exp_Ch7 is
          --  Decl. Last_Init denotes the last initialization call which follows
          --  Decl. Body_Insert denotes a node where the finalizer body could be
          --  potentially inserted after (if blocks are involved).
-
-         function Make_Address_For_Finalize
-           (Loc     : Source_Ptr;
-            Obj_Ref : Node_Id;
-            Obj_Typ : Entity_Id) return Node_Id;
-         --  Build the address of an object denoted by Obj_Ref and Obj_Typ for
-         --  use as actual parameter in a call to a Finalize_Address procedure.
-
-         -----------------------------
-         -- Build_BIP_Cleanup_Stmts --
-         -----------------------------
-
-         function Build_BIP_Cleanup_Stmts
-           (Func_Id  : Entity_Id;
-            Obj_Addr : Node_Id) return Node_Id
-         is
-            Decls      : constant List_Id := New_List;
-            Fin_Mas_Id : constant Entity_Id :=
-                           Build_In_Place_Formal
-                             (Func_Id, BIP_Finalization_Master);
-            Func_Typ   : constant Entity_Id := Etype (Func_Id);
-
-            Cond      : Node_Id;
-            Free_Blk  : Node_Id;
-            Free_Stmt : Node_Id;
-            Pool_Id   : Entity_Id;
-            Ptr_Typ   : Entity_Id;
-
-         begin
-            --  Generate:
-            --    Pool_Id renames Base_Pool (BIPfinalizationmaster.all).all;
-
-            Pool_Id := Make_Temporary (Loc, 'P');
-
-            Append_To (Decls,
-              Make_Object_Renaming_Declaration (Loc,
-                Defining_Identifier => Pool_Id,
-                Subtype_Mark        =>
-                  New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc),
-                Name                =>
-                  Make_Explicit_Dereference (Loc,
-                    Prefix =>
-                      Make_Function_Call (Loc,
-                        Name                   =>
-                          New_Occurrence_Of (RTE (RE_Base_Pool), Loc),
-                        Parameter_Associations => New_List (
-                          Make_Explicit_Dereference (Loc,
-                            Prefix =>
-                              New_Occurrence_Of (Fin_Mas_Id, Loc)))))));
-
-            --  Create an access type which uses the storage pool of the
-            --  caller's finalization master.
-
-            --  Generate:
-            --    type Ptr_Typ is access Func_Typ;
-
-            Ptr_Typ := Make_Temporary (Loc, 'P');
-
-            Append_To (Decls,
-              Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Ptr_Typ,
-                Type_Definition     =>
-                  Make_Access_To_Object_Definition (Loc,
-                    Subtype_Indication => New_Occurrence_Of (Func_Typ, Loc))));
-
-            --  Perform minor decoration in order to set the master and the
-            --  storage pool attributes.
-
-            Mutate_Ekind (Ptr_Typ, E_Access_Type);
-            Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
-            Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
-
-            if Debug_Generated_Code then
-               Set_Debug_Info_Needed (Pool_Id);
-            end if;
-
-            --  Create an explicit free statement. Note that the free uses the
-            --  caller's pool expressed as a renaming.
-
-            Free_Stmt :=
-              Make_Free_Statement (Loc,
-                Expression =>
-                  Unchecked_Convert_To (Ptr_Typ, Obj_Addr));
-
-            Set_Storage_Pool (Free_Stmt, Pool_Id);
-
-            --  Create a block to house the dummy type and the instantiation as
-            --  well as to perform the cleanup the temporary.
-
-            --  Generate:
-            --    declare
-            --       <Decls>
-            --    begin
-            --       Free (Ptr_Typ (Obj_Addr));
-            --    end;
-
-            Free_Blk :=
-              Make_Block_Statement (Loc,
-                Declarations               => Decls,
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => New_List (Free_Stmt)));
-
-            --  Generate:
-            --    if BIPfinalizationmaster /= null then
-
-            Cond :=
-              Make_Op_Ne (Loc,
-                Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
-                Right_Opnd => Make_Null (Loc));
-
-            --  For unconstrained or tagged results, escalate the condition to
-            --  include the allocation format. Generate:
-
-            --    if BIPallocform > Secondary_Stack'Pos
-            --      and then BIPfinalizationmaster /= null
-            --    then
-
-            if Needs_BIP_Alloc_Form (Func_Id) then
-               declare
-                  Alloc : constant Entity_Id :=
-                            Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
-               begin
-                  Cond :=
-                    Make_And_Then (Loc,
-                      Left_Opnd  =>
-                        Make_Op_Gt (Loc,
-                          Left_Opnd  => New_Occurrence_Of (Alloc, Loc),
-                          Right_Opnd =>
-                            Make_Integer_Literal (Loc,
-                              UI_From_Int
-                                (BIP_Allocation_Form'Pos (Secondary_Stack)))),
-
-                      Right_Opnd => Cond);
-               end;
-            end if;
-
-            --  Generate:
-            --    if <Cond> then
-            --       <Free_Blk>
-            --    end if;
-
-            return
-              Make_If_Statement (Loc,
-                Condition       => Cond,
-                Then_Statements => New_List (Free_Blk));
-         end Build_BIP_Cleanup_Stmts;
 
          --------------------
          -- Find_Last_Init --
@@ -2696,14 +2847,14 @@ package body Exp_Ch7 is
          --  Start of processing for Find_Last_Init
 
          begin
-            Last_Init   := Obj_Decl;
+            Last_Init   := Decl;
             Body_Insert := Empty;
 
             --  Objects that capture controlled function results do not require
             --  initialization.
 
-            if Nkind (Obj_Decl) = N_Object_Declaration
-              and then Nkind (Expression (Obj_Decl)) = N_Reference
+            if Nkind (Decl) = N_Object_Declaration
+              and then Nkind (Expression (Decl)) = N_Reference
             then
                return;
             end if;
@@ -2712,7 +2863,7 @@ package body Exp_Ch7 is
                Stmt := First (Actions (Freeze_Node (Obj_Id)));
                Body_Insert := Freeze_Node (Obj_Id);
             else
-               Stmt := Next_Suitable_Statement (Obj_Decl);
+               Stmt := Next_Suitable_Statement (Decl);
             end if;
 
             --  For an object with suppressed initialization, we check whether
@@ -2725,8 +2876,8 @@ package body Exp_Ch7 is
             --  call raises an exception, we will finalize the (uninitialized)
             --  object, which is wrong.
 
-            if Nkind (Obj_Decl) = N_Object_Declaration
-              and then No_Initialization (Obj_Decl)
+            if Nkind (Decl) = N_Object_Declaration
+              and then No_Initialization (Decl)
             then
                if No (Expression (Last_Init)) then
                   loop
@@ -2811,61 +2962,6 @@ package body Exp_Ch7 is
             end if;
          end Find_Last_Init;
 
-         -------------------------------
-         -- Make_Address_For_Finalize --
-         -------------------------------
-
-         function Make_Address_For_Finalize
-           (Loc     : Source_Ptr;
-            Obj_Ref : Node_Id;
-            Obj_Typ : Entity_Id) return Node_Id
-         is
-            Obj_Addr : Node_Id;
-
-         begin
-            Obj_Addr :=
-              Make_Attribute_Reference (Loc,
-                Prefix => Obj_Ref,
-                Attribute_Name => Name_Address);
-
-            --  If the type of a constrained array has an unconstrained first
-            --  subtype, its Finalize_Address primitive expects the address of
-            --  an object with a dope vector (see Make_Finalize_Address_Stmts).
-            --  This is achieved by setting Is_Constr_Subt_For_UN_Aliased, but
-            --  the address of the object is still that of its elements, so we
-            --  need to shift it.
-
-            if Is_Array_Type (Obj_Typ)
-              and then not Is_Constrained (First_Subtype (Obj_Typ))
-            then
-               --  Shift the address from the start of the elements to the
-               --  start of the dope vector:
-
-               --    V - (Obj_Typ'Descriptor_Size / Storage_Unit)
-
-               --  Note that this is done through a wrapper routine as  RTSfind
-               --  cannot retrieve operations with string name of the form "+".
-
-               Obj_Addr :=
-                 Make_Function_Call (Loc,
-                   Name                   =>
-                     New_Occurrence_Of (RTE (RE_Add_Offset_To_Address), Loc),
-                   Parameter_Associations => New_List (
-                     Obj_Addr,
-                     Make_Op_Minus (Loc,
-                       Make_Op_Divide (Loc,
-                         Left_Opnd  =>
-                           Make_Attribute_Reference (Loc,
-                             Prefix         =>
-                               New_Occurrence_Of (Obj_Typ, Loc),
-                             Attribute_Name => Name_Descriptor_Size),
-                         Right_Opnd =>
-                           Make_Integer_Literal (Loc, System_Storage_Unit)))));
-            end if;
-
-            return Obj_Addr;
-         end Make_Address_For_Finalize;
-
          --  Local variables
 
          Body_Ins           : Node_Id;
@@ -2913,30 +3009,31 @@ package body Exp_Ch7 is
             end if;
          end loop;
 
+         --  If the object is a Master_Node, then nothing to do, except if it
+         --  is the only object, in which case we move its declaration, call
+         --  marker (if any) and initialization call, as well as mark it to
+         --  avoid double processing.
+
+         if Is_RTE (Obj_Typ, RE_Master_Node) then
+            Master_Node_Id := Obj_Id;
+
+            if Counter_Val = 1 then
+               if Nkind (Next (Decl)) = N_Call_Marker then
+                  Prepend_To (Decls, Remove_Next (Next (Decl)));
+               end if;
+               Prepend_To (Decls, Remove_Next (Decl));
+               Remove (Decl);
+               Prepend_To (Decls, Decl);
+               Set_Is_Ignored_For_Finalization (Obj_Id);
+            end if;
+
          --  Create the declaration of the Master_Node for the object and
          --  insert it before the declaration of the object itself, except
          --  for the case where it is the only object because it will play
          --  the role of a degenerated scope master and therefore needs to
-         --  inserted at the same place the scope master would have been.
+         --  be inserted at the same place the scope master would have been.
 
-         if Present (Finalization_Master_Node_Or_Object (Obj_Id)) then
-            Master_Node_Id := Finalization_Master_Node_Or_Object (Obj_Id);
-
-            --  Move declaration, call marker if any and initialization call
-            --  and mark the Master_Node to avoid double processing
-
-            if Counter_Val = 1 then
-               Master_Node_Decl := Declaration_Node (Master_Node_Id);
-               if Nkind (Next (Master_Node_Decl)) = N_Call_Marker then
-                  Prepend_To (Decls, Remove_Next (Next (Master_Node_Decl)));
-               end if;
-               Prepend_To (Decls, Remove_Next (Master_Node_Decl));
-               Remove (Master_Node_Decl);
-               Prepend_To (Decls, Master_Node_Decl);
-               Set_Is_Ignored_For_Finalization (Master_Node_Id);
-            end if;
-
-         else
+         else pragma Assert (No (Finalization_Master_Node (Obj_Id)));
             --  For one object, use the Sloc the scope master would have had
 
             if Counter_Val = 1 then
@@ -2956,7 +3053,7 @@ package body Exp_Ch7 is
             if Counter_Val = 1 then
                Prepend_To (Decls, Master_Node_Decl);
             else
-               Insert_Before (Obj_Decl, Master_Node_Decl);
+               Insert_Before (Decl, Master_Node_Decl);
             end if;
             Analyze (Master_Node_Decl);
             Pop_Scope;
@@ -3004,7 +3101,7 @@ package body Exp_Ch7 is
          --  of the Master_Node after the declaration of the object itself.
 
          if No (Master_Node_Ins) then
-            Master_Node_Ins := Obj_Decl;
+            Master_Node_Ins := Decl;
          end if;
 
          --  Processing for simple protected objects. Such objects require
@@ -3041,17 +3138,17 @@ package body Exp_Ch7 is
                Set_Etype (Ren_Ref, Obj_Typ);
 
                if Is_Simple_Protected_Type (Obj_Typ) then
-                  Fin_Call := Cleanup_Protected_Object (Obj_Decl, Ren_Ref);
+                  Fin_Call := Cleanup_Protected_Object (Decl, Ren_Ref);
 
                   if Present (Fin_Call) then
                      Fin_Stmts := New_List (Fin_Call);
                   end if;
 
                elsif Is_Array_Type (Obj_Typ) then
-                  Fin_Stmts := Cleanup_Array (Obj_Decl, Ren_Ref, Obj_Typ);
+                  Fin_Stmts := Cleanup_Array (Decl, Ren_Ref, Obj_Typ);
 
                else
-                  Fin_Stmts := Cleanup_Record (Obj_Decl, Ren_Ref, Obj_Typ);
+                  Fin_Stmts := Cleanup_Record (Decl, Ren_Ref, Obj_Typ);
                end if;
 
                if No (Fin_Stmts) then
@@ -3116,81 +3213,6 @@ package body Exp_Ch7 is
                Master_Node_Ins := Fin_Body;
             end;
 
-         --  If we are dealing with a return object of a build-in-place
-         --  function, generate the following cleanup statements:
-
-         --    if BIPallocfrom > Secondary_Stack'Pos
-         --      and then BIPfinalizationmaster /= null
-         --    then
-         --       declare
-         --          type Ptr_Typ is access Obj_Typ;
-         --          for Ptr_Typ'Storage_Pool use
-         --                Base_Pool (BIPfinalizationmaster.all).all;
-         --       begin
-         --          Free (Ptr_Typ (Obj'Address));
-         --       end;
-         --    end if;
-
-         --  The generated code effectively detaches the temporary from the
-         --  caller finalization master and deallocates the object.
-
-         elsif Present (Func_Id)
-           and then Is_Build_In_Place_Function (Func_Id)
-           and then Needs_BIP_Finalization_Master (Func_Id)
-         then
-            declare
-               Ptr_Typ   : constant Node_Id := Make_Temporary (Loc, 'P');
-               Param     : constant Entity_Id :=
-                             Make_Defining_Identifier (Loc, Name_V);
-
-               Fin_Body  : Node_Id;
-               Fin_Stmts : List_Id;
-
-            begin
-               Fin_Stmts := Make_Finalize_Address_Stmts (Obj_Typ);
-
-               Append_To (Fin_Stmts,
-                 Build_BIP_Cleanup_Stmts
-                   (Func_Id, New_Occurrence_Of (Param, Loc)));
-
-               Fin_Id :=
-                 Make_Defining_Identifier (Loc,
-                   Make_TSS_Name_Local
-                     (Obj_Typ, TSS_Finalize_Address));
-
-               Fin_Body :=
-                 Make_Subprogram_Body (Loc,
-                   Specification =>
-                    Make_Procedure_Specification (Loc,
-                      Defining_Unit_Name => Fin_Id,
-
-                      Parameter_Specifications => New_List (
-                        Make_Parameter_Specification (Loc,
-                          Defining_Identifier => Param,
-                          Parameter_Type =>
-                            New_Occurrence_Of (RTE (RE_Address), Loc)))),
-
-                Declarations => New_List (
-                  Make_Full_Type_Declaration (Loc,
-                    Defining_Identifier => Ptr_Typ,
-                    Type_Definition     =>
-                      Make_Access_To_Object_Definition (Loc,
-                        All_Present        => True,
-                        Subtype_Indication =>
-                          New_Occurrence_Of (Obj_Typ, Loc)))),
-
-                  Handled_Statement_Sequence =>
-                    Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements => Fin_Stmts));
-
-               Push_Scope (Scope (Obj_Id));
-               Insert_After_And_Analyze
-                 (Master_Node_Ins, Fin_Body, Suppress => All_Checks);
-               Pop_Scope;
-
-               Master_Node_Ins := Fin_Body;
-            end;
-
          else
             Fin_Id := Finalize_Address (Obj_Typ);
 
@@ -3207,9 +3229,9 @@ package body Exp_Ch7 is
          if Counter_Val = 1 then
             --  Finalize_Address is not generated in CodePeer mode because the
             --  body contains address arithmetic. So we don't want to generate
-            --  the attach in this case.
+            --  the attach in this case. Ditto if the object is a Master_Node.
 
-            if CodePeer_Mode then
+            if CodePeer_Mode or else Obj_Id = Master_Node_Id then
                Master_Node_Attach := Make_Null_Statement (Loc);
             else
                Master_Node_Attach :=
@@ -3257,12 +3279,26 @@ package body Exp_Ch7 is
             end if;
 
             Append_To (Finalizer_Stmts, Fin_Call);
+
          else
+            --  If the object is a Master_Node, we just need to chain it
+
+            if Obj_Id = Master_Node_Id then
+               Master_Node_Attach :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   =>
+                     New_Occurrence_Of (RTE (RE_Chain_Node_To_Master), Loc),
+                     Parameter_Associations => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Obj_Id, Loc),
+                       Attribute_Name => Name_Unrestricted_Access),
+                     New_Occurrence_Of (Finalization_Scope_Master, Loc)));
+
             --  Finalize_Address is not generated in CodePeer mode because the
             --  body contains address arithmetic. So we don't want to generate
             --  the attach in this case.
 
-            if CodePeer_Mode then
+            elsif CodePeer_Mode then
                Master_Node_Attach := Make_Null_Statement (Loc);
             else
                Master_Node_Attach :=
@@ -5390,14 +5426,19 @@ package body Exp_Ch7 is
          begin
             --  If the object needs to be exported to the outer finalizer,
             --  create the declaration of the Master_Node for the object,
-            --  which will later be picked up by Build_Finalizer. Then add
-            --  the finalization call for the object.
+            --  which will later be picked up by Build_Finalizer.
 
             if Must_Export then
                Master_Node_Id := Make_Temporary (Loc, 'N');
                Master_Node_Decl :=
                  Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj_Id);
                Insert_Before_And_Analyze (Obj_Decl, Master_Node_Decl);
+
+               --  Generate the attachment of the object to the Master_Node
+
+               Attach_Object_To_Master_Node (Obj_Decl, Master_Node_Id);
+
+               --  Then add the finalization call for the object
 
                Insert_After_And_Analyze (Insert_Nod,
                  Make_Procedure_Call_Statement (Loc,
@@ -5623,6 +5664,60 @@ package body Exp_Ch7 is
           and then not Has_Entries (T)
           and then Is_RTE (Find_Protection_Type (T), RE_Protection);
    end Is_Simple_Protected_Type;
+
+   -------------------------------
+   -- Make_Address_For_Finalize --
+   -------------------------------
+
+   function Make_Address_For_Finalize
+     (Loc     : Source_Ptr;
+      Obj_Ref : Node_Id;
+      Obj_Typ : Entity_Id) return Node_Id
+   is
+      Obj_Addr : Node_Id;
+
+   begin
+      Obj_Addr :=
+        Make_Attribute_Reference (Loc,
+          Prefix => Obj_Ref,
+          Attribute_Name => Name_Address);
+
+      --  If the type of a constrained array has an unconstrained first
+      --  subtype, its Finalize_Address primitive expects the address of
+      --  an object with a dope vector (see Make_Finalize_Address_Stmts).
+      --  This is achieved by setting Is_Constr_Array_Subt_With_Bounds,
+      --  but the address of the object is still that of its elements,
+      --  so we need to shift it.
+
+      if Is_Array_Type (Obj_Typ)
+        and then not Is_Constrained (First_Subtype (Obj_Typ))
+      then
+         --  Shift the address from the start of the elements to the
+         --  start of the dope vector:
+
+         --    V - (Obj_Typ'Descriptor_Size / Storage_Unit)
+
+         --  Note that this is done through a wrapper routine as  RTSfind
+         --  cannot retrieve operations with string name of the form "+".
+
+         Obj_Addr :=
+           Make_Function_Call (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Add_Offset_To_Address), Loc),
+             Parameter_Associations => New_List (
+               Obj_Addr,
+               Make_Op_Minus (Loc,
+                 Make_Op_Divide (Loc,
+                   Left_Opnd  =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Obj_Typ, Loc),
+                       Attribute_Name => Name_Descriptor_Size),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, System_Storage_Unit)))));
+      end if;
+
+      return Obj_Addr;
+   end Make_Address_For_Finalize;
 
    -----------------------
    -- Make_Adjust_Call --
@@ -8644,10 +8739,7 @@ package body Exp_Ch7 is
       Obj         : Entity_Id) return Node_Id
    is
    begin
-      Set_Finalization_Master_Node_Or_Object (Obj, Master_Node);
-
-      Mutate_Ekind (Master_Node, E_Variable);
-      Set_Finalization_Master_Node_Or_Object (Master_Node, Obj);
+      Set_Finalization_Master_Node (Obj, Master_Node);
 
       return
         Make_Object_Declaration (Loc,
@@ -8707,6 +8799,8 @@ package body Exp_Ch7 is
      (Loc : Source_Ptr;
       Obj : Entity_Id) return Node_Id
    is
+      Obj_Decl : constant Node_Id := Declaration_Node (Obj);
+
       Master_Node_Decl : Node_Id;
       Master_Node_Id   : Entity_Id;
 
@@ -8714,14 +8808,18 @@ package body Exp_Ch7 is
       --  Create the declaration of the Master_Node for the object and
       --  insert it before the declaration of the object itself.
 
-      if Present (Finalization_Master_Node_Or_Object (Obj)) then
-         Master_Node_Id := Finalization_Master_Node_Or_Object (Obj);
+      if Present (Finalization_Master_Node (Obj)) then
+         Master_Node_Id := Finalization_Master_Node (Obj);
 
       else
          Master_Node_Id := Make_Temporary (Loc, 'N');
          Master_Node_Decl :=
            Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj);
-         Insert_Before_And_Analyze (Declaration_Node (Obj), Master_Node_Decl);
+         Insert_Before_And_Analyze (Obj_Decl, Master_Node_Decl);
+
+         --  Generate the attachment of the object to the Master_Node
+
+         Attach_Object_To_Master_Node (Obj_Decl, Master_Node_Id);
 
          --  Mark the object to avoid double finalization
 

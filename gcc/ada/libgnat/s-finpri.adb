@@ -47,9 +47,7 @@ package body System.Finalization_Primitives is
    is
    begin
       Attach_Object_To_Node (Object_Address, Finalize_Address, Node.all);
-
-      Node.Next   := Master.Head;
-      Master.Head := Node;
+      Chain_Node_To_Master (Node, Master);
    end Attach_Object_To_Master;
 
    ---------------------------
@@ -68,6 +66,19 @@ package body System.Finalization_Primitives is
       Node.Object_Address   := Object_Address;
       Node.Finalize_Address := Finalize_Address;
    end Attach_Object_To_Node;
+
+   --------------------------
+   -- Chain_Node_To_Master --
+   --------------------------
+
+   procedure Chain_Node_To_Master
+     (Node   : not null Master_Node_Ptr;
+      Master : in out Finalization_Scope_Master)
+   is
+   begin
+      Node.Next   := Master.Head;
+      Master.Head := Node;
+   end Chain_Node_To_Master;
 
    ---------------------
    -- Finalize_Master --
@@ -90,12 +101,6 @@ package body System.Finalization_Primitives is
 
       if Master.Exceptions_OK then
          while Node /= null loop
-            --  Check that the Master_Node has a nonnull address
-
-            if Node.Object_Address = System.Null_Address then
-               raise Program_Error with "finalize with null address";
-            end if;
-
             begin
                Finalize_Object (Node.all);
 
@@ -124,12 +129,6 @@ package body System.Finalization_Primitives is
 
       else
          while Node /= null loop
-            --  Check that the Master_Node has a nonnull address
-
-            if Node.Object_Address = System.Null_Address then
-               raise Program_Error with "finalize with null address";
-            end if;
-
             Finalize_Object (Node.all);
 
             Node := Node.Next;
@@ -159,7 +158,10 @@ package body System.Finalization_Primitives is
 
    begin
       if FA /= null then
+         pragma Assert (Node.Object_Address /= System.Null_Address);
+
          Node.Finalize_Address := null;
+
          FA (Node.Object_Address);
       end if;
    end Finalize_Object;

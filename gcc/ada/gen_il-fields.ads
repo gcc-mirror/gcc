@@ -538,7 +538,7 @@ package Gen_IL.Fields is
       Extra_Formal,
       Extra_Formals,
       Finalization_Master,
-      Finalization_Master_Node_Or_Object,
+      Finalization_Master_Node,
       Finalize_Storage_Only,
       Finalizer,
       First_Entity,

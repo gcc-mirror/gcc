@@ -79,7 +79,16 @@ package System.Finalization_Primitives with Preelaborate is
       Finalize_Address : not null Finalize_Address_Ptr;
       Node             : in out Master_Node);
    --  Associates a controlled object with its master node only. This is used
-   --  when there is a single object to be finalized in the context.
+   --  when there is a single object to be finalized in the context, as well as
+   --  for objects that need special processing (return object in an extended
+   --  return statement or transient objects).
+
+   procedure Chain_Node_To_Master
+     (Node   : not null Master_Node_Ptr;
+      Master : in out Finalization_Scope_Master);
+   --  Chain a master node to the given master. This is used to chain the node
+   --  to the master of the enclosing scope for the objects that need special
+   --  processing mentioned for Attach_Object_To_Node.
 
    procedure Finalize_Master (Master : in out Finalization_Scope_Master);
    --  Finalizes each of the controlled objects associated with Master, in the
@@ -125,6 +134,7 @@ private
 
    pragma Inline (Attach_Object_To_Master);
    pragma Inline (Attach_Object_To_Node);
+   pragma Inline (Chain_Node_To_Master);
    pragma Inline (Finalize_Object);
    pragma Inline (Suppress_Object_Finalize_At_End);
 

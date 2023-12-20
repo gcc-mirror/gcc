@@ -12953,11 +12953,10 @@ package body Exp_Util is
 
             --  Conversely, if one of the above cases created a Master_Node,
             --  finalization actions are required for the associated object.
-            --  Note that we need to make sure that we will not process both
-            --  the Master_Node and the associated object here.
 
-            elsif Present (Finalization_Master_Node_Or_Object (Obj_Id)) then
-               pragma Assert (Is_RTE (Obj_Typ, RE_Master_Node));
+            elsif Ekind (Obj_Id) = E_Variable
+              and then Is_RTE (Obj_Typ, RE_Master_Node)
+            then
                return True;
 
             --  Ignored Ghost objects do not need any cleanup actions because

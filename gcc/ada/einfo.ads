@@ -1305,15 +1305,13 @@ package Einfo is
 --       type. Empty for access-to-subprogram types. Empty for access types
 --       whose designated type does not need finalization actions.
 
---    Finalization_Master_Node_Or_Object
+--    Finalization_Master_Node
 --       Defined in variables and constants that require finalization actions.
 --       The field contains the entity of an object (called a Master_Node) that
 --       contains the address of the finalizable object, along with an access
 --       value denoting the finalizable object's finalization procedure. The
 --       Master_Node may be attached to a finalization list associated with
 --       either the global scope or some dynamic scope (block or subprogram).
---       Conversely, for a Master_Node entity, the field contains the entity
---       of the finalizable object.
 
 --    Finalize_Storage_Only [base type only]
 --       Defined in all types. Set on direct controlled types to which a
@@ -5304,7 +5302,7 @@ package Einfo is
    --    Related_Type                          (constants only)
    --    Initialization_Statements
    --    BIP_Initialization_Call
-   --    Finalization_Master_Node_Or_Object
+   --    Finalization_Master_Node
    --    Last_Aggregate_Assignment
    --    Activation_Record_Component
    --    Encapsulating_State                   (constants only)
@@ -6191,7 +6189,7 @@ package Einfo is
    --    Related_Type
    --    Initialization_Statements
    --    BIP_Initialization_Call
-   --    Finalization_Master_Node_Or_Object
+   --    Finalization_Master_Node
    --    Last_Aggregate_Assignment
    --    Activation_Record_Component
    --    Encapsulating_State
