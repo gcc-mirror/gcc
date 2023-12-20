@@ -1401,8 +1401,29 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	      add_phi_arg (phi, m_data[save_data_cnt], edge_false,
 			   UNKNOWN_LOCATION);
 	      add_phi_arg (phi, ext, edge_true_true, UNKNOWN_LOCATION);
-	      g = gimple_build_assign (m_data[save_data_cnt + 1], t4);
-	      insert_before (g);
+	      if (!save_cast_conditional)
+		{
+		  g = gimple_build_assign (m_data[save_data_cnt + 1], t4);
+		  insert_before (g);
+		}
+	      else
+		for (basic_block bb = gsi_bb (m_gsi);;)
+		  {
+		    edge e1 = single_succ_edge (bb);
+		    edge e2 = find_edge (e1->dest, m_bb), e3;
+		    tree t5 = (e2 ? m_data[save_data_cnt + 1]
+			       : make_ssa_name (m_limb_type));
+		    phi = create_phi_node (t5, e1->dest);
+		    edge_iterator ei;
+		    FOR_EACH_EDGE (e3, ei, e1->dest->preds)
+		      add_phi_arg (phi, (e3 == e1 ? t4
+					 : build_zero_cst (m_limb_type)),
+				   e3, UNKNOWN_LOCATION);
+		    if (e2)
+		      break;
+		    t4 = t5;
+		    bb = e1->dest;
+		  }
 	    }
 	  if (m_bitfld_load)
 	    {
@@ -1470,6 +1491,8 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 		m_data_cnt = tree_to_uhwi (m_data[save_data_cnt + 2]);
 	      if (TYPE_UNSIGNED (rhs_type))
 		t = build_zero_cst (m_limb_type);
+	      else if (m_bb)
+		t = m_data[save_data_cnt];
 	      else
 		t = m_data[save_data_cnt + 1];
 	    }
@@ -2586,6 +2609,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		m_gsi = gsi_after_labels (edge_bb);
 	      else
 		m_gsi = gsi_for_stmt (stmt);
+	      m_bb = NULL;
 	    }
 	}
     }
@@ -2712,6 +2736,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 				     NULL_TREE, NULL_TREE);
 	      insert_before (g);
 	      m_gsi = gsi_for_stmt (stmt);
+	      m_bb = NULL;
 	    }
 	}
     }
@@ -2890,6 +2915,7 @@ bitint_large_huge::lower_comparison_stmt (gimple *stmt, tree_code &cmp_code,
 	  extract_true_false_edges_from_block (gsi_bb (m_gsi),
 					       &true_edge, &false_edge);
 	  m_gsi = gsi_after_labels (false_edge->dest);
+	  m_bb = NULL;
 	}
     }
 
@@ -4208,6 +4234,7 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 				     NULL_TREE, NULL_TREE);
 	      insert_before (g);
 	      m_gsi = gsi_for_stmt (final_stmt);
+	      m_bb = NULL;
 	    }
 	}
     }
@@ -4405,6 +4432,7 @@ bitint_large_huge::lower_mul_overflow (tree obj, gimple *stmt)
 						       &true_edge,
 						       &false_edge);
 		  m_gsi = gsi_after_labels (false_edge->dest);
+		  m_bb = NULL;
 		}
 	    }
 
@@ -4744,6 +4772,7 @@ bitint_large_huge::lower_bit_query (gimple *stmt)
 		    m_gsi = gsi_after_labels (edge_bb);
 		  else
 		    m_gsi = gsi_for_stmt (stmt);
+		  m_bb = NULL;
 		}
 	    }
 	}
@@ -4905,6 +4934,7 @@ bitint_large_huge::lower_bit_query (gimple *stmt)
 	      extract_true_false_edges_from_block (gsi_bb (m_gsi),
 						   &true_edge, &false_edge);
 	      m_gsi = gsi_after_labels (false_edge->dest);
+	      m_bb = NULL;
 	    }
 	}
     }
