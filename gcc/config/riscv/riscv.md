@@ -86,6 +86,9 @@
 
   ;; String unspecs
   UNSPEC_STRLEN
+
+  ;; Workaround for HFmode without hardware extension
+  UNSPEC_FMV_SFP16_X
 ])
 
 (define_c_enum "unspecv" [
@@ -1923,6 +1926,14 @@
   [(set_attr "move_type" "fmove,move,load,store,mtc,mfc")
    (set_attr "type" "fmove")
    (set_attr "mode" "HF")])
+
+(define_insn "*movhf_softfloat_boxing"
+  [(set (match_operand:HF 0 "register_operand"            "=f")
+        (unspec:HF [(match_operand:X 1 "register_operand" " r")] UNSPEC_FMV_SFP16_X))]
+  "!TARGET_ZFHMIN"
+  "fmv.w.x\t%0,%1"
+  [(set_attr "type" "fmove")
+   (set_attr "mode" "SF")])
 
 ;;
 ;;  ....................
