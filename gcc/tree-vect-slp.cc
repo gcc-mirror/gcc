@@ -8634,10 +8634,21 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
     for (unsigned i = 0; i < dr_chain.length (); ++i)
       if (!bitmap_bit_p (used_defs, i))
 	{
-	  gimple *stmt = SSA_NAME_DEF_STMT (dr_chain[i]);
-	  gimple_stmt_iterator rgsi = gsi_for_stmt (stmt);
-	  gsi_remove (&rgsi, true);
-	  release_defs (stmt);
+	  tree def = dr_chain[i];
+	  do
+	    {
+	      gimple *stmt = SSA_NAME_DEF_STMT (def);
+	      if (is_gimple_assign (stmt)
+		  && (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
+		      || gimple_assign_rhs_code (stmt) == CONSTRUCTOR))
+		def = single_ssa_tree_operand (stmt, SSA_OP_USE);
+	      else
+		def = NULL;
+	      gimple_stmt_iterator rgsi = gsi_for_stmt (stmt);
+	      gsi_remove (&rgsi, true);
+	      release_defs (stmt);
+	    }
+	  while (def);
 	}
 
   return true;
