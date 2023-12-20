@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
    the unspec enum in riscv.md, subsequent to UNSPEC_ADDRESS_FIRST.  */
 enum riscv_symbol_type {
   SYMBOL_ABSOLUTE,
+  SYMBOL_FORCE_TO_MEM,
   SYMBOL_PCREL,
   SYMBOL_GOT_DISP,
   SYMBOL_TLS,

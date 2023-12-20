@@ -296,6 +296,9 @@ bool riscv_user_wants_strict_align;
 /* Stack alignment to assume/maintain.  */
 unsigned riscv_stack_boundary;
 
+/* Whether in riscv_output_mi_thunk. */
+static bool riscv_in_thunk_func = false;
+
 /* If non-zero, this is an offset to be added to SP to redefine the CFA
    when restoring the FP register from the stack.  Only valid when generating
    the epilogue.  */
@@ -878,7 +881,17 @@ riscv_classify_symbol (const_rtx x)
   if (GET_CODE (x) == SYMBOL_REF && flag_pic && !riscv_symbol_binds_local_p (x))
     return SYMBOL_GOT_DISP;
 
-  return riscv_cmodel == CM_MEDLOW ? SYMBOL_ABSOLUTE : SYMBOL_PCREL;
+  switch (riscv_cmodel)
+    {
+    case CM_MEDLOW:
+      return SYMBOL_ABSOLUTE;
+    case CM_LARGE:
+      if (SYMBOL_REF_P (x))
+	return CONSTANT_POOL_ADDRESS_P (x) ? SYMBOL_PCREL : SYMBOL_FORCE_TO_MEM;
+      return SYMBOL_PCREL;
+    default:
+      return SYMBOL_PCREL;
+    }
 }
 
 /* Classify the base of symbolic expression X.  */
@@ -942,6 +955,7 @@ static int riscv_symbol_insns (enum riscv_symbol_type type)
     case SYMBOL_PCREL: return 2; /* AUIPC + the reference.  */
     case SYMBOL_TLS_LE: return 3; /* LUI + ADD TP + the reference.  */
     case SYMBOL_GOT_DISP: return 3; /* AUIPC + LD GOT + the reference.  */
+    case SYMBOL_FORCE_TO_MEM: return 3; /* AUIPC + LD + the reference.  */
     default: gcc_unreachable ();
     }
 }
@@ -1111,6 +1125,9 @@ riscv_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
   split_const (x, &base, &offset);
   if (riscv_symbolic_constant_p (base, &type))
     {
+      if (type == SYMBOL_FORCE_TO_MEM)
+	return false;
+
       /* As an optimization, don't spill symbolic constants that are as
 	 cheap to rematerialize as to access in the constant pool.  */
       if (SMALL_OPERAND (INTVAL (offset)) && riscv_symbol_insns (type) > 0)
@@ -1938,6 +1955,9 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
   if (low_out)
     switch (symbol_type)
       {
+      case SYMBOL_FORCE_TO_MEM:
+	return false;
+
       case SYMBOL_ABSOLUTE:
 	{
 	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
@@ -2095,7 +2115,20 @@ static rtx
 riscv_force_address (rtx x, machine_mode mode)
 {
   if (!riscv_legitimate_address_p (mode, x, false))
-    x = force_reg (Pmode, x);
+    {
+      if (can_create_pseudo_p ())
+	return force_reg (Pmode, x);
+      else
+	{
+	  /* It's only safe for the thunk function.
+	     Use ra as the temp regiater.  */
+	  gcc_assert (riscv_in_thunk_func);
+	  rtx reg = RISCV_PROLOGUE_TEMP2 (Pmode);
+	  riscv_emit_move (reg, x);
+	  return reg;
+	}
+    }
+
   return x;
 }
 
@@ -5938,6 +5971,12 @@ riscv_size_ok_for_small_data_p (int size)
 static bool
 riscv_in_small_data_p (const_tree x)
 {
+  /* Because default_use_anchors_for_symbol_p doesn't gather small data to use
+     the anchor symbol to address nearby objects.  In large model, it can get
+     the better result using the anchor optiomization.  */
+  if (riscv_cmodel == CM_LARGE)
+    return false;
+
   if (TREE_CODE (x) == STRING_CST || TREE_CODE (x) == FUNCTION_DECL)
     return false;
 
@@ -6003,12 +6042,32 @@ riscv_unique_section (tree decl, int reloc)
   default_unique_section (decl, reloc);
 }
 
+/* Constant pools are per-function when in large code model.  */
+
+static inline bool
+riscv_can_use_per_function_literal_pools_p (void)
+{
+  return riscv_cmodel == CM_LARGE;
+}
+
+static bool
+riscv_use_blocks_for_constant_p (machine_mode, const_rtx)
+{
+  /* We can't use blocks for constants when we're using a per-function
+     constant pool.  */
+  return !riscv_can_use_per_function_literal_pools_p ();
+}
+
 /* Return a section for X, handling small data. */
 
 static section *
 riscv_elf_select_rtx_section (machine_mode mode, rtx x,
 			      unsigned HOST_WIDE_INT align)
 {
+  /* The literal pool stays with the function.  */
+  if (riscv_can_use_per_function_literal_pools_p ())
+    return function_section (current_function_decl);
+
   section *s = default_elf_select_rtx_section (mode, x, align);
 
   if (riscv_size_ok_for_small_data_p (GET_MODE_SIZE (mode).to_constant ()))
@@ -8513,6 +8572,8 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   rtx this_rtx, temp1, temp2, fnaddr;
   rtx_insn *insn;
 
+  riscv_in_thunk_func = true;
+
   /* Pretend to be a post-reload pass while generating rtl.  */
   reload_completed = 1;
 
@@ -8579,6 +8640,7 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Clean up the vars set above.  Note that final_end_function resets
      the global pointer for us.  */
   reload_completed = 0;
+  riscv_in_thunk_func = false;
 }
 
 /* Allocate a chunk of memory for per-function machine-dependent data.  */
@@ -8720,6 +8782,18 @@ riscv_option_override (void)
 
   if (flag_pic)
     g_switch_value = 0;
+
+  /* Always prefer medlow than medany for RV32 since medlow can access
+     full address space. */
+  if (riscv_cmodel == CM_LARGE && !TARGET_64BIT)
+    riscv_cmodel = CM_MEDLOW;
+
+  if (riscv_cmodel == CM_LARGE && TARGET_EXPLICIT_RELOCS)
+    sorry ("code model %qs with %qs", "large", "-mexplicit-relocs");
+
+  if (riscv_cmodel == CM_LARGE && flag_pic)
+    sorry ("code model %qs with %qs", "large",
+	   global_options.x_flag_pic > 1 ? "-fPIC" : "-fpic");
 
   if (flag_pic)
     riscv_cmodel = CM_PIC;
@@ -9093,6 +9167,12 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 
   /* Don't use sibcall for interrupt functions.  */
   if (cfun->machine->interrupt_handler_p)
+    return false;
+
+  /* Don't use sibcalls in the large model, because a sibcall instruction
+     expanding and a epilogue expanding both use RISCV_PROLOGUE_TEMP
+     register.  */
+  if (riscv_cmodel == CM_LARGE)
     return false;
 
   return true;
@@ -10548,7 +10628,7 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
 #define TARGET_LEGITIMATE_CONSTANT_P riscv_legitimate_constant_p
 
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
-#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_const_rtx_true
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P riscv_use_blocks_for_constant_p
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	riscv_legitimate_address_p
