@@ -1592,6 +1592,7 @@ C++ header file to be turned into a precompiled header or Ada spec.
 @item @var{file}.f
 @itemx @var{file}.for
 @itemx @var{file}.ftn
+@itemx @var{file}.fi
 Fixed form Fortran source code that should not be preprocessed.
 
 @item @var{file}.F
@@ -1606,6 +1607,7 @@ preprocessor).
 @itemx @var{file}.f95
 @itemx @var{file}.f03
 @itemx @var{file}.f08
+@itemx @var{file}.fii
 Free form Fortran source code that should not be preprocessed.
 
 @item @var{file}.F90

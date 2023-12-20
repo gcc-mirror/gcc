@@ -199,6 +199,12 @@ form_from_filename (const char *filename)
     ".f08", FORM_FREE}
     ,
     {
+    ".fii", FORM_FREE}
+    ,
+    {
+    ".fi", FORM_FIXED}
+    ,
+    {
     ".f", FORM_FIXED}
     ,
     {
