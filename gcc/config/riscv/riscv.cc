@@ -2693,14 +2693,22 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 
 	      if (i == 1)
 		{
-		  rtx tmp = expand_binop (Pmode, ashl_optab,
-					  gen_lowpart (Pmode, result),
-					  gen_int_mode (32, Pmode), NULL_RTX, 0,
-					  OPTAB_DIRECT);
-		  rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, int_reg,
-					   NULL_RTX, 0,
-					   OPTAB_DIRECT);
-		  emit_move_insn (int_reg, tmp2);
+		  if (UNITS_PER_WORD < mode_size)
+		    /* If Pmode = SImode and mode = DImode, we just need to
+		       extract element of index = 1 from the vector and move it
+		       into the highpart of the DEST since DEST consists of 2
+		       scalar registers.  */
+		    emit_move_insn (gen_highpart (smode, int_reg), result);
+		  else
+		    {
+		      rtx tmp = expand_binop (Pmode, ashl_optab,
+					      gen_lowpart (Pmode, result),
+					      gen_int_mode (32, Pmode),
+					      NULL_RTX, 0, OPTAB_DIRECT);
+		      rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, int_reg,
+					       NULL_RTX, 0, OPTAB_DIRECT);
+		      emit_move_insn (int_reg, tmp2);
+		    }
 		}
 	    }
 
