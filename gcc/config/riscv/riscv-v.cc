@@ -3750,6 +3750,16 @@ void
 expand_select_vl (rtx *ops)
 {
   poly_int64 nunits = rtx_to_poly_int64 (ops[2]);
+  if (CONST_INT_P (ops[1]) && known_le (INTVAL (ops[1]), nunits))
+    {
+      /* If length is known <= VF, we just use the length directly instead
+	 of using vsetvli.
+
+	 E.g. _255 = .SELECT_VL (3, POLY_INT_CST [4, 4]);
+	 We move 3 into _255 intead of using explicit vsetvl.  */
+      emit_move_insn (ops[0], ops[1]);
+      return;
+    }
   /* We arbitrary picked QImode as inner scalar mode to get vector mode.
      since vsetvl only demand ratio. We let VSETVL PASS to optimize it.  */
   scalar_int_mode mode = QImode;
