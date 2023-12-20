@@ -8096,8 +8096,9 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
   if (!riscv_macro_fusion_p ())
     return false;
 
-  if (simple_sets_p && (riscv_fusion_enabled_p (RISCV_FUSE_ZEXTW) ||
-			riscv_fusion_enabled_p (RISCV_FUSE_ZEXTH)))
+  if (simple_sets_p
+      && (riscv_fusion_enabled_p (RISCV_FUSE_ZEXTW)
+	  || riscv_fusion_enabled_p (RISCV_FUSE_ZEXTWS)))
     {
       /* We are trying to match the following:
 	   prev (slli) == (set (reg:DI rD)
