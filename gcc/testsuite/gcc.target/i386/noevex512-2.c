@@ -8,6 +8,6 @@ foo (long long c)
 {
   register long long a __asm ("k7") = c;
   long long b = foo (a);
-  asm volatile ("" : "+k" (b)); /* { dg-error "inconsistent operand constraints in an 'asm'" } */
+  asm volatile ("" : "+k" (b));
   return b;
 }
