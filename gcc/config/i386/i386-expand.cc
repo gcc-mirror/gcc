@@ -21173,6 +21173,74 @@ expand_vec_perm_pshuflw_pshufhw (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Try to permute 2 64-bit vectors by punpckldq + 128-bit vector shuffle.  */
+static bool
+expand_vec_perm_punpckldq_pshuf (struct expand_vec_perm_d *d)
+{
+  if (GET_MODE_BITSIZE (d->vmode) != 64
+      || !TARGET_MMX_WITH_SSE
+      || d->one_operand_p)
+    return false;
+
+  machine_mode widen_vmode;
+  switch (d->vmode)
+    {
+    /* pshufd.  */
+    case E_V2SImode:
+      widen_vmode = V4SImode;
+      break;
+
+    /* pshufd.  */
+    case E_V2SFmode:
+      widen_vmode = V4SFmode;
+      break;
+
+    case E_V4HImode:
+      widen_vmode = V8HImode;
+      /* pshufb.  */
+      if (!TARGET_SSSE3)
+	return false;
+      break;
+
+    case E_V8QImode:
+      /* pshufb.  */
+      widen_vmode = V16QImode;
+      if (!TARGET_SSSE3)
+	return false;
+      break;
+
+    default:
+      return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  struct expand_vec_perm_d dperm;
+  dperm.target = gen_reg_rtx (widen_vmode);
+  rtx op0 = gen_reg_rtx (widen_vmode);
+  emit_move_insn (op0, gen_rtx_VEC_CONCAT (widen_vmode, d->op0, d->op1));
+  dperm.op0 = op0;
+  dperm.op1 = op0;
+  dperm.vmode = widen_vmode;
+  unsigned nelt = GET_MODE_NUNITS (widen_vmode);
+  dperm.nelt = nelt;
+  dperm.one_operand_p = true;
+  dperm.testing_p = false;
+
+  for (unsigned i = 0; i != nelt / 2; i++)
+    {
+      dperm.perm[i] = d->perm[i];
+      dperm.perm[i + nelt / 2] = d->perm[i];
+    }
+
+  gcc_assert (expand_vec_perm_1 (&dperm));
+  emit_move_insn (d->target, lowpart_subreg (d->vmode,
+					     dperm.target,
+					     dperm.vmode));
+  return true;
+}
+
 /* A subroutine of ix86_expand_vec_perm_const_1.  Try to simplify
    the permutation using the SSSE3 palignr instruction.  This succeeds
    when all of the elements in PERM fit within one vector and we merely
@@ -23683,6 +23751,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     return true;
 
   if (expand_vec_perm_shufps_shufps (d))
+    return true;
+
+  if (expand_vec_perm_punpckldq_pshuf (d))
     return true;
 
   /* Try sequences of three instructions.  */
