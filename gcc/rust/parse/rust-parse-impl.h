@@ -5492,12 +5492,12 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
       AST::AttrVec inner_attrs = parse_inner_attributes ();
 
       // parse trait impl items
-      std::vector<std::unique_ptr<AST::TraitImplItem>> impl_items;
+      std::vector<std::unique_ptr<AST::AssociatedItem>> impl_items;
 
       const_TokenPtr t = lexer.peek_token ();
       while (t->get_id () != RIGHT_CURLY)
 	{
-	  std::unique_ptr<AST::TraitImplItem> impl_item
+	  std::unique_ptr<AST::AssociatedItem> impl_item
 	    = parse_trait_impl_item ();
 
 	  if (impl_item == nullptr)
@@ -5759,7 +5759,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
 
 // Parses a single trait impl item (item inside a trait impl block).
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::TraitImplItem>
+std::unique_ptr<AST::AssociatedItem>
 Parser<ManagedTokenSource>::parse_trait_impl_item ()
 {
   // parse outer attributes (if they exist)
@@ -5836,7 +5836,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
  * smaller ones and prevents duplication of logic. Strictly, this parses a
  * function or method item inside a trait impl item block. */
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::TraitImplItem>
+std::unique_ptr<AST::AssociatedItem>
 Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   AST::Visibility vis, AST::AttrVec outer_attrs)
 {
