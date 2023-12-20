@@ -433,6 +433,7 @@ public:
   bool single_step_npatterns_p () const;
   bool npatterns_all_equal_p () const;
   bool interleaved_stepped_npatterns_p () const;
+  bool npatterns_vid_diff_repeated_p () const;
 
   machine_mode new_mode () const { return m_new_mode; }
   scalar_mode inner_mode () const { return m_inner_mode; }
@@ -666,6 +667,43 @@ rvv_builder::single_step_npatterns_p () const
       if (maybe_ne (step, diff1) || maybe_ne (step, diff2))
 	return false;
     }
+  return true;
+}
+
+/* Return true if the diff between const vector and vid sequence
+   is repeated. For example as below cases:
+   The diff means the const vector - vid.
+     CASE 1:
+     CONST VECTOR: {3, 2, 1, 0, 7, 6, 5, 4, ... }
+     VID         : {0, 1, 2, 3, 4, 5, 6, 7, ... }
+     DIFF(MINUS) : {3, 1,-1,-3, 3, 1,-1,-3, ... }
+     The diff sequence {3, 1,-1,-3} is repeated in the npattern and
+     return TRUE for case 1.
+
+     CASE 2:
+     CONST VECTOR: {-4, 4,-3, 5,-2, 6,-1, 7, ...}
+     VID         : { 0, 1, 2, 3, 4, 5, 6, 7, ... }
+     DIFF(MINUS) : {-4, 3,-5,-2,-6, 1,-7, 0, ... }
+     The diff sequence {-4, 3} is not repated in the npattern and
+     return FALSE for case 2.  */
+bool
+rvv_builder::npatterns_vid_diff_repeated_p () const
+{
+  if (nelts_per_pattern () != 3)
+    return false;
+  else if (npatterns () == 0)
+    return false;
+
+  for (unsigned i = 0; i < npatterns (); i++)
+    {
+      poly_int64 diff_0 = rtx_to_poly_int64 (elt (i)) - i;
+      poly_int64 diff_1
+	= rtx_to_poly_int64 (elt (npatterns () + i)) - npatterns () - i;
+
+      if (maybe_ne (diff_0, diff_1))
+	return false;
+    }
+
   return true;
 }
 
@@ -1257,24 +1295,65 @@ expand_const_vector (rtx target, rtx src)
 	  else
 	    {
 	      /* Generate the variable-length vector following this rule:
-		 { a, b, a, b, a + step, b + step, a + step*2, b + step*2, ...}
-		   E.g. { 3, 2, 1, 0, 7, 6, 5, 4, ... } */
-	      /* Step 2: Generate diff = TARGET - VID:
-		 { 3-0, 2-1, 1-2, 0-3, 7-4, 6-5, 5-6, 4-7, ... }*/
-	      rvv_builder v (builder.mode (), builder.npatterns (), 1);
-	      for (unsigned int i = 0; i < v.npatterns (); ++i)
+		{ a, b, a + step, b + step, a + step*2, b + step*2, ... }  */
+
+	      if (builder.npatterns_vid_diff_repeated_p ())
 		{
-		  /* Calculate the diff between the target sequence and
-		     vid sequence.  The elt (i) can be either const_int or
-		     const_poly_int. */
-		  poly_int64 diff = rtx_to_poly_int64 (builder.elt (i)) - i;
-		  v.quick_push (gen_int_mode (diff, v.inner_mode ()));
+		  /* Case 1: For example as below:
+		     {3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8... }
+		     We have 3 - 0 = 3 equals 7 - 4 = 3, the sequence is
+		     repeated as below after minus vid.
+		     {3, 1, -1, -3, 3, 1, -1, -3...}
+		     Then we can simplify the diff code gen to at most
+		     npatterns().  */
+		  rvv_builder v (builder.mode (), builder.npatterns (), 1);
+
+		  /* Step 1: Generate diff = TARGET - VID.  */
+		  for (unsigned int i = 0; i < v.npatterns (); ++i)
+		    {
+		     poly_int64 diff = rtx_to_poly_int64 (builder.elt (i)) - i;
+		     v.quick_push (gen_int_mode (diff, v.inner_mode ()));
+		    }
+
+		  /* Step 2: Generate result = VID + diff.  */
+		  rtx vec = v.build ();
+		  rtx add_ops[] = {target, vid, vec};
+		  emit_vlmax_insn (code_for_pred (PLUS, builder.mode ()),
+				   BINARY_OP, add_ops);
 		}
-	      /* Step 2: Generate result = VID + diff.  */
-	      rtx vec = v.build ();
-	      rtx add_ops[] = {target, vid, vec};
-	      emit_vlmax_insn (code_for_pred (PLUS, builder.mode ()),
-				BINARY_OP, add_ops);
+	      else
+		{
+		  /* Case 2: For example as below:
+		     { -4, 4, -4 + 1, 4 + 1, -4 + 2, 4 + 2, -4 + 3, 4 + 3, ... }
+		   */
+		  rvv_builder v (builder.mode (), builder.npatterns (), 1);
+
+		  /* Step 1: Generate { a, b, a, b, ... }  */
+		  for (unsigned int i = 0; i < v.npatterns (); ++i)
+		    v.quick_push (builder.elt (i));
+		  rtx new_base = v.build ();
+
+		  /* Step 2: Generate tmp = VID >> LOG2 (NPATTERNS).  */
+		  rtx shift_count
+		    = gen_int_mode (exact_log2 (builder.npatterns ()),
+				    builder.inner_mode ());
+		  rtx tmp = expand_simple_binop (builder.mode (), LSHIFTRT,
+						 vid, shift_count, NULL_RTX,
+						 false, OPTAB_DIRECT);
+
+		  /* Step 3: Generate tmp2 = tmp * step.  */
+		  rtx tmp2 = gen_reg_rtx (builder.mode ());
+		  rtx step
+		    = simplify_binary_operation (MINUS, builder.inner_mode (),
+						 builder.elt (v.npatterns()),
+						 builder.elt (0));
+		  expand_vec_series (tmp2, const0_rtx, step, tmp);
+
+		  /* Step 4: Generate target = tmp2 + new_base.  */
+		  rtx add_ops[] = {target, tmp2, new_base};
+		  emit_vlmax_insn (code_for_pred (PLUS, builder.mode ()),
+				   BINARY_OP, add_ops);
+		}
 	    }
 	}
       else if (builder.interleaved_stepped_npatterns_p ())
