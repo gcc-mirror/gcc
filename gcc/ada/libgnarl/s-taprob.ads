@@ -207,6 +207,12 @@ package System.Tasking.Protected_Objects is
    --  lock and allowed to return from the Lock or Lock_Read_Only call.
 
 private
+   --  The following type contains the GNARL state of a protected object.
+   --  The application-defined portion of the state (i.e. private objects)
+   --  is maintained by the compiler-generated code. Note that there is
+   --  another version declared in System.Tasking.Protected_Objects.Entries
+   --  that handles the case with entries and is controlled.
+
    type Protection is record
       L : aliased Task_Primitives.Lock;
       --  Lock used to ensure mutual exclusive access to the protected object
