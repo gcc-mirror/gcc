@@ -2132,7 +2132,7 @@ gsi_insert_finally_seq_after_call (gimple_stmt_iterator gsi, gimple_seq seq)
 		    || (call && gimple_call_nothrow_p (call))
 		    || (eh_lp <= 0
 			&& (TREE_NOTHROW (cfun->decl)
-			    || !flag_exceptions)));
+			    || !opt_for_fn (cfun->decl, flag_exceptions))));
 
   if (noreturn_p && nothrow_p)
     return;
@@ -2470,9 +2470,11 @@ pass_ipa_strub::adjust_at_calls_call (cgraph_edge *e, int named_args,
   /* If we're already within a strub context, pass on the incoming watermark
      pointer, and omit the enter and leave calls around the modified call, as an
      optimization, or as a means to satisfy a tail-call requirement.  */
-  tree swmp = ((optimize_size || optimize > 2
+  tree swmp = ((opt_for_fn (e->caller->decl, optimize_size)
+		|| opt_for_fn (e->caller->decl, optimize) > 2
 		|| gimple_call_must_tail_p (ocall)
-		|| (optimize == 2 && gimple_call_tail_p (ocall)))
+		|| (opt_for_fn (e->caller->decl, optimize) == 2
+		    && gimple_call_tail_p (ocall)))
 	       ? strub_watermark_parm (e->caller->decl)
 	       : NULL_TREE);
   bool omit_own_watermark = swmp;
