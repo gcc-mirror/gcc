@@ -1357,9 +1357,13 @@ maybe_splice_retval_cleanup (tree compound_stmt, bool is_try)
 	return;
 
       /* Skip past other decls, they can't contain a return.  */
-      while (TREE_CODE (tsi_stmt (iter)) == DECL_EXPR)
+      while (!tsi_end_p (iter)
+	     && TREE_CODE (tsi_stmt (iter)) == DECL_EXPR)
 	tsi_next (&iter);
-      gcc_assert (!tsi_end_p (iter));
+
+      if (tsi_end_p (iter))
+	/* Nothing to wrap.  */
+	return;
 
       /* Wrap the rest of the STATEMENT_LIST in a CLEANUP_STMT.  */
       tree stmts = NULL_TREE;
