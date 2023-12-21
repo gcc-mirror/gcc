@@ -1982,6 +1982,16 @@ package body Sem_Warn is
                            then
                               return True;
 
+                           --  Verify we are not within a generated predicate
+                           --  function call.
+
+                           elsif Nkind (Nod) = N_Function_Call
+                             and then Is_Entity_Name (Name (Nod))
+                             and then Is_Predicate_Function
+                                        (Entity (Name (Nod)))
+                           then
+                              return True;
+
                            elsif Present (Parent (Nod)) then
                               P := Parent (Nod);
 
