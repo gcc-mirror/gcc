@@ -21226,6 +21226,11 @@ package body Sem_Util is
       then
          return True;
 
+      --  A function with side-effects is volatile
+
+      elsif Is_Function_With_Side_Effects (Func_Id) then
+         return True;
+
       --  Otherwise the function is treated as volatile if it is subject to
       --  enabled pragma Volatile_Function.
 
