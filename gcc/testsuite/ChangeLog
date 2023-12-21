@@ -1,3 +1,11 @@
+2023-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108975
+	* g++.dg/cpp0x/lambda/lambda-const11a.C: New test.
+
 2023-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

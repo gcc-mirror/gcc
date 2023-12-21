@@ -1,3 +1,10 @@
+2023-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Remove a short-circuit
+	for subtypes without aspects when it comes to predicates.
+	* sem_util.adb (Inherit_Predicate_Flags): Deal with private subtypes
+	whose full view is an Itype.
+
 2023-12-04  Steve Baird  <baird@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference): In the case of a

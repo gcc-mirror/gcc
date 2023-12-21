@@ -1,3 +1,13 @@
+2023-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108975
+	* pt.cc (value_dependent_expression_p) <case VAR_DECL>:
+	Suppress conservative early exit for reference variables
+	when DECL_HAS_VALUE_EXPR_P.
+
 2023-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
