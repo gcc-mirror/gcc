@@ -1,3 +1,16 @@
+2023-12-20  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/113050
+	* c-common.cc (get_atomic_generic_size): Use
+	OPT_Wdiscarded_qualifiers instead of
+	OPT_Wincompatible_pointer_types.
+
+2023-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wcalloc-transposed-args): New warning.
+	* c-common.h (warn_for_calloc, warn_for_alloc_size): Declare.
+	* c-warn.cc (warn_for_calloc, warn_for_alloc_size): New functions.
+
 2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* c-attribs.cc (attr_target_exclusions): Make

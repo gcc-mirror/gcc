@@ -1,3 +1,10 @@
+2023-12-20  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memcpy2d): Adjust parameters to
+	avoid out-of-bounds array checks in CUDA runtime.
+	(GOMP_OFFLOAD_memcpy3d): Likewise.
+	* testsuite/libgomp.c-c++-common/memcpyxd-bias-1.c: New test.
+
 2023-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/declare-variant-1.c: Restrict the test to x86,

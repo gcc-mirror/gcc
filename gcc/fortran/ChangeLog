@@ -1,3 +1,10 @@
+2023-12-20  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	PR fortran/81615
+	* lang-specs.h (F951_CPP_OPTIONS): Do not hardcode ".f90" extension
+	(F951_CPP_EXTENSION): Use .fi/.fii for fixed/free form sources
+	* options.cc (form_from_filename): Handle the new extensions
+
 2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gfortran.h: Include omp-selectors.h.

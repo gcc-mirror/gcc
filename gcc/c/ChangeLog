@@ -1,3 +1,14 @@
+2023-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_postfix_expression_after_primary): Grow
+	sizeof_arg and sizeof_arg_loc arrays to 6 elements.  Call
+	warn_for_calloc if warn_calloc_transposed_args for functions with
+	alloc_size type attribute with 2 arguments.
+	(c_parser_expr_list): Use 6 instead of 3.
+	* c-typeck.cc (build_c_cast): Call warn_for_alloc_size for casts
+	of calls to functions with alloc_size type attribute.
+	(convert_for_assignment): Likewise.
+
 2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-parser.cc (omp_construct_selectors): Delete.

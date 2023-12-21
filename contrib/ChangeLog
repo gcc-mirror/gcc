@@ -1,3 +1,7 @@
+2023-12-20  Jason Merrill  <jason@redhat.com>
+
+	* gcc-git-customization.sh: Add git gcc-style alias.
+
 2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
 	    Arthur Cohen  <arthur.cohen@embecosm.com>
 

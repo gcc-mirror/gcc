@@ -1,3 +1,106 @@
+2023-12-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113087
+	* gcc.target/riscv/rvv/autovec/pr113087-2.c: New test.
+
+2023-12-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113087
+	* gcc.target/riscv/rvv/autovec/pr113087-1.c: New test.
+
+2023-12-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/111702
+	* gcc.dg/rtl/aarch64/pr111702.c: New test.
+
+2023-12-20  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* gcc.target/riscv/large-model.c: New test.
+
+2023-12-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113088
+	PR c++/33799
+	* g++.dg/eh/return2.C: New test.
+
+2023-12-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103185
+	* g++.dg/cpp1z/array-prvalue2.C: New test.
+	* g++.dg/cpp1z/eval-order3.C: Test swapped operands.
+
+2023-12-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/pr112787.c: New test.
+
+2023-12-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/113033
+	* gcc.target/loongarch/pr113033.c: New test.
+
+2023-12-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/113034
+	* gcc.target/loongarch/vfcmp-f.c: New test.
+	* gcc.target/loongarch/vfcmp-d.c: New test.
+	* gcc.target/loongarch/xvfcmp-f.c: New test.
+	* gcc.target/loongarch/xvfcmp-d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-vcond-2.c: Scan for cune
+	instead of cne.
+	* gcc.target/loongarch/vector/lsx/lsx-vcond-2.c: Likewise.
+
+2023-12-20  demin.han  <demin.han@starfivetech.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-7.c: Moved to...
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-10.c: ...here.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-4.c: Moved to...
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-11.c: ...here.
+
+2023-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112941
+	* gcc.dg/bitint-55.c: New test.
+
+2023-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/Walloc-size-4.c: New test.
+	* gcc.dg/Walloc-size-5.c: New test.
+	* gcc.dg/Wcalloc-transposed-args-1.c: New test.
+
+2023-12-20  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113062
+	* gcc.dg/pr113062.c: New test.
+
+2023-12-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/bug-7.c: New test.
+
+2023-12-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/bug-8.c: New test.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/113002
+	* gcc.dg/vect/pr113002.c: New.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/torture/inline-mem-cmp-1.c: Copy timeout factor from
+	mem-cmp-1.c.
+	* gcc.dg/torture/inline-mem-cpy-1.c: Likewise.
+
+2023-12-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-6.c: Remove check for errors.
+	* gcc.target/i386/noevex512-2.c: Diito.
+
+2023-12-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/113012
+	* gcc.dg/ubsan/pr113012.c: New test case.
+
 2023-12-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/113063

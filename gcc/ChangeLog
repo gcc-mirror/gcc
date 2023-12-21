@@ -1,3 +1,264 @@
+2023-12-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113087
+	* config/riscv/riscv-v.cc (expand_select_vl): Optimize SELECT_VL.
+
+2023-12-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113087
+	* config/riscv/riscv-vsetvl.cc: Disallow fusion when VL modification pollutes non AVL use.
+
+2023-12-20  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	* doc/invoke.texi: Document the new file extensions
+
+2023-12-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/111702
+	* cse.cc (set::mode): Move earlier.
+	(set::src_in_memory, set::src_volatile): Convert to bitfields.
+	(set::is_fake_set): New member variable.
+	(add_to_set): Add an is_fake_set parameter.
+	(find_sets_in_insn): Update calls accordingly.
+	(cse_insn): Do not apply REG_EQUAL notes to fake sets.  Do not
+	try to optimize them either, or validate changes to them.
+
+2023-12-20  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/predicates.md (move_operand): Reject symbolic operands
+	with a type SYMBOL_FORCE_TO_MEM.
+	(call_insn_operand): Support for CM_Large.
+	(pcrel_symbol_operand): New.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Add builtin_define
+	"__riscv_cmodel_large".
+	* config/riscv/riscv-opts.h (riscv_code_model): Add CM_LARGE.
+	* config/riscv/riscv-protos.h (riscv_symbol_type): Add
+	SYMBOL_FORCE_TO_MEM.
+	* config/riscv/riscv.cc (riscv_classify_symbol) Support CM_LARGE model.
+	(riscv_symbol_insns) Add SYMBOL_FORCE_TO_MEM.
+	(riscv_cannot_force_const_mem): Ditto.
+	(riscv_split_symbol): Ditto.
+	(riscv_force_address): Check pseudo reg available before force_reg.
+	(riscv_size_ok_for_small_data_p): Disable in CM_LARGE model.
+	(riscv_can_use_per_function_literal_pools_p): New.
+	(riscv_elf_select_rtx_section): Handle per-function literal pools.
+	(riscv_output_mi_thunk): Add riscv_in_thunk_func.
+	(riscv_option_override): Support CM_LARGE model.
+	(riscv_function_ok_for_sibcall): Disable sibcalls in CM_LARGE model.
+	(riscv_in_thunk_func): New static.
+	* config/riscv/riscv.md (unspec): Define UNSPEC_FORCE_FOR_MEM.
+	(*large_load_address): New.
+	* config/riscv/riscv.opt (code_model): New.
+
+2023-12-20  Wang Pengcheng  <wangpengcheng.pp@bytedance.com>
+
+	* config/riscv/riscv.cc (riscv_macro_fusion_pair_p): Fix condition.
+
+2023-12-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/112787
+	* tree-vect-generic.cc (type_for_widest_vector_mode): Change function to
+	use original vector type and check widest vector mode has at most the
+	same number of elements.
+	(get_compute_type): Pass original vector type rather than the element
+	type to type_for_widest_vector_mode and remove now obsolete check for
+	the number of elements.
+
+2023-12-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* tree-object-size.cc (object_size_info): Remove UNKNOWNS.
+	Drop all references to it.
+	(object_sizes_set): Move unknowns propagation code to...
+	(gimplify_size_expressions): ... here.  Also free reexamine
+	bitmap.
+	(propagate_unknowns): New parameter UNKNOWNS.  Update callers.
+
+2023-12-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/gcn.h (LIBSTDCXX): Define to "gcc".
+
+2023-12-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_transform_slp_perm_load_1): Also handle
+	CTOR and VIEW_CONVERT up to the load when performing chain DCE.
+
+2023-12-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vector_init_same): Remove "temp2" and reuse
+	"temp" instead.
+	(loongarch_expand_vector_init): Use gcc_unreachable () instead
+	of gcc_assert (0), and fix the comment for it.
+
+2023-12-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/113033
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vector_init_same): Replace gen_reg_rtx +
+	emit_move_insn with force_reg.
+	(loongarch_expand_vector_init): Likewise.
+
+2023-12-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/113034
+	* config/loongarch/lasx.md (UNSPEC_LASX_XVFCMP_*): Remove.
+	(lasx_xvfcmp_caf_<flasxfmt>): Remove.
+	(lasx_xvfcmp_cune_<FLASX:flasxfmt>): Remove.
+	(FSC256_UNS): Remove.
+	(fsc256): Remove.
+	(lasx_xvfcmp_<vfcond:fcc>_<FLASX:flasxfmt>): Remove.
+	(lasx_xvfcmp_<fsc256>_<FLASX:flasxfmt>): Remove.
+	* config/loongarch/lsx.md (UNSPEC_LSX_XVFCMP_*): Remove.
+	(lsx_vfcmp_caf_<flsxfmt>): Remove.
+	(lsx_vfcmp_cune_<FLSX:flsxfmt>): Remove.
+	(vfcond): Remove.
+	(fcc): Remove.
+	(FSC_UNS): Remove.
+	(fsc): Remove.
+	(lsx_vfcmp_<vfcond:fcc>_<FLSX:flsxfmt>): Remove.
+	(lsx_vfcmp_<fsc>_<FLSX:flsxfmt>): Remove.
+	* config/loongarch/simd.md
+	(fcond_simd): New define_code_iterator.
+	(<simd_isa>_<x>vfcmp_<fcond:fcond_simd>_<simdfmt>):
+	New define_insn.
+	(fcond_simd_rev): New define_code_iterator.
+	(fcond_rev_asm): New define_code_attr.
+	(<simd_isa>_<x>vfcmp_<fcond:fcond_simd_rev>_<simdfmt>):
+	New define_insn.
+	(fcond_inv): New define_code_iterator.
+	(fcond_inv_rev): New define_code_iterator.
+	(fcond_inv_rev_asm): New define_code_attr.
+	(<simd_isa>_<x>vfcmp_<fcond_inv>_<simdfmt>): New define_insn.
+	(<simd_isa>_<x>vfcmp_<fcond_inv:fcond_inv_rev>_<simdfmt>):
+	New define_insn.
+	(UNSPEC_SIMD_FCMP_CAF, UNSPEC_SIMD_FCMP_SAF,
+	UNSPEC_SIMD_FCMP_SEQ, UNSPEC_SIMD_FCMP_SUN,
+	UNSPEC_SIMD_FCMP_SUEQ, UNSPEC_SIMD_FCMP_CNE,
+	UNSPEC_SIMD_FCMP_SOR, UNSPEC_SIMD_FCMP_SUNE): New unspecs.
+	(SIMD_FCMP): New define_int_iterator.
+	(fcond_unspec): New define_int_attr.
+	(<simd_isa>_<x>vfcmp_<fcond_unspec>_<simdfmt>): New define_insn.
+	* config/loongarch/loongarch.cc (loongarch_expand_lsx_cmp):
+	Remove unneeded special cases.
+
+2023-12-20  demin.han  <demin.han@starfivetech.com>
+
+	* config/riscv/riscv-vector-costs.cc (max_number_of_live_regs): Fix
+	max live vregs calc
+	(preferred_new_lmul_p): Ditto
+
+2023-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112962
+	* config/i386/i386-builtins.cc (ix86_builtins): Increase by one
+	element.
+	(def_builtin): If not -fnon-call-exceptions, set TREE_NOTHROW on
+	the builtin FUNCTION_DECL.  Add leaf attribute to DECL_ATTRIBUTES.
+	(ix86_add_new_builtins): Likewise.
+
+2023-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112941
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): If
+	save_cast_conditional, instead of adding assignment of t4 to
+	m_data[save_data_cnt + 1] before m_gsi, add phi nodes such that
+	t4 propagates to m_bb loop.  For constant idx, use
+	m_data[save_data_cnt] rather than m_data[save_data_cnt + 1] if inside
+	of the m_bb loop.
+	(bitint_large_huge::lower_mergeable_stmt): Clear m_bb when no longer
+	expanding inside of that loop.
+	(bitint_large_huge::lower_comparison_stmt): Likewise.
+	(bitint_large_huge::lower_addsub_overflow): Likewise.
+	(bitint_large_huge::lower_mul_overflow): Likewise.
+	(bitint_large_huge::lower_bit_query): Likewise.
+
+2023-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-Walloc-size): Add to the list of
+	warning options, remove unnecessary line-break.
+	(-Wcalloc-transposed-args): Document new warning.
+
+2023-12-20  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113062
+	* config/aarch64/aarch64-ldp-fusion.cc
+	(ldp_bb_info::track_access): Punt on accesses with invalid
+	register operands, move definition of mem_size closer to its
+	first use.
+
+2023-12-20  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (rvv_builder::npatterns_vid_diff_repeated_p):
+	New function to predicate the diff to vid is repeated or not.
+	(expand_const_vector): Add restriction
+	for the vid-diff code gen and implement general one.
+
+2023-12-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Fix ICE.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112917
+	* builtins.cc (expand_bultin_stack_address): Add
+	STACK_POINTER_OFFSET.
+	* doc/extend.texi (__builtin_stack_address): Adjust.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/113002
+	* cfgrtl.cc (commit_one_edge_insertion): Tolerate jumps in the
+	inserted sequence during expand.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* builtins.cc (delta_type): New template class.
+	(set_apply_args_size, get_apply_args_size): Replace with...
+	(saved_apply_args_size): ... this.
+	(set_apply_result_size, get_apply_result_size): Replace with...
+	(saved_apply_result_size): ... this.
+	(apply_args_size, apply_result_size): Adjust.
+
+2023-12-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/mcore/mcore.h (CC1_SPEC): Do not set -funsigned-bitfields.
+
+2023-12-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512bwintrin.h: Allow 64 bit mask intrin usage
+	for -mno-evex512.
+	* config/i386/i386-builtin.def: Remove OPTION_MASK_ISA2_EVEX512
+	for 64 bit mask builtins.
+	* config/i386/i386.cc (ix86_hard_regno_mode_ok): Allow 64 bit
+	mask register for -mno-evex512.
+	* config/i386/i386.md (SWI1248_AVX512BWDQ_64): Remove
+	TARGET_EVEX512.
+	(*zero_extendsidi2): Change isa attribute to avx512bw.
+	(kmov_isa): Ditto.
+	(*anddi_1): Ditto.
+	(*andn<mode>_1): Remove TARGET_EVEX512.
+	(*one_cmplsi2_1_zext): Change isa attribute to avx512bw.
+	(*ashl<mode>3_1): Ditto.
+	(*lshr<mode>3_1): Ditto.
+	* config/i386/sse.md (SWI1248_AVX512BWDQ): Remove TARGET_EVEX512.
+	(SWI1248_AVX512BW): Ditto.
+	(SWI1248_AVX512BWDQ2): Ditto.
+	(*knotsi_1_zext): Ditto.
+	(kunpckdi): Ditto.
+	(SWI24_MASK): Removed.
+	(vec_pack_trunc_<mode>): Change iterator from SWI24_MASK to SWI24.
+	(vec_unpacks_lo_di): Remove TARGET_EVEX512.
+	(SWI48x_MASK): Removed.
+	(vec_unpacks_hi_<mode>): Change iterator from SWI48x_MASK to SWI48x.
+
+2023-12-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/113012
+	* tree-object-size.cc (compute_builtin_object_size): Expand
+	comment for dynamic object sizes.
+	(collect_object_sizes_for): Always set COMPUTED bitmap for
+	dynamic object sizes.
+
 2023-12-20  Alexandre Oliva  <oliva@adacore.com>
 
 	* ipa-strub.cc (gsi_insert_finally_seq_after_call): Likewise.
