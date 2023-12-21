@@ -10387,11 +10387,8 @@ convert_for_assignment (tree type, tree rhs,
 	  }
     }
 
-  /* If -Wparentheses, warn about a = b = c when a has type bool and b
-     does not.  */
-  if (TREE_CODE (type) == BOOLEAN_TYPE
-      && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE)
-    maybe_warn_unparenthesized_assignment (rhs, complain);
+  if (TREE_CODE (type) == BOOLEAN_TYPE)
+    maybe_warn_unparenthesized_assignment (rhs, /*nested_p=*/true, complain);
 
   if (complain & tf_warning)
     warn_for_address_of_packed_member (type, rhs);
