@@ -618,6 +618,13 @@ latest_hazard_before (insn_info *insn, rtx *ignore,
 {
   insn_info *result = nullptr;
 
+  // If the insn can throw then it is at the end of a BB and we can't
+  // move it, model this by recording a hazard in the previous insn
+  // which will prevent moving the insn up.
+  if (cfun->can_throw_non_call_exceptions
+      && find_reg_note (insn->rtl (), REG_EH_REGION, NULL_RTX))
+    return insn->prev_nondebug_insn ();
+
   // Return true if we registered the hazard.
   auto hazard = [&](insn_info *h) -> bool
     {
