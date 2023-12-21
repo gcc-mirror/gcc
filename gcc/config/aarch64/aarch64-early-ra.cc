@@ -2072,8 +2072,8 @@ early_ra::find_strided_accesses ()
 
 	  if (group1->strided_polarity)
 	    group2->strided_polarity = group1->strided_polarity * pref;
-	  else if (group1->strided_polarity)
-	    group2->strided_polarity = group1->strided_polarity * pref;
+	  else if (group2->strided_polarity)
+	    group1->strided_polarity = group2->strided_polarity * pref;
 	  else
 	    {
 	      group1->strided_polarity = 1;
