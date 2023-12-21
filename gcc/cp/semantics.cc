@@ -2939,15 +2939,24 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
       if (!result)
 	{
-	  if (warn_sizeof_pointer_memaccess
+	  tree alloc_size_attr = NULL_TREE;
+	  if (warn_calloc_transposed_args
+	      && TREE_CODE (fn) == FUNCTION_DECL
+	      && (alloc_size_attr
+		  = lookup_attribute ("alloc_size",
+				      TYPE_ATTRIBUTES (TREE_TYPE (fn)))))
+	    if (TREE_VALUE (alloc_size_attr) == NULL_TREE
+		|| TREE_CHAIN (TREE_VALUE (alloc_size_attr)) == NULL_TREE)
+	      alloc_size_attr = NULL_TREE;
+	  if ((warn_sizeof_pointer_memaccess || alloc_size_attr)
 	      && (complain & tf_warning)
 	      && !vec_safe_is_empty (*args)
 	      && !processing_template_decl)
 	    {
-	      location_t sizeof_arg_loc[3];
-	      tree sizeof_arg[3];
+	      location_t sizeof_arg_loc[6];
+	      tree sizeof_arg[6];
 	      unsigned int i;
-	      for (i = 0; i < 3; i++)
+	      for (i = 0; i < (alloc_size_attr ? 6 : 3); i++)
 		{
 		  tree t;
 
@@ -2964,9 +2973,15 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 		    sizeof_arg[i] = TREE_OPERAND (t, 0);
 		  sizeof_arg_loc[i] = EXPR_LOCATION (t);
 		}
-	      sizeof_pointer_memaccess_warning
-		(sizeof_arg_loc, fn, *args,
-		 sizeof_arg, same_type_ignoring_top_level_qualifiers_p);
+	      if (warn_sizeof_pointer_memaccess)
+		{
+		  auto same_p = same_type_ignoring_top_level_qualifiers_p;
+		  sizeof_pointer_memaccess_warning (sizeof_arg_loc, fn, *args,
+						    sizeof_arg, same_p);
+		}
+	      if (alloc_size_attr)
+		warn_for_calloc (sizeof_arg_loc, fn, *args, sizeof_arg,
+				 alloc_size_attr);
 	    }
 
 	  if ((complain & tf_warning)

@@ -2048,6 +2048,25 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
     case NOP_EXPR:
       *stmt_p = predeclare_vla (*stmt_p);
+
+      /* Warn of new allocations that are not big enough for the target
+	 type.  */
+      if (warn_alloc_size
+	  && TREE_CODE (TREE_OPERAND (stmt, 0)) == CALL_EXPR
+	  && POINTER_TYPE_P (TREE_TYPE (stmt)))
+	{
+	  if (tree fndecl = get_callee_fndecl (TREE_OPERAND (stmt, 0)))
+	    if (DECL_IS_MALLOC (fndecl))
+	      {
+		tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (fndecl));
+		tree alloc_size = lookup_attribute ("alloc_size", attrs);
+		if (alloc_size)
+		  warn_for_alloc_size (EXPR_LOCATION (stmt),
+				       TREE_TYPE (TREE_TYPE (stmt)),
+				       TREE_OPERAND (stmt, 0), alloc_size);
+	      }
+	}
+
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT)
 	  && TYPE_REF_P (TREE_TYPE (stmt)))

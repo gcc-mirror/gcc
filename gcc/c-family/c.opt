@@ -332,7 +332,7 @@ C ObjC C++ ObjC++ Var(warn_alloca) Warning
 Warn on any use of alloca.
 
 Walloc-size
-C ObjC Var(warn_alloc_size) Warning LangEnabledBy(C ObjC, Wextra)
+C ObjC C++ ObjC++ Var(warn_alloc_size) Warning LangEnabledBy(C ObjC C++ ObjC++, Wextra)
 Warn when allocating insufficient storage for the target type of the assigned pointer.
 
 Walloc-size-larger-than=
