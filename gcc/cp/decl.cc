@@ -571,10 +571,14 @@ poplevel_named_label_1 (named_label_entry **slot, cp_binding_level *bl)
 	if (use->binding_level == bl)
 	  {
 	    if (auto &cg = use->computed_goto)
-	      for (tree d = use->names_in_scope; d; d = DECL_CHAIN (d))
-		if (TREE_CODE (d) == VAR_DECL && !TREE_STATIC (d)
-		    && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (d)))
-		  vec_safe_push (cg, d);
+	      {
+		if (bl->kind == sk_catch)
+		  vec_safe_push (cg, get_identifier ("catch"));
+		for (tree d = use->names_in_scope; d; d = DECL_CHAIN (d))
+		  if (TREE_CODE (d) == VAR_DECL && !TREE_STATIC (d)
+		      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (d)))
+		    vec_safe_push (cg, d);
+	      }
 
 	    use->binding_level = obl;
 	    use->names_in_scope = obl->names;
@@ -3820,7 +3824,12 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
       identified = 2;
       if (complained)
 	for (tree d : computed)
-	  inform (DECL_SOURCE_LOCATION (d), "  does not destroy %qD", d);
+	  {
+	    if (DECL_P (d))
+	      inform (DECL_SOURCE_LOCATION (d), "  does not destroy %qD", d);
+	    else if (d == get_identifier ("catch"))
+	      inform (*locus, "  does not clean up handled exception");
+	  }
     }
 
   return !identified;
@@ -3963,15 +3972,32 @@ check_goto_1 (named_label_entry *ent, bool computed)
       auto names = ent->names_in_scope;
       for (auto b = current_binding_level; ; b = b->level_chain)
 	{
+	  if (b->kind == sk_catch)
+	    {
+	      if (!identified)
+		{
+		  complained
+		    = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
+				     &input_location, DK_ERROR, computed);
+		  identified = 2;
+		}
+	      if (complained)
+		inform (input_location,
+			"  does not clean up handled exception");
+	    }
 	  tree end = b == level ? names : NULL_TREE;
 	  for (tree d = b->names; d != end; d = DECL_CHAIN (d))
 	    {
 	      if (TREE_CODE (d) == VAR_DECL && !TREE_STATIC (d)
 		  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (d)))
 		{
-		  complained = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
-					      &input_location, DK_ERROR,
-					      computed);
+		  if (!identified)
+		    {
+		      complained
+			= identify_goto (decl, DECL_SOURCE_LOCATION (decl),
+					 &input_location, DK_ERROR, computed);
+		      identified = 2;
+		    }
 		  if (complained)
 		    inform (DECL_SOURCE_LOCATION (d),
 			    "  does not destroy %qD", d);

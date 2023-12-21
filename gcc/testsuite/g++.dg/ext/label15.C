@@ -1,4 +1,5 @@
 // PR c++/37722
+// { dg-do compile { target indirect_jumps } }
 // { dg-options "" }
 
 extern "C" int printf (const char *, ...);
