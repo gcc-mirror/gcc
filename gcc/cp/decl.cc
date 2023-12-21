@@ -1545,6 +1545,10 @@ merge_attribute_bits (tree newdecl, tree olddecl)
   DECL_PURE_P (olddecl) |= DECL_PURE_P (newdecl);
   DECL_UNINLINABLE (newdecl) |= DECL_UNINLINABLE (olddecl);
   DECL_UNINLINABLE (olddecl) |= DECL_UNINLINABLE (newdecl);
+  TREE_DEPRECATED (newdecl) |= TREE_DEPRECATED (olddecl);
+  TREE_DEPRECATED (olddecl) |= TREE_DEPRECATED (newdecl);
+  TREE_UNAVAILABLE (newdecl) |= TREE_UNAVAILABLE (olddecl);
+  TREE_UNAVAILABLE (olddecl) |= TREE_UNAVAILABLE (newdecl);
 }
 
 #define GNU_INLINE_P(fn) (DECL_DECLARED_INLINE_P (fn)			\
@@ -1557,7 +1561,6 @@ merge_attribute_bits (tree newdecl, tree olddecl)
 static bool
 duplicate_function_template_decls (tree newdecl, tree olddecl)
 {
-
   tree newres = DECL_TEMPLATE_RESULT (newdecl);
   tree oldres = DECL_TEMPLATE_RESULT (olddecl);
   /* Function template declarations can be differentiated by parameter
