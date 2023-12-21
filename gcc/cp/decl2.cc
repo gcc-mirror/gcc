@@ -2655,7 +2655,10 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
   int *vis_p = (int *)data;
   int tpvis = VISIBILITY_DEFAULT;
 
-  switch (TREE_CODE (*tp))
+  tree t = *tp;
+  if (TREE_CODE (t) == PTRMEM_CST)
+    t = PTRMEM_CST_MEMBER (t);
+  switch (TREE_CODE (t))
     {
     case CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
@@ -2666,15 +2669,26 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
     case NEW_EXPR:
     case CONSTRUCTOR:
     case LAMBDA_EXPR:
-      tpvis = type_visibility (TREE_TYPE (*tp));
+      tpvis = type_visibility (TREE_TYPE (t));
       break;
 
+    case TEMPLATE_DECL:
+      if (DECL_ALIAS_TEMPLATE_P (t))
+	/* FIXME: We don't maintain TREE_PUBLIC / DECL_VISIBILITY for
+	   alias templates so we can't trust it here (PR107906).  */
+	break;
+      t = DECL_TEMPLATE_RESULT (t);
+      /* Fall through.  */
     case VAR_DECL:
     case FUNCTION_DECL:
-      if (! TREE_PUBLIC (*tp))
+      if (! TREE_PUBLIC (t))
 	tpvis = VISIBILITY_ANON;
       else
-	tpvis = DECL_VISIBILITY (*tp);
+	tpvis = DECL_VISIBILITY (t);
+      break;
+
+    case FIELD_DECL:
+      tpvis = type_visibility (DECL_CONTEXT (t));
       break;
 
     default:
