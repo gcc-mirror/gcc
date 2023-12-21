@@ -1973,6 +1973,8 @@ package body Sem_Warn is
                      begin
                         Nod := Parent (N);
                         while Present (Nod) loop
+                           --  General contract / predicate related pragma
+
                            if Nkind (Nod) = N_Pragma
                              and then
                                Pragma_Name_Unmapped (Nod)
@@ -1991,6 +1993,8 @@ package body Sem_Warn is
                                         (Entity (Name (Nod)))
                            then
                               return True;
+
+                           --  Deal with special 'Ensures' Test_Case component
 
                            elsif Present (Parent (Nod)) then
                               P := Parent (Nod);
