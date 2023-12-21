@@ -501,9 +501,6 @@ B Is_Protected_Interface              (E Id);
 #define Is_Protected_Record_Type einfo__utils__is_protected_record_type
 B Is_Protected_Record_Type            (E Id);
 
-#define Is_Relaxed_Initialization_State einfo__utils__is_relaxed_initialization_state
-B Is_Relaxed_Initialization_State     (E Id);
-
 #define Is_Standard_Character_Type einfo__utils__is_standard_character_type
 B Is_Standard_Character_Type          (E Id);
 

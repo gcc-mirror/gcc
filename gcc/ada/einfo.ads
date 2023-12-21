@@ -3219,10 +3219,6 @@ package Einfo is
 --       Applies to all entities, true for record types and subtypes,
 --       includes class-wide types and subtypes (which are also records).
 
---    Is_Relaxed_Initialization_State (synthesized)
---       Applies to all entities, true for abstract states that are subject to
---       option Relaxed_Initialization.
-
 --    Is_Remote_Call_Interface
 --       Defined in all entities. Set in E_Package and E_Generic_Package
 --       entities to which a pragma Remote_Call_Interface is applied, and
@@ -5129,7 +5125,6 @@ package Einfo is
    --    Has_Null_Visible_Refinement         (synth)
    --    Is_External_State                   (synth)
    --    Is_Null_State                       (synth)
-   --    Is_Relaxed_Initialization_State     (synth)
    --    Is_Synchronized_State               (synth)
    --    Partial_Refinement_Constituents     (synth)
 

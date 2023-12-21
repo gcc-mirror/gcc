@@ -13106,11 +13106,6 @@ package body Sem_Util is
       --  but now without any syntactic checks.
 
       case Ekind (E) is
-         --  Abstract states have option Relaxed_Initialization
-
-         when E_Abstract_State =>
-            return Is_Relaxed_Initialization_State (E);
-
          --  Constants have this aspect attached directly; for deferred
          --  constants, the aspect is attached to the partial view.
 
