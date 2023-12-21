@@ -1978,7 +1978,8 @@ package body Sem_Warn is
                            if Nkind (Nod) = N_Pragma
                              and then
                                Pragma_Name_Unmapped (Nod)
-                                in Name_Postcondition
+                                in Name_Precondition
+                                 | Name_Postcondition
                                  | Name_Refined_Post
                                  | Name_Contract_Cases
                            then
