@@ -6060,6 +6060,26 @@ gimple_lower_bitint (void)
 			  || (bitint_precision_kind (TREE_TYPE (rhs1))
 			      < bitint_prec_large))
 			continue;
+		      if (is_gimple_assign (use_stmt))
+			switch (gimple_assign_rhs_code (use_stmt))
+			  {
+			  case MULT_EXPR:
+			  case TRUNC_DIV_EXPR:
+			  case TRUNC_MOD_EXPR:
+			  case FLOAT_EXPR:
+			    /* Uses which use handle_operand_addr can't
+			       deal with nested casts.  */
+			    if (TREE_CODE (rhs1) == SSA_NAME
+				&& gimple_assign_cast_p
+				     (SSA_NAME_DEF_STMT (rhs1))
+				&& has_single_use (rhs1)
+				&& (gimple_bb (SSA_NAME_DEF_STMT (rhs1))
+				    == gimple_bb (SSA_NAME_DEF_STMT (s))))
+			      goto force_name;
+			    break;
+			  default:
+			    break;
+			}
 		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
 			   >= TYPE_PRECISION (TREE_TYPE (s)))
 			  && mergeable_op (use_stmt))
@@ -6154,6 +6174,7 @@ gimple_lower_bitint (void)
 	      && (!SSA_NAME_VAR (s) || VAR_P (SSA_NAME_VAR (s))))
 	    continue;
 
+	force_name:
 	  if (!large_huge.m_names)
 	    large_huge.m_names = BITMAP_ALLOC (NULL);
 	  bitmap_set_bit (large_huge.m_names, SSA_NAME_VERSION (s));
