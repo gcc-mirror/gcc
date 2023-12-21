@@ -1,5 +1,6 @@
 // PR c++/56237
 // { dg-do compile }
+// { dg-additional-options -fabi-compat-version=0 }
 
 void *p[4];
 

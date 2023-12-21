@@ -1,5 +1,5 @@
 // Test mangling of type casts
-// { dg-options "-fabi-version=0 -Wabi=5" }
+// { dg-options "-fabi-version=0 -fabi-compat-version=0 -Wabi=5" }
 // { dg-do compile }
 
 template<int i> class A {};

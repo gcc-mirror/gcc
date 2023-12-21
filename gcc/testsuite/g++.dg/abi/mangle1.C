@@ -1,7 +1,7 @@
 // Test for mangling of simple testcase involving construction vtables.
 
 // { dg-do compile }
-// { dg-options "-fno-inline" }
+// { dg-options "-fno-inline -fabi-compat-version=0" }
 
 struct A {
   virtual void f () { }

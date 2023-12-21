@@ -1,5 +1,6 @@
 // DR 850 makes this valid
 // { dg-do compile { target c++11 } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 template<class T> struct A
 {

@@ -1,5 +1,6 @@
 // DR 342, PR c++/48582
 // { dg-do compile { target c++11 } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct A;
 template < void * = nullptr > void f() { }

@@ -2,7 +2,7 @@
 // as a substitution candidate for a function type with function-cv-quals.
 // Test for that for backward compatibility.
 
-// { dg-options "-fabi-version=7 -Wabi" }
+// { dg-options "-fabi-version=7 -fabi-compat-version=7 -Wabi=0" }
 
 template <class T, class U> struct A { };
 // { dg-final { scan-assembler "\n_?_Z1fP1AIKFvvES0_E\[: \t\n\]" } }

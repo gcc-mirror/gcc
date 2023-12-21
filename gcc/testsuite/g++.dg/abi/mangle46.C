@@ -1,5 +1,5 @@
 // PR c++/48008
-// { dg-options -fabi-version=5 }
+// { dg-options "-fabi-version=5 -fabi-compat-version=5" }
 // Test that we retain function-cv-quals in template argument mangling.
 
 template <class T>

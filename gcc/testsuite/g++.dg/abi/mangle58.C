@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-options "-fabi-version=0 -Wabi=2" }
+// { dg-options "-fabi-version=0 -fabi-compat-version=0 -Wabi=2" }
 
 template<typename T, int (*cmp)(T, T)> struct A { };
 struct B {
