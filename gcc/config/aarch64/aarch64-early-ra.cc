@@ -3210,6 +3210,9 @@ early_ra::maybe_convert_to_strided_access (rtx_insn *insn)
 void
 early_ra::apply_allocation ()
 {
+  for (auto *insn : m_dead_insns)
+    set_insn_deleted (insn);
+
   rtx_insn *prev;
   for (auto insn_range : m_insn_ranges)
     for (rtx_insn *insn = insn_range.first;
