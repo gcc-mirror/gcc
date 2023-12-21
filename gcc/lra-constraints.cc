@@ -261,13 +261,6 @@ enough_allocatable_hard_regs_p (enum reg_class reg_class,
   return false;
 }
 
-/* True if C is a non-empty register class that has too few registers
-   to be safely used as a reload target class.	*/
-#define SMALL_REGISTER_CLASS_P(C)		\
-  (ira_class_hard_regs_num [(C)] == 1		\
-   || (ira_class_hard_regs_num [(C)] >= 1	\
-       && targetm.class_likely_spilled_p (C)))
-
 /* Return true if REG satisfies (or will satisfy) reg class constraint
    CL.  Use elimination first if REG is a hard register.  If REG is a
    reload pseudo created by this constraints pass, assume that it will
@@ -325,11 +318,7 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class,
       common_class = ira_reg_class_subset[rclass][cl];
       if (new_class != NULL)
 	*new_class = common_class;
-      return (enough_allocatable_hard_regs_p (common_class, reg_mode)
-	      /* Do not permit reload insn operand matching (new_class == NULL
-		 case) if the new class is too small.  */
-	      && (new_class != NULL || common_class == rclass
-		  || !SMALL_REGISTER_CLASS_P (common_class)));
+      return enough_allocatable_hard_regs_p (common_class, reg_mode);
     }
 }
 
@@ -933,6 +922,13 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
    && GET_CODE (X) != HIGH			\
    && GET_MODE_SIZE (MODE).is_constant ()	\
    && !targetm.cannot_force_const_mem (MODE, X))
+
+/* True if C is a non-empty register class that has too few registers
+   to be safely used as a reload target class.	*/
+#define SMALL_REGISTER_CLASS_P(C)		\
+  (ira_class_hard_regs_num [(C)] == 1		\
+   || (ira_class_hard_regs_num [(C)] >= 1	\
+       && targetm.class_likely_spilled_p (C)))
 
 /* If REG is a reload pseudo, try to make its class satisfying CL.  */
 static void
@@ -2635,7 +2631,7 @@ process_alt_operands (int only_alternative)
 				    hard_regno[nop]))))
 			win = true;
 		      else if (hard_regno[nop] < 0
-			       && in_class_p (op, this_alternative, NULL, true))
+			       && in_class_p (op, this_alternative, NULL))
 			win = true;
 		    }
 		  break;
@@ -2679,7 +2675,7 @@ process_alt_operands (int only_alternative)
 			  reject++;
 			}
 		      if (in_class_p (operand_reg[nop],
-				      this_costly_alternative, NULL, true))
+				      this_costly_alternative, NULL))
 			{
 			  if (lra_dump_file != NULL)
 			    fprintf
@@ -4392,7 +4388,7 @@ curr_insn_transform (bool check_only_p)
 
 	if (REG_P (reg) && (regno = REGNO (reg)) >= FIRST_PSEUDO_REGISTER)
 	  {
-	    bool ok_p = in_class_p (reg, goal_alt[i], &new_class, true);
+	    bool ok_p = in_class_p (reg, goal_alt[i], &new_class);
 
 	    if (new_class != NO_REGS && get_reg_class (regno) != new_class)
 	      {
