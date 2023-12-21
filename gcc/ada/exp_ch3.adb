@@ -12559,7 +12559,7 @@ package body Exp_Ch3 is
          and then not No_Run_Time_Mode
          and then RTE_Available (RE_Root_Buffer_Type)
       then
-         Build_Record_Put_Image_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Put_Image_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 

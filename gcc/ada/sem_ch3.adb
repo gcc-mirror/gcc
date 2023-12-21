@@ -14539,8 +14539,11 @@ package body Sem_Ch3 is
       --  In an instance it may be necessary to retrieve the full view of a
       --  type with unknown discriminants, or a full view with defaulted
       --  discriminants. In other contexts the constraint is illegal.
+      --  This relaxation of legality checking may also be needed in
+      --  compiler-generated Put_Image or streaming subprograms (hence
+      --  the Comes_From_Source test).
 
-      if In_Instance
+      if (In_Instance or not Comes_From_Source (S))
         and then Is_Private_Type (T)
         and then Present (Full_View (T))
         and then

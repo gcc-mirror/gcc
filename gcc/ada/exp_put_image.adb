@@ -82,12 +82,11 @@ package body Exp_Put_Image is
    -------------------------------------
 
    procedure Build_Array_Put_Image_Procedure
-     (Nod  : Node_Id;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
-      Loc  : constant Source_Ptr := Sloc (Nod);
+      Loc  : constant Source_Ptr := Sloc (Typ);
 
       function Wrap_In_Loop
         (Stms : List_Id;
@@ -132,7 +131,7 @@ package body Exp_Put_Image is
                  Expressions => New_List (
                    Make_Integer_Literal (Loc, Dim))));
          Loop_Stm : constant Node_Id :=
-           Make_Implicit_Loop_Statement (Nod, Statements => Stms);
+           Make_Implicit_Loop_Statement (Typ, Statements => Stms);
          Exit_Stm : constant Node_Id :=
            Make_Exit_Statement (Loc,
              Condition =>
@@ -549,11 +548,11 @@ package body Exp_Put_Image is
    --    end Put_Image;
 
    procedure Build_Record_Put_Image_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
+      Loc  : constant Source_Ptr := Sloc (Typ);
       Btyp : constant Entity_Id := Base_Type (Typ);
       pragma Assert (not Is_Class_Wide_Type (Btyp));
       pragma Assert (not Is_Unchecked_Union (Btyp));
@@ -1349,6 +1348,8 @@ package body Exp_Put_Image is
    begin
       if Is_Array_Type (E) and then Is_First_Subtype (E) then
          return E;
+      elsif Is_Private_Type (Base_Type (E)) and not Is_Private_Type (E) then
+         return Implementation_Base_Type (E);
       else
          return Base_Type (E);
       end if;
