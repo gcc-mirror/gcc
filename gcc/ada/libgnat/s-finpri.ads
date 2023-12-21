@@ -92,13 +92,12 @@ package System.Finalization_Primitives with Preelaborate is
 
    procedure Finalize_Master (Master : in out Finalization_Scope_Master);
    --  Finalizes each of the controlled objects associated with Master, in the
-   --  reverse of the order in which they were attached, and releases the space
-   --  that was allocated on the secondary stack if Master.SS_Mark is not null.
-   --  Calls to this procedure with a Master that has already been finalized
-   --  have no effects.
+   --  reverse of the order in which they were attached. Calls to the procedure
+   --  with a Master that has already been finalized have no effects.
 
    procedure Finalize_Object (Node : in out Master_Node);
-   --  Finalizes the controlled object attached to Node
+   --  Finalizes the controlled object attached to Node. Calls to the procedure
+   --  with a Node that has already been finalized have no effects.
 
    procedure Suppress_Object_Finalize_At_End (Node : in out Master_Node);
    --  Changes the state of Node to effectively suppress a call to Node's
