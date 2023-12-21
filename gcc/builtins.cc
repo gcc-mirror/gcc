@@ -4491,10 +4491,6 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
       if (max_len >> max_bits > min_len >> max_bits)
 	tst_bits = max_bits;
     }
-  /* ??? Do we have to check that all powers of two lengths from
-     max_bits down to ctz_len pass can_store_by_pieces?  As in, could
-     it possibly be that xlenest passes while smaller power-of-two
-     sizes don't?  */
 
   by_pieces_constfn constfun;
   void *constfundata;
