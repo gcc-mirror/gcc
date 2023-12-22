@@ -164,6 +164,7 @@ extern gimple *omp_build_barrier (tree lhs);
 extern tree find_combined_omp_for (tree *, int *, void *);
 extern poly_uint64 omp_max_vf (void);
 extern int omp_max_simt_vf (void);
+extern const char *omp_context_name_list_prop (tree);
 extern void omp_construct_traits_to_codes (tree, int, enum tree_code *);
 extern tree omp_check_context_selector (location_t loc, tree ctx);
 extern void omp_mark_declare_variant (location_t loc, tree variant,

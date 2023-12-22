@@ -1234,7 +1234,7 @@ struct omp_ts_info omp_ts_map[] =
 /* Return a name from PROP, a property in selectors accepting
    name lists.  */
 
-static const char *
+const char *
 omp_context_name_list_prop (tree prop)
 {
   gcc_assert (OMP_TP_NAME (prop) == OMP_TP_NAMELIST_NODE);
