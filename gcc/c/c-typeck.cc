@@ -1511,8 +1511,6 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
   if (!data->anon_field && TYPE_STUB_DECL (t1) != TYPE_STUB_DECL (t2))
     data->different_types_p = true;
 
-  data->anon_field = false;
-
   /* Incomplete types are incompatible inside a TU.  */
   if (TYPE_SIZE (t1) == NULL || TYPE_SIZE (t2) == NULL)
     return false;
@@ -1592,20 +1590,19 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 	     s1 && s2;
 	     s1 = DECL_CHAIN (s1), s2 = DECL_CHAIN (s2))
 	  {
-	    if (TREE_CODE (s1) != TREE_CODE (s2)
-		|| DECL_NAME (s1) != DECL_NAME (s2))
+	    gcc_assert (TREE_CODE (s1) == FIELD_DECL);
+	    gcc_assert (TREE_CODE (s2) == FIELD_DECL);
+
+	    if (DECL_NAME (s1) != DECL_NAME (s2))
 	      return false;
 
-	    if (!DECL_NAME (s1) && RECORD_OR_UNION_TYPE_P (TREE_TYPE (s1)))
-	      data->anon_field = true;
+	    if (DECL_ALIGN (s1) != DECL_ALIGN (s2))
+	      return false;
+
+	    data->anon_field = !DECL_NAME (s1);
 
 	    data->cache = &entry;
 	    if (!comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2), data))
-	      return false;
-
-	    if (TREE_CODE (s1) == FIELD_DECL
-		&& simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
-				     DECL_FIELD_BIT_OFFSET (s2)) != 1)
 	      return false;
 
 	    tree st1 = TYPE_SIZE (TREE_TYPE (s1));
