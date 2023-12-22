@@ -1491,7 +1491,7 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 		m_data_cnt = tree_to_uhwi (m_data[save_data_cnt + 2]);
 	      if (TYPE_UNSIGNED (rhs_type))
 		t = build_zero_cst (m_limb_type);
-	      else if (m_bb)
+	      else if (m_bb && m_data[save_data_cnt])
 		t = m_data[save_data_cnt];
 	      else
 		t = m_data[save_data_cnt + 1];
