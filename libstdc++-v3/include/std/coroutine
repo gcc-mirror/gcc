@@ -31,6 +31,9 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
+
 #define __glibcxx_want_coroutine
 #include <bits/version.h>
 
@@ -358,4 +361,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // __cpp_lib_coroutine
 
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_COROUTINE

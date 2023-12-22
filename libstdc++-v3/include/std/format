@@ -63,6 +63,10 @@
 # include <cctype>
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // __int128
+#pragma GCC diagnostic ignored "-Wc++23-extensions" // bf16
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1674,6 +1678,10 @@ namespace __format
 
 	      do
 		{
+		  // Mangling of this lambda, and thus resize_and_overwrite
+		  // instantiated with it, was fixed in ABI 18 (G++ 13).  Since
+		  // <format> was new in G++ 13, and is experimental, that
+		  // isn't a problem.
 		  auto __overwrite = [&__to_chars, &__res] (char* __p, size_t __n)
 		  {
 		    __res = __to_chars(__p + 1, __p + __n - 1);
@@ -4737,4 +4745,5 @@ namespace __format
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __cpp_lib_format
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_FORMAT

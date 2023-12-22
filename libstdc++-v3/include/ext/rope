@@ -66,6 +66,10 @@
 
 #include <ext/memory> // For uninitialized_copy_n
 
+// Ignore warnings about default member initializers.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
+
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -3008,6 +3012,8 @@ namespace tr1
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#pragma GCC diagnostic pop
 
 # include <ext/ropeimpl.h>
 

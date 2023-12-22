@@ -31,6 +31,9 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
+
 #include <bits/c++config.h>
 
 #if __cplusplus >= 201103L
@@ -87,5 +90,7 @@ namespace std
 # endif
 
 #endif // C++11
+
+#pragma GCC diagnostic pop
 
 #endif // _GLIBCXX_INTTYPES_H

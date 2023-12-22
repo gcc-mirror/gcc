@@ -31,6 +31,9 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // __int128
+
 #include <bits/requires_hosted.h> // for error codes
 
 // As an extension we support <charconv> in C++14, but this header should not
@@ -932,4 +935,5 @@ namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++14
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_CHARCONV

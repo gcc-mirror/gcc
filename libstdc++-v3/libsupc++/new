@@ -46,6 +46,9 @@
 #define __glibcxx_want_constexpr_new
 #include <bits/version.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // scoped enum
+
 #pragma GCC visibility push(default)
 
 extern "C++" {
@@ -239,5 +242,6 @@ namespace std
 }
 
 #pragma GCC visibility pop
+#pragma GCC diagnostic pop
 
 #endif

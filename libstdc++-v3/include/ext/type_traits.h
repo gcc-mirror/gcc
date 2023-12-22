@@ -34,6 +34,9 @@
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
+
 extern "C++" {
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
@@ -269,5 +272,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 } // extern "C++"
+
+#pragma GCC diagnostic pop
 
 #endif 

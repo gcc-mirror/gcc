@@ -32,6 +32,11 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
+#pragma GCC diagnostic ignored "-Wc++23-extensions" // bf16
+
 // The major release number for the GCC release the C++ library belongs to.
 #define _GLIBCXX_RELEASE
 
@@ -909,5 +914,7 @@ namespace __gnu_cxx
 #include <pstl/pstl_config.h>
 #endif // __has_include
 #endif // C++17
+
+#pragma GCC diagnostic pop
 
 // End of prewritten config; the settings discovered at configure time follow.

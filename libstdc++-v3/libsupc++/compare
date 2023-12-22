@@ -39,6 +39,10 @@
 
 #include <concepts>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // __int128
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
   // [cmp.categories], comparison category types
@@ -1257,6 +1261,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
   /// @endcond
 #endif // __cpp_lib_three_way_comparison >= 201907L
 } // namespace std
+
+#pragma GCC diagnostic pop
 
 #endif // C++20
 

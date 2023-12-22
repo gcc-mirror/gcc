@@ -40,6 +40,9 @@
 # include <type_traits> // is_same_v, is_integral_v
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
+
 //
 // This file provides some compile-time information about various types.
 // These representations were designed, on purpose, to be constant-expressions
@@ -581,5 +584,7 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 } // extern "C++"
+
+#pragma GCC diagnostic pop
 
 #endif //_CPP_TYPE_TRAITS_H
