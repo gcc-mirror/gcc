@@ -2,6 +2,7 @@
 
 #include <new>
 #include <stdlib.h>
+#include <stdint.h>
 
 extern int get_buf_size ();
 
