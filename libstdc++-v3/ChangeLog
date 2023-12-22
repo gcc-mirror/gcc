@@ -1,3 +1,26 @@
+2023-12-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/Makefile.am: Install std/generator, bits/elements_of.h
+	as freestanding.
+	* include/Makefile.in: Regenerate.
+	* include/bits/version.def: Add __cpp_lib_generator.
+	* include/bits/version.h: Regenerate.
+	* include/precompiled/stdc++.h: Include <generator>.
+	* include/std/ranges: Include bits/elements_of.h
+	* include/bits/elements_of.h: New file.
+	* include/std/generator: New file.
+	* testsuite/24_iterators/range_generators/01.cc: New test.
+	* testsuite/24_iterators/range_generators/02.cc: New test.
+	* testsuite/24_iterators/range_generators/copy.cc: New test.
+	* testsuite/24_iterators/range_generators/except.cc: New test.
+	* testsuite/24_iterators/range_generators/synopsis.cc: New test.
+	* testsuite/24_iterators/range_generators/subrange.cc: New test.
+
+2023-12-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/bits/ranges_util.h: Add missing <bits/invoke.h>
+	include.
+
 2023-12-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/112802

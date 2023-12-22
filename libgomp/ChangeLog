@@ -1,3 +1,7 @@
+2023-12-21  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-enter-data-6.f90: Remove XFAIL.
+
 2023-12-20  Julian Brown  <julian@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memcpy2d): Adjust parameters to

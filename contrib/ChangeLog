@@ -1,3 +1,8 @@
+2023-12-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* compare_tests: Add tool to test lines.  Match tabs besides
+	blanks to insert tool and target.  Don't print undefined fname.
+
 2023-12-20  Jason Merrill  <jason@redhat.com>
 
 	* gcc-git-customization.sh: Add git gcc-style alias.

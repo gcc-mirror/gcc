@@ -1,3 +1,52 @@
+2023-12-21  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (maybe_warn_unparenthesized_assignment): Add
+	'nested_p' bool parameter.
+	* semantics.cc (boolish_class_type_p_cache): Define.
+	(boolish_class_type_p): Define.
+	(maybe_warn_unparenthesized_assignment): Add 'nested_p'
+	bool parameter.  Suppress the warning for nested assignments
+	to bool and bool-like class types.
+	(maybe_convert_cond): Pass nested_p=false to
+	maybe_warn_unparenthesized_assignment.
+	* typeck.cc (convert_for_assignment): Pass nested_p=true to
+	maybe_warn_unparenthesized_assignment.  Remove now redundant
+	check for 'rhs' having bool type.
+
+2023-12-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/84542
+	* decl.cc (merge_attribute_bits): Merge TREE_DEPRECATED
+	and TREE_UNAVAILABLE.
+
+2023-12-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70413
+	PR c++/107906
+	* decl2.cc (min_vis_expr_r): Handle PTRMEM_CST and TEMPLATE_DECL
+	other than those for alias templates.
+
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.cc (cp_genericize_r): If warn_alloc_size, call
+	warn_for_alloc_size for -Walloc-size diagnostics.
+	* semantics.cc (finish_call_expr): If warn_calloc_transposed_args,
+	call warn_for_calloc for -Wcalloc-transposed-args diagnostics.
+
+2023-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37722
+	* decl.cc (identify_goto): Adjust for computed goto.
+	(struct named_label_use_entry): Add computed_goto field.
+	(poplevel_named_label_1): Add to computed_goto vec.
+	(check_previous_goto_1): Dump computed_goto vec.
+	(check_goto_1): Split out from check_goto.
+	(check_goto): Check all addressable labels for computed goto.
+	(struct named_label_entry): Add addressed field.
+	(mark_label_addressed): New.
+	* parser.cc (cp_parser_unary_expression): Call it.
+	* cp-tree.h (mark_label_addressed): Declare it.
+
 2023-12-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113088

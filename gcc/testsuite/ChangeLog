@@ -1,3 +1,122 @@
+2023-12-21  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/warn/Wparentheses-34.C: New test.
+
+2023-12-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/84542
+	* g++.dg/ext/attr-deprecated-2.C: No longer XFAIL.
+	* g++.dg/ext/attr-unavailable-12.C: New test.
+
+2023-12-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70413
+	PR c++/107906
+	* g++.dg/template/linkage2.C: New test.
+	* g++.dg/template/linkage3.C: New test.
+	* g++.dg/template/linkage4.C: New test.
+	* g++.dg/template/linkage4a.C: New test.
+
+2023-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113044
+	* gcc.target/i386/pr113044.c: New test.
+
+2023-12-21  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113093
+	* gcc.dg/pr113093.c: New test.
+
+2023-12-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-7.c: New test.
+
+2023-12-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113094
+	* gcc.target/aarch64/pr113094.c: New test.
+
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/warn/Walloc-size-1.C: New test.
+	* g++.dg/warn/Wcalloc-transposed-args-1.C: New test.
+
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/113092
+	* gcc.dg/ubsan/bitint-4.c: New test.
+
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112941
+	* gcc.dg/bitint-56.c: New test.
+	* gcc.dg/bitint-57.c: New test.
+
+2023-12-21  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/simd_correctness_check.h:The variable
+	types in the check results are modified in conjunction with the
+	parameter types defined in the vector builtin function.
+
+2023-12-21  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/c23-tag-2.c: Activate.
+	* gcc.dg/c23-tag-5.c: Activate.
+	* gcc.dg/c23-tag-alias-1.c: New test.
+	* gcc.dg/c23-tag-alias-2.c: New test.
+	* gcc.dg/c23-tag-alias-3.c: New test.
+	* gcc.dg/c23-tag-alias-4.c: New test.
+	* gcc.dg/c23-tag-alias-5.c: New test.
+	* gcc.dg/gnu23-tag-alias-1.c: New test.
+	* gcc.dg/gnu23-tag-alias-2.c: New test.
+	* gcc.dg/gnu23-tag-alias-3.c: New test.
+	* gcc.dg/gnu23-tag-alias-4.c: New test.
+	* gcc.dg/gnu23-tag-alias-5.c: New test.
+	* gcc.dg/gnu23-tag-alias-6.c: New test.
+	* gcc.dg/gnu23-tag-alias-7.c: New test.
+
+2023-12-21  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/c23-tag-enum-1.c: New test.
+	* gcc.dg/c23-tag-enum-2.c: New test.
+	* gcc.dg/c23-tag-enum-3.c: New test.
+	* gcc.dg/c23-tag-enum-4.c: New test.
+	* gcc.dg/c23-tag-enum-5.c: New test.
+	* gcc.dg/gnu23-tag-enum-1.c: Mew test.
+
+2023-12-21  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/c23-enum-7.c: Remove warning.
+	* gcc.dg/c23-tag-1.c: New test.
+	* gcc.dg/c23-tag-2.c: New deactivated test.
+	* gcc.dg/c23-tag-3.c: New test.
+	* gcc.dg/c23-tag-4.c: New test.
+	* gcc.dg/c23-tag-5.c: New deactivated test.
+	* gcc.dg/c23-tag-6.c: New test.
+	* gcc.dg/c23-tag-7.c: New test.
+	* gcc.dg/c23-tag-8.c: New test.
+	* gcc.dg/gnu23-tag-1.c: New test.
+	* gcc.dg/gnu23-tag-2.c: New test.
+	* gcc.dg/gnu23-tag-3.c: New test.
+	* gcc.dg/gnu23-tag-4.c: New test.
+	* gcc.dg/pr112488-2.c: Remove warning.
+
+2023-12-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/112995
+	* gcc.target/powerpc/pr112995.c: New test.
+
+2023-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37722
+	* g++.dg/ext/label15.C: New test.
+	* g++.dg/torture/pr42739.C: Expect warning.
+
+2023-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106213
+	* g++.dg/cpp0x/depr-copy5.C: New test.
+
 2023-12-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/113087

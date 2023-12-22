@@ -1,3 +1,144 @@
+2023-12-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/112951
+	* doc/md.texi (cond_copysign): Document.
+	(cond_len_copysign): Likewise.
+	* optabs.def: Reorder cond_copysign to be before
+	cond_fmin. Likewise for cond_len_copysign.
+
+2023-12-21  Andre Vieira (lists)  <andre.simoesdiasvieira@arm.com>
+
+	PR middle-end/113040
+	* omp-simd-clone.cc (simd_clone_adjust_argument_types): Add multiple
+	vector arguments where simdlen is larger than veclen.
+
+2023-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113044
+	* config/i386/i386.md (*ashlqi_ext<mode>_1): Move from the
+	high register of the input operand.
+	(*<insn>qi_ext<mode>_1): Ditto.
+
+2023-12-21  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2023-12-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/112918
+	* lra-constraints.cc (SMALL_REGISTER_CLASS_P): Move before in_class_p.
+	(in_class_p): Restrict condition for narrowing class in case of
+	allow_all_reload_class_changes_p.
+	(process_alt_operands): Pass true for
+	allow_all_reload_class_changes_p in calls of in_class_p.
+	(curr_insn_transform): Ditto for reg operand win.
+
+2023-12-21  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (omp_segregate_mapping_groups): Handle "present" groups.
+	(gimplify_scan_omp_clauses): Use mapping group functionality to
+	iterate through mapping nodes.  Remove most gimplification of
+	OMP_CLAUSE_MAP nodes from here, but still populate ctx->variables
+	splay tree.
+	(gimplify_adjust_omp_clauses): Move most gimplification of
+	OMP_CLAUSE_MAP nodes here.
+
+2023-12-21  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113093
+	* config/aarch64/aarch64-ldp-fusion.cc (latest_hazard_before):
+	If the insn is throwing, record the previous insn as a hazard to
+	prevent moving it from the end of the BB.
+
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.cc (maybe_fold_comparisons_from_match_pd):
+	Use unsigned char buffers for lhs1 and lhs2 instead of allocating
+	them through XALLOCA.
+	* collect2.cc (maybe_run_lto_and_relink): Swap xcalloc arguments.
+
+2023-12-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113094
+	* config/aarch64/aarch64-early-ra.cc (apply_allocation): Stub
+	out instructions that are going to be deleted before iterating
+	over the rest.
+
+2023-12-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112948
+	* config/aarch64/aarch64-early-ra.cc (find_strided_accesses): Fix
+	cut-&-pasto.
+
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112941
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Disallow merging
+	a cast with multiplication, division or conversion to floating point
+	if rhs1 of the cast is result of another single use cast in the same
+	bb.
+
+2023-12-21  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* doc/extend.texi:According to the documents submitted earlier,
+	Two problems with function return types and using the actual types
+	of parameters instead of variable names were found and fixed.
+
+2023-12-21  Jiajie Chen  <c@jia.je>
+
+	* doc/extend.texi(__lsx_vabsd_di): remove extra `i' in name.
+	(__lsx_vfrintrm_d, __lsx_vfrintrm_s, __lsx_vfrintrne_d,
+	__lsx_vfrintrne_s, __lsx_vfrintrp_d, __lsx_vfrintrp_s, __lsx_vfrintrz_d,
+	__lsx_vfrintrz_s): fix return types.
+	(__lsx_vld, __lsx_vldi, __lsx_vldrepl_b, __lsx_vldrepl_d,
+	__lsx_vldrepl_h, __lsx_vldrepl_w, __lsx_vmaxi_b, __lsx_vmaxi_d,
+	__lsx_vmaxi_h, __lsx_vmaxi_w, __lsx_vmini_b, __lsx_vmini_d,
+	__lsx_vmini_h, __lsx_vmini_w, __lsx_vsrani_d_q, __lsx_vsrarni_d_q,
+	__lsx_vsrlni_d_q, __lsx_vsrlrni_d_q, __lsx_vssrani_d_q,
+	__lsx_vssrarni_d_q, __lsx_vssrarni_du_q, __lsx_vssrlni_d_q,
+	__lsx_vssrlrni_du_q, __lsx_vst, __lsx_vstx, __lsx_vssrani_du_q,
+	__lsx_vssrlni_du_q, __lsx_vssrlrni_d_q): add missing semicolon.
+	(__lsx_vpickve2gr_bu, __lsx_vpickve2gr_hu): fix typo in return
+	type.
+	(__lsx_vstelm_b, __lsx_vstelm_d, __lsx_vstelm_h,
+	__lsx_vstelm_w): use imm type for the last argument.
+	(__lsx_vsigncov_b, __lsx_vsigncov_h, __lsx_vsigncov_w,
+	__lsx_vsigncov_d): remove duplicate definitions.
+
+2023-12-21  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md: Use zero expansion instruction.
+	* config/loongarch/lsx.md: Ditto.
+
+2023-12-21  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/112778
+	* builtins.cc (try_store_by_multiple_pieces): Drop obsolete
+	comment.
+
+2023-12-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/112995
+	* sel-sched.cc (try_replace_dest_reg): Check the validity of the
+	replaced insn before actually replacing dest in expr.
+
+2023-12-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* dbgcnt.def (sched_block): Remove.
+	* sched-rgn.cc (schedule_region): Remove the support of debug count
+	sched_block.
+
+2023-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37722
+	* doc/extend.texi: Document that computed goto does not
+	call destructors.
+
+2023-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106213
+	* opts-common.cc (control_warning_option): Call
+	handle_generated_option for all cl_var_types.
+
 2023-12-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/113087

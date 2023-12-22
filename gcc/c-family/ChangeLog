@@ -1,3 +1,13 @@
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Walloc-size): Enable also for C++ and ObjC++.
+
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/113092
+	* c-ubsan.cc (ubsan_instrument_shift): Workaround for missing
+	ubsan _BitInt support for the shift count.
+
 2023-12-20  Florian Weimer  <fweimer@redhat.com>
 
 	PR c/113050
