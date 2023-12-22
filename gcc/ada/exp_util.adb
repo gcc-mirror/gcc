@@ -12999,9 +12999,12 @@ package body Exp_Util is
             then
                return True;
 
-            --  Simple protected objects which use type System.Tasking.
+            --  Simple protected objects which use the type System.Tasking.
             --  Protected_Objects.Protection to manage their locks should be
-            --  treated as controlled since they require manual cleanup.
+            --  treated as controlled since they require manual cleanup, but
+            --  not for restricted run-time libraries (Ravenscar), see also
+            --  Cleanup_Protected_Object in Exp_Ch7.
+
             --  The only exception is illustrated in the following example:
 
             --     package Pkg is
@@ -13034,6 +13037,7 @@ package body Exp_Util is
             elsif Ekind (Obj_Id) = E_Variable
               and then not In_Library_Level_Package_Body (Obj_Id)
               and then Has_Simple_Protected_Object (Obj_Typ)
+              and then not Restricted_Profile
             then
                return True;
             end if;
