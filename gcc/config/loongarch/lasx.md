@@ -839,10 +839,10 @@
   [(set (match_operand:LASX 0 "nonimmediate_operand")
 	(match_operand:LASX 1 "move_operand"))]
   "reload_completed && ISA_HAS_LASX
-   && loongarch_split_move_insn_p (operands[0], operands[1])"
+   && loongarch_split_move_p (operands[0], operands[1])"
   [(const_int 0)]
 {
-  loongarch_split_move_insn (operands[0], operands[1], curr_insn);
+  loongarch_split_move (operands[0], operands[1]);
   DONE;
 })
 

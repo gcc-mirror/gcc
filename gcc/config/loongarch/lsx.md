@@ -794,21 +794,21 @@
 })
 
 (define_insn "mov<mode>_lsx"
-  [(set (match_operand:LSX 0 "nonimmediate_operand" "=f,f,R,*r,*f")
-	(match_operand:LSX 1 "move_operand" "fYGYI,R,f,*f,*r"))]
+  [(set (match_operand:LSX 0 "nonimmediate_operand" "=f,f,R,*r,*f,*r")
+	(match_operand:LSX 1 "move_operand" "fYGYI,R,f,*f,*r,*r"))]
   "ISA_HAS_LSX"
 { return loongarch_output_move (operands[0], operands[1]); }
-  [(set_attr "type" "simd_move,simd_load,simd_store,simd_copy,simd_insert")
+  [(set_attr "type" "simd_move,simd_load,simd_store,simd_copy,simd_insert,simd_copy")
    (set_attr "mode" "<MODE>")])
 
 (define_split
   [(set (match_operand:LSX 0 "nonimmediate_operand")
 	(match_operand:LSX 1 "move_operand"))]
   "reload_completed && ISA_HAS_LSX
-   && loongarch_split_move_insn_p (operands[0], operands[1])"
+   && loongarch_split_move_p (operands[0], operands[1])"
   [(const_int 0)]
 {
-  loongarch_split_move_insn (operands[0], operands[1], curr_insn);
+  loongarch_split_move (operands[0], operands[1]);
   DONE;
 })
 

@@ -82,11 +82,9 @@ extern rtx loongarch_legitimize_call_address (rtx);
 
 extern rtx loongarch_subword (rtx, bool);
 extern bool loongarch_split_move_p (rtx, rtx);
-extern void loongarch_split_move (rtx, rtx, rtx);
+extern void loongarch_split_move (rtx, rtx);
 extern bool loongarch_addu16i_imm12_operand_p (HOST_WIDE_INT, machine_mode);
 extern void loongarch_split_plus_constant (rtx *, machine_mode);
-extern bool loongarch_split_move_insn_p (rtx, rtx);
-extern void loongarch_split_move_insn (rtx, rtx, rtx);
 extern void loongarch_split_128bit_move (rtx, rtx);
 extern bool loongarch_split_128bit_move_p (rtx, rtx);
 extern void loongarch_split_256bit_move (rtx, rtx);

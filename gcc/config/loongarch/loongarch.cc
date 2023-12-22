@@ -2562,7 +2562,6 @@ loongarch_split_const_insns (rtx x)
   return low + high;
 }
 
-bool loongarch_split_move_insn_p (rtx dest, rtx src);
 /* Return one word of 128-bit value OP, taking into account the fixed
    endianness of certain registers.  BYTE selects from the byte address.  */
 
@@ -2602,7 +2601,7 @@ loongarch_load_store_insns (rtx mem, rtx_insn *insn)
     {
       set = single_set (insn);
       if (set
-	  && !loongarch_split_move_insn_p (SET_DEST (set), SET_SRC (set)))
+	  && !loongarch_split_move_p (SET_DEST (set), SET_SRC (set)))
 	might_split_p = false;
     }
 
@@ -4220,7 +4219,7 @@ loongarch_split_move_p (rtx dest, rtx src)
    SPLIT_TYPE describes the split condition.  */
 
 void
-loongarch_split_move (rtx dest, rtx src, rtx insn_)
+loongarch_split_move (rtx dest, rtx src)
 {
   rtx low_dest;
 
@@ -4256,33 +4255,6 @@ loongarch_split_move (rtx dest, rtx src, rtx insn_)
 	  loongarch_emit_move (low_dest, loongarch_subword (src, false));
 	  loongarch_emit_move (loongarch_subword (dest, true),
 			       loongarch_subword (src, true));
-	}
-    }
-
-  /* This is a hack.  See if the next insn uses DEST and if so, see if we
-     can forward SRC for DEST.  This is most useful if the next insn is a
-     simple store.  */
-  rtx_insn *insn = (rtx_insn *) insn_;
-  struct loongarch_address_info addr = {};
-  if (insn)
-    {
-      rtx_insn *next = next_nonnote_nondebug_insn_bb (insn);
-      if (next)
-	{
-	  rtx set = single_set (next);
-	  if (set && SET_SRC (set) == dest)
-	    {
-	      if (MEM_P (src))
-		{
-		  rtx tmp = XEXP (src, 0);
-		  loongarch_classify_address (&addr, tmp, GET_MODE (tmp),
-					      true);
-		  if (addr.reg && !reg_overlap_mentioned_p (dest, addr.reg))
-		    validate_change (next, &SET_SRC (set), src, false);
-		}
-	      else
-		validate_change (next, &SET_SRC (set), src, false);
-	    }
 	}
     }
 }
@@ -4329,23 +4301,6 @@ loongarch_split_plus_constant (rtx *op, machine_mode mode)
   op[1] = gen_int_mode (a, mode);
   v = v - (unsigned HOST_WIDE_INT) a;
   op[2] = gen_int_mode (v, mode);
-}
-
-/* Return true if a move from SRC to DEST in INSN should be split.  */
-
-bool
-loongarch_split_move_insn_p (rtx dest, rtx src)
-{
-  return loongarch_split_move_p (dest, src);
-}
-
-/* Split a move from SRC to DEST in INSN, given that
-   loongarch_split_move_insn_p holds.  */
-
-void
-loongarch_split_move_insn (rtx dest, rtx src, rtx insn)
-{
-  loongarch_split_move (dest, src, insn);
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  */
