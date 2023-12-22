@@ -577,77 +577,17 @@
   [(set_attr "type" "simd_insert")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "vec_concatv4di"
-  [(set (match_operand:V4DI 0 "register_operand" "=f")
-	(vec_concat:V4DI
-	  (match_operand:V2DI 1 "register_operand" "0")
-	  (match_operand:V2DI 2 "register_operand" "f")))]
+(define_insn "vec_concat<mode>"
+  [(set (match_operand:LASX 0 "register_operand" "=f")
+	(vec_concat:LASX
+	  (match_operand:<VHMODE256_ALL> 1 "register_operand" "0")
+	  (match_operand:<VHMODE256_ALL> 2 "register_operand" "f")))]
   "ISA_HAS_LASX"
 {
-  return "xvpermi.q\t%u0,%u2,0x20";
+  return "xvpermi.q\t%u0,%u2,0x02";
 }
   [(set_attr "type" "simd_splat")
-   (set_attr "mode" "V4DI")])
-
-(define_insn "vec_concatv8si"
-  [(set (match_operand:V8SI 0 "register_operand" "=f")
-	(vec_concat:V8SI
-	  (match_operand:V4SI 1 "register_operand" "0")
-	  (match_operand:V4SI 2 "register_operand" "f")))]
-  "ISA_HAS_LASX"
-{
-  return "xvpermi.q\t%u0,%u2,0x20";
-}
-  [(set_attr "type" "simd_splat")
-   (set_attr "mode" "V4DI")])
-
-(define_insn "vec_concatv16hi"
-  [(set (match_operand:V16HI 0 "register_operand" "=f")
-	(vec_concat:V16HI
-	  (match_operand:V8HI 1 "register_operand" "0")
-	  (match_operand:V8HI 2 "register_operand" "f")))]
-  "ISA_HAS_LASX"
-{
-  return "xvpermi.q\t%u0,%u2,0x20";
-}
-  [(set_attr "type" "simd_splat")
-   (set_attr "mode" "V4DI")])
-
-(define_insn "vec_concatv32qi"
-  [(set (match_operand:V32QI 0 "register_operand" "=f")
-	(vec_concat:V32QI
-	  (match_operand:V16QI 1 "register_operand" "0")
-	  (match_operand:V16QI 2 "register_operand" "f")))]
-  "ISA_HAS_LASX"
-{
-  return "xvpermi.q\t%u0,%u2,0x20";
-}
-  [(set_attr "type" "simd_splat")
-   (set_attr "mode" "V4DI")])
-
-(define_insn "vec_concatv4df"
-  [(set (match_operand:V4DF 0 "register_operand" "=f")
-	(vec_concat:V4DF
-	  (match_operand:V2DF 1 "register_operand" "0")
-	  (match_operand:V2DF 2 "register_operand" "f")))]
-  "ISA_HAS_LASX"
-{
-  return "xvpermi.q\t%u0,%u2,0x20";
-}
-  [(set_attr "type" "simd_splat")
-   (set_attr "mode" "V4DF")])
-
-(define_insn "vec_concatv8sf"
-  [(set (match_operand:V8SF 0 "register_operand" "=f")
-	(vec_concat:V8SF
-	  (match_operand:V4SF 1 "register_operand" "0")
-	  (match_operand:V4SF 2 "register_operand" "f")))]
-  "ISA_HAS_LASX"
-{
-  return "xvpermi.q\t%u0,%u2,0x20";
-}
-  [(set_attr "type" "simd_splat")
-   (set_attr "mode" "V4DI")])
+   (set_attr "mode" "<MODE>")])
 
 ;; xshuf.w
 (define_insn "lasx_xvperm_<lasxfmt_f_wd>"
