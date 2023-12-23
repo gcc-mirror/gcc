@@ -93,7 +93,8 @@ host_detect_local_cpu (int argc, const char **argv)
 fallback_cpu:
 #if defined (__mips_nan2008)
   /* Put the ret to the end of list, since it may be NULL.  */
-  ret = reconcat (ret, " -mnan=2008 ", ret, NULL);
+  if (arch)
+    ret = reconcat (ret, " -mnan=2008 ", ret, NULL);
 #endif
 
 #ifdef HAVE_GETAUXVAL
