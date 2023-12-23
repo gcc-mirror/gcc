@@ -551,8 +551,7 @@ enum reg_class
 #define CRIS_STACKADJ_REG CRIS_STRUCT_VALUE_REGNUM
 #define EH_RETURN_STACKADJ_RTX gen_rtx_REG (SImode, CRIS_STACKADJ_REG)
 
-#define EH_RETURN_HANDLER_RTX \
-  cris_return_addr_rtx (0, NULL)
+#define EH_RETURN_HANDLER_RTX cris_eh_return_handler_rtx ()
 
 #define INIT_EXPANDERS cris_init_expanders ()
 

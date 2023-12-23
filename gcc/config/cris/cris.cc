@@ -1382,6 +1382,22 @@ cris_return_addr_rtx (int count, rtx frameaddr ATTRIBUTE_UNUSED)
     : NULL_RTX;
 }
 
+/* Setting the EH return return address is done by a *store* to a memory
+   address expressed as relative to "*incoming* args".  That store will
+   be optimized away, unless the MEM is marked as volatile.  N.B.: no
+   optimization opportunities are expected to be lost due to this hack;
+   __builtin_eh_return isn't called from elsewhere than the EH machinery
+   in libgcc.  */
+
+rtx
+cris_eh_return_handler_rtx ()
+{
+  rtx ret = cris_return_addr_rtx (0, NULL_RTX);
+  gcc_assert (MEM_P (ret));
+  MEM_VOLATILE_P (ret) = true;
+  return ret;
+}
+
 /* Accessor used in cris.md:return because cfun->machine isn't available
    there.  */
 
