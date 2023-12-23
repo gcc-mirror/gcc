@@ -1,3 +1,8 @@
+2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.am: Allow overriding EXEPCT.
+	* Makefile.in: Regenerate.
+
 2023-12-18  Yang Yujie  <yangyujie@loongson.cn>
 
 	* m4/druntime/cpu.m4: Support loongarch* targets.

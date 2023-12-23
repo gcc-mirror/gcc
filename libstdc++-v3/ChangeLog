@@ -1,3 +1,8 @@
+2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.am: Allow overriding EXEPCT.
+	* Makefile.in: Regenerate.
+
 2023-12-21  Arsen Arsenović  <arsen@aarsen.me>
 
 	* include/Makefile.am: Install std/generator, bits/elements_of.h

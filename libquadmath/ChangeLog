@@ -1,3 +1,8 @@
+2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.am: Allow overriding EXEPCT.
+	* Makefile.in: Regenerate.
+
 2023-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libquadmath/112963

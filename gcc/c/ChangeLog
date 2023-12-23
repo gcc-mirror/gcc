@@ -1,3 +1,12 @@
+2023-12-22  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (composite_type_internal): Adapted from
+	composite_type to support structs and unions.
+	(composite_type): New wrapper function.
+	(build_conditional_operator): Return composite type.
+	* c-decl.cc (finish_struct): Allow NULL for
+	enclosing_struct_parse_info.
+
 2023-12-21  Martin Uecker  <uecker@tugraz.at>
 
 	* c-decl.cc (c_struct_hasher): Hash stable for struct

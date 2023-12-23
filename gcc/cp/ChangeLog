@@ -1,3 +1,17 @@
+2023-12-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81438
+	* decl.cc (poplevel_named_label_1): Handle leaving catch.
+	(check_previous_goto_1): Likewise.
+	(check_goto_1): Likewise.
+
+2023-12-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95298
+	* mangle.cc (write_expression): Handle v18 sizeof... bug.
+	* pt.cc (tsubst_pack_expansion): Keep TREE_VEC for sizeof...
+	(tsubst_expr): Don't strip TREE_VEC here.
+
 2023-12-21  Patrick Palka  <ppalka@redhat.com>
 
 	* cp-tree.h (maybe_warn_unparenthesized_assignment): Add

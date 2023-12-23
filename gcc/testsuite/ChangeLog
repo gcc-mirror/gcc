@@ -1,3 +1,155 @@
+2023-12-22  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/c23-tag-alias-6.c: New test.
+	* gcc.dg/c23-tag-alias-7.c: New test.
+	* gcc.dg/c23-tag-composite-1.c: New test.
+	* gcc.dg/c23-tag-composite-2.c: New test.
+	* gcc.dg/c23-tag-composite-3.c: New test.
+	* gcc.dg/c23-tag-composite-4.c: New test.
+	* gcc.dg/c23-tag-composite-5.c: New test.
+	* gcc.dg/c23-tag-composite-6.c: New test.
+	* gcc.dg/c23-tag-composite-7.c: New test.
+	* gcc.dg/c23-tag-composite-8.c: New test.
+	* gcc.dg/c23-tag-composite-9.c: New test.
+	* gcc.dg/c23-tag-composite-10.c: New test.
+	* gcc.dg/gnu23-tag-composite-1.c: New test.
+	* gcc.dg/gnu23-tag-composite-2.c: New test.
+	* gcc.dg/gnu23-tag-composite-3.c: New test.
+	* gcc.dg/gnu23-tag-composite-4.c: New test.
+	* gcc.dg/gnu23-tag-composite-5.c: New test.
+
+2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/112758
+	* gcc.c-torture/execute/pr112758.c: New test.
+
+2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112941
+	* gcc.dg/bitint-60.c: New test.
+
+2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113102
+	* gcc.dg/bitint-59.c: New test.
+
+2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113102
+	* gcc.dg/bitint-58.c: New test.
+
+2023-12-22  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/is_array.C: Remove testsuite_tr1.h.  Add necessary
+	definitions accordingly.  Tweak macros for consistency across
+	test codes.
+	* g++.dg/ext/is_bounded_array.C: Likewise.
+	* g++.dg/ext/is_function.C: Likewise.
+	* g++.dg/ext/is_member_function_pointer.C: Likewise.
+	* g++.dg/ext/is_member_object_pointer.C: Likewise.
+	* g++.dg/ext/is_member_pointer.C: Likewise.
+	* g++.dg/ext/is_object.C: Likewise.
+	* g++.dg/ext/is_reference.C: Likewise.
+	* g++.dg/ext/is_scoped_enum.C: Likewise.
+
+2023-12-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81438
+	* g++.dg/ext/label15.C: Require indirect_jumps.
+	* g++.dg/ext/label16.C: New test.
+
+2023-12-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/analyzer/placement-new-size.C: Include <stdint.h>.  Also
+	add missing newline to end of file.
+
+2023-12-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95298
+	* g++.dg/cpp0x/variadic-mangle2.C: Add non-member.
+	* g++.dg/cpp0x/variadic-mangle4.C: New test.
+	* g++.dg/cpp0x/variadic-mangle5.C: New test.
+	* g++.dg/cpp0x/variadic-mangle5a.C: New test.
+
+2023-12-22  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle-arm-crypto.C: Specify -fabi-compat-version.
+	* g++.dg/abi/mangle-concepts1.C
+	* g++.dg/abi/mangle-neon-aarch64.C
+	* g++.dg/abi/mangle-neon.C
+	* g++.dg/abi/mangle-regparm.C
+	* g++.dg/abi/mangle-regparm1a.C
+	* g++.dg/abi/mangle-ttp1.C
+	* g++.dg/abi/mangle-union1.C
+	* g++.dg/abi/mangle1.C
+	* g++.dg/abi/mangle13.C
+	* g++.dg/abi/mangle15.C
+	* g++.dg/abi/mangle16.C
+	* g++.dg/abi/mangle18-1.C
+	* g++.dg/abi/mangle19-1.C
+	* g++.dg/abi/mangle20-1.C
+	* g++.dg/abi/mangle22.C
+	* g++.dg/abi/mangle23.C
+	* g++.dg/abi/mangle24.C
+	* g++.dg/abi/mangle25.C
+	* g++.dg/abi/mangle26.C
+	* g++.dg/abi/mangle27.C
+	* g++.dg/abi/mangle28.C
+	* g++.dg/abi/mangle29.C
+	* g++.dg/abi/mangle3-2.C
+	* g++.dg/abi/mangle3.C
+	* g++.dg/abi/mangle30.C
+	* g++.dg/abi/mangle31.C
+	* g++.dg/abi/mangle32.C
+	* g++.dg/abi/mangle33.C
+	* g++.dg/abi/mangle34.C
+	* g++.dg/abi/mangle35.C
+	* g++.dg/abi/mangle36.C
+	* g++.dg/abi/mangle37.C
+	* g++.dg/abi/mangle39.C
+	* g++.dg/abi/mangle40.C
+	* g++.dg/abi/mangle43.C
+	* g++.dg/abi/mangle44.C
+	* g++.dg/abi/mangle45.C
+	* g++.dg/abi/mangle46.C
+	* g++.dg/abi/mangle47.C
+	* g++.dg/abi/mangle48.C
+	* g++.dg/abi/mangle49.C
+	* g++.dg/abi/mangle5.C
+	* g++.dg/abi/mangle50.C
+	* g++.dg/abi/mangle51.C
+	* g++.dg/abi/mangle52.C
+	* g++.dg/abi/mangle53.C
+	* g++.dg/abi/mangle54.C
+	* g++.dg/abi/mangle55.C
+	* g++.dg/abi/mangle56.C
+	* g++.dg/abi/mangle57.C
+	* g++.dg/abi/mangle58.C
+	* g++.dg/abi/mangle59.C
+	* g++.dg/abi/mangle6.C
+	* g++.dg/abi/mangle60.C
+	* g++.dg/abi/mangle61.C
+	* g++.dg/abi/mangle62.C
+	* g++.dg/abi/mangle62a.C
+	* g++.dg/abi/mangle63.C
+	* g++.dg/abi/mangle64.C
+	* g++.dg/abi/mangle65.C
+	* g++.dg/abi/mangle66.C
+	* g++.dg/abi/mangle68.C
+	* g++.dg/abi/mangle69.C
+	* g++.dg/abi/mangle7.C
+	* g++.dg/abi/mangle70.C
+	* g++.dg/abi/mangle71.C
+	* g++.dg/abi/mangle72.C
+	* g++.dg/abi/mangle73.C
+	* g++.dg/abi/mangle74.C
+	* g++.dg/abi/mangle75.C
+	* g++.dg/abi/mangle76.C
+	* g++.dg/abi/mangle77.C
+	* g++.dg/abi/mangle78.C
+	* g++.dg/abi/mangle8.C
+	* g++.dg/abi/mangle9.C: Likewise.
+
 2023-12-21  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/warn/Wparentheses-34.C: New test.

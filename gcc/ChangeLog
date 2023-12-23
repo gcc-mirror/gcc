@@ -1,3 +1,49 @@
+2023-12-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* omp-general.cc (omp_context_name_list_prop): Remove static qualifer.
+	* omp-general.h (omp_context_name_list_prop): Declare.
+	* tree-cfg.cc (dump_function_to_file): Intercept
+	"omp declare variant base" attribute for special handling.
+	* tree-pretty-print.cc: Include omp-general.h.
+	(dump_omp_context_selector): New.
+	(print_omp_context_selector): New.
+	* tree-pretty-print.h (print_omp_context_selector): Declare.
+
+2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/112758
+	* combine.cc (make_compopund_operation_int): Optimize AND of a SUBREG
+	based on nonzero_bits of SUBREG_REG and constant mask on
+	WORD_REGISTER_OPERATIONS targets only if it is a zero extending
+	MEM load.
+
+2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112941
+	* symtab-thunks.cc (expand_thunk): Check aggregate_value_p regardless
+	of whether is_gimple_reg_type (restype) or not.
+
+2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113102
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Handle unreleased
+	large/huge _BitInt SSA_NAMEs.
+
+2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113102
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): Only
+	use m_data[save_data_cnt] if it is non-NULL.
+
+2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.in: Allow overriding EXEPCT.
+
+2023-12-22  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* doc/extend.texi:Add modifiers to the vector of asm in the doc.
+	* doc/md.texi:Refine the description of the modifier 'f' in the doc.
+
 2023-12-21  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/112951
