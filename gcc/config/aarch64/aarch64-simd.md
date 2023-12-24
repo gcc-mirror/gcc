@@ -3885,6 +3885,48 @@
   DONE;
 })
 
+;; Patterns comparing two vectors and conditionally jump
+
+(define_expand "cbranch<mode>4"
+  [(set (pc)
+        (if_then_else
+          (match_operator 0 "aarch64_equality_operator"
+            [(match_operand:VDQ_I 1 "register_operand")
+             (match_operand:VDQ_I 2 "aarch64_simd_reg_or_zero")])
+          (label_ref (match_operand 3 ""))
+          (pc)))]
+  "TARGET_SIMD"
+{
+  auto code = GET_CODE (operands[0]);
+  rtx tmp = operands[1];
+
+  /* If comparing against a non-zero vector we have to do a comparison first
+     so we can have a != 0 comparison with the result.  */
+  if (operands[2] != CONST0_RTX (<MODE>mode))
+    {
+      tmp = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_xor<mode>3 (tmp, operands[1], operands[2]));
+    }
+
+  /* For 64-bit vectors we need no reductions.  */
+  if (known_eq (128, GET_MODE_BITSIZE (<MODE>mode)))
+    {
+      /* Always reduce using a V4SI.  */
+      rtx reduc = gen_lowpart (V4SImode, tmp);
+      rtx res = gen_reg_rtx (V4SImode);
+      emit_insn (gen_aarch64_umaxpv4si (res, reduc, reduc));
+      emit_move_insn (tmp, gen_lowpart (<MODE>mode, res));
+    }
+
+  rtx val = gen_reg_rtx (DImode);
+  emit_move_insn (val, gen_lowpart (DImode, tmp));
+
+  rtx cc_reg = aarch64_gen_compare_reg (code, val, const0_rtx);
+  rtx cmp_rtx = gen_rtx_fmt_ee (code, DImode, cc_reg, const0_rtx);
+  emit_jump_insn (gen_condjump (cmp_rtx, cc_reg, operands[3]));
+  DONE;
+})
+
 ;; Patterns comparing two vectors to produce a mask.
 
 (define_expand "vec_cmp<mode><mode>"
