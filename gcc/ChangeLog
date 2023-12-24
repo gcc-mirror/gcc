@@ -1,3 +1,14 @@
+2023-12-23  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/driver-native.cc (host_detect_local_cpu):
+	don't add nan2008 option for -mtune=native.
+
+2023-12-23  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR target/112759
+	* config/mips/driver-native.cc (host_detect_local_cpu):
+	Put the ret to the end of args of reconcat.
+
 2023-12-19  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
