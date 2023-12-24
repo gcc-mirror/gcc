@@ -342,6 +342,7 @@ is_simple_and_all_uses_invariant (stmt_vec_info stmt_info,
    - it has uses outside the loop.
    - it has vdefs (it alters memory).
    - control stmts in the loop (except for the exit condition).
+   - it is an induction and we have multiple exits.
 
    CHECKME: what other side effects would the vectorizer allow?  */
 
@@ -359,8 +360,10 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   *live_p = false;
 
   /* cond stmt other than loop exit cond.  */
-  if (is_ctrl_stmt (stmt_info->stmt)
-      && STMT_VINFO_TYPE (stmt_info) != loop_exit_ctrl_vec_info_type)
+  gimple *stmt = STMT_VINFO_STMT (stmt_info);
+  if (is_ctrl_stmt (stmt)
+      && LOOP_VINFO_LOOP_IV_COND (loop_vinfo) != stmt
+      && (!loop->inner || gimple_bb (stmt)->loop_father == loop))
     *relevant = vect_used_in_scope;
 
   /* changing memory.  */
@@ -392,11 +395,23 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	      /* We expect all such uses to be in the loop exit phis
 		 (because of loop closed form)   */
 	      gcc_assert (gimple_code (USE_STMT (use_p)) == GIMPLE_PHI);
-	      gcc_assert (bb == single_exit (loop)->dest);
 
               *live_p = true;
 	    }
 	}
+    }
+
+  /* Check if it's an induction and multiple exits.  In this case there will be
+     a usage later on after peeling which is needed for the alternate exit.  */
+  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+      && STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
+    {
+      if (dump_enabled_p ())
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "vec_stmt_relevant_p: induction forced for "
+			   "early break.\n");
+      *live_p = true;
+
     }
 
   if (*live_p && *relevant == vect_unused_in_scope
@@ -793,6 +808,20 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 			return res;
 		    }
                  }
+	    }
+	  else if (gcond *cond = dyn_cast <gcond *> (stmt_vinfo->stmt))
+	    {
+	      tree_code rhs_code = gimple_cond_code (cond);
+	      gcc_assert (TREE_CODE_CLASS (rhs_code) == tcc_comparison);
+	      opt_result res
+		= process_use (stmt_vinfo, gimple_cond_lhs (cond),
+			       loop_vinfo, relevant, &worklist, false);
+	      if (!res)
+		return res;
+	      res = process_use (stmt_vinfo, gimple_cond_rhs (cond),
+				loop_vinfo, relevant, &worklist, false);
+	      if (!res)
+		return res;
             }
 	  else if (gcall *call = dyn_cast <gcall *> (stmt_vinfo->stmt))
 	    {
@@ -806,6 +835,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 		    return res;
 		}
 	    }
+	  else
+	    gcc_unreachable ();
         }
       else
 	FOR_EACH_PHI_OR_STMT_USE (use_p, stmt_vinfo->stmt, iter, SSA_OP_USE)
@@ -1774,7 +1805,7 @@ compare_step_with_zero (vec_info *vinfo, stmt_vec_info stmt_info)
 /* If the target supports a permute mask that reverses the elements in
    a vector of type VECTYPE, return that mask, otherwise return null.  */
 
-static tree
+tree
 perm_mask_for_reverse (tree vectype)
 {
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -12542,7 +12573,7 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
   vec<tree> vec_oprnds0 = vNULL;
   vec<tree> vec_oprnds1 = vNULL;
   tree mask_type;
-  tree mask;
+  tree mask = NULL_TREE;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -12682,8 +12713,9 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
   /* Transform.  */
 
   /* Handle def.  */
-  lhs = gimple_assign_lhs (STMT_VINFO_STMT (stmt_info));
-  mask = vect_create_destination_var (lhs, mask_type);
+  lhs = gimple_get_lhs (STMT_VINFO_STMT (stmt_info));
+  if (lhs)
+    mask = vect_create_destination_var (lhs, mask_type);
 
   vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
 		     rhs1, vectype, &vec_oprnds0,
@@ -12697,7 +12729,10 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
       gimple *new_stmt;
       vec_rhs2 = vec_oprnds1[i];
 
-      new_temp = make_ssa_name (mask);
+      if (lhs)
+	new_temp = make_ssa_name (mask);
+      else
+	new_temp = make_temp_ssa_name (mask_type, NULL, "cmp");
       if (bitop1 == NOP_EXPR)
 	{
 	  new_stmt = gimple_build_assign (new_temp, code,
@@ -12776,6 +12811,213 @@ vectorizable_comparison (vec_info *vinfo,
   return true;
 }
 
+/* Check to see if the current early break given in STMT_INFO is valid for
+   vectorization.  */
+
+static bool
+vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
+			 gimple_stmt_iterator *gsi, gimple **vec_stmt,
+			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
+{
+  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
+  if (!loop_vinfo
+      || !is_a <gcond *> (STMT_VINFO_STMT (stmt_info)))
+    return false;
+
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_condition_def)
+    return false;
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return false;
+
+  DUMP_VECT_SCOPE ("vectorizable_early_exit");
+
+  auto code = gimple_cond_code (STMT_VINFO_STMT (stmt_info));
+
+  tree vectype = NULL_TREE;
+  slp_tree slp_op0;
+  tree op0;
+  enum vect_def_type dt0;
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 0, &op0, &slp_op0, &dt0,
+			   &vectype))
+    {
+      if (dump_enabled_p ())
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "use not simple.\n");
+	return false;
+    }
+
+  if (!vectype)
+    return false;
+
+  machine_mode mode = TYPE_MODE (vectype);
+  int ncopies;
+
+  if (slp_node)
+    ncopies = 1;
+  else
+    ncopies = vect_get_num_copies (loop_vinfo, vectype);
+
+  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+  bool masked_loop_p = LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
+
+  /* Now build the new conditional.  Pattern gimple_conds get dropped during
+     codegen so we must replace the original insn.  */
+  gimple *orig_stmt = STMT_VINFO_STMT (vect_orig_stmt (stmt_info));
+  gcond *cond_stmt = as_a <gcond *>(orig_stmt);
+  /* When vectorizing we assume that if the branch edge is taken that we're
+     exiting the loop.  This is not however always the case as the compiler will
+     rewrite conditions to always be a comparison against 0.  To do this it
+     sometimes flips the edges.  This is fine for scalar,  but for vector we
+     then have to flip the test, as we're still assuming that if you take the
+     branch edge that we found the exit condition.  */
+  auto new_code = NE_EXPR;
+  auto reduc_optab = ior_optab;
+  auto reduc_op = BIT_IOR_EXPR;
+  tree cst = build_zero_cst (vectype);
+  if (flow_bb_inside_loop_p (LOOP_VINFO_LOOP (loop_vinfo),
+			     BRANCH_EDGE (gimple_bb (cond_stmt))->dest))
+    {
+      new_code = EQ_EXPR;
+      reduc_optab = and_optab;
+      reduc_op = BIT_AND_EXPR;
+      cst = build_minus_one_cst (vectype);
+    }
+
+  /* Analyze only.  */
+  if (!vec_stmt)
+    {
+      if (direct_optab_handler (cbranch_optab, mode) == CODE_FOR_nothing)
+	{
+	  if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "can't vectorize early exit because the "
+			       "target doesn't support flag setting vector "
+			       "comparisons.\n");
+	  return false;
+	}
+
+      if (ncopies > 1
+	  && direct_optab_handler (reduc_optab, mode) == CODE_FOR_nothing)
+	{
+	  if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "can't vectorize early exit because the "
+			       "target does not support boolean vector %s "
+			       "for type %T.\n",
+			       reduc_optab == ior_optab ? "OR" : "AND",
+			       vectype);
+	  return false;
+	}
+
+      if (!vectorizable_comparison_1 (vinfo, vectype, stmt_info, code, gsi,
+				      vec_stmt, slp_node, cost_vec))
+	return false;
+
+      if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+	{
+	  if (direct_internal_fn_supported_p (IFN_VCOND_MASK_LEN, vectype,
+					      OPTIMIZE_FOR_SPEED))
+	    return false;
+	  else
+	    vect_record_loop_mask (loop_vinfo, masks, ncopies, vectype, NULL);
+	}
+
+
+      return true;
+    }
+
+  /* Tranform.  */
+
+  tree new_temp = NULL_TREE;
+  gimple *new_stmt = NULL;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "transform early-exit.\n");
+
+  if (!vectorizable_comparison_1 (vinfo, vectype, stmt_info, code, gsi,
+				  vec_stmt, slp_node, cost_vec))
+    gcc_unreachable ();
+
+  gimple *stmt = STMT_VINFO_STMT (stmt_info);
+  basic_block cond_bb = gimple_bb (stmt);
+  gimple_stmt_iterator  cond_gsi = gsi_last_bb (cond_bb);
+
+  auto_vec<tree> stmts;
+
+  if (slp_node)
+    stmts.safe_splice (SLP_TREE_VEC_DEFS (slp_node));
+  else
+    {
+      auto vec_stmts = STMT_VINFO_VEC_STMTS (stmt_info);
+      stmts.reserve_exact (vec_stmts.length ());
+      for (auto stmt : vec_stmts)
+	stmts.quick_push (gimple_assign_lhs (stmt));
+    }
+
+  /* Determine if we need to reduce the final value.  */
+  if (stmts.length () > 1)
+    {
+      /* We build the reductions in a way to maintain as much parallelism as
+	 possible.  */
+      auto_vec<tree> workset (stmts.length ());
+
+      /* Mask the statements as we queue them up.  Normally we loop over
+	 vec_num,  but since we inspect the exact results of vectorization
+	 we don't need to and instead can just use the stmts themselves.  */
+      if (masked_loop_p)
+	for (unsigned i = 0; i < stmts.length (); i++)
+	  {
+	    tree stmt_mask
+	      = vect_get_loop_mask (loop_vinfo, gsi, masks, ncopies, vectype,
+				    i);
+	    stmt_mask
+	      = prepare_vec_mask (loop_vinfo, TREE_TYPE (stmt_mask), stmt_mask,
+				  stmts[i], &cond_gsi);
+	    workset.quick_push (stmt_mask);
+	  }
+      else
+	workset.splice (stmts);
+
+      while (workset.length () > 1)
+	{
+	  new_temp = make_temp_ssa_name (vectype, NULL, "vexit_reduc");
+	  tree arg0 = workset.pop ();
+	  tree arg1 = workset.pop ();
+	  new_stmt = gimple_build_assign (new_temp, reduc_op, arg0, arg1);
+	  vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt,
+				       &cond_gsi);
+	  workset.quick_insert (0, new_temp);
+	}
+    }
+  else
+    {
+      new_temp = stmts[0];
+      if (masked_loop_p)
+	{
+	  tree mask
+	    = vect_get_loop_mask (loop_vinfo, gsi, masks, ncopies, vectype, 0);
+	  new_temp = prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
+				       new_temp, &cond_gsi);
+	}
+    }
+
+  gcc_assert (new_temp);
+
+  gimple_cond_set_condition (cond_stmt, new_code, new_temp, cst);
+  update_stmt (orig_stmt);
+
+  if (slp_node)
+    SLP_TREE_VEC_DEFS (slp_node).truncate (0);
+   else
+    STMT_VINFO_VEC_STMTS (stmt_info).truncate (0);
+
+  if (!slp_node)
+    *vec_stmt = orig_stmt;
+
+  return true;
+}
+
 /* If SLP_NODE is nonnull, return true if vectorizable_live_operation
    can handle all live statements in the node.  Otherwise return true
    if STMT_INFO is not live or if vectorizable_live_operation can handle it.
@@ -12787,20 +13029,27 @@ can_vectorize_live_stmts (vec_info *vinfo, stmt_vec_info stmt_info,
 			  bool vec_stmt_p,
 			  stmt_vector_for_cost *cost_vec)
 {
+  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   if (slp_node)
     {
       stmt_vec_info slp_stmt_info;
       unsigned int i;
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt_info)
 	{
-	  if (STMT_VINFO_LIVE_P (slp_stmt_info)
+	  if ((STMT_VINFO_LIVE_P (slp_stmt_info)
+	       || (loop_vinfo
+		   && LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+		   && STMT_VINFO_DEF_TYPE (slp_stmt_info)
+			== vect_induction_def))
 	      && !vectorizable_live_operation (vinfo, slp_stmt_info, slp_node,
 					       slp_node_instance, i,
 					       vec_stmt_p, cost_vec))
 	    return false;
 	}
     }
-  else if (STMT_VINFO_LIVE_P (stmt_info)
+  else if ((STMT_VINFO_LIVE_P (stmt_info)
+	    || (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+		&& STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def))
 	   && !vectorizable_live_operation (vinfo, stmt_info,
 					    slp_node, slp_node_instance, -1,
 					    vec_stmt_p, cost_vec))
@@ -12916,11 +13165,12 @@ vect_analyze_stmt (vec_info *vinfo,
 			     node_instance, cost_vec);
       if (!res)
 	return res;
-   }
+    }
 
   switch (STMT_VINFO_DEF_TYPE (stmt_info))
     {
       case vect_internal_def:
+      case vect_condition_def:
         break;
 
       case vect_reduction_def:
@@ -12953,6 +13203,7 @@ vect_analyze_stmt (vec_info *vinfo,
     {
       gcall *call = dyn_cast <gcall *> (stmt_info->stmt);
       gcc_assert (STMT_VINFO_VECTYPE (stmt_info)
+		  || gimple_code (stmt_info->stmt) == GIMPLE_COND
 		  || (call && gimple_call_lhs (call) == NULL_TREE));
       *need_to_vectorize = true;
     }
@@ -12995,7 +13246,9 @@ vect_analyze_stmt (vec_info *vinfo,
 	  || vectorizable_lc_phi (as_a <loop_vec_info> (vinfo),
 				  stmt_info, NULL, node)
 	  || vectorizable_recurr (as_a <loop_vec_info> (vinfo),
-				   stmt_info, NULL, node, cost_vec));
+				   stmt_info, NULL, node, cost_vec)
+	  || vectorizable_early_exit (vinfo, stmt_info, NULL, NULL, node,
+				      cost_vec));
   else
     {
       if (bb_vinfo)
@@ -13018,7 +13271,10 @@ vect_analyze_stmt (vec_info *vinfo,
 					 NULL, NULL, node, cost_vec)
 	      || vectorizable_comparison (vinfo, stmt_info, NULL, NULL, node,
 					  cost_vec)
-	      || vectorizable_phi (vinfo, stmt_info, NULL, node, cost_vec));
+	      || vectorizable_phi (vinfo, stmt_info, NULL, node, cost_vec)
+	      || vectorizable_early_exit (vinfo, stmt_info, NULL, NULL, node,
+					  cost_vec));
+
     }
 
   if (node)
@@ -13174,6 +13430,12 @@ vect_transform_stmt (vec_info *vinfo,
 
     case phi_info_type:
       done = vectorizable_phi (vinfo, stmt_info, &vec_stmt, slp_node, NULL);
+      gcc_assert (done);
+      break;
+
+    case loop_exit_ctrl_vec_info_type:
+      done = vectorizable_early_exit (vinfo, stmt_info, gsi, &vec_stmt,
+				      slp_node, NULL);
       gcc_assert (done);
       break;
 
@@ -13597,6 +13859,9 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
 	case vect_first_order_recurrence:
 	  dump_printf (MSG_NOTE, "first order recurrence\n");
 	  break;
+	case vect_condition_def:
+	  dump_printf (MSG_NOTE, "control flow\n");
+	  break;
 	case vect_unknown_def_type:
 	  dump_printf (MSG_NOTE, "unknown\n");
 	  break;
@@ -13713,6 +13978,8 @@ vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
 	  else
 	    *op = gimple_op (ass, operand + 1);
 	}
+      else if (gcond *cond = dyn_cast <gcond *> (stmt->stmt))
+	*op = gimple_op (cond, operand);
       else if (gcall *call = dyn_cast <gcall *> (stmt->stmt))
 	*op = gimple_call_arg (call, operand);
       else
@@ -14323,6 +14590,8 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
   *nunits_vectype_out = NULL_TREE;
 
   if (gimple_get_lhs (stmt) == NULL_TREE
+      /* Allow vector conditionals through here.  */
+      && !is_a <gcond *> (stmt)
       /* MASK_STORE has no lhs, but is ok.  */
       && !gimple_call_internal_p (stmt, IFN_MASK_STORE))
     {
@@ -14339,7 +14608,7 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
 
       return opt_result::failure_at (stmt,
-				     "not vectorized: irregular stmt.%G", stmt);
+				     "not vectorized: irregular stmt: %G", stmt);
     }
 
   tree vectype;
@@ -14364,6 +14633,14 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
     }
   else
     {
+      /* If we got here with a gcond it means that the target had no available vector
+	 mode for the scalar type.  We can't vectorize so abort.  */
+      if (is_a <gcond *> (stmt))
+	return opt_result::failure_at (stmt,
+				       "not vectorized:"
+				       " unsupported data-type for gcond %T\n",
+				       scalar_type);
+
       if (data_reference *dr = STMT_VINFO_DATA_REF (stmt_info))
 	scalar_type = TREE_TYPE (DR_REF (dr));
       else if (gimple_call_internal_p (stmt, IFN_MASK_STORE))

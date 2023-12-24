@@ -844,7 +844,7 @@ idx_within_array_bound (tree ref, tree *idx, void *dta)
 
 /* Return TRUE if ref is a within bound array reference.  */
 
-static bool
+bool
 ref_within_array_bound (gimple *stmt, tree ref)
 {
   class loop *loop = loop_containing_stmt (stmt);
