@@ -47,6 +47,7 @@ avx512f_test (void)
     r[i] = (int) ceil (a[i]);
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < NUM; i++)
     if (r[i] != (int) ceil (a[i]))
       abort();

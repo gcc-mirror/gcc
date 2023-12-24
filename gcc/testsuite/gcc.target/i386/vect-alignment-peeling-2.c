@@ -40,6 +40,7 @@ int main()
       b[i] = i;
     }
   foo1 ();
+#pragma GCC novector
   for (int i = 2; i < 508; ++i)
     if (a[i] != 2*i)
       __builtin_abort ();
@@ -50,6 +51,7 @@ int main()
       b[i] = i;
     }
   foo2 ();
+#pragma GCC novector
   for (int i = 3; i < 508; ++i)
     if (a[i] != 2*i)
       __builtin_abort ();
@@ -60,6 +62,7 @@ int main()
       b[i] = i;
     }
   foo3 ();
+#pragma GCC novector
   for (int i = 4; i < 508; ++i)
     if (a[i] != 2*i)
       __builtin_abort ();
@@ -70,6 +73,7 @@ int main()
       b[i] = i;
     }
   foo4 ();
+#pragma GCC novector
   for (int i = 5; i < 508; ++i)
     if (a[i] != 2*i)
       __builtin_abort ();
@@ -80,6 +84,7 @@ int main()
       b[i] = i;
     }
   foo5 (3);
+#pragma GCC novector
   for (int i = 3; i < 508; ++i)
     if (a[i] != 2*i)
       __builtin_abort ();

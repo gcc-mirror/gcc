@@ -38,6 +38,7 @@ avx512er_test (void)
   compute_sqrt_ref (in, ref);
   compute_sqrt_exp (in, exp);
 
+#pragma GCC novector
   for (int i = 0; i < MAX; i++)
     {
       float rel_err = (ref[i] - exp[i]) / ref[i];

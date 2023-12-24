@@ -33,6 +33,7 @@ main (void)
     r[i] = a[i] * __builtin_copysignf (1.0f, b[i]);
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (r[i] != a[i] * __builtin_copysignf (1.0f, b[i]))
       abort ();
@@ -41,6 +42,7 @@ main (void)
     rd[i] = ad[i] * __builtin_copysign (1.0d, bd[i]);
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (rd[i] != ad[i] * __builtin_copysign (1.0d, bd[i]))
       abort ();

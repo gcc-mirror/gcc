@@ -45,6 +45,7 @@ avx512f_test (void)
     r[i] = truncf (a[i]);
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < NUM; i++)
     if (r[i] != truncf (a[i]))
       abort();
