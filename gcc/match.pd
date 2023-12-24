@@ -5694,7 +5694,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     @2)))
  /* (a != b) ? (a + b) : (2 * a) -> (a + b) */
  (simplify
-  (cnd (ne:c @0 @1) (plus@2 @0 @1) (mult @0 uniform_integer_cst_p@3))
+  (cnd (ne:c @0 @1) (plus:c@2 @0 @1) (mult @0 uniform_integer_cst_p@3))
   (if (wi::to_wide (uniform_integer_cst_p (@3)) == 2)
    @2))
 )
