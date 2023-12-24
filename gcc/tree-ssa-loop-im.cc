@@ -48,6 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "dbgcnt.h"
+#include "insn-codes.h"
+#include "optabs-tree.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 
@@ -851,6 +853,17 @@ determine_max_movement (gimple *stmt, bool must_preserve_exec)
 	     predicate in DOM.  */
 	  if (!extract_true_false_args_from_phi (dom, phi, NULL, NULL))
 	    return false;
+
+	/* Check if one of the depedent statement is a vector compare whether
+	   the target supports it,  otherwise it's invalid to hoist it out of
+	   the gcond it belonged to.  */
+	if (VECTOR_TYPE_P (TREE_TYPE (gimple_cond_lhs (cond))))
+	  {
+	    tree type = TREE_TYPE (gimple_cond_lhs (cond));
+	    auto code = gimple_cond_code (cond);
+	    if (!target_supports_op_p (type, code, optab_vector))
+	      return false;
+	  }
 
 	  /* Fold in dependencies and cost of the condition.  */
 	  FOR_EACH_SSA_TREE_OPERAND (val, cond, iter, SSA_OP_USE)
