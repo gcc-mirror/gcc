@@ -1636,6 +1636,14 @@ Target supports hardware vectors of @code{float} when
 @option{-funsafe-math-optimizations} is not in effect.
 This implies @code{vect_float}.
 
+@item vect_early_break
+Target supports vectorization codegen of loops with early breaks.
+This requires an implementation of the cbranch optab for vectors.
+
+@item vect_early_break_hw
+Target supports hardware vectorization and running of loops with early breaks.
+This requires an implementation of the cbranch optab for vectors.
+
 @item vect_int
 Target supports hardware vectors of @code{int}.
 
@@ -3204,6 +3212,11 @@ instructions, if any.
 
 @item tls
 Add the target-specific flags needed to use thread-local storage.
+
+@item vect_early_break
+Add the target-specific flags needed to enable early break vectorization for
+a target, if any.  This requires the target to have an implementation of the
+@code{cbranch} optab.
 
 @item weak_undefined
 Add the flags needed to enable support for weak undefined symbols.

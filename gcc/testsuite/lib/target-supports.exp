@@ -4050,6 +4050,44 @@ proc check_effective_target_vect_int { } {
 	}}]
 }
 
+# Return 1 if the target supports vectorization of early breaks,
+# 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_early_break { } {
+    return [check_cached_effective_target_indexed vect_early_break {
+      expr {
+	[istarget aarch64*-*-*]
+	|| [check_effective_target_sse4]
+	}}]
+}
+
+# Return 1 if the target supports hardware execution of early breaks,
+# 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_early_break_hw { } {
+    return [check_cached_effective_target_indexed vect_early_break_hw {
+      expr {
+	[istarget aarch64*-*-*]
+	|| [check_sse4_hw_available]
+	}}]
+}
+
+proc add_options_for_vect_early_break { flags } {
+    if { ! [check_effective_target_vect_early_break] } {
+	return "$flags"
+    }
+
+    if { [check_effective_target_sse4] } {
+	return "$flags -msse4.1"
+    }
+
+    return "$flags"
+}
+
 # Return 1 if the target supports hardware vectorization of complex additions of
 # byte, 0 otherwise.
 #
