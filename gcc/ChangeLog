@@ -1,3 +1,58 @@
+2023-12-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (rotrsi3_extend): New
+	define_insn.
+
+2023-12-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-tune.h
+	(loongarch_rtx_cost_data::movcf2gr): New field.
+	(loongarch_rtx_cost_data::movcf2gr_): New method.
+	(loongarch_rtx_cost_data::use_movcf2gr): New method.
+	* config/loongarch/loongarch-def.cc
+	(loongarch_rtx_cost_data::loongarch_rtx_cost_data): Set movcf2gr
+	to COSTS_N_INSNS (7) and movgr2cf to COSTS_N_INSNS (15), based
+	on timing on LA464.
+	(loongarch_cpu_rtx_cost_data): Set movcf2gr and movgr2cf to
+	COSTS_N_INSNS (1) for LA664.
+	(loongarch_rtx_cost_optimize_size): Set movcf2gr and movgr2cf to
+	COSTS_N_INSNS (1) + 1.
+	* config/loongarch/predicates.md (loongarch_fcmp_operator): New
+	predicate.
+	* config/loongarch/loongarch.md (movfcc): Change to
+	define_expand.
+	(movfcc_internal): New define_insn.
+	(fcc_to_<X:mode>): New define_insn.
+	(cstore<ANYF:mode>4): New define_expand.
+	* config/loongarch/loongarch.cc
+	(loongarch_hard_regno_mode_ok_uncached): Allow FCCmode in GPRs
+	and GPRs.
+	(loongarch_secondary_reload): Reload FCCmode via FPR and/or GPR.
+	(loongarch_emit_float_compare): Call gen_reg_rtx instead of
+	loongarch_allocate_fcc.
+	(loongarch_allocate_fcc): Remove.
+	(loongarch_move_to_gpr_cost): Handle FCC_REGS -> GR_REGS.
+	(loongarch_move_from_gpr_cost): Handle GR_REGS -> FCC_REGS.
+	(loongarch_register_move_cost): Handle FCC_REGS -> FCC_REGS,
+	FCC_REGS -> FP_REGS, and FP_REGS -> FCC_REGS.
+
+2023-12-23  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/driver-native.cc (host_detect_local_cpu):
+	don't add nan2008 option for -mtune=native.
+
+2023-12-23  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR target/112759
+	* config/mips/driver-native.cc (host_detect_local_cpu):
+	Put the ret to the end of args of reconcat.
+
+2023-12-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* config/riscv/riscv-vector-costs.cc (max_number_of_live_regs): Refine dump information.
+	(preferred_new_lmul_p): Make PHI initial value into live regs calculation.
+
 2023-12-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* omp-general.cc (omp_context_name_list_prop): Remove static qualifer.

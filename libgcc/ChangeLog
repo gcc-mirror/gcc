@@ -1,3 +1,10 @@
+2023-12-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c++-minimal/README: New.
+	* c++-minimal/guard.c: New.
+	* config/gcn/t-amdgcn (LIB2ADD): Add it.
+	* config/nvptx/t-nvptx (LIB2ADD): Likewise.
+
 2023-12-20  Alexandre Oliva  <oliva@adacore.com>
 
 	PR middle-end/112917

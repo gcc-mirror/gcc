@@ -1,3 +1,17 @@
+2023-12-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/rotrw.c: New test.
+
+2023-12-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/movcf2gr.c: New test.
+	* gcc.target/loongarch/movcf2gr-via-fr.c: New test.
+
+2023-12-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-1.c: New test.
+
 2023-12-22  Martin Uecker  <uecker@tugraz.at>
 
 	* gcc.dg/c23-tag-alias-6.c: New test.
