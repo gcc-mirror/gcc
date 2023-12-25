@@ -1,4 +1,5 @@
 /* { dg-require-effective-target alloca } */
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
 
 #include <stdlib.h>
 #include "../../gcc.dg/analyzer/analyzer-decls.h"

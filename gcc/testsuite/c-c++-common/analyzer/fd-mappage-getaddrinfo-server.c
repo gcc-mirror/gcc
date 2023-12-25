@@ -27,6 +27,7 @@ the source, must acknowledge the copyright and authors of this work.
 */
 
 /* { dg-require-effective-target sockets } */
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
 
 #include <sys/types.h>
 #include <stdio.h>

@@ -28,6 +28,7 @@ the source, must acknowledge the copyright and authors of this work.
 
 /* { dg-require-effective-target sockets } */
 /* { dg-additional-options "-Wno-analyzer-too-complex" } */
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
 
 #include <sys/types.h>
 #include <sys/socket.h>
