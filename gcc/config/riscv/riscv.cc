@@ -6718,7 +6718,9 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	      || (TARGET_ZFINX
 		  && (cfun->machine->frame.mask & ~(1 << RISCV_PROLOGUE_TEMP_REGNUM)))))
 	{
-	  unsigned int fcsr_size = GET_MODE_SIZE (SImode);
+	  /* Always assume FCSR occupy UNITS_PER_WORD to prevent stack
+	     offset misaligned later.  */
+	  unsigned int fcsr_size = UNITS_PER_WORD;
 	  if (!epilogue)
 	    {
 	      riscv_save_restore_reg (word_mode, regno, offset, fn);
