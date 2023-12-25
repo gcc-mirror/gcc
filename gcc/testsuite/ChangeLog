@@ -1,3 +1,168 @@
+2023-12-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/tsvc/vect-tsvc-s332.c: Remove xfail when early break
+	supported.
+	* gcc.dg/vect/tsvc/vect-tsvc-s481.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s482.c: Likewise.
+
+2023-12-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/target-supports.exp (add_options_for_vect_early_break,
+	check_effective_target_vect_early_break_hw,
+	check_effective_target_vect_early_break): New.
+	* g++.dg/vect/vect-early-break_1.cc: New test.
+	* g++.dg/vect/vect-early-break_2.cc: New test.
+	* g++.dg/vect/vect-early-break_3.cc: New test.
+	* gcc.dg/vect/vect-early-break-run_1.c: New test.
+	* gcc.dg/vect/vect-early-break-run_10.c: New test.
+	* gcc.dg/vect/vect-early-break-run_2.c: New test.
+	* gcc.dg/vect/vect-early-break-run_3.c: New test.
+	* gcc.dg/vect/vect-early-break-run_4.c: New test.
+	* gcc.dg/vect/vect-early-break-run_5.c: New test.
+	* gcc.dg/vect/vect-early-break-run_6.c: New test.
+	* gcc.dg/vect/vect-early-break-run_7.c: New test.
+	* gcc.dg/vect/vect-early-break-run_8.c: New test.
+	* gcc.dg/vect/vect-early-break-run_9.c: New test.
+	* gcc.dg/vect/vect-early-break-template_1.c: New test.
+	* gcc.dg/vect/vect-early-break-template_2.c: New test.
+	* gcc.dg/vect/vect-early-break_1.c: New test.
+	* gcc.dg/vect/vect-early-break_10.c: New test.
+	* gcc.dg/vect/vect-early-break_11.c: New test.
+	* gcc.dg/vect/vect-early-break_12.c: New test.
+	* gcc.dg/vect/vect-early-break_13.c: New test.
+	* gcc.dg/vect/vect-early-break_14.c: New test.
+	* gcc.dg/vect/vect-early-break_15.c: New test.
+	* gcc.dg/vect/vect-early-break_16.c: New test.
+	* gcc.dg/vect/vect-early-break_17.c: New test.
+	* gcc.dg/vect/vect-early-break_18.c: New test.
+	* gcc.dg/vect/vect-early-break_19.c: New test.
+	* gcc.dg/vect/vect-early-break_2.c: New test.
+	* gcc.dg/vect/vect-early-break_20.c: New test.
+	* gcc.dg/vect/vect-early-break_21.c: New test.
+	* gcc.dg/vect/vect-early-break_22.c: New test.
+	* gcc.dg/vect/vect-early-break_23.c: New test.
+	* gcc.dg/vect/vect-early-break_24.c: New test.
+	* gcc.dg/vect/vect-early-break_25.c: New test.
+	* gcc.dg/vect/vect-early-break_26.c: New test.
+	* gcc.dg/vect/vect-early-break_27.c: New test.
+	* gcc.dg/vect/vect-early-break_28.c: New test.
+	* gcc.dg/vect/vect-early-break_29.c: New test.
+	* gcc.dg/vect/vect-early-break_3.c: New test.
+	* gcc.dg/vect/vect-early-break_30.c: New test.
+	* gcc.dg/vect/vect-early-break_31.c: New test.
+	* gcc.dg/vect/vect-early-break_32.c: New test.
+	* gcc.dg/vect/vect-early-break_33.c: New test.
+	* gcc.dg/vect/vect-early-break_34.c: New test.
+	* gcc.dg/vect/vect-early-break_35.c: New test.
+	* gcc.dg/vect/vect-early-break_36.c: New test.
+	* gcc.dg/vect/vect-early-break_37.c: New test.
+	* gcc.dg/vect/vect-early-break_38.c: New test.
+	* gcc.dg/vect/vect-early-break_39.c: New test.
+	* gcc.dg/vect/vect-early-break_4.c: New test.
+	* gcc.dg/vect/vect-early-break_40.c: New test.
+	* gcc.dg/vect/vect-early-break_41.c: New test.
+	* gcc.dg/vect/vect-early-break_42.c: New test.
+	* gcc.dg/vect/vect-early-break_43.c: New test.
+	* gcc.dg/vect/vect-early-break_44.c: New test.
+	* gcc.dg/vect/vect-early-break_45.c: New test.
+	* gcc.dg/vect/vect-early-break_46.c: New test.
+	* gcc.dg/vect/vect-early-break_47.c: New test.
+	* gcc.dg/vect/vect-early-break_48.c: New test.
+	* gcc.dg/vect/vect-early-break_49.c: New test.
+	* gcc.dg/vect/vect-early-break_5.c: New test.
+	* gcc.dg/vect/vect-early-break_50.c: New test.
+	* gcc.dg/vect/vect-early-break_51.c: New test.
+	* gcc.dg/vect/vect-early-break_52.c: New test.
+	* gcc.dg/vect/vect-early-break_53.c: New test.
+	* gcc.dg/vect/vect-early-break_54.c: New test.
+	* gcc.dg/vect/vect-early-break_55.c: New test.
+	* gcc.dg/vect/vect-early-break_56.c: New test.
+	* gcc.dg/vect/vect-early-break_57.c: New test.
+	* gcc.dg/vect/vect-early-break_58.c: New test.
+	* gcc.dg/vect/vect-early-break_59.c: New test.
+	* gcc.dg/vect/vect-early-break_6.c: New test.
+	* gcc.dg/vect/vect-early-break_60.c: New test.
+	* gcc.dg/vect/vect-early-break_61.c: New test.
+	* gcc.dg/vect/vect-early-break_62.c: New test.
+	* gcc.dg/vect/vect-early-break_63.c: New test.
+	* gcc.dg/vect/vect-early-break_64.c: New test.
+	* gcc.dg/vect/vect-early-break_65.c: New test.
+	* gcc.dg/vect/vect-early-break_66.c: New test.
+	* gcc.dg/vect/vect-early-break_67.c: New test.
+	* gcc.dg/vect/vect-early-break_68.c: New test.
+	* gcc.dg/vect/vect-early-break_69.c: New test.
+	* gcc.dg/vect/vect-early-break_7.c: New test.
+	* gcc.dg/vect/vect-early-break_70.c: New test.
+	* gcc.dg/vect/vect-early-break_71.c: New test.
+	* gcc.dg/vect/vect-early-break_72.c: New test.
+	* gcc.dg/vect/vect-early-break_73.c: New test.
+	* gcc.dg/vect/vect-early-break_74.c: New test.
+	* gcc.dg/vect/vect-early-break_75.c: New test.
+	* gcc.dg/vect/vect-early-break_76.c: New test.
+	* gcc.dg/vect/vect-early-break_77.c: New test.
+	* gcc.dg/vect/vect-early-break_78.c: New test.
+	* gcc.dg/vect/vect-early-break_79.c: New test.
+	* gcc.dg/vect/vect-early-break_8.c: New test.
+	* gcc.dg/vect/vect-early-break_80.c: New test.
+	* gcc.dg/vect/vect-early-break_81.c: New test.
+	* gcc.dg/vect/vect-early-break_82.c: New test.
+	* gcc.dg/vect/vect-early-break_83.c: New test.
+	* gcc.dg/vect/vect-early-break_84.c: New test.
+	* gcc.dg/vect/vect-early-break_85.c: New test.
+	* gcc.dg/vect/vect-early-break_86.c: New test.
+	* gcc.dg/vect/vect-early-break_87.c: New test.
+	* gcc.dg/vect/vect-early-break_88.c: New test.
+	* gcc.dg/vect/vect-early-break_89.c: New test.
+	* gcc.dg/vect/vect-early-break_9.c: New test.
+	* gcc.dg/vect/vect-early-break_90.c: New test.
+	* gcc.dg/vect/vect-early-break_91.c: New test.
+	* gcc.dg/vect/vect-early-break_92.c: New test.
+	* gcc.dg/vect/vect-early-break_93.c: New test.
+
+2023-12-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/vect-early-break-cbranch.c: New test.
+	* gcc.target/aarch64/vect-early-break-cbranch.c: New test.
+
+2023-12-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/no-scevccp-slp-30.c: Add pragma GCC novector to abort
+	loop.
+	* gcc.dg/vect/no-scevccp-slp-31.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Likewise.
+	* gcc.target/aarch64/vect-xorsign_exec.c: Likewise.
+	* gcc.target/i386/avx512er-vrcp28ps-3.c: Likewise.
+	* gcc.target/i386/avx512er-vrsqrt28ps-3.c: Likewise.
+	* gcc.target/i386/avx512er-vrsqrt28ps-5.c: Likewise.
+	* gcc.target/i386/avx512f-ceil-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-ceil-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-ceilf-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-ceilf-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-floor-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-floor-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-floorf-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-floorf-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-rint-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-rintf-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-round-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-roundf-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-trunc-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-truncf-vec-1.c: Likewise.
+	* gcc.target/i386/vect-alignment-peeling-1.c: Likewise.
+	* gcc.target/i386/vect-alignment-peeling-2.c: Likewise.
+	* gcc.target/i386/vect-pack-trunc-1.c: Likewise.
+	* gcc.target/i386/vect-pack-trunc-2.c: Likewise.
+	* gcc.target/i386/vect-perm-even-1.c: Likewise.
+	* gcc.target/i386/vect-unpack-1.c: Likewise.
+
+2023-12-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr110279-1.c: Add -march=2.0 option on hppa*-*-*.
+
+2023-12-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.dg/signbit-5.c: XFail for the riscv_v.
+
 2023-12-23  Xi Ruoyao  <xry111@xry111.site>
 
 	* gcc.target/loongarch/rotrw.c: New test.

@@ -1,3 +1,86 @@
+2023-12-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/sourcebuild.texi (check_effective_target_vect_early_break_hw,
+	check_effective_target_vect_early_break): Document.
+
+2023-12-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (cbranch<mode>4): New.
+
+2023-12-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-if-conv.cc (idx_within_array_bound): Expose.
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences): New.
+	(vect_analyze_data_ref_dependences): Use it.
+	* tree-vect-loop-manip.cc (vect_iv_increment_position): New.
+	(vect_set_loop_controls_directly,
+	vect_set_loop_condition_partial_vectors,
+	vect_set_loop_condition_partial_vectors_avx512,
+	vect_set_loop_condition_normal): Support multiple exits.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Support LCSAA peeling for
+	multiple exits.
+	(slpeel_can_duplicate_loop_p): Change vectorizer from looking at BB
+	count and instead look at loop shape.
+	(vect_update_ivs_after_vectorizer): Drop asserts.
+	(vect_gen_vector_loop_niters_mult_vf): Support peeled vector iterations.
+	(vect_do_peeling): Support multiple exits.
+	(vect_loop_versioning): Likewise.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Initialise
+	early_breaks.
+	(vect_analyze_loop_form): Support loop flows with more than single BB
+	loop body.
+	(vect_create_loop_vinfo): Support niters analysis for multiple exits.
+	(vect_analyze_loop): Likewise.
+	(vect_get_vect_def): New.
+	(vect_create_epilog_for_reduction): Support early exit reductions.
+	(vectorizable_live_operation_1): New.
+	(find_connected_edge): New.
+	(vectorizable_live_operation): Support early exit live operations.
+	(move_early_exit_stmts): New.
+	(vect_transform_loop): Use it.
+	* tree-vect-patterns.cc (vect_init_pattern_stmt): Support gcond.
+	(vect_recog_bitfield_ref_pattern): Support gconds and bools.
+	(vect_recog_gcond_pattern): New.
+	(possible_vector_mask_operation_p): Support gcond masks.
+	(vect_determine_mask_precision): Likewise.
+	(vect_mark_pattern_stmts): Set gcond def type.
+	(can_vectorize_live_stmts): Force early break inductions to be live.
+	* tree-vect-stmts.cc (vect_stmt_relevant_p): Add relevancy analysis for
+	early breaks.
+	(vect_mark_stmts_to_be_vectorized): Process gcond usage.
+	(perm_mask_for_reverse): Expose.
+	(vectorizable_comparison_1): New.
+	(vectorizable_early_exit): New.
+	(vect_analyze_stmt): Support early break and gcond.
+	(vect_transform_stmt): Likewise.
+	(vect_is_simple_use): Likewise.
+	(vect_get_vector_types_for_stmt): Likewise.
+	* tree-vectorizer.cc (pass_vectorize::execute): Update exits for value
+	numbering.
+	* tree-vectorizer.h (enum vect_def_type): Add vect_condition_def.
+	(LOOP_VINFO_EARLY_BREAKS, LOOP_VINFO_EARLY_BRK_STORES,
+	LOOP_VINFO_EARLY_BREAKS_VECT_PEELED, LOOP_VINFO_EARLY_BRK_DEST_BB,
+	LOOP_VINFO_EARLY_BRK_VUSES): New.
+	(is_loop_header_bb_p): Drop assert.
+	(class loop): Add early_breaks, early_break_stores, early_break_dest_bb,
+	early_break_vuses.
+	(vect_iv_increment_position, perm_mask_for_reverse,
+	ref_within_array_bound): New.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Update for early breaks.
+
+2023-12-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-ssa-loop-im.cc (determine_max_movement): Import insn-codes.h
+	and optabs-tree.h and check for vector compare motion out of gcond.
+
+2023-12-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/113109
+	* config/cris/cris.cc (cris_eh_return_handler_rtx): New function.
+	* config/cris/cris-protos.h (cris_eh_return_handler_rtx): Prototype.
+	* config/cris/cris.h (EH_RETURN_HANDLER_RTX): Redefine to call
+	cris_eh_return_handler_rtx.
+
 2023-12-23  Xi Ruoyao  <xry111@xry111.site>
 
 	* config/loongarch/loongarch.md (rotrsi3_extend): New
