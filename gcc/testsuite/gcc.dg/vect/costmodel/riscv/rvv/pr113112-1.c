@@ -20,6 +20,7 @@ foo (int n){
   return 0;
 }
 
+/* { dg-final { scan-assembler {e32,m4} } } */
 /* { dg-final { scan-assembler-not {jr} } } */
 /* { dg-final { scan-assembler-times {ret} 1 } } */
 /* { dg-final { scan-tree-dump "Maximum lmul = 8" "vect" } } */
