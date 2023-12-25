@@ -6207,7 +6207,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   exit_bb = loop_exit->dest;
   exit_gsi = gsi_after_labels (exit_bb);
   reduc_inputs.create (slp_node ? vec_num : ncopies);
-  vec <gimple *> vec_stmts;
+  vec <gimple *> vec_stmts = vNULL;
   for (unsigned i = 0; i < vec_num; i++)
     {
       gimple_seq stmts = NULL;
