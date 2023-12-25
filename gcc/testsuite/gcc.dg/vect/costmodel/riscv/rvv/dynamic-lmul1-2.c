@@ -57,7 +57,4 @@ foo (int32_t *__restrict a, int32_t *__restrict b,    int32_t *__restrict c,
 /* FIXME: Choosing LMUL = 1 is not the optimal since it can be LMUL = 2 if we apply instruction scheduler.  */
 /* { dg-final { scan-assembler {e32,m1} } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 1" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Preferring smaller LMUL loop because it has unexpected spills" 3 "vect" } } */

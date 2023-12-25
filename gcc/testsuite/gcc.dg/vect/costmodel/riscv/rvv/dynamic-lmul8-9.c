@@ -13,7 +13,4 @@ foo (int64_t *__restrict a, int64_t init, int n)
 
 /* { dg-final { scan-assembler {e64,m8} } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
-/* { dg-final { scan-tree-dump "Maximum lmul = 8" "vect" } } */
-/* { dg-final { scan-tree-dump-not "Maximum lmul = 4" "vect" } } */
-/* { dg-final { scan-tree-dump-not "Maximum lmul = 2" "vect" } } */
-/* { dg-final { scan-tree-dump-not "Maximum lmul = 1" "vect" } } */
+/* { dg-final { scan-tree-dump-not "Preferring smaller LMUL loop because it has unexpected spills" "vect" } } */

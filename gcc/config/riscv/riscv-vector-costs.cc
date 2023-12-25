@@ -390,14 +390,13 @@ non_contiguous_memory_access_p (stmt_vec_info stmt_info)
 
 /* Return the LMUL of the current analysis.  */
 static int
-compute_estimated_lmul (loop_vec_info other_loop_vinfo, machine_mode mode)
+compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
 {
   gcc_assert (GET_MODE_BITSIZE (mode).is_constant ());
-  int regno_alignment
-    = riscv_get_v_regno_alignment (other_loop_vinfo->vector_mode);
-  if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (other_loop_vinfo), 1U))
+  int regno_alignment = riscv_get_v_regno_alignment (loop_vinfo->vector_mode);
+  if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo), 1U))
     {
-      int estimated_vf = vect_vf_for_cost (other_loop_vinfo);
+      int estimated_vf = vect_vf_for_cost (loop_vinfo);
       return estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
 	     / TARGET_MIN_VLEN;
     }
@@ -407,12 +406,11 @@ compute_estimated_lmul (loop_vec_info other_loop_vinfo, machine_mode mode)
     {
       int ratio;
       if (can_div_trunc_p (BYTES_PER_RISCV_VECTOR,
-			   LOOP_VINFO_SLP_UNROLLING_FACTOR (other_loop_vinfo),
+			   LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo),
 			   &ratio))
 	return TARGET_MAX_LMUL / ratio;
-      else
-	gcc_unreachable ();
     }
+  return 0;
 }
 
 /* Update the live ranges according PHI.
@@ -576,14 +574,17 @@ update_local_live_ranges (
     }
 }
 
-/* Return true that the LMUL of new COST model is preferred.  */
+/* Compute the maximum live V_REGS.  */
 static bool
-preferred_new_lmul_p (loop_vec_info other_loop_vinfo)
+has_unexpected_spills_p (loop_vec_info loop_vinfo)
 {
+  /* We don't apply dynamic LMUL cost model on VLS modes.  */
+  if (!riscv_v_ext_vector_mode_p (loop_vinfo->vector_mode))
+    return false;
   /* Compute local program points.
      It's a fast and effective computation.  */
   hash_map<basic_block, vec<stmt_point>> program_points_per_bb;
-  compute_local_program_points (other_loop_vinfo, program_points_per_bb);
+  compute_local_program_points (loop_vinfo, program_points_per_bb);
 
   /* Compute local live ranges.  */
   hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
@@ -591,34 +592,38 @@ preferred_new_lmul_p (loop_vec_info other_loop_vinfo)
     = compute_local_live_ranges (program_points_per_bb, live_ranges_per_bb);
 
   /* Update live ranges according to PHI.  */
-  update_local_live_ranges (other_loop_vinfo, program_points_per_bb,
+  update_local_live_ranges (loop_vinfo, program_points_per_bb,
 			    live_ranges_per_bb, &biggest_mode);
 
-  int lmul = compute_estimated_lmul (other_loop_vinfo, biggest_mode);
+  int lmul = compute_estimated_lmul (loop_vinfo, biggest_mode);
   /* TODO: We calculate the maximum live vars base on current STMTS
      sequence.  We can support live range shrink if it can give us
      big improvement in the future.  */
-  if (!live_ranges_per_bb.is_empty ())
+  if (lmul > RVV_M1)
     {
-      unsigned int max_nregs = 0;
-      for (hash_map<basic_block, hash_map<tree, pair>>::iterator iter
-	   = live_ranges_per_bb.begin ();
-	   iter != live_ranges_per_bb.end (); ++iter)
+      if (!live_ranges_per_bb.is_empty ())
 	{
-	  basic_block bb = (*iter).first;
-	  unsigned int max_point
-	    = (*program_points_per_bb.get (bb)).length () + 1;
-	  if ((*iter).second.is_empty ())
-	    continue;
-	  /* We prefer larger LMUL unless it causes register spillings.  */
-	  unsigned int nregs
-	    = max_number_of_live_regs (bb, (*iter).second, max_point,
-				       biggest_mode, lmul);
-	  if (nregs > max_nregs)
-	    max_nregs = nregs;
+	  unsigned int max_nregs = 0;
+	  for (hash_map<basic_block, hash_map<tree, pair>>::iterator iter
+	       = live_ranges_per_bb.begin ();
+	       iter != live_ranges_per_bb.end (); ++iter)
+	    {
+	      basic_block bb = (*iter).first;
+	      unsigned int max_point
+		= (*program_points_per_bb.get (bb)).length () + 1;
+	      if ((*iter).second.is_empty ())
+		continue;
+	      /* We prefer larger LMUL unless it causes register spillings. */
+	      unsigned int nregs
+		= max_number_of_live_regs (bb, (*iter).second, max_point,
+					   biggest_mode, lmul);
+	      if (nregs > max_nregs)
+		max_nregs = nregs;
+	    }
+	  live_ranges_per_bb.empty ();
+	  if (max_nregs > V_REG_NUM)
+	    return true;
 	}
-      live_ranges_per_bb.empty ();
-      return max_nregs > V_REG_NUM;
     }
   if (!program_points_per_bb.is_empty ())
     {
@@ -632,7 +637,7 @@ preferred_new_lmul_p (loop_vec_info other_loop_vinfo)
 	}
       program_points_per_bb.empty ();
     }
-  return lmul > RVV_M1;
+  return false;
 }
 
 costs::costs (vec_info *vinfo, bool costing_for_scalar)
@@ -667,6 +672,25 @@ costs::analyze_loop_vinfo (loop_vec_info loop_vinfo)
   /* Detect whether we're vectorizing for VLA and should apply the unrolling
      heuristic described above m_unrolled_vls_niters.  */
   record_potential_vls_unrolling (loop_vinfo);
+
+  /* Detect whether the LOOP has unexpected spills.  */
+  record_potential_unexpected_spills (loop_vinfo);
+}
+
+/* Analyze the vectorized program stataments and use dynamic LMUL
+   heuristic to detect whether the loop has unexpected spills.  */
+void
+costs::record_potential_unexpected_spills (loop_vec_info loop_vinfo)
+{
+  if (riscv_autovec_lmul == RVV_DYNAMIC)
+    {
+      bool post_dom_available_p = dom_info_available_p (CDI_POST_DOMINATORS);
+      if (!post_dom_available_p)
+	calculate_dominance_info (CDI_POST_DOMINATORS);
+      m_has_unexpected_spills_p = has_unexpected_spills_p (loop_vinfo);
+      if (!post_dom_available_p)
+	free_dominance_info (CDI_POST_DOMINATORS);
+    }
 }
 
 /* Decide whether to use the unrolling heuristic described above
@@ -762,19 +786,19 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 	  return other_prefer_unrolled;
 	}
     }
-
-  if (!LOOP_VINFO_NITERS_KNOWN_P (this_loop_vinfo)
-      && riscv_autovec_lmul == RVV_DYNAMIC)
+  else if (riscv_autovec_lmul == RVV_DYNAMIC
+	   && !LOOP_VINFO_NITERS_KNOWN_P (other_loop_vinfo))
     {
-      if (!riscv_v_ext_vector_mode_p (this_loop_vinfo->vector_mode))
+      if (other->m_has_unexpected_spills_p)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Preferring smaller LMUL loop because"
+			     " it has unexpected spills\n");
+	  return true;
+	}
+      else
 	return false;
-      bool post_dom_available_p = dom_info_available_p (CDI_POST_DOMINATORS);
-      if (!post_dom_available_p)
-	calculate_dominance_info (CDI_POST_DOMINATORS);
-      bool preferred_p = preferred_new_lmul_p (other_loop_vinfo);
-      if (!post_dom_available_p)
-	free_dominance_info (CDI_POST_DOMINATORS);
-      return preferred_p;
     }
 
   return vector_costs::better_main_loop_than_p (other);

@@ -92,6 +92,14 @@ private:
   void analyze_loop_vinfo (loop_vec_info);
   void record_potential_vls_unrolling (loop_vec_info);
   bool prefer_unrolled_loop () const;
+
+  /* Analyze the vectorized program statements and compute the maximum live
+     V_REGS live at some program point if we enable dynamic LMUL cost model.
+
+     It's true when LMUL of loop vectorization factor > 1 and has unexpected
+     V_REGS spills according to the analysis.  */
+  bool m_has_unexpected_spills_p = false;
+  void record_potential_unexpected_spills (loop_vec_info);
 };
 
 } // namespace riscv_vector
