@@ -1489,7 +1489,7 @@
   "loongarch_pre_reload_split () && \
    loongarch_use_bstrins_for_ior_with_mask (<MODE>mode, operands)"
   "#"
-  ""
+  "&& true"
   [(set (match_dup 0) (match_dup 1))
    (set (zero_extract:GPR (match_dup 0) (match_dup 2) (match_dup 4))
 	(match_dup 3))]
