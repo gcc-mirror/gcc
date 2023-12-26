@@ -6,4 +6,4 @@ template<class T>
 
 template void fun<int>();
 
-// { dg-final { scan-assembler {.section[ \t]+.foo} } }
+// { dg-final { scan-assembler {.(section|csect)[ \t]+.+foo} } }

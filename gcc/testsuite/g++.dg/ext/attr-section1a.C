@@ -8,4 +8,4 @@ struct A {
 
 template struct A<int>;
 
-// { dg-final { scan-assembler {.section[ \t]+.foo} } }
+// { dg-final { scan-assembler {.(section|csect)[ \t]+.+foo} } }

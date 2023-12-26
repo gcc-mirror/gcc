@@ -11,4 +11,4 @@ int A<T>::var = 42;
 
 template struct A<int>;
 
-// { dg-final { scan-assembler {.section[ \t]+.foo} } }
+// { dg-final { scan-assembler {.(section|csect)[ \t]+.foo} } }
