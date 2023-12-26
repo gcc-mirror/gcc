@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Ofast --param avoid-fma-max-bits=512 --param tree-reassoc-width=4 -fdump-tree-widening_mul-details" } */
-/* { dg-additional-options "-march=armv8.2-a" { target aarch64-*-* } } */
+/* { dg-additional-options "-mcpu=generic" { target aarch64*-*-* } } */
+/* { dg-additional-options "-mfma" { target i?86-*-* x86_64-*-* } } */
 /* { dg-additional-options "-march=2.0" { target hppa*-*-* } } */
 
 #define LOOP_COUNT 800000000

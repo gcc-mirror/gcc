@@ -1,7 +1,7 @@
 /* PR tree-optimization/110279 */
 /* { dg-do compile } */
 /* { dg-options "-Ofast --param tree-reassoc-width=4 --param fully-pipelined-fma=1 -fdump-tree-reassoc2-details -fdump-tree-optimized" } */
-/* { dg-additional-options "-march=armv8.2-a" { target aarch64-*-* } } */
+/* { dg-additional-options "-mcpu=generic" { target aarch64*-*-* } } */
 
 #define LOOP_COUNT 800000000
 typedef double data_e;
@@ -35,5 +35,5 @@ foo (data_e in)
   return result + result2;
 }
 
-/* { dg-final { scan-tree-dump-not "was chosen for reassociation" "reassoc2"} } */
-/* { dg-final { scan-tree-dump-times {\.FMA } 3 "optimized"} } */
+/* { dg-final { scan-tree-dump-not "was chosen for reassociation" "reassoc2" { target aarch64*-*-* }} } */
+/* { dg-final { scan-tree-dump-times {\.FMA } 3 "optimized" { target aarch64*-*-* }} } */
