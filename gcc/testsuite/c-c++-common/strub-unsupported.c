@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target strub } */
 
 /* Check that, when strub is not supported (so no dg-required-effective-target
    strub above), we report when strub functions are defined, and when they're
