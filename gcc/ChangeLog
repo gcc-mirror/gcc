@@ -1,3 +1,33 @@
+2023-12-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (compute_estimated_lmul): Allow
+	fractional vecrtor.
+	(preferred_new_lmul_p): Move RVV V_REGS liveness computation into analyze_loop_vinfo.
+	(has_unexpected_spills_p): New function.
+	(costs::record_potential_unexpected_spills): Ditto.
+	(costs::better_main_loop_than_p): Move RVV V_REGS liveness computation into
+	analyze_loop_vinfo.
+	* config/riscv/riscv-vector-costs.h: New functions and variables.
+
+2023-12-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR bootstrap/113132
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Initialize vec_stmts;
+
+2023-12-25  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+	    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/110320
+	* config/rs6000/rs6000.cc (rs6000_conditional_register_usage): Change
+	GPR2 to volatile and non-fixed register for PCREL.
+	* config/rs6000/rs6000.h (FIXED_REGISTERS): Modify GPR2 to not fixed.
+
+2023-12-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/19832
+	* match.pd (`(a != b) ? (a + b) : (2 * a)`): Add `:c`
+	on the plus operator.
+
 2023-12-24  Tamar Christina  <tamar.christina@arm.com>
 
 	* doc/sourcebuild.texi (check_effective_target_vect_early_break_hw,
