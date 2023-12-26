@@ -6906,7 +6906,8 @@ loongarch_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 	  return NO_REGS;
 	}
 
-      if (reg_class_subset_p (rclass, FP_REGS) && MEM_P (x))
+      if (reg_class_subset_p (rclass, FP_REGS)
+	  && (regno == -1 || MEM_P (x)))
 	return GR_REGS;
 
       return NO_REGS;
