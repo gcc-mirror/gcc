@@ -394,21 +394,32 @@ compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
 {
   gcc_assert (GET_MODE_BITSIZE (mode).is_constant ());
   int regno_alignment = riscv_get_v_regno_alignment (loop_vinfo->vector_mode);
-  if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo), 1U))
+  if (riscv_v_ext_vls_mode_p (loop_vinfo->vector_mode))
+    return regno_alignment;
+  else if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo), 1U)
+	   || LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo).is_constant ())
     {
       int estimated_vf = vect_vf_for_cost (loop_vinfo);
       return estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
 	     / TARGET_MIN_VLEN;
     }
-  else if (regno_alignment > 1)
-    return regno_alignment;
   else
     {
-      int ratio;
-      if (can_div_trunc_p (BYTES_PER_RISCV_VECTOR,
-			   LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo),
-			   &ratio))
-	return TARGET_MAX_LMUL / ratio;
+      /* Estimate the VLA SLP LMUL.  */
+      if (regno_alignment > RVV_M1)
+	return regno_alignment;
+      else if (mode != QImode)
+	{
+	  int ratio;
+	  if (can_div_trunc_p (BYTES_PER_RISCV_VECTOR,
+			       GET_MODE_SIZE (loop_vinfo->vector_mode), &ratio))
+	    {
+	      if (ratio == 1)
+		return RVV_M4;
+	      else if (ratio == 2)
+		return RVV_M2;
+	    }
+	}
     }
   return 0;
 }
@@ -540,7 +551,10 @@ update_local_live_ranges (
 	  stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
 	  enum stmt_vec_info_type type
 	    = STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
-	  if (non_contiguous_memory_access_p (stmt_info))
+	  if (non_contiguous_memory_access_p (stmt_info)
+	      /* LOAD_LANES/STORE_LANES doesn't need a perm indice.  */
+	      && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info)
+		   != VMAT_LOAD_STORE_LANES)
 	    {
 	      /* For non-adjacent load/store STMT, we will potentially
 		 convert it into:
@@ -578,9 +592,6 @@ update_local_live_ranges (
 static bool
 has_unexpected_spills_p (loop_vec_info loop_vinfo)
 {
-  /* We don't apply dynamic LMUL cost model on VLS modes.  */
-  if (!riscv_v_ext_vector_mode_p (loop_vinfo->vector_mode))
-    return false;
   /* Compute local program points.
      It's a fast and effective computation.  */
   hash_map<basic_block, vec<stmt_point>> program_points_per_bb;
@@ -682,7 +693,12 @@ costs::analyze_loop_vinfo (loop_vec_info loop_vinfo)
 void
 costs::record_potential_unexpected_spills (loop_vec_info loop_vinfo)
 {
-  if (riscv_autovec_lmul == RVV_DYNAMIC)
+  /* We only want to apply the heuristic if LOOP_VINFO is being
+     vectorized for VLA and known NITERS VLS loop.  */
+  if (riscv_autovec_lmul == RVV_DYNAMIC
+      && (m_cost_type == VLA_VECTOR_COST
+	  || (m_cost_type == VLS_VECTOR_COST
+	      && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))))
     {
       bool post_dom_available_p = dom_info_available_p (CDI_POST_DOMINATORS);
       if (!post_dom_available_p)

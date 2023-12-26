@@ -1,10 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gcv -mabi=ilp32 -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic --param riscv-autovec-preference=scalable -fselective-scheduling -fdump-tree-vect-details" } */
 
-#include <stdint-gcc.h>
-
 void
-foo (uint8_t *restrict a, uint8_t *restrict b, int n)
+foo (int *restrict a, int *restrict b, int n)
 {
   for (int i = 0; i < n; ++i)
     {
@@ -19,10 +17,9 @@ foo (uint8_t *restrict a, uint8_t *restrict b, int n)
     }
 }
 
-/* { dg-final { scan-assembler {e8,m4} } } */
+/* { dg-final { scan-assembler {e32,m8} } } */
 /* { dg-final { scan-assembler-times {csrr} 1 } } */
-/* Since we don't support VLA SLP for LMUL = 8, dynamic LMUL cost model start from LMUL = 4.  */
 /* { dg-final { scan-tree-dump-not "Preferring smaller LMUL loop because it has unexpected spills" "vect" } } */
-/* { dg-final { scan-tree-dump-not "Maximum lmul = 8" "vect" } } */
+/* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */

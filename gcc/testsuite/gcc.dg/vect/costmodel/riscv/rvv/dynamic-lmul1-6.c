@@ -145,3 +145,6 @@ foo (int8_t *__restrict a, int8_t *__restrict b,    int8_t *__restrict c,
 /* { dg-final { scan-assembler {e8,m1} } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
 /* { dg-final { scan-tree-dump-times "Preferring smaller LMUL loop because it has unexpected spills" 3 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */

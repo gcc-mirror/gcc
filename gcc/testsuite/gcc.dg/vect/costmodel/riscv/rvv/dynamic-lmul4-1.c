@@ -30,3 +30,6 @@ foo (int32_t *__restrict a, int32_t *__restrict b, int32_t *__restrict c,
 /* { dg-final { scan-assembler {e32,m4} } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
 /* { dg-final { scan-tree-dump-times "Preferring smaller LMUL loop because it has unexpected spills" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */
