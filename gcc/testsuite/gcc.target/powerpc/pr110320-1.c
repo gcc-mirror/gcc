@@ -1,5 +1,6 @@
 /* PR target/110320 */
 /* { dg-require-effective-target powerpc_elfv2 } */
+/* { dg-require-effective-target powerpc_pcrel } */
 /* { dg-options "-O2 -mdejagnu-cpu=power10 -ffixed-r0 -ffixed-r11 -ffixed-r12" } */
 
 /* Ensure we use r2 as a normal volatile register for the code below.
