@@ -1,3 +1,10 @@
+2023-12-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* config/riscv/riscv-vector-costs.cc (compute_estimated_lmul): Tweak LMUL estimation.
+	(has_unexpected_spills_p): Ditto.
+	(costs::record_potential_unexpected_spills): Ditto.
+
 2023-12-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vector-costs.cc (compute_estimated_lmul): Allow

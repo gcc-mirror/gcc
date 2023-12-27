@@ -1,3 +1,72 @@
+2023-12-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/analyzer/out-of-bounds-diagram-17.c: Skip on AIX.
+	* gcc.dg/analyzer/out-of-bounds-diagram-18.c: Same.
+
+2023-12-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr111409.c: Skip on AIX.
+
+2023-12-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* c-c++-common/strub-unsupported-2.c: Require strub.
+	* c-c++-common/strub-unsupported-3.c: Same.
+	* c-c++-common/strub-unsupported.c: Same.
+	* lib/target-supports.exp (check_effective_target_strub): Return 0
+	for AIX.
+
+2023-12-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-10.c: Fix typo.
+
+2023-12-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-1.c: Add more checks.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-2.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-4.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-7.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-2.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-4.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-2.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-7.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-8.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-10.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-11.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-2.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-4.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-7.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-8.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-9.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-12.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-2.c: New test.
+
+2023-12-26  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	* gcc.dg/pr110279-1.c: Add "-mcpu=generic" for aarch64; add
+	"-mfma" for x86_64.
+	* gcc.dg/pr110279-2.c: Replace "-march=armv8.2-a" with
+	"-mcpu=generic"; limit the check to be on aarch64.
+
+2023-12-26  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/110320
+	* gcc.target/powerpc/pr110320-1.c: Add dg-require-effective-target powerpc_pcrel.
+
 2023-12-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* c-c++-common/analyzer/capacity-1.c: Skip on AIX.
