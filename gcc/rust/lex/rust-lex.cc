@@ -1766,13 +1766,15 @@ Lexer::parse_byte_string (location_t loc)
   std::string str;
   str.reserve (16); // some sensible default
 
-  int length = 1;
   current_char = peek_input ();
+
+  const location_t string_begin_locus = get_current_location ();
 
   while (current_char != '"' && !current_char.is_eof ())
     {
       if (current_char == '\\')
 	{
+	  int length = 1;
 	  auto escape_length_pair = parse_escape ('"');
 	  char output_char = std::get<0> (escape_length_pair);
 
@@ -1784,17 +1786,24 @@ Lexer::parse_byte_string (location_t loc)
 	  if (output_char != 0 || !std::get<2> (escape_length_pair))
 	    str += output_char;
 
+	  current_column += length;
+
 	  continue;
 	}
 
-      length++;
+      current_column++;
+      if (current_char.value == '\n')
+	{
+	  current_line++;
+	  current_column = 1;
+	  // tell line_table that new line starts
+	  start_line (current_line, max_column_hint);
+	}
 
       str += current_char;
       skip_input ();
       current_char = peek_input ();
     }
-
-  current_column += length;
 
   if (current_char == '"')
     {
@@ -1805,7 +1814,7 @@ Lexer::parse_byte_string (location_t loc)
     }
   else if (current_char.is_eof ())
     {
-      rust_error_at (get_current_location (), "unended byte string literal");
+      rust_error_at (string_begin_locus, "unended byte string literal");
       return Token::make (END_OF_FILE, get_current_location ());
     }
   else
@@ -1996,14 +2005,17 @@ Lexer::parse_string (location_t loc)
   std::string str;
   str.reserve (16); // some sensible default
 
-  int length = 1;
   current_char = peek_input ();
+
+  const location_t string_begin_locus = get_current_location ();
 
   // FIXME: This fails if the input ends. How do we check for EOF?
   while (current_char.value != '"' && !current_char.is_eof ())
     {
       if (current_char.value == '\\')
 	{
+	  int length = 1;
+
 	  // parse escape
 	  auto utf8_escape_pair = parse_utf8_escape ();
 	  current_char = std::get<0> (utf8_escape_pair);
@@ -2016,20 +2028,27 @@ Lexer::parse_string (location_t loc)
 	  if (current_char != Codepoint (0) || !std::get<2> (utf8_escape_pair))
 	    str += current_char.as_string ();
 
+	  current_column += length;
+
 	  // FIXME: should remove this but can't.
 	  // `parse_utf8_escape` does not update `current_char` correctly.
 	  current_char = peek_input ();
 	  continue;
 	}
 
-      length++;
+      current_column++;
+      if (current_char.value == '\n')
+	{
+	  current_line++;
+	  current_column = 1;
+	  // tell line_table that new line starts
+	  start_line (current_line, max_column_hint);
+	}
 
       str += current_char;
       skip_input ();
       current_char = peek_input ();
     }
-
-  current_column += length;
 
   if (current_char.value == '"')
     {
@@ -2040,7 +2059,7 @@ Lexer::parse_string (location_t loc)
     }
   else if (current_char.is_eof ())
     {
-      rust_error_at (get_current_location (), "unended string literal");
+      rust_error_at (string_begin_locus, "unended string literal");
       return Token::make (END_OF_FILE, get_current_location ());
     }
   else
@@ -2049,7 +2068,6 @@ Lexer::parse_string (location_t loc)
     }
 
   str.shrink_to_fit ();
-  loc += length - 1;
 
   return Token::make_string (loc, std::move (str));
 }
