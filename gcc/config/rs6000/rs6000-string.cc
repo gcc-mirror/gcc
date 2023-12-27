@@ -1947,11 +1947,8 @@ expand_block_compare_gpr(unsigned HOST_WIDE_INT bytes, unsigned int base_align,
 bool
 expand_block_compare (rtx operands[])
 {
-  rtx target = operands[0];
-  rtx orig_src1 = operands[1];
-  rtx orig_src2 = operands[2];
-  rtx bytes_rtx = operands[3];
-  rtx align_rtx = operands[4];
+  /* TARGET_POPCNTD is already guarded at expand cmpmemsi.  */
+  gcc_assert (TARGET_POPCNTD);
 
   /* This case is complicated to handle because the subtract
      with carry instructions do not generate the 64-bit
@@ -1960,23 +1957,19 @@ expand_block_compare (rtx operands[])
   if (TARGET_32BIT && TARGET_POWERPC64)
     return false;
 
-  bool isP7 = (rs6000_tune == PROCESSOR_POWER7);
-
   /* Allow this param to shut off all expansion.  */
   if (rs6000_block_compare_inline_limit == 0)
     return false;
 
-  /* targetm.slow_unaligned_access -- don't do unaligned stuff.
-     However slow_unaligned_access returns true on P7 even though the
-     performance of this code is good there.  */
-  if (!isP7
-      && (targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src1))
-	  || targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src2))))
-    return false;
+  rtx target = operands[0];
+  rtx orig_src1 = operands[1];
+  rtx orig_src2 = operands[2];
+  rtx bytes_rtx = operands[3];
+  rtx align_rtx = operands[4];
 
-  /* Unaligned l*brx traps on P7 so don't do this.  However this should
-     not affect much because LE isn't really supported on P7 anyway.  */
-  if (isP7 && !BYTES_BIG_ENDIAN)
+  /* targetm.slow_unaligned_access -- don't do unaligned stuff.  */
+  if (targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src1))
+      || targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src2)))
     return false;
 
   /* If this is not a fixed size compare, try generating loop code and
@@ -2024,14 +2017,6 @@ expand_block_compare (rtx operands[])
 
   if (!IN_RANGE (bytes, 1, max_bytes))
     return expand_compare_loop (operands);
-
-  /* The code generated for p7 and older is not faster than glibc
-     memcmp if alignment is small and length is not short, so bail
-     out to avoid those conditions.  */
-  if (targetm.slow_unaligned_access (word_mode, align_by_bits)
-      && ((base_align == 1 && bytes > 16)
-	  || (base_align == 2 && bytes > 32)))
-    return false;
 
   rtx final_label = NULL;
 
