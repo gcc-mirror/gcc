@@ -28,6 +28,7 @@ struct stmt_point
   /* Program point.  */
   unsigned int point;
   gimple *stmt;
+  stmt_vec_info stmt_info;
 };
 
 enum cost_type_enum

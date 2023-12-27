@@ -88,6 +88,39 @@ namespace riscv_vector {
 	 3. M1(M8) -> MF2(M4) -> MF4(M2) -> MF8(M1)
 */
 
+static bool
+is_gimple_assign_or_call (gimple_stmt_iterator si)
+{
+  return is_gimple_assign (gsi_stmt (si)) || is_gimple_call (gsi_stmt (si));
+}
+
+/* Return the program point of 1st vectorized lanes statement.  */
+static unsigned int
+get_first_lane_point (const vec<stmt_point> program_points,
+		      stmt_vec_info stmt_info)
+{
+  for (const auto program_point : program_points)
+    if (program_point.stmt_info == DR_GROUP_FIRST_ELEMENT (stmt_info))
+      return program_point.point;
+  return 0;
+}
+
+/* Return the program point of last vectorized lanes statement.  */
+static unsigned int
+get_last_lane_point (const vec<stmt_point> program_points,
+		     stmt_vec_info stmt_info)
+{
+  unsigned int max_point = 0;
+  for (auto s = DR_GROUP_FIRST_ELEMENT (stmt_info); s != NULL;
+       s = DR_GROUP_NEXT_ELEMENT (s))
+    {
+      for (const auto program_point : program_points)
+	if (program_point.stmt_info == s && program_point.point > max_point)
+	  max_point = program_point.point;
+    }
+  return max_point;
+}
+
 /* Collect all STMTs that are vectorized and compute their program points.
    Note that we don't care about the STMTs that are not vectorized and
    we only build the local graph (within a block) of program points.
@@ -132,15 +165,14 @@ compute_local_program_points (
 			     bb->index);
 	  for (si = gsi_start_bb (bbs[i]); !gsi_end_p (si); gsi_next (&si))
 	    {
-	      if (!(is_gimple_assign (gsi_stmt (si))
-		    || is_gimple_call (gsi_stmt (si))))
+	      if (!is_gimple_assign_or_call (si))
 		continue;
 	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
 	      enum stmt_vec_info_type type
 		= STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
 	      if (type != undef_vec_info_type)
 		{
-		  stmt_point info = {point, gsi_stmt (si)};
+		  stmt_point info = {point, gsi_stmt (si), stmt_info};
 		  program_points.safe_push (info);
 		  point++;
 		  if (dump_enabled_p ())
@@ -219,6 +251,10 @@ compute_local_live_ranges (
 		  pair &live_range
 		    = live_ranges->get_or_insert (lhs, &existed_p);
 		  gcc_assert (!existed_p);
+		  if (STMT_VINFO_MEMORY_ACCESS_TYPE (program_point.stmt_info)
+		      == VMAT_LOAD_STORE_LANES)
+		    point = get_first_lane_point (program_points,
+						  program_point.stmt_info);
 		  live_range = pair (point, point);
 		}
 	      for (i = 0; i < gimple_num_args (stmt); i++)
@@ -241,6 +277,11 @@ compute_local_live_ranges (
 		      bool existed_p = false;
 		      pair &live_range
 			= live_ranges->get_or_insert (var, &existed_p);
+		      if (STMT_VINFO_MEMORY_ACCESS_TYPE (
+			    program_point.stmt_info)
+			  == VMAT_LOAD_STORE_LANES)
+			point = get_last_lane_point (program_points,
+						     program_point.stmt_info);
 		      if (existed_p)
 			/* We will grow the live range for each use.  */
 			live_range = pair (live_range.first, point);
@@ -313,7 +354,10 @@ max_number_of_live_regs (const basic_block bb,
 	    = compute_nregs_for_mode (mode, biggest_mode, lmul);
 	  live_vars_vec[i] += nregs;
 	  if (live_vars_vec[i] > max_nregs)
-	    max_nregs = live_vars_vec[i];
+	    {
+	      max_nregs = live_vars_vec[i];
+	      live_point = i;
+	    }
 	}
     }
 
@@ -396,8 +440,7 @@ compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
   int regno_alignment = riscv_get_v_regno_alignment (loop_vinfo->vector_mode);
   if (riscv_v_ext_vls_mode_p (loop_vinfo->vector_mode))
     return regno_alignment;
-  else if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo), 1U)
-	   || LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo).is_constant ())
+  else if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo), 1U))
     {
       int estimated_vf = vect_vf_for_cost (loop_vinfo);
       return estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
@@ -408,7 +451,8 @@ compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
       /* Estimate the VLA SLP LMUL.  */
       if (regno_alignment > RVV_M1)
 	return regno_alignment;
-      else if (mode != QImode)
+      else if (mode != QImode
+	       || LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo).is_constant ())
 	{
 	  int ratio;
 	  if (can_div_trunc_p (BYTES_PER_RISCV_VECTOR,
@@ -507,7 +551,7 @@ update_local_live_ranges (
 		      auto &program_points = (*program_points_per_bb.get (bb));
 		      if (program_points.is_empty ())
 			{
-			  stmt_point info = {1, phi};
+			  stmt_point info = {1, phi, stmt_info};
 			  program_points.safe_push (info);
 			}
 		      if (dump_enabled_p ())
@@ -545,8 +589,7 @@ update_local_live_ranges (
 	}
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  if (!(is_gimple_assign (gsi_stmt (si))
-		|| is_gimple_call (gsi_stmt (si))))
+	  if (!is_gimple_assign_or_call (si))
 	    continue;
 	  stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
 	  enum stmt_vec_info_type type
@@ -802,8 +845,7 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 	  return other_prefer_unrolled;
 	}
     }
-  else if (riscv_autovec_lmul == RVV_DYNAMIC
-	   && !LOOP_VINFO_NITERS_KNOWN_P (other_loop_vinfo))
+  else if (riscv_autovec_lmul == RVV_DYNAMIC)
     {
       if (other->m_has_unexpected_spills_p)
 	{
@@ -813,8 +855,29 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 			     " it has unexpected spills\n");
 	  return true;
 	}
-      else
-	return false;
+      else if (riscv_v_ext_vector_mode_p (other_loop_vinfo->vector_mode))
+	{
+	  if (LOOP_VINFO_NITERS_KNOWN_P (other_loop_vinfo))
+	    {
+	      if (maybe_gt (LOOP_VINFO_INT_NITERS (this_loop_vinfo),
+			    LOOP_VINFO_VECT_FACTOR (this_loop_vinfo)))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_NOTE, vect_location,
+				     "Keep current LMUL loop because"
+				     " known NITERS exceed the new VF\n");
+		  return false;
+		}
+	    }
+	  else
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Keep current LMUL loop because"
+				 " it is unknown NITERS\n");
+	      return false;
+	    }
+	}
     }
 
   return vector_costs::better_main_loop_than_p (other);
