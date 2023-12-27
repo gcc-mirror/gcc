@@ -13,4 +13,4 @@ int foo() {
   return a;
 }
 
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero} 1 } } */
+/* { dg-final { scan-assembler-not {vsetvli\s+[a-x0-9]+,\s*zero} } } */

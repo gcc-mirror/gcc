@@ -68,6 +68,16 @@ imm_avl_p (machine_mode mode)
 	   : false;
 }
 
+/* Return true if LEN is equal to NUNITS that out of the range [0, 31].  */
+static bool
+is_vlmax_len_p (machine_mode mode, rtx len)
+{
+  poly_int64 value;
+  return poly_int_rtx_p (len, &value)
+	 && known_eq (value, GET_MODE_NUNITS (mode))
+	 && !satisfies_constraint_K (len);
+}
+
 /* Helper functions for insn_flags && insn_types */
 
 /* Return true if caller need pass mask operand for insn pattern with
@@ -3776,7 +3786,7 @@ expand_load_store (rtx *ops, bool is_load)
   rtx len = ops[3];
   machine_mode mode = GET_MODE (ops[0]);
 
-  if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))
+  if (is_vlmax_len_p (mode, len))
     {
       /* If the length operand is equal to VF, it is VLMAX load/store.  */
       if (is_load)
@@ -3842,8 +3852,7 @@ expand_cond_len_op (unsigned icode, insn_flags op_type, rtx *ops, rtx len)
   machine_mode mask_mode = GET_MODE (mask);
   poly_int64 value;
   bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
-  bool is_vlmax_len
-    = poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode));
+  bool is_vlmax_len = is_vlmax_len_p (mode, len);
 
   unsigned insn_flags = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | op_type;
   if (is_dummy_mask)
@@ -4012,7 +4021,7 @@ expand_gather_scatter (rtx *ops, bool is_load)
   unsigned inner_offsize = GET_MODE_BITSIZE (inner_idx_mode);
   poly_int64 nunits = GET_MODE_NUNITS (vec_mode);
   poly_int64 value;
-  bool is_vlmax = poly_int_rtx_p (len, &value) && known_eq (value, nunits);
+  bool is_vlmax = is_vlmax_len_p (vec_mode, len);
 
   /* Extend the offset element to address width.  */
   if (inner_offsize < BITS_PER_WORD)
@@ -4199,7 +4208,7 @@ expand_lanes_load_store (rtx *ops, bool is_load)
   rtx reg = is_load ? ops[0] : ops[1];
   machine_mode mode = GET_MODE (ops[0]);
 
-  if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))
+  if (is_vlmax_len_p (mode, len))
     {
       /* If the length operand is equal to VF, it is VLMAX load/store.  */
       if (is_load)
@@ -4252,7 +4261,7 @@ expand_fold_extract_last (rtx *ops)
   rtx slide_vect = gen_reg_rtx (mode);
   insn_code icode;
 
-  if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))
+  if (is_vlmax_len_p (mode, len))
     len = NULL_RTX;
 
   /* Calculate the number of 1-bit in mask. */
