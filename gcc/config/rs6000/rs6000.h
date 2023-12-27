@@ -485,10 +485,6 @@ extern int rs6000_vector_align[];
 #define TARGET_NO_SF_SUBREG	TARGET_DIRECT_MOVE_64BIT
 #define TARGET_ALLOW_SF_SUBREG	(!TARGET_DIRECT_MOVE_64BIT)
 
-/* This wants to be set for p8 and newer.  On p7, overlapping unaligned
-   loads are slow. */
-#define TARGET_EFFICIENT_OVERLAPPING_UNALIGNED TARGET_EFFICIENT_UNALIGNED_VSX
-
 /* Byte/char syncs were added as phased in for ISA 2.06B, but are not present
    in power7, so conditionalize them on p8 features.  TImode syncs need quad
    memory support.  */
