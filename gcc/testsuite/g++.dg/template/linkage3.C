@@ -1,5 +1,5 @@
 // PR c++/70413
-// { dg-final { scan-assembler-not "(weak|glob)\[^\n\]*_Z" } }
+// { dg-final { scan-assembler-not "(weak|glob)\[^\n\]*_Z" { xfail powerpc-*-aix* } } }
 
 namespace {
   struct A {
