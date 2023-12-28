@@ -1,3 +1,55 @@
+2023-12-27  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/113148
+	* gcc.target/loongarch/pr113148.c: New test.
+
+2023-12-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/rotl-with-rotr.c: New test.
+	* gcc.target/loongarch/rotl-with-vrotr-b.c: New test.
+	* gcc.target/loongarch/rotl-with-vrotr-h.c: New test.
+	* gcc.target/loongarch/rotl-with-vrotr-w.c: New test.
+	* gcc.target/loongarch/rotl-with-vrotr-d.c: New test.
+	* gcc.target/loongarch/rotl-with-xvrotr-b.c: New test.
+	* gcc.target/loongarch/rotl-with-xvrotr-h.c: New test.
+	* gcc.target/loongarch/rotl-with-xvrotr-w.c: New test.
+	* gcc.target/loongarch/rotl-with-xvrotr-d.c: New test.
+
+2023-12-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-1.c:
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-3.c: New test.
+
+2023-12-27  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-mov-1.c: New test.
+
+2023-12-27  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/block-cmp-4.c: New.
+
+2023-12-27  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/block-cmp-3.c: New.
+
+2023-12-27  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/block-cmp-1.c: New.
+	* gcc.target/powerpc/block-cmp-2.c: New.
+
+2023-12-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp23/wchar-multi1.C: Require 4 byte wchar_t.
+
+2023-12-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ext/attr-section1.C: Test for csect section directive.
+	* g++.dg/ext/attr-section1a.C: Same.
+	* g++.dg/ext/attr-section2.C: Same.
+	* g++.dg/ext/attr-section2a.C: Same.
+	* g++.dg/ext/attr-section2b.C: Same.
+
 2023-12-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/analyzer/out-of-bounds-diagram-17.c: Skip on AIX.

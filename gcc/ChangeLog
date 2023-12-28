@@ -1,3 +1,80 @@
+2023-12-27  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/113148
+	* config/loongarch/loongarch.cc (loongarch_secondary_reload):
+	Check if regno == -1 besides MEM_P (x) for reloading FCCmode
+	from/to FPR to/from memory.
+
+2023-12-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (rotl<mode>3):
+	New define_expand.
+	* config/loongarch/simd.md (vrotl<mode>3): Likewise.
+	(rotl<mode>3): Likewise.
+
+2023-12-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* config/riscv/riscv-vector-costs.cc (is_gimple_assign_or_call): New function.
+	(get_first_lane_point): Ditto.
+	(get_last_lane_point): Ditto.
+	(max_number_of_live_regs): Refine live point dump.
+	(compute_estimated_lmul): Make unknown NITERS loop be aware of liveness.
+	(costs::better_main_loop_than_p): Ditto.
+	* config/riscv/riscv-vector-costs.h (struct stmt_point): Add new member.
+
+2023-12-27  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* config/loongarch/lasx.md: Use loongarch_split_move and
+	loongarch_split_move_p directly.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_split_move): Remove unnecessary argument.
+	(loongarch_split_move_insn_p): Delete.
+	(loongarch_split_move_insn): Delete.
+	* config/loongarch/loongarch.cc
+	(loongarch_split_move_insn_p): Delete.
+	(loongarch_load_store_insns): Use loongarch_split_move_p
+	directly.
+	(loongarch_split_move): remove the unnecessary processing.
+	(loongarch_split_move_insn): Delete.
+	* config/loongarch/lsx.md: Use loongarch_split_move and
+	loongarch_split_move_p directly.
+
+2023-12-27  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_concatv4di): Delete.
+	(vec_concatv8si): Delete.
+	(vec_concatv16hi): Delete.
+	(vec_concatv32qi): Delete.
+	(vec_concatv4df): Delete.
+	(vec_concatv8sf): Delete.
+	(vec_concat<mode>): New template with insn output fixed.
+
+2023-12-27  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.md: Adjust.
+
+2023-12-27  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-string.cc (expand_block_compare): Assert
+	only P7 above can enter this function.  Remove P7 CPU test and let
+	P7 BE do the expand.
+
+2023-12-27  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (cmpmemsi): Fail when optimizing for size.
+
+2023-12-27  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.h (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED):
+	Remove.
+	* config/rs6000/rs6000-string.cc (select_block_compare_mode):
+	Replace TARGET_EFFICIENT_OVERLAPPING_UNALIGNED with
+	targetm.slow_unaligned_access.
+	(expand_block_compare_gpr): Likewise.
+	(expand_block_compare): Likewise.
+	(expand_strncmp_gpr_sequence): Likewise.
+
 2023-12-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/113112
