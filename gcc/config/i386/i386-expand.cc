@@ -1537,6 +1537,23 @@ ix86_expand_unary_operator (enum rtx_code code, machine_mode mode,
     emit_move_insn (operands[0], dst);
 }
 
+/* Return TRUE or FALSE depending on whether the unary operator meets the
+   appropriate constraints.  */
+
+bool
+ix86_unary_operator_ok (enum rtx_code,
+			machine_mode,
+			rtx operands[2],
+			bool use_ndd)
+{
+  /* If one of operands is memory, source and destination must match.  */
+  if ((MEM_P (operands[0])
+       || (!use_ndd && MEM_P (operands[1])))
+      && ! rtx_equal_p (operands[0], operands[1]))
+    return false;
+  return true;
+}
+
 /* Predict just emitted jump instruction to be taken with probability PROB.  */
 
 static void

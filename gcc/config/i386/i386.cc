@@ -16219,23 +16219,6 @@ ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn)
 				       PATTERN (use_insn));
 }
 
-/* Return TRUE or FALSE depending on whether the unary operator meets the
-   appropriate constraints.  */
-
-bool
-ix86_unary_operator_ok (enum rtx_code,
-			machine_mode,
-			rtx operands[2],
-			bool use_ndd)
-{
-  /* If one of operands is memory, source and destination must match.  */
-  if ((MEM_P (operands[0])
-       || (!use_ndd && MEM_P (operands[1])))
-      && ! rtx_equal_p (operands[0], operands[1]))
-    return false;
-  return true;
-}
-
 /* Return TRUE if the operands to a vec_interleave_{high,low}v2df
    are ok, keeping in mind the possible movddup alternative.  */
 
