@@ -8825,143 +8825,6 @@ loongarch_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
     }
 }
 
-static bool
-loongarch_is_odd_extraction (struct expand_vec_perm_d *);
-
-static bool
-loongarch_is_even_extraction (struct expand_vec_perm_d *);
-
-static bool
-loongarch_try_expand_lsx_vshuf_const (struct expand_vec_perm_d *d)
-{
-  int i;
-  rtx target, op0, op1, sel, tmp;
-  rtx rperm[MAX_VECT_LEN];
-
-  if (d->vmode == E_V2DImode || d->vmode == E_V2DFmode
-	|| d->vmode == E_V4SImode || d->vmode == E_V4SFmode
-	|| d->vmode == E_V8HImode || d->vmode == E_V16QImode)
-    {
-      target = d->target;
-      op0 = d->op0;
-      op1 = d->one_vector_p ? d->op0 : d->op1;
-
-      if (GET_MODE (op0) != GET_MODE (op1)
-	  || GET_MODE (op0) != GET_MODE (target))
-	return false;
-
-      if (d->testing_p)
-	return true;
-
-      /* If match extract-even and extract-odd permutations pattern, use
-       * vselect much better than vshuf.  */
-      if (loongarch_is_odd_extraction (d)
-	  || loongarch_is_even_extraction (d))
-	{
-	  if (loongarch_expand_vselect_vconcat (d->target, d->op0, d->op1,
-						d->perm, d->nelt))
-	    return true;
-
-	  unsigned char perm2[MAX_VECT_LEN];
-	  for (i = 0; i < d->nelt; ++i)
-	    perm2[i] = (d->perm[i] + d->nelt) & (2 * d->nelt - 1);
-
-	  if (loongarch_expand_vselect_vconcat (d->target, d->op1, d->op0,
-						perm2, d->nelt))
-	    return true;
-	}
-
-      for (i = 0; i < d->nelt; i += 1)
-	{
-	  rperm[i] = GEN_INT (d->perm[i]);
-	}
-
-      if (d->vmode == E_V2DFmode)
-	{
-	  sel = gen_rtx_CONST_VECTOR (E_V2DImode, gen_rtvec_v (d->nelt, rperm));
-	  tmp = simplify_gen_subreg (E_V2DImode, d->target, d->vmode, 0);
-	  emit_move_insn (tmp, sel);
-	}
-      else if (d->vmode == E_V4SFmode)
-	{
-	  sel = gen_rtx_CONST_VECTOR (E_V4SImode, gen_rtvec_v (d->nelt, rperm));
-	  tmp = simplify_gen_subreg (E_V4SImode, d->target, d->vmode, 0);
-	  emit_move_insn (tmp, sel);
-	}
-      else
-	{
-	  sel = gen_rtx_CONST_VECTOR (d->vmode, gen_rtvec_v (d->nelt, rperm));
-	  emit_move_insn (d->target, sel);
-	}
-
-      switch (d->vmode)
-	{
-	case E_V2DFmode:
-	  emit_insn (gen_lsx_vshuf_d_f (target, target, op1, op0));
-	  break;
-	case E_V2DImode:
-	  emit_insn (gen_lsx_vshuf_d (target, target, op1, op0));
-	  break;
-	case E_V4SFmode:
-	  emit_insn (gen_lsx_vshuf_w_f (target, target, op1, op0));
-	  break;
-	case E_V4SImode:
-	  emit_insn (gen_lsx_vshuf_w (target, target, op1, op0));
-	  break;
-	case E_V8HImode:
-	  emit_insn (gen_lsx_vshuf_h (target, target, op1, op0));
-	  break;
-	case E_V16QImode:
-	  emit_insn (gen_lsx_vshuf_b (target, op1, op0, target));
-	  break;
-	default:
-	  break;
-	}
-
-      return true;
-    }
-  return false;
-}
-
-static bool
-loongarch_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
-{
-  unsigned int i, nelt = d->nelt;
-  unsigned char perm2[MAX_VECT_LEN];
-
-  if (d->one_vector_p)
-    {
-      /* Try interleave with alternating operands.  */
-      memcpy (perm2, d->perm, sizeof (perm2));
-      for (i = 1; i < nelt; i += 2)
-	perm2[i] += nelt;
-      if (loongarch_expand_vselect_vconcat (d->target, d->op0, d->op1, perm2,
-					    nelt))
-	return true;
-    }
-  else
-    {
-      if (loongarch_expand_vselect_vconcat (d->target, d->op0, d->op1,
-					    d->perm, nelt))
-	return true;
-
-      /* Try again with swapped operands.  */
-      for (i = 0; i < nelt; ++i)
-	perm2[i] = (d->perm[i] + nelt) & (2 * nelt - 1);
-      if (loongarch_expand_vselect_vconcat (d->target, d->op1, d->op0, perm2,
-					    nelt))
-	return true;
-    }
-
-  if (loongarch_expand_lsx_shuffle (d))
-    return true;
-  if (loongarch_expand_vec_perm_even_odd (d))
-    return true;
-  if (loongarch_expand_vec_perm_interleave (d))
-    return true;
-  return false;
-}
-
 /* Following are the assist function for const vector permutation support.  */
 static bool
 loongarch_is_quad_duplicate (struct expand_vec_perm_d *d)
@@ -8988,36 +8851,6 @@ loongarch_is_quad_duplicate (struct expand_vec_perm_d *d)
 	  result = false;
 	  break;
 	}
-    }
-
-  return result;
-}
-
-static bool
-loongarch_is_double_duplicate (struct expand_vec_perm_d *d)
-{
-  if (!d->one_vector_p)
-    return false;
-
-  if (d->nelt < 8)
-    return false;
-
-  bool result = true;
-  unsigned char buf = d->perm[0];
-
-  for (int i = 1; i < d->nelt; i += 2)
-    {
-      if (d->perm[i] != buf)
-	{
-	  result = false;
-	  break;
-	}
-      if (d->perm[i - 1] != d->perm[i])
-	{
-	  result = false;
-	  break;
-	}
-      buf += d->nelt / 4;
     }
 
   return result;
@@ -9069,110 +8902,6 @@ loongarch_is_extraction_permutation (struct expand_vec_perm_d *d)
 
   if (buf != 0 || buf != d->nelt)
     return false;
-
-  for (int i = 0; i < d->nelt; i += 1)
-    {
-      if (buf != d->perm[i])
-	{
-	  result = false;
-	  break;
-	}
-      buf += 1;
-    }
-
-  return result;
-}
-
-static bool
-loongarch_is_center_extraction (struct expand_vec_perm_d *d)
-{
-  bool result = true;
-  unsigned buf = d->nelt / 2;
-
-  for (int i = 0; i < d->nelt; i += 1)
-    {
-      if (buf != d->perm[i])
-	{
-	  result = false;
-	  break;
-	}
-      buf += 1;
-    }
-
-  return result;
-}
-
-static bool
-loongarch_is_reversing_permutation (struct expand_vec_perm_d *d)
-{
-  if (!d->one_vector_p)
-    return false;
-
-  bool result = true;
-  unsigned char buf = d->nelt - 1;
-
-  for (int i = 0; i < d->nelt; i += 1)
-    {
-      if (d->perm[i] != buf)
-	{
-	  result = false;
-	  break;
-	}
-
-      buf -= 1;
-    }
-
-  return result;
-}
-
-static bool
-loongarch_is_di_misalign_extract (struct expand_vec_perm_d *d)
-{
-  if (d->nelt != 4 && d->nelt != 8)
-    return false;
-
-  bool result = true;
-  unsigned char buf;
-
-  if (d->nelt == 4)
-    {
-      buf = 1;
-      for (int i = 0; i < d->nelt; i += 1)
-	{
-	  if (buf != d->perm[i])
-	    {
-	      result = false;
-	      break;
-	    }
-
-	  buf += 1;
-	}
-    }
-  else if (d->nelt == 8)
-    {
-      buf = 2;
-      for (int i = 0; i < d->nelt; i += 1)
-	{
-	  if (buf != d->perm[i])
-	    {
-	      result = false;
-	      break;
-	    }
-
-	  buf += 1;
-	}
-    }
-
-  return result;
-}
-
-static bool
-loongarch_is_si_misalign_extract (struct expand_vec_perm_d *d)
-{
-  if (d->vmode != E_V8SImode && d->vmode != E_V8SFmode)
-    return false;
-  bool result = true;
-  unsigned char buf = 1;
 
   for (int i = 0; i < d->nelt; i += 1)
     {
@@ -9246,39 +8975,6 @@ loongarch_is_lasx_lowpart_interleave_2 (struct expand_vec_perm_d *d)
   COMPARE_SELECTOR (40, 24, 32);
 
 #undef COMPARE_SELECTOR
-  return result;
-}
-
-static bool
-loongarch_is_lasx_lowpart_extract (struct expand_vec_perm_d *d)
-{
-  bool result = true;
-  unsigned char buf = 0;
-
-  for (int i = 0; i < d->nelt / 2; i += 1)
-    {
-      if (buf != d->perm[i])
-	{
-	  result = false;
-	  break;
-	}
-      buf += 1;
-    }
-
-  if (result)
-    {
-      buf = d->nelt;
-      for (int i = d->nelt / 2; i < d->nelt; i += 1)
-	{
-	  if (buf != d->perm[i])
-	    {
-	      result = false;
-	      break;
-	    }
-	  buf += 1;
-	}
-    }
-
   return result;
 }
 
@@ -9363,538 +9059,195 @@ loongarch_is_elem_duplicate (struct expand_vec_perm_d *d)
   return result;
 }
 
-inline bool
-loongarch_is_op_reverse_perm (struct expand_vec_perm_d *d)
-{
-  return (d->vmode == E_V4DFmode)
-    && d->perm[0] == 2 && d->perm[1] == 3
-    && d->perm[2] == 0 && d->perm[3] == 1;
-}
-
-static bool
-loongarch_is_single_op_perm (struct expand_vec_perm_d *d)
-{
-  bool result = true;
-
-  for (int i = 0; i < d->nelt; i += 1)
-    {
-      if (d->perm[i] >= d->nelt)
-	{
-	  result = false;
-	  break;
-	}
-    }
-
-  return result;
-}
-
-static bool
-loongarch_is_divisible_perm (struct expand_vec_perm_d *d)
-{
-  bool result = true;
-
-  for (int i = 0; i < d->nelt / 2; i += 1)
-    {
-      if (d->perm[i] >= d->nelt)
-	{
-	  result = false;
-	  break;
-	}
-    }
-
-  if (result)
-    {
-      for (int i = d->nelt / 2; i < d->nelt; i += 1)
-	{
-	  if (d->perm[i] < d->nelt)
-	    {
-	      result = false;
-	      break;
-	    }
-	}
-    }
-
-  return result;
-}
-
-inline bool
-loongarch_is_triple_stride_extract (struct expand_vec_perm_d *d)
-{
-  return (d->vmode == E_V4DImode || d->vmode == E_V4DFmode)
-    && d->perm[0] == 1 && d->perm[1] == 4
-    && d->perm[2] == 7 && d->perm[3] == 0;
-}
-
 /* In LASX, some permutation insn does not have the behavior that gcc expects
- * when compiler wants to emit a vector permutation.
- *
- * 1. What GCC provides via vectorize_vec_perm_const ()'s paramater:
- * When GCC wants to performs a vector permutation, it provides two op
- * reigster, one target register, and a selector.
- * In const vector permutation case, GCC provides selector as a char array
- * that contains original value; in variable vector permuatation
- * (performs via vec_perm<mode> insn template), it provides a vector register.
- * We assume that nelt is the elements numbers inside single vector in current
- * 256bit vector mode.
- *
- * 2. What GCC expects to perform:
- * Two op registers (op0, op1) will "combine" into a 512bit temp vector storage
- * that has 2*nelt elements inside it; the low 256bit is op0, and high 256bit
- * is op1, then the elements are indexed as below:
- *		  0 ~ nelt - 1		nelt ~ 2 * nelt - 1
- *	  |-------------------------|-------------------------|
- *		Low 256bit (op0)	High 256bit (op1)
- * For example, the second element in op1 (V8SImode) will be indexed with 9.
- * Selector is a vector that has the same mode and number of elements  with
- * op0,op1 and target, it's look like this:
- *	      0 ~ nelt - 1
- *	  |-------------------------|
- *	      256bit (selector)
- * It describes which element from 512bit temp vector storage will fit into
- * target's every element slot.
- * GCC expects that every element in selector can be ANY indices of 512bit
- * vector storage (Selector can pick literally any element from op0 and op1, and
- * then fits into any place of target register). This is also what LSX 128bit
- * vshuf.* instruction do similarly, so we can handle 128bit vector permutation
- * by single instruction easily.
- *
- * 3. What LASX permutation instruction does:
- * In short, it just execute two independent 128bit vector permuatation, and
- * it's the reason that we need to do the jobs below.  We will explain it.
- * op0, op1, target, and selector will be separate into high 128bit and low
- * 128bit, and do permutation as the description below:
- *
- *  a) op0's low 128bit and op1's low 128bit "combines" into a 256bit temp
- * vector storage (TVS1), elements are indexed as below:
- *	    0 ~ nelt / 2 - 1	  nelt / 2 ~ nelt - 1
- *	|---------------------|---------------------| TVS1
- *	    op0's low 128bit      op1's low 128bit
- *    op0's high 128bit and op1's high 128bit are "combined" into TVS2 in the
- *    same way.
- *	    0 ~ nelt / 2 - 1	  nelt / 2 ~ nelt - 1
- *	|---------------------|---------------------| TVS2
- *	    op0's high 128bit	op1's high 128bit
- *  b) Selector's low 128bit describes which elements from TVS1 will fit into
- *  target vector's low 128bit.  No TVS2 elements are allowed.
- *  c) Selector's high 128bit describes which elements from TVS2 will fit into
- *  target vector's high 128bit.  No TVS1 elements are allowed.
- *
- * As we can see, if we want to handle vector permutation correctly, we can
- * achieve it in three ways:
- *  a) Modify selector's elements, to make sure that every elements can inform
- *  correct value that will put into target vector.
-    b) Generate extra instruction before/after permutation instruction, for
-    adjusting op vector or target vector, to make sure target vector's value is
-    what GCC expects.
-    c) Use other instructions to process op and put correct result into target.
- */
+   when compiler wants to emit a vector permutation.
+
+   1.  What GCC provides via vectorize_vec_perm_const ()'s paramater:
+   When GCC wants to performs a vector permutation, it provides two op
+   reigster, one target register, and a selector.
+   In const vector permutation case, GCC provides selector as a char array
+   that contains original value; in variable vector permuatation
+   (performs via vec_perm<mode> insn template), it provides a vector register.
+   We assume that nelt is the elements numbers inside single vector in current
+   256bit vector mode.
+
+   2.  What GCC expects to perform:
+   Two op registers (op0, op1) will "combine" into a 512bit temp vector storage
+   that has 2*nelt elements inside it; the low 256bit is op0, and high 256bit
+   is op1, then the elements are indexed as below:
+   0 ~ nelt - 1		nelt ~ 2 * nelt - 1
+   |-------------------------|-------------------------|
+   Low 256bit (op0)	High 256bit (op1)
+   For example, the second element in op1 (V8SImode) will be indexed with 9.
+   Selector is a vector that has the same mode and number of elements  with
+   op0,op1 and target, it's look like this:
+   0 ~ nelt - 1
+   |-------------------------|
+   256bit (selector)
+   It describes which element from 512bit temp vector storage will fit into
+   target's every element slot.
+   GCC expects that every element in selector can be ANY indices of 512bit
+   vector storage (Selector can pick literally any element from op0 and op1, and
+   then fits into any place of target register). This is also what LSX 128bit
+   vshuf.* instruction do similarly, so we can handle 128bit vector permutation
+   by single instruction easily.
+
+   3.  What LASX permutation instruction does:
+   In short, it just execute two independent 128bit vector permuatation, and
+   it's the reason that we need to do the jobs below.  We will explain it.
+   op0, op1, target, and selector will be separate into high 128bit and low
+   128bit, and do permutation as the description below:
+
+   a) op0's low 128bit and op1's low 128bit "combines" into a 256bit temp
+   vector storage (TVS1), elements are indexed as below:
+   0 ~ nelt / 2 - 1	  nelt / 2 ~ nelt - 1
+   |---------------------|---------------------| TVS1
+   op0's low 128bit      op1's low 128bit
+   op0's high 128bit and op1's high 128bit are "combined" into TVS2 in the
+   same way.
+   0 ~ nelt / 2 - 1	  nelt / 2 ~ nelt - 1
+   |---------------------|---------------------| TVS2
+   op0's high 128bit	op1's high 128bit
+   b) Selector's low 128bit describes which elements from TVS1 will fit into
+   target vector's low 128bit.  No TVS2 elements are allowed.
+   c) Selector's high 128bit describes which elements from TVS2 will fit into
+   target vector's high 128bit.  No TVS1 elements are allowed.
+
+   As we can see, if we want to handle vector permutation correctly, we can
+   achieve it in three ways:
+   a) Modify selector's elements, to make sure that every elements can inform
+   correct value that will put into target vector.
+   b) Generate extra instruction before/after permutation instruction, for
+   adjusting op vector or target vector, to make sure target vector's value is
+   what GCC expects.
+   c) Use other instructions to process op and put correct result into target.
+   */
 
 /* Implementation of constant vector permuatation.  This function identifies
- * recognized pattern of permuation selector argument, and use one or more
- * instruction(s) to finish the permutation job correctly.  For unsupported
- * patterns, it will return false.  */
+   recognized pattern of permuation selector argument, and use one or more
+   instruction (s) to finish the permutation job correctly.  For unsupported
+   patterns, it will return false.  */
 
 static bool
-loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
+loongarch_expand_vec_perm_const (struct expand_vec_perm_d *d)
 {
-  /* Although we have the LSX vec_perm<mode> template, there's still some
-     128bit vector permuatation operations send to vectorize_vec_perm_const.
-     In this case, we just simpliy wrap them by single vshuf.* instruction,
-     because LSX vshuf.* instruction just have the same behavior that GCC
-     expects.  */
-  if (GET_MODE_SIZE (d->vmode) == 16)
-    return loongarch_try_expand_lsx_vshuf_const (d);
-  else
-    return false;
-
-  bool ok = false, reverse_hi_lo = false, extract_ev_od = false,
-       use_alt_op = false;
+  bool flag = false;
+  unsigned int i;
   unsigned char idx;
-  int i;
   rtx target, op0, op1, sel, tmp;
-  rtx op0_alt = NULL_RTX, op1_alt = NULL_RTX;
   rtx rperm[MAX_VECT_LEN];
   unsigned int remapped[MAX_VECT_LEN];
+  unsigned char perm2[MAX_VECT_LEN];
 
-  /* Try to figure out whether is a recognized permutation selector pattern, if
-     yes, we will reassign some elements with new value in selector argument,
-     and in some cases we will generate some assist insn to complete the
-     permutation. (Even in some cases, we use other insn to impl permutation
-     instead of xvshuf!)
-
-     Make sure to check d->testing_p is false everytime if you want to emit new
-     insn, unless you want to crash into ICE directly.  */
-  if (loongarch_is_quad_duplicate (d))
+  if (GET_MODE_SIZE (d->vmode) == 16)
+    return loongarch_expand_lsx_shuffle (d);
+  else
     {
-      /* Selector example: E_V8SImode, { 0, 0, 0, 0, 4, 4, 4, 4 }
-	 copy first elem from original selector to all elem in new selector.  */
-      idx = d->perm[0];
-      for (i = 0; i < d->nelt; i += 1)
+      if (d->one_vector_p)
 	{
-	  remapped[i] = idx;
-	}
-      /* Selector after: { 0, 0, 0, 0, 0, 0, 0, 0 }.  */
-    }
-  else if (loongarch_is_double_duplicate (d))
-    {
-      /* Selector example: E_V8SImode, { 1, 1, 3, 3, 5, 5, 7, 7 }
-	 one_vector_p == true.  */
-      for (i = 0; i < d->nelt / 2; i += 1)
-	{
-	  idx = d->perm[i];
-	  remapped[i] = idx;
-	  remapped[i + d->nelt / 2] = idx;
-	}
-      /* Selector after: { 1, 1, 3, 3, 1, 1, 3, 3 }.  */
-    }
-  else if (loongarch_is_odd_extraction (d)
-	   || loongarch_is_even_extraction (d))
-    {
-      /* Odd extraction selector sample: E_V4DImode, { 1, 3, 5, 7 }
-	 Selector after: { 1, 3, 1, 3 }.
-	 Even extraction selector sample: E_V4DImode, { 0, 2, 4, 6 }
-	 Selector after: { 0, 2, 0, 2 }.  */
-
-      /* Better implement of extract-even and extract-odd permutations.  */
-      if (loongarch_expand_vec_perm_even_odd (d))
-	return true;
-
-      for (i = 0; i < d->nelt / 2; i += 1)
-	{
-	  idx = d->perm[i];
-	  remapped[i] = idx;
-	  remapped[i + d->nelt / 2] = idx;
-	}
-      /* Additional insn is required for correct result.  See codes below.  */
-      extract_ev_od = true;
-    }
-  else if (loongarch_is_extraction_permutation (d))
-    {
-      /* Selector sample: E_V8SImode, { 0, 1, 2, 3, 4, 5, 6, 7 }.  */
-      if (d->perm[0] == 0)
-	{
-	  for (i = 0; i < d->nelt / 2; i += 1)
-	    {
-	      remapped[i] = i;
-	      remapped[i + d->nelt / 2] = i;
-	    }
+	  /* Try interleave with alternating operands.  */
+	  memcpy (perm2, d->perm, sizeof (perm2));
+	  for (i = 1; i < d->nelt; i += 2)
+	    perm2[i] += d->nelt;
+	  if (loongarch_expand_vselect_vconcat (d->target, d->op0, d->op1,
+						perm2, d->nelt))
+	    return true;
 	}
       else
 	{
-	  /* { 8, 9, 10, 11, 12, 13, 14, 15 }.  */
-	  for (i = 0; i < d->nelt / 2; i += 1)
-	    {
-	      idx = i + d->nelt / 2;
-	      remapped[i] = idx;
-	      remapped[i + d->nelt / 2] = idx;
-	    }
-	}
-      /* Selector after: { 0, 1, 2, 3, 0, 1, 2, 3 }
-	 { 8, 9, 10, 11, 8, 9, 10, 11 }  */
-    }
-  else if (loongarch_is_center_extraction (d))
-    {
-      /* sample: E_V4DImode, { 2, 3, 4, 5 }
-	 In this condition, we can just copy high 128bit of op0 and low 128bit
-	 of op1 to the target register by using xvpermi.q insn.  */
-      if (!d->testing_p)
-	{
-	  emit_move_insn (d->target, d->op1);
-	  switch (d->vmode)
-	    {
-	      case E_V4DImode:
-		emit_insn (gen_lasx_xvpermi_q_v4di (d->target, d->target,
-						    d->op0, GEN_INT (0x21)));
-		break;
-	      case E_V4DFmode:
-		emit_insn (gen_lasx_xvpermi_q_v4df (d->target, d->target,
-						    d->op0, GEN_INT (0x21)));
-		break;
-	      case E_V8SImode:
-		emit_insn (gen_lasx_xvpermi_q_v8si (d->target, d->target,
-						    d->op0, GEN_INT (0x21)));
-		break;
-	      case E_V8SFmode:
-		emit_insn (gen_lasx_xvpermi_q_v8sf (d->target, d->target,
-						    d->op0, GEN_INT (0x21)));
-		break;
-	      case E_V16HImode:
-		emit_insn (gen_lasx_xvpermi_q_v16hi (d->target, d->target,
-						     d->op0, GEN_INT (0x21)));
-		break;
-	      case E_V32QImode:
-		emit_insn (gen_lasx_xvpermi_q_v32qi (d->target, d->target,
-						     d->op0, GEN_INT (0x21)));
-		break;
-	      default:
-		break;
-	    }
-	}
-      ok = true;
-      /* Finish the funtion directly.  */
-      goto expand_perm_const_2_end;
-    }
-  else if (loongarch_is_reversing_permutation (d))
-    {
-      /* Selector sample: E_V8SImode, { 7, 6, 5, 4, 3, 2, 1, 0 }
-	 one_vector_p == true  */
-      idx = d->nelt / 2 - 1;
-      for (i = 0; i < d->nelt / 2; i += 1)
-	{
-	  remapped[i] = idx;
-	  remapped[i + d->nelt / 2] = idx;
-	  idx -= 1;
-	}
-      /* Selector after: { 3, 2, 1, 0, 3, 2, 1, 0 }
-	 Additional insn will be generated to swap hi and lo 128bit of target
-	 register.  */
-      reverse_hi_lo = true;
-    }
-  else if (loongarch_is_di_misalign_extract (d)
-	   || loongarch_is_si_misalign_extract (d))
-    {
-      /* Selector Sample:
-	 DI misalign: E_V4DImode, { 1, 2, 3, 4 }
-	 SI misalign: E_V8SImode, { 1, 2, 3, 4, 5, 6, 7, 8 }  */
-      if (!d->testing_p)
-	{
-	  /* Copy original op0/op1 value to new temp register.
-	     In some cases, operand register may be used in multiple place, so
-	     we need new regiter instead modify original one, to avoid runtime
-	     crashing or wrong value after execution.  */
-	  use_alt_op = true;
-	  op1_alt = gen_reg_rtx (d->vmode);
-	  emit_move_insn (op1_alt, d->op1);
+	  if (loongarch_expand_vselect_vconcat (d->target, d->op0, d->op1,
+						d->perm, d->nelt))
+	    return true;
 
-	  /* Adjust op1 for selecting correct value in high 128bit of target
+	  /* Try again with swapped operands.  */
+	  for (i = 0; i < d->nelt; ++i)
+	    perm2[i] = (d->perm[i] + d->nelt) & (2 * d->nelt - 1);
+	  if (loongarch_expand_vselect_vconcat (d->target, d->op1, d->op0,
+						perm2, d->nelt))
+	    return true;
+	}
+
+      if (loongarch_expand_lsx_shuffle (d))
+	return true;
+
+      if (loongarch_is_odd_extraction (d)
+	  || loongarch_is_even_extraction (d))
+	{
+	  if (loongarch_expand_vec_perm_even_odd (d))
+	    return true;
+	}
+
+      if (loongarch_is_lasx_lowpart_interleave (d)
+	  || loongarch_is_lasx_lowpart_interleave_2 (d)
+	  || loongarch_is_lasx_highpart_interleave (d)
+	  || loongarch_is_lasx_highpart_interleave_2 (d))
+	{
+	  if (loongarch_expand_vec_perm_interleave (d))
+	    return true;
+	}
+
+      if (loongarch_is_quad_duplicate (d))
+	{
+	  if (d->testing_p)
+	    return true;
+	  /* Selector example: E_V8SImode, { 0, 0, 0, 0, 4, 4, 4, 4 }.  */
+	  for (i = 0; i < d->nelt; i += 1)
+	    {
+	      rperm[i] = GEN_INT (d->perm[0]);
+	    }
+	  /* Selector after: { 0, 0, 0, 0, 0, 0, 0, 0 }.  */
+	  flag = true;
+	  goto expand_perm_const_end;
+	}
+
+      if (loongarch_is_extraction_permutation (d))
+	{
+	  if (d->testing_p)
+	    return true;
+	  /* Selector sample: E_V8SImode, { 0, 1, 2, 3, 4, 5, 6, 7 }.  */
+	  if (d->perm[0] == 0)
+	    {
+	      for (i = 0; i < d->nelt / 2; i += 1)
+		{
+		  remapped[i] = i;
+		  remapped[i + d->nelt / 2] = i;
+		}
+	    }
+	  else
+	    {
+	      /* { 8, 9, 10, 11, 12, 13, 14, 15 }.  */
+	      for (i = 0; i < d->nelt / 2; i += 1)
+		{
+		  idx = i + d->nelt / 2;
+		  remapped[i] = idx;
+		  remapped[i + d->nelt / 2] = idx;
+		}
+	    }
+	  /* Selector after: { 0, 1, 2, 3, 0, 1, 2, 3 }
+	     { 8, 9, 10, 11, 8, 9, 10, 11 }  */
+
+	  /* Convert remapped selector array to RTL array.  */
+	  for (i = 0; i < d->nelt; i += 1)
+	    {
+	      rperm[i] = GEN_INT (remapped[i]);
+	    }
+
+	  flag = true;
+	  goto expand_perm_const_end;
+	}
+
+      if (loongarch_is_elem_duplicate (d))
+	{
+	  if (d->testing_p)
+	    return true;
+	  /* Brocast single element (from op0 or op1) to all slot of target
 	     register.
-	     op1: E_V4DImode, { 4, 5, 6, 7 } -> { 2, 3, 4, 5 }.  */
-	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
-	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1, conv_op1,
-					      conv_op0, GEN_INT (0x21)));
-
-	  for (i = 0; i < d->nelt / 2; i += 1)
-	    {
-	      remapped[i] = d->perm[i];
-	      remapped[i + d->nelt / 2] = d->perm[i];
-	    }
-	  /* Selector after:
-	     DI misalign: { 1, 2, 1, 2 }
-	     SI misalign: { 1, 2, 3, 4, 1, 2, 3, 4 }  */
-	}
-    }
-  else if (loongarch_is_lasx_lowpart_interleave (d))
-    {
-      /* Elements from op0's low 18bit and op1's 128bit are inserted into
-	 target register alternately.
-	 sample: E_V4DImode, { 0, 4, 1, 5 }  */
-      if (!d->testing_p)
-	{
-	  /* Prepare temp register instead of modify original op.  */
-	  use_alt_op = true;
-	  op1_alt = gen_reg_rtx (d->vmode);
-	  op0_alt = gen_reg_rtx (d->vmode);
-	  emit_move_insn (op1_alt, d->op1);
-	  emit_move_insn (op0_alt, d->op0);
-
-	  /* Generate subreg for fitting into insn gen function.  */
-	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
-	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, op0_alt, d->vmode, 0);
-
-	  /* Adjust op value in temp register.
-	     op0 = {0,1,2,3}, op1 = {4,5,0,1}  */
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1, conv_op1,
-					      conv_op0, GEN_INT (0x02)));
-	  /* op0 = {0,1,4,5}, op1 = {4,5,0,1}  */
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op0, conv_op0,
-					      conv_op1, GEN_INT (0x01)));
-
-	  /* Remap indices in selector based on the location of index inside
-	     selector, and vector element numbers in current vector mode.  */
-
-	  /* Filling low 128bit of new selector.  */
-	  for (i = 0; i < d->nelt / 2; i += 1)
-	    {
-	      /* value in odd-indexed slot of low 128bit part of selector
-		 vector.  */
-	      remapped[i] = i % 2 != 0 ? d->perm[i] - d->nelt / 2 : d->perm[i];
-	    }
-	  /* Then filling the high 128bit.  */
-	  for (i = d->nelt / 2; i < d->nelt; i += 1)
-	    {
-	      /* value in even-indexed slot of high 128bit part of
-		 selector vector.  */
-	      remapped[i] = i % 2 == 0
-		? d->perm[i] + (d->nelt / 2) * 3 : d->perm[i];
-	    }
-	}
-    }
-  else if (loongarch_is_lasx_lowpart_interleave_2 (d))
-    {
-      /* Special lowpart interleave case in V32QI vector mode.  It does the same
-	 thing as we can see in if branch that above this line.
-	 Selector sample: E_V32QImode,
-	 {0, 1, 2, 3, 4, 5, 6, 7, 32, 33, 34, 35, 36, 37, 38, 39, 8,
-	 9, 10, 11, 12, 13, 14, 15, 40, 41, 42, 43, 44, 45, 46, 47}  */
-      if (!d->testing_p)
-	{
-	  /* Solution for this case in very simple - covert op into V4DI mode,
-	     and do same thing as previous if branch.  */
-	  op1_alt = gen_reg_rtx (d->vmode);
-	  op0_alt = gen_reg_rtx (d->vmode);
-	  emit_move_insn (op1_alt, d->op1);
-	  emit_move_insn (op0_alt, d->op0);
-
-	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
-	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, op0_alt, d->vmode, 0);
-	  rtx conv_target = simplify_gen_subreg (E_V4DImode, d->target,
-						 d->vmode, 0);
-
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1, conv_op1,
-					      conv_op0, GEN_INT (0x02)));
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op0, conv_op0,
-					      conv_op1, GEN_INT (0x01)));
-	  remapped[0] = 0;
-	  remapped[1] = 4;
-	  remapped[2] = 1;
-	  remapped[3] = 5;
-
-	  for (i = 0; i < d->nelt; i += 1)
-	    {
-	      rperm[i] = GEN_INT (remapped[i]);
-	    }
-
-	  sel = gen_rtx_CONST_VECTOR (E_V4DImode, gen_rtvec_v (4, rperm));
-	  sel = force_reg (E_V4DImode, sel);
-	  emit_insn (gen_lasx_xvshuf_d (conv_target, sel,
-					conv_op1, conv_op0));
-	}
-
-      ok = true;
-      goto expand_perm_const_2_end;
-    }
-  else if (loongarch_is_lasx_lowpart_extract (d))
-    {
-      /* Copy op0's low 128bit to target's low 128bit, and copy op1's low
-	 128bit to target's high 128bit.
-	 Selector sample: E_V4DImode, { 0, 1, 4 ,5 }  */
-      if (!d->testing_p)
-	{
-	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, d->op1, d->vmode, 0);
-	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
-	  rtx conv_target = simplify_gen_subreg (E_V4DImode, d->target,
-						 d->vmode, 0);
-
-	  /* We can achieve the expectation by using sinple xvpermi.q insn.  */
-	  emit_move_insn (conv_target, conv_op1);
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_target, conv_target,
-					      conv_op0, GEN_INT (0x20)));
-	}
-
-      ok = true;
-      goto expand_perm_const_2_end;
-    }
-  else if (loongarch_is_lasx_highpart_interleave (d))
-    {
-      /* Similar to lowpart interleave, elements from op0's high 128bit and
-	 op1's high 128bit are inserted into target regiter alternately.
-	 Selector sample: E_V8SImode, { 4, 12, 5, 13, 6, 14, 7, 15 }  */
-      if (!d->testing_p)
-	{
-	  /* Prepare temp op register.  */
-	  use_alt_op = true;
-	  op1_alt = gen_reg_rtx (d->vmode);
-	  op0_alt = gen_reg_rtx (d->vmode);
-	  emit_move_insn (op1_alt, d->op1);
-	  emit_move_insn (op0_alt, d->op0);
-
-	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
-	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, op0_alt, d->vmode, 0);
-	  /* Adjust op value in temp regiter.
-	     op0 = { 0, 1, 2, 3 }, op1 = { 6, 7, 2, 3 }  */
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1, conv_op1,
-					      conv_op0, GEN_INT (0x13)));
-	  /* op0 = { 2, 3, 6, 7 }, op1 = { 6, 7, 2, 3 }  */
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op0, conv_op0,
-					      conv_op1, GEN_INT (0x01)));
-	  /* Remap indices in selector based on the location of index inside
-	     selector, and vector element numbers in current vector mode.  */
-
-	  /* Filling low 128bit of new selector.  */
-	 for (i = 0; i < d->nelt / 2; i += 1)
-	   {
-	     /* value in even-indexed slot of low 128bit part of selector
-		vector.  */
-	     remapped[i] = i % 2 == 0 ? d->perm[i] - d->nelt / 2 : d->perm[i];
-	   }
-	  /* Then filling the high 128bit.  */
-	 for (i = d->nelt / 2; i < d->nelt; i += 1)
-	   {
-	     /* value in odd-indexed slot of high 128bit part of selector
-		vector.  */
-	      remapped[i] = i % 2 != 0
-		? d->perm[i] - (d->nelt / 2) * 3 : d->perm[i];
-	   }
-	}
-    }
-  else if (loongarch_is_lasx_highpart_interleave_2 (d))
-    {
-      /* Special highpart interleave case in V32QI vector mode.  It does the
-	 same thing as the normal version above.
-	 Selector sample: E_V32QImode,
-	 {16, 17, 18, 19, 20, 21, 22, 23, 48, 49, 50, 51, 52, 53, 54, 55,
-	 24, 25, 26, 27, 28, 29, 30, 31, 56, 57, 58, 59, 60, 61, 62, 63}
-      */
-      if (!d->testing_p)
-	{
-	  /* Convert op into V4DImode and do the things.  */
-	  op1_alt = gen_reg_rtx (d->vmode);
-	  op0_alt = gen_reg_rtx (d->vmode);
-	  emit_move_insn (op1_alt, d->op1);
-	  emit_move_insn (op0_alt, d->op0);
-
-	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
-	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, op0_alt, d->vmode, 0);
-	  rtx conv_target = simplify_gen_subreg (E_V4DImode, d->target,
-						 d->vmode, 0);
-
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1, conv_op1,
-					      conv_op0, GEN_INT (0x13)));
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op0, conv_op0,
-					      conv_op1, GEN_INT (0x01)));
-	  remapped[0] = 2;
-	  remapped[1] = 6;
-	  remapped[2] = 3;
-	  remapped[3] = 7;
-
-	  for (i = 0; i < d->nelt; i += 1)
-	    {
-	      rperm[i] = GEN_INT (remapped[i]);
-	    }
-
-	  sel = gen_rtx_CONST_VECTOR (E_V4DImode, gen_rtvec_v (4, rperm));
-	  sel = force_reg (E_V4DImode, sel);
-	  emit_insn (gen_lasx_xvshuf_d (conv_target, sel,
-					conv_op1, conv_op0));
-	}
-
-	ok = true;
-	goto expand_perm_const_2_end;
-    }
-  else if (loongarch_is_elem_duplicate (d))
-    {
-      /* Brocast single element (from op0 or op1) to all slot of target
-	 register.
-	 Selector sample:E_V8SImode, { 2, 2, 2, 2, 2, 2, 2, 2 }  */
-      if (!d->testing_p)
-	{
+	     Selector sample:E_V8SImode, { 2, 2, 2, 2, 2, 2, 2, 2 }  */
 	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, d->op1, d->vmode, 0);
 	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
 	  rtx temp_reg = gen_reg_rtx (d->vmode);
 	  rtx conv_temp = simplify_gen_subreg (E_V4DImode, temp_reg,
 					       d->vmode, 0);
-
 	  emit_move_insn (temp_reg, d->op0);
 
 	  idx = d->perm[0];
@@ -9903,7 +9256,7 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	     value that we need to broardcast, because xvrepl128vei does the
 	     broardcast job from every 128bit of source register to
 	     corresponded part of target register! (A deep sigh.)  */
-	  if (/*idx >= 0 &&*/ idx < d->nelt / 2)
+	  if (idx < d->nelt / 2)
 	    {
 	      emit_insn (gen_lasx_xvpermi_q_v4di (conv_temp, conv_temp,
 						  conv_op0, GEN_INT (0x0)));
@@ -9958,310 +9311,75 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	      break;
 	    }
 
-	  /* finish func directly.  */
-	  ok = true;
-	  goto expand_perm_const_2_end;
+	  return true;
 	}
-    }
-  else if (loongarch_is_op_reverse_perm (d))
-    {
-      /* reverse high 128bit and low 128bit in op0.
-	 Selector sample: E_V4DFmode, { 2, 3, 0, 1 }
-	 Use xvpermi.q for doing this job.  */
-      if (!d->testing_p)
+
+expand_perm_const_end:
+      if (flag)
 	{
-	  if (d->vmode == E_V4DImode)
+	  /* Copy selector vector from memory to vector register for later insn
+	     gen function.
+	     If vector's element in floating point value, we cannot fit
+	     selector argument into insn gen function directly, because of the
+	     insn template definition.  As a solution, generate a integral mode
+	     subreg of target, then copy selector vector (that is in integral
+	     mode) to this subreg.  */
+	  switch (d->vmode)
 	    {
-	      emit_insn (gen_lasx_xvpermi_q_v4di (d->target, d->target, d->op0,
-						  GEN_INT (0x01)));
+	    case E_V4DFmode:
+	      sel = gen_rtx_CONST_VECTOR (E_V4DImode, gen_rtvec_v (d->nelt,
+								   rperm));
+	      tmp = simplify_gen_subreg (E_V4DImode, d->target, d->vmode, 0);
+	      emit_move_insn (tmp, sel);
+	      break;
+	    case E_V8SFmode:
+	      sel = gen_rtx_CONST_VECTOR (E_V8SImode, gen_rtvec_v (d->nelt,
+								   rperm));
+	      tmp = simplify_gen_subreg (E_V8SImode, d->target, d->vmode, 0);
+	      emit_move_insn (tmp, sel);
+	      break;
+	    default:
+	      sel = gen_rtx_CONST_VECTOR (d->vmode, gen_rtvec_v (d->nelt,
+								 rperm));
+	      emit_move_insn (d->target, sel);
+	      break;
 	    }
-	  else if (d->vmode == E_V4DFmode)
+
+	  target = d->target;
+	  op0 = d->op0;
+	  op1 = d->one_vector_p ? d->op0 : d->op1;
+
+	  /* We FINALLY can generate xvshuf.* insn.  */
+	  switch (d->vmode)
 	    {
-	      emit_insn (gen_lasx_xvpermi_q_v4df (d->target, d->target, d->op0,
-						  GEN_INT (0x01)));
-	    }
-	  else
-	    {
+	    case E_V4DFmode:
+	      emit_insn (gen_lasx_xvshuf_d_f (target, target, op1, op0));
+	      break;
+	    case E_V4DImode:
+	      emit_insn (gen_lasx_xvshuf_d (target, target, op1, op0));
+	      break;
+	    case E_V8SFmode:
+	      emit_insn (gen_lasx_xvshuf_w_f (target, target, op1, op0));
+	      break;
+	    case E_V8SImode:
+	      emit_insn (gen_lasx_xvshuf_w (target, target, op1, op0));
+	      break;
+	    case E_V16HImode:
+	      emit_insn (gen_lasx_xvshuf_h (target, target, op1, op0));
+	      break;
+	    case E_V32QImode:
+	      emit_insn (gen_lasx_xvshuf_b (target, op1, op0, target));
+	      break;
+	    default:
 	      gcc_unreachable ();
+	      break;
 	    }
-	}
 
-      ok = true;
-      goto expand_perm_const_2_end;
-    }
-  else if (loongarch_is_single_op_perm (d))
-    {
-      /* Permutation that only select elements from op0.  */
-      if (!d->testing_p)
-	{
-	  /* Prepare temp register instead of modify original op.  */
-	  use_alt_op = true;
-	  op0_alt = gen_reg_rtx (d->vmode);
-	  op1_alt = gen_reg_rtx (d->vmode);
-
-	  emit_move_insn (op0_alt, d->op0);
-	  emit_move_insn (op1_alt, d->op1);
-
-	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
-	  rtx conv_op0a = simplify_gen_subreg (E_V4DImode, op0_alt,
-					       d->vmode, 0);
-	  rtx conv_op1a = simplify_gen_subreg (E_V4DImode, op1_alt,
-					       d->vmode, 0);
-
-	  /* Duplicate op0's low 128bit in op0, then duplicate high 128bit
-	     in op1.  After this, xvshuf.* insn's selector argument can
-	     access all elements we need for correct permutation result.  */
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op0a, conv_op0a, conv_op0,
-					      GEN_INT (0x00)));
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1a, conv_op1a, conv_op0,
-					      GEN_INT (0x11)));
-
-	  /* In this case, there's no need to remap selector's indices.  */
-	  for (i = 0; i < d->nelt; i += 1)
-	    {
-	      remapped[i] = d->perm[i];
-	    }
-	}
-    }
-  else if (loongarch_is_divisible_perm (d))
-    {
-      /* Divisible perm:
-	 Low 128bit of selector only selects elements of op0,
-	 and high 128bit of selector only selects elements of op1.  */
-
-      if (!d->testing_p)
-	{
-	  /* Prepare temp register instead of modify original op.  */
-	  use_alt_op = true;
-	  op0_alt = gen_reg_rtx (d->vmode);
-	  op1_alt = gen_reg_rtx (d->vmode);
-
-	  emit_move_insn (op0_alt, d->op0);
-	  emit_move_insn (op1_alt, d->op1);
-
-	  rtx conv_op0a = simplify_gen_subreg (E_V4DImode, op0_alt,
-					       d->vmode, 0);
-	  rtx conv_op1a = simplify_gen_subreg (E_V4DImode, op1_alt,
-					       d->vmode, 0);
-	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
-	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, d->op1, d->vmode, 0);
-
-	  /* Reorganize op0's hi/lo 128bit and op1's hi/lo 128bit, to make sure
-	     that selector's low 128bit can access all op0's elements, and
-	     selector's high 128bit can access all op1's elements.  */
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op0a, conv_op0a, conv_op1,
-					      GEN_INT (0x02)));
-	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1a, conv_op1a, conv_op0,
-					      GEN_INT (0x31)));
-
-	  /* No need to modify indices.  */
-	  for (i = 0; i < d->nelt;i += 1)
-	    {
-	      remapped[i] = d->perm[i];
-	    }
-	}
-    }
-  else if (loongarch_is_triple_stride_extract (d))
-    {
-      /* Selector sample: E_V4DFmode, { 1, 4, 7, 0 }.  */
-      if (!d->testing_p)
-	{
-	  /* Resolve it with brute force modification.  */
-	  remapped[0] = 1;
-	  remapped[1] = 2;
-	  remapped[2] = 3;
-	  remapped[3] = 0;
-	}
-    }
-  else
-    {
-      /* When all of the detections above are failed, we will try last
-	 strategy.
-	 The for loop tries to detect following rules based on indices' value,
-	 its position inside of selector vector ,and strange behavior of
-	 xvshuf.* insn; Then we take corresponding action. (Replace with new
-	 value, or give up whole permutation expansion.)  */
-      for (i = 0; i < d->nelt; i += 1)
-	{
-	  /* % (2 * d->nelt)  */
-	  idx = d->perm[i];
-
-	  /* if index is located in low 128bit of selector vector.  */
-	  if (i < d->nelt / 2)
-	    {
-	      /* Fail case 1: index tries to reach element that located in op0's
-		 high 128bit.  */
-	      if (idx >= d->nelt / 2 && idx < d->nelt)
-		{
-		  goto expand_perm_const_2_end;
-		}
-	      /* Fail case 2: index tries to reach element that located in
-		 op1's high 128bit.  */
-	      if (idx >= (d->nelt + d->nelt / 2))
-		{
-		  goto expand_perm_const_2_end;
-		}
-
-	      /* Success case: index tries to reach elements that located in
-		 op1's low 128bit.  Apply - (nelt / 2) offset to original
-		 value.  */
-	      if (idx >= d->nelt && idx < (d->nelt + d->nelt / 2))
-		{
-		  idx -= d->nelt / 2;
-		}
-	    }
-	  /* if index is located in high 128bit of selector vector.  */
-	  else
-	    {
-	      /* Fail case 1: index tries to reach element that located in
-		 op1's low 128bit.  */
-	      if (idx >= d->nelt && idx < (d->nelt + d->nelt / 2))
-		{
-		  goto expand_perm_const_2_end;
-		}
-	      /* Fail case 2: index tries to reach element that located in
-		 op0's low 128bit.  */
-	      if (idx < (d->nelt / 2))
-		{
-		  goto expand_perm_const_2_end;
-		}
-	      /* Success case: index tries to reach element that located in
-		 op0's high 128bit.  */
-	      if (idx >= d->nelt / 2 && idx < d->nelt)
-		{
-		  idx -= d->nelt / 2;
-		}
-	    }
-	  /* No need to process other case that we did not mentioned.  */
-
-	  /* Assign with original or processed value.  */
-	  remapped[i] = idx;
+	  return true;
 	}
     }
 
-  ok = true;
-  /* If testing_p is true, compiler is trying to figure out that backend can
-     handle this permutation, but doesn't want to generate actual insn.  So
-     if true, exit directly.  */
-  if (d->testing_p)
-    {
-      goto expand_perm_const_2_end;
-    }
-
-  /* Convert remapped selector array to RTL array.  */
-  for (i = 0; i < d->nelt; i += 1)
-    {
-      rperm[i] = GEN_INT (remapped[i]);
-    }
-
-  /* Copy selector vector from memory to vector regiter for later insn gen
-     function.
-     If vector's element in floating point value, we cannot fit selector
-     argument into insn gen function directly, because of the insn template
-     definition.  As a solution, generate a integral mode subreg of target,
-     then copy selector vector (that is in integral mode) to this subreg.  */
-  switch (d->vmode)
-    {
-    case E_V4DFmode:
-      sel = gen_rtx_CONST_VECTOR (E_V4DImode, gen_rtvec_v (d->nelt, rperm));
-      tmp = simplify_gen_subreg (E_V4DImode, d->target, d->vmode, 0);
-      emit_move_insn (tmp, sel);
-      break;
-    case E_V8SFmode:
-      sel = gen_rtx_CONST_VECTOR (E_V8SImode, gen_rtvec_v (d->nelt, rperm));
-      tmp = simplify_gen_subreg (E_V8SImode, d->target, d->vmode, 0);
-      emit_move_insn (tmp, sel);
-      break;
-    default:
-      sel = gen_rtx_CONST_VECTOR (d->vmode, gen_rtvec_v (d->nelt, rperm));
-      emit_move_insn (d->target, sel);
-      break;
-    }
-
-  target = d->target;
-  /* If temp op registers are requested in previous if branch, then use temp
-     register intead of original one.  */
-  if (use_alt_op)
-    {
-      op0 = op0_alt != NULL_RTX ? op0_alt : d->op0;
-      op1 = op1_alt != NULL_RTX ? op1_alt : d->op1;
-    }
-  else
-    {
-      op0 = d->op0;
-      op1 = d->one_vector_p ? d->op0 : d->op1;
-    }
-
-  /* We FINALLY can generate xvshuf.* insn.  */
-  switch (d->vmode)
-    {
-    case E_V4DFmode:
-      emit_insn (gen_lasx_xvshuf_d_f (target, target, op1, op0));
-      break;
-    case E_V4DImode:
-      emit_insn (gen_lasx_xvshuf_d (target, target, op1, op0));
-      break;
-    case E_V8SFmode:
-      emit_insn (gen_lasx_xvshuf_w_f (target, target, op1, op0));
-      break;
-    case E_V8SImode:
-      emit_insn (gen_lasx_xvshuf_w (target, target, op1, op0));
-      break;
-    case E_V16HImode:
-      emit_insn (gen_lasx_xvshuf_h (target, target, op1, op0));
-      break;
-    case E_V32QImode:
-      emit_insn (gen_lasx_xvshuf_b (target, op1, op0, target));
-      break;
-    default:
-      gcc_unreachable ();
-      break;
-    }
-
-  /* Extra insn for swapping the hi/lo 128bit of target vector register.  */
-  if (reverse_hi_lo)
-    {
-      switch (d->vmode)
-	{
-	case E_V4DFmode:
-	  emit_insn (gen_lasx_xvpermi_q_v4df (d->target, d->target,
-					      d->target, GEN_INT (0x1)));
-	  break;
-	case E_V4DImode:
-	  emit_insn (gen_lasx_xvpermi_q_v4di (d->target, d->target,
-					      d->target, GEN_INT (0x1)));
-	  break;
-	case E_V8SFmode:
-	  emit_insn (gen_lasx_xvpermi_q_v8sf (d->target, d->target,
-					      d->target, GEN_INT (0x1)));
-	  break;
-	case E_V8SImode:
-	  emit_insn (gen_lasx_xvpermi_q_v8si (d->target, d->target,
-					      d->target, GEN_INT (0x1)));
-	  break;
-	case E_V16HImode:
-	  emit_insn (gen_lasx_xvpermi_q_v16hi (d->target, d->target,
-					       d->target, GEN_INT (0x1)));
-	  break;
-	case E_V32QImode:
-	  emit_insn (gen_lasx_xvpermi_q_v32qi (d->target, d->target,
-					       d->target, GEN_INT (0x1)));
-	  break;
-	default:
-	  break;
-	}
-    }
-  /* Extra insn required by odd/even extraction.  Swapping the second and third
-     64bit in target vector register.  */
-  else if (extract_ev_od)
-    {
-      rtx converted = simplify_gen_subreg (E_V4DImode, d->target, d->vmode, 0);
-      emit_insn (gen_lasx_xvpermi_d_v4di (converted, converted,
-					  GEN_INT (0xD8)));
-    }
-
-expand_perm_const_2_end:
-  return ok;
+  return false;
 }
 
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
@@ -10345,25 +9463,19 @@ loongarch_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
       if (!d.one_vector_p)
 	d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
 
-      ok = loongarch_expand_vec_perm_const_2 (&d);
-      if (ok)
-	return ok;
-
       start_sequence ();
-      ok = loongarch_expand_vec_perm_const_1 (&d);
+      ok = loongarch_expand_vec_perm_const (&d);
       end_sequence ();
       return ok;
     }
 
-  ok = loongarch_expand_vec_perm_const_2 (&d);
-  if (!ok)
-    ok = loongarch_expand_vec_perm_const_1 (&d);
+  ok = loongarch_expand_vec_perm_const (&d);
 
   /* If we were given a two-vector permutation which just happened to
      have both input vectors equal, we folded this into a one-vector
      permutation.  There are several loongson patterns that are matched
      via direct vec_select+vec_concat expansion, but we do not have
-     support in loongarch_expand_vec_perm_const_1 to guess the adjustment
+     support in loongarch_expand_vec_perm_const to guess the adjustment
      that should be made for a single operand.  Just try again with
      the original permutation.  */
   if (!ok && which == 3)
@@ -10372,7 +9484,7 @@ loongarch_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
       d.op1 = op1;
       d.one_vector_p = false;
       memcpy (d.perm, orig_perm, MAX_VECT_LEN);
-      ok = loongarch_expand_vec_perm_const_1 (&d);
+      ok = loongarch_expand_vec_perm_const (&d);
     }
 
   return ok;
