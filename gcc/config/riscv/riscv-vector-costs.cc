@@ -89,9 +89,9 @@ namespace riscv_vector {
 */
 
 static bool
-is_gimple_assign_or_call (gimple_stmt_iterator si)
+is_gimple_assign_or_call (gimple *stmt)
 {
-  return is_gimple_assign (gsi_stmt (si)) || is_gimple_call (gsi_stmt (si));
+  return is_gimple_assign (stmt) || is_gimple_call (stmt);
 }
 
 /* Return the program point of 1st vectorized lanes statement.  */
@@ -119,6 +119,42 @@ get_last_lane_point (const vec<stmt_point> program_points,
 	  max_point = program_point.point;
     }
   return max_point;
+}
+
+/* Return the last variable that is in the live range list.  */
+static pair *
+get_live_range (hash_map<tree, pair> *live_ranges, tree arg)
+{
+  auto *r = live_ranges->get (arg);
+  if (r)
+    return r;
+  else
+    {
+      tree t = arg;
+      gimple *def_stmt = NULL;
+      while (t && TREE_CODE (t) == SSA_NAME && !r
+	     && (def_stmt = SSA_NAME_DEF_STMT (t)))
+	{
+	  if (gimple_assign_cast_p (def_stmt))
+	    {
+	      t = gimple_assign_rhs1 (def_stmt);
+	      r = live_ranges->get (t);
+	      def_stmt = NULL;
+	    }
+	  else
+	    /* FIXME: Currently we don't see any fold for
+	       non-conversion statements.  */
+	    t = NULL_TREE;
+	}
+      if (r)
+	return r;
+      else
+	{
+	  bool insert_p = live_ranges->put (arg, pair (0, 0));
+	  gcc_assert (!insert_p);
+	  return live_ranges->get (arg);
+	}
+    }
 }
 
 /* Collect all STMTs that are vectorized and compute their program points.
@@ -163,9 +199,9 @@ compute_local_program_points (
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "Compute local program points for bb %d:\n",
 			     bb->index);
-	  for (si = gsi_start_bb (bbs[i]); !gsi_end_p (si); gsi_next (&si))
+	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	    {
-	      if (!is_gimple_assign_or_call (si))
+	      if (!is_gimple_assign_or_call (gsi_stmt (si)))
 		continue;
 	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
 	      enum stmt_vec_info_type type
@@ -282,13 +318,33 @@ compute_local_live_ranges (
 			  == VMAT_LOAD_STORE_LANES)
 			point = get_last_lane_point (program_points,
 						     program_point.stmt_info);
+		      else if (existed_p)
+			point = MAX (live_range.second, point);
 		      if (existed_p)
 			/* We will grow the live range for each use.  */
 			live_range = pair (live_range.first, point);
 		      else
-			/* We assume the variable is live from the start of
-			   this block.  */
-			live_range = pair (0, point);
+			{
+			  gimple *def_stmt;
+			  if (TREE_CODE (var) == SSA_NAME
+			      && (def_stmt = SSA_NAME_DEF_STMT (var))
+			      && gimple_bb (def_stmt) == bb
+			      && is_gimple_assign_or_call (def_stmt))
+			    {
+			      live_ranges->remove (var);
+			      for (unsigned int j = 0;
+				   j < gimple_num_args (def_stmt); j++)
+				{
+				  tree arg = gimple_arg (def_stmt, j);
+				  auto *r = get_live_range (live_ranges, arg);
+				  gcc_assert (r);
+				  (*r).second = MAX (point, (*r).second);
+				}
+			    }
+			  else
+			    /* The splat vector lives the whole block.  */
+			    live_range = pair (0, program_points.length ());
+			}
 		    }
 		}
 	    }
@@ -589,7 +645,7 @@ update_local_live_ranges (
 	}
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  if (!is_gimple_assign_or_call (si))
+	  if (!is_gimple_assign_or_call (gsi_stmt (si)))
 	    continue;
 	  stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
 	  enum stmt_vec_info_type type

@@ -45,3 +45,5 @@ void foo2 (int16_t *__restrict a,
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */
+/* { dg-final { scan-tree-dump "start = 8, end = 10" "vect" } } */
+/* { dg-final { scan-tree-dump "2: type = unsigned short, start = 0, end = 34" "vect" } } */
