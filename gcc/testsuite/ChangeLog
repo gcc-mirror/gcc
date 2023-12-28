@@ -1,3 +1,11 @@
+2023-12-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-12-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97592
+	* gfortran.dg/contiguous_15.f90: New test.
+
 2023-12-20  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
