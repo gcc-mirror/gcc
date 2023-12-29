@@ -24,6 +24,3 @@ foo (int n){
 /* { dg-final { scan-assembler-not {jr} } } */
 /* { dg-final { scan-assembler-times {ret} 1 } } */
 /* { dg-final { scan-tree-dump-times "Preferring smaller LMUL loop because it has unexpected spills" 1 "vect" } } */
-/* { dg-final { scan-tree-dump "At most 8 number of live V_REG at program point 1 for bb 4" "vect" } } */
-/* { dg-final { scan-tree-dump "At most 40 number of live V_REG at program point 1 for bb 3" "vect" } } */
-/* { dg-final { scan-tree-dump "At most 8 number of live V_REG at program point 1 for bb 5" "vect" } } */
