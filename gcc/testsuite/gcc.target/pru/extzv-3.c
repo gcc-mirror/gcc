@@ -1,6 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-options "-Os" } */
-/* { dg-final { object-size text <= 16 } } */
+/* { dg-final { object-size text <= 12 } } */
 
 struct S {
     unsigned int a : 9;
