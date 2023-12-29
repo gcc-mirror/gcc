@@ -16077,6 +16077,15 @@ private:
      leaving a vectorization of { elts }.  */
   bool m_stores_to_vector_load_decl = false;
 
+  /* Non-zero if the last operation we costed is a vector promotion or demotion.
+     In this case the value is the number of insns in the last operation.
+
+     On AArch64 vector promotion and demotions require us to first widen or
+     narrow the input and only after that emit conversion instructions.  For
+     costing this means we need to emit the cost of the final conversions as
+     well.  */
+  unsigned int m_num_last_promote_demote = 0;
+
   /* - If M_VEC_FLAGS is zero then we're costing the original scalar code.
      - If M_VEC_FLAGS & VEC_ADVSIMD is nonzero then we're costing Advanced
        SIMD code.
@@ -17131,6 +17140,29 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
     stmt_cost = aarch64_sve_adjust_stmt_cost (m_vinfo, kind, stmt_info,
 					      vectype, stmt_cost);
+
+  /*  Vector promotion and demotion requires us to widen the operation first
+      and only after that perform the conversion.  Unfortunately the mid-end
+      expects this to be doable as a single operation and doesn't pass on
+      enough context here for us to tell which operation is happening.  To
+      account for this we count every promote-demote operation twice and if
+      the previously costed operation was also a promote-demote we reduce
+      the cost of the currently being costed operation to simulate the final
+      conversion cost.  Note that for SVE we can do better here if the converted
+      value comes from a load since the widening load would consume the widening
+      operations.  However since we're in stage 3 we can't change the helper
+      vect_is_extending_load and duplicating the code seems not useful.  */
+  gassign *assign = NULL;
+  if (kind == vec_promote_demote
+      && (assign = dyn_cast <gassign *> (STMT_VINFO_STMT (stmt_info)))
+      && gimple_assign_rhs_code (assign) == FLOAT_EXPR)
+    {
+      auto new_count = count * 2 - m_num_last_promote_demote;
+      m_num_last_promote_demote = count;
+      count = new_count;
+    }
+  else
+    m_num_last_promote_demote = 0;
 
   if (stmt_info && aarch64_use_new_vector_costs_p ())
     {
