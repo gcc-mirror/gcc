@@ -1486,8 +1486,8 @@
                           (match_operand:GPR 2 "const_int_operand"))
 		 (and:GPR (match_operand:GPR 3 "register_operand")
 			  (match_operand:GPR 4 "const_int_operand"))))]
-  "loongarch_pre_reload_split () && \
-   loongarch_use_bstrins_for_ior_with_mask (<MODE>mode, operands)"
+  "loongarch_pre_reload_split ()
+   && loongarch_use_bstrins_for_ior_with_mask (<MODE>mode, operands)"
   "#"
   "&& true"
   [(set (match_dup 0) (match_dup 1))
