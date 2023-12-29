@@ -1,3 +1,13 @@
+2023-12-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/template/linkage2.C: XFAIL on AIX.
+	* g++.dg/template/linkage3.C: Same.
+
+2023-12-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-3.c: Adapt test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-5.c: Ditto.
+
 2023-12-27  Xi Ruoyao  <xry111@xry111.site>
 
 	PR target/113148

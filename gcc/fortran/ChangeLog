@@ -1,3 +1,9 @@
+2023-12-28  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	PR fortran/81615
+	* invoke.texi: Add Developer Options section.  Move '-fdump-*'
+	to it.  Add small examples about changed '-save-temps' behavior.
+
 2023-12-20  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
 
 	PR fortran/81615

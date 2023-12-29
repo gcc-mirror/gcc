@@ -1,3 +1,18 @@
+2023-12-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_unary_operator_ok): Move from here...
+	* config/i386/i386-expand.cc (ix86_unary_operator_ok): ... to here.
+	* config/i386/i386-protos.h: Re-arrange ix86_{unary|binary}_operator_ok
+	and ix86_expand_{unary|binary}_operator prototypes.
+	* config/i386/i386.md: Cosmetic changes with the usage of
+	TARGET_APX_NDD in ix86_expand_{unary|binary}_operator
+	and ix86_{unary|binary}_operator_ok function calls.
+
+2023-12-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (is_gimple_assign_or_call): Change interface.
+	(get_live_range): New function.
+
 2023-12-27  Xi Ruoyao  <xry111@xry111.site>
 
 	PR target/113148
