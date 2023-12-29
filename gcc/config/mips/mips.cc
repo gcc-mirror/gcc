@@ -4170,6 +4170,37 @@ mips_set_reg_reg_cost (machine_mode mode)
     }
 }
 
+/* Implement TARGET_INSN_COSTS.  */
+
+static int
+mips_insn_cost (rtx_insn *x, bool speed)
+{
+  int cost;
+  int count;
+  int ratio;
+
+  if (recog_memoized (x) < 0
+      && GET_CODE (PATTERN (x)) != ASM_INPUT
+      && asm_noperands (PATTERN (x)) < 0)
+    goto pattern_cost;
+
+  /* FIXME: return get_attr_length?  More tests may be needed.  */
+  if (!speed)
+    goto pattern_cost;
+
+  count = get_attr_insn_count (x);
+  ratio = get_attr_perf_ratio (x);
+  cost = count * ratio;
+  if (cost > 0)
+    return cost;
+
+pattern_cost:
+  cost = pattern_cost (PATTERN (x), speed);
+  /* If the cost is zero, then it's likely a complex insn.
+     FIXME: Return COSTS_N_INSNS (2)?  More tests are needed.  */
+  return cost;
+}
+
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
@@ -23069,6 +23100,8 @@ mips_bit_clear_p (enum machine_mode mode, unsigned HOST_WIDE_INT m)
 #define TARGET_RTX_COSTS mips_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST mips_address_cost
+#undef  TARGET_INSN_COST
+#define TARGET_INSN_COST mips_insn_cost
 
 #undef TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
 #define TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P mips_no_speculation_in_delay_slots_p
