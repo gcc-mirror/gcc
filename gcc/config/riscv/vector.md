@@ -1513,7 +1513,7 @@
 
 (define_insn "@vsetvl<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P [(match_operand:P 1 "csr_operand" "rK")
+	(unspec:P [(match_operand:P 1 "vector_length_operand" "rK")
 		   (match_operand 2 "const_int_operand" "i")
 		   (match_operand 3 "const_int_operand" "i")
 		   (match_operand 4 "const_int_operand" "i")
@@ -1559,7 +1559,7 @@
 ;; in vsetvl instruction pattern.
 (define_insn "@vsetvl_discard_result<mode>"
   [(set (reg:SI VL_REGNUM)
-	(unspec:SI [(match_operand:P 0 "csr_operand" "rK")
+	(unspec:SI [(match_operand:P 0 "vector_length_operand" "rK")
 		    (match_operand 1 "const_int_operand" "i")
 		    (match_operand 2 "const_int_operand" "i")] UNSPEC_VSETVL))
    (set (reg:SI VTYPE_REGNUM)
@@ -1581,7 +1581,7 @@
 ;; such pattern can allow us gain benefits of these optimizations.
 (define_insn_and_split "@vsetvl<mode>_no_side_effects"
   [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P [(match_operand:P 1 "csr_operand" "rK")
+	(unspec:P [(match_operand:P 1 "vector_length_operand" "rK")
 		   (match_operand 2 "const_int_operand" "i")
 		   (match_operand 3 "const_int_operand" "i")
 		   (match_operand 4 "const_int_operand" "i")
@@ -1625,7 +1625,7 @@
   [(set (match_operand:DI 0 "register_operand")
         (sign_extend:DI
           (subreg:SI
-	    (unspec:DI [(match_operand:P 1 "csr_operand")
+	    (unspec:DI [(match_operand:P 1 "vector_length_operand")
 		        (match_operand 2 "const_int_operand")
 		        (match_operand 3 "const_int_operand")
 		        (match_operand 4 "const_int_operand")
