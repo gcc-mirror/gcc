@@ -277,9 +277,12 @@ compute_local_live_ranges (
 	    {
 	      unsigned int point = program_point.point;
 	      gimple *stmt = program_point.stmt;
+	      stmt_vec_info stmt_info = program_point.stmt_info;
 	      tree lhs = gimple_get_lhs (stmt);
 	      if (lhs != NULL_TREE && is_gimple_reg (lhs)
-		  && !POINTER_TYPE_P (TREE_TYPE (lhs)))
+		  && (!POINTER_TYPE_P (TREE_TYPE (lhs))
+		      || STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info))
+			   != store_vec_info_type))
 		{
 		  biggest_mode = get_biggest_mode (biggest_mode,
 						   TYPE_MODE (TREE_TYPE (lhs)));
@@ -305,7 +308,10 @@ compute_local_live_ranges (
 		     the future.  */
 		  if (poly_int_tree_p (var)
 		      || (is_gimple_val (var)
-			  && !POINTER_TYPE_P (TREE_TYPE (var))))
+			  && (!POINTER_TYPE_P (TREE_TYPE (var))
+			      || STMT_VINFO_TYPE (
+				   vect_stmt_to_vectorize (stmt_info))
+				   != load_vec_info_type)))
 		    {
 		      biggest_mode
 			= get_biggest_mode (biggest_mode,
@@ -374,7 +380,7 @@ compute_nregs_for_mode (machine_mode mode, machine_mode biggest_mode, int lmul)
   unsigned int biggest_size = GET_MODE_SIZE (biggest_mode).to_constant ();
   gcc_assert (biggest_size >= mode_size);
   unsigned int ratio = biggest_size / mode_size;
-  return lmul / ratio;
+  return MAX (lmul / ratio, 1);
 }
 
 /* This function helps to determine whether current LMUL will cause
