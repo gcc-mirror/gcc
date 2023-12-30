@@ -426,6 +426,37 @@
   [(set_attr "type" "simd_fcmp")
    (set_attr "mode" "<MODE>")])
 
+; [x]vf{min/max} instructions are IEEE-754-2008 conforming, use them for
+; the corresponding IEEE-754-2008 operations.  We must use UNSPEC instead
+; of smin/smax though, see PR105414 and PR107013.
+
+(define_int_iterator UNSPEC_FMAXMIN [UNSPEC_FMAX UNSPEC_FMIN])
+(define_int_attr fmaxmin [(UNSPEC_FMAX "fmax") (UNSPEC_FMIN "fmin")])
+
+(define_insn "<fmaxmin><mode>3"
+  [(set (match_operand:FVEC 0 "register_operand" "=f")
+	(unspec:FVEC [(match_operand:FVEC 1 "register_operand" "f")
+		      (match_operand:FVEC 2 "register_operand" "f")]
+		     UNSPEC_FMAXMIN))]
+  ""
+  "<x>v<fmaxmin>.<simdfmt>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_fminmax")
+   (set_attr "mode" "<MODE>")])
+
+;; ... and also reduc operations.
+(define_expand "reduc_<fmaxmin>_scal_<mode>"
+  [(match_operand:<UNITMODE> 0 "register_operand")
+   (match_operand:FVEC 1 "register_operand")
+   (const_int UNSPEC_FMAXMIN)]
+  ""
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  loongarch_expand_vector_reduc (gen_<fmaxmin><mode>3, tmp, operands[1]);
+  emit_insn (gen_vec_extract<mode><unitmode> (operands[0], tmp,
+					      const0_rtx));
+  DONE;
+})
+
 ; The LoongArch SX Instructions.
 (include "lsx.md")
 
