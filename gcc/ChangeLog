@@ -1,3 +1,52 @@
+2023-12-29  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_128FMA_CHAINS,
+	X86_TUNE_AVOID_256FMA_CHAINS): Enable for znver4 and Core.
+
+2023-12-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/110625
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::add_stmt_cost):
+	Adjust throughput and latency calculations for vector conversions.
+	(class aarch64_vector_costs): Add m_num_last_promote_demote.
+
+2023-12-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (bstrins_<mode>_for_ior_mask):
+	For the condition, remove unneeded trailing "\" and move "&&" to
+	follow GNU coding style.  NFC.
+
+2023-12-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/predicates.md
+	(symbolic_pcrel_offset_operand): New define_predicate.
+	(mem_simple_ldst_operand): Likewise.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_rewrite_mem_for_simple_ldst): Declare.
+	* config/loongarch/loongarch.cc
+	(loongarch_rewrite_mem_for_simple_ldst): Implement.
+	* config/loongarch/loongarch.md (simple_load<mode>): New
+	define_insn_and_rewrite.
+	(simple_load_<su>ext<SUBDI:mode><GPR:mode>): Likewise.
+	(simple_store<mode>): Likewise.
+	(define_peephole2): Remove la.local/[f]ld peepholes.
+
+2023-12-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113133
+	* config/i386/i386.md
+	(TARGET_USE_VECTOR_FP_CONVERTS SF->DF float_extend splitter):
+	Do not handle xmm16+ with TARGET_EVEX512.
+
+2023-12-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (is_vlmax_len_p): New function.
+	(expand_load_store): Disallow transformation into VLMAX when len is in range of [0,31]
+	(expand_cond_len_op): Ditto.
+	(expand_gather_scatter): Ditto.
+	(expand_lanes_load_store): Ditto.
+	(expand_fold_extract_last): Ditto.
+
 2023-12-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.cc (ix86_unary_operator_ok): Move from here...

@@ -1,3 +1,39 @@
+2023-12-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/110625
+	* gcc.target/aarch64/pr110625_4.c: New test.
+	* gcc.target/aarch64/sve/unpack_fcvt_signed_1.c: Add
+	--param aarch64-sve-compare-costs=0.
+	* gcc.target/aarch64/sve/unpack_fcvt_unsigned_1.c: Likewise
+
+2023-12-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/explicit-relocs-auto-single-load-store-2.c:
+	New test.
+	* gcc.target/loongarch/explicit-relocs-auto-single-load-store-3.c:
+	New test.
+
+2023-12-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113133
+	* gcc.target/i386/pr113133-1.c: New test.
+	* gcc.target/i386/pr113133-2.c: New test.
+
+2023-12-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/113167
+	* gcc.dg/tree-ssa/gen-vect-26.c: Mark the test/check loop
+	as novector.
+
+2023-12-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-1.c: Remove redundant checks.
+
+2023-12-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/post-ra-avl.c: Adapt test.
+	* gcc.target/riscv/rvv/base/vf_avl-2.c: New test.
+
 2023-12-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/template/linkage2.C: XFAIL on AIX.
