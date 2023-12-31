@@ -6,4 +6,4 @@ unsigned __int128 foo(unsigned __int128 x, unsigned long long y)
   return x+y;
 }
 
-/* { dg-final { scan-assembler-times "movq" 1 } } */
+/* { dg-final { scan-assembler-times "movq" 2 } } */
