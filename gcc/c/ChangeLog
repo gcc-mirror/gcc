@@ -1,3 +1,7 @@
+2023-12-30  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (tagged_types_tu_compatible_p): Revise.
+
 2023-12-22  Martin Uecker  <uecker@tugraz.at>
 
 	* c-typeck.cc (composite_type_internal): Adapted from

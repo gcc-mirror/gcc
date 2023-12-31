@@ -1,3 +1,7 @@
+2023-12-30  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/c23-tag-9.c: New test.
+
 2023-12-29  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/110625
