@@ -182,6 +182,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (convert (cmp@0 @1 @2))
    (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))))
 )
+/* `a ^ b` is another form of `a != b` when the type
+    is a 1bit precission integer.  */
+(match (maybe_cmp @0)
+ (bit_xor@0 @1 @2)
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_PRECISION (type) == 1)))
 #endif
 
 /* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
