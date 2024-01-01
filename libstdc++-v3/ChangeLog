@@ -1,3 +1,28 @@
+2023-12-31  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/20_util/hash/quality.cc: Increase timeout by a factor 3.
+
+2023-12-31  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h: Move comment about all equivalent values
+	being next to each other in the class documentation header.
+	(_M_reinsert_node, _M_merge_unique): Implement small size optimization.
+	(_M_find_tr, _M_count_tr, _M_equal_range_tr): Likewise.
+
+2023-12-31  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/performance/23_containers/insert/54075.cc: Add lookup on unknown entries
+	w/o copy to see potential impact of memory fragmentation enhancements.
+	* testsuite/performance/23_containers/insert/unordered_multiset_hint.cc: Enhance hash
+	functor to make it perfect, exactly 1 entry per bucket. Also use hash functor tagged as
+	slow or not to bench w/o hash code cache.
+	* testsuite/performance/23_containers/insert/unordered_set_hint.cc: New test case. Like
+	previous one but using std::unordered_set.
+	* testsuite/performance/23_containers/insert/unordered_set_range_insert.cc: New test case.
+	Check performance of range-insertion compared to individual insertions.
+	* testsuite/performance/23_containers/insert_erase/unordered_small_size.cc: Add same bench
+	but after a copy to demonstrate impact of enhancements regarding memory fragmentation.
+
 2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* Makefile.am: Allow overriding EXEPCT.

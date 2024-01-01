@@ -1,3 +1,9 @@
+2023-12-31  Uros Bizjak  <ubizjak@gmail.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/43644
+	* gcc.target/i386/pr43644-2.c: Expect 2 movq instructions.
+
 2023-12-30  Martin Uecker  <uecker@tugraz.at>
 
 	* gcc.dg/c23-tag-9.c: New test.
