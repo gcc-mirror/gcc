@@ -5241,6 +5241,53 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_store1_3reg<q>")]
 )
 
+(define_expand "neon_vst1q_x3<mode>"
+  [(match_operand:CI 0 "neon_struct_operand")
+   (match_operand:CI 1 "s_register_operand")
+   (unspec:VDQX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_NEON"
+{
+  rtx mem = adjust_address (operands[0], EImode, 0);
+  emit_insn (gen_neon_vst1x3qa<mode> (mem, operands[1]));
+  mem = adjust_address (mem, EImode, GET_MODE_SIZE (EImode));
+  emit_insn (gen_neon_vst1x3qb<mode> (mem, operands[1]));
+  DONE;
+})
+
+(define_insn "neon_vst1x3qa<mode>"
+  [(set (match_operand:EI 0 "neon_struct_operand" "=Um")
+        (unspec:EI [(match_operand:CI 1 "s_register_operand" "w")
+                    (unspec:VDQX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VST1X3A))]
+  "TARGET_NEON"
+{
+  rtx ops[2];
+  ops[0] = operands[0];
+  ops[1] = gen_rtx_REG (EImode, REGNO (operands[1]));
+
+  output_asm_insn ("vst1.<V_sz_elem>\t%h1, %A0", ops);
+  return "";
+}
+  [(set_attr "type" "neon_store1_3reg<q>")]
+)
+
+(define_insn "neon_vst1x3qb<mode>"
+  [(set (match_operand:EI 0 "neon_struct_operand" "=Um")
+        (unspec:EI [(match_operand:CI 1 "s_register_operand" "w")
+                    (unspec:VDQX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VST1X3B))]
+  "TARGET_NEON"
+{
+  rtx ops[2];
+  ops[0] = operands[0];
+  ops[1] = gen_rtx_REG (EImode, REGNO (operands[1]) + 6);
+
+  output_asm_insn ("vst1.<V_sz_elem>\t%h1, %A0", ops);
+  return "";
+}
+  [(set_attr "type" "neon_store1_3reg<q>")]
+)
+
 (define_insn "neon_vst1_x4<mode>"
   [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
         (unspec:OI [(match_operand:OI 1 "s_register_operand" "w")

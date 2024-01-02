@@ -10,4 +10,10 @@ void test_vst1q_bf16_x2 (bfloat16_t * ptr, bfloat16x8x2_t val)
     vst1q_bf16_x2 (ptr, val);
 }
 
-/* { dg-final { scan-assembler-times {vst1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 1 } }  */
+void test_vst1q_bf16_x3 (bfloat16_t * ptr, bfloat16x8x3_t val)
+{
+    vst1q_bf16_x3 (ptr, val);
+}
+
+/* { dg-final { scan-assembler-times {vst1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 2 } }  */
+/* { dg-final { scan-assembler-times {vst1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]!\n} 1 } }  */

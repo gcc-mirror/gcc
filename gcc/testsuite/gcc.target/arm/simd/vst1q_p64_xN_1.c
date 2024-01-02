@@ -10,4 +10,10 @@ void test_vst1q_p64_x2 (poly64_t * ptr, poly64x2x2_t val)
     vst1q_p64_x2 (ptr, val);
 }
 
-/* { dg-final { scan-assembler-times {vst1.64\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+:64\]\n} 1 } }  */
+void test_vst1q_p64_x3 (poly64_t * ptr, poly64x2x3_t val)
+{
+    vst1q_p64_x3 (ptr, val);
+}
+
+/* { dg-final { scan-assembler-times {vst1.64\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+:64\]\n} 2 } }  */
+/* { dg-final { scan-assembler-times {vst1.64\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+:64\]!\n} 1 } }  */
