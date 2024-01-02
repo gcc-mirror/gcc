@@ -74,8 +74,7 @@ is_vlmax_len_p (machine_mode mode, rtx len)
 {
   poly_int64 value;
   return poly_int_rtx_p (len, &value)
-	 && known_eq (value, GET_MODE_NUNITS (mode))
-	 && !satisfies_constraint_K (len);
+	 && known_eq (value, GET_MODE_NUNITS (mode));
 }
 
 /* Helper functions for insn_flags && insn_types */
@@ -3855,7 +3854,13 @@ expand_cond_len_op (unsigned icode, insn_flags op_type, rtx *ops, rtx len)
   bool is_vlmax_len = is_vlmax_len_p (mode, len);
 
   unsigned insn_flags = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | op_type;
-  if (is_dummy_mask)
+  /* FIXME: We don't support simplification of COND_LEN_NEG (..., dummy len,
+     dummy mask) into NEG_EXPR in GIMPLE FOLD yet.  So, we do such
+     simplification in RISC-V backend and may do that in middle-end in the
+     future.  */
+  if (is_dummy_mask && is_vlmax_len)
+    insn_flags |= TDEFAULT_POLICY_P | MDEFAULT_POLICY_P;
+  else if (is_dummy_mask)
     insn_flags |= TU_POLICY_P | MDEFAULT_POLICY_P;
   else if (is_vlmax_len)
     insn_flags |= TDEFAULT_POLICY_P | MU_POLICY_P;
