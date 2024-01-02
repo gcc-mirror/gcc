@@ -27300,7 +27300,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     {
       set_instantiating_module (d);
       if (variable_template_p (gen_tmpl))
-	note_variable_template_instantiation (d);
+	note_vague_linkage_variable (d);
       instantiate_body (td, args, d, false);
     }
 
