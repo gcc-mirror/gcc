@@ -279,10 +279,11 @@ compute_local_live_ranges (
 	      gimple *stmt = program_point.stmt;
 	      stmt_vec_info stmt_info = program_point.stmt_info;
 	      tree lhs = gimple_get_lhs (stmt);
+	      enum stmt_vec_info_type type
+		= STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
 	      if (lhs != NULL_TREE && is_gimple_reg (lhs)
 		  && (!POINTER_TYPE_P (TREE_TYPE (lhs))
-		      || STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info))
-			   != store_vec_info_type))
+		      || type != store_vec_info_type))
 		{
 		  biggest_mode = get_biggest_mode (biggest_mode,
 						   TYPE_MODE (TREE_TYPE (lhs)));
@@ -309,9 +310,7 @@ compute_local_live_ranges (
 		  if (poly_int_tree_p (var)
 		      || (is_gimple_val (var)
 			  && (!POINTER_TYPE_P (TREE_TYPE (var))
-			      || STMT_VINFO_TYPE (
-				   vect_stmt_to_vectorize (stmt_info))
-				   != load_vec_info_type)))
+			      || type != load_vec_info_type)))
 		    {
 		      biggest_mode
 			= get_biggest_mode (biggest_mode,
