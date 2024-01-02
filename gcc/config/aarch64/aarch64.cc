@@ -18321,6 +18321,12 @@ aarch64_override_options_internal (struct gcc_options *opts)
     SET_OPTION_IF_UNSET (opts, &global_options_set, param_avoid_fma_max_bits,
 			 512);
 
+  /* Consider fully pipelined FMA in reassociation.  */
+  if (aarch64_tune_params.extra_tuning_flags
+      & AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA)
+    SET_OPTION_IF_UNSET (opts, &global_options_set, param_fully_pipelined_fma,
+			 1);
+
   aarch64_override_options_after_change_1 (opts);
 }
 

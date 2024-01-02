@@ -105,8 +105,9 @@ static const struct tune_params ampere1b_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_STRONG,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND |
-   AARCH64_EXTRA_TUNE_AVOID_CROSS_LOOP_FMA),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND
+   | AARCH64_EXTRA_TUNE_AVOID_CROSS_LOOP_FMA
+   | AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA), /* tune_flags.  */
   &ampere1b_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALIGNED,   /* ldp_policy_model.  */
   AARCH64_LDP_STP_POLICY_ALIGNED    /* stp_policy_model.  */
