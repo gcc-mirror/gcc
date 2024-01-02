@@ -60,8 +60,69 @@ poly16x8x2_t test_vld1q_p16_x2 (poly16_t * a)
     return vld1q_p16_x2 (a);
 }
 
-/* { dg-final { scan-assembler-times {vld1.8\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 3 } }  */
-/* { dg-final { scan-assembler-times {vld1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 3 } }  */
-/* { dg-final { scan-assembler-times {vld1.32\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 3 } }  */
-/* { dg-final { scan-assembler-times {vld1.64\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+:64\]\n} 2 } }  */
+uint8x16x3_t test_vld1q_u8_x3 (uint8_t * a)
+{
+    return vld1q_u8_x3 (a);
+}
 
+uint16x8x3_t test_vld1q_u16_x3 (uint16_t * a)
+{
+    return vld1q_u16_x3 (a);
+}
+
+uint32x4x3_t test_vld1q_u32_x3 (uint32_t * a)
+{
+    return vld1q_u32_x3 (a);
+}
+
+uint64x2x3_t test_vld1q_u64_x3 (uint64_t * a)
+{
+    return vld1q_u64_x3 (a);
+}
+
+int8x16x3_t test_vld1q_s8_x3 (int8_t * a)
+{
+    return vld1q_s8_x3 (a);
+}
+
+int16x8x3_t test_vld1q_s16_x3 (int16_t * a)
+{
+    return vld1q_s16_x3 (a);
+}
+
+int32x4x3_t test_vld1q_s32_x3 (int32_t * a)
+{
+    return vld1q_s32_x3 (a);
+}
+
+int64x2x3_t test_vld1q_s64_x3 (int64_t * a)
+{
+    return vld1q_s64_x3 (a);
+}
+
+float32x4x3_t test_vld1q_f32_x3 (float32_t * a)
+{
+    return vld1q_f32_x3 (a);
+}
+
+poly8x16x3_t test_vld1q_p8_x3 (poly8_t * a)
+{
+    return vld1q_p8_x3 (a);
+}
+
+poly16x8x3_t test_vld1q_p16_x3 (poly16_t * a)
+{
+    return vld1q_p16_x3 (a);
+}
+
+/* { dg-final { scan-assembler-times {vld1.8\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 6 } }  */
+/* { dg-final { scan-assembler-times {vld1.8\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]!\n} 3 } }  */
+
+/* { dg-final { scan-assembler-times {vld1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 6 } }  */
+/* { dg-final { scan-assembler-times {vld1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]!\n} 3 } }  */
+
+/* { dg-final { scan-assembler-times {vld1.32\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 6 } }  */
+/* { dg-final { scan-assembler-times {vld1.32\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]!\n} 3 } }  */
+
+/* { dg-final { scan-assembler-times {vld1.64\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+:64\]\n} 4 } }  */
+/* { dg-final { scan-assembler-times {vld1.64\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+:64\]!\n} 2 } }  */

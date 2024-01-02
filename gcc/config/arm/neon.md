@@ -5016,6 +5016,54 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_load1_2reg<q>")]
 )
 
+(define_expand "neon_vld1_x3<mode>"
+  [(match_operand:CI 0 "s_register_operand")
+   (match_operand:CI 1 "neon_struct_operand")
+   (unspec:VQXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_NEON"
+{
+  rtx mem = adjust_address (operands[1], EImode, 0);
+  emit_insn (gen_neon_vld1x3qa<mode> (operands[0], mem));
+  mem = adjust_address (mem, EImode, GET_MODE_SIZE (EImode));
+  emit_insn (gen_neon_vld1x3qb<mode> (operands[0], mem, operands[0]));
+  DONE;
+})
+
+(define_insn "neon_vld1x3qa<mode>"
+  [(set (match_operand:CI 0 "s_register_operand" "=w")
+        (unspec:CI [(match_operand:EI 1 "neon_struct_operand" "Um")
+                    (unspec:VQXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VLD1X3A))]
+  "TARGET_NEON"
+{
+  rtx ops[2];
+  ops[0] = gen_rtx_REG (EImode, REGNO (operands[0]));
+  ops[1] = operands[1];
+
+  output_asm_insn ("vld1.<V_sz_elem>\t%h0, %A1", ops);
+  return "";
+}
+  [(set_attr "type" "neon_load1_3reg<q>")]
+)
+
+(define_insn "neon_vld1x3qb<mode>"
+  [(set (match_operand:CI 0 "s_register_operand" "=w")
+        (unspec:CI [(match_operand:EI 1 "neon_struct_operand" "Um")
+                    (match_operand:CI 2 "s_register_operand" "0")
+                    (unspec:VQXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VLD1X3B))]
+  "TARGET_NEON"
+{
+  rtx ops[2];
+  ops[0] = gen_rtx_REG (EImode, REGNO (operands[0]) + 6);
+  ops[1] = operands[1];
+
+  output_asm_insn ("vld1.<V_sz_elem>\t%h0, %A1", ops);
+  return "";
+}
+  [(set_attr "type" "neon_load1_3reg<q>")]
+)
+
 ;; The lane numbers in the RTL are in GCC lane order, having been flipped
 ;; in arm_expand_neon_args. The lane numbers are restored to architectural
 ;; lane order here.
