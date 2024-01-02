@@ -5006,6 +5006,16 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_load1_1reg<q>")]
 )
 
+(define_insn "neon_vld1_x2<mode>"
+  [(set (match_operand:OI 0 "s_register_operand" "=w")
+        (unspec:OI [(match_operand:OI 1 "neon_struct_operand" "Um")
+                    (unspec:VQXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VLD1))]
+  "TARGET_NEON"
+  "vld1.<V_sz_elem>\t%h0, %A1"
+  [(set_attr "type" "neon_load1_2reg<q>")]
+)
+
 ;; The lane numbers in the RTL are in GCC lane order, having been flipped
 ;; in arm_expand_neon_args. The lane numbers are restored to architectural
 ;; lane order here.
