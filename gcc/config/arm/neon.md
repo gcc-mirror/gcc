@@ -5241,6 +5241,16 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_store1_3reg<q>")]
 )
 
+(define_insn "neon_vst1_x4<mode>"
+  [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
+        (unspec:OI [(match_operand:OI 1 "s_register_operand" "w")
+                    (unspec:VDQX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VST1))]
+  "TARGET_NEON"
+  "vst1.<V_sz_elem>\t%h1, %A0"
+  [(set_attr "type" "neon_store1_4reg<q>")]
+)
+
 ;; see comment on neon_vld1_lane for reason why the lane numbers are reversed
 ;; here on big endian targets.
 (define_insn "neon_vst1_lane<mode>"

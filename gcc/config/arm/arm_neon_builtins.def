@@ -313,6 +313,7 @@ VAR14 (STORE1, vst1,
         v4bf, v8bf)
 VAR7 (STORE1, vst1_x2, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
 VAR7 (STORE1, vst1_x3, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
+VAR7 (STORE1, vst1_x4, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
 VAR14 (STORE1LANE, vst1_lane,
        v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di, v4bf, v8bf)
 VAR13 (LOAD1, vld2,
