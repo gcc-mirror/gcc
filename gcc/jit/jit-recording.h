@@ -560,6 +560,7 @@ public:
   virtual function_type *as_a_function_type() { gcc_unreachable (); return NULL; }
   virtual struct_ *dyn_cast_struct () { return NULL; }
   virtual vector_type *dyn_cast_vector_type () { return NULL; }
+  virtual array_type *dyn_cast_array_type () { return NULL; }
 
   /* Is it typesafe to copy to this type from rtype?  */
   virtual bool accepts_writes_from (type *rtype)
@@ -829,6 +830,11 @@ public:
 
   void replay_into (replayer *) final override;
 
+  array_type *dyn_cast_array_type () final override
+  {
+    return m_other_type->dyn_cast_array_type ();
+  }
+
 private:
   string * make_debug_string () final override;
   void write_reproducer (reproducer &r) final override;
@@ -894,6 +900,17 @@ class array_type : public type
   {}
 
   type *dereference () final override;
+
+  bool is_same_type_as (type *other) final override
+  {
+    array_type *other_array_type = other->dyn_cast_array_type ();
+    if (!other_array_type)
+      return false;
+    return m_num_elements == other_array_type->m_num_elements
+      && m_element_type->is_same_type_as (other_array_type->m_element_type);
+  }
+
+  array_type *dyn_cast_array_type () final override { return this; }
 
   bool is_int () const final override { return false; }
   bool is_float () const final override { return false; }
