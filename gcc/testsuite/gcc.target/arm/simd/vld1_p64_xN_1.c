@@ -10,4 +10,9 @@ poly64x1x2_t test_vld1_p64_x2 (poly64_t * a)
     return vld1_p64_x2 (a);
 }
 
-/* { dg-final { scan-assembler-times {vld1.64\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+:64\]\n} 1 } }  */
+poly64x1x3_t test_vld1_p64_x3 (poly64_t * a)
+{
+    return vld1_p64_x3 (a);
+}
+
+/* { dg-final { scan-assembler-times {vld1.64\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+:64\]\n} 2 } }  */
