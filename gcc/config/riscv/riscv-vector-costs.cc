@@ -373,13 +373,17 @@ compute_local_live_ranges (
    E.g. If mode = SImode, biggest_mode = DImode, LMUL = M4.
 	Then return RVVM4SImode (LMUL = 4, element mode = SImode).  */
 static unsigned int
-compute_nregs_for_mode (machine_mode mode, machine_mode biggest_mode, int lmul)
+compute_nregs_for_mode (loop_vec_info loop_vinfo, machine_mode mode,
+			machine_mode biggest_mode, int lmul)
 {
+  unsigned int rgroup_size = LOOP_VINFO_LENS (loop_vinfo).is_empty ()
+			       ? 1
+			       : LOOP_VINFO_LENS (loop_vinfo).length ();
   unsigned int mode_size = GET_MODE_SIZE (mode).to_constant ();
   unsigned int biggest_size = GET_MODE_SIZE (biggest_mode).to_constant ();
   gcc_assert (biggest_size >= mode_size);
   unsigned int ratio = biggest_size / mode_size;
-  return MAX (lmul / ratio, 1);
+  return MAX (lmul / ratio, 1) * rgroup_size;
 }
 
 /* This function helps to determine whether current LMUL will cause
@@ -393,7 +397,7 @@ compute_nregs_for_mode (machine_mode mode, machine_mode biggest_mode, int lmul)
        mode.
      - Third, Return the maximum V_REGs are alive of the loop.  */
 static unsigned int
-max_number_of_live_regs (const basic_block bb,
+max_number_of_live_regs (loop_vec_info loop_vinfo, const basic_block bb,
 			 const hash_map<tree, pair> &live_ranges,
 			 unsigned int max_point, machine_mode biggest_mode,
 			 int lmul)
@@ -412,7 +416,7 @@ max_number_of_live_regs (const basic_block bb,
 	{
 	  machine_mode mode = TYPE_MODE (TREE_TYPE (var));
 	  unsigned int nregs
-	    = compute_nregs_for_mode (mode, biggest_mode, lmul);
+	    = compute_nregs_for_mode (loop_vinfo, mode, biggest_mode, lmul);
 	  live_vars_vec[i] += nregs;
 	  if (live_vars_vec[i] > max_nregs)
 	    {
@@ -687,6 +691,24 @@ update_local_live_ranges (
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "Add perm indice %T, start = 0, end = %d\n",
 				 sel, max_point);
+	      if (!LOOP_VINFO_LENS (loop_vinfo).is_empty ()
+		  && LOOP_VINFO_LENS (loop_vinfo).length () > 1)
+		{
+		  /* If we are vectorizing a permutation when the rgroup number
+		     > 1, we will need additional mask to shuffle the second
+		     vector.  */
+		  tree mask = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+					  get_identifier ("vect_perm_mask"),
+					  boolean_type_node);
+		  pair &live_range
+		    = live_ranges->get_or_insert (mask, &existed_p);
+		  gcc_assert (!existed_p);
+		  live_range = pair (0, max_point);
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_NOTE, vect_location,
+				     "Add perm mask %T, start = 0, end = %d\n",
+				     mask, max_point);
+		}
 	    }
 	}
     }
@@ -730,8 +752,8 @@ has_unexpected_spills_p (loop_vec_info loop_vinfo)
 		continue;
 	      /* We prefer larger LMUL unless it causes register spillings. */
 	      unsigned int nregs
-		= max_number_of_live_regs (bb, (*iter).second, max_point,
-					   biggest_mode, lmul);
+		= max_number_of_live_regs (loop_vinfo, bb, (*iter).second,
+					   max_point, biggest_mode, lmul);
 	      if (nregs > max_nregs)
 		max_nregs = nregs;
 	    }
