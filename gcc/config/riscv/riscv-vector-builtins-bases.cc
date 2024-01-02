@@ -2127,6 +2127,212 @@ public:
   }
 };
 
+/* Below implements are vector crypto */
+/* Implements vandn.[vv,vx] */
+class vandn : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vv:
+        return e.use_exact_insn (code_for_pred_vandn (e.vector_mode ()));
+      case OP_TYPE_vx:
+        return e.use_exact_insn (code_for_pred_vandn_scalar (e.vector_mode ()));
+      default:
+        gcc_unreachable ();
+      }
+  }
+};
+
+/* Implements vrol/vror/clz/ctz.  */
+template<rtx_code CODE>
+class bitmanip : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override
+  {
+    return (CODE == CLZ || CODE == CTZ) ? false : true;
+  }
+  bool apply_mask_policy_p () const override
+  {
+    return (CODE == CLZ || CODE == CTZ) ? false : true;
+  }
+  bool has_merge_operand_p () const override
+  {
+    return (CODE == CLZ || CODE == CTZ) ? false : true;
+  }
+  
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+    {
+      case OP_TYPE_v:
+      case OP_TYPE_vv:
+        return e.use_exact_insn (code_for_pred_v (CODE, e.vector_mode ()));
+      case OP_TYPE_vx:
+        return e.use_exact_insn (code_for_pred_v_scalar (CODE, e.vector_mode ()));
+      default:
+        gcc_unreachable ();
+    }
+  }
+};
+
+/* Implements vbrev/vbrev8/vrev8.  */
+template<int UNSPEC>
+class b_reverse : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+      return e.use_exact_insn (code_for_pred_v (UNSPEC, e.vector_mode ()));
+  }
+};
+
+class vwsll : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vv:
+        return e.use_exact_insn (code_for_pred_vwsll (e.vector_mode ()));
+      case OP_TYPE_vx:
+        return e.use_exact_insn (code_for_pred_vwsll_scalar (e.vector_mode ()));
+      default:
+        gcc_unreachable ();
+      }
+  }
+};
+
+/* Implements clmul */
+template<int UNSPEC>
+class clmul : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vv:
+        return e.use_exact_insn (
+                 code_for_pred_vclmul (UNSPEC, e.vector_mode ()));
+      case OP_TYPE_vx:
+        return e.use_exact_insn
+                 (code_for_pred_vclmul_scalar (UNSPEC, e.vector_mode ()));
+      default:
+        gcc_unreachable ();
+      }
+  }
+};
+
+/* Implements vghsh/vsh2ms/vsha2c[hl]. */
+template<int UNSPEC>
+class vg_nhab : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_v (UNSPEC, e.vector_mode ()));
+  }
+};
+
+/* Implements vgmul/vaes*. */
+template<int UNSPEC>
+class crypto_vv : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    poly_uint64 nunits = 0U;
+    switch (e.op_info->op)
+    {
+      case OP_TYPE_vv:
+        if (UNSPEC == UNSPEC_VGMUL)
+          return e.use_exact_insn
+                   (code_for_pred_crypto_vv (UNSPEC, UNSPEC, e.vector_mode ()));
+        else
+          return e.use_exact_insn
+                   (code_for_pred_crypto_vv (UNSPEC + 1, UNSPEC + 1, e.vector_mode ()));
+      case OP_TYPE_vs:
+        /* Calculate the ratio between arg0 and arg1*/
+        gcc_assert (multiple_p (GET_MODE_BITSIZE (e.arg_mode (0)),
+                                GET_MODE_BITSIZE (e.arg_mode (1)), &nunits));
+        if (maybe_eq (nunits, 1U))
+          return e.use_exact_insn (code_for_pred_crypto_vvx1_scalar
+                                   (UNSPEC + 2, UNSPEC + 2, e.vector_mode ()));
+        else if (maybe_eq (nunits, 2U))
+          return e.use_exact_insn (code_for_pred_crypto_vvx2_scalar
+                                   (UNSPEC + 2, UNSPEC + 2, e.vector_mode ()));
+        else if (maybe_eq (nunits, 4U))
+          return e.use_exact_insn (code_for_pred_crypto_vvx4_scalar
+                                   (UNSPEC + 2, UNSPEC + 2, e.vector_mode ()));
+        else if (maybe_eq (nunits, 8U))
+          return e.use_exact_insn (code_for_pred_crypto_vvx8_scalar
+                                   (UNSPEC + 2, UNSPEC + 2, e.vector_mode ()));
+        else
+          return e.use_exact_insn (code_for_pred_crypto_vvx16_scalar
+                                   (UNSPEC + 2, UNSPEC + 2, e.vector_mode ()));
+      default:
+        gcc_unreachable ();
+    }
+  }
+};
+
+/* Implements vaeskf1/vsm4k. */
+template<int UNSPEC>
+class crypto_vi : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn
+             (code_for_pred_crypto_vi_scalar (UNSPEC, e.vector_mode ()));
+  }
+};
+
+/* Implements vaeskf2/vsm3c. */
+template<int UNSPEC>
+class vaeskf2_vsm3c : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn
+             (code_for_pred_vi_nomaskedoff_scalar (UNSPEC, e.vector_mode ()));
+  }
+};
+
+/* Implements vsm3me. */
+class vsm3me : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_vsm3me (e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -2383,6 +2589,35 @@ static CONSTEXPR const seg_indexed_load<UNSPEC_ORDERED> vloxseg_obj;
 static CONSTEXPR const seg_indexed_store<UNSPEC_UNORDERED> vsuxseg_obj;
 static CONSTEXPR const seg_indexed_store<UNSPEC_ORDERED> vsoxseg_obj;
 static CONSTEXPR const vlsegff vlsegff_obj;
+
+/* Crypto Vector */
+static CONSTEXPR const vandn vandn_obj;
+static CONSTEXPR const bitmanip<ROTATE>   vrol_obj;
+static CONSTEXPR const bitmanip<ROTATERT> vror_obj;
+static CONSTEXPR const b_reverse<UNSPEC_VBREV>   vbrev_obj;
+static CONSTEXPR const b_reverse<UNSPEC_VBREV8>  vbrev8_obj;
+static CONSTEXPR const b_reverse<UNSPEC_VREV8>   vrev8_obj;
+static CONSTEXPR const bitmanip<CLZ> vclz_obj;
+static CONSTEXPR const bitmanip<CTZ> vctz_obj;
+static CONSTEXPR const vwsll vwsll_obj;
+static CONSTEXPR const clmul<UNSPEC_VCLMUL>      vclmul_obj;
+static CONSTEXPR const clmul<UNSPEC_VCLMULH>     vclmulh_obj;
+static CONSTEXPR const vg_nhab<UNSPEC_VGHSH>     vghsh_obj;
+static CONSTEXPR const crypto_vv<UNSPEC_VGMUL>   vgmul_obj;
+static CONSTEXPR const crypto_vv<UNSPEC_VAESEF>  vaesef_obj;
+static CONSTEXPR const crypto_vv<UNSPEC_VAESEM>  vaesem_obj;
+static CONSTEXPR const crypto_vv<UNSPEC_VAESDF>  vaesdf_obj;
+static CONSTEXPR const crypto_vv<UNSPEC_VAESDM>  vaesdm_obj;
+static CONSTEXPR const crypto_vv<UNSPEC_VAESZ>   vaesz_obj;
+static CONSTEXPR const crypto_vi<UNSPEC_VAESKF1> vaeskf1_obj;
+static CONSTEXPR const vaeskf2_vsm3c<UNSPEC_VAESKF2> vaeskf2_obj;
+static CONSTEXPR const vg_nhab<UNSPEC_VSHA2MS>   vsha2ms_obj;
+static CONSTEXPR const vg_nhab<UNSPEC_VSHA2CH>   vsha2ch_obj;
+static CONSTEXPR const vg_nhab<UNSPEC_VSHA2CL>   vsha2cl_obj;
+static CONSTEXPR const crypto_vi<UNSPEC_VSM4K>   vsm4k_obj;
+static CONSTEXPR const crypto_vv<UNSPEC_VSM4R>   vsm4r_obj;
+static CONSTEXPR const vsm3me vsm3me_obj;
+static CONSTEXPR const vaeskf2_vsm3c<UNSPEC_VSM3C>   vsm3c_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -2645,5 +2880,32 @@ BASE (vloxseg)
 BASE (vsuxseg)
 BASE (vsoxseg)
 BASE (vlsegff)
-
+/* Crypto vector */
+BASE (vandn)
+BASE (vbrev)
+BASE (vbrev8)
+BASE (vrev8)
+BASE (vclz)
+BASE (vctz)
+BASE (vrol)
+BASE (vror)
+BASE (vwsll)
+BASE (vclmul)
+BASE (vclmulh)
+BASE (vghsh)
+BASE (vgmul)
+BASE (vaesef)
+BASE (vaesem)
+BASE (vaesdf)
+BASE (vaesdm)
+BASE (vaesz)
+BASE (vaeskf1)
+BASE (vaeskf2)
+BASE (vsha2ms)
+BASE (vsha2ch)
+BASE (vsha2cl)
+BASE (vsm4k)
+BASE (vsm4r)
+BASE (vsm3me)
+BASE (vsm3c)
 } // end namespace riscv_vector

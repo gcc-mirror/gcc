@@ -653,4 +653,98 @@ DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_p
 DEF_RVV_FUNCTION (vlsegff, seg_fault_load, full_preds, tuple_v_scalar_const_ptr_size_ptr_ops)
 #undef REQUIRED_EXTENSIONS
 
+/* Definiation of crypto vector intrinsic functions */
+// ZVBB and ZVKB
+#define REQUIRED_EXTENSIONS ZVBB_EXT
+DEF_RVV_FUNCTION (vbrev,  alu, full_preds, u_vv_ops)
+DEF_RVV_FUNCTION (vclz,   alu, none_m_preds, u_vv_ops)
+DEF_RVV_FUNCTION (vctz,   alu, none_m_preds, u_vv_ops)
+DEF_RVV_FUNCTION (vwsll,  alu, full_preds, u_wvv_ops)
+DEF_RVV_FUNCTION (vwsll,  alu, full_preds, u_shift_wvx_ops)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS ZVBB_OR_ZVKB_EXT
+DEF_RVV_FUNCTION (vandn,  alu, full_preds, u_vvv_ops)
+DEF_RVV_FUNCTION (vandn,  alu, full_preds, u_vvx_ops)
+DEF_RVV_FUNCTION (vbrev8, alu, full_preds, u_vv_ops)
+DEF_RVV_FUNCTION (vrev8,  alu, full_preds, u_vv_ops)
+DEF_RVV_FUNCTION (vrol,   alu, full_preds, u_vvv_ops)
+DEF_RVV_FUNCTION (vror,   alu, full_preds, u_vvv_ops)
+DEF_RVV_FUNCTION (vror,   alu, full_preds, u_shift_vvx_ops)
+DEF_RVV_FUNCTION (vrol,   alu, full_preds, u_shift_vvx_ops)
+#undef REQUIRED_EXTENSIONS
+//ZVBC
+#define REQUIRED_EXTENSIONS ZVBC_EXT
+DEF_RVV_FUNCTION (vclmul,  alu, full_preds, u_vvv_crypto_sew64_ops)
+DEF_RVV_FUNCTION (vclmul,  alu, full_preds, u_vvx_crypto_sew64_ops)
+DEF_RVV_FUNCTION (vclmulh, alu, full_preds, u_vvv_crypto_sew64_ops)
+DEF_RVV_FUNCTION (vclmulh, alu, full_preds, u_vvx_crypto_sew64_ops)
+#undef REQUIRED_EXTENSIONS
+//ZVKG
+#define REQUIRED_EXTENSIONS ZVKG_EXT
+DEF_RVV_FUNCTION(vghsh, no_mask_policy, none_tu_preds, u_vvvv_crypto_sew32_ops)
+DEF_RVV_FUNCTION(vgmul, no_mask_policy, none_tu_preds, u_vvv_crypto_sew32_ops)
+#undef REQUIRED_EXTENSIONS
+//ZVKNED
+#define REQUIRED_EXTENSIONS ZVKNED_EXT
+DEF_RVV_FUNCTION (vaesef,   crypto_vv, none_tu_preds, u_vvv_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaesef,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaesef,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x2_ops)
+DEF_RVV_FUNCTION (vaesef,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x4_ops)
+DEF_RVV_FUNCTION (vaesef,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x8_ops)
+DEF_RVV_FUNCTION (vaesef,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x16_ops)
+DEF_RVV_FUNCTION (vaesem,   crypto_vv, none_tu_preds, u_vvv_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaesem,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaesem,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x2_ops)
+DEF_RVV_FUNCTION (vaesem,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x4_ops)
+DEF_RVV_FUNCTION (vaesem,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x8_ops)
+DEF_RVV_FUNCTION (vaesem,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x16_ops)
+DEF_RVV_FUNCTION (vaesdf,   crypto_vv, none_tu_preds, u_vvv_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaesdf,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaesdf,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x2_ops)
+DEF_RVV_FUNCTION (vaesdf,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x4_ops)
+DEF_RVV_FUNCTION (vaesdf,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x8_ops)
+DEF_RVV_FUNCTION (vaesdf,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x16_ops)
+DEF_RVV_FUNCTION (vaesdm,   crypto_vv, none_tu_preds, u_vvv_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaesdm,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaesdm,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x2_ops)
+DEF_RVV_FUNCTION (vaesdm,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x4_ops)
+DEF_RVV_FUNCTION (vaesdm,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x8_ops)
+DEF_RVV_FUNCTION (vaesdm,   crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x16_ops)
+DEF_RVV_FUNCTION (vaesz,    crypto_vv_no_op_type, none_tu_preds, u_vvs_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaesz,    crypto_vv_no_op_type, none_tu_preds, u_vvs_crypto_sew32_lmul_x2_ops)
+DEF_RVV_FUNCTION (vaesz,    crypto_vv_no_op_type, none_tu_preds, u_vvs_crypto_sew32_lmul_x4_ops)
+DEF_RVV_FUNCTION (vaesz,    crypto_vv_no_op_type, none_tu_preds, u_vvs_crypto_sew32_lmul_x8_ops)
+DEF_RVV_FUNCTION (vaesz,    crypto_vv_no_op_type, none_tu_preds, u_vvs_crypto_sew32_lmul_x16_ops)
+DEF_RVV_FUNCTION (vaeskf1,  crypto_vi, none_tu_preds, u_vv_size_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vaeskf2,  crypto_vi, none_tu_preds, u_vvv_size_crypto_sew32_ops)
+#undef REQUIRED_EXTENSIONS
+//ZVKNHA
+//ZVKNHA and ZVKNHB
+#define REQUIRED_EXTENSIONS ZVKNHA_OR_ZVKNHB_EXT
+DEF_RVV_FUNCTION (vsha2ms,  no_mask_policy, none_tu_preds, u_vvvv_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vsha2ch,  no_mask_policy, none_tu_preds, u_vvvv_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vsha2cl,  no_mask_policy, none_tu_preds, u_vvvv_crypto_sew32_ops)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS ZVKNHB_EXT
+DEF_RVV_FUNCTION (vsha2ms,  no_mask_policy, none_tu_preds, u_vvvv_crypto_sew64_ops)
+DEF_RVV_FUNCTION (vsha2ch,  no_mask_policy, none_tu_preds, u_vvvv_crypto_sew64_ops)
+DEF_RVV_FUNCTION (vsha2cl,  no_mask_policy, none_tu_preds, u_vvvv_crypto_sew64_ops)
+#undef REQUIRED_EXTENSIONS
+//Zvksed
+#define REQUIRED_EXTENSIONS ZVKSED_EXT
+DEF_RVV_FUNCTION (vsm4k, crypto_vi, none_tu_preds, u_vv_size_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vsm4r, crypto_vv, none_tu_preds, u_vvv_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vsm4r, crypto_vv, none_tu_preds, u_vvs_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vsm4r, crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x2_ops)
+DEF_RVV_FUNCTION (vsm4r, crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x4_ops)
+DEF_RVV_FUNCTION (vsm4r, crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x8_ops)
+DEF_RVV_FUNCTION (vsm4r, crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x16_ops)
+#undef REQUIRED_EXTENSIONS
+//Zvksh
+#define REQUIRED_EXTENSIONS ZVKSH_EXT
+DEF_RVV_FUNCTION (vsm3me, no_mask_policy,    none_tu_preds, u_vvv_crypto_sew32_ops)
+DEF_RVV_FUNCTION (vsm3c,  crypto_vi,    none_tu_preds, u_vvv_size_crypto_sew32_ops)
+#undef REQUIRED_EXTENSIONS
 #undef DEF_RVV_FUNCTION
