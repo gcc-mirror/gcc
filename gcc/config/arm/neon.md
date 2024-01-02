@@ -5221,9 +5221,9 @@ if (BYTES_BIG_ENDIAN)
   "vst1.<V_sz_elem>\t%h1, %A0"
   [(set_attr "type" "neon_store1_1reg<q>")])
 
-(define_insn "neon_vst1_x2<mode>"
-  [(set (match_operand:TI 0 "neon_struct_operand" "=Um")
-        (unspec:TI [(match_operand:TI 1 "s_register_operand" "w")
+(define_insn "neon_vst1<VMEMX2_q>_x2<VDQX:mode>"
+  [(set (match_operand:VMEMX2 0 "neon_struct_operand" "=Um")
+        (unspec:VMEMX2 [(match_operand:VMEMX2 1 "s_register_operand" "w")
                     (unspec:VDQX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST1))]
   "TARGET_NEON"
