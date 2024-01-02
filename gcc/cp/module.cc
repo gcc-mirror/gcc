@@ -11707,7 +11707,8 @@ trees_out::write_var_def (tree decl)
     {
       tree dyn_init = NULL_TREE;
 
-      if (DECL_NONTRIVIALLY_INITIALIZED_P (decl))
+      /* We only need to write initializers in header modules.  */
+      if (header_module_p () && DECL_NONTRIVIALLY_INITIALIZED_P (decl))
 	{
 	  dyn_init = value_member (decl,
 				   CP_DECL_THREAD_LOCAL_P (decl)
