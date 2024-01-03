@@ -269,7 +269,6 @@ unsigned const char omp_clause_num_ops[] =
   2, /* OMP_CLAUSE_MAP  */
   1, /* OMP_CLAUSE_HAS_DEVICE_ADDR  */
   1, /* OMP_CLAUSE_DOACROSS  */
-  1, /* OMP_CLAUSE_INDIRECT  */
   2, /* OMP_CLAUSE__CACHE_  */
   2, /* OMP_CLAUSE_GANG  */
   1, /* OMP_CLAUSE_ASYNC  */
@@ -316,6 +315,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_ORDER  */
   0, /* OMP_CLAUSE_BIND  */
   1, /* OMP_CLAUSE_FILTER  */
+  1, /* OMP_CLAUSE_INDIRECT  */
   1, /* OMP_CLAUSE__SIMDUID_  */
   0, /* OMP_CLAUSE__SIMT_  */
   0, /* OMP_CLAUSE_INDEPENDENT  */
@@ -362,7 +362,6 @@ const char * const omp_clause_code_name[] =
   "map",
   "has_device_addr",
   "doacross",
-  "indirect",
   "_cache_",
   "gang",
   "async",
@@ -409,6 +408,7 @@ const char * const omp_clause_code_name[] =
   "order",
   "bind",
   "filter",
+  "indirect",
   "_simduid_",
   "_simt_",
   "independent",
