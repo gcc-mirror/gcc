@@ -14,7 +14,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-d 2006-2023
+@set copyrights-d 2006-2024
 
 @copying
 @c man begin COPYRIGHT

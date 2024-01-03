@@ -592,7 +592,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "%s %s%s\n", progname, pkgversion_string, version_string);
-  fnotice (stdout, "Copyright %s 2023 Free Software Foundation, Inc.\n",
+  fnotice (stdout, "Copyright %s 2024 Free Software Foundation, Inc.\n",
            _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.  There is NO\n\
