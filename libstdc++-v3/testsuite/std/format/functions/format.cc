@@ -9,12 +9,24 @@
 # error "Feature test macro for std::format has wrong value in <format>"
 #endif
 
+#ifndef __cpp_lib_format_uchar
+# error "Feature test macro for formatting chars as integers is missing in <format>"
+#elif __cpp_lib_format_uchar < 202311L
+# error "Feature test macro for formatting chars as integers has wrong value in <format>"
+#endif
+
 #undef __cpp_lib_format
 #include <version>
 #ifndef __cpp_lib_format
 # error "Feature test macro for std::format is missing in <version>"
 #elif __cpp_lib_format < 202110L
 # error "Feature test macro for std::format has wrong value in <version>"
+#endif
+
+#ifndef __cpp_lib_format_uchar
+# error "Feature test macro for formatting chars as integers is missing in <version>"
+#elif __cpp_lib_format_uchar < 202311L
+# error "Feature test macro for formatting chars as integers has wrong value in <version>"
 #endif
 
 #include <string>
@@ -274,13 +286,16 @@ test_char()
   VERIFY( s == "0023 0077" );
 
   s = std::format("{:b} {:B} {:#b} {:#B}", '\xff', '\xa0', '\x17', '\x3f');
-  if constexpr (std::is_unsigned_v<char>)
-    VERIFY( s == "11111111 10100000 0b10111 0B111111" );
-  else
-    VERIFY( s == "-1 -1100000 0b10111 0B111111" );
+  VERIFY( s == "11111111 10100000 0b10111 0B111111" );
 
   s = std::format("{:x} {:#x} {:#X}", '\x12', '\x34', '\x45');
   VERIFY( s == "12 0x34 0X45" );
+
+  // P2909R4 Fix formatting of code units as integers (Dude, where’s my char?)
+  // char and wchar_t should be converted to unsigned when formatting them
+  // with an integer presentation type.
+  s = std::format("{0:b} {0:B} {0:d} {0:o} {0:x} {0:X}", '\xf0');
+  VERIFY( s == "11110000 11110000 240 360 f0 F0" );
 }
 
 void
@@ -313,6 +328,10 @@ test_wchar()
 
   s = std::format(L"{0:#b} {0:#B} {0:#x} {0:#X}", 99);
   VERIFY( s == L"0b1100011 0B1100011 0x63 0X63" );
+
+  // P2909R4 Fix formatting of code units as integers (Dude, where’s my char?)
+  s = std::format(L"{:d} {:d}", wchar_t(-1), char(-1));
+  VERIFY( s.find('-') == std::wstring::npos );
 }
 
 void
