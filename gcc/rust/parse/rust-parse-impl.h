@@ -5096,6 +5096,7 @@ Parser<ManagedTokenSource>::parse_trait_item ()
       // else, fallthrough to function
       // TODO: find out how to disable gcc "implicit fallthrough" error
       gcc_fallthrough ();
+    case ASYNC:
     case UNSAFE:
     case EXTERN_KW:
       case FN_KW: {

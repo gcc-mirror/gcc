@@ -141,9 +141,16 @@ ASTValidation::visit (AST::TraitFunctionDecl &decl)
 {
   const auto &qualifiers = decl.get_qualifiers ();
 
-  if (context.back () == Context::TRAIT && qualifiers.is_const ())
-    rust_error_at (decl.get_identifier ().get_locus (), ErrorCode::E0379,
-		   "functions in traits cannot be declared const");
+  if (context.back () == Context::TRAIT)
+    {
+      // may change soon
+      if (qualifiers.is_async ())
+	rust_error_at (decl.get_identifier ().get_locus (), ErrorCode::E0706,
+		       "functions in traits cannot be declared %<async%>");
+      if (qualifiers.is_const ())
+	rust_error_at (decl.get_identifier ().get_locus (), ErrorCode::E0379,
+		       "functions in traits cannot be declared const");
+    }
 }
 
 void
