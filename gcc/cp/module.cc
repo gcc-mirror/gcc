@@ -12832,8 +12832,10 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
       else if (TREE_CODE (inner) == TEMPLATE_DECL)
 	inner = DECL_TEMPLATE_RESULT (inner);
 
-      if (!DECL_LANG_SPECIFIC (inner) || !DECL_MODULE_PURVIEW_P (inner))
-	/* Ignore global module fragment entities.  */
+      if ((!DECL_LANG_SPECIFIC (inner) || !DECL_MODULE_PURVIEW_P (inner))
+	  && !(flags & (WMB_Using | WMB_Export)))
+	/* Ignore global module fragment entities unless explicitly
+	   exported with a using declaration.  */
 	return false;
 
       if (VAR_OR_FUNCTION_DECL_P (inner)
