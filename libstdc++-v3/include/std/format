@@ -66,6 +66,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // 202207 Encodings in localized formatting of chrono, basic-format-string.
 #define __cpp_lib_format 202110L
 
+#define __cpp_lib_format_uchar 202311L
+
 #if __cplusplus > 202002L
 // 202207 P2286R8 Formatting Ranges
 // 202207 P2585R1 Improving default container formatting
@@ -1775,7 +1777,8 @@ namespace __format
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(_CharT __u, basic_format_context<_Out, _CharT>& __fc) const
 	{
-	  if (_M_f._M_spec._M_type == __format::_Pres_none)
+	  if (_M_f._M_spec._M_type == __format::_Pres_none
+	      || _M_f._M_spec._M_type == __format::_Pres_c)
 	    return _M_f._M_format_character(__u, __fc);
 	  else if (_M_f._M_spec._M_type == __format::_Pres_esc)
 	    {
@@ -1783,7 +1786,7 @@ namespace __format
 	      return __fc.out();
 	    }
 	  else
-	    return _M_f.format(__u, __fc);
+	    return _M_f.format(static_cast<make_unsigned_t<_CharT>>(__u), __fc);
 	}
 
 #if __cpp_lib_format_ranges
@@ -1812,7 +1815,8 @@ namespace __format
 	typename basic_format_context<_Out, wchar_t>::iterator
 	format(char __u, basic_format_context<_Out, wchar_t>& __fc) const
 	{
-	  if (_M_f._M_spec._M_type == __format::_Pres_none)
+	  if (_M_f._M_spec._M_type == __format::_Pres_none
+	      || _M_f._M_spec._M_type == __format::_Pres_c)
 	    return _M_f._M_format_character(__u, __fc);
 	  else if (_M_f._M_spec._M_type == __format::_Pres_esc)
 	    {
@@ -1820,7 +1824,7 @@ namespace __format
 	      return __fc.out();
 	    }
 	  else
-	    return _M_f.format(__u, __fc);
+	    return _M_f.format(static_cast<unsigned char>(__u), __fc);
 	}
 
 #if __cpp_lib_format_ranges
@@ -3086,6 +3090,9 @@ namespace __format
 	  using _Td = _Normalize<_Tp>;
 	  if constexpr (is_same_v<_Td, basic_string_view<_CharT>>)
 	    _M_set(_Td{__v.data(), __v.size()});
+	  else if constexpr (is_same_v<remove_const_t<_Tp>, char>
+			       && is_same_v<_CharT, wchar_t>)
+	    _M_set(static_cast<_Td>(static_cast<unsigned char>(__v)));
 	  else
 	    _M_set(static_cast<_Td>(__v));
 	}
