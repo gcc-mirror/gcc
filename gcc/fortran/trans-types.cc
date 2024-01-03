@@ -1791,7 +1791,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 	  TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type));
 	}
 
-      return type;
+      goto array_type_done;
     }
 
   if (known_stride)
@@ -1809,10 +1809,6 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   TREE_TYPE (type) = etype;
 
   layout_type (type);
-
-  mpz_clear (offset);
-  mpz_clear (stride);
-  mpz_clear (delta);
 
   /* Represent packed arrays as multi-dimensional if they have rank >
      1 and with proper bounds, instead of flat arrays.  This makes for
@@ -1844,6 +1840,12 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
       GFC_ARRAY_TYPE_P (type) = 1;
       TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type));
     }
+
+array_type_done:
+  mpz_clear (offset);
+  mpz_clear (stride);
+  mpz_clear (delta);
+
   return type;
 }
 
