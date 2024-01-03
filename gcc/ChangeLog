@@ -1,3 +1,62 @@
+2024-01-02  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/vector.md:
+	Use vector_length_operand for vsetvl patterns.
+
+2024-01-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (is_vlmax_len_p): Remove satisfies_constraint_K.
+	(expand_cond_len_op): Add simplification of dummy len and dummy mask.
+
+2024-01-02  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	* config/aarch64/aarch64-tuning-flags.def
+	(AARCH64_EXTRA_TUNING_OPTION): New tuning option
+	AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA.
+	* config/aarch64/aarch64.cc
+	(aarch64_override_options_internal): Set
+	param_fully_pipelined_fma according to tuning option.
+	* config/aarch64/tuning_models/ampere1.h: Add
+	AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA to tune_flags.
+	* config/aarch64/tuning_models/ampere1a.h: Likewise.
+	* config/aarch64/tuning_models/ampere1b.h: Likewise.
+
+2024-01-02  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/vector-crypto.md: Modify copyright year.
+
+2024-01-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc: Move STMT_VINFO_TYPE (...) to local.
+
+2024-01-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config.in: Regenerate.
+	* config/loongarch/loongarch-opts.h (HAVE_AS_TLS_LE_RELAXATION): Define.
+	* config/loongarch/loongarch.cc (loongarch_legitimize_tls_address):
+	Added TLS Le Relax support.
+	(loongarch_print_operand_reloc): Add the output string of TLS Le Relax.
+	* config/loongarch/loongarch.md (@add_tls_le_relax<mode>): New template.
+	* configure: Regenerate.
+	* configure.ac: Check if binutils supports TLS le relax.
+
+2024-01-02  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/iterators.md: Add rotate insn name.
+	* config/riscv/riscv.md: Add new insns name for crypto vector.
+	* config/riscv/vector-iterators.md: Add new iterators for crypto vector.
+	* config/riscv/vector.md: Add the corresponding attr for crypto vector.
+	* config/riscv/vector-crypto.md: New file.The machine descriptions for crypto vector.
+
+2024-01-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* config/riscv/riscv-vector-costs.cc (compute_nregs_for_mode): Fix
+	pointer type liveness count.
+
 2023-12-31  Uros Bizjak  <ubizjak@gmail.com>
 	    Roger Sayle  <roger@nextmovesoftware.com>
 

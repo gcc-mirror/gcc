@@ -1,3 +1,22 @@
+2024-01-02  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gfortran.dg/vect/vect-8.f90: Accept more vectorized loops.
+
+2024-01-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vf_avl-3.c: New test.
+
+2024-01-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* lib/target-supports.exp: Add a function to check whether binutil supports
+	TLS Le Relax.
+	* gcc.target/loongarch/tls-le-relax.c: New test.
+
+2024-01-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-4.c: New test.
+
 2023-12-31  Uros Bizjak  <ubizjak@gmail.com>
 	    Roger Sayle  <roger@nextmovesoftware.com>
 
