@@ -3425,17 +3425,15 @@ package body Sem_Ch10 is
       --  Local variables
 
       Ent   : constant Entity_Id  := Entity (Nam);
-      Withn : Node_Id;
+      Withn : constant Node_Id :=
+        Make_With_Clause
+          (Loc, Name => Build_Unit_Name (Nam),
+           First_Name => True, Last_Name => True);
 
    --  Start of processing for Expand_With_Clause
 
    begin
-      Withn :=
-        Make_With_Clause (Loc,
-          Name => Build_Unit_Name (Nam));
-
       Set_Corresponding_Spec (Withn, Ent);
-      Set_First_Name         (Withn);
       Set_Implicit_With      (Withn);
       Set_Library_Unit       (Withn, Parent (Unit_Declaration_Node (Ent)));
       Set_Parent_With        (Withn);
@@ -3570,7 +3568,6 @@ package body Sem_Ch10 is
       P      : constant Node_Id    := Parent_Spec (Child_Unit);
       P_Unit : Node_Id             := Unit (P);
       P_Name : constant Entity_Id  := Get_Parent_Entity (P_Unit);
-      Withn  : Node_Id;
 
       function Build_Ancestor_Name (P : Node_Id) return Node_Id;
       --  Build prefix of child unit name. Recurse if needed
@@ -3655,21 +3652,25 @@ package body Sem_Ch10 is
          return;
       end if;
 
-      Withn := Make_With_Clause (Loc, Name => Build_Unit_Name);
+      declare
+         Withn : constant Node_Id :=
+           Make_With_Clause
+             (Loc, Name => Build_Unit_Name,
+              First_Name => True, Last_Name => True);
+      begin
+         Set_Corresponding_Spec (Withn, P_Name);
+         Set_Implicit_With      (Withn);
+         Set_Library_Unit       (Withn, P);
+         Set_Parent_With        (Withn);
 
-      Set_Corresponding_Spec (Withn, P_Name);
-      Set_First_Name         (Withn);
-      Set_Implicit_With      (Withn);
-      Set_Library_Unit       (Withn, P);
-      Set_Parent_With        (Withn);
+         --  Node is placed at the beginning of the context items, so that
+         --  subsequent use clauses on the parent can be validated.
 
-      --  Node is placed at the beginning of the context items, so that
-      --  subsequent use clauses on the parent can be validated.
+         Prepend (Withn, Context_Items (N));
+         Mark_Rewrite_Insertion (Withn);
 
-      Prepend (Withn, Context_Items (N));
-      Mark_Rewrite_Insertion (Withn);
-
-      Install_With_Clause (Withn);
+         Install_With_Clause (Withn);
+      end;
 
       if Is_Child_Spec (P_Unit) then
          Implicit_With_On_Parent (P_Unit, N);
@@ -4524,13 +4525,21 @@ package body Sem_Ch10 is
       if Nkind (Parent (Decl)) = N_Compilation_Unit then
          Item := First (Context_Items (Parent (Decl)));
          while Present (Item) loop
+            --  If Item is a private with clause, install it, but do not
+            --  install implicit private with's that come from (for example)
+            --  with's on instantiated generics. DO install implicit private
+            --  with's that come from parents, which is necessary in general,
+            --  but ???not quite right if the former (generic) case also
+            --  applies.
+
             if Nkind (Item) = N_With_Clause
               and then Private_Present (Item)
+              and then (not Implicit_With (Item) or else Parent_With (Item))
             then
                --  If the unit is an ancestor of the current one, it is the
                --  case of a private limited with clause on a child unit, and
                --  the compilation of one of its descendants, in that case the
-               --  limited view is errelevant.
+               --  limited view is irrelevant.
 
                if Limited_Present (Item) then
                   if not Limited_View_Installed (Item)
