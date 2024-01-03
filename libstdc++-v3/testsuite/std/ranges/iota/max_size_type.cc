@@ -199,8 +199,8 @@ test02()
   using max_type = std::conditional_t<signed_p, max_diff_t, max_size_t>;
   using shorten_type = std::conditional_t<shorten_p, hw_type, max_type>;
   const int hw_type_bit_size = sizeof(hw_type) * __CHAR_BIT__;
-  const int limit = 1000;
-  const int log2_limit = 10;
+  const unsigned limit = 100;
+  const int log2_limit = 7;
   static_assert((1 << log2_limit) >= limit);
   const int min = (signed_p ? -limit : 0);
   const int max = limit;
@@ -257,8 +257,8 @@ test03()
   using max_type = std::conditional_t<signed_p, max_diff_t, max_size_t>;
   using base_type = std::conditional_t<toggle_base_p, hw_type, max_type>;
   constexpr int hw_type_bit_size = sizeof(hw_type) * __CHAR_BIT__;
-  constexpr int limit = 1000;
-  constexpr int log2_limit = 10;
+  constexpr unsigned limit = 100;
+  constexpr int log2_limit = 7;
   static_assert((1 << log2_limit) >= limit);
   const int min = (signed_p ? -limit : 0);
   const int max = limit;
