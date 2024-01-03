@@ -5921,8 +5921,10 @@ nvptx_record_offload_symbol (tree decl)
 	fprintf (asm_out_file, "//:");
 	if (lookup_attribute ("omp declare target indirect",
 			      DECL_ATTRIBUTES (decl)))
-	  fprintf (asm_out_file, "IND_");
-	fprintf (asm_out_file, "FUNC_MAP \"%s\"",
+	  fprintf (asm_out_file, "IND_FUNC_MAP");
+	else
+	  fprintf (asm_out_file, "FUNC_MAP");
+	fprintf (asm_out_file, " \"%s\"",
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
 
 	for (; dims; dims = TREE_CHAIN (dims))
