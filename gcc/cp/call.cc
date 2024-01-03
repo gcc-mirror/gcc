@@ -1739,6 +1739,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 		   tsubst_flags_t complain)
 {
   conversion *conv = NULL;
+  conversion *bad_direct_conv = nullptr;
   tree to = TREE_TYPE (rto);
   tree from = rfrom;
   tree tfrom;
@@ -1925,13 +1926,23 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
       z_candidate *cand = build_user_type_conversion_1 (rto, expr, flags,
 							complain);
       if (cand)
-	return cand->second_conv;
+	{
+	  if (!cand->second_conv->bad_p)
+	    return cand->second_conv;
+
+	  /* Direct reference binding wasn't successful and yielded a bad
+	     conversion.  Proceed with trying to go through a temporary
+	     instead, and if that also fails then we'll return this bad
+	     conversion rather than no conversion for sake of better
+	     diagnostics.  */
+	  bad_direct_conv = cand->second_conv;
+	}
     }
 
   /* From this point on, we conceptually need temporaries, even if we
      elide them.  Only the cases above are "direct bindings".  */
   if (flags & LOOKUP_NO_TEMP_BIND)
-    return NULL;
+    return bad_direct_conv ? bad_direct_conv : nullptr;
 
   /* [over.ics.rank]
 
@@ -1972,6 +1983,9 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
      there's no strictly viable candidate.  */
   if (!maybe_valid_p && (flags & LOOKUP_SHORTCUT_BAD_CONVS))
     {
+      if (bad_direct_conv)
+	return bad_direct_conv;
+
       conv = alloc_conversion (ck_deferred_bad);
       conv->bad_p = true;
       return conv;
@@ -1995,7 +2009,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
     conv = implicit_conversion (to, from, expr, c_cast_p,
 				flags, complain);
   if (!conv)
-    return NULL;
+    return bad_direct_conv ? bad_direct_conv : nullptr;
 
   if (conv->user_conv_p)
     {
@@ -2018,7 +2032,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	      = reference_binding (rto, ftype, NULL_TREE, c_cast_p,
 				   sflags, complain);
 	    if (!new_second)
-	      return NULL;
+	      return bad_direct_conv ? bad_direct_conv : nullptr;
 	    conv = merge_conversion_sequences (t, new_second);
 	    gcc_assert (maybe_valid_p || conv->bad_p);
 	    return conv;
