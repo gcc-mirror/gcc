@@ -2,7 +2,7 @@
    from omp-general.h so that it may also be used in the Fortran parser
    without reference to tree data structures.
 
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
