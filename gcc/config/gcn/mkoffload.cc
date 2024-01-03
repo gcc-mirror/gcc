@@ -84,6 +84,7 @@
 			    == EF_AMDGPU_FEATURE_XNACK_ON_V4)
 #define TEST_XNACK_OFF(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) \
 			     == EF_AMDGPU_FEATURE_XNACK_OFF_V4)
+#define TEST_XNACK_UNSET(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) == 0)
 
 #define SET_SRAM_ECC_ON(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_SRAMECC_V4) \
 				    | EF_AMDGPU_FEATURE_SRAMECC_ON_V4)
@@ -122,8 +123,7 @@ static struct obstack files_to_cleanup;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX803;  // Default GPU architecture.
-uint32_t elf_flags =
-    (EF_AMDGPU_FEATURE_XNACK_ANY_V4 | EF_AMDGPU_FEATURE_SRAMECC_ANY_V4);
+uint32_t elf_flags = EF_AMDGPU_FEATURE_SRAMECC_ANY_V4;
 
 static int gcn_stack_size = 0;  /* Zero means use default.  */
 
@@ -1003,6 +1003,25 @@ main (int argc, char **argv)
       break;
     default:
       gcc_unreachable ();
+    }
+
+  /* Disable XNACK mode on architectures where it doesn't work (well).
+     Set default to "any" otherwise.  */
+  switch (elf_arch)
+    {
+    case EF_AMDGPU_MACH_AMDGCN_GFX803:
+    case EF_AMDGPU_MACH_AMDGCN_GFX900:
+    case EF_AMDGPU_MACH_AMDGCN_GFX906:
+    case EF_AMDGPU_MACH_AMDGCN_GFX908:
+    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+      SET_XNACK_OFF (elf_flags);
+      break;
+    case EF_AMDGPU_MACH_AMDGCN_GFX90a:
+      if (TEST_XNACK_UNSET (elf_flags))
+	SET_XNACK_ANY (elf_flags);
+      break;
+    default:
+      fatal_error (input_location, "unhandled architecture");
     }
 
   /* Build arguments for compiler pass.  */
