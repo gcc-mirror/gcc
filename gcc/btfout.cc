@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "cgraph.h"
 #include "varasm.h"
+#include "stringpool.h"  /* For lookup_attribute.  */
+#include "attribs.h" /* For lookup_attribute.  */
 #include "dwarf2out.h" /* For lookup_decl_die.  */
 
 static int btf_label_num;
@@ -438,6 +440,11 @@ btf_collect_datasec (ctf_container_ref ctfc)
 
       ctf_dtdef_ref dtd = ctf_dtd_lookup (ctfc, die);
       if (dtd == NULL)
+	continue;
+
+      if (DECL_EXTERNAL (func->decl)
+	  && (lookup_attribute ("kernel_helper",
+				DECL_ATTRIBUTES (func->decl))) != NULL_TREE)
 	continue;
 
       /* Functions actually get two types: a BTF_KIND_FUNC_PROTO, and
