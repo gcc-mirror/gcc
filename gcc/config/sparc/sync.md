@@ -65,12 +65,19 @@
   [(set_attr "type" "multi")])
 
 ;; For V8, LDSTUB has the effect of membar #StoreLoad.
-(define_insn "*membar_storeload"
+(define_insn "membar_storeload"
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0) (const_int 2)] UNSPEC_MEMBAR))]
   "TARGET_V8"
-  "ldstub\t[%%sp-1], %%g0"
-  [(set_attr "type" "multi")])
+{
+  if (sparc_fix_gr712rc)
+    return ".align\t16\n\tldstub\t[%%sp-1], %%g0";
+  else
+    return "ldstub\t[%%sp-1], %%g0";
+}
+  [(set_attr "type" "multi")
+   (set (attr "length") (if_then_else (eq_attr "fix_gr712rc" "true")
+		      (const_int 4) (const_int 1)))])
 
 ;; Put the two together, in combination with the fact that V8 implements PSO
 ;; as its weakest memory model, means a full barrier.  Match all remaining
@@ -80,9 +87,15 @@
 	(unspec:BLK [(match_dup 0) (match_operand:SI 1 "const_int_operand")]
 		    UNSPEC_MEMBAR))]
   "TARGET_V8"
-  "stbar\n\tldstub\t[%%sp-1], %%g0"
+{
+  if (sparc_fix_gr712rc)
+    return "stbar\n.align\t16\n\tldstub\t[%%sp-1], %%g0";
+  else
+    return "stbar\n\tldstub\t[%%sp-1], %%g0";
+}
   [(set_attr "type" "multi")
-   (set_attr "length" "2")])
+   (set (attr "length") (if_then_else (eq_attr "fix_gr712rc" "true")
+		      (const_int 5) (const_int 2)))])
 
 ;; For V9, we have the full membar instruction.
 (define_insn "*membar"
