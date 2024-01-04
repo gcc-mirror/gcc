@@ -405,9 +405,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-    template<typename _A>
-    concept _Stateless_alloc = (allocator_traits<_A>::is_always_equal::value
-				&& default_initializable<_A>);
+    template<typename _All>
+    concept _Stateless_alloc = (allocator_traits<_All>::is_always_equal::value
+				&& default_initializable<_All>);
 
     template<typename _Alloc>
       class _Promise_alloc
