@@ -152,6 +152,10 @@ struct cl_option_state {
 
 extern const struct cl_option cl_options[];
 extern const unsigned int cl_options_count;
+
+extern const char *
+get_opt_url_suffix (int option_index, unsigned lang_mask);
+
 #ifdef ENABLE_PLUGIN
 extern const struct cl_var cl_vars[];
 #endif
