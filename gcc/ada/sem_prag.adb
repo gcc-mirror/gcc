@@ -1383,10 +1383,11 @@ package body Sem_Prag is
            (Item_Is_Input  : out Boolean;
             Item_Is_Output : out Boolean)
          is
-            --  A constant or an IN parameter of a procedure or a protected
-            --  entry, if it is of an access-to-variable type, should be
-            --  handled like a variable, as the underlying memory pointed-to
-            --  can be modified. Use Adjusted_Kind to do this adjustment.
+            --  A constant or an IN parameter of a protected entry, procedure,
+            --  or function with side-effects, if it is of an
+            --  access-to-variable type, should be handled like a variable, as
+            --  the underlying memory pointed-to can be modified. Use
+            --  Adjusted_Kind to do this adjustment.
 
             Adjusted_Kind : Entity_Kind := Ekind (Item_Id);
 
@@ -1394,11 +1395,15 @@ package body Sem_Prag is
             if (Ekind (Item_Id) in E_Constant | E_Generic_In_Parameter
                   or else
                   (Ekind (Item_Id) = E_In_Parameter
-                     and then Ekind (Scope (Item_Id))
-                                not in E_Function | E_Generic_Function))
+                     and then
+                   (Ekind (Scope (Item_Id)) not in E_Function
+                                                 | E_Generic_Function
+                      or else
+                    Is_Function_With_Side_Effects (Scope (Item_Id)))))
               and then Is_Access_Variable (Etype (Item_Id))
-              and then Ekind (Spec_Id) not in E_Function
-                                            | E_Generic_Function
+              and then (Ekind (Spec_Id) not in E_Function
+                                             | E_Generic_Function
+                          or else Is_Function_With_Side_Effects (Spec_Id))
             then
                Adjusted_Kind := E_Variable;
             end if;
