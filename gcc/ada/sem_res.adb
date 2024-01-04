@@ -4388,6 +4388,17 @@ package body Sem_Res is
                   Resolve (Expression (A));
                end if;
 
+               --  In GNATprove mode, add a range check flag on scalar
+               --  conversions for IN OUT parameters. The check may be
+               --  needed on entry from the call.
+
+               if GNATprove_Mode
+                 and then Ekind (F) = E_In_Out_Parameter
+                 and then Is_Scalar_Type (Etype (F))
+               then
+                  Set_Do_Range_Check (Expression (A));
+               end if;
+
             --  If the actual is a function call that returns a limited
             --  unconstrained object that needs finalization, create a
             --  transient scope for it, so that it can receive the proper
