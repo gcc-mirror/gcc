@@ -585,6 +585,11 @@ The front end's manuals should be mentioned in
 and the online manuals should be linked to from
 @file{onlinedocs/index.html}.
 @item
+If the front end has its own manual with its own index of options, the
+generated @file{Option-Index.html} should be added to
+@code{PER_LANGUAGE_OPTION_INDEXES} in @file{gcc/regenerate-opt-urls.py}
+and to @code{OPT_URLS_HTML_DEPS} in @file{gcc/Makefile.in}.
+@item
 Any old releases or CVS repositories of the front end, before its
 inclusion in GCC, should be made available on the GCC web site at
 @uref{https://gcc.gnu.org/pub/gcc/old-releases/}.
@@ -812,6 +817,10 @@ Documentation in @file{gcc/doc/invoke.texi} for any command-line
 options supported by this target (@pxref{Run-time Target, , Run-time
 Target Specification}).  This means both entries in the summary table
 of options and details of the individual options.
+@item
+An entry in @file{gcc/regenerate-opt-urls.py}'s TARGET_SPECIFIC_PAGES
+dictionary mapping from target-specific HTML documentation pages
+to the target specific source directory.
 @item
 Documentation in @file{gcc/doc/extend.texi} for any target-specific
 attributes supported (@pxref{Target Attributes, , Defining
