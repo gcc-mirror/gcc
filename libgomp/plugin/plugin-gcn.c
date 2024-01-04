@@ -196,6 +196,16 @@ struct hsa_runtime_fn_info
   hsa_status_t (*hsa_code_object_deserialize_fn)
     (void *serialized_code_object, size_t serialized_code_object_size,
      const char *options, hsa_code_object_t *code_object);
+  hsa_status_t (*hsa_amd_memory_lock_fn)
+    (void *host_ptr, size_t size, hsa_agent_t *agents, int num_agent,
+     void **agent_ptr);
+  hsa_status_t (*hsa_amd_memory_unlock_fn) (void *host_ptr);
+  hsa_status_t (*hsa_amd_memory_async_copy_rect_fn)
+    (const hsa_pitched_ptr_t *dst, const hsa_dim3_t *dst_offset,
+     const hsa_pitched_ptr_t *src, const hsa_dim3_t *src_offset,
+     const hsa_dim3_t *range, hsa_agent_t copy_agent,
+     hsa_amd_copy_direction_t dir, uint32_t num_dep_signals,
+     const hsa_signal_t *dep_signals, hsa_signal_t completion_signal);
 };
 
 /* Structure describing the run-time and grid properties of an HSA kernel
@@ -1371,6 +1381,8 @@ init_hsa_runtime_functions (void)
   hsa_fns.function##_fn = dlsym (handle, #function); \
   if (hsa_fns.function##_fn == NULL) \
     return false;
+#define DLSYM_OPT_FN(function) \
+  hsa_fns.function##_fn = dlsym (handle, #function);
   void *handle = dlopen (hsa_runtime_lib, RTLD_LAZY);
   if (handle == NULL)
     return false;
@@ -1405,7 +1417,11 @@ init_hsa_runtime_functions (void)
   DLSYM_FN (hsa_signal_load_acquire)
   DLSYM_FN (hsa_queue_destroy)
   DLSYM_FN (hsa_code_object_deserialize)
+  DLSYM_OPT_FN (hsa_amd_memory_lock)
+  DLSYM_OPT_FN (hsa_amd_memory_unlock)
+  DLSYM_OPT_FN (hsa_amd_memory_async_copy_rect)
   return true;
+#undef DLSYM_OPT_FN
 #undef DLSYM_FN
 }
 
@@ -3931,6 +3947,352 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst, const void *src, size_t n)
   if (status != HSA_STATUS_SUCCESS)
     GOMP_PLUGIN_error ("memory copy failed");
   return true;
+}
+
+/* Here <quantity>_size refers to <quantity> multiplied by size -- i.e.
+   measured in bytes.  So we have:
+
+   dim1_size: number of bytes to copy on innermost dimension ("row")
+   dim0_len: number of rows to copy
+   dst: base pointer for destination of copy
+   dst_offset1_size: innermost row offset (for dest), in bytes
+   dst_offset0_len: offset, number of rows (for dest)
+   dst_dim1_size: whole-array dest row length, in bytes (pitch)
+   src: base pointer for source of copy
+   src_offset1_size: innermost row offset (for source), in bytes
+   src_offset0_len: offset, number of rows (for source)
+   src_dim1_size: whole-array source row length, in bytes (pitch)
+*/
+
+int
+GOMP_OFFLOAD_memcpy2d (int dst_ord, int src_ord, size_t dim1_size,
+		       size_t dim0_len, void *dst, size_t dst_offset1_size,
+		       size_t dst_offset0_len, size_t dst_dim1_size,
+		       const void *src, size_t src_offset1_size,
+		       size_t src_offset0_len, size_t src_dim1_size)
+{
+  if (!hsa_fns.hsa_amd_memory_lock_fn
+      || !hsa_fns.hsa_amd_memory_unlock_fn
+      || !hsa_fns.hsa_amd_memory_async_copy_rect_fn)
+    return -1;
+
+  /* GCN hardware requires 4-byte alignment for base addresses & pitches.  Bail
+     out quietly if we have anything oddly-aligned rather than letting the
+     driver raise an error.  */
+  if ((((uintptr_t) dst) & 3) != 0 || (((uintptr_t) src) & 3) != 0)
+    return -1;
+
+  if ((dst_dim1_size & 3) != 0 || (src_dim1_size & 3) != 0)
+    return -1;
+
+  /* Only handle host to device or device to host transfers here.  */
+  if ((dst_ord == -1 && src_ord == -1)
+      || (dst_ord != -1 && src_ord != -1))
+    return -1;
+
+  hsa_amd_copy_direction_t dir
+    = (src_ord == -1) ? hsaHostToDevice : hsaDeviceToHost;
+  hsa_agent_t copy_agent;
+
+  /* We need to pin (lock) host memory before we start the transfer.  Try to
+     lock the minimum size necessary, i.e. using partial first/last rows of the
+     whole array.  Something like this:
+
+	 rows -->
+	 ..............
+     c | ..#######+++++ <- first row apart from {src,dst}_offset1_size
+     o | ++#######+++++ <- whole row
+     l | ++#######+++++ <-     "
+     s v ++#######..... <- last row apart from trailing remainder
+	 ..............
+
+     We could split very large transfers into several rectangular copies, but
+     that is unimplemented for now.  */
+
+  size_t bounded_size_host, first_elem_offset_host;
+  void *host_ptr;
+  if (dir == hsaHostToDevice)
+    {
+      bounded_size_host = src_dim1_size * (dim0_len - 1) + dim1_size;
+      first_elem_offset_host = src_offset0_len * src_dim1_size
+			       + src_offset1_size;
+      host_ptr = (void *) src;
+      struct agent_info *agent = get_agent_info (dst_ord);
+      copy_agent = agent->id;
+    }
+  else
+    {
+      bounded_size_host = dst_dim1_size * (dim0_len - 1) + dim1_size;
+      first_elem_offset_host = dst_offset0_len * dst_dim1_size
+			       + dst_offset1_size;
+      host_ptr = dst;
+      struct agent_info *agent = get_agent_info (src_ord);
+      copy_agent = agent->id;
+    }
+
+  void *agent_ptr;
+
+  hsa_status_t status
+    = hsa_fns.hsa_amd_memory_lock_fn (host_ptr + first_elem_offset_host,
+				      bounded_size_host, NULL, 0, &agent_ptr);
+  /* We can't lock the host memory: don't give up though, we might still be
+     able to use the slow path in our caller.  So, don't make this an
+     error.  */
+  if (status != HSA_STATUS_SUCCESS)
+    return -1;
+
+  hsa_pitched_ptr_t dstpp, srcpp;
+  hsa_dim3_t dst_offsets, src_offsets, ranges;
+
+  int retval = 1;
+
+  hsa_signal_t completion_signal;
+  status = hsa_fns.hsa_signal_create_fn (1, 0, NULL, &completion_signal);
+  if (status != HSA_STATUS_SUCCESS)
+    {
+      retval = -1;
+      goto unlock;
+    }
+
+  if (dir == hsaHostToDevice)
+    {
+      srcpp.base = agent_ptr - first_elem_offset_host;
+      dstpp.base = dst;
+    }
+  else
+    {
+      srcpp.base = (void *) src;
+      dstpp.base = agent_ptr - first_elem_offset_host;
+    }
+
+  srcpp.pitch = src_dim1_size;
+  srcpp.slice = 0;
+
+  src_offsets.x = src_offset1_size;
+  src_offsets.y = src_offset0_len;
+  src_offsets.z = 0;
+
+  dstpp.pitch = dst_dim1_size;
+  dstpp.slice = 0;
+
+  dst_offsets.x = dst_offset1_size;
+  dst_offsets.y = dst_offset0_len;
+  dst_offsets.z = 0;
+
+  ranges.x = dim1_size;
+  ranges.y = dim0_len;
+  ranges.z = 1;
+
+  status
+    = hsa_fns.hsa_amd_memory_async_copy_rect_fn (&dstpp, &dst_offsets, &srcpp,
+						 &src_offsets, &ranges,
+						 copy_agent, dir, 0, NULL,
+						 completion_signal);
+  /* If the rectangular copy fails, we might still be able to use the slow
+     path.  We need to unlock the host memory though, so don't return
+     immediately.  */
+  if (status != HSA_STATUS_SUCCESS)
+    retval = -1;
+  else
+    hsa_fns.hsa_signal_wait_acquire_fn (completion_signal,
+					HSA_SIGNAL_CONDITION_LT, 1, UINT64_MAX,
+					HSA_WAIT_STATE_ACTIVE);
+
+  hsa_fns.hsa_signal_destroy_fn (completion_signal);
+
+unlock:
+  status = hsa_fns.hsa_amd_memory_unlock_fn (host_ptr + first_elem_offset_host);
+  if (status != HSA_STATUS_SUCCESS)
+    hsa_fatal ("Could not unlock host memory", status);
+
+  return retval;
+}
+
+/* As above, <quantity>_size refers to <quantity> multiplied by size -- i.e.
+   measured in bytes.  So we have:
+
+   dim2_size: number of bytes to copy on innermost dimension ("row")
+   dim1_len: number of rows per slice to copy
+   dim0_len: number of slices to copy
+   dst: base pointer for destination of copy
+   dst_offset2_size: innermost row offset (for dest), in bytes
+   dst_offset1_len: offset, number of rows (for dest)
+   dst_offset0_len: offset, number of slices (for dest)
+   dst_dim2_size: whole-array dest row length, in bytes (pitch)
+   dst_dim1_len: whole-array number of rows in slice (for dest)
+   src: base pointer for source of copy
+   src_offset2_size: innermost row offset (for source), in bytes
+   src_offset1_len: offset, number of rows (for source)
+   src_offset0_len: offset, number of slices (for source)
+   src_dim2_size: whole-array source row length, in bytes (pitch)
+   src_dim1_len: whole-array number of rows in slice (for source)
+*/
+
+int
+GOMP_OFFLOAD_memcpy3d (int dst_ord, int src_ord, size_t dim2_size,
+		       size_t dim1_len, size_t dim0_len, void *dst,
+		       size_t dst_offset2_size, size_t dst_offset1_len,
+		       size_t dst_offset0_len, size_t dst_dim2_size,
+		       size_t dst_dim1_len, const void *src,
+		       size_t src_offset2_size, size_t src_offset1_len,
+		       size_t src_offset0_len, size_t src_dim2_size,
+		       size_t src_dim1_len)
+{
+  if (!hsa_fns.hsa_amd_memory_lock_fn
+      || !hsa_fns.hsa_amd_memory_unlock_fn
+      || !hsa_fns.hsa_amd_memory_async_copy_rect_fn)
+    return -1;
+
+  /* GCN hardware requires 4-byte alignment for base addresses & pitches.  Bail
+     out quietly if we have anything oddly-aligned rather than letting the
+     driver raise an error.  */
+  if ((((uintptr_t) dst) & 3) != 0 || (((uintptr_t) src) & 3) != 0)
+    return -1;
+
+  if ((dst_dim2_size & 3) != 0 || (src_dim2_size & 3) != 0)
+    return -1;
+
+  /* Only handle host to device or device to host transfers here.  */
+  if ((dst_ord == -1 && src_ord == -1)
+      || (dst_ord != -1 && src_ord != -1))
+    return -1;
+
+  hsa_amd_copy_direction_t dir
+    = (src_ord == -1) ? hsaHostToDevice : hsaDeviceToHost;
+  hsa_agent_t copy_agent;
+
+  /* We need to pin (lock) host memory before we start the transfer.  Try to
+     lock the minimum size necessary, i.e. using partial first/last slices of
+     the whole 3D array.  Something like this:
+
+	 slice 0:          slice 1:	     slice 2:
+	     __________        __________        __________
+       ^    /+++++++++/    :  /+++++++++/    :	/         /
+    column /+++##++++/|    | /+++##++++/|    | /+++##    /  # = subarray
+     /	  /   ##++++/ |    |/+++##++++/ |    |/+++##++++/   + = area to pin
+	 /_________/  :    /_________/  :    /_________/
+	row --->
+
+     We could split very large transfers into several rectangular copies, but
+     that is unimplemented for now.  */
+
+  size_t bounded_size_host, first_elem_offset_host;
+  void *host_ptr;
+  if (dir == hsaHostToDevice)
+    {
+      size_t slice_bytes = src_dim2_size * src_dim1_len;
+      bounded_size_host = slice_bytes * (dim0_len - 1)
+			  + src_dim2_size * (dim1_len - 1)
+			  + dim2_size;
+      first_elem_offset_host = src_offset0_len * slice_bytes
+			       + src_offset1_len * src_dim2_size
+			       + src_offset2_size;
+      host_ptr = (void *) src;
+      struct agent_info *agent = get_agent_info (dst_ord);
+      copy_agent = agent->id;
+    }
+  else
+    {
+      size_t slice_bytes = dst_dim2_size * dst_dim1_len;
+      bounded_size_host = slice_bytes * (dim0_len - 1)
+			  + dst_dim2_size * (dim1_len - 1)
+			  + dim2_size;
+      first_elem_offset_host = dst_offset0_len * slice_bytes
+			       + dst_offset1_len * dst_dim2_size
+			       + dst_offset2_size;
+      host_ptr = dst;
+      struct agent_info *agent = get_agent_info (src_ord);
+      copy_agent = agent->id;
+    }
+
+  void *agent_ptr;
+
+  hsa_status_t status
+    = hsa_fns.hsa_amd_memory_lock_fn (host_ptr + first_elem_offset_host,
+				      bounded_size_host, NULL, 0, &agent_ptr);
+  /* We can't lock the host memory: don't give up though, we might still be
+     able to use the slow path in our caller (maybe even with iterated memcpy2d
+     calls).  So, don't make this an error.  */
+  if (status != HSA_STATUS_SUCCESS)
+    return -1;
+
+  hsa_pitched_ptr_t dstpp, srcpp;
+  hsa_dim3_t dst_offsets, src_offsets, ranges;
+
+  int retval = 1;
+
+  hsa_signal_t completion_signal;
+  status = hsa_fns.hsa_signal_create_fn (1, 0, NULL, &completion_signal);
+  if (status != HSA_STATUS_SUCCESS)
+    {
+      retval = -1;
+      goto unlock;
+    }
+
+  if (dir == hsaHostToDevice)
+    {
+      srcpp.base = agent_ptr - first_elem_offset_host;
+      dstpp.base = dst;
+    }
+  else
+    {
+      srcpp.base = (void *) src;
+      dstpp.base = agent_ptr - first_elem_offset_host;
+    }
+
+  /* Pitch is measured in bytes.  */
+  srcpp.pitch = src_dim2_size;
+  /* Slice is also measured in bytes (i.e. total per-slice).  */
+  srcpp.slice = src_dim2_size * src_dim1_len;
+
+  src_offsets.x = src_offset2_size;
+  src_offsets.y = src_offset1_len;
+  src_offsets.z = src_offset0_len;
+
+  /* As above.  */
+  dstpp.pitch = dst_dim2_size;
+  dstpp.slice = dst_dim2_size * dst_dim1_len;
+
+  dst_offsets.x = dst_offset2_size;
+  dst_offsets.y = dst_offset1_len;
+  dst_offsets.z = dst_offset0_len;
+
+  ranges.x = dim2_size;
+  ranges.y = dim1_len;
+  ranges.z = dim0_len;
+
+  status
+    = hsa_fns.hsa_amd_memory_async_copy_rect_fn (&dstpp, &dst_offsets, &srcpp,
+						 &src_offsets, &ranges,
+						 copy_agent, dir, 0, NULL,
+						 completion_signal);
+  /* If the rectangular copy fails, we might still be able to use the slow
+     path.  We need to unlock the host memory though, so don't return
+     immediately.  */
+  if (status != HSA_STATUS_SUCCESS)
+    retval = -1;
+  else
+    {
+      hsa_signal_value_t sv
+	= hsa_fns.hsa_signal_wait_acquire_fn (completion_signal,
+					      HSA_SIGNAL_CONDITION_LT, 1,
+					      UINT64_MAX,
+					      HSA_WAIT_STATE_ACTIVE);
+      if (sv < 0)
+	{
+	  GCN_WARNING ("async copy rect failure");
+	  retval = -1;
+	}
+    }
+
+  hsa_fns.hsa_signal_destroy_fn (completion_signal);
+
+unlock:
+  status = hsa_fns.hsa_amd_memory_unlock_fn (host_ptr + first_elem_offset_host);
+  if (status != HSA_STATUS_SUCCESS)
+    hsa_fatal ("Could not unlock host memory", status);
+
+  return retval;
 }
 
 /* }}}  */
