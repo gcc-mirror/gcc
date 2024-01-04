@@ -31651,6 +31651,17 @@ package body Sem_Prag is
          while Present (Formal) loop
             if Ekind (Formal) in E_In_Out_Parameter | E_In_Parameter then
                Append_New_Elmt (Formal, Subp_Inputs);
+
+               --  IN parameters of procedures and protected entries can act as
+               --  outputs when the related type is access-to-variable.
+
+               if Ekind (Formal) = E_In_Parameter
+                 and then Ekind (Spec_Id) not in E_Function
+                                               | E_Generic_Function
+                 and then Is_Access_Variable (Etype (Formal))
+               then
+                  Append_New_Elmt (Formal, Subp_Outputs);
+               end if;
             end if;
 
             if Ekind (Formal) in E_In_Out_Parameter | E_Out_Parameter then
@@ -31665,17 +31676,6 @@ package body Sem_Prag is
                then
                   Append_New_Elmt (Formal, Subp_Inputs);
                end if;
-            end if;
-
-            --  IN parameters of procedures and protected entries can act as
-            --  outputs when the related type is access-to-variable.
-
-            if Ekind (Formal) = E_In_Parameter
-              and then Ekind (Spec_Id) not in E_Function
-                                            | E_Generic_Function
-              and then Is_Access_Variable (Etype (Formal))
-            then
-               Append_New_Elmt (Formal, Subp_Outputs);
             end if;
 
             Next_Formal (Formal);
