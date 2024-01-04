@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h" /* for ATTRIBUTE_GCC_DIAG.  */
 #include "diagnostic-event-id.h"
 
+class sarif_object;
+
 /* A diagnostic_path is an optional additional piece of metadata associated
    with a diagnostic (via its rich_location).
 
@@ -157,6 +159,13 @@ class diagnostic_event
   virtual meaning get_meaning () const = 0;
 
   virtual diagnostic_thread_id_t get_thread_id () const = 0;
+
+  /* Hook for SARIF output to allow for adding diagnostic-specific
+     properties to the threadFlowLocation object's property bag.  */
+  virtual void
+  maybe_add_sarif_properties (sarif_object &/*thread_flow_loc_obj*/) const
+  {
+  }
 };
 
 /* Abstract base class representing a thread of execution within

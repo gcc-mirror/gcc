@@ -118,6 +118,9 @@ public:
     return 0;
   }
 
+  void
+  maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const override;
+
   /* Additional functionality.  */
 
   int get_original_stack_depth () const { return m_original_depth; }
@@ -391,6 +394,9 @@ public:
 class superedge_event : public checker_event
 {
 public:
+  void maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj)
+    const override;
+
   /* Mark this edge event as being either an interprocedural call or
      return in which VAR is in STATE, and that this is critical to the
      diagnostic (so that get_desc can attempt to get a better description
