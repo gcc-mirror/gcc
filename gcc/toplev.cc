@@ -1044,12 +1044,13 @@ general_init (const char *argv0, bool init_signals)
   global_dc->m_show_column
     = global_options_init.x_flag_show_column;
   global_dc->m_internal_error = internal_error_function;
+  const unsigned lang_mask = lang_hooks.option_lang_mask ();
   global_dc->set_option_hooks (option_enabled,
 			       &global_options,
 			       option_name,
 			       get_option_url,
-			       lang_hooks.option_lang_mask ());
-  global_dc->set_urlifier (make_gcc_urlifier ());
+			       lang_mask);
+  global_dc->set_urlifier (make_gcc_urlifier (lang_mask));
 
   if (init_signals)
     {

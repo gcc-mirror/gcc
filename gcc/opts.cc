@@ -3710,14 +3710,6 @@ get_option_html_page (int option_index)
 {
   const cl_option *cl_opt = &cl_options[option_index];
 
-  /* Analyzer options are on their own page.  */
-  if (strstr (cl_opt->opt_text, "analyzer-"))
-    return "gcc/Static-Analyzer-Options.html";
-
-  /* Handle -flto= option.  */
-  if (strstr (cl_opt->opt_text, "flto"))
-    return "gcc/Optimize-Options.html";
-
 #ifdef CL_Fortran
   if ((cl_opt->flags & CL_Fortran) != 0
       /* If it is option common to both C/C++ and Fortran, it is documented
@@ -3730,32 +3722,49 @@ get_option_html_page (int option_index)
     return "gfortran/Error-and-Warning-Options.html";
 #endif
 
-  return "gcc/Warning-Options.html";
+  return nullptr;
+}
+
+/* Get the url within the documentation for this option, or NULL.  */
+
+label_text
+get_option_url_suffix (int option_index, unsigned lang_mask)
+{
+  if (const char *url = get_opt_url_suffix (option_index, lang_mask))
+
+    return label_text::borrow (url);
+
+  /* Fallback code for some options that aren't handled byt opt_url_suffixes
+     e.g. links below "gfortran/".  */
+  if (const char *html_page = get_option_html_page (option_index))
+    return label_text::take
+      (concat (html_page,
+	       /* Expect an anchor of the form "index-Wfoo" e.g.
+		  <a name="index-Wformat"></a>, and thus an id within
+		  the page of "#index-Wformat".  */
+	       "#index",
+	       cl_options[option_index].opt_text,
+	       NULL));
+
+  return label_text ();
 }
 
 /* Return malloced memory for a URL describing the option OPTION_INDEX
    which enabled a diagnostic (context CONTEXT).  */
 
 char *
-get_option_url (const diagnostic_context *, int option_index)
+get_option_url (const diagnostic_context *,
+		int option_index,
+		unsigned lang_mask)
 {
   if (option_index)
-    return concat (/* DOCUMENTATION_ROOT_URL should be supplied via
-		      #include "config.h" (see --with-documentation-root-url),
-		      and should have a trailing slash.  */
-		   DOCUMENTATION_ROOT_URL,
+    {
+      label_text url_suffix = get_option_url_suffix (option_index, lang_mask);
+      if (url_suffix.get ())
+	return concat (DOCUMENTATION_ROOT_URL, url_suffix.get (), nullptr);
+    }
 
-		   /* get_option_html_page will return something like
-		      "gcc/Warning-Options.html".  */
-		   get_option_html_page (option_index),
-
-		   /* Expect an anchor of the form "index-Wfoo" e.g.
-		      <a name="index-Wformat"></a>, and thus an id within
-		      the URL of "#index-Wformat".  */
-		   "#index", cl_options[option_index].opt_text,
-		   NULL);
-  else
-    return NULL;
+  return nullptr;
 }
 
 /* Return a heap allocated producer with command line options.  */
@@ -3886,17 +3895,35 @@ gen_producer_string (const char *language_string, cl_decoded_option *options,
 
 namespace selftest {
 
-/* Verify that get_option_html_page works as expected.  */
+/* Verify that get_option_url_suffix works as expected.  */
 
 static void
-test_get_option_html_page ()
+test_get_option_url_suffix ()
 {
-  ASSERT_STREQ (get_option_html_page (OPT_Wcpp), "gcc/Warning-Options.html");
-  ASSERT_STREQ (get_option_html_page (OPT_Wanalyzer_double_free),
-	     "gcc/Static-Analyzer-Options.html");
+  ASSERT_STREQ (get_option_url_suffix (OPT_Wcpp, 0).get (),
+		"gcc/Warning-Options.html#index-Wcpp");
+  ASSERT_STREQ (get_option_url_suffix (OPT_Wanalyzer_double_free, 0).get (),
+		"gcc/Static-Analyzer-Options.html#index-Wanalyzer-double-free");
+
+  /* Test of a D-specific option.  */
+#ifdef CL_D
+  ASSERT_EQ (get_option_url_suffix (OPT_fbounds_check_, 0).get (), nullptr);
+  ASSERT_STREQ (get_option_url_suffix (OPT_fbounds_check_, CL_D).get (),
+		"gdc/Runtime-Options.html#index-fbounds-check");
+
+  /* Test of a D-specific override to an option URL.  */
+  /* Generic URL.  */
+  ASSERT_STREQ (get_option_url_suffix (OPT_fmax_errors_, 0).get (),
+		"gcc/Warning-Options.html#index-fmax-errors");
+  /* D-specific URL.  */
+  ASSERT_STREQ (get_option_url_suffix (OPT_fmax_errors_, CL_D).get (),
+		"gdc/Warnings.html#index-fmax-errors");
+#endif
+
 #ifdef CL_Fortran
-  ASSERT_STREQ (get_option_html_page (OPT_Wline_truncation),
-		"gfortran/Error-and-Warning-Options.html");
+  ASSERT_STREQ
+    (get_option_url_suffix (OPT_Wline_truncation, CL_Fortran).get (),
+     "gfortran/Error-and-Warning-Options.html#index-Wline-truncation");
 #endif
 }
 
@@ -3959,7 +3986,7 @@ test_enum_sets ()
 void
 opts_cc_tests ()
 {
-  test_get_option_html_page ();
+  test_get_option_url_suffix ();
   test_enum_sets ();
 }
 

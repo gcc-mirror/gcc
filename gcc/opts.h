@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OPTS_H
 #define GCC_OPTS_H
 
+#include "rich-location.h"
 #include "obstack.h"
 
 /* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */
@@ -568,5 +569,8 @@ struct switchstr
   bool validated;
   bool ordering;
 };
+
+extern label_text
+get_option_url_suffix (int option_index, unsigned lang_mask);
 
 #endif

@@ -21,6 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GCC_URLIFIER_H
 #define GCC_GCC_URLIFIER_H
 
-extern urlifier *make_gcc_urlifier ();
+extern urlifier *make_gcc_urlifier (unsigned int lang_mask);
 
 #endif /* GCC_GCC_URLIFIER_H */

@@ -24,6 +24,7 @@ extern char *option_name (const diagnostic_context *context, int option_index,
 			  diagnostic_t orig_diag_kind, diagnostic_t diag_kind);
 
 extern char *get_option_url (const diagnostic_context *context,
-			     int option_index);
+			     int option_index,
+			     unsigned lang_mask);
 
 #endif
