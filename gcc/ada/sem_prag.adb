@@ -31669,8 +31669,7 @@ package body Sem_Prag is
                Append_New_Elmt (Formal, Subp_Outputs);
 
                --  OUT parameters can act as inputs when the related type is
-               --  tagged, unconstrained array, unconstrained record, or record
-               --  with unconstrained components.
+               --  tagged, unconstrained array or unconstrained record.
 
                if Ekind (Formal) = E_Out_Parameter
                  and then Is_Unconstrained_Or_Tagged_Item (Formal)
