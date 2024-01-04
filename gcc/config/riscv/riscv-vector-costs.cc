@@ -230,6 +230,42 @@ get_biggest_mode (machine_mode mode1, machine_mode mode2)
   return mode1_size >= mode2_size ? mode1 : mode2;
 }
 
+/* Return true if the variable should be counted into liveness.  */
+static bool
+variable_vectorized_p (stmt_vec_info stmt_info, tree var, bool lhs_p)
+{
+  if (!var)
+    return false;
+  gimple *stmt = STMT_VINFO_STMT (stmt_info);
+  enum stmt_vec_info_type type
+    = STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
+  if (is_gimple_call (stmt) && gimple_call_internal_p (stmt))
+    {
+      if (gimple_call_internal_fn (stmt) == IFN_MASK_STORE
+	  || gimple_call_internal_fn (stmt) == IFN_MASK_LOAD)
+	{
+	  /* .MASK_LOAD (_5, 32B, _33)
+			  ^    ^    ^
+	     Only the 3rd argument will be vectorized and consume
+	     a vector register.  */
+	  if (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
+	      || (is_gimple_reg (var) && !POINTER_TYPE_P (TREE_TYPE (var))))
+	    return true;
+	  else
+	    return false;
+	}
+    }
+  if (lhs_p)
+    return is_gimple_reg (var)
+	   && (!POINTER_TYPE_P (TREE_TYPE (var))
+	       || type != store_vec_info_type);
+  else
+    return poly_int_tree_p (var)
+	   || (is_gimple_val (var)
+	       && (!POINTER_TYPE_P (TREE_TYPE (var))
+		   || type != load_vec_info_type));
+}
+
 /* Compute local live ranges of each vectorized variable.
    Note that we only compute local live ranges (within a block) since
    local live ranges information is accurate enough for us to determine
@@ -277,13 +313,8 @@ compute_local_live_ranges (
 	    {
 	      unsigned int point = program_point.point;
 	      gimple *stmt = program_point.stmt;
-	      stmt_vec_info stmt_info = program_point.stmt_info;
 	      tree lhs = gimple_get_lhs (stmt);
-	      enum stmt_vec_info_type type
-		= STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
-	      if (lhs != NULL_TREE && is_gimple_reg (lhs)
-		  && (!POINTER_TYPE_P (TREE_TYPE (lhs))
-		      || type != store_vec_info_type))
+	      if (variable_vectorized_p (program_point.stmt_info, lhs, true))
 		{
 		  biggest_mode = get_biggest_mode (biggest_mode,
 						   TYPE_MODE (TREE_TYPE (lhs)));
@@ -307,10 +338,8 @@ compute_local_live_ranges (
 
 		     TODO: We may elide the cases that the unnecessary IMM in
 		     the future.  */
-		  if (poly_int_tree_p (var)
-		      || (is_gimple_val (var)
-			  && (!POINTER_TYPE_P (TREE_TYPE (var))
-			      || type != load_vec_info_type)))
+		  if (variable_vectorized_p (program_point.stmt_info, var,
+					     false))
 		    {
 		      biggest_mode
 			= get_biggest_mode (biggest_mode,
@@ -383,7 +412,9 @@ compute_nregs_for_mode (loop_vec_info loop_vinfo, machine_mode mode,
   unsigned int biggest_size = GET_MODE_SIZE (biggest_mode).to_constant ();
   gcc_assert (biggest_size >= mode_size);
   unsigned int ratio = biggest_size / mode_size;
-  return MAX (lmul / ratio, 1) * rgroup_size;
+  /* RVV mask bool modes always consume 1 vector register regardless LMUL.  */
+  unsigned int nregs = mode == BImode ? 1 : lmul / ratio;
+  return MAX (nregs, 1) * rgroup_size;
 }
 
 /* This function helps to determine whether current LMUL will cause
@@ -414,7 +445,9 @@ max_number_of_live_regs (loop_vec_info loop_vinfo, const basic_block bb,
       pair live_range = (*iter).second;
       for (i = live_range.first + 1; i <= live_range.second; i++)
 	{
-	  machine_mode mode = TYPE_MODE (TREE_TYPE (var));
+	  machine_mode mode = TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
+				? BImode
+				: TYPE_MODE (TREE_TYPE (var));
 	  unsigned int nregs
 	    = compute_nregs_for_mode (loop_vinfo, mode, biggest_mode, lmul);
 	  live_vars_vec[i] += nregs;
@@ -508,8 +541,12 @@ compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
   else if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo), 1U))
     {
       int estimated_vf = vect_vf_for_cost (loop_vinfo);
-      return estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
-	     / TARGET_MIN_VLEN;
+      int estimated_lmul = estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
+			   / TARGET_MIN_VLEN;
+      if (estimated_lmul > RVV_M8)
+	return regno_alignment;
+      else
+	return estimated_lmul;
     }
   else
     {
@@ -733,6 +770,7 @@ has_unexpected_spills_p (loop_vec_info loop_vinfo)
 			    live_ranges_per_bb, &biggest_mode);
 
   int lmul = compute_estimated_lmul (loop_vinfo, biggest_mode);
+  gcc_assert (lmul <= RVV_M8);
   /* TODO: We calculate the maximum live vars base on current STMTS
      sequence.  We can support live range shrink if it can give us
      big improvement in the future.  */
