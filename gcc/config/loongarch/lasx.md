@@ -846,32 +846,6 @@
   DONE;
 })
 
-;; Offset load
-(define_expand "lasx_mxld_<lasxfmt_f>"
-  [(match_operand:LASX 0 "register_operand")
-   (match_operand 1 "pmode_register_operand")
-   (match_operand 2 "aq10<lasxfmt>_operand")]
-  "ISA_HAS_LASX"
-{
-  rtx addr = plus_constant (GET_MODE (operands[1]), operands[1],
-				      INTVAL (operands[2]));
-  loongarch_emit_move (operands[0], gen_rtx_MEM (<MODE>mode, addr));
-  DONE;
-})
-
-;; Offset store
-(define_expand "lasx_mxst_<lasxfmt_f>"
-  [(match_operand:LASX 0 "register_operand")
-   (match_operand 1 "pmode_register_operand")
-   (match_operand 2 "aq10<lasxfmt>_operand")]
-  "ISA_HAS_LASX"
-{
-  rtx addr = plus_constant (GET_MODE (operands[1]), operands[1],
-			    INTVAL (operands[2]));
-  loongarch_emit_move (gen_rtx_MEM (<MODE>mode, addr), operands[0]);
-  DONE;
-})
-
 ;; LASX
 (define_insn "add<mode>3"
   [(set (match_operand:ILASX 0 "register_operand" "=f,f,f")
