@@ -1,5 +1,5 @@
-/* General types and functions that are uselful for processing of OpenMP,
-   OpenACC and similar directivers at various stages of compilation.
+/* General types and functions that are useful for processing of OpenMP,
+   OpenACC and similar directives at various stages of compilation.
 
    Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
@@ -18,8 +18,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-/* Find an OMP clause of type KIND within CLAUSES.  */
 
 #include "config.h"
 #include "system.h"
@@ -45,11 +43,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "streamer-hooks.h"
 #include "opts.h"
-#include "omp-general.h"
 #include "tree-pretty-print.h"
 
 enum omp_requires omp_requires_mask;
 
+/* Find an OMP clause of type KIND within CLAUSES.  */
 tree
 omp_find_clause (tree clauses, enum omp_clause_code kind)
 {
@@ -2874,9 +2872,8 @@ oacc_launch_pack (unsigned code, tree device, unsigned op)
   return res;
 }
 
-/* FIXME: What is the following comment for? */
-/* Look for compute grid dimension clauses and convert to an attribute
-   attached to FN.  This permits the target-side code to (a) massage
+/* Openacc compute grid dimension clauses are converted to an attribute
+   attached to the function.  This permits the target-side code to (a) massage
    the dimensions, (b) emit that data and (c) optimize.  Non-constant
    dimensions are pushed onto ARGS.
 
@@ -2890,9 +2887,8 @@ oacc_launch_pack (unsigned code, tree device, unsigned op)
    dimensions, keyed by the device type.  The first entry will be the
    default.  Well, that's the plan.  */
 
-/* Replace any existing oacc fn attribute with updated dimensions.  */
-
-/* Variant working on a list of attributes.  */
+/* Replace any existing oacc fn attribute in ATTRIBS with updated
+   dimensions.  */
 
 tree
 oacc_replace_fn_attrib_attr (tree attribs, tree dims)
@@ -2905,7 +2901,8 @@ oacc_replace_fn_attrib_attr (tree attribs, tree dims)
   return tree_cons (ident, dims, attribs);
 }
 
-/* Variant working on a function decl.  */
+/* Replace any existing oacc fn attribute on FN with updated
+   dimensions.  */
 
 void
 oacc_replace_fn_attrib (tree fn, tree dims)
