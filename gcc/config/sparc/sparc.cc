@@ -1063,6 +1063,7 @@ atomic_insn_for_leon3_p (rtx_insn *insn)
 {
   switch (INSN_CODE (insn))
     {
+    case CODE_FOR_membar_storeload:
     case CODE_FOR_swapsi:
     case CODE_FOR_ldstub:
     case CODE_FOR_atomic_compare_and_swap_leon3_1:
