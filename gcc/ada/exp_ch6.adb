@@ -9393,6 +9393,16 @@ package body Exp_Ch6 is
       Insert_Action (Obj_Decl, Tmp_Decl);
       Expander_Mode_Restore;
 
+      --  Inherit Is_Return_Object from the parent object to the temp object,
+      --  so that Make_In_Build_Place_Call_In_Object_Declaration will handle
+      --  the temp properly in cases where there's a BIP_Alloc_Form formal of
+      --  an enclosing function that should be passed along (and which also
+      --  ensures that if the BIP call is used as a function result and it
+      --  requires finalization, then it will not be finalized prematurely
+      --  or redundantly).
+
+      Set_Is_Return_Object (Tmp_Id, Is_Return_Object (Obj_Id));
+
       Make_Build_In_Place_Call_In_Object_Declaration
         (Obj_Decl      => Tmp_Decl,
          Function_Call => Expression (Tmp_Decl));
