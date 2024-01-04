@@ -1,3 +1,13 @@
+2024-01-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-01-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR testsuite/113175
+	* testsuite/std/ranges/iota/max_size_type.cc (test02): Reduce
+	'limit' to 100 from 1000 and adjust 'log2_limit' accordingly.
+	(test03): Likewise.
+
 2023-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
