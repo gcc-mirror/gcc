@@ -269,7 +269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __glibcxx_assert(&__new.promise()._M_nest == this);
 	  __glibcxx_assert(this->_M_is_bottom());
-	  // We're bottom.  We're also top of top is unset (note that this is
+	  // We're bottom.  We're also top if top is unset (note that this is
 	  // not true if something was added to the coro stack and then popped,
 	  // but in that case we can't possibly be yielded from, as it would
 	  // require rerunning begin()).
