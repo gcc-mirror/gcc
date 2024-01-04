@@ -1,3 +1,18 @@
+2024-01-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113064
+	* g++.dg/cpp0x/rv-conv4.C: New test.
+	* g++.dg/cpp0x/rv-conv5.C: New test.
+
+2024-01-03  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vfmax-vfmin.c: New test.
+
+2024-01-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-5.c: New test.
+
 2024-01-02  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* gfortran.dg/vect/vect-8.f90: Accept more vectorized loops.

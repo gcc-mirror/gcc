@@ -1,3 +1,8 @@
+2024-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GenericFilter): Skip gpl_v3_without_node.texi.
+	(GCCFilter): Skip GmcOptions.cc.
+
 2023-12-21  Alexandre Oliva  <oliva@adacore.com>
 
 	* compare_tests: Add tool to test lines.  Match tabs besides

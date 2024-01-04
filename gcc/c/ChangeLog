@@ -1,3 +1,8 @@
+2024-01-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Move handling of indirect
+	clause to correspond to alphabetical order.
+
 2023-12-30  Martin Uecker  <uecker@tugraz.at>
 
 	* c-typeck.cc (tagged_types_tu_compatible_p): Revise.

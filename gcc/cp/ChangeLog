@@ -1,3 +1,14 @@
+2024-01-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113064
+	* call.cc (reference_binding): Still try a conversion via a
+	temporary if a direct conversion was bad.
+
+2024-01-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_name): Move handling of indirect
+	clause to correspond to alphabetical order.
+
 
 Copyright (C) 2024 Free Software Foundation, Inc.
 

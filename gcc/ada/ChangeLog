@@ -1,3 +1,8 @@
+2024-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gnat_ugn.texi: Bump @copying's copyright year.
+	* gnat_rm.texi: Likewise.
+
 
 Copyright (C) 2024 Free Software Foundation, Inc.
 
