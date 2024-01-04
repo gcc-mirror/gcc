@@ -255,29 +255,6 @@ variable_vectorized_p (stmt_vec_info stmt_info, tree var, bool lhs_p)
 	    return false;
 	}
     }
-  else if (is_gimple_assign (stmt))
-    {
-      tree_code tcode = gimple_assign_rhs_code (stmt);
-      /* vi variant doesn't need to allocate such statement.
-	 E.g. tmp_15 = _4 + 1; will be transformed into vadd.vi
-	 so the INTEGER_CST '1' doesn't need a vector register.  */
-      switch (tcode)
-	{
-	case PLUS_EXPR:
-	case BIT_IOR_EXPR:
-	case BIT_XOR_EXPR:
-	case BIT_AND_EXPR:
-	  return TREE_CODE (var) != INTEGER_CST
-		 || !IN_RANGE (tree_to_shwi (var), -16, 15);
-	case MINUS_EXPR:
-	  return TREE_CODE (var) != INTEGER_CST
-		 || !IN_RANGE (tree_to_shwi (var), -16, 15)
-		 || gimple_assign_rhs1 (stmt) != var;
-	default:
-	  break;
-	}
-    }
-
   if (lhs_p)
     return is_gimple_reg (var)
 	   && (!POINTER_TYPE_P (TREE_TYPE (var))
@@ -354,6 +331,13 @@ compute_local_live_ranges (
 	      for (i = 0; i < gimple_num_args (stmt); i++)
 		{
 		  tree var = gimple_arg (stmt, i);
+		  /* Both IMM and REG are included since a VECTOR_CST may be
+		     potentially held in a vector register.  However, it's not
+		     accurate, since a PLUS_EXPR can be vectorized into vadd.vi
+		     if IMM is -16 ~ 15.
+
+		     TODO: We may elide the cases that the unnecessary IMM in
+		     the future.  */
 		  if (variable_vectorized_p (program_point.stmt_info, var,
 					     false))
 		    {
