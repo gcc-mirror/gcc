@@ -31656,8 +31656,9 @@ package body Sem_Prag is
                --  outputs when the related type is access-to-variable.
 
                if Ekind (Formal) = E_In_Parameter
-                 and then Ekind (Spec_Id) not in E_Function
-                                               | E_Generic_Function
+                 and then (Ekind (Spec_Id) not in E_Function
+                                                | E_Generic_Function
+                             or else Is_Function_With_Side_Effects (Spec_Id))
                  and then Is_Access_Variable (Etype (Formal))
                then
                   Append_New_Elmt (Formal, Subp_Outputs);
