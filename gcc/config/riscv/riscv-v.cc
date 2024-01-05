@@ -3780,7 +3780,6 @@ expand_select_vl (rtx *ops)
 void
 expand_load_store (rtx *ops, bool is_load)
 {
-  poly_int64 value;
   rtx mask = ops[2];
   rtx len = ops[3];
   machine_mode mode = GET_MODE (ops[0]);
@@ -3849,7 +3848,6 @@ expand_cond_len_op (unsigned icode, insn_flags op_type, rtx *ops, rtx len)
   rtx mask = ops[1];
   machine_mode mode = GET_MODE (dest);
   machine_mode mask_mode = GET_MODE (mask);
-  poly_int64 value;
   bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
   bool is_vlmax_len = is_vlmax_len_p (mode, len);
 
@@ -4025,7 +4023,6 @@ expand_gather_scatter (rtx *ops, bool is_load)
   scalar_mode inner_idx_mode = GET_MODE_INNER (idx_mode);
   unsigned inner_offsize = GET_MODE_BITSIZE (inner_idx_mode);
   poly_int64 nunits = GET_MODE_NUNITS (vec_mode);
-  poly_int64 value;
   bool is_vlmax = is_vlmax_len_p (vec_mode, len);
 
   /* Extend the offset element to address width.  */
@@ -4206,7 +4203,6 @@ prepare_ternary_operands (rtx *ops)
 void
 expand_lanes_load_store (rtx *ops, bool is_load)
 {
-  poly_int64 value;
   rtx mask = ops[2];
   rtx len = ops[3];
   rtx addr = is_load ? XEXP (ops[1], 0) : XEXP (ops[0], 0);
@@ -4259,7 +4255,6 @@ expand_fold_extract_last (rtx *ops)
   rtx else_label = gen_label_rtx ();
   rtx end_label = gen_label_rtx ();
   rtx len = ops[4];
-  poly_int64 value;
   machine_mode mode = GET_MODE (vect);
   machine_mode mask_mode = GET_MODE (mask);
   rtx compress_vect = gen_reg_rtx (mode);
