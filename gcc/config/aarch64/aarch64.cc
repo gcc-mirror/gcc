@@ -18223,12 +18223,6 @@ aarch64_override_options_internal (struct gcc_options *opts)
   SET_OPTION_IF_UNSET (opts, &global_options_set,
 		       param_sched_autopref_queue_depth, queue_depth);
 
-  /* If using Advanced SIMD only for autovectorization disable SVE vector costs
-     comparison.  */
-  if (aarch64_autovec_preference == 1)
-    SET_OPTION_IF_UNSET (opts, &global_options_set,
-			 aarch64_sve_compare_costs, 0);
-
   /* Set up parameters to be used in prefetching algorithm.  Do not
      override the defaults unless we are tuning for a core we have
      researched values for.  */
@@ -22138,12 +22132,7 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
    modes->safe_push (sve_modes[sve_i++]);
 
   unsigned int flags = 0;
-  /* Consider enabling VECT_COMPARE_COSTS for SVE, both so that we
-     can compare SVE against Advanced SIMD and so that we can compare
-     multiple SVE vectorization approaches against each other.  There's
-     not really any point doing this for Advanced SIMD only, since the
-     first mode that works should always be the best.  */
-  if (TARGET_SVE && aarch64_sve_compare_costs)
+  if (aarch64_vect_compare_costs)
     flags |= VECT_COMPARE_COSTS;
   return flags;
 }

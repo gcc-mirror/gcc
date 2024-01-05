@@ -1,5 +1,5 @@
 /* { dg-do run { target aarch64_sve_hw } } */
-/* { dg-options "-O2 -ftree-vectorize -fno-inline --param aarch64-sve-compare-costs=0" } */
+/* { dg-options "-O2 -ftree-vectorize -fno-inline --param aarch64-vect-compare-costs=0" } */
 
 #include "unpack_unsigned_1.c"
 
