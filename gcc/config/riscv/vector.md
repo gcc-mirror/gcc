@@ -864,9 +864,9 @@
 			  vnclip,vicmp,vfalu,vfmul,vfminmax,vfdiv,vfwalu,vfwmul,\
 			  vfsgnj,vfcmp,vslideup,vslidedown,vislide1up,\
 			  vislide1down,vfslide1up,vfslide1down,vgather,viwmuladd,vfwmuladd,\
-			  vlsegds,vlsegdux,vlsegdox,vandn,vrol,vror,vwsll")
+			  vlsegds,vlsegdux,vlsegdox,vandn,vrol,vror,vclmul,vclmulh,vwsll")
 	   (const_int 8)
-	 (eq_attr "type" "vstux,vstox,vssegts,vssegtux,vssegtox,vclmul,vclmulh")
+	 (eq_attr "type" "vstux,vstox,vssegts,vssegtux,vssegtox")
 	   (const_int 5)
 
 	 (eq_attr "type" "vimuladd,vfmuladd")
