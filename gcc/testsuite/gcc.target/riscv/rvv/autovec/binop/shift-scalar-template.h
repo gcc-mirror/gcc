@@ -3,7 +3,6 @@
 /* { dg-additional-options "-std=c99 --param=riscv-autovec-preference=scalable -fno-vect-cost-model --save-temps" } */
 
 #include <stdint-gcc.h>
-#include <assert.h>
 
 #define SHIFTL(TYPE,VAL)				\
   __attribute__ ((noipa))                               \
@@ -64,7 +63,7 @@ TEST_ALL()
     a##TYPE##VAL[i] = 2;		\
   vsll_##TYPE_##VAL (a##TYPE##VAL, SZ);	\
   for (int i = 0; i < SZ; i++)	  	\
-    assert (a##TYPE##VAL[i] == (2ll << VAL));
+    if (a##TYPE##VAL[i] != (2ll << VAL)) __builtin_abort ();
 
 __attribute__((noipa))
 void vsllvx (uint32_t *dst, int val, int n)
@@ -79,7 +78,7 @@ void vsllvx (uint32_t *dst, int val, int n)
     a[i] = 2;		\
   vsllvx (a, 17, SZ);	\
   for (int i = 0; i < SZ; i++)	  	\
-    assert (a[i] == (2 << 17));
+    if (a[i] != (2 << 17)) __builtin_abort ();
 
 int main ()
 {
