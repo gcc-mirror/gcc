@@ -984,89 +984,6 @@ struct seg_fault_load_def : public build_base
   }
 };
 
-/* vsm4r/vaes* class.  */
-struct crypto_vv_def : public build_base
-{
-  char *get_name (function_builder &b, const function_instance &instance,
-                  bool overloaded_p) const override
-  {
-    /* Return nullptr if it can not be overloaded.  */
-    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
-      return nullptr;
-    b.append_base_name (instance.base_name);
-    b.append_name (operand_suffixes[instance.op_info->op]);
-
-    if (!overloaded_p)
-    {
-      if (instance.op_info->op == OP_TYPE_vv)
-        b.append_name (type_suffixes[instance.type.index].vector);
-      else
-      {
-        vector_type_index arg0_type_idx
-          = instance.op_info->args[1].get_function_type_index
-            (instance.type.index);
-        b.append_name (type_suffixes[arg0_type_idx].vector);
-        vector_type_index ret_type_idx
-          = instance.op_info->ret.get_function_type_index
-            (instance.type.index);
-        b.append_name (type_suffixes[ret_type_idx].vector);
-      }
-    }
-
-    b.append_name (predication_suffixes[instance.pred]);
-    return b.finish_name ();
-  }
-};
-
-/* vaeskf1/vaeskf2/vsm4k/vsm3c class.  */
-struct crypto_vi_def : public build_base
-{
-  char *get_name (function_builder &b, const function_instance &instance,
-                  bool overloaded_p) const override
-  {
-    /* Return nullptr if it can not be overloaded.  */
-    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
-      return nullptr;
-    b.append_base_name (instance.base_name);
-    if (!overloaded_p)
-    {
-      b.append_name (operand_suffixes[instance.op_info->op]);
-      b.append_name (type_suffixes[instance.type.index].vector);
-    }
-    b.append_name (predication_suffixes[instance.pred]);
-    return b.finish_name ();
-  }
-};
-
-/* vaesz class.  */
-struct crypto_vv_no_op_type_def : public build_base
-{
-  char *get_name (function_builder &b, const function_instance &instance,
-                  bool overloaded_p) const override
-  {
-    /* Return nullptr if it can not be overloaded.  */
-    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
-      return nullptr;
-    b.append_base_name (instance.base_name);
-      
-    if (!overloaded_p)
-    {
-      b.append_name (operand_suffixes[instance.op_info->op]);
-      vector_type_index arg0_type_idx
-        = instance.op_info->args[1].get_function_type_index
-          (instance.type.index);
-      b.append_name (type_suffixes[arg0_type_idx].vector);
-      vector_type_index ret_type_idx
-        = instance.op_info->ret.get_function_type_index
-          (instance.type.index);
-      b.append_name (type_suffixes[ret_type_idx].vector);
-    }
-
-    b.append_name (predication_suffixes[instance.pred]);
-    return b.finish_name ();
-  }
-};
-
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -1095,7 +1012,5 @@ SHAPE(vlenb, vlenb)
 SHAPE(seg_loadstore, seg_loadstore)
 SHAPE(seg_indexed_loadstore, seg_indexed_loadstore)
 SHAPE(seg_fault_load, seg_fault_load)
-SHAPE(crypto_vv, crypto_vv)
-SHAPE(crypto_vi, crypto_vi)
-SHAPE(crypto_vv_no_op_type, crypto_vv_no_op_type)
+
 } // end namespace riscv_vector

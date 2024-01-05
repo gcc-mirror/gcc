@@ -280,34 +280,6 @@ extern const function_base *const vloxseg;
 extern const function_base *const vsuxseg;
 extern const function_base *const vsoxseg;
 extern const function_base *const vlsegff;
-/* Below function_base are Vectro Crypto*/
-extern const function_base *const vandn;
-extern const function_base *const vbrev;
-extern const function_base *const vbrev8;
-extern const function_base *const vrev8;
-extern const function_base *const vclz;
-extern const function_base *const vctz;
-extern const function_base *const vrol;
-extern const function_base *const vror;
-extern const function_base *const vwsll;
-extern const function_base *const vclmul;
-extern const function_base *const vclmulh;
-extern const function_base *const vghsh;
-extern const function_base *const vgmul;
-extern const function_base *const vaesef;
-extern const function_base *const vaesem;
-extern const function_base *const vaesdf;
-extern const function_base *const vaesdm;
-extern const function_base *const vaesz;
-extern const function_base *const vaeskf1;
-extern const function_base *const vaeskf2;
-extern const function_base *const vsha2ms;
-extern const function_base *const vsha2ch;
-extern const function_base *const vsha2cl;
-extern const function_base *const vsm4k;
-extern const function_base *const vsm4r;
-extern const function_base *const vsm3me;
-extern const function_base *const vsm3c;
 }
 
 } // end namespace riscv_vector
