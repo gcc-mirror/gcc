@@ -67,6 +67,8 @@ private:
   const char *parsing_subset_version (const char *, const char *, unsigned *,
 				      unsigned *, bool, bool *);
 
+  const char *parse_base_ext (const char *);
+
   const char *parse_std_ext (const char *);
 
   const char *parse_single_std_ext (const char *);

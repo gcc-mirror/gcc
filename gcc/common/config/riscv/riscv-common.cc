@@ -971,24 +971,36 @@ riscv_subset_list::parsing_subset_version (const char *ext,
   return p;
 }
 
-/* Parsing function for standard extensions.
+/* Parsing function for base extensions, rv[32|64][i|e|g]
 
    Return Value:
-     Points to the end of extensions.
+     Points to the end of extensions, return NULL if any error.
 
    Arguments:
      `p`: Current parsing position.  */
-
 const char *
-riscv_subset_list::parse_std_ext (const char *p)
+riscv_subset_list::parse_base_ext (const char *p)
 {
-  const char *all_std_exts = riscv_supported_std_ext ();
-  const char *std_exts = all_std_exts;
-
   unsigned major_version = 0;
   unsigned minor_version = 0;
-  char std_ext = '\0';
   bool explicit_version_p = false;
+
+  if (startswith (p, "rv32"))
+    {
+      m_xlen = 32;
+      p += 4;
+    }
+  else if (startswith (p, "rv64"))
+    {
+      m_xlen = 64;
+      p += 4;
+    }
+  else
+    {
+      error_at (m_loc, "%<-march=%s%>: ISA string must begin with rv32 or rv64",
+		m_arch);
+      return NULL;
+    }
 
   /* First letter must start with i, e or g.  */
   switch (*p)
@@ -1044,6 +1056,28 @@ riscv_subset_list::parse_std_ext (const char *p)
 		"%<i%> or %<g%>", m_arch);
       return NULL;
     }
+  return p;
+}
+
+
+/* Parsing function for standard extensions.
+
+   Return Value:
+     Points to the end of extensions.
+
+   Arguments:
+     `p`: Current parsing position.  */
+
+const char *
+riscv_subset_list::parse_std_ext (const char *p)
+{
+  const char *all_std_exts = riscv_supported_std_ext ();
+  const char *std_exts = all_std_exts;
+
+  unsigned major_version = 0;
+  unsigned minor_version = 0;
+  char std_ext = '\0';
+  bool explicit_version_p = false;
 
   while (p != NULL && *p)
     {
@@ -1509,22 +1543,9 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   riscv_subset_list *subset_list = new riscv_subset_list (arch, loc);
   riscv_subset_t *itr;
   const char *p = arch;
-  if (startswith (p, "rv32"))
-    {
-      subset_list->m_xlen = 32;
-      p += 4;
-    }
-  else if (startswith (p, "rv64"))
-    {
-      subset_list->m_xlen = 64;
-      p += 4;
-    }
-  else
-    {
-      error_at (loc, "%<-march=%s%>: ISA string must begin with rv32 or rv64",
-		arch);
-      goto fail;
-    }
+  p = subset_list->parse_base_ext (p);
+  if (p == NULL)
+    goto fail;
 
   /* Parsing standard extension.  */
   p = subset_list->parse_std_ext (p);
