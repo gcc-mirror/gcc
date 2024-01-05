@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <array>
 #include <bits/stl_uninitialized.h>
+#include <ext/numeric_traits.h> // __gnu_cxx::__int_traits
 
 namespace fs = std::filesystem;
 using fs::path;
@@ -447,11 +448,30 @@ path::_List::reserve(int newcap, bool exact = false)
 
   if (curcap < newcap)
     {
-      const int nextcap = curcap + curcap / 2;
-      if (!exact && newcap < nextcap)
-	newcap = nextcap;
+      if (!exact)
+	{
+	  const int nextcap = curcap + curcap / 2;
+	  if (newcap < nextcap)
+	    newcap = nextcap;
+	}
 
-      void* p = ::operator new(sizeof(_Impl) + newcap * sizeof(value_type));
+      using __gnu_cxx::__int_traits;
+      // Nobody should need paths with this many components.
+      if (newcap >= __int_traits<int>::__max / 4)
+	std::__throw_bad_alloc();
+
+      size_t bytes;
+      if constexpr (__int_traits<int>::__max >= __int_traits<size_t>::__max)
+	{
+	  size_t components;
+	  if (__builtin_mul_overflow(newcap, sizeof(value_type), &components)
+		|| __builtin_add_overflow(sizeof(_Impl), components, &bytes))
+	    std::__throw_bad_alloc();
+	}
+      else // This won't overflow, even for 20-bit size_t on msp430.
+	bytes = sizeof(_Impl) + newcap * sizeof(value_type);
+
+      void* p = ::operator new(bytes);
       std::unique_ptr<_Impl, _Impl_deleter> newptr(::new(p) _Impl{newcap});
       const int cursize = curptr ? curptr->size() : 0;
       if (cursize)
@@ -587,13 +607,6 @@ path::operator/=(const path& __p)
   if (orig_type == _Type::_Root_name)
     ++capacity; // Need to insert root-directory after root-name
 #endif
-
-  if (orig_type == _Type::_Multi)
-    {
-      const int curcap = _M_cmpts._M_impl->capacity();
-      if (capacity > curcap)
-	capacity = std::max(capacity, (int) (curcap * 1.5));
-    }
 
   _M_pathname.reserve(_M_pathname.length() + sep.length()
 		      + __p._M_pathname.length());
