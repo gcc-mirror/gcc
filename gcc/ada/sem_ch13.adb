@@ -15938,7 +15938,7 @@ package body Sem_Ch13 is
             return Skip;
 
          --  Resolve identifiers, but not selectors in parameter associations;
-         --  the selectors are never resolved by visibility.
+         --  such selectors are never resolved by visibility.
 
          elsif Nkind (N) = N_Identifier
            and then Chars (N) /= Chars (E)
