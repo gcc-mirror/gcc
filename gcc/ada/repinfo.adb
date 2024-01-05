@@ -1491,6 +1491,12 @@ package body Repinfo is
 
                   else
                      Parent_Type := Base_Type (Parent_Type);
+
+                     if Is_Private_Type (Parent_Type) then
+                        Parent_Type := Full_View (Parent_Type);
+                        pragma Assert (Present (Parent_Type));
+                     end if;
+
                      if not In_Extended_Main_Source_Unit (Parent_Type) then
                         raise Not_In_Extended_Main;
                      end if;
