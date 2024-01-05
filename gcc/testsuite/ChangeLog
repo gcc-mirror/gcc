@@ -1,3 +1,94 @@
+2024-01-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-13.c: New test.
+
+2024-01-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/113186
+	* gcc.dg/tree-ssa/bitops-bool-1.c: New test.
+
+2024-01-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/gcc-dg.exp: Set TERM to xterm.
+
+2024-01-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112790
+	* c-c++-common/analyzer/deref-before-check-pr112790.c: New test.
+
+2024-01-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113222
+	* gcc.dg/analyzer/out-of-bounds-diagram-pr113222.c: New test.
+
+2024-01-04  Kuan-Lin Chen  <rufus@andestech.com>
+	    Patrick Lin  <patrick@andestech.com>
+	    Rufus Chen  <rufus@andestech.com>
+	    Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/_Float16-nanboxing.c: New test.
+
+2024-01-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-01-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-13.c: New test.
+
+2024-01-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-13.c: New test.
+
+2024-01-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/interrupt-misaligned.c: New.
+
+2024-01-04  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.dg/vect/slp-26.c: Add loongarch.
+
+2024-01-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-11.c: New test.
+
+2024-01-04  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvstelm.c:Add compile
+	option "-fno-vect-cost-model" to dg-options.
+
+2024-01-04  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.c-torture/compile/mipscop-1.c: Include stdio.h.
+	* gcc.c-torture/compile/mipscop-2.c: Ditto.
+	* gcc.c-torture/compile/mipscop-3.c: Ditto.
+	* gcc.c-torture/compile/mipscop-4.c: Ditto.
+
+2024-01-04  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/pr104914.c: New test.
+
+2024-01-04  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/data-sym-multi-pool.c: Skip Os or -O0.
+
+2024-01-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113206
+	PR target/113209
+	* gcc.target/riscv/rvv/vsetvl/avl_single-23.c: Adapt test.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-1.c: Robostify test.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr113206-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr113206-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr113209.c: New test.
+
 2024-01-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/113064

@@ -1,3 +1,17 @@
+2024-01-05  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits: Use _GLIBCXX_USE_BUILTIN_TRAIT.
+
+2024-01-04  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/std/generator (_Subyield_state::_M_jump_in): Fix typo
+	reported by Will Hawkins <hawkinsw@obs.cr>.
+
+2024-01-04  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/std/generator (_Stateless_alloc): Rename typename _A
+	to _All.
+
 2024-01-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR testsuite/113175
