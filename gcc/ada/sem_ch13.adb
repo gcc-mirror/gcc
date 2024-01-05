@@ -15925,12 +15925,20 @@ package body Sem_Ch13 is
               and then Chars (Prefix (N)) /= Chars (E)
             then
                Find_Selected_Component (N);
+
+               --  Reset the Entity if N is overloaded since the entity might
+               --  not be the correct one; allow later resolution to set it
+               --  properly.
+
+               if Is_Overloaded (N) then
+                  Set_Entity (N, Empty);
+               end if;
             end if;
 
             return Skip;
 
-         --  Resolve identifiers that are not selectors in parameter
-         --  associations (these are never resolved by visibility).
+         --  Resolve identifiers, but not selectors in parameter associations;
+         --  the selectors are never resolved by visibility.
 
          elsif Nkind (N) = N_Identifier
            and then Chars (N) /= Chars (E)
@@ -15939,8 +15947,7 @@ package body Sem_Ch13 is
          then
             Find_Direct_Name (N);
 
-            --  Reset the Entity if N is overloaded since the entity may not
-            --  be the correct one.
+            --  Reset the Entity as above for selected_components
 
             if Is_Overloaded (N) then
                Set_Entity (N, Empty);
