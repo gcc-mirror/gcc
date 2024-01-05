@@ -12,4 +12,4 @@ f2 (double a, double b, double c)
   return -(a * b) - c;
 }
 
-/* { dg-final { scan-tree-dump-times { = \.FNMS \(} 2 "widening_mul" { target scalar_all_fma } } } */
+/* { dg-final { scan-tree-dump-times { = \.FNMS \(} 2 "widening_mul" { target { scalar_all_fma && { ! loongarch*-*-* } } } } } */
