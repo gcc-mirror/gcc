@@ -9847,10 +9847,46 @@ loongarch_gen_const_int_vector_shuffle (machine_mode mode, int val)
 void
 loongarch_expand_vector_group_init (rtx target, rtx vals)
 {
-  rtx ops[2] = { force_reg (E_V16QImode, XVECEXP (vals, 0, 0)),
-      force_reg (E_V16QImode, XVECEXP (vals, 0, 1)) };
-  emit_insn (gen_rtx_SET (target, gen_rtx_VEC_CONCAT (E_V32QImode, ops[0],
-						      ops[1])));
+  machine_mode vmode = GET_MODE (target);
+  machine_mode half_mode = VOIDmode;
+  rtx low = XVECEXP (vals, 0, 0);
+  rtx high = XVECEXP (vals, 0, 1);
+
+  switch (vmode)
+    {
+    case E_V32QImode:
+      half_mode = V16QImode;
+      break;
+    case E_V16HImode:
+      half_mode = V8HImode;
+      break;
+    case E_V8SImode:
+      half_mode = V4SImode;
+      break;
+    case E_V4DImode:
+      half_mode = V2DImode;
+      break;
+    case E_V8SFmode:
+      half_mode = V4SFmode;
+      break;
+    case E_V4DFmode:
+      half_mode = V2DFmode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (high == CONST0_RTX (half_mode))
+    emit_insn (gen_vec_concatz (vmode, target, low, high));
+  else
+    {
+      if (!register_operand (low, half_mode))
+	low = force_reg (half_mode, low);
+      if (!register_operand (high, half_mode))
+	high = force_reg (half_mode, high);
+      emit_insn (gen_rtx_SET (target,
+			      gen_rtx_VEC_CONCAT (vmode, low, high)));
+    }
 }
 
 /* Expand initialization of a vector which has all same elements.  */

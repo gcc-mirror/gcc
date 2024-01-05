@@ -465,6 +465,11 @@
    (V16HI "w")
    (V32QI "w")])
 
+;; Half modes of all LASX vector modes, in lower-case.
+(define_mode_attr lasxhalf [(V32QI "v16qi")  (V16HI "v8hi")
+             (V8SI "v4si")  (V4DI  "v2di")
+             (V8SF  "v4sf") (V4DF  "v2df")])
+
 (define_expand "vec_init<mode><unitmode>"
   [(match_operand:LASX 0 "register_operand")
    (match_operand:LASX 1 "")]
@@ -474,9 +479,9 @@
   DONE;
 })
 
-(define_expand "vec_initv32qiv16qi"
- [(match_operand:V32QI 0 "register_operand")
-  (match_operand:V16QI 1 "")]
+(define_expand "vec_init<mode><lasxhalf>"
+ [(match_operand:LASX 0 "register_operand")
+  (match_operand:<VHMODE256_ALL> 1 "")]
   "ISA_HAS_LASX"
 {
   loongarch_expand_vector_group_init (operands[0], operands[1]);
@@ -575,6 +580,21 @@
     return "xvinsgr2vr.<lasxfmt>\t%u0,%z1,%y3";
 }
   [(set_attr "type" "simd_insert")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@vec_concatz<mode>"
+  [(set (match_operand:LASX 0 "register_operand" "=f")
+    (vec_concat:LASX
+      (match_operand:<VHMODE256_ALL> 1 "nonimmediate_operand")
+      (match_operand:<VHMODE256_ALL> 2 "const_0_operand")))]
+  "ISA_HAS_LASX"
+{
+  if (MEM_P (operands[1]))
+    return "vld\t%w0,%1";
+  else
+    return "vori.b\t%w0,%w1,0";
+}
+  [(set_attr "type" "simd_splat")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "vec_concat<mode>"
