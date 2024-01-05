@@ -1020,9 +1020,15 @@ dec_waiting_unlocked (gfc_unit *u)
 #ifdef HAVE_ATOMIC_FETCH_ADD
   (void) __atomic_fetch_add (&u->waiting, -1, __ATOMIC_RELAXED);
 #else
-  WRLOCK (&unit_rwlock);
+#ifdef __GTHREAD_RWLOCK_INIT
+  __gthread_rwlock_wrlock (&unit_rwlock);
   u->waiting--;
-  RWUNLOCK (&unit_rwlock);
+  __gthread_rwlock_unlock (&unit_rwlock);
+#else
+  __gthread_mutex_lock (&unit_rwlock);
+  u->waiting--;
+  __gthread_mutex_unlock (&unit_rwlock);
+#endif
 #endif
 }
 
