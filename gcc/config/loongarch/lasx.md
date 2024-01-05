@@ -635,6 +635,8 @@
    (set_attr "mode" "<MODE>")])
 
 ;; xvpermi.q
+;; Unused bits in operands[3] need be set to 0 to avoid
+;; causing undefined behavior on LA464.
 (define_insn "lasx_xvpermi_q_<LASX:mode>"
   [(set (match_operand:LASX 0 "register_operand" "=f")
 	(unspec:LASX
@@ -643,7 +645,12 @@
 	   (match_operand     3 "const_uimm8_operand")]
 	  UNSPEC_LASX_XVPERMI_Q))]
   "ISA_HAS_LASX"
-  "xvpermi.q\t%u0,%u2,%3"
+{
+  int mask = 0x33;
+  mask &= INTVAL (operands[3]);
+  operands[3] = GEN_INT (mask);
+  return "xvpermi.q\t%u0,%u2,%3";
+}
   [(set_attr "type" "simd_splat")
    (set_attr "mode" "<MODE>")])
 
