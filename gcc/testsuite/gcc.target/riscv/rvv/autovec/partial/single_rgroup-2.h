@@ -29,7 +29,7 @@
 	}                                                                      \
       else                                                                     \
         {                                                                      \
-	  if (b_##TYPE[i] == 0) __builtin_abort();                             \
+	  if (b_##TYPE[i] != 0) __builtin_abort();                             \
 	}                                                                      \
     }
 
