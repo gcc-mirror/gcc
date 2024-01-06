@@ -5600,6 +5600,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
 	    return nullptr;
 	  }
       }
+    case ASYNC:
     case EXTERN_KW:
     case UNSAFE:
     case FN_KW:
