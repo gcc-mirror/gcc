@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-require-effective-target int32plus } */
 
 unsigned int test_ior(unsigned char i)
 {

@@ -5,11 +5,11 @@ extern void abort (void);
 
 
 __attribute__ ((noinline, noclone))
-static int rt32 (int x, int y, int z) {
+static __INT32_TYPE__ rt32 (__INT32_TYPE__ x, int y, __INT32_TYPE__ z) {
   return (__builtin_bswap32(x) >> y) & z;
 }
 #define TEST32(X,Y,Z) if(((__builtin_bswap32(X)>>Y)&Z)!=rt32(X,Y,Z)) abort()
-void test32(int x)
+void test32(__INT32_TYPE__ x)
 {
   TEST32(x,0,1);
   TEST32(x,0,255);

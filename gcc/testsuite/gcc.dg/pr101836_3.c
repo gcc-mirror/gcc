@@ -46,7 +46,7 @@ void __attribute__((__noinline__)) stuff(
     struct trailing_array_3 *trailing_0,
     struct trailing_array_4 *trailing_flex)
 {
-    expect(__builtin_object_size(normal->c, 1), 16);
+    expect(__builtin_object_size(normal->c, 1), 4 * __SIZEOF_INT__);
     expect(__builtin_object_size(trailing_1->c, 1), -1);
     expect(__builtin_object_size(trailing_0->c, 1), -1);
     expect(__builtin_object_size(trailing_flex->c, 1), -1);

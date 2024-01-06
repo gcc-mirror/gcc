@@ -2,6 +2,7 @@
 /* { dg-do run } */
 // { dg-require-effective-target thread_fence }
 /* { dg-options "-std=c23 -pedantic-errors -Wall -Wextra -Wno-unused-variable" } */
+/* { dg-xfail-if "__atomic not supported" { "avr-*-*" } } */
 
 #include <stdarg.h>
 

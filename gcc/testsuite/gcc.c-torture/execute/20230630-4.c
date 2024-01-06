@@ -5,7 +5,7 @@
 #endif
 
 struct S {
-  int i : 24;
+  __INT32_TYPE__ i : 24;
   char c1 : 1;
   char c2 : 1;
   char c3 : 1;
