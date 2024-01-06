@@ -1724,10 +1724,7 @@
    vse<sew>.v\t%3,%0%p1
    vmv.v.v\t%0,%3
    vmv.v.v\t%0,%3"
-  "&& register_operand (operands[0], <MODE>mode)
-   && register_operand (operands[3], <MODE>mode)
-   && satisfies_constraint_vu (operands[2])
-   && INTVAL (operands[7]) == riscv_vector::VLMAX"
+  "&& riscv_vector::whole_reg_to_reg_move_p (operands, <MODE>mode, 7)"
   [(set (match_dup 0) (match_dup 3))]
   ""
   [(set_attr "type" "vlde,vlde,vlde,vste,vimov,vimov")
@@ -1776,9 +1773,7 @@
    vmmv.m\t%0,%3
    vmclr.m\t%0
    vmset.m\t%0"
-  "&& register_operand (operands[0], <MODE>mode)
-   && register_operand (operands[3], <MODE>mode)
-   && INTVAL (operands[5]) == riscv_vector::VLMAX"
+  "&& riscv_vector::whole_reg_to_reg_move_p (operands, <MODE>mode, 5)"
   [(set (match_dup 0) (match_dup 3))]
   ""
   [(set_attr "type" "vldm,vstm,vmalu,vmalu,vmalu")

@@ -5117,4 +5117,27 @@ estimated_poly_value (poly_int64 val, unsigned int kind)
   return val.coeffs[0] + val.coeffs[1] * over_min_vlen / TARGET_MIN_VLEN;
 }
 
+/* Return true it is whole register-register move.  */
+bool
+whole_reg_to_reg_move_p (rtx *ops, machine_mode mode, int avl_type_index)
+{
+  /* An operation is a whole-register move if either
+     (1) Its vlmax operand equals VLMAX
+     (2) Its vl operand equals the number of units of its mode.  */
+  if (register_operand (ops[0], mode)
+      && register_operand (ops[3], mode)
+      && satisfies_constraint_vu (ops[2])
+      && satisfies_constraint_Wc1 (ops[1]))
+    {
+      if (INTVAL (ops[avl_type_index]) == VLMAX)
+	return true;
+      /* AVL propagation PASS will transform FIXED-VLMAX with NUNITS < 32
+	 into NON-VLMAX with LEN = NUNITS.  */
+      else if (CONST_INT_P (ops[4])
+	       && known_eq (INTVAL (ops[4]), GET_MODE_NUNITS (mode)))
+	return true;
+    }
+  return false;
+}
+
 } // namespace riscv_vector
