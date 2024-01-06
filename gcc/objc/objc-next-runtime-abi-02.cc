@@ -1657,6 +1657,8 @@ build_v2_objc_method_fixup_call (int super_flag, tree method_prototype,
   rcv_p = (super_flag ? objc_super_type : objc_object_type);
 
   lookup_object = build_c_cast (input_location, rcv_p, lookup_object);
+  if (sender == error_mark_node || lookup_object == error_mark_node)
+    return error_mark_node;
 
   /* Use SAVE_EXPR to avoid evaluating the receiver twice.  */
   lookup_object = save_expr (lookup_object);
