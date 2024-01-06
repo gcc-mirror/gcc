@@ -1,3 +1,44 @@
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_path.cc (path::_List::reserve): Limit maximum
+	size and check for overflows in arithmetic.
+	(path::operator/=(const path&)): Remove redundant exponential
+	growth calculation.
+
+2024-01-05  Martin Küttler  <martin.kuettler@kernkonzept.com>
+
+	* src/c++17/fs_path.cc (path::_List::reserve): Avoid
+	floating-point arithmetic.
+
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113241
+	* include/std/type_traits (is_convertible_v): Guard use of
+	built-in with preprocessor check.
+
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113200
+	* include/bits/char_traits.h (__gnu_cxx::char_traits::move): Use
+	__builtin_constant_p to check for unrelated pointers that cannot
+	be compared during constant evaluation.
+	* testsuite/21_strings/char_traits/requirements/113200.cc: New
+	test.
+
+2024-01-05  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono: Fix + and - for months and weekdays.
+	* testsuite/std/time/month/1.cc: Add constexpr tests against overflow.
+	* testsuite/std/time/month/2.cc: New test for extreme values.
+	* testsuite/std/time/weekday/1.cc: Add constexpr tests against overflow.
+	* testsuite/std/time/weekday/2.cc: New test for extreme values.
+
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113099
+	* include/bits/locale_classes.tcc (__try_use_facet): Use
+	if-constexpr for C++11 and up.
+
 2024-01-05  Ken Matsui  <kmatsui@gcc.gnu.org>
 
 	* include/std/type_traits: Use _GLIBCXX_USE_BUILTIN_TRAIT.

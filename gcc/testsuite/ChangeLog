@@ -1,3 +1,179 @@
+2024-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113104
+	* gcc.target/aarch64/pr113104.c: New test.
+	* gcc.target/aarch64/sve/cond_arith_1.c: Update for new parameter
+	names.
+	* gcc.target/aarch64/sve/cond_arith_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_7.c: Likewise.
+	* gcc.target/aarch64/sve/load_const_offset_2.c: Likewise.
+	* gcc.target/aarch64/sve/load_const_offset_3.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_7.c: Likewise.
+	* gcc.target/aarch64/sve/mask_load_slp_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_3.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_4.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/pack_1.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_4.c: Likewise.
+	* gcc.target/aarch64/sve/scatter_store_6.c: Likewise.
+	* gcc.target/aarch64/sve/scatter_store_7.c: Likewise.
+	* gcc.target/aarch64/sve/strided_load_3.c: Likewise.
+	* gcc.target/aarch64/sve/strided_store_3.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_fcvt_signed_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_fcvt_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_signed_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_unsigned_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_11.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_11_run.c: Likewise.
+
+2024-01-05  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/vect-ld-st-imm12.c: New test.
+
+2024-01-05  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.dg/fma-3.c: The intermediate file corresponding to the
+	function does not produce the corresponding FNMA symbol, so the test
+	rules should be skipped when testing.
+	* gcc.dg/fma-4.c: The intermediate file corresponding to the
+	function does not produce the corresponding FNMS symbol, so skip the
+	test rules when testing.
+	* gcc.dg/fma-6.c: The cause is the same as fma-3.c.
+	* gcc.dg/fma-7.c: The cause is the same as fma-4.c
+
+2024-01-05  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.dg/vect/bb-slp-pattern-1.c: If you are testing on the
+	LoongArch architecture, you need to add the "-mlasx" compilation
+	option to generate vectorized code.
+	* gcc.dg/vect/slp-widen-mult-half.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-half.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-u16.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-u8-s16-s32.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-u8-u32.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-u8.c: Dito.
+
+2024-01-05  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gfortran.dg/vect/pr60510.f: Delete the default behavior of the
+	program.
+
+2024-01-05  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gfortran.dg/bind_c_array_params_2.f90: Add code test rules to
+	support testing of the loongArch architecture.
+
+2024-01-05  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.dg/vect/vect-82.c: Add the LoongArch architecture to the
+	object detection framework.
+	* gcc.dg/vect/vect-83.c: Dito.
+
+2024-01-05  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.dg/vect/vect-bic-bitmask-12.c: Change the default
+	setting of assembly to compile.
+	* gcc.dg/vect/vect-bic-bitmask-23.c: Dito.
+
+2024-01-05  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* lib/target-supports.exp: Add LoongArch to the list of supported
+	targets.
+
+2024-01-05  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113217
+	* g++.dg/pr113217.C: New test.
+
+2024-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113201
+	* gcc.c-torture/compile/pr113201.c: New test.
+
+2024-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90693
+	* gcc.target/i386/pr90693-2.c: New test.
+
+2024-01-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-2.h:
+	Fix the check condition.
+
+2024-01-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/shift-scalar-template.h:
+	Use __builtin_abort instead of assert.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-1.c: Drop math.h.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-2.h: Use
+	__builtin_abort instead of assert.
+	* gcc.target/riscv/rvv/autovec/pr112694-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-3.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/abs-template.h: Drop stdlib.h.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vnot-template.h: Ditto.
+
+2024-01-05  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-01-05  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/zvbb-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvbb_vandn_vx_constraint.c: New test.
+	* gcc.target/riscv/rvv/base/zvbc-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvbc_vx_constraint-1.c: New test.
+	* gcc.target/riscv/rvv/base/zvbc_vx_constraint-2.c: New test.
+	* gcc.target/riscv/rvv/base/zvkg-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvkned-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvknha-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvknhb-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvksed-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvksh-intrinsic.c: New test.
+	* gcc.target/riscv/zvkb.c: New test.
+
+2024-01-05  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/zvbb-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvbb_vandn_vx_constraint.c: New test.
+	* gcc.target/riscv/rvv/base/zvbc-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvbc_vx_constraint-1.c: New test.
+	* gcc.target/riscv/rvv/base/zvbc_vx_constraint-2.c: New test.
+	* gcc.target/riscv/rvv/base/zvkg-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvkned-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvknha-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvknhb-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvksed-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvksh-intrinsic.c: New test.
+	* gcc.target/riscv/zvkb.c: New test.
+
 2024-01-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-13.c: New test.

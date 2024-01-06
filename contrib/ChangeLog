@@ -1,3 +1,28 @@
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* analyze_brprob.py: Remove stray text at end of comment.
+	* analyze_brprob_spec.py: Likewise.
+	* check-params-in-docs.py: Likewise.
+	* check_GNU_style.py: Likewise.
+	* check_GNU_style_lib.py: Likewise.
+	* filter-clang-warnings.py: Likewise.
+	* gcc-changelog/git_check_commit.py: Likewise.
+	* gcc-changelog/git_commit.py: Likewise.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/git_update_version.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+	* gen_autofdo_event.py: Likewise.
+	* mark_spam.py: Likewise.
+	* unicode/gen-box-drawing-chars.py: Likewise.
+	* unicode/gen-combining-chars.py: Likewise.
+	* unicode/gen-printable-chars.py: Likewise.
+	* unicode/gen_wcwidth.py: Likewise.
+
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_wcwidth.py: Add sys.argv[0] to usage error.
+
 2024-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py (GenericFilter): Skip gpl_v3_without_node.texi.

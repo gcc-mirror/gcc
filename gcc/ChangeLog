@@ -1,3 +1,248 @@
+2024-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113104
+	* doc/invoke.texi (aarch64-sve-compare-costs): Replace with...
+	(aarch64-vect-compare-costs): ...this.
+	* config/aarch64/aarch64.opt (-param=aarch64-sve-compare-costs=):
+	Replace with...
+	(-param=aarch64-vect-compare-costs=): ...this new param.
+	* config/aarch64/aarch64.cc (aarch64_override_options_internal):
+	Don't disable it when vectorizing for Advanced SIMD only.
+	(aarch64_autovectorize_vector_modes): Apply VECT_COMPARE_COSTS
+	whenever aarch64_vect_compare_costs is true.
+
+2024-01-05  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/lasx.md (lasx_mxld_<lasxfmt_f>):
+	Modify the method of determining the memory offset of [x]vld/[x]vst.
+	(lasx_mxst_<lasxfmt_f>): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_valid_offset_p): Delete.
+	(loongarch_address_insns): Likewise.
+	* config/loongarch/lsx.md (lsx_ld_<lsxfmt_f>): Likewise.
+	(lsx_st_<lsxfmt_f>): Likewise.
+	* config/loongarch/predicates.md (aq10b_operand): Likewise.
+	(aq10h_operand): Likewise.
+	(aq10w_operand): Likewise.
+	(aq10d_operand): Likewise.
+
+2024-01-05  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113217
+	* config/aarch64/aarch64-ldp-fusion.cc
+	(ldp_bb_info::try_fuse_pair): If the second access can throw,
+	narrow the move range to exactly that insn.
+
+2024-01-05  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* asan.cc (asan_function_start): Drop switch_to_section ().
+	(asan_emit_stack_protection): Set .LASANPC alignment.
+	* config/i386/i386.cc: Use assemble_function_label_raw ()
+	instead of ASM_OUTPUT_LABEL ().
+	* config/s390/s390.cc (s390_asm_output_function_label):
+	Likewise.
+	* defaults.h (ASM_OUTPUT_FUNCTION_LABEL): Likewise.
+	* final.cc (final_start_function_1): Drop
+	asan_function_start ().
+	* output.h (assemble_function_label_raw): New function.
+	* varasm.cc (assemble_function_label_raw): Likewise.
+
+2024-01-05  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_declare_function_name):
+	Use ASM_OUTPUT_FUNCTION_LABEL ().
+	* config/alpha/alpha.cc (alpha_start_function): Likewise.
+	* config/arm/aout.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/arm/arm.cc (arm_asm_declare_function_name): Likewise.
+	* config/bfin/bfin.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/c6x/c6x.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Likewise.
+	* config/h8300/h8300.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/ia64/ia64.cc (ia64_start_function): Likewise.
+	* config/mcore/mcore-elf.h (ASM_DECLARE_FUNCTION_NAME):
+	Likewise.
+	* config/microblaze/microblaze.cc (microblaze_function_prologue):
+	Likewise.
+	* config/mips/mips.cc (mips_start_unique_function): Return the
+	tree.
+	(mips_start_function_definition): Use
+	ASM_OUTPUT_FUNCTION_LABEL ().
+	(mips_finish_stub): Pass the tree to
+	mips_start_function_definition ().
+	(mips16_build_function_stub): Likewise.
+	(mips16_build_call_stub): Likewise.
+	(mips_output_function_prologue): Likewise.
+	* config/pa/pa.cc (pa_output_function_label): Use
+	ASM_OUTPUT_FUNCTION_LABEL ().
+	* config/riscv/riscv.cc (riscv_declare_function_name): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_elf_declare_function_name):
+	Likewise.
+	(rs6000_xcoff_declare_function_name): Likewise.
+
+2024-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113201
+	* tree-scalar-evolution.cc (final_value_replacement_loop): Don't call
+	replace_uses_by on SSA_NAME_OCCURS_IN_ABNORMAL_PHI rslt.
+
+2024-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90693
+	* tree-ssa-math-opts.cc (match_single_bit_test): If
+	tree_expr_nonzero_p (arg), remember it in the second argument to
+	IFN_POPCOUNT or lower it as arg & (arg - 1) == 0 rather than
+	arg ^ (arg - 1) > arg - 1.
+	* internal-fn.cc (expand_POPCOUNT): If second argument to
+	IFN_POPCOUNT suggests arg is non-zero, try to expand it as
+	arg & (arg - 1) == 0 rather than arg ^ (arg - 1) > arg - 1.
+
+2024-01-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-v.cc (expand_load_store):
+	Remove `value`.
+	(expand_cond_len_op): Ditto.
+	(expand_gather_scatter): Ditto.
+	(expand_lanes_load_store): Ditto.
+	(expand_fold_extract_last): Ditto.
+
+2024-01-05  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-01-05  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class vandn):
+				Add new function_base for crypto vector.
+	(class bitmanip): Ditto.
+	(class b_reverse):Ditto.
+	(class vwsll):   Ditto.
+	(class clmul):   Ditto.
+	(class vg_nhab):  Ditto.
+	(class crypto_vv):Ditto.
+	(class crypto_vi):Ditto.
+	(class vaeskf2_vsm3c):Ditto.
+	(class vsm3me): Ditto.
+	(BASE): Add BASE declaration for crypto vector.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (REQUIRED_EXTENSIONS):
+				Add crypto vector intrinsic definition.
+	(vbrev): Ditto.
+	(vclz): Ditto.
+	(vctz): Ditto.
+	(vwsll): Ditto.
+	(vandn): Ditto.
+	(vbrev8): Ditto.
+	(vrev8): Ditto.
+	(vrol): Ditto.
+	(vror): Ditto.
+	(vclmul): Ditto.
+	(vclmulh): Ditto.
+	(vghsh): Ditto.
+	(vgmul): Ditto.
+	(vaesef): Ditto.
+	(vaesem): Ditto.
+	(vaesdf): Ditto.
+	(vaesdm): Ditto.
+	(vaesz): Ditto.
+	(vaeskf1): Ditto.
+	(vaeskf2): Ditto.
+	(vsha2ms): Ditto.
+	(vsha2ch): Ditto.
+	(vsha2cl): Ditto.
+	(vsm4k): Ditto.
+	(vsm4r): Ditto.
+	(vsm3me): Ditto.
+	(vsm3c): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct crypto_vv_def):
+				Add new function_shape for crypto vector.
+	(struct crypto_vi_def): Ditto.
+	(struct crypto_vv_no_op_type_def): Ditto.
+	(SHAPE): Add SHAPE declaration of crypto vector.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_CRYPTO_SEW32_OPS):
+				Add new data type for crypto vector.
+	(DEF_RVV_CRYPTO_SEW64_OPS): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vuint64m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_CRYPTO_SEW32_OPS):
+				Add new data struct for crypto vector.
+	(DEF_RVV_CRYPTO_SEW64_OPS): Ditto.
+	(registered_function::overloaded_hash): Processing size_t uimm for C overloaded func.
+	* config/riscv/riscv-vector-builtins.def (vi): Add vi OP_TYPE.
+
+2024-01-05  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class vandn):
+				Add new function_base for crypto vector.
+	(class bitmanip): Ditto.
+	(class b_reverse):Ditto.
+	(class vwsll):   Ditto.
+	(class clmul):   Ditto.
+	(class vg_nhab):  Ditto.
+	(class crypto_vv):Ditto.
+	(class crypto_vi):Ditto.
+	(class vaeskf2_vsm3c):Ditto.
+	(class vsm3me): Ditto.
+	(BASE): Add BASE declaration for crypto vector.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (REQUIRED_EXTENSIONS):
+				Add crypto vector intrinsic definition.
+	(vbrev): Ditto.
+	(vclz): Ditto.
+	(vctz): Ditto.
+	(vwsll): Ditto.
+	(vandn): Ditto.
+	(vbrev8): Ditto.
+	(vrev8): Ditto.
+	(vrol): Ditto.
+	(vror): Ditto.
+	(vclmul): Ditto.
+	(vclmulh): Ditto.
+	(vghsh): Ditto.
+	(vgmul): Ditto.
+	(vaesef): Ditto.
+	(vaesem): Ditto.
+	(vaesdf): Ditto.
+	(vaesdm): Ditto.
+	(vaesz): Ditto.
+	(vaeskf1): Ditto.
+	(vaeskf2): Ditto.
+	(vsha2ms): Ditto.
+	(vsha2ch): Ditto.
+	(vsha2cl): Ditto.
+	(vsm4k): Ditto.
+	(vsm4r): Ditto.
+	(vsm3me): Ditto.
+	(vsm3c): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct crypto_vv_def):
+				Add new function_shape for crypto vector.
+	(struct crypto_vi_def): Ditto.
+	(struct crypto_vv_no_op_type_def): Ditto.
+	(SHAPE): Add SHAPE declaration of crypto vector.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_CRYPTO_SEW32_OPS):
+				Add new data type for crypto vector.
+	(DEF_RVV_CRYPTO_SEW64_OPS): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vuint64m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_CRYPTO_SEW32_OPS):
+				Add new data struct for crypto vector.
+	(DEF_RVV_CRYPTO_SEW64_OPS): Ditto.
+	(registered_function::overloaded_hash): Processing size_t uimm for C overloaded func.
+	* config/riscv/riscv-vector-builtins.def (vi): Add vi OP_TYPE.
+
 2024-01-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vector-costs.cc (variable_vectorized_p): Teach vi variant.
