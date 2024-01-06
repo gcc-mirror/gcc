@@ -2876,6 +2876,23 @@ pre_vsetvl::fuse_local_vsetvl_info ()
 		      curr_info.dump (dump_file, "        ");
 		      fprintf (dump_file, "\n");
 		    }
+		  /* Even though prev_info is available with curr_info,
+		     we need to update the MAX_SEW of prev_info since
+		     we don't check MAX_SEW in available_p check.
+
+		     prev_info:
+		     Demand fields: demand_ratio_and_ge_sew demand_avl
+		     SEW=16, VLMUL=mf4, RATIO=64, MAX_SEW=64
+
+		     curr_info:
+		     Demand fields: demand_ge_sew demand_non_zero_avl
+		     SEW=16, VLMUL=m1, RATIO=16, MAX_SEW=32
+
+		     In the example above, prev_info is available with
+		     curr_info, we need to update prev_info MAX_SEW from
+		     64 into 32.  */
+		  prev_info.set_max_sew (
+		    MIN (prev_info.get_max_sew (), curr_info.get_max_sew ()));
 		  if (!curr_info.vl_used_by_non_rvv_insn_p ()
 		      && vsetvl_insn_p (curr_info.get_insn ()->rtl ()))
 		    m_delete_list.safe_push (curr_info);
