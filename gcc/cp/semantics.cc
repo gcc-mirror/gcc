@@ -11933,9 +11933,13 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	      if (WILDCARD_TYPE_P (non_reference (obtype)))
 		/* We don't know what the eventual obtype quals will be.  */
 		goto dependent;
-	      int quals = cp_type_quals (type);
-	      if (INDIRECT_TYPE_P (obtype))
-		quals |= cp_type_quals (TREE_TYPE (obtype));
+	      auto direct_type = [](tree t){
+		  if (INDIRECT_TYPE_P (t))
+		    return TREE_TYPE (t);
+		  return t;
+	       };
+	      int const quals = cp_type_quals (type)
+			      | cp_type_quals (direct_type (obtype));
 	      type = cp_build_qualified_type (type, quals);
 	      type = build_reference_type (type);
 	    }

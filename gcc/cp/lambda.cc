@@ -404,8 +404,10 @@ build_capture_proxy (tree member, tree init)
   fn = lambda_function (closure);
   lam = CLASSTYPE_LAMBDA_EXPR (closure);
 
+  object = DECL_ARGUMENTS (fn);
   /* The proxy variable forwards to the capture field.  */
-  object = build_fold_indirect_ref (DECL_ARGUMENTS (fn));
+  if (INDIRECT_TYPE_P (TREE_TYPE (object)))
+    object = build_fold_indirect_ref (object);
   object = finish_non_static_data_member (member, object, NULL_TREE);
   if (REFERENCE_REF_P (object))
     object = TREE_OPERAND (object, 0);

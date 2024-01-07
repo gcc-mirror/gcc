@@ -14490,9 +14490,9 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   tree ctx = closure ? closure : DECL_CONTEXT (t);
   bool member = ctx && TYPE_P (ctx);
 
-  /* If this is a static lambda, remove the 'this' pointer added in
+  /* If this is a static or xobj lambda, remove the 'this' pointer added in
      tsubst_lambda_expr now that we know the closure type.  */
-  if (lambda_fntype && DECL_STATIC_FUNCTION_P (t))
+  if (lambda_fntype && !DECL_IOBJ_MEMBER_FUNCTION_P (t))
     lambda_fntype = static_fn_type (lambda_fntype);
 
   if (member && !closure)
@@ -14567,12 +14567,12 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
     DECL_NAME (r) = make_conv_op_name (TREE_TYPE (type));
 
   tree parms = DECL_ARGUMENTS (t);
-  if (closure && !DECL_STATIC_FUNCTION_P (t))
+  if (closure && DECL_IOBJ_MEMBER_FUNCTION_P (t))
     parms = DECL_CHAIN (parms);
   parms = tsubst (parms, args, complain, t);
   for (tree parm = parms; parm; parm = DECL_CHAIN (parm))
     DECL_CONTEXT (parm) = r;
-  if (closure && !DECL_STATIC_FUNCTION_P (t))
+  if (closure && DECL_IOBJ_MEMBER_FUNCTION_P (t))
     {
       tree tparm = build_this_parm (r, closure, type_memfn_quals (type));
       DECL_NAME (tparm) = closure_identifier;
@@ -14607,6 +14607,66 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
       && IDENTIFIER_ANY_OP_P (DECL_NAME (r))
       && !grok_op_properties (r, /*complain=*/false))
     return error_mark_node;
+
+  /* If we are looking at an xobj lambda, we might need to check the type of
+     its xobj parameter.  */
+  if (LAMBDA_FUNCTION_P (r) && DECL_XOBJ_MEMBER_FUNCTION_P (r))
+    {
+      tree closure_obj = DECL_CONTEXT (r);
+      tree lambda_expr = CLASSTYPE_LAMBDA_EXPR (closure_obj);
+      tree obj_param = TREE_TYPE (DECL_ARGUMENTS (r));
+
+      if (!(LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
+	    || LAMBDA_EXPR_CAPTURE_LIST (lambda_expr)))
+	/* If a lambda has an empty capture clause, an xobj parameter of
+	   unrelated type is not an error.  */;
+      else if (dependent_type_p (obj_param))
+	/* If we are coming from tsubst_lambda_expr we might not have
+	   substituted into our xobj parameter yet.  We can't error out until
+	   we know what the type really is so do nothing...
+	   ...but if we are instantiating the call op for real and we don't
+	   have a real type then something has gone incredibly wrong.  */
+	gcc_assert (lambda_fntype);
+      else
+	{
+	  /* We have a lambda with captures, and know the type of the xobj
+	     parameter, time to check it.  */
+	  tree obj_param_type = TYPE_MAIN_VARIANT (non_reference (obj_param));
+	  if (!same_or_base_type_p (closure_obj, obj_param_type))
+	    {
+	      /* This error does not emit when the lambda's call operator
+		 template is instantiated by taking its address, such as in
+		 the following case:
+
+		 auto f = [x = 0](this auto&&){};
+		 int (*fp)(int&) = &decltype(f)::operator();
+
+		 It only emits when explicitly calling the call operator with
+		 an explicit template parameter:
+
+		 template<typename T>
+		 struct S : T {
+		   using T::operator();
+		   operator int() const {return {};}
+		 };
+
+		 auto s = S{[x = 0](this auto&&) {}};
+		 s.operator()<int>();
+
+		 This is due to resolve_address_of_overloaded_function being
+		 deficient at reporting candidates when overload resolution
+		 fails.
+
+		 This diagnostic will be active in the first case if/when
+		 resolve_address_of_overloaded_function is fixed to properly
+		 emit candidates upon failure to resolve to an overload.  */
+	      if (complain & tf_error)
+		error ("a lambda with captures may not have an explicit "
+		       "object parameter of an unrelated type");
+	      return error_mark_node;
+	    }
+	}
+    }
 
   /* Associate the constraints directly with the instantiation. We
      don't substitute through the constraints; that's only done when
@@ -19595,7 +19655,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 which would be skipped if cp_unevaluated_operand.  */
       cp_evaluated ev;
 
-      /* Fix the type of 'this'.  */
+      /* Fix the type of 'this'.
+	 For static and xobj member functions we use this to transport the
+	 lambda's closure type.  It appears that in the regular case the
+	 object parameter is still pulled off, and then re-added again anyway.
+	 So perhaps we could do something better here?  */
       fntype = build_memfn_type (fntype, type,
 				 type_memfn_quals (fntype),
 				 type_memfn_rqual (fntype));

@@ -11874,8 +11874,12 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   else if (cxx_dialect < cxx23)
     omitted_parms_loc = cp_lexer_peek_token (parser->lexer)->location;
 
-  /* In the decl-specifier-seq of the lambda-declarator, each
-     decl-specifier shall either be mutable or constexpr.  */
+  /* [expr.prim.lambda.general]
+     lambda-specifier:
+	consteval, constexpr, mutable, static
+     [4] A lambda-specifier-seq shall contain at most one of each
+	 lambda-specifier and shall not contain both constexpr and consteval.
+	 The lambda-specifier-seq shall not contain both mutable and static.  */
   int declares_class_or_enum;
   if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer))
     cp_parser_decl_specifier_seq (parser,
@@ -11890,13 +11894,83 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	       "%<-std=gnu++2b%>");
       omitted_parms_loc = UNKNOWN_LOCATION;
     }
+  /* Peek at the params, see if we have an xobj parameter.  */
+  if (param_list && TREE_PURPOSE (param_list) == this_identifier)
+    {
+      quals = TYPE_UNQUALIFIED;
+      /* We still need grokdeclarator to see that this is an xobj function
+	 and finish the rest of the work, don't mutate it.  */
+      tree const xobj_param = TREE_VALUE (param_list);
+      tree const param_type = TREE_TYPE (xobj_param);
+      /* [expr.prim.lambda.closure-5]
+	 Given a lambda with a lambda-capture, the type of the explicit object
+	 parameter, if any, of the lambda's function call operator (possibly
+	 instantiated from a function call operator template) shall be either:
+	 -- the closure type,
+	 -- a class type derived from the closure type, or
+	 -- a reference to a possibly cv-qualified such type.  */
+      bool const unrelated_with_captures
+	= (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
+	   || LAMBDA_EXPR_CAPTURE_LIST (lambda_expr))
+	  /* Since a lambda's type is anonymous, we can assume an xobj
+	     parameter is unrelated to the closure if it is non-dependent.
+	     If it is dependent we handle it at instantiation time.  */
+	  && !WILDCARD_TYPE_P (non_reference (param_type));
+      if (unrelated_with_captures)
+	{
+	  error_at (DECL_SOURCE_LOCATION (xobj_param),
+		    "a lambda with captures may not have an explicit object "
+		    "parameter of an unrelated type");
+	  LAMBDA_EXPR_CAPTURE_LIST (lambda_expr) = NULL_TREE;
+	}
 
-  if (lambda_specs.storage_class == sc_mutable)
+      /* [expr.prim.lambda.general-4]
+	 If the lambda-declarator contains an explicit object parameter
+	 ([dcl.fct]), then no lambda-specifier in the lambda-specifier-seq
+	 shall be mutable or static.  */
+      if (lambda_specs.storage_class == sc_mutable)
+	{
+	  auto_diagnostic_group d;
+	  error_at (lambda_specs.locations[ds_storage_class],
+		    "%<mutable%> lambda specifier "
+		    "with explicit object parameter");
+	  /* Tell the user how to do what they probably meant, maybe fixits
+	     would be appropriate later?  */
+	  if (unrelated_with_captures)
+	    /* The following hints don't make sense when we already have an
+	       unrelated type with captures, don't emit them.  */;
+	  else if (!TYPE_REF_P (param_type))
+	    inform (DECL_SOURCE_LOCATION (xobj_param),
+		    "the passed in closure object will not be mutated because "
+		    "it is taken by value");
+	  else if (TYPE_READONLY (TREE_TYPE (param_type)))
+	    inform (DECL_SOURCE_LOCATION (xobj_param),
+		    "declare the explicit object parameter as non-const "
+		    "reference instead");
+	  else
+	    inform (DECL_SOURCE_LOCATION (xobj_param),
+		    "explicit object parameter is already a mutable "
+		    "reference");
+	}
+      else if (lambda_specs.storage_class == sc_static)
+	{
+	  auto_diagnostic_group d;
+	  error_at (lambda_specs.locations[ds_storage_class],
+		    "%<static%> lambda specifier "
+		    "with explicit object parameter");
+	  inform (DECL_SOURCE_LOCATION (xobj_param),
+		  "explicit object parameter declared here");
+	}
+    }
+  else if (lambda_specs.storage_class == sc_mutable)
     {
       quals = TYPE_UNQUALIFIED;
     }
   else if (lambda_specs.storage_class == sc_static)
     {
+      /* [expr.prim.lambda.general-4]
+	 If the lambda-specifier-seq contains static, there shall be no
+	 lambda-capture.  */
       if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
 	  || LAMBDA_EXPR_CAPTURE_LIST (lambda_expr))
 	error_at (lambda_specs.locations[ds_storage_class],
@@ -12021,7 +12095,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       {
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
 	DECL_ARTIFICIAL (fco) = 1;
-	if (!LAMBDA_EXPR_STATIC_P (lambda_expr))
+	if (DECL_IOBJ_MEMBER_FUNCTION_P (fco))
 	  /* Give the object parameter a different name.  */
 	  DECL_NAME (DECL_ARGUMENTS (fco)) = closure_identifier;
 	DECL_SET_LAMBDA_FUNCTION (fco, true);
