@@ -4129,6 +4129,31 @@ package body Sem_Ch3 is
                if not Subtypes_Statically_Match (Obj_Typ, R_Typ) then
                   Error_No_Match (Indic);
                end if;
+
+            --  If the result subtype of the function is defined by a
+            --  subtype_mark, the return_subtype_indication shall be a
+            --  subtype_indication. The subtype defined by the subtype_
+            --  indication shall be statically compatible with the result
+            --  subtype of the function (RM 6.5(5.3/5)).
+
+            --  We exclude the extended return statement of the predefined
+            --  stream input to avoid reporting spurious errors, because its
+            --  code is expanded on the basis of the base type (see subprogram
+            --  Stream_Base_Type).
+
+            elsif Nkind (Indic) = N_Subtype_Indication
+              and then not Subtypes_Statically_Compatible (Obj_Typ, R_Typ)
+              and then not Is_TSS (Func_Id, TSS_Stream_Input)
+            then
+               Error_Msg_N
+                 ("result subtype must be statically compatible with the " &
+                  "function result type", Indic);
+
+               if not Predicates_Compatible (Obj_Typ, R_Typ) then
+                  Error_Msg_NE
+                    ("\predicate on result subtype is not compatible with &",
+                     Indic, R_Typ);
+               end if;
             end if;
 
          --  All remaining cases are illegal
