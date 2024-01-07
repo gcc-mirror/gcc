@@ -795,13 +795,19 @@ do_build_copy_assign (tree fndecl)
   compound_stmt = begin_compound_stmt (0);
   parm = convert_from_reference (parm);
 
+  /* If we are building a defaulted xobj copy/move assignment operator then
+     current_class_ref will not have been set up.
+     Kind of an icky hack, but what can ya do?  */
+  tree const class_ref = DECL_XOBJ_MEMBER_FUNCTION_P (fndecl)
+    ? cp_build_fold_indirect_ref (DECL_ARGUMENTS (fndecl)) : current_class_ref;
+
   if (trivial
       && is_empty_class (current_class_type))
     /* Don't copy the padding byte; it might not have been allocated
        if *this is a base subobject.  */;
   else if (trivial)
     {
-      tree t = build2 (MODIFY_EXPR, void_type_node, current_class_ref, parm);
+      tree t = build2 (MODIFY_EXPR, void_type_node, class_ref, parm);
       finish_expr_stmt (t);
     }
   else
@@ -826,7 +832,7 @@ do_build_copy_assign (tree fndecl)
 	  /* Call the base class assignment operator.  */
 	  releasing_vec parmvec (make_tree_vector_single (converted_parm));
 	  finish_expr_stmt
-	    (build_special_member_call (current_class_ref,
+	    (build_special_member_call (class_ref,
 					assign_op_identifier,
 					&parmvec,
 					base_binfo,
@@ -839,7 +845,7 @@ do_build_copy_assign (tree fndecl)
 	   fields;
 	   fields = DECL_CHAIN (fields))
 	{
-	  tree comp = current_class_ref;
+	  tree comp = class_ref;
 	  tree init = parm;
 	  tree field = fields;
 	  tree expr_type;
@@ -898,7 +904,7 @@ do_build_copy_assign (tree fndecl)
 	  finish_expr_stmt (init);
 	}
     }
-  finish_return_stmt (current_class_ref);
+  finish_return_stmt (class_ref);
   finish_compound_stmt (compound_stmt);
 }
 
@@ -3380,13 +3386,46 @@ defaulted_late_check (tree fn)
 					    NULL, NULL);
   tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
 
+  /* Includes special handling for a default xobj operator.  */
+  auto compare_fn_params = [](tree fn, tree implicit_fn){
+    tree fn_parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
+    tree implicit_fn_parms = TYPE_ARG_TYPES (TREE_TYPE (implicit_fn));
+
+    if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+      {
+	tree fn_obj_ref_type = TREE_VALUE (fn_parms);
+	/* We can't default xobj operators with an xobj parameter that is not
+	   an lvalue reference.  */
+	if (!TYPE_REF_P (fn_obj_ref_type)
+	    || TYPE_REF_IS_RVALUE (fn_obj_ref_type))
+	  return false;
+	/* If implicit_fn's object parameter is not a pointer, something is not
+	   right.  (Or we have finally changed the type of the iobj parameter
+	   in iobj member functions.)  */
+	gcc_assert (TYPE_PTR_P (TREE_VALUE (implicit_fn_parms)));
+	/* Strip the reference/pointer off each object parameter before
+	   comparing them.  */
+	if (!same_type_p (TREE_TYPE (fn_obj_ref_type),
+			  TREE_TYPE (TREE_VALUE (implicit_fn_parms))))
+	  return false;
+	/* We just compared the object parameters, skip over them before
+	   passing to compparms.  */
+	fn_parms = TREE_CHAIN (fn_parms);
+	implicit_fn_parms = TREE_CHAIN (implicit_fn_parms);
+      }
+    return compparms(fn_parms, implicit_fn_parms);
+  };
+
   if (!same_type_p (TREE_TYPE (TREE_TYPE (fn)),
 		    TREE_TYPE (TREE_TYPE (implicit_fn)))
-      || !compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
-		     TYPE_ARG_TYPES (TREE_TYPE (implicit_fn))))
+      || !compare_fn_params (fn, implicit_fn))
     {
       error ("defaulted declaration %q+D does not match the "
 	     "expected signature", fn);
+      /* FIXME: If the user is defaulting an xobj member function we should
+	 emit an xobj member function for a signature.  When we do this, maybe
+	 we can just synthesize implicit_fn as an xobj member function and
+	 avoid the dance in compare_fn_parms.  */
       inform (DECL_SOURCE_LOCATION (fn),
 	      "expected signature: %qD", implicit_fn);
     }
@@ -3472,6 +3511,10 @@ defaultable_fn_check (tree fn)
       if (!early_check_defaulted_comparison (fn))
 	return false;
     }
+
+  /* FIXME: We need to check for xobj member functions here to give better
+     diagnostics for weird cases where unrelated xobj parameters are given.
+     We just want to do better than 'cannot be defaulted'.  */
 
   if (kind == sfk_none)
     {

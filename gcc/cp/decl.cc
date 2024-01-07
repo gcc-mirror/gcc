@@ -15663,7 +15663,19 @@ copy_fn_p (const_tree d)
       && DECL_NAME (d) != assign_op_identifier)
     return 0;
 
-  args = FUNCTION_FIRST_USER_PARMTYPE (d);
+  if (DECL_XOBJ_MEMBER_FUNCTION_P (d))
+    {
+      tree object_param = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (d)));
+      if (!TYPE_REF_P (object_param)
+	  || TYPE_REF_IS_RVALUE (object_param)
+	  /* Reject unrelated object parameters. */
+	  || TYPE_MAIN_VARIANT (TREE_TYPE (object_param)) != DECL_CONTEXT (d)
+	  || CP_TYPE_CONST_P (TREE_TYPE (object_param)))
+	return 0;
+      args = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (d)));
+    }
+  else
+    args = FUNCTION_FIRST_USER_PARMTYPE (d);
   if (!args)
     return 0;
 
@@ -15738,7 +15750,19 @@ move_signature_fn_p (const_tree d)
       && DECL_NAME (d) != assign_op_identifier)
     return 0;
 
-  args = FUNCTION_FIRST_USER_PARMTYPE (d);
+  if (DECL_XOBJ_MEMBER_FUNCTION_P (d))
+    {
+      tree object_param = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (d)));
+      if (!TYPE_REF_P (object_param)
+	  || TYPE_REF_IS_RVALUE (object_param)
+	  /* Reject unrelated object parameters. */
+	  || TYPE_MAIN_VARIANT (TREE_TYPE (object_param)) != DECL_CONTEXT (d)
+	  || CP_TYPE_CONST_P (TREE_TYPE (object_param)))
+	return 0;
+      args = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (d)));
+    }
+  else
+    args = FUNCTION_FIRST_USER_PARMTYPE (d);
   if (!args)
     return 0;
 
