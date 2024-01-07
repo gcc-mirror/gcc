@@ -8968,20 +8968,51 @@ resolve_address_of_overloaded_function (tree target_type,
   fn = TREE_PURPOSE (matches);
 
   if (DECL_OBJECT_MEMBER_FUNCTION_P (fn)
-      && !(complain & tf_ptrmem_ok) && !flag_ms_extensions)
+      && !(complain & tf_ptrmem_ok))
     {
-      static int explained;
-
-      if (!(complain & tf_error))
+      /* Previously we allowed this behavior for iobj member functions when the
+	 -fms-extensions flag is passed as MSVC allows this as a language
+	 extension.  MSVC also allows this for xobj member functions, but the
+	 documentation for -fms-extensions states it's purpose is to support
+	 the use of microsoft headers.  Until otherwise demonstrated, we should
+	 assume xobj member functions are not used in this manner in microsoft
+	 headers and indiscriminately forbid the incorrect syntax instead of
+	 supporting it for non-legacy uses.  This should hopefully encourage
+	 conformance going forward.
+	 This comment is referred to in typeck.cc:cp_build_addr_expr_1.  */
+      if (DECL_IOBJ_MEMBER_FUNCTION_P (fn) && flag_ms_extensions)
+	/* Early escape.  */;
+      else if (!(complain & tf_error))
 	return error_mark_node;
-
-      auto_diagnostic_group d;
-      if (permerror (input_location, "assuming pointer to member %qD", fn)
-	  && !explained)
+      else if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
 	{
-	  inform (input_location, "(a pointer to member can only be "
-		  "formed with %<&%E%>)", fn);
-	  explained = 1;
+	  auto_diagnostic_group d;
+	  /* Should match the error in typeck.cc:cp_build_addr_expr_1.
+	     We seem to lack the details here to match that diagnostic exactly,
+	     perhaps this could be fixed in the future? See PR113075 bug 2.  */
+	  error_at (input_location,
+		    "ISO C++ forbids taking the address of an unqualified"
+		    " or parenthesized non-static member function to form"
+		    " a pointer to explicit object member function.");
+	  /* This is incorrect, see PR113075 bug 3.  */
+	  inform (input_location,
+		  "a pointer to explicit object member function can only be "
+		  "formed with %<&%E%>", fn);
+	}
+      else
+	{
+	  static int explained;
+	  gcc_assert (DECL_IOBJ_MEMBER_FUNCTION_P (fn) && !flag_ms_extensions);
+	  /* Is there a reason this error message doesn't match the one in
+	     typeck.cc:cp_build_addr_expr_1?  */
+	  auto_diagnostic_group d;
+	  if (permerror (input_location, "assuming pointer to member %qD", fn)
+	      && !explained)
+	    {
+	      inform (input_location, "(a pointer to member can only be "
+				      "formed with %<&%E%>)", fn);
+	      explained = 1;
+	    }
 	}
     }
 

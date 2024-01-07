@@ -3169,7 +3169,30 @@ finish_this_expr (void)
     return rvalue (result);
 
   tree fn = current_nonlambda_function ();
-  if (fn && DECL_STATIC_FUNCTION_P (fn))
+  if (fn && DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+    {
+      auto_diagnostic_group d;
+      error ("%<this%> is unavailable for explicit object member "
+	     "functions");
+      tree xobj_parm = DECL_ARGUMENTS (fn);
+      gcc_assert (xobj_parm);
+      tree parm_name = DECL_NAME (xobj_parm);
+
+      static tree remembered_fn = NULL_TREE;
+      /* Only output this diagnostic once per function.  */
+      if (remembered_fn == fn)
+	/* Early escape.  */;
+      else if (parm_name)
+	inform (DECL_SOURCE_LOCATION (xobj_parm),
+		"use explicit object parameter %qs instead",
+		IDENTIFIER_POINTER (parm_name));
+      else
+	inform (DECL_SOURCE_LOCATION (xobj_parm),
+		"name the explicit object parameter");
+
+      remembered_fn = fn;
+    }
+  else if (fn && DECL_STATIC_FUNCTION_P (fn))
     error ("%<this%> is unavailable for static member functions");
   else if (fn && processing_contract_condition && DECL_CONSTRUCTOR_P (fn))
     error ("invalid use of %<this%> before it is valid");

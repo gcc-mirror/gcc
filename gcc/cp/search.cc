@@ -2224,10 +2224,13 @@ look_for_overrides_here (tree type, tree fndecl)
 	/* Not a virtual.  */;
       else if (DECL_CONTEXT (fn) != type)
 	/* Introduced with a using declaration.  */;
-      else if (DECL_STATIC_FUNCTION_P (fndecl))
+      else if (DECL_STATIC_FUNCTION_P (fndecl)
+	       || DECL_XOBJ_MEMBER_FUNCTION_P (fndecl))
 	{
 	  tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	  tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	  dtypes = DECL_XOBJ_MEMBER_FUNCTION_P (fndecl) ? TREE_CHAIN (dtypes)
+							: dtypes;
 	  if (compparms (TREE_CHAIN (btypes), dtypes))
 	    return fn;
 	}
@@ -2254,6 +2257,15 @@ look_for_overrides_r (tree type, tree fndecl)
 	  auto_diagnostic_group d;
 	  error ("%q+#D cannot be declared", fndecl);
 	  error ("  since %q+#D declared in base class", fn);
+	}
+      else if (DECL_XOBJ_MEMBER_FUNCTION_P (fndecl))
+	{
+	  auto_diagnostic_group d;
+	  error_at (DECL_SOURCE_LOCATION (fndecl),
+		    "explicit object member function "
+		    "overrides virtual function");
+	  inform (DECL_SOURCE_LOCATION (fn),
+		  "virtual function declared here");
 	}
       else
 	{

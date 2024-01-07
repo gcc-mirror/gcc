@@ -16188,6 +16188,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
   /* Assume no class or enumeration type is declared.  */
   *declares_class_or_enum = 0;
 
+  /* Keep a token that additionally will be used for diagnostics.  */
+  cp_token *first_specifier = NULL;
   /* Keep reading specifiers until there are no more to read.  */
   while (true)
     {
@@ -16260,12 +16262,32 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	    decl_specs->locations[ds_attribute] = token->location;
 	  continue;
 	}
+      /* We know by this point that the token is not part of an attribute.  */
+      if (!first_specifier)
+	first_specifier = token;
       /* Special case for "this" specifier, indicating a parm is an xobj parm.
 	 The "this" specifier must be the first specifier in the declaration,
 	 after any attributes.  */
       if (token->keyword == RID_THIS)
 	{
 	  cp_lexer_consume_token (parser->lexer);
+	  if (token != first_specifier)
+	    {
+	      /* Don't emit diagnostics if we have already seen "this",
+		 leave it for set_and_check_decl_spec_loc.  */
+	      if (decl_specs->locations[ds_this] == 0)
+		{
+		  auto_diagnostic_group d;
+		  gcc_rich_location richloc (token->location);
+		  /* Works, need to add tests for it though.  */
+		  richloc.add_fixit_remove ();
+		  richloc.add_fixit_insert_before (first_specifier->location,
+						   "this ");
+		  error_at (&richloc,
+			    "%<this%> must be the first specifier "
+			    "in a parameter declaration");
+		}
+	    }
 	  set_and_check_decl_spec_loc (decl_specs, ds_this, token);
 	  continue;
 	}
@@ -25657,12 +25679,14 @@ cp_parser_parameter_declaration (cp_parser *parser,
   /* The restriction on defining new types applies only to the type
      of the parameter, not to the default argument.  */
   parser->type_definition_forbidden_message = saved_message;
-
+  cp_token *eq_token = NULL;
   /* If the next token is `=', then process a default argument.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
     {
       tree type = decl_specifiers.type;
       token = cp_lexer_peek_token (parser->lexer);
+      /* Used for diagnostics with an xobj parameter.  */
+      eq_token = token;
       if (declarator)
 	declarator->init_loc = token->location;
       /* If we are defining a class, then the tokens that make up the
@@ -25733,6 +25757,18 @@ cp_parser_parameter_declaration (cp_parser *parser,
 
   if (decl_spec_seq_has_spec_p (&decl_specifiers, ds_this))
     {
+      if (default_argument)
+	{
+	  /* If there is a default_argument, eq_token should always be set.  */
+	  gcc_assert (eq_token);
+	  location_t param_with_init_loc
+	    = make_location (eq_token->location,
+			     decl_spec_token_start->location,
+			     input_location);
+	  error_at (param_with_init_loc,
+		    "an explicit object parameter "
+		    "may not have a default argument");
+	}
       /* Xobj parameters can not have default arguments, thus
 	 we can reuse the default argument field to flag the param as such.  */
       default_argument = this_identifier;
