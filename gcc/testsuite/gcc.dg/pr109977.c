@@ -2,8 +2,8 @@
 /* { dg-do compile } */
 /* { dg-options "-Og" } */
 
-typedef double __attribute__((__vector_size__ (8))) V;
-typedef double __attribute__((__vector_size__ (16))) W;
+typedef double __attribute__((__vector_size__ (__SIZEOF_DOUBLE__))) V;
+typedef double __attribute__((__vector_size__ (__SIZEOF_DOUBLE__*2))) W;
 V v;
 int i;
 extern void bar (void *);

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
-typedef unsigned uint32_t;
+typedef __UINT32_TYPE__ uint32_t;
 typedef uint32_t uint32x4 __attribute__((vector_size(16)));
 typedef struct {
   uint32x4 b, d;
