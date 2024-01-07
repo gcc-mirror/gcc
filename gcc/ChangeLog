@@ -1,3 +1,25 @@
+2024-01-06  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md: Set the unused bits in operand[3] to 0.
+
+2024-01-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113248
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::fuse_local_vsetvl_info):
+	Update the MAX_SEW.
+
+2024-01-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (loop_invariant_op_p): New function.
+	(variable_vectorized_p): Teach loop invariant.
+	(has_unexpected_spills_p): Ditto.
+
+2024-01-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (whole_reg_to_reg_move_p): New function.
+	* config/riscv/riscv-v.cc (whole_reg_to_reg_move_p): Ditto.
+	* config/riscv/vector.md: Allow non-vlmax with len = NUNITS simplification.
+
 2024-01-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/113104

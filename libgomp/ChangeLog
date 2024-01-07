@@ -1,3 +1,16 @@
+2024-01-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Technical Report 12): Fix a typo.
+	(Device Memory Routines): Fix OpenMP 5.1 spec refs; add
+	omp_target_is_accessible.
+	(Environment Display Routine): Uncomment and add
+	omp_display_env description.
+	(OMP_DISPLAY_ENV): Update wording, add 'see also'.
+
+2024-01-06  Mark Wielaard  <mark@klomp.org>
+
+	* configure: Regenerate.
+
 2024-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi: Bump @copying's copyright year.
