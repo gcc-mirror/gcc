@@ -20,7 +20,7 @@ int foo(int a, int b)
     else if (a == 10)
       global2 = 12345;
     else if (a == 1)
-      global2 = 123456;
+      global2 = 23456;
   }
 }
 
