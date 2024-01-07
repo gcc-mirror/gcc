@@ -103,7 +103,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     print(FILE* __stream, format_string<_Args...> __fmt, _Args&&... __args)
     {
-      auto __fmtargs = std::make_format_args(std::forward<_Args>(__args)...);
+      auto __fmtargs = std::make_format_args(__args...);
       if constexpr (__unicode::__literal_encoding_is_utf8())
 	std::vprint_unicode(__stream, __fmt.get(), __fmtargs);
       else

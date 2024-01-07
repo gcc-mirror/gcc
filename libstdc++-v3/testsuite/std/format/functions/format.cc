@@ -267,14 +267,16 @@ test_width()
   }
 
   try {
-    auto args = std::make_format_args(false, true);
+    bool no = false, yes = true;
+    auto args = std::make_format_args(no, yes);
     s = std::vformat("DR 3720: restrict type of width arg-id {0:{1}}", args);
     VERIFY(false);
   } catch (const std::format_error&) {
   }
 
   try {
-    auto args = std::make_format_args('?', '!');
+    char wat = '?', bang = '!';
+    auto args = std::make_format_args(wat, bang);
     s = std::vformat("DR 3720: restrict type of width arg-id {0:{1}}", args);
     VERIFY(false);
   } catch (const std::format_error&) {

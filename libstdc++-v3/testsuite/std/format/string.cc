@@ -149,8 +149,9 @@ void
 test_pr110862()
 {
   try {
+    int i = 1;
     // PR libstdc++/110862 out-of-bounds read on invalid format string
-    (void) std::vformat("{0:{0}", std::make_format_args(1));
+    (void) std::vformat("{0:{0}", std::make_format_args(i));
     VERIFY( false );
   } catch (const std::format_error& e) {
     std::string_view what = e.what();
@@ -162,9 +163,11 @@ void
 test_pr110974()
 {
   try {
+    double d = 1.0;
+    int i = 1;
     // PR libstdc++/110974 out of bounds read on invalid format string "{:{}."
     std::string_view fmt{"{:{}.0", 5}; // "0" is not part of the format string.
-    (void) std::vformat(fmt, std::make_format_args(1.0, 1));
+    (void) std::vformat(fmt, std::make_format_args(d, i));
     VERIFY( false );
   } catch (const std::format_error& e) {
     std::string_view what = e.what();
