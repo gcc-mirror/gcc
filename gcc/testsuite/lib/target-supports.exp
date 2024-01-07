@@ -4069,6 +4069,7 @@ proc check_effective_target_vect_early_break { } {
     return [check_cached_effective_target_indexed vect_early_break {
       expr {
 	[istarget aarch64*-*-*]
+	|| [check_effective_target_arm_v8_neon_ok]
 	|| [check_effective_target_sse4]
 	}}]
 }
@@ -4082,6 +4083,7 @@ proc check_effective_target_vect_early_break_hw { } {
     return [check_cached_effective_target_indexed vect_early_break_hw {
       expr {
 	[istarget aarch64*-*-*]
+	|| [check_effective_target_arm_v8_neon_hw]
 	|| [check_sse4_hw_available]
 	}}]
 }
@@ -4089,6 +4091,11 @@ proc check_effective_target_vect_early_break_hw { } {
 proc add_options_for_vect_early_break { flags } {
     if { ! [check_effective_target_vect_early_break] } {
 	return "$flags"
+    }
+
+    if { [check_effective_target_arm_v8_neon_ok] } {
+	global et_arm_v8_neon_flags
+	return "$flags $et_arm_v8_neon_flags -march=armv8-a"
     }
 
     if { [check_effective_target_sse4] } {
