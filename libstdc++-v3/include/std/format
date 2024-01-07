@@ -81,6 +81,9 @@ namespace __format
 
   template<typename _CharT>
     using __format_context = basic_format_context<_Sink_iter<_CharT>, _CharT>;
+
+  template<typename _CharT>
+    struct _Runtime_format_string { basic_string_view<_CharT> _M_str; };
 } // namespace __format
 /// @endcond
 
@@ -116,6 +119,11 @@ namespace __format
 	basic_format_string(const _Tp& __s);
 
       [[__gnu__::__always_inline__]]
+      basic_format_string(__format::_Runtime_format_string<_CharT>&& __s)
+      : _M_str(__s._M_str)
+      { }
+
+      [[__gnu__::__always_inline__]]
       constexpr basic_string_view<_CharT>
       get() const noexcept
       { return _M_str; }
@@ -132,6 +140,20 @@ namespace __format
     using wformat_string
       = basic_format_string<wchar_t, type_identity_t<_Args>...>;
 #endif
+
+#if __cplusplus > 202302L
+  [[__gnu__::__always_inline__]]
+  inline __format::_Runtime_format_string<char>
+  runtime_format(string_view __fmt)
+  { return {__fmt}; }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  [[__gnu__::__always_inline__]]
+  inline __format::_Runtime_format_string<wchar_t>
+  runtime_format(wstring_view __fmt)
+  { return {__fmt}; }
+#endif
+#endif // C++26
 
   // [format.formatter], formatter
 
