@@ -1019,6 +1019,217 @@ modify_vtable_entry (tree t,
 }
 
 
+/* Check if the object parameters of an xobj and iobj member function
+   correspond. This function assumes that the iobj parameter has been correctly
+   adjusted when the function is introduced by a using declaration per
+   [over.match.funcs.general.4].  */
+
+bool
+xobj_iobj_parameters_correspond (tree fn1, tree fn2)
+{
+  gcc_assert (DECL_IOBJ_MEMBER_FUNCTION_P (fn1)
+	      || DECL_IOBJ_MEMBER_FUNCTION_P (fn2));
+  gcc_assert (DECL_XOBJ_MEMBER_FUNCTION_P (fn1)
+	      || DECL_XOBJ_MEMBER_FUNCTION_P (fn2));
+  gcc_assert (fn1 != fn2);
+
+  tree xobj_fn = DECL_XOBJ_MEMBER_FUNCTION_P (fn1) ? fn1 : fn2;
+  /* A reference, pointer, or something else.  */
+  tree xobj_param = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (xobj_fn)));
+
+  tree iobj_fn = DECL_IOBJ_MEMBER_FUNCTION_P (fn1) ? fn1 : fn2;
+  tree iobj_fn_type = TREE_TYPE (iobj_fn);
+  /* Will work for a pointer or reference param type.  So this will continue
+     to work even if we change how the object parameter of an iobj member
+     function is represented.  */
+  tree iobj_param_type
+    = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (iobj_fn_type)));
+
+  /* If the iobj member function was introduced with a using declaration, the
+     type of its object parameter is considered to be that of the class it was
+     introduced into.
+
+     [over.match.funcs.general.4]
+     For non-conversion functions that are implicit object member
+     functions nominated by a using-declaration in a derived class, the
+     function is considered to be a member of the derived class for the purpose
+     of defining the type of the implicit object parameter.
+
+     Unfortunately, because of this rule, we can't just compare the xobj member
+     function's DECL_CONTEXT to its object parameter.
+
+     struct S;
+
+     struct B {
+       int f(this S&) { return 5; }
+     };
+
+     struct S : B {
+       using B::f;
+       int f() { return 10; }
+     };
+
+     The using declaration does not change the object parameter of B::f as it
+     is an xobj member function.  However, its object parameter still
+     corresponds to S::f as it was declared with an object parameter of type
+     S const&.  The DECL_CONTEXT of B::f is B, so if we compare the type of the
+     object parameter to that, it will not match.  If we naively assume a
+     different type from the DECL_CONTEXT for an xobj parameter means that the
+     object parameters do not correspond, then the object parameters in the
+     above example will be considered non-corresponding.
+
+     As a result of this, B::f would incorrectly not be discarded, causing an
+     ambiguity when f is called on an object of type S.
+
+     This also impacts member functions with constraints as in the following
+     example.
+
+     template<typename = void>
+     struct S;
+
+     template<typename = void>
+     struct B {
+       int f(this S<>&) requires true { return 5; }
+     };
+
+     template<typename>
+     struct S : B<> {
+       using B<>::f;
+       int f() { return 10; }
+     };
+
+     Once again, if we compare the DECL_CONTEXT of B<>::f to it's xobj
+     parameter, it would not match.  If the object parameters do not
+     correspond, constraints are not taken into account, so in this example we
+     would (probably) get an ambiguous lookup instead of correctly picking
+     B<>::f.
+
+     Because of this caveat, we must actually compare the type of the iobj
+     parameter to the type of the xobj parameter, shortcuts will have these
+     edge cases.
+
+     Aside from the more complex reasons above, this logic also implicitly
+     handles xobj parameters of pointer type, we don't have to explicitly
+     check for that case.  */
+
+  /* FIXME:
+
+     template<typename>
+     struct S;
+
+     template<typename>
+     struct B {
+       int f(this S<void>&) requires true { return 5; }
+     };
+
+     template<typename>
+     struct S : B<void> {
+       using B<void>::f;
+       int f() { return 10; }
+     };
+
+     This case is broken, the incomplete type seems to screw with things.
+     I'm not sure how to fix that so I'm just noting the issue here, I have a
+     feeling it's trivial to do if you know how.  */
+
+  if (TYPE_MAIN_VARIANT (iobj_param_type)
+      != TYPE_MAIN_VARIANT (non_reference (xobj_param)))
+    return false;
+  /* We don't get to bail yet even if we have a by-value xobj parameter,
+     a by-value xobj parameter can correspond to an iobj parameter provided the
+     iobj member function is not declared with a reference qualifier.
+
+     From this point on, we know we are dealing with an xobj parameter that has
+     an object parameter of the same type as the class it was declared in.
+     We still don't know if we have a reference or by-value parameter yet
+     though.  */
+
+  cp_ref_qualifier const iobj_ref_qual = type_memfn_rqual (iobj_fn_type);
+  /* We only care about cv qualifiers when determining correspondence.  */
+  static constexpr cp_cv_quals cv_bits = TYPE_QUAL_VOLATILE
+				       | TYPE_QUAL_CONST;
+  cp_cv_quals const iobj_cv_quals = type_memfn_quals (iobj_fn_type) & cv_bits;
+  /* We need to ignore the ref qualifier of the xobj parameter if the iobj
+     member function lacks a ref qualifier.
+
+     [basic.scope.scope.3]
+     Two non-static member functions have corresponding object parameters if:
+     -- exactly one is an implicit object member function with no ref-qualifier
+	and the types of their object parameters ([dcl.fct]), after removing
+	top-level references, are the same, or
+     -- their object parameters have the same type.
+
+     The cv qualifiers of a by-value parameter are supposed to be discarded, so
+     we ignore them.
+
+     [dcl.fct.5]
+     After producing the list of parameter types, any top-level cv-qualifiers
+     modifying a parameter type are deleted when forming the function type.
+
+     However, they still need to be taken into account when our xobj parameter
+     is a reference that is being ignored (according to [basic.scope.scope.3]
+     quoted above), but when we are actually dealing with a by-value xobj
+     parameter we can proceed following this table.
+     | iobj | xobj | equal |
+     | none | none |   X   |
+     | none |    c |   X   |
+     | none |    v |   X   |
+     | none |   cv |   X   |
+     |    c | none |   O   |
+     |    c |    c |   O   |
+     |    c |    v |   O   |
+     |    c |   cv |   O   |
+     |    v | none |   O   |
+     |    v |    c |   O   |
+     |    v |    v |   O   |
+     |    v |   cv |   O   |
+     |   cv | none |   O   |
+     |   cv |    c |   O   |
+     |   cv |    v |   O   |
+     |   cv |   cv |   O   |
+
+     Additionally, if the iobj member function is ref qualified, we aren't
+     ignoring the ref qualifier of the iobj parameter, so we can't be dealing
+     with correspondence in that case either.
+
+     So to recap, if we have a by-value xobj parameter, we know for sure that
+     we aren't dealing with corresponding object parameters if the iobj member
+     function has any cv-ref qualifiers.  The only case where we might still be
+     dealing with corresponding object parameters is when the iobj member
+     function lacks any cv-ref qualification.  */
+  if (!TYPE_REF_P (xobj_param))
+    {
+      if (iobj_ref_qual || iobj_cv_quals)
+	return false;
+    }
+  else
+    {
+      /* We are dealing with an xobj parameter that is a reference now, but due
+	 to [basic.scope.scope.3] we need to ignore its ref qual.  */
+      cp_ref_qualifier const xobj_ref_qual = [&](){
+	  if (!TYPE_REF_P (xobj_param) || !iobj_ref_qual)
+	    return REF_QUAL_NONE;
+	  return TYPE_REF_IS_RVALUE (xobj_param) ? REF_QUAL_RVALUE
+						 : REF_QUAL_LVALUE;
+	}(); /* IILE.  */
+
+      /* Even if we are ignoring the reference qualifier, the xobj parameter
+	 was still a reference so we still take the cv qualifiers into
+	 account.  */
+      cp_cv_quals const xobj_cv_quals
+	= cp_type_quals (TREE_TYPE (xobj_param)) & cv_bits;
+
+      /* Finally, if the qualifications don't match exactly, the object
+	 parameters don't correspond.  */
+      if (iobj_ref_qual != xobj_ref_qual
+	  || iobj_cv_quals != xobj_cv_quals)
+	return false;
+    }
+  /* If we got past everything else, the object parameters of fn1 and fn2
+     definitely correspond.  */
+  return true;
+}
+
 /* Add method METHOD to class TYPE.  If VIA_USING indicates whether
    METHOD is being injected via a using_decl.  Returns true if the
    method could be added to the method vec.  */
@@ -1079,8 +1290,8 @@ add_method (tree type, tree method, bool via_using)
       /* Compare the quals on the 'this' parm.  Don't compare
 	 the whole types, as used functions are treated as
 	 coming from the using class in overload resolution.  */
-      if (! DECL_STATIC_FUNCTION_P (fn)
-	  && ! DECL_STATIC_FUNCTION_P (method)
+      if (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
+	  && DECL_IOBJ_MEMBER_FUNCTION_P (method)
 	  /* Either both or neither need to be ref-qualified for
 	     differing quals to allow overloading.  */
 	  && (FUNCTION_REF_QUALIFIED (fn_type)
@@ -1088,6 +1299,35 @@ add_method (tree type, tree method, bool via_using)
 	  && (type_memfn_quals (fn_type) != type_memfn_quals (method_type)
 	      || type_memfn_rqual (fn_type) != type_memfn_rqual (method_type)))
 	  continue;
+
+      /* Handle special correspondence rules for xobj vs xobj and xobj vs iobj
+	 member function declarations.
+	 We don't worry about static member functions here.  */
+      if ((!DECL_XOBJ_MEMBER_FUNCTION_P (fn)
+	   && !DECL_XOBJ_MEMBER_FUNCTION_P (method))
+	  || DECL_STATIC_FUNCTION_P (fn) || DECL_STATIC_FUNCTION_P (method))
+	/* Early escape.  */;
+      else if (DECL_XOBJ_MEMBER_FUNCTION_P (fn)
+	       && DECL_XOBJ_MEMBER_FUNCTION_P (method))
+	{
+	  auto get_object_param = [](tree fn){
+	    return TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fn)));
+	  };
+	  /* We skip the object parameter below, check it here instead of
+	     making changes to that code.  */
+	  tree fn_param = get_object_param (fn);
+	  tree method_param = get_object_param (method);
+	  if (!same_type_p (fn_param, method_param))
+	    continue;
+	}
+      else if (DECL_XOBJ_MEMBER_FUNCTION_P (fn)
+	       || DECL_XOBJ_MEMBER_FUNCTION_P (method))
+	{
+	  if (!xobj_iobj_parameters_correspond (fn, method))
+	    continue;
+	}
+      else
+	gcc_unreachable ();
 
       tree real_fn = fn;
       tree real_method = method;

@@ -16260,6 +16260,16 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	    decl_specs->locations[ds_attribute] = token->location;
 	  continue;
 	}
+      /* Special case for "this" specifier, indicating a parm is an xobj parm.
+	 The "this" specifier must be the first specifier in the declaration,
+	 after any attributes.  */
+      if (token->keyword == RID_THIS)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  set_and_check_decl_spec_loc (decl_specs, ds_this, token);
+	  continue;
+	}
+
       /* Assume we will find a decl-specifier keyword.  */
       found_decl_spec = true;
       /* If the next token is an appropriate keyword, we can simply
@@ -25721,6 +25731,13 @@ cp_parser_parameter_declaration (cp_parser *parser,
   if (default_argument)
     STRIP_ANY_LOCATION_WRAPPER (default_argument);
 
+  if (decl_spec_seq_has_spec_p (&decl_specifiers, ds_this))
+    {
+      /* Xobj parameters can not have default arguments, thus
+	 we can reuse the default argument field to flag the param as such.  */
+      default_argument = this_identifier;
+    }
+
   /* Generate a location for the parameter, ranging from the start of the
      initial token to the end of the final token (using input_location for
      the latter, set up by cp_lexer_set_source_position_from_token when
@@ -34091,6 +34108,8 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	}
       else
 	{
+	  /* These correspond to cp-tree.h:cp_decl_spec,
+	     changes here should also be reflected there.  */
 	  static const char *const decl_spec_names[] = {
 	    "signed",
 	    "unsigned",
@@ -34108,7 +34127,8 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    "constexpr",
 	    "__complex",
 	    "constinit",
-	    "consteval"
+	    "consteval",
+	    "this"
 	  };
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_remove ();

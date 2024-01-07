@@ -7265,6 +7265,15 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	    && !mark_used (t, complain) && !(complain & tf_error))
 	  return error_mark_node;
 
+	/* Pull out the function_decl for a single xobj member function, and
+	   let the rest of this function handle it.  This is similar to how
+	   static member functions are handled in the BASELINK case above.  */
+	if (DECL_XOBJ_MEMBER_FUNCTION_P (t))
+	  {
+	    arg = t;
+	    break;
+	  }
+
 	type = build_ptrmem_type (context_for_name_lookup (t),
 				  TREE_TYPE (t));
 	t = make_ptrmem_cst (type, t);

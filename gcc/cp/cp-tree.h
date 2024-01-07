@@ -6341,11 +6341,13 @@ enum cp_storage_class {
 
 /* An individual decl-specifier.  This is used to index the array of
    locations for the declspecs in struct cp_decl_specifier_seq
-   below.  */
+   below.
+   A subset of these enums also corresponds to elements of
+   cp_parser_set_decl_spec_type:decl_spec_names in parser.cc.  */
 
 enum cp_decl_spec {
   ds_first,
-  ds_signed = ds_first,
+  ds_signed = ds_first, /* Index of first element of decl_spec_names.  */
   ds_unsigned,
   ds_short,
   ds_long,
@@ -6362,6 +6364,7 @@ enum cp_decl_spec {
   ds_complex,
   ds_constinit,
   ds_consteval,
+  ds_this, /* Index of last element of decl_spec_names.  */
   ds_thread,
   ds_type_spec,
   ds_redefined_builtin_type_spec,
