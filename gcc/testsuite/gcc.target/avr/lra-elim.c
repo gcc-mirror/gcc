@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mmcu=avr25 -Os" } */
+/* { dg-options "-Os" } */
 
 typedef int HItype __attribute__ ((mode (HI)));
 HItype

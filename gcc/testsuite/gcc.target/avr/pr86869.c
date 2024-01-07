@@ -1,4 +1,5 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! avr_tiny } } } */
+/* { dg-additional-options "-std=gnu99 -w" } */
 
 struct S {
   char y[2];

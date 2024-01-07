@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! avr_tiny } } } */
 /* { dg-options "" } */
 
 typedef __SIZE_TYPE__ size_t;
