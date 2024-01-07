@@ -1187,7 +1187,7 @@ early_check_defaulted_comparison (tree fn)
 	ok = false;
     }
 
-  bool mem = DECL_NONSTATIC_MEMBER_FUNCTION_P (fn);
+  bool mem = DECL_IOBJ_MEMBER_FUNCTION_P (fn);
   if (mem && type_memfn_quals (TREE_TYPE (fn)) != TYPE_QUAL_CONST)
     {
       error_at (loc, "defaulted %qD must be %<const%>", fn);
@@ -1230,7 +1230,7 @@ early_check_defaulted_comparison (tree fn)
 
   if (saw_bad || (saw_byval && saw_byref))
     {
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+      if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
 	error_at (loc, "defaulted member %qD must have parameter type "
 		  "%<const %T&%>", fn, ctx);
       else if (saw_bad)
@@ -3606,7 +3606,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
 tree
 skip_artificial_parms_for (const_tree fn, tree list)
 {
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
     list = TREE_CHAIN (list);
   else
     return list;
@@ -3626,7 +3626,7 @@ num_artificial_parms_for (const_tree fn)
 {
   int count = 0;
 
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
     count++;
   else
     return 0;

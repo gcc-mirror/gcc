@@ -2323,7 +2323,7 @@ build_this_conversion (tree fn, tree ctype,
 		       tree& parmtype, tree& argtype, tree& arg,
 		       int flags, tsubst_flags_t complain)
 {
-  gcc_assert (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+  gcc_assert (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 	      && !DECL_CONSTRUCTOR_P (fn));
 
   /* The type of the implicit object parameter ('this') for
@@ -2536,7 +2536,7 @@ add_function_candidate (struct z_candidate **candidates,
 	{
 	  tree parmtype = TREE_VALUE (parmnode);
 	  if (i == 0
-	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	      && DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 	      && !DECL_CONSTRUCTOR_P (fn))
 	    t = build_this_conversion (fn, ctype, parmtype, argtype, arg,
 				       flags, complain);
@@ -3493,7 +3493,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 
   /* We don't do deduction on the in-charge parameter, the VTT
      parameter or 'this'.  */
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (tmpl))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (tmpl))
     {
       if (first_arg_without_in_chrg != NULL_TREE)
 	first_arg_without_in_chrg = NULL_TREE;
@@ -3603,7 +3603,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
       convs = alloc_conversions (nargs);
 
       if (shortcut_bad_convs
-	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (tmpl)
+	  && DECL_IOBJ_MEMBER_FUNCTION_P (tmpl)
 	  && !DECL_CONSTRUCTOR_P (tmpl))
 	{
 	  /* Check the 'this' conversion before proceeding with deduction.
@@ -6631,7 +6631,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
       tree fn_first_arg = NULL_TREE;
       const vec<tree, va_gc> *fn_args = args;
 
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+      if (DECL_OBJECT_MEMBER_FUNCTION_P (fn))
 	{
 	  /* Figure out where the object arg comes from.  If this
 	     function is a non-static member and we didn't get an
@@ -10798,7 +10798,8 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
      type.  If so, and if the class has no non-trivial bases or members,
      be more permissive.  */
   if (current_function_decl
-      && DECL_NONSTATIC_MEMBER_FUNCTION_P (current_function_decl)
+      && DECL_OBJECT_MEMBER_FUNCTION_P (current_function_decl)
+      /* ??? is_object_parameter?  */
       && is_this_parameter (tree_strip_nop_conversions (dest)))
     {
       tree ctx = DECL_CONTEXT (current_function_decl);
@@ -12698,8 +12699,8 @@ cand_parms_match (z_candidate *c1, z_candidate *c2)
   tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (fn2));
   if (DECL_FUNCTION_MEMBER_P (fn1)
       && DECL_FUNCTION_MEMBER_P (fn2)
-      && (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn1)
-	  != DECL_NONSTATIC_MEMBER_FUNCTION_P (fn2)))
+      && (DECL_STATIC_FUNCTION_P (fn1)
+	  != DECL_STATIC_FUNCTION_P (fn2)))
     {
       /* Ignore 'this' when comparing the parameters of a static member
 	 function with those of a non-static one.  */
@@ -12884,7 +12885,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 			  print_z_candidate (input_location,
 					     N_("candidate 2:"), l);
 			  if (w->fn == l->fn
-			      && DECL_NONSTATIC_MEMBER_FUNCTION_P (w->fn)
+			      && DECL_IOBJ_MEMBER_FUNCTION_P (w->fn)
 			      && (type_memfn_quals (TREE_TYPE (w->fn))
 				  & TYPE_QUAL_CONST) == 0)
 			    {
@@ -14033,7 +14034,7 @@ do_warn_dangling_reference (tree expr, bool arg_p)
 	       because R refers to one of the int elements of V, not to
 	       a temporary object.  Member operator* may return a reference
 	       but probably not to one of its arguments.  */
-	    || (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+	    || (DECL_OBJECT_MEMBER_FUNCTION_P (fndecl)
 		&& DECL_OVERLOADED_OPERATOR_P (fndecl)
 		&& DECL_OVERLOADED_OPERATOR_IS (fndecl, INDIRECT_REF)))
 	  return NULL_TREE;
@@ -14059,7 +14060,7 @@ do_warn_dangling_reference (tree expr, bool arg_p)
 	    tree arg = CALL_EXPR_ARG (expr, i);
 	    /* Check that this argument initializes a reference, except for
 	       the argument initializing the object of a member function.  */
-	    if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+	    if (!DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
 		&& !TYPE_REF_P (TREE_TYPE (arg)))
 	      continue;
 	    STRIP_NOPS (arg);
@@ -14079,7 +14080,7 @@ do_warn_dangling_reference (tree expr, bool arg_p)
 	       const S& s = S().self();
 	     where 's' dangles.  If we've gotten here, the object this function
 	     is invoked on is not a temporary.  */
-	    if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl))
+	    if (DECL_OBJECT_MEMBER_FUNCTION_P (fndecl))
 	      break;
 	  }
 	return NULL_TREE;

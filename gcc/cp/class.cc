@@ -5968,7 +5968,7 @@ finalize_literal_type_property (tree t)
     for (fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
       if (TREE_CODE (fn) == FUNCTION_DECL
 	  && DECL_DECLARED_CONSTEXPR_P (fn)
-	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	  && DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 	  && !DECL_CONSTRUCTOR_P (fn))
 	{
 	  DECL_DECLARED_CONSTEXPR_P (fn) = false;
@@ -7932,7 +7932,7 @@ finish_struct (tree t, tree attributes)
   if (flag_openmp)
     for (tree decl = TYPE_FIELDS (t); decl; decl = DECL_CHAIN (decl))
       if (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	  && DECL_OBJECT_MEMBER_FUNCTION_P (decl))
 	if (tree attr = lookup_attribute ("omp declare variant base",
 					  DECL_ATTRIBUTES (decl)))
 	  omp_declare_variant_finalize (decl, attr);
@@ -8727,7 +8727,7 @@ resolve_address_of_overloaded_function (tree target_type,
   /* Good, exactly one match.  Now, convert it to the correct type.  */
   fn = TREE_PURPOSE (matches);
 
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+  if (DECL_OBJECT_MEMBER_FUNCTION_P (fn)
       && !(complain & tf_ptrmem_ok) && !flag_ms_extensions)
     {
       static int explained;

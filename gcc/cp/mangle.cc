@@ -1231,9 +1231,9 @@ write_nested_name (const tree decl)
 
   write_char ('N');
 
-  /* Write CV-qualifiers, if this is a member function.  */
+  /* Write CV-qualifiers, if this is an iobj member function.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+      && DECL_IOBJ_MEMBER_FUNCTION_P (decl))
     {
       if (DECL_VOLATILE_MEMFUNC_P (decl))
 	write_char ('V');

@@ -1446,9 +1446,9 @@ is_specialization_of_friend (tree decl, tree friend_decl)
 	     `this' parameter.  */
 	  friend_args_type = TYPE_ARG_TYPES (friend_type);
 	  decl_args_type = TYPE_ARG_TYPES (decl_type);
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (friend_decl))
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (friend_decl))
 	    friend_args_type = TREE_CHAIN (friend_args_type);
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (decl))
 	    decl_args_type = TREE_CHAIN (decl_args_type);
 
 	  return compparms (decl_args_type, friend_args_type);
@@ -2236,7 +2236,7 @@ determine_specialization (tree template_id,
 	     that the const qualification is the same.  Since
 	     get_bindings does not try to merge the "this" parameter,
 	     we must do the comparison explicitly.  */
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
 	    {
 	      if (!same_type_p (TREE_VALUE (fn_arg_types),
 				TREE_VALUE (decl_arg_types)))
@@ -2359,14 +2359,14 @@ determine_specialization (tree template_id,
 	  /* Adjust the type of DECL in case FN is a static member.  */
 	  decl_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
 	  if (DECL_STATIC_FUNCTION_P (fn)
-	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	      && DECL_IOBJ_MEMBER_FUNCTION_P (decl))
 	    decl_arg_types = TREE_CHAIN (decl_arg_types);
 
 	  if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
 			 decl_arg_types))
             continue;
 
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 	      && (type_memfn_rqual (TREE_TYPE (decl))
 		  != type_memfn_rqual (TREE_TYPE (fn))))
 	    continue;
@@ -2552,7 +2552,7 @@ copy_default_args_to_explicit_spec (tree decl)
   old_type = TREE_TYPE (decl);
   spec_types = TYPE_ARG_TYPES (old_type);
 
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (decl))
     {
       /* Remove the this pointer, but remember the object's type for
 	 CV quals.  */
@@ -3137,7 +3137,7 @@ check_explicit_specialization (tree declarator,
 	     make DECL a static member function as well.  */
 	  if (DECL_FUNCTION_TEMPLATE_P (tmpl)
 	      && DECL_STATIC_FUNCTION_P (tmpl)
-	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	      && DECL_IOBJ_MEMBER_FUNCTION_P (decl))
 	    revert_static_member_fn (decl);
 
 	  /* If this is a specialization of a member template of a
@@ -11814,7 +11814,7 @@ tsubst_contract_attribute (tree decl, tree t, tree args,
   /* For member functions, make this available for semantic analysis.  */
   tree save_ccp = current_class_ptr;
   tree save_ccr = current_class_ref;
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (decl))
     {
       tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
       tree this_type = TREE_TYPE (TREE_VALUE (arg_types));
@@ -22130,7 +22130,7 @@ check_non_deducible_conversions (tree parms, const tree *args, unsigned nargs,
 {
   /* Non-constructor methods need to leave a conversion for 'this', which
      isn't included in nargs here.  */
-  unsigned offset = (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+  unsigned offset = (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 		     && !DECL_CONSTRUCTOR_P (fn));
 
   for (unsigned ia = 0;
@@ -25357,16 +25357,16 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 	 I think think the old G++ behavior of just skipping the object
 	 parameter when comparing to a static member function was better, so
 	 let's stick with that for now.  This is CWG2834.  --jason 2023-12 */
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1)) /* FIXME or explicit */
+      if (DECL_OBJECT_MEMBER_FUNCTION_P (decl1))
 	{
 	  len--; /* LEN is the number of significant arguments for DECL1 */
 	  args1 = TREE_CHAIN (args1);
 	}
-      else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2)) /* FIXME or explicit */
+      else if (DECL_OBJECT_MEMBER_FUNCTION_P (decl2))
 	args2 = TREE_CHAIN (args2);
     }
-  else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1) /* FIXME implicit only */
-	   && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2))
+  else if (DECL_IOBJ_MEMBER_FUNCTION_P (decl1)
+	   && DECL_IOBJ_MEMBER_FUNCTION_P (decl2))
     {
       /* Note DR2445 also (IMO wrongly) removed the "only one" above, which
 	 would break e.g.  cpp1y/lambda-generic-variadic5.C.  */
@@ -25374,12 +25374,12 @@ more_specialized_fn (tree pat1, tree pat2, int len)
       args1 = TREE_CHAIN (args1);
       args2 = TREE_CHAIN (args2);
     }
-  else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1) /* FIXME implicit only */
-	   || DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2))
+  else if (DECL_IOBJ_MEMBER_FUNCTION_P (decl1)
+	   || DECL_IOBJ_MEMBER_FUNCTION_P (decl2))
     {
       /* The other is a non-member or explicit object member function;
 	 rewrite the implicit object parameter to a reference.  */
-      tree ns = DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2) ? decl2 : decl1;
+      tree ns = DECL_IOBJ_MEMBER_FUNCTION_P (decl2) ? decl2 : decl1;
       tree &nsargs = ns == decl2 ? args2 : args1;
       tree obtype = TREE_TYPE (TREE_VALUE (nsargs));
 
@@ -26712,7 +26712,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  push_deferring_access_checks (dk_no_deferred);
 	  input_location = DECL_SOURCE_LOCATION (fn);
 
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 	      && !DECL_LOCAL_DECL_P (fn))
 	    {
 	      /* If needed, set current_class_ptr for the benefit of
@@ -26775,7 +26775,7 @@ register_parameter_specializations (tree pattern, tree inst)
 {
   tree tmpl_parm = DECL_ARGUMENTS (pattern);
   tree spec_parm = DECL_ARGUMENTS (inst);
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (inst))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (inst))
     {
       register_local_specialization (spec_parm, tmpl_parm);
       spec_parm = skip_artificial_parms_for (inst, spec_parm);
@@ -28118,7 +28118,7 @@ value_dependent_expression_p (tree expression)
 	       cause the call to be considered value-dependent.  We also
 	       look through it in potential_constant_expression.  */
 	    if (i == 0 && fn && DECL_DECLARED_CONSTEXPR_P (fn)
-		&& DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+		&& DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 		&& TREE_CODE (op) == ADDR_EXPR)
 	      op = TREE_OPERAND (op, 0);
 	    if (value_dependent_expression_p (op))

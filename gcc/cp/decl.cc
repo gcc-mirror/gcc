@@ -8655,7 +8655,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       && TREE_CODE (decl) == FUNCTION_DECL
       /* #pragma omp declare variant on methods handled in finish_struct
 	 instead.  */
-      && (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+      && (!DECL_OBJECT_MEMBER_FUNCTION_P (decl)
 	  || COMPLETE_TYPE_P (DECL_CONTEXT (decl))))
     if (tree attr = lookup_attribute ("omp declare variant base",
 				      DECL_ATTRIBUTES (decl)))
@@ -15645,7 +15645,7 @@ grok_special_member_properties (tree decl)
   tree class_type;
 
   if (TREE_CODE (decl) == USING_DECL
-      || !DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+      || !DECL_OBJECT_MEMBER_FUNCTION_P (decl))
     return;
 
   class_type = DECL_CONTEXT (decl);
@@ -17835,7 +17835,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   /* Start the statement-tree, start the tree now.  */
   DECL_SAVED_TREE (decl1) = push_stmt_list ();
 
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (decl1))
     {
       /* We know that this was set up by `grokclassfn'.  We do not
 	 wait until `store_parm_decls', since evil parse errors may
@@ -18304,7 +18304,7 @@ outer_curly_brace_block (tree fndecl)
 static void
 record_key_method_defined (tree fndecl)
 {
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+  if (DECL_OBJECT_MEMBER_FUNCTION_P (fndecl)
       && DECL_VIRTUAL_P (fndecl)
       && !processing_template_decl)
     {

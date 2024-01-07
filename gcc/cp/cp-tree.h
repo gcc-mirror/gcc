@@ -2962,8 +2962,9 @@ struct GTY(()) lang_decl_fn {
   unsigned coroutine_p : 1;
   unsigned implicit_constexpr : 1;
   unsigned escalated_p : 1;
+  unsigned xobj_func : 1;
 
-  unsigned spare : 8;
+  unsigned spare : 7;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -3361,33 +3362,55 @@ struct GTY(()) lang_decl {
 #define DECL_STATIC_FUNCTION_P(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->static_function)
 
-/* Nonzero for FUNCTION_DECL means that this decl is a non-static
+/* Nonzero for FUNCTION_DECL means that this decl is a non-static member
+   function.  C++23 explicit object member functions are also considered
+   non-static, but most former uses of this macro meant implicit object member
+   function.  Instead of this macro, use DECL_IOBJ_MEMBER_FUNCTION_P or
+   DECL_OBJECT_MEMBER_FUNCTION_P.  */
+#define DECL_NONSTATIC_MEMBER_FUNCTION_P(NODE) did_you_mean_object_or_iobj
+
+/* Nonzero for FUNCTION_DECL means that this decl is an implicit object
    member function.  */
-#define DECL_NONSTATIC_MEMBER_FUNCTION_P(NODE) \
+#define DECL_IOBJ_MEMBER_FUNCTION_P(NODE) \
   (TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE)
+
+/* Simple member access, only valid for FUNCTION_DECL nodes.  */
+#define DECL_FUNCTION_XOBJ_FLAG(NODE)	\
+  (LANG_DECL_FN_CHECK (NODE)->xobj_func)
+
+/* Nonzero if NODE is an xobj member function,
+   safely evaluates to false for all non FUNCTION_DECL nodes.  */
+#define DECL_XOBJ_MEMBER_FUNCTION_P(NODE)		\
+  (TREE_CODE (STRIP_TEMPLATE (NODE)) == FUNCTION_DECL	\
+   && DECL_FUNCTION_XOBJ_FLAG (NODE) == 1)
+
+/* Nonzero if NODE is a member function with an object argument,
+   in other words, a non-static member function.  */
+#define DECL_OBJECT_MEMBER_FUNCTION_P(NODE) \
+  (DECL_IOBJ_MEMBER_FUNCTION_P (NODE) || DECL_XOBJ_MEMBER_FUNCTION_P (NODE))
 
 /* Nonzero for FUNCTION_DECL means that this decl is a member function
    (static or non-static).  */
 #define DECL_FUNCTION_MEMBER_P(NODE) \
-  (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE) || DECL_STATIC_FUNCTION_P (NODE))
+  (DECL_OBJECT_MEMBER_FUNCTION_P (NODE) || DECL_STATIC_FUNCTION_P (NODE)) \
 
 /* Nonzero for FUNCTION_DECL means that this member function
    has `this' as const X *const.  */
 #define DECL_CONST_MEMFUNC_P(NODE)					 \
-  (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE)				 \
+  (DECL_IOBJ_MEMBER_FUNCTION_P (NODE)				 \
    && CP_TYPE_CONST_P (TREE_TYPE (TREE_VALUE				 \
 				  (TYPE_ARG_TYPES (TREE_TYPE (NODE))))))
 
 /* Nonzero for FUNCTION_DECL means that this member function
    has `this' as volatile X *const.  */
 #define DECL_VOLATILE_MEMFUNC_P(NODE)					 \
-  (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE)				 \
+  (DECL_IOBJ_MEMBER_FUNCTION_P (NODE)				 \
    && CP_TYPE_VOLATILE_P (TREE_TYPE (TREE_VALUE				 \
 				  (TYPE_ARG_TYPES (TREE_TYPE (NODE))))))
 
 /* Nonzero for a DECL means that this member is a non-static member.  */
 #define DECL_NONSTATIC_MEMBER_P(NODE)		\
-  (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE)	\
+  (DECL_OBJECT_MEMBER_FUNCTION_P (NODE)	\
    || TREE_CODE (NODE) == FIELD_DECL)
 
 /* Nonzero for a FIELD_DECL means that this member object type

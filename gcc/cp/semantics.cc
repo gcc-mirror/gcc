@@ -6727,7 +6727,7 @@ finish_omp_declare_simd_methods (tree t)
   for (tree x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
     {
       if (TREE_CODE (x) == USING_DECL
-	  || !DECL_NONSTATIC_MEMBER_FUNCTION_P (x))
+	  || !DECL_IOBJ_MEMBER_FUNCTION_P (x))
 	continue;
       tree ods = lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (x));
       if (!ods || !TREE_VALUE (ods))
