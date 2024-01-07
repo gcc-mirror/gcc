@@ -3117,7 +3117,7 @@ namespace __format
 
       template<typename _Ctx, typename... _Argz>
 	friend auto
-	make_format_args(_Argz&&...) noexcept;
+	make_format_args(_Argz&...) noexcept;
 
       template<typename _Visitor, typename _Ctx>
 	friend decltype(auto)
@@ -3287,7 +3287,7 @@ namespace __format
 
       template<typename _Ctx, typename... _Args>
 	friend auto
-	make_format_args(_Args&&...) noexcept;
+	make_format_args(_Args&...) noexcept;
 
       // An array of _Arg_t enums corresponding to _Args...
       template<typename... _Args>
@@ -3325,7 +3325,7 @@ namespace __format
 
   template<typename _Context, typename... _Args>
     auto
-    make_format_args(_Args&&... __fmt_args) noexcept;
+    make_format_args(_Args&... __fmt_args) noexcept;
 
   // An array of type-erased formatting arguments.
   template<typename _Context, typename... _Args>
@@ -3338,7 +3338,7 @@ namespace __format
 #if _GLIBCXX_INLINE_VERSION
 	__8:: // Needed for PR c++/59256
 #endif
-	make_format_args(_Argz&&...) noexcept;
+	make_format_args(_Argz&...) noexcept;
 
       // For a sufficiently small number of arguments we only store values.
       // basic_format_args can get the types from the _Args pack.
@@ -3412,11 +3412,11 @@ namespace __format
   template<typename _Context = format_context, typename... _Args>
     [[nodiscard,__gnu__::__always_inline__]]
     inline auto
-    make_format_args(_Args&&... __fmt_args) noexcept
+    make_format_args(_Args&... __fmt_args) noexcept
     {
       using _Fmt_arg = basic_format_arg<_Context>;
       using _Store = __format::_Arg_store<_Context, typename _Fmt_arg::template
-		     _Normalize<remove_reference_t<_Args>>...>;
+		     _Normalize<_Args>...>;
       return _Store(__fmt_args...);
     }
 
@@ -3424,7 +3424,7 @@ namespace __format
   template<typename... _Args>
     [[nodiscard,__gnu__::__always_inline__]]
     inline auto
-    make_wformat_args(_Args&&... __args) noexcept
+    make_wformat_args(_Args&... __args) noexcept
     { return std::make_format_args<wformat_context>(__args...); }
 
 /// @cond undocumented
@@ -3857,7 +3857,7 @@ namespace __format
     format_to(_Out __out, format_string<_Args...> __fmt, _Args&&... __args)
     {
       return std::vformat_to(std::move(__out), __fmt.get(),
-			     std::make_format_args(std::forward<_Args>(__args)...));
+			     std::make_format_args(__args...));
     }
 
   template<typename _Out, typename... _Args>
@@ -3866,7 +3866,7 @@ namespace __format
     format_to(_Out __out, wformat_string<_Args...> __fmt, _Args&&... __args)
     {
       return std::vformat_to(std::move(__out), __fmt.get(),
-			     std::make_wformat_args(std::forward<_Args>(__args)...));
+			     std::make_wformat_args(__args...));
     }
 
   template<typename _Out, typename... _Args>
@@ -3876,7 +3876,7 @@ namespace __format
 	      _Args&&... __args)
     {
       return std::vformat_to(std::move(__out), __loc, __fmt.get(),
-			     std::make_format_args(std::forward<_Args>(__args)...));
+			     std::make_format_args(__args...));
     }
 
   template<typename _Out, typename... _Args>
@@ -3886,7 +3886,7 @@ namespace __format
 	      _Args&&... __args)
     {
       return std::vformat_to(std::move(__out), __loc, __fmt.get(),
-			     std::make_wformat_args(std::forward<_Args>(__args)...));
+			     std::make_wformat_args(__args...));
     }
 
   template<typename _Out, typename... _Args>
@@ -3988,7 +3988,7 @@ namespace __format
     {
       __format::_Counting_sink<char> __buf;
       std::vformat_to(__buf.out(), __fmt.get(),
-		      std::make_format_args(std::forward<_Args>(__args)...));
+		      std::make_format_args(__args...));
       return __buf.count();
     }
 
@@ -3999,7 +3999,7 @@ namespace __format
     {
       __format::_Counting_sink<wchar_t> __buf;
       std::vformat_to(__buf.out(), __fmt.get(),
-		      std::make_wformat_args(std::forward<_Args>(__args)...));
+		      std::make_wformat_args(__args...));
       return __buf.count();
     }
 
@@ -4011,7 +4011,7 @@ namespace __format
     {
       __format::_Counting_sink<char> __buf;
       std::vformat_to(__buf.out(), __loc, __fmt.get(),
-		      std::make_format_args(std::forward<_Args>(__args)...));
+		      std::make_format_args(__args...));
       return __buf.count();
     }
 
@@ -4023,7 +4023,7 @@ namespace __format
     {
       __format::_Counting_sink<wchar_t> __buf;
       std::vformat_to(__buf.out(), __loc, __fmt.get(),
-		      std::make_wformat_args(std::forward<_Args>(__args)...));
+		      std::make_wformat_args(__args...));
       return __buf.count();
     }
 

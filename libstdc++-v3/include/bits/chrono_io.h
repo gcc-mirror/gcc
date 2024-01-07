@@ -2195,7 +2195,8 @@ namespace chrono
       _Str __s = _GLIBCXX_WIDEN("{:02d} is not a valid day");
       if (__d.ok())
 	__s = __s.substr(0, 6);
-      __os << std::vformat(__s, make_format_args<_Ctx>((unsigned)__d));
+      auto __u = (unsigned)__d;
+      __os << std::vformat(__s, make_format_args<_Ctx>(__u));
       return __os;
     }
 
@@ -2213,8 +2214,10 @@ namespace chrono
 	__os << std::vformat(__os.getloc(), __s.substr(0, 6),
 			     make_format_args<_Ctx>(__m));
       else
-	__os << std::vformat(__s.substr(6),
-			     make_format_args<_Ctx>((unsigned)__m));
+	{
+	  auto __u = (unsigned)__m;
+	  __os << std::vformat(__s.substr(6), make_format_args<_Ctx>(__u));
+	}
       return __os;
     }
 
@@ -2253,8 +2256,10 @@ namespace chrono
 	__os << std::vformat(__os.getloc(), __s.substr(0, 6),
 			     make_format_args<_Ctx>(__wd));
       else
-	__os << std::vformat(__s.substr(6),
-			     make_format_args<_Ctx>(__wd.c_encoding()));
+	{
+	  auto __c = __wd.c_encoding();
+	  __os << std::vformat(__s.substr(6), make_format_args<_Ctx>(__c));
+	}
       return __os;
     }
 
