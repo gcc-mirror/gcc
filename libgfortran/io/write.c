@@ -2466,6 +2466,8 @@ namelist_write (st_parameter_dt *dtp)
 	dtp->u.p.nml_delim = '\0';
     }
 
+  if (is_internal_unit (dtp))
+    write_character (dtp, " ", 1, 1, NODELIM);
   write_character (dtp, "&", 1, 1, NODELIM);
 
   /* Write namelist name in upper case - f95 std.  */

@@ -50,7 +50,7 @@ program p
   namelist /nml/ x
   x = t('a', 5)
   write (buffer, nml)
-  if (buffer.ne.'&NML  X=a,  5  /') STOP 1
+  if (buffer.ne.' &NML  X=a,  5  /') STOP 1
   x = t('x', 0)
   read (buffer, nml)
   if (x%c.ne.'a'.or. x%k.ne.5) STOP 2
