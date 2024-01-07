@@ -5,7 +5,7 @@
 /* Test to make sure unrelated arguments and comparisons
    don't get optimized incorrectly. */
 
-__UINT16_TYPE__ short test_bswap16(__UINT16_TYPE__ x, __UINT16_TYPE__ y)
+__UINT16_TYPE__ test_bswap16(__UINT16_TYPE__ x, __UINT16_TYPE__ y)
 {
   return x ? __builtin_bswap16(y) : 0;
 }
