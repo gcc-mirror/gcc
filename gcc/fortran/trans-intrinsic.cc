@@ -8025,9 +8025,6 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
 	  argse.data_not_needed = 1;
 	  gfc_conv_expr (&argse, actual->expr);
 	  gfc_add_block_to_block (&se->pre, &argse.pre);
-	  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-				  argse.expr, null_pointer_node);
-	  cond = gfc_evaluate_now (cond, &se->pre);
 	  /* 'block2' contains the arg2 absent case, 'block' the arg2 present
 	      case; size_var can be used in both blocks. */
 	  tree size_var = gfc_create_var (TREE_TYPE (size), "size");
@@ -8038,6 +8035,7 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
 	  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 				 TREE_TYPE (size_var), size_var, size);
 	  gfc_add_expr_to_block (&block2, tmp);
+	  cond = gfc_conv_expr_present (actual->expr->symtree->n.sym);
 	  tmp = build3_v (COND_EXPR, cond, gfc_finish_block (&block),
 			  gfc_finish_block (&block2));
 	  gfc_add_expr_to_block (&se->pre, tmp);
