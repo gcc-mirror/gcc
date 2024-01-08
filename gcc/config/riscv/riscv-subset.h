@@ -69,12 +69,8 @@ private:
 
   const char *parse_base_ext (const char *);
 
-  const char *parse_std_ext (const char *);
-
   const char *parse_single_std_ext (const char *, bool);
 
-  const char *parse_multiletter_ext (const char *, const char *,
-				     const char *);
   const char *parse_single_multiletter_ext (const char *, const char *,
 					    const char *, bool);
 
