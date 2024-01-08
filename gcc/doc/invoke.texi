@@ -30113,6 +30113,467 @@ syntax @samp{<major>p<minor>} or @samp{<major>}, (e.g.@: @samp{m2p1} or
 @samp{m2}).
 @end table
 
+Supported extension are listed below:
+@multitable @columnfractions .10 .10 .80
+@headitem Extension Name @tab Supported Version @tab Description
+@item i
+@tab 2.0, 2.1
+@tab Base integer extension.
+
+@item e
+@tab 2.0
+@tab Reduced base integer extension.
+
+@item g
+@tab -
+@tab General-purpose computing base extension, @samp{g} will expand to
+@samp{i}, @samp{m}, @samp{a}, @samp{f}, @samp{d}, @samp{zicsr} and
+@samp{zifencei}.
+
+@item m
+@tab 2.0
+@tab Integer multiplication and division extension.
+
+@item a
+@tab 2.0, 2.1
+@tab Atomic extension.
+
+@item f
+@tab 2.0, 2.2
+@tab Single-precision floating-point extension.
+
+@item d
+@tab 2.0, 2.2
+@tab Double-precision floating-point extension.
+
+@item c
+@tab 2.0
+@tab Compressed extension.
+
+@item h
+@tab 1.0
+@tab Hypervisor extension.
+
+@item v
+@tab 1.0
+@tab Vector extension.
+
+@item zicsr
+@tab 2.0
+@tab Control and status register access extension.
+
+@item zifencei
+@tab 2.0
+@tab Instruction-fetch fence extension.
+
+@item zicond
+@tab 1.0
+@tab Integer conditional operations extension.
+
+@item zawrs
+@tab 1.0
+@tab Wait-on-reservation-set extension.
+
+@item zba
+@tab 1.0
+@tab Address calculation extension.
+
+@item zbb
+@tab 1.0
+@tab Basic bit manipulation extension.
+
+@item zbc
+@tab 1.0
+@tab Carry-less multiplication extension.
+
+@item zbs
+@tab 1.0
+@tab Single-bit operation extension.
+
+@item zfinx
+@tab 1.0
+@tab Single-precision floating-point in integer registers extension.
+
+@item zdinx
+@tab 1.0
+@tab Double-precision floating-point in integer registers extension.
+
+@item zhinx
+@tab 1.0
+@tab Half-precision floating-point in integer registers extension.
+
+@item zhinxmin
+@tab 1.0
+@tab Minimal half-precision floating-point in integer registers extension.
+
+@item zbkb
+@tab 1.0
+@tab Cryptography bit-manipulation extension.
+
+@item zbkc
+@tab 1.0
+@tab Cryptography carry-less multiply extension.
+
+@item zbkx
+@tab 1.0
+@tab Cryptography crossbar permutation extension.
+
+@item zkne
+@tab 1.0
+@tab AES Encryption extension.
+
+@item zknd
+@tab 1.0
+@tab AES Decryption extension.
+
+@item zknh
+@tab 1.0
+@tab Hash function extension.
+
+@item zkr
+@tab 1.0
+@tab Entropy source extension.
+
+@item zksed
+@tab 1.0
+@tab SM4 block cipher extension.
+
+@item zksh
+@tab 1.0
+@tab SM3 hash function extension.
+
+@item zkt
+@tab 1.0
+@tab Data independent execution latency extension.
+
+@item zk
+@tab 1.0
+@tab Standard scalar cryptography extension.
+
+@item zkn
+@tab 1.0
+@tab NIST algorithm suite extension.
+
+@item zks
+@tab 1.0
+@tab ShangMi algorithm suite extension.
+
+@item zihintntl
+@tab 1.0
+@tab Non-temporal locality hints extension.
+
+@item zihintpause
+@tab 1.0
+@tab Pause hint extension.
+
+@item zicboz
+@tab 1.0
+@tab Cache-block zero extension.
+
+@item zicbom
+@tab 1.0
+@tab Cache-block management extension.
+
+@item zicbop
+@tab 1.0
+@tab Cache-block prefetch extension.
+
+@item zicntr
+@tab 2.0
+@tab Standard extension for base counters and timers.
+
+@item zihpm
+@tab 2.0
+@tab Standard extension for hardware performance counters.
+
+@item ztso
+@tab 1.0
+@tab Total store ordering extension.
+
+@item zve32x
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zve32f
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zve64x
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zve64f
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zve64d
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zvl32b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl64b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl128b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl256b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl512b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl1024b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl2048b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl4096b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvbb
+@tab 1.0
+@tab Vector basic bit-manipulation extension.
+
+@item zvbc
+@tab 1.0
+@tab Vector carryless multiplication extension.
+
+@item zvkb
+@tab 1.0
+@tab Vector cryptography bit-manipulation extension.
+
+@item zvkg
+@tab 1.0
+@tab Vector GCM/GMAC extension.
+
+@item zvkned
+@tab 1.0
+@tab Vector AES block cipher extension.
+
+@item zvknha
+@tab 1.0
+@tab Vector SHA-2 secure hash extension.
+
+@item zvknhb
+@tab 1.0
+@tab Vector SHA-2 secure hash extension.
+
+@item zvksed
+@tab 1.0
+@tab Vector SM4 Block Cipher extension.
+
+@item zvksh
+@tab 1.0
+@tab Vector SM3 Secure Hash extension.
+
+@item zvkn
+@tab 1.0
+@tab Vector NIST Algorithm Suite extension, @samp{zvkn} will expand to
+@samp{zvkned}, @samp{zvknhb}, @samp{zvkb} and @samp{zvkt}.
+
+@item zvknc
+@tab 1.0
+@tab Vector NIST Algorithm Suite with carryless multiply extension, @samp{zvknc}
+will expand to @samp{zvkn} and @samp{zvbc}.
+
+@item zvkng
+@tab 1.0
+@tab Vector NIST Algorithm Suite with GCM extension, @samp{zvkng} will expand
+to @samp{zvkn} and @samp{zvkg}.
+
+@item zvks
+@tab 1.0
+@tab Vector ShangMi algorithm suite extension, @samp{zvks} will expand
+to @samp{zvksed}, @samp{zvksh}, @samp{zvkb} and @samp{zvkt}.
+
+@item zvksc
+@tab 1.0
+@tab Vector ShangMi algorithm suite with carryless multiplication extension,
+@samp{zvksc} will expand to @samp{zvks} and @samp{zvbc}.
+
+@item zvksg
+@tab 1.0
+@tab Vector ShangMi algorithm suite with GCM extension, @samp{zvksg} will expand
+to @samp{zvks} and @samp{zvkg}.
+
+@item zvkt
+@tab 1.0
+@tab Vector data independent execution latency extension.
+
+@item zfh
+@tab 1.0
+@tab Half-precision floating-point extension.
+
+@item zfhmin
+@tab 1.0
+@tab Minimal half-precision floating-point extension.
+
+@item zvfh
+@tab 1.0
+@tab Vector half-precision floating-point extension.
+
+@item zvfhmin
+@tab 1.0
+@tab Vector minimal half-precision floating-point extension.
+
+@item zvfbfmin
+@tab 1.0
+@tab Vector BF16 converts extension.
+
+@item zfa
+@tab 1.0
+@tab Additional floating-point extension.
+
+@item zmmul
+@tab 1.0
+@tab Integer multiplication extension.
+
+@item zca
+@tab 1.0
+@tab Integer compressed instruction extension.
+
+@item zcf
+@tab 1.0
+@tab Compressed single-precision floating point loads and stores extension.
+
+@item zcd
+@tab 1.0
+@tab Compressed double-precision floating point loads and stores extension.
+
+@item zcb
+@tab 1.0
+@tab Simple compressed instruction extension.
+
+@item zce
+@tab 1.0
+@tab Compressed instruction extensions for embedded processors.
+
+@item zcmp
+@tab 1.0
+@tab Compressed push pop extension.
+
+@item zcmt
+@tab 1.0
+@tab Table jump instruction extension.
+
+@item smaia
+@tab 1.0
+@tab Advanced interrupt architecture extension.
+
+@item smepmp
+@tab 1.0
+@tab PMP Enhancements for memory access and execution prevention on Machine mode.
+
+@item smstateen
+@tab 1.0
+@tab State enable extension.
+
+@item ssaia
+@tab 1.0
+@tab Advanced interrupt architecture extension for supervisor-mode.
+
+@item sscofpmf
+@tab 1.0
+@tab Count overflow & filtering extension.
+
+@item ssstateen
+@tab 1.0
+@tab State-enable extension for supervisor-mode.
+
+@item sstc
+@tab 1.0
+@tab Supervisor-mode timer interrupts extension.
+
+@item svinval
+@tab 1.0
+@tab Fine-grained address-translation cache invalidation extension.
+
+@item svnapot
+@tab 1.0
+@tab NAPOT translation contiguity extension.
+
+@item svpbmt
+@tab 1.0
+@tab Page-based memory types extension.
+
+@item xcvmac
+@tab 1.0
+@tab Core-V multiply-accumulate extension.
+
+@item xcvalu
+@tab 1.0
+@tab Core-V miscellaneous ALU extension.
+
+@item xcvelw
+@tab 1.0
+@tab Core-V event load word extension.
+
+@item xtheadba
+@tab 1.0
+@tab T-head address calculation extension.
+
+@item xtheadbb
+@tab 1.0
+@tab T-head basic bit-manipulation extension.
+
+@item xtheadbs
+@tab 1.0
+@tab T-head single-bit instructions extension.
+
+@item xtheadcmo
+@tab 1.0
+@tab T-head cache management operations extension.
+
+@item xtheadcondmov
+@tab 1.0
+@tab T-head conditional move extension.
+
+@item xtheadfmemidx
+@tab 1.0
+@tab T-head indexed memory operations for floating-point registers extension.
+
+@item xtheadfmv
+@tab 1.0
+@tab T-head double floating-point high-bit data transmission extension.
+
+@item xtheadint
+@tab 1.0
+@tab T-head acceleration interruption extension.
+
+@item xtheadmac
+@tab 1.0
+@tab T-head multiply-accumulate extension.
+
+@item xtheadmemidx
+@tab 1.0
+@tab T-head indexed memory operation extension.
+
+@item xtheadmempair
+@tab 1.0
+@tab T-head two-GPR memory operation extension.
+
+@item xtheadsync
+@tab 1.0
+@tab T-head multi-core synchronization extension.
+
+@item xventanacondops
+@tab 1.0
+@tab Ventana integer conditional operations extension.
+
+@end multitable
+
 When @option{-march=} is not specified, use the setting from @option{-mcpu}.
 
 If both @option{-march} and @option{-mcpu=} are not specified, the default for
