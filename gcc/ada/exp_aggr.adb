@@ -1988,7 +1988,7 @@ package body Exp_Aggr is
       --  STEP 1: Process component associations
 
       --  For those associations that may generate a loop, initialize
-      --  Loop_Actions to collect inserted actions that may be crated.
+      --  Loop_Actions to collect inserted actions that may be created.
 
       --  Skip this if no component associations
 

@@ -7785,7 +7785,7 @@ package body Sem_Util is
             Set_Is_Immediately_Visible (E, False);
 
          --  Case of renaming declaration constructed for package instances.
-         --  if there is an explicit declaration with the same identifier,
+         --  If there is an explicit declaration with the same identifier,
          --  the renaming is not immediately visible any longer, but remains
          --  visible through selected component notation.
 
@@ -7794,7 +7794,7 @@ package body Sem_Util is
          then
             Set_Is_Immediately_Visible (E, False);
 
-         --  The new entity may be the package renaming, which has the same
+         --  The new entity may be the package renaming, which has the
          --  same name as a generic formal which has been seen already.
 
          elsif Nkind (Parent (Def_Id)) = N_Package_Renaming_Declaration
