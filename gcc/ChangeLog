@@ -1,3 +1,20 @@
+2024-01-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113231
+	* config/i386/i386-features.cc (compute_convert_gain): Include
+	the overhead of explicit load and store (movd) instructions when
+	converting non-store scalar operations with memory destinations.
+	Various indentation whitespace fixes.
+
+2024-01-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/neon.md (cbranch<mode>4): New.
+
+2024-01-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc: replace std::max by MAX.
+
 2024-01-06  Jiahao Xu  <xujiahao@loongson.cn>
 
 	* config/loongarch/lasx.md: Set the unused bits in operand[3] to 0.

@@ -1,3 +1,20 @@
+2024-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112997
+	* libsupc++/unwind-cxx.h (__cxa_call_terminate): Change first
+	parameter to void*.
+
+2024-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/variant/87619.cc: Remove dg-timeout-factor.
+
+2024-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_trivially_destructible_v): Use
+	built-in directly when concepts are supported.
+	* testsuite/20_util/is_trivially_destructible/value_v.cc: New
+	test.
+
 2024-01-06  Gwenole Beauchesne  <gb.devel@gmail.com>
 
 	* testsuite/tr1/8_c_compatibility/cinttypes/functions.cc: Use

@@ -1,3 +1,142 @@
+2024-01-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/lra-cpymem_qi.c: Remove duplicate -mmcu=.
+	* gcc.target/avr/lra-elim.c: Same.
+	* gcc.target/avr/pr112830.c: Skip for Reduced Tiny.
+	* gcc.target/avr/pr46779-1.c: Same.
+	* gcc.target/avr/pr46779-2.c: Same.
+	* gcc.target/avr/pr86869.c: Skip for Reduced Tiny and add -std=gnu99
+	for GNU-C due to address spaces.
+	* gcc.target/avr/pr89270.c: Same.
+	* gcc.target/avr/torture/builtins-2-flash.c: Only test address
+	space __flash1 if we have it.
+	* gcc.target/avr/torture/addr-space-1-1.c: Same.
+	* gcc.target/avr/torture/addr-space-2-1.c: Same.
+
+2024-01-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/dtio_25.f90: Update.
+	* gfortran.dg/namelist_57.f90: Update.
+	* gfortran.dg/namelist_65.f90: Update.
+
+2024-01-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113231
+	* gcc.target/i386/pr113231.c: New test case.
+
+2024-01-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-early-break_2.c: Skip Arm.
+	* gcc.dg/vect/vect-early-break_7.c: Likewise.
+	* gcc.dg/vect/vect-early-break_75.c: Likewise.
+	* gcc.dg/vect/vect-early-break_77.c: Likewise.
+	* gcc.dg/vect/vect-early-break_82.c: Likewise.
+	* gcc.dg/vect/vect-early-break_88.c: Likewise.
+	* lib/target-supports.exp (add_options_for_vect_early_break,
+	check_effective_target_vect_early_break_hw,
+	check_effective_target_vect_early_break): Support AArch32.
+	* gcc.target/arm/vect-early-break-cbranch.c: New test.
+
+2024-01-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.dg/tree-ssa/phi-opt-25b.c: Remove extraneous "short".
+
+2024-01-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/torture/pr110838.c: Use proper shift offset to get MSB or int.
+	* gcc.dg/torture/pr112282.c: Use at least 32 bits for :20 bit-fields.
+	* gcc.dg/tree-ssa/bitcmp-5.c: Use integral type with 32 bits or more.
+	* gcc.dg/tree-ssa/bitcmp-6.c: Same.
+	* gcc.dg/tree-ssa/cltz-complement-max.c: Same.
+	* gcc.dg/tree-ssa/cltz-max.c: Same.
+	* gcc.dg/tree-ssa/if-to-switch-8.c: Use literals that fit int.
+	* gcc.dg/tree-ssa/if-to-switch-9.c [avr]: Set case-values-threshold=3.
+	* gcc.dg/tree-ssa/negneg-3.c: Discriminate [not] large_double.
+	* gcc.dg/tree-ssa/phi-opt-25b.c: Use types of correct widths for
+	__builtin_bswapN.
+	* gcc.dg/tree-ssa/pr55177-1.c: Same.
+	* gcc.dg/tree-ssa/popcount-max.c: Use int32_t where required.
+	* gcc.dg/tree-ssa/pr111583-1.c: Use intptr_t as needed.
+	* gcc.dg/tree-ssa/pr111583-2.c: Same.
+
+2024-01-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/memchr-3.c [avr]: Anticipate -Wbuiltin-declaration-mismatch.
+	* gcc.dg/pr103207.c: Use __INT32_TYPE__ instead of int.
+	* gcc.dg/pr103451.c [void* != long]: Anticipate -Wpointer-to-int-cast.
+	* gcc.dg/pr110496.c [void* != long]: Anticipate -Wint-to-pointer-cast.
+	* gcc.dg/pr109977.c: Use __SIZEOF_DOUBLE__ instead of 8.
+	* gcc.dg/pr110506-2.c: Use __UINT32_TYPE__ for uint32_t.
+	* gcc.dg/pr110582.c: Require int32plus.
+	* gcc.dg/pr111039.c: [sizeof(int) < 4]: Use __INT32_TYPE__.
+	* gcc.dg/pr111599.c: Same.
+	* gcc.dg/builtin-dynamic-object-size-0.c: Require size20plus.
+	* gcc.dg/builtin-object-size-1.c [avr]: Skip tests with strndup.
+	* gcc.dg/builtin-object-size-2.c: Same.
+	* gcc.dg/builtin-object-size-3.c: Same.
+	* gcc.dg/builtin-object-size-4.c: Same.
+	* gcc.dg/pr111070.c: Use __UINTPTR_TYPE__ instead of unsigned long.
+	* gcc.dg/debug/btf/btf-pr106773.c: Same.
+	* gcc.dg/debug/btf/btf-bitfields-2.c: [sizeof(int) < 4]: Use
+	__UINT32_TYPE__.
+
+2024-01-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.c-torture/compile/attr-complex-method-2.c [target=avr]: Check
+	for "divsc3" as double = float per default.
+	* gcc.c-torture/compile/pr106537-1.c: Use __INTPTR_TYPE__ instead of
+	hard-coded "long".
+	* gcc.c-torture/compile/pr106537-2.c: Same.
+	* gcc.c-torture/compile/pr106537-3.c: Same.
+	* gcc.c-torture/execute/20230630-3.c: Use __INT32_TYPE__ for bit-field
+	wider than 16 bits.
+	* gcc.c-torture/execute/20230630-4.c: Same.
+	* gcc.c-torture/execute/pr109938.c: Require int32plus.
+	* gcc.c-torture/execute/pr109986.c: Same.
+	* gcc.dg/fold-ior-4.c: Same.
+	* gcc.dg/fold-ior-5.c: Same
+	* gcc.dg/fold-parity-5.c: Same.
+	* gcc.dg/fold-popcount-5.c: Same.
+	* gcc.dg/builtin-bswap-13.c [sizeof(int) < 4]: Use __INT32_TYPE__
+	instead of int.
+	* gcc.dg/builtin-bswap-14.c: Use __INT32_TYPE__ instead of int where
+	required by code.
+	* gcc.dg/c23-constexpr-9.c: Require large_double.
+	* gcc.dg/c23-nullptr-1.c [target=avr]: xfail.
+	* gcc.dg/loop-unswitch-10.c: Require size32plus.
+	* gcc.dg/loop-unswitch-14.c: Same.
+	* gcc.dg/loop-unswitch-11.c: Require int32.
+	* gcc.dg/pr101836.c: Use __SIZEOF_INT instead of hard-coded 4.
+	* gcc.dg/pr101836_1.c: Same.
+	* gcc.dg/pr101836_2.c: Same.
+	* gcc.dg/pr101836_3.c: Same.
+
+2024-01-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/init-5_a.C: New test.
+	* g++.dg/modules/init-5_b.C: New test.
+
+2024-01-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/109679
+	* g++.dg/modules/using-11.h: New test.
+	* g++.dg/modules/using-11_a.C: New test.
+	* g++.dg/modules/using-11_b.C: New test.
+
+2024-01-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/110808
+	* g++.dg/modules/part-hdr-1_c.C: Fix syntax.
+	* g++.dg/modules/part-mac-1_c.C: Likewise.
+	* g++.dg/modules/mod-invalid-1.C: New test.
+	* g++.dg/modules/part-8_a.C: New test.
+	* g++.dg/modules/part-8_b.C: New test.
+	* g++.dg/modules/part-8_c.C: New test.
+
 2024-01-06  Harald Anlauf  <anlauf@gmx.de>
 	    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
