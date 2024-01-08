@@ -12832,6 +12832,20 @@ is_this_parameter (tree t)
   return true;
 }
 
+/* As above, or a C++23 explicit object parameter.  */
+
+bool
+is_object_parameter (tree t)
+{
+  if (is_this_parameter (t))
+    return true;
+  if (TREE_CODE (t) != PARM_DECL)
+    return false;
+  tree ctx = DECL_CONTEXT (t);
+  return (ctx && DECL_XOBJ_MEMBER_FUNCTION_P (ctx)
+	  && t == DECL_ARGUMENTS (ctx));
+}
+
 /* Insert the deduced return type for an auto function.  */
 
 void

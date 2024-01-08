@@ -7784,6 +7784,7 @@ extern void finish_handler_parms		(tree, tree);
 extern void finish_handler			(tree);
 extern void finish_cleanup			(tree, tree);
 extern bool is_this_parameter                   (tree);
+extern bool is_object_parameter                 (tree);
 
 enum {
   BCS_NORMAL = 0,

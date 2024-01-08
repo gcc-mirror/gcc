@@ -1737,8 +1737,7 @@ field_access_p (tree component_ref, tree field_decl, tree field_type)
     return false;
 
   tree ptr = STRIP_NOPS (TREE_OPERAND (indirect_ref, 0));
-  /* ??? is_object_parameter?  */
-  if (!is_this_parameter (ptr))
+  if (!is_object_parameter (ptr))
     return false;
 
   /* Must access the correct field.  */
@@ -1818,6 +1817,17 @@ reference_accessor_p (tree init_expr, tree field_decl, tree field_type,
   return true;
 }
 
+/* Return the class of the `this' or explicit object parameter of FN.  */
+
+static tree
+class_of_object_parm (const_tree fn)
+{
+  tree fntype = TREE_TYPE (fn);
+  if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+    return non_reference (TREE_VALUE (TYPE_ARG_TYPES (fntype)));
+  return class_of_this_parm (fntype);
+}
+
 /* Return true if FN is an accessor method for FIELD_DECL.
    i.e. a method of the form { return FIELD; }, with no
    conversions.
@@ -1835,15 +1845,14 @@ field_accessor_p (tree fn, tree field_decl, bool const_p)
   if (TREE_CODE (field_decl) != FIELD_DECL)
     return false;
 
-  tree fntype = TREE_TYPE (fn);
-  if (TREE_CODE (fntype) != METHOD_TYPE)
+  if (!DECL_OBJECT_MEMBER_FUNCTION_P (fn))
     return false;
 
   /* If the field is accessed via a const "this" argument, verify
      that the "this" parameter is const.  */
   if (const_p)
     {
-      tree this_class = class_of_this_parm (fntype);
+      tree this_class = class_of_object_parm (fn);
       if (!TYPE_READONLY (this_class))
 	return false;
     }

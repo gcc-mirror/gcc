@@ -10815,8 +10815,7 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
      be more permissive.  */
   if (current_function_decl
       && DECL_OBJECT_MEMBER_FUNCTION_P (current_function_decl)
-      /* ??? is_object_parameter?  */
-      && is_this_parameter (tree_strip_nop_conversions (dest)))
+      && is_object_parameter (tree_strip_nop_conversions (dest)))
     {
       tree ctx = DECL_CONTEXT (current_function_decl);
       bool special = same_type_ignoring_top_level_qualifiers_p (ctx, desttype);
