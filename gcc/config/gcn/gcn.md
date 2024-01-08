@@ -299,10 +299,10 @@
 
 (define_attr "enabled" ""
   (cond [(and (eq_attr "rdna" "no")
-	      (ne (symbol_ref "TARGET_RDNA2") (const_int 0)))
+	      (ne (symbol_ref "TARGET_RDNA2_PLUS") (const_int 0)))
 	   (const_int 0)
 	 (and (eq_attr "rdna" "yes")
-	      (eq (symbol_ref "TARGET_RDNA2") (const_int 0)))
+	      (eq (symbol_ref "TARGET_RDNA2_PLUS") (const_int 0)))
 	   (const_int 0)
 	 (and (eq_attr "gcn_version" "gcn5")
 	      (eq (symbol_ref "TARGET_GCN5_PLUS") (const_int 0)))
@@ -2109,13 +2109,13 @@
 	    return "s_load%o0\t%0, %A1 glc\;s_waitcnt\tlgkmcnt(0)\;"
 		   "s_dcache_wb_vol";
 	  case 1:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "flat_load%o0\t%0, %A1%O1 glc\;s_waitcnt\t0\;"
 		      "buffer_gl0_inv"
 		    : "flat_load%o0\t%0, %A1%O1 glc\;s_waitcnt\t0\;"
 		      "buffer_wbinvl1_vol");
 	  case 2:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "global_load%o0\t%0, %A1%O1 glc\;s_waitcnt\tvmcnt(0)\;"
 		      "buffer_gl0_inv"
 		    : "global_load%o0\t%0, %A1%O1 glc\;s_waitcnt\tvmcnt(0)\;"
@@ -2131,13 +2131,13 @@
 	    return "s_dcache_wb_vol\;s_load%o0\t%0, %A1 glc\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 glc\;"
 		      "s_waitcnt\t0\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;flat_load%o0\t%0, %A1%O1 glc\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol");
 	  case 2:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 glc\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;global_load%o0\t%0, %A1%O1 glc\;"
@@ -2180,11 +2180,11 @@
 	  case 0:
 	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc";
 	  case 1:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 glc"
 		    : "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 glc");
 	  case 2:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 glc"
 		    : "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 glc");
 	  }
@@ -2198,13 +2198,13 @@
 	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 glc\;"
 		      "s_waitcnt\t0\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 glc\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol");
 	  case 2:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 glc\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 glc\;"
@@ -2252,13 +2252,13 @@
 	    return "s_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\tlgkmcnt(0)\;"
 		   "s_dcache_wb_vol\;s_dcache_inv_vol";
 	  case 1:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "flat_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\t0\;"
 		      "buffer_gl0_inv"
 		    : "flat_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\t0\;"
 		      "buffer_wbinvl1_vol");
 	  case 2:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl0_inv"
 		    : "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
@@ -2273,13 +2273,13 @@
 	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 glc\;"
 		   "s_waitcnt\tlgkmcnt(0)";
 	  case 1:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
 		      "s_waitcnt\t0"
 		    : "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
 		      "s_waitcnt\t0");
 	  case 2:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;"
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
 		      "s_waitcnt\tvmcnt(0)"
@@ -2297,13 +2297,13 @@
 	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 glc\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
 		      "s_waitcnt\t0\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol");
 	  case 2:
-	    return (TARGET_RDNA2
+	    return (TARGET_RDNA2_PLUS
 		    ? "buffer_gl0_inv\;"
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl0_inv"

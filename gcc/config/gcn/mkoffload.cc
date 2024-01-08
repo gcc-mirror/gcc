@@ -59,6 +59,8 @@
 #define EF_AMDGPU_MACH_AMDGCN_GFX90a 0x3f
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX1030
 #define EF_AMDGPU_MACH_AMDGCN_GFX1030 0x36
+#undef  EF_AMDGPU_MACH_AMDGCN_GFX1100
+#define EF_AMDGPU_MACH_AMDGCN_GFX1100 0x41
 
 #define EF_AMDGPU_FEATURE_XNACK_V4	0x300  /* Mask.  */
 #define EF_AMDGPU_FEATURE_XNACK_UNSUPPORTED_V4	0x000
@@ -971,6 +973,8 @@ main (int argc, char **argv)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX90a;
       else if (strcmp (argv[i], "-march=gfx1030") == 0)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX1030;
+      else if (strcmp (argv[i], "-march=gfx1100") == 0)
+	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX1100;
 #define STR "-mstack-size="
       else if (startswith (argv[i], STR))
 	gcn_stack_size = atoi (argv[i] + strlen (STR));

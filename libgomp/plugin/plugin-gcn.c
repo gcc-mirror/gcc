@@ -1641,7 +1641,8 @@ const static char *gcn_gfx906_s = "gfx906";
 const static char *gcn_gfx908_s = "gfx908";
 const static char *gcn_gfx90a_s = "gfx90a";
 const static char *gcn_gfx1030_s = "gfx1030";
-const static int gcn_isa_name_len = 6;
+const static char *gcn_gfx1100_s = "gfx1100";
+const static int gcn_isa_name_len = 7;
 
 /* Returns the name that the HSA runtime uses for the ISA or NULL if we do not
    support the ISA. */
@@ -1662,6 +1663,8 @@ isa_hsa_name (int isa) {
       return gcn_gfx90a_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX1030:
       return gcn_gfx1030_s;
+    case EF_AMDGPU_MACH_AMDGCN_GFX1100:
+      return gcn_gfx1100_s;
     }
   return NULL;
 }
@@ -1704,6 +1707,9 @@ isa_code(const char *isa) {
   if (!strncmp (isa, gcn_gfx1030_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX1030;
 
+  if (!strncmp (isa, gcn_gfx1100_s, gcn_isa_name_len))
+    return EF_AMDGPU_MACH_AMDGCN_GFX1100;
+
   return -1;
 }
 
@@ -1719,6 +1725,7 @@ max_isa_vgprs (int isa)
     case EF_AMDGPU_MACH_AMDGCN_GFX906:
     case EF_AMDGPU_MACH_AMDGCN_GFX908:
     case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+    case EF_AMDGPU_MACH_AMDGCN_GFX1100:
       return 256;
     case EF_AMDGPU_MACH_AMDGCN_GFX90a:
       return 512;

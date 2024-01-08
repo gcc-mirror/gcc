@@ -30,6 +30,8 @@
 	builtin_define ("__CDNA2__");                                          \
       else if (TARGET_RDNA2)                                                   \
 	builtin_define ("__RDNA2__");                                          \
+      else if (TARGET_RDNA3)                                                   \
+	builtin_define ("__RDNA3__");                                          \
       if (TARGET_FIJI)                                                         \
 	{                                                                      \
 	  builtin_define ("__fiji__");                                         \
@@ -41,11 +43,13 @@
 	builtin_define ("__gfx906__");                                         \
       else if (TARGET_GFX908)                                                  \
 	builtin_define ("__gfx908__");                                         \
-      else if (TARGET_GFX90a)                                                  \
-	builtin_define ("__gfx90a__");                                         \
+      else if (TARGET_GFX1030)                                                 \
+	builtin_define ("__gfx1030");                                          \
+      else if (TARGET_GFX1100)                                                 \
+	builtin_define ("__gfx1100__");                                        \
   } while (0)
 
-#define ASSEMBLER_DIALECT (TARGET_RDNA2 ? 1 : 0)
+#define ASSEMBLER_DIALECT (TARGET_RDNA2_PLUS ? 1 : 0)
 
 /* Support for a compile-time default architecture and tuning.
    The rules are:

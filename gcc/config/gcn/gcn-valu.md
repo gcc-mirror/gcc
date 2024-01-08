@@ -1417,7 +1417,7 @@
 	  [(match_operand:V_noHI 1 "register_operand" " v")
 	   (match_operand:SI 2 "const_int_operand"    " n")]
 	  UNSPEC_MOV_DPP_SHR))]
-  "!TARGET_RDNA2"
+  "!TARGET_RDNA2_PLUS"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "v_mov_b32",
 				    UNSPEC_MOV_DPP_SHR, INTVAL (operands[2]));
@@ -4211,7 +4211,7 @@
 	(unspec:<SCALAR_MODE>
 	  [(match_operand:V_ALL 1 "register_operand")]
 	  REDUC_UNSPEC))]
-  "!TARGET_RDNA2"
+  "!TARGET_RDNA2_PLUS"
   {
     rtx tmp = gcn_expand_reduc_scalar (<MODE>mode, operands[1],
 				       <reduc_unspec>);
@@ -4265,7 +4265,7 @@
   ; GCN3 requires a carry out, GCN5 not
   "!(TARGET_GCN3 && SCALAR_INT_MODE_P (<SCALAR_MODE>mode)
      && <reduc_unspec> == UNSPEC_PLUS_DPP_SHR)
-   && !TARGET_RDNA2"
+   && !TARGET_RDNA2_PLUS"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "<reduc_insn>",
 				    <reduc_unspec>, INTVAL (operands[3]));
@@ -4310,7 +4310,7 @@
 	   (match_operand:SI 3 "const_int_operand"	  "n")]
 	  UNSPEC_PLUS_CARRY_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
-  "!TARGET_RDNA2"
+  "!TARGET_RDNA2_PLUS"
   {
     return gcn_expand_dpp_shr_insn (<VnSI>mode, "v_add%^_u32",
 				    UNSPEC_PLUS_CARRY_DPP_SHR,
@@ -4328,7 +4328,7 @@
 	   (match_operand:DI 4 "register_operand"   "cV")]
 	  UNSPEC_PLUS_CARRY_IN_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
-  "!TARGET_RDNA2"
+  "!TARGET_RDNA2_PLUS"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "v_addc%^_u32",
 				    UNSPEC_PLUS_CARRY_IN_DPP_SHR,
