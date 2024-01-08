@@ -34708,8 +34708,8 @@ see @ref{Other Builtins} for details.
 
 @opindex mmovbe
 @item -mmovbe
-This option enables use of the @code{movbe} instruction to implement
-@code{__builtin_bswap32} and @code{__builtin_bswap64}.
+This option enables use of the @code{movbe} instruction to optimize
+byte swapping of four and eight byte entities.
 
 @opindex mshstk
 @item -mshstk
