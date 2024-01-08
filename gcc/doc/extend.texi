@@ -7344,6 +7344,12 @@ Enable/disable the generation of the SM4 instructions.
 @itemx no-usermsr
 Enable/disable the generation of the USER_MSR instructions.
 
+@cindex @code{target("apxf")} function attribute, x86
+@item apxf
+@itemx no-apxf
+Enable/disable the generation of the APX features, including
+EGPR, PUSH2POP2, NDD and PPX.
+
 @cindex @code{target("avx10.1")} function attribute, x86
 @item avx10.1
 @itemx no-avx10.1
