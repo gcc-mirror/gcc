@@ -105,7 +105,9 @@ int cond[N] = {0};
           if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
         }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_7(TYPE)                                                            \
@@ -151,7 +153,9 @@ int cond[N] = {0};
           if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
         }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_10(TYPE)                                                           \
