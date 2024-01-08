@@ -1586,7 +1586,7 @@ darwin_objc1_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   else if (startswith (p, "V1_CEXT"))
     return darwin_sections[objc1_class_ext_section];
 
-  else if (startswith (p, "V2_CSTR"))
+  else if (startswith (p, "V1_CSTR"))
     return darwin_sections[objc_constant_string_object_section];
 
   return base;
@@ -1730,7 +1730,7 @@ machopic_select_section (tree decl,
 	return base_section; /* GNU runtime is happy with it all in one pot.  */
     }
 
-  /* b) Constant string objects.  */
+  /* b) Constructors for constant NSstring [but not CFString] objects.  */
   if (TREE_CODE (decl) == CONSTRUCTOR
       && TREE_TYPE (decl)
       && TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
@@ -1751,6 +1751,12 @@ machopic_select_section (tree decl,
 	    }
 	  else
 	    return darwin_sections[objc_string_object_section];
+	}
+      else if (!strcmp (IDENTIFIER_POINTER (name), "__builtin_CFString"))
+	{
+	  /* We should have handled __anon_cfstrings above.  */
+	  gcc_checking_assert (0);
+	  return darwin_sections[cfstring_constant_object_section];
 	}
       else
 	return base_section;
