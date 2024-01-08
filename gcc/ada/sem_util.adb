@@ -9103,6 +9103,14 @@ package body Sem_Util is
                Placement := Private_State_Space;
                return;
 
+            --  The item or its enclosing package appear in the visible state
+            --  space of a generic package.
+
+            elsif Ekind (Pack_Id) = E_Generic_Package then
+               Placement := Not_In_Package;
+               Pack_Id := Empty;
+               return;
+
             --  When the item appears in the visible state space of a package,
             --  continue to climb the scope stack as this may not be the final
             --  state space.
