@@ -140,6 +140,7 @@
 
 // These clash with newlib so don't use them.
 # define __lockable		cannot be used as an identifier
+# define __null_sentinel	cannot be used as an identifier
 # define __packed		cannot be used as an identifier
 # define __unused		cannot be used as an identifier
 # define __used			cannot be used as an identifier
