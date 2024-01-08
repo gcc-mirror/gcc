@@ -17734,6 +17734,9 @@ function.  The value @code{full} is an alias for specifying both
 @code{branch} and @code{return}. The value @code{none} turns off
 instrumentation.
 
+To override @option{-fcf-protection}, @option{-fcf-protection=none}
+needs to be added and then with @option{-fcf-protection=xxx}.
+
 The value @code{check} is used for the final link with link-time
 optimization (LTO).  An error is issued if LTO object files are
 compiled with different @option{-fcf-protection} values.  The
