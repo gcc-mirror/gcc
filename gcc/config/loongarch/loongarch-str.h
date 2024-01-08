@@ -63,11 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #define STR_CMODEL_LARGE "large"
 #define STR_CMODEL_EXTREME "extreme"
 
-#define OPTSTR_EXPLICIT_RELOCS "explicit-relocs"
-#define STR_EXPLICIT_RELOCS_AUTO "auto"
-#define STR_EXPLICIT_RELOCS_NONE "none"
-#define STR_EXPLICIT_RELOCS_ALWAYS "always"
-
 #define OPTSTR_FRECIPE	"frecipe"
 #define OPTSTR_DIV32	"div32"
 #define OPTSTR_LAM_BH	"lam-bh"

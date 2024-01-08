@@ -202,7 +202,7 @@ Target RejectNegative Joined Enum(explicit_relocs) Var(la_opt_explicit_relocs) I
 Use %reloc() assembly operators.
 
 mexplicit-relocs
-Target Var(la_opt_explicit_relocs_backward) Init(M_OPT_UNSET)
+Target Alias(mexplicit-relocs=, always, none)
 Use %reloc() assembly operators (for backward compatibility).
 
 mrecip
