@@ -48,16 +48,16 @@ array_arch<loongarch_isa> loongarch_cpu_default_isa =
   array_arch<loongarch_isa> ()
     .set (CPU_LOONGARCH64,
 	  loongarch_isa ()
-	    .base_ (ISA_BASE_LA64V100)
+	    .base_ (ISA_BASE_LA64)
 	    .fpu_ (ISA_EXT_FPU64))
     .set (CPU_LA464,
 	  loongarch_isa ()
-	    .base_ (ISA_BASE_LA64V100)
+	    .base_ (ISA_BASE_LA64)
 	    .fpu_ (ISA_EXT_FPU64)
 	    .simd_ (ISA_EXT_SIMD_LASX))
     .set (CPU_LA664,
 	  loongarch_isa ()
-	    .base_ (ISA_BASE_LA64V100)
+	    .base_ (ISA_BASE_LA64)
 	    .fpu_ (ISA_EXT_FPU64)
 	    .simd_ (ISA_EXT_SIMD_LASX)
 	    .evolution_ (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA
@@ -153,7 +153,7 @@ array_tune<int> loongarch_cpu_multipass_dfa_lookahead = array_tune<int> ()
 
 array<const char *, N_ISA_BASE_TYPES> loongarch_isa_base_strings =
   array<const char *, N_ISA_BASE_TYPES> ()
-    .set (ISA_BASE_LA64V100, STR_ISA_BASE_LA64V100);
+    .set (ISA_BASE_LA64, STR_ISA_BASE_LA64);
 
 array<const char *, N_ISA_EXT_TYPES> loongarch_isa_ext_strings =
   array<const char *, N_ISA_EXT_TYPES> ()
@@ -189,15 +189,15 @@ array<array<loongarch_isa, N_ABI_EXT_TYPES>, N_ABI_BASE_TYPES>
 	  array<loongarch_isa, N_ABI_EXT_TYPES> ()
 	    .set (ABI_EXT_BASE,
 		  loongarch_isa ()
-		    .base_ (ISA_BASE_LA64V100)
+		    .base_ (ISA_BASE_LA64)
 		    .fpu_ (ISA_EXT_FPU64)))
     .set (ABI_BASE_LP64F,
 	  array<loongarch_isa, N_ABI_EXT_TYPES> ()
 	    .set (ABI_EXT_BASE,
 		  loongarch_isa ()
-		    .base_ (ISA_BASE_LA64V100)
+		    .base_ (ISA_BASE_LA64)
 		    .fpu_ (ISA_EXT_FPU32)))
     .set (ABI_BASE_LP64S,
 	  array<loongarch_isa, N_ABI_EXT_TYPES> ()
 	    .set (ABI_EXT_BASE,
-		  loongarch_isa ().base_ (ISA_BASE_LA64V100)));
+		  loongarch_isa ().base_ (ISA_BASE_LA64)));

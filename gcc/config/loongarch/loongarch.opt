@@ -41,7 +41,7 @@ Name(isa_base) Type(int)
 Basic ISAs of LoongArch:
 
 EnumValue
-Enum(isa_base) String(la64) Value(ISA_BASE_LA64V100)
+Enum(isa_base) String(la64) Value(ISA_BASE_LA64)
 
 ;; ISA extensions / adjustments
 Enum

@@ -567,17 +567,17 @@ isa_default_abi (const struct loongarch_isa *isa)
   switch (isa->fpu)
     {
       case ISA_EXT_FPU64:
-	if (isa->base >= ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64)
 	  abi.base = ABI_BASE_LP64D;
 	break;
 
       case ISA_EXT_FPU32:
-	if (isa->base >= ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64)
 	  abi.base = ABI_BASE_LP64F;
 	break;
 
       case ISA_EXT_NONE:
-	if (isa->base >= ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64)
 	  abi.base = ABI_BASE_LP64S;
 	break;
 
@@ -596,8 +596,8 @@ isa_base_compat_p (const struct loongarch_isa *set1,
 {
   switch (set2->base)
     {
-      case ISA_BASE_LA64V100:
-	return (set1->base >= ISA_BASE_LA64V100);
+      case ISA_BASE_LA64:
+	return (set1->base >= ISA_BASE_LA64);
 
       default:
 	gcc_unreachable ();

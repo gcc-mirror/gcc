@@ -55,9 +55,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* enum isa_base */
 
-/* LoongArch V1.00.  */
-#define ISA_BASE_LA64V100	0
-#define N_ISA_BASE_TYPES	1
+/* LoongArch64 */
+#define ISA_BASE_LA64	      0
+#define N_ISA_BASE_TYPES      1
 extern loongarch_def_array<const char *, N_ISA_BASE_TYPES>
   loongarch_isa_base_strings;
 
