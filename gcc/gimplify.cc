@@ -19593,9 +19593,5 @@ gimplify_hasher::equal (const elt_t *p1, const elt_t *p2)
   if (!operand_equal_p (t1, t2, 0))
     return false;
 
-  /* Only allow them to compare equal if they also hash equal; otherwise
-     results are nondeterminate, and we fail bootstrap comparison.  */
-  gcc_checking_assert (hash (p1) == hash (p2));
-
   return true;
 }
