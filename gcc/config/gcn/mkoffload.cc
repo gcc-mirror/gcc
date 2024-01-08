@@ -1018,6 +1018,7 @@ main (int argc, char **argv)
     case EF_AMDGPU_MACH_AMDGCN_GFX906:
     case EF_AMDGPU_MACH_AMDGCN_GFX908:
     case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+    case EF_AMDGPU_MACH_AMDGCN_GFX1100:
       SET_XNACK_OFF (elf_flags);
       break;
     case EF_AMDGPU_MACH_AMDGCN_GFX90a:
