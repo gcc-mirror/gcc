@@ -140,7 +140,9 @@ static int with_default_simd = 0;
 void
 loongarch_init_target (struct loongarch_target *target,
 		       int cpu_arch, int cpu_tune, int fpu, int simd,
-		       int abi_base, int abi_ext, int cmodel)
+		       int abi_base, int abi_ext, int cmodel,
+		       HOST_WIDE_INT isa_evolution,
+		       HOST_WIDE_INT isa_evolution_set)
 {
   if (!target)
     return;
@@ -148,6 +150,8 @@ loongarch_init_target (struct loongarch_target *target,
   target->cpu_tune = cpu_tune;
   target->isa.fpu = fpu;
   target->isa.simd = simd;
+  target->isa.evolution = isa_evolution;
+  target->isa.evolution_set = isa_evolution_set;
   target->abi.base = abi_base;
   target->abi.ext = abi_ext;
   target->cmodel = cmodel;
@@ -183,6 +187,9 @@ loongarch_config_target (struct loongarch_target *target,
       M_OPT_ABSENT (target->cmodel)	  ? 0 : 1,
       M_OPT_ABSENT (target->abi.base)	  ? 0 : 1,
   };
+
+  int64_t isa_evolution = target->isa.evolution;
+  int64_t isa_evolution_set = target->isa.evolution_set;
 
   /* 1.  Target ABI */
   if (constrained.abi_base)
@@ -394,6 +401,13 @@ config_target_isa:
 	}
     }
 
+  /* Apply the ISA evolution feature switches from the user.  */
+  HOST_WIDE_INT isa_evolution_orig = t.isa.evolution;
+  t.isa.evolution &= ~(~isa_evolution & isa_evolution_set);
+  t.isa.evolution |= isa_evolution & isa_evolution_set;
+
+  /* evolution_set means "what's different from the -march default".  */
+  t.isa.evolution_set = isa_evolution_orig ^ t.isa.evolution;
 
   /* 4.  ABI-ISA compatibility */
   /* Note:
@@ -774,4 +788,5 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
   /* status of -mfpu */
   opts->x_la_opt_fpu = target->isa.fpu;
   opts->x_la_opt_simd = target->isa.simd;
+  opts->x_la_isa_evolution = target->isa.evolution;
 }

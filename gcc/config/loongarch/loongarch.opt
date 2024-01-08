@@ -267,26 +267,26 @@ default value is 4.
 ; Features added during ISA evolution.  This concept is different from ISA
 ; extension, read Section 1.5 of LoongArch v1.10 Volume 1 for the
 ; explanation.  These features may be implemented and enumerated with
-; CPUCFG independantly, so we use bit flags to specify them.
-Variable
-HOST_WIDE_INT isa_evolution = 0
+; CPUCFG independently, so we use bit flags to specify them.
+TargetVariable
+HOST_WIDE_INT la_isa_evolution = 0
 
 mfrecipe
-Target Mask(ISA_FRECIPE) Var(isa_evolution)
+Target Mask(ISA_FRECIPE) Var(la_isa_evolution)
 Support frecipe.{s/d} and frsqrte.{s/d} instructions.
 
 mdiv32
-Target Mask(ISA_DIV32) Var(isa_evolution)
+Target Mask(ISA_DIV32) Var(la_isa_evolution)
 Support div.w[u] and mod.w[u] instructions with inputs not sign-extended.
 
 mlam-bh
-Target Mask(ISA_LAM_BH) Var(isa_evolution)
+Target Mask(ISA_LAM_BH) Var(la_isa_evolution)
 Support am{swap/add}[_db].{b/h} instructions.
 
 mlamcas
-Target Mask(ISA_LAMCAS) Var(isa_evolution)
+Target Mask(ISA_LAMCAS) Var(la_isa_evolution)
 Support amcas[_db].{b/h/w/d} instructions.
 
 mld-seq-sa
-Target Mask(ISA_LD_SEQ_SA) Var(isa_evolution)
+Target Mask(ISA_LD_SEQ_SA) Var(la_isa_evolution)
 Do not need load-load barriers (dbar 0x700).

@@ -102,7 +102,7 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   else
     builtin_define ("__loongarch_frlen=0");
 
-  if (TARGET_HARD_FLOAT && TARGET_FRECIPE)
+  if (TARGET_HARD_FLOAT && ISA_HAS_FRECIPE)
     builtin_define ("__loongarch_frecipe");
 
   if (ISA_HAS_LSX)

@@ -132,8 +132,11 @@ struct loongarch_isa
 
      Using int64_t instead of HOST_WIDE_INT for C compatibility.  */
   int64_t evolution;
+  int64_t evolution_set;
 
-  loongarch_isa () : base (0), fpu (0), simd (0), evolution (0) {}
+  loongarch_isa () :
+    base (0), fpu (0), simd (0), evolution (0), evolution_set (0)
+  {}
   loongarch_isa base_ (int _base) { base = _base; return *this; }
   loongarch_isa fpu_ (int _fpu) { fpu = _fpu; return *this; }
   loongarch_isa simd_ (int _simd) { simd = _simd; return *this; }

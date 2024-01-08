@@ -3863,7 +3863,7 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
       else
 	{
 	  *total = loongarch_cost->int_div_si;
-	  if (TARGET_64BIT && !TARGET_DIV32)
+	  if (TARGET_64BIT && !ISA_HAS_DIV32)
 	    *total += COSTS_N_INSNS (2);
 	}
 
@@ -6111,7 +6111,7 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       if (loongarch_cas_failure_memorder_needs_acquire (
 	    memmodel_from_int (INTVAL (op))))
 	fputs ("dbar\t0b10100", file);
-      else if (!TARGET_LD_SEQ_SA)
+      else if (!ISA_HAS_LD_SEQ_SA)
 	fputs ("dbar\t0x700", file);
       break;
 
@@ -7513,7 +7513,8 @@ loongarch_option_override_internal (struct gcc_options *opts,
   loongarch_init_target (&la_target,
 			 la_opt_cpu_arch, la_opt_cpu_tune, la_opt_fpu,
 			 la_opt_simd, la_opt_abi_base, la_opt_abi_ext,
-			 la_opt_cmodel);
+			 la_opt_cmodel, opts->x_la_isa_evolution,
+			 opts_set->x_la_isa_evolution);
 
   /* Handle target-specific options: compute defaults/conflicts etc.  */
   loongarch_config_target (&la_target, NULL, 0);
@@ -7553,11 +7554,6 @@ loongarch_option_override_internal (struct gcc_options *opts,
      default.  */
   if (loongarch_branch_cost == 0)
     loongarch_branch_cost = loongarch_cost->branch_cost;
-
-  /* If the user hasn't disabled a feature added during ISA evolution,
-     use the processor's default.  */
-  isa_evolution |= (la_target.isa.evolution &
-		    ~global_options_set.x_isa_evolution);
 
   /* Enable sw prefetching at -O3 and higher.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
@@ -7689,7 +7685,7 @@ loongarch_option_override_internal (struct gcc_options *opts,
     }
   if (loongarch_recip)
     recip_mask |= RECIP_MASK_ALL;
-  if (!TARGET_FRECIPE)
+  if (!ISA_HAS_FRECIPE)
     recip_mask = RECIP_MASK_NONE;
 }
 
@@ -10880,11 +10876,11 @@ loongarch_asm_code_end (void)
 	       loongarch_cpu_strings [la_target.cpu_tune]);
       fprintf (asm_out_file, "%s Base ISA: %s\n", ASM_COMMENT_START,
 	       loongarch_isa_base_strings [la_target.isa.base]);
-      DUMP_FEATURE (TARGET_FRECIPE);
-      DUMP_FEATURE (TARGET_DIV32);
-      DUMP_FEATURE (TARGET_LAM_BH);
-      DUMP_FEATURE (TARGET_LAMCAS);
-      DUMP_FEATURE (TARGET_LD_SEQ_SA);
+      DUMP_FEATURE (ISA_HAS_FRECIPE);
+      DUMP_FEATURE (ISA_HAS_DIV32);
+      DUMP_FEATURE (ISA_HAS_LAM_BH);
+      DUMP_FEATURE (ISA_HAS_LAMCAS);
+      DUMP_FEATURE (ISA_HAS_LD_SEQ_SA);
     }
 
   fputs ("\n\n", asm_out_file);
