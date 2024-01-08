@@ -1845,7 +1845,9 @@ assemble_function_label_raw (FILE *file, const char *name)
   ASM_OUTPUT_LABEL (file, name);
   if ((flag_sanitize & SANITIZE_ADDRESS)
       /* Notify ASAN only about the first function label.  */
-      && (in_cold_section_p == first_function_block_is_cold))
+      && (in_cold_section_p == first_function_block_is_cold)
+      /* Do not notify ASAN when called from, e.g., code_end ().  */
+      && cfun)
     asan_function_start ();
 }
 
