@@ -34,7 +34,7 @@ Jeff Law					<jlaw@ventanamicro.com>
 Michael Meissner				<gnu@the-meissners.org>
 Jason Merrill					<jason@redhat.com>
 David S. Miller					<davem@redhat.com>
-Joseph Myers					<jsm@polyomino.org.uk>
+Joseph Myers					<josmyers@redhat.com>
 Richard Sandiford				<richard.sandiford@arm.com>
 Bernd Schmidt					<bernds_cb1@t-online.de>
 Ian Lance Taylor				<ian@airs.com>
@@ -155,7 +155,7 @@ cygwin, mingw-w64	Jonathan Yong		<10walls@gmail.com>
 
 			Language Front Ends Maintainers
 
-C front end/ISO C99	Joseph Myers		<jsm@polyomino.org.uk>
+C front end/ISO C99	Joseph Myers		<josmyers@redhat.com>
 Ada front end		Arnaud Charlet		<charlet@adacore.com>
 Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
 Ada front end		Marc Poulhiès		<poulhies@adacore.com>
@@ -192,7 +192,7 @@ libquadmath		Jakub Jelinek		<jakub@redhat.com>
 libvtv			Caroline Tice		<cmtice@google.com>
 libphobos		Iain Buclaw		<ibuclaw@gdcproject.org>
 line map		Dodji Seketeli		<dodji@redhat.com>
-soft-fp			Joseph Myers		<jsm@polyomino.org.uk>
+soft-fp			Joseph Myers		<josmyers@redhat.com>
 scheduler (+ haifa)	Jim Wilson		<wilson@tuliptree.org>
 scheduler (+ haifa)	Michael Meissner	<gnu@the-meissners.org>
 scheduler (+ haifa)	Jeff Law		<jeffreyalaw@gmail.com>
@@ -219,7 +219,7 @@ jump.cc			David S. Miller		<davem@redhat.com>
 web pages		Gerald Pfeifer		<gerald@pfeifer.com>
 config.sub/config.guess	Ben Elliston		<config-patches@gnu.org>
 i18n			Philipp Thomas		<pth@suse.de>
-i18n			Joseph Myers		<jsm@polyomino.org.uk>
+i18n			Joseph Myers		<josmyers@redhat.com>
 diagnostic messages	Dodji Seketeli		<dodji@redhat.com>
 diagnostic messages	David Malcolm		<dmalcolm@redhat.com>
 build machinery (*.in)	Paolo Bonzini		<bonzini@gnu.org>
@@ -227,14 +227,14 @@ build machinery (*.in)	Nathanael Nerode	<neroden@gcc.gnu.org>
 build machinery (*.in)	Alexandre Oliva		<aoliva@gcc.gnu.org>
 build machinery (*.in)	Ralf Wildenhues		<Ralf.Wildenhues@gmx.de>
 docs co-maintainer	Gerald Pfeifer		<gerald@pfeifer.com>
-docs co-maintainer	Joseph Myers		<jsm@polyomino.org.uk>
+docs co-maintainer	Joseph Myers		<josmyers@redhat.com>
 docs co-maintainer	Sandra Loosemore	<sandra@codesourcery.com>
 docstring relicensing	Gerald Pfeifer		<gerald@pfeifer.com>
-docstring relicensing	Joseph Myers		<jsm@polyomino.org.uk>
+docstring relicensing	Joseph Myers		<josmyers@redhat.com>
 predict.def		Jan Hubicka		<hubicka@ucw.cz>
 gcov			Jan Hubicka		<hubicka@ucw.cz>
 gcov			Nathan Sidwell		<nathan@acm.org>
-option handling		Joseph Myers		<jsm@polyomino.org.uk>
+option handling		Joseph Myers		<josmyers@redhat.com>
 middle-end		Jeff Law		<jeffreyalaw@gmail.com>
 middle-end		Ian Lance Taylor	<ian@airs.com>
 middle-end		Richard Biener		<rguenther@suse.de>
@@ -278,7 +278,7 @@ CTF, BTF, bpf port	David Faust		<david.faust@oracle.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
 dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
-driver			Joseph Myers		<jsm@polyomino.org.uk>
+driver			Joseph Myers		<josmyers@redhat.com>
 Fortran			Harald Anlauf		<anlauf@gmx.de>
 Fortran			Janne Blomqvist		<jb@gcc.gnu.org>
 Fortran			Tobias Burnus		<tobias@codesourcery.com>
