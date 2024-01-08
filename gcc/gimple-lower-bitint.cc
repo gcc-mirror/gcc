@@ -6606,8 +6606,12 @@ gimple_lower_bitint (void)
 			= build_array_type_nelts (large_huge.m_limb_type,
 						  nelts);
 		      tree ptype = build_pointer_type (TREE_TYPE (v1));
-		      tree off = fold_convert (ptype,
-					       TYPE_SIZE_UNIT (TREE_TYPE (c)));
+		      tree off;
+		      if (c)
+			off = fold_convert (ptype,
+					    TYPE_SIZE_UNIT (TREE_TYPE (c)));
+		      else
+			off = build_zero_cst (ptype);
 		      tree vd = build2 (MEM_REF, vtype,
 					build_fold_addr_expr (v1), off);
 		      g = gimple_build_assign (vd, build_zero_cst (vtype));
