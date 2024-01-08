@@ -612,8 +612,7 @@ extern GTY(()) int darwin_ms_struct;
    director as one being loaded.  */
 #define DARWIN_RPATH_SPEC \
   "%:version-compare(>= 10.5 mmacosx-version-min= -rpath) \
-   %:version-compare(>= 10.5 mmacosx-version-min= @loader_path) \
-   %P "
+   %{%:version-compare(>= 10.5 mmacosx-version-min= @loader_path): %P }"
 #else
 #define DARWIN_RPATH_SPEC ""
 #endif
