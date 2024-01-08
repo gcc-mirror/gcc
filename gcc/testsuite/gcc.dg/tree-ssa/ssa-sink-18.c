@@ -215,4 +215,4 @@ compute_on_bytes (uint8_t *in_data, int in_len, uint8_t *out_data, int out_len)
     base+index addressing modes, so the ip[len] address computation can't be
     made from the IV computation above.  powerpc64le similarly is affected.  */
 
- /* { dg-final { scan-tree-dump-times "Sunk statements: 5" 1 "sink2" { target lp64 xfail { riscv64-*-* powerpc64le-*-* } } } } */
+ /* { dg-final { scan-tree-dump-times "Sunk statements: 5" 1 "sink2" { target lp64 xfail { riscv64-*-* powerpc64le-*-* hppa*64*-*-* } } } } */
