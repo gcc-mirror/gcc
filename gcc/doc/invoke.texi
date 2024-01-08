@@ -30097,6 +30097,22 @@ Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
 lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
 @samp{rv32imaf}.
 
+The syntax of the ISA string is defined as follows:
+
+@table @code
+@item The string must start with @samp{rv32} or @samp{rv64}, followed by
+@samp{i}, @samp{e}, or @samp{g}, referred to as the base ISA.
+@item The subsequent part of the string is a list of extension names. Extension
+names can be categorized as multi-letter (e.g.@: @samp{zba}) and single-letter
+(e.g.@: @samp{v}). Single-letter extensions can appear consecutively,
+but multi-letter extensions must be separated by underscores.
+@item An underscore can appear anywhere after the base ISA. It has no specific
+effect but is used to improve readability and can act as a separator.
+@item Extension names may include an optional version number, following the
+syntax @samp{<major>p<minor>} or @samp{<major>}, (e.g.@: @samp{m2p1} or
+@samp{m2}).
+@end table
+
 When @option{-march=} is not specified, use the setting from @option{-mcpu}.
 
 If both @option{-march} and @option{-mcpu=} are not specified, the default for
