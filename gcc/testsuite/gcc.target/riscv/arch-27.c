@@ -4,4 +4,4 @@ int foo()
 {
 }
 
-/* { dg-error "ISA string is not in canonical order. 'e'" "" { target *-*-* } 0 } */
+/* { dg-error "'i', 'e' or 'g' must be the first extension" "" { target *-*-* } 0 } */
