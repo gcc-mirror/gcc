@@ -1,3 +1,15 @@
+2024-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/112952
+	* gcc.target/avr/attribute-io.h: New file.
+	* gcc.target/avr/pr112952-0.c: New test.
+	* gcc.target/avr/pr112952-1.c: New test.
+	* gcc.target/avr/pr112952-2.c: New test.
+	* gcc.target/avr/pr112952-3.c: New test.
+
 2023-12-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

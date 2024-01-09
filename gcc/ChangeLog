@@ -1,3 +1,22 @@
+2024-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/112952
+	* config/avr/avr.cc (avr_handle_addr_attribute): Also print valid
+	range when diagnosing attribute "io" and "io_low" are out of range.
+	(avr_eval_addr_attrib): Don't ICE on empty address at that place.
+	(avr_insert_attributes): Reject if attribute "address", "io" or "io_low"
+	in contexts other than static storage.
+	(avr_asm_output_aligned_decl_common): Move output of decls with
+	attribute "address", "io", and "io_low" to...
+	(avr_output_addr_attrib): ...this new function.
+	(avr_asm_asm_output_aligned_bss): Remove output for decls with
+	attribute "address", "io", and "io_low".
+	(avr_encode_section_info): Rectify handling of decls with attribute
+	"address", "io", and "io_low".
+
 2023-12-23  YunQiang Su  <syq@gcc.gnu.org>
 
 	* config/mips/driver-native.cc (host_detect_local_cpu):

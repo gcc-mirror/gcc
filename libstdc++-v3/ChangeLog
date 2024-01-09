@@ -1,3 +1,24 @@
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/format/functions/format.cc: Add more checks for
+	wstring formatting of arithmetic types.
+
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (formatter<C, C>::format): Check for
+	_Pres_c and call _M_format_character directly. Cast C to its
+	unsigned equivalent for formatting as an integer.
+	(formatter<char, wchar_t>::format): Likewise.
+	(basic_format_arg(T&)): Store char arguments as unsigned char
+	for formatting to a wide string.
+	(__cpp_lib_format_uchar): Define.
+	* include/std/version (__cpp_lib_format_uchar): Define.
+	* testsuite/std/format/functions/format.cc: Adjust test. Check
+	formatting of characters using all integer presentation types.
+
 2024-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
