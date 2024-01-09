@@ -1,3 +1,9 @@
+2024-01-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113245
+	* trans-intrinsic.cc (gfc_conv_intrinsic_size): Use
+	gfc_conv_expr_present() for proper check of optional DIM argument.
+
 2024-01-06  Harald Anlauf  <anlauf@gmx.de>
 	    José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 

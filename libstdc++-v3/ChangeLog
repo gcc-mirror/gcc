@@ -1,3 +1,80 @@
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (__null_sentinel): Remove.
+	* testsuite/17_intro/names.cc: Add __null_sentinel.
+
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Runtime_format_string): Define
+	new class template.
+	(basic_format_string): Add non-consteval constructor for runtime
+	format strings.
+	(runtime_format): Define new function for C++26.
+	* testsuite/std/format/runtime_format.cc: New test.
+
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono): Always use
+	lvalue arguments to make_format_args.
+	* include/std/format (make_format_args): Change parameter pack
+	from forwarding references to lvalue references. Remove use of
+	remove_reference_t which is now unnecessary.
+	(format_to, formatted_size): Remove incorrect forwarding of
+	arguments.
+	* include/std/ostream (print): Remove forwarding of arguments.
+	* include/std/print (print): Likewise.
+	* testsuite/20_util/duration/io.cc: Use lvalues as arguments to
+	make_format_args.
+	* testsuite/std/format/arguments/args.cc: Likewise.
+	* testsuite/std/format/arguments/lwg3810.cc: Likewise.
+	* testsuite/std/format/functions/format.cc: Likewise.
+	* testsuite/std/format/functions/vformat_to.cc: Likewise.
+	* testsuite/std/format/string.cc: Likewise.
+	* testsuite/std/time/day/io.cc: Likewise.
+	* testsuite/std/time/month/io.cc: Likewise.
+	* testsuite/std/time/weekday/io.cc: Likewise.
+	* testsuite/std/time/year/io.cc: Likewise.
+	* testsuite/std/time/year_month_day/io.cc: Likewise.
+	* testsuite/std/format/arguments/args_neg.cc: New test.
+
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/bits/unicode.h: New file.
+	* include/bits/unicode-data.h: New file.
+	* include/std/format: Include <bits/unicode.h>.
+	(__literal_encoding_is_utf8): Move to <bits/unicode.h>.
+	(_Spec::_M_fill): Change type to char32_t.
+	(_Spec::_M_parse_fill_and_align): Read a Unicode scalar value
+	instead of a single character.
+	(__write_padded): Change __fill_char parameter to char32_t and
+	encode it into the output.
+	(__formatter_str::format): Use new __unicode::__field_width and
+	__unicode::__truncate functions.
+	* include/std/ostream: Adjust namespace qualification for
+	__literal_encoding_is_utf8.
+	* include/std/print: Likewise.
+	* src/c++23/print.cc: Add [[unlikely]] attribute to error path.
+	* testsuite/ext/unicode/view.cc: New test.
+	* testsuite/std/format/functions/format.cc: Add missing examples
+	from the standard demonstrating alignment with non-ASCII
+	characters. Add examples checking correct handling of extended
+	grapheme clusters.
+
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (format_uchar): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (formatter<C, C>::format): Check for
+	_Pres_c and call _M_format_character directly. Cast C to its
+	unsigned equivalent for formatting as an integer.
+	(formatter<char, wchar_t>::format): Likewise.
+	(basic_format_arg(T&)): Store char arguments as unsigned char
+	for formatting to a wide string.
+	* testsuite/std/format/functions/format.cc: Adjust test. Check
+	formatting of
+
 2024-01-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/112997

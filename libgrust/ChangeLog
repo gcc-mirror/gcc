@@ -1,3 +1,9 @@
+2024-01-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR rust/113056
+	* configure.ac: 'AM_ENABLE_MULTILIB' only for target builds.
+	* configure: Regenerate.
+
 2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
 	    Arthur Cohen  <arthur.cohen@embecosm.com>
 
