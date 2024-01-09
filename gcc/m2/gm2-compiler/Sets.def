@@ -34,11 +34,6 @@ DEFINITION MODULE Sets ;
 
 FROM SymbolKey IMPORT PerformOperation ;
 
-EXPORT QUALIFIED Set,
-                 InitSet, KillSet,
-                 IncludeElementIntoSet, ExcludeElementFromSet,
-                 NoOfElementsInSet, IsElementInSet,
-                 ForeachElementInSetDo, DuplicateSet ;
 
 TYPE
    Set ;
@@ -99,6 +94,13 @@ PROCEDURE ExcludeElementFromSet (s: Set; i: CARDINAL) ;
 *)
 
 PROCEDURE IncludeElementIntoSet (s: Set; i: CARDINAL) ;
+
+
+(*
+   EqualSet - return TRUE if left = right.
+*)
+
+PROCEDURE EqualSet (left, right: Set) : BOOLEAN ;
 
 
 END Sets.
