@@ -19,13 +19,24 @@ namespace __pstl
 {
 namespace __internal
 {
-
-template <typename _IteratorTag, typename... _IteratorTypes>
-using __are_iterators_of = std::conjunction<
-    std::is_base_of<_IteratorTag, typename std::iterator_traits<std::decay_t<_IteratorTypes>>::iterator_category>...>;
+#if __glibcxx_concepts
+template<typename _Iter>
+  concept __is_random_access_iter
+    = std::is_base_of_v<std::random_access_iterator_tag,
+			std::__iter_category_t<_Iter>>
+      || std::random_access_iterator<_Iter>;
 
 template <typename... _IteratorTypes>
-using __are_random_access_iterators = __are_iterators_of<std::random_access_iterator_tag, _IteratorTypes...>;
+  using __are_random_access_iterators
+    = std::bool_constant<(__is_random_access_iter<std::remove_cvref_t<_IteratorTypes>> && ...)>;
+#else
+template <typename... _IteratorTypes>
+using __are_random_access_iterators
+    = std::__and_<
+	std::is_base_of<std::random_access_iterator_tag,
+			std::__iter_category_t<std::__remove_cvref_t<_IteratorTypes>>>...
+      >;
+#endif
 
 struct __serial_backend_tag
 {
