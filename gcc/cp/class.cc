@@ -1020,15 +1020,11 @@ modify_vtable_entry (tree t,
 
 
 /* Check if the object parameters of an xobj and iobj member function
-   correspond.  This function assumes that the iobj parameter has been
-   correctly adjusted when the function is introduced by a using declaration
-   per [over.match.funcs.general.4].
+   correspond.  CONTEXT is the class that an implicit object parameter
+   refers to.  */
 
-   ??? But it isn't, that's only considered at overload resolution time.
-   cand_parms_match will probably need to check cand->conversion_path.  */
-
-bool
-xobj_iobj_parameters_correspond (tree fn1, tree fn2)
+static bool
+xobj_iobj_parameters_correspond (tree fn1, tree fn2, tree context)
 {
   gcc_assert (DECL_IOBJ_MEMBER_FUNCTION_P (fn1)
 	      || DECL_IOBJ_MEMBER_FUNCTION_P (fn2));
@@ -1042,11 +1038,6 @@ xobj_iobj_parameters_correspond (tree fn1, tree fn2)
 
   tree iobj_fn = DECL_IOBJ_MEMBER_FUNCTION_P (fn1) ? fn1 : fn2;
   tree iobj_fn_type = TREE_TYPE (iobj_fn);
-  /* Will work for a pointer or reference param type.  So this will continue
-     to work even if we change how the object parameter of an iobj member
-     function is represented.  */
-  tree iobj_param_type
-    = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (iobj_fn_type)));
 
   /* If the iobj member function was introduced with a using declaration, the
      type of its object parameter is considered to be that of the class it was
@@ -1116,7 +1107,7 @@ xobj_iobj_parameters_correspond (tree fn1, tree fn2)
      check for that case.  */
 
   if (!same_type_ignoring_top_level_qualifiers_p
-      (iobj_param_type, non_reference (xobj_param)))
+      (context, non_reference (xobj_param)))
     return false;
 
   /* We don't get to bail yet even if we have a by-value xobj parameter,
@@ -1214,6 +1205,63 @@ xobj_iobj_parameters_correspond (tree fn1, tree fn2)
   return true;
 }
 
+/* True if FN and METHOD have corresponding object parms per
+   [basic.scope.scope], or if one of them is a static member function (which
+   are considered to have an object parm that corresponds to any other).
+   CONTEXT is the class that an implicit object member function is considered
+   to be a member of for the purpose of this comparison, per
+   [over.match.funcs].  */
+
+bool
+object_parms_correspond (tree fn, tree method, tree context)
+{
+  tree fn_type = TREE_TYPE (fn);
+  tree method_type = TREE_TYPE (method);
+
+  /* Compare the quals on the 'this' parm.  Don't compare
+     the whole types, as used functions are treated as
+     coming from the using class in overload resolution.  */
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
+      && DECL_IOBJ_MEMBER_FUNCTION_P (method))
+    {
+      /* Either both or neither need to be ref-qualified for
+	 differing quals to allow overloading.  */
+      if ((FUNCTION_REF_QUALIFIED (fn_type)
+	   == FUNCTION_REF_QUALIFIED (method_type))
+	  && (type_memfn_quals (fn_type) != type_memfn_quals (method_type)
+	      || type_memfn_rqual (fn_type) != type_memfn_rqual (method_type)))
+	return false;
+      return true;
+    }
+  /* Treat a static member function as corresponding to any object parm.  */
+  else if (DECL_STATIC_FUNCTION_P (fn) || DECL_STATIC_FUNCTION_P (method))
+    return true;
+  /* Handle special correspondence rules for xobj vs xobj and xobj vs iobj
+     member function declarations.
+     We don't worry about static member functions here.  */
+  else if (DECL_XOBJ_MEMBER_FUNCTION_P (fn)
+	   && DECL_XOBJ_MEMBER_FUNCTION_P (method))
+    {
+      auto get_object_param = [] (tree fn)
+	{
+	  return TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fn)));
+	};
+      /* We skip the object parameter below, check it here instead of
+	 making changes to that code.  */
+      tree fn_param = get_object_param (fn);
+      tree method_param = get_object_param (method);
+      if (!same_type_p (fn_param, method_param))
+	return false;
+    }
+  else if (DECL_XOBJ_MEMBER_FUNCTION_P (fn)
+	   || DECL_XOBJ_MEMBER_FUNCTION_P (method))
+    return xobj_iobj_parameters_correspond (fn, method, context);
+  else
+    gcc_unreachable ();
+
+  return true;
+}
+
 /* Add method METHOD to class TYPE.  If VIA_USING indicates whether
    METHOD is being injected via a using_decl.  Returns true if the
    method could be added to the method vec.  */
@@ -1268,50 +1316,11 @@ add_method (tree type, tree method, bool via_using)
 	 functions in the derived class override and/or hide member
 	 functions with the same name and parameter types in a base
 	 class (rather than conflicting).  */
+      if (!object_parms_correspond (fn, method, type))
+	continue;
+
       tree fn_type = TREE_TYPE (fn);
       tree method_type = TREE_TYPE (method);
-
-      /* Compare the quals on the 'this' parm.  Don't compare
-	 the whole types, as used functions are treated as
-	 coming from the using class in overload resolution.  */
-      if (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
-	  && DECL_IOBJ_MEMBER_FUNCTION_P (method)
-	  /* Either both or neither need to be ref-qualified for
-	     differing quals to allow overloading.  */
-	  && (FUNCTION_REF_QUALIFIED (fn_type)
-	      == FUNCTION_REF_QUALIFIED (method_type))
-	  && (type_memfn_quals (fn_type) != type_memfn_quals (method_type)
-	      || type_memfn_rqual (fn_type) != type_memfn_rqual (method_type)))
-	  continue;
-
-      /* Handle special correspondence rules for xobj vs xobj and xobj vs iobj
-	 member function declarations.
-	 We don't worry about static member functions here.  */
-      if ((!DECL_XOBJ_MEMBER_FUNCTION_P (fn)
-	   && !DECL_XOBJ_MEMBER_FUNCTION_P (method))
-	  || DECL_STATIC_FUNCTION_P (fn) || DECL_STATIC_FUNCTION_P (method))
-	/* Early escape.  */;
-      else if (DECL_XOBJ_MEMBER_FUNCTION_P (fn)
-	       && DECL_XOBJ_MEMBER_FUNCTION_P (method))
-	{
-	  auto get_object_param = [](tree fn){
-	    return TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fn)));
-	  };
-	  /* We skip the object parameter below, check it here instead of
-	     making changes to that code.  */
-	  tree fn_param = get_object_param (fn);
-	  tree method_param = get_object_param (method);
-	  if (!same_type_p (fn_param, method_param))
-	    continue;
-	}
-      else if (DECL_XOBJ_MEMBER_FUNCTION_P (fn)
-	       || DECL_XOBJ_MEMBER_FUNCTION_P (method))
-	{
-	  if (!xobj_iobj_parameters_correspond (fn, method))
-	    continue;
-	}
-      else
-	gcc_unreachable ();
 
       tree real_fn = fn;
       tree real_method = method;

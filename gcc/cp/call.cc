@@ -12685,6 +12685,51 @@ joust_maybe_elide_copy (z_candidate *cand)
   return false;
 }
 
+/* Return the class that CAND's implicit object parameter refers to.  */
+
+static tree
+class_of_implicit_object (z_candidate *cand)
+{
+  if (!DECL_IOBJ_MEMBER_FUNCTION_P (cand->fn))
+    return NULL_TREE;
+
+  /* "For conversion functions that are implicit object member functions,
+     the function is considered to be a member of the class of the implied
+     object argument for the purpose of defining the type of the implicit
+     object parameter."  */
+  if (DECL_CONV_FN_P (cand->fn))
+    return TYPE_MAIN_VARIANT (TREE_TYPE (cand->first_arg));
+
+  /* "For non-conversion functions that are implicit object member
+     functions nominated by a using-declaration in a derived class, the
+     function is considered to be a member of the derived class for the
+     purpose of defining the type of the implicit object parameter."
+
+     That derived class is reflected in the conversion_path binfo.  */
+  return BINFO_TYPE (cand->conversion_path);
+}
+
+/* True if candidates C1 and C2 have corresponding object parameters per
+   [basic.scope.scope].  */
+
+static bool
+object_parms_correspond (z_candidate *c1, z_candidate *c2)
+{
+  tree context = class_of_implicit_object (c1);
+  tree ctx2 = class_of_implicit_object (c2);
+  if (!ctx2)
+    /* Leave context as is. */;
+  else if (!context)
+    context = ctx2;
+  else if (context != ctx2)
+    /* This can't happen for normal function calls, since it means finding
+       functions in multiple bases which would fail with an ambiguous lookup,
+       but it can occur with reversed operators.  */
+    return false;
+
+  return object_parms_correspond (c1->fn, c2->fn, context);
+}
+
 /* True if the defining declarations of the two candidates have equivalent
    parameters.  */
 
@@ -12712,35 +12757,25 @@ cand_parms_match (z_candidate *c1, z_candidate *c2)
     }
   tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn1));
   tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (fn2));
-  auto skip_parms = [](tree fn, tree parms){
-      if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
-	return TREE_CHAIN (parms);
-      else
-	return skip_artificial_parms_for (fn, parms);
-    };
   if (!(DECL_FUNCTION_MEMBER_P (fn1)
 	&& DECL_FUNCTION_MEMBER_P (fn2)))
     /* Early escape.  */;
-  else if ((DECL_STATIC_FUNCTION_P (fn1)
-	    != DECL_STATIC_FUNCTION_P (fn2)))
+
+  /* CWG2789 is not adequate, it should specify corresponding object
+     parameters, not same typed object parameters.  */
+  else if (!object_parms_correspond (c1, c2))
+    return false;
+  else
     {
-      /* Ignore 'this' when comparing the parameters of a static member
-	 function with those of a non-static one.  */
-      parms1 = skip_parms (fn1, parms1);
-      parms2 = skip_parms (fn2, parms2);
-    }
-  else if ((DECL_XOBJ_MEMBER_FUNCTION_P (fn1)
-	    || DECL_XOBJ_MEMBER_FUNCTION_P (fn2))
-	   && (DECL_IOBJ_MEMBER_FUNCTION_P (fn1)
-	       || DECL_IOBJ_MEMBER_FUNCTION_P (fn2)))
-    {
-      bool xobj_iobj_parameters_correspond (tree, tree);
-      /* CWG2789 is not adequate, it should specify corresponding object
-	 parameters, not same typed object parameters.  */
-      if (!xobj_iobj_parameters_correspond (fn1, fn2))
-	return false;
       /* We just compared the object parameters, if they don't correspond
-	 we already return false.  */
+	 we already returned false.  */
+      auto skip_parms = [] (tree fn, tree parms)
+	{
+	  if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+	    return TREE_CHAIN (parms);
+	  else
+	    return skip_artificial_parms_for (fn, parms);
+	};
       parms1 = skip_parms (fn1, parms1);
       parms2 = skip_parms (fn2, parms2);
     }
@@ -13104,6 +13139,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 
   if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn)
       && !cand1->template_decl && !cand2->template_decl
+      && cand1->reversed () == cand2->reversed ()
       && cand_parms_match (cand1, cand2))
     {
       winner = more_constrained (cand1->fn, cand2->fn);

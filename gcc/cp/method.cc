@@ -3395,24 +3395,18 @@ defaulted_late_check (tree fn)
       {
 	tree fn_obj_ref_type = TREE_VALUE (fn_parms);
 	/* We can't default xobj operators with an xobj parameter that is not
-	   an lvalue reference.  */
+	   an lvalue reference, even if it would correspond.  */
 	if (!TYPE_REF_P (fn_obj_ref_type)
-	    || TYPE_REF_IS_RVALUE (fn_obj_ref_type))
-	  return false;
-	/* If implicit_fn's object parameter is not a pointer, something is not
-	   right.  */
-	gcc_assert (TYPE_PTR_P (TREE_VALUE (implicit_fn_parms)));
-	/* Strip the reference/pointer off each object parameter before
-	   comparing them.  */
-	if (!same_type_p (TREE_TYPE (fn_obj_ref_type),
-			  TREE_TYPE (TREE_VALUE (implicit_fn_parms))))
+	    || TYPE_REF_IS_RVALUE (fn_obj_ref_type)
+	    || !object_parms_correspond (fn, implicit_fn,
+					 DECL_CONTEXT (implicit_fn)))
 	  return false;
 	/* We just compared the object parameters, skip over them before
 	   passing to compparms.  */
 	fn_parms = TREE_CHAIN (fn_parms);
 	implicit_fn_parms = TREE_CHAIN (implicit_fn_parms);
       }
-    return compparms(fn_parms, implicit_fn_parms);
+    return compparms (fn_parms, implicit_fn_parms);
   };
 
   if (!same_type_p (TREE_TYPE (TREE_TYPE (fn)),
