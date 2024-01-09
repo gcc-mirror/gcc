@@ -4104,6 +4104,7 @@ proc check_effective_target_vect_early_break { } {
 	[istarget aarch64*-*-*]
 	|| [check_effective_target_arm_v8_neon_ok]
 	|| [check_effective_target_sse4]
+	|| [istarget amdgcn-*-*]
 	}}]
 }
 
@@ -4118,6 +4119,7 @@ proc check_effective_target_vect_early_break_hw { } {
 	[istarget aarch64*-*-*]
 	|| [check_effective_target_arm_v8_neon_hw]
 	|| [check_sse4_hw_available]
+	|| [istarget amdgcn-*-*]
 	}}]
 }
 
