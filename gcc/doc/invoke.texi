@@ -35272,6 +35272,14 @@ r8-r15 registers so that the call and jmp instruction length is 6 bytes
 to allow them to be replaced with @samp{lfence; call *%r8-r15} or
 @samp{lfence; jmp *%r8-r15} at run-time.
 
+@opindex mapx-inline-asm-use-gpr32
+@item -mapx-inline-asm-use-gpr32
+For inline asm support with APX, by default the EGPR feature was
+disabled to prevent potential illegal instruction with EGPR occurs.
+To invoke egpr usage in inline asm, use new compiler option
+-mapx-inline-asm-use-gpr32 and user should ensure the instruction
+supports EGPR.
+
 @end table
 
 These @samp{-m} switches are supported in addition to the above
