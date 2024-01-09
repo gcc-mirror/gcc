@@ -413,18 +413,18 @@ package body Endh is
                        ("misplaced aspects for package declaration");
                      Error_Msg
                        ("info: aspect specifications belong here??", Is_Loc);
-                     P_Aspect_Specifications (Empty);
+                     P_Aspect_Specifications (Empty, Semicolon => True);
 
                   --  Other cases where aspect specifications are not allowed
 
                   else
-                     P_Aspect_Specifications (Error);
+                     P_Aspect_Specifications (Error, Semicolon => True);
                   end if;
 
                --  Aspect specifications allowed
 
                else
-                  P_Aspect_Specifications (Decl);
+                  P_Aspect_Specifications (Decl, Semicolon => True);
                end if;
 
             --  If no aspect specifications, must have a semicolon

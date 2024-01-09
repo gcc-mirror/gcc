@@ -1375,6 +1375,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Null_Exclusion_Present, Flag, Default_False),
         Sy (Discriminant_Type, Node_Id),
         Sy (Expression, Node_Id, Default_Empty),
+        Sy (Aspect_Specifications, List_Id, Default_No_List),
         Sm (More_Ids, Flag),
         Sm (Prev_Ids, Flag)));
 

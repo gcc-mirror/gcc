@@ -881,7 +881,7 @@ package body Ch3 is
 
       Set_Defining_Identifier (Decl_Node, Ident_Node);
       Set_Discriminant_Specifications (Decl_Node, Discr_List);
-      P_Aspect_Specifications (Decl_Node);
+      P_Aspect_Specifications (Decl_Node, Semicolon => True);
       return Decl_Node;
    end P_Type_Declaration;
 
@@ -930,7 +930,7 @@ package body Ch3 is
 
       Set_Subtype_Indication
         (Decl_Node, P_Subtype_Indication (Not_Null_Present));
-      P_Aspect_Specifications (Decl_Node);
+      P_Aspect_Specifications (Decl_Node, Semicolon => True);
       return Decl_Node;
    end P_Subtype_Declaration;
 
@@ -3270,7 +3270,8 @@ package body Ch3 is
                  (Specification_Node, Init_Expr_Opt (True));
 
                if Token = Tok_With then
-                  P_Aspect_Specifications (Specification_Node, False);
+                  P_Aspect_Specifications
+                    (Specification_Node, Semicolon => False);
                end if;
 
                if Ident > 1 then
@@ -3873,8 +3874,9 @@ package body Ch3 is
                Set_More_Ids (Decl_Node, True);
             end if;
 
-            Append (Decl_Node, Decls);
+            P_Aspect_Specifications (Decl_Node, Semicolon => True);
 
+            Append (Decl_Node, Decls);
          exception
             when Error_Resync =>
                if Token /= Tok_End then
@@ -3887,8 +3889,6 @@ package body Ch3 is
          Restore_Scan_State (Scan_State);
          T_Colon;
       end loop Ident_Loop;
-
-      P_Aspect_Specifications (Decl_Node);
    end P_Component_Items;
 
    --------------------------------

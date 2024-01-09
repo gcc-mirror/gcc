@@ -1029,7 +1029,7 @@ package body Ch9 is
          Discard_Junk_Node (P_Expression_No_Right_Paren);
       end if;
 
-      P_Aspect_Specifications (Decl_Node);
+      P_Aspect_Specifications (Decl_Node, Semicolon => True);
       return Decl_Node;
 
    exception
@@ -1318,7 +1318,7 @@ package body Ch9 is
         (Iterator_Node, P_Discrete_Subtype_Definition);
 
       if Token = Tok_With then
-         P_Aspect_Specifications (Iterator_Node, False);
+         P_Aspect_Specifications (Iterator_Node, Semicolon => False);
       end if;
 
       return Iterator_Node;

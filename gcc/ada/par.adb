@@ -1031,11 +1031,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       procedure P_Aspect_Specifications
         (Decl      : Node_Id;
-         Semicolon : Boolean := True);
+         Semicolon : Boolean);
       --  This procedure scans out a series of aspect specifications. If
-      --  argument Semicolon is True, a terminating semicolon is also scanned.
-      --  If this argument is False, the scan pointer is left pointing past the
-      --  aspects and the caller must check for a proper terminator.
+      --  argument Semicolon is True, a terminating semicolon is also scanned;
+      --  if False, the scan pointer is left pointing past the aspects and the
+      --  caller must check for a proper terminator.
       --
       --  P_Aspect_Specifications is called with the current token pointing
       --  to either a WITH keyword starting an aspect specification, or an
@@ -1049,14 +1049,14 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  semicolon (with the exception that it detects WHEN used in place of
       --  WITH).
 
-      --  If Decl is Error on entry, any scanned aspect specifications are
-      --  ignored and a message is output saying aspect specifications not
-      --  permitted here. If Decl is Empty, then scanned aspect specifications
-      --  are also ignored, but no error message is given (this is used when
-      --  the caller has already taken care of the error message).
+      --  If Decl is Error or a node that does not allow aspect specifications,
+      --  then any scanned aspect specifications are ignored and a message is
+      --  output saying aspect specifications not permitted here. If Decl is
+      --  Empty, then scanned aspect specifications are also ignored, but no
+      --  error message is given (this is used when the caller has already
+      --  taken care of the error message).
 
-      function Get_Aspect_Specifications
-        (Semicolon : Boolean := True) return List_Id;
+      function Get_Aspect_Specifications (Semicolon : Boolean) return List_Id;
       --  Parse a list of aspects but do not attach them to a declaration node.
       --  Subsidiary to P_Aspect_Specifications procedure. Used when parsing
       --  a subprogram specification that may be a declaration or a body.

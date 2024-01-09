@@ -237,7 +237,7 @@ package body Ch7 is
                   Move_Aspects (From => Dummy_Node, To => Package_Node);
                end if;
 
-               P_Aspect_Specifications (Package_Node);
+               P_Aspect_Specifications (Package_Node, Semicolon => True);
                Pop_Scope_Stack;
 
             --  Case of package declaration or package specification

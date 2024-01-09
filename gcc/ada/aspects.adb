@@ -450,6 +450,7 @@ package body Aspects is
    Has_Aspect_Specifications_Flag : constant array (Node_Kind) of Boolean :=
      (N_Abstract_Subprogram_Declaration        => True,
       N_Component_Declaration                  => True,
+      N_Discriminant_Specification             => True,
       N_Entry_Body                             => True,
       N_Entry_Declaration                      => True,
       N_Exception_Declaration                  => True,
@@ -471,8 +472,8 @@ package body Aspects is
       N_Package_Body_Stub                      => True,
       N_Package_Declaration                    => True,
       N_Package_Instantiation                  => True,
-      N_Package_Specification                  => True,
       N_Package_Renaming_Declaration           => True,
+      N_Package_Specification                  => True,
       N_Parameter_Specification                => True,
       N_Private_Extension_Declaration          => True,
       N_Private_Type_Declaration               => True,
