@@ -1463,7 +1463,7 @@ See RS/6000 and PowerPC Options.
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni
 -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16
 -mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mapxf
--musermsr -mavx10.1 -mavx10.1-256 -mavx10.1-512
+-musermsr -mavx10.1 -mavx10.1-256 -mavx10.1-512 -mevex512
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg}
 -mkl -mwidekl
@@ -35279,6 +35279,11 @@ disabled to prevent potential illegal instruction with EGPR occurs.
 To invoke egpr usage in inline asm, use new compiler option
 -mapx-inline-asm-use-gpr32 and user should ensure the instruction
 supports EGPR.
+
+@opindex mevex512
+@item -mevex512
+@itemx -mno-evex512
+Enables/disables 512-bit vector. It will be default on if AVX512F is enabled.
 
 @end table
 
