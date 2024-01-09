@@ -941,9 +941,22 @@ vect_get_loop_niters (class loop *loop, const_edge main_exit, tree *assumptions,
 	 ???  For UINT_MAX latch executions this number overflows to zero
 	 for loops like do { n++; } while (n != 0);  */
       if (niter && !chrec_contains_undetermined (niter))
+	{
 	  niter = fold_build2 (PLUS_EXPR, TREE_TYPE (niter),
 			       unshare_expr (niter),
 			       build_int_cst (TREE_TYPE (niter), 1));
+	  if (TREE_CODE (niter) == INTEGER_CST
+	      && TREE_CODE (*number_of_iterationsm1) != INTEGER_CST)
+	    {
+	      /* If we manage to fold niter + 1 into INTEGER_CST even when
+		 niter is some complex expression, ensure back
+		 *number_of_iterationsm1 is an INTEGER_CST as well.  See
+		 PR113210.  */
+	      *number_of_iterationsm1
+		= fold_build2 (PLUS_EXPR, TREE_TYPE (niter), niter,
+			       build_minus_one_cst (TREE_TYPE (niter)));
+	    }
+	}
       *number_of_iterations = niter;
     }
 
