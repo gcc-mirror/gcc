@@ -132,11 +132,18 @@ lto_get_section_name (int section_type, const char *name,
      doesn't confuse the reader with merged sections.
 
      For options don't add a ID, the option reader cannot deal with them
-     and merging should be ok here. */
-  if (section_type == LTO_section_opts)
+     and merging should be ok here.
+
+     LTRANS files (output of wpa, input and output of ltrans) are handled
+     directly inside of linker/lto-wrapper, so name uniqueness for external
+     tools is not needed.
+     Randomness would inhibit incremental LTO.  */
+  if (section_type == LTO_section_opts || flag_ltrans)
     strcpy (post, "");
   else if (f != NULL) 
     sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, f->id);
+  else if (flag_wpa)
+    strcpy (post, "");
   else
     sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, get_random_seed (false)); 
   char *res = concat (section_name_prefix, sep, add, post, NULL);
