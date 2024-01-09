@@ -1137,14 +1137,10 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      tree left_ref_type = TREE_TYPE (left_base_type);
 	      tree right_ref_type = TREE_TYPE (right_base_type);
 
-	      /* Anonymous access types in Ada 2005 can point to different
-		 members of a tagged hierarchy or different function types.  */
-	      gcc_assert (TYPE_MAIN_VARIANT (left_ref_type)
-			  == TYPE_MAIN_VARIANT (right_ref_type)
-			  || (TYPE_ALIGN_OK (left_ref_type)
-			      && TYPE_ALIGN_OK (right_ref_type))
-			  || (TREE_CODE (left_ref_type) == FUNCTION_TYPE
-			      && TREE_CODE (right_ref_type) == FUNCTION_TYPE));
+	      /* Anonymous access types in Ada 2005 may point to compatible
+		 object subtypes or function types in the language sense.  */
+	      gcc_assert (FUNCTION_POINTER_TYPE_P (left_ref_type)
+			  == FUNCTION_POINTER_TYPE_P (right_ref_type));
 	      best_type = left_base_type;
 	    }
 
