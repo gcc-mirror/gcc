@@ -10590,13 +10590,12 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 
    helper function for vectorizable_live_operation.  */
 
-tree
+static tree
 vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 			       stmt_vec_info stmt_info, basic_block exit_bb,
 			       tree vectype, int ncopies, slp_tree slp_node,
 			       tree bitsize, tree bitstart, tree vec_lhs,
-			       tree lhs_type, bool restart_loop,
-			       gimple_stmt_iterator *exit_gsi)
+			       tree lhs_type, gimple_stmt_iterator *exit_gsi)
 {
   gcc_assert (single_pred_p (exit_bb) || LOOP_VINFO_EARLY_BREAKS (loop_vinfo));
 
@@ -10612,7 +10611,7 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
   if (integer_zerop (bitstart))
     {
       tree scalar_res = gimple_build (&stmts, BIT_FIELD_REF, TREE_TYPE (vectype),
-				   vec_lhs_phi, bitsize, bitstart);
+				      vec_lhs_phi, bitsize, bitstart);
 
       /* Convert the extracted vector element to the scalar type.  */
       new_tree = gimple_convert (&stmts, lhs_type, scalar_res);
@@ -10973,8 +10972,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 						 dest, vectype, ncopies,
 						 slp_node, bitsize,
 						 tmp_bitstart, tmp_vec_lhs,
-						 lhs_type, restart_loop,
-						 &exit_gsi);
+						 lhs_type, &exit_gsi);
 
 	      if (gimple_phi_num_args (use_stmt) == 1)
 		{
