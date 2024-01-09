@@ -1020,9 +1020,12 @@ modify_vtable_entry (tree t,
 
 
 /* Check if the object parameters of an xobj and iobj member function
-   correspond. This function assumes that the iobj parameter has been correctly
-   adjusted when the function is introduced by a using declaration per
-   [over.match.funcs.general.4].  */
+   correspond.  This function assumes that the iobj parameter has been
+   correctly adjusted when the function is introduced by a using declaration
+   per [over.match.funcs.general.4].
+
+   ??? But it isn't, that's only considered at overload resolution time.
+   cand_parms_match will probably need to check cand->conversion_path.  */
 
 bool
 xobj_iobj_parameters_correspond (tree fn1, tree fn2)
@@ -1112,29 +1115,10 @@ xobj_iobj_parameters_correspond (tree fn1, tree fn2)
      handles xobj parameters of pointer type, we don't have to explicitly
      check for that case.  */
 
-  /* FIXME:
-
-     template<typename>
-     struct S;
-
-     template<typename>
-     struct B {
-       int f(this S<void>&) requires true { return 5; }
-     };
-
-     template<typename>
-     struct S : B<void> {
-       using B<void>::f;
-       int f() { return 10; }
-     };
-
-     This case is broken, the incomplete type seems to screw with things.
-     I'm not sure how to fix that so I'm just noting the issue here, I have a
-     feeling it's trivial to do if you know how.  */
-
-  if (TYPE_MAIN_VARIANT (iobj_param_type)
-      != TYPE_MAIN_VARIANT (non_reference (xobj_param)))
+  if (!same_type_ignoring_top_level_qualifiers_p
+      (iobj_param_type, non_reference (xobj_param)))
     return false;
+
   /* We don't get to bail yet even if we have a by-value xobj parameter,
      a by-value xobj parameter can correspond to an iobj parameter provided the
      iobj member function is not declared with a reference qualifier.
@@ -8976,9 +8960,9 @@ resolve_address_of_overloaded_function (tree target_type,
 	 documentation for -fms-extensions states it's purpose is to support
 	 the use of microsoft headers.  Until otherwise demonstrated, we should
 	 assume xobj member functions are not used in this manner in microsoft
-	 headers and indiscriminately forbid the incorrect syntax instead of
-	 supporting it for non-legacy uses.  This should hopefully encourage
-	 conformance going forward.
+	 headers and forbid the incorrect syntax instead of supporting it for
+	 non-legacy uses.  This should hopefully encourage conformance going
+	 forward.
 	 This comment is referred to in typeck.cc:cp_build_addr_expr_1.  */
       if (DECL_IOBJ_MEMBER_FUNCTION_P (fn) && flag_ms_extensions)
 	/* Early escape.  */;

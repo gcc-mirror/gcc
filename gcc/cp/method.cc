@@ -3400,8 +3400,7 @@ defaulted_late_check (tree fn)
 	    || TYPE_REF_IS_RVALUE (fn_obj_ref_type))
 	  return false;
 	/* If implicit_fn's object parameter is not a pointer, something is not
-	   right.  (Or we have finally changed the type of the iobj parameter
-	   in iobj member functions.)  */
+	   right.  */
 	gcc_assert (TYPE_PTR_P (TREE_VALUE (implicit_fn_parms)));
 	/* Strip the reference/pointer off each object parameter before
 	   comparing them.  */
@@ -3422,10 +3421,6 @@ defaulted_late_check (tree fn)
     {
       error ("defaulted declaration %q+D does not match the "
 	     "expected signature", fn);
-      /* FIXME: If the user is defaulting an xobj member function we should
-	 emit an xobj member function for a signature.  When we do this, maybe
-	 we can just synthesize implicit_fn as an xobj member function and
-	 avoid the dance in compare_fn_parms.  */
       inform (DECL_SOURCE_LOCATION (fn),
 	      "expected signature: %qD", implicit_fn);
     }

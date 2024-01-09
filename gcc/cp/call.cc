@@ -10187,20 +10187,17 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       parm = TREE_CHAIN (parm);
     }
 
-  auto handle_arg = [fn, flags, complain](tree type,
-					  tree arg,
-					  int const param_index,
-					  conversion *conv,
-					  bool const conversion_warning)
+  auto handle_arg = [fn, flags](tree type,
+				tree arg,
+				int const param_index,
+				conversion *conv,
+				tsubst_flags_t const arg_complain)
     {
       /* Set user_conv_p on the argument conversions, so rvalue/base handling
 	 knows not to allow any more UDCs.  This needs to happen after we
 	 process cand->warnings.  */
       if (flags & LOOKUP_NO_CONVERSION)
 	conv->user_conv_p = true;
-
-      tsubst_flags_t const arg_complain
-	= conversion_warning ? complain : complain & ~tf_warning;
 
       if (arg_complain & tf_warning)
 	maybe_warn_pessimizing_move (arg, type, /*return_p=*/false);
@@ -10214,13 +10211,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
     {
       gcc_assert (cand->num_convs > 0);
-      static constexpr bool conversion_warning = true;
       tree object_arg = consume_object_arg ();
       val = handle_arg (TREE_VALUE (parm),
 			object_arg,
 			param_index++,
 			convs[conv_index++],
-			conversion_warning);
+			complain);
 
       if (val == error_mark_node)
 	return error_mark_node;
@@ -10260,11 +10256,14 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 					&& cand->template_decl
 					&& !cand->explicit_targs);
 
+      tsubst_flags_t const arg_complain
+	= conversion_warning ? complain : complain & ~tf_warning;
+
       val = handle_arg (TREE_VALUE (parm),
 			current_arg,
 			param_index,
 			convs[conv_index],
-			conversion_warning);
+			arg_complain);
 
       if (val == error_mark_node)
 	return error_mark_node;
@@ -10273,7 +10272,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
 
   /* Default arguments */
-  for (; parm && parm != void_list_node; parm = TREE_CHAIN (parm), param_index++)
+  for (; parm && parm != void_list_node;
+       parm = TREE_CHAIN (parm), param_index++)
     {
       if (TREE_VALUE (parm) == error_mark_node)
 	return error_mark_node;
