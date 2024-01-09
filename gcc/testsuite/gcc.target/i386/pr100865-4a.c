@@ -12,6 +12,6 @@ foo (void)
     array[i] = -45;
 }
 
-/* { dg-final { scan-assembler-times "vpbroadcastb\[\\t \]+%xmm\[0-9\]+, %ymm\[0-9\]+" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%xmm\[0-9\]+, %ymm\[0-9\]+" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqu\[\\t \]%ymm\[0-9\]+, " 2 } } */
 /* { dg-final { scan-assembler-not "vmovdqa" } } */

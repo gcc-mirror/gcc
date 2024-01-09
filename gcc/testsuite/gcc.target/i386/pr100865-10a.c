@@ -29,5 +29,5 @@ foo (void)
     array[i] = MK_CONST128_BROADCAST (0x1f);
 }
 
-/* { dg-final { scan-assembler-times "vpbroadcastb\[\\t \]+\[^\n\]*, %ymm\[0-9\]+" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+\[^\n\]*, %ymm\[0-9\]+" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqu\[\\t \]%ymm\[0-9\]+, " 8 } } */
