@@ -98,12 +98,12 @@
        (match_test "REGNO (op) >= FIRST_PSEUDO_REGISTER || REGNO (op) <= 7")))
 
 ;; Constant suitable for the addsi3_r pattern.
+;; No idea why we previously used RTX_OK_FOR_OFFSET with SI, HI an QI
+;; modes.  The instruction in question accepts 11 bit signed constants.
 (define_constraint "Car"
   "addsi3_r constant."
   (and (match_code "const_int")
-       (ior (match_test "RTX_OK_FOR_OFFSET_P (SImode, op)")
-	    (match_test "RTX_OK_FOR_OFFSET_P (HImode, op)")
-	    (match_test "RTX_OK_FOR_OFFSET_P (QImode, op)"))))
+       (match_test "IN_RANGE (INTVAL (op), -1024, 1023)")))
 
 ;; The return address if it can be replaced with GPR_LR.
 (define_constraint "Rra"
