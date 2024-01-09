@@ -529,8 +529,13 @@ ASTLoweringTypeBounds::translate (AST::TypeParamBound *type)
 void
 ASTLoweringTypeBounds::visit (AST::TraitBound &bound)
 {
-  // FIXME
-  std::vector<HIR::LifetimeParam> lifetimes;
+  std::vector<HIR::LifetimeParam> for_lifetimes;
+  for (auto &lifetime_param : bound.get_for_lifetimes ())
+    {
+      auto generic_param = ASTLowerGenericParam::translate (&lifetime_param);
+      for_lifetimes.push_back (
+	*static_cast<HIR::LifetimeParam *> (generic_param));
+    }
 
   AST::TypePath &ast_trait_path = bound.get_type_path ();
   HIR::TypePath *trait_path = ASTLowerTypePath::translate (ast_trait_path);
@@ -543,8 +548,9 @@ ASTLoweringTypeBounds::visit (AST::TraitBound &bound)
   BoundPolarity polarity = bound.has_opening_question_mark ()
 			     ? BoundPolarity::AntiBound
 			     : BoundPolarity::RegularBound;
-  translated = new HIR::TraitBound (mapping, *trait_path, bound.get_locus (),
-				    bound.is_in_parens (), polarity);
+  translated
+    = new HIR::TraitBound (mapping, *trait_path, bound.get_locus (),
+			   bound.is_in_parens (), polarity, for_lifetimes);
 }
 
 void
@@ -595,6 +601,13 @@ ASTLowerWhereClauseItem::visit (AST::TypeBoundWhereClauseItem &item)
 {
   // FIXME
   std::vector<HIR::LifetimeParam> for_lifetimes;
+
+  for (auto &lifetime_param : item.get_for_lifetimes ())
+    {
+      auto generic_param = ASTLowerGenericParam::translate (&lifetime_param);
+      for_lifetimes.push_back (
+	*static_cast<HIR::LifetimeParam *> (generic_param));
+    }
 
   std::unique_ptr<HIR::Type> bound_type = std::unique_ptr<HIR::Type> (
     ASTLoweringType::translate (item.get_type ().get ()));
