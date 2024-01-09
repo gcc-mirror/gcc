@@ -159,8 +159,7 @@ package Exp_Ch6 is
    function Is_Build_In_Place_Function_Call (N : Node_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if N denotes a call to a function
    --  that requires handling as a build-in-place call (possibly qualified or
-   --  converted); that is, BIP function calls, and calls to functions with
-   --  inherited BIP formals.
+   --  converted).
 
    function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if functions returning the type use
