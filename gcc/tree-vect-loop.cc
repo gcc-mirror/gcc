@@ -10607,7 +10607,17 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 
   gimple_seq stmts = NULL;
   tree new_tree;
-  if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+
+  /* If bitstart is 0 then we can use a BIT_FIELD_REF  */
+  if (integer_zerop (bitstart))
+    {
+      tree scalar_res = gimple_build (&stmts, BIT_FIELD_REF, TREE_TYPE (vectype),
+				   vec_lhs_phi, bitsize, bitstart);
+
+      /* Convert the extracted vector element to the scalar type.  */
+      new_tree = gimple_convert (&stmts, lhs_type, scalar_res);
+    }
+  else if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
     {
       /* Emit:
 
@@ -10633,12 +10643,6 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
       tree last_index = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (len),
 				     len, bias_minus_one);
 
-      /* This needs to implement extraction of the first index, but not sure
-	 how the LEN stuff works.  At the moment we shouldn't get here since
-	 there's no LEN support for early breaks.  But guard this so there's
-	 no incorrect codegen.  */
-      gcc_assert (!LOOP_VINFO_EARLY_BREAKS (loop_vinfo));
-
       /* SCALAR_RES = VEC_EXTRACT <VEC_LHS, LEN + BIAS - 1>.  */
       tree scalar_res
 	= gimple_build (&stmts, CFN_VEC_EXTRACT, TREE_TYPE (vectype),
@@ -10663,32 +10667,6 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 				      &LOOP_VINFO_MASKS (loop_vinfo),
 				      1, vectype, 0);
       tree scalar_res;
-
-      /* For an inverted control flow with early breaks we want EXTRACT_FIRST
-	 instead of EXTRACT_LAST.  Emulate by reversing the vector and mask. */
-      if (restart_loop && LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
-	{
-	  /* First create the permuted mask.  */
-	  tree perm_mask = perm_mask_for_reverse (TREE_TYPE (mask));
-	  tree perm_dest = copy_ssa_name (mask);
-	  gimple *perm_stmt
-		= gimple_build_assign (perm_dest, VEC_PERM_EXPR, mask,
-				       mask, perm_mask);
-	  vect_finish_stmt_generation (loop_vinfo, stmt_info, perm_stmt,
-				       &gsi);
-	  mask = perm_dest;
-
-	  /* Then permute the vector contents.  */
-	  tree perm_elem = perm_mask_for_reverse (vectype);
-	  perm_dest = copy_ssa_name (vec_lhs_phi);
-	  perm_stmt
-		= gimple_build_assign (perm_dest, VEC_PERM_EXPR, vec_lhs_phi,
-				       vec_lhs_phi, perm_elem);
-	  vect_finish_stmt_generation (loop_vinfo, stmt_info, perm_stmt,
-				       &gsi);
-	  vec_lhs_phi = perm_dest;
-	}
-
       gimple_seq_add_seq (&stmts, tem);
 
       scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST, scalar_type,
