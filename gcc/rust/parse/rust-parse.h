@@ -288,11 +288,13 @@ private:
   std::unique_ptr<AST::Param> parse_function_param ();
   std::unique_ptr<AST::Type> parse_function_return_type ();
   AST::WhereClause parse_where_clause ();
-  std::unique_ptr<AST::WhereClauseItem> parse_where_clause_item ();
+  std::unique_ptr<AST::WhereClauseItem> parse_where_clause_item (
+    const std::vector<AST::LifetimeParam> &global_for_lifetimes);
   std::unique_ptr<AST::LifetimeWhereClauseItem>
   parse_lifetime_where_clause_item ();
   std::unique_ptr<AST::TypeBoundWhereClauseItem>
-  parse_type_bound_where_clause_item ();
+  parse_type_bound_where_clause_item (
+    const std::vector<AST::LifetimeParam> &global_for_lifetimes);
   std::vector<AST::LifetimeParam> parse_for_lifetimes ();
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::TypeParamBound>>
