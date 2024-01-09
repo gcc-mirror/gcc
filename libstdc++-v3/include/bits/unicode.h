@@ -163,7 +163,7 @@ namespace __unicode
 	    else
 	      _M_read();
 	  }
-	else if (_M_buf_index + 1 <= _M_buf_last)
+	else if (_M_buf_index + 1 < _M_buf_last)
 	  ++_M_buf_index;
 	return *this;
       }
@@ -603,6 +603,7 @@ inline namespace __v15_1_0
     return (__p - __width_edges) % 2 + 1;
   }
 
+  // @pre c <= 0x10FFFF
   constexpr _Gcb_property
   __grapheme_cluster_break_property(char32_t __c) noexcept
   {
@@ -621,9 +622,13 @@ inline namespace __v15_1_0
     return std::find(__incb_linkers, __end, __c) != __end;
   }
 
+  // @pre c <= 0x10FFFF
   constexpr _InCB
   __incb_property(char32_t __c) noexcept
   {
+    if ((__c << 2) < __incb_edges[0]) [[likely]]
+      return _InCB(0);
+
     constexpr uint32_t __mask = 0x3;
     auto* __end = std::end(__incb_edges);
     auto* __p = std::lower_bound(__incb_edges, __end, (__c << 2) | __mask);
@@ -634,10 +639,10 @@ inline namespace __v15_1_0
   __is_extended_pictographic(char32_t __c)
   {
     if (__c < __xpicto_edges[0]) [[likely]]
-      return 1;
+      return 0;
 
     auto* __p = std::upper_bound(__xpicto_edges, std::end(__xpicto_edges), __c);
-    return (__p - __xpicto_edges) % 2 + 1;
+    return (__p - __xpicto_edges) % 2;
   }
 
   struct _Grapheme_cluster_iterator_base
@@ -732,22 +737,22 @@ inline namespace __v15_1_0
 
       public:
 	// TODO: Change value_type to be subrange<_U32_iterator> instead?
-	// That would be the whole cluster, not just the first code point.
-	// Would need to change type of _M_start to _U32_iterator, so that
-	// operator* just does return value_type{_M_start, _M_next}.
 	// Alternatively, value_type could be _Utf32_view<iterator_t<_View>>.
+	// That would be the whole cluster, not just the first code point.
+	// Would need to store two iterators and find end of current cluster
+	// on increment, so operator* returns value_type(_M_base, _M_next).
 	using value_type = char32_t;
 	using iterator_concept = forward_iterator_tag;
+	using difference_type = ptrdiff_t;
 
 	constexpr
 	_Iterator(_U32_iterator __i)
-	: _M_start(__i.base()), _M_next(__i)
+	: _M_base(__i)
 	{
-	  if (_M_start != __i.end())
+	  if (__i != __i.end())
 	    {
 	      _M_c = *__i;
 	      _M_prop = __grapheme_cluster_break_property(_M_c);
-	      operator++(); // Finds the end of the first cluster.
 	    }
 	}
 
@@ -764,11 +769,11 @@ inline namespace __v15_1_0
 	constexpr _Iterator&
 	operator++()
 	{
-	  const auto __end = _M_next.end();
-	  if (_M_next != __end)
+	  const auto __end = _M_base.end();
+	  if (_M_base != __end)
 	    {
 	      auto __p_prev = _M_prop;
-	      auto __it = _M_next;
+	      auto __it = _M_base;
 	      while (++__it != __end)
 		{
 		  char32_t __c = *__it;
@@ -784,11 +789,8 @@ inline namespace __v15_1_0
 		    }
 		  __p_prev = __p;
 		}
-	      _M_start = _M_next.base();
-	      _M_next = __it;
+	      _M_base = __it;
 	    }
-	  else
-	    _M_start = __end;
 	  return *this;
 	}
 
@@ -802,18 +804,18 @@ inline namespace __v15_1_0
 
 	constexpr bool
 	operator==(const _Iterator& __i) const
-	{ return _M_start == __i._M_start; }
+	{ return _M_base == __i._M_base; }
 
 	// This supports iter != iter.end()
 	constexpr bool
 	operator==(const ranges::sentinel_t<_View>& __i) const
-	{ return _M_start == __i; }
+	{ return _M_base == __i; }
 
 	// Iterator to the start of the current cluster.
-	constexpr auto base() const { return _M_start; }
+	constexpr auto base() const { return _M_base.base(); }
 
 	// The end of the underlying view (not the end of the current cluster!)
-	constexpr auto end() const { return _M_next.end(); }
+	constexpr auto end() const { return _M_base.end(); }
 
 	// Field width of the first code point in the cluster.
 	constexpr int
@@ -821,8 +823,7 @@ inline namespace __v15_1_0
 	{ return __field_width(_M_c); }
 
       private:
-	ranges::iterator_t<_View> _M_start;
-	_U32_iterator _M_next;
+	_U32_iterator _M_base;
 
 	// Implement the Grapheme Cluster Boundary Rules from Unicode Annex #29
 	// http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundary_Rules
@@ -891,13 +892,13 @@ inline namespace __v15_1_0
 	  // Do not break within certain combinations with
 	  // Indic_Conjunct_Break (InCB)=Linker.
 	  if (_M_incb_linker_seen
-		&& __incb_property(*_M_start) == _InCB::_Consonant
+		&& __incb_property(_M_c) == _InCB::_Consonant
 		&& __incb_property(*__curr) == _InCB::_Consonant)
 	    {
-	      // Match [_M_start, __curr] against regular expression
+	      // Match [_M_base, __curr] against regular expression
 	      // Consonant ([Extend Linker]* Linker [Extend Linker]* Consonant)+
 	      bool __have_linker = false;
-	      auto __it = _M_start;
+	      auto __it = _M_base;
 	      while (++__it != __curr)
 		{
 		  if (__is_incb_linker(*__it))

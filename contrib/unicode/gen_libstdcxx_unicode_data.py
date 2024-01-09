@@ -122,7 +122,10 @@ for line in open("GraphemeBreakProperty.txt", "r"):
         process_code_points(code_points, grapheme_property.strip())
 
 edges = find_edges(all_code_points)
-gcb_props = {p:i+1 for i,p in enumerate(sorted(set([x[1] for x in edges])))}
+gcb_props = {"Other":0}
+for c, p in edges:
+    if p not in gcb_props:
+        gcb_props[p] = len(gcb_props)
 shift_bits = int(math.ceil(math.log2(len(gcb_props))))
 
 # Enum definition for std::__unicode::_Gcb_property
