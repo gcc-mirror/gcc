@@ -33812,7 +33812,23 @@ package body Sem_Prag is
       --  as 0.
 
       if not In_Extended_Main_Code_Unit (N) then
-         Insert_Library_Level_Action (New_Copy_Tree (N));
+         --  We've created an Itype for the string in this pragma and
+         --  may have made other Itypes. When we copy the entire tree
+         --  of this pragma, we'll make a second copy of them in its
+         --  unit, which will mess up the numbering of the remaining
+         --  internal names.
+
+         declare
+            Saved_Current_Sem_Unit : constant Unit_Number_Type :=
+              Current_Sem_Unit;
+            New_N                  : Node_Id;
+
+         begin
+            Current_Sem_Unit := Main_Unit;
+            New_N := New_Copy_Tree (N);
+            Current_Sem_Unit := Saved_Current_Sem_Unit;
+            Insert_Library_Level_Action (New_N);
+         end;
       end if;
    end Defer_Compile_Time_Warning_Error_To_BE;
 
