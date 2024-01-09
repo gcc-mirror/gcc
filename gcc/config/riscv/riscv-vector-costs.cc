@@ -241,7 +241,7 @@ loop_invariant_op_p (class loop *loop,
   if (SSA_NAME_IS_DEFAULT_DEF (op)
       || !flow_bb_inside_loop_p (loop, gimple_bb (SSA_NAME_DEF_STMT (op))))
     return true;
-  return gimple_uid (SSA_NAME_DEF_STMT (op)) & 1;
+  return false;
 }
 
 /* Return true if the variable should be counted into liveness.  */
