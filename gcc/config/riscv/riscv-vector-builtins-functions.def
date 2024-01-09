@@ -79,8 +79,6 @@ DEF_RVV_FUNCTION (vsoxei64, indexed_loadstore, none_m_preds, all_v_scalar_ptr_ee
 // 7.7. Unit-stride Fault-Only-First Loads
 DEF_RVV_FUNCTION (vleff, fault_load, full_preds, all_v_scalar_const_ptr_size_ptr_ops)
 
-// TODO: 7.8. Vector Load/Store Segment Instructions
-
 /* 11. Vector Integer Arithmetic Instructions.  */
 
 // 11.1. Vector Single-Width Integer Add and Subtract
@@ -630,6 +628,8 @@ DEF_RVV_FUNCTION (vset, vset, none_preds, all_v_vset_tuple_ops)
 DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_tuple_ops)
 DEF_RVV_FUNCTION (vcreate, vcreate, none_preds, all_v_vcreate_tuple_ops)
 DEF_RVV_FUNCTION (vundefined, vundefined, none_preds, all_none_void_tuple_ops)
+
+// 7.8. Vector Load/Store Segment Instructions
 DEF_RVV_FUNCTION (vlseg, seg_loadstore, full_preds, tuple_v_scalar_const_ptr_ops)
 DEF_RVV_FUNCTION (vsseg, seg_loadstore, none_m_preds, tuple_v_scalar_ptr_ops)
 DEF_RVV_FUNCTION (vlsseg, seg_loadstore, full_preds, tuple_v_scalar_const_ptr_ptrdiff_ops)
