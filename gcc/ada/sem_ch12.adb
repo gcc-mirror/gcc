@@ -13438,8 +13438,7 @@ package body Sem_Ch12 is
                Ancestor := Get_Instance_Of (Ancestor);
 
             else
-               Ancestor :=
-                 Get_Instance_Of (Base_Type (Get_Instance_Of (A_Gen_T)));
+               Ancestor := Get_Instance_Of (Etype (Get_Instance_Of (A_Gen_T)));
             end if;
 
          --  Check whether parent is a previous formal of the current generic

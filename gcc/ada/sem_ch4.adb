@@ -2297,7 +2297,9 @@ package body Sem_Ch4 is
             while Present (It.Nam) loop
                T := It.Typ;
 
-               if No (First_Formal (Base_Type (Designated_Type (T)))) then
+               if Is_Access_Type (T)
+                 and then No (First_Formal (Base_Type (Designated_Type (T))))
+               then
                   Set_Etype (P, T);
                else
                   Remove_Interp (I);
