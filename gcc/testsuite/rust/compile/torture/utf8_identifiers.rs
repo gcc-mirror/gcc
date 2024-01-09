@@ -1,7 +1,7 @@
 #[lang = "sized"]
 pub trait Sized {}
 
-pub fn f() {
+pub fn f<'かに>() {
     let crab = ();
 
     let Κάβουρας = 0.001;
