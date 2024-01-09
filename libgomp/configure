@@ -16655,7 +16655,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_FLOCK="$srcdir/testsuite/flock"
+    ac_cv_prog_FLOCK="\$(abs_top_srcdir)/testsuite/flock"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
