@@ -328,6 +328,8 @@ public:
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
   bool lookup_visibility (NodeId id, Privacy::ModuleVisibility &def);
 
+  void insert_ast_module (AST::Module *);
+  tl::optional<AST::Module *> lookup_ast_module (NodeId id);
   void insert_module_child (NodeId module, NodeId child);
   tl::optional<std::vector<NodeId> &> lookup_module_children (NodeId module);
 
@@ -427,6 +429,7 @@ private:
   std::map<NodeId, std::vector<NodeId>> module_child_map;
   std::map<NodeId, std::vector<Resolver::CanonicalPath>> module_child_items;
   std::map<NodeId, NodeId> child_to_parent_module_map;
+  std::map<NodeId, AST::Module *> modules;
 
   // AST mappings
   std::map<NodeId, AST::Item *> ast_item_mappings;

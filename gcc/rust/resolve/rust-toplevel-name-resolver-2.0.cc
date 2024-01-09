@@ -25,6 +25,87 @@
 namespace Rust {
 namespace Resolver2_0 {
 
+void
+GlobbingVisitor::visit (AST::Module &module)
+{
+  if (module.get_visibility ().is_public ())
+    ctx.insert (module.get_name (), module.get_node_id (), Namespace::Types);
+}
+
+void
+GlobbingVisitor::visit (AST::MacroRulesDefinition &macro)
+{
+  if (macro.get_visibility ().is_public ())
+    ctx.insert (macro.get_rule_name (), macro.get_node_id (),
+		Namespace::Macros);
+}
+
+void
+GlobbingVisitor::visit (AST::Function &function)
+{
+  if (function.get_visibility ().is_public ())
+    ctx.insert (function.get_function_name (), function.get_node_id (),
+		Namespace::Values);
+}
+
+void
+GlobbingVisitor::visit (AST::StaticItem &static_item)
+{
+  if (static_item.get_visibility ().is_public ())
+    ctx.insert (static_item.get_identifier (), static_item.get_node_id (),
+		Namespace::Values);
+}
+
+void
+GlobbingVisitor::visit (AST::StructStruct &struct_item)
+{
+  if (struct_item.get_visibility ().is_public ())
+    ctx.insert (struct_item.get_identifier (), struct_item.get_node_id (),
+		Namespace::Values);
+}
+
+void
+GlobbingVisitor::visit (AST::TupleStruct &tuple_struct)
+{
+  if (tuple_struct.get_visibility ().is_public ())
+    ctx.insert (tuple_struct.get_identifier (), tuple_struct.get_node_id (),
+		Namespace::Values);
+}
+
+void
+GlobbingVisitor::visit (AST::Enum &enum_item)
+{
+  if (enum_item.get_visibility ().is_public ())
+    ctx.insert (enum_item.get_identifier (), enum_item.get_node_id (),
+		Namespace::Values);
+}
+
+void
+GlobbingVisitor::visit (AST::Union &union_item)
+{
+  if (union_item.get_visibility ().is_public ())
+    ctx.insert (union_item.get_identifier (), union_item.get_node_id (),
+		Namespace::Values);
+}
+
+void
+GlobbingVisitor::visit (AST::ConstantItem &const_item)
+{
+  if (const_item.get_visibility ().is_public ())
+    ctx.insert (const_item.get_identifier (), const_item.get_node_id (),
+		Namespace::Values);
+}
+
+void
+GlobbingVisitor::visit (AST::ExternCrate &crate)
+{}
+
+void
+GlobbingVisitor::visit (AST::UseDeclaration &use)
+{
+  // Handle cycles ?
+}
+
 TopLevel::TopLevel (NameResolutionContext &resolver)
   : DefaultResolver (resolver)
 {}
@@ -81,6 +162,10 @@ TopLevel::visit (AST::Module &module)
 
   ctx.scoped (Rib::Kind::Module, module.get_node_id (), sub_visitor,
 	      module.get_name ());
+
+  if (Analysis::Mappings::get ()->lookup_ast_module (module.get_node_id ())
+      == tl::nullopt)
+    Analysis::Mappings::get ()->insert_ast_module (&module);
 }
 
 template <typename PROC_MACRO>
@@ -302,13 +387,26 @@ TopLevel::visit (AST::ConstantItem &const_item)
 }
 
 bool
+TopLevel::handle_use_glob (AST::SimplePath glob)
+{
+  auto resolved = ctx.types.resolve_path (glob.get_segments ());
+  if (!resolved.has_value ())
+    return false;
+
+  auto result = Analysis::Mappings::get ()->lookup_ast_module (*resolved);
+
+  if (!result.has_value ())
+    return false;
+
+  GlobbingVisitor gvisitor (ctx);
+  gvisitor.visit (*result.value ());
+
+  return true;
+}
+
+bool
 TopLevel::handle_use_dec (AST::SimplePath path)
 {
-  // TODO: Glob imports can get shadowed by regular imports and regular items.
-  // So we need to store them in a specific way in the ForeverStack - which can
-  // also probably be used by labels and macros etc. Like store it as a
-  // `Shadowable(NodeId)` instead of just a `NodeId`
-
   auto locus = path.get_final_segment ().get_locus ();
   auto declared_name = path.get_final_segment ().as_string ();
 
@@ -377,14 +475,17 @@ static void
 flatten_rebind (const AST::UseTreeRebind &glob,
 		std::vector<AST::SimplePath> &paths);
 static void
-flatten_list (const AST::UseTreeList &glob,
-	      std::vector<AST::SimplePath> &paths);
+flatten_list (const AST::UseTreeList &glob, std::vector<AST::SimplePath> &paths,
+	      std::vector<AST::SimplePath> &glob_paths,
+	      NameResolutionContext &ctx);
 static void
 flatten_glob (const AST::UseTreeGlob &glob,
-	      std::vector<AST::SimplePath> &paths);
+	      std::vector<AST::SimplePath> &glob_paths,
+	      NameResolutionContext &ctx);
 
 static void
-flatten (const AST::UseTree *tree, std::vector<AST::SimplePath> &paths)
+flatten (const AST::UseTree *tree, std::vector<AST::SimplePath> &paths,
+	 std::vector<AST::SimplePath> &glob_paths, NameResolutionContext &ctx)
 {
   switch (tree->get_kind ())
     {
@@ -395,13 +496,12 @@ flatten (const AST::UseTree *tree, std::vector<AST::SimplePath> &paths)
       }
       case AST::UseTree::List: {
 	auto list = static_cast<const AST::UseTreeList *> (tree);
-	flatten_list (*list, paths);
+	flatten_list (*list, paths, glob_paths, ctx);
 	break;
       }
       case AST::UseTree::Glob: {
-	rust_sorry_at (tree->get_locus (), "cannot resolve glob imports yet");
 	auto glob = static_cast<const AST::UseTreeGlob *> (tree);
-	flatten_glob (*glob, paths);
+	flatten_glob (*glob, glob_paths, ctx);
 	break;
       }
       break;
@@ -432,8 +532,28 @@ flatten_rebind (const AST::UseTreeRebind &rebind,
     }
 }
 
+/** Prefix a list of subpath
+ * @param prefix A prefix for all subpath
+ * @param subs List of subpath to prefix
+ * @param size List where results should be stored
+ */
 static void
-flatten_list (const AST::UseTreeList &list, std::vector<AST::SimplePath> &paths)
+prefix_subpaths (AST::SimplePath prefix, std::vector<AST::SimplePath> subs,
+		 std::vector<AST::SimplePath> &results)
+{
+  for (auto &sub : subs)
+    {
+      auto new_path = prefix;
+      std::copy (sub.get_segments ().begin (), sub.get_segments ().end (),
+		 std::back_inserter (new_path.get_segments ()));
+      results.emplace_back (new_path);
+    }
+}
+
+static void
+flatten_list (const AST::UseTreeList &list, std::vector<AST::SimplePath> &paths,
+	      std::vector<AST::SimplePath> &glob_paths,
+	      NameResolutionContext &ctx)
 {
   auto prefix = AST::SimplePath::create_empty ();
   if (list.has_path ())
@@ -442,43 +562,52 @@ flatten_list (const AST::UseTreeList &list, std::vector<AST::SimplePath> &paths)
   for (const auto &tree : list.get_trees ())
     {
       auto sub_paths = std::vector<AST::SimplePath> ();
-      flatten (tree.get (), sub_paths);
+      auto sub_globs = std::vector<AST::SimplePath> ();
+      flatten (tree.get (), sub_paths, sub_globs, ctx);
 
-      for (auto &sub_path : sub_paths)
-	{
-	  auto new_path = prefix;
-	  std::copy (sub_path.get_segments ().begin (),
-		     sub_path.get_segments ().end (),
-		     std::back_inserter (new_path.get_segments ()));
-
-	  paths.emplace_back (new_path);
-	}
+      prefix_subpaths (prefix, sub_paths, paths);
+      prefix_subpaths (prefix, sub_globs, glob_paths);
     }
 }
 
 static void
-flatten_glob (const AST::UseTreeGlob &glob, std::vector<AST::SimplePath> &paths)
+flatten_glob (const AST::UseTreeGlob &glob, std::vector<AST::SimplePath> &paths,
+	      NameResolutionContext &ctx)
 {
   if (glob.has_path ())
     paths.emplace_back (glob.get_path ());
+
+  // (PE): Get path rib
+  auto rib = ctx.values.resolve_path (glob.get_path ().get_segments ())
+	       .and_then ([&] (NodeId id) { return ctx.values.to_rib (id); });
+  if (rib.has_value ())
+    {
+      auto value = rib.value ().get_values ();
+    }
 }
 
 void
 TopLevel::visit (AST::UseDeclaration &use)
 {
   auto paths = std::vector<AST::SimplePath> ();
+  auto glob_path = std::vector<AST::SimplePath> ();
 
   // FIXME: How do we handle `use foo::{self}` imports? Some beforehand cleanup?
   // How do we handle module imports in general? Should they get added to all
   // namespaces?
 
   const auto &tree = use.get_tree ();
-  flatten (tree.get (), paths);
+  flatten (tree.get (), paths, glob_path, this->ctx);
 
   for (auto &path : paths)
     if (!handle_use_dec (path))
       rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
 		     "unresolved import %qs", path.as_string ().c_str ());
+
+  for (auto &glob : glob_path)
+    if (!handle_use_glob (glob))
+      rust_error_at (glob.get_final_segment ().get_locus (), ErrorCode::E0433,
+		     "unresolved import %qs", glob.as_string ().c_str ());
 }
 
 } // namespace Resolver2_0

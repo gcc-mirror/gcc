@@ -17,9 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-map.h"
+#include "optional.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
 #include "rust-hir-full.h"
+#include "rust-item.h"
 #include "rust-macro-builtins.h"
 #include "rust-mapping-common.h"
 #include "rust-attribute-values.h"
@@ -1156,6 +1158,23 @@ Mappings::lookup_module_children (NodeId module)
     return tl::nullopt;
 
   return it->second;
+}
+
+void
+Mappings::insert_ast_module (AST::Module *module)
+{
+  rust_assert (modules.find (module->get_node_id ()) == modules.end ());
+  modules[module->get_node_id ()] = module;
+}
+
+tl::optional<AST::Module *>
+Mappings::lookup_ast_module (NodeId id)
+{
+  auto it = modules.find (id);
+  if (it == modules.end ())
+    return tl::nullopt;
+
+  return {it->second};
 }
 
 void
