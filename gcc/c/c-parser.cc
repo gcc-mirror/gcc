@@ -8445,7 +8445,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
  			   build_int_cst (integer_type_node,
 					  annot_expr_unroll_kind),
 			   build_int_cst (integer_type_node, unroll));
-	  if (novector && cond != error_mark_node)
+	  if (novector && cond && cond != error_mark_node)
 	    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 			   build_int_cst (integer_type_node,
 					  annot_expr_no_vector_kind),
