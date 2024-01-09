@@ -1843,6 +1843,15 @@ void
 assemble_function_label_raw (FILE *file, const char *name)
 {
   ASM_OUTPUT_LABEL (file, name);
+  assemble_function_label_final ();
+}
+
+/* Finish outputting function label.  Needs to be called when outputting
+   function label without using assemble_function_label_raw ().  */
+
+void
+assemble_function_label_final (void)
+{
   if ((flag_sanitize & SANITIZE_ADDRESS)
       /* Notify ASAN only about the first function label.  */
       && (in_cold_section_p == first_function_block_is_cold)
