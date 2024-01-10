@@ -560,7 +560,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    1 / X -> X >= -1 && X <= 1 ? X : 0 for signed integer X.
    But not for 1 / 0 so that we can get proper warnings and errors,
    and not for 1-bit integers as they are edge cases better handled
-   elsewhere.  */
+   elsewhere.  Delay the conversion of the signed division until late
+   because `1 / X` is simplier to handle than the resulting COND_EXPR.  */
 (simplify
  (trunc_div integer_onep@0 @1)
  (if (INTEGRAL_TYPE_P (type)
@@ -569,10 +570,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && (!flag_non_call_exceptions || tree_expr_nonzero_p (@1)))
   (if (TYPE_UNSIGNED (type))
    (convert (eq:boolean_type_node @1 { build_one_cst (type); }))
-   (with { tree utype = unsigned_type_for (type); }
-    (cond (le (plus (convert:utype @1) { build_one_cst (utype); })
-	      { build_int_cst (utype, 2); })
-     @1 { build_zero_cst (type); })))))
+   (if (!canonicalize_math_p ())
+    (with { tree utype = unsigned_type_for (type); }
+     (cond (le (plus (convert:utype @1) { build_one_cst (utype); })
+		{ build_int_cst (utype, 2); })
+      @1 { build_zero_cst (type); }))))))
 
 /* Combine two successive divisions.  Note that combining ceil_div
    and floor_div is trickier and combining round_div even more so.  */
