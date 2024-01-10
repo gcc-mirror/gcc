@@ -70,6 +70,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // [format.context], class template basic_format_context
   template<typename _Out, typename _CharT> class basic_format_context;
 
+  // [format.fmt.string], class template basic_format_string
+  template<typename _CharT, typename... _Args> struct basic_format_string;
+
 /// @cond undocumented
 namespace __format
 {
@@ -83,7 +86,20 @@ namespace __format
     using __format_context = basic_format_context<_Sink_iter<_CharT>, _CharT>;
 
   template<typename _CharT>
-    struct _Runtime_format_string { basic_string_view<_CharT> _M_str; };
+    struct _Runtime_format_string
+    {
+      [[__gnu__::__always_inline__]]
+      _Runtime_format_string(basic_string_view<_CharT> __s) noexcept
+      : _M_str(__s) { }
+
+      _Runtime_format_string(const _Runtime_format_string&) = delete;
+      void operator=(const _Runtime_format_string&) = delete;
+
+    private:
+      basic_string_view<_CharT> _M_str;
+
+      template<typename, typename...> friend struct std::basic_format_string;
+    };
 } // namespace __format
 /// @endcond
 
@@ -104,8 +120,6 @@ namespace __format
   template<typename _Context>
     class basic_format_arg;
 
-  // [format.fmt.string], class template basic_format_string
-
   /** A compile-time checked format string for the specified argument types.
    *
    * @since C++23 but available as an extension in C++20.
@@ -119,7 +133,7 @@ namespace __format
 	basic_format_string(const _Tp& __s);
 
       [[__gnu__::__always_inline__]]
-      basic_format_string(__format::_Runtime_format_string<_CharT>&& __s)
+      basic_format_string(__format::_Runtime_format_string<_CharT> __s) noexcept
       : _M_str(__s._M_str)
       { }
 
@@ -144,14 +158,14 @@ namespace __format
 #if __cplusplus > 202302L
   [[__gnu__::__always_inline__]]
   inline __format::_Runtime_format_string<char>
-  runtime_format(string_view __fmt)
-  { return {__fmt}; }
+  runtime_format(string_view __fmt) noexcept
+  { return __fmt; }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   [[__gnu__::__always_inline__]]
   inline __format::_Runtime_format_string<wchar_t>
-  runtime_format(wstring_view __fmt)
-  { return {__fmt}; }
+  runtime_format(wstring_view __fmt) noexcept
+  { return __fmt; }
 #endif
 #endif // C++26
 
