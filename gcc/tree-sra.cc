@@ -2733,7 +2733,8 @@ analyze_access_subtree (struct access *root, struct access *parent,
          For integral types this means the precision has to match.
 	 Avoid assumptions based on the integral type kind, too.  */
       if (INTEGRAL_TYPE_P (root->type)
-	  && (TREE_CODE (root->type) != INTEGER_TYPE
+	  && ((TREE_CODE (root->type) != INTEGER_TYPE
+	       && TREE_CODE (root->type) != BITINT_TYPE)
 	      || TYPE_PRECISION (root->type) != root->size)
 	  /* But leave bitfield accesses alone.  */
 	  && (TREE_CODE (root->expr) != COMPONENT_REF
@@ -2742,8 +2743,11 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  tree rt = root->type;
 	  gcc_assert ((root->offset % BITS_PER_UNIT) == 0
 		      && (root->size % BITS_PER_UNIT) == 0);
-	  root->type = build_nonstandard_integer_type (root->size,
-						       TYPE_UNSIGNED (rt));
+	  if (TREE_CODE (root->type) == BITINT_TYPE)
+	    root->type = build_bitint_type (root->size, TYPE_UNSIGNED (rt));
+	  else
+	    root->type = build_nonstandard_integer_type (root->size,
+							 TYPE_UNSIGNED (rt));
 	  root->expr = build_ref_for_offset (UNKNOWN_LOCATION, root->base,
 					     root->offset, root->reverse,
 					     root->type, NULL, false);
