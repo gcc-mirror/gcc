@@ -1160,18 +1160,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (hypots @0 (copysigns @1 @2))
    (hypots @0 @1))))
 
-/* copysign(x, CST) -> abs (x).  */
+/* copysign(x, CST) -> abs (x).  If the target does not
+   support the copysign optab then canonicalize
+   copysign(x, -CST) -> fneg (abs (x)).   */
 (for copysigns (COPYSIGN_ALL)
  (simplify
   (copysigns @0 REAL_CST@1)
   (if (!REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
-   (abs @0))))
+   (abs @0)
+#if GIMPLE
+   (if (!direct_internal_fn_supported_p (IFN_COPYSIGN, type,
+					 OPTIMIZE_FOR_BOTH))
+    (negate (abs @0)))
+#endif
+   )))
 
-/* Transform fneg (fabs (X)) -> copysign (X, -1).  */
+#if GIMPLE
+/* Transform fneg (fabs (X)) -> copysign (X, -1) as the canonical
+   representation if the target supports the copysign optab.  */
 (simplify
  (negate (abs @0))
- (IFN_COPYSIGN @0 { build_minus_one_cst (type); }))
-
+ (if (direct_internal_fn_supported_p (IFN_COPYSIGN, type,
+				      OPTIMIZE_FOR_BOTH))
+   (IFN_COPYSIGN @0 { build_minus_one_cst (type); })))
+#endif
 /* copysign(copysign(x, y), z) -> copysign(x, z).  */
 (for copysigns (COPYSIGN_ALL)
  (simplify

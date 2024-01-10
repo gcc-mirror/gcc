@@ -2681,6 +2681,10 @@ Target requires a command line argument to enable a SIMD instruction set.
 @item xorsign
 Target supports the xorsign optab expansion.
 
+@item ifn_copysign
+Target supports the copysign optab expansion of float and double for
+both scalar and vector modes.
+
 @end table
 
 @subsubsection Environment attributes
