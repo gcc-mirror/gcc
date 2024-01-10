@@ -8001,7 +8001,6 @@ proc check_effective_target_vect_widen_mult_qi_to_hi { } {
 		  || ([istarget aarch64*-*-*]
 		      && ![check_effective_target_aarch64_sve])
 		  || [is-effective-target arm_neon]
-		  || [is-effective-target loongarch*-*-*]
 		  || ([istarget s390*-*-*]
 		      && [check_effective_target_s390_vx])) 
 	      || [istarget amdgcn-*-*] }}]
@@ -8026,7 +8025,6 @@ proc check_effective_target_vect_widen_mult_hi_to_si { } {
 		     && ![check_effective_target_aarch64_sve])
 		 || [istarget i?86-*-*] || [istarget x86_64-*-*]
 		 || [is-effective-target arm_neon]
-		 || [is-effective-target loongarch*-*-*]
 		 || ([istarget s390*-*-*]
 		     && [check_effective_target_s390_vx]))
 	     || [istarget amdgcn-*-*] }}]
