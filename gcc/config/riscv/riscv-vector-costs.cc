@@ -994,7 +994,8 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 		     vect_vf_for_cost (other_loop_vinfo));
 
   /* Apply the unrolling heuristic described above m_unrolled_vls_niters.  */
-  if (bool (m_unrolled_vls_stmts) != bool (other->m_unrolled_vls_stmts))
+  if (bool (m_unrolled_vls_stmts) != bool (other->m_unrolled_vls_stmts)
+      && m_cost_type != other->m_cost_type)
     {
       bool this_prefer_unrolled = this->prefer_unrolled_loop ();
       bool other_prefer_unrolled = other->prefer_unrolled_loop ();
