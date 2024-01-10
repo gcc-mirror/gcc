@@ -62,6 +62,8 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalStaticItem &item)
 void
 TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 {
+  auto binder_pin = context->push_clean_lifetime_resolver ();
+
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (function.has_generics ())
     {
@@ -70,6 +72,11 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 	  switch (generic_param.get ()->get_kind ())
 	    {
 	    case HIR::GenericParam::GenericKind::LIFETIME:
+	      context->intern_and_insert_lifetime (
+		static_cast<HIR::LifetimeParam &> (*generic_param)
+		  .get_lifetime ());
+	      // TODO: handle bounds
+	      break;
 	    case HIR::GenericParam::GenericKind::CONST:
 	      // FIXME: Skipping Lifetime and Const completely until better
 	      // handling.
@@ -153,11 +160,13 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 			    function.get_item_name ().as_string ()),
     function.get_locus ()};
 
-  auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
-				  function.get_mappings ().get_defid (),
-				  function.get_item_name ().as_string (), ident,
-				  flags, parent.get_abi (), std::move (params),
-				  ret_type, std::move (substitutions));
+  auto fnType = new TyTy::FnType (
+    function.get_mappings ().get_hirid (),
+    function.get_mappings ().get_defid (),
+    function.get_item_name ().as_string (), ident, flags, parent.get_abi (),
+    std::move (params), ret_type, std::move (substitutions),
+    TyTy::SubstitutionArgumentMappings::empty (
+      context->get_lifetime_resolver ().get_num_bound_regions ()));
 
   context->insert_type (function.get_mappings (), fnType);
   resolved = fnType;
@@ -192,6 +201,8 @@ TypeCheckImplItem::Resolve (
 void
 TypeCheckImplItem::visit (HIR::Function &function)
 {
+  auto binder_pin = context->push_lifetime_binder ();
+
   if (function.has_generics ())
     resolve_generic_params (function.get_generic_params (), substitutions);
 
@@ -254,16 +265,36 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	      self_type = self->clone ();
 	      break;
 
-	    case HIR::SelfParam::IMM_REF:
-	      self_type = new TyTy::ReferenceType (
-		self_param.get_mappings ().get_hirid (),
-		TyTy::TyVar (self->get_ref ()), Mutability::Imm);
+	      case HIR::SelfParam::IMM_REF: {
+		auto region = context->lookup_and_resolve_lifetime (
+		  self_param.get_lifetime ());
+		if (!region.has_value ())
+		  {
+		    rust_inform (self_param.get_locus (),
+				 "failed to resolve lifetime");
+		    region = TyTy::Region::make_anonymous (); // FIXME
+		  }
+		self_type = new TyTy::ReferenceType (
+		  self_param.get_mappings ().get_hirid (),
+		  TyTy::TyVar (self->get_ref ()), Mutability::Imm,
+		  region.value ());
+	      }
 	      break;
 
-	    case HIR::SelfParam::MUT_REF:
-	      self_type = new TyTy::ReferenceType (
-		self_param.get_mappings ().get_hirid (),
-		TyTy::TyVar (self->get_ref ()), Mutability::Mut);
+	      case HIR::SelfParam::MUT_REF: {
+		auto region = context->lookup_and_resolve_lifetime (
+		  self_param.get_lifetime ());
+		if (!region.has_value ())
+		  {
+		    rust_error_at (self_param.get_locus (),
+				   "failed to resolve lifetime");
+		    return;
+		  }
+		self_type = new TyTy::ReferenceType (
+		  self_param.get_mappings ().get_hirid (),
+		  TyTy::TyVar (self->get_ref ()), Mutability::Mut,
+		  region.value ());
+	      }
 	      break;
 
 	    default:
@@ -295,15 +326,15 @@ TypeCheckImplItem::visit (HIR::Function &function)
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, function.get_locus ()};
-  auto fnType
-    = new TyTy::FnType (function.get_mappings ().get_hirid (),
-			function.get_mappings ().get_defid (),
-			function.get_function_name ().as_string (), ident,
-			function.is_method ()
-			  ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
+  auto fnType = new TyTy::FnType (
+    function.get_mappings ().get_hirid (),
+    function.get_mappings ().get_defid (),
+    function.get_function_name ().as_string (), ident,
+    function.is_method () ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
 			  : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
-			ABI::RUST, std::move (params), ret_type,
-			std::move (substitutions));
+    ABI::RUST, std::move (params), ret_type, std::move (substitutions),
+    TyTy::SubstitutionArgumentMappings::empty (
+      context->get_lifetime_resolver ().get_num_bound_regions ()));
 
   context->insert_type (function.get_mappings (), fnType);
   result = fnType;
@@ -348,6 +379,11 @@ TypeCheckImplItem::visit (HIR::ConstantItem &constant)
 void
 TypeCheckImplItem::visit (HIR::TypeAlias &alias)
 {
+  auto binder_pin = context->push_lifetime_binder ();
+
+  if (alias.has_generics ())
+    resolve_generic_params (alias.get_generic_params (), substitutions);
+
   TyTy::BaseType *actual_type
     = TypeCheckType::Resolve (alias.get_type_aliased ().get ());
 

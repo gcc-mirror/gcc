@@ -61,7 +61,7 @@ protected:
   TyTy::BaseType *self;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 
-  TyTy::BaseType *result;
+  TyTy::BaseType *result = nullptr;
 };
 
 class TypeCheckImplItemWithTrait : public TypeCheckBase,

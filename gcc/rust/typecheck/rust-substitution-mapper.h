@@ -29,7 +29,9 @@ class SubstMapper : public TyTy::TyVisitor
 {
 public:
   static TyTy::BaseType *Resolve (TyTy::BaseType *base, location_t locus,
-				  HIR::GenericArgs *generics = nullptr);
+				  HIR::GenericArgs *generics = nullptr,
+				  const std::vector<TyTy::Region> &regions
+				  = {});
 
   static TyTy::BaseType *InferSubst (TyTy::BaseType *base, location_t locus);
 
@@ -63,10 +65,12 @@ public:
   void visit (TyTy::ClosureType &) override { rust_unreachable (); }
 
 private:
-  SubstMapper (HirId ref, HIR::GenericArgs *generics, location_t locus);
+  SubstMapper (HirId ref, HIR::GenericArgs *generics,
+	       const std::vector<TyTy::Region> &regions, location_t locus);
 
   TyTy::BaseType *resolved;
   HIR::GenericArgs *generics;
+  const std::vector<TyTy::Region> &regions;
   location_t locus;
 };
 

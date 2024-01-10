@@ -30,6 +30,39 @@ saw_errors (void);
 namespace Rust {
 namespace Resolver {
 
+tl::optional<TyTy::Region>
+TypeCheckContext::LifetimeResolver::resolve (const Lifetime &placeholder) const
+{
+  if (placeholder.is_static ())
+    return TyTy::Region::make_static ();
+
+  if (placeholder == Lifetime::anonymous_lifetime ())
+    return TyTy::Region::make_anonymous ();
+
+  for (auto it = lifetime_lookup.rbegin (); it != lifetime_lookup.rend (); ++it)
+    {
+      if (it->first == placeholder)
+	{
+	  if (it->second.scope <= ITEM_SCOPE)
+	    {
+	      // It is useful to have the static lifetime and named
+	      // lifetimed disjoint so we add the +1 here.
+	      return (is_body)
+		       ? TyTy::Region::make_named (it->second.index + 1)
+		       : TyTy::Region::make_early_bound (it->second.index);
+	    }
+	  else
+	    {
+	      return TyTy::Region::make_late_bound (get_current_scope ()
+						      - it->second.scope,
+						    it->second.index);
+	    }
+	}
+    }
+
+  return tl::nullopt;
+}
+
 void
 TypeResolution::Resolve (HIR::Crate &crate)
 {
@@ -151,6 +184,8 @@ TraitItemReference::get_type_from_constant (
 TyTy::BaseType *
 TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 {
+  auto binder_pin = context->push_clean_lifetime_resolver ();
+
   std::vector<TyTy::SubstitutionParamMapping> substitutions
     = inherited_substitutions;
 
@@ -161,7 +196,15 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	{
 	  switch (generic_param.get ()->get_kind ())
 	    {
-	    case HIR::GenericParam::GenericKind::LIFETIME:
+	      case HIR::GenericParam::GenericKind::LIFETIME: {
+		auto lifetime_param
+		  = static_cast<HIR::LifetimeParam &> (*generic_param);
+
+		context->intern_and_insert_lifetime (
+		  lifetime_param.get_lifetime ());
+		// TODO: Handle lifetime bounds
+	      }
+	      break;
 	    case HIR::GenericParam::GenericKind::CONST:
 	      // FIXME: Skipping Lifetime and Const completely until better
 	      // handling.
@@ -234,15 +277,27 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	      break;
 
 	    case HIR::SelfParam::IMM_REF:
-	      self_type = new TyTy::ReferenceType (
-		self_param.get_mappings ().get_hirid (),
-		TyTy::TyVar (self->get_ref ()), Mutability::Imm);
-	      break;
+	      case HIR::SelfParam::MUT_REF: {
+		auto mutability
+		  = self_param.get_self_kind () == HIR::SelfParam::IMM_REF
+		      ? Mutability::Imm
+		      : Mutability::Mut;
+		rust_assert (self_param.has_lifetime ());
 
-	    case HIR::SelfParam::MUT_REF:
-	      self_type = new TyTy::ReferenceType (
-		self_param.get_mappings ().get_hirid (),
-		TyTy::TyVar (self->get_ref ()), Mutability::Mut);
+		auto maybe_region = context->lookup_and_resolve_lifetime (
+		  self_param.get_lifetime ());
+
+		if (!maybe_region.has_value ())
+		  {
+		    rust_error_at (self_param.get_locus (),
+				   "failed to resolve lifetime");
+		    return get_error ();
+		  }
+		self_type = new TyTy::ReferenceType (
+		  self_param.get_mappings ().get_hirid (),
+		  TyTy::TyVar (self->get_ref ()), mutability,
+		  maybe_region.value ());
+	      }
 	      break;
 
 	    default:
@@ -274,15 +329,14 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, fn.get_locus ()};
-  auto resolved
-    = new TyTy::FnType (fn.get_mappings ().get_hirid (),
-			fn.get_mappings ().get_defid (),
-			function.get_function_name ().as_string (), ident,
-			function.is_method ()
-			  ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
+  auto resolved = new TyTy::FnType (
+    fn.get_mappings ().get_hirid (), fn.get_mappings ().get_defid (),
+    function.get_function_name ().as_string (), ident,
+    function.is_method () ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
 			  : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
-			ABI::RUST, std::move (params), ret_type, substitutions);
-
+    ABI::RUST, std::move (params), ret_type, substitutions,
+    TyTy::SubstitutionArgumentMappings::empty (
+      context->get_lifetime_resolver ().get_num_bound_regions ()));
   context->insert_type (fn.get_mappings (), resolved);
   return resolved;
 }

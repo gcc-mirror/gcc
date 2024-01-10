@@ -225,7 +225,8 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 
 	infered = new TyTy::ReferenceType (expr_mappings.get_hirid (),
 					   TyTy::TyVar (base->get_ref ()),
-					   Mutability::Imm);
+					   Mutability::Imm,
+					   TyTy::Region::make_static ());
       }
       break;
 
@@ -271,7 +272,8 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 
 	infered = new TyTy::ReferenceType (expr_mappings.get_hirid (),
 					   TyTy::TyVar (array->get_ref ()),
-					   Mutability::Imm);
+					   Mutability::Imm,
+					   TyTy::Region::make_static ());
       }
       break;
 
@@ -352,16 +354,23 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 
 void
 TypeCheckBase::resolve_generic_params (
-  const std::vector<std::unique_ptr<HIR::GenericParam> > &generic_params,
+  const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
   std::vector<TyTy::SubstitutionParamMapping> &substitutions)
 {
   for (auto &generic_param : generic_params)
     {
-      switch (generic_param.get ()->get_kind ())
+      switch (generic_param->get_kind ())
 	{
-	case HIR::GenericParam::GenericKind::LIFETIME:
-	  // FIXME: Skipping Lifetime completely until better
-	  // handling.
+	  case HIR::GenericParam::GenericKind::LIFETIME: {
+	    auto lifetime_param
+	      = static_cast<HIR::LifetimeParam &> (*generic_param);
+	    auto lifetime = lifetime_param.get_lifetime ();
+	    rust_assert (lifetime.get_lifetime_type ()
+			 == AST::Lifetime::LifetimeType::NAMED);
+	    context->get_lifetime_resolver ().insert_mapping (
+	      context->intern_lifetime (lifetime));
+	  }
+
 	  break;
 
 	  case HIR::GenericParam::GenericKind::CONST: {

@@ -520,9 +520,10 @@ AssociatedImplTrait::setup_associated_types (
 	}
     }
 
-  TyTy::SubstitutionArgumentMappings infer_arguments (std::move (subst_args),
-						      {}, locus,
-						      param_subst_cb);
+  TyTy::SubstitutionArgumentMappings infer_arguments (
+    std::move (subst_args), {},
+    TyTy::SubstitutionArgumentMappings::regions_from_nullable_args (args),
+    locus, param_subst_cb);
   TyTy::BaseType *impl_self_infer
     = (!associated_self->is_concrete ())
 	? SubstMapperInternal::Resolve (associated_self, infer_arguments)
@@ -613,7 +614,9 @@ AssociatedImplTrait::setup_associated_types (
     }
 
   TyTy::SubstitutionArgumentMappings associated_type_args (
-    std::move (associated_arguments), {}, locus);
+    std::move (associated_arguments), {},
+    TyTy::SubstitutionArgumentMappings::regions_from_nullable_args (args),
+    locus);
 
   auto &impl_items = impl->get_impl_items ();
   for (auto &impl_item : impl_items)

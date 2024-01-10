@@ -23,6 +23,7 @@
 #include "rust-tyty.h"
 #include "rust-hir-trait-reference.h"
 #include "rust-autoderef.h"
+#include "rust-tyty-region.h"
 
 #include <stack>
 
@@ -222,7 +223,13 @@ public:
   WARN_UNUSED_RESULT tl::optional<Lifetime>
   lookup_lifetime (const HIR::Lifetime &lifetime) const;
 
+  WARN_UNUSED_RESULT tl::optional<TyTy::Region>
+  lookup_and_resolve_lifetime (const HIR::Lifetime &lifetime) const;
+
   void intern_and_insert_lifetime (const HIR::Lifetime &lifetime);
+
+  WARN_UNUSED_RESULT std::vector<TyTy::Region>
+  regions_from_generic_args (const HIR::GenericArgs &args) const;
 
 private:
   TypeCheckContext ();
@@ -326,6 +333,9 @@ private:
       lifetime_lookup.push_back (
 	{placeholder, {get_current_scope (), binder_size_stack.top ()++}});
     }
+
+    WARN_UNUSED_RESULT tl::optional<TyTy::Region>
+    resolve (const Lifetime &placeholder) const;
 
     /** Only to be used by the guard. */
     void push_binder () { binder_size_stack.push (0); }

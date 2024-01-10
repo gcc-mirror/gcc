@@ -375,6 +375,7 @@ TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
 
   used_arguments
     = SubstitutionArgumentMappings (copied_arg_mappings, {},
+				    other.used_arguments.get_regions (),
 				    other.used_arguments.get_locus ());
 }
 
@@ -415,6 +416,7 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
 
   used_arguments
     = SubstitutionArgumentMappings (copied_arg_mappings, {},
+				    other.used_arguments.get_regions (),
 				    other.used_arguments.get_locus ());
 
   return *this;
@@ -482,7 +484,10 @@ TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args,
     }
 
   // now actually perform a substitution
-  used_arguments = get_mappings_from_generic_args (*generic_args);
+  used_arguments = get_mappings_from_generic_args (
+    *generic_args,
+    Resolver::TypeCheckContext::get ()->regions_from_generic_args (
+      *generic_args));
 
   error_flag |= used_arguments.is_error ();
   auto &subst_mappings = used_arguments;
@@ -590,6 +595,7 @@ TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
     }
 
   SubstitutionArgumentMappings adjusted (adjusted_mappings, {},
+					 gargs.get_regions (),
 					 gargs.get_locus (),
 					 gargs.get_subst_cb (),
 					 true /* trait-mode-flag */);
