@@ -196,8 +196,9 @@ Late::visit (AST::PathInExpression &expr)
   // in a function item` error here?
   // do we emit it in `get<Namespace::Labels>`?
 
-  auto label = ctx.labels.resolve_path (expr.get_segments ());
   auto value = ctx.values.resolve_path (expr.get_segments ());
+
+  ctx.map_usage (Usage (expr.get_node_id ()), Definition (*value));
 }
 
 void
