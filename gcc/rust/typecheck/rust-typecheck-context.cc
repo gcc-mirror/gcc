@@ -31,7 +31,7 @@ TypeCheckContext::get ()
   return instance;
 }
 
-TypeCheckContext::TypeCheckContext () {}
+TypeCheckContext::TypeCheckContext () { lifetime_resolver_stack.emplace (); }
 
 TypeCheckContext::~TypeCheckContext () {}
 
@@ -494,6 +494,59 @@ TypeCheckContext::trait_query_in_progress (DefId id) const
 {
   return trait_queries_in_progress.find (id)
 	 != trait_queries_in_progress.end ();
+}
+
+Lifetime
+TypeCheckContext::intern_lifetime (const HIR::Lifetime &lifetime)
+{
+  if (lifetime.get_lifetime_type () == AST::Lifetime::NAMED)
+    {
+      auto maybe_interned = lookup_lifetime (lifetime);
+      if (maybe_interned)
+	return *maybe_interned;
+
+      auto interned = next_lifetime_index.next ();
+      lifetime_name_interner[lifetime.get_name ()] = interned;
+      return interned;
+    }
+  if (lifetime.get_lifetime_type () == AST::Lifetime::WILDCARD)
+    {
+      return next_lifetime_index.next ();
+    }
+  if (lifetime.get_lifetime_type () == AST::Lifetime::STATIC)
+    {
+      return Lifetime::static_lifetime ();
+    }
+  rust_unreachable ();
+}
+
+tl::optional<Lifetime>
+TypeCheckContext::lookup_lifetime (const HIR::Lifetime &lifetime) const
+{
+  if (lifetime.get_lifetime_type () == AST::Lifetime::NAMED)
+    {
+      rust_assert (lifetime.get_name () != "static");
+      const auto name = lifetime.get_name ();
+      auto it = lifetime_name_interner.find (name);
+      if (it == lifetime_name_interner.end ())
+	return tl::nullopt;
+      return it->second;
+    }
+  if (lifetime.get_lifetime_type () == AST::Lifetime::WILDCARD)
+    {
+      return Lifetime::anonymous_lifetime ();
+    }
+  if (lifetime.get_lifetime_type () == AST::Lifetime::STATIC)
+    {
+      return Lifetime::static_lifetime ();
+    }
+  rust_unreachable ();
+}
+
+void
+TypeCheckContext::intern_and_insert_lifetime (const HIR::Lifetime &lifetime)
+{
+  get_lifetime_resolver ().insert_mapping (intern_lifetime (lifetime));
 }
 
 // TypeCheckContextItem
