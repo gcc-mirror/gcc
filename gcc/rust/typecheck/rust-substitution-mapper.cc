@@ -23,15 +23,18 @@ namespace Rust {
 namespace Resolver {
 
 SubstMapper::SubstMapper (HirId ref, HIR::GenericArgs *generics,
+			  const std::vector<TyTy::Region> &regions,
 			  location_t locus)
-  : resolved (new TyTy::ErrorType (ref)), generics (generics), locus (locus)
+  : resolved (new TyTy::ErrorType (ref)), generics (generics),
+    regions (regions), locus (locus)
 {}
 
 TyTy::BaseType *
 SubstMapper::Resolve (TyTy::BaseType *base, location_t locus,
-		      HIR::GenericArgs *generics)
+		      HIR::GenericArgs *generics,
+		      const std::vector<TyTy::Region> &regions)
 {
-  SubstMapper mapper (base->get_ref (), generics, locus);
+  SubstMapper mapper (base->get_ref (), generics, regions, locus);
   base->accept_vis (mapper);
   rust_assert (mapper.resolved != nullptr);
   return mapper.resolved;
@@ -40,7 +43,7 @@ SubstMapper::Resolve (TyTy::BaseType *base, location_t locus,
 TyTy::BaseType *
 SubstMapper::InferSubst (TyTy::BaseType *base, location_t locus)
 {
-  return SubstMapper::Resolve (base, locus, nullptr);
+  return SubstMapper::Resolve (base, locus, nullptr, {});
 }
 
 bool
@@ -62,7 +65,7 @@ SubstMapper::visit (TyTy::FnType &type)
   else
     {
       TyTy::SubstitutionArgumentMappings mappings
-	= type.get_mappings_from_generic_args (*generics);
+	= type.get_mappings_from_generic_args (*generics, regions);
       if (mappings.is_error ())
 	return;
 
@@ -86,7 +89,7 @@ SubstMapper::visit (TyTy::ADTType &type)
   else
     {
       TyTy::SubstitutionArgumentMappings mappings
-	= type.get_mappings_from_generic_args (*generics);
+	= type.get_mappings_from_generic_args (*generics, regions);
       if (mappings.is_error ())
 	return;
 
@@ -101,7 +104,7 @@ void
 SubstMapper::visit (TyTy::PlaceholderType &type)
 {
   rust_assert (type.can_resolve ());
-  resolved = SubstMapper::Resolve (type.resolve (), locus, generics);
+  resolved = SubstMapper::Resolve (type.resolve (), locus, generics, regions);
 }
 
 void
@@ -117,7 +120,7 @@ SubstMapper::visit (TyTy::ProjectionType &type)
   else
     {
       TyTy::SubstitutionArgumentMappings mappings
-	= type.get_mappings_from_generic_args (*generics);
+	= type.get_mappings_from_generic_args (*generics, regions);
       if (mappings.is_error ())
 	return;
 

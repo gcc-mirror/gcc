@@ -543,10 +543,37 @@ TypeCheckContext::lookup_lifetime (const HIR::Lifetime &lifetime) const
   rust_unreachable ();
 }
 
+WARN_UNUSED_RESULT tl::optional<TyTy::Region>
+TypeCheckContext::lookup_and_resolve_lifetime (
+  const HIR::Lifetime &lifetime) const
+{
+  auto maybe_interned = lookup_lifetime (lifetime);
+  if (!maybe_interned)
+    return tl::nullopt;
+
+  return get_lifetime_resolver ().resolve (maybe_interned.value ());
+}
 void
 TypeCheckContext::intern_and_insert_lifetime (const HIR::Lifetime &lifetime)
 {
   get_lifetime_resolver ().insert_mapping (intern_lifetime (lifetime));
+}
+
+WARN_UNUSED_RESULT std::vector<TyTy::Region>
+TypeCheckContext::regions_from_generic_args (const HIR::GenericArgs &args) const
+{
+  std::vector<TyTy::Region> regions;
+  for (const auto &lifetime : args.get_lifetime_args ())
+    {
+      auto resolved = lookup_and_resolve_lifetime (lifetime);
+      if (!resolved)
+	{
+	  rust_error_at (lifetime.get_locus (), "unresolved lifetime");
+	  return {};
+	}
+      regions.push_back (*resolved);
+    }
+  return regions;
 }
 
 // TypeCheckContextItem

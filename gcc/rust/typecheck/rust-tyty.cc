@@ -572,7 +572,8 @@ BaseType::monomorphized_clone () const
     {
       TyVar elm = ref->get_var_element_type ().monomorphized_clone ();
       return new ReferenceType (ref->get_ref (), ref->get_ty_ref (), elm,
-				ref->mutability (), ref->get_combined_refs ());
+				ref->mutability (), ref->get_region (),
+				ref->get_combined_refs ());
     }
   else if (auto tuple = x->try_as<const TupleType> ())
     {
@@ -594,7 +595,8 @@ BaseType::monomorphized_clone () const
       return new FnType (fn->get_ref (), fn->get_ty_ref (), fn->get_id (),
 			 fn->get_identifier (), fn->ident, fn->get_flags (),
 			 fn->get_abi (), std::move (cloned_params), retty,
-			 fn->clone_substs (), fn->get_combined_refs ());
+			 fn->clone_substs (), fn->get_substitution_arguments (),
+			 fn->get_combined_refs ());
     }
   else if (auto fn = x->try_as<const FnPtr> ())
     {
@@ -977,6 +979,7 @@ InferType::default_type (BaseType **type) const
   auto context = Resolver::TypeCheckContext::get ();
   bool ok = false;
 
+  // NOTE: Calling this error is misleading.
   if (default_hint.kind == TypeKind::ERROR)
     {
       switch (infer_kind)
@@ -1955,7 +1958,7 @@ FnType::clone () const
   return new FnType (get_ref (), get_ty_ref (), get_id (), get_identifier (),
 		     ident, flags, abi, std::move (cloned_params),
 		     get_return_type ()->clone (), clone_substs (),
-		     get_combined_refs ());
+		     get_substitution_arguments (), get_combined_refs ());
 }
 
 FnType *
@@ -2848,19 +2851,20 @@ CharType::clone () const
 // Reference Type
 
 ReferenceType::ReferenceType (HirId ref, TyVar base, Mutability mut,
-			      std::set<HirId> refs)
+			      Region region, std::set<HirId> refs)
   : BaseType (ref, ref, KIND,
 	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
-	      refs),
-    base (base), mut (mut)
+	      std::move (refs)),
+    base (base), mut (mut), region (region)
 {}
 
 ReferenceType::ReferenceType (HirId ref, HirId ty_ref, TyVar base,
-			      Mutability mut, std::set<HirId> refs)
+			      Mutability mut, Region region,
+			      std::set<HirId> refs)
   : BaseType (ref, ty_ref, KIND,
 	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
-	      refs),
-    base (base), mut (mut)
+	      std::move (refs)),
+    base (base), mut (mut), region (region)
 {}
 
 Mutability
@@ -2873,6 +2877,11 @@ bool
 ReferenceType::is_mutable () const
 {
   return mut == Mutability::Mut;
+}
+Region
+ReferenceType::get_region () const
+{
+  return region;
 }
 
 bool
@@ -2982,7 +2991,7 @@ BaseType *
 ReferenceType::clone () const
 {
   return new ReferenceType (get_ref (), get_ty_ref (), base, mutability (),
-			    get_combined_refs ());
+			    get_region (), get_combined_refs ());
 }
 
 ReferenceType *

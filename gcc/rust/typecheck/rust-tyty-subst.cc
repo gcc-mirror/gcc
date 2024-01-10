@@ -17,6 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-tyty-subst.h"
+
+#include <utility>
 #include "rust-tyty.h"
 #include "rust-hir-type-check.h"
 #include "rust-substitution-mapper.h"
@@ -243,21 +245,34 @@ SubstitutionArg::as_string () const
 	 + (argument != nullptr ? ":" + argument->as_string () : "");
 }
 
+const RegionParamList &
+SubstitutionArgumentMappings::get_regions () const
+{
+  return regions;
+}
+
+RegionParamList &
+SubstitutionArgumentMappings::get_mut_regions ()
+{
+  return regions;
+}
+
 // SubstitutionArgumentMappings
 
 SubstitutionArgumentMappings::SubstitutionArgumentMappings (
   std::vector<SubstitutionArg> mappings,
-  std::map<std::string, BaseType *> binding_args, location_t locus,
-  ParamSubstCb param_subst_cb, bool trait_item_flag, bool error_flag)
-  : mappings (mappings), binding_args (binding_args), locus (locus),
-    param_subst_cb (param_subst_cb), trait_item_flag (trait_item_flag),
-    error_flag (error_flag)
+  std::map<std::string, BaseType *> binding_args, RegionParamList regions,
+  location_t locus, ParamSubstCb param_subst_cb, bool trait_item_flag,
+  bool error_flag)
+  : mappings (std::move (mappings)), binding_args (binding_args),
+    regions (regions), locus (locus), param_subst_cb (param_subst_cb),
+    trait_item_flag (trait_item_flag), error_flag (error_flag)
 {}
 
 SubstitutionArgumentMappings::SubstitutionArgumentMappings (
   const SubstitutionArgumentMappings &other)
   : mappings (other.mappings), binding_args (other.binding_args),
-    locus (other.locus), param_subst_cb (nullptr),
+    regions (other.regions), locus (other.locus), param_subst_cb (nullptr),
     trait_item_flag (other.trait_item_flag), error_flag (other.error_flag)
 {}
 
@@ -267,6 +282,7 @@ SubstitutionArgumentMappings::operator= (
 {
   mappings = other.mappings;
   binding_args = other.binding_args;
+  regions = other.regions;
   locus = other.locus;
   param_subst_cb = nullptr;
   trait_item_flag = other.trait_item_flag;
@@ -278,15 +294,15 @@ SubstitutionArgumentMappings::operator= (
 SubstitutionArgumentMappings
 SubstitutionArgumentMappings::error ()
 {
-  return SubstitutionArgumentMappings ({}, {}, UNDEF_LOCATION, nullptr, false,
-				       true);
+  return SubstitutionArgumentMappings ({}, {}, 0, UNDEF_LOCATION, nullptr,
+				       false, true);
 }
 
 SubstitutionArgumentMappings
-SubstitutionArgumentMappings::empty ()
+SubstitutionArgumentMappings::empty (size_t num_regions)
 {
-  return SubstitutionArgumentMappings ({}, {}, UNDEF_LOCATION, nullptr, false,
-				       false);
+  return SubstitutionArgumentMappings ({}, {}, num_regions, UNDEF_LOCATION,
+				       nullptr, false, false);
 }
 
 bool
@@ -297,18 +313,30 @@ SubstitutionArgumentMappings::is_error () const
 
 bool
 SubstitutionArgumentMappings::get_argument_for_symbol (
-  const ParamType *param_to_find, SubstitutionArg *argument)
+  const ParamType *param_to_find, SubstitutionArg *argument) const
 {
-  for (auto &mapping : mappings)
+  for (const auto &mapping : mappings)
     {
       const ParamType *p = mapping.get_param_ty ();
-      if (p->get_symbol ().compare (param_to_find->get_symbol ()) == 0)
+      if (p->get_symbol () == param_to_find->get_symbol ())
 	{
 	  *argument = mapping;
 	  return true;
 	}
     }
   return false;
+}
+tl::optional<size_t>
+SubstitutionArgumentMappings::find_symbol (const ParamType &param_to_find) const
+{
+  auto it = std::find_if (mappings.begin (), mappings.end (),
+			  [param_to_find] (const SubstitutionArg &arg) {
+			    return arg.get_param_ty ()->get_symbol ()
+				   == param_to_find.get_symbol ();
+			  });
+  if (it == mappings.end ())
+    return tl::nullopt;
+  return std::distance (mappings.begin (), it);
 }
 
 bool
@@ -461,6 +489,16 @@ SubstitutionRef::get_num_substitutions () const
 {
   return substitutions.size ();
 }
+size_t
+SubstitutionRef::get_num_lifetime_params () const
+{
+  return used_arguments.get_regions ().size ();
+}
+size_t
+SubstitutionRef::get_num_type_params () const
+{
+  return get_num_substitutions ();
+}
 
 std::vector<SubstitutionParamMapping> &
 SubstitutionRef::get_substs ()
@@ -497,12 +535,9 @@ SubstitutionRef::override_context ()
 bool
 SubstitutionRef::needs_substitution () const
 {
-  for (auto &sub : substitutions)
-    {
-      if (sub.need_substitution ())
-	return true;
-    }
-  return false;
+  return std::any_of (substitutions.begin (), substitutions.end (),
+		      std::mem_fn (
+			&SubstitutionParamMapping::needs_substitution));
 }
 
 bool
@@ -547,14 +582,15 @@ SubstitutionRef::min_required_substitutions () const
   return n;
 }
 
-SubstitutionArgumentMappings
+const SubstitutionArgumentMappings &
 SubstitutionRef::get_used_arguments () const
 {
   return used_arguments;
 }
 
 SubstitutionArgumentMappings
-SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
+SubstitutionRef::get_mappings_from_generic_args (
+  HIR::GenericArgs &args, const std::vector<Region> &regions)
 {
   std::map<std::string, BaseType *> binding_arguments;
   if (args.get_binding_args ().size () > 0)
@@ -672,9 +708,9 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	  // this resolved default might already contain default parameters
 	  if (!resolved->is_concrete ())
 	    {
-	      SubstitutionArgumentMappings intermediate (mappings,
-							 binding_arguments,
-							 args.get_locus ());
+	      SubstitutionArgumentMappings intermediate (
+		mappings, binding_arguments,
+		{used_arguments.get_regions ().size ()}, args.get_locus ());
 	      resolved = Resolver::SubstMapperInternal::Resolve (resolved,
 								 intermediate);
 
@@ -687,8 +723,10 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	}
     }
 
-  return SubstitutionArgumentMappings (mappings, binding_arguments,
-				       args.get_locus ());
+  return {mappings, binding_arguments,
+	  RegionParamList::from_subst (used_arguments.get_regions ().size (),
+				       regions),
+	  args.get_locus ()};
 }
 
 BaseType *
@@ -727,6 +765,7 @@ SubstitutionRef::infer_substitions (location_t locus)
 
   SubstitutionArgumentMappings infer_arguments (std::move (args),
 						{} /* binding_arguments */,
+						used_arguments.get_regions (),
 						locus);
   return handle_substitions (infer_arguments);
 }
@@ -773,6 +812,7 @@ SubstitutionRef::adjust_mappings_for_this (
 
   return SubstitutionArgumentMappings (resolved_mappings,
 				       mappings.get_binding_args (),
+				       mappings.get_regions (),
 				       mappings.get_locus (),
 				       mappings.get_subst_cb (),
 				       mappings.trait_item_mode ());
@@ -840,6 +880,7 @@ SubstitutionRef::solve_mappings_from_receiver_for_self (
 
   return SubstitutionArgumentMappings (resolved_mappings,
 				       mappings.get_binding_args (),
+				       mappings.get_regions (),
 				       mappings.get_locus ());
 }
 

@@ -674,8 +674,9 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, unified));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
-					    expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (
+    subst_mappings, {}, adt->get_substitution_arguments ().get_regions (),
+    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -721,8 +722,9 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, from_ty));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
-					    expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (
+    subst_mappings, {}, adt->get_substitution_arguments ().get_regions (),
+    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -767,8 +769,9 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, from_ty));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
-					    expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (
+    subst_mappings, {}, adt->get_substitution_arguments ().get_regions (),
+    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -851,8 +854,9 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, unified));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
-					    expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (
+    subst_mappings, {}, adt->get_substitution_arguments ().get_regions (),
+    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -1193,7 +1197,9 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
 
   if (resolved_candidate.is_impl_candidate ())
     {
-      auto infer_arguments = TyTy::SubstitutionArgumentMappings::error ();
+      auto infer_arguments = TyTy::SubstitutionArgumentMappings::empty ();
+      infer_arguments.get_mut_regions ()
+	= fn->get_used_arguments ().get_regions ();
       HIR::ImplBlock &impl = *resolved_candidate.item.impl.parent;
       TyTy::BaseType *impl_self_infer
 	= TypeCheckItem::ResolveImplBlockSelfWithInference (impl,
