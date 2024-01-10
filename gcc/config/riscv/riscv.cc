@@ -3555,7 +3555,7 @@ riscv_noce_conversion_profitable_p (rtx_insn *seq,
      this redundant zero extend operation counts towards the cost of
      the replacement sequence.  Compensate for that by incrementing the
      cost of the original sequence as well as the maximum sequence cost
-     accordingly.  */
+     accordingly.  Likewise for sign extension.  */
   rtx last_dest = NULL_RTX;
   for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
     {
@@ -3567,8 +3567,9 @@ riscv_noce_conversion_profitable_p (rtx_insn *seq,
 	  && GET_CODE (x) == SET)
 	{
 	  rtx src = SET_SRC (x);
+	  enum rtx_code code = GET_CODE (src);
 	  if (last_dest != NULL_RTX
-	      && GET_CODE (src) == ZERO_EXTEND
+	      && (code == SIGN_EXTEND || code == ZERO_EXTEND)
 	      && REG_P (XEXP (src, 0))
 	      && REGNO (XEXP (src, 0)) == REGNO (last_dest))
 	    {
