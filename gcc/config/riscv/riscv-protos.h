@@ -366,6 +366,12 @@ enum insn_flags : unsigned int
 
   /* Means INSN has FRM operand and the value is FRM_RNE.  */
   FRM_RNE_P = 1 << 19,
+
+  /* Means INSN has VXRM operand and the value is VXRM_RNU.  */
+  VXRM_RNU_P = 1 << 20,
+
+  /* Means INSN has VXRM operand and the value is VXRM_RDN.  */
+  VXRM_RDN_P = 1 << 21,
 };
 
 enum insn_type : unsigned int
@@ -426,6 +432,8 @@ enum insn_type : unsigned int
   BINARY_OP_TAMU = __MASK_OP_TAMU | BINARY_OP_P,
   BINARY_OP_TUMA = __MASK_OP_TUMA | BINARY_OP_P,
   BINARY_OP_FRM_DYN = BINARY_OP | FRM_DYN_P,
+  BINARY_OP_VXRM_RNU = BINARY_OP | VXRM_RNU_P,
+  BINARY_OP_VXRM_RDN = BINARY_OP | VXRM_RDN_P,
 
   /* Ternary operator. Always have real merge operand.  */
   TERNARY_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
