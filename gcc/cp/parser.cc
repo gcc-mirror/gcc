@@ -50971,7 +50971,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_UNROLL:
     case PRAGMA_NOVECTOR:
       {
-	bool ivdep;
+	bool ivdep = false;
 	tree unroll = NULL_TREE;
 	bool novector = false;
 	const char *pragma_str;
