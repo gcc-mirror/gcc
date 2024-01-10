@@ -1999,6 +1999,61 @@ gcc_jit_vector_type_get_element_type (gcc_jit_vector_type *vector_type);
 extern gcc_jit_type *
 gcc_jit_type_unqualified (gcc_jit_type *type);
 
+#define LIBGCCJIT_HAVE_ATTRIBUTES
+
+/* Function attributes.  */
+enum gcc_jit_fn_attribute
+{
+  GCC_JIT_FN_ATTRIBUTE_ALIAS,
+  GCC_JIT_FN_ATTRIBUTE_ALWAYS_INLINE,
+  GCC_JIT_FN_ATTRIBUTE_INLINE,
+  GCC_JIT_FN_ATTRIBUTE_NOINLINE,
+  GCC_JIT_FN_ATTRIBUTE_TARGET,
+  GCC_JIT_FN_ATTRIBUTE_USED,
+  GCC_JIT_FN_ATTRIBUTE_VISIBILITY,
+  GCC_JIT_FN_ATTRIBUTE_COLD,
+  GCC_JIT_FN_ATTRIBUTE_RETURNS_TWICE,
+  GCC_JIT_FN_ATTRIBUTE_PURE,
+  GCC_JIT_FN_ATTRIBUTE_CONST,
+  GCC_JIT_FN_ATTRIBUTE_WEAK,
+  GCC_JIT_FN_ATTRIBUTE_NONNULL,
+
+  /* Maximum value of this enum, should always be last. */
+  GCC_JIT_FN_ATTRIBUTE_MAX,
+};
+
+/* Add an attribute to a function.  */
+extern void
+gcc_jit_function_add_attribute (gcc_jit_function *func,
+				enum gcc_jit_fn_attribute attribute);
+
+extern void
+gcc_jit_function_add_string_attribute (gcc_jit_function *func,
+				       enum gcc_jit_fn_attribute attribute,
+				       const char* value);
+
+extern void
+gcc_jit_function_add_integer_array_attribute (
+  gcc_jit_function *func,
+  enum gcc_jit_fn_attribute attribute,
+  const int* value,
+  size_t length);
+
+/* Variable attributes.  */
+enum gcc_jit_variable_attribute
+{
+  GCC_JIT_VARIABLE_ATTRIBUTE_VISIBILITY,
+
+  /* Maximum value of this enum, should always be last. */
+  GCC_JIT_VARIABLE_ATTRIBUTE_MAX,
+};
+
+/* Add a string attribute to a variable.  */
+extern void
+gcc_jit_lvalue_add_string_attribute (gcc_jit_lvalue *variable,
+				     enum gcc_jit_variable_attribute attribute,
+				     const char* value);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

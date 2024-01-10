@@ -32,12 +32,18 @@
 /* test-add-driver-options.c: We don't use this one, since the extra options
    affect the whole context.  */
 
+/* test-alias-attribute.c: This can't be in the testcases array as it
+   doesn't have a verify_code implementation.  */
+
 /* test-alignment.c */
 #define create_code create_code_alignment
 #define verify_code verify_code_alignment
 #include "test-alignment.c"
 #undef create_code
 #undef verify_code
+
+/* test-always_inline-attribute.c: This can't be in the testcases array as it needs
+   the `-O0` flag.  */
 
 /* test-arith-overflow.c */
 #define create_code create_code_arith_overflow
@@ -119,12 +125,18 @@
 #undef create_code
 #undef verify_code
 
+/* test-cold-attribute.c: This can't be in the testcases array as it needs
+   the `-O2` flag.  */
+
 /* test-constants.c */
 #define create_code create_code_constants
 #define verify_code verify_code_constants
 #include "test-constants.c"
 #undef create_code
 #undef verify_code
+
+/* test-const-attribute.c: This can't be in the testcases array as it needs
+   the `-O3` flag.  */
 
 /* test-debug-strings.c */
 #define create_code create_code_debug_strings
@@ -268,6 +280,12 @@
 #undef create_code
 #undef verify_code
 
+/* test-noinline-attribute.c: This can't be in the testcases array as it needs
+   the `-O2` flag.  */
+
+/* test-nonnull-attribute.c: This can't be in the testcases array as it needs
+   the `-O2` flag.  */
+
 /* test-pr103562.c: We don't add this one, since it touches
    the optimization level of the context as a whole.  */
 
@@ -299,6 +317,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-pure-attribute.c: This can't be in the testcases array as it needs
+   the `-O3` flag.  */
+
 /* test-reading-struct.c */
 #define create_code create_code_reading_struct
 #define verify_code verify_code_reading_struct
@@ -314,6 +335,9 @@
 #undef verify_code
 
 /* test-restrict.c: This can't be in the testcases array as it needs
+   the `-O3` flag.  */
+
+/* test-restrict-attribute.c: This can't be in the testcases array as it needs
    the `-O3` flag.  */
 
 /* test-register-variable.c: This can't be in the testcases array as it
@@ -350,6 +374,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-used-attribute.c: This can't be in the testcases array as it needs
+   the `-O2` flag.  */
+
 /* test-using-global.c */
 #define create_code create_code_using_global
 #define verify_code verify_code_using_global
@@ -360,6 +387,9 @@
 /* test-validly-unreachable-block.c: We don't use this one, since the use
    of gcc_jit_context_set_bool_allow_unreachable_blocks affects the whole
    context.  */
+
+/* test-variable-attribute.c: This can't be in the testcases array as it
+   doesn't have a verify_code implementation.  */
 
 /* test-vector-types.cc: We don't use this, since it's C++.  */
 
@@ -380,6 +410,9 @@
 /* test-ggc-bugfix.c: We don't use this once, since the use of
    gcc_jit_context_add_command_line_option and
    gcc_jit_context_add_driver_option affects the whole context.  */
+
+/* test-weak-attribute.c: This can't be in the testcases array as it
+   doesn't have a verify_code implementation.  */
 
 /* Now expose the individual testcases as instances of this struct.  */
 

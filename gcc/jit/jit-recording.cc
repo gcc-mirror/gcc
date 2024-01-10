@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-builtins.h"
 #include "jit-recording.h"
 #include "jit-playback.h"
+#include <sstream>
 
 namespace gcc {
 namespace jit {
@@ -2068,7 +2069,7 @@ recording::memento::get_debug_string ()
 void
 recording::memento::write_to_dump (dump &d)
 {
-  d.write("  %s\n", get_debug_string ());
+  d.write ("  %s\n", get_debug_string ());
 }
 
 /* The implementation of class gcc::jit::recording::string.  */
@@ -4026,6 +4027,13 @@ void recording::lvalue::set_alignment (unsigned bytes)
   m_alignment = bytes;
 }
 
+void recording::lvalue::add_string_attribute (
+	gcc_jit_variable_attribute attribute,
+	const char* value)
+{
+  m_string_attributes.push_back (std::make_pair (attribute, std::string (value)));
+}
+
 /* The implementation of class gcc::jit::recording::param.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -4102,7 +4110,10 @@ recording::function::function (context *ctxt,
   m_builtin_id (builtin_id),
   m_locals (),
   m_blocks (),
-  m_fn_ptr_type (NULL)
+  m_fn_ptr_type (NULL),
+  m_attributes (),
+  m_string_attributes (),
+  m_int_array_attributes ()
 {
   for (int i = 0; i< num_params; i++)
     {
@@ -4161,7 +4172,10 @@ recording::function::replay_into (replayer *r)
 				     m_name->c_str (),
 				     &params,
 				     m_is_variadic,
-				     m_builtin_id));
+				     m_builtin_id,
+				     m_attributes,
+				     m_string_attributes,
+				     m_int_array_attributes));
 }
 
 /* Create a recording::local instance and add it to
@@ -4210,6 +4224,40 @@ recording::function::new_block (const char *name)
 void
 recording::function::write_to_dump (dump &d)
 {
+  for (auto attr: m_attributes)
+  {
+    const char* attribute = fn_attribute_to_string (attr);
+    if (attribute)
+      d.write ("__attribute(%s)__\n", attribute);
+  }
+  for (auto attr: m_string_attributes)
+  {
+    gcc_jit_fn_attribute& name = std::get<0>(attr);
+    std::string& value = std::get<1>(attr);
+    const char* attribute = fn_attribute_to_string (name);
+
+    if (attribute)
+      d.write ("__attribute(%s(\"%s\"))__\n", attribute, value.c_str());
+  }
+  for (auto attr: m_int_array_attributes)
+  {
+    gcc_jit_fn_attribute& name = std::get<0>(attr);
+    std::vector<int>& values = std::get<1>(attr);
+    const char* attribute = fn_attribute_to_string (name);
+    if (attribute)
+    {
+      d.write ("__attribute(%s(", attribute);
+      for (size_t i = 0; i < values.size(); ++i)
+      {
+	if (i > 0)
+	  d.write (", %d", values[i]);
+	else
+	  d.write ("%d", values[i]);
+      }
+      d.write ("))__\n");
+    }
+  }
+
   switch (m_kind)
     {
     default: gcc_unreachable ();
@@ -4404,6 +4452,31 @@ recording::function::get_address (recording::location *loc)
   return result;
 }
 
+void
+recording::function::add_attribute (gcc_jit_fn_attribute attribute)
+{
+  m_attributes.push_back (attribute);
+}
+
+void
+recording::function::add_string_attribute (gcc_jit_fn_attribute attribute,
+					   const char* value)
+{
+  m_string_attributes.push_back (
+	std::make_pair (attribute, std::string (value)));
+}
+
+void
+recording::function::add_integer_array_attribute (
+	gcc_jit_fn_attribute attribute,
+	const int* value,
+	size_t length)
+{
+  m_int_array_attributes.push_back (std::make_pair (
+    attribute,
+    std::vector<int> (value, value + length)));
+}
+
 /* Implementation of recording::memento::make_debug_string for
    functions.  */
 
@@ -4424,6 +4497,39 @@ static const char * const names_of_function_kinds[] = {
 };
 
 /* Implementation of recording::memento::write_reproducer for functions. */
+
+static const char * const fn_attribute_reproducer_strings[] =
+{
+  "GCC_JIT_FN_ATTRIBUTE_ALIAS",
+  "GCC_JIT_FN_ATTRIBUTE_ALWAYS_INLINE",
+  "GCC_JIT_FN_ATTRIBUTE_INLINE",
+  "GCC_JIT_FN_ATTRIBUTE_NOINLINE",
+  "GCC_JIT_FN_ATTRIBUTE_TARGET",
+  "GCC_JIT_FN_ATTRIBUTE_USED",
+  "GCC_JIT_FN_ATTRIBUTE_VISIBILITY",
+  "GCC_JIT_FN_ATTRIBUTE_COLD",
+  "GCC_JIT_FN_ATTRIBUTE_RETURNS_TWICE",
+  "GCC_JIT_FN_ATTRIBUTE_PURE",
+  "GCC_JIT_FN_ATTRIBUTE_CONST",
+  "GCC_JIT_FN_ATTRIBUTE_WEAK",
+  "GCC_JIT_FN_ATTRIBUTE_NONNULL",
+};
+
+std::string
+get_vector_int_debug (std::vector<int> &values)
+{
+  std::stringstream s;
+
+  s << "{";
+  for(auto it = values.begin(); it != values.end(); ++it)
+    {
+      if (it != values.begin() )
+	 s << ", ";
+      s << *it;
+    }
+  s << "}";
+  return s.str();
+}
 
 void
 recording::function::write_reproducer (reproducer &r)
@@ -4467,6 +4573,25 @@ recording::function::write_reproducer (reproducer &r)
 	   m_params.length (),
 	   params_id,
 	   m_is_variadic);
+  for (auto attribute : m_attributes)
+    r.write("  gcc_jit_function_add_attribute (%s, %s);\n",
+	    id,
+	    fn_attribute_reproducer_strings[attribute]);
+  for (auto attribute : m_string_attributes)
+    r.write("  gcc_jit_function_add_string_attribute (%s, %s, \"%s\");\n",
+	    id,
+	    fn_attribute_reproducer_strings[std::get<0>(attribute)],
+	    std::get<1>(attribute).c_str());
+  for (auto attribute : m_int_array_attributes) {
+    r.write("  gcc_jit_function_add_integer_array_attribute (%s,\n"
+	    "                                                %s,\n"
+	    "                                                (int[])%s,\n"
+	    "                                                %lu);\n",
+	    id,
+	    fn_attribute_reproducer_strings[std::get<0>(attribute)],
+	    get_vector_int_debug (std::get<1>(attribute)).c_str(),
+	    std::get<1>(attribute).size ());
+  }
 }
 
 
@@ -4879,12 +5004,14 @@ recording::global::replay_into (replayer *r)
 				 / m_type->dereference ()->get_size (),
 				 m_initializer,
 				 playback_string (m_name),
-				 m_flags)
+				 m_flags,
+				 m_string_attributes)
     : r->new_global (playback_location (r, m_loc),
 		     m_kind,
 		     m_type->playback_type (),
 		     playback_string (m_name),
-		     m_flags);
+		     m_flags,
+		     m_string_attributes);
 
   if (m_tls_model != GCC_JIT_TLS_MODEL_NONE)
     global->set_tls_model (recording::tls_models[m_tls_model]);
@@ -4943,6 +5070,15 @@ recording::global::write_to_dump (dump &d)
       break;
     }
 
+  for (auto attr: m_string_attributes)
+  {
+    gcc_jit_variable_attribute& name = std::get<0>(attr);
+    std::string& value = std::get<1>(attr);
+    const char* attribute = variable_attribute_to_string (name);
+
+    if (attribute)
+      d.write ("__attribute(%s(\"%s\"))__\n", attribute, value.c_str());
+  }
   d.write ("%s %s",
 	   m_type->get_debug_string (),
 	   get_debug_string ());
@@ -5013,6 +5149,10 @@ static const char * const tls_model_enum_strings[] = {
   "GCC_JIT_TLS_MODEL_LOCAL_EXEC",
 };
 
+static const char * const gcc_jit_variable_attribute_enum_strings[] = {
+  "GCC_JIT_VARIABLE_ATTRIBUTE_VISIBILITY",
+};
+
 void
 recording::global::write_reproducer (reproducer &r)
 {
@@ -5041,6 +5181,13 @@ recording::global::write_reproducer (reproducer &r)
 	"                                  \"%s\"); /* */\n",
      id,
      m_link_section->c_str ());
+
+  for (auto attribute : m_string_attributes)
+    r.write("  gcc_jit_lvalue_add_string_attribute (%s, %s, \"%s\");\n",
+	    id,
+	    gcc_jit_variable_attribute_enum_strings[std::get<0>(attribute)],
+	    std::get<1>(attribute).c_str());
+
 
   if (m_initializer)
     switch (m_type->dereference ()->get_size ())
@@ -6622,7 +6769,8 @@ recording::local::replay_into (replayer *r)
   playback::lvalue *obj = m_func->playback_function ()
       ->new_local (playback_location (r, m_loc),
 		   m_type->playback_type (),
-		   playback_string (m_name));
+		   playback_string (m_name),
+		   m_string_attributes);
 
   if (m_reg_name != NULL)
     obj->set_register_name (m_reg_name->c_str ());
@@ -6644,9 +6792,9 @@ recording::local::write_to_dump (dump &d)
 {
   if (d.update_locations ())
     m_loc = d.make_location ();
-  d.write("  %s %s;\n",
-	  m_type->get_debug_string (),
-	  get_debug_string ());
+  d.write ("  %s %s;\n",
+	   m_type->get_debug_string (),
+	   get_debug_string ());
 }
 
 void
