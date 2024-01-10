@@ -1306,6 +1306,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
+#if __cpp_variable_templates && __cpp_concepts
+  template<typename _Tp>
+    constexpr bool __is_implicitly_default_constructible_v
+      = requires (void(&__f)(_Tp)) { __f({}); };
+
+  template<typename _Tp>
+    struct __is_implicitly_default_constructible
+    : __bool_constant<__is_implicitly_default_constructible_v<_Tp>>
+    { };
+#else
   struct __do_is_implicitly_default_constructible_impl
   {
     template <typename _Tp>
@@ -1335,6 +1345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __and_<__is_constructible_impl<_Tp>,
 		    __is_implicitly_default_constructible_safe<_Tp>>::type
     { };
+#endif
 
   /// is_trivially_copy_constructible
   template<typename _Tp>
