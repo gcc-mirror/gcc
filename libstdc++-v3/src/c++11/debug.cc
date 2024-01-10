@@ -437,6 +437,8 @@ namespace __gnu_debug
 	_M_version = _M_sequence->_M_version;
 	_M_sequence->_M_attach(this, __constant);
       }
+    else
+      _M_version = 0;
   }
 
   void
@@ -452,6 +454,8 @@ namespace __gnu_debug
 	_M_version = _M_sequence->_M_version;
 	_M_sequence->_M_attach_single(this, __constant);
       }
+    else
+      _M_version = 0;
   }
 
   void
@@ -528,6 +532,8 @@ namespace __gnu_debug
 	_M_version = _M_sequence->_M_version;
 	_M_get_container()->_M_attach_local(this, __constant);
       }
+    else
+      _M_version = 0;
   }
 
   void
@@ -543,6 +549,8 @@ namespace __gnu_debug
 	_M_version = _M_sequence->_M_version;
 	_M_get_container()->_M_attach_local_single(this, __constant);
       }
+    else
+      _M_version = 0;
   }
 
   void
