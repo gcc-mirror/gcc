@@ -359,48 +359,49 @@ const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   VD_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
 };
 
-/* Generic costs for VLS vector operations.   */
-static const common_vector_cost generic_vls_vector_cost = {
+/* RVV costs for VLS vector operations.   */
+static const common_vector_cost rvv_vls_vector_cost = {
   1, /* int_stmt_cost  */
   1, /* fp_stmt_cost  */
   1, /* gather_load_cost  */
   1, /* scatter_store_cost  */
-  2, /* vec_to_scalar_cost  */
+  1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
-  2, /* permute_cost  */
+  1, /* permute_cost  */
   1, /* align_load_cost  */
   1, /* align_store_cost  */
-  1, /* unalign_load_cost  */
-  1, /* unalign_store_cost  */
+  2, /* unalign_load_cost  */
+  2, /* unalign_store_cost  */
 };
 
-/* Generic costs for VLA vector operations.  */
-static const scalable_vector_cost generic_vla_vector_cost = {
+/* RVV costs for VLA vector operations.  */
+static const scalable_vector_cost rvv_vla_vector_cost = {
   {
     1, /* int_stmt_cost  */
     1, /* fp_stmt_cost  */
     1, /* gather_load_cost  */
     1, /* scatter_store_cost  */
-    2, /* vec_to_scalar_cost  */
+    1, /* vec_to_scalar_cost  */
     1, /* scalar_to_vec_cost  */
-    2, /* permute_cost  */
+    1, /* permute_cost  */
     1, /* align_load_cost  */
     1, /* align_store_cost  */
-    1, /* unalign_load_cost  */
-    1, /* unalign_store_cost  */
+    2, /* unalign_load_cost  */
+    2, /* unalign_store_cost  */
   },
 };
 
-/* Generic costs for vector insn classes.  */
+/* Generic costs for vector insn classes.  It is supposed to be the vector cost
+   models used by default if no other cost model was specified.  */
 static const struct cpu_vector_cost generic_vector_cost = {
-  1,			    /* scalar_int_stmt_cost  */
-  1,			    /* scalar_fp_stmt_cost  */
-  1,			    /* scalar_load_cost  */
-  1,			    /* scalar_store_cost  */
-  3,			    /* cond_taken_branch_cost  */
-  1,			    /* cond_not_taken_branch_cost  */
-  &generic_vls_vector_cost, /* vls  */
-  &generic_vla_vector_cost, /* vla */
+  1,			/* scalar_int_stmt_cost  */
+  1,			/* scalar_fp_stmt_cost  */
+  1,			/* scalar_load_cost  */
+  1,			/* scalar_store_cost  */
+  3,			/* cond_taken_branch_cost  */
+  1,			/* cond_not_taken_branch_cost  */
+  &rvv_vls_vector_cost, /* vls  */
+  &rvv_vla_vector_cost, /* vla */
 };
 
 /* Costs to use when optimizing for rocket.  */
@@ -10426,16 +10427,26 @@ riscv_frame_pointer_required (void)
   return riscv_save_frame_pointer && !crtl->is_leaf;
 }
 
-/* Return the appropriate common costs for vectors of type VECTYPE.  */
+/* Return the appropriate common costs according to VECTYPE from COSTS.  */
 static const common_vector_cost *
-get_common_costs (tree vectype)
+get_common_costs (const cpu_vector_cost *costs, tree vectype)
 {
-  const cpu_vector_cost *costs = tune_param->vec_costs;
   gcc_assert (costs);
 
   if (vectype && riscv_v_ext_vls_mode_p (TYPE_MODE (vectype)))
     return costs->vls;
   return costs->vla;
+}
+
+/* Return the CPU vector costs according to -mtune if tune info has non-NULL
+   vector cost.  Otherwide, return the default generic vector costs.  */
+static const cpu_vector_cost *
+get_vector_costs ()
+{
+  const cpu_vector_cost *costs = tune_param->vec_costs;
+  if (!costs)
+    return &generic_vector_cost;
+  return costs;
 }
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
@@ -10444,72 +10455,67 @@ static int
 riscv_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 				  tree vectype, int misalign ATTRIBUTE_UNUSED)
 {
-  unsigned elements;
-  const cpu_vector_cost *costs = tune_param->vec_costs;
+  const cpu_vector_cost *costs = get_vector_costs ();
   bool fp = false;
 
   if (vectype != NULL)
     fp = FLOAT_TYPE_P (vectype);
 
-  if (costs != NULL)
+  const common_vector_cost *common_costs = get_common_costs (costs, vectype);
+  gcc_assert (common_costs != NULL);
+  switch (type_of_cost)
     {
-      const common_vector_cost *common_costs = get_common_costs (vectype);
-      gcc_assert (common_costs != NULL);
-      switch (type_of_cost)
-	{
-	case scalar_stmt:
-	  return fp ? costs->scalar_fp_stmt_cost : costs->scalar_int_stmt_cost;
+    case scalar_stmt:
+      return fp ? costs->scalar_fp_stmt_cost : costs->scalar_int_stmt_cost;
 
-	case scalar_load:
-	  return costs->scalar_load_cost;
+    case scalar_load:
+      return costs->scalar_load_cost;
 
-	case scalar_store:
-	  return costs->scalar_store_cost;
+    case scalar_store:
+      return costs->scalar_store_cost;
 
-	case vector_stmt:
-	  return fp ? common_costs->fp_stmt_cost : common_costs->int_stmt_cost;
+    case vector_stmt:
+      return fp ? common_costs->fp_stmt_cost : common_costs->int_stmt_cost;
 
-	case vector_load:
-	  return common_costs->align_load_cost;
+    case vector_load:
+      return common_costs->align_load_cost;
 
-	case vector_store:
-	  return common_costs->align_store_cost;
+    case vector_store:
+      return common_costs->align_store_cost;
 
-	case vec_to_scalar:
-	  return common_costs->vec_to_scalar_cost;
+    case vec_to_scalar:
+      return common_costs->vec_to_scalar_cost;
 
-	case scalar_to_vec:
-	  return common_costs->scalar_to_vec_cost;
+    case scalar_to_vec:
+      return common_costs->scalar_to_vec_cost;
 
-	case unaligned_load:
-	  return common_costs->unalign_load_cost;
-	case vector_gather_load:
-	  return common_costs->gather_load_cost;
+    case unaligned_load:
+      return common_costs->unalign_load_cost;
+    case vector_gather_load:
+      return common_costs->gather_load_cost;
 
-	case unaligned_store:
-	  return common_costs->unalign_store_cost;
-	case vector_scatter_store:
-	  return common_costs->scatter_store_cost;
+    case unaligned_store:
+      return common_costs->unalign_store_cost;
+    case vector_scatter_store:
+      return common_costs->scatter_store_cost;
 
-	case cond_branch_taken:
-	  return costs->cond_taken_branch_cost;
+    case cond_branch_taken:
+      return costs->cond_taken_branch_cost;
 
-	case cond_branch_not_taken:
-	  return costs->cond_not_taken_branch_cost;
+    case cond_branch_not_taken:
+      return costs->cond_not_taken_branch_cost;
 
-	case vec_perm:
-	  return common_costs->permute_cost;
+    case vec_perm:
+      return common_costs->permute_cost;
 
-	case vec_promote_demote:
-	  return fp ? common_costs->fp_stmt_cost : common_costs->int_stmt_cost;
+    case vec_promote_demote:
+      return fp ? common_costs->fp_stmt_cost : common_costs->int_stmt_cost;
 
-	case vec_construct:
-	  elements = estimated_poly_value (TYPE_VECTOR_SUBPARTS (vectype));
-	  return elements / 2 + 1;
+    case vec_construct:
+      return estimated_poly_value (TYPE_VECTOR_SUBPARTS (vectype)) - 1;
 
-	default:
-	  gcc_unreachable ();
-	}
+    default:
+      gcc_unreachable ();
     }
 
   return default_builtin_vectorization_cost (type_of_cost, vectype, misalign);
