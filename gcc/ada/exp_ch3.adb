@@ -6752,27 +6752,23 @@ package body Exp_Ch3 is
                | E_Record_Subtype
                | E_Record_Type
             =>
-               Component := First_Component_Or_Discriminant (Typ);
+               Component := First_Component (Typ);
 
                --  Recursively descend each component of the composite type
-               --  looking for tasks, but only if the component is marked as
-               --  having a task.
+               --  looking for tasks.
 
                while Present (Component) loop
-                  if Has_Task (Etype (Component)) then
-                     declare
-                        P : Int;
-                        S : Int;
+                  declare
+                     P : Int;
+                     S : Int;
 
-                     begin
-                        Count_Default_Sized_Task_Stacks
-                          (Etype (Component), P, S);
-                        Pri_Stacks := Pri_Stacks + P;
-                        Sec_Stacks := Sec_Stacks + S;
-                     end;
-                  end if;
+                  begin
+                     Count_Default_Sized_Task_Stacks (Etype (Component), P, S);
+                     Pri_Stacks := Pri_Stacks + P;
+                     Sec_Stacks := Sec_Stacks + S;
+                  end;
 
-                  Next_Component_Or_Discriminant (Component);
+                  Next_Component (Component);
                end loop;
 
             when E_Limited_Private_Subtype
@@ -7457,11 +7453,10 @@ package body Exp_Ch3 is
         and then not Restriction_Active (No_Secondary_Stack)
         and then (Restriction_Active (No_Implicit_Heap_Allocations)
           or else Restriction_Active (No_Implicit_Task_Allocations))
-        and then not (Ekind (Typ) in E_Array_Type | E_Array_Subtype
-                      and then Has_Init_Expression (N))
+        and then not (Is_Array_Type (Typ) and then Has_Init_Expression (N))
       then
          declare
-            PS_Count, SS_Count : Int := 0;
+            PS_Count, SS_Count : Int;
          begin
             Count_Default_Sized_Task_Stacks (Typ, PS_Count, SS_Count);
             Increment_Primary_Stack_Count (PS_Count);
