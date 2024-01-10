@@ -20,8 +20,10 @@
 // from live codes are live, and everything else is dead.
 
 #include "rust-lint-marklive.h"
+#include "options.h"
 #include "rust-hir-full.h"
 #include "rust-name-resolver.h"
+#include "rust-immutable-name-resolution-context.h"
 
 namespace Rust {
 namespace Analysis {
@@ -270,12 +272,25 @@ MarkLive::mark_hir_id (HirId id)
 void
 MarkLive::find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id)
 {
-  if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+  if (flag_name_resolution_2_0)
     {
-      if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      nr_ctx.lookup (ast_node_id).map ([&ref_node_id] (NodeId resolved) {
+	ref_node_id = resolved;
+      });
+    }
+  else
+    {
+      if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
 	{
-	  bool ok = resolver->lookup_resolved_misc (ast_node_id, &ref_node_id);
-	  rust_assert (ok);
+	  if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+	    {
+	      bool ok
+		= resolver->lookup_resolved_misc (ast_node_id, &ref_node_id);
+	      rust_assert (ok);
+	    }
 	}
     }
 }
