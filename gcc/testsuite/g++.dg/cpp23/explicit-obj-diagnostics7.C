@@ -43,11 +43,11 @@ struct S : B {
 
 // these should be suppressed, the wording conflicts with the error
 // the issue is not that they don't override, it's that they do override, and that isn't allowed
-// { dg-bogus "marked 'override', but does not override" "" { xfail *-*-* } line_f1 }
+// { dg-bogus "marked 'override', but does not override" "" { target *-*-* } line_f1 }
 // { dg-bogus "marked 'final', but is not virtual"	 "" { xfail *-*-* } line_f2 }
 // { dg-bogus "marked '(override|final)'"		 "" { xfail *-*-* } line_f3 }
 
-// { dg-bogus "marked 'override', but does not override" "" { xfail *-*-* } line_f5 }
+// { dg-bogus "marked 'override', but does not override" "" { target *-*-* } line_f5 }
 // { dg-bogus "marked 'final', but is not virtual"	 "" { xfail *-*-* } line_f6 }
 // { dg-bogus "marked '(override|final)'"		 "" { xfail *-*-* } line_f7 }
 
