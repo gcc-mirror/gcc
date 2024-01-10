@@ -4116,6 +4116,13 @@ pop:
 	  if (op.ops[1] == op.ops[opi])
 	    neg = ! neg;
 	}
+      else if (op.code == IFN_COND_SUB)
+	{
+	  op.code = IFN_COND_ADD;
+	  /* Track whether we negate the reduction value each iteration.  */
+	  if (op.ops[2] == op.ops[opi])
+	    neg = ! neg;
+	}
       if (CONVERT_EXPR_CODE_P (op.code)
 	  && tree_nop_conversion_p (op.type, TREE_TYPE (op.ops[0])))
 	;
