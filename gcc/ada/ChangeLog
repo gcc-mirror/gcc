@@ -1,3 +1,65 @@
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112781
+	* exp_ch6.ads (Is_Build_In_Place_Function): Adjust description.
+	* exp_ch6.adb (Is_True_Build_In_Place_Function_Call): Delete.
+	(Is_Function_Call_With_BIP_Formals): New predicate.
+	(Is_Build_In_Place_Function_Call): Restore original semantics.
+	(Expand_Call_Helper): Adjust conditions guarding the calls to
+	Add_Dummy_Build_In_Place_Actuals to above renaming.
+	(Expand_N_Extended_Return_Statement): Adjust to above renaming.
+	(Expand_Simple_Function_Return): Likewise.  Move the assertion
+	to after the transformation into an extended return statement.
+	(Make_Build_In_Place_Call_In_Allocator): Remove unreachable code.
+	(Make_Build_In_Place_Call_In_Assignment): Likewise.
+
+2024-01-09  Javier Miranda  <miranda@adacore.com>
+
+	* einfo-utils.adb (Underlying_Type): Protect recursion call
+	against non-available attribute Etype.
+	* einfo.ads (Protected_Subprogram): Fix typo in documentation.
+	* exp_ch3.adb (BIP_Function_Call_Id): New subprogram.
+	(Expand_N_Object_Declaration): Improve code that evaluates if the
+	object is initialized with a BIP function call.
+	* exp_ch6.adb (Is_True_Build_In_Place_Function_Call): New
+	subprogram.
+	(Add_Task_Actuals_To_Build_In_Place_Call): Add dummy actuals if
+	the function does not require the BIP task actuals but it is a
+	dispatching operation that inherited them.
+	(Build_In_Place_Formal): Improve code to avoid never-ending loop
+	if the BIP formal is not found.
+	(Add_Dummy_Build_In_Place_Actuals): New subprogram.
+	(Expand_Call_Helper): Add calls to
+	Add_Dummy_Build_In_Place_Actuals.
+	(Expand_N_Extended_Return_Statement): Adjust assertion.
+	(Expand_Simple_Function_Return): Adjust assertion.
+	(Make_Build_In_Place_Call_In_Allocator): No action needed if the
+	called function inherited the BIP extra formals but it is not a
+	true BIP function.
+	(Make_Build_In_Place_Call_In_Assignment): Ditto.
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Remove code
+	reporting unsupported case (since this patch adds support for it).
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Adding assertion
+	to ensure matching of BIP formals when setting the
+	Protected_Formal field of a protected subprogram to reference the
+	corresponding extra formal of the subprogram that implements it.
+	(Might_Need_BIP_Task_Actuals): New subprogram.
+	(Create_Extra_Formals): Improve code adding inherited extra
+	formals.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112781
+	* sem_ch12.adb (Instantiate_Type): Use Etype instead of Base_Type
+	consistently to retrieve the ancestor for a derived type.
+	* sem_ch4.adb (Analyze_Explicit_Dereference): Test Is_Access_Type
+	consistently before accessing Designated_Type.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.cc (build_binary_op) <EQ_EXPR>: Relax
+	assertion for regular pointer types.
+
 2023-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch3.adb (Analyze_Subtype_Declaration): Remove a short-circuit

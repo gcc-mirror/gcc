@@ -1,3 +1,17 @@
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/bip_prim_func2.adb: New test.
+	* gnat.dg/bip_prim_func2_pkg.ads, gnat.dg/bip_prim_func2_pkg.adb:
+	New helper package.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/anon4.ads: New test.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/opt/delay-slot-2.C: New test.
+
 2024-01-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

@@ -1,3 +1,9 @@
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/113140
+	* reorg.cc (fill_slots_from_thread): If we are to branch after the
+	last instruction of the function, create an end label.
+
 2024-01-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
