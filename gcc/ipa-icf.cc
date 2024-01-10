@@ -3663,3 +3663,12 @@ make_pass_ipa_icf (gcc::context *ctxt)
 {
   return new ipa_icf::pass_ipa_icf (ctxt);
 }
+
+/* Reset all state within ipa-icf.cc so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+ipa_icf_cc_finalize (void)
+{
+  ipa_icf::optimizer = NULL;
+}

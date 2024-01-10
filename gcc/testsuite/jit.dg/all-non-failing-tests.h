@@ -377,6 +377,10 @@
 #undef create_code
 #undef verify_code
 
+/* test-ggc-bugfix.c: We don't use this once, since the use of
+   gcc_jit_context_add_command_line_option and
+   gcc_jit_context_add_driver_option affects the whole context.  */
+
 /* Now expose the individual testcases as instances of this struct.  */
 
 struct testcase
