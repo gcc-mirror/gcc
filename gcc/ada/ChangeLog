@@ -1,3 +1,28 @@
+2024-01-09  Steve Baird  <baird@adacore.com>
+
+	PR ada/104354
+	* libgnat/s-rident.ads: Define a new restriction,
+	No_Task_Hierarchy_Implicit. This is like the No_Task_Hierarchy
+	restriction, but with the difference that setting this restriction
+	does not mean the H.6(6) post-compilation check is satisified.
+	* exp_ch6.adb (Add_Task_Actuals_To_Build_In_Place_Call): If it is
+	known that the function result cannot have tasks, then pass in a
+	null literal for the activation chain actual parameter. This
+	avoids generating a reference to an entity that
+	Build_Activation_Chain_Entity may have chosen not to generate a
+	declaration for.
+	* gnatbind.adb (List_Applicable_Restrictions): Do not list the
+	No_Task_Hierarchy_Implicit restriction.
+	* restrict.adb: Special treatment for the
+	No_Task_Hierarchy_Implicit restriction in functions
+	Get_Restriction_Id and Restriction_Active. The former is needed to
+	disallow the (unlikely) case that a user tries to explicitly
+	reference the No_Task_Hierarchy_Implicit restriction.
+	* sem_prag.adb (Analyze_Pragma): If a Sequential
+	Partition_Elaboration_Policy is specified (and the
+	No_Task_Hierarchy restriction is not already enabled), then enable
+	the No_Task_Hierarchy_Implicit restriction.
+
 2023-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Also create a
