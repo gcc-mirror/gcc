@@ -30,10 +30,10 @@ typedef struct dyn_string
 {
   int allocated;	/* The amount of space allocated for the string.  */
   int length;		/* The actual length of the string.  */
-  char *s;		/* The string itself, NUL-terminated.  */
+  char *s;		/* The string itself, NULL-terminated.  */
 }* dyn_string_t;
 
-/* The length STR, in bytes, not including the terminating NUL.  */
+/* The length STR, in bytes, not including the terminating NULL.  */
 #define dyn_string_length(STR)                                          \
   ((STR)->length)
 
