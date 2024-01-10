@@ -1,3 +1,192 @@
+2024-01-09  Jason Merrill  <jason@redhat.com>
+
+	* semantics.cc (is_object_parameter): New.
+	* cp-tree.h (is_object_parameter): Declare.
+	* call.cc (maybe_warn_class_memaccess): Use it.
+	* search.cc (field_access_p): Use it.
+	(class_of_object_parm): New.
+	(field_accessor_p): Adjust for explicit object parms.
+
+2024-01-09  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (build_over_call): Refactor handle_arg lambda.
+	* class.cc (xobj_iobj_parameters_correspond): Fix FIXME.
+	* method.cc (defaulted_late_check): Adjust comments.
+
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/102609
+	PR c++/102609
+	C++23 P0847R7 (deducing this) - CWG2586.
+	* decl.cc (copy_fn_p): Accept xobj copy assignment functions.
+	(move_signature_fn_p): Accept xobj move assignment functions.
+	* method.cc (do_build_copy_assign): Handle defaulted xobj member
+	functions.
+	(defaulted_late_check): Comment.
+	(defaultable_fn_check): Comment.
+
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/102609
+	PR c++/102609
+	C++23 P0847R7 (deducing this) - xobj lambdas.
+	* lambda.cc (build_capture_proxy): Don't fold direct object types.
+	* parser.cc (cp_parser_lambda_declarator_opt): Handle xobj lambdas,
+	diagnostics.  Comments also updated.
+	* pt.cc (tsubst_function_decl): Handle xobj lambdas.  Check object
+	type of xobj lambda call operator, diagnose incorrect types.
+	(tsubst_lambda_expr): Update comment.
+	* semantics.cc (finish_decltype_type): Also consider by-value object
+	parameter qualifications.
+
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/102609
+	PR c++/102609
+	C++23 P0847R7 (deducing this) - diagnostics.
+	* class.cc (resolve_address_of_overloaded_function): Diagnostics.
+	* cp-tree.h (TFF_XOBJ_FUNC): Define.
+	* decl.cc (grokfndecl): Diagnostics.
+	(grokdeclarator): Diagnostics.
+	* error.cc (dump_aggr_type): Pass TFF_XOBJ_FUNC.
+	(dump_lambda_function): Formatting for xobj lambda.
+	(dump_function_decl): Pass TFF_XOBJ_FUNC.
+	(dump_parameters): Formatting for xobj member functions.
+	(function_category): Formatting for xobj member functions.
+	* parser.cc (cp_parser_decl_specifier_seq): Diagnostics.
+	(cp_parser_parameter_declaration): Diagnostics.
+	* search.cc (look_for_overrides_here): Make xobj member functions
+	override.
+	(look_for_overrides_r): Reject an overriding xobj member function
+	and diagnose it.
+	* semantics.cc (finish_this_expr): Diagnostics.
+	* typeck.cc (cp_build_addr_expr_1): Diagnostics.
+
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/102609
+	PR c++/102609
+	C++23 P0847R7 (deducing this) - initial functionality.
+	* class.cc (xobj_iobj_parameters_correspond): New function, checks
+	for corresponding object parameters between xobj and iobj member
+	functions.
+	(add_method): Handle object parameters of xobj member functions, use
+	xobj_iobj_parameters_correspond.
+	* call.cc (build_over_call): Refactor, handle xobj member functions.
+	(cand_parms_match): Handle object parameters of xobj and iobj member
+	functions, use xobj_iobj_parameters_correspond.
+	* cp-tree.h (enum cp_decl_spec): Add ds_this, add comments.
+	* decl.cc (grokfndecl): Add xobj_func_p parameter.  For xobj member
+	functions, Set xobj_flag, don't set static_function flag.
+	(grokdeclarator): Handle xobj member functions, tell grokfndecl.
+	(grok_op_properties): Don't error for xobj operators.
+	* parser.cc (cp_parser_decl_specifier_seq): Handle this specifier.
+	(cp_parser_parameter_declaration): Set default argument to
+	"this_identifier" for xobj parameters.
+	(set_and_check_decl_spec_loc): Add "this", add comments.
+	* tree.cc (build_min_non_dep_op_overload): Handle xobj operators.
+	* typeck.cc (cp_build_addr_expr_1): Handle address-of xobj member
+	functions.
+
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/102609
+	* cp-tree.h (struct lang_decl_fn): New data member.
+	(DECL_NONSTATIC_MEMBER_FUNCTION_P): Poison.
+	(DECL_IOBJ_MEMBER_FUNCTION_P): Define.
+	(DECL_FUNCTION_XOBJ_FLAG): Define.
+	(DECL_XOBJ_MEMBER_FUNCTION_P): Define.
+	(DECL_OBJECT_MEMBER_FUNCTION_P): Define.
+	(DECL_FUNCTION_MEMBER_P): Don't use
+	DECL_NONSTATIC_MEMBER_FUNCTION_P.
+	(DECL_CONST_MEMFUNC_P): Likewise.
+	(DECL_VOLATILE_MEMFUNC_P): Likewise.
+	(DECL_NONSTATIC_MEMBER_P): Likewise.
+	* module.cc (trees_out::lang_decl_bools): Handle xobj_flag.
+	(trees_in::lang_decl_bools): Handle xobj_flag.
+	* call.cc (build_this_conversion)
+	(add_function_candidate)
+	(add_template_candidate_real)
+	(add_candidates)
+	(maybe_warn_class_memaccess)
+	(cand_parms_match)
+	(joust)
+	(do_warn_dangling_reference)
+	* class.cc (finalize_literal_type_property)
+	(finish_struct)
+	(resolve_address_of_overloaded_function)
+	* constexpr.cc (is_valid_constexpr_fn)
+	(cxx_bind_parameters_in_call)
+	* contracts.cc (build_contract_condition_function)
+	* cp-objcp-common.cc (cp_decl_dwarf_attribute)
+	* cxx-pretty-print.cc (cxx_pretty_printer::postfix_expression)
+	(cxx_pretty_printer::declaration_specifiers)
+	(cxx_pretty_printer::direct_declarator)
+	* decl.cc (cp_finish_decl)
+	(grok_special_member_properties)
+	(start_preparsed_function)
+	(record_key_method_defined)
+	* decl2.cc (cp_handle_deprecated_or_unavailable)
+	* init.cc (find_uninit_fields_r)
+	(build_offset_ref)
+	* lambda.cc (lambda_expr_this_capture)
+	(maybe_generic_this_capture)
+	(nonlambda_method_basetype)
+	* mangle.cc (write_nested_name)
+	* method.cc (early_check_defaulted_comparison)
+	(skip_artificial_parms_for)
+	(num_artificial_parms_for)
+	* pt.cc (is_specialization_of_friend)
+	(determine_specialization)
+	(copy_default_args_to_explicit_spec)
+	(check_explicit_specialization)
+	(tsubst_contract_attribute)
+	(check_non_deducible_conversions)
+	(more_specialized_fn)
+	(maybe_instantiate_noexcept)
+	(register_parameter_specializations)
+	(value_dependent_expression_p)
+	* search.cc (shared_member_p)
+	(lookup_member)
+	(field_access_p)
+	* semantics.cc (finish_omp_declare_simd_methods)
+	* tree.cc (lvalue_kind)
+	* typeck.cc (invalid_nonstatic_memfn_p): Don't use
+	DECL_NONSTATIC_MEMBER_FUNCTION_P.
+
+2024-01-09  Julian Brown  <julian@codesourcery.com>
+
+	* constexpr.cc (potential_consant_expression_1): Handle
+	OMP_ARRAY_SECTION.
+	* cp-tree.h (grok_omp_array_section, build_omp_array_section): Add
+	prototypes.
+	* decl2.cc (grok_omp_array_section): New function.
+	* error.cc (dump_expr): Handle OMP_ARRAY_SECTION.
+	* parser.cc (cp_parser_new): Initialize parser->omp_array_section_p.
+	(cp_parser_statement_expr): Disallow array sections.
+	(cp_parser_postfix_open_square_expression): Support OMP_ARRAY_SECTION
+	parsing.
+	(cp_parser_parenthesized_expression_list, cp_parser_lambda_expression,
+	cp_parser_braced_list): Disallow array sections.
+	(cp_parser_omp_var_list_no_open): Remove ALLOW_DEREF parameter, add
+	MAP_LVALUE in its place.  Support generalised lvalue parsing for
+	OpenMP map, to and from clauses.  Use OMP_ARRAY_SECTION
+	code instead of TREE_LIST to represent OpenMP array sections.
+	(cp_parser_omp_var_list): Remove ALLOW_DEREF parameter, add MAP_LVALUE.
+	Pass to cp_parser_omp_var_list_no_open.
+	(cp_parser_oacc_data_clause): Update call to cp_parser_omp_var_list.
+	(cp_parser_omp_clause_map): Add sk_omp scope around
+	cp_parser_omp_var_list_no_open call.
+	* parser.h (cp_parser): Add omp_array_section_p field.
+	* pt.cc (tsubst, tsubst_copy, tsubst_omp_clause_decl,
+	tsubst_copy_and_build): Add OMP_ARRAY_SECTION support.
+	* semantics.cc (handle_omp_array_sections_1, handle_omp_array_sections,
+	cp_oacc_check_attachments, finish_omp_clauses): Use OMP_ARRAY_SECTION
+	instead of TREE_LIST where appropriate.  Handle more types of map
+	expression.
+	* typeck.cc (build_omp_array_section): New function.
+
 2024-01-07  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* module.cc (trees_out::write_var_def): Only write initializers

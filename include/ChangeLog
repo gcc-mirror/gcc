@@ -1,3 +1,8 @@
+2024-01-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	* longlong.h (__stormy16_count_leading_zeros): Add prototype for
+	__clzhi2.
+
 2023-12-15  Julian Brown  <julian@codesourcery.com>
 
 	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_STRUCT_UNORD.

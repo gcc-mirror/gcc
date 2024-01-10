@@ -1,3 +1,29 @@
+2024-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode-data.h: Regenerate.
+	* include/bits/unicode.h (_Utf_iterator::operator++()): Fix off
+	by one error.
+	(__incb_property): Add missing check for values before the
+	first edge.
+	(__is_extended_pictographic): Invert return values to fix
+	copy&pasted logic.
+	(_Grapheme_cluster_view::_Iterator): Remove second iterator
+	member and find end of cluster lazily.
+	* testsuite/ext/unicode/grapheme_view.cc: New test.
+	* testsuite/ext/unicode/properties.cc: New test.
+	* testsuite/ext/unicode/view.cc: New test.
+
+2024-01-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* scripts/extract_symvers.in: Require final colon to only match
+	.dsynsym in the header of the dynamic symtab.
+
+2024-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_F): Simplify
+	handling of string returned from std::format.
+	(__formatter_chrono::_M_R_T): Likewise.
+
 2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unicode.h (__null_sentinel): Remove.

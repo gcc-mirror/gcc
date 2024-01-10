@@ -1,3 +1,8 @@
+2024-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_libstdcxx_unicode_data.py: Print out Gcb_property
+	enumerators in the order they're seen, not alphabetical order.
+
 2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unicode/README: Add notes about generating libstdc++ tables.

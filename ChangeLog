@@ -1,3 +1,14 @@
+2024-01-09  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* SECURITY.txt: Drop "exploitable" in the hardening section.
+
+2024-01-09  Tom Tromey  <tom@tromey.com>
+
+	* Makefile.in: Rebuild.
+	* Makefile.tpl (BASE_EXPORTS): Add GUILE.
+	(GUILE): New variable.
+	* Makefile.def (flags_to_pass): Add GUILE.
+
 2024-01-08  Joseph Myers  <josmyers@redhat.com>
 
 	* MAINTAINERS: Update my email address.

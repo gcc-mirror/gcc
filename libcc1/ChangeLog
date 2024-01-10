@@ -1,3 +1,10 @@
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/102609
+	* libcp1plugin.cc (plugin_pragma_push_user_expression): Don't use
+	DECL_NONSTATIC_MEMBER_FUNCTION_P.
+
 2023-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* context.cc (plugin_print_error_function): Make diagnostic_info

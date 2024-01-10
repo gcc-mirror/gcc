@@ -1,3 +1,8 @@
+2024-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR c/113267
+	* c-parser.cc (c_parser_for_statement): Skip the pragma is no cond.
+
 2024-01-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_clause_name): Move handling of indirect

@@ -1,3 +1,202 @@
+2024-01-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/epiphany/constraints.md (Car): Allow -1024..1023, no more,
+	no less.
+
+2024-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/mn10300/mn10300.md (subdi3_degenerate): Add isa attribute.
+
+2024-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-loop.cc (vectorizable_live_operation_1): Drop unused
+	restart_loop.
+	(vectorizable_live_operation): Likewise.
+
+2024-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113199
+	* tree-vect-loop.cc (vectorizable_live_operation_1): Use
+	BIT_FIELD_REF.
+
+2024-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/113270
+	* config.gcc (aarch64*-*-*): Add aarch64-builtins.h to target_gtfiles.
+	* config/aarch64/aarch64-builtins.cc (aarch64_simd_types): Add extern
+	GTY(()) declaration before the definition, drop GTY(()) drom the
+	definition.
+
+2024-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113026
+	* tree-vect-loop-manip.cc (vect_do_peeling): Remove
+	redundant and wrong niter bound setting.  Move niter
+	bound adjustment down.
+
+2024-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/113163
+	* tree-vect-loop-manip.cc (vect_can_peel_nonlinear_iv_p):
+	Reject non-linear inductions that aren't supported.
+
+2024-01-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.cc (arc_shift_alg): New enumerated type for
+	left shift implementation strategies.
+	(arc_shift_info): Type for each entry of the shift strategy table.
+	(arc_shift_context_idx): Return a integer value for each code
+	generation context, used as an index
+	(arc_ashl_alg): Table indexed by context and shifted bit count.
+	(arc_split_ashl): Use the arc_ashl_alg table to select SImode
+	left shift implementation.
+	(arc_rtx_costs) <case ASHIFT>: Use the arc_ashl_alg table to
+	provide accurate costs, when optimizing for speed or size.
+
+2024-01-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (loop_invariant_op_p): Fix loop invariant check.
+
+2024-01-09  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_expr): Ensure OMP_ARRAY_SECTION has been
+	processed out before gimplification.
+	* tree-pretty-print.cc (dump_generic_node): Support OMP_ARRAY_SECTION.
+	* tree.def (OMP_ARRAY_SECTION): New tree code.
+
+2024-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113210
+	* tree-vect-loop.cc (vect_get_loop_niters): If non-INTEGER_CST
+	value in *number_of_iterationsm1 PLUS_EXPR 1 is folded into
+	INTEGER_CST, recompute *number_of_iterationsm1 as the INTEGER_CST
+	minus 1.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/113140
+	* reorg.cc (fill_slots_from_thread): If we are to branch after the
+	last instruction of the function, create an end label.
+
+2024-01-09  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/112992
+	* config/i386/i386-expand.cc
+	(ix86_convert_const_wide_int_to_broadcast): Allow call to
+	ix86_expand_vector_init_duplicate to fail, and return NULL_RTX.
+	(ix86_broadcast_from_constant): Revert recent change; Return a
+	suitable MEMREF independently of mode/target combinations.
+	(ix86_expand_vector_move): Allow ix86_expand_vector_init_duplicate
+	to decide whether expansion is possible/preferrable.  Only try
+	forcing DImode constants to memory (and trying again) if calling
+	ix86_expand_vector_init_duplicate fails with an DImode immediate
+	constant.
+	(ix86_expand_vector_init_duplicate) <case E_V2DImode>: Try using
+	V4SImode for suitable immediate constants.
+	<case E_V4DImode>: Try using V8SImode for suitable constants.
+	<case E_V4HImode>: Fail for CONST_INT_P, i.e. use constant pool.
+	<case E_V2HImode>: Likewise.
+	<case E_V8HImode>: For CONST_INT_P try using V4SImode via widen.
+	<case E_V16QImode>: For CONT_INT_P try using V8HImode via widen.
+	<label widen>: Handle CONT_INTs via simplify_binary_operation.
+	Allow recursive calls to ix86_expand_vector_init_duplicate to fail.
+	<case E_V16HImode>: For CONST_INT_P try V8SImode via widen.
+	<case E_V32QImode>: For CONST_INT_P try V16HImode via widen.
+	(ix86_expand_vector_init): Move try using a broadcast for all_same
+	with ix86_expand_vector_init_duplicate before using constant pool.
+
+2024-01-09  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* doc/invoke.texi (Arm Options): Document Cortex-M52 options.
+
+2024-01-09  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/arm/arm-cpus.in (cortex-m52): New cpu.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+
+2024-01-09  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_initv32qiv16qi): Rename to ..
+	(vec_init<mode><lasxhalf>): .. this, and extend to mode.
+	(@vec_concatz<mode>): New insn pattern.
+	* config/loongarch/loongarch.cc (loongarch_expand_vector_group_init):
+	Handle VALS containing two vectors.
+
+2024-01-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-functions.def (vleff): Move comments.
+	(vundefined): Ditto.
+
+2024-01-09  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class vandn):
+				Add new function_base for crypto vector.
+	(class bitmanip): Ditto.
+	(class b_reverse):Ditto.
+	(class vwsll):   Ditto.
+	(class clmul):   Ditto.
+	(class vg_nhab):  Ditto.
+	(class crypto_vv):Ditto.
+	(class crypto_vi):Ditto.
+	(class vaeskf2_vsm3c):Ditto.
+	(class vsm3me): Ditto.
+	(BASE): Add BASE declaration for crypto vector.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (REQUIRED_EXTENSIONS):
+				Add crypto vector intrinsic definition.
+	(vbrev): Ditto.
+	(vclz): Ditto.
+	(vctz): Ditto.
+	(vwsll): Ditto.
+	(vandn): Ditto.
+	(vbrev8): Ditto.
+	(vrev8): Ditto.
+	(vrol): Ditto.
+	(vror): Ditto.
+	(vclmul): Ditto.
+	(vclmulh): Ditto.
+	(vghsh): Ditto.
+	(vgmul): Ditto.
+	(vaesef): Ditto.
+	(vaesem): Ditto.
+	(vaesdf): Ditto.
+	(vaesdm): Ditto.
+	(vaesz): Ditto.
+	(vaeskf1): Ditto.
+	(vaeskf2): Ditto.
+	(vsha2ms): Ditto.
+	(vsha2ch): Ditto.
+	(vsha2cl): Ditto.
+	(vsm4k): Ditto.
+	(vsm4r): Ditto.
+	(vsm3me): Ditto.
+	(vsm3c): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct crypto_vv_def):
+				Add new function_shape for crypto vector.
+	(struct crypto_vi_def): Ditto.
+	(struct crypto_vv_no_op_type_def): Ditto.
+	(SHAPE): Add SHAPE declaration of crypto vector.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_CRYPTO_SEW32_OPS):
+				Add new data type for crypto vector.
+	(DEF_RVV_CRYPTO_SEW64_OPS): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vuint64m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_CRYPTO_SEW32_OPS):
+				Add new data struct for crypto vector.
+	(DEF_RVV_CRYPTO_SEW64_OPS): Ditto.
+	(registered_function::overloaded_hash): Processing size_t uimm for C overloaded func.
+	* config/riscv/riscv-vector-builtins.def (vi): Add vi OP_TYPE.
+
 2024-01-08  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR sanitizer/113251

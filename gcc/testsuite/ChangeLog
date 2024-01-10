@@ -1,3 +1,206 @@
+2024-01-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/torture/accessor-fixits-9-xobj.C: New test.
+
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/102609
+	PR c++/102609
+	C++23 P0847R7 (deducing this) - CWG2586.
+	* g++.dg/cpp23/explicit-obj-basic6.C: New test.
+	* g++.dg/cpp23/explicit-obj-default1.C: New test.
+	* g++.dg/cpp23/explicit-obj-default2.C: New test.
+
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/102609
+	PR c++/102609
+	C++23 P0847R7 (deducing this) - xobj lambdas.
+	* g++.dg/cpp23/explicit-obj-diagnostics8.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda1.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda10.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda11.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda12.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda13.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda2.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda3.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda4.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda5.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda6.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda7.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda8.C: New test.
+	* g++.dg/cpp23/explicit-obj-lambda9.C: New test.
+
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/102609
+	PR c++/102609
+	C++23 P0847R7 (deducing this) - diagnostics.
+	* g++.dg/cpp23/feat-cxx2b.C: Test existance and value of
+	__cpp_explicit_this_parameter feature test macro.
+	* g++.dg/cpp26/feat-cxx26.C: Likewise.
+	* g++.dg/cpp23/explicit-obj-cxx-dialect-A.C: New test.
+	* g++.dg/cpp23/explicit-obj-cxx-dialect-B.C: New test.
+	* g++.dg/cpp23/explicit-obj-cxx-dialect-C.C: New test.
+	* g++.dg/cpp23/explicit-obj-cxx-dialect-D.C: New test.
+	* g++.dg/cpp23/explicit-obj-cxx-dialect-E.C: New test.
+	* g++.dg/cpp23/explicit-obj-diagnostics1.C: New test.
+	* g++.dg/cpp23/explicit-obj-diagnostics2.C: New test.
+	* g++.dg/cpp23/explicit-obj-diagnostics3.C: New test.
+	* g++.dg/cpp23/explicit-obj-diagnostics4.C: New test.
+	* g++.dg/cpp23/explicit-obj-diagnostics5.C: New test.
+	* g++.dg/cpp23/explicit-obj-diagnostics6.C: New test.
+	* g++.dg/cpp23/explicit-obj-diagnostics7.C: New test.
+
+2024-01-09  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/102609
+	PR c++/102609
+	C++23 P0847R7 (deducing this) - initial functionality.
+	* g++.dg/cpp23/explicit-obj-basic1.C: New test.
+	* g++.dg/cpp23/explicit-obj-basic2.C: New test.
+	* g++.dg/cpp23/explicit-obj-basic3.C: New test.
+	* g++.dg/cpp23/explicit-obj-basic4.C: New test.
+	* g++.dg/cpp23/explicit-obj-basic5.C: New test.
+	* g++.dg/cpp23/explicit-obj-by-value1.C: New test.
+	* g++.dg/cpp23/explicit-obj-by-value2.C: New test.
+	* g++.dg/cpp23/explicit-obj-by-value3.C: New test.
+	* g++.dg/cpp23/explicit-obj-by-value4.C: New test.
+	* g++.dg/cpp23/explicit-obj-constraints.C: New test.
+	* g++.dg/cpp23/explicit-obj-constraints2.C: New test.
+	* g++.dg/cpp23/explicit-obj-ops-mem-arrow.C: New test.
+	* g++.dg/cpp23/explicit-obj-ops-mem-assignment.C: New test.
+	* g++.dg/cpp23/explicit-obj-ops-mem-call.C: New test.
+	* g++.dg/cpp23/explicit-obj-ops-mem-subscript.C: New test.
+	* g++.dg/cpp23/explicit-obj-ops-non-mem-dep.C: New test.
+	* g++.dg/cpp23/explicit-obj-ops-non-mem-non-dep.C: New test.
+	* g++.dg/cpp23/explicit-obj-ops-non-mem.h: New test.
+	* g++.dg/cpp23/explicit-obj-ops-requires-mem.C: New test.
+	* g++.dg/cpp23/explicit-obj-ops-requires-non-mem.C: New test.
+	* g++.dg/cpp23/explicit-obj-redecl.C: New test.
+	* g++.dg/cpp23/explicit-obj-redecl2.C: New test.
+	* g++.dg/cpp23/explicit-obj-redecl3.C: New test.
+	* g++.dg/cpp23/explicit-obj-redecl4.C: New test.
+
+2024-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/113262
+	* gcc.dg/pr113262.c: New test.
+
+2024-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113199
+	* gcc.target/gcn/pr113199.c: New test.
+
+2024-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/vect-early-break-cbranch.c: Accept thumb output.
+
+2024-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR c/113267
+	* gcc.dg/pr113267.c: New test.
+
+2024-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/113163
+	* gcc.target/gcn/pr113163.c: New test.
+
+2024-01-09  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/map-6.c: Update expected output.
+	* c-c++-common/gomp/target-enter-data-1.c: Update scan test.
+	* g++.dg/gomp/array-section-1.C: New test.
+	* g++.dg/gomp/array-section-2.C: New test.
+	* g++.dg/gomp/bad-array-section-1.C: New test.
+	* g++.dg/gomp/bad-array-section-2.C: New test.
+	* g++.dg/gomp/bad-array-section-3.C: New test.
+	* g++.dg/gomp/bad-array-section-4.C: New test.
+	* g++.dg/gomp/bad-array-section-5.C: New test.
+	* g++.dg/gomp/bad-array-section-6.C: New test.
+	* g++.dg/gomp/bad-array-section-7.C: New test.
+	* g++.dg/gomp/bad-array-section-8.C: New test.
+	* g++.dg/gomp/bad-array-section-9.C: New test.
+	* g++.dg/gomp/bad-array-section-10.C: New test.
+	* g++.dg/gomp/bad-array-section-11.C: New test.
+	* g++.dg/gomp/has_device_addr-non-lvalue-1.C: New test.
+	* g++.dg/gomp/pr67522.C: Update expected output.
+	* g++.dg/gomp/ind-base-3.C: New test.
+	* g++.dg/gomp/map-assignment-1.C: New test.
+	* g++.dg/gomp/map-inc-1.C: New test.
+	* g++.dg/gomp/map-lvalue-ref-1.C: New test.
+	* g++.dg/gomp/map-ptrmem-1.C: New test.
+	* g++.dg/gomp/map-ptrmem-2.C: New test.
+	* g++.dg/gomp/map-static-cast-lvalue-1.C: New test.
+	* g++.dg/gomp/map-ternary-1.C: New test.
+	* g++.dg/gomp/member-array-2.C: New test.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/bip_prim_func2.adb: New test.
+	* gnat.dg/bip_prim_func2_pkg.ads, gnat.dg/bip_prim_func2_pkg.adb:
+	New helper package.
+
+2024-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113210
+	* gcc.c-torture/compile/pr113210.c: New test.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/anon4.ads: New test.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/opt/delay-slot-2.C: New test.
+
+2024-01-09  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/auto-init-8.c: Update test case.
+	* gcc.target/i386/avx512f-broadcast-pr87767-1.c: Likewise.
+	* gcc.target/i386/avx512f-broadcast-pr87767-5.c: Likewise.
+	* gcc.target/i386/avx512fp16-13.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-1.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-5.c: Likewise.
+	* gcc.target/i386/pr100865-1.c: Likewise.
+	* gcc.target/i386/pr100865-10a.c: Likewise.
+	* gcc.target/i386/pr100865-10b.c: Likewise.
+	* gcc.target/i386/pr100865-2.c: Likewise.
+	* gcc.target/i386/pr100865-3.c: Likewise.
+	* gcc.target/i386/pr100865-4a.c: Likewise.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+	* gcc.target/i386/pr100865-5a.c: Likewise.
+	* gcc.target/i386/pr100865-5b.c: Likewise.
+	* gcc.target/i386/pr100865-9a.c: Likewise.
+	* gcc.target/i386/pr100865-9b.c: Likewise.
+	* gcc.target/i386/pr102021.c: Likewise.
+	* gcc.target/i386/pr90773-17.c: Likewise.
+
+2024-01-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512fp16-xorsign-1.c: Fix testcase.
+	* gcc.target/i386/part-vect-absneghf.c: Ditto.
+
+2024-01-09  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-vec-init-2.c: New test.
+
+2024-01-09  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/zvbb-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvbb_vandn_vx_constraint.c: New test.
+	* gcc.target/riscv/rvv/base/zvbc-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvbc_vx_constraint-1.c: New test.
+	* gcc.target/riscv/rvv/base/zvbc_vx_constraint-2.c: New test.
+	* gcc.target/riscv/rvv/base/zvkg-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvkned-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvknha-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvknhb-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvksed-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvksh-intrinsic.c: New test.
+	* gcc.target/riscv/zvkb.c: New test.
+
 2024-01-08  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/ssa-sink-18.c: xfail dg-final "Sunk statements: 5"

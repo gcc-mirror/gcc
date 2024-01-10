@@ -1,3 +1,26 @@
+2024-01-09  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.c++/baseptrs-4.C: Remove commented-out cases that
+	now work.
+	* testsuite/libgomp.c++/baseptrs-6.C: New test.
+	* testsuite/libgomp.c++/ind-base-1.C: New test.
+	* testsuite/libgomp.c++/ind-base-2.C: New test.
+	* testsuite/libgomp.c++/lvalue-tofrom-1.C: New test.
+	* testsuite/libgomp.c++/lvalue-tofrom-2.C: New test.
+	* testsuite/libgomp.c++/map-comma-1.C: New test.
+	* testsuite/libgomp.c++/map-rvalue-ref-1.C: New test.
+	* testsuite/libgomp.c++/struct-ref-1.C: New test.
+	* testsuite/libgomp.c-c++-common/array-field-1.c: New test.
+	* testsuite/libgomp.c-c++-common/array-of-struct-1.c: New test.
+	* testsuite/libgomp.c-c++-common/array-of-struct-2.c: New test.
+
+2024-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/113192
+	* configure.ac (FLOCK): Use \$(abs_top_srcdir)/testsuite/flock
+	rather than $srcdir/testsuite/flock.
+	* configure: Regenerated.
+
 2024-01-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add

@@ -1,3 +1,204 @@
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Array_Type>: Use the
+	TYPE_CANONICAL of types when it comes to aliasing.
+	* gcc-interface/utils.cc (relate_alias_sets): Likewise.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Array_Type>: Use a
+	separate FLD local variable to hold the first field of the fat
+	pointer type being built.
+	* gcc-interface/gigi.h (relate_alias_sets): Remove GNU_ prefix on
+	the first two parameters.
+	* gcc-interface/utils.cc (relate_alias_sets): Likewise and adjust.
+
+2024-01-09  Viljar Indus  <indus@adacore.com>
+
+	* sem_attr.adb: avoid marking a use of the Address attribute
+	as a modification of its prefix.
+
+2024-01-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Change "not Present"
+	tests to tests using "No" (in two places).
+
+2024-01-09  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Type): Make the relevant error message
+	conditional upon "Ekind (A_Gen_T) /= E_Incomplete_Type". Misc
+	cleanup.
+
+2024-01-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Add code to determine
+	whether the aggregate is an indexed aggregate, setting a flag
+	(Is_Indexed_Aggregate), which is tested to have proper separation
+	of treatment for the Add_Unnamed
+	(for positional aggregates) and New_Indexed (for indexed
+	aggregates) cases. In the code generating associations for indexed
+	aggregates, remove the code for Expressions cases entirely, since
+	the code for indexed aggregates is governed by the presence of
+	Component_Associations, and add an assertion that Expressions must
+	be Empty. Also, exclude empty aggregates from entering that code.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtsfind.ads (RE_Id): Remove RE_Attach.
+	(RE_Unit_Table): Likewise.
+	* libgnat/s-finmas.ads (Attach): Delete.
+	* libgnat/s-finmas.adb (Attach): Likewise.
+
+2024-01-09  Tucker Taft  <taft@adacore.com>
+
+	* pprint.adb (List_Name): Check for "Box_Present" when displaying
+	a list, and emit "<>" if returns True.
+	* sem_scil.adb (Check_SCIL_Node): Handle case when the type of a
+	parameter is from a package that was mentioned in a limited with
+	clause, and make no further checks, since this check routine does
+	not have all the logic to check such a usage.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Expression.Has_Decl_In_List): Deal specifically
+	with itypes that are class-wide subtypes.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-atopri.ads (Atomic_Store): New generic procedure.
+	(Atomic_Store_8): New instantiated procedure.
+	(Atomic_Store_16): Likewise.
+	(Atomic_Store_32): Likewise.
+	(Atomic_Store_64): Likewise.
+	* libgnat/s-atopri__32.ads (Atomic_Store): New generic procedure.
+	(Atomic_Store_8): New instantiated procedure.
+	(Atomic_Store_16): Likewise.
+	(Atomic_Store_32): Likewise.
+	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Implement the
+	support for __atomic_store_n and __sync_bool_compare_and_swap_n.
+	* gcc-interface/gigi.h (list_second): New inline function.
+
+2024-01-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Specification): Do not replace
+	the type of the formals with its corresponding record in
+	init-procs.
+	* sem_ch9.adb (Analyze_Requeue): Add missing support to requeue to
+	a procedure that denotes a renaming of an entry.
+
+2024-01-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Possible_Side_Effect_In_SPARK): Refine handling of
+	itype declarations.
+
+2024-01-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Specification): Set Is_Inlined
+	flag by default in GNATprove mode.
+	* sem_res.adb (Resolve_Call): Only look at flag which is cleared
+	when inlined subprogram is detected to be recursive.
+
+2024-01-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Establish_Actual_Mapping_For_Inlined_Call):
+	Remove detection of recursive calls.
+
+2024-01-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Cannot_Inline): Cleanup use of 'Length; remove
+	dead code.
+
+2024-01-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Container_Aggregate): Use "No".
+	* sem_ch8.adb (Find_Direct_Name): Likewise.
+
+2024-01-09  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Enclosing_Declaration): Instead of returning a
+	subprogram specification node, return its parent (which is
+	presumably a subprogram declaration).
+	* contracts.adb (Insert_Stable_Property_Check): Remove code
+	formerly needed to compensate for incorrect behavior of
+	Sem_Util.Enclosing_Declaration.
+	* exp_attr.adb (In_Available_Context): Remove code formerly needed
+	to compensate for incorrect behavior of
+	Sem_Util.Enclosing_Declaration.
+	* sem_ch8.adb (Is_Actual_Subp_Of_Inst): Remove code formerly
+	needed to compensate for incorrect behavior of
+	Sem_Util.Enclosing_Declaration.
+
+2024-01-09  Steve Baird  <baird@adacore.com>
+
+	* sem_ch8.adb (Check_Constrained_Object): Before updating the
+	subtype mark of an object renaming declaration by calling Rewrite,
+	first check whether the destination of the Rewrite call exists.
+	* atree.adb (Copy_Slots): Return without performing any updates if
+	Destination equals Empty or Error, or if Source equals Empty. Any
+	of those conditions indicates an error case.
+	* sem_ch12.adb (Analyze_Formal_Derived_Type): Avoid cascading
+	errors.
+	* sem_ch3.adb (Analyze_Number_Declaration): In an error case, do
+	not pass Error as destination in a call to Rewrite.
+	(Find_Type_Of_Subtype_Indic): In an error case, do not pass Error
+	or Empty as destination in a call to Rewrite.
+
+2024-01-09  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/i-cstrin.ads (Update): Fix precondition.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_aggr.adb (Resolve_Extension_Aggregate): Remove the unreachable
+	call to Transform_BIP_Assignment as well as the procedure.
+
+2024-01-09  Bob Duff  <duff@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Do not count it as a read
+	reference if we're calling a TSS.
+
+2024-01-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_aspects.rst,
+	doc/gnat_rm/implementation_defined_pragmas.rst: Add sections for
+	Always_Terminates.
+	* gnat-style.texi: Regenerate.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/78207
+	* libgnat/g-regexp.ads: Fix outdated comment.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112781
+	* exp_ch6.ads (Is_Build_In_Place_Function): Adjust description.
+	* exp_ch6.adb (Is_True_Build_In_Place_Function_Call): Delete.
+	(Is_Function_Call_With_BIP_Formals): New predicate.
+	(Is_Build_In_Place_Function_Call): Restore original semantics.
+	(Expand_Call_Helper): Adjust conditions guarding the calls to
+	Add_Dummy_Build_In_Place_Actuals to above renaming.
+	(Expand_N_Extended_Return_Statement): Adjust to above renaming.
+	(Expand_Simple_Function_Return): Likewise.  Move the assertion
+	to after the transformation into an extended return statement.
+	(Make_Build_In_Place_Call_In_Allocator): Remove unreachable code.
+	(Make_Build_In_Place_Call_In_Assignment): Likewise.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112781
+	* sem_ch12.adb (Instantiate_Type): Use Etype instead of Base_Type
+	consistently to retrieve the ancestor for a derived type.
+	* sem_ch4.adb (Analyze_Explicit_Dereference): Test Is_Access_Type
+	consistently before accessing Designated_Type.
+
+2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.cc (build_binary_op) <EQ_EXPR>: Relax
+	assertion for regular pointer types.
+
 2024-01-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-interface/lang.opt.urls: New file, autogenerated by
