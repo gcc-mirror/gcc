@@ -2785,7 +2785,7 @@ package Sem_Util is
    --   2) N is a comparison operator, one of the operands is null, and the
    --      type of the other operand is a descendant of System.Address.
 
-   function Number_Of_Elements_In_Array (T : Entity_Id) return Int;
+   function Number_Of_Elements_In_Array (T : Entity_Id) return Nat;
    --  Returns the number of elements in the array T if the index bounds of T
    --  is known at compile time. If the bounds are not known at compile time,
    --  the function returns the value zero.

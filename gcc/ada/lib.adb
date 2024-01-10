@@ -173,12 +173,12 @@ package body Lib is
       return Units.Table (U).OA_Setting;
    end OA_Setting;
 
-   function Primary_Stack_Count (U : Unit_Number_Type) return Int is
+   function Primary_Stack_Count (U : Unit_Number_Type) return Nat is
    begin
       return Units.Table (U).Primary_Stack_Count;
    end Primary_Stack_Count;
 
-   function Sec_Stack_Count  (U : Unit_Number_Type) return Int is
+   function Sec_Stack_Count  (U : Unit_Number_Type) return Nat is
    begin
       return Units.Table (U).Sec_Stack_Count;
    end Sec_Stack_Count;
@@ -1034,8 +1034,8 @@ package body Lib is
    -- Increment_Primary_Stack_Count --
    -----------------------------------
 
-   procedure Increment_Primary_Stack_Count (Increment : Int) is
-      PSC : Int renames Units.Table (Current_Sem_Unit).Primary_Stack_Count;
+   procedure Increment_Primary_Stack_Count (Increment : Nat) is
+      PSC : Nat renames Units.Table (Current_Sem_Unit).Primary_Stack_Count;
    begin
       PSC := PSC + Increment;
    end Increment_Primary_Stack_Count;
@@ -1044,8 +1044,8 @@ package body Lib is
    -- Increment_Sec_Stack_Count --
    -------------------------------
 
-   procedure Increment_Sec_Stack_Count (Increment : Int) is
-      SSC : Int renames Units.Table (Current_Sem_Unit).Sec_Stack_Count;
+   procedure Increment_Sec_Stack_Count (Increment : Nat) is
+      SSC : Nat renames Units.Table (Current_Sem_Unit).Sec_Stack_Count;
    begin
       SSC := SSC + Increment;
    end Increment_Sec_Stack_Count;

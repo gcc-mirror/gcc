@@ -57,11 +57,11 @@ package body Bindgen is
    Num_Elab_Calls : Nat := 0;
    --  Number of generated calls to elaboration routines
 
-   Num_Primary_Stacks : Int := 0;
+   Num_Primary_Stacks : Nat := 0;
    --  Number of default-sized primary stacks the binder needs to allocate for
    --  task objects declared in the program.
 
-   Num_Sec_Stacks : Int := 0;
+   Num_Sec_Stacks : Nat := 0;
    --  Number of default-sized primary stacks the binder needs to allocate for
    --  task objects declared in the program.
 

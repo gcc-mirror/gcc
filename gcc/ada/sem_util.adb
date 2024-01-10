@@ -25372,12 +25372,12 @@ package body Sem_Util is
    -- Number_Of_Elements_In_Array --
    ---------------------------------
 
-   function Number_Of_Elements_In_Array (T : Entity_Id) return Int is
+   function Number_Of_Elements_In_Array (T : Entity_Id) return Nat is
       Indx : Node_Id;
       Typ  : Entity_Id;
       Low  : Node_Id;
       High : Node_Id;
-      Num  : Int := 1;
+      Num  : Nat := 1;
 
    begin
       pragma Assert (Is_Array_Type (T));

@@ -6738,7 +6738,7 @@ package body Exp_Ch3 is
                --  Then multiply the result by the size of the array
 
                declare
-                  Quantity : constant Int := Number_Of_Elements_In_Array (Typ);
+                  Quantity : constant Nat := Number_Of_Elements_In_Array (Typ);
                   --  Number_Of_Elements_In_Array is non-trival, consequently
                   --  its result is captured as an optimization.
 

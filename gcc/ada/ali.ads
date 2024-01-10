@@ -482,11 +482,11 @@ package ALI is
       --  Indicates whether a package body or a spec has a library-level
       --  finalization routine.
 
-      Primary_Stack_Count : Int;
+      Primary_Stack_Count : Nat;
       --  Indicates the number of task objects declared in this unit that have
       --  default sized primary stacks.
 
-      Sec_Stack_Count : Int;
+      Sec_Stack_Count : Nat;
       --  Indicates the number of task objects declared in this unit that have
       --  default sized secondary stacks.
    end record;
