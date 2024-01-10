@@ -1603,7 +1603,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 
   pp_format (this->printer, &diagnostic->message, m_urlifier);
   m_output_format->on_begin_diagnostic (*diagnostic);
-  pp_output_formatted_text (this->printer);
+  pp_output_formatted_text (this->printer, m_urlifier);
   if (m_show_cwe)
     print_any_cwe (*diagnostic);
   if (m_show_rules)

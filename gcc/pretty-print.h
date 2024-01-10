@@ -69,6 +69,8 @@ enum diagnostic_prefixing_rule_t
   DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE = 0x2
 };
 
+class quoting_info;
+
 /* The chunk_info data structure forms a stack of the results from the
    first phase of formatting (pp_format) which have not yet been
    output (pp_output_formatted_text).  A stack is necessary because
@@ -86,6 +88,10 @@ struct chunk_info
      text, and the third phase simply emits all the chunks in sequence
      with appropriate line-wrapping.  */
   const char *args[PP_NL_ARGMAX * 2];
+
+  /* If non-null, information on quoted text runs within the chunks
+     for use by a urlifier.  */
+  quoting_info *m_quotes;
 };
 
 /* The output buffer datatype.  This is best seen as an abstract datatype
@@ -409,7 +415,8 @@ extern void pp_flush (pretty_printer *);
 extern void pp_really_flush (pretty_printer *);
 extern void pp_format (pretty_printer *, text_info *,
 		       const urlifier * = nullptr);
-extern void pp_output_formatted_text (pretty_printer *);
+extern void pp_output_formatted_text (pretty_printer *,
+				      const urlifier * = nullptr);
 extern void pp_format_verbatim (pretty_printer *, text_info *);
 
 extern void pp_indent (pretty_printer *);
