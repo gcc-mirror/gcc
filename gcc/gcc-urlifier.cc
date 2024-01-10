@@ -154,11 +154,46 @@ gcc_urlifier::get_url_suffix_for_option (const char *p, size_t sz) const
      and skipping the leading '-'.
 
      We have a (pointer,size) pair that doesn't necessarily have a
-     terminator, so create a 0-terminated clone of the string.  */
-  gcc_assert (sz > 0);
-  char *tmp = xstrndup (p + 1, sz - 1); // skip the leading '-'
-  size_t opt = find_opt (tmp, m_lang_mask);
-  free (tmp);
+     terminator.
+     Additionally, we could have one of the e.g. "-Wno-" variants of
+     the option, which find_opt doesn't handle.
+
+     Hence we need to create input for find_opt in a temporary buffer.  */
+  char *option_buffer;
+
+  const char *new_prefix;
+  if (const char *old_prefix = get_option_prefix_remapping (p, sz, &new_prefix))
+    {
+      /* We have one of the variants; generate a buffer containing a copy
+	 that maps from the old prefix to the new prefix
+	 e.g. given "-Wno-suffix", generate "-Wsuffix".  */
+      gcc_assert (old_prefix[0] == '-');
+      gcc_assert (new_prefix);
+      gcc_assert (new_prefix[0] == '-');
+
+      const size_t old_prefix_len = strlen (old_prefix);
+      gcc_assert (old_prefix_len <= sz);
+      const size_t suffix_len = sz - old_prefix_len;
+      const size_t new_prefix_len = strlen (new_prefix);
+      const size_t new_sz = new_prefix_len + suffix_len + 1;
+
+      option_buffer = (char *)xmalloc (new_sz);
+      memcpy (option_buffer, new_prefix, new_prefix_len);
+      /* Copy suffix.  */
+      memcpy (option_buffer + new_prefix_len, p + old_prefix_len, suffix_len);
+      /* Terminate.  */
+      option_buffer[new_prefix_len + suffix_len] = '\0';
+    }
+  else
+    {
+      /* Otherwise we can simply create a 0-terminated clone of the string.  */
+      gcc_assert (sz > 0);
+      gcc_assert (p[0] == '-');
+      option_buffer = xstrndup (p, sz);
+    }
+
+  size_t opt = find_opt (option_buffer + 1, m_lang_mask);
+  free (option_buffer);
 
   if (opt >= N_OPTS)
     /* Option not recognized.  */
@@ -221,6 +256,10 @@ gcc_urlifier_cc_tests ()
   /* Check an option.  */
   ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("-fpack-struct").get (),
 		"gcc/Code-Gen-Options.html#index-fpack-struct");
+
+  /* Check a "-fno-" variant of an option.  */
+  ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("-fno-inline").get (),
+		"gcc/Optimize-Options.html#index-finline");
 }
 
 } // namespace selftest
