@@ -2605,6 +2605,20 @@ test_pp_format ()
   assert_pp_format (SELFTEST_LOCATION, "item 3 of 7", "item %i of %i", 3, 7);
   assert_pp_format (SELFTEST_LOCATION, "problem with `bar' at line 10",
 		    "problem with %qs at line %i", "bar", 10);
+
+  /* Verified numbered args.  */
+  assert_pp_format (SELFTEST_LOCATION,
+		    "foo: second bar: first",
+		    "foo: %2$s bar: %1$s",
+		    "first", "second");
+  assert_pp_format (SELFTEST_LOCATION,
+		    "foo: 1066 bar: 1776",
+		    "foo: %2$i bar: %1$i",
+		    1776, 1066);
+  assert_pp_format (SELFTEST_LOCATION,
+		    "foo: second bar: 1776",
+		    "foo: %2$s bar: %1$i",
+		    1776, "second");
 }
 
 /* A subclass of pretty_printer for use by test_prefixes_and_wrapping.  */
