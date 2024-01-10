@@ -1716,8 +1716,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	  /* Now link the alternative exits.  */
 	  if (multiple_exits_p)
 	    {
-	      set_immediate_dominator (CDI_DOMINATORS, new_preheader,
-				       main_loop_exit_block);
 	      for (auto gsi_from = gsi_start_phis (loop->header),
 		   gsi_to = gsi_start_phis (new_preheader);
 		   !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
@@ -1755,13 +1753,10 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       if (multiple_exits_p)
 	{
 	  update_loop = new_loop;
-	  for (edge e : get_loop_exit_edges (loop))
-	    doms.safe_push (e->dest);
-	  doms.safe_push (exit_dest);
-
-	  /* Likely a fall-through edge, so update if needed.  */
-	  if (single_succ_p (exit_dest))
-	    doms.safe_push (single_succ (exit_dest));
+	  doms = get_all_dominated_blocks (CDI_DOMINATORS, loop->header);
+	  for (unsigned i = 0; i < doms.length (); ++i)
+	    if (flow_bb_inside_loop_p (loop, doms[i]))
+	      doms.unordered_remove (i);
 	}
     }
   else /* Add the copy at entry.  */
