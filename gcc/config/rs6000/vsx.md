@@ -411,6 +411,12 @@
 			   (V2DF  "d")
 			   (V4SF  "w")])
 
+;; Iterator and attribute for vector count leading/trailing
+;; zero least-significant bits byte
+(define_int_iterator VCZLSBB [UNSPEC_VCLZLSBB
+			      UNSPEC_VCTZLSBB])
+(define_int_attr vczlsbb_char [(UNSPEC_VCLZLSBB "l")
+			       (UNSPEC_VCTZLSBB "t")])
 
 ;; VSX moves
 
@@ -5855,35 +5861,24 @@
   "vcmpnezw %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-;; Vector Count Leading Zero Least-Significant Bits Byte
-(define_insn "vclzlsbb_<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI
-	 [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
-	 UNSPEC_VCLZLSBB))]
-  "TARGET_P9_VECTOR"
-  "vclzlsbb %0,%1"
-  [(set_attr "type" "vecsimple")])
-
-;; Vector Count Trailing Zero Least-Significant Bits Byte
-(define_insn "*vctzlsbb_zext_<mode>"
+;; Vector Count Leading/Trailing Zero Least-Significant Bits Byte
+(define_insn "*vc<vczlsbb_char>zlsbb_zext_<mode>"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
-	(unspec:SI
-	 [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
-	 UNSPEC_VCTZLSBB)))]
+	  (zero_extend:DI
+	    (unspec:SI
+	      [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
+	      VCZLSBB)))]
   "TARGET_P9_VECTOR"
-  "vctzlsbb %0,%1"
+  "vc<vczlsbb_char>zlsbb %0,%1"
   [(set_attr "type" "vecsimple")])
 
-;; Vector Count Trailing Zero Least-Significant Bits Byte
-(define_insn "vctzlsbb_<mode>"
+(define_insn "vc<vczlsbb_char>zlsbb_<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI
-         [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
-         UNSPEC_VCTZLSBB))]
+	  (unspec:SI
+	    [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
+	    VCZLSBB))]
   "TARGET_P9_VECTOR"
-  "vctzlsbb %0,%1"
+  "vc<vczlsbb_char>zlsbb %0,%1"
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Extract Unsigned Byte Left-Indexed
