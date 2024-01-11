@@ -10037,6 +10037,15 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 
   step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
   gcc_assert (step_expr != NULL_TREE);
+  if (INTEGRAL_TYPE_P (TREE_TYPE (step_expr))
+      && !type_has_mode_precision_p (TREE_TYPE (step_expr)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "bit-precision induction vectorization not "
+			 "supported.\n");
+      return false;
+    }
   tree step_vectype = get_same_sized_vectype (TREE_TYPE (step_expr), vectype);
 
   /* Check for backend support of PLUS/MINUS_EXPR. */
