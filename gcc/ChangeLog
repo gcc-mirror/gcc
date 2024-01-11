@@ -1,3 +1,249 @@
+2024-01-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (get_common_costs): Switch RVV cost model.
+	(get_vector_costs): Ditto.
+	(riscv_builtin_vectorization_cost): Ditto.
+
+2024-01-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (costs::better_main_loop_than_p): Minior tweak.
+
+2024-01-10  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/111396
+	* ipa-fnsummary.cc (ipa_fnsummary_cc_finalize): Call
+	ipa_free_size_summary.
+	* ipa-icf.cc (ipa_icf_cc_finalize): New function.
+	* ipa-profile.cc (ipa_profile_cc_finalize): New function.
+	* ipa-prop.cc (ipa_prop_cc_finalize): New function.
+	* ipa-prop.h (ipa_prop_cc_finalize): New function.
+	* ipa-sra.cc (ipa_sra_cc_finalize): New function.
+	* ipa-utils.h (ipa_profile_cc_finalize, ipa_icf_cc_finalize,
+	ipa_sra_cc_finalize): New functions.
+	* toplev.cc (toplev::finalize): Call ipa_icf_cc_finalize,
+	ipa_prop_cc_finalize, ipa_profile_cc_finalize and
+	ipa_sra_cc_finalize
+	Include ipa-utils.h.
+
+2024-01-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-protos.h (th_int_get_mask): New prototype.
+	(th_int_get_save_adjustment): Likewise.
+	(th_int_adjust_cfi_prologue): Likewise.
+	* config/riscv/riscv.cc (BITSET_P): Moved away from here.
+	(TH_INT_INTERRUPT): New macro.
+	(riscv_expand_prologue): Add the processing of XTheadInt.
+	(riscv_expand_epilogue): Likewise.
+	* config/riscv/riscv.h (BITSET_P): Moved to here.
+	* config/riscv/riscv.md: New unspec.
+	* config/riscv/thead.cc (th_int_get_mask): New function.
+	(th_int_get_save_adjustment): Likewise.
+	(th_int_adjust_cfi_prologue): Likewise.
+	* config/riscv/thead.md (th_int_push): New pattern.
+	(th_int_pop): new pattern.
+
+2024-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/112468
+	* doc/sourcebuild.texi: Document ifn_copysign.
+	* match.pd: Only apply transformation if target supports the IFN.
+
+2024-01-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/112581
+	* gimple-if-to-switch.cc (pass_if_to_switch::execute): Call
+	mark_ssa_maybe_undefs.
+	* tree-ssa-reassoc.cc (can_reassociate_op_p): Uninitialized
+	variables can not be reassociated.
+	(init_range_entry): Check for uninitialized variables too.
+	(init_reassoc): Call mark_ssa_maybe_undefs.
+
+2024-01-10  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_noce_conversion_profitable_p):
+	Also handle sign extension.
+
+2024-01-10  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.opt (-mearly-ldp-fusion): Set default
+	to 0.
+	(-mlate-ldp-fusion): Likewise.
+
+2024-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113287
+	* tree-vect-stmts.cc (vectorizable_early_exit): Check the flags on edge
+	instead of using BRANCH_EDGE to determine true edge.
+
+2024-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113078
+	* tree-vect-loop.cc (check_reduction_path): Canonicalize
+	.COND_SUB to .COND_ADD.
+
+2024-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-urlifier.cc (gcc_urlifier::get_url_suffix_for_option):
+	Handle prefix mappings before calling find_opt.
+	(selftest::gcc_urlifier_cc_tests): Add example of urlifying a
+	"-fno-"-prefixed command-line option.
+	* opts-common.cc (get_option_prefix_remapping): New.
+	* opts.h (get_option_prefix_remapping): New decl.
+
+2024-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::report_diagnostic): Pass
+	m_urlifier to pp_output_formatted_text.
+	* pretty-print.cc: Add #define of INCLUDE_VECTOR.
+	(obstack_append_string): New overload, taking a length.
+	(urlify_quoted_string): Pass in an obstack ptr, rather than using
+	that of the pp's buffer.  Generalize to handle trailing text in
+	the buffer beyond the run of quoted text.
+	(class quoting_info): New.
+	(on_begin_quote): New.
+	(on_end_quote): New.
+	(pp_format): Refactor phase 1 and phase 2 quoting support, moving
+	it to calls to on_begin_quote and on_end_quote.
+	(struct auto_obstack): New.
+	(quoting_info::handle_phase_3): New.
+	(pp_output_formatted_text): Add urlifier param.  Use it if there
+	is deferred urlification.  Delete m_quotes.
+	(selftest::pp_printf_with_urlifier): Pass urlifier to
+	pp_output_formatted_text.
+	(selftest::test_urlification): Update results for the existing
+	case of quoted text stradding chunks; add more such test cases.
+	* pretty-print.h (class quoting_info): New forward decl.
+	(chunk_info::m_quotes): New field.
+	(pp_output_formatted_text): Add optional urlifier param.
+
+2024-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.cc (selftest::test_pp_format): Add selftest
+	coverage for numbered args.
+
+2024-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113144
+	PR tree-optimization/113145
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Update all BB that the original exits dominated.
+
+2024-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (modified_type_die): Extend the support of reverse
+	storage order to enumeration types if -gstrict-dwarf is not passed.
+	(gen_enumeration_type_die): Add REVERSE parameter and generate the
+	DIE immediately after the existing one if it is true.
+	(gen_tagged_type_die): Add REVERSE parameter and pass it in the
+	call to gen_enumeration_type_die.
+	(gen_type_die_with_usage): Add REVERSE parameter and pass it in the
+	first recursive call as well as the call to gen_tagged_type_die.
+	(gen_type_die): Add REVERSE parameter and pass it in the call to
+	gen_type_die_with_usage.
+
+2024-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113120
+	* tree-sra.cc (analyze_access_subtree): For BITINT_TYPE
+	with root->size TYPE_PRECISION don't build anything new.
+	Otherwise, if root->type is a BITINT_TYPE, use build_bitint_type
+	rather than build_nonstandard_integer_type.
+
+2024-01-10  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.opt: Adjust document.
+	* doc/invoke.texi: Add description for
+	-mapx-inline-asm-use-gpr32.
+
+2024-01-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (<u>avg<v_double_trunc>3_floor): Remove.
+	(avg<v_double_trunc>3_floor): New pattern.
+	(<u>avg<v_double_trunc>3_ceil): Remove.
+	(avg<v_double_trunc>3_ceil): New pattern.
+	(uavg<mode>3_floor): Ditto.
+	(uavg<mode>3_ceil): Ditto.
+	* config/riscv/riscv-protos.h (enum insn_flags): Add for average addition.
+	(enum insn_type): Ditto.
+	* config/riscv/riscv-v.cc: Ditto.
+	* config/riscv/vector-iterators.md (ashiftrt): Remove.
+	(ASHIFTRT): Ditto.
+	* config/riscv/vector.md: Add VLS modes.
+
+2024-01-10  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111480
+	* config/rs6000/vsx.md (VCZLSBB): New int iterator.
+	(vczlsbb_char): New int attribute.
+	(vclzlsbb_<mode>, vctzlsbb_<mode>): Merge to ...
+	(vc<vczlsbb_char>zlsbb_<mode>): ... this.
+	(*vctzlsbb_zext_<mode>): Rename to ...
+	(*vc<vczlsbb_char>zlsbb_zext_<mode>): ... this, and extend it to
+	cover vclzlsbb.
+
+2024-01-10  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/112606
+	* config/rs6000/rs6000.md (copysign<mode>3 IEEE128): Change predicate
+	of the last argument from altivec_register_operand to any_operand.  If
+	operands[2] is CONST_DOUBLE, emit abs or neg abs depending on its sign
+	otherwise if it doesn't satisfy altivec_register_operand, force it to
+	REG using copy_to_mode_reg.
+
+2024-01-10  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR middle-end/113100
+	* builtins.cc (expand_builtin_stack_address): Guard stack point
+	adjustment with SPARC_STACK_BOUNDARY_HACK.
+
+2024-01-10  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/genopts/loongarch-strings: Remove explicit-reloc
+	argument string definitions.
+	* config/loongarch/loongarch-str.h: Same.
+	* config/loongarch/genopts/loongarch.opt.in: Mark -m[no-]explicit-relocs
+	as aliases to -mexplicit-relocs={always,none}
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.cc: Same.
+
+2024-01-10  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/loongarch-def.h: Define constants with
+	enums instead of Macros.
+
+2024-01-10  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/genopts/loongarch-strings: Rename.
+	* config/loongarch/genopts/loongarch.opt.in: Same.
+	* config/loongarch/loongarch-cpu.cc: Same.
+	* config/loongarch/loongarch-def.cc: Same.
+	* config/loongarch/loongarch-def.h: Same.
+	* config/loongarch/loongarch-opts.cc: Same.
+	* config/loongarch/loongarch-opts.h: Same.
+	* config/loongarch/loongarch-str.h: Same.
+	* config/loongarch/loongarch.opt: Same.
+
+2024-01-10  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/genopts/genstr.sh: Prepend the isa_evolution
+	variable with the common la_ prefix.
+	* config/loongarch/genopts/loongarch.opt.in: Mark ISA evolution
+	flags as saved using TargetVariable.
+	* config/loongarch/loongarch.opt: Same.
+	* config/loongarch/loongarch-def.h: Define evolution_set to
+	mark changes to the -march default.
+	* config/loongarch/loongarch-driver.cc: Same.
+	* config/loongarch/loongarch-opts.cc: Same.
+	* config/loongarch/loongarch-opts.h: Define and use ISA evolution
+	conditions around the la_target structure.
+	* config/loongarch/loongarch.cc: Same.
+	* config/loongarch/loongarch.md: Same.
+	* config/loongarch/loongarch-builtins.cc: Same.
+	* config/loongarch/loongarch-c.cc: Same.
+	* config/loongarch/lasx.md: Same.
+	* config/loongarch/lsx.md: Same.
+	* config/loongarch/sync.md: Same.
+
 2024-01-09  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/epiphany/constraints.md (Car): Allow -1024..1023, no more,

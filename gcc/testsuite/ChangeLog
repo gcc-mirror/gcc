@@ -1,3 +1,122 @@
+2024-01-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/vla_vs_vls-10.c: Fix test.
+	* gcc.dg/vect/costmodel/riscv/rvv/vla_vs_vls-11.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/vla_vs_vls-12.c: Ditto.
+
+2024-01-10  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/111396
+	* jit.dg/all-non-failing-tests.h: Add note about test-ggc-bugfix.
+	* jit.dg/test-ggc-bugfix.c: New test.
+
+2024-01-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/xtheadint-push-pop.c: New test.
+
+2024-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/112468
+	* gcc.dg/fold-copysign-1.c: Modify tests based on if target supports
+	IFN_COPYSIGN.
+	* gcc.dg/pr55152-2.c: Likewise.
+	* gcc.dg/tree-ssa/abs-4.c: Likewise.
+	* gcc.dg/tree-ssa/backprop-6.c: Likewise.
+	* gcc.dg/tree-ssa/copy-sign-2.c: Likewise.
+	* gcc.dg/tree-ssa/mult-abs-2.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_ifn_copysign): New.
+
+2024-01-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/112581
+	* gcc.c-torture/execute/pr112581-1.c: New test.
+
+2024-01-10  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/pr105314.c: Fix comment termination.
+
+2024-01-10  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/cset-sext-sfb.c: New test.
+	* gcc.target/riscv/cset-sext-thead.c: New test.
+	* gcc.target/riscv/cset-sext-ventana.c: New test.
+	* gcc.target/riscv/cset-sext-zicond.c: New test.
+	* gcc.target/riscv/cset-sext.c: New test.
+
+2024-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112734
+	* gcc.dg/bitint-64.c: New test.
+
+2024-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113287
+	* gcc.dg/vect/vect-early-break_100-pr113287.c: New test.
+	* gcc.dg/vect/vect-early-break_99-pr113287.c: New test.
+
+2024-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113078
+	* gcc.dg/vect/vect-reduc-cond-sub.c: New testcase.
+	* gcc.target/i386/vect-pr113078.c: Likewise.
+
+2024-01-10  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/gomp/bad-array-section-10.C: Adjust diagnostics for C++23 and
+	up.
+
+2024-01-10  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/gomp/array-section-1.C: Fix scan output for 32-bit target.
+	* g++.dg/gomp/array-section-2.C: Likewise.
+	* g++.dg/gomp/bad-array-section-4.C: Adjust error output for 32-bit
+	target.
+
+2024-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113144
+	PR tree-optimization/113145
+	* gcc.dg/vect/vect-early-break_94-pr113144.c: New test.
+
+2024-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113297
+	* gcc.dg/bitint-63.c: Fix PR number.
+
+2024-01-10  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.dg/vect/slp-21.c: Add loongarch.
+
+2024-01-10  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* lib/target-supports.exp: Removed an issue with "target keyword"
+	checking errors on LoongArch architecture.
+
+2024-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113120
+	* gcc.dg/bitint-63.c: New test.
+
+2024-01-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/avg-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/vls/avg-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/avg-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/avg-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/avg-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/avg-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-rv64gcv.c: Ditto.
+
+2024-01-10  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/112751
+	* gcc.target/powerpc/pcrel-sibcall-1.c: Replace noinline as noipa.
+
+2024-01-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-7.c: Add assembler-not check.
+
 2024-01-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/torture/accessor-fixits-9-xobj.C: New test.

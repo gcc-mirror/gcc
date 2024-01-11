@@ -1,3 +1,8 @@
+2024-01-11  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/utility.h (_Nth_type): Use
+	_GLIBCXX_USE_BUILTIN_TRAIT instead of __has_builtin.
+
 2024-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unicode-data.h: Regenerate.

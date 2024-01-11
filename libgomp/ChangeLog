@@ -1,3 +1,10 @@
+2024-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/113192
+	* configure.ac (FLOCK): Use $libgomp_abs_srcdir/testsuite/flock
+	instead of \$(abs_top_srcdir)/testsuite/flock.
+	* configure: Regenerated.
+
 2024-01-09  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.c++/baseptrs-4.C: Remove commented-out cases that
