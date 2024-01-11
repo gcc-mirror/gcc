@@ -775,13 +775,24 @@ function_info::change_insns (array_slice<insn_change *> changes)
 	      placeholder = add_placeholder_after (after);
 	      following_insn = placeholder;
 	    }
-
-	  // Finalize the new list of accesses for the change.  Don't install
-	  // them yet, so that we still have access to the old lists below.
-	  finalize_new_accesses (change,
-				 placeholder ? placeholder : insn);
 	}
       placeholders[i] = placeholder;
+    }
+
+  // Finalize the new list of accesses for each change.  Don't install them yet,
+  // so that we still have access to the old lists below.
+  //
+  // Note that we do this forwards instead of in the backwards loop above so
+  // that any new defs being inserted are processed before new uses of those
+  // defs, so that the (initially) temporary uses referring to temporary defs
+  // can be easily updated to become permanent uses referring to permanent defs.
+  for (unsigned i = 0; i < changes.size (); i++)
+    {
+      insn_change &change = *changes[i];
+      insn_info *placeholder = placeholders[i];
+      if (!change.is_deletion ())
+	finalize_new_accesses (change,
+			       placeholder ? placeholder : change.insn ());
     }
 
   // Remove all definitions that are no longer needed.  After the above,
