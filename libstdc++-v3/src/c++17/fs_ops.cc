@@ -898,7 +898,7 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
       return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
 #endif
     }
-  else if (!exists(s1) && !exists(s2))
+  else if (!exists(s1) || !exists(s2))
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
   else if (err)
     ec.assign(err, std::generic_category());
