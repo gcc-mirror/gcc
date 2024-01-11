@@ -933,14 +933,17 @@
    && pow2p_hwi (INTVAL (operands[2]))
    && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)"
   "#"
-  "&& 1"
+  "&& reload_completed"
   [(set (match_dup 0)
         (mem:TH_M_NOEXTF (plus:X
           (match_dup 3)
           (ashift:X (match_dup 1) (match_dup 2)))))]
   { operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
   }
-)
+  [(set_attr "move_type" "fpload")
+   (set_attr "mode" "<UNITMODE>")
+   (set_attr "type" "fmove")
+   (set (attr "length") (const_int 16))])
 
 (define_insn_and_split "*th_fmemidx_I_c"
   [(set (mem:TH_M_ANYF (plus:X
@@ -977,7 +980,7 @@
    && CONST_INT_P (operands[3])
    && (INTVAL (operands[3]) >> exact_log2 (INTVAL (operands[2]))) == 0xffffffff"
   "#"
-  "&& 1"
+  "&& reload_completed"
   [(set (match_dup 0)
         (mem:TH_M_NOEXTF (plus:DI
           (match_dup 4)
@@ -985,7 +988,10 @@
   { operands[1] = gen_lowpart (SImode, operands[1]);
     operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
   }
-)
+  [(set_attr "move_type" "fpload")
+   (set_attr "mode" "<UNITMODE>")
+   (set_attr "type" "fmove")
+   (set (attr "length") (const_int 16))])
 
 (define_insn_and_split "*th_fmemidx_US_c"
   [(set (mem:TH_M_ANYF (plus:DI
@@ -1020,12 +1026,16 @@
   "TARGET_64BIT && TARGET_XTHEADMEMIDX && TARGET_XTHEADFMEMIDX
    && (!HARD_REGISTER_NUM_P (REGNO (operands[0])) || HARDFP_REG_P (REGNO (operands[0])))"
   "#"
-  "&& 1"
+  "&& reload_completed"
   [(set (match_dup 0)
         (mem:TH_M_NOEXTF (plus:DI
           (match_dup 2)
           (zero_extend:DI (match_dup 1)))))]
-)
+  ""
+  [(set_attr "move_type" "fpload")
+   (set_attr "mode" "<UNITMODE>")
+   (set_attr "type" "fmove")
+   (set (attr "length") (const_int 16))])
 
 (define_insn_and_split "*th_fmemidx_UZ_c"
   [(set (mem:TH_M_ANYF (plus:DI
