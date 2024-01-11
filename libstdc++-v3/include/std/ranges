@@ -59,7 +59,6 @@
 #define __glibcxx_want_ranges_chunk_by
 #define __glibcxx_want_ranges_enumerate
 #define __glibcxx_want_ranges_iota
-#define __glibcxx_want_ranges_iota
 #define __glibcxx_want_ranges_join_with
 #define __glibcxx_want_ranges_repeat
 #define __glibcxx_want_ranges_slide
