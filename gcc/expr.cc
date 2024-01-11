@@ -13621,6 +13621,8 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   if ((code == NE || code == EQ)
       && (integer_zerop (arg1)
 	  || integer_pow2p (arg1))
+      /* vector types are not handled here. */
+      && TREE_CODE (TREE_TYPE (arg1)) != VECTOR_TYPE
       && (TYPE_PRECISION (ops->type) != 1 || TYPE_UNSIGNED (ops->type)))
     {
       tree narg0 = arg0;
