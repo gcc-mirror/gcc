@@ -1019,24 +1019,13 @@ modify_vtable_entry (tree t,
 }
 
 
-/* Check if the object parameters of an xobj and iobj member function
-   correspond.  CONTEXT is the class that an implicit object parameter
-   refers to.  */
+/* Check if the object parameter of an iobj member function corresponds to
+   another parameter type.  CONTEXT is the class that the implicit object
+   parameter is considered to refer to.  */
 
-static bool
-xobj_iobj_parameters_correspond (tree fn1, tree fn2, tree context)
+bool
+iobj_parm_corresponds_to (tree iobj_fn, tree xobj_param, tree context)
 {
-  gcc_assert (DECL_IOBJ_MEMBER_FUNCTION_P (fn1)
-	      || DECL_IOBJ_MEMBER_FUNCTION_P (fn2));
-  gcc_assert (DECL_XOBJ_MEMBER_FUNCTION_P (fn1)
-	      || DECL_XOBJ_MEMBER_FUNCTION_P (fn2));
-  gcc_assert (fn1 != fn2);
-
-  tree xobj_fn = DECL_XOBJ_MEMBER_FUNCTION_P (fn1) ? fn1 : fn2;
-  /* A reference, pointer, or something else.  */
-  tree xobj_param = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (xobj_fn)));
-
-  tree iobj_fn = DECL_IOBJ_MEMBER_FUNCTION_P (fn1) ? fn1 : fn2;
   tree iobj_fn_type = TREE_TYPE (iobj_fn);
 
   /* If the iobj member function was introduced with a using declaration, the
@@ -1253,11 +1242,14 @@ object_parms_correspond (tree fn, tree method, tree context)
       if (!same_type_p (fn_param, method_param))
 	return false;
     }
-  else if (DECL_XOBJ_MEMBER_FUNCTION_P (fn)
-	   || DECL_XOBJ_MEMBER_FUNCTION_P (method))
-    return xobj_iobj_parameters_correspond (fn, method, context);
   else
-    gcc_unreachable ();
+    {
+      tree xobj_fn = DECL_XOBJ_MEMBER_FUNCTION_P (fn) ? fn : method;
+      tree iobj_fn = xobj_fn != fn ? fn : method;
+      tree xobj_param = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (xobj_fn)));
+
+      return iobj_parm_corresponds_to (iobj_fn, xobj_param, context);
+    }
 
   return true;
 }

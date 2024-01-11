@@ -79,19 +79,17 @@ namespace N1 {
 
   template <class = void>
   struct A {
-    constexpr bool operator==(B<>&) { return true; }
+    constexpr bool operator==(B<>&) { return false; }
   };
 
   template <class>
   struct B {
-    constexpr bool operator==(A<>&) requires true { return false; }
+    constexpr bool operator==(A<>&) requires true { return true; }
   };
 
   A<> a;
   B<> b;
-  // when comparing the A op== to the reversed B op==, we don't compare
-  // constraints and so fall through to the tiebreaker that chooses the
-  // non-reversed candidate.
-  // ??? shouldn't we compare constraints?
+  // when comparing the A op== to the reversed B op==, we compare them in
+  // reverse order, so they match, and we choose the more constrained.
   static_assert (a == b);
 }

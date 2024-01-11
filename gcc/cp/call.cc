@@ -12713,7 +12713,7 @@ class_of_implicit_object (z_candidate *cand)
    [basic.scope.scope].  */
 
 static bool
-object_parms_correspond (z_candidate *c1, z_candidate *c2)
+object_parms_correspond (z_candidate *c1, tree fn1, z_candidate *c2, tree fn2)
 {
   tree context = class_of_implicit_object (c1);
   tree ctx2 = class_of_implicit_object (c2);
@@ -12727,43 +12727,80 @@ object_parms_correspond (z_candidate *c1, z_candidate *c2)
        but it can occur with reversed operators.  */
     return false;
 
-  return object_parms_correspond (c1->fn, c2->fn, context);
+  return object_parms_correspond (fn1, fn2, context);
+}
+
+/* Return whether the first parameter of C1 matches the second parameter
+   of C2.  */
+
+static bool
+reversed_match (z_candidate *c1, z_candidate *c2)
+{
+  tree fn1 = c1->fn;
+  tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (c2->fn));
+  tree parm2 = TREE_VALUE (TREE_CHAIN (parms2));
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn1))
+    {
+      tree ctx = class_of_implicit_object (c1);
+      return iobj_parm_corresponds_to (fn1, parm2, ctx);
+    }
+  else
+    {
+      tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn1));
+      tree parm1 = TREE_VALUE (parms1);
+      return same_type_p (parm1, parm2);
+    }
 }
 
 /* True if the defining declarations of the two candidates have equivalent
-   parameters.  */
+   parameters.  MATCH_KIND controls whether we're trying to compare the
+   original declarations (for a warning) or the actual candidates.  */
+
+enum class pmatch { original, current };
 
 static bool
-cand_parms_match (z_candidate *c1, z_candidate *c2)
+cand_parms_match (z_candidate *c1, z_candidate *c2, pmatch match_kind)
 {
   tree fn1 = c1->fn;
   tree fn2 = c2->fn;
-  if (fn1 == fn2)
+  bool reversed = (match_kind == pmatch::current
+		   && c1->reversed () != c2->reversed ());
+  if (fn1 == fn2 && !reversed)
     return true;
   if (identifier_p (fn1) || identifier_p (fn2))
     return false;
-  /* We don't look at c1->template_decl because that's only set for primary
-     templates, not e.g. non-template member functions of class templates.  */
-  tree t1 = most_general_template (fn1);
-  tree t2 = most_general_template (fn2);
-  if (t1 || t2)
+  if (match_kind == pmatch::original)
     {
-      if (!t1 || !t2)
-	return false;
-      if (t1 == t2)
-	return true;
-      fn1 = DECL_TEMPLATE_RESULT (t1);
-      fn2 = DECL_TEMPLATE_RESULT (t2);
+      /* We don't look at c1->template_decl because that's only set for
+	 primary templates, not e.g. non-template member functions of
+	 class templates.  */
+      tree t1 = most_general_template (fn1);
+      tree t2 = most_general_template (fn2);
+      if (t1 || t2)
+	{
+	  if (!t1 || !t2)
+	    return false;
+	  if (t1 == t2)
+	    return true;
+	  fn1 = DECL_TEMPLATE_RESULT (t1);
+	  fn2 = DECL_TEMPLATE_RESULT (t2);
+	}
     }
+
+  else if (reversed)
+    return (reversed_match (c1, c2)
+	    && reversed_match (c2, c1));
+
   tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn1));
   tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (fn2));
+
   if (!(DECL_FUNCTION_MEMBER_P (fn1)
 	&& DECL_FUNCTION_MEMBER_P (fn2)))
     /* Early escape.  */;
 
   /* CWG2789 is not adequate, it should specify corresponding object
      parameters, not same typed object parameters.  */
-  else if (!object_parms_correspond (c1, c2))
+  else if (!object_parms_correspond (c1, fn1, c2, fn2))
     return false;
   else
     {
@@ -12938,7 +12975,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 		 this approach to resolving the ambiguity, so pedwarn.  */
 	      if ((complain & tf_warning_or_error)
 		  && (cand1->reversed () != cand2->reversed ())
-		  && cand_parms_match (cand1, cand2))
+		  && cand_parms_match (cand1, cand2, pmatch::original))
 		{
 		  struct z_candidate *w, *l;
 		  if (cand2->reversed ())
@@ -13139,8 +13176,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 
   if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn)
       && !cand1->template_decl && !cand2->template_decl
-      && cand1->reversed () == cand2->reversed ()
-      && cand_parms_match (cand1, cand2))
+      && cand_parms_match (cand1, cand2, pmatch::current))
     {
       winner = more_constrained (cand1->fn, cand2->fn);
       if (winner)

@@ -6854,6 +6854,7 @@ extern tree build_vtbl_ref			(tree, tree);
 extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl			(tree, int);
 extern bool object_parms_correspond		(tree, tree, tree);
+extern bool iobj_parm_corresponds_to		(tree, tree, tree);
 extern bool add_method				(tree, tree, bool);
 extern tree declared_access			(tree);
 extern bool maybe_push_used_methods		(tree);
