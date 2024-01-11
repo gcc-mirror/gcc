@@ -23695,11 +23695,6 @@ Do not save registers in @code{main}.  The effect is the same like
 attaching attribute @ref{AVR Function Attributes,,@code{OS_task}}
 to @code{main}. It is activated per default if optimization is on.
 
-@opindex mn-flash
-@item -mn-flash=@var{num}
-Assume that the flash memory has a size of 
-@var{num} times 64@tie{}KiB.
-
 @opindex mno-interrupts
 @item -mno-interrupts
 Generated code is not compatible with hardware interrupts.
@@ -23720,35 +23715,6 @@ differ from instructions in the assembler code.
 
 Relaxing must be turned on if linker stubs are needed, see the
 section on @code{EIND} and linker stubs below.
-
-@opindex mrmw
-@item -mrmw
-Assume that the device supports the Read-Modify-Write
-instructions @code{XCH}, @code{LAC}, @code{LAS} and @code{LAT}.
-
-@opindex mshort-calls
-@item -mshort-calls
-
-Assume that @code{RJMP} and @code{RCALL} can target the whole
-program memory.
-
-This option is used internally for multilib selection.  It is
-not an optimization option, and you don't need to set it by hand.
-
-@opindex msp8
-@item -msp8
-Treat the stack pointer register as an 8-bit register,
-i.e.@: assume the high byte of the stack pointer is zero.
-In general, you don't need to set this option by hand.
-
-This option is used internally by the compiler to select and
-build multilibs for architectures @code{avr2} and @code{avr25}.
-These architectures mix devices with and without @code{SPH}.
-For any setting other than @option{-mmcu=avr2} or @option{-mmcu=avr25}
-the compiler driver adds or removes this option from the compiler
-proper's command line, because the compiler then knows if the device
-or architecture has an 8-bit stack pointer and thus no @code{SPH}
-register or not.
 
 @opindex mstrict-X
 @item -mstrict-X
@@ -24176,6 +24142,45 @@ and is defined to @code{2} or @code{3}.
 @itemx __WITH_LIBF7_MATH_SYMBOLS__
 Reflects the @code{--with-libf7=@{libgcc|math|math-symbols@}}
 @w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure option}}.
+
+@end table
+
+@subsubsection AVR Internal Options
+The following options are used internally by the compiler and to communicate
+between device specs files and the compiler proper. You don't need to set these
+options by hand, in particular they are not optimization options.
+Using these options in the wrong way may lead to sub-optimal or wrong code.
+They are documented for completeness, and in order to get a better
+understanding of
+@w{@uref{https://gcc.gnu.org/wiki/avr-gcc#spec-files,device specs}}
+files.
+
+@table @gcctabopt
+
+@opindex mn-flash
+@item -mn-flash=@var{num}
+Assume that the flash memory has a size of @var{num} times 64@tie{}KiB.
+This determines which @code{__flash@var{N}} address spaces are available.
+
+@opindex mrmw
+@item -mrmw
+Assume that the device supports the Read-Modify-Write
+instructions @code{XCH}, @code{LAC}, @code{LAS} and @code{LAT}.
+
+@opindex mshort-calls
+@item -mshort-calls
+
+Assume that @code{RJMP} and @code{RCALL} can target the whole
+program memory. This option is used for multilib generation and selection
+for the devices from architecture @code{avrxmega3}.
+
+@opindex msp8
+@item -msp8
+Treat the stack pointer register as an 8-bit register,
+i.e.@: assume the high byte of the stack pointer is zero.
+This option is used by the compiler to select and
+build multilibs for architectures @code{avr2} and @code{avr25}.
+These architectures mix devices with and without @code{SPH}.
 
 @end table
 
