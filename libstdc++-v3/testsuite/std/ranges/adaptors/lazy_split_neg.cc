@@ -38,7 +38,7 @@ test02()
 {
   using namespace std::literals;
   auto x = "the  quick  brown  fox"sv;
-  auto v1 = views::lazy_split(std::initializer_list<char>{' ', ' '})(x); // { dg-error "deleted" }
+  auto v1 = views::lazy_split(std::initializer_list<char>{' ', ' '})(x); // { dg-error "deleted|no match" }
   auto v2 = x | views::lazy_split(std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
 }
 

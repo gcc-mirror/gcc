@@ -110,6 +110,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return static_cast<_Up&>(__x);
       }
   }
+
+  template<typename _Tp, typename _Up>
+    using __like_t = decltype(std::forward_like<_Tp>(std::declval<_Up>()));
 #endif
 
   /**

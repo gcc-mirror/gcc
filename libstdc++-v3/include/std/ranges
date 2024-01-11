@@ -1011,7 +1011,19 @@ namespace views::__adaptor
 
       // Invoke _Adaptor with arguments __r, _M_args... according to the
       // value category of this _Partial object.
-      // TODO: use explicit object functions ("deducing this").
+#if __cpp_explicit_this_parameter
+      template<typename _Self, typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, __like_t<_Self, _Args>...>
+	constexpr auto
+	operator()(this _Self&& __self, _Range&& __r)
+	{
+	  auto __forwarder = [&__r] (auto&&... __args) {
+	    return _Adaptor{}(std::forward<_Range>(__r),
+			      std::forward<decltype(__args)>(__args)...);
+	  };
+	  return std::apply(__forwarder, std::forward<_Self>(__self)._M_args);
+	}
+#else
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
 	constexpr auto
@@ -1037,6 +1049,7 @@ namespace views::__adaptor
       template<typename _Range>
 	constexpr auto
 	operator()(_Range&& __r) const && = delete;
+#endif
     };
 
   // A lightweight specialization of the above primary template for
@@ -1051,6 +1064,13 @@ namespace views::__adaptor
 	: _M_arg(std::move(__arg))
       { }
 
+#if __cpp_explicit_this_parameter
+      template<typename _Self, typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, __like_t<_Self, _Arg>>
+	constexpr auto
+	operator()(this _Self&& __self, _Range&& __r)
+	{ return _Adaptor{}(std::forward<_Range>(__r), std::forward<_Self>(__self)._M_arg); }
+#else
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
 	constexpr auto
@@ -1066,6 +1086,7 @@ namespace views::__adaptor
       template<typename _Range>
 	constexpr auto
 	operator()(_Range&& __r) const && = delete;
+#endif
     };
 
   // Partial specialization of the primary template for the case where the extra
@@ -1142,7 +1163,17 @@ namespace views::__adaptor
 
       // Invoke _M_rhs(_M_lhs(__r)) according to the value category of this
       // range adaptor closure object.
-      // TODO: use explicit object functions ("deducing this").
+#if __cpp_explicit_this_parameter
+      template<typename _Self, typename _Range>
+	requires __pipe_invocable<__like_t<_Self, _Lhs>, __like_t<_Self, _Rhs>, _Range>
+	constexpr auto
+	operator()(this _Self&& __self, _Range&& __r)
+	{
+	  return (std::forward<_Self>(__self)._M_rhs
+		  (std::forward<_Self>(__self)._M_lhs
+		   (std::forward<_Range>(__r))));
+	}
+#else
       template<typename _Range>
 	requires __pipe_invocable<const _Lhs&, const _Rhs&, _Range>
 	constexpr auto
@@ -1158,6 +1189,7 @@ namespace views::__adaptor
       template<typename _Range>
 	constexpr auto
 	operator()(_Range&& __r) const && = delete;
+#endif
     };
 
   // A partial specialization of the above primary template for the case where
