@@ -8465,7 +8465,7 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	  emit_move_insn (move_src, gen_int_mode (aarch64_sve_vg, DImode));
 	}
       rtx base_rtx = stack_pointer_rtx;
-      poly_int64 cfa_offset = offset;
+      poly_int64 sp_offset = offset;
 
       HOST_WIDE_INT const_offset;
       if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
@@ -8490,17 +8490,12 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	  offset -= fp_offset;
 	}
       rtx mem = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
+      rtx cfi_mem = gen_frame_mem (mode, plus_constant (Pmode,
+							stack_pointer_rtx,
+							sp_offset));
+      rtx cfi_set = gen_rtx_SET (cfi_mem, reg);
+      bool need_cfi_note_p = (base_rtx != stack_pointer_rtx);
 
-      rtx cfa_base = stack_pointer_rtx;
-      if (hard_fp_valid_p && frame_pointer_needed)
-	{
-	  cfa_base = hard_frame_pointer_rtx;
-	  cfa_offset += (bytes_below_sp - frame.bytes_below_hard_fp);
-	}
-
-      rtx cfa_mem = gen_frame_mem (mode,
-				   plus_constant (Pmode,
-						  cfa_base, cfa_offset));
       unsigned int regno2;
       if (!aarch64_sve_mode_p (mode)
 	  && reg == move_src
@@ -8514,34 +8509,48 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	  offset += GET_MODE_SIZE (mode);
 	  insn = emit_insn (aarch64_gen_store_pair (mem, reg, reg2));
 
-	  /* The first part of a frame-related parallel insn is
-	     always assumed to be relevant to the frame
-	     calculations; subsequent parts, are only
-	     frame-related if explicitly marked.  */
+	  rtx cfi_mem2
+	    = gen_frame_mem (mode,
+			     plus_constant (Pmode,
+					    stack_pointer_rtx,
+					    sp_offset + GET_MODE_SIZE (mode)));
+	  rtx cfi_set2 = gen_rtx_SET (cfi_mem2, reg2);
+
+	  /* The first part of a frame-related parallel insn is always
+	     assumed to be relevant to the frame calculations;
+	     subsequent parts, are only frame-related if
+	     explicitly marked.  */
 	  if (aarch64_emit_cfi_for_reg_p (regno2))
-	    {
-	      const auto off = cfa_offset + GET_MODE_SIZE (mode);
-	      rtx cfa_mem2 = gen_frame_mem (mode,
-					    plus_constant (Pmode,
-							   cfa_base,
-							   off));
-	      add_reg_note (insn, REG_CFA_OFFSET,
-			    gen_rtx_SET (cfa_mem2, reg2));
-	    }
+	    RTX_FRAME_RELATED_P (cfi_set2) = 1;
+
+	  /* Add a REG_FRAME_RELATED_EXPR note since the unspec
+	     representation of stp cannot be understood directly by
+	     dwarf2cfi.  */
+	  rtx par = gen_rtx_PARALLEL (VOIDmode,
+				      gen_rtvec (2, cfi_set, cfi_set2));
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, par);
 
 	  regno = regno2;
 	  ++i;
 	}
-      else if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
-	insn = emit_insn (gen_aarch64_pred_mov (mode, mem, ptrue, move_src));
-      else if (aarch64_sve_mode_p (mode))
-	insn = emit_insn (gen_rtx_SET (mem, move_src));
       else
-	insn = emit_move_insn (mem, move_src);
+	{
+	  if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
+	    {
+	      insn = emit_insn (gen_aarch64_pred_mov (mode, mem,
+						      ptrue, move_src));
+	      need_cfi_note_p = true;
+	    }
+	  else if (aarch64_sve_mode_p (mode))
+	    insn = emit_insn (gen_rtx_SET (mem, move_src));
+	  else
+	    insn = emit_move_insn (mem, move_src);
+
+	  if (frame_related_p && (need_cfi_note_p || move_src != reg))
+	    add_reg_note (insn, REG_FRAME_RELATED_EXPR, cfi_set);
+	}
 
       RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      if (frame_related_p)
-	add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (cfa_mem, reg));
 
       /* Emit a fake instruction to indicate that the VG save slot has
 	 been initialized.  */
