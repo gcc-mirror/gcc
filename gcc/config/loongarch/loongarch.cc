@@ -4083,10 +4083,10 @@ loongarch_vector_costs::determine_suggested_unroll_factor (loop_vec_info loop_vi
 
   /* Use this simple hardware resource model that how many non vld/vst
      vector instructions can be issued per cycle.  */
-  unsigned int issue_info = loongarch_vect_issue_info;
+  unsigned int issue_info = la_vect_issue_info;
   unsigned int reduc_factor = m_reduc_factor > 1 ? m_reduc_factor : 1;
   unsigned int uf = CEIL (reduc_factor * issue_info, nstmts_nonldst);
-  uf = MIN ((unsigned int) loongarch_vect_unroll_limit, uf);
+  uf = MIN ((unsigned int) la_vect_unroll_limit, uf);
 
   return 1 << ceil_log2 (uf);
 }
@@ -5544,7 +5544,7 @@ loongarch_expand_block_move (rtx dest, rtx src, rtx r_length, rtx r_align)
     return false;
 
   HOST_WIDE_INT length = INTVAL (r_length);
-  if (length > loongarch_max_inline_memcpy_size)
+  if (length > la_max_inline_memcpy_size)
     return false;
 
   HOST_WIDE_INT align = INTVAL (r_align);
@@ -7522,13 +7522,6 @@ loongarch_option_override_internal (struct gcc_options *opts,
   loongarch_update_gcc_opt_status (&la_target, opts, opts_set);
   loongarch_cpu_option_override (&la_target, opts, opts_set);
 
-  if (la_opt_explicit_relocs == M_OPT_UNSET)
-    la_opt_explicit_relocs = (HAVE_AS_EXPLICIT_RELOCS
-			      ? (loongarch_mrelax
-				 ? EXPLICIT_RELOCS_AUTO
-				 : EXPLICIT_RELOCS_ALWAYS)
-			      : EXPLICIT_RELOCS_NONE);
-
   if (TARGET_ABI_LP64)
     flag_pcc_struct_return = 0;
 
@@ -7540,8 +7533,8 @@ loongarch_option_override_internal (struct gcc_options *opts,
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
-  if (loongarch_branch_cost == 0)
-    loongarch_branch_cost = loongarch_cost->branch_cost;
+  if (la_branch_cost == 0)
+    la_branch_cost = loongarch_cost->branch_cost;
 
   /* Enable sw prefetching at -O3 and higher.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
@@ -7628,9 +7621,9 @@ loongarch_option_override_internal (struct gcc_options *opts,
 	{ "vec-rsqrt", RECIP_MASK_VEC_RSQRT },
   };
 
-  if (loongarch_recip_name)
+  if (la_recip_name)
     {
-      char *p = ASTRDUP (loongarch_recip_name);
+      char *p = ASTRDUP (la_recip_name);
       char *q;
       unsigned int mask, i;
       bool invert;
@@ -7671,10 +7664,38 @@ loongarch_option_override_internal (struct gcc_options *opts,
 	    recip_mask |= mask;
 	}
     }
-  if (loongarch_recip)
+  if (la_recip)
     recip_mask |= RECIP_MASK_ALL;
   if (!ISA_HAS_FRECIPE)
     recip_mask = RECIP_MASK_NONE;
+
+#define INIT_TARGET_FLAG(NAME, INIT) \
+  { \
+    if (!(target_flags_explicit & MASK_##NAME)) \
+      { \
+	if (INIT) \
+	  target_flags |= MASK_##NAME; \
+	else \
+	  target_flags &= ~MASK_##NAME; \
+      } \
+  }
+
+  /* Enable conditional moves for int and float by default.  */
+  INIT_TARGET_FLAG (COND_MOVE_INT, 1)
+  INIT_TARGET_FLAG (COND_MOVE_FLOAT, 1)
+
+  /* Set mrelax default.  */
+  INIT_TARGET_FLAG (LINKER_RELAXATION,
+		    HAVE_AS_MRELAX_OPTION && HAVE_AS_COND_BRANCH_RELAXATION)
+
+#undef INIT_TARGET_FLAG
+
+  if (la_opt_explicit_relocs == M_OPT_UNSET)
+    la_opt_explicit_relocs = (HAVE_AS_EXPLICIT_RELOCS
+			      ? (TARGET_LINKER_RELAXATION
+				 ? EXPLICIT_RELOCS_AUTO
+				 : EXPLICIT_RELOCS_ALWAYS)
+			      : EXPLICIT_RELOCS_NONE);
 }
 
 
@@ -7684,6 +7705,31 @@ static void
 loongarch_option_override (void)
 {
   loongarch_option_override_internal (&global_options, &global_options_set);
+}
+
+/* Implement TARGET_OPTION_SAVE.  */
+static void
+loongarch_option_save (struct cl_target_option *,
+		       struct gcc_options *opts,
+		       struct gcc_options *opts_set)
+{
+  loongarch_update_gcc_opt_status (&la_target, opts, opts_set);
+}
+
+/* Implement TARGET_OPTION_RESTORE.  */
+static void
+loongarch_option_restore (struct gcc_options *,
+			  struct gcc_options *,
+			  struct cl_target_option *ptr)
+{
+  la_target.cpu_arch = ptr->x_la_opt_cpu_arch;
+  la_target.cpu_tune = ptr->x_la_opt_cpu_tune;
+
+  la_target.isa.fpu = ptr->x_la_opt_fpu;
+  la_target.isa.simd = ptr->x_la_opt_simd;
+  la_target.isa.evolution = ptr->x_la_isa_evolution;
+
+  la_target.cmodel = ptr->x_la_opt_cmodel;
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
@@ -10885,6 +10931,10 @@ loongarch_asm_code_end (void)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE loongarch_option_override
+#undef TARGET_OPTION_SAVE
+#define TARGET_OPTION_SAVE loongarch_option_save
+#undef TARGET_OPTION_RESTORE
+#define TARGET_OPTION_RESTORE loongarch_option_restore
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS loongarch_legitimize_address

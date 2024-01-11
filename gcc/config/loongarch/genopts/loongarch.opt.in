@@ -50,7 +50,7 @@ EnumValue
 Enum(isa_ext_fpu) String(@@STR_ISA_EXT_FPU64@@) Value(ISA_EXT_FPU64)
 
 m@@OPTSTR_ISA_EXT_FPU@@=
-Target RejectNegative Joined ToLower Enum(isa_ext_fpu) Var(la_opt_fpu) Init(M_OPT_UNSET)
+Target RejectNegative Joined ToLower Enum(isa_ext_fpu) Var(la_opt_fpu) Init(M_OPT_UNSET) Save
 -m@@OPTSTR_ISA_EXT_FPU@@=FPU	Generate code for the given FPU.
 
 m@@OPTSTR_ISA_EXT_FPU@@=@@STR_ISA_EXT_FPU0@@
@@ -82,7 +82,7 @@ EnumValue
 Enum(isa_ext_simd) String(@@STR_ISA_EXT_LASX@@) Value(ISA_EXT_SIMD_LASX)
 
 m@@OPTSTR_ISA_EXT_SIMD@@=
-Target RejectNegative Joined ToLower Enum(isa_ext_simd) Var(la_opt_simd) Init(M_OPT_UNSET)
+Target RejectNegative Joined ToLower Enum(isa_ext_simd) Var(la_opt_simd) Init(M_OPT_UNSET) Save
 -m@@OPTSTR_ISA_EXT_SIMD@@=SIMD	Generate code for the given SIMD extension.
 
 m@@STR_ISA_EXT_LSX@@
@@ -114,11 +114,11 @@ EnumValue
 Enum(cpu_type) String(@@STR_CPU_LA664@@) Value(CPU_LA664)
 
 m@@OPTSTR_ARCH@@=
-Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPT_UNSET)
+Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPT_UNSET) Save
 -m@@OPTSTR_ARCH@@=PROCESSOR	Generate code for the given PROCESSOR ISA.
 
 m@@OPTSTR_TUNE@@=
-Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_tune) Init(M_OPT_UNSET)
+Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_tune) Init(M_OPT_UNSET) Save
 -m@@OPTSTR_TUNE@@=PROCESSOR	Generate optimized code for PROCESSOR.
 
 
@@ -149,31 +149,31 @@ Variable
 int la_opt_abi_ext = M_OPT_UNSET
 
 mbranch-cost=
-Target RejectNegative Joined UInteger Var(loongarch_branch_cost)
+Target RejectNegative Joined UInteger Var(la_branch_cost) Save
 -mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
 
 mcheck-zero-division
-Target Mask(CHECK_ZERO_DIV)
+Target Mask(CHECK_ZERO_DIV) Save
 Trap on integer divide by zero.
 
 mcond-move-int
-Target Var(TARGET_COND_MOVE_INT) Init(1)
+Target Mask(COND_MOVE_INT) Save
 Conditional moves for integral are enabled.
 
 mcond-move-float
-Target Var(TARGET_COND_MOVE_FLOAT) Init(1)
+Target Mask(COND_MOVE_FLOAT) Save
 Conditional moves for float are enabled.
 
 mmemcpy
-Target Mask(MEMCPY)
+Target Mask(MEMCPY) Save
 Prevent optimizing block moves, which is also the default behavior of -Os.
 
 mstrict-align
-Target Var(TARGET_STRICT_ALIGN) Init(0)
+Target Mask(STRICT_ALIGN) Save
 Do not generate unaligned memory accesses.
 
 mmax-inline-memcpy-size=
-Target Joined RejectNegative UInteger Var(loongarch_max_inline_memcpy_size) Init(1024)
+Target Joined RejectNegative UInteger Var(la_max_inline_memcpy_size) Init(1024) Save
 -mmax-inline-memcpy-size=SIZE	Set the max size of memcpy to inline, default is 1024.
 
 Enum
@@ -198,11 +198,11 @@ Target Alias(mexplicit-relocs=, always, none)
 Use %reloc() assembly operators (for backward compatibility).
 
 mrecip
-Target RejectNegative Var(loongarch_recip)
+Target RejectNegative Var(la_recip) Save
 Generate approximate reciprocal divide and square root for better throughput.
 
 mrecip=
-Target RejectNegative Joined Var(loongarch_recip_name)
+Target RejectNegative Joined Var(la_recip_name) Save
 Control generation of reciprocal estimates.
 
 ; The code model option names for -mcmodel.
@@ -229,29 +229,29 @@ EnumValue
 Enum(cmodel) String(@@STR_CMODEL_EXTREME@@) Value(CMODEL_EXTREME)
 
 mcmodel=
-Target RejectNegative Joined Enum(cmodel) Var(la_opt_cmodel) Init(M_OPT_UNSET)
+Target RejectNegative Joined Enum(cmodel) Var(la_opt_cmodel) Init(M_OPT_UNSET) Save
 Specify the code model.
 
 mdirect-extern-access
-Target Var(TARGET_DIRECT_EXTERN_ACCESS) Init(0)
+Target Mask(DIRECT_EXTERN_ACCESS) Save
 Avoid using the GOT to access external symbols.
 
 mrelax
-Target Var(loongarch_mrelax) Init(HAVE_AS_MRELAX_OPTION && HAVE_AS_COND_BRANCH_RELAXATION)
+Target Mask(LINKER_RELAXATION)
 Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses.
 
 mpass-mrelax-to-as
-Target Var(loongarch_pass_mrelax_to_as) Init(HAVE_AS_MRELAX_OPTION)
+Driver Var(la_pass_mrelax_to_as) Init(HAVE_AS_MRELAX_OPTION)
 Pass -mrelax or -mno-relax option to the assembler.
 
 -param=loongarch-vect-unroll-limit=
-Target Joined UInteger Var(loongarch_vect_unroll_limit) Init(6) IntegerRange(1, 64) Param
+Target Joined UInteger Var(la_vect_unroll_limit) Init(6) IntegerRange(1, 64) Param
 Used to limit unroll factor which indicates how much the autovectorizer may
 unroll a loop.  The default value is 6.
 
 -param=loongarch-vect-issue-info=
-Target Undocumented Joined UInteger Var(loongarch_vect_issue_info) Init(4) IntegerRange(1, 64) Param
+Target Undocumented Joined UInteger Var(la_vect_issue_info) Init(4) IntegerRange(1, 64) Param
 Indicate how many non memory access vector instructions can be issued per
 cycle, it's used in unroll factor determination for autovectorizer.  The
 default value is 4.

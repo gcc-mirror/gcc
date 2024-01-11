@@ -785,8 +785,15 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
   opts->x_la_opt_cpu_arch = target->cpu_arch;
   opts->x_la_opt_cpu_tune = target->cpu_tune;
 
+  /* status of -mcmodel */
+  opts->x_la_opt_cmodel = target->cmodel;
+
   /* status of -mfpu */
   opts->x_la_opt_fpu = target->isa.fpu;
+
+  /* status of -msimd */
   opts->x_la_opt_simd = target->isa.simd;
+
+  /* ISA evolution features */
   opts->x_la_isa_evolution = target->isa.evolution;
 }
