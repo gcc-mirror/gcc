@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O1 -save-temps -fdump-tree-dce" } */
+/* { dg-options "-O1 -fdump-tree-dce" } */
 
 #include <stdint.h>
 

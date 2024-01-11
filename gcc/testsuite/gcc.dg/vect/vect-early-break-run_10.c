@@ -2,7 +2,7 @@
 /* { dg-require-effective-target vect_early_break_hw } */
 /* { dg-require-effective-target vect_int } */
 
-/* { dg-additional-options "-Ofast -save-temps" } */
+/* { dg-additional-options "-Ofast" } */
 
 #define N 800
 #define P 799
