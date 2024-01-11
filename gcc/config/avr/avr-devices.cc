@@ -93,8 +93,8 @@ avr_texinfo[] =
     "``Enhanced'' devices with 3-byte PC, i.e.@: with more than 128@tie{}KiB "
     "of program memory." },
   { ARCH_AVRTINY,
-    "``TINY'' Tiny core devices with 512@tie{}B up to 4@tie{}KiB of "
-    "program memory." },
+    "``Reduced Tiny'' Tiny core devices with only 16 general purpose "
+    "registers and 512@tie{}B up to 4@tie{}KiB of program memory." },
   { ARCH_AVRXMEGA2,
     "``XMEGA'' devices with more than 8@tie{}KiB and up to 64@tie{}KiB "
     "of program memory." },

@@ -23808,6 +23808,7 @@ Warn if the ISR is misspelled, i.e.@: without __vector prefix.
 Enabled by default.
 @end table
 
+@anchor{eind}
 @subsubsection @code{EIND} and Devices with More Than 128 Ki Bytes of Flash
 @cindex @code{EIND}
 Pointers in the implementation are 16@tie{}bits wide.
@@ -23944,6 +23945,7 @@ and the application be linked with @option{-Wl,--defsym,func_4=0x4}.
 Alternatively, @code{func_4} can be defined in the linker script.
 @end itemize
 
+@anchor{ramp}
 @subsubsection Handling of the @code{RAMPD}, @code{RAMPX}, @code{RAMPY} and @code{RAMPZ} Special Function Registers
 @cindex @code{RAMPD}
 @cindex @code{RAMPX}
@@ -23986,6 +23988,7 @@ you must reset it to zero after the access.
 
 @end itemize
 
+@anchor{avr-macros}
 @subsubsection AVR Built-in Macros
 
 GCC defines several built-in macros so that the user code can test

@@ -189,7 +189,8 @@ int main (void)
 
 	  for (i = 0; i < ARRAY_SIZE (avr_texinfo); i++)
 	    if (arch_id == avr_texinfo[i].arch_id)
-	      printf ("@item %s\n%s\n", mcu->name, avr_texinfo[i].texinfo);
+	      printf ("@item @anchor{%s}%s\n%s\n", mcu->name, mcu->name,
+		      avr_texinfo[i].texinfo);
 	}
       else if (arch_id == (enum avr_arch_id) mcu->arch_id)
 	{
