@@ -1,3 +1,24 @@
+2024-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/manual/*: Regenerate.
+	* doc/xml/manual/using.xml: Update documentation on linking.
+	* scripts/testsuite_flags.in: Adjust LDFLAGS to find
+	libstdc++exp instead of libstdc++_libbacktrace.
+	* src/c++20/Makefile.am: Fix comment.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/experimental/Makefile.am: Use LIBADD to include other
+	libraries.
+	* src/experimental/Makefile.in: Regenerate.
+	* testsuite/19_diagnostics/stacktrace/current.cc: Adjust
+	dg-options to use -lstdc++exp.
+	* testsuite/19_diagnostics/stacktrace/entry.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Likewise.
+	* testsuite/23_containers/vector/debug/assign4_backtrace_neg.cc:
+	Likewise.
+
 2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/std/format/functions/format.cc: Add more checks for
