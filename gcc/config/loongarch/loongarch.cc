@@ -5371,6 +5371,12 @@ loongarch_expand_conditional_move (rtx *operands)
 	  rtx temp3 = gen_reg_rtx (mode);
 	  emit_insn (gen_rtx_SET (temp3, gen_rtx_IOR (mode, temp, temp2)));
 	  temp3 = gen_lowpart (GET_MODE (operands[0]), temp3);
+	  /* Nonzero in a subreg if it was made when accessing an object that
+	     was promoted to a wider mode in accord with the PROMOTED_MODE
+	     machine description macro.  */
+	  SUBREG_PROMOTED_VAR_P (temp3) = 1;
+	  /* Sets promoted mode for SUBREG_PROMOTED_VAR_P.  */
+	  SUBREG_PROMOTED_SET (temp3, SRP_SIGNED);
 	  loongarch_emit_move (operands[0], temp3);
 	}
       else

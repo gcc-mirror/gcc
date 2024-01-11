@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-mabi=lp64d -O2" } */
-/* { dg-final { scan-assembler-times "slli.w\t\\\$r\[0-9\]+,\\\$r\[0-9\]+,0" 1 } } */
+/* { dg-options "-mabi=lp64d -O2 -fdump-rtl-expand" } */
+/* { dg-final { scan-rtl-dump "subreg/s" "expand" } } */
+/* { dg-final { scan-assembler-not "slli.w\t\\\$r\[0-9\]+,\\\$r\[0-9\]+,0" } } */
 
 #include <stdint.h>
 #define my_min(x, y) ((x) < (y) ? (x) : (y))
