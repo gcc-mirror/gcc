@@ -1042,6 +1042,15 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 	    }
 	}
     }
+  /* If NITERS is unknown, we should not use VLS modes to vectorize
+     the loop since we don't support partial vectors for VLS modes,
+     that is, we will have full vectors (VLSmodes) on loop body
+     and partial vectors (VLAmodes) on loop epilogue which is very
+     inefficient.  Instead, we should apply partial vectors (VLAmodes)
+     on loop body without an epilogue on unknown NITERS loop.  */
+  else if (!LOOP_VINFO_NITERS_KNOWN_P (this_loop_vinfo)
+	   && m_cost_type == VLS_VECTOR_COST)
+    return false;
 
   return vector_costs::better_main_loop_than_p (other);
 }
