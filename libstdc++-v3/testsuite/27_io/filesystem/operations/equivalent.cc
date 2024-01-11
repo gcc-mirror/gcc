@@ -34,13 +34,13 @@ test01()
   bool result;
 
   result = equivalent(p1, p2, ec);
-  VERIFY( ec );
+  VERIFY( ec == std::errc::no_such_file_or_directory );
   VERIFY( !result );
 
   __gnu_test::scoped_file f1(p1);
   ec = bad_ec;
   result = equivalent(p1, p2, ec);
-  VERIFY( !ec );
+  VERIFY( ec == std::errc::no_such_file_or_directory );
   VERIFY( !result );
 
   __gnu_test::scoped_file f2(p2);
