@@ -872,13 +872,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (!__next_n || __next_bkt != __bkt)
 	  {
 	    // Bucket is now empty
-	    // First update next bucket if any
+	    // Update next bucket if any
 	    if (__next_n)
 	      _M_buckets[__next_bkt] = _M_buckets[__bkt];
 
-	    // Second update before begin node if necessary
-	    if (&_M_before_begin == _M_buckets[__bkt])
-	      _M_before_begin._M_nxt = __next_n;
 	    _M_buckets[__bkt] = nullptr;
 	  }
       }
