@@ -1107,8 +1107,10 @@ to provide the symbols for the experimental C++ Contracts support.</para>
 
 <section xml:id="api.rel_133"><info><title><constant>13.3</constant></title></info>
 
-<para>Symols for the Filesystem TS and C++23 <filename>&lt;stacktrace&gt;</filename>
-header were added to the static library <filename>libstdc++exp.a</filename>.</para>
+<para>
+Symbols for the Filesystem TS and C++23 <filename>&lt;stacktrace&gt;</filename>
+header were added to the static library <filename>libstdc++exp.a</filename>.
+</para>
 
 </section>
 
