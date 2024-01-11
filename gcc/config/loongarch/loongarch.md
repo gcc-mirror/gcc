@@ -657,42 +657,87 @@
   [(set_attr "type" "fadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn_and_split "add<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=r,r,r,r,r,r,r")
-	(plus:GPR (match_operand:GPR 1 "register_operand" "r,r,r,r,r,r,r")
-		  (match_operand:GPR 2 "plus_<mode>_operand"
-				       "r,I,La,Lb,Lc,Ld,Le")))]
+(define_insn_and_split "*addsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r")
+	(plus:SI (match_operand:SI 1 "register_operand" "r,r,r,r,r")
+		  (match_operand:SI 2 "plus_si_operand"
+				       "r,I,La,Lb,Le")))]
   ""
   "@
-   add.<d>\t%0,%1,%2
-   addi.<d>\t%0,%1,%2
+   add.w\t%0,%1,%2
+   addi.w\t%0,%1,%2
+   #
+   * operands[2] = GEN_INT (INTVAL (operands[2]) / 65536); \
+     return \"addu16i.d\t%0,%1,%2\";
+   #"
+  "CONST_INT_P (operands[2]) && !IMM12_INT (operands[2]) \
+   && !ADDU16I_OPERAND (INTVAL (operands[2]))"
+  [(set (match_dup 0) (plus:SI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 4)))]
+  {
+    loongarch_split_plus_constant (&operands[2], SImode);
+  }
+  [(set_attr "alu_type" "add")
+   (set_attr "mode" "SI")
+   (set_attr "insn_count" "1,1,2,1,2")])
+
+(define_expand "addsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r")
+	(plus:SI (match_operand:SI 1 "register_operand" "r,r,r,r,r")
+		 (match_operand:SI 2 "plus_si_operand"  "r,I,La,Le,Lb")))]
+  "TARGET_64BIT"
+{
+  if (CONST_INT_P (operands[2]) && !IMM12_INT (operands[2])
+      && ADDU16I_OPERAND (INTVAL (operands[2])))
+    {
+      rtx t1 = gen_reg_rtx (DImode);
+      rtx t2 = gen_reg_rtx (DImode);
+      rtx t3 = gen_reg_rtx (DImode);
+      emit_insn (gen_extend_insn (t1, operands[1], DImode, SImode, 0));
+      t2 = operands[2];
+      emit_insn (gen_adddi3 (t3, t1, t2));
+      t3 = gen_lowpart (SImode, t3);
+      emit_move_insn (operands[0], t3);
+      DONE;
+    }
+  else
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_addsi3_extended (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
+
+(define_insn_and_split "adddi3"
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r,r")
+	(plus:DI (match_operand:DI 1 "register_operand" "r,r,r,r,r,r")
+		  (match_operand:DI 2 "plus_di_operand"
+				       "r,I,La,Lb,Lc,Ld")))]
+  "TARGET_64BIT"
+  "@
+   add.d\t%0,%1,%2
+   addi.d\t%0,%1,%2
    #
    * operands[2] = GEN_INT (INTVAL (operands[2]) / 65536); \
      return \"addu16i.d\t%0,%1,%2\";
    #
-   #
    #"
-  "CONST_INT_P (operands[2]) && !IMM12_INT (operands[2]) \
+  "&& CONST_INT_P (operands[2]) && !IMM12_INT (operands[2]) \
    && !ADDU16I_OPERAND (INTVAL (operands[2]))"
-  [(set (match_dup 0) (plus:GPR (match_dup 1) (match_dup 3)))
-   (set (match_dup 0) (plus:GPR (match_dup 0) (match_dup 4)))]
+  [(set (match_dup 0) (plus:DI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 4)))]
   {
-    loongarch_split_plus_constant (&operands[2], <MODE>mode);
+    loongarch_split_plus_constant (&operands[2], DImode);
   }
   [(set_attr "alu_type" "add")
-   (set_attr "mode" "<MODE>")
-   (set_attr "insn_count" "1,1,2,1,2,2,2")
-   (set (attr "enabled")
-      (cond
-	[(match_test "<MODE>mode != DImode && which_alternative == 4")
-	 (const_string "no")
-	 (match_test "<MODE>mode != DImode && which_alternative == 5")
-	 (const_string "no")
-	 (match_test "<MODE>mode != SImode && which_alternative == 6")
-	 (const_string "no")]
-	(const_string "yes")))])
+   (set_attr "mode" "DI")
+   (set_attr "insn_count" "1,1,2,1,2,2")])
 
-(define_insn_and_split "*addsi3_extended"
+(define_insn_and_split "addsi3_extended"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
 	(sign_extend:DI
 	     (plus:SI (match_operand:SI 1 "register_operand" "r,r,r,r")
