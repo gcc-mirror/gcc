@@ -3652,12 +3652,9 @@ namespace __format
       friend std::basic_format_args<_Context>;
 
       template<typename _Ctx, typename... _Argz>
-	friend auto
+	friend auto std::
 #if _GLIBCXX_INLINE_VERSION
-	// Needed for PR c++/59526
-	std::__8::
-#else
-	std::
+	__8:: // Needed for PR c++/59256
 #endif
 	make_format_args(_Argz&...) noexcept;
 
