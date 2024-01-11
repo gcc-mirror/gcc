@@ -28455,6 +28455,7 @@ $as_echo "#define HAVE_AS_AVR_MGCCISR_OPTION 1" >>confdefs.h
 fi
 
 
+    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
     # Check how default linker description file implements .rodata for
     # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to
     # RAM so avr-gcc skips __do_copy_data for .rodata objects.
@@ -28499,7 +28500,6 @@ $as_echo "#define HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH 1" >>confdefs.h
 $as_echo "no: avrxmega3 .rodata located in RAM" >&6; }
 	    echo "$as_me: nm output was" >&5
 	    cat conftest.nm >&5
-	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)" >&5
 $as_echo "$as_me: WARNING: support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)" >&2;}
 	fi
@@ -28512,6 +28512,74 @@ $as_echo "test failed" >&6; }
 $as_echo "$as_me: WARNING: see \`config.log' for details" >&2;}
     fi
     rm -f conftest.s conftest.o conftest.elf conftest.nm
+
+    # Check for emulation avrxmega2_flmap.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking binutils for avrxmega2_flmap support (PR31124)" >&5
+$as_echo_n "checking binutils for avrxmega2_flmap support (PR31124)... " >&6; }
+    cat > conftest.s <<EOF
+        .section .text,"ax",@progbits
+        ldi r16, __flmap_value_with_lock
+EOF
+    { ac_try='$gcc_cv_as -mmcu=avrxmega2 conftest.s -o conftest.o'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    { ac_try='$gcc_cv_ld -mavrxmega2_flmap conftest.o -o conftest.elf'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    if test -s conftest.elf
+    then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+$as_echo "#define HAVE_LD_AVR_AVRXMEGA2_FLMAP 1" >>confdefs.h
+
+    else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: support for avrxmega2_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)" >&5
+$as_echo "$as_me: WARNING: support for avrxmega2_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)" >&2;}
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: see \`config.log' for details" >&5
+$as_echo "$as_me: WARNING: see \`config.log' for details" >&2;}
+    fi
+    rm -f conftest.o conftest.elf
+
+    # Check for emulation avrxmega4_flmap.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking binutils for avrxmega4_flmap support (PR31124)" >&5
+$as_echo_n "checking binutils for avrxmega4_flmap support (PR31124)... " >&6; }
+    { ac_try='$gcc_cv_as -mmcu=avrxmega4 conftest.s -o conftest.o'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    { ac_try='$gcc_cv_ld -mavrxmega4_flmap conftest.o -o conftest.elf'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    if test -s conftest.elf
+    then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+$as_echo "#define HAVE_LD_AVR_AVRXMEGA4_FLMAP 1" >>confdefs.h
+
+    else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: support for avrxmega4_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)" >&5
+$as_echo "$as_me: WARNING: support for avrxmega4_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)" >&2;}
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: see \`config.log' for details" >&5
+$as_echo "$as_me: WARNING: see \`config.log' for details" >&2;}
+    fi
+    rm -f conftest.s conftest.o conftest.elf
     ;;
 
   cris-*-*)

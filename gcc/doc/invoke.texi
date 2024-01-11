@@ -883,11 +883,11 @@ Objective-C and Objective-C++ Dialects}.
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args
 -mbranch-cost=@var{cost}
--mcall-prologues  -mgas-isr-prologues  -mint8
+-mcall-prologues  -mgas-isr-prologues  -mint8 -mflmap
 -mdouble=@var{bits} -mlong-double=@var{bits}
 -mn_flash=@var{size}  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack
--mfract-convert-truncate
+-mrodata-in-ram -mfract-convert-truncate
 -mshort-calls  -nodevicelib  -nodevicespecs
 -Waddr-space-convert  -Wmisspelled-isr}
 
@@ -23719,6 +23719,20 @@ differ from instructions in the assembler code.
 Relaxing must be turned on if linker stubs are needed, see the
 section on @code{EIND} and linker stubs below.
 
+@opindex mrodata-in-ram
+@item -mrodata-in-ram
+@itemx -mno-rodata-in-ram
+Locate the @code{.rodata} sections for read-only data in RAM resp.@:
+in program memory.
+For most devices, there is no choice and this option acts rather
+like an assertion.
+
+Since v14 and for the AVR64* and AVR128* devices, @code{.rodata}
+is located in flash memory per default, provided the required GNU Binutils
+support (@w{@uref{https://sourceware.org/PR31124,PR31124}}) is available.
+In that case, @option{-mrodata-in-ram} can be used to return to the old
+layout with @code{.rodata} in RAM.
+
 @opindex mstrict-X
 @item -mstrict-X
 Use address register @code{X} in a way proposed by the hardware.  This means
@@ -24112,6 +24126,23 @@ description file, and is currently available for
 there is no need to use address spaces like @code{__flash} or
 features like attribute @code{progmem} and @code{pgm_read_*}.
 
+@item __AVR_HAVE_FLMAP__
+This macro is defined provided the following conditions are met:
+@itemize @bullet
+@item The device has the @code{NVMCTRL_CTRLB.FLMAP} bitfield.
+This applies to the AVR64* and AVR128* devices.
+@item It's not known at assembler-time which emulation will be used.
+@end itemize
+This implies the compiler was configured with GNU Binutils that implement
+@w{@uref{https://sourceware.org/PR31124,PR31124}}.
+
+@item __AVR_RODATA_IN_RAM__
+This macro is undefined when the code is compiled for a core architecture.
+
+When the code is compiled for a device, the macro is defined to@tie{}1
+when the @code{.rodata} sections for read-only data is located in RAM;
+and defined to@tie{}0, otherwise.
+
 @item __WITH_AVRLIBC__
 The compiler is configured to be used together with AVR-Libc.
 See the @option{--with-avrlibc} configure option.
@@ -24164,6 +24195,11 @@ files.
 @item -mn-flash=@var{num}
 Assume that the flash memory has a size of @var{num} times 64@tie{}KiB.
 This determines which @code{__flash@var{N}} address spaces are available.
+
+@opindex mflmap
+@item -mflmap
+The device has the @code{FLMAP} bit field located in special function
+register @code{NVMCTRL_CTRLB}.
 
 @opindex mrmw
 @item -mrmw

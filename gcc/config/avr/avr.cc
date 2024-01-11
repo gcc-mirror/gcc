@@ -220,6 +220,7 @@ static GTY(()) rtx xstring_e;
 
 /* Current architecture.  */
 const avr_arch_t *avr_arch;
+enum avr_arch_id avr_arch_index;
 
 /* Unnamed sections associated to __attribute__((progmem)) aka. PROGMEM
    or to address space __flash* or __memx.  Only used as singletons inside
@@ -229,9 +230,10 @@ static GTY(()) section *progmem_section[ADDR_SPACE_COUNT];
 /* Condition for insns/expanders from avr-dimode.md.  */
 bool avr_have_dimode = true;
 
-/* To track if code will use .bss and/or .data.  */
+/* To track if code will use .bss, .data, .rodata.  */
 bool avr_need_clear_bss_p = false;
 bool avr_need_copy_data_p = false;
+bool avr_has_rodata_p = false;
 
 
 /* Transform UP into lowercase and write the result to LO.
@@ -1059,6 +1061,7 @@ avr_set_core_architecture (void)
 	       && mcu->macro == NULL)
         {
           avr_arch = &avr_arch_types[mcu->arch_id];
+	  avr_arch_index = mcu->arch_id;
           if (avr_n_flash < 0)
             avr_n_flash = 1 + (mcu->flash_size - 1) / 0x10000;
 
@@ -10758,6 +10761,49 @@ avr_insert_attributes (tree node, tree *attributes)
     }
 }
 
+#ifdef HAVE_LD_AVR_AVRXMEGA2_FLMAP
+static const bool have_avrxmega2_flmap = true;
+#else
+static const bool have_avrxmega2_flmap = false;
+#endif
+
+#ifdef HAVE_LD_AVR_AVRXMEGA4_FLMAP
+static const bool have_avrxmega4_flmap = true;
+#else
+static const bool have_avrxmega4_flmap = false;
+#endif
+
+#ifdef HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
+static const bool have_avrxmega3_rodata_in_flash = true;
+#else
+static const bool have_avrxmega3_rodata_in_flash = false;
+#endif
+
+
+static bool
+avr_rodata_in_flash_p ()
+{
+  switch (avr_arch_index)
+    {
+    default:
+      break;
+
+    case ARCH_AVRTINY:
+      return true;
+
+    case ARCH_AVRXMEGA3:
+      return have_avrxmega3_rodata_in_flash;
+
+    case ARCH_AVRXMEGA2:
+      return avr_flmap && have_avrxmega2_flmap && avr_rodata_in_ram != 1;
+
+    case ARCH_AVRXMEGA4:
+      return avr_flmap && have_avrxmega4_flmap && avr_rodata_in_ram != 1;
+    }
+
+  return false;
+}
+
 
 /* Implement `ASM_OUTPUT_ALIGNED_DECL_LOCAL'.  */
 /* Implement `ASM_OUTPUT_ALIGNED_DECL_COMMON'.  */
@@ -10890,13 +10936,11 @@ avr_output_addr_attrib (tree decl, const char *name,
 static void
 avr_asm_init_sections (void)
 {
-  /* Override section callbacks to keep track of `avr_need_clear_bss_p'
-     resp. `avr_need_copy_data_p'.  If flash is not mapped to RAM then
-     we have also to track .rodata because it is located in RAM then.  */
+  /* Override section callbacks to keep track of `avr_need_clear_bss_p',
+     `avr_need_copy_data_p' and `avr_has_rodata_p'.
+     Track also .rodata for the case when .rodata is located in RAM.  */
 
-#if defined HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
-  if (avr_arch->flash_pm_offset == 0)
-#endif
+  if (! avr_rodata_in_flash_p ())
     readonly_data_section->unnamed.callback = avr_output_data_section_asm_op;
   data_section->unnamed.callback = avr_output_data_section_asm_op;
   bss_section->unnamed.callback = avr_output_bss_section_asm_op;
@@ -10937,13 +10981,9 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
     avr_need_copy_data_p = (startswith (name, ".data")
 			    || startswith (name, ".gnu.linkonce.d"));
 
-  if (!avr_need_copy_data_p
-#if defined HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
-      && avr_arch->flash_pm_offset == 0
-#endif
-      )
-    avr_need_copy_data_p = (startswith (name, ".rodata")
-			    || startswith (name, ".gnu.linkonce.r"));
+  if (!avr_has_rodata_p)
+    avr_has_rodata_p = (startswith (name, ".rodata")
+			 || startswith (name, ".gnu.linkonce.r"));
 
   if (!avr_need_clear_bss_p)
     avr_need_clear_bss_p = startswith (name, ".bss");
@@ -11273,7 +11313,8 @@ avr_file_end (void)
      linking in the initialization code from libgcc if resp.
      sections are empty, see PR18145.  */
 
-  if (avr_need_copy_data_p)
+  if (avr_need_copy_data_p
+      || (avr_has_rodata_p && ! avr_rodata_in_flash_p ()))
     fputs (".global __do_copy_data\n", asm_out_file);
 
   if (avr_need_clear_bss_p)

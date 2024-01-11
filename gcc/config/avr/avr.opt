@@ -94,6 +94,14 @@ mstrict-X
 Target Var(avr_strict_X) Init(0)
 When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.
 
+mflmap
+Target Var(avr_flmap) Init(0)
+The device has the bitfield NVMCTRL_CTRLB.FLMAP.  This option is used internally.
+
+mrodata-in-ram
+Target Var(avr_rodata_in_ram) Init(-1)
+The device has the .rodata section located in the RAM area.
+
 ;; For rationale behind -msp8 see explanation in avr.h.
 msp8
 Target RejectNegative Var(avr_sp8) Init(0)
