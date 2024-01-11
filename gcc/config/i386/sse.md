@@ -16174,7 +16174,6 @@
       operands[2] = lowpart_subreg (<sseunpackmode>mode,
 				    force_reg (<MODE>mode, operands[2]),
 				    <MODE>mode);
-      emit_insn (gen_rtx_SET (operands[0], operands[3]));
       emit_insn (gen_vpdpwssd_<SDOT_VPDP_SUF> (operands[0], operands[3],
 					       operands[1], operands[2]));
     }
@@ -29963,7 +29962,6 @@
   operands[2] = lowpart_subreg (<ssedvecmode>mode,
 				force_reg (<MODE>mode, operands[2]),
 				<MODE>mode);
-  emit_insn (gen_rtx_SET (operands[0], operands[3]));
   emit_insn (gen_vpdpbusd_<ssedvecmodelower> (operands[0], operands[3],
 				  operands[1], operands[2]));
   DONE;
@@ -30780,7 +30778,6 @@
       operands[2] = lowpart_subreg (<ssedvecmode>mode,
 				    force_reg (<MODE>mode, operands[2]),
 				    <MODE>mode);
-      emit_insn (gen_rtx_SET (operands[0], operands[3]));
       emit_insn (gen_vpdpbssd_<ssedvecmodelower> (operands[0], operands[3],
 						  operands[1], operands[2]));
     }
@@ -30857,7 +30854,6 @@
       operands[2] = lowpart_subreg (<ssedvecmode>mode,
 				    force_reg (<MODE>mode, operands[2]),
 				    <MODE>mode);
-      emit_insn (gen_rtx_SET (operands[0], operands[3]));
       emit_insn (gen_vpdpbuud_<ssedvecmodelower> (operands[0], operands[3],
 						  operands[1], operands[2]));
    }
