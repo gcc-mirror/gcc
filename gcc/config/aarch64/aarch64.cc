@@ -12961,6 +12961,8 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
 	  && constant_multiple_p (GET_MODE_SIZE (mode),
 				  aarch64_vl_bytes (mode, vec_flags), &nregs))
 	return nregs;
+      if (vec_flags == (VEC_ADVSIMD | VEC_STRUCT | VEC_PARTIAL))
+	return GET_MODE_SIZE (mode).to_constant () / 8;
       return (vec_flags & VEC_ADVSIMD
 	      ? CEIL (lowest_size, UNITS_PER_VREG)
 	      : CEIL (lowest_size, UNITS_PER_WORD));
