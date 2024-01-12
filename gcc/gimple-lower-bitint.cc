@@ -231,7 +231,8 @@ mergeable_op (gimple *stmt)
 	    && TREE_CODE (rhs_type) == BITINT_TYPE
 	    && bitint_precision_kind (lhs_type) >= bitint_prec_large
 	    && bitint_precision_kind (rhs_type) >= bitint_prec_large
-	    && tree_int_cst_equal (TYPE_SIZE (lhs_type), TYPE_SIZE (rhs_type)))
+	    && (CEIL (TYPE_PRECISION (lhs_type), limb_prec)
+		== CEIL (TYPE_PRECISION (rhs_type), limb_prec)))
 	  {
 	    if (TYPE_PRECISION (rhs_type) >= TYPE_PRECISION (lhs_type))
 	      return true;
@@ -1263,8 +1264,8 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	     if m_upwards_2limb * limb_prec is equal to
 	     lhs precision that is not the case.  */
 	  || (!m_var_msb
-	      && tree_int_cst_equal (TYPE_SIZE (rhs_type),
-				     TYPE_SIZE (lhs_type))
+	      && (CEIL (TYPE_PRECISION (lhs_type), limb_prec)
+		  == CEIL (TYPE_PRECISION (rhs_type), limb_prec))
 	      && (!m_upwards_2limb
 		  || (m_upwards_2limb * limb_prec
 		      < TYPE_PRECISION (lhs_type)))))
