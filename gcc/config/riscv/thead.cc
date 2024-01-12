@@ -908,6 +908,213 @@ th_asm_output_opcode (FILE *asm_out_file, const char *p)
 	    }
 	}
 
+      if (get_attr_type (current_output_insn) == TYPE_VLDE ||
+	  get_attr_type (current_output_insn) == TYPE_VSTE ||
+	  get_attr_type (current_output_insn) == TYPE_VLDFF)
+	{
+	  if (strstr (p, "e8") || strstr (p, "e16") ||
+	      strstr (p, "e32") || strstr (p, "e64"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTE
+				  ? fputs ("th.vse", asm_out_file)
+				  : fputs ("th.vle", asm_out_file);
+	      if (strstr (p, "e8"))
+		return p+4;
+	      else
+		return p+5;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLDS ||
+	  get_attr_type (current_output_insn) == TYPE_VSTS)
+	{
+	  if (strstr (p, "vle8") || strstr (p, "vse8") ||
+	      strstr (p, "vle16") || strstr (p, "vse16") ||
+	      strstr (p, "vle32") || strstr (p, "vse32") ||
+	      strstr (p, "vle64") || strstr (p, "vse64"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTS
+				  ? fputs ("th.vse", asm_out_file)
+				  : fputs ("th.vle", asm_out_file);
+	      if (strstr (p, "e8"))
+		return p+4;
+	      else
+		return p+5;
+	    }
+	  else if (strstr (p, "vlse8") || strstr (p, "vsse8") ||
+		   strstr (p, "vlse16") || strstr (p, "vsse16") ||
+		   strstr (p, "vlse32") || strstr (p, "vsse32") ||
+		   strstr (p, "vlse64") || strstr (p, "vsse64"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTS
+				  ? fputs ("th.vsse", asm_out_file)
+				  : fputs ("th.vlse", asm_out_file);
+	      if (strstr (p, "e8"))
+		return p+5;
+	      else
+		return p+6;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLDUX ||
+	  get_attr_type (current_output_insn) == TYPE_VLDOX)
+	{
+	  if (strstr (p, "ei"))
+	    {
+	      fputs ("th.vlxe", asm_out_file);
+	      if (strstr (p, "ei8"))
+		return p+7;
+	      else
+		return p+8;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VSTUX ||
+	  get_attr_type (current_output_insn) == TYPE_VSTOX)
+	{
+	  if (strstr (p, "ei"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTUX
+				? fputs ("th.vsuxe", asm_out_file)
+				: fputs ("th.vsxe", asm_out_file);
+	      if (strstr (p, "ei8"))
+		return p+7;
+	      else
+		return p+8;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLSEGDE ||
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTE ||
+	  get_attr_type (current_output_insn) == TYPE_VLSEGDFF)
+	{
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTE
+				? fputs ("th.vsseg", asm_out_file)
+				: fputs ("th.vlseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[5]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "e8"))
+	    return p+8;
+	  else
+	    return p+9;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLSEGDS ||
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTS)
+	{
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTS
+				? fputs ("th.vssseg", asm_out_file)
+				: fputs ("th.vlsseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[6]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "e8"))
+	    return p+9;
+	  else
+	    return p+10;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLSEGDUX ||
+	  get_attr_type (current_output_insn) == TYPE_VLSEGDOX)
+	{
+	  fputs ("th.vlxseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[7]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "ei8"))
+	    return p+11;
+	  else
+	    return p+12;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VSSEGTUX ||
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTOX)
+	{
+	  fputs ("th.vsxseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[7]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "ei8"))
+	    return p+11;
+	  else
+	    return p+12;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VNSHIFT)
+	{
+	  if (strstr (p, "vncvt"))
+	    {
+	      fputs ("th.vncvt.x.x.v", asm_out_file);
+	      return p+11;
+	    }
+
+	  strstr (p, "vnsrl") ? fputs ("th.vnsrl.v", asm_out_file)
+			      : fputs ("th.vnsra.v", asm_out_file);
+	  return p+7;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VNCLIP)
+	{
+	  if (strstr (p, "vnclipu"))
+	    {
+	      fputs ("th.vnclipu.v", asm_out_file);
+	      return p+9;
+	    }
+	  else
+	    {
+	      fputs ("th.vnclip.v", asm_out_file);
+	      return p+8;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VMPOP)
+	{
+	  fputs ("th.vmpopc", asm_out_file);
+	  return p+5;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VMFFS)
+	{
+	  fputs ("th.vmfirst", asm_out_file);
+	  return p+6;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFNCVTFTOI ||
+	  get_attr_type (current_output_insn) == TYPE_VFNCVTITOF)
+	{
+	  if (strstr (p, "xu"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VFNCVTFTOI
+			   ? fputs ("th.vfncvt.xu.f.v", asm_out_file)
+			   : fputs ("th.vfncvt.f.xu.v", asm_out_file);
+	      return p+13;
+	}
+	  else
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VFNCVTFTOI
+			   ? fputs ("th.vfncvt.x.f.v", asm_out_file)
+			   : fputs ("th.vfncvt.f.x.v", asm_out_file);
+	      return p+12;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFNCVTFTOF)
+	{
+	  fputs ("th.vfncvt.f.f.v", asm_out_file);
+	  return p+12;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFREDU
+	  && strstr (p, "sum"))
+	{
+	  fputs ("th.vfredsum", asm_out_file);
+	  return p+9;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFWREDU
+	  && strstr (p, "sum"))
+	{
+	  fputs ("th.vfwredsum", asm_out_file);
+	  return p+10;
+	}
+
       if (p[0] == 'v')
 	fputs ("th.", asm_out_file);
     }
