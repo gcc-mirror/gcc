@@ -73,6 +73,13 @@ public:
 			insn_info *insn,
 			resource_info resource);
 
+  // Create a temporary use of SET as part of a change to INSN.
+  // SET can be a pre-existing definition or one that is being created
+  // as part of the same change group.
+  use_info *create_use (obstack_watermark &watermark,
+			insn_info *insn,
+			set_info *set);
+
   // Create a temporary insn with code INSN_CODE and pattern PAT.
   insn_info *create_insn (obstack_watermark &watermark,
 			  rtx_code insn_code,

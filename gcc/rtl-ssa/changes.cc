@@ -609,14 +609,26 @@ function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
 	  m_temp_uses[i] = use = allocate<use_info> (*use);
 	  use->m_is_temp = false;
 	  set_info *def = use->def ();
-	  // Handle cases in which the value was previously not used
-	  // within the block.
-	  if (def && def->m_is_temp)
+	  if (!def || !def->m_is_temp)
+	    continue;
+
+	  if (auto phi = dyn_cast<phi_info *> (def))
 	    {
-	      phi_info *phi = as_a<phi_info *> (def);
+	      // Handle cases in which the value was previously not used
+	      // within the block.
 	      gcc_assert (phi->is_degenerate ());
 	      phi = create_degenerate_phi (phi->ebb (), phi->input_value (0));
 	      use->set_def (phi);
+	    }
+	  else
+	    {
+	      // The temporary def may also be a set added with this change, in
+	      // which case the permanent set is stored in the last_def link,
+	      // and we need to update the use to refer to the permanent set.
+	      gcc_assert (is_a<set_info *> (def));
+	      auto perm_set = as_a<set_info *> (def->last_def ());
+	      gcc_assert (!perm_set->is_temporary ());
+	      use->set_def (perm_set);
 	    }
 	}
     }
