@@ -415,7 +415,11 @@ is
       procedure Prove_Rounding_Case is
       begin
          if Same_Sign (Big (X) * Big (Y), Big (Z)) then
-            null;
+            pragma Assert
+              (abs Big_Q =
+                 (if Ru > (Zu - Uns32'(1)) / Uns32'(2)
+                  then abs Quot + 1
+                  else abs Quot));
          end if;
       end Prove_Rounding_Case;
 
@@ -432,7 +436,14 @@ is
       -- Prove_Signs --
       -----------------
 
-      procedure Prove_Signs is null;
+      procedure Prove_Signs is
+      begin
+         if (X >= 0) = (Y >= 0) then
+            pragma Assert (Big (R) = Big_R and then Big (Q) = Big_Q);
+         else
+            pragma Assert (Big (R) = Big_R and then Big (Q) = Big_Q);
+         end if;
+      end Prove_Signs;
 
    --  Start of processing for Scaled_Divide32
 
@@ -483,6 +494,8 @@ is
       Lemma_Div_Commutation (D, Uns64 (Zu));
       Lemma_Rem_Commutation (D, Uns64 (Zu));
 
+      pragma Assert (Uns64 (Qu) = D / Uns64 (Zu));
+      pragma Assert (Uns64 (Ru) = D rem Uns64 (Zu));
       pragma Assert (Big (Ru) = abs Big_R);
       pragma Assert (Big (Qu) = abs Quot);
       pragma Assert (Big (Zu) = Big (Uns32'(abs Z)));

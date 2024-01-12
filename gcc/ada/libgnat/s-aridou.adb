@@ -971,7 +971,7 @@ is
       procedure Prove_Rounding_Case is
       begin
          if Same_Sign (Big (X), Big (Y) * Big (Z)) then
-            null;
+            pragma Assert (abs Big_Q = Big (Qu));
          end if;
       end Prove_Rounding_Case;
 
@@ -1603,6 +1603,7 @@ is
          pragma Loop_Invariant (XX = Shift_Right (X, J));
          pragma Loop_Invariant (XX = X / Double_Uns'(2) ** J);
       end loop;
+      Lemma_Div_Commutation (X, Double_Uns'(2) ** Shift);
    end Lemma_Shift_Right;
 
    ------------------------------
@@ -2441,7 +2442,11 @@ is
       procedure Prove_Rounding_Case is
       begin
          if Same_Sign (Big (X) * Big (Y), Big (Z)) then
-            null;
+            pragma Assert
+              (abs Big_Q =
+                 (if Ru > (Zu - Double_Uns'(1)) / Double_Uns'(2)
+                  then abs Quot + 1
+                  else abs Quot));
          end if;
       end Prove_Rounding_Case;
 

@@ -689,7 +689,6 @@ is
      (Left  : Super_String;
       Right : Super_String) return Boolean
    with
-     Pre    => Left.Max_Length = Right.Max_Length,
      Post   => "="'Result = (Super_To_String (Left) = Super_To_String (Right)),
      Global => null;
 

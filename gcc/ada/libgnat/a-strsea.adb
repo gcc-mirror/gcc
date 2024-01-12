@@ -623,6 +623,7 @@ package body Ada.Strings.Search with SPARK_Mode is
            (if (for some J in From .. Source'Last - PL1 =>
                  Match (Source, Pattern, Mapping, J))
             then Result in From .. Source'Last - PL1
+              and then Match (Source, Pattern, Mapping, Result)
             else Result = 0);
 
       else
@@ -636,6 +637,7 @@ package body Ada.Strings.Search with SPARK_Mode is
            (if (for some J in Source'First .. From - PL1 =>
                   Match (Source, Pattern, Mapping, J))
             then Result in Source'First .. From - PL1
+              and then Match (Source, Pattern, Mapping, Result)
             else Result = 0);
       end if;
 
