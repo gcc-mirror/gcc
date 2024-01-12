@@ -2868,6 +2868,10 @@ build_array_ref (location_t loc, tree array, tree index)
 			 "array");
 	}
 
+      if (TREE_CODE (TREE_TYPE (index)) == BITINT_TYPE
+	  && TYPE_PRECISION (TREE_TYPE (index)) > TYPE_PRECISION (sizetype))
+	index = fold_convert (sizetype, index);
+
       type = TREE_TYPE (TREE_TYPE (array));
       rval = build4 (ARRAY_REF, type, array, index, NULL_TREE, NULL_TREE);
       /* Array ref is const/volatile if the array elements are
