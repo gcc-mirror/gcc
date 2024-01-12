@@ -10388,8 +10388,8 @@ avr_handle_addr_attribute (tree *node, tree name, tree args,
 	       && (!tree_fits_shwi_p (arg)
 		   || ! IN_RANGE (TREE_INT_CST_LOW (arg), io_start, io_end)))
 	{
-	  warning_at (loc, OPT_Wattributes, "%qE attribute address out of "
-		      "range 0x%x...0x%x", name, (int) io_start, (int) io_end);
+	  warning_at (loc, OPT_Wattributes, "%qE attribute address out of range"
+		      " 0x%x%s0x%x", name, (int) io_start, "...", (int) io_end);
 	  *no_add = true;
 	}
       else
