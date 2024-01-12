@@ -5118,14 +5118,23 @@ bitint_large_huge::lower_call (tree obj, gimple *stmt)
 	  || TREE_CODE (TREE_TYPE (arg)) != BITINT_TYPE
 	  || bitint_precision_kind (TREE_TYPE (arg)) <= bitint_prec_middle)
 	continue;
-      int p = var_to_partition (m_map, arg);
-      tree v = m_vars[p];
-      gcc_assert (v != NULL_TREE);
-      if (!types_compatible_p (TREE_TYPE (arg), TREE_TYPE (v)))
-	v = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (arg), v);
-      arg = make_ssa_name (TREE_TYPE (arg));
-      gimple *g = gimple_build_assign (arg, v);
-      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      if (SSA_NAME_IS_DEFAULT_DEF (arg)
+	  && (!SSA_NAME_VAR (arg) || VAR_P (SSA_NAME_VAR (arg))))
+	{
+	  tree var = create_tmp_reg (TREE_TYPE (arg));
+	  arg = get_or_create_ssa_default_def (cfun, var);
+	}
+      else
+	{
+	  int p = var_to_partition (m_map, arg);
+	  tree v = m_vars[p];
+	  gcc_assert (v != NULL_TREE);
+	  if (!types_compatible_p (TREE_TYPE (arg), TREE_TYPE (v)))
+	    v = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (arg), v);
+	  arg = make_ssa_name (TREE_TYPE (arg));
+	  gimple *g = gimple_build_assign (arg, v);
+	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	}
       gimple_call_set_arg (stmt, i, arg);
       if (m_preserved == NULL)
 	m_preserved = BITMAP_ALLOC (NULL);
