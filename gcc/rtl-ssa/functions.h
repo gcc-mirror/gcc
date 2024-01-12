@@ -301,8 +301,10 @@ private:
   void process_uses_of_deleted_def (set_info *);
   insn_info *add_placeholder_after (insn_info *);
   void possibly_queue_changes (insn_change &);
-  void finalize_new_accesses (insn_change &, insn_info *);
-  void apply_changes_to_insn (insn_change &);
+  void finalize_new_accesses (insn_change &, insn_info *,
+			      hash_set<def_info *> &);
+  void apply_changes_to_insn (insn_change &,
+			      hash_set<def_info *> &);
 
   void init_function_data ();
   void calculate_potential_phi_regs (build_info &);
