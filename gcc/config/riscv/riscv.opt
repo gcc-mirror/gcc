@@ -452,6 +452,8 @@ Mask(XTHEADMEMPAIR) Var(riscv_xthead_subext)
 
 Mask(XTHEADSYNC)    Var(riscv_xthead_subext)
 
+Mask(XTHEADVECTOR)  Var(riscv_xthead_subext)
+
 TargetVariable
 int riscv_xventana_subext
 

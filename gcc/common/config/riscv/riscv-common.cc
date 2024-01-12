@@ -368,6 +368,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xtheadmemidx", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xtheadmempair", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xtheadsync", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadvector", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"xventanacondops", ISA_SPEC_CLASS_NONE, 1, 0},
 
@@ -1251,6 +1252,15 @@ riscv_subset_list::check_conflict_ext ()
       if (lookup ("zcmp"))
 	error_at (m_loc, "%<-march=%s%>: zcd conflicts with zcmp", m_arch);
     }
+
+  if ((lookup ("v") || lookup ("zve32x")
+	 || lookup ("zve64x") || lookup ("zve32f")
+	 || lookup ("zve64f") || lookup ("zve64d")
+	 || lookup ("zvl32b") || lookup ("zvl64b")
+	 || lookup ("zvl128b") || lookup ("zvfh"))
+	 && lookup ("xtheadvector"))
+    error_at (m_loc, "%<-march=%s%>: xtheadvector conflicts with vector "
+		   "extension or its sub-extensions", m_arch);
 }
 
 /* Parsing function for multi-letter extensions.
@@ -1743,6 +1753,19 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"xtheadmemidx",  &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMEMIDX},
   {"xtheadmempair", &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMEMPAIR},
   {"xtheadsync",    &gcc_options::x_riscv_xthead_subext, MASK_XTHEADSYNC},
+  {"xtheadvector",  &gcc_options::x_riscv_xthead_subext, MASK_XTHEADVECTOR},
+  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_32},
+  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64},
+  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
+  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64},
+  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
+  {"xtheadvector",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL32B},
+  {"xtheadvector",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL64B},
+  {"xtheadvector",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL128B},
+  {"xtheadvector",  &gcc_options::x_riscv_zf_subext, MASK_ZVFHMIN},
+  {"xtheadvector",  &gcc_options::x_riscv_zf_subext, MASK_ZVFH},
+  {"xtheadvector",  &gcc_options::x_target_flags, MASK_FULL_V},
+  {"xtheadvector",  &gcc_options::x_target_flags, MASK_VECTOR},
 
   {"xventanacondops", &gcc_options::x_riscv_xventana_subext, MASK_XVENTANACONDOPS},
 
