@@ -1626,11 +1626,12 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	  flush_pending_stmts (e);
 	}
 
+      bool peeled_iters = single_pred (loop->latch) != loop_exit->src;
       /* Record the new SSA names in the cache so that we can skip materializing
 	 them again when we fill in the rest of the LCSSA variables.  */
       for (auto phi : new_phis)
 	{
-	  tree new_arg = gimple_phi_arg (phi, loop_exit->dest_idx)->def;
+	  tree new_arg = gimple_phi_arg_def (phi, loop_exit->dest_idx);
 
 	  if (!SSA_VAR_P (new_arg))
 	    continue;
@@ -1653,7 +1654,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	      continue;
 	    }
 
-	  /* If we decide to remove the PHI node we should also not
+	  /* If we decided not to remove the PHI node we should also not
 	     rematerialize it later on.  */
 	  new_phi_args.put (new_arg, gimple_phi_result (phi));
 
@@ -1667,7 +1668,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       edge loop_entry = single_succ_edge (new_preheader);
       if (flow_loops)
 	{
-	  bool peeled_iters = single_pred (loop->latch) != loop_exit->src;
 	  /* Link through the main exit first.  */
 	  for (auto gsi_from = gsi_start_phis (loop->header),
 	       gsi_to = gsi_start_phis (new_loop->header);
@@ -1693,8 +1693,11 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		    }
 		}
 	      /* If we have multiple exits and the vector loop is peeled then we
-		 need to use the value at start of loop.  */
-	      if (peeled_iters)
+		 need to use the value at start of loop.  If we're looking at
+		 virtual operands we have to keep the original link.   Virtual
+		 operands don't all become the same because we'll corrupt the
+		 vUSE chains among others.  */
+	      if (peeled_iters && !virtual_operand_p (new_arg))
 		{
 		  tree tmp_arg = gimple_phi_result (from_phi);
 		  if (!new_phi_args.get (tmp_arg))
@@ -1726,9 +1729,31 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 
 		  tree alt_arg = gimple_phi_result (from_phi);
 		  edge main_e = single_succ_edge (alt_loop_exit_block);
-		  for (edge e : loop_exits)
-		    if (e != loop_exit)
-		      SET_PHI_ARG_DEF (to_phi, main_e->dest_idx, alt_arg);
+
+		  /* Now update the virtual PHI nodes with the right value.  */
+		  if (peeled_iters
+		      && virtual_operand_p (alt_arg)
+		      && flow_bb_inside_loop_p (loop,
+				gimple_bb (SSA_NAME_DEF_STMT (alt_arg))))
+		    {
+			/* Link the alternative exit one.  */
+			tree def
+			  = gimple_phi_arg_def (to_phi, loop_exit->dest_idx);
+			gphi *def_phi = as_a <gphi *> (SSA_NAME_DEF_STMT (def));
+			SET_PHI_ARG_DEF (def_phi, 0, alt_arg);
+
+			/* And now the main merge block.  */
+			gphi *iter_phi
+			  = as_a <gphi *> (SSA_NAME_DEF_STMT (alt_arg));
+			unsigned latch_idx
+			  = single_succ_edge (loop->latch)->dest_idx;
+			tree exit_val
+			  = gimple_phi_arg_def (iter_phi, latch_idx);
+			alt_arg = copy_ssa_name (def);
+			gphi *l_phi = create_phi_node (alt_arg, main_e->src);
+			SET_PHI_ARG_DEF (l_phi, 0, exit_val);
+		    }
+		  SET_PHI_ARG_DEF (to_phi, main_e->dest_idx, alt_arg);
 		}
 
 	      set_immediate_dominator (CDI_DOMINATORS, new_preheader,
@@ -3413,6 +3438,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	vect_update_ivs_after_vectorizer (loop_vinfo, niters_vector_mult_vf,
 					  update_e);
 
+      /* If we have a peeled vector iteration we will never skip the epilog loop
+	 and we can simplify the cfg a lot by not doing the edge split.  */
       if (skip_epilog || LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	{
 	  guard_cond = fold_build2 (EQ_EXPR, boolean_type_node,

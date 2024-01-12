@@ -989,7 +989,11 @@ vec_init_loop_exit_info (class loop *loop)
       if (number_of_iterations_exit_assumptions (loop, exit, &niter_desc, NULL)
 	  && !chrec_contains_undetermined (niter_desc.niter))
 	{
-	  if (!niter_desc.may_be_zero || !candidate)
+	  tree may_be_zero = niter_desc.may_be_zero;
+	  if (integer_zerop (may_be_zero)
+	      && (!candidate
+		  || dominated_by_p (CDI_DOMINATORS, exit->src,
+				     candidate->src)))
 	    candidate = exit;
 	}
     }
