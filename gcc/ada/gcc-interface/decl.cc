@@ -939,6 +939,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_type));
+	    /* Make sure to have an array type for the template.  */
+	    if (TYPE_IS_PADDING_P (gnu_type))
+	      gnu_type = TREE_TYPE (TYPE_FIELDS (gnu_type));
 	    gnu_type
 	      = build_unc_object_type_from_ptr (TREE_TYPE (gnu_array),
 						gnu_type,
