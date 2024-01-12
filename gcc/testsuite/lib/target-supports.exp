@@ -3858,6 +3858,15 @@ proc check_effective_target_bitint575 { } {
     } "-std=c23"]
 }
 
+# Return 1 if the target supports _BitInt(65535), 0 otherwise.
+
+proc check_effective_target_bitint65535 { } {
+    return [check_no_compiler_messages bitint65535 object {
+        _BitInt (2) a = 1wb;
+        unsigned _BitInt (65535) b = 0uwb;
+    } "-std=c23"]
+}
+
 # Return 1 if the target supports compiling decimal floating point,
 # 0 otherwise.
 

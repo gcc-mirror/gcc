@@ -2877,6 +2877,18 @@ Target supports Graphite optimizations.
 @item fixed_point
 Target supports fixed-point extension to C.
 
+@item bitint
+Target supports _BitInt(N).
+
+@item bitint128
+Target supports _BitInt(128).
+
+@item bitint575
+Target supports _BitInt(575).
+
+@item bitint65535
+Target supports _BitInt(65535).
+
 @item fopenacc
 Target supports OpenACC via @option{-fopenacc}.
 

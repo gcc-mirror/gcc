@@ -1,7 +1,10 @@
 /* { dg-add-options vect_early_break } */
 /* { dg-require-effective-target vect_early_break } */
-/* { dg-require-effective-target vect_int } */
-/* { dg-require-effective-target bitint } */
+/* { dg-require-effective-target bitint65535 } */
+
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
+
+#include "tree-vect.h"
 
 _BitInt(998) b;
 char c;
@@ -24,6 +27,8 @@ foo(char y, _BitInt(9020) a, char *r)
 int
 main(void)
 {
+  check_vect ();
+
   char x;
   foo(5, 5, &x);
   if (x != 1)
