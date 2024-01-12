@@ -1,3 +1,44 @@
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Fix spelling.
+	* doc/html/manual/api.html: Regenerate.
+
+2024-01-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/112477
+	* src/c++11/debug.cc
+	(_Safe_iterator_base::_M_attach): Reset _M_version to 0 if attaching to null
+	sequence.
+	(_Safe_iterator_base::_M_attach_single): Likewise.
+	(_Safe_local_iterator_base::_M_attach): Likewise.
+	(_Safe_local_iterator_base::_M_attach_single): Likewise.
+	* testsuite/23_containers/map/debug/112477.cc: New test case.
+
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document addition of
+	libstdc++exp.a.
+	* doc/html/*: Regenerate.
+
+2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	Backported from master:
+	2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR libstdc++/113250
+	* src/c++17/fs_ops.cc (fs::equivalent): Use || instead of &&.
+	* src/filesystem/ops.cc (fs::equivalent): Likewise.
+	* testsuite/27_io/filesystem/operations/equivalent.cc: Handle
+	error codes.
+	* testsuite/experimental/filesystem/operations/equivalent.cc:
+	Likewise.
+
 2024-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

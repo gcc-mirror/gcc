@@ -1,3 +1,14 @@
+2024-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2023-12-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/113012
+	* tree-object-size.cc (compute_builtin_object_size): Expand
+	comment for dynamic object sizes.
+	(collect_object_sizes_for): Always set COMPUTED bitmap for
+	dynamic object sizes.
+
 2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/113140
