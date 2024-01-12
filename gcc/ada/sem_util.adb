@@ -30562,7 +30562,8 @@ package body Sem_Util is
                               | Pragma_Post
                               | Pragma_Postcondition
                               | Pragma_Post_Class
-                              | Pragma_Refined_Post);
+                              | Pragma_Refined_Post
+                              | Pragma_Test_Case);
 
                            return (1 .. 0 => <>); -- recursion terminates here
                         end if;
@@ -30619,7 +30620,8 @@ package body Sem_Util is
                   Determiners : constant Determining_Expression_List :=
                     Determining_Expressions (Expr);
                begin
-                  pragma Assert (Determiners'Length > 0);
+                  pragma Assert (if Serious_Errors_Detected = 0 then
+                                   Determiners'Length > 0);
 
                   for Idx in Determiners'Range loop
                      if not Is_Known_On_Entry (Determiners (Idx).Expr) then

@@ -48,8 +48,6 @@ package System.Val_Spec with
   Pure,
   Ghost
 is
-   pragma Unevaluated_Use_Of_Old (Allow);
-
    function Only_Space_Ghost (S : String; From, To : Integer) return Boolean is
       (for all J in From .. To => S (J) = ' ')
    with
