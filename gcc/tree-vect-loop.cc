@@ -11943,8 +11943,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	      (LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
       scale_loop_frequencies (LOOP_VINFO_SCALAR_LOOP (loop_vinfo),
 			      LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
-      single_exit (LOOP_VINFO_SCALAR_LOOP (loop_vinfo))->dest->count
-	= preheader->count;
+      LOOP_VINFO_SCALAR_IV_EXIT (loop_vinfo)->dest->count = preheader->count;
     }
 
   if (niters_vector == NULL_TREE)

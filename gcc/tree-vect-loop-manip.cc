@@ -4066,7 +4066,16 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       basic_block preheader = loop_preheader_edge (loop_to_version)->src;
       preheader->count = preheader->count.apply_probability (prob * prob2);
       scale_loop_frequencies (loop_to_version, prob * prob2);
-      single_exit (loop_to_version)->dest->count = preheader->count;
+      /* When the loop has multiple exits then we can only version itself.
+	This is denoted by loop_to_version == loop.  In this case we can
+	do the versioning by selecting the exit edge the vectorizer is
+	currently using.  */
+      edge exit_edge;
+      if (loop_to_version == loop)
+       exit_edge = LOOP_VINFO_IV_EXIT (loop_vinfo);
+      else
+       exit_edge = single_exit (loop_to_version);
+      exit_edge->dest->count = preheader->count;
       LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo) = (prob * prob2).invert ();
 
       nloop = scalar_loop;
