@@ -3202,6 +3202,11 @@ loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 	      rtx mem = gen_rtx_MEM (Pmode, low);
 	      *low_out = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, mem),
 					 UNSPEC_LOAD_FROM_GOT);
+
+	      /* Nonzero in a mem, if the memory is statically allocated and
+		 read-only.  A common example of the later is a shared library’s
+		 global offset table.  */
+	      MEM_READONLY_P (mem) = 1;
 	    }
 
 	  break;
