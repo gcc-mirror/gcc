@@ -3260,7 +3260,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
-   (set (attr "avl_type_idx") (const_int 5))])
+   (set (attr "avl_type_idx") (const_int 5))
+   (set_attr "spec_restriction" "thv,none,none")])
 
 (define_insn "@pred_msbc<mode>"
   [(set (match_operand:<VM> 0 "register_operand"        "=vr, vr, &vr")
@@ -3279,7 +3280,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
-   (set (attr "avl_type_idx") (const_int 5))])
+   (set (attr "avl_type_idx") (const_int 5))
+   (set_attr "spec_restriction" "thv,thv,none")])
 
 (define_insn "@pred_madc<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
@@ -3299,7 +3301,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
-   (set (attr "avl_type_idx") (const_int 5))])
+   (set (attr "avl_type_idx") (const_int 5))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_insn "@pred_msbc<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
@@ -3319,7 +3322,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
-   (set (attr "avl_type_idx") (const_int 5))])
+   (set (attr "avl_type_idx") (const_int 5))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_expand "@pred_madc<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -3368,7 +3372,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
-   (set (attr "avl_type_idx") (const_int 5))])
+   (set (attr "avl_type_idx") (const_int 5))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_insn "*pred_madc<mode>_extended_scalar"
   [(set (match_operand:<VM> 0 "register_operand"             "=vr, &vr")
@@ -3389,7 +3394,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
-   (set (attr "avl_type_idx") (const_int 5))])
+   (set (attr "avl_type_idx") (const_int 5))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_expand "@pred_msbc<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -3438,7 +3444,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
-   (set (attr "avl_type_idx") (const_int 5))])
+   (set (attr "avl_type_idx") (const_int 5))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_insn "*pred_msbc<mode>_extended_scalar"
   [(set (match_operand:<VM> 0 "register_operand"              "=vr, &vr")
@@ -3459,7 +3466,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
-   (set (attr "avl_type_idx") (const_int 5))])
+   (set (attr "avl_type_idx") (const_int 5))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_insn "@pred_madc<mode>_overflow"
   [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr, &vr")
@@ -3477,7 +3485,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
-   (set (attr "avl_type_idx") (const_int 4))])
+   (set (attr "avl_type_idx") (const_int 4))
+   (set_attr "spec_restriction" "thv,none,none")])
 
 (define_insn "@pred_msbc<mode>_overflow"
   [(set (match_operand:<VM> 0 "register_operand"         "=vr, vr, &vr, &vr")
@@ -3495,7 +3504,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
-   (set (attr "avl_type_idx") (const_int 4))])
+   (set (attr "avl_type_idx") (const_int 4))
+   (set_attr "spec_restriction" "thv,thv,none,none")])
 
 (define_insn "@pred_madc<mode>_overflow_scalar"
   [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
@@ -3514,7 +3524,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
-   (set (attr "avl_type_idx") (const_int 4))])
+   (set (attr "avl_type_idx") (const_int 4))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_insn "@pred_msbc<mode>_overflow_scalar"
   [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
@@ -3533,7 +3544,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
-   (set (attr "avl_type_idx") (const_int 4))])
+   (set (attr "avl_type_idx") (const_int 4))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_expand "@pred_madc<mode>_overflow_scalar"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -3580,7 +3592,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
-   (set (attr "avl_type_idx") (const_int 4))])
+   (set (attr "avl_type_idx") (const_int 4))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_insn "*pred_madc<mode>_overflow_extended_scalar"
   [(set (match_operand:<VM> 0 "register_operand"             "=vr, &vr")
@@ -3600,7 +3613,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
-   (set (attr "avl_type_idx") (const_int 4))])
+   (set (attr "avl_type_idx") (const_int 4))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_expand "@pred_msbc<mode>_overflow_scalar"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -3647,7 +3661,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
-   (set (attr "avl_type_idx") (const_int 4))])
+   (set (attr "avl_type_idx") (const_int 4))
+   (set_attr "spec_restriction" "thv,none")])
 
 (define_insn "*pred_msbc<mode>_overflow_extended_scalar"
   [(set (match_operand:<VM> 0 "register_operand"             "=vr, &vr")
@@ -3667,7 +3682,8 @@
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
-   (set (attr "avl_type_idx") (const_int 4))])
+   (set (attr "avl_type_idx") (const_int 4))
+   (set_attr "spec_restriction" "thv,none")])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated integer unary operations
@@ -3987,7 +4003,8 @@
   "TARGET_VECTOR"
   "vn<insn>.w%o4\t%0,%3,%v4%p1"
   [(set_attr "type" "vnshift")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set_attr "spec_restriction" "none,none,thv,thv,none,thv,none,none,none,thv,none,none")])
 
 (define_insn "@pred_narrow_<optab><mode>_scalar"
   [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand"           "=vd, vd, vr, vr,  &vr,  &vr")
@@ -4008,7 +4025,8 @@
   "TARGET_VECTOR"
   "vn<insn>.w%o4\t%0,%3,%4%p1"
   [(set_attr "type" "vnshift")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set_attr "spec_restriction" "none,none,thv,thv,none,none")])
 
 ;; vncvt.x.x.w
 (define_insn "@pred_trunc<mode>"
@@ -4032,7 +4050,8 @@
    (set_attr "vl_op_idx" "4")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[5])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[6])"))
-   (set (attr "avl_type_idx") (const_int 7))])
+   (set (attr "avl_type_idx") (const_int 7))
+   (set_attr "spec_restriction" "none,none,thv,thv,none,none")])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated fixed-point operations
@@ -4438,7 +4457,8 @@
   "TARGET_VECTOR"
   "vnclip<v_su>.w%o4\t%0,%3,%v4%p1"
   [(set_attr "type" "vnclip")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set_attr "spec_restriction" "thv,thv,thv,thv,thv,thv,none,none,thv,thv,none,none")])
 
 (define_insn "@pred_narrow_clip<v_su><mode>_scalar"
   [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand"           "=vd, vd, vr, vr,  &vr,  &vr")
@@ -4460,7 +4480,8 @@
   "TARGET_VECTOR"
   "vnclip<v_su>.w%o4\t%0,%3,%4%p1"
   [(set_attr "type" "vnclip")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set_attr "spec_restriction" "thv,thv,thv,thv,none,none")])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated integer comparison operations
@@ -4511,23 +4532,24 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_cmp<mode>"
-  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   vr,   vr,   &vr,   &vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK")
-	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
-	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK,   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i,    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i,    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "comparison_except_ltge_operator"
-	     [(match_operand:V_VLSI 4 "register_operand"          "   vr,   vr,   vr,   vr")
-	      (match_operand:V_VLSI 5 "vector_arith_operand"      "   vr,   vr,   vi,   vi")])
-	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,   vu,    0")))]
+	     [(match_operand:V_VLSI 4 "register_operand"          "   vr,   vr,   vr,   vr,   vr,   vr,   vr,   vr")
+	      (match_operand:V_VLSI 5 "vector_arith_operand"      "   vr,   vr,   vi,   vi,   vr,   vr,   vi,   vi")])
+	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,   vu,    0,   vu,    0,   vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode)"
   "vms%B3.v%o5\t%0,%4,%v5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,thv,thv,rvv,rvv,rvv,rvv")])
 
 ;; We use early-clobber for source LMUL > dest LMUL.
 (define_insn "*pred_cmp<mode>_narrow"
@@ -4547,7 +4569,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode)"
   "vms%B3.v%o5\t%0,%4,%v5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,thv,thv,thv,thv,none,none")])
 
 (define_expand "@pred_ltge<mode>"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -4591,23 +4614,24 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_ltge<mode>"
-  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   vr,   vr,   &vr,   &vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK")
-	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
-	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK,   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i,    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i,    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "ltge_operator"
-	     [(match_operand:V_VLSI 4 "register_operand"          "   vr,   vr,   vr,   vr")
-	      (match_operand:V_VLSI 5 "vector_neg_arith_operand"  "   vr,   vr,   vj,   vj")])
-	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,   vu,    0")))]
+	     [(match_operand:V_VLSI 4 "register_operand"          "   vr,   vr,   vr,   vr,   vr,   vr,   vr,   vr")
+	      (match_operand:V_VLSI 5 "vector_neg_arith_operand"  "   vr,   vr,   vj,   vj,   vr,   vr,   vj,   vj")])
+	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,   vu,    0,    vu,    0,   vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode)"
   "vms%B3.v%o5\t%0,%4,%v5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,thv,thv,rvv,rvv,rvv,rvv")])
 
 ;; We use early-clobber for source LMUL > dest LMUL.
 (define_insn "*pred_ltge<mode>_narrow"
@@ -4627,7 +4651,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode)"
   "vms%B3.v%o5\t%0,%4,%v5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,thv,thv,thv,thv,none,none")])
 
 (define_expand "@pred_cmp<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -4673,24 +4698,25 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_cmp<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"         "   rK,   rK")
-	     (match_operand 7 "const_int_operand"             "    i,    i")
-	     (match_operand 8 "const_int_operand"             "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "comparison_except_eqge_operator"
-	     [(match_operand:V_VLSI_QHS 4 "register_operand"      "   vr,   vr")
+	     [(match_operand:V_VLSI_QHS 4 "register_operand"      "   vr,   vr,   vr,   vr")
 	      (vec_duplicate:V_VLSI_QHS
-	        (match_operand:<VEL> 5 "register_operand"     "    r,    r"))])
-	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0")))]
+	        (match_operand:<VEL> 5 "register_operand"     "    r,    r,    r,    r"))])
+	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,    vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode)"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,rvv,rvv")])
 
 ;; We use early-clobber for source LMUL > dest LMUL.
 (define_insn "*pred_cmp<mode>_scalar_narrow"
@@ -4711,7 +4737,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode)"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,none,none")])
 
 (define_expand "@pred_eqne<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -4757,24 +4784,25 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_eqne<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"         "   rK,   rK")
-	     (match_operand 7 "const_int_operand"             "    i,    i")
-	     (match_operand 8 "const_int_operand"             "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "equality_operator"
 	     [(vec_duplicate:V_VLSI_QHS
-	        (match_operand:<VEL> 5 "register_operand"     "    r,    r"))
-	      (match_operand:V_VLSI_QHS 4 "register_operand"      "   vr,   vr")])
-	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0")))]
+	        (match_operand:<VEL> 5 "register_operand"     "    r,    r,    r,    r"))
+	      (match_operand:V_VLSI_QHS 4 "register_operand"      "   vr,   vr,   vr,   vr")])
+	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,    vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode)"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,rvv,rvv")])
 
 ;; We use early-clobber for source LMUL > dest LMUL.
 (define_insn "*pred_eqne<mode>_scalar_narrow"
@@ -4795,7 +4823,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode)"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,none,none")])
 
 ;; Handle GET_MODE_INNER (mode) = DImode. We need to split them since
 ;; we need to deal with SEW = 64 in RV32 system.
@@ -4922,24 +4951,25 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_cmp<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"         "   rK,   rK")
-	     (match_operand 7 "const_int_operand"             "    i,    i")
-	     (match_operand 8 "const_int_operand"             "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "comparison_except_eqge_operator"
-	     [(match_operand:V_VLSI_D 4 "register_operand"        "   vr,   vr")
+	     [(match_operand:V_VLSI_D 4 "register_operand"        "   vr,   vr,   vr,   vr")
 	      (vec_duplicate:V_VLSI_D
-	        (match_operand:<VEL> 5 "register_operand"     "    r,    r"))])
-	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0")))]
+	        (match_operand:<VEL> 5 "register_operand"     "    r,    r,    r,    r"))])
+	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,    vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode)"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,rvv,rvv")])
 
 ;; We use early-clobber for source LMUL > dest LMUL.
 (define_insn "*pred_cmp<mode>_scalar_narrow"
@@ -4960,28 +4990,30 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode)"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,none,none")])
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_eqne<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"         "   rK,   rK")
-	     (match_operand 7 "const_int_operand"             "    i,    i")
-	     (match_operand 8 "const_int_operand"             "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "equality_operator"
 	     [(vec_duplicate:V_VLSI_D
-	        (match_operand:<VEL> 5 "register_operand"     "    r,    r"))
-	      (match_operand:V_VLSI_D 4 "register_operand"        "   vr,   vr")])
-	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0")))]
+	        (match_operand:<VEL> 5 "register_operand"     "    r,    r,    r,    r"))
+	      (match_operand:V_VLSI_D 4 "register_operand"        "   vr,   vr,   vr,   vr")])
+	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,    vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode)"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,rvv,rvv")])
 
 ;; We use early-clobber for source LMUL > dest LMUL.
 (define_insn "*pred_eqne<mode>_scalar_narrow"
@@ -5002,7 +5034,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode)"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,none,none")])
 
 (define_insn "*pred_cmp<mode>_extended_scalar_merge_tie_mask"
   [(set (match_operand:<VM> 0 "register_operand"               "=vm")
@@ -5031,25 +5064,26 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_cmp<mode>_extended_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"                 "=vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                 "=vr,   vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"       "vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"          "   rK,   rK")
-	     (match_operand 7 "const_int_operand"              "    i,    i")
-	     (match_operand 8 "const_int_operand"              "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"       "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"          "   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"              "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"              "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "comparison_except_eqge_operator"
-	     [(match_operand:V_VLSI_D 4 "register_operand"         "   vr,   vr")
+	     [(match_operand:V_VLSI_D 4 "register_operand"         "   vr,   vr,   vr,   vr")
 	      (vec_duplicate:V_VLSI_D
 	        (sign_extend:<VEL>
-	          (match_operand:<VSUBEL> 5 "register_operand" "    r,    r")))])
-	  (match_operand:<VM> 2 "vector_merge_operand"         "   vu,    0")))]
+	          (match_operand:<VSUBEL> 5 "register_operand" "    r,    r,    r,    r")))])
+	  (match_operand:<VM> 2 "vector_merge_operand"         "   vu,    0,    vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode) && !TARGET_64BIT"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,rvv,rvv")])
 
 (define_insn "*pred_cmp<mode>_extended_scalar_narrow"
   [(set (match_operand:<VM> 0 "register_operand"                 "=vm,   vr,   vr,  &vr,  &vr")
@@ -5070,7 +5104,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode) && !TARGET_64BIT"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,none,none")])
 
 (define_insn "*pred_eqne<mode>_extended_scalar_merge_tie_mask"
   [(set (match_operand:<VM> 0 "register_operand"                 "=vm")
@@ -5099,25 +5134,26 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_eqne<mode>_extended_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"                 "=vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                 "=vr,   vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"       "vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"          "   rK,   rK")
-	     (match_operand 7 "const_int_operand"              "    i,    i")
-	     (match_operand 8 "const_int_operand"              "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"       "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"          "   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"              "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"              "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "equality_operator"
 	     [(vec_duplicate:V_VLSI_D
 	        (sign_extend:<VEL>
-	          (match_operand:<VSUBEL> 5 "register_operand" "    r,    r")))
-	      (match_operand:V_VLSI_D 4 "register_operand"         "   vr,   vr")])
-	  (match_operand:<VM> 2 "vector_merge_operand"         "   vu,    0")))]
+	          (match_operand:<VSUBEL> 5 "register_operand" "    r,    r,    r,    r")))
+	      (match_operand:V_VLSI_D 4 "register_operand"         "   vr,   vr,   vr,   vr")])
+	  (match_operand:<VM> 2 "vector_merge_operand"         "   vu,    0,    vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode) && !TARGET_64BIT"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,rvv,rvv")])
 
 (define_insn "*pred_eqne<mode>_extended_scalar_narrow"
   [(set (match_operand:<VM> 0 "register_operand"                "=vm,   vr,   vr,  &vr,  &vr")
@@ -5138,7 +5174,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode) && !TARGET_64BIT"
   "vms%B3.vx\t%0,%4,%5%p1"
   [(set_attr "type" "vicmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,none,none")])
 
 ;; GE, vmsge.vx/vmsgeu.vx
 ;;
@@ -7327,23 +7364,24 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_cmp<mode>"
-  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"         "   rK,   rK")
-	     (match_operand 7 "const_int_operand"             "    i,    i")
-	     (match_operand 8 "const_int_operand"             "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "signed_order_operator"
-	     [(match_operand:V_VLSF 4 "register_operand"      "   vr,   vr")
-	      (match_operand:V_VLSF 5 "register_operand"      "   vr,   vr")])
-	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0")))]
+	     [(match_operand:V_VLSF 4 "register_operand"      "   vr,   vr,   vr,   vr")
+	      (match_operand:V_VLSF 5 "register_operand"      "   vr,   vr,   vr,   vr")])
+	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,    vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode)"
   "vmf%B3.vv\t%0,%4,%5%p1"
   [(set_attr "type" "vfcmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,rvv,rvv")])
 
 (define_insn "*pred_cmp<mode>_narrow_merge_tie_mask"
   [(set (match_operand:<VM> 0 "register_operand"               "=vm")
@@ -7386,7 +7424,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode)"
   "vmf%B3.vv\t%0,%4,%5%p1"
   [(set_attr "type" "vfcmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,thv,thv,thv,thv,none,none")])
 
 (define_expand "@pred_cmp<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -7432,24 +7471,25 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_cmp<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"         "   rK,   rK")
-	     (match_operand 7 "const_int_operand"             "    i,    i")
-	     (match_operand 8 "const_int_operand"             "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "signed_order_operator"
-	     [(match_operand:V_VLSF 4 "register_operand"      "   vr,   vr")
+	     [(match_operand:V_VLSF 4 "register_operand"      "   vr,   vr,   vr,   vr")
 	      (vec_duplicate:V_VLSF
-	        (match_operand:<VEL> 5 "register_operand"     "    f,    f"))])
-	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0")))]
+	        (match_operand:<VEL> 5 "register_operand"     "    f,    f,    f,    f"))])
+	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,    vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode)"
   "vmf%B3.vf\t%0,%4,%5%p1"
   [(set_attr "type" "vfcmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,rvv,rvv")])
 
 ;; We use early-clobber for source LMUL > dest LMUL.
 (define_insn "*pred_cmp<mode>_scalar_narrow"
@@ -7470,7 +7510,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode)"
   "vmf%B3.vf\t%0,%4,%5%p1"
   [(set_attr "type" "vfcmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,none,none")])
 
 (define_expand "@pred_eqne<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -7516,24 +7557,25 @@
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_eqne<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr")
+  [(set (match_operand:<VM> 0 "register_operand"                "=vr,   vr,   &vr,   &vr")
 	(if_then_else:<VM>
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1")
-	     (match_operand 6 "vector_length_operand"         "   rK,   rK")
-	     (match_operand 7 "const_int_operand"             "    i,    i")
-	     (match_operand 8 "const_int_operand"             "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 6 "vector_length_operand"         "   rK,   rK,   rK,   rK")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"             "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "equality_operator"
 	     [(vec_duplicate:V_VLSF
-	        (match_operand:<VEL> 5 "register_operand"     "    f,    f"))
-	      (match_operand:V_VLSF 4 "register_operand"      "   vr,   vr")])
-	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0")))]
+	        (match_operand:<VEL> 5 "register_operand"     "    f,    f,    f,    f"))
+	      (match_operand:V_VLSF 4 "register_operand"      "   vr,   vr,   vr,   vr")])
+	  (match_operand:<VM> 2 "vector_merge_operand"        "   vu,    0,    vu,    0")))]
   "TARGET_VECTOR && riscv_vector::cmp_lmul_le_one (<MODE>mode)"
   "vmf%B3.vf\t%0,%4,%5%p1"
   [(set_attr "type" "vfcmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "thv,thv,rvv,rvv")])
 
 ;; We use early-clobber for source LMUL > dest LMUL.
 (define_insn "*pred_eqne<mode>_scalar_narrow"
@@ -7554,7 +7596,8 @@
   "TARGET_VECTOR && riscv_vector::cmp_lmul_gt_one (<MODE>mode)"
   "vmf%B3.vf\t%0,%4,%5%p1"
   [(set_attr "type" "vfcmp")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "spec_restriction" "none,thv,thv,none,none")])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated floating-point merge
@@ -7774,7 +7817,8 @@
   [(set_attr "type" "vfncvtftoi")
    (set_attr "mode" "<VNCONVERT>")
    (set (attr "frm_mode")
-	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))
+   (set_attr "spec_restriction" "none,none,thv,thv,none,none")])
 
 (define_insn "@pred_narrow_<fix_cvt><mode>"
   [(set (match_operand:<VNCONVERT> 0 "register_operand"        "=vd, vd, vr, vr,  &vr,  &vr")
@@ -7816,7 +7860,8 @@
   [(set_attr "type" "vfncvtitof")
    (set_attr "mode" "<VNCONVERT>")
    (set (attr "frm_mode")
-	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))
+   (set_attr "spec_restriction" "none,none,thv,thv,none,none")])
 
 (define_insn "@pred_trunc<mode>"
   [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand"       "=vd, vd, vr, vr,  &vr,  &vr")
@@ -7839,7 +7884,8 @@
   [(set_attr "type" "vfncvtftof")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")
    (set (attr "frm_mode")
-	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))
+   (set_attr "spec_restriction" "none,none,thv,thv,none,none")])
 
 (define_insn "@pred_rod_trunc<mode>"
   [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand"       "=vd, vd, vr, vr,  &vr,  &vr")

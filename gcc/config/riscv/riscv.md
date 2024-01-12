@@ -583,6 +583,25 @@
         ]
        (const_string "yes")))
 
+;; This attribute marks the alternatives not matching the constraints
+;; described in spec as disabled.
+(define_attr "spec_restriction" "none,thv,rvv"
+  (const_string "none"))
+
+(define_attr "spec_restriction_disabled" "no,yes"
+  (cond [(eq_attr "spec_restriction" "none")
+	 (const_string "no")
+
+	 (and (eq_attr "spec_restriction" "thv")
+	      (match_test "TARGET_XTHEADVECTOR"))
+	 (const_string "yes")
+
+	 (and (eq_attr "spec_restriction" "rvv")
+	      (match_test "TARGET_VECTOR && !TARGET_XTHEADVECTOR"))
+	 (const_string "yes")
+	]
+       (const_string "no")))
+
 ;; Attribute to control enable or disable instructions.
 (define_attr "enabled" "no,yes"
   (cond [
@@ -593,6 +612,9 @@
     (const_string "no")
 
     (eq_attr "group_overlap_valid" "no")
+    (const_string "no")
+
+    (eq_attr "spec_restriction_disabled" "yes")
     (const_string "no")
   ]
   (const_string "yes")))
