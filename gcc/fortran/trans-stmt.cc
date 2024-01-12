@@ -41,6 +41,7 @@ typedef struct iter_info
   tree start;
   tree end;
   tree step;
+  gfc_loop_annot annot;
   struct iter_info *next;
 }
 iter_info;
@@ -2462,21 +2463,22 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
 			    fold_convert (type, to));
 
   cond = gfc_evaluate_now_loc (loc, cond, &body);
-  if (code->ext.iterator->unroll && cond != error_mark_node)
+  if (code->ext.iterator->annot.unroll && cond != error_mark_node)
     cond
       = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		build_int_cst (integer_type_node, annot_expr_unroll_kind),
-		build_int_cst (integer_type_node, code->ext.iterator->unroll));
+		build_int_cst (integer_type_node,
+			       code->ext.iterator->annot.unroll));
 
-  if (code->ext.iterator->ivdep && cond != error_mark_node)
+  if (code->ext.iterator->annot.ivdep && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
 		   integer_zero_node);
-  if (code->ext.iterator->vector && cond != error_mark_node)
+  if (code->ext.iterator->annot.vector && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_vector_kind),
 		   integer_zero_node);
-  if (code->ext.iterator->novector && cond != error_mark_node)
+  if (code->ext.iterator->annot.novector && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_no_vector_kind),
 		   integer_zero_node);
@@ -2806,21 +2808,22 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   /* End with the loop condition.  Loop until countm1t == 0.  */
   cond = fold_build2_loc (loc, EQ_EXPR, logical_type_node, countm1t,
 			  build_int_cst (utype, 0));
-  if (code->ext.iterator->unroll && cond != error_mark_node)
+  if (code->ext.iterator->annot.unroll && cond != error_mark_node)
     cond
       = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		build_int_cst (integer_type_node, annot_expr_unroll_kind),
-		build_int_cst (integer_type_node, code->ext.iterator->unroll));
+		build_int_cst (integer_type_node,
+			       code->ext.iterator->annot.unroll));
 
-  if (code->ext.iterator->ivdep && cond != error_mark_node)
+  if (code->ext.iterator->annot.ivdep && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
 		   integer_zero_node);
-  if (code->ext.iterator->vector && cond != error_mark_node)
+  if (code->ext.iterator->annot.vector && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_vector_kind),
 		   integer_zero_node);
-  if (code->ext.iterator->novector && cond != error_mark_node)
+  if (code->ext.iterator->annot.novector && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_no_vector_kind),
 		   integer_zero_node);
@@ -4117,10 +4120,28 @@ gfc_trans_forall_loop (forall_info *forall_tmp, tree body,
 
       /* PR 83064 means that we cannot use annot_expr_parallel_kind until
        the autoparallelizer can handle this.  */
-      if (forall_tmp->do_concurrent)
+      if (forall_tmp->do_concurrent || iter->annot.ivdep)
 	cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		       build_int_cst (integer_type_node,
 				      annot_expr_ivdep_kind),
+		       integer_zero_node);
+
+      if (iter->annot.unroll && cond != error_mark_node)
+	cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		       build_int_cst (integer_type_node,
+				      annot_expr_unroll_kind),
+		       build_int_cst (integer_type_node, iter->annot.unroll));
+
+      if (iter->annot.vector && cond != error_mark_node)
+	cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		       build_int_cst (integer_type_node,
+				      annot_expr_vector_kind),
+		       integer_zero_node);
+
+      if (iter->annot.novector && cond != error_mark_node)
+	cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		       build_int_cst (integer_type_node,
+				      annot_expr_no_vector_kind),
 		       integer_zero_node);
 
       tmp = build1_v (GOTO_EXPR, exit_label);
@@ -5089,6 +5110,9 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       gfc_make_safe_expr (&se);
       gfc_add_block_to_block (&block, &se.pre);
       step[n] = se.expr;
+
+      /* Copy loop annotations.  */
+      this_forall->annot = fa->annot;
 
       /* Set the NEXT field of this_forall to NULL.  */
       this_forall->next = NULL;
