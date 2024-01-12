@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } {"-mfloat-abi=soft" } } */
-/* { dg-options "-mthumb -O2 -mfloat-abi=soft -w" } */
+/* { dg-options "-mthumb -O2 -mfloat-abi=soft -w -fpermissive" } */
 /* { dg-skip-if "" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
 
 struct ST {
