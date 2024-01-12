@@ -402,10 +402,12 @@ extern UDWtype __udivmoddi4 (UDWtype, UDWtype, UDWtype *);
 #if (defined(__BITINT_MAXWIDTH__) \
      && (defined(L_mulbitint3) || defined(L_divmodbitint4)))
 /* _BitInt support.  */
-extern void __mulbitint3 (UWtype *, SItype, const UWtype *, SItype,
-			  const UWtype *, SItype);
-extern void __divmodbitint4 (UWtype *, SItype, UWtype *, SItype,
-			     const UWtype *, SItype, const UWtype *, SItype);
+typedef UWtype __attribute__((__may_alias__)) UBILtype;
+extern void __mulbitint3 (UBILtype *, SItype, const UBILtype *, SItype,
+			  const UBILtype *, SItype);
+extern void __divmodbitint4 (UBILtype *, SItype, UBILtype *, SItype,
+			     const UBILtype *, SItype, const UBILtype *,
+			     SItype);
 #endif
 
 /* __negdi2 is static inline when building other libgcc2 portions.  */
