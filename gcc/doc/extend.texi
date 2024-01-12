@@ -1594,7 +1594,7 @@ from @w{@uref{https://www.nongnu.org/avr-libc/user-manual/,AVR-LibC}}
 together with attribute @code{progmem}.
 
 @noindent
-@b{Limitations and caveats}
+@b{Limitations and Caveats}
 
 @itemize
 @item
@@ -1608,6 +1608,8 @@ supports reading across the 64@tie{}KiB flash segment boundaries is
 If you use one of the @code{__flash@var{N}} address spaces
 you must arrange your linker script to locate the
 @code{.progmem@var{N}.data} sections according to your needs.
+For an example, see the
+@w{@uref{https://gcc.gnu.org/wiki/avr-gcc#Address_Spaces,avr-gcc wiki}}
 
 @item
 Any data or pointers to the non-generic address spaces must
