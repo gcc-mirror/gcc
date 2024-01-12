@@ -967,6 +967,12 @@ create_access (tree expr, gimple *stmt, bool write)
       disqualify_candidate (base, "Encountered an access beyond the base.");
       return NULL;
     }
+  if (TREE_CODE (TREE_TYPE (expr)) == BITINT_TYPE
+      && size > WIDE_INT_MAX_PRECISION - 1)
+    {
+      disqualify_candidate (base, "Encountered too large _BitInt access.");
+      return NULL;
+    }
 
   access = create_access_1 (base, offset, size);
   access->expr = expr;
