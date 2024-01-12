@@ -1245,8 +1245,8 @@ namespace std::chrono
   pair<vector<leap_second>, bool>
   tzdb_list::_Node::_S_read_leap_seconds()
   {
-    // This list is valid until at least 2025-12-28 00:00:00 UTC.
-    auto expires = sys_days{2025y/12/28};
+    // This list is valid until at least 2026-06-28 00:00:00 UTC.
+    constexpr auto expires = sys_days{2026y/06/28};
     vector<leap_second> leaps
     {
       (leap_second)  78796800, // 1 Jul 1972
