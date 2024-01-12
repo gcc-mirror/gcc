@@ -1697,10 +1697,15 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		 virtual operands we have to keep the original link.   Virtual
 		 operands don't all become the same because we'll corrupt the
 		 vUSE chains among others.  */
-	      if (peeled_iters && !virtual_operand_p (new_arg))
+	      if (peeled_iters)
 		{
 		  tree tmp_arg = gimple_phi_result (from_phi);
-		  if (!new_phi_args.get (tmp_arg))
+		  /* Similar to the single exit case, If we have an existing
+		     LCSSA variable thread through the original value otherwise
+		     skip it and directly use the final value.  */
+		  if (tree *res = new_phi_args.get (tmp_arg))
+		    new_arg = *res;
+		  else if (!virtual_operand_p (new_arg))
 		    new_arg = tmp_arg;
 		}
 
