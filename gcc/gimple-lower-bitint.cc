@@ -997,7 +997,7 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 	{
 	  unsigned int prec = TYPE_PRECISION (TREE_TYPE (op));
 	  unsigned rem = prec % (2 * limb_prec);
-	  int ext = tree_int_cst_sgn (op) < 0 ? -1 : 0;
+	  int ext = wi::neg_p (wi::to_wide (op)) ? -1 : 0;
 	  tree c = m_data[m_data_cnt];
 	  unsigned min_prec = TYPE_PRECISION (TREE_TYPE (c));
 	  g = gimple_build_cond (LT_EXPR, idx,
