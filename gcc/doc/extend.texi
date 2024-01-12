@@ -8317,8 +8317,7 @@ allowing the use of @code{cbi}, @code{sbi}, @code{sbic} and @code{sbis}
 instructions.
 
 @cindex @code{address} variable attribute, AVR
-@item address
-@itemx address (@var{addr})
+@item address (@var{addr})
 Variables with the @code{address} attribute can be used to address
 memory-mapped peripherals that may lie outside the I/O address range.
 Just like with the @code{io} and @code{io_low} attributes, no memory is
