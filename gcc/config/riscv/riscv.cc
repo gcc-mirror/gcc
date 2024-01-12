@@ -391,17 +391,24 @@ static const scalable_vector_cost rvv_vla_vector_cost = {
   },
 };
 
+/* RVV register move cost.   */
+static const regmove_vector_cost rvv_regmove_vector_cost = {
+  2, /* GR2VR  */
+  2, /* FR2VR  */
+};
+
 /* Generic costs for vector insn classes.  It is supposed to be the vector cost
    models used by default if no other cost model was specified.  */
 static const struct cpu_vector_cost generic_vector_cost = {
-  1,			/* scalar_int_stmt_cost  */
-  1,			/* scalar_fp_stmt_cost  */
-  1,			/* scalar_load_cost  */
-  1,			/* scalar_store_cost  */
-  3,			/* cond_taken_branch_cost  */
-  1,			/* cond_not_taken_branch_cost  */
-  &rvv_vls_vector_cost, /* vls  */
-  &rvv_vla_vector_cost, /* vla */
+  1,			    /* scalar_int_stmt_cost  */
+  1,			    /* scalar_fp_stmt_cost  */
+  1,			    /* scalar_load_cost  */
+  1,			    /* scalar_store_cost  */
+  3,			    /* cond_taken_branch_cost  */
+  1,			    /* cond_not_taken_branch_cost  */
+  &rvv_vls_vector_cost,	    /* vls  */
+  &rvv_vla_vector_cost,	    /* vla  */
+  &rvv_regmove_vector_cost, /* regmove  */
 };
 
 /* Costs to use when optimizing for rocket.  */
@@ -10443,7 +10450,7 @@ get_common_costs (const cpu_vector_cost *costs, tree vectype)
 
 /* Return the CPU vector costs according to -mtune if tune info has non-NULL
    vector cost.  Otherwide, return the default generic vector costs.  */
-static const cpu_vector_cost *
+const cpu_vector_cost *
 get_vector_costs ()
 {
   const cpu_vector_cost *costs = tune_param->vec_costs;

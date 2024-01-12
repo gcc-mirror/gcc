@@ -1055,6 +1055,26 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
   return vector_costs::better_main_loop_than_p (other);
 }
 
+/* Adjust vectorization cost after calling riscv_builtin_vectorization_cost.
+   For some statement, we would like to further fine-grain tweak the cost on
+   top of riscv_builtin_vectorization_cost handling which doesn't have any
+   information on statement operation codes etc.  */
+
+static unsigned
+adjust_stmt_cost (enum vect_cost_for_stmt kind, tree vectype, int stmt_cost)
+{
+  const cpu_vector_cost *costs = get_vector_costs ();
+  switch (kind)
+    {
+    case scalar_to_vec:
+      return stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->FR2VR
+						  : costs->regmove->GR2VR);
+    default:
+      break;
+    }
+  return stmt_cost;
+}
+
 unsigned
 costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		      stmt_vec_info stmt_info, slp_tree, tree vectype,
@@ -1082,6 +1102,9 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	 as one iteration of the VLA loop.  */
       if (where == vect_body && m_unrolled_vls_niters)
 	m_unrolled_vls_stmts += count * m_unrolled_vls_niters;
+
+      if (vectype)
+	stmt_cost = adjust_stmt_cost (kind, vectype, stmt_cost);
     }
 
   return record_stmt_cost (stmt_info, where, count * stmt_cost);

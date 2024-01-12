@@ -250,6 +250,13 @@ struct scalable_vector_cost : common_vector_cost
      E.g. fold_left reduction cost, lanes load/store cost, ..., etc.  */
 };
 
+/* Additional costs for register copies.  Cost is for one register.  */
+struct regmove_vector_cost
+{
+  const int GR2VR;
+  const int FR2VR;
+};
+
 /* Cost for vector insn classes.  */
 struct cpu_vector_cost
 {
@@ -276,6 +283,9 @@ struct cpu_vector_cost
 
   /* Cost of an VLA modes operations.  */
   const scalable_vector_cost *vla;
+
+  /* Cost of vector register move operations.  */
+  const regmove_vector_cost *regmove;
 };
 
 /* Routines implemented in riscv-selftests.cc.  */
@@ -764,5 +774,6 @@ struct riscv_tune_info {
 
 const struct riscv_tune_info *
 riscv_parse_tune (const char *, bool);
+const cpu_vector_cost *get_vector_costs ();
 
 #endif /* ! GCC_RISCV_PROTOS_H */
