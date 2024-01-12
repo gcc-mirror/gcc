@@ -6799,7 +6799,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    ? TREE_TYPE (@00) : type1);
      }
      (if (element_precision (TREE_TYPE (@0)) > element_precision (newtype)
-	  && is_truth_type_for (newtype, type))
+	  && (!VECTOR_TYPE_P (type) || is_truth_type_for (newtype, type)))
       (cmp (convert:newtype @00) (convert:newtype @10))))))))
 
 
