@@ -25714,6 +25714,25 @@ cp_parser_parameter_declaration (cp_parser *parser,
      for a C-style variadic function. */
   token = cp_lexer_peek_token (parser->lexer);
 
+  bool const xobj_param_p
+    = decl_spec_seq_has_spec_p (&decl_specifiers, ds_this);
+
+  if (xobj_param_p
+      && ((declarator && declarator->parameter_pack_p)
+	  || cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)))
+    {
+      location_t xobj_param
+	= make_location (decl_specifiers.locations[ds_this],
+			 decl_spec_token_start->location,
+			 input_location);
+      error_at (xobj_param,
+		"an explicit object parameter cannot "
+		"be a function parameter pack");
+      /* Suppress errors that occur down the line.  */
+      if (declarator)
+	declarator->parameter_pack_p = false;
+    }
+
   /* If a function parameter pack was specified and an implicit template
      parameter was introduced during cp_parser_parameter_declaration,
      change any implicit parameters introduced into packs.  */
@@ -25837,7 +25856,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
   if (default_argument)
     STRIP_ANY_LOCATION_WRAPPER (default_argument);
 
-  if (decl_spec_seq_has_spec_p (&decl_specifiers, ds_this))
+  if (xobj_param_p)
     {
       if (default_argument)
 	{
