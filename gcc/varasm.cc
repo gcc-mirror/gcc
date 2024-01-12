@@ -2552,7 +2552,8 @@ process_pending_assemble_externals (void)
   for (rtx list = pending_libcall_symbols; list; list = XEXP (list, 1))
     {
       rtx symbol = XEXP (list, 0);
-      tree id = get_identifier (XSTR (symbol, 0));
+      const char *name = targetm.strip_name_encoding (XSTR (symbol, 0));
+      tree id = get_identifier (name);
       if (TREE_SYMBOL_REFERENCED (id))
 	targetm.asm_out.external_libcall (symbol);
     }
@@ -2640,7 +2641,8 @@ assemble_external_libcall (rtx fun)
          reference to it will mark its tree node as referenced, via
          assemble_name_resolve.  These are eventually emitted, if
          used, in process_pending_assemble_externals. */
-      get_identifier (XSTR (fun, 0));
+      const char *name = targetm.strip_name_encoding (XSTR (fun, 0));
+      get_identifier (name);
       pending_libcall_symbols = gen_rtx_EXPR_LIST (VOIDmode, fun,
 						   pending_libcall_symbols);
     }
