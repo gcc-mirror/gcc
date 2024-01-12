@@ -2600,19 +2600,6 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
   return cpp_interpret_string_1 (pfile, from, count, to, type, NULL, NULL);
 }
 
-/* A "do nothing" diagnostic-handling callback for use by
-   cpp_interpret_string_ranges, so that it can temporarily suppress
-   diagnostic-handling.  */
-
-static bool
-noop_diagnostic_cb (cpp_reader *, enum cpp_diagnostic_level,
-		    enum cpp_warning_reason, rich_location *,
-		    const char *, va_list *)
-{
-  /* no-op.  */
-  return true;
-}
-
 /* This function mimics the behavior of cpp_interpret_string, but
    rather than generating a string in the execution character set,
    *OUT is written to with the source code ranges of the characters
@@ -2652,20 +2639,9 @@ cpp_interpret_string_ranges (cpp_reader *pfile, const cpp_string *from,
      failing, rather than being emitted as a user-visible diagnostic.
      If an diagnostic does occur, we should see it via the return value of
      cpp_interpret_string_1.  */
-  bool (*saved_diagnostic_handler) (cpp_reader *, enum cpp_diagnostic_level,
-				    enum cpp_warning_reason, rich_location *,
-				    const char *, va_list *)
-    ATTRIBUTE_CPP_PPDIAG (5, 0);
-
-  saved_diagnostic_handler = pfile->cb.diagnostic;
-  pfile->cb.diagnostic = noop_diagnostic_cb;
-
+  cpp_auto_suppress_diagnostics suppress {pfile};
   bool result = cpp_interpret_string_1 (pfile, from, count, NULL, type,
 					loc_readers, out);
-
-  /* Restore the saved diagnostic-handler.  */
-  pfile->cb.diagnostic = saved_diagnostic_handler;
-
   if (!result)
     return "cpp_interpret_string_1 failed";
 
@@ -2701,17 +2677,11 @@ static unsigned
 count_source_chars (cpp_reader *pfile, cpp_string str, cpp_ttype type)
 {
   cpp_string str2 = { 0, 0 };
-  bool (*saved_diagnostic_handler) (cpp_reader *, enum cpp_diagnostic_level,
-				    enum cpp_warning_reason, rich_location *,
-				    const char *, va_list *)
-    ATTRIBUTE_CPP_PPDIAG (5, 0);
-  saved_diagnostic_handler = pfile->cb.diagnostic;
-  pfile->cb.diagnostic = noop_diagnostic_cb;
+  cpp_auto_suppress_diagnostics suppress {pfile};
   convert_f save_func = pfile->narrow_cset_desc.func;
   pfile->narrow_cset_desc.func = convert_count_chars;
   bool ret = cpp_interpret_string (pfile, &str, 1, &str2, type);
   pfile->narrow_cset_desc.func = save_func;
-  pfile->cb.diagnostic = saved_diagnostic_handler;
   if (ret)
     {
       if (str2.text != str.text)

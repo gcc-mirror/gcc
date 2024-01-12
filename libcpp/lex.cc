@@ -2091,39 +2091,6 @@ identifier_diagnostics_on_lex (cpp_reader *pfile, cpp_hashnode *node)
 		 NODE_NAME (node));
 }
 
-/* Helper function to get the cpp_hashnode of the identifier BASE.  */
-static cpp_hashnode *
-lex_identifier_intern (cpp_reader *pfile, const uchar *base)
-{
-  cpp_hashnode *result;
-  const uchar *cur;
-  unsigned int len;
-  unsigned int hash = HT_HASHSTEP (0, *base);
-
-  cur = base + 1;
-  while (ISIDNUM (*cur))
-    {
-      hash = HT_HASHSTEP (hash, *cur);
-      cur++;
-    }
-  len = cur - base;
-  hash = HT_HASHFINISH (hash, len);
-  result = CPP_HASHNODE (ht_lookup_with_hash (pfile->hash_table,
-					      base, len, hash, HT_ALLOC));
-  identifier_diagnostics_on_lex (pfile, result);
-  return result;
-}
-
-/* Get the cpp_hashnode of an identifier specified by NAME in
-   the current cpp_reader object.  If none is found, NULL is returned.  */
-cpp_hashnode *
-_cpp_lex_identifier (cpp_reader *pfile, const char *name)
-{
-  cpp_hashnode *result;
-  result = lex_identifier_intern (pfile, (uchar *) name);
-  return result;
-}
-
 /* Lex an identifier starting at BASE.  BUFFER->CUR is expected to point
    one past the first character at BASE, which may be a (possibly multi-byte)
    character if STARTS_UCN is true.  */

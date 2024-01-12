@@ -141,7 +141,8 @@ static cpp_macro **find_answer (cpp_hashnode *, const cpp_macro *);
 static void handle_assertion (cpp_reader *, const char *, int);
 static void do_pragma_push_macro (cpp_reader *);
 static void do_pragma_pop_macro (cpp_reader *);
-static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
+static void cpp_pop_definition (cpp_reader *, def_pragma_macro *,
+				cpp_hashnode *);
 
 /* This is the table of directive handlers.  All extensions other than
    #warning, #include_next, and #import are deprecated.  The name is
@@ -2085,55 +2086,95 @@ do_pragma_once (cpp_reader *pfile)
   _cpp_mark_file_once_only (pfile, pfile->buffer->file);
 }
 
-/* Handle #pragma push_macro(STRING).  */
-static void
-do_pragma_push_macro (cpp_reader *pfile)
-{
-  cpp_hashnode *node;
-  size_t defnlen;
-  const uchar *defn = NULL;
-  char *macroname, *dest;
-  const char *limit, *src;
-  const cpp_token *txt;
-  struct def_pragma_macro *c;
+/* Helper for #pragma {push,pop}_macro.  Destringize STR and
+   lex it into an identifier, returning the hash node for it.  */
 
-  txt = get__Pragma_string (pfile);
-  if (!txt)
-    {
-      location_t src_loc = pfile->cur_token[-1].src_loc;
-      cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
-			   "invalid %<#pragma push_macro%> directive");
-      check_eol (pfile, false);
-      skip_rest_of_line (pfile);
-      return;
-    }
-  dest = macroname = (char *) alloca (txt->val.str.len + 2);
-  src = (const char *) (txt->val.str.text + 1 + (txt->val.str.text[0] == 'L'));
-  limit = (const char *) (txt->val.str.text + txt->val.str.len - 1);
-  while (src < limit)
+static cpp_hashnode *
+lex_identifier_from_string (cpp_reader *pfile, cpp_string str)
+{
+  auto src = (const uchar *) memchr (str.text, '"', str.len);
+  gcc_checking_assert (src);
+  ++src;
+  const auto limit = str.text + str.len - 1;
+  gcc_checking_assert (*limit == '"' && limit >= src);
+  const auto ident = XALLOCAVEC (uchar, limit - src + 1);
+  auto dest = ident;
+  while (src != limit)
     {
       /* We know there is a character following the backslash.  */
       if (*src == '\\' && (src[1] == '\\' || src[1] == '"'))
 	src++;
       *dest++ = *src++;
     }
-  *dest = 0;
-  check_eol (pfile, false);
-  skip_rest_of_line (pfile);
-  c = XNEW (struct def_pragma_macro);
-  memset (c, 0, sizeof (struct def_pragma_macro));
-  c->name = XNEWVAR (char, strlen (macroname) + 1);
-  strcpy (c->name, macroname);
+
+  /* We reserved a spot for the newline with the + 1 when allocating IDENT.
+     Push a buffer containing the identifier to lex.  */
+  *dest = '\n';
+  cpp_push_buffer (pfile, ident, dest - ident, true);
+  _cpp_clean_line (pfile);
+  pfile->cur_token = _cpp_temp_token (pfile);
+  cpp_token *tok;
+  {
+    /* Suppress diagnostics during lexing so that we silently ignore invalid
+       input, as seems to be the common practice for this pragma.  */
+    cpp_auto_suppress_diagnostics suppress {pfile};
+    tok = _cpp_lex_direct (pfile);
+  }
+
+  cpp_hashnode *node;
+  if (tok->type != CPP_NAME || pfile->buffer->cur != pfile->buffer->rlimit)
+    node = nullptr;
+  else
+    node = tok->val.node.node;
+
+  _cpp_pop_buffer (pfile);
+  return node;
+}
+
+/* Common processing for #pragma {push,pop}_macro.  */
+
+static cpp_hashnode *
+push_pop_macro_common (cpp_reader *pfile, const char *type)
+{
+  const cpp_token *const txt = get__Pragma_string (pfile);
+  ++pfile->keep_tokens;
+  cpp_hashnode *node;
+  if (txt)
+    {
+      check_eol (pfile, false);
+      skip_rest_of_line (pfile);
+      node = lex_identifier_from_string (pfile, txt->val.str);
+    }
+  else
+    {
+      node = nullptr;
+      location_t src_loc = pfile->cur_token[-1].src_loc;
+      cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
+			   "invalid %<#pragma %s_macro%> directive", type);
+      skip_rest_of_line (pfile);
+    }
+  --pfile->keep_tokens;
+  return node;
+}
+
+/* Handle #pragma push_macro(STRING).  */
+static void
+do_pragma_push_macro (cpp_reader *pfile)
+{
+  const auto node = push_pop_macro_common (pfile, "push");
+  if (!node)
+    return;
+  const auto c = XCNEW (def_pragma_macro);
+  c->name = xstrdup ((const char *) NODE_NAME (node));
   c->next = pfile->pushed_macros;
-  node = _cpp_lex_identifier (pfile, c->name);
   if (node->type == NT_VOID)
     c->is_undef = 1;
   else if (node->type == NT_BUILTIN_MACRO)
     c->is_builtin = 1;
   else
     {
-      defn = cpp_macro_definition (pfile, node);
-      defnlen = ustrlen (defn);
+      const auto defn = cpp_macro_definition (pfile, node);
+      const size_t defnlen = ustrlen (defn);
       c->definition = XNEWVEC (uchar, defnlen + 2);
       c->definition[defnlen] = '\n';
       c->definition[defnlen + 1] = 0;
@@ -2150,50 +2191,24 @@ do_pragma_push_macro (cpp_reader *pfile)
 static void
 do_pragma_pop_macro (cpp_reader *pfile)
 {
-  char *macroname, *dest;
-  const char *limit, *src;
-  const cpp_token *txt;
-  struct def_pragma_macro *l = NULL, *c = pfile->pushed_macros;
-  txt = get__Pragma_string (pfile);
-  if (!txt)
+  const auto node = push_pop_macro_common (pfile, "pop");
+  if (!node)
+    return;
+  for (def_pragma_macro *c = pfile->pushed_macros, *l = nullptr; c; c = c->next)
     {
-      location_t src_loc = pfile->cur_token[-1].src_loc;
-      cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
-			   "invalid %<#pragma pop_macro%> directive");
-      check_eol (pfile, false);
-      skip_rest_of_line (pfile);
-      return;
-    }
-  dest = macroname = (char *) alloca (txt->val.str.len + 2);
-  src = (const char *) (txt->val.str.text + 1 + (txt->val.str.text[0] == 'L'));
-  limit = (const char *) (txt->val.str.text + txt->val.str.len - 1);
-  while (src < limit)
-    {
-      /* We know there is a character following the backslash.  */
-      if (*src == '\\' && (src[1] == '\\' || src[1] == '"'))
-	src++;
-      *dest++ = *src++;
-    }
-  *dest = 0;
-  check_eol (pfile, false);
-  skip_rest_of_line (pfile);
-
-  while (c != NULL)
-    {
-      if (!strcmp (c->name, macroname))
+      if (!strcmp (c->name, (const char *) NODE_NAME (node)))
 	{
 	  if (!l)
 	    pfile->pushed_macros = c->next;
 	  else
 	    l->next = c->next;
-	  cpp_pop_definition (pfile, c);
+	  cpp_pop_definition (pfile, c, node);
 	  free (c->definition);
 	  free (c->name);
 	  free (c);
 	  break;
 	}
       l = c;
-      c = c->next;
     }
 }
 
@@ -3109,12 +3124,8 @@ cpp_undef (cpp_reader *pfile, const char *macro)
 /* Replace a previous definition DEF of the macro STR.  If DEF is NULL,
    or first element is zero, then the macro should be undefined.  */
 static void
-cpp_pop_definition (cpp_reader *pfile, struct def_pragma_macro *c)
+cpp_pop_definition (cpp_reader *pfile, def_pragma_macro *c, cpp_hashnode *node)
 {
-  cpp_hashnode *node = _cpp_lex_identifier (pfile, c->name);
-  if (node == NULL)
-    return;
-
   if (pfile->cb.before_define)
     pfile->cb.before_define (pfile);
 
@@ -3136,29 +3147,23 @@ cpp_pop_definition (cpp_reader *pfile, struct def_pragma_macro *c)
     }
 
   {
-    size_t namelen;
-    const uchar *dn;
-    cpp_hashnode *h = NULL;
-    cpp_buffer *nbuf;
-
-    namelen = ustrcspn (c->definition, "( \n");
-    h = cpp_lookup (pfile, c->definition, namelen);
-    dn = c->definition + namelen;
-
-    nbuf = cpp_push_buffer (pfile, dn, ustrchr (dn, '\n') - dn, true);
+    const auto namelen = ustrcspn (c->definition, "( \n");
+    const auto dn = c->definition + namelen;
+    const auto nbuf = cpp_push_buffer (pfile, dn, ustrchr (dn, '\n') - dn,
+				       true);
     if (nbuf != NULL)
       {
 	_cpp_clean_line (pfile);
 	nbuf->sysp = 1;
-	if (!_cpp_create_definition (pfile, h, 0))
+	if (!_cpp_create_definition (pfile, node, 0))
 	  abort ();
 	_cpp_pop_buffer (pfile);
       }
     else
       abort ();
-    h->value.macro->line = c->line;
-    h->value.macro->syshdr = c->syshdr;
-    h->value.macro->used = c->used;
+    node->value.macro->line = c->line;
+    node->value.macro->syshdr = c->syshdr;
+    node->value.macro->used = c->used;
   }
 }
 

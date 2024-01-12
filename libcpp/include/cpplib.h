@@ -1662,4 +1662,17 @@ enum cpp_xid_property {
 
 unsigned int cpp_check_xid_property (cppchar_t c);
 
+/* In errors.cc */
+
+/* RAII class to suppress CPP diagnostics in the current scope.  */
+class cpp_auto_suppress_diagnostics
+{
+ public:
+  explicit cpp_auto_suppress_diagnostics (cpp_reader *pfile);
+  ~cpp_auto_suppress_diagnostics ();
+ private:
+  cpp_reader *const m_pfile;
+  const decltype (cpp_callbacks::diagnostic) m_cb;
+};
+
 #endif /* ! LIBCPP_CPPLIB_H */

@@ -794,7 +794,6 @@ extern cpp_token *_cpp_lex_direct (cpp_reader *);
 extern unsigned char *_cpp_spell_ident_ucns (unsigned char *, cpp_hashnode *);
 extern int _cpp_equiv_tokens (const cpp_token *, const cpp_token *);
 extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
-extern cpp_hashnode *_cpp_lex_identifier (cpp_reader *, const char *);
 extern int _cpp_remaining_tokens_num_in_context (cpp_context *);
 extern void _cpp_init_lexer (void);
 static inline void *_cpp_reserve_room (cpp_reader *pfile, size_t have,
