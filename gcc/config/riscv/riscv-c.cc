@@ -195,7 +195,8 @@ riscv_pragma_intrinsic (cpp_reader *)
 
   const char *name = TREE_STRING_POINTER (x);
 
-  if (strcmp (name, "vector") == 0)
+  if (strcmp (name, "vector") == 0
+      || strcmp (name, "xtheadvector") == 0)
     {
       if (!TARGET_VECTOR)
 	{

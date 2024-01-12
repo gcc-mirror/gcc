@@ -428,7 +428,9 @@
 ;; Predicates for the V extension.
 (define_special_predicate "vector_length_operand"
   (ior (match_operand 0 "pmode_register_operand")
-       (match_operand 0 "const_csr_operand")))
+       (and (ior (match_test "TARGET_XTHEADVECTOR && rtx_equal_p (op, const0_rtx)")
+		 (match_test "!TARGET_XTHEADVECTOR"))
+    (match_operand 0 "const_csr_operand"))))
 
 (define_special_predicate "autovec_length_operand"
   (ior (match_operand 0 "pmode_register_operand")

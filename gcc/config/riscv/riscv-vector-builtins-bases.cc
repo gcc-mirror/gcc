@@ -131,23 +131,37 @@ public:
 
     tree type = builtin_types[e.type.index].vector;
     machine_mode mode = TYPE_MODE (type);
-    /* Normalize same RATO (SEW/LMUL) into same vsetvl instruction.
 
-	 - e8,mf8/e16,mf4/e32,mf2/e64,m1 --> e8mf8
-	 - e8,mf4/e16,mf2/e32,m1/e64,m2  --> e8mf4
-	 - e8,mf2/e16,m1/e32,m2/e64,m4   --> e8mf2
-	 - e8,m1/e16,m2/e32,m4/e64,m8    --> e8m1
-	 - e8,m2/e16,m4/e32,m8           --> e8m2
-	 - e8,m4/e16,m8                  --> e8m4
-	 - e8,m8                         --> e8m8
-    */
-    /* SEW.  */
-    e.add_input_operand (Pmode, gen_int_mode (8, Pmode));
+    if (TARGET_XTHEADVECTOR)
+      {
+	machine_mode inner_mode = GET_MODE_INNER (mode);
+	/* SEW.  */
+	e.add_input_operand (Pmode,
+	  gen_int_mode (GET_MODE_BITSIZE (inner_mode), Pmode));
+	/* LMUL.  */
+	e.add_input_operand (Pmode,
+	  gen_int_mode (get_vlmul (mode), Pmode));
+      }
+    else
+      {
+	/* Normalize same RATO (SEW/LMUL) into same vsetvl instruction.
 
-    /* LMUL.  */
-    machine_mode e8_mode
-      = get_vector_mode (QImode, GET_MODE_NUNITS (mode)).require ();
-    e.add_input_operand (Pmode, gen_int_mode (get_vlmul (e8_mode), Pmode));
+	     - e8,mf8/e16,mf4/e32,mf2/e64,m1 --> e8mf8
+	     - e8,mf4/e16,mf2/e32,m1/e64,m2  --> e8mf4
+	     - e8,mf2/e16,m1/e32,m2/e64,m4   --> e8mf2
+	     - e8,m1/e16,m2/e32,m4/e64,m8    --> e8m1
+	     - e8,m2/e16,m4/e32,m8           --> e8m2
+	     - e8,m4/e16,m8                  --> e8m4
+	     - e8,m8                         --> e8m8
+	*/
+	/* SEW.  */
+	e.add_input_operand (Pmode, gen_int_mode (8, Pmode));
+
+	/* LMUL.  */
+	machine_mode e8_mode
+	  = get_vector_mode (QImode, GET_MODE_NUNITS (mode)).require ();
+	e.add_input_operand (Pmode, gen_int_mode (get_vlmul (e8_mode), Pmode));
+      }
 
     /* TAIL_ANY.  */
     e.add_input_operand (Pmode,

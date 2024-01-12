@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_xtheadvector } } } */
 /* { dg-skip-if "test rvv intrinsic" { *-*-* } { "*" } { "-march=rv*v*" } } */
 
 void foo0 () {__rvv_bool64_t t;}

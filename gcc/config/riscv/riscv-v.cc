@@ -4403,7 +4403,7 @@ cmp_lmul_gt_one (machine_mode mode)
 bool
 vls_mode_valid_p (machine_mode vls_mode)
 {
-  if (!TARGET_VECTOR)
+  if (!TARGET_VECTOR || TARGET_XTHEADVECTOR)
     return false;
 
   if (riscv_autovec_preference == RVV_SCALABLE)

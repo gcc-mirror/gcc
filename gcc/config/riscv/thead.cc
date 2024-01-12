@@ -27,6 +27,7 @@
 #include "backend.h"
 #include "tree.h"
 #include "rtl.h"
+#include "insn-attr.h"
 #include "explow.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
@@ -890,8 +891,26 @@ th_asm_output_opcode (FILE *asm_out_file, const char *p)
 {
   /* We need to add th. prefix to all the xtheadvector
      instructions here.*/
-  if (current_output_insn != NULL && p[0] == 'v')
-    fputs ("th.", asm_out_file);
+  if (current_output_insn != NULL)
+    {
+      if (get_attr_type (current_output_insn) == TYPE_VSETVL)
+	{
+	  if (strstr (p, "zero"))
+	    {
+	      if (strstr (p, "zero,zero"))
+		return "th.vsetvli\tzero,zero,e%0,%m1";
+	      else
+		return "th.vsetvli\tzero,%0,e%1,%m2";
+	    }
+	  else
+	    {
+	      return "th.vsetvli\t%0,%1,e%2,%m3";
+	    }
+	}
+
+      if (p[0] == 'v')
+	fputs ("th.", asm_out_file);
+    }
 
   return p;
 }

@@ -1956,6 +1956,18 @@ proc check_effective_target_riscv_zbb { } {
     }]
 }
 
+# Return 1 if the target arch supports the XTheadVector extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_xtheadvector { } {
+    return [check_no_compiler_messages riscv_ext_xtheadvector assembly {
+       #ifndef __riscv_xtheadvector
+       #error "Not __riscv_xtheadvector"
+       #endif
+    }]
+}
+
+
 # Return 1 if we can execute code when using dg-add-options riscv_v
 
 proc check_effective_target_riscv_v_ok { } {
