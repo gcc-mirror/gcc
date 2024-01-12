@@ -1,3 +1,16 @@
+2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	Backported from master:
+	2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR libstdc++/113250
+	* src/c++17/fs_ops.cc (fs::equivalent): Use || instead of &&.
+	* src/filesystem/ops.cc (fs::equivalent): Likewise.
+	* testsuite/27_io/filesystem/operations/equivalent.cc: Handle
+	error codes.
+	* testsuite/experimental/filesystem/operations/equivalent.cc:
+	Likewise.
+
 2024-01-03  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
