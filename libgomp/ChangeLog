@@ -1,3 +1,9 @@
+2024-01-11  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.texi: C/C++ lvalues are supported now for map/to/from.
+	* testsuite/libgomp.c-c++-common/ind-base-4.c: New test.
+	* testsuite/libgomp.c-c++-common/unary-ptr-1.c: New test.
+
 2024-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/113192

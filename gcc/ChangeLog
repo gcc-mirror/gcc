@@ -1,3 +1,137 @@
+2024-01-11  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/thead.md: Add limits for splits.
+
+2024-01-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/113322
+	* expr.cc (do_store_flag): Don't try single bit tests with
+	comparison on vector types.
+
+2024-01-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/113301
+	* match.pd (`1/x`): Delay signed case until late.
+
+2024-01-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options): Move -mrmw, -mn-flash, -mshort-calls
+	and -msp8 to...
+	(AVR Internal Options): ...this new @subsubsection.
+
+2024-01-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/112918
+	* lra-constraints.cc (SMALL_REGISTER_CLASS_P): Move before in_class_p.
+	(in_class_p): Restrict condition for narrowing class in case of
+	allow_all_reload_class_changes_p.
+	(process_alt_operands): Try to match operand without and with
+	narrowing reg class.  Discourage narrowing the class.  Finish insn
+	matching only if there is no class narrowing.
+	(curr_insn_transform): Pass true to in_class_p for reg operand win.
+
+2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112505
+	* tree-vect-loop.cc (vectorizable_induction): Reject
+	bit-precision induction.
+
+2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113126
+	* match.pd ((double)float CMP (double)float -> float CMP float):
+	Make sure the boolean type is the same.
+	* fold-const.cc (fold_binary_loc): Likewise.
+
+2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112636
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Call
+	estimate_numbers_of_iterations before querying
+	get_max_loop_iterations_int.
+	(pass_ch::execute): Initialize SCEV and loops appropriately.
+
+2024-01-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-devices.cc (avr_texinfo): Adjust documentation for
+	Reduced Tiny.
+	* config/avr/gen-avr-mmcu-texi.cc (main): Add @anchor for each core.
+	* doc/extend.texi (AVR Variable Attributes): Improve documentation
+	of io, io_low and address attributes.
+	* doc/invoke.texi (AVR Options): Add some anchors for external refs.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2024-01-11  Yang Yujie  <yangyujie@loongson.cn>
+
+	PR target/113233
+	* config/loongarch/genopts/loongarch.opt.in: Mark options with
+	the "Save" property.
+	* config/loongarch/loongarch.opt: Same.
+	* config/loongarch/loongarch-opts.cc: Refresh -mcmodel= state
+	according to la_target.
+	* config/loongarch/loongarch.cc: Implement TARGET_OPTION_{SAVE,
+	RESTORE} for the la_target structure; Rename option conditions
+	to have the same "la_" prefix.
+	* config/loongarch/loongarch.h: Same.
+
+2024-01-11  Pan Li  <pan2.li@intel.com>
+
+	* loop-unroll.cc (insert_var_expansion_initialization): Leverage
+	MODE_HAS_SIGNED_ZEROS for expansion variable initialization.
+
+2024-01-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113077
+	* config/aarch64/aarch64-ldp-fusion.cc (filter_notes): Add
+	fr_expr param to extract REG_FRAME_RELATED_EXPR notes.
+	(combine_reg_notes): Handle REG_FRAME_RELATED_EXPR notes, and
+	synthesize these if needed.  Update caller ...
+	(ldp_bb_info::fuse_pair): ... here.
+	(ldp_bb_info::try_fuse_pair): Punt if either insn has writeback
+	and either insn is frame-related.
+	(find_trailing_add): Punt on frame-related insns.
+	* config/aarch64/aarch64.cc (aarch64_save_callee_saves): Use
+	REG_FRAME_RELATED_EXPR instead of REG_CFA_OFFSET.
+
+2024-01-11  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.cc (mips_start_function_definition):
+	Add ATTRIBUTE_UNUSED.
+
+2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112740
+	* expr.cc (store_constructor): Check the integer vector
+	mask has a single bit per element before using sign-extension
+	to expand an uniform vector.
+
+2024-01-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (costs::better_main_loop_than_p): VLA
+	preempt VLS on unknown NITERS loop.
+
+2024-01-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* doc/invoke.texi: Add -mevex512.
+
+2024-01-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.md (one_cmpl<mode>2): Replace GPR with X.
+	(*nor<mode>3): Likewise.
+	(nor<mode>3): Likewise.
+	(*negsi2_extended): New template.
+	(*<optab>si3_internal): Likewise.
+	(*one_cmplsi2_internal): Likewise.
+	(*norsi3_internal): Likewise.
+	(*<optab>nsi_internal): Likewise.
+	(bytepick_w_<bytepick_imm>_extend): Modify this template according to the
+	modified bit operation to make the optimization work.
+
+2024-01-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104401
+	* match.pd (VEC_COND_EXPR: A < B ? A : B -> MIN_EXPR): New patten match.
+
 2024-01-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv.cc (get_common_costs): Switch RVV cost model.

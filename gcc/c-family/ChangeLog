@@ -1,3 +1,8 @@
+2024-01-11  Julian Brown  <julian@codesourcery.com>
+
+	* c-pretty-print.cc (c_pretty_printer::postfix_expression,
+	c_pretty_printer::expression): Add OMP_ARRAY_SECTION support.
+
 2024-01-09  waffl3x  <waffl3x@protonmail.com>
 
 	PR c++/102609

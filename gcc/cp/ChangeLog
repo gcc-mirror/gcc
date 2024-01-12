@@ -1,3 +1,16 @@
+2024-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113191
+	* class.cc (xobj_iobj_parameters_correspond): Add context parm.
+	(object_parms_correspond): Factor out of...
+	(add_method): ...here.
+	* method.cc (defaulted_late_check): Use it.
+	* call.cc (class_of_implicit_object): New.
+	(object_parms_correspond): Overload taking two candidates.
+	(cand_parms_match): Use it.
+	(joust): Check reversed before comparing constraints.
+	* cp-tree.h (object_parms_correspond): Declare.
+
 2024-01-10  Tamar Christina  <tamar.christina@arm.com>
 
 	* parser.cc (cp_parser_pragma): Initialize to false.

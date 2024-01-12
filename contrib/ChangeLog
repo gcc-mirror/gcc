@@ -1,3 +1,8 @@
+2024-01-11  Paul Iannetta  <piannetta@kalrayinc.com>
+
+	* dg-extract-results.py: Make the test_run regex case
+	insensitive.
+
 2024-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unicode/gen_libstdcxx_unicode_data.py: Print out Gcb_property

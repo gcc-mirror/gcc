@@ -1,3 +1,32 @@
+2024-01-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112946
+	* gm2-compiler/M2GenGCC.mod (IsExpressionCompatible): Import.
+	(ExpressionTypeCompatible): Import.
+	(CodeStatement): Remove op1, op2, op3 parameters from CodeSetOr,
+	CodeSetAnd, CodeSetSymmetricDifference, CodeSetLogicalDifference.
+	(checkArrayElements): Rename op1 to des and op3 to expr.
+	Use despos and exprpos instead of CurrentQuadToken.
+	(checkRecordTypes): Rename op1 to des and op2 to expr.
+	Use virtpos instead of CurrentQuadToken.
+	(checkIncorrectMeta): Ditto.
+	(checkBecomes): Rename op1 to des and op3 to expr.
+	Use virtpos instead of CurrentQuadToken.
+	(NoWalkProcedure): New procedure stub.
+	(CheckBinaryExpressionTypes): New procedure function.
+	(CheckElementSetTypes): New procedure function.
+	(CodeBinarySet): Re-write.
+	(FoldBinarySet): Re-write.
+	(CodeSetOr): Remove parameters op1, op2 and op3.
+	(CodeSetAnd): Ditto.
+	(CodeSetLogicalDifference): Ditto.
+	(CodeSetSymmetricDifference): Ditto.
+	(CodeIfIn): Call CheckBinaryExpressionTypes and
+	CheckElementSetTypes.
+	* gm2-compiler/M2Quads.mod (BuildRotateFunction): Correct
+	parameters to MakeVirtualTok to reflect parameter block
+	passed to Rotate.
+
 2024-01-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/112920

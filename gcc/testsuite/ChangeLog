@@ -1,3 +1,121 @@
+2024-01-11  Julian Brown  <julian@codesourcery.com>
+
+	* gcc.dg/gomp/bad-array-section-c-1.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-2.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-3.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-4.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-5.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-6.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-7.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-8.c: New test.
+
+2024-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113191
+	* g++.dg/cpp2a/concepts-memfun4.C: New test.
+
+2024-01-11  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/xtheadfmemidx-medany.c: New test.
+
+2024-01-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/113322
+	* gcc.c-torture/compile/pr113322-1.c: New test.
+
+2024-01-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/113301
+	* gcc.dg/tree-ssa/divide-8.c: New test.
+
+2024-01-11  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/explicit-obj-diagnostics7.C: Remove xfail.
+
+2024-01-11  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/113319
+	* gcc.dg/bic-bitmask-13.c: Remove -save-temps.
+	* gcc.dg/bic-bitmask-14.c: Likewise.
+	* gcc.dg/bic-bitmask-15.c: Likewise.
+	* gcc.dg/bic-bitmask-16.c: Likewise.
+	* gcc.dg/bic-bitmask-17.c: Likewise.
+	* gcc.dg/bic-bitmask-18.c: Likewise.
+	* gcc.dg/bic-bitmask-19.c: Likewise.
+	* gcc.dg/bic-bitmask-20.c: Likewise.
+	* gcc.dg/bic-bitmask-21.c: Likewise.
+	* gcc.dg/bic-bitmask-22.c: Likewise.
+	* gcc.dg/bic-bitmask-7.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_1.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_10.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_2.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_3.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_4.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_5.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_6.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_7.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_8.c: Likewise.
+	* gcc.dg/vect/vect-early-break-run_9.c: Likewise.
+
+2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112505
+	* gcc.dg/vect/pr112505.c: New testcase.
+
+2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113126
+	* gcc.dg/torture/pr113126.c: New testcase.
+
+2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112636
+	* gcc.dg/pr112636.c: New testcase.
+
+2024-01-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.dg/pr30957-1.c: Remove.
+
+2024-01-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113077
+	* gcc.target/aarch64/pr113077.c: New test.
+
+2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111003
+	* gcc.dg/tree-ssa/pr111003.c: New testcase.
+
+2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112740
+	* gcc.dg/pr112740.c: New testcase.
+
+2024-01-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-1.c: Remove xfail.
+	* gcc.target/riscv/rvv/autovec/partial/slp-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-5.c: Ditto.
+
+2024-01-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/sign-extend-bitwise.c: New test.
+
+2024-01-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104401.c: New test.
+	* gcc.dg/tree-ssa/pr95906.c: Adjust testcase.
+
+2024-01-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112946
+	* gm2/pim/fail/badbecomes.mod: New test.
+	* gm2/pim/fail/badexpression.mod: New test.
+	* gm2/pim/fail/badexpression2.mod: New test.
+	* gm2/pim/fail/badifin.mod: New test.
+	* gm2/pim/pass/goodifin.mod: New test.
+
 2024-01-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.dg/vect/costmodel/riscv/rvv/vla_vs_vls-10.c: Fix test.

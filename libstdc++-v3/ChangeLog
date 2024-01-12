@@ -1,3 +1,76 @@
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Fix spelling.
+	* doc/html/manual/api.html: Regenerate.
+
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document addition of
+	libstdc++exp.a.
+	* doc/html/*: Regenerate.
+
+2024-01-11  Marcus Haehnel  <marcus.haehnel@kernkonzept.com>
+
+	* libsupc++/eh_unex_handler.cc: Adjust definition type to
+	declaration.
+
+2024-01-11  Michael Levine  <mlevine55@bloomberg.net>
+
+	* include/std/ranges (__glibcxx_want_ranges_iota): Remove
+	duplicate definition.
+
+2024-01-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/112477
+	* src/c++11/debug.cc
+	(_Safe_iterator_base::_M_attach): Reset _M_version to 0 if attaching to null
+	sequence.
+	(_Safe_iterator_base::_M_attach_single): Likewise.
+	(_Safe_local_iterator_base::_M_attach): Likewise.
+	(_Safe_local_iterator_base::_M_attach_single): Likewise.
+	* testsuite/23_containers/map/debug/112477.cc: New test case.
+
+2024-01-11  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/move.h (__like_t): Define in C++23 mode.
+	* include/std/ranges (views::__adaptor::Partial::operator()):
+	Implement using C++23 deducing this when available.
+	(views::__adaptor::_Pipe::operator()): Likewise.
+	* testsuite/std/ranges/adaptors/100577.cc: Adjust testcase to
+	accept new "no match for call" errors issued in C++23 mode.
+	* testsuite/std/ranges/adaptors/lazy_split_neg.cc: Likewise.
+
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdIntegralConstantPrinter):
+	Add printer for std::integral_constant.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Test it.
+
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113258
+	* libsupc++/new_opa.cc: Prefer to use posix_memalign if
+	available.
+
+2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* src/filesystem/ops-common.h (stat_type): Use using.
+
+2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR libstdc++/113250
+	* src/c++17/fs_ops.cc (fs::equivalent): Use || instead of &&.
+	* src/filesystem/ops.cc (fs::equivalent): Likewise.
+	* testsuite/27_io/filesystem/operations/equivalent.cc: Handle
+	error codes.
+	* testsuite/experimental/filesystem/operations/equivalent.cc:
+	Likewise.
+
+2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_compound): Do not use __not_.
+	(is_compound_v): Use is_fundamental_v instead.
+
 2024-01-11  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/utility.h (_Nth_type): Use
