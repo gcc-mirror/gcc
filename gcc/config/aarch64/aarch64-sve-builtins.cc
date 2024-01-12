@@ -938,6 +938,10 @@ static GTY(()) vec<registered_function *, va_gc> *registered_functions;
    overloaded functions.  */
 static hash_table<registered_function_hasher> *function_table;
 
+/* Maps all overloaded function names that we've registered so far to
+   their associated function_instances.  The map keys are IDENTIFIER_NODEs.  */
+static GTY(()) hash_map<tree, registered_function *> *overload_names;
+
 /* True if we've already complained about attempts to use functions
    when the required extension is disabled.  */
 static bool reported_missing_extension_p;
@@ -1585,21 +1589,23 @@ function_builder::
 add_overloaded_function (const function_instance &instance,
 			 aarch64_feature_flags required_extensions)
 {
+  if (!overload_names)
+    overload_names = hash_map<tree, registered_function *>::create_ggc ();
+
   char *name = get_name (instance, true);
-  if (registered_function **map_value = m_overload_names.get (name))
-    {
-      gcc_assert ((*map_value)->instance == instance
-		  && ((*map_value)->required_extensions
-		      & ~required_extensions) == 0);
-      obstack_free (&m_string_obstack, name);
-    }
+  tree id = get_identifier (name);
+  if (registered_function **map_value = overload_names->get (id))
+    gcc_assert ((*map_value)->instance == instance
+		&& ((*map_value)->required_extensions
+		    & ~required_extensions) == 0);
   else
     {
       registered_function &rfn
 	= add_function (instance, name, m_overload_type, NULL_TREE,
 			required_extensions, true, m_direct_overloads);
-      m_overload_names.put (name, &rfn);
+      overload_names->put (id, &rfn);
     }
+  obstack_free (&m_string_obstack, name);
 }
 
 /* If we are using manual overload resolution, add one function decl
