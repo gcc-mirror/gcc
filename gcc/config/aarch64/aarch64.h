@@ -1056,6 +1056,12 @@ typedef struct GTY (()) machine_function
   /* A set of all decls that have been passed to a vld1 intrinsic in the
      current function.  This is used to help guide the vector cost model.  */
   hash_set<tree> *vector_load_decls;
+
+  /* An instruction that was emitted at the start of the function to
+     set an Advanced SIMD pseudo register to zero.  If the instruction
+     still exists and still fulfils its original purpose. the same register
+     can be reused by other code.  */
+  rtx_insn *advsimd_zero_insn;
 } machine_function;
 #endif
 #endif

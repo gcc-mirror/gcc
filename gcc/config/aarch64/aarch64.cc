@@ -22882,16 +22882,61 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
     == SYMBOL_TINY_ABSOLUTE;
 }
 
+/* Return a function-invariant register that contains VALUE.  *CACHED_INSN
+   caches instructions that set up such registers, so that they can be
+   reused by future calls.  */
+
+static rtx
+aarch64_get_shareable_reg (rtx_insn **cached_insn, rtx value)
+{
+  rtx_insn *insn = *cached_insn;
+  if (insn && INSN_P (insn) && !insn->deleted ())
+    {
+      rtx pat = PATTERN (insn);
+      if (GET_CODE (pat) == SET)
+	{
+	  rtx dest = SET_DEST (pat);
+	  if (REG_P (dest)
+	      && !HARD_REGISTER_P (dest)
+	      && rtx_equal_p (SET_SRC (pat), value))
+	    return dest;
+	}
+    }
+  rtx reg = gen_reg_rtx (GET_MODE (value));
+  *cached_insn = emit_insn_before (gen_rtx_SET (reg, value),
+				   function_beg_insn);
+  return reg;
+}
+
 /* Create a 0 constant that is based on V4SI to allow CSE to optimally share
    the constant creation.  */
 
 rtx
 aarch64_gen_shareable_zero (machine_mode mode)
 {
-  machine_mode zmode = V4SImode;
-  rtx tmp = gen_reg_rtx (zmode);
-  emit_move_insn (tmp, CONST0_RTX (zmode));
-  return lowpart_subreg (mode, tmp, zmode);
+  rtx reg = aarch64_get_shareable_reg (&cfun->machine->advsimd_zero_insn,
+				       CONST0_RTX (V4SImode));
+  return lowpart_subreg (mode, reg, GET_MODE (reg));
+}
+
+/* INSN is some form of extension or shift that can be split into a
+   permutation involving a shared zero.  Return true if we should
+   perform such a split.
+
+   ??? For now, make sure that the split instruction executes more
+   frequently than the zero that feeds it.  In future it would be good
+   to split without that restriction and instead recombine shared zeros
+   if they turn out not to be worthwhile.  This would allow splits in
+   single-block functions and would also cope more naturally with
+   rematerialization.  */
+
+bool
+aarch64_split_simd_shift_p (rtx_insn *insn)
+{
+  return (can_create_pseudo_p ()
+	  && optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn))
+	  && (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
+	      < BLOCK_FOR_INSN (insn)->count));
 }
 
 /* Return a const_int vector of VAL.  */
