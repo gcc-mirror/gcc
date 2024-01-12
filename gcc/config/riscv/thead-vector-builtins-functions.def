@@ -1,0 +1,39 @@
+#ifndef DEF_RVV_FUNCTION
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)
+#endif
+
+#define REQUIRED_EXTENSIONS XTHEADVECTOR_EXT
+DEF_RVV_FUNCTION (vlb, th_loadstore_width, full_preds, all_v_scalar_const_ptr_ops)
+DEF_RVV_FUNCTION (vlh, th_loadstore_width, full_preds, all_v_scalar_const_ptr_ops)
+DEF_RVV_FUNCTION (vlw, th_loadstore_width, full_preds, all_v_scalar_const_ptr_ops)
+DEF_RVV_FUNCTION (vlbu, th_loadstore_width, full_preds, all_v_scalar_const_ptr_ops)
+DEF_RVV_FUNCTION (vlhu, th_loadstore_width, full_preds, all_v_scalar_const_ptr_ops)
+DEF_RVV_FUNCTION (vlwu, th_loadstore_width, full_preds, all_v_scalar_const_ptr_ops)
+DEF_RVV_FUNCTION (vsb, th_loadstore_width, none_m_preds, all_v_scalar_ptr_ops)
+DEF_RVV_FUNCTION (vsh, th_loadstore_width, none_m_preds, all_v_scalar_ptr_ops)
+DEF_RVV_FUNCTION (vsw, th_loadstore_width, none_m_preds, all_v_scalar_ptr_ops)
+DEF_RVV_FUNCTION (vlsb, th_loadstore_width, full_preds, all_v_scalar_const_ptr_size_ops)
+DEF_RVV_FUNCTION (vlsh, th_loadstore_width, full_preds, all_v_scalar_const_ptr_size_ops)
+DEF_RVV_FUNCTION (vlsw, th_loadstore_width, full_preds, all_v_scalar_const_ptr_size_ops)
+DEF_RVV_FUNCTION (vlsbu, th_loadstore_width, full_preds, all_v_scalar_const_ptr_size_ops)
+DEF_RVV_FUNCTION (vlshu, th_loadstore_width, full_preds, all_v_scalar_const_ptr_size_ops)
+DEF_RVV_FUNCTION (vlswu, th_loadstore_width, full_preds, all_v_scalar_const_ptr_size_ops)
+DEF_RVV_FUNCTION (vssb, th_loadstore_width, none_m_preds, all_v_scalar_ptr_size_ops)
+DEF_RVV_FUNCTION (vssh, th_loadstore_width, none_m_preds, all_v_scalar_ptr_size_ops)
+DEF_RVV_FUNCTION (vssw, th_loadstore_width, none_m_preds, all_v_scalar_ptr_size_ops)
+DEF_RVV_FUNCTION (vlxb, th_indexed_loadstore_width, full_preds, all_v_scalar_const_ptr_index_ops)
+DEF_RVV_FUNCTION (vlxh, th_indexed_loadstore_width, full_preds, all_v_scalar_const_ptr_index_ops)
+DEF_RVV_FUNCTION (vlxw, th_indexed_loadstore_width, full_preds, all_v_scalar_const_ptr_index_ops)
+DEF_RVV_FUNCTION (vlxbu, th_indexed_loadstore_width, full_preds, all_v_scalar_const_ptr_index_ops)
+DEF_RVV_FUNCTION (vlxhu, th_indexed_loadstore_width, full_preds, all_v_scalar_const_ptr_index_ops)
+DEF_RVV_FUNCTION (vlxwu, th_indexed_loadstore_width, full_preds, all_v_scalar_const_ptr_index_ops)
+DEF_RVV_FUNCTION (vsxb, th_indexed_loadstore_width, none_m_preds, all_v_scalar_ptr_index_ops)
+DEF_RVV_FUNCTION (vsxh, th_indexed_loadstore_width, none_m_preds, all_v_scalar_ptr_index_ops)
+DEF_RVV_FUNCTION (vsxw, th_indexed_loadstore_width, none_m_preds, all_v_scalar_ptr_index_ops)
+DEF_RVV_FUNCTION (vsuxb, th_indexed_loadstore_width, none_m_preds, all_v_scalar_ptr_index_ops)
+DEF_RVV_FUNCTION (vsuxh, th_indexed_loadstore_width, none_m_preds, all_v_scalar_ptr_index_ops)
+DEF_RVV_FUNCTION (vsuxw, th_indexed_loadstore_width, none_m_preds, all_v_scalar_ptr_index_ops)
+DEF_RVV_FUNCTION (vext_x_v, th_extract, none_preds, iu_x_s_u_ops)
+#undef REQUIRED_EXTENSIONS
+
+#undef DEF_RVV_FUNCTION
