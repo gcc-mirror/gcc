@@ -844,11 +844,138 @@ def_upwards_move_range (def_info *def)
   return range;
 }
 
+// Class that implements a state machine for building the changes needed to form
+// a store pair instruction.  This allows us to easily build the changes in
+// program order, as required by rtl-ssa.
+struct stp_change_builder
+{
+  enum class state
+  {
+    FIRST,
+    INSERT,
+    FIXUP_USE,
+    LAST,
+    DONE
+  };
+
+  enum class action
+  {
+    TOMBSTONE,
+    CHANGE,
+    INSERT,
+    FIXUP_USE
+  };
+
+  struct change
+  {
+    action type;
+    insn_info *insn;
+  };
+
+  bool done () const { return m_state == state::DONE; }
+
+  stp_change_builder (insn_info *insns[2],
+		      insn_info *repurpose,
+		      insn_info *dest)
+    : m_state (state::FIRST), m_insns { insns[0], insns[1] },
+      m_repurpose (repurpose), m_dest (dest), m_use (nullptr) {}
+
+  change get_change () const
+  {
+    switch (m_state)
+      {
+      case state::FIRST:
+	return {
+	  m_insns[0] == m_repurpose ? action::CHANGE : action::TOMBSTONE,
+	  m_insns[0]
+	};
+      case state::LAST:
+	return {
+	  m_insns[1] == m_repurpose ? action::CHANGE : action::TOMBSTONE,
+	  m_insns[1]
+	};
+      case state::INSERT:
+	return { action::INSERT, m_dest };
+      case state::FIXUP_USE:
+	return { action::FIXUP_USE, m_use->insn () };
+      case state::DONE:
+	break;
+      }
+
+    gcc_unreachable ();
+  }
+
+  // Transition to the next state.
+  void advance ()
+  {
+    switch (m_state)
+      {
+      case state::FIRST:
+	if (m_repurpose)
+	  m_state = state::LAST;
+	else
+	  m_state = state::INSERT;
+	break;
+      case state::INSERT:
+      {
+	def_info *def = memory_access (m_insns[0]->defs ());
+	while (*def->next_def ()->insn () <= *m_dest)
+	  def = def->next_def ();
+
+	// Now we know DEF feeds the insertion point for the new stp.
+	// Look for any uses of DEF that will consume the new stp.
+	gcc_assert (*def->insn () <= *m_dest
+		    && *def->next_def ()->insn () > *m_dest);
+
+	auto set = as_a<set_info *> (def);
+	for (auto use : set->nondebug_insn_uses ())
+	  if (*use->insn () > *m_dest)
+	    {
+	      m_use = use;
+	      break;
+	    }
+
+	if (m_use)
+	  m_state = state::FIXUP_USE;
+	else
+	  m_state = state::LAST;
+	break;
+      }
+      case state::FIXUP_USE:
+	m_use = m_use->next_nondebug_insn_use ();
+	if (!m_use)
+	  m_state = state::LAST;
+	break;
+      case state::LAST:
+	m_state = state::DONE;
+	break;
+      case state::DONE:
+	gcc_unreachable ();
+      }
+  }
+
+private:
+  state m_state;
+
+  // Original candidate stores.
+  insn_info *m_insns[2];
+
+  // If non-null, this is a candidate insn to change into an stp.  Otherwise we
+  // are deleting both original insns and inserting a new insn for the stp.
+  insn_info *m_repurpose;
+
+  // Destionation of the stp, it will be placed immediately after m_dest.
+  insn_info *m_dest;
+
+  // Current nondebug use that needs updating due to stp insertion.
+  use_info *m_use;
+};
+
 // Given candidate store insns FIRST and SECOND, see if we can re-purpose one
 // of them (together with its def of memory) for the stp insn.  If so, return
 // that insn.  Otherwise, return null.
 static insn_info *
-decide_stp_strategy (insn_info *first,
+try_repurpose_store (insn_info *first,
 		     insn_info *second,
 		     const insn_range_info &move_range)
 {
@@ -1253,7 +1380,7 @@ ldp_bb_info::fuse_pair (bool load_p,
 
   insn_info *insns[2] = { first, second };
 
-  auto_vec<insn_change *, 4> changes (4);
+  auto_vec<insn_change *> changes;
   auto_vec<int, 2> tombstone_uids (2);
 
   rtx pats[2] = {
@@ -1455,9 +1582,9 @@ ldp_bb_info::fuse_pair (bool load_p,
 
   if (load_p)
     {
-      changes.quick_push (make_delete (first));
+      changes.safe_push (make_delete (first));
       pair_change = make_change (second);
-      changes.quick_push (pair_change);
+      changes.safe_push (pair_change);
 
       pair_change->move_range = move_range;
       pair_change->new_defs = merge_access_arrays (attempt,
@@ -1474,18 +1601,22 @@ ldp_bb_info::fuse_pair (bool load_p,
     }
   else
     {
-      insn_info *store_to_change = decide_stp_strategy (first, second,
+      using Action = stp_change_builder::action;
+      insn_info *store_to_change = try_repurpose_store (first, second,
 							move_range);
-
-      if (store_to_change && dump_file)
-	fprintf (dump_file, "  stp: re-purposing store %d\n",
-		 store_to_change->uid ());
-
+      insn_info *stp_dest = move_range.singleton ();
+      gcc_assert (stp_dest);
+      stp_change_builder builder (insns, store_to_change, stp_dest);
       insn_change *change;
-      for (int i = 0; i < 2; i++)
+      set_info *new_set = nullptr;
+      for (; !builder.done (); builder.advance ())
 	{
-	  change = make_change (insns[i]);
-	  if (insns[i] == store_to_change)
+	  auto action = builder.get_change ();
+	  change = (action.type == Action::INSERT)
+	    ? nullptr : make_change (action.insn);
+	  switch (action.type)
+	    {
+	    case Action::CHANGE:
 	    {
 	      set_pair_pat (change);
 	      change->new_uses = merge_access_arrays (attempt,
@@ -1495,67 +1626,76 @@ ldp_bb_info::fuse_pair (bool load_p,
 	      auto d2 = drop_memory_access (input_defs[1]);
 	      change->new_defs = merge_access_arrays (attempt, d1, d2);
 	      gcc_assert (change->new_defs.is_valid ());
-	      def_info *stp_def = memory_access (store_to_change->defs ());
+	      def_info *stp_def = memory_access (change->insn ()->defs ());
 	      change->new_defs = insert_access (attempt,
 						stp_def,
 						change->new_defs);
 	      gcc_assert (change->new_defs.is_valid ());
 	      change->move_range = move_range;
 	      pair_change = change;
+	      break;
 	    }
-	  else
+	    case Action::TOMBSTONE:
 	    {
-	      // Note that we are turning this insn into a tombstone,
-	      // we need to keep track of these if we go ahead with the
-	      // change.
-	      tombstone_uids.quick_push (insns[i]->uid ());
-	      rtx_insn *rti = insns[i]->rtl ();
+	      tombstone_uids.quick_push (change->insn ()->uid ());
+	      rtx_insn *rti = change->insn ()->rtl ();
 	      validate_change (rti, &PATTERN (rti), gen_tombstone (), true);
 	      validate_change (rti, &REG_NOTES (rti), NULL_RTX, true);
 	      change->new_uses = use_array (nullptr, 0);
+	      break;
 	    }
-	  gcc_assert (change->new_uses.is_valid ());
-	  changes.quick_push (change);
-	}
+	    case Action::INSERT:
+	    {
+	      if (dump_file)
+		fprintf (dump_file,
+			 "  stp: cannot re-purpose candidate stores\n");
 
-      if (!store_to_change)
-	{
-	  // Tricky case.  Cannot re-purpose existing insns for stp.
-	  // Need to insert new insn.
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "  stp fusion: cannot re-purpose candidate stores\n");
+	      auto new_insn = crtl->ssa->create_insn (attempt, INSN, pair_pat);
+	      change = make_change (new_insn);
+	      change->move_range = move_range;
+	      change->new_uses = merge_access_arrays (attempt,
+						      input_uses[0],
+						      input_uses[1]);
+	      gcc_assert (change->new_uses.is_valid ());
 
-	  auto new_insn = crtl->ssa->create_insn (attempt, INSN, pair_pat);
-	  change = make_change (new_insn);
-	  change->move_range = move_range;
-	  change->new_uses = merge_access_arrays (attempt,
-						  input_uses[0],
-						  input_uses[1]);
-	  gcc_assert (change->new_uses.is_valid ());
+	      auto d1 = drop_memory_access (input_defs[0]);
+	      auto d2 = drop_memory_access (input_defs[1]);
+	      change->new_defs = merge_access_arrays (attempt, d1, d2);
+	      gcc_assert (change->new_defs.is_valid ());
 
-	  auto d1 = drop_memory_access (input_defs[0]);
-	  auto d2 = drop_memory_access (input_defs[1]);
-	  change->new_defs = merge_access_arrays (attempt, d1, d2);
-	  gcc_assert (change->new_defs.is_valid ());
-
-	  auto new_set = crtl->ssa->create_set (attempt, new_insn, memory);
-	  change->new_defs = insert_access (attempt, new_set,
-					    change->new_defs);
-	  gcc_assert (change->new_defs.is_valid ());
-	  changes.safe_insert (1, change);
-	  pair_change = change;
+	      new_set = crtl->ssa->create_set (attempt, new_insn, memory);
+	      change->new_defs = insert_access (attempt, new_set,
+						change->new_defs);
+	      gcc_assert (change->new_defs.is_valid ());
+	      pair_change = change;
+	      break;
+	    }
+	    case Action::FIXUP_USE:
+	    {
+	      // This use now needs to consume memory from our stp.
+	      if (dump_file)
+		fprintf (dump_file,
+			 "  stp: changing i%d to use mem from new stp "
+			 "(after i%d)\n",
+			 action.insn->uid (), stp_dest->uid ());
+	      change->new_uses = drop_memory_access (change->new_uses);
+	      gcc_assert (new_set);
+	      auto new_use = crtl->ssa->create_use (attempt, action.insn,
+						    new_set);
+	      change->new_uses = insert_access (attempt, new_use,
+						change->new_uses);
+	      break;
+	    }
+	    }
+	  changes.safe_push (change);
 	}
     }
 
   if (trailing_add)
-    changes.quick_push (make_delete (trailing_add));
-
-  auto n_changes = changes.length ();
-  gcc_checking_assert (n_changes >= 2 && n_changes <= 4);
+    changes.safe_push (make_delete (trailing_add));
 
   auto is_changing = insn_is_changing (changes);
-  for (unsigned i = 0; i < n_changes; i++)
+  for (unsigned i = 0; i < changes.length (); i++)
     gcc_assert (rtl_ssa::restrict_movement_ignoring (*changes[i], is_changing));
 
   // Check the pair pattern is recog'd.
