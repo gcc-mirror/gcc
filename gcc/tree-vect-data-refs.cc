@@ -671,13 +671,20 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 		     "loop contains multiple exits, analyzing"
 		     " statement dependencies.\n");
 
-  for (gimple *c : LOOP_VINFO_LOOP_CONDS (loop_vinfo))
+  /* Since we don't support general control flow, the location we'll move the
+     side-effects to is always the latch connected exit.  When we support
+     general control flow we can do better but for now this is fine.  */
+  dest_bb = single_pred (loop->latch);
+  basic_block bb = dest_bb;
+
+  do
     {
-      stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (c);
-      if (STMT_VINFO_TYPE (loop_cond_info) != loop_exit_ctrl_vec_info_type)
+      /* If the destination block is also the header then we have nothing to do.  */
+      if (!single_pred_p (bb))
 	continue;
 
-      gimple_stmt_iterator gsi = gsi_for_stmt (c);
+      bb = single_pred (bb);
+      gimple_stmt_iterator gsi = gsi_last_bb (bb);
 
       /* Now analyze all the remaining statements and try to determine which
 	 instructions are allowed/needed to be moved.  */
@@ -705,10 +712,10 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "early breaks only supported on statically"
 				 " allocated objects.\n");
-	      return opt_result::failure_at (c,
+	      return opt_result::failure_at (stmt,
 				 "can't safely apply code motion to "
 				 "dependencies of %G to vectorize "
-				 "the early exit.\n", c);
+				 "the early exit.\n", stmt);
 	    }
 
 	  tree refop = TREE_OPERAND (obj, 0);
@@ -720,10 +727,10 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "early breaks only supported on"
 				 " statically allocated objects.\n");
-	      return opt_result::failure_at (c,
+	      return opt_result::failure_at (stmt,
 				 "can't safely apply code motion to "
 				 "dependencies of %G to vectorize "
-				 "the early exit.\n", c);
+				 "the early exit.\n", stmt);
 	    }
 
 	  /* Check if vector accesses to the object will be within bounds.
@@ -736,10 +743,10 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 				 "early breaks not supported: vectorization "
 				 "would %s beyond size of obj.",
 				 DR_IS_READ (dr_ref) ? "read" : "write");
-	      return opt_result::failure_at (c,
+	      return opt_result::failure_at (stmt,
 				 "can't safely apply code motion to "
 				 "dependencies of %G to vectorize "
-				 "the early exit.\n", c);
+				 "the early exit.\n", stmt);
 	    }
 
 	  if (DR_IS_READ (dr_ref))
@@ -801,27 +808,13 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 				 "marked statement for vUSE update: %G", stmt);
 	    }
 	}
-
-      /* Save destination as we go, BB are visited in order and the last one
-	is where statements should be moved to.  */
-      if (!dest_bb)
-	dest_bb = gimple_bb (c);
-      else
-	{
-	  basic_block curr_bb = gimple_bb (c);
-	  if (dominated_by_p (CDI_DOMINATORS, curr_bb, dest_bb))
-	    dest_bb = curr_bb;
-	}
     }
+  while (bb != loop->header);
 
-  basic_block dest_bb0 = EDGE_SUCC (dest_bb, 0)->dest;
-  basic_block dest_bb1 = EDGE_SUCC (dest_bb, 1)->dest;
-  dest_bb = flow_bb_inside_loop_p (loop, dest_bb0) ? dest_bb0 : dest_bb1;
   /* We don't allow outer -> inner loop transitions which should have been
      trapped already during loop form analysis.  */
   gcc_assert (dest_bb->loop_father == loop);
 
-  gcc_assert (dest_bb);
   LOOP_VINFO_EARLY_BRK_DEST_BB (loop_vinfo) = dest_bb;
 
   if (!LOOP_VINFO_EARLY_BRK_VUSES (loop_vinfo).is_empty ())
