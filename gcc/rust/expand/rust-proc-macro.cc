@@ -14,12 +14,14 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-system.h"
 #include "rust-diagnostics.h"
 #include "rust-proc-macro.h"
 #include "rust-session-manager.h"
 #include "rust-lex.h"
 #include "rust-token-converter.h"
 #include "rust-attributes.h"
+
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
@@ -178,17 +180,11 @@ load_macros (std::string path)
 std::string
 generate_proc_macro_decls_symbol (std::uint32_t stable_crate_id)
 {
-#define PROC_MACRO_DECLS_FMT_ARGS                                              \
-  "__gccrs_proc_macro_decls_%08x__", stable_crate_id
-  // Size could be hardcoded since we know the input size but I elected to
-  // calculate it everytime so we won't have any desync between code and data.
-  int size = std::snprintf (nullptr, 0, PROC_MACRO_DECLS_FMT_ARGS);
-  std::vector<char> buf;
-  buf.resize (size + 1, '\0');
-  std::sprintf (buf.data (), PROC_MACRO_DECLS_FMT_ARGS);
-#undef PROC_MACRO_DECLS_FMT_ARGS
+  std::ostringstream stream;
+  stream << "__gccrs_proc_macro_decls_" << std::setfill ('0') << std::hex
+	 << std::setw (8) << stable_crate_id << "__";
 
-  return std::string (buf.cbegin (), buf.cend ());
+  return stream.str ();
 }
 
 } // namespace Rust
