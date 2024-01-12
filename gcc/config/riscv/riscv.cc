@@ -5610,6 +5610,17 @@ riscv_get_v_regno_alignment (machine_mode mode)
   return lmul;
 }
 
+/* Define ASM_OUTPUT_OPCODE to do anything special before
+   emitting an opcode.  */
+const char *
+riscv_asm_output_opcode (FILE *asm_out_file, const char *p)
+{
+  if (TARGET_XTHEADVECTOR)
+     return th_asm_output_opcode (asm_out_file, p);
+
+  return p;
+}
+
 /* Implement TARGET_PRINT_OPERAND.  The RISCV-specific operand codes are:
 
    'h'	Print the high-part relocation associated with OP, after stripping

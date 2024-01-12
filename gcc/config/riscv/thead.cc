@@ -883,6 +883,19 @@ th_output_move (rtx dest, rtx src)
   return NULL;
 }
 
+/* Define ASM_OUTPUT_OPCODE to do anything special before
+   emitting an opcode.  */
+const char *
+th_asm_output_opcode (FILE *asm_out_file, const char *p)
+{
+  /* We need to add th. prefix to all the xtheadvector
+     instructions here.*/
+  if (current_output_insn != NULL && p[0] == 'v')
+    fputs ("th.", asm_out_file);
+
+  return p;
+}
+
 /* Implement TARGET_PRINT_OPERAND_ADDRESS for XTheadMemIdx.  */
 
 bool
