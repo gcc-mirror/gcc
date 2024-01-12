@@ -51,16 +51,6 @@
   DEF_SVE_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
 #endif
 
-#ifndef DEF_SME_ZA_FUNCTION_GS
-#define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUP, PREDS) \
-  DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUP, PREDS)
-#endif
-
-#ifndef DEF_SME_ZA_FUNCTION
-#define DEF_SME_ZA_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
-  DEF_SME_ZA_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
-#endif
-
 DEF_SVE_MODE (n, none, none, none)
 DEF_SVE_MODE (single, none, none, none)
 DEF_SVE_MODE (index, none, none, elements)
@@ -168,11 +158,8 @@ DEF_SVE_GROUP_SUFFIX (vg4x4, 4, 4)
 
 #include "aarch64-sve-builtins-base.def"
 #include "aarch64-sve-builtins-sve2.def"
-#include "aarch64-sve-builtins-sme.def"
 
-#undef DEF_SME_ZA_FUNCTION
 #undef DEF_SVE_FUNCTION
-#undef DEF_SME_ZA_FUNCTION_GS
 #undef DEF_SVE_FUNCTION_GS
 #undef DEF_SVE_GROUP_SUFFIX
 #undef DEF_SME_ZA_SUFFIX

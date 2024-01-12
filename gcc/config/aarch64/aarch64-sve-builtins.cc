@@ -882,23 +882,31 @@ static const predication_index preds_z[] = { PRED_z, NUM_PREDS };
 /* Used by SME instructions that always merge into ZA.  */
 static const predication_index preds_za_m[] = { PRED_za_m, NUM_PREDS };
 
-/* A list of all SVE ACLE functions.  */
+/* A list of all arm_sve.h functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
 #define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
     preds_##PREDS, REQUIRED_EXTENSIONS },
-#define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
-  { #NAME, &functions::NAME##_za, &shapes::SHAPE, types_##TYPES, \
-    groups_##GROUPS, preds_##PREDS, (REQUIRED_EXTENSIONS | AARCH64_FL_ZA_ON) },
 #include "aarch64-sve-builtins.def"
 };
 
-/* A list of all NEON-SVE-Bridge ACLE functions.  */
+/* A list of all arm_neon_sve_bridge.h ACLE functions.  */
 static CONSTEXPR const function_group_info neon_sve_function_groups[] = {
 #define DEF_NEON_SVE_FUNCTION(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &neon_sve_bridge_functions::NAME, &shapes::SHAPE, types_##TYPES, \
     groups_##GROUPS, preds_##PREDS, 0 },
 #include "aarch64-neon-sve-bridge-builtins.def"
+};
+
+/* A list of all arm_sme.h functions.  */
+static CONSTEXPR const function_group_info sme_function_groups[] = {
+#define DEF_SME_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+  { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
+    preds_##PREDS, REQUIRED_EXTENSIONS },
+#define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+  { #NAME, &functions::NAME##_za, &shapes::SHAPE, types_##TYPES, \
+    groups_##GROUPS, preds_##PREDS, (REQUIRED_EXTENSIONS | AARCH64_FL_ZA_ON) },
+#include "aarch64-sve-builtins-sme.def"
 };
 
 /* The scalar type associated with each vector type.  */
@@ -4629,8 +4637,7 @@ handle_arm_sve_h ()
   function_table = new hash_table<registered_function_hasher> (1023);
   function_builder builder;
   for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
-    if (!(function_groups[i].required_extensions & AARCH64_FL_SME))
-      builder.register_function_group (function_groups[i]);
+    builder.register_function_group (function_groups[i]);
 }
 
 /* Implement #pragma GCC aarch64 "arm_neon_sve_bridge.h".  */
@@ -4675,9 +4682,8 @@ handle_arm_sme_h ()
   sme_switcher sme;
 
   function_builder builder;
-  for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
-    if (function_groups[i].required_extensions & AARCH64_FL_SME)
-      builder.register_function_group (function_groups[i]);
+  for (unsigned int i = 0; i < ARRAY_SIZE (sme_function_groups); ++i)
+    builder.register_function_group (sme_function_groups[i]);
 }
 
 /* If we're implementing manual overloading, check whether the SVE

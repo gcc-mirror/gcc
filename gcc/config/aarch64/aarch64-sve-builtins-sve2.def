@@ -241,6 +241,7 @@ DEF_SVE_FUNCTION (svrevd, unary, all_data, mxz)
 
 #define REQUIRED_EXTENSIONS (AARCH64_FL_SVE \
 			     | AARCH64_FL_SVE2 \
+			     | AARCH64_FL_SME \
 			     | AARCH64_FL_SME2 \
 			     | AARCH64_FL_SM_ON)
 DEF_SVE_FUNCTION_GS (svadd, binary_single, all_integer, x24, none)
