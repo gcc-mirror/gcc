@@ -956,8 +956,11 @@ namespace views::__adaptor
     requires __is_range_adaptor_closure<_Lhs>
       && __is_range_adaptor_closure<_Rhs>
     constexpr auto
-    operator|(_Lhs __lhs, _Rhs __rhs)
-    { return _Pipe<_Lhs, _Rhs>{std::move(__lhs), std::move(__rhs)}; }
+    operator|(_Lhs&& __lhs, _Rhs&& __rhs)
+    {
+      return _Pipe<decay_t<_Lhs>, decay_t<_Rhs>>{std::forward<_Lhs>(__lhs),
+						 std::forward<_Rhs>(__rhs)};
+    }
 
   // The base class of every range adaptor non-closure.
   //
@@ -980,7 +983,7 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(_Args&&... __args) const
 	{
-	  return _Partial<_Derived, decay_t<_Args>...>{std::forward<_Args>(__args)...};
+	  return _Partial<_Derived, decay_t<_Args>...>{0, std::forward<_Args>(__args)...};
 	}
     };
 
@@ -1003,10 +1006,13 @@ namespace views::__adaptor
     {
       tuple<_Args...> _M_args;
 
-      constexpr
-      _Partial(_Args... __args)
-	: _M_args(std::move(__args)...)
-      { }
+      // First parameter is to ensure this constructor is never used
+      // instead of the copy/move constructor.
+      template<typename... _Ts>
+	constexpr
+	_Partial(int, _Ts&&... __args)
+	  : _M_args(std::forward<_Ts>(__args)...)
+	{ }
 
       // Invoke _Adaptor with arguments __r, _M_args... according to the
       // value category of this _Partial object.
@@ -1058,10 +1064,11 @@ namespace views::__adaptor
     {
       _Arg _M_arg;
 
-      constexpr
-      _Partial(_Arg __arg)
-	: _M_arg(std::move(__arg))
-      { }
+      template<typename _Tp>
+	constexpr
+	_Partial(int, _Tp&& __arg)
+	  : _M_arg(std::forward<_Tp>(__arg))
+	{ }
 
 #if __cpp_explicit_this_parameter
       template<typename _Self, typename _Range>
@@ -1099,10 +1106,11 @@ namespace views::__adaptor
     {
       tuple<_Args...> _M_args;
 
-      constexpr
-      _Partial(_Args... __args)
-	: _M_args(std::move(__args)...)
-      { }
+      template<typename... _Ts>
+	constexpr
+	_Partial(int, _Ts&&... __args)
+	  : _M_args(std::forward<_Ts>(__args)...)
+	{ }
 
       // Invoke _Adaptor with arguments __r, const _M_args&... regardless
       // of the value category of this _Partial object.
@@ -1129,10 +1137,11 @@ namespace views::__adaptor
     {
       _Arg _M_arg;
 
-      constexpr
-      _Partial(_Arg __arg)
-	: _M_arg(std::move(__arg))
-      { }
+      template<typename _Tp>
+	constexpr
+	_Partial(int, _Tp&& __arg)
+	  : _M_arg(std::forward<_Tp>(__arg))
+	{ }
 
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
@@ -1155,10 +1164,11 @@ namespace views::__adaptor
       [[no_unique_address]] _Lhs _M_lhs;
       [[no_unique_address]] _Rhs _M_rhs;
 
-      constexpr
-      _Pipe(_Lhs __lhs, _Rhs __rhs)
-	: _M_lhs(std::move(__lhs)), _M_rhs(std::move(__rhs))
-      { }
+      template<typename _Tp, typename _Up>
+	constexpr
+	_Pipe(_Tp&& __lhs, _Up&& __rhs)
+	  : _M_lhs(std::forward<_Tp>(__lhs)), _M_rhs(std::forward<_Up>(__rhs))
+	{ }
 
       // Invoke _M_rhs(_M_lhs(__r)) according to the value category of this
       // range adaptor closure object.
@@ -1203,10 +1213,11 @@ namespace views::__adaptor
       [[no_unique_address]] _Lhs _M_lhs;
       [[no_unique_address]] _Rhs _M_rhs;
 
-      constexpr
-      _Pipe(_Lhs __lhs, _Rhs __rhs)
-	: _M_lhs(std::move(__lhs)), _M_rhs(std::move(__rhs))
-      { }
+      template<typename _Tp, typename _Up>
+	constexpr
+	_Pipe(_Tp&& __lhs, _Up&& __rhs)
+	  : _M_lhs(std::forward<_Tp>(__lhs)), _M_rhs(std::forward<_Up>(__rhs))
+	{ }
 
       template<typename _Range>
 	requires __pipe_invocable<const _Lhs&, const _Rhs&, _Range>
@@ -9458,7 +9469,7 @@ namespace __detail
     {
       using __detail::_To;
       using views::__adaptor::_Partial;
-      return _Partial<_To<_Cont>, decay_t<_Args>...>{std::forward<_Args>(__args)...};
+      return _Partial<_To<_Cont>, decay_t<_Args>...>{0, std::forward<_Args>(__args)...};
     }
 
 /// @cond undocumented
@@ -9503,7 +9514,7 @@ namespace __detail
     {
       using __detail::_To2;
       using views::__adaptor::_Partial;
-      return _Partial<_To2<_Cont>, decay_t<_Args>...>{std::forward<_Args>(__args)...};
+      return _Partial<_To2<_Cont>, decay_t<_Args>...>{0, std::forward<_Args>(__args)...};
     }
 
 } // namespace ranges
