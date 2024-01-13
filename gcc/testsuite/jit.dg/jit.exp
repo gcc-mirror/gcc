@@ -871,8 +871,22 @@ proc jit-verify-assembler { args } {
 proc jit-verify-assembler-output { args } {
     verbose "jit-verify-assembler: $args"
 
+    if { [llength $args] > 3 } {
+	error "jit-verify-assembler-output: too many arguments"
+	return
+    }
+
     set dg-output-text [lindex $args 0]
     verbose "dg-output-text: ${dg-output-text}"
+
+    if { [llength $args] >= 2 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
 
     upvar 2 name name
     verbose "name: $name"
