@@ -2227,7 +2227,9 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
       mp = CEIL (min_prec, limb_prec) * limb_prec;
       if (mp == 0)
 	mp = 1;
-      if (mp >= (unsigned) TYPE_PRECISION (TREE_TYPE (op)))
+      if (mp >= (unsigned) TYPE_PRECISION (TREE_TYPE (op))
+	  && (TREE_CODE (TREE_TYPE (op)) == BITINT_TYPE
+	      || TYPE_PRECISION (TREE_TYPE (op)) <= limb_prec))
 	type = TREE_TYPE (op);
       else
 	type = build_bitint_type (mp, 1);
@@ -2237,11 +2239,15 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	  if (TYPE_PRECISION (type) <= limb_prec)
 	    type = m_limb_type;
 	  else
-	    /* This case is for targets which e.g. have 64-bit
-	       limb but categorize up to 128-bits _BitInts as
-	       small.  We could use type of m_limb_type[2] and
-	       similar instead to save space.  */
-	    type = build_bitint_type (mid_min_prec, 1);
+	    {
+	      while (bitint_precision_kind (mp) == bitint_prec_small)
+		mp += limb_prec;
+	      /* This case is for targets which e.g. have 64-bit
+		 limb but categorize up to 128-bits _BitInts as
+		 small.  We could use type of m_limb_type[2] and
+		 similar instead to save space.  */
+	      type = build_bitint_type (mp, 1);
+	    }
 	}
       if (prec_stored)
 	{
