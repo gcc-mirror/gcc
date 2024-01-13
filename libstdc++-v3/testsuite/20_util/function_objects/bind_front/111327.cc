@@ -17,24 +17,26 @@ struct G {
 
 int main() {
   auto f0 = std::bind_front(F{});
-  f0(); // { dg-error "deleted" }
+  f0(); // { dg-error "deleted|no match" }
   std::move(f0)();
   std::as_const(f0)();
   std::move(std::as_const(f0))();
 
   auto g0 = std::bind_front(G{});
-  g0(); // { dg-error "deleted" }
-  std::move(g0)(); // { dg-error "deleted" }
+  g0(); // { dg-error "deleted|no match" }
+  std::move(g0)(); // { dg-error "deleted|no match" }
   std::move(std::as_const(g0))();
 
   auto f1 = std::bind_front(F{}, 42);
-  f1(); // { dg-error "deleted" }
+  f1(); // { dg-error "deleted|no match" }
   std::move(f1)();
   std::as_const(f1)();
   std::move(std::as_const(f1))();
 
   auto g1 = std::bind_front(G{}, 42);
-  g1(); // { dg-error "deleted" }
-  std::move(g1)(); // { dg-error "deleted" }
+  g1(); // { dg-error "deleted|no match" }
+  std::move(g1)(); // { dg-error "deleted|no match" }
   std::move(std::as_const(g1))();
 }
+
+// { dg-error "no type named 'type' in 'struct std::invoke_result" "" { target c++23 } 0 }
