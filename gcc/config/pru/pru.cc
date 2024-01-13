@@ -443,6 +443,10 @@ prologue_saved_reg_p (int regno)
 {
   gcc_assert (GP_REG_P (regno));
 
+  /* Do not save the register if function will not return.  */
+  if (TREE_THIS_VOLATILE (current_function_decl))
+    return false;
+
   if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
     return true;
 
