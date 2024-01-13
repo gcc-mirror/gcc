@@ -1247,6 +1247,9 @@ write_nested_name (const tree decl)
 	    write_char ('R');
 	}
     }
+  else if (DECL_DECLARES_FUNCTION_P (decl)
+	   && DECL_XOBJ_MEMBER_FUNCTION_P (decl))
+    write_char ('H');
 
   /* Is this a template instance?  */
   if (tree info = maybe_template_info (decl))
