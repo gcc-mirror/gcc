@@ -55,7 +55,17 @@ else
 
 ifneq (,$(findstring darwin,$(host)))
 
-LIBGCCJIT_AGE = 1
+# NOTE that we are building here for the host, and so tests for target-
+# specific functionality will only work when host == target.  This causes
+# fails when building cross-compilers with different object formats (at
+# least when the respective linkers do not accept the same command line
+# options).  Fortunately, for Darwin we can safely hard-code the relevant
+# host options, since all usable linkers support them).
+
+LIBGCCJIT_CURRENT = 24
+LIBGCCJIT_REVISION = 0
+LIBGCCJIT_AGE = 24
+LIBGCCJIT_COMPAT = 0
 LIBGCCJIT_BASENAME = libgccjit
 
 LIBGCCJIT_SONAME = \
@@ -63,18 +73,18 @@ LIBGCCJIT_SONAME = \
 LIBGCCJIT_FILENAME = $(LIBGCCJIT_BASENAME).$(LIBGCCJIT_VERSION_NUM).dylib
 LIBGCCJIT_LINKER_NAME = $(LIBGCCJIT_BASENAME).dylib
 
-# Conditionalize the use of the LD_VERSION_SCRIPT_OPTION and
-# LD_SONAME_OPTION depending if configure found them, using $(if)
-# We have to define a COMMA here, otherwise the commas in the "true"
-# result are treated as separators by the $(if).
+# Darwin does not have a version script option. Exported symbols are controlled
+# by the following, and library versioning is done using libtool.
+# We have to define a COMMA here, otherwise the commas are treated as
+# separators.
 COMMA := ,
 LIBGCCJIT_VERSION_SCRIPT_OPTION = \
-	$(if $(LD_VERSION_SCRIPT_OPTION),\
-	  -Wl$(COMMA)$(LD_VERSION_SCRIPT_OPTION)$(COMMA)$(srcdir)/jit/libgccjit.map)
+  -Wl$(COMMA)-exported_symbols_list$(COMMA)$(srcdir)/jit/libgccjit.exports
 
+# For Darwin host, we need a l64 or ld64-compatible linker, that uses
+# -install_name to introduce this.
 LIBGCCJIT_SONAME_OPTION = \
-	$(if $(LD_SONAME_OPTION), \
-	     -Wl$(COMMA)$(LD_SONAME_OPTION)$(COMMA)$(LIBGCCJIT_SONAME))
+  -Wl$(COMMA)-install_name$(COMMA)$(LIBGCCJIT_SONAME)
 
 LIBGCCJIT_SONAME_SYMLINK = $(LIBGCCJIT_FILENAME)
 LIBGCCJIT_LINKER_NAME_SYMLINK = $(LIBGCCJIT_LINKER_NAME)
@@ -143,15 +153,18 @@ ifneq (,$(findstring mingw,$(target)))
 # Create import library
 LIBGCCJIT_EXTRA_OPTS = -Wl,--out-implib,$(LIBGCCJIT_IMPORT_LIB)
 else
-
 ifneq (,$(findstring darwin,$(host)))
-# TODO : Construct a Darwin-style symbol export file.
-LIBGCCJIT_EXTRA_OPTS = -Wl,-compatibility_version,$(LIBGCCJIT_VERSION_NUM) \
-	-Wl,-current_version,$(LIBGCCJIT_VERSION_NUM).$(LIBGCCJIT_MINOR_NUM).$(LIBGCCJIT_AGE) \
-	$(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
-	$(LIBGCCJIT_SONAME_OPTION)
+LIBGCCJIT_VERS = $(LIBGCCJIT_CURRENT).$(LIBGCCJIT_REVISION).$(LIBGCCJIT_AGE)
+LIBGCCJIT_EXTRA_OPTS = -Wl,-current_version,$(LIBGCCJIT_VERS) \
+ -Wl,-compatibility_version,$(LIBGCCJIT_COMPAT) \
+  $(LIBGCCJIT_VERSION_SCRIPT_OPTION) $(LIBGCCJIT_SONAME_OPTION)
+# Use the default (shared) libgcc.
+JIT_LDFLAGS = $(filter-out -static-libgcc, $(LDFLAGS))
+ifeq (,$(findstring darwin8,$(host)))
+JIT_LDFLAGS += -Wl,-rpath,@loader_path
+endif
 else
-
+JIT_LDFLAGS = $(LDFLAGS)
 LIBGCCJIT_EXTRA_OPTS = $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
 	$(LIBGCCJIT_SONAME_OPTION)
 endif
@@ -170,7 +183,7 @@ $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	$(LIBDEPS) $(srcdir)/jit/libgccjit.map \
 	$(EXTRA_GCC_OBJS_EXCLUSIVE) $(jit.prev)
 	@$(call LINK_PROGRESS,$(INDEX.jit),start)
-	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ -shared \
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(JIT_LDFLAGS) -o $@ -shared \
 	     $(jit_OBJS) libbackend.a libcommon-target.a libcommon.a \
 	     $(CPPLIB) $(LIBDECNUMBER) $(EXTRA_GCC_LIBS) $(LIBS) $(BACKENDLIBS) \
 	     $(EXTRA_GCC_OBJS_EXCLUSIVE) \
