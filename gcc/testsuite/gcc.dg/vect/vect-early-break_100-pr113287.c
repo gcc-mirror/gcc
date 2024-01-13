@@ -18,14 +18,14 @@ foo (void)
 {
   unsigned long long r[142];
   bar (r);
-  unsigned long long v = ((long) r[0] >> 31);
+  unsigned long long v = ((long long) r[0] >> 31);
   if (v + 1 > 1)
     return 1;
   for (unsigned long long i = 1; i <= 140; ++i)
     if (r[i] != v)
       return 1;
   unsigned long long w = r[141];
-  if ((unsigned long long) (((long) (w << 60)) >> 60) != v)
+  if ((unsigned long long) (((long long) (w << 60)) >> 60) != v)
     return 1;
   return 0;
 }
