@@ -6863,8 +6863,22 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 
   if (num_args == 3)
     {
+      gfc_expr *size = expr->value.function.actual->next->next->expr;
+
       /* Use a library function for the 3 parameter version.  */
       tree int4type = gfc_get_int_type (4);
+
+      /* Treat optional SIZE argument when it is passed as an optional
+	 dummy.  If SIZE is absent, the default value is BIT_SIZE(I).  */
+      if (size->expr_type == EXPR_VARIABLE
+	  && size->symtree->n.sym->attr.dummy
+	  && size->symtree->n.sym->attr.optional)
+	{
+	  tree type_of_size = TREE_TYPE (args[2]);
+	  args[2] = build3_loc (input_location, COND_EXPR, type_of_size,
+				gfc_conv_expr_present (size->symtree->n.sym),
+				args[2], fold_convert (type_of_size, nbits));
+	}
 
       /* We convert the first argument to at least 4 bytes, and
 	 convert back afterwards.  This removes the need for library
