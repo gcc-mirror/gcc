@@ -1,3 +1,409 @@
+2024-01-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Named Address Spaces, Limitations and Caveats):
+	Add web-link to the avr-gcc wiki.
+
+2024-01-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Variable Attributes) [address]: Remove
+	documentation for a version without argument, which is not supported.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1_u8_x4, vld1_u16_x4, vld1_u32_x4, vld1_u64_x4): New.
+	(vld1_s8_x4, vld1_s16_x4, vld1_s32_x4, vld1_s64_x4): New.
+	(vld1_f16_x4, vld1_f32_x4): New.
+	(vld1_p8_x4, vld1_p16_x4, vld1_p64_x4): New.
+	(vld1_bf16_x4): New.
+	(vld1q_types_x4): Updated to use vld1q_x4
+	from arm_neon_builtins.def
+	* config/arm/arm_neon_builtins.def
+	(vld1_x4): Updated entries.
+	(vld1q_x4): New entries, but comes from the old vld1_x4
+	* config/arm/neon.md
+	(neon_vld1q_x4<mode>): Updated from neon_vld1_x4<mode>.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1_u8_x3, vld1_u16_x3, vld1_u32_x3, vld1_u64_x3): New.
+	(vld1_s8_x3, vld1_s16_x3, vld1_s32_x3, vld1_s64_x3): New.
+	(vld1_f16_x3, vld1_f32_x3): New.
+	(vld1_p8_x3, vld1_p16_x3, vld1_p64_x3): New.
+	(vld1_bf16_x3): New.
+	(vld1q_types_x3): Updated to use vld1q_x3 from
+	arm_neon_builtins.def
+	* config/arm/arm_neon_builtins.def
+	(vld1_x3): Updated entries.
+	(vld1q_x3): New entries, but comes from the old vld1_x2
+	* config/arm/neon.md
+	(neon_vld1q_x3<mode>): Updated from neon_vld1_x3<mode>.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1_u8_x2, vld1_u16_x2, vld1_u32_x2, vld1_u64_x2): New.
+	(vld1_s8_x2, vld1_s16_x2, vld1_s32_x2, vld1_s64_x2): New.
+	(vld1_f16_x2, vld1_f32_x2): New.
+	(vld1_p8_x2, vld1_p16_x2, vld1_p64_x2): New.
+	(vld1_bf16_x2): New.
+	(vld1q_types_x2): Updated to use vld1q_x2 from
+	arm_neon_builtins.def
+	* config/arm/arm_neon_builtins.def
+	(vld1_x2): Updated entries.
+	(vld1q_x2): New entries, but comes from the old vld1_x2
+	* config/arm/neon.md
+	(neon_vld1<VMEMX2_q>_x2<VDQX:mode>): Updated from
+	neon_vld1_x2<mode>.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1q_u8_x4, vst1q_u16_x4, vst1q_u32_x4, vst1q_u64_x4): New.
+	(vst1q_s8_x4, vst1q_s16_x4, vst1q_s32_x4, vst1q_s64_x4): New.
+	(vst1q_f16_x4, vst1q_f32_x4): New.
+	(vst1q_p8_x4, vst1q_p16_x4, vst1q_p64_x4): New.
+	(vst1q_bf16_x4): New.
+	* config/arm/arm_neon_builtins.def (vst1q_x4): New entries.
+	* config/arm/neon.md
+	(neon_vst1q_x4<mode>): New.
+	(neon_vst1x4qa<mode>, neon_vst1x4qb<mode>): New.
+	* config/arm/unspecs.md
+	(UNSPEC_VST1X4A, UNSPEC_VST1X4B): New.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1q_u8_x3, vst1q_u16_x3, vst1q_u32_x3, vst1q_u64_x3): New.
+	(vst1q_s8_x3, vst1q_s16_x3, vst1q_s32_x3, vst1q_s64_x3): New.
+	(vst1q_f16_x3, vst1q_f32_x3): New.
+	(vst1q_p8_x3, vst1q_p16_x3, vst1q_p64_x3): New.
+	(vst1q_bf16_x3): New.
+	* config/arm/arm_neon_builtins.def (vst1q_x3): New entries.
+	* config/arm/neon.md
+	(neon_vst1q_x3<mode>): New.
+	(neon_vld1x3qa<mode>, neon_vst1x3qb<mode>): New.
+	* config/arm/unspecs.md
+	(UNSPEC_VST1X3A, UNSPEC_VST1X3B): New.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1q_u8_x2, vst1q_u16_x2, vst1q_u32_x2, vst1q_u64_x2): New.
+	(vst1q_s8_x2, vst1q_s16_x2, vst1q_s32_x2, vst1q_s64_x2): New.
+	(vst1q_f16_x2, vst1q_f32_x2): New.
+	(vst1q_p8_x2, vst1q_p16_x2, vst1q_p64_x2): New.
+	(vst1q_bf16_x2): New.
+	* config/arm/arm_neon_builtins.def (vst1<_x2): New entries.
+	* config/arm/neon.md
+	(neon_vst1<VMEMX2_q>_x2<VDQX:mode>): Updated from
+	neon_vst1_x2<mode>.
+	* config/arm/iterators.md
+	(VMEMX2): New mode iterator.
+	(VMEMX2_q): New mode attribute.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1_u8_x4, vst1_u16_x4, vst1_u32_x4, vst1_u64_x4): New.
+	(vst1_s8_x4, vst1_s16_x4, vst1_s32_x4, vst1_s64_x4): New.
+	(vst1_f16_x4, vst1_f32_x4): New.
+	(vst1_p8_x4, vst1_p16_x4, vst1_p64_x4): New.
+	(vst1_bf16_x4): New.
+	* config/arm/arm_neon_builtins.def (vst1_x4): New entries.
+	* config/arm/neon.md (vst1_x4<mode>): New.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1_u8_x3, vst1_u16_x3, vst1_u32_x3, vst1_u64_x3): New.
+	(vst1_s8_x3, vst1_s16_x3, vst1_s32_x3, vst1_s64_x3): New.
+	(vst1_f16_x3, vst1_f32_x3): New.
+	(vst1_p8_x3, vst1_p16_x3, vst1_p64_x3): New.
+	(vst1_bf16_x3): New.
+	* config/arm/arm_neon_builtins.def (vst1_x3): New entries.
+	* config/arm/neon.md (vst1_x3<mode>): New.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1_u8_x2, vst1_u16_x2, vst1_u32_x2, vst1_u64_x2): New.
+	(vst1_s8_x2, vst1_s16_x2, vst1_s32_x2, vst1_s64_x2): New.
+	(vst1_f16_x2, vst1_f32_x2): New.
+	(vst1_p8_x2, vst1_p16_x2, vst1_p64_x2): New.
+	(vst1_bf16_x2): New.
+	* config/arm/arm_neon_builtins.def (vst1_x2): New entries.
+	* config/arm/neon.md (vst1_x2<mode>): New.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1q_u8_x4, vld1q_u16_x4, vld1q_u32_x4, vld1q_u64_x4): New.
+	(vld1q_s8_x4, vld1q_s16_x4, vld1q_s32_x4, vld1q_s64_x4): New.
+	(vld1q_f16_x4, vld1q_f32_x4): New.
+	(vld1q_p8_x4, vld1q_p16_x4, vld1q_p64_x4): New.
+	(vld1q_bf16_x4): New.
+	* config/arm/arm_neon_builtins.def (vld1_x4): New entries.
+	* config/arm/neon.md
+	(neon_vld1_x4<mode>): New.
+	(neon_vld1x4qa<mode>, neon_vld1x4qb<mode>): New
+	* config/arm/unspecs.md
+	(UNSPEC_VLD1X4A, UNSPEC_VLD1X4B): New.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1q_u8_x3, vld1q_u16_x3, vld1q_u32_x3, vld1q_u64_x3): New.
+	(vld1q_s8_x3, vld1q_s16_x3, vld1q_s32_x3, vld1q_s64_x3): New.
+	(vld1q_f16_x3, vld1q_f32_x3): New.
+	(vld1q_p8_x3, vld1q_p16_x3, vld1q_p64_x3): New.
+	(vld1q_bf16_x3): New.
+	* config/arm/arm_neon_builtins.def (vld1_x3): New entries.
+	* config/arm/neon.md
+	(neon_vld1_x3<mode>): New.
+	(neon_vld1x3qa<mode>, neon_vld1x3qb<mode>): New.
+	* config/arm/unspecs.md
+	(UNSPEC_VLD1X3A, UNSPEC_VLD1X3B): New.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1q_u8_x2, vld1q_u16_x2, vld1q_u32_x2, vld1q_u64_x2): New.
+	(vld1q_s8_x2, vld1q_s16_x2, vld1q_s32_x2, vld1q_s64_x2): New.
+	(vld1q_f16_x2, vld1q_f32_x2): New.
+	(vld1q_p8_x2, vld1q_p16_x2, vld1q_p64_x2): New.
+	(vld1q_bf16_x2): New.
+	* config/arm/arm_neon_builtins.def (vld1_x2): New entries.
+	* config/arm/neon.md (vld1_x2<mode>): New.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113287
+	* doc/sourcebuild.texi (check_effective_target_bitint65535): New.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Replace single_exit.
+	* tree-vect-loop.cc (vect_transform_loop): Likewise.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113178
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Fill in all
+	alternate exits.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113237
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg): Use
+	existing LCSSA variable for exit when all exits are early break.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113137
+	PR tree-optimization/113136
+	PR tree-optimization/113172
+	PR tree-optimization/113178
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Maintain PHIs on inverted loops.
+	(vect_do_peeling): Maintain virtual PHIs on inverted loops.
+	* tree-vect-loop.cc (vec_init_loop_exit_info): Pick exit closes to
+	latch.
+	(vect_create_loop_vinfo): Record all conds instead of only alt ones.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113135
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences): Rework
+	dependency analysis.
+
+2024-01-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/host-darwin.cc (segv_handler): Use the revised
+	diagnostics class member name for abort of error.
+
+2024-01-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_handle_addr_attribute): Move "..." from
+	format string to %s argument.
+
+2024-01-12  John David Anglin  <danglin@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113182
+	* varasm.cc (process_pending_assemble_externals,
+	assemble_external_libcall): Use targetm.strip_name_encoding
+	before calling get_identifier.
+
+2024-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113196
+	* config/aarch64/aarch64.h (machine_function::advsimd_zero_insn):
+	New member variable.
+	* config/aarch64/aarch64-protos.h (aarch64_split_simd_shift_p):
+	Declare.
+	* config/aarch64/iterators.md (Vnarrowq2): New mode attribute.
+	* config/aarch64/aarch64-simd.md
+	(vec_unpacku_hi_<mode>, vec_unpacks_hi_<mode>): Recombine into...
+	(vec_unpack<su>_hi_<mode>): ...this.  Move the generation of
+	zip2 for zero-extends to...
+	(aarch64_simd_vec_unpack<su>_hi_<mode>): ...a split of this
+	instruction.  Fix big-endian handling.
+	(vec_unpacku_lo_<mode>, vec_unpacks_lo_<mode>): Recombine into...
+	(vec_unpack<su>_lo_<mode>): ...this.  Move the generation of
+	zip1 for zero-extends to...
+	(<optab><Vnarrowq><mode>2): ...a split of this instruction.
+	Fix big-endian handling.
+	(*aarch64_zip1_uxtl): New pattern.
+	(aarch64_usubw<mode>_lo_zip, aarch64_uaddw<mode>_lo_zip): Delete
+	(aarch64_usubw<mode>_hi_zip, aarch64_uaddw<mode>_hi_zip): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_get_shareable_reg): New function.
+	(aarch64_gen_shareable_zero): Use it.
+	(aarch64_split_simd_shift_p): New function.
+
+2024-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* emit-rtl.h (rtl_data::x_function_beg_note): New member variable.
+	(function_beg_insn): New macro.
+	* function.cc (expand_function_start): Initialize function_beg_insn.
+
+2024-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112989
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_builder::m_overload_names): Replace with...
+	* config/aarch64/aarch64-sve-builtins.cc (overload_names): ...this
+	new global.
+	(add_overloaded_function): Update accordingly, using get_identifier
+	to get a GGC-friendly record of the name.
+
+2024-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112989
+	* config/aarch64/aarch64-sve-builtins.def: Don't include
+	aarch64-sve-builtins-sme.def.
+	(DEF_SME_ZA_FUNCTION_GS, DEF_SME_ZA_FUNCTION): Move to...
+	* config/aarch64/aarch64-sve-builtins-sme.def: ...here.
+	(DEF_SME_FUNCTION): New macro.  Use it and DEF_SME_FUNCTION_GS
+	instead of DEF_SVE_*.  Add AARCH64_FL_SME to anything that
+	requires AARCH64_FL_SME2.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Make same
+	AARCH64_FL_SME adjustment here.
+	* config/aarch64/aarch64-sve-builtins.cc (function_groups): Don't
+	include SME intrinsics.
+	(sme_function_groups): New array.
+	(handle_arm_sve_h): Remove check for AARCH64_FL_SME.
+	(handle_arm_sme_h): Use sme_function_groups instead of function_groups.
+
+2024-01-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113281
+	* config/riscv/riscv-protos.h (struct regmove_vector_cost): New struct.
+	(struct cpu_vector_cost): Add regmove struct.
+	(get_vector_costs): Export as global.
+	* config/riscv/riscv-vector-costs.cc (adjust_stmt_cost): Adjust scalar_to_vec cost.
+	(costs::add_stmt_cost): Ditto.
+	* config/riscv/riscv.cc (get_common_costs): Export global function.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113334
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_operand): Use
+	wi::neg_p (wi::to_wide (op)) instead of tree_int_cst_sgn (op) < 0
+	to determine if number should be extended by all ones rather than zero
+	extended.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113330
+	* tree-sra.cc (create_access): Punt for BITINT_TYPE accesses with
+	too large size.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113323
+	* gimple-lower-bitint.cc (bitint_dom_walker::before_dom_children): Fix
+	check for lhs being large/huge _BitInt not in m_names.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113316
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_call): Handle
+	uninitialized large/huge _BitInt arguments to calls.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (mergeable_op): Instead of comparing
+	TYPE_SIZE (t) of large/huge BITINT_TYPEs, compare
+	CEIL (TYPE_PRECISION (t), limb_prec).
+	(bitint_large_huge::handle_cast): Likewise.
+
+2024-01-12  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR sanitizer/113284
+	* config/rs6000/rs6000.cc (rs6000_elf_declare_function_name):
+	Use assemble_function_label_final () for Power ELF V1 ABI.
+	* output.h (assemble_function_label_final): New function.
+	* varasm.cc (assemble_function_label_raw): Use
+	assemble_function_label_final ().
+	(assemble_function_label_final): New function.
+
+2024-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113344
+	* match.pd ((double)float CMP (double)float -> float CMP float):
+	Perform result type check only for vectors.
+	* fold-const.cc (fold_binary_loc): Likewise.
+
+2024-01-12  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/sse.md (sdot_prod<mode>): Remove redundant SET.
+	(usdot_prod<mode>): Ditto.
+	(sdot_prod<mode>): Ditto.
+	(udot_prod<mode>): Ditto.
+
+2024-01-12  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/113288
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Add __AVX10_1__, __AVX10_1_256__ and __AVX10_1_512__.
+
+2024-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR target/112280
+	* config/s390/s390.cc (expand_perm_as_a_vlbr_vstbr_candidate):
+	Do not generate code when d.testing_p.
+
+2024-01-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/113039
+	* doc/invoke.texi (fcf-protection=): Update documents.
+
+2024-01-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_v_ext_mode_p): Update the
+	comments of predicate func riscv_v_ext_mode_p.
+
+2024-01-12  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins.def (vfloat16m8_t):
+			Modify ABI-name length of vfloat16m8_t
+
+2024-01-12  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_expand_conditional_move):
+	Adjust.
+
+2024-01-12  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.md (add<mode>3): Removed.
+	(*addsi3): New.
+	(addsi3): Ditto.
+	(adddi3): Ditto.
+	(*addsi3_extended): Removed.
+	(addsi3_extended): New.
+
 2024-01-11  Jin Ma  <jinma@linux.alibaba.com>
 
 	* config/riscv/thead.md: Add limits for splits.

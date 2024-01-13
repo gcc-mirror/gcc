@@ -1,3 +1,9 @@
+2024-01-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.cc
+	(build_v2_objc_method_fixup_call): Early exit for cases
+	where the sender or receiver are known to be in error.
+
 2023-11-27  Alex Coplan  <alex.coplan@arm.com>
 	    Iain Sandoe  <iain@sandoe.co.uk>
 

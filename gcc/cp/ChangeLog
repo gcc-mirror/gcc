@@ -1,3 +1,22 @@
+2024-01-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113038
+	* name-lookup.cc (lookup_elaborated_type): Look for bindings
+	in the global namespace in the ABI namespace.
+
+2024-01-12  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (reversed_match): New.
+	(enum class pmatch): New enum.
+	(cand_parms_match): Add match_kind parm.
+	(object_parms_correspond): Add fn parms.
+	(joust): Adjust.
+	* class.cc (xobj_iobj_parameters_correspond): Rename to...
+	(iobj_parm_corresponds_to): ...this.  Take the other
+	type instead of a second function.
+	(object_parms_correspond): Adjust.
+	* cp-tree.h (iobj_parm_corresponds_to): Declare.
+
 2024-01-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113191

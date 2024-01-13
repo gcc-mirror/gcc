@@ -1,3 +1,37 @@
+2024-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107466
+	* include/bits/random.tcc (subtract_with_carry_engine::seed):
+	Implement proposed resolution of LWG 4014.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/lwg3809.cc:
+	Check for expected result of 64-bit engine with seed that
+	doesn't fit in 32-bits.
+
+2024-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113320
+	* include/std/format (__format::_Runtime_format_string): Add
+	constructor and disable copy operations.
+	(basic_format_string(_Runtime_format_string)): Add noexcept and
+	take parameter by value not rvalue reference.
+	(runtime_format): Add noexcept.
+	* testsuite/std/format/runtime_format.cc: Check noexcept. Check
+	that construction is only possible from prvalues, not xvalues.
+
+2024-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105505
+	* include/bits/stl_pair.h (pair::pair(U1&&, U2&&)) [C++23]: Add
+	default template arguments, as per P1951R1.
+	* testsuite/20_util/pair/cons/default_tmpl_args.cc: New test.
+
+2024-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Arg_store): Fix PR number in
+	comment. Simplify preprocessor code.
+
 2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/evolution.xml: Fix spelling.

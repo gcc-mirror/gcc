@@ -1,3 +1,219 @@
+2024-01-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113038
+	* g++.dg/modules/pr106304_b.C: Add dynamic_cast.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1_base_xN_1.c: Updated.
+	* gcc.target/arm/simd/vld1_bf16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vld1_fp16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vld1_p64_xN_1.c: Updated.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1_base_xN_1.c: Updated.
+	* gcc.target/arm/simd/vld1_bf16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vld1_fp16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vld1_p64_xN_1.c: Updated.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_p64_xN_1.c: Add new tests.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1q_base_xN_1.c: Updated
+	* gcc.target/arm/simd/vst1q_bf16_xN_1.c: Updated
+	* gcc.target/arm/simd/vst1q_fp16_xN_1.c: Updated
+	* gcc.target/arm/simd/vst1q_p64_xN_1.c: Updated
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_p64_xN_1.c: Add new tests.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_p64_xN_1.c: Add new tests.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1_base_xN_1.c: Updated.
+	* gcc.target/arm/simd/vst1_bf16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vst1_fp16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vst1_p64_xN_1.c: Updated.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1_base_xN_1.c: Updated.
+	* gcc.target/arm/simd/vst1_bf16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vst1_fp16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vst1_p64_xN_1.c: Updated.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1_p64_xN_1.c: Add new tests.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Updated.
+	* gcc.target/arm/simd/vld1q_bf16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vld1q_fp16_xN_1.c: Updated.
+	* gcc.target/arm/simd/vld1q_p64_xN_1.c: Updated.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_p64_xN_1.c: Add new tests.
+
+2024-01-12  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vld1q_bf16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vld1q_fp16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vld1q_p64_xN_1.c: Add new test.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/113315
+	* gcc.dg/bitint-65.c: New test.
+	* gcc.dg/bitint-66.c: New test.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113287
+	* gcc.dg/vect/vect-early-break_100-pr113287.c: Support non-bitint.
+	* gcc.dg/vect/vect-early-break_99-pr113287.c: Likewise.
+	* lib/target-supports.exp (bitint, bitint128, bitint575, bitint65535):
+	Document them.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113178
+	* gcc.dg/vect/vect-early-break_101-pr113178.c: New test.
+	* gcc.dg/vect/vect-early-break_102-pr113178.c: New test.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113237
+	* gcc.dg/vect/vect-early-break_98-pr113237.c: New test.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113137
+	PR tree-optimization/113136
+	PR tree-optimization/113172
+	PR tree-optimization/113178
+	* g++.dg/vect/vect-early-break_4-pr113137.cc: New test.
+	* g++.dg/vect/vect-early-break_5-pr113137.cc: New test.
+	* gcc.dg/vect/vect-early-break_95-pr113137.c: New test.
+	* gcc.dg/vect/vect-early-break_96-pr113136.c: New test.
+	* gcc.dg/vect/vect-early-break_97-pr113172.c: New test.
+
+2024-01-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113135
+	* gcc.dg/vect/vect-early-break_103-pr113135.c: New test.
+
+2024-01-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/concepts-memfun4.C: Change expected
+	reversed handling.
+
+2024-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113196
+	* gcc.target/aarch64/pr113196.c: New test.
+	* gcc.target/aarch64/simd/vmovl_high_1.c: Remove double include.
+	Expect uxtl2 rather than zip2.
+	* gcc.target/aarch64/vect_mixed_sizes_8.c: Expect zip1 rather
+	than uxtl.
+	* gcc.target/aarch64/vect_mixed_sizes_9.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_10.c: Likewise.
+
+2024-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112989
+	* gcc.target/aarch64/sve/acle/general-c/clamp_1.c: Remove bogus
+	error test.
+
+2024-01-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113281
+	* gcc.target/riscv/rvv/autovec/pr113209.c: Adapt test.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113281-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113281-2.c: New test.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113334
+	* gcc.dg/torture/bitint-46.c: New test.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113330
+	* gcc.dg/bitint-69.c: New test.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113323
+	* gcc.dg/bitint-68.c: New test.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113316
+	* gcc.dg/bitint-67.c: New test.
+
+2024-01-12  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+	    Antoni Boucher  <bouanto@zoho.com>
+
+	* jit.dg/all-non-failing-tests.h: Add new attributes tests.
+	* jit.dg/jit.exp: Add `jit-verify-assembler-output-not` test command.
+	* jit.dg/test-restrict-attribute.c: New test.
+	* jit.dg/test-alias-attribute.c: New test.
+	* jit.dg/test-always_inline-attribute.c: New test.
+	* jit.dg/test-cold-attribute.c: New test.
+	* jit.dg/test-const-attribute.c: New test.
+	* jit.dg/test-noinline-attribute.c: New test.
+	* jit.dg/test-nonnull-attribute.c: New test.
+	* jit.dg/test-pure-attribute.c: New test.
+	* jit.dg/test-used-attribute.c: New test.
+	* jit.dg/test-variable-attribute.c: New test.
+	* jit.dg/test-weak-attribute.c: New test.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/bitint-31.c: Fix up #if conditions checking whether
+	__*_MANT_DIG__ is equal to a particular precision.
+
+2024-01-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/fold-min-poly.c: Remove -fno-vect-cost-model
+
+2024-01-12  Li Wei  <liwei@loongson.cn>
+
+	* gcc.target/loongarch/sign-extend-2.c: Adjust.
+
+2024-01-12  Li Wei  <liwei@loongson.cn>
+
+	* gcc.target/loongarch/sign-extend.c: Moved to...
+	* gcc.target/loongarch/sign-extend-1.c: ...here.
+	* gcc.target/loongarch/sign-extend-2.c: New test.
+
 2024-01-11  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.dg/gomp/bad-array-section-c-1.c: New test.

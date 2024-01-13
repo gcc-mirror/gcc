@@ -1,3 +1,55 @@
+2024-01-12  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+	    Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst: Add documentation for LIBGCCJIT_ABI_26.
+	* docs/topics/functions.rst: Add documentation for new functions.
+	* docs/topics/expressions.rst: Add documentation for new functions.
+
+2024-01-12  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+	    Antoni Boucher  <bouanto@zoho.com>
+
+	* dummy-frontend.cc (handle_alias_attribute): New function.
+	(handle_always_inline_attribute): New function.
+	(handle_cold_attribute): New function.
+	(handle_fnspec_attribute): New function.
+	(handle_format_arg_attribute): New function.
+	(handle_format_attribute): New function.
+	(handle_noinline_attribute): New function.
+	(handle_target_attribute): New function.
+	(handle_used_attribute): New function.
+	(handle_visibility_attribute): New function.
+	(handle_weak_attribute): New function.
+	(handle_alias_ifunc_attribute): New function.
+	* jit-playback.cc (fn_attribute_to_string): New function.
+	(variable_attribute_to_string): New function.
+	(global_new_decl): Add attributes support.
+	(set_variable_attribute): New function.
+	(new_global): Add attributes support.
+	(new_global_initialized): Add attributes support.
+	(new_local): Add attributes support.
+	* jit-playback.h (fn_attribute_to_string): New function.
+	(set_variable_attribute): New function.
+	* jit-recording.cc (recording::lvalue::add_attribute): New function.
+	(recording::function::function): New function.
+	(recording::function::write_to_dump): Add attributes support.
+	(recording::function::add_attribute): New function.
+	(recording::function::add_string_attribute): New function.
+	(recording::function::add_integer_array_attribute): New function.
+	(recording::global::replay_into): Add attributes support.
+	(recording::local::replay_into): Add attributes support.
+	* jit-recording.h: Add attributes support.
+	* libgccjit.cc (gcc_jit_function_add_attribute): New function.
+	(gcc_jit_function_add_string_attribute): New function.
+	(gcc_jit_function_add_integer_array_attribute): New function.
+	(gcc_jit_lvalue_add_attribute): New function.
+	* libgccjit.h (enum gcc_jit_fn_attribute): New enum.
+	(gcc_jit_function_add_attribute): New function.
+	(gcc_jit_function_add_string_attribute): New function.
+	(gcc_jit_function_add_integer_array_attribute): New function.
+	(enum gcc_jit_variable_attribute): New function.
+	(gcc_jit_lvalue_add_string_attribute): New function.
+	* libgccjit.map: Declare new functions.
+
 2023-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.cc (jit_begin_diagnostic): Make diagnostic_info
