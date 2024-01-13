@@ -33,6 +33,6 @@ program test
 
 #ifdef __GFC_REAL_16__
     real_16 = 4.18
-    write(buffer, fmt) ':',real_16,':' ! { dg-error "Positive width required" "" { target fortran_real_16 } }
+    write(buffer, fmt) ':',real_16,':' ! { dg-error "Positive width required" "" { target { fortran_real_16 || { hppa*64*-*-hpux* } } } }
 #endif
 end
