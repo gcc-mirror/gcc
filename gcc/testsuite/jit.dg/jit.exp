@@ -94,25 +94,34 @@ proc parse_valgrind_logfile {name logfile} {
 # unexpected exits.
 
 proc verify_exit_status { executable wres } {
-    lassign $wres pid spawnid os_error_flag value
+    set extra [lassign $wres pid spawnid os_error_flag value]
     verbose "pid: $pid" 3
     verbose "spawnid: $spawnid" 3
     verbose "os_error_flag: $os_error_flag" 3
     verbose "value: $value" 3
 
     # Detect segfaults etc:
-    if { [llength $wres] > 4 } {
-	if { [lindex $wres 4] == "CHILDKILLED" } {
-	    fail "$executable killed: $wres"
+    set len [llength $extra]
+    if { $len >= 1 } {
+	if { [lindex $extra 0] == "CHILDKILLED" } {
+	    set reason "Unknown Reason"
+	    set detail "No Details"
+	    if { $len >= 2 } {
+		set reason [lindex $extra 1]
+		if { $len >= 3 } {
+		    set detail [lindex $extra 2]
+		}
+	    }
+	    fail "$executable killed: $reason $detail"
 	    return
 	}
     }
     if { $os_error_flag != 0 } {
-	fail "$executable: OS error: $wres"
+	fail "$executable: OS error: $os_error_flag $extra"
 	return
     }
     if { $value != 0 } {
-	fail "$executable: non-zero exit code: $wres"
+	fail "$executable: non-zero exit code: $value $extra"
 	return
     }
     pass "$executable exited cleanly"
