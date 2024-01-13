@@ -3189,8 +3189,7 @@ namespace __format
 	// Format as const if possible, to reduce instantiations.
 	template<typename _Tp>
 	  using __maybe_const_t
-	    = __conditional_t<__format::__formattable_with<_Tp, _Context>,
-			      const _Tp, _Tp>;
+	    = __conditional_t<__formattable<_Tp>, const _Tp, _Tp>;
 
 	template<typename _Tq>
 	  static void
@@ -3208,7 +3207,7 @@ namespace __format
 	  explicit
 	  handle(_Tp& __val) noexcept
 	  {
-	    if constexpr (!__format::__formattable_with<const _Tp, _Context>)
+	    if constexpr (!__formattable<const _Tp>)
 	      static_assert(!is_const_v<_Tp>, "std::format argument must be "
 					      "non-const for this type");
 
