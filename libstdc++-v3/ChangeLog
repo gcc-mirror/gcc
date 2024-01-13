@@ -1,3 +1,11 @@
+2024-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Arg_store): Fix PR number in
+	comment. Simplify preprocessor code.
+
 2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

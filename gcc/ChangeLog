@@ -1,3 +1,11 @@
+2024-01-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-01-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_handle_addr_attribute): Move "..." from
+	format string to %s argument.
+
 2024-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	Backported from master:
