@@ -76,6 +76,7 @@
 
 #define __glibcxx_want_boyer_moore_searcher
 #define __glibcxx_want_bind_front
+#define __glibcxx_want_bind_back
 #define __glibcxx_want_constexpr_functional
 #define __glibcxx_want_invoke
 #define __glibcxx_want_invoke_r
@@ -1044,6 +1045,75 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  std::forward<_Args>(__args)...);
     }
 #endif // __cpp_lib_bind_front
+
+#ifdef __cpp_lib_bind_back // C++ >= 23
+  template<typename _Fd, typename... _BoundArgs>
+    struct _Bind_back
+    {
+      static_assert(is_move_constructible_v<_Fd>);
+      static_assert((is_move_constructible_v<_BoundArgs> && ...));
+
+      // First parameter is to ensure this constructor is never used
+      // instead of the copy/move constructor.
+      template<typename _Fn, typename... _Args>
+	explicit constexpr
+	_Bind_back(int, _Fn&& __fn, _Args&&... __args)
+	noexcept(__and_<is_nothrow_constructible<_Fd, _Fn>,
+			is_nothrow_constructible<_BoundArgs, _Args>...>::value)
+	: _M_fd(std::forward<_Fn>(__fn)),
+	  _M_bound_args(std::forward<_Args>(__args)...)
+	{ static_assert(sizeof...(_Args) == sizeof...(_BoundArgs)); }
+
+      template<typename _Self, typename... _CallArgs>
+	constexpr
+	invoke_result_t<__like_t<_Self, _Fd>, _CallArgs..., __like_t<_Self, _BoundArgs>...>
+	operator()(this _Self&& __self, _CallArgs&&... __call_args)
+	noexcept(is_nothrow_invocable_v<__like_t<_Self, _Fd>,
+					_CallArgs..., __like_t<_Self, _BoundArgs>...>)
+	{
+	  return _S_call(std::forward<_Self>(__self), _BoundIndices(),
+			 std::forward<_CallArgs>(__call_args)...);
+	}
+
+    private:
+      using _BoundIndices = index_sequence_for<_BoundArgs...>;
+
+      template<typename _Tp, size_t... _Ind, typename... _CallArgs>
+	static constexpr
+	decltype(auto)
+	_S_call(_Tp&& __g, index_sequence<_Ind...>, _CallArgs&&... __call_args)
+	{
+	  return std::invoke(std::forward<_Tp>(__g)._M_fd,
+	      std::forward<_CallArgs>(__call_args)...,
+	      std::get<_Ind>(std::forward<_Tp>(__g)._M_bound_args)...);
+	}
+
+      [[no_unique_address]] _Fd _M_fd;
+      [[no_unique_address]] std::tuple<_BoundArgs...> _M_bound_args;
+    };
+
+  template<typename _Fn, typename... _Args>
+    using _Bind_back_t = _Bind_back<decay_t<_Fn>, decay_t<_Args>...>;
+
+  /** Create call wrapper by partial application of arguments to function.
+   *
+   * The result of `std::bind_back(f, args...)` is a function object that
+   * stores `f` and the bound arguments, `args...`. When that function
+   * object is invoked with `call_args...` it returns the result of calling
+   * `f(call_args..., args...)`.
+   *
+   *  @since C++23
+   */
+  template<typename _Fn, typename... _Args>
+    constexpr _Bind_back_t<_Fn, _Args...>
+    bind_back(_Fn&& __fn, _Args&&... __args)
+    noexcept(is_nothrow_constructible_v<_Bind_back_t<_Fn, _Args...>,
+					int, _Fn, _Args...>)
+    {
+      return _Bind_back_t<_Fn, _Args...>(0, std::forward<_Fn>(__fn),
+					 std::forward<_Args>(__args)...);
+    }
+#endif // __cpp_lib_bind_back
 
 #if __cplusplus >= 201402L
   /// Generalized negator.

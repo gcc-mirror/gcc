@@ -767,6 +767,15 @@ ftms = {
 };
 
 ftms = {
+  name = bind_back;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+    extra_cond = "__cpp_explicit_this_parameter";
+  };
+};
+
+ftms = {
   name = starts_ends_with;
   values = {
     v = 201711;
