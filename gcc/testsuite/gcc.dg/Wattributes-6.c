@@ -408,7 +408,7 @@ finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .warn_unused
 				/* { dg-note	"previous declaration here" "" { target *-*-* } .-1 } */
 
 inline int ATTR ((aligned (4)))
-  finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .aligned \\(4\\). because it conflicts with attribute .aligned \\(8\\)." "" { target { ! { hppa*64*-*-* } } } } */
+  finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .aligned \\(4\\). because it conflicts with attribute .aligned \\(8\\)." "" } */
 
 inline int ATTR ((aligned (8)))
 finline_hot_noret_align (int);  /* { dg-note	"previous declaration here" } */
