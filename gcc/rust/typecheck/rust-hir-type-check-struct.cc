@@ -142,7 +142,16 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
     }
 
   // check the arguments are all assigned and fix up the ordering
-  if (fields_assigned.size () != variant->num_fields ())
+  std::vector<std::string> missing_field_names;
+  for (auto &field : variant->get_fields ())
+    {
+      auto it = fields_assigned.find (field->get_name ());
+      if (it == fields_assigned.end ())
+	{
+	  missing_field_names.push_back (field->get_name ());
+	}
+    }
+  if (!missing_field_names.empty ())
     {
       if (struct_def->is_union ())
 	{
@@ -156,8 +165,12 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 	}
       else if (!struct_expr.has_struct_base ())
 	{
-	  rust_error_at (struct_expr.get_locus (), ErrorCode::E0063,
-			 "constructor is missing fields");
+	  Error missing_fields_error
+	    = make_missing_field_error (struct_expr.get_locus (),
+					missing_field_names,
+					struct_path_ty->get_name ());
+	  // We might want to return or handle these in the future emit for now.
+	  missing_fields_error.emit ();
 	  return;
 	}
       else
@@ -390,6 +403,35 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
     }
 
   return true;
+}
+
+Error
+TypeCheckStructExpr::make_missing_field_error (
+  location_t locus, const std::vector<std::string> &missing_field_names,
+  const std::string &struct_name)
+{
+  // Message plurality depends on size
+  if (missing_field_names.size () == 1)
+    {
+      return Error (locus, ErrorCode::E0063,
+		    "missing field %s in initializer of %qs",
+		    missing_field_names[0].c_str (), struct_name.c_str ());
+    }
+  // Make comma separated string for display
+  std::stringstream display_field_names;
+  bool first = true;
+  for (auto &name : missing_field_names)
+    {
+      if (!first)
+	{
+	  display_field_names << ", ";
+	}
+      first = false;
+      display_field_names << name;
+    }
+  return Error (locus, ErrorCode::E0063,
+		"missing fields %s in initializer of %qs",
+		display_field_names.str ().c_str (), struct_name.c_str ());
 }
 
 } // namespace Resolver
