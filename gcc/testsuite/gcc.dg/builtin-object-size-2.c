@@ -536,7 +536,7 @@ test8 (unsigned cond)
 #endif
 }
 
-#ifndef __AVR__ /* avr has no strndup */
+#if !defined(__AVR__) && !defined(__hpux__) /* avr and hpux have no strndup */
 /* Tests for strdup/strndup.  */
 size_t
 __attribute__ ((noinline))
@@ -639,7 +639,7 @@ main (void)
   test6 ();
   test7 ();
   test8 (1);
-#ifndef __AVR__ /* avr has no strndup */
+#if !defined(__AVR__) && !defined(__hpux__) /* avr and hpux have no strndup */
   test9 ();
 #endif
   DONE ();

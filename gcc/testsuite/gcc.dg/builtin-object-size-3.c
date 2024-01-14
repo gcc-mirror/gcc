@@ -628,7 +628,7 @@ test10 (void)
     }
 }
 
-#ifndef __AVR__ /* avr has no strndup */
+#if !defined(__AVR__) && !defined(__hpux__) /* avr and hpux have no strndup */
 /* Tests for strdup/strndup.  */
 size_t
 __attribute__ ((noinline))
@@ -734,7 +734,7 @@ main (void)
   test8 ();
   test9 (1);
   test10 ();
-#ifndef __AVR__ /* avr has no strndup */
+#if !defined(__AVR__) && !defined(__hpux__) /* avr and hpux have no strndup */
   test11 ();
 #endif
   DONE ();
