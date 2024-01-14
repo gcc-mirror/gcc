@@ -25,12 +25,21 @@
 #include "rust-tyty.h"
 
 namespace Rust {
+
+struct Error;
+
 namespace Resolver {
 
 class TypeCheckStructExpr : public TypeCheckBase
 {
 public:
   static TyTy::BaseType *Resolve (HIR::StructExprStructFields *expr);
+
+  // Helper for making any errors
+  static Error
+  make_missing_field_error (location_t locus,
+			    const std::vector<std::string> &missing_field_names,
+			    const std::string &struct_name);
 
 protected:
   void resolve (HIR::StructExprStructFields &struct_expr);

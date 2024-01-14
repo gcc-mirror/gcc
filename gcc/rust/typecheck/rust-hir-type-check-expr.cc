@@ -1017,6 +1017,24 @@ TypeCheckExpr::visit (HIR::StructExprStruct &struct_expr)
       return;
     }
 
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (struct_path_ty);
+  for (auto variant : adt->get_variants ())
+    {
+      if (!variant->get_fields ().empty ())
+	{
+	  std::vector<std::string> field_names;
+	  for (auto &field : variant->get_fields ())
+	    field_names.push_back (field->get_name ());
+	  Error missing_fields_error
+	    = TypeCheckStructExpr::make_missing_field_error (
+	      struct_expr.get_locus (), field_names,
+	      struct_path_ty->get_name ());
+	  // We might want to return or handle these in the future emit for now.
+	  missing_fields_error.emit ();
+	  return;
+	}
+    }
+
   infered = struct_path_ty;
 }
 
