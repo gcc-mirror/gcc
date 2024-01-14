@@ -1,3 +1,12 @@
+2024-01-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2024-01-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/dtio_25.f90: Update.
+	* gfortran.dg/namelist_57.f90: Update.
+	* gfortran.dg/namelist_65.f90: Update.
+
 2024-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	Backported from master:
