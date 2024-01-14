@@ -1,3 +1,8 @@
+2024-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+
 2024-01-09  Jeff Law  <jlaw@ventanamicro.com>
 
 	* longlong.h (__stormy16_count_leading_zeros): Add prototype for

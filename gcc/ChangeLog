@@ -1,3 +1,9 @@
+2024-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113361
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_operand_addr):
+	Fix up determination of the type for > limb_prec constants.
+
 2024-01-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/extend.texi (AVR Named Address Spaces, Limitations and Caveats):

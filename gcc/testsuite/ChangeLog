@@ -1,3 +1,47 @@
+2024-01-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/67277
+	* gfortran.dg/ishftc_optional_size_1.f90: New test.
+
+2024-01-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gfortran.dg/fmt_f_default_field_width_3.f90: Add hppa*64*-*-hpux*
+	to real_16 dg-error targets.
+	* gfortran.dg/fmt_g_default_field_width_3.f90: Likewise.
+
+2024-01-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113305
+	* gfortran.dg/do_concurrent_7.f90: New test.
+
+2024-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113361
+	* gcc.dg/torture/bitint-47.c: New test.
+
+2024-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113287
+	* gcc.dg/vect/vect-early-break_100-pr113287.c: Use long long instead
+	of long.
+
+2024-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/abi/mangle79.C: New test.
+
+2024-01-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/107823
+	PR tree-optimization/110768
+	PR tree-optimization/110941
+	PR tree-optimization/110450
+	PR tree-optimization/110841
+	* gcc.dg/tree-ssa/ssa-thread-22.c: New test.
+	* gcc.dg/tree-ssa/vrp-loop-1.c: New test.
+	* gcc.dg/tree-ssa/vrp-loop-2.c: New test.
+	* gcc.dg/tree-ssa/vrp-unreachable-1.c: New test.
+	* gcc.dg/tree-ssa/vrp-unreachable-2.c: New test.
+
 2024-01-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113038

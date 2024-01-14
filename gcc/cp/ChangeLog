@@ -1,3 +1,9 @@
+2024-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* mangle.cc (write_nested_name): Mangle explicit object
+	member functions with H as per
+	https://github.com/itanium-cxx-abi/cxx-abi/issues/148 non-proposal.
+
 2024-01-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113038

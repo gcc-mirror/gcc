@@ -1,5 +1,49 @@
 2024-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/108822
+	* include/std/tuple (tuple): Add checks for dangling references.
+	Reimplement constraints and constant expressions using C++20
+	features.
+	* include/std/type_traits [C++20]
+	(__is_implicitly_default_constructible_v): Define.
+	(__is_implicitly_default_constructible): Use variable template.
+	* testsuite/20_util/tuple/dangling_ref.cc: New test.
+
+2024-01-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/108827
+	PR libstdc++/111327
+	* include/bits/version.def (bind_back): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/functional (_Bind_back): Define for C++23.
+	(bind_back): Likewise.
+	* testsuite/20_util/function_objects/bind_back/1.cc: New test
+	(adapted from corresponding bind_front test).
+	* testsuite/20_util/function_objects/bind_back/111327.cc: Likewise.
+
+2024-01-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/functional (_Bind_front): Remove =default special
+	member function declarations.
+	(_Bind_front::operator()): Implement using C++23 deducing this
+	when available.
+	* testsuite/20_util/function_objects/bind_front/111327.cc:
+	Adjust testcase to expect better errors in C++23 mode.
+
+2024-01-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (views::__adaptor::operator|): Perform
+	perfect forwarding of arguments.
+	(views::__adaptor::_RangeAdaptor::operator()): Pass dummy
+	first argument to _Partial.
+	(views::__adaptor::_Partial::_Partial): Likewise.  Add dummy
+	first parameter.
+	(views::__adaptor::_Pipe::_Pipe): Perform perfect forwarding
+	of arguments.
+	(to): Pass dummy first argument to _Partial.
+
+2024-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/107466
 	* include/bits/random.tcc (subtract_with_carry_engine::seed):
 	Implement proposed resolution of LWG 4014.
