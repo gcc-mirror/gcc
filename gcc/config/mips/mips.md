@@ -3440,16 +3440,16 @@
    (set_attr "compression" "micromips,*,*")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*ior<mode>3_mips16_asmacro"
-  [(set (match_operand:GPR 0 "register_operand" "=d,d")
-	(ior:GPR (match_operand:GPR 1 "register_operand" "%0,0")
-		 (match_operand:GPR 2 "uns_arith_operand" "d,K")))]
+(define_insn "*iorsi3_mips16_asmacro"
+  [(set (match_operand:SI 0 "register_operand" "=d,d")
+	(ior:SI (match_operand:SI 1 "register_operand" "%0,0")
+		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
   "ISA_HAS_MIPS16E2"
   "@
    or\t%0,%2
    ori\t%0,%x2"
    [(set_attr "alu_type" "or")
-    (set_attr "mode" "<MODE>")
+    (set_attr "mode" "SI")
     (set_attr "extended_mips16" "*,yes")])
 
 (define_insn "*ior<mode>3_mips16"
