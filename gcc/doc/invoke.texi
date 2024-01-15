@@ -864,7 +864,7 @@ Objective-C and Objective-C++ Dialects}.
 -mn_flash=@var{size}  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack
 -mfract-convert-truncate
--mshort-calls  -nodevicelib  -nodevicespecs
+-mshort-calls  -mskip-bug  -nodevicelib  -nodevicespecs
 -Waddr-space-convert  -Wmisspelled-isr}
 
 @emph{Blackfin Options}
@@ -23293,6 +23293,12 @@ instructions @code{XCH}, @code{LAC}, @code{LAS} and @code{LAT}.
 Assume that @code{RJMP} and @code{RCALL} can target the whole
 program memory. This option is used for multilib generation and selection
 for the devices from architecture @code{avrxmega3}.
+
+@opindex mskip-bug
+@item -mskip-bug
+
+Generate code without skips (@code{CPSE}, @code{SBRS},
+@code{SBRC}, @code{SBIS}, @code{SBIC}) over 32-bit instructions.
 
 @opindex msp8
 @item -msp8
