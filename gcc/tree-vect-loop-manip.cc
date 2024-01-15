@@ -1613,11 +1613,11 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	    {
 	      if (!alt_loop_exit_block)
 		{
-		  alt_loop_exit_block = split_edge (exit);
 		  edge res = redirect_edge_and_branch (
-				single_succ_edge (alt_loop_exit_block),
+				exit,
 				new_preheader);
 		  flush_pending_stmts (res);
+		  alt_loop_exit_block = split_edge (res);
 		  continue;
 		}
 	      dest = alt_loop_exit_block;
