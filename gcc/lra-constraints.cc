@@ -4491,23 +4491,18 @@ curr_insn_transform (bool check_only_p)
 	{
 	  if (goal_alt[i] == NO_REGS
 	      && REG_P (op)
-	      /* When we assign NO_REGS it means that we will not
-		 assign a hard register to the scratch pseudo by
-		 assigment pass and the scratch pseudo will be
-		 spilled.  Spilled scratch pseudos are transformed
-		 back to scratches at the LRA end.  */
-	      && ira_former_scratch_operand_p (curr_insn, i)
-	      && ira_former_scratch_p (REGNO (op)))
+	      && (regno = REGNO (op)) >= FIRST_PSEUDO_REGISTER
+	      /* We assigned a hard register to the pseudo in the past but now
+		 decided to spill it for the insn.  If the pseudo is used only
+		 in this insn, it is better to spill it here as we free hard
+		 registers for other pseudos referenced in the insn.  The most
+		 common case of this is a scratch register which will be
+		 transformed to scratch back at the end of LRA.  */
+	      && lra_get_regno_hard_regno (regno) >= 0
+	      && bitmap_single_bit_set_p (&lra_reg_info[regno].insn_bitmap))
 	    {
-	      int regno = REGNO (op);
 	      lra_change_class (regno, NO_REGS, "      Change to", true);
-	      if (lra_get_regno_hard_regno (regno) >= 0)
-		/* We don't have to mark all insn affected by the
-		   spilled pseudo as there is only one such insn, the
-		   current one.  */
-		reg_renumber[regno] = -1;
-	      lra_assert (bitmap_single_bit_set_p
-			  (&lra_reg_info[REGNO (op)].insn_bitmap));
+	      reg_renumber[regno] = -1;
 	    }
 	  /* We can do an optional reload.  If the pseudo got a hard
 	     reg, we might improve the code through inheritance.  If
