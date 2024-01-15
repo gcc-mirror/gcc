@@ -978,8 +978,6 @@ maybe_new_partial_specialization (tree& type)
       tree d = create_implicit_typedef (DECL_NAME (tmpl), t);
       DECL_CONTEXT (d) = TYPE_CONTEXT (t);
       DECL_SOURCE_LOCATION (d) = input_location;
-      TREE_PRIVATE (d) = (current_access_specifier == access_private_node);
-      TREE_PROTECTED (d) = (current_access_specifier == access_protected_node);
       TREE_PUBLIC (d) = TREE_PUBLIC (DECL_TEMPLATE_RESULT (tmpl));
 
       set_instantiating_module (d);

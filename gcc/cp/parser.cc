@@ -35306,7 +35306,8 @@ static void
 cp_parser_check_access_in_redeclaration (tree decl, location_t location)
 {
   if (!decl
-      || (!CLASS_TYPE_P (TREE_TYPE (decl))
+      || (!(CLASS_TYPE_P (TREE_TYPE (decl))
+	    && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
 	  && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE))
     return;
 
