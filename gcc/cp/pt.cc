@@ -975,6 +975,7 @@ maybe_new_partial_specialization (tree& type)
       DECL_SOURCE_LOCATION (d) = input_location;
       TREE_PRIVATE (d) = (current_access_specifier == access_private_node);
       TREE_PROTECTED (d) = (current_access_specifier == access_protected_node);
+      TREE_PUBLIC (d) = TREE_PUBLIC (DECL_TEMPLATE_RESULT (tmpl));
 
       set_instantiating_module (d);
       DECL_MODULE_EXPORT_P (d) = DECL_MODULE_EXPORT_P (tmpl);
