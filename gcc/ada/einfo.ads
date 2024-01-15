@@ -4016,9 +4016,6 @@ package Einfo is
 --       ensure that the finalization masters of all pending access types are
 --       fully initialized when the full view is frozen.
 
---    Postconditions_Proc
---       Obsolete field which can be removed once CodePeer is fixed ???
-
 --    Predicate_Function (synthesized)
 --       Defined in all types. Set for types for which (Has_Predicates is True)
 --       and for which a predicate procedure has been built that tests that the
