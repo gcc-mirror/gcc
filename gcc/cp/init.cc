@@ -4155,7 +4155,8 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 
   /* If one destructor throws, keep trying to clean up the rest, unless we're
      already in a build_vec_init cleanup.  */
-  if (flag_exceptions && !in_cleanup && !expr_noexcept_p (tmp, tf_none))
+  if (flag_exceptions && !in_cleanup && !processing_template_decl
+      && !expr_noexcept_p (tmp, tf_none))
     {
       loop = build2 (TRY_CATCH_EXPR, void_type_node, loop,
 		     unshare_expr (loop));
