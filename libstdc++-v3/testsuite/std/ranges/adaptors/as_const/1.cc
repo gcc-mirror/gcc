@@ -9,7 +9,7 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
-#if __cpp_lib_ranges_as_const != 202207L
+#if __cpp_lib_ranges_as_const != 202311L
 # error "Feature-test macro __cpp_lib_ranges_as_const has wrong value in <ranges>"
 #endif
 

@@ -8953,7 +8953,7 @@ namespace views::__adaptor
     inline constexpr _Enumerate enumerate;
   }
 
-#define __cpp_lib_ranges_as_const 202207L
+#define __cpp_lib_ranges_as_const 202311L
 
   template<view _Vp>
     requires input_range<_Vp>
