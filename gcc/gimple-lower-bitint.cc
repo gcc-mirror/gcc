@@ -869,7 +869,7 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 	      && m_data[m_data_cnt + 1] == NULL_TREE))
 	{
 	  unsigned int prec = TYPE_PRECISION (TREE_TYPE (op));
-	  unsigned int rem = prec % (2 * limb_prec);
+	  unsigned int rem = prec % ((m_upwards_2limb ? 2 : 1) * limb_prec);
 	  int ext;
 	  unsigned min_prec = bitint_min_cst_precision (op, ext);
 	  if (m_first)
@@ -996,7 +996,7 @@ bitint_large_huge::handle_operand (tree op, tree idx)
       if (m_data[m_data_cnt + 1] == integer_type_node)
 	{
 	  unsigned int prec = TYPE_PRECISION (TREE_TYPE (op));
-	  unsigned rem = prec % (2 * limb_prec);
+	  unsigned rem = prec % ((m_upwards_2limb ? 2 : 1) * limb_prec);
 	  int ext = wi::neg_p (wi::to_wide (op)) ? -1 : 0;
 	  tree c = m_data[m_data_cnt];
 	  unsigned min_prec = TYPE_PRECISION (TREE_TYPE (c));
