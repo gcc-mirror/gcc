@@ -1,4 +1,4 @@
-/* { dg-options "isa_rev>=6 -mgp64" } */
+/* { dg-options "isa_rev>=6 -mgp64 -mno-abicalls" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-not "\tsb\t" } } */
 /* { dg-final { scan-assembler-not "\tsh\t" } } */
