@@ -195,6 +195,7 @@ typedef struct
 
 extern const avr_arch_t avr_arch_types[];
 extern const avr_arch_t *avr_arch;
+extern const avr_arch_t *avr_get_parch (const char *mcu);
 
 extern const avr_mcu_t avr_mcu_types[];
 
