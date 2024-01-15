@@ -1,3 +1,54 @@
+2024-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/112944
+	* configure.ac [target=avr]: Check availability of emulations
+	avrxmega2_flmap and avrxmega4_flmap, resulting in new config vars
+	HAVE_LD_AVR_AVRXMEGA2_FLMAP and HAVE_LD_AVR_AVRXMEGA4_FLMAP.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* doc/invoke.texi (AVR Options): Document -mflmap, -mrodata-in-ram,
+	__AVR_HAVE_FLMAP__, __AVR_RODATA_IN_RAM__.
+	* config/avr/avr.opt (-mflmap, -mrodata-in-ram): New options.
+	* config/avr/avr-arch.h (enum avr_device_specific_features):
+	Add AVR_ISA_FLMAP.
+	* config/avr/avr-mcus.def (AVR_MCU) [avr64*, avr128*]: Set isa flag
+	AVR_ISA_FLMAP.
+	* config/avr/avr.cc (avr_arch_index, avr_has_rodata_p): New vars.
+	(avr_set_core_architecture): Set avr_arch_index.
+	(have_avrxmega2_flmap, have_avrxmega4_flmap)
+	(have_avrxmega3_rodata_in_flash): Set new static const bool according
+	to configure results.
+	(avr_rodata_in_flash_p): New function using them.
+	(avr_asm_init_sections): Let readonly_data_section->unnamed.callback
+	track avr_need_copy_data_p only if not avr_rodata_in_flash_p().
+	(avr_asm_named_section): Track avr_has_rodata_p.
+	(avr_file_end): Emit __do_copy_data also when avr_has_rodata_p
+	and not avr_rodata_in_flash_p ().
+	* config/avr/specs.h (CC1_SPEC): Add %(cc1_rodata_in_ram).
+	(LINK_SPEC): Add %(link_rodata_in_ram).
+	(LINK_ARCH_SPEC): Remove.
+	* config/avr/gen-avr-mmcu-specs.cc (have_avrxmega3_rodata_in_flash)
+	(have_avrxmega2_flmap, have_avrxmega4_flmap): Set new static
+	const bool according to configure results.
+	(diagnose_mrodata_in_ram): New function.
+	(print_mcu): Generate specs with the following changes:
+	<*cc1_misc, *asm_misc, *link_misc>: New specs so that we don't
+	need to extend avr/specs.h each time we add a new bell or whistle.
+	<*cc1_rodata_in_ram, *link_rodata_in_ram>: New specs to diagnose
+	-m[no-]rodata-in-ram.
+	<*cpp_rodata_in_ram>: New. Does -D__AVR_RODATA_IN_RAM__=0/1.
+	<*cpp_mcu>: Add -D__AVR_AVR_FLMAP__ if it applies.
+	<*cpp>: Add %(cpp_rodata_in_ram).
+	<*link_arch>: Use emulation avrxmega2_flmap, avrxmega4_flmap as
+	requested.
+	<*self_spec>: Add -mflmap or %<mflmap as needed.
+
+2024-01-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/mips/mips.md (ior<mode>3_mips16_asmacro): Use SImode,
+	not the GPR iterator.  Adjust pattern name and mode attribute
+	accordingly.
+
 2024-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/113361

@@ -1,3 +1,39 @@
+2024-01-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/builtin-object-size-1.c: Disable tests for strdup/strndup
+	on __hpux__.
+	* gcc.dg/builtin-object-size-2.c: Likewise.
+	* gcc.dg/builtin-object-size-3.c: Likewise.
+	* gcc.dg/builtin-object-size-4.c: Likewise.
+
+2024-01-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/builtin-dynamic-object-size-0.c: Skip on hppa*-*-hpux*.
+	* gcc.dg/builtin-dynamic-object-size-1.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-2.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-3.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-4.c: Likewise.
+
+2024-01-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/Wattributes-6.c: Fix dg-warning on hppa*64*-*-*.
+
+2024-01-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR analyzer/113150
+	* c-c++-common/analyzer/fd-glibc-byte-stream-socket.c: Skip
+	on hppa*-*-hpux*.
+	* c-c++-common/analyzer/fd-manpage-getaddrinfo-client.c: Likewise.
+	* c-c++-common/analyzer/fd-mappage-getaddrinfo-server.c: Likewise.
+	* c-c++-common/analyzer/fd-symbolic-socket.c: Likewise.
+	* gcc.dg/analyzer/fd-glibc-byte-stream-connection-server.c: Likewise.
+
+2024-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/112944
+	* gcc.target/avr/torture/pr112944-flmap-0.c: New test.
+	* gcc.target/avr/torture/pr112944-flmap-1.c: New test.
+
 2024-01-13  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/67277
