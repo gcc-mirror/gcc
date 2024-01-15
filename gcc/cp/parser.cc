@@ -25063,12 +25063,20 @@ cp_parser_type_id (cp_parser *parser, cp_parser_flags flags,
 static tree
 cp_parser_template_type_arg (cp_parser *parser)
 {
-  tree r;
   const char *saved_message = parser->type_definition_forbidden_message;
   parser->type_definition_forbidden_message
     = G_("types may not be defined in template arguments");
-  r = cp_parser_type_id_1 (parser, CP_PARSER_FLAGS_NONE, true, false, NULL);
+  tree r = cp_parser_type_id_1 (parser, CP_PARSER_FLAGS_NONE,
+				/*is_template_arg=*/true,
+				/*is_trailing_return=*/false, nullptr);
   parser->type_definition_forbidden_message = saved_message;
+  /* cp_parser_type_id_1 checks for auto, but only for
+     ->auto_is_implicit_function_template_parm_p.  */
+  if (cxx_dialect >= cxx14 && !flag_concepts_ts && type_uses_auto (r))
+    {
+      error ("invalid use of %<auto%> in template argument");
+      r = error_mark_node;
+    }
   return r;
 }
 
