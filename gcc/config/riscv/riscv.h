@@ -736,8 +736,6 @@ typedef struct {
   /* Number of floating-point registers used so far, likewise.  */
   unsigned int num_fprs;
 
-  int rvv_psabi_warning;
-
   /* Number of mask registers used so far, up to MAX_ARGS_IN_MASK_REGISTERS.  */
   unsigned int num_mrs;
 

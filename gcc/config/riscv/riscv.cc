@@ -4865,59 +4865,6 @@ riscv_pass_fpr_pair (machine_mode mode, unsigned regno1,
 				   GEN_INT (offset2))));
 }
 
-/* Return true if a vector type is included in the type TYPE.  */
-
-static bool
-riscv_arg_has_vector (const_tree type)
-{
-  if (riscv_v_ext_mode_p (TYPE_MODE (type)))
-    return true;
-
-  if (!COMPLETE_TYPE_P (type))
-    return false;
-
-  switch (TREE_CODE (type))
-    {
-    case RECORD_TYPE:
-      /* If it is a record, it is further determined whether its fields have
-	 vector type.  */
-      for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
-	if (TREE_CODE (f) == FIELD_DECL)
-	  {
-	    tree field_type = TREE_TYPE (f);
-	    if (!TYPE_P (field_type))
-	      break;
-
-	    if (riscv_arg_has_vector (field_type))
-	      return true;
-	  }
-      break;
-    case ARRAY_TYPE:
-      return riscv_arg_has_vector (TREE_TYPE (type));
-    default:
-      break;
-    }
-
-  return false;
-}
-
-/* Pass the type to check whether it's a vector type or contains vector type.
-   Only check the value type and no checking for vector pointer type.  */
-
-static void
-riscv_pass_in_vector_p (const_tree type)
-{
-  static int warned = 0;
-
-  if (type && riscv_vector::lookup_vector_type_attribute (type) && !warned)
-    {
-      warning (OPT_Wpsabi,
-	       "ABI for the vector type is currently in experimental stage and "
-	       "may changes in the upcoming version of GCC.");
-      warned = 1;
-    }
-}
-
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
@@ -4935,15 +4882,6 @@ riscv_init_cumulative_args (CUMULATIVE_ARGS *cum,
     cum->variant_cc = (riscv_cc) fntype_abi (fntype).id ();
   else
     cum->variant_cc = RISCV_CC_BASE;
-
-  if (fndecl)
-    {
-      const tree_function_decl &fn
-	= FUNCTION_DECL_CHECK (fndecl)->function_decl;
-
-      if (fn.built_in_class == NOT_BUILT_IN)
-	  cum->rvv_psabi_warning = 1;
-    }
 }
 
 /* Return true if TYPE is a vector type that can be passed in vector registers.
@@ -5059,12 +4997,6 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
   memset (info, 0, sizeof (*info));
   info->gpr_offset = cum->num_gprs;
   info->fpr_offset = cum->num_fprs;
-
-  if (cum->rvv_psabi_warning)
-    {
-      /* Only check existing of vector type.  */
-      riscv_pass_in_vector_p (type);
-    }
 
   /* When disable vector_abi or scalable vector argument is anonymous, this
      argument is passed by reference.  */
@@ -5243,17 +5175,7 @@ riscv_function_value (const_tree type, const_tree func, machine_mode mode)
 
   memset (&args, 0, sizeof args);
 
-  const_tree arg_type = type;
-  if (func && DECL_RESULT (func))
-    {
-      const tree_function_decl &fn = FUNCTION_DECL_CHECK (func)->function_decl;
-      if (fn.built_in_class == NOT_BUILT_IN)
-	args.rvv_psabi_warning = 1;
-
-      arg_type = TREE_TYPE (DECL_RESULT (func));
-    }
-
-  return riscv_get_arg_info (&info, &args, mode, arg_type, true, true);
+  return riscv_get_arg_info (&info, &args, mode, type, true, true);
 }
 
 /* Implement TARGET_PASS_BY_REFERENCE. */
