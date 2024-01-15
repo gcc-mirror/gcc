@@ -11353,6 +11353,8 @@ mips_compute_frame_info (void)
      in, which is why the global_pointer field is initialised here and not
      earlier.  */
   cfun->machine->global_pointer = mips_global_pointer ();
+  if (cfun->machine->global_pointer != GLOBAL_POINTER_REGNUM)
+    df_set_regs_ever_live (GLOBAL_POINTER_REGNUM, false);
 
   offset = frame->args_size + frame->cprestore_size;
 
