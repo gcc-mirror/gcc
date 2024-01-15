@@ -121,6 +121,16 @@ ForeverStack<N>::insert (Identifier name, NodeId node)
 
 template <Namespace N>
 tl::expected<NodeId, DuplicateNameError>
+ForeverStack<N>::insert_shadowable (Identifier name, NodeId node)
+{
+  auto &innermost_rib = peek ();
+
+  return insert_inner (innermost_rib, name.as_string (),
+		       Rib::Definition::Shadowable (node));
+}
+
+template <Namespace N>
+tl::expected<NodeId, DuplicateNameError>
 ForeverStack<N>::insert_at_root (Identifier name, NodeId node)
 {
   auto &root_rib = root.rib;
