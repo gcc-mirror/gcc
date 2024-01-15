@@ -1237,20 +1237,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _TCC<_Cond>::template __is_explicitly_constructible<_Args...>(),
 	  bool>;
 
-      template<typename... _UElements>
-	static constexpr
-	__enable_if_t<sizeof...(_UElements) == sizeof...(_Elements), bool>
-	__assignable()
-	{ return __and_<is_assignable<_Elements&, _UElements>...>::value; }
-
-      // Condition for noexcept-specifier of an assignment operator.
-      template<typename... _UElements>
-	static constexpr bool __nothrow_assignable()
-	{
-	  return
-	    __and_<is_nothrow_assignable<_Elements&, _UElements>...>::value;
-	}
-
       // Condition for noexcept-specifier of a constructor.
       template<typename... _UElements>
 	static constexpr bool __nothrow_constructible()
@@ -1685,7 +1671,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(_UTuple&& __u) const;
 #endif // C++23
 
-#else // ! concepts
+#else // ! (concepts && consteval)
+
+    private:
+      template<typename... _UElements>
+	static constexpr
+	__enable_if_t<sizeof...(_UElements) == sizeof...(_Elements), bool>
+	__assignable()
+	{ return __and_<is_assignable<_Elements&, _UElements>...>::value; }
+
+      // Condition for noexcept-specifier of an assignment operator.
+      template<typename... _UElements>
+	static constexpr bool __nothrow_assignable()
+	{
+	  return
+	    __and_<is_nothrow_assignable<_Elements&, _UElements>...>::value;
+	}
+
+    public:
 
       _GLIBCXX20_CONSTEXPR
       tuple&
@@ -1728,7 +1731,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->_M_assign(std::move(__in));
 	  return *this;
 	}
-#endif // concepts
+#endif // concepts && consteval
 
       // tuple swap
       _GLIBCXX20_CONSTEXPR
