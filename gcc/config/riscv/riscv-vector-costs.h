@@ -85,11 +85,6 @@ private:
   unsigned HOST_WIDE_INT m_unrolled_vls_niters = 0;
   unsigned HOST_WIDE_INT m_unrolled_vls_stmts = 0;
 
-  /* If we're vectorizing a loop that executes a constant number of times,
-     this variable gives the number of times that the vector loop would
-     iterate, otherwise it is zero.  */
-  uint64_t m_num_vector_iterations = 0;
-
   void analyze_loop_vinfo (loop_vec_info);
   void record_potential_vls_unrolling (loop_vec_info);
   bool prefer_unrolled_loop () const;

@@ -872,19 +872,6 @@ costs::costs (vec_info *vinfo, bool costing_for_scalar)
 void
 costs::analyze_loop_vinfo (loop_vec_info loop_vinfo)
 {
-  /* Record the number of times that the vector loop would execute,
-     if known.  */
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  auto scalar_niters = max_stmt_executions_int (loop);
-  if (scalar_niters >= 0)
-    {
-      unsigned int vf = vect_vf_for_cost (loop_vinfo);
-      if (LOOP_VINFO_LENS (loop_vinfo).is_empty ())
-	m_num_vector_iterations = scalar_niters / vf;
-      else
-	m_num_vector_iterations = CEIL (scalar_niters, vf);
-    }
-
   /* Detect whether we're vectorizing for VLA and should apply the unrolling
      heuristic described above m_unrolled_vls_niters.  */
   record_potential_vls_unrolling (loop_vinfo);
