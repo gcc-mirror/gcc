@@ -1875,9 +1875,9 @@
 // from version.def line 1549
 #if !defined(__cpp_lib_ranges_as_const)
 # if (__cplusplus >= 202100L)
-#  define __glibcxx_ranges_as_const 202207L
+#  define __glibcxx_ranges_as_const 202311L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges_as_const)
-#   define __cpp_lib_ranges_as_const 202207L
+#   define __cpp_lib_ranges_as_const 202311L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_ranges_as_const) && defined(__glibcxx_want_ranges_as_const) */

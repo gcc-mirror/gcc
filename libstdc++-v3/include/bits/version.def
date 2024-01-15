@@ -1548,7 +1548,7 @@ ftms = {
 ftms = {
   name = ranges_as_const;
   values = {
-    v = 202207;
+    v = 202311;
     cxxmin = 23;
   };
 };

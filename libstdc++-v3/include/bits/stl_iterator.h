@@ -2775,6 +2775,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       noexcept(noexcept(_M_current == __s))
       { return _M_current == __s; }
 
+    template<__detail::__not_a_const_iterator _CIt>
+      requires __detail::__constant_iterator<_CIt> && convertible_to<_It, _CIt>
+    constexpr
+    operator _CIt() const&
+    { return _M_current; }
+
+    template<__detail::__not_a_const_iterator _CIt>
+      requires __detail::__constant_iterator<_CIt> && convertible_to<_It, _CIt>
+    constexpr
+    operator _CIt() &&
+    { return std::move(_M_current); }
+
     constexpr bool
     operator<(const basic_const_iterator& __y) const
     noexcept(noexcept(_M_current < __y._M_current))
