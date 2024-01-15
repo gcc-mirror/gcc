@@ -2137,6 +2137,17 @@
 #undef __glibcxx_want_saturation_arithmetic
 
 // from version.def line 1755
+#if !defined(__cpp_lib_text_encoding)
+# if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (_GLIBCXX_USE_NL_LANGINFO_L)
+#  define __glibcxx_text_encoding 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_text_encoding)
+#   define __cpp_lib_text_encoding 202306L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_text_encoding) && defined(__glibcxx_want_text_encoding) */
+#undef __glibcxx_want_text_encoding
+
+// from version.def line 1765
 #if !defined(__cpp_lib_to_string)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (__glibcxx_to_chars)
 #  define __glibcxx_to_string 202306L
@@ -2147,7 +2158,7 @@
 #endif /* !defined(__cpp_lib_to_string) && defined(__glibcxx_want_to_string) */
 #undef __glibcxx_want_to_string
 
-// from version.def line 1765
+// from version.def line 1775
 #if !defined(__cpp_lib_generator)
 # if (__cplusplus >= 202100L) && (__glibcxx_coroutine)
 #  define __glibcxx_generator 202207L

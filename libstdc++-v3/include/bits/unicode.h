@@ -32,7 +32,8 @@
 
 #if __cplusplus >= 202002L
 #include <array>
-#include <bit>
+#include <bit>      // bit_width
+#include <charconv> // __detail::__from_chars_alnum_to_val_table
 #include <cstdint>
 #include <bits/stl_algo.h>
 #include <bits/stl_iterator.h>
@@ -986,7 +987,7 @@ inline namespace __v15_1_0
       return __n;
     }
 
-    template<typename _CharT>
+  template<typename _CharT>
     consteval bool
     __literal_encoding_is_unicode()
     {
@@ -1055,6 +1056,53 @@ inline namespace __v15_1_0
   consteval bool
   __literal_encoding_is_utf8()
   { return __literal_encoding_is_unicode<char>(); }
+
+  consteval bool
+  __literal_encoding_is_extended_ascii()
+  {
+    return '0' == 0x30 && 'A' == 0x41 && 'Z' == 0x5a
+	     && 'a' == 0x61 && 'z' == 0x7a;
+  }
+
+  // https://www.unicode.org/reports/tr22/tr22-8.html#Charset_Alias_Matching
+  constexpr bool
+  __charset_alias_match(string_view __a, string_view __b)
+  {
+    // Map alphanumeric chars to their base 64 value, everything else to 127.
+    auto __map = [](char __c, bool& __num) -> unsigned char {
+      if (__c == '0') [[unlikely]]
+	return __num ? 0 : 127;
+      const auto __v = __detail::__from_chars_alnum_to_val(__c);
+      __num = __v < 10;
+      return __v;
+    };
+
+    auto __ptr_a = __a.begin(), __end_a = __a.end();
+    auto __ptr_b = __b.begin(), __end_b = __b.end();
+    bool __num_a = false, __num_b = false;
+
+    while (true)
+      {
+	// Find the value of the next alphanumeric character in each string.
+	unsigned char __val_a, __val_b;
+	while (__ptr_a != __end_a
+		 && (__val_a = __map(*__ptr_a, __num_a)) == 127)
+	  ++__ptr_a;
+	while (__ptr_b != __end_b
+		 && (__val_b = __map(*__ptr_b, __num_b)) == 127)
+	  ++__ptr_b;
+	// Stop when we reach the end of a string, or get a mismatch.
+	if (__ptr_a == __end_a)
+	  return __ptr_b == __end_b;
+	else if (__ptr_b == __end_b)
+	  return false;
+	else if (__val_a != __val_b)
+	  return false; // Found non-matching characters.
+	++__ptr_a;
+	++__ptr_b;
+      }
+    return true;
+  }
 
 } // namespace __unicode
 

@@ -557,6 +557,9 @@ GLIBCXX_CHECK_INIT_PRIORITY
 # For __basic_file::native_handle()
 GLIBCXX_CHECK_FILEBUF_NATIVE_HANDLES
 
+# For std::text_encoding
+GLIBCXX_CHECK_TEXT_ENCODING
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough
