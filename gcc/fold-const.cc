@@ -1343,6 +1343,29 @@ distributes_over_addition_p (tree_code op, int opno)
     }
 }
 
+/* OP is the INDEXth operand to CODE (counting from zero) and OTHER_OP
+   is the other operand.  Try to use the value of OP to simplify the
+   operation in one step, without having to process individual elements.  */
+static tree
+simplify_const_binop (tree_code code, tree op, tree other_op,
+		      int index ATTRIBUTE_UNUSED)
+{
+  /* AND, IOR as well as XOR with a zerop can be simplified directly.  */
+  if (TREE_CODE (op) == VECTOR_CST && TREE_CODE (other_op) == VECTOR_CST)
+    {
+      if (integer_zerop (other_op))
+	{
+	  if (code == BIT_IOR_EXPR || code == BIT_XOR_EXPR)
+	    return op;
+	  else if (code == BIT_AND_EXPR)
+	    return other_op;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+
 /* Combine two constants ARG1 and ARG2 under operation CODE to produce a new
    constant.  We assume ARG1 and ARG2 have the same data type, or at least
    are the same kind of constant and the same machine mode.  Return zero if
@@ -1645,6 +1668,14 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       if (real && imag)
 	return build_complex (type, real, imag);
     }
+
+  tree simplified;
+  if ((simplified = simplify_const_binop (code, arg1, arg2, 0)))
+    return simplified;
+
+  if (commutative_tree_code (code)
+      && (simplified = simplify_const_binop (code, arg2, arg1, 1)))
+    return simplified;
 
   if (TREE_CODE (arg1) == VECTOR_CST
       && TREE_CODE (arg2) == VECTOR_CST
