@@ -4272,7 +4272,7 @@ package Sinfo is
       --  Etype
 
       ---------------------------------
-      --  3.4.5 Container_Aggregates --
+      --  4.3.5 Container_Aggregates --
       ---------------------------------
 
       --  ITERATED_ELEMENT_ASSOCIATION ::=
