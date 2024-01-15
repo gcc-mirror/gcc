@@ -1097,9 +1097,66 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   return record_stmt_cost (stmt_info, where, count * stmt_cost);
 }
 
+/* For some target specific vectorization cost which can't be handled per stmt,
+   we check the requisite conditions and adjust the vectorization cost
+   accordingly if satisfied.  One typical example is to model model and adjust
+   loop_len cost for known_lt (NITERS, VF).  */
+
+void
+costs::adjust_vect_cost_per_loop (loop_vec_info loop_vinfo)
+{
+  if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo)
+      && !LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo))
+    {
+      /* In middle-end loop vectorizer, we don't count the loop_len cost in
+	 vect_estimate_min_profitable_iters when NITERS < VF, that is, we only
+	 count cost of len that we need to iterate loop more than once with VF.
+	 It's correct for most of the cases:
+
+	 E.g. VF = [4, 4]
+	   for (int i = 0; i < 3; i ++)
+	     a[i] += b[i];
+
+	 We don't need to cost MIN_EXPR or SELECT_VL for the case above.
+
+	 However, for some inefficient vectorized cases, it does use MIN_EXPR
+	 to generate len.
+
+	 E.g. VF = [256, 256]
+
+	 Loop body:
+	   # loop_len_110 = PHI <18(2), _119(11)>
+	   ...
+	   _117 = MIN_EXPR <ivtmp_114, 18>;
+	   _118 = 18 - _117;
+	   _119 = MIN_EXPR <_118, POLY_INT_CST [256, 256]>;
+	   ...
+
+	 Epilogue:
+	   ...
+	   _112 = .VEC_EXTRACT (vect_patt_27.14_109, _111);
+
+	 We cost 1 unconditionally for this situation like other targets which
+	 apply mask as the loop control.  */
+      rgroup_controls *rgc;
+      unsigned int num_vectors_m1;
+      unsigned int body_stmts = 0;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_LENS (loop_vinfo), num_vectors_m1, rgc)
+	if (rgc->type)
+	  body_stmts += num_vectors_m1 + 1;
+
+      add_stmt_cost (body_stmts, scalar_stmt, NULL, NULL, NULL_TREE, 0,
+		     vect_body);
+    }
+}
+
 void
 costs::finish_cost (const vector_costs *scalar_costs)
 {
+  if (loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo))
+    {
+      adjust_vect_cost_per_loop (loop_vinfo);
+    }
   vector_costs::finish_cost (scalar_costs);
 }
 

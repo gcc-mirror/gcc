@@ -96,6 +96,8 @@ private:
      V_REGS spills according to the analysis.  */
   bool m_has_unexpected_spills_p = false;
   void record_potential_unexpected_spills (loop_vec_info);
+
+  void adjust_vect_cost_per_loop (loop_vec_info);
 };
 
 } // namespace riscv_vector
