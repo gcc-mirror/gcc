@@ -13,7 +13,7 @@ DEF_REDUC_PLUS (float, 256)
 DEF_REDUC_PLUS (float, 512)
 DEF_REDUC_PLUS (float, 1024)
 
-/* { dg-final { scan-assembler-times {vfredosum\.vs} 9 } } */
+/* { dg-final { scan-assembler-times {vfredosum\.vs} 8 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
 /* { dg-final { scan-tree-dump-not "1,1" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "2,2" "optimized" } } */

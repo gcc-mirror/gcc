@@ -1056,6 +1056,9 @@ adjust_stmt_cost (enum vect_cost_for_stmt kind, tree vectype, int stmt_cost)
     case scalar_to_vec:
       return stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->FR2VR
 						  : costs->regmove->GR2VR);
+    case vec_to_scalar:
+      return stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->VR2FR
+						  : costs->regmove->VR2GR);
     default:
       break;
     }

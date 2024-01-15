@@ -255,6 +255,8 @@ struct regmove_vector_cost
 {
   const int GR2VR;
   const int FR2VR;
+  const int VR2GR;
+  const int VR2FR;
 };
 
 /* Cost for vector insn classes.  */
