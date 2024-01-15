@@ -72,8 +72,8 @@
 
 ;; ZBKB extension
 (define_insn "riscv_brev8_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")]
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+        (unspec:GPR [(match_operand:GPR 1 "register_operand" "r")]
                   UNSPEC_BREV8))]
   "TARGET_ZBKB"
   "brev8\t%0,%1"

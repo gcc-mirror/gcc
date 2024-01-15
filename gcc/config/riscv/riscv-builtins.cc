@@ -105,6 +105,7 @@ AVAIL (zero32,  TARGET_ZICBOZ && !TARGET_64BIT)
 AVAIL (zero64,  TARGET_ZICBOZ && TARGET_64BIT)
 AVAIL (prefetchi32, TARGET_ZICBOP && !TARGET_64BIT)
 AVAIL (prefetchi64, TARGET_ZICBOP && TARGET_64BIT)
+AVAIL (crypto_zbkb, TARGET_ZBKB)
 AVAIL (crypto_zbkb32, TARGET_ZBKB && !TARGET_64BIT)
 AVAIL (crypto_zbkb64, TARGET_ZBKB && TARGET_64BIT)
 AVAIL (crypto_zbkx32, TARGET_ZBKX && !TARGET_64BIT)
@@ -119,10 +120,15 @@ AVAIL (crypto_zknh32, TARGET_ZKNH && !TARGET_64BIT)
 AVAIL (crypto_zknh64, TARGET_ZKNH && TARGET_64BIT)
 AVAIL (crypto_zksh, TARGET_ZKSH)
 AVAIL (crypto_zksed, TARGET_ZKSED)
+AVAIL (clmul_zbkc_or_zbc, (TARGET_ZBKC || TARGET_ZBC))
 AVAIL (clmul_zbkc32_or_zbc32, (TARGET_ZBKC || TARGET_ZBC) && !TARGET_64BIT)
 AVAIL (clmul_zbkc64_or_zbc64, (TARGET_ZBKC || TARGET_ZBC) && TARGET_64BIT)
 AVAIL (clmulr_zbc32, TARGET_ZBC && !TARGET_64BIT)
 AVAIL (clmulr_zbc64, TARGET_ZBC && TARGET_64BIT)
+AVAIL (zbb, TARGET_ZBB)
+AVAIL (zbb64, TARGET_ZBB && TARGET_64BIT)
+AVAIL (zbb64_or_zbkb64, (TARGET_ZBKB || TARGET_ZBB) && TARGET_64BIT)
+AVAIL (zbb_or_zbkb, (TARGET_ZBKB || TARGET_ZBB))
 AVAIL (hint_pause, (!0))
 
 // CORE-V AVAIL
@@ -144,6 +150,22 @@ AVAIL (cvelw, TARGET_XCVELW && !TARGET_64BIT)
    riscv_builtin_avail_.  */
 #define RISCV_BUILTIN(INSN, NAME, BUILTIN_TYPE,	FUNCTION_TYPE, AVAIL)	\
   { CODE_FOR_riscv_ ## INSN, "__builtin_riscv_" NAME,			\
+    BUILTIN_TYPE, FUNCTION_TYPE, riscv_builtin_avail_ ## AVAIL }
+
+/* Construct a riscv_builtin_description from the given arguments like RISCV_BUILTIN.
+
+   INSN is the name of the associated instruction pattern, without the
+   leading CODE_FOR_.
+
+   NAME is the name of the function itself, without the leading
+   "__builtin_riscv_".
+
+   BUILTIN_TYPE and FUNCTION_TYPE are riscv_builtin_description fields.
+
+   AVAIL is the name of the availability predicate, without the leading
+   riscv_builtin_avail_.  */
+#define RISCV_BUILTIN_NO_PREFIX(INSN, NAME, BUILTIN_TYPE,	FUNCTION_TYPE, AVAIL)	\
+  { CODE_FOR_ ## INSN, "__builtin_riscv_" NAME,			\
     BUILTIN_TYPE, FUNCTION_TYPE, riscv_builtin_avail_ ## AVAIL }
 
 /* Define __builtin_riscv_<INSN>, which is a RISCV_BUILTIN_DIRECT function
