@@ -2077,31 +2077,13 @@ find_base_term (rtx x, vec<std::pair<cselib_val *,
 	if (tmp1 == pic_offset_table_rtx && CONSTANT_P (tmp2))
 	  return find_base_term (tmp2, visited_vals);
 
-	/* If either operand is known to be a pointer, then prefer it
-	   to determine the base term.  */
-	if (REG_P (tmp1) && REG_POINTER (tmp1))
-	  ;
-	else if (REG_P (tmp2) && REG_POINTER (tmp2))
-	  std::swap (tmp1, tmp2);
-	/* If second argument is constant which has base term, prefer it
-	   over variable tmp1.  See PR64025.  */
-	else if (CONSTANT_P (tmp2) && !CONST_INT_P (tmp2))
+	if (CONST_INT_P (tmp1))
 	  std::swap (tmp1, tmp2);
 
-	/* Go ahead and find the base term for both operands.  If either base
-	   term is from a pointer or is a named object or a special address
-	   (like an argument or stack reference), then use it for the
-	   base term.  */
-	rtx base = find_base_term (tmp1, visited_vals);
-	if (base != NULL_RTX
-	    && ((REG_P (tmp1) && REG_POINTER (tmp1))
-		 || known_base_value_p (base)))
-	  return base;
-	base = find_base_term (tmp2, visited_vals);
-	if (base != NULL_RTX
-	    && ((REG_P (tmp2) && REG_POINTER (tmp2))
-		 || known_base_value_p (base)))
-	  return base;
+	/* We can only handle binary operators when one of the operands
+	   never leads to a base value.  */
+	if (CONST_INT_P (tmp2))
+	  return find_base_term (tmp1, visited_vals);
 
 	/* We could not determine which of the two operands was the
 	   base register and which was the index.  So we can determine
