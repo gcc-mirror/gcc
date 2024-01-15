@@ -2216,11 +2216,11 @@ ldp_bb_info::try_fuse_pair (bool load_p, unsigned access_size,
 	  ignore[j] = &XEXP (cand_mems[j], 0);
 
       insn_info *h = first_hazard_after (insns[0], ignore[0]);
-      if (h && *h <= *insns[1])
+      if (h && *h < *insns[1])
 	cand.hazards[0] = h;
 
       h = latest_hazard_before (insns[1], ignore[1]);
-      if (h && *h >= *insns[0])
+      if (h && *h > *insns[0])
 	cand.hazards[1] = h;
 
       if (!cand.viable ())
