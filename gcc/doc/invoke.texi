@@ -883,12 +883,12 @@ Objective-C and Objective-C++ Dialects}.
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args
 -mbranch-cost=@var{cost}
--mcall-prologues  -mgas-isr-prologues  -mint8 -mflmap
--mdouble=@var{bits} -mlong-double=@var{bits}
+-mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
+-mdouble=@var{bits}  -mlong-double=@var{bits}
 -mn_flash=@var{size}  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack
--mrodata-in-ram -mfract-convert-truncate
--mshort-calls  -nodevicelib  -nodevicespecs
+-mrodata-in-ram  -mfract-convert-truncate
+-mshort-calls  -mskip-bug  -nodevicelib  -nodevicespecs
 -Waddr-space-convert  -Wmisspelled-isr}
 
 @emph{Blackfin Options}
@@ -24212,6 +24212,12 @@ instructions @code{XCH}, @code{LAC}, @code{LAS} and @code{LAT}.
 Assume that @code{RJMP} and @code{RCALL} can target the whole
 program memory. This option is used for multilib generation and selection
 for the devices from architecture @code{avrxmega3}.
+
+@opindex mskip-bug
+@item -mskip-bug
+
+Generate code without skips (@code{CPSE}, @code{SBRS},
+@code{SBRC}, @code{SBIS}, @code{SBIC}) over 32-bit instructions.
 
 @opindex msp8
 @item -msp8
