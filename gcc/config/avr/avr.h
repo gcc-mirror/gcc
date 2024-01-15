@@ -500,9 +500,11 @@ typedef struct avr_args
 
 extern const char *avr_devicespecs_file (int, const char**);
 extern const char *avr_double_lib (int, const char**);
+extern const char *avr_no_devlib (int, const char**);
 
 #define EXTRA_SPEC_FUNCTIONS                            \
   { "double-lib", avr_double_lib },                     \
+  { "no-devlib", avr_no_devlib },                       \
   { "device-specs-file", avr_devicespecs_file },
 
 /* Driver self specs has lmited functionality w.r.t. '%s' for dynamic specs.
