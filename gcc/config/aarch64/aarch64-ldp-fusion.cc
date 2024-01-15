@@ -1693,6 +1693,30 @@ ldp_bb_info::fuse_pair (bool load_p,
 
   if (trailing_add)
     changes.safe_push (make_delete (trailing_add));
+  else if ((writeback & 2) && !writeback_effect)
+    {
+      // The second insn initially had writeback but now the pair does not,
+      // need to update any nondebug uses of the base register def in the
+      // second insn.  We'll take care of debug uses later.
+      auto def = find_access (insns[1]->defs (), base_regno);
+      gcc_assert (def);
+      auto set = dyn_cast<set_info *> (def);
+      if (set && set->has_nondebug_uses ())
+	{
+	  auto orig_use = find_access (insns[0]->uses (), base_regno);
+	  for (auto use : set->nondebug_insn_uses ())
+	    {
+	      auto change = make_change (use->insn ());
+	      change->new_uses = check_remove_regno_access (attempt,
+							    change->new_uses,
+							    base_regno);
+	      change->new_uses = insert_access (attempt,
+						orig_use,
+						change->new_uses);
+	      changes.safe_push (change);
+	    }
+	}
+    }
 
   auto is_changing = insn_is_changing (changes);
   for (unsigned i = 0; i < changes.length (); i++)
