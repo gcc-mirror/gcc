@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zvkned_zve64x -mabi=lp64d -O2 -Wno-psabi" } */
+/* { dg-options "-march=rv64gc_zvkned_zve64x -mabi=lp64d -O2" } */
 #include "riscv_vector.h"
 
 vuint32mf2_t test_vaesdf_vv_u32mf2(vuint32mf2_t vd, vuint32mf2_t vs2, size_t vl) {
