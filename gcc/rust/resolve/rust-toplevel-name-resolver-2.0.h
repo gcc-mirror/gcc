@@ -33,6 +33,7 @@ class GlobbingVisitor : public AST::DefaultASTVisitor
 public:
   GlobbingVisitor (NameResolutionContext &ctx) : ctx (ctx) {}
 
+  void go (AST::Module *module);
   void visit (AST::Module &module) override;
   void visit (AST::MacroRulesDefinition &macro) override;
   void visit (AST::Function &function) override;

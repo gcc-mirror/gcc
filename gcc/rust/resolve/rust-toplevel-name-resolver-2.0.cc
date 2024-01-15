@@ -26,6 +26,13 @@ namespace Rust {
 namespace Resolver2_0 {
 
 void
+GlobbingVisitor::go (AST::Module *module)
+{
+  for (auto &i : module->get_items ())
+    visit (i);
+}
+
+void
 GlobbingVisitor::visit (AST::Module &module)
 {
   if (module.get_visibility ().is_public ())
@@ -399,7 +406,7 @@ TopLevel::handle_use_glob (AST::SimplePath glob)
     return false;
 
   GlobbingVisitor gvisitor (ctx);
-  gvisitor.visit (*result.value ());
+  gvisitor.go (result.value ());
 
   return true;
 }
