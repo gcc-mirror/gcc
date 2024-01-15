@@ -197,6 +197,8 @@ Late::visit (AST::PathInExpression &expr)
   // do we emit it in `get<Namespace::Labels>`?
 
   auto value = ctx.values.resolve_path (expr.get_segments ());
+  if (!value.has_value ())
+    rust_unreachable (); // Should have been resolved earlier
 
   ctx.map_usage (Usage (expr.get_node_id ()), Definition (*value));
 }
