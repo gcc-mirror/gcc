@@ -1,7 +1,6 @@
 // From ABI document
 // { dg-do compile { target c++14 } }
 // { dg-skip-if "No .weak" { { hppa*-*-hpux* } && { ! lp64 } } }
-// { dg-additional-options --save-temps }
 
 struct A { const int (&x)[3]; };
 struct B { const A (&x)[2]; };
