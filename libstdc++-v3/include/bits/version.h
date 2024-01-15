@@ -289,7 +289,7 @@
 #undef __glibcxx_want_to_chars
 
 #if !defined(__cpp_lib_chrono_udls)
-# if (__cplusplus >= 201402L) && _GLIBCXX_HOSTED
+# if (__cplusplus >= 201402L)
 #  define __glibcxx_chrono_udls 201304L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono_udls)
 #   define __cpp_lib_chrono_udls 201304L

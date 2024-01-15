@@ -1321,6 +1321,18 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
         destroy, or modify vectors.
       </para>
     </listitem></varlistentry>
+
+    <varlistentry><term><code>_GLIBCXX_NO_FREESTANDING_CHRONO</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined, the
+	<filename class="headerfile">&lt;chrono&gt;</filename> header cannot
+	be used with <option>-ffreestanding</option>.
+	When not defined, durations, time points, and calendar types are
+	available for freestanding, but the standard clocks and the time zone
+	database are not (because they require OS support).
+      </para>
+    </listitem></varlistentry>
     </variablelist>
 
   </section>
