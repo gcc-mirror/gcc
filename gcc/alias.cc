@@ -1400,26 +1400,6 @@ unique_base_value_p (rtx x)
   return GET_CODE (x) == ADDRESS && GET_MODE (x) == Pmode;
 }
 
-/* Return true if X is known to be a base value.  */
-
-static bool
-known_base_value_p (rtx x)
-{
-  switch (GET_CODE (x))
-    {
-    case LABEL_REF:
-    case SYMBOL_REF:
-      return true;
-
-    case ADDRESS:
-      /* Arguments may or may not be bases; we don't know for sure.  */
-      return GET_MODE (x) != VOIDmode;
-
-    default:
-      return false;
-    }
-}
-
 /* Inside SRC, the source of a SET, find a base address.  */
 
 static rtx
@@ -1490,46 +1470,12 @@ find_base_value (rtx src)
     case PLUS:
     case MINUS:
       {
-	rtx temp, src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
+	rtx src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
 
-	/* If either operand is a REG that is a known pointer, then it
-	   is the base.  */
-	if (REG_P (src_0) && REG_POINTER (src_0))
+	/* If either operand is a CONST_INT, then the other is the base.  */
+	if (CONST_INT_P (src_1))
 	  return find_base_value (src_0);
-	if (REG_P (src_1) && REG_POINTER (src_1))
-	  return find_base_value (src_1);
-
-	/* If either operand is a REG, then see if we already have
-	   a known value for it.  */
-	if (REG_P (src_0))
-	  {
-	    temp = find_base_value (src_0);
-	    if (temp != 0)
-	      src_0 = temp;
-	  }
-
-	if (REG_P (src_1))
-	  {
-	    temp = find_base_value (src_1);
-	    if (temp!= 0)
-	      src_1 = temp;
-	  }
-
-	/* If either base is named object or a special address
-	   (like an argument or stack reference), then use it for the
-	   base term.  */
-	if (src_0 != 0 && known_base_value_p (src_0))
-	  return src_0;
-
-	if (src_1 != 0 && known_base_value_p (src_1))
-	  return src_1;
-
-	/* Guess which operand is the base address:
-	   If either operand is a symbol, then it is the base.  If
-	   either operand is a CONST_INT, then the other is the base.  */
-	if (CONST_INT_P (src_1) || CONSTANT_P (src_0))
-	  return find_base_value (src_0);
-	else if (CONST_INT_P (src_0) || CONSTANT_P (src_1))
+	else if (CONST_INT_P (src_0))
 	  return find_base_value (src_1);
 
 	return 0;
