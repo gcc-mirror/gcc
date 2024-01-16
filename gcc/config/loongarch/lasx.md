@@ -746,6 +746,21 @@
   DONE;
 })
 
+(define_insn_and_split "vec_extract<mode>_0"
+  [(set (match_operand:<UNITMODE> 0 "register_operand" "=f")
+        (vec_select:<UNITMODE>
+          (match_operand:FLASX 1 "register_operand" "f")
+          (parallel [(const_int 0)])))]
+  "ISA_HAS_LSX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  operands[1] = gen_rtx_REG (<UNITMODE>mode, REGNO (operands[1]));
+}
+  [(set_attr "move_type" "fmove")
+   (set_attr "mode" "<UNITMODE>")])
+
 (define_expand "vec_perm<mode>"
  [(match_operand:LASX 0 "register_operand")
   (match_operand:LASX 1 "register_operand")
