@@ -869,6 +869,7 @@ typedef struct {
    1 is the default; other values are interpreted relative to that.  */
 
 #define BRANCH_COST(speed_p, predictable_p) la_branch_cost
+#define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
 /* Return the asm template for a conditional branch instruction.
    OPCODE is the opcode's mnemonic and OPERANDS is the asm template for
