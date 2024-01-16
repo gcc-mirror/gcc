@@ -23,8 +23,29 @@ namespace Rust {
 namespace Resolver2_0 {
 
 Rib::Definition::Definition (NodeId id, bool shadowable)
-  : id (id), shadowable (shadowable)
+  : ids ({id}), shadowable (shadowable)
 {}
+
+bool
+Rib::Definition::is_ambiguous () const
+{
+  return shadowable && ids.size () > 1;
+}
+
+std::string
+Rib::Definition::to_string () const
+{
+  std::stringstream out;
+  out << (shadowable ? "(S)" : "(NS)") << "[";
+  std::string sep;
+  for (auto id : ids)
+    {
+      out << sep << id;
+      sep = ",";
+    }
+  out << "]";
+  return out.str ();
+}
 
 Rib::Definition
 Rib::Definition::Shadowable (NodeId id)
@@ -58,28 +79,46 @@ Rib::Rib (Kind kind, std::unordered_map<std::string, NodeId> to_insert)
 tl::expected<NodeId, DuplicateNameError>
 Rib::insert (std::string name, Definition def)
 {
-  auto res = values.insert ({name, def});
-  auto inserted_id = res.first->second.id;
-  auto existed = !res.second;
+  auto it = values.find (name);
+  if (it == values.end ())
+    {
+      /* No old value */
+      values[name] = def;
+    }
+  else if (it->second.shadowable && def.shadowable)
+    { /* Both shadowable */
+      auto &current = values[name];
+      for (auto id : def.ids)
+	{
+	  if (std::find (current.ids.cbegin (), current.ids.cend (), id)
+	      == current.ids.cend ())
+	    {
+	      current.ids.push_back (id);
+	    }
+	}
+    }
+  else if (it->second.shadowable)
+    { /* Only old shadowable : replace value */
+      values[name] = def;
+    }
+  else /* Neither are shadowable */
+    {
+      return tl::make_unexpected (
+	DuplicateNameError (name, it->second.ids.back ()));
+    }
 
-  // if we couldn't insert, the element already exists - exit with an error,
-  // unless shadowing is allowed
-  if (existed && !def.shadowable)
-    return tl::make_unexpected (DuplicateNameError (name, inserted_id));
-
-  // return the NodeId
-  return inserted_id;
+  return def.ids.back ();
 }
 
-tl::optional<NodeId>
+tl::optional<Rib::Definition>
 Rib::get (const std::string &name)
 {
   auto it = values.find (name);
 
   if (it == values.end ())
-    return {};
+    return tl::nullopt;
 
-  return it->second.id;
+  return it->second;
 }
 
 const std::unordered_map<std::string, Rib::Definition> &

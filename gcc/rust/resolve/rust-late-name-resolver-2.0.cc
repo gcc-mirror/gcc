@@ -159,7 +159,7 @@ Late::visit (AST::IdentifierExpr &expr)
 {
   // TODO: same thing as visit(PathInExpression) here?
 
-  tl::optional<NodeId> resolved = tl::nullopt;
+  tl::optional<Rib::Definition> resolved = tl::nullopt;
   auto label = ctx.labels.get (expr.get_ident ());
   auto value = ctx.values.get (expr.get_ident ());
 
@@ -179,7 +179,8 @@ Late::visit (AST::IdentifierExpr &expr)
       return;
     }
 
-  ctx.map_usage (Usage (expr.get_node_id ()), Definition (*resolved));
+  ctx.map_usage (Usage (expr.get_node_id ()),
+		 Definition (resolved->get_node_id ()));
 
   // in the old resolver, resolutions are kept in the resolver, not the mappings
   // :/ how do we deal with that?
@@ -200,7 +201,14 @@ Late::visit (AST::PathInExpression &expr)
   if (!value.has_value ())
     rust_unreachable (); // Should have been resolved earlier
 
-  ctx.map_usage (Usage (expr.get_node_id ()), Definition (*value));
+  if (value->is_ambiguous ())
+    {
+      rust_error_at (expr.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
+		     expr.as_string ().c_str ());
+      return;
+    }
+  ctx.map_usage (Usage (expr.get_node_id ()),
+		 Definition (value->get_node_id ()));
 }
 
 void
@@ -213,7 +221,8 @@ Late::visit (AST::TypePath &type)
 
   auto resolved = ctx.types.get (type.get_segments ().back ()->as_string ());
 
-  ctx.map_usage (Usage (type.get_node_id ()), Definition (*resolved));
+  ctx.map_usage (Usage (type.get_node_id ()),
+		 Definition (resolved->get_node_id ()));
 }
 
 } // namespace Resolver2_0
