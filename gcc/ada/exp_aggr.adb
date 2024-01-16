@@ -6662,6 +6662,8 @@ package body Exp_Aggr is
             end if;
          end Add_Range_Size;
 
+      --  Start of processing for Aggregate_Size
+
       begin
          --  Aggregate is either all positional or all named
 
@@ -6669,23 +6671,39 @@ package body Exp_Aggr is
 
          if Present (Component_Associations (N)) then
             Comp := First (Component_Associations (N));
-            --  If there is a single component association it can be
-            --  an iterated component with dynamic bounds or an element
-            --  iterator over an iterable object. If it is an array
-            --  we can use the attribute Length to get its size;
-            --  for a predefined container the function Length plays
-            --  the same role. There is no available mechanism for
-            --  user-defined containers. For now we treat all of these
-            --  as dynamic.
 
-            if List_Length (Component_Associations (N)) = 1
-              and then Nkind (Comp) in N_Iterated_Component_Association |
-                                       N_Iterated_Element_Association
-            then
-               return Build_Siz_Exp (Comp);
-            end if;
+            --  If one or more of the associations is one of the iterated
+            --  forms, and is either an association with nonstatic bounds
+            --  or is an iterator over an iterable object, then treat the
+            --  whole container aggregate as having a nonstatic number of
+            --  elements.
 
-            --  Otherwise all associations must specify static sizes.
+            declare
+               Has_Nonstatic_Length : Boolean := False;
+
+            begin
+               while Present (Comp) loop
+                  if Nkind (Comp) in N_Iterated_Component_Association |
+                                     N_Iterated_Element_Association
+                    and then Build_Siz_Exp (Comp) = -1
+                  then
+                     Has_Nonstatic_Length := True;
+                  end if;
+
+                  Next (Comp);
+               end loop;
+
+               if Has_Nonstatic_Length then
+                  return -1;
+               end if;
+            end;
+
+            --  Otherwise, the aggregate must have associations where all
+            --  choices and bounds are statically known, and we compute
+            --  the number of elements statically by adding up the number
+            --  of elements in each association.
+
+            Comp := First (Component_Associations (N));
 
             while Present (Comp) loop
                Choice := First (Choice_List (Comp));
@@ -6731,7 +6749,9 @@ package body Exp_Aggr is
       -------------------
 
       function Build_Siz_Exp (Comp : Node_Id) return Int is
-         Lo, Hi : Node_Id;
+         Lo, Hi       : Node_Id;
+         Temp_Siz_Exp : Node_Id;
+
       begin
          if Nkind (Comp) = N_Range then
             Lo := Low_Bound (Comp);
@@ -6750,10 +6770,29 @@ package body Exp_Aggr is
                   Siz := UI_To_Int (Enumeration_Pos (Hi))
                        - UI_To_Int (Enumeration_Pos (Lo)) + 1;
                end if;
+
+               --  Include the static value in the computation of the aggregate
+               --  length in Siz_Exp. This will only end up being used if there
+               --  are one or more associations that have nonstatic ranges.
+
+               if Present (Siz_Exp) then
+                  Siz_Exp := Make_Op_Add (Sloc (Comp),
+                               Left_Opnd  => Siz_Exp,
+                               Right_Opnd => Make_Integer_Literal (Loc, Siz));
+               else
+                  Siz_Exp := Make_Integer_Literal (Loc, Siz);
+               end if;
+
                return Siz;
 
+            --  The possibility of having multiple associations with nonstatic
+            --  ranges (plus static ranges) means that in general we really
+            --  should be accumulating a sum of the various sizes. The current
+            --  code can end up overwriting Siz_Exp on subsequent associations
+            --  (plus won't account for associations with static ranges). ???
+
             else
-               Siz_Exp :=
+               Temp_Siz_Exp :=
                  Make_Op_Add (Sloc (Comp),
                    Left_Opnd =>
                      Make_Op_Subtract (Sloc (Comp),
@@ -6761,6 +6800,18 @@ package body Exp_Aggr is
                        Right_Opnd => New_Copy_Tree (Lo)),
                    Right_Opnd =>
                      Make_Integer_Literal (Loc, 1));
+
+               --  Include this nonstatic length in the total length being
+               --  accumulated in Siz_Exp.
+
+               if Present (Siz_Exp) then
+                  Siz_Exp := Make_Op_Add (Sloc (Comp),
+                               Left_Opnd  => Siz_Exp,
+                               Right_Opnd => Temp_Siz_Exp);
+               else
+                  Siz_Exp := Temp_Siz_Exp;
+               end if;
+
                return -1;
             end if;
 
@@ -6914,6 +6965,37 @@ package body Exp_Aggr is
         Empty_Subp, Add_Named_Subp, Add_Unnamed_Subp,
         New_Indexed_Subp, Assign_Indexed_Subp);
 
+      --  Determine whether this is an indexed aggregate (see RM 4.3.5(25/5))
+
+      if Present (New_Indexed_Subp) then
+         if No (Add_Unnamed_Subp) then
+            Is_Indexed_Aggregate := True;
+
+         else
+            declare
+               Comp_Assns : constant List_Id := Component_Associations (N);
+               Comp_Assn  : Node_Id;
+
+            begin
+               if not Is_Empty_List (Comp_Assns) then
+
+                  --  It suffices to look at the first association to determine
+                  --  whether the aggregate is an indexed aggregate.
+
+                  Comp_Assn := First (Comp_Assns);
+
+                  if Nkind (Comp_Assn) = N_Component_Association
+                    or else
+                      (Nkind (Comp_Assn) = N_Iterated_Component_Association
+                        and then Present (Defining_Identifier (Comp_Assn)))
+                  then
+                     Is_Indexed_Aggregate := True;
+                  end if;
+               end if;
+            end;
+         end if;
+      end if;
+
       --  The constructor for bounded containers is a function with
       --  a parameter that sets the size of the container. If the
       --  size cannot be determined statically we use a default value
@@ -6963,7 +7045,48 @@ package body Exp_Aggr is
                Expression => Siz_Exp);
          Append (Siz_Decl, Aggr_Code);
 
-         if Nkind (Siz_Exp) = N_Integer_Literal then
+         --  In the case of an indexed aggregate, the aggregate is allocated
+         --  with the New_Indexed operation, passing the bounds.
+
+         if Is_Indexed_Aggregate then
+            declare
+               Insert     : constant Entity_Id :=
+                              Entity (Assign_Indexed_Subp);
+               Index_Type : constant Entity_Id :=
+                              Etype (Next_Formal (First_Formal (Insert)));
+               Index      : Node_Id;
+
+            begin
+               Index := Make_Op_Add (Loc,
+                 Left_Opnd => New_Copy_Tree (Type_Low_Bound (Index_Type)),
+                 Right_Opnd =>
+                   Make_Op_Subtract (Loc,
+                     Left_Opnd  => Make_Type_Conversion (Loc,
+                                     Subtype_Mark =>
+                                       New_Occurrence_Of (Index_Type, Loc),
+                                     Expression =>
+                                       New_Occurrence_Of
+                                         (Defining_Identifier (Siz_Decl),
+                                          Loc)),
+                     Right_Opnd => Make_Integer_Literal (Loc, 1)));
+
+               Init_Stat :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                   Expression => Make_Function_Call (Loc,
+                     Name =>
+                       New_Occurrence_Of (Entity (New_Indexed_Subp), Loc),
+                     Parameter_Associations =>
+                       New_List (
+                         New_Copy_Tree (Type_Low_Bound (Index_Type)),
+                         Index)));
+            end;
+
+         --  Otherwise we generate a call to the Empty operation, passing
+         --  the determined number of elements as saved in Siz_Decl.
+
+         else
             Init_Stat :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp,
@@ -6974,32 +7097,13 @@ package body Exp_Aggr is
                     New_List
                       (New_Occurrence_Of
                         (Defining_Identifier (Siz_Decl), Loc))));
-
-         else
-            Init_Stat :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Temp,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                Expression => Make_Function_Call (Loc,
-                  Name =>
-                    New_Occurrence_Of (Entity (New_Indexed_Subp), Loc),
-                  Parameter_Associations =>
-                    New_List (
-                      Make_Integer_Literal (Loc, 1),
-                      Make_Type_Conversion (Loc,
-                        Subtype_Mark =>
-                          New_Occurrence_Of
-                            (Etype (First_Formal (Entity (New_Indexed_Subp))),
-                             Loc),
-                        Expression => New_Occurrence_Of
-                                        (Defining_Identifier (Siz_Decl),
-                                         Loc)))));
          end if;
 
          Append (Init_Stat, Aggr_Code);
 
-         --  Size is dynamic: Create declaration for object, and initialize
-         --  with a call to the null container, or an assignment to it.
+      --  The container will grow dynamically. Create a declaration for
+      --  the object, and initialize it either from a call to the Empty
+      --  function, or from the Empty constant.
 
       else
          Decl :=
@@ -7042,35 +7146,6 @@ package body Exp_Aggr is
             & " aggregate<<<", Parent (N));
          Error_Msg_N
            ("\this will result in infinite recursion??", Parent (N));
-      end if;
-
-      --  Determine whether this is an indexed aggregate (see RM 4.3.5(25/5)).
-
-      if Present (New_Indexed_Subp) then
-         if No (Add_Unnamed_Subp) then
-            Is_Indexed_Aggregate := True;
-
-         else
-            declare
-               Comp_Assns : constant List_Id := Component_Associations (N);
-               Comp_Assn  : Node_Id;
-
-            begin
-               if Present (Comp_Assns)
-                 and then not Is_Empty_List (Comp_Assns)
-               then
-                  Comp_Assn := First (Comp_Assns);
-
-                  if Nkind (Comp_Assn) = N_Component_Association
-                    or else
-                      (Nkind (Comp_Assn) = N_Iterated_Component_Association
-                        and then Present (Defining_Identifier (Comp_Assn)))
-                  then
-                     Is_Indexed_Aggregate := True;
-                  end if;
-               end if;
-            end;
-         end if;
       end if;
 
       ---------------------------
@@ -7170,26 +7245,22 @@ package body Exp_Aggr is
         and then not Is_Empty_List (Component_Associations (N))
       then
          declare
-            Insert : constant Entity_Id := Entity (Assign_Indexed_Subp);
-            Index_Type : constant Entity_Id :=
-               Etype (Next_Formal (First_Formal (Insert)));
 
             function  Expand_Range_Component
               (Rng  : Node_Id;
                Expr : Node_Id) return Node_Id;
-            --  Transform a component assoication with a range into an
+            --  Transform a component association with a range into an
             --  explicit loop. If the choice is a subtype name, it is
             --  rewritten as a range with the corresponding bounds, which
             --  are known to be static.
 
             Comp   : Node_Id;
-            Index  : Node_Id;
             Stat   : Node_Id;
             Key    : Node_Id;
 
-            -----------------------------
-            -- Expand_Raange_Component --
-            -----------------------------
+            ----------------------------
+            -- Expand_Range_Component --
+            ----------------------------
 
             function Expand_Range_Component
               (Rng  : Node_Id;
@@ -7227,26 +7298,6 @@ package body Exp_Aggr is
 
          begin
             pragma Assert (No (Expressions (N)));
-
-            if Siz > 0 then
-
-               --  Modify the call to the constructor to allocate the
-               --  required size for the aggregwte : call the provided
-               --  constructor rather than the Empty aggregate.
-
-               Index := Make_Op_Add (Loc,
-                 Left_Opnd => New_Copy_Tree (Type_Low_Bound (Index_Type)),
-                 Right_Opnd => Make_Integer_Literal (Loc, Siz - 1));
-
-               Set_Expression (Init_Stat,
-                  Make_Function_Call (Loc,
-                    Name =>
-                      New_Occurrence_Of (Entity (New_Indexed_Subp), Loc),
-                    Parameter_Associations =>
-                      New_List (
-                         New_Copy_Tree (Type_Low_Bound (Index_Type)),
-                         Index)));
-            end if;
 
             Comp := First (Component_Associations (N));
 
