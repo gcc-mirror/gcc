@@ -1,3 +1,19 @@
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104634
+	* g++.dg/cpp2a/concepts-explicit-inst6.C: New test.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109899
+	* g++.dg/cpp0x/initlist-array21.C: New test.
+
 2024-01-14  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR testsuite/106879

@@ -1,3 +1,21 @@
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104634
+	* pt.cc (maybe_new_partial_specialization): Propagate TREE_PUBLIC
+	to the newly created partial specialization.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109899
+	* init.cc (build_vec_delete_1): Assume expr_noexcept_p returns
+	false in a template context.
+
 2023-12-20  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
