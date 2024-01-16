@@ -606,7 +606,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             {
                 import dmd.common.outbuffer;
                 OutBuffer buf;
-                HdrGenStage hgs;
+                HdrGenState hgs;
                 toCBuffer(ts.sym, buf, hgs);
                 printf("%s\n", buf.peekChars());
             }
@@ -803,9 +803,6 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         Loop1:
             for (size_t index = 0; index < ci.initializerList.length; )
             {
-                CInitializer cprev;
-                size_t indexprev;
-             L1:
                 DesigInit di = ci.initializerList[index];
                 Designators* dlist = di.designatorList;
                 if (dlist)
@@ -833,15 +830,6 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                             continue Loop1;
                         }
                     }
-                    if (cprev)
-                    {
-                        /* The peeling didn't work, so unpeel it
-                         */
-                        ci = cprev;
-                        index = indexprev;
-                        di = ci.initializerList[index];
-                        goto L2;
-                    }
                     error(ci.loc, "`.%s` is not a field of `%s`\n", id.toChars(), sd.toChars());
                     return err();
                 }
@@ -849,18 +837,55 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 {
                     if (fieldi == nfields)
                         break;
-                    if (/*index == 0 && ci.initializerList.length == 1 &&*/ di.initializer.isCInitializer())
+
+                    auto ix = di.initializer;
+
+                    /* If a C initializer is wrapped in a C initializer, with no designators,
+                     * peel off the outer one
+                     */
+                    if (ix.isCInitializer())
                     {
-                        /* Try peeling off this set of { } and see if it works
-                         */
-                        cprev = ci;
-                        ci = di.initializer.isCInitializer();
-                        indexprev = index;
-                        index = 0;
-                        goto L1;
+                        CInitializer cix = ix.isCInitializer();
+                        if (cix.initializerList.length == 1)
+                        {
+                            DesigInit dix = cix.initializerList[0];
+                            if (!dix.designatorList)
+                            {
+                                Initializer inix = dix.initializer;
+                                if (inix.isCInitializer())
+                                    ix = inix;
+                            }
+                        }
                     }
 
-                L2:
+                    if (auto cix = ix.isCInitializer())
+                    {
+                        /* ImportC loses the structure from anonymous structs, but this is retained
+                         * by the initializer syntax. if a CInitializer has a Designator, it is probably
+                         * a nested anonymous struct
+                         */
+                        if (cix.initializerList.length)
+                        {
+                            DesigInit dix = cix.initializerList[0];
+                            Designators* dlistx = dix.designatorList;
+                            if (dlistx && (*dlistx).length == 1 && (*dlistx)[0].ident)
+                            {
+                                auto id = (*dlistx)[0].ident;
+                                foreach (k, f; sd.fields[])         // linear search for now
+                                {
+                                    if (f.ident == id)
+                                    {
+                                        fieldi = k;
+                                        si.addInit(id, dix.initializer);
+                                        ++fieldi;
+                                        ++index;
+                                        continue Loop1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     VarDeclaration field;
                     while (1)   // skip field if it overlaps with previously seen fields
                     {
@@ -871,10 +896,11 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                         if (fieldi == nfields)
                             break;
                     }
+
                     auto tn = field.type.toBasetype();
                     auto tnsa = tn.isTypeSArray();
                     auto tns = tn.isTypeStruct();
-                    auto ix = di.initializer;
+
                     if (tnsa && ix.isExpInitializer())
                     {
                         ExpInitializer ei = ix.isExpInitializer();
@@ -1013,7 +1039,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         }
         else
         {
-            error(ci.loc, "unrecognized C initializer `%s`", toChars(ci));
+            error(ci.loc, "unrecognized C initializer `%s` for type `%s`", toChars(ci), t.toChars());
             return err();
         }
     }
@@ -1546,6 +1572,11 @@ Expressions* resolveStructLiteralNamedArgs(StructDeclaration sd, Type t, Scope* 
         {
             error(argLoc, "too many initializers for `%s` with %d field%s", sd.toChars(),
                 cast(int) nfields, nfields != 1 ? "s".ptr : "".ptr);
+            return null;
+        }
+        if (fieldi >= nfields)
+        {
+            error(argLoc, "trying to initialize past the last field `%s` of `%s`", sd.fields[nfields - 1].toChars(), sd.toChars());
             return null;
         }
 

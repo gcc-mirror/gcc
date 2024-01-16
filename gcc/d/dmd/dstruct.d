@@ -289,7 +289,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         for (size_t i = 0; i < members.length; i++)
         {
             Dsymbol s = (*members)[i];
-            s.setFieldOffset(this, fieldState, isunion);
+            s.setFieldOffset(this, &fieldState, isunion);
         }
         if (type.ty == Terror)
         {

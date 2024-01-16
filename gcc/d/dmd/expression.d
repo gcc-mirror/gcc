@@ -21,7 +21,6 @@ import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
-import dmd.gluelayer;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dimport;
@@ -2240,7 +2239,7 @@ extern (C++) final class StructLiteralExp : Expression
     // while `sym` is only used in `e2ir/s2ir/tocsym` which comes after
     union
     {
-        Symbol* sym;            /// back end symbol to initialize with literal
+        void* sym;            /// back end symbol to initialize with literal (used as a Symbol*)
 
         /// those fields need to prevent a infinite recursion when one field of struct initialized with 'this' pointer.
         StructLiteralExp inlinecopy;

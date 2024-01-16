@@ -228,7 +228,7 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
 
         Type t = s.getType(); // type symbol, type alias, or type tuple?
         uint errorsave = global.errors;
-        int flags = t is null ? SearchLocalsOnly : IgnorePrivateImports;
+        SearchOptFlags flags = t is null ? SearchOpt.localsOnly : SearchOpt.ignorePrivateImports;
 
         Dsymbol sm = s.searchX(loc, sc, id, flags);
         if (sm)
@@ -380,12 +380,12 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
  *  loc = location to print the error messages
  *  sc = the scope where the symbol is located
  *  id = the id of the symbol
- *  flags = the search flags which can be `SearchLocalsOnly` or `IgnorePrivateImports`
+ *  flags = the search flags which can be `SearchLocalsOnly` or `SearchOpt.ignorePrivateImports`
  *
  * Returns:
  *      symbol found, NULL if not
  */
-private Dsymbol searchX(Dsymbol dsym, const ref Loc loc, Scope* sc, RootObject id, int flags)
+private Dsymbol searchX(Dsymbol dsym, const ref Loc loc, Scope* sc, RootObject id, SearchOptFlags flags)
 {
     //printf("Dsymbol::searchX(this=%p,%s, ident='%s')\n", this, toChars(), ident.toChars());
     Dsymbol s = dsym.toAlias();
@@ -483,6 +483,529 @@ Expression typeToExpression(Type t)
         case Tinstance: return visitInstance(t.isTypeInstance());
         case Tmixin:    return visitMixin(t.isTypeMixin());
         default:        return null;
+    }
+}
+
+/********************************
+ * 'args' are being matched to function type 'tf'
+ * Determine match level.
+ * Params:
+ *      tf = function type
+ *      tthis = type of `this` pointer, null if not member function
+ *      argumentList = arguments to function call
+ *      flag = 1: performing a partial ordering match
+ *      pMessage = address to store error message, or null
+ *      sc = context
+ * Returns:
+ *      MATCHxxxx
+ */
+extern (D) MATCH callMatch(TypeFunction tf, Type tthis, ArgumentList argumentList, int flag = 0, const(char)** pMessage = null, Scope* sc = null)
+{
+    //printf("TypeFunction::callMatch() %s\n", tf.toChars());
+    MATCH match = MATCH.exact; // assume exact match
+    ubyte wildmatch = 0;
+
+    if (tthis)
+    {
+        Type t = tthis;
+        if (t.toBasetype().ty == Tpointer)
+            t = t.toBasetype().nextOf(); // change struct* to struct
+        if (t.mod != tf.mod)
+        {
+            if (MODimplicitConv(t.mod, tf.mod))
+                match = MATCH.constant;
+            else if ((tf.mod & MODFlags.wild) && MODimplicitConv(t.mod, (tf.mod & ~MODFlags.wild) | MODFlags.const_))
+            {
+                match = MATCH.constant;
+            }
+            else
+                return MATCH.nomatch;
+        }
+        if (tf.isWild())
+        {
+            if (t.isWild())
+                wildmatch |= MODFlags.wild;
+            else if (t.isConst())
+                wildmatch |= MODFlags.const_;
+            else if (t.isImmutable())
+                wildmatch |= MODFlags.immutable_;
+            else
+                wildmatch |= MODFlags.mutable;
+        }
+    }
+
+    ParameterList* parameterList = &tf.parameterList;
+    const nparams = parameterList.length;
+    if (argumentList.length > nparams)
+    {
+        if (parameterList.varargs == VarArg.none)
+        {
+            // suppress early exit if an error message is wanted,
+            // so we can check any matching args are valid
+            if (!pMessage)
+                return MATCH.nomatch;
+        }
+        // too many args; no match
+        match = MATCH.convert; // match ... with a "conversion" match level
+    }
+
+    // https://issues.dlang.org/show_bug.cgi?id=22997
+    if (parameterList.varargs == VarArg.none && nparams > argumentList.length && !parameterList.hasDefaultArgs)
+    {
+        OutBuffer buf;
+        buf.printf("too few arguments, expected %d, got %d", cast(int)nparams, cast(int)argumentList.length);
+        if (pMessage)
+            *pMessage = buf.extractChars();
+        return MATCH.nomatch;
+    }
+    auto resolvedArgs = tf.resolveNamedArgs(argumentList, pMessage);
+    Expression[] args;
+    if (!resolvedArgs)
+    {
+        if (!pMessage || *pMessage)
+            return MATCH.nomatch;
+
+        // if no message was provided, it was because of overflow which will be diagnosed below
+        match = MATCH.nomatch;
+        args = argumentList.arguments ? (*argumentList.arguments)[] : null;
+    }
+    else
+    {
+        args = (*resolvedArgs)[];
+    }
+
+    foreach (u, p; *parameterList)
+    {
+        if (u >= args.length)
+            break;
+
+        Expression arg = args[u];
+        if (!arg)
+            continue; // default argument
+
+        Type tprm = p.type;
+        Type targ = arg.type;
+
+        if (!(p.isLazy() && tprm.ty == Tvoid && targ.ty != Tvoid))
+        {
+            const isRef = p.isReference();
+            wildmatch |= targ.deduceWild(tprm, isRef);
+        }
+    }
+    if (wildmatch)
+    {
+        /* Calculate wild matching modifier
+         */
+        if (wildmatch & MODFlags.const_ || wildmatch & (wildmatch - 1))
+            wildmatch = MODFlags.const_;
+        else if (wildmatch & MODFlags.immutable_)
+            wildmatch = MODFlags.immutable_;
+        else if (wildmatch & MODFlags.wild)
+            wildmatch = MODFlags.wild;
+        else
+        {
+            assert(wildmatch & MODFlags.mutable);
+            wildmatch = MODFlags.mutable;
+        }
+    }
+
+    foreach (u, p; *parameterList)
+    {
+        MATCH m;
+
+        assert(p);
+
+        // One or more arguments remain
+        if (u < args.length)
+        {
+            Expression arg = args[u];
+            if (!arg)
+                continue; // default argument
+            m = argumentMatchParameter(tf, p, arg, wildmatch, flag, sc, pMessage);
+        }
+        else if (p.defaultArg)
+            continue;
+
+        /* prefer matching the element type rather than the array
+         * type when more arguments are present with T[]...
+         */
+        if (parameterList.varargs == VarArg.typesafe && u + 1 == nparams && args.length > nparams)
+            goto L1;
+
+        //printf("\tm = %d\n", m);
+        if (m == MATCH.nomatch) // if no match
+        {
+        L1:
+            if (parameterList.varargs == VarArg.typesafe && u + 1 == nparams) // if last varargs param
+            {
+                auto trailingArgs = args[u .. $];
+                if (auto vmatch = matchTypeSafeVarArgs(tf, p, trailingArgs, pMessage))
+                    return vmatch < match ? vmatch : match;
+                // Error message was already generated in `matchTypeSafeVarArgs`
+                return MATCH.nomatch;
+            }
+            if (pMessage && u >= args.length)
+                *pMessage = tf.getMatchError("missing argument for parameter #%d: `%s`",
+                    u + 1, parameterToChars(p, tf, false));
+            // If an error happened previously, `pMessage` was already filled
+            else if (pMessage && !*pMessage)
+                *pMessage = tf.getParamError(args[u], p);
+
+            return MATCH.nomatch;
+        }
+        if (m < match)
+            match = m; // pick worst match
+    }
+
+    if (pMessage && !parameterList.varargs && args.length > nparams)
+    {
+        // all parameters had a match, but there are surplus args
+        *pMessage = tf.getMatchError("expected %d argument(s), not %d", nparams, args.length);
+        return MATCH.nomatch;
+    }
+    //printf("match = %d\n", match);
+    return match;
+}
+
+/**
+ * Used by `callMatch` to check if the copy constructor may be called to
+ * copy the argument
+ *
+ * This is done by seeing if a call to the copy constructor can be made:
+ * ```
+ * typeof(tprm) __copytmp;
+ * copytmp.__copyCtor(arg);
+ * ```
+ */
+private extern(D) bool isCopyConstructorCallable (StructDeclaration argStruct,
+    Expression arg, Type tprm, Scope* sc, const(char)** pMessage)
+{
+    auto tmp = new VarDeclaration(arg.loc, tprm, Identifier.generateId("__copytmp"), null);
+    tmp.storage_class = STC.rvalue | STC.temp | STC.ctfe;
+    tmp.dsymbolSemantic(sc);
+    Expression ve = new VarExp(arg.loc, tmp);
+    Expression e = new DotIdExp(arg.loc, ve, Id.ctor);
+    e = new CallExp(arg.loc, e, arg);
+    //printf("e = %s\n", e.toChars());
+    if (.trySemantic(e, sc))
+        return true;
+
+    if (pMessage)
+    {
+        /* https://issues.dlang.org/show_bug.cgi?id=22202
+         *
+         * If a function was deduced by semantic on the CallExp,
+         * it means that resolveFuncCall completed succesfully.
+         * Therefore, there exists a callable copy constructor,
+         * however, it cannot be called because scope constraints
+         * such as purity, safety or nogc.
+         */
+        OutBuffer buf;
+        auto callExp = e.isCallExp();
+        if (auto f = callExp.f)
+        {
+            char[] s;
+            if (!f.isPure && sc.func.setImpure())
+                s ~= "pure ";
+            if (!f.isSafe() && !f.isTrusted() && sc.setUnsafe())
+                s ~= "@safe ";
+            if (!f.isNogc && sc.func.setGC(arg.loc, null))
+                s ~= "nogc ";
+            if (s)
+            {
+                s[$-1] = '\0';
+                buf.printf("`%s` copy constructor cannot be called from a `%s` context", f.type.toChars(), s.ptr);
+            }
+            else if (f.isGenerated() && f.isDisabled())
+            {
+                /* https://issues.dlang.org/show_bug.cgi?id=23097
+                 * Compiler generated copy constructor failed.
+                 */
+                buf.printf("generating a copy constructor for `struct %s` failed, therefore instances of it are uncopyable",
+                           argStruct.toChars());
+            }
+            else
+            {
+                /* Although a copy constructor may exist, no suitable match was found.
+                 * i.e: `inout` constructor creates `const` object, not mutable.
+                 * Fallback to using the original generic error before https://issues.dlang.org/show_bug.cgi?id=22202.
+                 */
+                goto Lnocpctor;
+            }
+        }
+        else
+        {
+        Lnocpctor:
+            buf.printf("`struct %s` does not define a copy constructor for `%s` to `%s` copies",
+                       argStruct.toChars(), arg.type.toChars(), tprm.toChars());
+        }
+
+        *pMessage = buf.extractChars();
+    }
+    return false;
+}
+
+/**
+ * Match a single parameter to an argument.
+ *
+ * This function is called by `TypeFunction.callMatch` while iterating over
+ * the list of parameter. Here we check if `arg` is a match for `p`,
+ * which is mostly about checking if `arg.type` converts to `p`'s type
+ * and some check about value reference.
+ *
+ * Params:
+ *   tf = The `TypeFunction`, only used for error reporting
+ *   p = The parameter of `tf` being matched
+ *   arg = Argument being passed (bound) to `p`
+ *   wildmatch = Wild (`inout`) matching level, derived from the full argument list
+ *   flag = A non-zero value means we're doing a partial ordering check
+ *          (no value semantic check)
+ *   sc = Scope we are in
+ *   pMessage = A buffer to write the error in, or `null`
+ *
+ * Returns: Whether `trailingArgs` match `p`.
+ */
+private extern(D) MATCH argumentMatchParameter (TypeFunction tf, Parameter p,
+    Expression arg, ubyte wildmatch, int flag, Scope* sc, const(char)** pMessage)
+{
+    //printf("arg: %s, type: %s\n", arg.toChars(), arg.type.toChars());
+    MATCH m;
+    Type targ = arg.type;
+    Type tprm = wildmatch ? p.type.substWildTo(wildmatch) : p.type;
+
+    if (p.isLazy() && tprm.ty == Tvoid && targ.ty != Tvoid)
+        m = MATCH.convert;
+    else if (flag)
+    {
+        // for partial ordering, value is an irrelevant mockup, just look at the type
+        m = targ.implicitConvTo(tprm);
+    }
+    else
+    {
+        const isRef = p.isReference();
+        StructDeclaration argStruct, prmStruct;
+
+        // first look for a copy constructor
+        if (arg.isLvalue() && !isRef && targ.ty == Tstruct && tprm.ty == Tstruct)
+        {
+            // if the argument and the parameter are of the same unqualified struct type
+            argStruct = (cast(TypeStruct)targ).sym;
+            prmStruct = (cast(TypeStruct)tprm).sym;
+        }
+
+        // check if the copy constructor may be called to copy the argument
+        if (argStruct && argStruct == prmStruct && argStruct.hasCopyCtor)
+        {
+            if (!isCopyConstructorCallable(argStruct, arg, tprm, sc, pMessage))
+                return MATCH.nomatch;
+            m = MATCH.exact;
+        }
+        else
+        {
+            import dmd.dcast : cimplicitConvTo;
+            m = (sc && sc.flags & SCOPE.Cfile) ? arg.cimplicitConvTo(tprm) : arg.implicitConvTo(tprm);
+        }
+    }
+
+    // Non-lvalues do not match ref or out parameters
+    if (p.isReference())
+    {
+        // https://issues.dlang.org/show_bug.cgi?id=13783
+        // Don't use toBasetype() to handle enum types.
+        Type ta = targ;
+        Type tp = tprm;
+        //printf("fparam[%d] ta = %s, tp = %s\n", u, ta.toChars(), tp.toChars());
+
+        if (m && !arg.isLvalue())
+        {
+            if (p.storageClass & STC.out_)
+            {
+                if (pMessage) *pMessage = tf.getParamError(arg, p);
+                return MATCH.nomatch;
+            }
+
+            if (arg.op == EXP.string_ && tp.ty == Tsarray)
+            {
+                if (ta.ty != Tsarray)
+                {
+                    Type tn = tp.nextOf().castMod(ta.nextOf().mod);
+                    dinteger_t dim = (cast(StringExp)arg).len;
+                    ta = tn.sarrayOf(dim);
+                }
+            }
+            else if (arg.op == EXP.slice && tp.ty == Tsarray)
+            {
+                // Allow conversion from T[lwr .. upr] to ref T[upr-lwr]
+                if (ta.ty != Tsarray)
+                {
+                    Type tn = ta.nextOf();
+                    dinteger_t dim = (cast(TypeSArray)tp).dim.toUInteger();
+                    ta = tn.sarrayOf(dim);
+                }
+            }
+            else if ((p.storageClass & STC.in_) && global.params.previewIn)
+            {
+                // Allow converting a literal to an `in` which is `ref`
+                if (arg.op == EXP.arrayLiteral && tp.ty == Tsarray)
+                {
+                    Type tn = tp.nextOf();
+                    dinteger_t dim = (cast(TypeSArray)tp).dim.toUInteger();
+                    ta = tn.sarrayOf(dim);
+                }
+
+                // Need to make this a rvalue through a temporary
+                m = MATCH.convert;
+            }
+            else if (global.params.rvalueRefParam != FeatureState.enabled ||
+                     p.storageClass & STC.out_ ||
+                     !arg.type.isCopyable())  // can't copy to temp for ref parameter
+            {
+                if (pMessage) *pMessage = tf.getParamError(arg, p);
+                return MATCH.nomatch;
+            }
+            else
+            {
+                /* in functionParameters() we'll convert this
+                 * rvalue into a temporary
+                 */
+                m = MATCH.convert;
+            }
+        }
+
+        /* If the match is not already perfect or if the arg
+           is not a lvalue then try the `alias this` chain
+           see  https://issues.dlang.org/show_bug.cgi?id=15674
+           and https://issues.dlang.org/show_bug.cgi?id=21905
+        */
+        if (ta != tp || !arg.isLvalue())
+        {
+            Type firsttab = ta.toBasetype();
+            while (1)
+            {
+                Type tab = ta.toBasetype();
+                Type tat = tab.aliasthisOf();
+                if (!tat || !tat.implicitConvTo(tprm))
+                    break;
+                if (tat == tab || tat == firsttab)
+                    break;
+                ta = tat;
+            }
+        }
+
+        /* A ref variable should work like a head-const reference.
+         * e.g. disallows:
+         *  ref T      <- an lvalue of const(T) argument
+         *  ref T[dim] <- an lvalue of const(T[dim]) argument
+         */
+        if (!ta.constConv(tp))
+        {
+            if (pMessage) *pMessage = tf.getParamError(arg, p);
+            return MATCH.nomatch;
+        }
+    }
+    return m;
+}
+
+// arguments get specially formatted
+private const(char)* getParamError(TypeFunction tf, Expression arg, Parameter par)
+{
+    if (global.gag && !global.params.v.showGaggedErrors)
+        return null;
+    // show qualification when toChars() is the same but types are different
+    // https://issues.dlang.org/show_bug.cgi?id=19948
+    // when comparing the type with strcmp, we need to drop the qualifier
+    bool qual = !arg.type.mutableOf().equals(par.type.mutableOf()) &&
+        strcmp(arg.type.mutableOf().toChars(), par.type.mutableOf().toChars()) == 0;
+    auto at = qual ? arg.type.toPrettyChars(true) : arg.type.toChars();
+    OutBuffer buf;
+    // only mention rvalue if it's relevant
+    const rv = !arg.isLvalue() && par.isReference();
+    buf.printf("cannot pass %sargument `%s` of type `%s` to parameter `%s`",
+        rv ? "rvalue ".ptr : "".ptr, arg.toChars(), at,
+        parameterToChars(par, tf, qual));
+    return buf.extractChars();
+}
+
+/**
+ * Match the remaining arguments `trailingArgs` with parameter `p`.
+ *
+ * Assume we already checked that `p` is the last parameter of `tf`,
+ * and we want to know whether the arguments would match `p`.
+ *
+ * Params:
+ *   tf = The `TypeFunction`, only used for error reporting
+ *   p = The last parameter of `tf` which is variadic
+ *   trailingArgs = The remaining arguments that should match `p`
+ *   pMessage = A buffer to write the error in, or `null`
+ *
+ * Returns: Whether `trailingArgs` match `p`.
+ */
+private extern(D) MATCH matchTypeSafeVarArgs(TypeFunction tf, Parameter p,
+    Expression[] trailingArgs, const(char)** pMessage)
+{
+    Type tb = p.type.toBasetype();
+
+    switch (tb.ty)
+    {
+    case Tsarray:
+        TypeSArray tsa = cast(TypeSArray)tb;
+        dinteger_t sz = tsa.dim.toInteger();
+        if (sz != trailingArgs.length)
+        {
+            if (pMessage)
+                *pMessage = tf.getMatchError("expected %llu variadic argument(s), not %zu",
+                    sz, trailingArgs.length);
+            return MATCH.nomatch;
+        }
+        goto case Tarray;
+    case Tarray:
+    {
+        MATCH match = MATCH.exact;
+        TypeArray ta = cast(TypeArray)tb;
+        foreach (arg; trailingArgs)
+        {
+            MATCH m;
+            assert(arg);
+
+            /* If lazy array of delegates,
+             * convert arg(s) to delegate(s)
+             */
+            Type tret = p.isLazyArray();
+            if (tret)
+            {
+                if (ta.next.equals(arg.type))
+                    m = MATCH.exact;
+                else if (tret.toBasetype().ty == Tvoid)
+                    m = MATCH.convert;
+                else
+                {
+                    m = arg.implicitConvTo(tret);
+                    if (m == MATCH.nomatch)
+                        m = arg.implicitConvTo(ta.next);
+                }
+            }
+            else
+                m = arg.implicitConvTo(ta.next);
+
+            if (m == MATCH.nomatch)
+            {
+                if (pMessage) *pMessage = tf.getParamError(arg, p);
+                return MATCH.nomatch;
+            }
+            if (m < match)
+                match = m;
+        }
+        return match;
+    }
+    case Tclass:
+        // We leave it up to the actual constructor call to do the matching.
+        return MATCH.exact;
+
+    default:
+        // We can have things as `foo(int[int] wat...)` but they only match
+        // with an associative array proper.
+        if (pMessage && trailingArgs.length) *pMessage = tf.getParamError(trailingArgs[0], p);
+        return MATCH.nomatch;
     }
 }
 
@@ -1878,7 +2401,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         /* look for pre-existing declaration
          */
         Dsymbol scopesym;
-        auto s = sc2.search(mtype.loc, mtype.id, &scopesym, IgnoreErrors | TagNameSpace);
+        auto s = sc2.search(mtype.loc, mtype.id, scopesym, SearchOpt.ignoreErrors | SearchOpt.tagNameSpace);
         if (!s || s.isModule())
         {
             // no pre-existing declaration, so declare it
@@ -2753,7 +3276,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
         }
 
         Dsymbol scopesym;
-        Dsymbol s = sc.search(loc, mt.ident, &scopesym);
+        Dsymbol s = sc.search(loc, mt.ident, scopesym);
         /*
          * https://issues.dlang.org/show_bug.cgi?id=1170
          * https://issues.dlang.org/show_bug.cgi?id=10739
@@ -2776,7 +3299,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                         mixinTempl.dsymbolSemantic(sc);
                 }
                 sds.members.foreachDsymbol( s => semanticOnMixin(s) );
-                s = sc.search(loc, mt.ident, &scopesym);
+                s = sc.search(loc, mt.ident, scopesym);
             }
         }
 
@@ -3794,8 +4317,8 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
             return e;
         }
 
-        immutable flags = sc.flags & SCOPE.ignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
-        s = mt.sym.search(e.loc, ident, flags | IgnorePrivateImports);
+        immutable flags = sc.flags & SCOPE.ignoresymbolvisibility ? SearchOpt.ignoreVisibility : 0;
+        s = mt.sym.search(e.loc, ident, flags | SearchOpt.ignorePrivateImports);
     L1:
         if (!s)
         {
@@ -4074,8 +4597,8 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
             return e;
         }
 
-        int flags = sc.flags & SCOPE.ignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
-        s = mt.sym.search(e.loc, ident, flags | IgnorePrivateImports);
+        SearchOptFlags flags = sc.flags & SCOPE.ignoresymbolvisibility ? SearchOpt.ignoreVisibility : SearchOpt.all;
+        s = mt.sym.search(e.loc, ident, flags | SearchOpt.ignorePrivateImports);
 
     L1:
         if (!s)
@@ -4723,7 +5246,7 @@ Type getComplexLibraryType(const ref Loc loc, Scope* sc, TY ty)
         return *pt;
     }
 
-    Dsymbol s = mConfig.searchX(Loc.initial, sc, id, IgnorePrivateImports);
+    Dsymbol s = mConfig.searchX(Loc.initial, sc, id, SearchOpt.ignorePrivateImports);
     if (!s)
     {
         error(loc, "`%s` not found in core.stdc.config", id.toChars());
@@ -4746,6 +5269,263 @@ Type getComplexLibraryType(const ref Loc loc, Scope* sc, TY ty)
 
     error(loc, "`%s` must be an alias for a complex struct", s.toChars());
     return *pt;
+}
+
+/*******************************
+ * Covariant means that 'src' can substitute for 't',
+ * i.e. a pure function is a match for an impure type.
+ * Params:
+ *      src = source type
+ *      t = type 'src' is covariant with
+ *      pstc = if not null, store STCxxxx which would make it covariant
+ *      cppCovariant = true if extern(C++) function types should follow C++ covariant rules
+ * Returns:
+ *     An enum value of either `Covariant.yes` or a reason it's not covariant.
+ */
+extern (C++) Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool cppCovariant = false)
+{
+    version (none)
+    {
+        printf("Type::covariant(t = %s) %s\n", t.toChars(), src.toChars());
+        printf("deco = %p, %p\n", src.deco, t.deco);
+        //    printf("ty = %d\n", next.ty);
+        printf("mod = %x, %x\n", src.mod, t.mod);
+    }
+    if (pstc)
+        *pstc = 0;
+    StorageClass stc = 0;
+
+    bool notcovariant = false;
+
+    if (src.equals(t))
+        return Covariant.yes;
+
+    TypeFunction t1 = src.isTypeFunction();
+    TypeFunction t2 = t.isTypeFunction();
+
+    if (!t1 || !t2)
+        goto Ldistinct;
+
+    if (t1.parameterList.varargs != t2.parameterList.varargs)
+        goto Ldistinct;
+
+    if (t1.parameterList.parameters && t2.parameterList.parameters)
+    {
+        if (t1.parameterList.length != t2.parameterList.length)
+            goto Ldistinct;
+
+        foreach (i, fparam1; t1.parameterList)
+        {
+            Parameter fparam2 = t2.parameterList[i];
+            Type tp1 = fparam1.type;
+            Type tp2 = fparam2.type;
+
+            if (!tp1.equals(tp2))
+            {
+                if (tp1.ty == tp2.ty)
+                {
+                    if (auto tc1 = tp1.isTypeClass())
+                    {
+                        if (tc1.sym == (cast(TypeClass)tp2).sym && MODimplicitConv(tp2.mod, tp1.mod))
+                            goto Lcov;
+                    }
+                    else if (auto ts1 = tp1.isTypeStruct())
+                    {
+                        if (ts1.sym == (cast(TypeStruct)tp2).sym && MODimplicitConv(tp2.mod, tp1.mod))
+                            goto Lcov;
+                    }
+                    else if (tp1.ty == Tpointer)
+                    {
+                        if (tp2.implicitConvTo(tp1))
+                            goto Lcov;
+                    }
+                    else if (tp1.ty == Tarray)
+                    {
+                        if (tp2.implicitConvTo(tp1))
+                            goto Lcov;
+                    }
+                    else if (tp1.ty == Tdelegate)
+                    {
+                        if (tp2.implicitConvTo(tp1))
+                            goto Lcov;
+                    }
+                }
+                goto Ldistinct;
+            }
+        Lcov:
+            notcovariant |= !fparam1.isCovariant(t1.isref, fparam2);
+
+            /* https://issues.dlang.org/show_bug.cgi?id=23135
+             * extern(C++) mutable parameters are not covariant with const.
+             */
+            if (t1.linkage == LINK.cpp && cppCovariant)
+            {
+                notcovariant |= tp1.isNaked() != tp2.isNaked();
+                if (auto tpn1 = tp1.nextOf())
+                    notcovariant |= tpn1.isNaked() != tp2.nextOf().isNaked();
+            }
+        }
+    }
+    else if (t1.parameterList.parameters != t2.parameterList.parameters)
+    {
+        if (t1.parameterList.length || t2.parameterList.length)
+            goto Ldistinct;
+    }
+
+    // The argument lists match
+    if (notcovariant)
+        goto Lnotcovariant;
+    if (t1.linkage != t2.linkage)
+        goto Lnotcovariant;
+
+    {
+        // Return types
+        Type t1n = t1.next;
+        Type t2n = t2.next;
+
+        if (!t1n || !t2n) // happens with return type inference
+            goto Lnotcovariant;
+
+        if (t1n.equals(t2n))
+            goto Lcovariant;
+        if (t1n.ty == Tclass && t2n.ty == Tclass)
+        {
+            /* If same class type, but t2n is const, then it's
+             * covariant. Do this test first because it can work on
+             * forward references.
+             */
+            if ((cast(TypeClass)t1n).sym == (cast(TypeClass)t2n).sym && MODimplicitConv(t1n.mod, t2n.mod))
+                goto Lcovariant;
+
+            // If t1n is forward referenced:
+            ClassDeclaration cd = (cast(TypeClass)t1n).sym;
+            if (cd.semanticRun < PASS.semanticdone && !cd.isBaseInfoComplete())
+                cd.dsymbolSemantic(null);
+            if (!cd.isBaseInfoComplete())
+            {
+                return Covariant.fwdref;
+            }
+        }
+        if (t1n.ty == Tstruct && t2n.ty == Tstruct)
+        {
+            if ((cast(TypeStruct)t1n).sym == (cast(TypeStruct)t2n).sym && MODimplicitConv(t1n.mod, t2n.mod))
+                goto Lcovariant;
+        }
+        else if (t1n.ty == t2n.ty && t1n.implicitConvTo(t2n))
+        {
+            if (t1.isref && t2.isref)
+            {
+                // Treat like pointers to t1n and t2n
+                if (t1n.constConv(t2n) < MATCH.constant)
+                    goto Lnotcovariant;
+            }
+            goto Lcovariant;
+        }
+        else if (t1n.ty == Tnull)
+        {
+            // NULL is covariant with any pointer type, but not with any
+            // dynamic arrays, associative arrays or delegates.
+            // https://issues.dlang.org/show_bug.cgi?id=8589
+            // https://issues.dlang.org/show_bug.cgi?id=19618
+            Type t2bn = t2n.toBasetype();
+            if (t2bn.ty == Tnull || t2bn.ty == Tpointer || t2bn.ty == Tclass)
+                goto Lcovariant;
+        }
+        // bottom type is covariant to any type
+        else if (t1n.ty == Tnoreturn)
+            goto Lcovariant;
+    }
+    goto Lnotcovariant;
+
+Lcovariant:
+    if (t1.isref != t2.isref)
+        goto Lnotcovariant;
+
+    if (!t1.isref && (t1.isScopeQual || t2.isScopeQual))
+    {
+        StorageClass stc1 = t1.isScopeQual ? STC.scope_ : 0;
+        StorageClass stc2 = t2.isScopeQual ? STC.scope_ : 0;
+        if (t1.isreturn)
+        {
+            stc1 |= STC.return_;
+            if (!t1.isScopeQual)
+                stc1 |= STC.ref_;
+        }
+        if (t2.isreturn)
+        {
+            stc2 |= STC.return_;
+            if (!t2.isScopeQual)
+                stc2 |= STC.ref_;
+        }
+        if (!Parameter.isCovariantScope(t1.isref, stc1, stc2))
+            goto Lnotcovariant;
+    }
+
+    // We can subtract 'return ref' from 'this', but cannot add it
+    else if (t1.isreturn && !t2.isreturn)
+        goto Lnotcovariant;
+
+    /* https://issues.dlang.org/show_bug.cgi?id=23135
+     * extern(C++) mutable member functions are not covariant with const.
+     */
+    if (t1.linkage == LINK.cpp && cppCovariant && t1.isNaked() != t2.isNaked())
+        goto Lnotcovariant;
+
+    /* Can convert mutable to const
+     */
+    if (!MODimplicitConv(t2.mod, t1.mod))
+    {
+        version (none)
+        {
+            //stop attribute inference with const
+            // If adding 'const' will make it covariant
+            if (MODimplicitConv(t2.mod, MODmerge(t1.mod, MODFlags.const_)))
+                stc |= STC.const_;
+            else
+                goto Lnotcovariant;
+        }
+        else
+        {
+            goto Ldistinct;
+        }
+    }
+
+    /* Can convert pure to impure, nothrow to throw, and nogc to gc
+     */
+    if (!t1.purity && t2.purity)
+        stc |= STC.pure_;
+
+    if (!t1.isnothrow && t2.isnothrow)
+        stc |= STC.nothrow_;
+
+    if (!t1.isnogc && t2.isnogc)
+        stc |= STC.nogc;
+
+    /* Can convert safe/trusted to system
+     */
+    if (t1.trust <= TRUST.system && t2.trust >= TRUST.trusted)
+    {
+        // Should we infer trusted or safe? Go with safe.
+        stc |= STC.safe;
+    }
+
+    if (stc)
+    {
+        if (pstc)
+            *pstc = stc;
+        goto Lnotcovariant;
+    }
+
+    //printf("\tcovaraint: 1\n");
+    return Covariant.yes;
+
+Ldistinct:
+    //printf("\tcovaraint: 0\n");
+    return Covariant.distinct;
+
+Lnotcovariant:
+    //printf("\tcovaraint: 2\n");
+    return Covariant.no;
 }
 
 /******************************* Private *****************************************/

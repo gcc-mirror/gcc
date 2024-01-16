@@ -2261,7 +2261,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                             continue;
                         assert(scx.sw == sw);
 
-                        if (!scx.search(cs.exp.loc, v.ident, null))
+                        Dsymbol pscopesym;
+                        if (!scx.search(cs.exp.loc, v.ident, pscopesym))
                         {
                             error(cs.loc, "`case` variable `%s` declared at %s cannot be declared in `switch` body",
                                 v.toChars(), v.loc.toChars());
@@ -2525,10 +2526,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (fd.fes)
             fd = fd.fes.func; // fd is now function enclosing foreach
 
-            TypeFunction tf = cast(TypeFunction)fd.type;
-        assert(tf.ty == Tfunction);
+        auto tf = fd.type.isTypeFunction();
 
-        if (rs.exp && rs.exp.op == EXP.variable && (cast(VarExp)rs.exp).var == fd.vresult)
+        if (rs.exp && rs.exp.isVarExp() && rs.exp.isVarExp().var == fd.vresult)
         {
             // return vresult;
             if (sc.fes)
@@ -2616,7 +2616,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             rs.exp.checkSharedAccess(sc, returnSharedRef);
 
             // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
-            if (rs.exp.op == EXP.type)
+            if (rs.exp.isTypeExp())
                 rs.exp = resolveAliasThis(sc, rs.exp);
 
             rs.exp = resolveProperties(sc, rs.exp);
@@ -2632,14 +2632,14 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
             // Extract side-effect part
             rs.exp = Expression.extractLast(rs.exp, e0);
-            if (rs.exp.op == EXP.call)
+            if (rs.exp.isCallExp())
                 rs.exp = valueNoDtor(rs.exp);
 
             /* Void-return function can have void / noreturn typed expression
              * on return statement.
              */
             auto texp = rs.exp.type;
-            const convToVoid = texp.ty == Tvoid || texp.ty == Tnoreturn;
+            const convToVoid = texp.ty == Tvoid || texp.isTypeNoreturn();
 
             if (tbret && tbret.ty == Tvoid || convToVoid)
             {
@@ -2688,7 +2688,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 {
                     tf.next = rs.exp.type;
                 }
-                else if (tret.ty != Terror && !rs.exp.type.equals(tret))
+                else if (!tret.isTypeError() && !rs.exp.type.equals(tret))
                 {
                     int m1 = rs.exp.type.implicitConvTo(tret);
                     int m2 = tret.implicitConvTo(rs.exp.type);
@@ -2789,7 +2789,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 // Found an actual return value before
                 else if (tf.next.ty != Tvoid && !resType.toBasetype().isTypeNoreturn())
                 {
-                    if (tf.next.ty != Terror)
+                    if (!tf.next.isTypeError())
                     {
                         error(rs.loc, "mismatched function return type inference of `void` and `%s`", tf.next.toChars());
                     }
@@ -2807,7 +2807,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
             if (tbret.ty != Tvoid && !resType.isTypeNoreturn()) // if non-void return
             {
-                if (tbret.ty != Terror)
+                if (!tbret.isTypeError())
                 {
                     if (e0)
                         error(rs.loc, "expected return type of `%s`, not `%s`", tret.toChars(), resType.toChars());
@@ -2901,7 +2901,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
         if (e0)
         {
-            if (e0.op == EXP.declaration || e0.op == EXP.comma)
+            if (e0.isDeclarationExp() || e0.isCommaExp())
             {
                 rs.exp = Expression.combine(e0, rs.exp);
             }

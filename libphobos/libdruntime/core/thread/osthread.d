@@ -2129,6 +2129,13 @@ extern (C) void thread_init() @nogc nothrow
         static extern(C) void initChildAfterFork()
         {
             auto thisThread = Thread.getThis();
+            if (!thisThread)
+            {
+                // It is possible that runtime was not properly initialized in the current process or thread -
+                // it may happen after `fork` call when using a dynamically loaded shared library written in D from a multithreaded non-D program.
+                // In such case getThis will return null.
+                return;
+            }
             thisThread.m_addr = pthread_self();
             assert( thisThread.m_addr != thisThread.m_addr.init );
             thisThread.m_tmach = pthread_mach_thread_np( thisThread.m_addr );

@@ -1665,12 +1665,12 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             }
             else if (auto ed = sm.isEnumDeclaration())
             {
-                ScopeDsymbol._foreach(null, ed.members, &pushIdentsDg);
+                _foreach(null, ed.members, &pushIdentsDg);
             }
             return 0;
         }
 
-        ScopeDsymbol._foreach(sc, sds.members, &pushIdentsDg);
+        _foreach(sc, sds.members, &pushIdentsDg);
         auto cd = sds.isClassDeclaration();
         if (cd && e.ident == Id.allMembers)
         {
@@ -1684,7 +1684,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 {
                     auto cb = (*cd.baseclasses)[i].sym;
                     assert(cb);
-                    ScopeDsymbol._foreach(null, cb.members, &pushIdentsDg);
+                    _foreach(null, cb.members, &pushIdentsDg);
                     if (cb.baseclasses.length)
                         pushBaseMembersDg(cb);
                 }

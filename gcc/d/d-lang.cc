@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/cond.h"
 #include "dmd/declaration.h"
 #include "dmd/doc.h"
+#include "dmd/dsymbol.h"
 #include "dmd/errors.h"
 #include "dmd/expression.h"
 #include "dmd/hdrgen.h"
@@ -1226,7 +1227,7 @@ d_parse_file (void)
       if (global.params.v.verbose)
 	message ("importall %s", m->toChars ());
 
-      m->importAll (NULL);
+      importAll (m, NULL);
     }
 
   if (global.errors)

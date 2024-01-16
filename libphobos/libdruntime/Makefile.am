@@ -202,26 +202,26 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/stdc/ctype.d core/stdc/errno.d core/stdc/fenv.d \
 	core/stdc/float_.d core/stdc/inttypes.d core/stdc/limits.d \
 	core/stdc/locale.d core/stdc/math.d core/stdc/signal.d \
-	core/stdc/stdarg.d core/stdc/stddef.d core/stdc/stdint.d \
-	core/stdc/stdio.d core/stdc/stdlib.d core/stdc/string.d \
-	core/stdc/tgmath.d core/stdc/time.d core/stdc/wchar_.d \
-	core/stdc/wctype.d core/sync/barrier.d core/sync/condition.d \
-	core/sync/config.d core/sync/event.d core/sync/exception.d \
-	core/sync/mutex.d core/sync/package.d core/sync/rwmutex.d \
-	core/sync/semaphore.d core/thread/context.d core/thread/fiber.d \
-	core/thread/osthread.d core/thread/package.d core/thread/threadbase.d \
-	core/thread/threadgroup.d core/thread/types.d core/time.d \
-	core/vararg.d core/volatile.d etc/valgrind/valgrind.d gcc/attribute.d \
-	gcc/attributes.d gcc/backtrace.d gcc/builtins.d gcc/deh.d gcc/emutls.d \
-	gcc/gthread.d gcc/sections/common.d gcc/sections/elf.d \
-	gcc/sections/macho.d gcc/sections/package.d gcc/sections/pecoff.d \
-	gcc/simd.d gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
-	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
-	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arraycat.d rt/cast_.d \
-	rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d rt/ehalloc.d \
-	rt/invariant.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
-	rt/profilegc.d rt/sections.d rt/tlsgc.d rt/util/typeinfo.d \
-	rt/util/utility.d
+	core/stdc/stdarg.d core/stdc/stdatomic.d core/stdc/stddef.d \
+	core/stdc/stdint.d core/stdc/stdio.d core/stdc/stdlib.d \
+	core/stdc/string.d core/stdc/tgmath.d core/stdc/time.d \
+	core/stdc/wchar_.d core/stdc/wctype.d core/sync/barrier.d \
+	core/sync/condition.d core/sync/config.d core/sync/event.d \
+	core/sync/exception.d core/sync/mutex.d core/sync/package.d \
+	core/sync/rwmutex.d core/sync/semaphore.d core/thread/context.d \
+	core/thread/fiber.d core/thread/osthread.d core/thread/package.d \
+	core/thread/threadbase.d core/thread/threadgroup.d core/thread/types.d \
+	core/time.d core/vararg.d core/volatile.d etc/valgrind/valgrind.d \
+	gcc/attribute.d gcc/attributes.d gcc/backtrace.d gcc/builtins.d \
+	gcc/deh.d gcc/emutls.d gcc/gthread.d gcc/sections/common.d \
+	gcc/sections/elf.d gcc/sections/macho.d gcc/sections/package.d \
+	gcc/sections/pecoff.d gcc/simd.d gcc/unwind/arm.d \
+	gcc/unwind/arm_common.d gcc/unwind/c6x.d gcc/unwind/generic.d \
+	gcc/unwind/package.d gcc/unwind/pe.d object.d rt/aApply.d rt/aApplyR.d \
+	rt/aaA.d rt/adi.d rt/arraycat.d rt/cast_.d rt/config.d rt/critical_.d \
+	rt/deh.d rt/dmain2.d rt/ehalloc.d rt/invariant.d rt/lifetime.d \
+	rt/memory.d rt/minfo.d rt/monitor_.d rt/profilegc.d rt/sections.d \
+	rt/tlsgc.d rt/util/typeinfo.d rt/util/utility.d
 
 DRUNTIME_DSOURCES_STDCXX = core/stdcpp/allocator.d core/stdcpp/array.d \
 	core/stdcpp/exception.d core/stdcpp/memory.d core/stdcpp/new_.d \

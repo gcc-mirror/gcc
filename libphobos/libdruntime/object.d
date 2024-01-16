@@ -526,6 +526,12 @@ unittest
 
 private extern(C) void _d_setSameMutex(shared Object ownee, shared Object owner) nothrow;
 
+/** Makes ownee use owner's mutex.
+ * This will initialize owner's mutex if it hasn't been set yet.
+ * Params:
+ * ownee = object to change
+ * owner = source object
+ */
 void setSameMutex(shared Object ownee, shared Object owner)
 {
     import core.atomic : atomicLoad;

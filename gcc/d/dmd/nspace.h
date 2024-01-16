@@ -22,7 +22,6 @@ class Nspace final : public ScopeDsymbol
     Expression *identExp;
     Nspace *syntaxCopy(Dsymbol *s) override;
     bool hasPointers() override;
-    void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override;
     const char *kind() const override;
     Nspace *isNspace() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }

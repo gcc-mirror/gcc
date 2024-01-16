@@ -636,8 +636,11 @@ bool isSafePointerCast(Type srcPointee, Type destPointee)
 
     // It's OK if function pointers differ only in safe/pure/nothrow
     if (srcPointee.ty == Tfunction && destPointee.ty == Tfunction)
+    {
+        import dmd.typesem : covariant;
         return srcPointee.covariant(destPointee) == Covariant.yes ||
             destPointee.covariant(srcPointee) == Covariant.yes;
+    }
     // it's OK to cast to void*
     if (destPointee.ty == Tvoid)
         return true;

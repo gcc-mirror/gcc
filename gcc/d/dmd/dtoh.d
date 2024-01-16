@@ -3284,7 +3284,7 @@ ASTCodegen.Dsymbol symbolFromType(ASTCodegen.Type t) @safe
  */
 ASTCodegen.Dsymbol findMember(ASTCodegen.Dsymbol sym, Identifier name)
 {
-    if (auto mem = sym.search(Loc.initial, name, ASTCodegen.IgnoreErrors))
+    if (auto mem = sym.search(Loc.initial, name, ASTCodegen.SearchOpt.ignoreErrors))
         return mem;
 
     // search doesn't work for declarations inside of uninstantiated

@@ -244,7 +244,7 @@ public:
         {
             // we must check what the identifier expression is.
             Dsymbol scopesym;
-            Dsymbol s = sc.search(exp.loc, exp.ident, &scopesym);
+            Dsymbol s = sc.search(exp.loc, exp.ident, scopesym);
             if (s)
             {
                 auto v = s.isVarDeclaration();

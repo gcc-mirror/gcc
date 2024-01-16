@@ -281,7 +281,6 @@ public:
     bool systemInferred(bool v);
     static VarDeclaration *create(const Loc &loc, Type *t, Identifier *id, Initializer *init, StorageClass storage_class = STCundefined);
     VarDeclaration *syntaxCopy(Dsymbol *) override;
-    void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override final;
     const char *kind() const override;
     AggregateDeclaration *isThis() override final;
     bool needThis() override final;

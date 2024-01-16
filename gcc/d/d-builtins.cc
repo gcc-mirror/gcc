@@ -724,7 +724,7 @@ static bool
 covariant_with_builtin_type_p (Type *t1, Type *t2)
 {
   /* Check whether the declared function matches the built-in.  */
-  if (same_type_p (t1, t2) || t1->covariant (t2) == Covariant::yes)
+  if (same_type_p (t1, t2) || covariant (t1, t2) == Covariant::yes)
     return true;
 
   /* May not be covariant because of D attributes applied on t1.

@@ -123,19 +123,6 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
         return sc;
     }
 
-    override void importAll(Scope* sc)
-    {
-        Dsymbols* d = include(sc);
-        //printf("\tAttribDeclaration::importAll '%s', d = %p\n", toChars(), d);
-        if (d)
-        {
-            Scope* sc2 = newScope(sc);
-            d.foreachDsymbol( s => s.importAll(sc2) );
-            if (sc2 != sc)
-                sc2.pop();
-        }
-    }
-
     override void addComment(const(char)* comment)
     {
         //printf("AttribDeclaration::addComment %s\n", comment);
@@ -154,11 +141,6 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
     {
         Dsymbols* d = include(null);
         return Dsymbol.oneMembers(d, ps, ident);
-    }
-
-    override void setFieldOffset(AggregateDeclaration ad, ref FieldState fieldState, bool isunion)
-    {
-        include(null).foreachDsymbol( s => s.setFieldOffset(ad, fieldState, isunion) );
     }
 
     override final bool hasPointers()
@@ -675,81 +657,6 @@ extern (C++) final class AnonDeclaration : AttribDeclaration
         return new AnonDeclaration(loc, isunion, Dsymbol.arraySyntaxCopy(decl));
     }
 
-    override void setFieldOffset(AggregateDeclaration ad, ref FieldState fieldState, bool isunion)
-    {
-        //printf("\tAnonDeclaration::setFieldOffset %s %p\n", isunion ? "union" : "struct", this);
-        if (decl)
-        {
-            /* This works by treating an AnonDeclaration as an aggregate 'member',
-             * so in order to place that member we need to compute the member's
-             * size and alignment.
-             */
-            size_t fieldstart = ad.fields.length;
-
-            /* Hackishly hijack ad's structsize and alignsize fields
-             * for use in our fake anon aggregate member.
-             */
-            uint savestructsize = ad.structsize;
-            uint savealignsize = ad.alignsize;
-            ad.structsize = 0;
-            ad.alignsize = 0;
-
-            FieldState fs;
-            decl.foreachDsymbol( (s)
-            {
-                s.setFieldOffset(ad, fs, this.isunion);
-                if (this.isunion)
-                    fs.offset = 0;
-            });
-
-            /* https://issues.dlang.org/show_bug.cgi?id=13613
-             * If the fields in this.members had been already
-             * added in ad.fields, just update *poffset for the subsequent
-             * field offset calculation.
-             */
-            if (fieldstart == ad.fields.length)
-            {
-                ad.structsize = savestructsize;
-                ad.alignsize = savealignsize;
-                fieldState.offset = ad.structsize;
-                return;
-            }
-
-            anonstructsize = ad.structsize;
-            anonalignsize = ad.alignsize;
-            ad.structsize = savestructsize;
-            ad.alignsize = savealignsize;
-
-            // 0 sized structs are set to 1 byte
-            if (anonstructsize == 0)
-            {
-                anonstructsize = 1;
-                anonalignsize = 1;
-            }
-
-            assert(_scope);
-            auto alignment = _scope.alignment();
-
-            /* Given the anon 'member's size and alignment,
-             * go ahead and place it.
-             */
-            anonoffset = placeField(
-                fieldState.offset,
-                anonstructsize, anonalignsize, alignment,
-                ad.structsize, ad.alignsize,
-                isunion);
-
-            // Add to the anon fields the base offset of this anonymous aggregate
-            //printf("anon fields, anonoffset = %d\n", anonoffset);
-            foreach (const i; fieldstart .. ad.fields.length)
-            {
-                VarDeclaration v = ad.fields[i];
-                //printf("\t[%d] %s %d\n", i, v.toChars(), v.offset);
-                v.offset += anonoffset;
-            }
-        }
-    }
-
     override const(char)* kind() const
     {
         return (isunion ? "anonymous union" : "anonymous struct");
@@ -943,11 +850,6 @@ extern (C++) final class StaticIfDeclaration : ConditionalDeclaration
         }
     }
 
-    override void importAll(Scope* sc)
-    {
-        // do not evaluate condition before semantic pass
-    }
-
     override const(char)* kind() const
     {
         return "static if";
@@ -1055,11 +957,6 @@ extern (C++) final class StaticForeachDeclaration : AttribDeclaration
     {
         // do nothing
         // change this to give semantics to documentation comments on static foreach declarations
-    }
-
-    override void importAll(Scope* sc)
-    {
-        // do not evaluate aggregate before semantic pass
     }
 
     override const(char)* kind() const

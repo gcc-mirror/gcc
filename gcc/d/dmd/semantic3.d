@@ -520,7 +520,8 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 {
                     Parameter narg = Parameter.getNth(t.arguments, j);
                     assert(narg.ident);
-                    VarDeclaration v = sc2.search(Loc.initial, narg.ident, null).isVarDeclaration();
+                    Dsymbol pscopesym;
+                    VarDeclaration v = sc2.search(Loc.initial, narg.ident, pscopesym).isVarDeclaration();
                     assert(v);
                     (*exps)[j] = new VarExp(v.loc, v);
                 }

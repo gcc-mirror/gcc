@@ -344,13 +344,13 @@ extern (C++) struct Scope
      * Params:
      *  loc = location to use for error messages
      *  ident = name to look up
-     *  pscopesym = if supplied and name is found, set to scope that ident was found in
+     *  pscopesym = if supplied and name is found, set to scope that ident was found in, otherwise set to null
      *  flags = modify search based on flags
      *
      * Returns:
      *  symbol if found, null if not
      */
-    extern (C++) Dsymbol search(const ref Loc loc, Identifier ident, Dsymbol* pscopesym, int flags = IgnoreNone)
+    extern (C++) Dsymbol search(const ref Loc loc, Identifier ident, out Dsymbol pscopesym, SearchOptFlags flags = SearchOpt.all)
     {
         version (LOGSEARCH)
         {
@@ -371,7 +371,7 @@ extern (C++) struct Scope
         }
 
         // This function is called only for unqualified lookup
-        assert(!(flags & (SearchLocalsOnly | SearchImportsOnly)));
+        assert(!(flags & (SearchOpt.localsOnly | SearchOpt.importsOnly)));
 
         /* If ident is "start at module scope", only look at module scope
          */
@@ -386,15 +386,14 @@ extern (C++) struct Scope
                 if (Dsymbol s = sc.scopesym.isModule())
                 {
                     //printMsg("\tfound", s);
-                    if (pscopesym)
-                        *pscopesym = sc.scopesym;
+                    pscopesym = sc.scopesym;
                     return s;
                 }
             }
             return null;
         }
 
-        Dsymbol checkAliasThis(AggregateDeclaration ad, Identifier ident, int flags, Expression* exp)
+        Dsymbol checkAliasThis(AggregateDeclaration ad, Identifier ident, SearchOptFlags flags, Expression* exp)
         {
             import dmd.mtype;
             if (!ad || !ad.aliasthis)
@@ -458,7 +457,7 @@ extern (C++) struct Scope
             return s;
         }
 
-        Dsymbol searchScopes(int flags)
+        Dsymbol searchScopes(SearchOptFlags flags)
         {
             for (Scope* sc = &this; sc; sc = sc.enclosing)
             {
@@ -468,13 +467,13 @@ extern (C++) struct Scope
                 //printf("\tlooking in scopesym '%s', kind = '%s', flags = x%x\n", sc.scopesym.toChars(), sc.scopesym.kind(), flags);
 
                 if (sc.scopesym.isModule())
-                    flags |= SearchUnqualifiedModule;        // tell Module.search() that SearchLocalsOnly is to be obeyed
+                    flags |= SearchOpt.unqualifiedModule;    // tell Module.search() that SearchOpt.localsOnly is to be obeyed
                 else if (sc.flags & SCOPE.Cfile && sc.scopesym.isStructDeclaration())
                     continue;                                // C doesn't have struct scope
 
                 if (Dsymbol s = sc.scopesym.search(loc, ident, flags))
                 {
-                    if (flags & TagNameSpace)
+                    if (flags & SearchOpt.tagNameSpace)
                     {
                         // ImportC: if symbol is not a tag, look for it in tag table
                         if (!s.isScopeDsymbol())
@@ -486,8 +485,7 @@ extern (C++) struct Scope
                         }
                     }
                     //printMsg("\tfound local", s);
-                    if (pscopesym)
-                        *pscopesym = sc.scopesym;
+                    pscopesym = sc.scopesym;
                     return s;
                 }
 
@@ -499,8 +497,7 @@ extern (C++) struct Scope
                     if (aliasSym)
                     {
                         //printf("found aliassym: %s\n", aliasSym.toChars());
-                        if (pscopesym)
-                            *pscopesym = new ExpressionDsymbol(exp);
+                        pscopesym = new ExpressionDsymbol(exp);
                         return aliasSym;
                     }
                 }
@@ -513,15 +510,15 @@ extern (C++) struct Scope
         }
 
         if (this.flags & SCOPE.ignoresymbolvisibility)
-            flags |= IgnoreSymbolVisibility;
+            flags |= SearchOpt.ignoreVisibility;
 
         // First look in local scopes
-        Dsymbol s = searchScopes(flags | SearchLocalsOnly);
+        Dsymbol s = searchScopes(flags | SearchOpt.localsOnly);
         version (LOGSEARCH) if (s) printMsg("-Scope.search() found local", s);
         if (!s)
         {
             // Second look in imported modules
-            s = searchScopes(flags | SearchImportsOnly);
+            s = searchScopes(flags | SearchOpt.importsOnly);
             version (LOGSEARCH) if (s) printMsg("-Scope.search() found import", s);
         }
         return s;
@@ -554,8 +551,8 @@ extern (C++) struct Scope
                 return null;
             Scope* sc = &this;
             Module.clearCache();
-            Dsymbol scopesym = null;
-            Dsymbol s = sc.search(Loc.initial, id, &scopesym, IgnoreErrors);
+            Dsymbol scopesym;
+            Dsymbol s = sc.search(Loc.initial, id, scopesym, SearchOpt.ignoreErrors);
             if (!s)
                 return null;
 
@@ -579,9 +576,9 @@ extern (C++) struct Scope
             return s;
         }
 
-        Dsymbol scopesym = null;
+        Dsymbol scopesym;
         // search for exact name first
-        if (auto s = search(Loc.initial, ident, &scopesym, IgnoreErrors))
+        if (auto s = search(Loc.initial, ident, scopesym, SearchOpt.ignoreErrors))
             return s;
         return speller!scope_search_fp(ident.toString());
     }

@@ -748,7 +748,8 @@ void emitAnchor(ref OutBuffer buf, Dsymbol s, Scope* sc, bool forHeader = false)
                 auto a = imp.aliases[i];
                 auto id = a ? a : imp.names[i];
                 auto loc = Loc.init;
-                if (auto symFromId = sc.search(loc, id, null))
+                Dsymbol pscopesym;
+                if (auto symFromId = sc.search(loc, id, pscopesym))
                 {
                     emitAnchor(buf, symFromId, sc, forHeader);
                 }
@@ -3636,11 +3637,12 @@ struct MarkdownLinkReferences
         if (id)
         {
             auto loc = Loc();
-            auto symbol = _scope.search(loc, id, null, IgnoreErrors);
+            Dsymbol pscopesym;
+            auto symbol = _scope.search(loc, id, pscopesym, SearchOpt.ignoreErrors);
             for (size_t i = 1; symbol && i < ids.length; ++i)
             {
                 id = Identifier.lookup(ids[i].ptr, ids[i].length);
-                symbol = id !is null ? symbol.search(loc, id, IgnoreErrors) : null;
+                symbol = id !is null ? symbol.search(loc, id, SearchOpt.ignoreErrors) : null;
             }
             if (symbol)
                 link = MarkdownLink(createHref(symbol), null, name, symbol);
@@ -4997,7 +4999,8 @@ void highlightCode(Scope* sc, Dsymbol s, ref OutBuffer buf, size_t offset)
             auto a = imp.aliases[i];
             auto id = a ? a : imp.names[i];
             auto loc = Loc.init;
-            if (auto symFromId = sc.search(loc, id, null))
+            Dsymbol pscopesym;
+            if (auto symFromId = sc.search(loc, id, pscopesym))
             {
                 highlightCode(sc, symFromId, buf, offset);
             }

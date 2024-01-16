@@ -716,7 +716,7 @@ public:
 class InlineAsmStatement final : public AsmStatement
 {
 public:
-    code *asmcode;
+    void *asmcode;
     unsigned asmalign;          // alignment of this statement
     unsigned regs;              // mask of registers modified (must match regm_t in back end)
     d_bool refparam;              // true if function parameter is referenced

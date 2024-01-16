@@ -61,6 +61,20 @@ class ErrorSinkNull : ErrorSink
 }
 
 /*****************************************
+ * Ignores the messages, but sets `sawErrors` for any calls to `error()`
+ */
+class ErrorSinkLatch : ErrorSinkNull
+{
+  nothrow:
+  extern (C++):
+  override:
+
+    bool sawErrors;
+
+    void error(const ref Loc loc, const(char)* format, ...) { sawErrors = true; }
+}
+
+/*****************************************
  * Simplest implementation, just sends messages to stderr.
  * See also: ErrorSinkCompiler.
  */

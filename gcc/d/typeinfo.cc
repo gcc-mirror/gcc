@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 
 #include "dmd/aggregate.h"
+#include "dmd/dsymbol.h"
 #include "dmd/enum.h"
 #include "dmd/errors.h"
 #include "dmd/expression.h"
@@ -205,7 +206,7 @@ make_frontend_typeinfo (Identifier *ident, ClassDeclaration *base = NULL)
 
   /* Create object module in order to complete the semantic.  */
   if (!object_module->_scope)
-    object_module->importAll (NULL);
+    importAll (object_module, NULL);
 
   /* Object class doesn't exist, create a stub one that will cause an error if
      used.  */

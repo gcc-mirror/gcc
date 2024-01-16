@@ -311,7 +311,6 @@ public:
     const char *kind() const override;
     bool oneMember(Dsymbol **ps, Identifier *ident) override;
     bool hasPointers() override;
-    void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override;
     const char *toChars() const override;
 
     TemplateMixin *isTemplateMixin() override { return this; }

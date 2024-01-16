@@ -12,21 +12,15 @@
 module dmd.init;
 
 import core.stdc.stdio;
-import core.checkedint;
 
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
-import dmd.dsymbol;
 import dmd.expression;
-import dmd.globals;
-import dmd.hdrgen;
 import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
-import dmd.common.outbuffer;
 import dmd.rootobject;
-import dmd.tokens;
 import dmd.visitor;
 
 enum NeedInterpret : int
