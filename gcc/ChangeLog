@@ -1,3 +1,86 @@
+2024-01-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options) [-mskip-bug]: Add documentation.
+
+2024-01-15  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* config.gcc: Include riscv_bitmanip.h.
+	* config/riscv/bitmanip.md: Changed mode form X to GPR in orcb and clmul pattern.
+	* config/riscv/crypto.md: Changed mode form X to GPR in brev8 pattern.
+	* config/riscv/riscv-builtins.cc (AVAIL): Adding new bitmanip builtins.
+	(RISCV_BUILTIN_NO_PREFIX): New helper macro.
+	* config/riscv/riscv-cmo.def (RISCV_BUILTIN): Add '_32'/'_64' postfix to builtins.
+	* config/riscv/riscv-ftypes.def (2): New ftypes.
+	* config/riscv/riscv-scalar-crypto.def (RISCV_BUILTIN): New builtins.
+	(RISCV_BUILTIN_NO_PREFIX): Likewise.
+	* config/riscv/riscv_bitmanip.h: New file.
+
+2024-01-15  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* config.gcc: Include riscv_crypto.h.
+	* config/riscv/riscv_crypto.h: New file.
+
+2024-01-15  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/113354
+	* lra-constraints.cc (curr_insn_transform): Spill pseudo only used
+	in the insn if the corresponding operand does not require hard
+	register anymore.
+
+2024-01-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/107201
+	* config/avr/avr.h (EXTRA_SPEC_FUNCTIONS): Add no-devlib, avr_no_devlib.
+	* config/avr/driver-avr.cc (avr_no_devlib): New function.
+	(avr_devicespecs_file): Use it to remove -nodevicelib from the
+	options for cores only.
+	* config/avr/avr-arch.h (avr_get_parch): New prototype.
+	* config/avr/avr-devices.cc (avr_get_parch): New function.
+
+2024-01-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113247
+	* config/riscv/riscv-protos.h (struct regmove_vector_cost): Add vector to scalar regmove.
+	* config/riscv/riscv-vector-costs.cc (adjust_stmt_cost): Ditto.
+	* config/riscv/riscv.cc (riscv_builtin_vectorization_cost): Adjust vec_construct cost.
+
+2024-01-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113281
+	* config/riscv/riscv-vector-costs.cc (costs::adjust_vect_cost_per_loop): New function.
+	(costs::finish_cost): Adjust cost for LOOP LEN with NITERS < VF.
+	* config/riscv/riscv-vector-costs.h: New function.
+
+2024-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113385
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	First redirect, then split the exit edge.
+
+2024-01-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (costs::analyze_loop_vinfo):
+	Remove m_num_vector_iterations.
+	* config/riscv/riscv-vector-costs.h: Ditto.
+
+2024-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113156
+	* config/avr/avr.opt (-mdouble, -mlong-double): Add "Save" flag.
+	(-mbranch-cost): Set "Optimization" flag.
+
+2024-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113370
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_operand): Only
+	set rem to prec % (2 * limb_prec) if m_upwards_2limb, otherwise
+	set it to just prec % limb_prec.
+
+2024-01-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113393
+	* config/riscv/vector.md: Fix ternary attributes.
+
 2024-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/112944

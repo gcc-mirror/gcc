@@ -1,3 +1,150 @@
+2024-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106229
+	* c-c++-common/analyzer/taint-index-pr106229.c: New test.
+
+2024-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113333
+	* c-c++-common/analyzer/calloc-1.c: Add tests.
+	* c-c++-common/analyzer/pr96639.c: Update expected results.
+	* gcc.dg/analyzer/data-model-9.c: Likewise.
+
+2024-01-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110065
+	* g++.dg/concepts/auto8.C: New test.
+	* g++.dg/concepts/auto8a.C: New test.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/template/partial-specialization14.C: New test.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104634
+	* g++.dg/cpp2a/concepts-explicit-inst6.C: New test.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109899
+	* g++.dg/cpp0x/initlist-array21.C: New test.
+
+2024-01-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/113369
+	* g++.dg/abi/ref-temp1.C: Remove --save-temps.
+	* g++.target/i386/bfloat_cpp_typecheck.C: Likewise.
+	* gcc.dg/debug/dwarf2/pr111080.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-4.c: Likewise.
+
+2024-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113048
+	* gcc.target/i386/pr113048.c: New test.
+
+2024-01-15  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/scalar_bitmanip_intrinsic-32.c: New test.
+	* gcc.target/riscv/scalar_bitmanip_intrinsic-64-emulated.c: New test.
+	* gcc.target/riscv/scalar_bitmanip_intrinsic-64.c: New test.
+
+2024-01-15  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/scalar_crypto_intrinsic-32.c: New test.
+	* gcc.target/riscv/scalar_crypto_intrinsic-64.c: New test.
+
+2024-01-15  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/zbb_32_bswap-2.c: Moved to...
+	* gcc.target/riscv/zbb_bswap16.c: ...here.
+	* gcc.target/riscv/zbkb32.c: Remove __builtin_riscv_(un)zip and
+	zip,__builtin_riscv_brev8.
+	* gcc.target/riscv/zbkb64.c: Remove __builtin_riscv_brev8.
+	* gcc.target/riscv/zbb_32_bswap-1.c: Removed.
+	* gcc.target/riscv/zbb_bswap-1.c: Removed.
+	* gcc.target/riscv/zbb_bswap-2.c: Removed.
+	* gcc.target/riscv/zbbw.c: Removed.
+	* gcc.target/riscv/zbc32.c: Removed.
+	* gcc.target/riscv/zbc64.c: Removed.
+	* gcc.target/riscv/zbkc32.c: Removed.
+	* gcc.target/riscv/zbkc64.c: Removed.
+	* gcc.target/riscv/zbkx32.c: Removed.
+	* gcc.target/riscv/zbkx64.c: Removed.
+	* gcc.target/riscv/zknd32-2.c: Removed.
+	* gcc.target/riscv/zknd64-2.c: Removed.
+	* gcc.target/riscv/zkne32-2.c: Removed.
+	* gcc.target/riscv/zkne64-2.c: Removed.
+	* gcc.target/riscv/zknh-sha256-32.c: Removed.
+	* gcc.target/riscv/zknh-sha256-64.c: Removed.
+	* gcc.target/riscv/zknh-sha512-32.c: Removed.
+	* gcc.target/riscv/zknh-sha512-64.c: Removed.
+	* gcc.target/riscv/zksed32-2.c: Removed.
+	* gcc.target/riscv/zksed64-2.c: Removed.
+	* gcc.target/riscv/zksh32.c: Removed.
+	* gcc.target/riscv/zksh64.c: Removed.
+
+2024-01-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113247
+	* gcc.target/riscv/rvv/autovec/vls/reduc-19.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-20.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-21.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113247-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113247-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113247-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113247-4.c: New test.
+
+2024-01-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113281
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113281-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113281-4.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113281-5.c: New test.
+
+2024-01-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/reduc-1.c: Add dump check.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-13.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-14.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-15.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-17.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-18.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-19.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-20.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-21.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/reduc-9.c: Ditto.
+
+2024-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113370
+	* gcc.dg/torture/bitint-48.c: New test.
+
+2024-01-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113393
+	* gcc.target/riscv/rvv/autovec/pr113393-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr113393-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr113393-3.c: New test.
+
+2024-01-15  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/unaligned-2.c: Add -mno-abicalls option.
+
 2024-01-14  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/builtin-object-size-1.c: Disable tests for strdup/strndup

@@ -1,3 +1,10 @@
+2024-01-15  Lipeng Zhu  <lipeng.zhu@intel.com>
+
+	* io/io.h (dec_waiting_unlocked): Use
+	__gthread_rwlock_wrlock/__gthread_rwlock_unlock or
+	__gthread_mutex_lock/__gthread_mutex_unlock functions
+	to replace WRLOCK and RWUNLOCK macros.
+
 2024-01-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/write.c (namelist_write): If internal_unit precede with space.

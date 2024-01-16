@@ -1,3 +1,7 @@
+2024-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* MAINTAINERS (DCO): Add myself.
+
 2024-01-09  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	* SECURITY.txt: Drop "exploitable" in the hardening section.

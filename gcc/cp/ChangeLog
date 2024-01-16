@@ -1,3 +1,27 @@
+2024-01-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110065
+	* parser.cc (cp_parser_template_type_arg): Add auto checking.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.cc (cp_parser_check_access_in_redeclaration): Don't
+	check access for a partial or explicit specialization.
+	* pt.cc (maybe_new_partial_specialization): Don't set TREE_PRIVATE
+	or TREE_PROTECTED on the newly created partial specialization.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104634
+	* pt.cc (maybe_new_partial_specialization): Propagate TREE_PUBLIC
+	to the newly created partial specialization.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109899
+	* init.cc (build_vec_delete_1): Assume expr_noexcept_p returns
+	false in a template context.
+
 2024-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* mangle.cc (write_nested_name): Mangle explicit object

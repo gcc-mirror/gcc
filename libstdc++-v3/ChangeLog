@@ -1,3 +1,42 @@
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/variant (__detail::__variant::_Variadic_union):
+	Add bool __trivially_destructible template parameter.
+	(__detail::__variant::_Variadic_union::~_Variadic_union):
+	Use __trivially_destructible in constraints instead.
+	(__detail::__variant::_Variant_storage): Pass
+	__trivially_destructible value to _Variadic_union.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (const_iterator): Define conversion
+	operators as per P2836R1.
+	* include/bits/version.def (ranges_as_const): Update value.
+	* include/bits/version.h: Regenerate.
+	* testsuite/24_iterators/const_iterator/1.cc (test04): New test.
+	* testsuite/std/ranges/adaptors/as_const/1.cc: Adjust expected
+	value of __cpp_lib_ranges_as_const.
+	* testsuite/std/ranges/version_c++23.cc: Likewise.
+
+2024-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108822
+	* include/std/tuple (__assignable, __is_nothrow_assignable):
+	Move pre-C++20 definitions adjacent to their use.
+
+2024-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/113366
+	* include/std/format (basic_format_arg): Use __formattable
+	variable template instead of __format::__formattable_with
+	concept.
+
+2024-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdata.zi: Import new file from 2023d release.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds)
+	Update expiry date for leap seconds list.
+
 2024-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/108822
