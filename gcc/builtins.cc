@@ -8416,6 +8416,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
     case BUILT_IN_ADJUST_DESCRIPTOR:
       return expand_builtin_adjust_descriptor (exp);
 
+    case BUILT_IN_GCC_NESTED_PTR_CREATED:
+    case BUILT_IN_GCC_NESTED_PTR_DELETED:
+      break; /* At present, no expansion, just call the function.  */
+
     case BUILT_IN_FORK:
     case BUILT_IN_EXECL:
     case BUILT_IN_EXECV:
