@@ -213,7 +213,8 @@ enum scope_kind {
 			explicit specialization is introduced by
 			"template <>", this scope is always empty.  */
   sk_transaction,    /* A synchronized or atomic statement.  */
-  sk_omp	     /* An OpenMP structured block.  */
+  sk_omp,	     /* An OpenMP structured block.  */
+  sk_count	     /* Number of scope_kind enumerations.  */
 };
 
 struct GTY(()) cp_class_binding {
