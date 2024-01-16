@@ -1555,7 +1555,7 @@ package body Inline is
       --  a return type of a deep type: either an access type or a composite
       --  type containing an access type.
 
-      function Has_Formal_With_Discriminant_Dependent_Fields
+      function Has_Formal_With_Per_Object_Constrained_Component
         (Id : Entity_Id) return Boolean;
       --  Returns true if the subprogram has at least one formal parameter of
       --  an unconstrained record type with per-object constraints on component
@@ -1701,23 +1701,23 @@ package body Inline is
          return False;
       end Has_Formal_Or_Result_Of_Deep_Type;
 
-      ---------------------------------------------------
-      -- Has_Formal_With_Discriminant_Dependent_Fields --
-      ---------------------------------------------------
+      ------------------------------------------------------
+      -- Has_Formal_With_Per_Object_Constrained_Component --
+      ------------------------------------------------------
 
-      function Has_Formal_With_Discriminant_Dependent_Fields
+      function Has_Formal_With_Per_Object_Constrained_Component
         (Id : Entity_Id) return Boolean
       is
-         function Has_Discriminant_Dependent_Component
+         function Has_Per_Object_Constrained_Component
            (Typ : Entity_Id) return Boolean;
          --  Determine whether unconstrained record type Typ has at least one
          --  component that depends on a discriminant.
 
          ------------------------------------------
-         -- Has_Discriminant_Dependent_Component --
+         -- Has_Per_Object_Constrained_Component --
          ------------------------------------------
 
-         function Has_Discriminant_Dependent_Component
+         function Has_Per_Object_Constrained_Component
            (Typ : Entity_Id) return Boolean
          is
             Comp : Entity_Id;
@@ -1728,7 +1728,7 @@ package body Inline is
 
             Comp := First_Component (Typ);
             while Present (Comp) loop
-               if Has_Discriminant_Dependent_Constraint (Comp) then
+               if Has_Per_Object_Constraint (Comp) then
                   return True;
                end if;
 
@@ -1736,7 +1736,7 @@ package body Inline is
             end loop;
 
             return False;
-         end Has_Discriminant_Dependent_Component;
+         end Has_Per_Object_Constrained_Component;
 
          --  Local variables
 
@@ -1745,7 +1745,7 @@ package body Inline is
          Formal_Typ : Entity_Id;
 
       --  Start of processing for
-      --  Has_Formal_With_Discriminant_Dependent_Fields
+      --  Has_Formal_With_Per_Object_Constrained_Component
 
       begin
          --  Inspect all parameters of the subprogram looking for a formal
@@ -1758,7 +1758,7 @@ package body Inline is
 
             if Is_Record_Type (Formal_Typ)
               and then not Is_Constrained (Formal_Typ)
-              and then Has_Discriminant_Dependent_Component (Formal_Typ)
+              and then Has_Per_Object_Constrained_Component (Formal_Typ)
             then
                return True;
             end if;
@@ -1767,7 +1767,7 @@ package body Inline is
          end loop;
 
          return False;
-      end Has_Formal_With_Discriminant_Dependent_Fields;
+      end Has_Formal_With_Per_Object_Constrained_Component;
 
       --------------------------------
       -- Has_Hide_Unhide_Annotation --
@@ -2063,7 +2063,7 @@ package body Inline is
       --  in record component accesses (in particular with records containing
       --  packed arrays).
 
-      elsif Has_Formal_With_Discriminant_Dependent_Fields (Id) then
+      elsif Has_Formal_With_Per_Object_Constrained_Component (Id) then
          return False;
 
       --  Do not inline subprograms with a formal parameter or return type of
