@@ -149,7 +149,7 @@ ASTValidation::visit (AST::TraitFunctionDecl &decl)
 		       "functions in traits cannot be declared %<async%>");
       if (qualifiers.is_const ())
 	rust_error_at (decl.get_identifier ().get_locus (), ErrorCode::E0379,
-		       "functions in traits cannot be declared const");
+		       "functions in traits cannot be declared %<const%>");
     }
 }
 
