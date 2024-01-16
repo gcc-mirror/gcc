@@ -25,7 +25,11 @@ along with GCC; see the file COPYING3.  If not see
    name for the functions and static_initializers.  For other types of
    sections a '.' and the section type are appended.  */
 #define LTO_SECTION_NAME_PREFIX ".gnu.lto_"
+#if OBJECT_FORMAT_MACHO
+#define OFFLOAD_SECTION_NAME_PREFIX "__GNU_OFFLD_LTO,"
+#else
 #define OFFLOAD_SECTION_NAME_PREFIX ".gnu.offload_lto_"
+#endif
 
 /* Can be either OFFLOAD_SECTION_NAME_PREFIX when we stream IR for offload
    compiler, or LTO_SECTION_NAME_PREFIX for LTO case.  */
@@ -35,8 +39,14 @@ extern const char *section_name_prefix;
 
 #define LTO_SEGMENT_NAME "__GNU_LTO"
 
+#if OBJECT_FORMAT_MACHO
+#define OFFLOAD_VAR_TABLE_SECTION_NAME "__GNU_OFFLOAD,__vars"
+#define OFFLOAD_FUNC_TABLE_SECTION_NAME "__GNU_OFFLOAD,__funcs"
+#define OFFLOAD_IND_FUNC_TABLE_SECTION_NAME "__GNU_OFFLOAD,__ind_fns"
+#else
 #define OFFLOAD_VAR_TABLE_SECTION_NAME ".gnu.offload_vars"
 #define OFFLOAD_FUNC_TABLE_SECTION_NAME ".gnu.offload_funcs"
 #define OFFLOAD_IND_FUNC_TABLE_SECTION_NAME ".gnu.offload_ind_funcs"
+#endif
 
 #endif /* GCC_LTO_SECTION_NAMES_H */
