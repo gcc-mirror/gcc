@@ -13743,6 +13743,7 @@ grokdeclarator (const cp_declarator *declarator,
 			  "destructors may not have parameters");
 		arg_types = void_list_node;
 		parms = NULL_TREE;
+		is_xobj_member_function = false;
 	      }
 
 	    type = build_function_type (type, arg_types);
