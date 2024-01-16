@@ -1342,6 +1342,311 @@ ldp_bb_info::track_tombstone (int uid)
     gcc_unreachable (); // Bit should have changed.
 }
 
+// Reset the debug insn containing USE (the debug insn has been
+// optimized away).
+static void
+reset_debug_use (use_info *use)
+{
+  auto use_insn = use->insn ();
+  auto use_rtl = use_insn->rtl ();
+  insn_change change (use_insn);
+  change.new_uses = {};
+  INSN_VAR_LOCATION_LOC (use_rtl) = gen_rtx_UNKNOWN_VAR_LOC ();
+  crtl->ssa->change_insn (change);
+}
+
+// USE is a debug use that needs updating because DEF (a def of the same
+// register) is being re-ordered over it.  If BASE is non-null, then DEF
+// is an update of the register BASE by a constant, given by WB_OFFSET,
+// and we can preserve debug info by accounting for the change in side
+// effects.
+static void
+fixup_debug_use (obstack_watermark &attempt,
+		 use_info *use,
+		 def_info *def,
+		 rtx base,
+		 poly_int64 wb_offset)
+{
+  auto use_insn = use->insn ();
+  if (base)
+    {
+      auto use_rtl = use_insn->rtl ();
+      insn_change change (use_insn);
+
+      gcc_checking_assert (REG_P (base) && use->regno () == REGNO (base));
+      change.new_uses = check_remove_regno_access (attempt,
+						   change.new_uses,
+						   use->regno ());
+
+      // The effect of the writeback is to add WB_OFFSET to BASE.  If
+      // we're re-ordering DEF below USE, then we update USE by adding
+      // WB_OFFSET to it.  Otherwise, if we're re-ordering DEF above
+      // USE, we update USE by undoing the effect of the writeback
+      // (subtracting WB_OFFSET).
+      use_info *new_use;
+      if (*def->insn () > *use_insn)
+	{
+	  // We now need USE_INSN to consume DEF.  Create a new use of DEF.
+	  //
+	  // N.B. this means until we call change_insns for the main change
+	  // group we will temporarily have a debug use consuming a def that
+	  // comes after it, but RTL-SSA doesn't currently support updating
+	  // debug insns as part of the main change group (together with
+	  // nondebug changes), so we will have to live with this update
+	  // leaving the IR being temporarily inconsistent.  It seems to
+	  // work out OK once the main change group is applied.
+	  wb_offset *= -1;
+	  new_use = crtl->ssa->create_use (attempt,
+					   use_insn,
+					   as_a<set_info *> (def));
+	}
+      else
+	new_use = find_access (def->insn ()->uses (), use->regno ());
+
+      change.new_uses = insert_access (attempt, new_use, change.new_uses);
+
+      if (dump_file)
+	{
+	  const char *dir = (*def->insn () < *use_insn) ? "down" : "up";
+	  pretty_printer pp;
+	  pp_string (&pp, "[");
+	  pp_access (&pp, use, 0);
+	  pp_string (&pp, "]");
+	  pp_string (&pp, " due to wb def ");
+	  pp_string (&pp, "[");
+	  pp_access (&pp, def, 0);
+	  pp_string (&pp, "]");
+	  fprintf (dump_file,
+		   "  i%d: fix up debug use %s re-ordered %s, "
+		   "sub r%u -> r%u + ",
+		   use_insn->uid (), pp_formatted_text (&pp),
+		   dir, REGNO (base), REGNO (base));
+	  print_dec (wb_offset, dump_file);
+	  fprintf (dump_file, "\n");
+	}
+
+      insn_propagation prop (use_rtl, base,
+			     plus_constant (GET_MODE (base), base, wb_offset));
+      if (prop.apply_to_pattern (&INSN_VAR_LOCATION_LOC (use_rtl)))
+	crtl->ssa->change_insn (change);
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "  i%d: RTL substitution failed (%s)"
+		     ", resetting debug insn", use_insn->uid (),
+		     prop.failure_reason);
+	  reset_debug_use (use);
+	}
+    }
+  else
+    {
+      if (dump_file)
+	{
+	  pretty_printer pp;
+	  pp_string (&pp, "[");
+	  pp_access (&pp, use, 0);
+	  pp_string (&pp, "] due to re-ordered load def [");
+	  pp_access (&pp, def, 0);
+	  pp_string (&pp, "]");
+	  fprintf (dump_file, "  i%d: resetting debug use %s\n",
+		   use_insn->uid (), pp_formatted_text (&pp));
+	}
+      reset_debug_use (use);
+    }
+}
+
+// Update debug uses when folding in a trailing add insn to form a
+// writeback pair.
+//
+// ATTEMPT is used to allocate RTL-SSA temporaries for the changes,
+// the final pair is placed immediately after PAIR_DST, TRAILING_ADD
+// is a trailing add insn which is being folded into the pair to make it
+// use writeback addressing, and WRITEBACK_EFFECT is the pattern for
+// TRAILING_ADD.
+static void
+fixup_debug_uses_trailing_add (obstack_watermark &attempt,
+			       insn_info *pair_dst,
+			       insn_info *trailing_add,
+			       rtx writeback_effect)
+{
+  rtx base = SET_DEST (writeback_effect);
+
+  poly_int64 wb_offset;
+  rtx base2 = strip_offset (SET_SRC (writeback_effect), &wb_offset);
+  gcc_checking_assert (rtx_equal_p (base, base2));
+
+  auto defs = trailing_add->defs ();
+  gcc_checking_assert (defs.size () == 1);
+  def_info *def = defs[0];
+
+  if (auto set = safe_dyn_cast<set_info *> (def->prev_def ()))
+    for (auto use : set->debug_insn_uses ())
+      if (*use->insn () > *pair_dst)
+	// DEF is getting re-ordered above USE, fix up USE accordingly.
+	fixup_debug_use (attempt, use, def, base, wb_offset);
+}
+
+// Called from fuse_pair, fixes up any debug uses that will be affected
+// by the changes.
+//
+// ATTEMPT is the obstack watermark used to allocate RTL-SSA temporaries for
+// the changes, INSNS gives the candidate insns: at this point the use/def
+// information should still be as on entry to fuse_pair, but the patterns may
+// have changed, hence we pass ORIG_RTL which contains the original patterns
+// for the candidate insns.
+//
+// The final pair will be placed immediately after PAIR_DST, LOAD_P is true if
+// it is a load pair, bit I of WRITEBACK is set if INSNS[I] originally had
+// writeback, and WRITEBACK_EFFECT is an rtx describing the overall update to
+// the base register in the final pair (if any).  BASE_REGNO gives the register
+// number of the base register used in the final pair.
+static void
+fixup_debug_uses (obstack_watermark &attempt,
+		  insn_info *insns[2],
+		  rtx orig_rtl[2],
+		  insn_info *pair_dst,
+		  insn_info *trailing_add,
+		  bool load_p,
+		  int writeback,
+		  rtx writeback_effect,
+		  unsigned base_regno)
+{
+  // USE is a debug use that needs updating because DEF (a def of the
+  // resource) is being re-ordered over it.  If WRITEBACK_PAT is non-NULL,
+  // then it gives the original RTL pattern for DEF's insn, and DEF is a
+  // writeback update of the base register.
+  //
+  // This simply unpacks WRITEBACK_PAT if needed and calls fixup_debug_use.
+  auto update_debug_use = [&](use_info *use, def_info *def,
+			      rtx writeback_pat)
+    {
+      poly_int64 offset = 0;
+      rtx base = NULL_RTX;
+      if (writeback_pat)
+	{
+	  rtx mem = XEXP (writeback_pat, load_p);
+	  gcc_checking_assert (GET_RTX_CLASS (GET_CODE (XEXP (mem, 0)))
+			       == RTX_AUTOINC);
+
+	  base = ldp_strip_offset (mem, &offset);
+	  gcc_checking_assert (REG_P (base) && REGNO (base) == base_regno);
+	}
+      fixup_debug_use (attempt, use, def, base, offset);
+    };
+
+  // Reset any debug uses of mem over which we re-ordered a store.
+  //
+  // It would be nice to try and preserve debug info here, but it seems that
+  // would require doing alias analysis to see if the store aliases with the
+  // debug use, which seems a little extravagant just to preserve debug info.
+  if (!load_p)
+    {
+      auto def = memory_access (insns[0]->defs ());
+      auto last_def = memory_access (insns[1]->defs ());
+      for (; def != last_def; def = def->next_def ())
+	for (auto use : as_a<set_info *> (def)->debug_insn_uses ())
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "  i%d: resetting debug use of mem\n",
+		       use->insn ()->uid ());
+	    reset_debug_use (use);
+	  }
+    }
+
+  // Now let's take care of register uses, starting with debug uses
+  // attached to defs from our first insn.
+  for (auto def : insns[0]->defs ())
+    {
+      auto set = dyn_cast<set_info *> (def);
+      if (!set || set->is_mem () || !set->first_debug_insn_use ())
+	continue;
+
+      def_info *defs[2] = {
+	def,
+	find_access (insns[1]->defs (), def->regno ())
+      };
+
+      rtx writeback_pats[2] = {};
+      if (def->regno () == base_regno)
+	for (int i = 0; i < 2; i++)
+	  if (writeback & (1 << i))
+	    {
+	      gcc_checking_assert (defs[i]);
+	      writeback_pats[i] = orig_rtl[i];
+	    }
+
+      // Now that we've characterized the defs involved, go through the
+      // debug uses and determine how to update them (if needed).
+      for (auto use : set->debug_insn_uses ())
+	{
+	  if (*pair_dst < *use->insn () && defs[1])
+	    // We're re-ordering defs[1] above a previous use of the
+	    // same resource.
+	    update_debug_use (use, defs[1], writeback_pats[1]);
+	  else if (*pair_dst >= *use->insn ())
+	    // We're re-ordering defs[0] below its use.
+	    update_debug_use (use, defs[0], writeback_pats[0]);
+	}
+    }
+
+  // Now let's look at registers which are def'd by the second insn
+  // but not by the first insn, there may still be debug uses of a
+  // previous def which can be affected by moving the second insn up.
+  for (auto def : insns[1]->defs ())
+    {
+      // This should be M log N where N is the number of defs in
+      // insns[0] and M is the number of defs in insns[1].
+      if (def->is_mem () || find_access (insns[0]->defs (), def->regno ()))
+	  continue;
+
+      auto prev_set = safe_dyn_cast<set_info *> (def->prev_def ());
+      if (!prev_set)
+	continue;
+
+      rtx writeback_pat = NULL_RTX;
+      if (def->regno () == base_regno && (writeback & 2))
+	writeback_pat = orig_rtl[1];
+
+      // We have a def in insns[1] which isn't def'd by the first insn.
+      // Look to the previous def and see if it has any debug uses.
+      for (auto use : prev_set->debug_insn_uses ())
+	if (*pair_dst < *use->insn ())
+	  // We're ordering DEF above a previous use of the same register.
+	  update_debug_use (use, def, writeback_pat);
+    }
+
+  if ((writeback & 2) && !writeback_effect)
+    {
+      // If the second insn initially had writeback but the final
+      // pair does not, then there may be trailing debug uses of the
+      // second writeback def which need re-parenting: do that.
+      auto def = find_access (insns[1]->defs (), base_regno);
+      gcc_assert (def);
+      for (auto use : as_a<set_info *> (def)->debug_insn_uses ())
+	{
+	  insn_change change (use->insn ());
+	  change.new_uses = check_remove_regno_access (attempt,
+						       change.new_uses,
+						       base_regno);
+	  auto new_use = find_access (insns[0]->uses (), base_regno);
+
+	  // N.B. insns must have already shared a common base due to writeback.
+	  gcc_assert (new_use);
+
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "  i%d: cancelling wb, re-parenting trailing debug use\n",
+		     use->insn ()->uid ());
+
+	  change.new_uses = insert_access (attempt, new_use, change.new_uses);
+	  crtl->ssa->change_insn (change);
+	}
+    }
+  else if (trailing_add)
+    fixup_debug_uses_trailing_add (attempt, pair_dst, trailing_add,
+				   writeback_effect);
+}
+
 // Try and actually fuse the pair given by insns I1 and I2.
 //
 // Here we've done enough analysis to know this is safe, we only
@@ -1378,6 +1683,9 @@ ldp_bb_info::fuse_pair (bool load_p,
   insn_info *first = (*i1 < *i2) ? i1 : i2;
   insn_info *second = (first == i1) ? i2 : i1;
 
+  insn_info *pair_dst = move_range.singleton ();
+  gcc_assert (pair_dst);
+
   insn_info *insns[2] = { first, second };
 
   auto_vec<insn_change *> changes;
@@ -1387,6 +1695,13 @@ ldp_bb_info::fuse_pair (bool load_p,
     PATTERN (first->rtl ()),
     PATTERN (second->rtl ())
   };
+
+  // Make copies of the patterns as we might need to refer to the original RTL
+  // later, for example when updating debug uses (which is after we've updated
+  // one or both of the patterns in the candidate insns).
+  rtx orig_rtl[2];
+  for (int i = 0; i < 2; i++)
+    orig_rtl[i] = copy_rtx (pats[i]);
 
   use_array input_uses[2] = { first->uses (), second->uses () };
   def_array input_defs[2] = { first->defs (), second->defs () };
@@ -1604,9 +1919,7 @@ ldp_bb_info::fuse_pair (bool load_p,
       using Action = stp_change_builder::action;
       insn_info *store_to_change = try_repurpose_store (first, second,
 							move_range);
-      insn_info *stp_dest = move_range.singleton ();
-      gcc_assert (stp_dest);
-      stp_change_builder builder (insns, store_to_change, stp_dest);
+      stp_change_builder builder (insns, store_to_change, pair_dst);
       insn_change *change;
       set_info *new_set = nullptr;
       for (; !builder.done (); builder.advance ())
@@ -1677,7 +1990,7 @@ ldp_bb_info::fuse_pair (bool load_p,
 		fprintf (dump_file,
 			 "  stp: changing i%d to use mem from new stp "
 			 "(after i%d)\n",
-			 action.insn->uid (), stp_dest->uid ());
+			 action.insn->uid (), pair_dst->uid ());
 	      change->new_uses = drop_memory_access (change->new_uses);
 	      gcc_assert (new_set);
 	      auto new_use = crtl->ssa->create_use (attempt, action.insn,
@@ -1740,6 +2053,11 @@ ldp_bb_info::fuse_pair (bool load_p,
     }
 
   gcc_assert (crtl->ssa->verify_insn_changes (changes));
+
+  // Fix up any debug uses that will be affected by the changes.
+  if (MAY_HAVE_DEBUG_INSNS)
+    fixup_debug_uses (attempt, insns, orig_rtl, pair_dst, trailing_add,
+		      load_p, writeback, writeback_effect, base_regno);
 
   confirm_change_group ();
   crtl->ssa->change_insns (changes);
@@ -2807,7 +3125,7 @@ try_promote_writeback (insn_info *insn)
 
   rtx wb_effect = NULL_RTX;
   def_info *add_def;
-  const insn_range_info pair_range (insn->prev_nondebug_insn ());
+  const insn_range_info pair_range (insn);
   insn_info *insns[2] = { nullptr, insn };
   insn_info *trailing_add = find_trailing_add (insns, pair_range, 0, &wb_effect,
 					       &add_def, base_def, offset,
@@ -2830,8 +3148,6 @@ try_promote_writeback (insn_info *insn)
 					pair_change.new_defs);
   gcc_assert (pair_change.new_defs.is_valid ());
 
-  pair_change.move_range = insn_range_info (insn->prev_nondebug_insn ());
-
   auto is_changing = insn_is_changing (changes);
   for (unsigned i = 0; i < ARRAY_SIZE (changes); i++)
     gcc_assert (rtl_ssa::restrict_movement_ignoring (*changes[i], is_changing));
@@ -2846,6 +3162,10 @@ try_promote_writeback (insn_info *insn)
     }
 
   gcc_assert (crtl->ssa->verify_insn_changes (changes));
+
+  if (MAY_HAVE_DEBUG_INSNS)
+    fixup_debug_uses_trailing_add (attempt, insn, trailing_add, wb_effect);
+
   confirm_change_group ();
   crtl->ssa->change_insns (changes);
 }
