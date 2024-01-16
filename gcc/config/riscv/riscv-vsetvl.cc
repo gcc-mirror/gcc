@@ -3671,7 +3671,7 @@ pass_vsetvl::execute (function *)
   if (!has_vector_insn (cfun))
     return 0;
 
-  if (!optimize)
+  if (!optimize || vsetvl_strategy & VSETVL_SIMPLE)
     simple_vsetvl ();
   else
     lazy_vsetvl ();
