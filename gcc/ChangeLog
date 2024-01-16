@@ -1,3 +1,12 @@
+2024-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113156
+	* config/avr/avr.opt (-mdouble, -mlong-double): Add "Save" flag.
+	(-mbranch-cost): Set "Optimization" flag.
+
 2024-01-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

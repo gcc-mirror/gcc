@@ -1,3 +1,12 @@
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109899
+	* init.cc (build_vec_delete_1): Assume expr_noexcept_p returns
+	false in a template context.
+
 2023-12-24  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
