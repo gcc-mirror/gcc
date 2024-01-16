@@ -4008,14 +4008,6 @@ package Einfo is
 --       has unknown discriminants. A default initialization of an object of
 --       the type does not require an invariant check (AI12-0133).
 
---    Pending_Access_Types
---       Defined in all types. Set for incomplete, private, Taft-amendment
---       types, and their corresponding full views. This list contains all
---       access types, both named and anonymous, declared between the partial
---       and the full view. The list is used by the finalization machinery to
---       ensure that the finalization masters of all pending access types are
---       fully initialized when the full view is frozen.
-
 --    Predicate_Function (synthesized)
 --       Defined in all types. Set for types for which (Has_Predicates is True)
 --       and for which a predicate procedure has been built that tests that the
@@ -4995,7 +4987,6 @@ package Einfo is
    --    Esize
    --    RM_Size
    --    Alignment
-   --    Pending_Access_Types
    --    Related_Expression
    --    Current_Use_Clause
    --    Subprograms_For_Type

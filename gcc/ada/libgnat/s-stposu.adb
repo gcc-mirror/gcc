@@ -43,11 +43,6 @@ use  System.Storage_Pools.Subpools.Finalization;
 
 package body System.Storage_Pools.Subpools is
 
-   Finalize_Address_Table_In_Use : Boolean := False;
-   --  This flag should be set only when a successful allocation on a subpool
-   --  has been performed and the associated Finalize_Address has been added to
-   --  the hash table in System.Finalization_Masters.
-
    function Address_To_FM_Node_Ptr is
      new Ada.Unchecked_Conversion (Address, FM_Node_Ptr);
 
@@ -284,44 +279,12 @@ package body System.Storage_Pools.Subpools is
          --  Synchronization:
          --    Write - allocation, deallocation, finalization
 
-         Attach_Unprotected (N_Ptr, Objects (Master.all));
+         Attach_Unprotected (N_Ptr, Fin_Address, Objects (Master.all));
 
          --  Move the address from the hidden list header to the start of the
          --  object. This operation effectively hides the list header.
 
          Addr := N_Addr + Header_And_Padding;
-
-         --  Homogeneous masters service the following:
-
-         --    1) Allocations on / Deallocations from regular pools
-         --    2) Named access types
-         --    3) Most cases of anonymous access types usage
-
-         --  Synchronization:
-         --    Read  - allocation, finalization
-         --    Write - outside
-
-         if Master.Is_Homogeneous then
-
-            --  Synchronization:
-            --    Read  - finalization
-            --    Write - allocation, outside
-
-            Set_Finalize_Address_Unprotected (Master.all, Fin_Address);
-
-         --  Heterogeneous masters service the following:
-
-         --    1) Allocations on / Deallocations from subpools
-         --    2) Certain cases of anonymous access types usage
-
-         else
-            --  Synchronization:
-            --    Read  - finalization
-            --    Write - allocation, deallocation
-
-            Set_Heterogeneous_Finalize_Address_Unprotected (Addr, Fin_Address);
-            Finalize_Address_Table_In_Use := True;
-         end if;
 
          Unlock_Task.all;
          Lock_Taken := False;
@@ -394,18 +357,6 @@ package body System.Storage_Pools.Subpools is
          Lock_Task.all;
 
          begin
-            --  Destroy the relation pair object - Finalize_Address since it is
-            --  no longer needed.
-
-            if Finalize_Address_Table_In_Use then
-
-               --  Synchronization:
-               --    Read  - finalization
-               --    Write - allocation, deallocation
-
-               Delete_Finalize_Address_Unprotected (Addr);
-            end if;
-
             --  Account for possible padding space before the header due to a
             --  larger alignment.
 
@@ -821,11 +772,6 @@ package body System.Storage_Pools.Subpools is
       Subpool.Node := N_Ptr;
 
       Attach (N_Ptr, To.Subpools'Unchecked_Access);
-
-      --  Mark the subpool's master as being a heterogeneous collection of
-      --  controlled objects.
-
-      Set_Is_Heterogeneous (Subpool.Master);
    end Set_Pool_Of_Subpool;
 
 end System.Storage_Pools.Subpools;

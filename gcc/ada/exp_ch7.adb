@@ -1567,36 +1567,6 @@ package body Exp_Ch7 is
       Context_Scope  : Entity_Id := Empty;
       Insertion_Node : Node_Id   := Empty)
    is
-      procedure Add_Pending_Access_Type
-        (Typ     : Entity_Id;
-         Ptr_Typ : Entity_Id);
-      --  Add access type Ptr_Typ to the pending access type list for type Typ
-
-      -----------------------------
-      -- Add_Pending_Access_Type --
-      -----------------------------
-
-      procedure Add_Pending_Access_Type
-        (Typ     : Entity_Id;
-         Ptr_Typ : Entity_Id)
-      is
-         List : Elist_Id;
-
-      begin
-         if Present (Pending_Access_Types (Typ)) then
-            List := Pending_Access_Types (Typ);
-         else
-            List := New_Elmt_List;
-            Set_Pending_Access_Types (Typ, List);
-         end if;
-
-         Prepend_Elmt (Ptr_Typ, List);
-      end Add_Pending_Access_Type;
-
-      --  Local variables
-
-      Desig_Typ : constant Entity_Id := Designated_Type (Typ);
-
       Ptr_Typ : constant Entity_Id := Root_Type_Of_Full_View (Base_Type (Typ));
       --  A finalization master created for a named access type is associated
       --  with the full view (if applicable) as a consequence of freezing. The
@@ -1686,63 +1656,6 @@ package body Exp_Ch7 is
                Make_Attribute_Reference (Loc,
                  Prefix         => New_Occurrence_Of (Pool_Id, Loc),
                  Attribute_Name => Name_Unrestricted_Access))));
-
-         --  Finalize_Address is not generated in CodePeer mode because the
-         --  body contains address arithmetic. Skip this step.
-
-         if CodePeer_Mode then
-            null;
-
-         --  Associate the Finalize_Address primitive of the designated type
-         --  with the finalization master of the access type. The designated
-         --  type must be frozen, as Finalize_Address is generated when the
-         --  freeze node is expanded.
-
-         elsif Is_Frozen (Desig_Typ)
-           and then Present (Finalize_Address (Desig_Typ))
-
-           --  The Finalize_Address procedure for a class-wide type may exist
-           --  at this point (as created by Expand_Freeze_Record_Type), but
-           --  may not have been analyzed yet, so the Set_Finalize_Address call
-           --  generation must be deferred (to Freeze_Type) in that case.
-
-           and then Analyzed (Finalize_Address (Desig_Typ))
-
-           --  The finalization master of an anonymous access type may need
-           --  to be inserted in a specific place in the tree. For instance:
-
-           --    type Comp_Typ;
-
-           --    <finalization master of "access Comp_Typ">
-
-           --    type Rec_Typ is record
-           --       Comp : access Comp_Typ;
-           --    end record;
-
-           --    <freeze node for Comp_Typ>
-           --    <freeze node for Rec_Typ>
-
-           --  Due to this oddity, the anonymous access type is stored for
-           --  later processing (see below).
-
-           and then Ekind (Ptr_Typ) /= E_Anonymous_Access_Type
-         then
-            --  Generate:
-            --    Set_Finalize_Address
-            --      (<Ptr_Typ>FM, <Desig_Typ>FD'Unrestricted_Access);
-
-            Append_To (Actions,
-              Make_Set_Finalize_Address_Call
-                (Loc     => Loc,
-                 Ptr_Typ => Ptr_Typ));
-
-         --  Otherwise the designated type is either anonymous access or a
-         --  Taft-amendment type and has not been frozen. Store the access
-         --  type for later processing (see Freeze_Type).
-
-         else
-            Add_Pending_Access_Type (Desig_Typ, Ptr_Typ);
-         end if;
 
          --  A finalization master created for an access designating a type
          --  with private components is inserted before a context-dependent
@@ -8752,48 +8665,6 @@ package body Exp_Ch7 is
           Object_Definition   =>
             New_Occurrence_Of (RTE (RE_Master_Node), Loc));
    end Make_Master_Node_Declaration;
-
-   ------------------------------------
-   -- Make_Set_Finalize_Address_Call --
-   ------------------------------------
-
-   function Make_Set_Finalize_Address_Call
-     (Loc     : Source_Ptr;
-      Ptr_Typ : Entity_Id) return Node_Id
-   is
-      --  It is possible for Ptr_Typ to be a partial view, if the access type
-      --  is a full view declared in the private part of a nested package, and
-      --  the finalization actions take place when completing analysis of the
-      --  enclosing unit. For this reason use Underlying_Type twice below.
-
-      Desig_Typ : constant Entity_Id :=
-                    Available_View
-                      (Designated_Type (Underlying_Type (Ptr_Typ)));
-      Fin_Addr  : constant Entity_Id := Finalize_Address (Desig_Typ);
-      Fin_Mas   : constant Entity_Id :=
-                    Finalization_Master (Underlying_Type (Ptr_Typ));
-
-   begin
-      --  Both the finalization master and primitive Finalize_Address must be
-      --  available.
-
-      pragma Assert (Present (Fin_Addr) and Present (Fin_Mas));
-
-      --  Generate:
-      --    Set_Finalize_Address
-      --      (<Ptr_Typ>FM, <Desig_Typ>FD'Unrestricted_Access);
-
-      return
-        Make_Procedure_Call_Statement (Loc,
-          Name                   =>
-            New_Occurrence_Of (RTE (RE_Set_Finalize_Address), Loc),
-          Parameter_Associations => New_List (
-            New_Occurrence_Of (Fin_Mas, Loc),
-
-            Make_Attribute_Reference (Loc,
-              Prefix         => New_Occurrence_Of (Fin_Addr, Loc),
-              Attribute_Name => Name_Unrestricted_Access)));
-   end Make_Set_Finalize_Address_Call;
 
    ----------------------------------------
    -- Make_Suppress_Object_Finalize_Call --

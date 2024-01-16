@@ -9327,10 +9327,6 @@ package body Exp_Ch3 is
       --  Validate and generate stubs for all RACW types associated with type
       --  Typ.
 
-      procedure Process_Pending_Access_Types (Typ : Entity_Id);
-      --  Associate type Typ's Finalize_Address primitive with the finalization
-      --  masters of pending access-to-Typ types.
-
       ------------------------
       -- Process_RACW_Types --
       ------------------------
@@ -9359,61 +9355,6 @@ package body Exp_Ch3 is
             Remote_Types_Tagged_Full_View_Encountered (Typ);
          end if;
       end Process_RACW_Types;
-
-      ----------------------------------
-      -- Process_Pending_Access_Types --
-      ----------------------------------
-
-      procedure Process_Pending_Access_Types (Typ : Entity_Id) is
-         E : Elmt_Id;
-
-      begin
-         --  Finalize_Address is not generated in CodePeer mode because the
-         --  body contains address arithmetic. This processing is disabled.
-
-         if CodePeer_Mode then
-            null;
-
-         --  Certain itypes are generated for contexts that cannot allocate
-         --  objects and should not set primitive Finalize_Address.
-
-         elsif Is_Itype (Typ)
-           and then Nkind (Associated_Node_For_Itype (Typ)) =
-                      N_Explicit_Dereference
-         then
-            null;
-
-         --  When an access type is declared after the incomplete view of a
-         --  Taft-amendment type, the access type is considered pending in
-         --  case the full view of the Taft-amendment type is controlled. If
-         --  this is indeed the case, associate the Finalize_Address routine
-         --  of the full view with the finalization masters of all pending
-         --  access types. This scenario applies to anonymous access types as
-         --  well. But the Finalize_Address routine is missing if the type is
-         --  class-wide and we are under restriction No_Dispatching_Calls, see
-         --  Expand_Freeze_Class_Wide_Type above for the rationale.
-
-         elsif Needs_Finalization (Typ)
-           and then (not Is_Class_Wide_Type (Typ)
-                      or else not Restriction_Active (No_Dispatching_Calls))
-           and then Present (Pending_Access_Types (Typ))
-         then
-            E := First_Elmt (Pending_Access_Types (Typ));
-            while Present (E) loop
-
-               --  Generate:
-               --    Set_Finalize_Address
-               --      (Ptr_Typ, <Typ>FD'Unrestricted_Access);
-
-               Append_Freeze_Action (Typ,
-                 Make_Set_Finalize_Address_Call
-                   (Loc     => Sloc (N),
-                    Ptr_Typ => Node (E)));
-
-               Next_Elmt (E);
-            end loop;
-         end if;
-      end Process_Pending_Access_Types;
 
       --  Local variables
 
@@ -9723,11 +9664,6 @@ package body Exp_Ch3 is
 
       end if;
 
-      --  Complete the initialization of all pending access types' finalization
-      --  masters now that the designated type has been is frozen and primitive
-      --  Finalize_Address generated.
-
-      Process_Pending_Access_Types (Def_Id);
       Freeze_Stream_Operations (N, Def_Id);
 
       --  Generate the [spec and] body of the invariant procedure tasked with

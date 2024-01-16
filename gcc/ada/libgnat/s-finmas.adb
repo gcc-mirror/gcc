@@ -32,31 +32,11 @@
 with Ada.Exceptions; use Ada.Exceptions;
 
 with System.Address_Image;
-with System.HTable;           use System.HTable;
 with System.IO;               use System.IO;
 with System.Soft_Links;       use System.Soft_Links;
 with System.Storage_Elements; use System.Storage_Elements;
 
 package body System.Finalization_Masters is
-
-   --  Finalize_Address hash table types. In general, masters are homogeneous
-   --  collections of controlled objects. Rare cases such as allocations on a
-   --  subpool require heterogeneous masters. The following table provides a
-   --  relation between object address and its Finalize_Address routine.
-
-   type Header_Num is range 0 .. 127;
-
-   function Hash (Key : System.Address) return Header_Num;
-
-   --  Address --> Finalize_Address_Ptr
-
-   package Finalize_Address_Table is new Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Finalize_Address_Ptr,
-      No_Element => null,
-      Key        => System.Address,
-      Hash       => Hash,
-      Equal      => "=");
 
    ---------------------------
    -- Add_Offset_To_Address --
@@ -75,14 +55,17 @@ package body System.Finalization_Masters is
    ------------------------
 
    procedure Attach_Unprotected
-     (N : not null FM_Node_Ptr;
-      L : not null FM_Node_Ptr)
+     (N                : not null FM_Node_Ptr;
+      Finalize_Address : not null Finalize_Address_Ptr;
+      L                : not null FM_Node_Ptr)
    is
    begin
+      N.Finalize_Address := Finalize_Address;
+      N.Prev             := L;
+      N.Next             := L.Next;
+
       L.Next.Prev := N;
-      N.Next := L.Next;
-      L.Next := N;
-      N.Prev := L;
+      L.Next      := N;
    end Attach_Unprotected;
 
    ---------------
@@ -95,15 +78,6 @@ package body System.Finalization_Masters is
    begin
       return Master.Base_Pool;
    end Base_Pool;
-
-   -----------------------------------------
-   -- Delete_Finalize_Address_Unprotected --
-   -----------------------------------------
-
-   procedure Delete_Finalize_Address_Unprotected (Obj : System.Address) is
-   begin
-      Finalize_Address_Table.Remove (Obj);
-   end Delete_Finalize_Address_Unprotected;
 
    ------------------------
    -- Detach_Unprotected --
@@ -124,7 +98,6 @@ package body System.Finalization_Masters is
    --------------
 
    overriding procedure Finalize (Master : in out Finalization_Master) is
-      Cleanup  : Finalize_Address_Ptr;
       Curr_Ptr : FM_Node_Ptr;
       Ex_Occur : Exception_Occurrence;
       Obj_Addr : Address;
@@ -186,31 +159,8 @@ package body System.Finalization_Masters is
 
          Obj_Addr := Curr_Ptr.all'Address + Header_Size;
 
-         --  Retrieve TSS primitive Finalize_Address depending on the master's
-         --  mode of operation.
-
-         --  Synchronization:
-         --    Read  - allocation, finalization
-         --    Write - outside
-
-         if Master.Is_Homogeneous then
-
-            --  Synchronization:
-            --    Read  - finalization
-            --    Write - allocation, outside
-
-            Cleanup := Master.Finalize_Address;
-
-         else
-            --  Synchronization:
-            --    Read  - finalization
-            --    Write - allocation, deallocation
-
-            Cleanup := Finalize_Address_Unprotected (Obj_Addr);
-         end if;
-
          begin
-            Cleanup (Obj_Addr);
+            Curr_Ptr.Finalize_Address (Obj_Addr);
          exception
             when Fin_Occur : others =>
                if not Raised then
@@ -218,22 +168,6 @@ package body System.Finalization_Masters is
                   Save_Occurrence (Ex_Occur, Fin_Occur);
                end if;
          end;
-
-         --  When the master is a heterogeneous collection, destroy the object
-         --  - Finalize_Address pair since it is no longer needed.
-
-         --  Synchronization:
-         --    Read  - finalization
-         --    Write - outside
-
-         if not Master.Is_Homogeneous then
-
-            --  Synchronization:
-            --    Read  - finalization
-            --    Write - allocation, deallocation, finalization
-
-            Delete_Finalize_Address_Unprotected (Obj_Addr);
-         end if;
       end loop;
 
       Unlock_Task.all;
@@ -246,28 +180,6 @@ package body System.Finalization_Masters is
       end if;
    end Finalize;
 
-   ----------------------
-   -- Finalize_Address --
-   ----------------------
-
-   function Finalize_Address
-     (Master : Finalization_Master) return Finalize_Address_Ptr
-   is
-   begin
-      return Master.Finalize_Address;
-   end Finalize_Address;
-
-   ----------------------------------
-   -- Finalize_Address_Unprotected --
-   ----------------------------------
-
-   function Finalize_Address_Unprotected
-     (Obj : System.Address) return Finalize_Address_Ptr
-   is
-   begin
-      return Finalize_Address_Table.Get (Obj);
-   end Finalize_Address_Unprotected;
-
    --------------------------
    -- Finalization_Started --
    --------------------------
@@ -278,17 +190,6 @@ package body System.Finalization_Masters is
    begin
       return Master.Finalization_Started;
    end Finalization_Started;
-
-   ----------
-   -- Hash --
-   ----------
-
-   function Hash (Key : System.Address) return Header_Num is
-   begin
-      return
-        Header_Num
-          (To_Integer (Key) mod Integer_Address (Header_Num'Range_Length));
-   end Hash;
 
    -----------------
    -- Header_Size --
@@ -310,15 +211,6 @@ package body System.Finalization_Masters is
       Master.Objects.Next := Master.Objects'Unchecked_Access;
       Master.Objects.Prev := Master.Objects'Unchecked_Access;
    end Initialize;
-
-   --------------------
-   -- Is_Homogeneous --
-   --------------------
-
-   function Is_Homogeneous (Master : Finalization_Master) return Boolean is
-   begin
-      return Master.Is_Homogeneous;
-   end Is_Homogeneous;
 
    -------------
    -- Objects --
@@ -342,29 +234,17 @@ package body System.Finalization_Masters is
       --  Output the basic contents of a master
 
       --    Master   : 0x123456789
-      --    Is_Hmgen : TURE <or> FALSE
       --    Base_Pool: null <or> 0x123456789
-      --    Fin_Addr : null <or> 0x123456789
       --    Fin_Start: TRUE <or> FALSE
 
       Put ("Master   : ");
       Put_Line (Address_Image (Master'Address));
-
-      Put ("Is_Hmgen : ");
-      Put_Line (Master.Is_Homogeneous'Img);
 
       Put ("Base_Pool: ");
       if Master.Base_Pool = null then
          Put_Line ("null");
       else
          Put_Line (Address_Image (Master.Base_Pool'Address));
-      end if;
-
-      Put ("Fin_Addr : ");
-      if Master.Finalize_Address = null then
-         Put_Line ("null");
-      else
-         Put_Line (Address_Image (Master.Finalize_Address'Address));
       end if;
 
       Put ("Fin_Start: ");
@@ -374,8 +254,9 @@ package body System.Finalization_Masters is
 
       --    ^ <or> ? <or> null
       --    |Header: 0x123456789 (dummy head)
-      --    |  Prev: 0x123456789
-      --    |  Next: 0x123456789
+      --    |  Fin_Addr: 0x0001F2580
+      --    |  Prev    : 0x123456789
+      --    |  Next    : 0x123456789
       --    V
 
       --  ^ - the current element points back to the correct element
@@ -383,10 +264,11 @@ package body System.Finalization_Masters is
       --  n - the current element points back to null
 
       --  Header - the address of the list header
-      --  Prev   - the address of the list header which the current element
-      --           points back to
-      --  Next   - the address of the list header which the current element
-      --           points to
+      --  Fin_Addr  - the Finalize_Address routine
+      --  Prev      - the address of the list header which the current element
+      --              points back to
+      --  Next      - the address of the list header which the current element
+      --              points to
       --  (dummy head) - present if dummy head
 
       N_Ptr := Head;
@@ -432,7 +314,14 @@ package body System.Finalization_Masters is
             Put_Line ("");
          end if;
 
-         Put ("|  Prev: ");
+         Put ("|  Fin_Addr: ");
+         if N_Ptr.Finalize_Address = null then
+            Put_Line ("null");
+         else
+            Put_Line (Address_Image (N_Ptr.Finalize_Address'Address));
+         end if;
+
+         Put ("|  Prev    : ");
 
          if N_Ptr.Prev = null then
             Put_Line ("null");
@@ -440,7 +329,7 @@ package body System.Finalization_Masters is
             Put_Line (Address_Image (N_Ptr.Prev.all'Address));
          end if;
 
-         Put ("|  Next: ");
+         Put ("|  Next    : ");
 
          if N_Ptr.Next = null then
             Put_Line ("null");
@@ -463,64 +352,5 @@ package body System.Finalization_Masters is
    begin
       Master.Base_Pool := Pool_Ptr;
    end Set_Base_Pool;
-
-   --------------------------
-   -- Set_Finalize_Address --
-   --------------------------
-
-   procedure Set_Finalize_Address
-     (Master       : in out Finalization_Master;
-      Fin_Addr_Ptr : Finalize_Address_Ptr)
-   is
-   begin
-      --  Synchronization:
-      --    Read  - finalization
-      --    Write - allocation, outside
-
-      Lock_Task.all;
-      Set_Finalize_Address_Unprotected (Master, Fin_Addr_Ptr);
-      Unlock_Task.all;
-   end Set_Finalize_Address;
-
-   --------------------------------------
-   -- Set_Finalize_Address_Unprotected --
-   --------------------------------------
-
-   procedure Set_Finalize_Address_Unprotected
-     (Master       : in out Finalization_Master;
-      Fin_Addr_Ptr : Finalize_Address_Ptr)
-   is
-   begin
-      if Master.Finalize_Address = null then
-         Master.Finalize_Address := Fin_Addr_Ptr;
-      end if;
-   end Set_Finalize_Address_Unprotected;
-
-   ----------------------------------------------------
-   -- Set_Heterogeneous_Finalize_Address_Unprotected --
-   ----------------------------------------------------
-
-   procedure Set_Heterogeneous_Finalize_Address_Unprotected
-     (Obj          : System.Address;
-      Fin_Addr_Ptr : Finalize_Address_Ptr)
-   is
-   begin
-      Finalize_Address_Table.Set (Obj, Fin_Addr_Ptr);
-   end Set_Heterogeneous_Finalize_Address_Unprotected;
-
-   --------------------------
-   -- Set_Is_Heterogeneous --
-   --------------------------
-
-   procedure Set_Is_Heterogeneous (Master : in out Finalization_Master) is
-   begin
-      --  Synchronization:
-      --    Read  - finalization
-      --    Write - outside
-
-      Lock_Task.all;
-      Master.Is_Homogeneous := False;
-      Unlock_Task.all;
-   end Set_Is_Heterogeneous;
 
 end System.Finalization_Masters;

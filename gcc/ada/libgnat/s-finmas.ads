@@ -72,13 +72,10 @@ package System.Finalization_Masters is
    for Finalization_Master_Ptr'Storage_Size use 0;
 
    procedure Attach_Unprotected
-     (N : not null FM_Node_Ptr;
-      L : not null FM_Node_Ptr);
+     (N                : not null FM_Node_Ptr;
+      Finalize_Address : not null Finalize_Address_Ptr;
+      L                : not null FM_Node_Ptr);
    --  Prepend a node to a specific finalization master
-
-   procedure Delete_Finalize_Address_Unprotected (Obj : System.Address);
-   --  Destroy the relation pair object - Finalize_Address from the internal
-   --  hash table.
 
    procedure Detach_Unprotected (N : not null FM_Node_Ptr);
    --  Remove a node from an arbitrary finalization master
@@ -88,24 +85,11 @@ package System.Finalization_Masters is
    --  the list of allocated controlled objects, finalizing each one by calling
    --  its specific Finalize_Address. In the end, deallocate the dummy head.
 
-   function Finalize_Address
-     (Master : Finalization_Master) return Finalize_Address_Ptr;
-   --  Return a reference to the TSS primitive Finalize_Address associated with
-   --  a master.
-
-   function Finalize_Address_Unprotected
-     (Obj : System.Address) return Finalize_Address_Ptr;
-   --  Retrieve the Finalize_Address primitive associated with a particular
-   --  object.
-
    function Finalization_Started (Master : Finalization_Master) return Boolean;
    --  Return the finalization status of a master
 
    function Header_Size return System.Storage_Elements.Storage_Count;
    --  Return the size of type FM_Node as Storage_Count
-
-   function Is_Homogeneous (Master : Finalization_Master) return Boolean;
-   --  Return the behavior flag of a master
 
    function Objects (Master : Finalization_Master) return FM_Node_Ptr;
    --  Return the header of the doubly-linked list of controlled objects
@@ -113,32 +97,12 @@ package System.Finalization_Masters is
    procedure Print_Master (Master : Finalization_Master);
    --  Debug routine, outputs the contents of a master
 
-   procedure Set_Finalize_Address
-     (Master       : in out Finalization_Master;
-      Fin_Addr_Ptr : Finalize_Address_Ptr);
-   --  Compiler interface, do not call from within the run-time. Set the clean
-   --  up routine of a finalization master
-
-   procedure Set_Finalize_Address_Unprotected
-     (Master       : in out Finalization_Master;
-      Fin_Addr_Ptr : Finalize_Address_Ptr);
-   --  Set the clean up routine of a finalization master
-
-   procedure Set_Heterogeneous_Finalize_Address_Unprotected
-     (Obj          : System.Address;
-      Fin_Addr_Ptr : Finalize_Address_Ptr);
-   --  Add a relation pair object - Finalize_Address to the internal hash
-   --  table. This is done in the context of allocation on a heterogeneous
-   --  finalization master where a single master services multiple anonymous
-   --  access-to-controlled types.
-
-   procedure Set_Is_Heterogeneous (Master : in out Finalization_Master);
-   --  Mark the master as being a heterogeneous collection of objects
-
 private
    --  Heterogeneous collection type structure
 
    type FM_Node is record
+      Finalize_Address : Finalize_Address_Ptr := null;
+
       Prev : FM_Node_Ptr := null;
       Next : FM_Node_Ptr := null;
    end record;
@@ -151,10 +115,6 @@ private
    type Finalization_Master is
      new Ada.Finalization.Limited_Controlled with
    record
-      Is_Homogeneous : Boolean := True;
-      --  A flag which controls the behavior of the master. A value of False
-      --  denotes a heterogeneous collection.
-
       Base_Pool : Any_Storage_Pool_Ptr := null;
       --  A reference to the pool which this finalization master services. This
       --  field is used in conjunction with the build-in-place machinery.
@@ -162,10 +122,6 @@ private
       Objects : aliased FM_Node;
       --  A doubly linked list which contains the headers of all controlled
       --  objects allocated in a [sub]pool.
-
-      Finalize_Address : Finalize_Address_Ptr := null;
-      --  A reference to the routine reponsible for object finalization. This
-      --  is used only when the master is in homogeneous mode.
 
       Finalization_Started : Boolean := False;
       --  A flag used to detect allocations which occur during the finalization

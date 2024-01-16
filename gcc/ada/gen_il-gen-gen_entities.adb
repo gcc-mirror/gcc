@@ -520,7 +520,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Optimize_Alignment_Space, Flag),
         Sm (Optimize_Alignment_Time, Flag),
         Sm (Partial_View_Has_Unknown_Discr, Flag),
-        Sm (Pending_Access_Types, Elist_Id),
         Sm (Related_Expression, Node_Id),
         Sm (RM_Size, Uint),
         Sm (SPARK_Pragma, Node_Id),

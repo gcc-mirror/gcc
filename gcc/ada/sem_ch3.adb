@@ -3479,14 +3479,6 @@ package body Sem_Ch3 is
          Generate_Definition (Def_Id);
       end if;
 
-      --  Propagate any pending access types whose finalization masters need to
-      --  be fully initialized from the partial to the full view. Guard against
-      --  an illegal full view that remains unanalyzed.
-
-      if Is_Type (Def_Id) and then Is_Incomplete_Or_Private_Type (Prev) then
-         Set_Pending_Access_Types (Def_Id, Pending_Access_Types (Prev));
-      end if;
-
       if Chars (Scope (Def_Id)) = Name_System
         and then Chars (Def_Id) = Name_Address
         and then In_Predefined_Unit (N)

@@ -244,15 +244,6 @@ package Exp_Ch7 is
       Obj         : Entity_Id) return Node_Id;
    --  Build the declaration of the Master_Node for the object Obj
 
-   function Make_Set_Finalize_Address_Call
-     (Loc     : Source_Ptr;
-      Ptr_Typ : Entity_Id) return Node_Id;
-   --  Associate the Finalize_Address primitive of the designated type with the
-   --  finalization master of access type Ptr_Typ. The returned call is:
-   --
-   --    Set_Finalize_Address
-   --      (<Ptr_Typ>FM, <Desig_Typ>FD'Unrestricted_Access);
-
    function Make_Suppress_Object_Finalize_Call
      (Loc : Source_Ptr;
       Obj : Entity_Id) return Node_Id;

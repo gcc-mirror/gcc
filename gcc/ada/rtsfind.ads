@@ -923,7 +923,6 @@ package Rtsfind is
      RE_Finalization_Master,             -- System.Finalization_Masters
      RE_Finalization_Master_Ptr,         -- System.Finalization_Masters
      RE_Set_Base_Pool,                   -- System.Finalization_Masters
-     RE_Set_Finalize_Address,            -- System.Finalization_Masters
 
      RE_Attach_Object_To_Master,         -- System.Finalization_Primitives
      RE_Attach_Object_To_Node,           -- System.Finalization_Primitives
@@ -2576,7 +2575,6 @@ package Rtsfind is
      RE_Finalization_Master              => System_Finalization_Masters,
      RE_Finalization_Master_Ptr          => System_Finalization_Masters,
      RE_Set_Base_Pool                    => System_Finalization_Masters,
-     RE_Set_Finalize_Address             => System_Finalization_Masters,
 
      RE_Attach_Object_To_Master          => System_Finalization_Primitives,
      RE_Attach_Object_To_Node            => System_Finalization_Primitives,
