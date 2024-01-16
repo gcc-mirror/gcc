@@ -2354,8 +2354,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   /* Check if we can possibly peel the loop.  */
   if (!vect_can_advance_ivs_p (loop_vinfo)
       || !slpeel_can_duplicate_loop_p (loop, LOOP_VINFO_IV_EXIT (loop_vinfo),
-				       LOOP_VINFO_IV_EXIT (loop_vinfo))
-      || loop->inner)
+				       loop_preheader_edge (loop))
+      || loop->inner
+      || LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
     do_peeling = false;
 
   struct _vect_peel_extended_info peel_for_known_alignment;

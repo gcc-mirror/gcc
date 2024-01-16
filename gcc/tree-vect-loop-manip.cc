@@ -3262,7 +3262,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
     {
       e = loop_preheader_edge (loop);
       edge exit_e = LOOP_VINFO_IV_EXIT (loop_vinfo);
-      gcc_checking_assert (slpeel_can_duplicate_loop_p (loop, exit_e, e));
+      gcc_checking_assert (slpeel_can_duplicate_loop_p (loop, exit_e, e)
+			   && !LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo));
 
       /* Peel prolog and put it on preheader edge of loop.  */
       edge scalar_e = LOOP_VINFO_SCALAR_IV_EXIT (loop_vinfo);
