@@ -13357,6 +13357,19 @@ proc check_effective_target_cv_elw { } {
     } "-march=rv32i_xcvelw" ]
 }
 
+# Return 1 if the CORE-V SIMD extension is available.
+proc check_effective_target_cv_simd { } {
+    if { !([istarget riscv*-*-*]) } {
+         return 0
+     }
+    return [check_no_compiler_messages cv_simd object {
+        void foo (void)
+        {
+          asm ("cv.add.sc.b x0, x0, x0");
+        }
+    } "-march=rv32i_xcvsimd" ]
+}
+
 proc check_effective_target_loongarch_sx { } {
     return [check_no_compiler_messages loongarch_lsx assembly {
        #if !defined(__loongarch_sx)

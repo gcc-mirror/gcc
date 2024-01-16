@@ -5851,6 +5851,14 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	output_addr_const (file, newop);
 	break;
       }
+    case 'Y':
+      {
+	unsigned int imm = (UINTVAL (op) & 63);
+	gcc_assert (imm <= 63);
+	rtx newop = GEN_INT (imm);
+	output_addr_const (file, newop);
+	break;
+      }
     default:
       switch (code)
 	{
