@@ -2343,7 +2343,7 @@ public:
   void compute_lcm_local_properties ();
 
   void fuse_local_vsetvl_info ();
-  bool earliest_fuse_vsetvl_info ();
+  bool earliest_fuse_vsetvl_info (int iter);
   void pre_global_vsetvl_info ();
   void emit_vsetvl ();
   void cleaup ();
@@ -2961,7 +2961,7 @@ pre_vsetvl::fuse_local_vsetvl_info ()
 
 
 bool
-pre_vsetvl::earliest_fuse_vsetvl_info ()
+pre_vsetvl::earliest_fuse_vsetvl_info (int iter)
 {
   compute_avl_def_data ();
   compute_vsetvl_def_data ();
@@ -2984,7 +2984,8 @@ pre_vsetvl::earliest_fuse_vsetvl_info ()
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "\n  Compute LCM earliest insert data:\n\n");
+      fprintf (dump_file, "\n  Compute LCM earliest insert data (lift %d):\n\n",
+	       iter);
       fprintf (dump_file, "    Expression List (%u):\n", num_exprs);
       for (unsigned i = 0; i < num_exprs; i++)
 	{
@@ -3032,7 +3033,7 @@ pre_vsetvl::earliest_fuse_vsetvl_info ()
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "    Fused global info result:\n");
+      fprintf (dump_file, "    Fused global info result (lift %d):\n", iter);
     }
 
   bool changed = false;
@@ -3142,8 +3143,7 @@ pre_vsetvl::earliest_fuse_vsetvl_info ()
 		  if (src_block_info.has_info ())
 		    src_block_info.probability += dest_block_info.probability;
 		}
-	      else if (src_block_info.has_info ()
-		       && !m_dem.compatible_p (prev_info, curr_info))
+	      else
 		{
 		  /* Cancel lift up if probabilities are equal.  */
 		  if (successors_probability_equal_p (eg->src))
@@ -3151,11 +3151,11 @@ pre_vsetvl::earliest_fuse_vsetvl_info ()
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			{
 			  fprintf (dump_file,
-				   "      Change empty bb %u to from:",
+				   "      Reset bb %u:",
 				   eg->src->index);
 			  prev_info.dump (dump_file, "        ");
 			  fprintf (dump_file,
-				   "        to (higher probability):");
+				   "	due to (same probability):");
 			  curr_info.dump (dump_file, "        ");
 			}
 		      src_block_info.set_empty_info ();
@@ -3170,7 +3170,7 @@ pre_vsetvl::earliest_fuse_vsetvl_info ()
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			{
 			  fprintf (dump_file,
-				   "      Change empty bb %u to from:",
+				   "      Change bb %u from:",
 				   eg->src->index);
 			  prev_info.dump (dump_file, "        ");
 			  fprintf (dump_file,
@@ -3627,7 +3627,7 @@ pass_vsetvl::lazy_vsetvl ()
     {
       if (dump_file)
 	fprintf (dump_file, "  Try lift up %d.\n\n", fused_count);
-      changed = pre.earliest_fuse_vsetvl_info ();
+      changed = pre.earliest_fuse_vsetvl_info (fused_count);
       fused_count += 1;
   } while (changed);
 
