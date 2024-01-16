@@ -90,11 +90,13 @@ ForeverStack<N>::pop ()
   rust_debug ("popping link");
 
   for (const auto &kv : cursor ().rib.get_values ())
-    rust_debug ("current_rib: k: %s, v: %d", kv.first.c_str (), kv.second);
+    rust_debug ("current_rib: k: %s, v: %s", kv.first.c_str (),
+		kv.second.to_string ().c_str ());
 
   if (cursor ().parent.has_value ())
     for (const auto &kv : cursor ().parent.value ().rib.get_values ())
-      rust_debug ("new cursor: k: %s, v: %d", kv.first.c_str (), kv.second);
+      rust_debug ("new cursor: k: %s, v: %s", kv.first.c_str (),
+		  kv.second.to_string ().c_str ());
 
   update_cursor (cursor ().parent.value ());
 }
@@ -222,22 +224,22 @@ ForeverStack<N>::update_cursor (Node &new_cursor)
 }
 
 template <Namespace N>
-tl::optional<NodeId>
+tl::optional<Rib::Definition>
 ForeverStack<N>::get (const Identifier &name)
 {
-  tl::optional<NodeId> resolved_node = tl::nullopt;
+  tl::optional<Rib::Definition> resolved_definition = tl::nullopt;
 
   // TODO: Can we improve the API? have `reverse_iter` return an optional?
-  reverse_iter ([&resolved_node, &name] (Node &current) {
+  reverse_iter ([&resolved_definition, &name] (Node &current) {
     auto candidate = current.rib.get (name.as_string ());
 
     return candidate.map_or (
-      [&resolved_node] (NodeId found) {
+      [&resolved_definition] (Rib::Definition found) {
 	// for most namespaces, we do not need to care about various ribs - they
 	// are available from all contexts if defined in the current scope, or
 	// an outermore one. so if we do have a candidate, we can return it
 	// directly and stop iterating
-	resolved_node = found;
+	resolved_definition = found;
 
 	return KeepGoing::No;
       },
@@ -245,16 +247,16 @@ ForeverStack<N>::get (const Identifier &name)
       KeepGoing::Yes);
   });
 
-  return resolved_node;
+  return resolved_definition;
 }
 
 template <>
-tl::optional<NodeId> inline ForeverStack<Namespace::Labels>::get (
+tl::optional<Rib::Definition> inline ForeverStack<Namespace::Labels>::get (
   const Identifier &name)
 {
-  tl::optional<NodeId> resolved_node = tl::nullopt;
+  tl::optional<Rib::Definition> resolved_definition = tl::nullopt;
 
-  reverse_iter ([&resolved_node, &name] (Node &current) {
+  reverse_iter ([&resolved_definition, &name] (Node &current) {
     // looking up for labels cannot go through function ribs
     // TODO: What other ribs?
     if (current.rib.kind == Rib::Kind::Function)
@@ -264,15 +266,15 @@ tl::optional<NodeId> inline ForeverStack<Namespace::Labels>::get (
 
     // FIXME: Factor this in a function with the generic `get`
     return candidate.map_or (
-      [&resolved_node] (NodeId found) {
-	resolved_node = found;
+      [&resolved_definition] (Rib::Definition found) {
+	resolved_definition = found;
 
 	return KeepGoing::No;
       },
       KeepGoing::Yes);
   });
 
-  return resolved_node;
+  return resolved_definition;
 }
 
 /* Check if an iterator points to the last element */
@@ -444,7 +446,7 @@ ForeverStack<N>::resolve_segments (
 
 template <Namespace N>
 template <typename S>
-tl::optional<NodeId>
+tl::optional<Rib::Definition>
 ForeverStack<N>::resolve_path (const std::vector<S> &segments)
 {
   // TODO: What to do if segments.empty() ?
@@ -472,8 +474,9 @@ ForeverStack<N>::dfs (ForeverStack<N>::Node &starting_point, NodeId to_find)
   auto values = starting_point.rib.get_values ();
 
   for (auto &kv : values)
-    if (kv.second.id == to_find)
-      return {{starting_point, kv.first}};
+    for (auto id : kv.second.ids)
+      if (id == to_find)
+	return {{starting_point, kv.first}};
 
   for (auto &child : starting_point.children)
     {
@@ -582,7 +585,7 @@ ForeverStack<N>::stream_rib (std::stringstream &stream, const Rib &rib,
   stream << next << "rib: {\n";
 
   for (const auto &kv : rib.get_values ())
-    stream << next_next << kv.first << ": " << kv.second.id << "\n";
+    stream << next_next << kv.first << ": " << kv.second.to_string () << "\n";
 
   stream << next << "},\n";
 }

@@ -152,9 +152,11 @@ Early::visit (AST::MacroInvocation &invoc)
 
   // https://doc.rust-lang.org/reference/macros-by-example.html#path-based-scope
 
-  tl::optional<NodeId> definition = tl::nullopt;
+  tl::optional<Rib::Definition> definition = tl::nullopt;
   if (path.get_segments ().size () == 1)
-    definition = textual_scope.get (path.get_final_segment ().as_string ());
+    definition
+      = textual_scope.get (path.get_final_segment ().as_string ())
+	  .map ([] (NodeId id) { return Rib::Definition::NonShadowable (id); });
 
   // we won't have changed `definition` from `nullopt` if there are more
   // than one segments in our path
@@ -169,13 +171,13 @@ Early::visit (AST::MacroInvocation &invoc)
       return;
     }
 
-  insert_once (invoc, *definition);
+  insert_once (invoc, definition->get_node_id ());
 
   // now do we need to keep mappings or something? or insert "uses" into our
   // ForeverStack? can we do that? are mappings simpler?
   auto mappings = Analysis::Mappings::get ();
   AST::MacroRulesDefinition *rules_def = nullptr;
-  if (!mappings->lookup_macro_def (definition.value (), &rules_def))
+  if (!mappings->lookup_macro_def (definition->get_node_id (), &rules_def))
     {
       // Macro definition not found, maybe it is not expanded yet.
       return;
@@ -212,8 +214,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 		  continue;
 		}
 
-	      auto pm_def
-		= mappings->lookup_derive_proc_macro_def (definition.value ());
+	      auto pm_def = mappings->lookup_derive_proc_macro_def (
+		definition->get_node_id ());
 
 	      rust_assert (pm_def.has_value ());
 
@@ -234,8 +236,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 			     "could not resolve attribute macro invocation");
 	      return;
 	    }
-	  auto pm_def
-	    = mappings->lookup_attribute_proc_macro_def (definition.value ());
+	  auto pm_def = mappings->lookup_attribute_proc_macro_def (
+	    definition->get_node_id ());
 
 	  rust_assert (pm_def.has_value ());
 

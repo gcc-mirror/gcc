@@ -480,21 +480,21 @@ public:
    * @param name Name of the identifier to locate in this scope or an outermore
    *        scope
    *
-   * @return a valid option with the NodeId if the identifier is present in the
-   *         current map, an empty one otherwise.
+   * @return a valid option with the Definition if the identifier is present in
+   * the current map, an empty one otherwise.
    */
-  tl::optional<NodeId> get (const Identifier &name);
+  tl::optional<Rib::Definition> get (const Identifier &name);
 
   /**
    * Resolve a path to its definition in the current `ForeverStack`
    *
    * // TODO: Add documentation for `segments`
    *
-   * @return a valid option with the NodeId if the path is present in the
+   * @return a valid option with the Definition if the path is present in the
    *         current map, an empty one otherwise.
    */
   template <typename S>
-  tl::optional<NodeId> resolve_path (const std::vector<S> &segments);
+  tl::optional<Rib::Definition> resolve_path (const std::vector<S> &segments);
 
   // FIXME: Documentation
   tl::optional<Resolver::CanonicalPath> to_canonical_path (NodeId id);

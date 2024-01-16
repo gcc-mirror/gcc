@@ -114,8 +114,23 @@ public:
     static Definition NonShadowable (NodeId id);
     static Definition Shadowable (NodeId id);
 
-    NodeId id;
+    std::vector<NodeId> ids;
     bool shadowable;
+
+    Definition () = default;
+
+    Definition &operator= (const Definition &) = default;
+    Definition (Definition const &) = default;
+
+    bool is_ambiguous () const;
+
+    NodeId get_node_id ()
+    {
+      rust_assert (!is_ambiguous ());
+      return ids[0];
+    }
+
+    std::string to_string () const;
 
   private:
     Definition (NodeId id, bool shadowable);
@@ -163,7 +178,7 @@ public:
    *
    * @return tl::nullopt if the key does not exist, the NodeId otherwise
    */
-  tl::optional<NodeId> get (const std::string &name);
+  tl::optional<Rib::Definition> get (const std::string &name);
 
   /* View all the values stored in the rib */
   const std::unordered_map<std::string, Definition> &get_values () const;

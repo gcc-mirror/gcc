@@ -401,7 +401,8 @@ TopLevel::handle_use_glob (AST::SimplePath glob)
   if (!resolved.has_value ())
     return false;
 
-  auto result = Analysis::Mappings::get ()->lookup_ast_module (*resolved);
+  auto result
+    = Analysis::Mappings::get ()->lookup_ast_module (resolved->get_node_id ());
 
   if (!result.has_value ())
     return false;
@@ -428,7 +429,7 @@ TopLevel::handle_use_dec (AST::SimplePath path)
   auto resolve_and_insert
     = [this, &found, &declared_name, locus] (Namespace ns,
 					     const AST::SimplePath &path) {
-	tl::optional<NodeId> resolved = tl::nullopt;
+	tl::optional<Rib::Definition> resolved = tl::nullopt;
 
 	// FIXME: resolve_path needs to return an `expected<NodeId, Error>` so
 	// that we can improve it with hints or location or w/ever. and maybe
@@ -450,22 +451,22 @@ TopLevel::handle_use_dec (AST::SimplePath path)
 	  }
 
 	// FIXME: Ugly
-	(void) resolved.map (
-	  [this, &found, &declared_name, locus, ns, path] (NodeId id) {
-	    found = true;
+	(void) resolved.map ([this, &found, &declared_name, locus, ns,
+			      path] (Rib::Definition def) {
+	  found = true;
 
-	    // what do we do with the id?
-	    insert_or_error_out (declared_name, locus, id, ns);
-	    auto result = node_forwarding.find (id);
-	    if (result != node_forwarding.cend ()
-		&& result->second != path.get_node_id ())
-	      rust_error_at (path.get_locus (), "%<%s%> defined multiple times",
-			     declared_name.c_str ());
-	    else // No previous thing has inserted this into our scope
-	      node_forwarding.insert ({id, path.get_node_id ()});
+	  // what do we do with the id?
+	  insert_or_error_out (declared_name, locus, def.get_node_id (), ns);
+	  auto result = node_forwarding.find (def.get_node_id ());
+	  if (result != node_forwarding.cend ()
+	      && result->second != path.get_node_id ())
+	    rust_error_at (path.get_locus (), "%<%s%> defined multiple times",
+			   declared_name.c_str ());
+	  else // No previous thing has inserted this into our scope
+	    node_forwarding.insert ({def.get_node_id (), path.get_node_id ()});
 
-	    return id;
-	  });
+	  return def.get_node_id ();
+	});
       };
 
   // do this for all namespaces (even Labels?)
@@ -587,7 +588,9 @@ flatten_glob (const AST::UseTreeGlob &glob, std::vector<AST::SimplePath> &paths,
 
   // (PE): Get path rib
   auto rib = ctx.values.resolve_path (glob.get_path ().get_segments ())
-	       .and_then ([&] (NodeId id) { return ctx.values.to_rib (id); });
+	       .and_then ([&] (Rib::Definition def) {
+		 return ctx.values.to_rib (def.get_node_id ());
+	       });
   if (rib.has_value ())
     {
       auto value = rib.value ().get_values ();
