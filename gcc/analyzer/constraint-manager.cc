@@ -54,7 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-static tristate
+tristate
 compare_constants (tree lhs_const, enum tree_code op, tree rhs_const)
 {
   tree comparison
