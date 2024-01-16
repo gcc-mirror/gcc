@@ -714,15 +714,15 @@ inline namespace __v15_1_0
   };
 
   // Split a range into extended grapheme clusters.
-  template<ranges::forward_range _View>
+  template<ranges::forward_range _View> requires ranges::view<_View>
     class _Grapheme_cluster_view
     : public ranges::view_interface<_Grapheme_cluster_view<_View>>
     {
     public:
 
       constexpr
-      _Grapheme_cluster_view(const _View& __v)
-      : _M_begin(_Utf32_view(__v).begin())
+      _Grapheme_cluster_view(_View __v)
+      : _M_begin(_Utf32_view<_View>(std::move(__v)).begin())
       { }
 
       constexpr auto begin() const { return _M_begin; }
@@ -946,7 +946,7 @@ inline namespace __v15_1_0
     {
       if (__s.empty()) [[unlikely]]
 	return 0;
-      _Grapheme_cluster_view __gc(__s);
+      _Grapheme_cluster_view<basic_string_view<_CharT>> __gc(__s);
       auto __it = __gc.begin();
       const auto __end = __gc.end();
       size_t __n = __it.width();
@@ -964,7 +964,7 @@ inline namespace __v15_1_0
       if (__s.empty()) [[unlikely]]
 	return 0;
 
-      _Grapheme_cluster_view __gc(__s);
+      _Grapheme_cluster_view<basic_string_view<_CharT>> __gc(__s);
       auto __it = __gc.begin();
       const auto __end = __gc.end();
       size_t __n = __it.width();
@@ -1057,6 +1057,19 @@ inline namespace __v15_1_0
   { return __literal_encoding_is_unicode<char>(); }
 
 } // namespace __unicode
+
+namespace ranges
+{
+  template<typename _To, typename _Range>
+    inline constexpr bool
+    enable_borrowed_range<std::__unicode::_Utf_view<_To, _Range>>
+      = enable_borrowed_range<_Range>;
+
+  template<typename _Range>
+    inline constexpr bool
+    enable_borrowed_range<std::__unicode::_Grapheme_cluster_view<_Range>>
+      = enable_borrowed_range<_Range>;
+} // namespace ranges
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
