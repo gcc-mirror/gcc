@@ -982,15 +982,16 @@ package body Sem_Attr is
          if Is_Entity_Name (P) then
             Typ := Entity (P);
 
-            --  The reference may appear in an aggregate that has been expanded
-            --  into a loop. Locate scope of type definition, if any.
-
-            Scop := Current_Scope;
-            while Ekind (Scop) = E_Loop loop
-               Scop := Scope (Scop);
-            end loop;
-
             if Is_Type (Typ) then
+
+               --  The reference may appear in an aggregate that has been
+               --  expanded into a loop. Locate scope of type definition,
+               --  if any.
+
+               Scop := Current_Scope;
+               while Ekind (Scop) = E_Loop loop
+                  Scop := Scope (Scop);
+               end loop;
 
                --  OK if we are within the scope of a limited type
                --  let's mark the component as having per object constraint
