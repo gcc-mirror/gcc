@@ -988,10 +988,7 @@ package body Sem_Attr is
                --  expanded into a loop. Locate scope of type definition,
                --  if any.
 
-               Scop := Current_Scope;
-               while Ekind (Scop) = E_Loop loop
-                  Scop := Scope (Scop);
-               end loop;
+               Scop := Current_Scope_No_Loops;
 
                --  OK if we are within the scope of a limited type
                --  let's mark the component as having per object constraint
