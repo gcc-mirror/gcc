@@ -10266,14 +10266,7 @@ package body Sem_Util is
                | N_Selected_Component
                | N_Slice
             =>
-               --  If not generating code, a dereference may be left implicit.
-               --  In thoses cases, return Empty.
-
-               if Is_Access_Type (Etype (Prefix (N))) then
-                  return Empty;
-               else
-                  return Get_Enclosing_Object (Prefix (N));
-               end if;
+               return Get_Enclosing_Object (Prefix (N));
 
             when N_Type_Conversion =>
                return Get_Enclosing_Object (Expression (N));
