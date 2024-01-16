@@ -102,17 +102,24 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
       switch (field->get_kind ())
 	{
 	case HIR::StructExprField::StructExprFieldKind::IDENTIFIER:
-	  visit (static_cast<HIR::StructExprFieldIdentifier &> (*field.get ()));
+	  ok = visit (
+	    static_cast<HIR::StructExprFieldIdentifier &> (*field.get ()));
 	  break;
 
 	case HIR::StructExprField::StructExprFieldKind::IDENTIFIER_VALUE:
-	  visit (
+	  ok = visit (
 	    static_cast<HIR::StructExprFieldIdentifierValue &> (*field.get ()));
 	  break;
 
 	case HIR::StructExprField::StructExprFieldKind::INDEX_VALUE:
-	  visit (static_cast<HIR::StructExprFieldIndexValue &> (*field.get ()));
+	  ok = visit (
+	    static_cast<HIR::StructExprFieldIndexValue &> (*field.get ()));
 	  break;
+	}
+
+      if (!ok)
+	{
+	  return;
 	}
 
       if (resolved_field_value_expr == nullptr)
@@ -238,16 +245,9 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
   resolved = struct_def;
 }
 
-void
+bool
 TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
 {
-  auto it = fields_assigned.find (field.field_name.as_string ());
-  if (it != fields_assigned.end ())
-    {
-      rust_fatal_error (field.get_locus (), "used more than once");
-      return;
-    }
-
   size_t field_index;
   TyTy::StructFieldType *field_type;
   bool ok = variant->lookup_field (field.field_name.as_string (), &field_type,
@@ -255,7 +255,20 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
   if (!ok)
     {
       rust_error_at (field.get_locus (), "unknown field");
-      return;
+      return true;
+    }
+
+  auto it = adtFieldIndexToField.find (field_index);
+  if (it != adtFieldIndexToField.end ())
+    {
+      rich_location repeat_location (line_table, field.get_locus ());
+      auto prev_field_locus = it->second->get_locus ();
+      repeat_location.add_range (prev_field_locus);
+
+      rust_error_at (repeat_location, ErrorCode::E0062,
+		     "field %<%s%> specified more than once",
+		     field.field_name.as_string ().c_str ());
+      return false;
     }
 
   TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ().get ());
@@ -273,18 +286,14 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       fields_assigned.insert (field.field_name.as_string ());
       adtFieldIndexToField[field_index] = &field;
     }
+
+  return true;
 }
 
-void
+bool
 TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
 {
   std::string field_name (std::to_string (field.get_tuple_index ()));
-  auto it = fields_assigned.find (field_name);
-  if (it != fields_assigned.end ())
-    {
-      rust_fatal_error (field.get_locus (), "used more than once");
-      return;
-    }
 
   size_t field_index;
   TyTy::StructFieldType *field_type;
@@ -292,7 +301,20 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
   if (!ok)
     {
       rust_error_at (field.get_locus (), "unknown field");
-      return;
+      return true;
+    }
+
+  auto it = adtFieldIndexToField.find (field_index);
+  if (it != adtFieldIndexToField.end ())
+    {
+      rich_location repeat_location (line_table, field.get_locus ());
+      auto prev_field_locus = it->second->get_locus ();
+      repeat_location.add_range (prev_field_locus);
+
+      rust_error_at (repeat_location, ErrorCode::E0062,
+		     "field %<%s%> specified more than once",
+		     field_name.c_str ());
+      return false;
     }
 
   TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ().get ());
@@ -310,18 +332,13 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       fields_assigned.insert (field_name);
       adtFieldIndexToField[field_index] = &field;
     }
+
+  return true;
 }
 
-void
+bool
 TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
 {
-  auto it = fields_assigned.find (field.get_field_name ().as_string ());
-  if (it != fields_assigned.end ())
-    {
-      rust_fatal_error (field.get_locus (), "used more than once");
-      return;
-    }
-
   size_t field_index;
   TyTy::StructFieldType *field_type;
   bool ok = variant->lookup_field (field.get_field_name ().as_string (),
@@ -329,7 +346,20 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   if (!ok)
     {
       rust_error_at (field.get_locus (), "unknown field");
-      return;
+      return true;
+    }
+
+  auto it = adtFieldIndexToField.find (field_index);
+  if (it != adtFieldIndexToField.end ())
+    {
+      rich_location repeat_location (line_table, field.get_locus ());
+      auto prev_field_locus = it->second->get_locus ();
+      repeat_location.add_range (prev_field_locus);
+
+      rust_error_at (repeat_location, ErrorCode::E0062,
+		     "field %<%s%> specified more than once",
+		     field.get_field_name ().as_string ().c_str ());
+      return false;
     }
 
   // we can make the field look like a path expr to take advantage of existing
@@ -358,6 +388,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
       fields_assigned.insert (field.get_field_name ().as_string ());
       adtFieldIndexToField[field_index] = &field;
     }
+
+  return true;
 }
 
 } // namespace Resolver

@@ -35,9 +35,9 @@ public:
 protected:
   void resolve (HIR::StructExprStructFields &struct_expr);
 
-  void visit (HIR::StructExprFieldIdentifierValue &field);
-  void visit (HIR::StructExprFieldIndexValue &field);
-  void visit (HIR::StructExprFieldIdentifier &field);
+  bool visit (HIR::StructExprFieldIdentifierValue &field);
+  bool visit (HIR::StructExprFieldIndexValue &field);
+  bool visit (HIR::StructExprFieldIdentifier &field);
 
 private:
   TypeCheckStructExpr (HIR::Expr *e);
