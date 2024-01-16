@@ -313,7 +313,11 @@
 
 (define_special_predicate "aarch64_ldp_reg_operand"
   (and
-    (match_code "reg,subreg")
+    (ior
+      (match_code "reg")
+      (and
+       (match_code "subreg")
+       (match_test "REG_P (SUBREG_REG (op))")))
     (match_test "aarch64_ldpstp_operand_mode_p (GET_MODE (op))")
     (ior
       (match_test "mode == VOIDmode")
