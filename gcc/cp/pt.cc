@@ -7217,8 +7217,10 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 	   * a string literal (5.13.5),
 	   * the result of a typeid expression (8.2.8), or
 	   * a predefined __func__ variable (11.4.1).  */
-	else if (VAR_P (decl) && DECL_ARTIFICIAL (decl))
+	else if (VAR_P (decl) && DECL_ARTIFICIAL (decl)
+		 && !DECL_NTTP_OBJECT_P (decl))
 	  {
+	    gcc_checking_assert (DECL_TINFO_P (decl) || DECL_FNAME_P (decl));
 	    if (complain & tf_error)
 	      error ("the address of %qD is not a valid template argument",
 		     decl);
