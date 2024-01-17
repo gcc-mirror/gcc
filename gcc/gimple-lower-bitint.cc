@@ -5455,7 +5455,8 @@ vuse_eq (ao_ref *, tree vuse1, void *data)
 
 /* Return true if STMT uses a library function and needs to take
    address of its inputs.  We need to avoid bit-fields in those
-   cases.  */
+   cases.  Similarly, we need to avoid overlap between destination
+   and source limb arrays.  */
 
 bool
 stmt_needs_operand_addr (gimple *stmt)
@@ -5574,7 +5575,8 @@ bitint_dom_walker::before_dom_children (basic_block bb)
 	  else if (!bitmap_bit_p (m_loads, SSA_NAME_VERSION (s)))
 	    continue;
 
-	  tree rhs1 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (s));
+	  gimple *g = SSA_NAME_DEF_STMT (s);
+	  tree rhs1 = gimple_assign_rhs1 (g);
 	  if (needs_operand_addr
 	      && TREE_CODE (rhs1) == COMPONENT_REF
 	      && DECL_BIT_FIELD_TYPE (TREE_OPERAND (rhs1, 1)))
@@ -5596,15 +5598,14 @@ bitint_dom_walker::before_dom_children (basic_block bb)
 
 	  ao_ref ref;
 	  ao_ref_init (&ref, rhs1);
-	  tree lvop = gimple_vuse (SSA_NAME_DEF_STMT (s));
+	  tree lvop = gimple_vuse (g);
 	  unsigned limit = 64;
 	  tree vuse = cvop;
 	  if (vop != cvop
 	      && is_gimple_assign (stmt)
 	      && gimple_store_p (stmt)
-	      && !operand_equal_p (lhs,
-				   gimple_assign_rhs1 (SSA_NAME_DEF_STMT (s)),
-				   0))
+	      && (needs_operand_addr
+		  || !operand_equal_p (lhs, gimple_assign_rhs1 (g), 0)))
 	    vuse = vop;
 	  if (vuse != lvop
 	      && walk_non_aliased_vuses (&ref, vuse, false, vuse_eq,
