@@ -266,8 +266,10 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	{
 	  if (is_root)
 	    {
-	      rust_error_at (seg.get_locus (),
-			     "failed to resolve root segment");
+	      rust_error_at (expr.get_locus (), ErrorCode::E0425,
+			     "cannot find value %qs in this scope",
+			     expr.as_simple_path ().as_string ().c_str ());
+
 	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	    }
 	  return root_tyty;
