@@ -115,7 +115,8 @@ omp_adjust_for_condition (location_t loc, enum tree_code *cond_code, tree *n2,
 
     case NE_EXPR:
       gcc_assert (TREE_CODE (step) == INTEGER_CST);
-      if (TREE_CODE (TREE_TYPE (v)) == INTEGER_TYPE)
+      if (TREE_CODE (TREE_TYPE (v)) == INTEGER_TYPE
+	  || TREE_CODE (TREE_TYPE (v)) == BITINT_TYPE)
 	{
 	  if (integer_onep (step))
 	    *cond_code = LT_EXPR;
@@ -409,6 +410,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       loop->v = gimple_omp_for_index (for_stmt, i);
       gcc_assert (SSA_VAR_P (loop->v));
       gcc_assert (TREE_CODE (TREE_TYPE (loop->v)) == INTEGER_TYPE
+		  || TREE_CODE (TREE_TYPE (loop->v)) == BITINT_TYPE
 		  || TREE_CODE (TREE_TYPE (loop->v)) == POINTER_TYPE);
       var = TREE_CODE (loop->v) == SSA_NAME ? SSA_NAME_VAR (loop->v) : loop->v;
       loop->n1 = gimple_omp_for_initial (for_stmt, i);
@@ -479,9 +481,17 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	  else if (i == 0
 		   || TYPE_PRECISION (iter_type)
 		      < TYPE_PRECISION (TREE_TYPE (loop->v)))
-	    iter_type
-	      = build_nonstandard_integer_type
-		  (TYPE_PRECISION (TREE_TYPE (loop->v)), 1);
+	    {
+	      if (TREE_CODE (iter_type) == BITINT_TYPE
+		  || TREE_CODE (TREE_TYPE (loop->v)) == BITINT_TYPE)
+		iter_type
+		  = build_bitint_type (TYPE_PRECISION (TREE_TYPE (loop->v)),
+				       1);
+	      else
+		iter_type
+		  = build_nonstandard_integer_type
+			(TYPE_PRECISION (TREE_TYPE (loop->v)), 1);
+	    }
 	}
       else if (iter_type != long_long_unsigned_type_node)
 	{
@@ -747,7 +757,8 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	  if (t && integer_zerop (t))
 	    count = build_zero_cst (long_long_unsigned_type_node);
 	  else if ((i == 0 || count != NULL_TREE)
-		   && TREE_CODE (TREE_TYPE (loop->v)) == INTEGER_TYPE
+		   && (TREE_CODE (TREE_TYPE (loop->v)) == INTEGER_TYPE
+		       || TREE_CODE (TREE_TYPE (loop->v)) == BITINT_TYPE)
 		   && TREE_CONSTANT (loop->n1)
 		   && TREE_CONSTANT (loop->n2)
 		   && TREE_CODE (loop->step) == INTEGER_CST)
