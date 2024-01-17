@@ -1,3 +1,32 @@
+2024-01-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.cc (next_active_non_empty_insn): Length 0 treated as empty
+
+2024-01-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.cc (atomic_insn_for_leon3_p): Treat membar_storeload as atomic
+	* config/sparc/sync.md (membar_storeload): Turn into named insn
+	and add GR712RC errata workaround.
+	(membar_v8): Add GR712RC errata workaround.
+
+2024-01-16  Andreas Larsson  <andreas@gaisler.com>
+
+	* config/sparc/sync.md (*membar_storeload_leon3): Remove
+	(*membar_storeload): Enable for LEON
+
+2024-01-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-01-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/107201
+	* config/avr/avr.h (EXTRA_SPEC_FUNCTIONS): Add no-devlib, avr_no_devlib.
+	* config/avr/driver-avr.cc (avr_no_devlib): New function.
+	(avr_devicespecs_file): Use it to remove -nodevicelib from the
+	options for cores only.
+	* config/avr/avr-arch.h (avr_get_parch): New prototype.
+	* config/avr/avr-devices.cc (avr_get_parch): New function.
+
 2024-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

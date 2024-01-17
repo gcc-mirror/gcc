@@ -1,3 +1,11 @@
+2024-01-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* gcc.dg/lto/pr88077_0.c: Change type to match alignment for SPARC
+
+2024-01-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* gcc.dg/ifcvt-4.c: Skip for SPARC V8
+
 2024-01-15  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
