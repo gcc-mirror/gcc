@@ -365,7 +365,7 @@ test_minmax()
     s = std::format("{:b}" , std::numeric_limits<U>::max());
     VERIFY( s == '1' + ones );
   };
-  check(std::int8_t(0));
+  check((signed char)(0)); // int8_t is char on Solaris, see PR 113450
   check(std::int16_t(0));
   check(std::int32_t(0));
   check(std::int64_t(0));
