@@ -1,7 +1,7 @@
 /**
  * Flow analysis for Ownership/Borrowing
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/ob.d, _ob.d)
@@ -197,7 +197,7 @@ enum PtrState : ubyte
 
 /************
  */
-const(char)* toChars(PtrState state)
+const(char)* PtrStateToChars(PtrState state)
 {
     return toString(state).ptr;
 }
@@ -2490,7 +2490,7 @@ void checkObErrors(ref ObState obstate)
                     if (s1 != s2 && (s1 == PtrState.Owner || s2 == PtrState.Owner))
                     {
                         auto v = obstate.vars[i];
-                        .error(ob.exp ? ob.exp.loc : v.loc, "%s `%s` is both %s and %s", v.kind, v.toPrettyChars, s1.toChars(), s2.toChars());
+                        .error(ob.exp ? ob.exp.loc : v.loc, "%s `%s` is both %s and %s", v.kind, v.toPrettyChars, PtrStateToChars(s1), PtrStateToChars(s2));
                     }
                     pvs1.combine(*pvs2, i, ob.gen);
                 }

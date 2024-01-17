@@ -2,7 +2,7 @@
  * Does the semantic 1 pass on the AST, which looks at symbol declarations but not initializers
  * or function bodies.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dsymbolsem.d, _dsymbolsem.d)
@@ -947,7 +947,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         // At this point we can add `scope` to the STC instead of `in`,
         // because we are never going to use this variable's STC for user messages
-        if (dsym.storage_class & STC.in_ && global.params.previewIn)
+        if (dsym.storage_class & STC.constscoperef)
             dsym.storage_class |= STC.scope_;
 
         if (dsym.storage_class & STC.scope_)
@@ -2964,7 +2964,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (tempdecl.members)
         {
             Dsymbol s;
-            if (Dsymbol.oneMembers(tempdecl.members, &s, tempdecl.ident) && s)
+            if (Dsymbol.oneMembers(tempdecl.members, s, tempdecl.ident) && s)
             {
                 tempdecl.onemember = s;
                 s.parent = tempdecl;
@@ -4096,7 +4096,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
                     auto fd = s.isFuncDeclaration();
                     functionToBufferFull(cast(TypeFunction)(funcdecl.type), buf,
-                        new Identifier(funcdecl.toPrettyChars()), &hgs, null);
+                        new Identifier(funcdecl.toPrettyChars()), hgs, null);
                     const(char)* funcdeclToChars = buf.peekChars();
 
                     if (fd)
@@ -4119,7 +4119,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         else
                         {
                             functionToBufferFull(cast(TypeFunction)(fd.type), buf1,
-                                new Identifier(fd.toPrettyChars()), &hgs, null);
+                                new Identifier(fd.toPrettyChars()), hgs, null);
 
                             error(funcdecl.loc, "function `%s` does not override any function, did you mean to override `%s`?",
                                 funcdeclToChars, buf1.peekChars());
@@ -4592,6 +4592,24 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             m.needmoduleinfo = 1;
             //printf("module1 %s needs moduleinfo\n", m.toChars());
         }
+
+        foreachUda(scd, sc, (Expression e) {
+            import dmd.attrib : isEnumAttribute;
+            if (!isEnumAttribute(e, Id.udaStandalone))
+                return 0;
+
+            if (auto sharedCtor = scd.isSharedStaticCtorDeclaration())
+            {
+                auto trust = sharedCtor.type.isTypeFunction().trust;
+                if (trust != TRUST.system && trust != TRUST.trusted)
+                    error(e.loc, "a module constructor using `@%s` must be `@system` or `@trusted`", Id.udaStandalone.toChars());
+                sharedCtor.standalone = true;
+            }
+            else
+                .error(e.loc, "`@%s` can only be used on shared static constructors", Id.udaStandalone.toChars());
+
+            return 1;
+        });
     }
 
     override void visit(StaticDtorDeclaration sdd)
@@ -4831,8 +4849,14 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         {
             if (ts.sym != sd)
             {
-                auto ti = ts.sym.isInstantiated();
+                TemplateInstance ti = ts.sym.isInstantiated();
                 if (ti && isError(ti))
+                    ts.sym = sd;
+                /* For C modules, if module A contains `struct S;` and
+                 * module B contains `struct S { members...}` then replace
+                 * the former with the latter
+                 */
+                else if (!ts.sym.members && sd.members)
                     ts.sym = sd;
             }
         }
@@ -5357,7 +5381,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     cldec.classKind = ClassKind.cpp;
                 if (cldec.classKind != cldec.baseClass.classKind)
                     .error(cldec.loc, "%s `%s` with %s linkage cannot inherit from class `%s` with %s linkage", cldec.kind, cldec.toPrettyChars,
-                        cldec.classKind.toChars(), cldec.baseClass.toChars(), cldec.baseClass.classKind.toChars());
+                        ClassKindToChars(cldec.classKind), cldec.baseClass.toChars(), ClassKindToChars(cldec.baseClass.classKind));
 
                 if (cldec.baseClass.stack)
                     cldec.stack = true;
@@ -6807,7 +6831,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
     if (tempinst.members.length)
     {
         Dsymbol s;
-        if (Dsymbol.oneMembers(tempinst.members, &s, tempdecl.ident) && s)
+        if (Dsymbol.oneMembers(tempinst.members, s, tempdecl.ident) && s)
         {
             //printf("tempdecl.ident = %s, s = `%s %s`\n", tempdecl.ident.toChars(), s.kind(), s.toPrettyChars());
             //printf("setting aliasdecl\n");
@@ -6852,7 +6876,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
     if (tempinst.members.length)
     {
         Dsymbol s;
-        if (Dsymbol.oneMembers(tempinst.members, &s, tempdecl.ident) && s)
+        if (Dsymbol.oneMembers(tempinst.members, s, tempdecl.ident) && s)
         {
             if (!tempinst.aliasdecl || tempinst.aliasdecl != s)
             {

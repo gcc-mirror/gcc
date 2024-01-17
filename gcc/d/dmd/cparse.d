@@ -3,7 +3,7 @@
  *
  * Specification: C11
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/cparse.d, _cparse.d)
@@ -605,15 +605,23 @@ final class CParser(AST) : Parser!AST
         {
             Identifier ident;
             nextToken();
-            if (token.value != TOK.identifier)
-            {
-                error("identifier expected following `goto`");
-                ident = null;
-            }
-            else
+            if (token.value == TOK.identifier)
             {
                 ident = token.ident;
                 nextToken();
+            }
+            else if (token.value == TOK.mul)
+            {
+                /* https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html
+                 */
+                error("`goto *` computed goto extension is not supported");
+                ident = null;
+                cparseUnaryExp();   // parse and throw away
+            }
+            else
+            {
+                error("identifier expected following `goto`");
+                ident = null;
             }
             s = new AST.GotoStatement(loc, ident);
             check(TOK.semicolon, "`goto` statement");
@@ -1055,6 +1063,14 @@ final class CParser(AST) : Parser!AST
             e = new AST.DotIdExp(loc, e, Id.__sizeof);
             break;
         }
+
+        case TOK.andAnd:
+            /* https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html
+             */
+            error("unary `&&` computed goto extension is not supported");
+            nextToken();
+            e = cparseCastExp();
+            break;
 
         case TOK._Alignof:
         {
@@ -1931,20 +1947,18 @@ final class CParser(AST) : Parser!AST
                 }
                 else if (auto tt = dt.isTypeTag())
                 {
-                    if (tt.id || tt.tok == TOK.enum_)
-                    {
-                        if (!tt.id && id)
-                            /* This applies for enums declared as
-                             * typedef enum {A} E;
-                             */
-                            tt.id = id;
-                        Specifier spec;
-                        declareTag(tt, spec);
-                    }
+                    if (!tt.id && id)
+                        /* This applies for enums declared as
+                         * typedef enum {A} E;
+                         */
+                        tt.id = id;
+                    Specifier spec;
+                    declareTag(tt, spec);
                     idt = tt.id;
                 }
                 if (isalias)
                 {
+                    //printf("AliasDeclaration %s %s\n", id.toChars(), dt.toChars());
                     auto ad = new AST.AliasDeclaration(token.loc, id, dt);
                     if (id == idt)
                         ad.adFlags |= ad.hidden; // do not print when generating .di files

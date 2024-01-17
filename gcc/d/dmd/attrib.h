@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -28,7 +28,7 @@ public:
     virtual Scope *newScope(Scope *sc);
     void addComment(const utf8_t *comment) override;
     const char *kind() const override;
-    bool oneMember(Dsymbol **ps, Identifier *ident) override;
+    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     bool hasPointers() override final;
     bool hasStaticCtorOrDtor() override final;
     void checkCtorConstInit() override final;
@@ -44,7 +44,7 @@ public:
 
     StorageClassDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
-    bool oneMember(Dsymbol **ps, Identifier *ident) override final;
+    bool oneMember(Dsymbol *&ps, Identifier *ident) override final;
     StorageClassDeclaration *isStorageClassDeclaration() override { return this; }
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -153,7 +153,7 @@ public:
     Dsymbols *elsedecl; // array of Dsymbol's for else block
 
     ConditionalDeclaration *syntaxCopy(Dsymbol *s) override;
-    bool oneMember(Dsymbol **ps, Identifier *ident) override final;
+    bool oneMember(Dsymbol *&ps, Identifier *ident) override final;
     Dsymbols *include(Scope *sc) override;
     void addComment(const utf8_t *comment) override final;
     void accept(Visitor *v) override { v->visit(this); }
@@ -183,7 +183,7 @@ public:
     Dsymbols *cache;
 
     StaticForeachDeclaration *syntaxCopy(Dsymbol *s) override;
-    bool oneMember(Dsymbol **ps, Identifier *ident) override;
+    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     Dsymbols *include(Scope *sc) override;
     void addComment(const utf8_t *comment) override;
     const char *kind() const override;

@@ -1,7 +1,7 @@
 /**
  * The base class for a D symbol, which can be a module, variable, function, enum, etc.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dsymbol.d, _dsymbol.d)
@@ -845,27 +845,27 @@ extern (C++) class Dsymbol : ASTNode
     /**************************************
      * Determine if this symbol is only one.
      * Returns:
-     *      false, *ps = NULL: There are 2 or more symbols
-     *      true,  *ps = NULL: There are zero symbols
-     *      true,  *ps = symbol: The one and only one symbol
+     *      false, ps = null: There are 2 or more symbols
+     *      true,  ps = null: There are zero symbols
+     *      true,  ps = symbol: The one and only one symbol
      */
-    bool oneMember(Dsymbol* ps, Identifier ident)
+    bool oneMember(out Dsymbol ps, Identifier ident)
     {
         //printf("Dsymbol::oneMember()\n");
-        *ps = this;
+        ps = this;
         return true;
     }
 
     /*****************************************
      * Same as Dsymbol::oneMember(), but look at an array of Dsymbols.
      */
-    extern (D) static bool oneMembers(Dsymbols* members, Dsymbol* ps, Identifier ident)
+    extern (D) static bool oneMembers(Dsymbols* members, out Dsymbol ps, Identifier ident)
     {
         //printf("Dsymbol::oneMembers() %d\n", members ? members.length : 0);
         Dsymbol s = null;
         if (!members)
         {
-            *ps = null;
+            ps = null;
             return true;
         }
 
@@ -877,21 +877,21 @@ extern (C++) class Dsymbol : ASTNode
             if (!x)
             {
                 //printf("\tfalse 1\n");
-                assert(*ps is null);
+                assert(ps is null);
                 return false;
             }
-            if (*ps)
+            if (ps)
             {
                 assert(ident);
-                if (!(*ps).ident || !(*ps).ident.equals(ident))
+                if (!ps.ident || !ps.ident.equals(ident))
                     continue;
                 if (!s)
-                    s = *ps;
-                else if (s.isOverloadable() && (*ps).isOverloadable())
+                    s = ps;
+                else if (s.isOverloadable() && ps.isOverloadable())
                 {
                     // keep head of overload set
                     FuncDeclaration f1 = s.isFuncDeclaration();
-                    FuncDeclaration f2 = (*ps).isFuncDeclaration();
+                    FuncDeclaration f2 = ps.isFuncDeclaration();
                     if (f1 && f2)
                     {
                         assert(!f1.isFuncAliasDeclaration());
@@ -908,13 +908,13 @@ extern (C++) class Dsymbol : ASTNode
                 }
                 else // more than one symbol
                 {
-                    *ps = null;
+                    ps = null;
                     //printf("\tfalse 2\n");
                     return false;
                 }
             }
         }
-        *ps = s; // s is the one symbol, null if none
+        ps = s; // s is the one symbol, null if none
         //printf("\ttrue\n");
         return true;
     }

@@ -3,7 +3,7 @@
  *
  * Specification: ($LINK2 https://dlang.org/spec/expression.html, Expressions)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/expressionsem.d, _expressionsem.d)
@@ -6813,11 +6813,14 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                             {
                                 if (sc.func.fes)
                                 {
-                                    deprecation(e.loc, "%s `%s` is shadowing %s `%s`. Rename the `foreach` variable.", s.kind(), s.ident.toChars(), s2.kind(), s2.toPrettyChars());
+                                    deprecation(e.loc, "%s `%s` is shadowing %s `%s`", s.kind(), s.ident.toChars(), s2.kind(), s2.toPrettyChars());
+                                    deprecationSupplemental(s2.loc, "declared here");
+
                                 }
                                 else
                                 {
                                     error(e.loc, "%s `%s` is shadowing %s `%s`", s.kind(), s.ident.toChars(), s2.kind(), s2.toPrettyChars());
+                                    errorSupplemental(s2.loc, "declared here");
                                     return setError();
                                 }
                             }
@@ -7591,6 +7594,13 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         static if (LOGSEMANTIC)
         {
             printf("AssertExp::semantic('%s')\n", exp.toChars());
+        }
+        if (auto e = exp.e1.isStringExp())
+        {
+            // deprecated in 2.107
+            deprecation(e.loc, "assert condition cannot be a string literal");
+            deprecationSupplemental(e.loc, "If intentional, use `%s !is null` instead to preserve behaviour",
+                e.toChars());
         }
 
         const generateMsg = !exp.msg &&
@@ -15037,6 +15047,8 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
  */
 Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
 {
+    exp.loc = loc;
+
     Expression visit(Expression exp)
     {
         if (auto unaExp = exp.isUnaExp())
@@ -15044,7 +15056,6 @@ Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
             unaExp.e1 = unaExp.e1.resolveLoc(loc, sc);
             return unaExp;
         }
-        exp.loc = loc;
         return exp;
     }
 

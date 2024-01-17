@@ -1,7 +1,7 @@
 /**
  * Compile-time checks associated with the @mustuse attribute.
  *
- * Copyright: Copyright (C) 2022-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 2022-2024 by The D Language Foundation, All Rights Reserved
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/mustuse.d, _mustuse.d)
  * Documentation:  https://dlang.org/phobos/dmd_mustuse.html
@@ -222,20 +222,7 @@ private bool hasMustUseAttribute(Dsymbol sym, Scope* sc)
  */
 private bool isMustUseAttribute(Expression e)
 {
-    import dmd.attrib : isCoreUda;
+    import dmd.attrib : isEnumAttribute;
     import dmd.id : Id;
-
-    // Logic based on dmd.objc.Supported.declaredAsOptionalCount
-    auto typeExp = e.isTypeExp;
-    if (!typeExp)
-        return false;
-
-    auto typeEnum = typeExp.type.isTypeEnum();
-    if (!typeEnum)
-        return false;
-
-    if (isCoreUda(typeEnum.sym, Id.udaMustUse))
-        return true;
-
-    return false;
+    return isEnumAttribute(e, Id.udaMustUse);
 }

@@ -1,7 +1,7 @@
 /**
  * Contains the `Id` struct with a list of predefined symbols the compiler knows about.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/id.d, _id.d)
@@ -521,6 +521,7 @@ immutable Msgtable[] msgtable =
     { "udaSelector", "selector" },
     { "udaOptional", "optional"},
     { "udaMustUse", "mustuse" },
+    { "udaStandalone", "standalone" },
 
     // C names, for undefined identifier error messages
     { "NULL" },

@@ -1,5 +1,5 @@
 /*
-PERMUTE_ARGS: -preview=in
+REQUIRED_ARGS: -preview=in
 TEST_OUTPUT:
 ---
 fail_compilation/diagin.d(14): Error: function `diagin.foo(in int)` is not callable using argument types `()`

@@ -1,7 +1,7 @@
 /**
  * Read a file from disk and store it in memory.
  *
- * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/file_manager.d, _file_manager.d)
  * Documentation:  https://dlang.org/phobos/dmd_file_manager.html
@@ -10,6 +10,7 @@
 
 module dmd.file_manager;
 
+import core.stdc.stdio;
 import dmd.root.stringtable : StringTable;
 import dmd.root.file : File, Buffer;
 import dmd.root.filename : FileName, isDirSeparator;
@@ -281,63 +282,103 @@ nothrow:
         return fb;
     }
 
-    /**
-     * Looks up the given filename from the internal file buffer table, and returns the lines within the file.
-     * If the file does not already exist within the table, it will be read from the filesystem.
-     * If it has been read before,
-     *
-     * Returns: the loaded source file if it was found in memory,
-     *      otherwise `null`
+    /**********************************
+     * Take `text` and turn it into an InputRange that emits
+     * slices into `text` for each line.
+     * Params:
+     *  text = array of characters
+     * Returns:
+     *  InputRange accessing `text` as a sequence of lines
+     * Reference:
+     *  `std.string.splitLines()`
      */
-    const(char)[][] getLines(FileName file)
+    auto splitLines(const char[] text)
     {
-        const(char)[][] lines;
-        if (const buffer = lookup(file))
+        struct Range
         {
-            const slice = buffer;
-            size_t start, end;
-            for (auto i = 0; i < slice.length; i++)
+          @safe:
+          @nogc:
+          nothrow:
+          pure:
+          private:
+
+            const char[] text;
+            size_t index;       // index of start of line
+            size_t eolIndex;    // index of end of line before newline characters
+            size_t nextIndex;   // index past end of line
+
+            public this(const char[] text)
             {
-                const c = slice[i];
-                if (c == '\n' || c == '\r')
+                this.text = text;
+            }
+
+            public bool empty() { return index == text.length; }
+
+            public void popFront() { advance(); index = nextIndex; }
+
+            public const(char)[] front() { advance(); return text[index .. eolIndex]; }
+
+            private void advance()
+            {
+                if (index != nextIndex) // if already advanced
+                    return;
+
+                for (size_t i = index; i < text.length; ++i)
                 {
-                    if (i != 0)
+                    switch (text[i])
                     {
-                        end = i;
-                        // Appending lines one at a time will certainly be slow
-                        lines ~= cast(const(char)[])slice[start .. end];
-                    }
-                    // Check for Windows-style CRLF newlines
-                    if (c == '\r')
-                    {
-                        if (slice.length > i + 1 && slice[i + 1] == '\n')
-                        {
-                            // This is a CRLF sequence, skip over two characters
-                            start = i + 2;
-                            i++;
-                        }
-                        else
-                        {
-                            // Just a CR sequence
-                            start = i + 1;
-                        }
-                    }
-                    else
-                    {
-                        // The next line should start after the LF sequence
-                        start = i + 1;
+                        case '\v', '\f', '\n':
+                            eolIndex = i;
+                            nextIndex = i + 1;
+                            return;
+
+                        case '\r':
+                            if (i + 1 < text.length && text[i + 1] == '\n') // decode "\r\n"
+                            {
+                                eolIndex = i;
+                                nextIndex = i + 2;
+                                return;
+                            }
+                            eolIndex = i;
+                            nextIndex = i + 1;
+                            return;
+
+                        /* Manually decode:
+                         *  NEL is C2 85
+                         */
+                        case 0xC2:
+                            if (i + 1 < text.length && text[i + 1] == 0x85)
+                            {
+                                eolIndex = i;
+                                nextIndex = i + 2;
+                                return;
+                            }
+                            break;
+
+                        /* Manually decode:
+                         *  lineSep is E2 80 A8
+                         *  paraSep is E2 80 A9
+                         */
+                        case 0xE2:
+                            if (i + 2 < text.length &&
+                                text[i + 1] == 0x80 &&
+                                (text[i + 2] == 0xA8 || text[i + 2] == 0xA9)
+                               )
+                            {
+                                eolIndex = i;
+                                nextIndex = i + 3;
+                                return;
+                            }
+                            break;
+
+                        default:
+                            break;
                     }
                 }
             }
-
-            if (slice[$ - 1] != '\r' && slice[$ - 1] != '\n')
-            {
-                end = slice.length;
-                lines ~= cast(const(char)[])slice[start .. end];
-            }
         }
 
-        return lines;
+        return Range(text);
     }
 
     /**

@@ -1209,7 +1209,7 @@ d_parse_file (void)
 	    message ("import    %s", m->toChars ());
 
 	  OutBuffer buf;
-	  genhdrfile (m, buf);
+	  genhdrfile (m, global.params.dihdr.fullOutput, buf);
 	  d_write_file (m->hdrfile.toChars (), buf.peekChars ());
 	}
 
@@ -1373,7 +1373,7 @@ d_parse_file (void)
 	  OutBuffer buf;
 	  buf.doindent = 1;
 
-	  moduleToBuffer (buf, m);
+	  moduleToBuffer (buf, true, m);
 	  message ("%s", buf.peekChars ());
 	}
     }

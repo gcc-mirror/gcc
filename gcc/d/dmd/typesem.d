@@ -1,7 +1,7 @@
 /**
  * Semantic analysis for D types.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/typesem.d, _typesem.d)
@@ -711,7 +711,15 @@ private extern(D) bool isCopyConstructorCallable (StructDeclaration argStruct,
                 s ~= "@safe ";
             if (!f.isNogc && sc.func.setGC(arg.loc, null))
                 s ~= "nogc ";
-            if (s)
+            if (f.isDisabled() && !f.isGenerated())
+            {
+                /* https://issues.dlang.org/show_bug.cgi?id=24301
+                 * Copy constructor is explicitly disabled
+                 */
+                buf.printf("`%s` copy constructor cannot be used because it is annotated with `@disable`",
+                    f.type.toChars());
+            }
+            else if (s)
             {
                 s[$-1] = '\0';
                 buf.printf("`%s` copy constructor cannot be called from a `%s` context", f.type.toChars(), s.ptr);
@@ -843,7 +851,7 @@ private extern(D) MATCH argumentMatchParameter (TypeFunction tf, Parameter p,
                     ta = tn.sarrayOf(dim);
                 }
             }
-            else if ((p.storageClass & STC.in_) && global.params.previewIn)
+            else if (p.storageClass & STC.constscoperef)
             {
                 // Allow converting a literal to an `in` which is `ref`
                 if (arg.op == EXP.arrayLiteral && tp.ty == Tsarray)
@@ -1678,7 +1686,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
             // default arg must be an lvalue
             if (isRefOrOut && !isAuto &&
-                !(global.params.previewIn && (fparam.storageClass & STC.in_)) &&
+                !(fparam.storageClass & STC.constscoperef) &&
                 global.params.rvalueRefParam != FeatureState.enabled)
                 e = e.toLvalue(sc, "create default argument for `ref` / `out` parameter from");
 
@@ -1784,13 +1792,13 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                     switch (tf.linkage)
                     {
                     case LINK.cpp:
-                        if (global.params.previewIn)
+                        if (fparam.storageClass & STC.constscoperef)
                             fparam.storageClass |= STC.ref_;
                         break;
                     case LINK.default_, LINK.d:
                         break;
                     default:
-                        if (global.params.previewIn)
+                        if (fparam.storageClass & STC.constscoperef)
                         {
                             .error(loc, "cannot use `in` parameters with `extern(%s)` functions",
                                    linkageToChars(tf.linkage));
@@ -1820,7 +1828,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                     if (tb2.ty == Tstruct && !tb2.isTypeStruct().sym.members ||
                         tb2.ty == Tenum   && !tb2.isTypeEnum().sym.memtype)
                     {
-                        if (global.params.previewIn && (fparam.storageClass & STC.in_))
+                        if (fparam.storageClass & STC.constscoperef)
                         {
                             .error(loc, "cannot infer `ref` for `in` parameter `%s` of opaque type `%s`",
                                    fparam.toChars(), fparam.type.toChars());
@@ -1902,7 +1910,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 fparam.storageClass &= ~(STC.TYPECTOR);
 
                 // -preview=in: add `ref` storage class to suited `in` params
-                if (global.params.previewIn && (fparam.storageClass & (STC.in_ | STC.ref_)) == STC.in_)
+                if ((fparam.storageClass & (STC.constscoperef | STC.ref_)) == STC.constscoperef)
                 {
                     auto ts = t.baseElemOf().isTypeStruct();
                     const isPOD = !ts || ts.sym.isPOD();
@@ -2318,11 +2326,16 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
     Type visitTag(TypeTag mtype)
     {
         //printf("TypeTag.semantic() %s\n", mtype.toChars());
+        Type returnType(Type t)
+        {
+            return t.deco ? t : t.merge();
+        }
+
         if (mtype.resolved)
         {
             /* struct S s, *p;
              */
-            return mtype.resolved.addSTC(mtype.mod);
+            return returnType(mtype.resolved.addSTC(mtype.mod));
         }
 
         /* Find the current scope by skipping tag scopes.
@@ -2395,7 +2408,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         {
             mtype.id = Identifier.generateId("__tag"[]);
             declareTag();
-            return mtype.resolved.addSTC(mtype.mod);
+            return returnType(mtype.resolved.addSTC(mtype.mod));
         }
 
         /* look for pre-existing declaration
@@ -2408,7 +2421,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             if (mtype.tok == TOK.enum_ && !mtype.members)
                 .error(mtype.loc, "`enum %s` is incomplete without members", mtype.id.toChars()); // C11 6.7.2.3-3
             declareTag();
-            return mtype.resolved.addSTC(mtype.mod);
+            return returnType(mtype.resolved.addSTC(mtype.mod));
         }
 
         /* A redeclaration only happens if both declarations are in
@@ -2508,7 +2521,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 declareTag();
             }
         }
-        return mtype.resolved.addSTC(mtype.mod);
+        return returnType(mtype.resolved.addSTC(mtype.mod));
     }
 
     switch (type.ty)
