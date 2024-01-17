@@ -965,7 +965,8 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
     }
 
   const Resolver::PathProbeCandidate *selectedCandidate = nullptr;
-  rust_debug_loc (expr_locus, "resolved to %lu candidates", candidates.size ());
+  rust_debug_loc (expr_locus, "resolved to %lu candidates",
+		  (unsigned long) candidates.size ());
 
   // filter for the possible case of non fn type items
   std::set<Resolver::PathProbeCandidate> filteredFunctionCandidates;
