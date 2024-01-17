@@ -2673,6 +2673,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 
 	tree ttype = TREE_TYPE (t);
 	tree optype = TREE_TYPE (op);
+	if (!optype)
+	  optype = unknown_type_node;
 
 	if (TREE_CODE (ttype) != TREE_CODE (optype)
 	    && INDIRECT_TYPE_P (ttype)
@@ -2691,7 +2693,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	    else
 	      dump_unary_op (pp, "&", t, flags);
 	  }
-	else if (!same_type_p (TREE_TYPE (op), TREE_TYPE (t)))
+	else if (!same_type_p (optype, ttype))
 	  {
 	    /* It is a cast, but we cannot tell whether it is a
 	       reinterpret or static cast. Use the C style notation.  */

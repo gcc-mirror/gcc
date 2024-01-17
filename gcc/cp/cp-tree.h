@@ -4717,6 +4717,11 @@ get_vec_init_expr (tree t)
 #define IMPLICIT_CONV_EXPR_BRACED_INIT(NODE) \
   (TREE_LANG_FLAG_2 (IMPLICIT_CONV_EXPR_CHECK (NODE)))
 
+/* True if NODE represents a conversion forced to be represented in
+   maybe_convert_nontype_argument, i.e. for an alias template.  */
+#define IMPLICIT_CONV_EXPR_FORCED(NODE) \
+  (TREE_LANG_FLAG_3 (IMPLICIT_CONV_EXPR_CHECK (NODE)))
+
 /* Nonzero means that an object of this type cannot be initialized using
    an initializer list.  */
 #define CLASSTYPE_NON_AGGREGATE(NODE) \
