@@ -1975,9 +1975,12 @@ bitint_large_huge::handle_stmt (gimple *stmt, tree idx)
 	case INTEGER_CST:
 	  return handle_operand (gimple_assign_rhs1 (stmt), idx);
 	CASE_CONVERT:
-	case VIEW_CONVERT_EXPR:
 	  return handle_cast (TREE_TYPE (gimple_assign_lhs (stmt)),
 			      gimple_assign_rhs1 (stmt), idx);
+	case VIEW_CONVERT_EXPR:
+	  return handle_cast (TREE_TYPE (gimple_assign_lhs (stmt)),
+			      TREE_OPERAND (gimple_assign_rhs1 (stmt), 0),
+			      idx);
 	default:
 	  break;
 	}
