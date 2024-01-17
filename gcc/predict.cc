@@ -2404,44 +2404,78 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
       if (!bitmap_set_bit (visited, SSA_NAME_VERSION (op0)))
 	return NULL;
 
-      if (gimple_code (def) == GIMPLE_PHI)
+      if (gphi *phi = dyn_cast <gphi *> (def))
 	{
 	  /* All the arguments of the PHI node must have the same constant
 	     length.  */
-	  int i, n = gimple_phi_num_args (def);
-	  tree val = NULL, new_val;
+	  int i, n = gimple_phi_num_args (phi);
+	  tree val = NULL;
+	  bool has_nonzero_edge = false;
+
+	  /* If we already proved that given edge is unlikely, we do not need
+	     to handle merging of the probabilities.  */
+	  for (i = 0; i < n && !has_nonzero_edge; i++)
+	    {
+	      tree arg = PHI_ARG_DEF (phi, i);
+	      if (arg == PHI_RESULT (phi))
+		continue;
+	      profile_count cnt = gimple_phi_arg_edge (phi, i)->count ();
+	      if (!cnt.initialized_p () || cnt.nonzero_p ())
+		has_nonzero_edge = true;
+	    }
 
 	  for (i = 0; i < n; i++)
 	    {
-	      tree arg = PHI_ARG_DEF (def, i);
+	      tree arg = PHI_ARG_DEF (phi, i);
 	      enum br_predictor predictor2;
 
-	      /* If this PHI has itself as an argument, we cannot
-		 determine the string length of this argument.  However,
-		 if we can find an expected constant value for the other
-		 PHI args then we can still be sure that this is
-		 likely a constant.  So be optimistic and just
-		 continue with the next argument.  */
-	      if (arg == PHI_RESULT (def))
+	      /* Skip self-referring parameters, since they does not change
+		 expected value.  */
+	      if (arg == PHI_RESULT (phi))
 		continue;
 
-	      HOST_WIDE_INT probability2;
-	      new_val = expr_expected_value (arg, visited, &predictor2,
-					     &probability2);
-
-	      /* It is difficult to combine value predictors.  Simply assume
-		 that later predictor is weaker and take its prediction.  */
-	      if (*predictor < predictor2)
+	      /* Skip edges which we already predicted as executing
+		 zero times.  */
+	      if (has_nonzero_edge)
 		{
-		  *predictor = predictor2;
-		  *probability = probability2;
+		  profile_count cnt = gimple_phi_arg_edge (phi, i)->count ();
+		  if (cnt.initialized_p () && !cnt.nonzero_p ())
+		    continue;
 		}
+	      HOST_WIDE_INT probability2;
+	      tree new_val = expr_expected_value (arg, visited, &predictor2,
+						  &probability2);
+	      /* If we know nothing about value, give up.  */
 	      if (!new_val)
 		return NULL;
+
+	      /* If this is a first edge, trust its prediction.  */
 	      if (!val)
-		val = new_val;
-	      else if (!operand_equal_p (val, new_val, false))
+		{
+		  val = new_val;
+		  *predictor = predictor2;
+		  *probability = probability2;
+		  continue;
+		}
+	      /* If there are two different values, give up.  */
+	      if (!operand_equal_p (val, new_val, false))
 		return NULL;
+
+	      int p1 = get_predictor_value (*predictor, *probability);
+	      int p2 = get_predictor_value (predictor2, probability2);
+	      /* If both predictors agree, it does not matter from which
+		 edge we enter the basic block.  */
+	      if (*predictor == predictor2 && p1 == p2)
+		continue;
+	      /* The general case has no precise solution, since we do not
+		 know probabilities of incomming edges, yet.
+		 Still if value is predicted over all incomming edges, we
+		 can hope it will be indeed the case.  Conservatively
+		 downgrade prediction quality (so first match merging is not
+		 performed) and take least successful prediction.  */
+
+	      *predictor = PRED_COMBINED_VALUE_PREDICTIONS_PHI;
+	      *probability = MIN (p1, p2);
 	    }
 	  return val;
 	}
@@ -2585,6 +2619,10 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
       tree res;
       tree nop0 = op0;
       tree nop1 = op1;
+
+      /* First handle situation where single op is enough to determine final
+	 value.  In this case we can do better job by avoiding the prediction
+	 merging.  */
       if (TREE_CODE (op0) != INTEGER_CST)
 	{
 	  /* See if expected value of op0 is good enough to determine the result.  */
@@ -2592,12 +2630,18 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	  if (nop0
 	      && (res = fold_build2 (code, type, nop0, op1)) != NULL
 	      && TREE_CODE (res) == INTEGER_CST)
+	    /* We are now getting conservative probability.  Consider for
+	       example:
+	          op0 * op1
+	       If op0 is 0 with probability p, then we will ignore the
+	       posibility that op0 != 0 and op1 == 0.  It does not seem to be
+	       worthwhile to downgrade prediciton quality for this.  */
 	    return res;
 	  if (!nop0)
 	    nop0 = op0;
 	 }
-      enum br_predictor predictor2;
-      HOST_WIDE_INT probability2;
+      enum br_predictor predictor2 = PRED_UNCONDITIONAL;
+      HOST_WIDE_INT probability2 = -1;
       if (TREE_CODE (op1) != INTEGER_CST)
 	{
 	  /* See if expected value of op1 is good enough to determine the result.  */
@@ -2606,6 +2650,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	      && (res = fold_build2 (code, type, op0, nop1)) != NULL
 	      && TREE_CODE (res) == INTEGER_CST)
 	    {
+	      /* Similarly as above we now get conservative probability.  */
 	      *predictor = predictor2;
 	      *probability = probability2;
 	      return res;
@@ -2613,24 +2658,40 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	  if (!nop1)
 	    nop1 = op1;
 	 }
+      /* We already checked if folding one of arguments to constant is good
+	 enough.  Consequently failing to fold both means that we will not
+	 succeed determining the value.  */
       if (nop0 == op0 || nop1 == op1)
 	return NULL;
       /* Finally see if we have two known values.  */
       res = fold_build2 (code, type, nop0, nop1);
-      if (TREE_CODE (res) == INTEGER_CST
-	  && TREE_CODE (nop0) == INTEGER_CST
-	  && TREE_CODE (nop1) == INTEGER_CST)
+      if (TREE_CODE (res) == INTEGER_CST)
 	{
-	  /* Combine binary predictions.  */
-	  if (*probability != -1 || probability2 != -1)
-	    {
-	      HOST_WIDE_INT p1 = get_predictor_value (*predictor, *probability);
-	      HOST_WIDE_INT p2 = get_predictor_value (predictor2, probability2);
-	      *probability = RDIV (p1 * p2, REG_BR_PROB_BASE);
-	    }
+	  HOST_WIDE_INT p1 = get_predictor_value (*predictor, *probability);
+	  HOST_WIDE_INT p2 = get_predictor_value (predictor2, probability2);
 
-	  if (predictor2 < *predictor)
-	    *predictor = predictor2;
+	  /* If one of predictions is sure, such as PRED_UNCONDITIONAL, we
+	     can ignore it.  */
+	  if (p2 == PROB_ALWAYS)
+	    return res;
+	  if (p1 == PROB_ALWAYS)
+	    {
+	      *predictor = predictor2;
+	      *probability = probability2;
+	      return res;
+	    }
+	  /* Combine binary predictions.
+	     Since we do not know about independence of predictors, we
+	     can not determine value precisely.  */
+	  *probability = RDIV (p1 * p2, REG_BR_PROB_BASE);
+	  /* If we no longer track useful information, give up.  */
+	  if (!*probability)
+	    return NULL;
+	  /* Otherwise mark that prediction is a result of combining
+	     different heuristics, since we do not want it to participate
+	     in first match merging.  It is no longer reliable since
+	     we do not know if the probabilities are indpenendet.  */
+	  *predictor = PRED_COMBINED_VALUE_PREDICTIONS;
 
 	  return res;
 	}
@@ -2690,6 +2751,8 @@ get_predictor_value (br_predictor predictor, HOST_WIDE_INT probability)
     {
     case PRED_BUILTIN_EXPECT:
     case PRED_BUILTIN_EXPECT_WITH_PROBABILITY:
+    case PRED_COMBINED_VALUE_PREDICTIONS_PHI:
+    case PRED_COMBINED_VALUE_PREDICTIONS:
       gcc_assert (probability != -1);
       return probability;
     default:
