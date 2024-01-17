@@ -271,8 +271,7 @@ in the following sections.
 -Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
 -Wsized-deallocation  -Wsuggest-final-methods
 -Wsuggest-final-types  -Wsuggest-override
--Wno-terminate  -Wuseless-cast  -Wno-vexing-parse
--Wvirtual-inheritance
+-Wno-terminate  -Wno-vexing-parse  -Wvirtual-inheritance
 -Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
 
 @item Objective-C and Objective-C++ Language Options
@@ -420,6 +419,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-macros
 -Wunused-parameter  -Wno-unused-result
 -Wunused-value  -Wunused-variable
+-Wuse-after-free  -Wuse-after-free=@var{n}  -Wuseless-cast
 -Wno-varargs  -Wvariadic-macros
 -Wvector-operation-performance
 -Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than
@@ -4814,83 +4814,6 @@ annotations.
 Warn about overriding virtual functions that are not marked with the
 @code{override} keyword.
 
-@opindex Wuse-after-free
-@opindex Wno-use-after-free
-@item -Wuse-after-free
-@itemx -Wuse-after-free=@var{n}
-Warn about uses of pointers to dynamically allocated objects that have
-been rendered indeterminate by a call to a deallocation function.
-The warning is enabled at all optimization levels but may yield different
-results with optimization than without.
-
-@table @gcctabopt
-@item -Wuse-after-free=1
-At level 1 the warning attempts to diagnose only unconditional uses
-of pointers made indeterminate by a deallocation call or a successful
-call to @code{realloc}, regardless of whether or not the call resulted
-in an actual reallocatio of memory.  This includes double-@code{free}
-calls as well as uses in arithmetic and relational expressions.  Although
-undefined, uses of indeterminate pointers in equality (or inequality)
-expressions are not diagnosed at this level.
-@item -Wuse-after-free=2
-At level 2, in addition to unconditional uses, the warning also diagnoses
-conditional uses of pointers made indeterminate by a deallocation call.
-As at level 2, uses in equality (or inequality) expressions are not
-diagnosed.  For example, the second call to @code{free} in the following
-function is diagnosed at this level:
-@smallexample
-struct A @{ int refcount; void *data; @};
-
-void release (struct A *p)
-@{
-  int refcount = --p->refcount;
-  free (p);
-  if (refcount == 0)
-    free (p->data);   // warning: p may be used after free
-@}
-@end smallexample
-@item -Wuse-after-free=3
-At level 3, the warning also diagnoses uses of indeterminate pointers in
-equality expressions.  All uses of indeterminate pointers are undefined
-but equality tests sometimes appear after calls to @code{realloc} as
-an attempt to determine whether the call resulted in relocating the object
-to a different address.  They are diagnosed at a separate level to aid
-legacy code gradually transition to safe alternatives.  For example,
-the equality test in the function below is diagnosed at this level:
-@smallexample
-void adjust_pointers (int**, int);
-
-void grow (int **p, int n)
-@{
-  int **q = (int**)realloc (p, n *= 2);
-  if (q == p)
-    return;
-  adjust_pointers ((int**)q, n);
-@}
-@end smallexample
-To avoid the warning at this level, store offsets into allocated memory
-instead of pointers.  This approach obviates needing to adjust the stored
-pointers after reallocation.
-@end table
-
-@option{-Wuse-after-free=2} is included in @option{-Wall}.
-
-@opindex Wuseless-cast
-@opindex Wno-useless-cast
-@item -Wuseless-cast @r{(C, Objective-C, C++ and Objective-C++ only)}
-Warn when an expression is cast to its own type.  This warning does not
-occur when a class object is converted to a non-reference type as that
-is a way to create a temporary:
-
-@smallexample
-struct S @{ @};
-void g (S&&);
-void f (S&& arg)
-@{
-  g (S(arg)); // make arg prvalue so that it can bind to S&&
-@}
-@end smallexample
-
 @opindex Wconversion-null
 @opindex Wno-conversion-null
 @item -Wno-conversion-null @r{(C++ and Objective-C++ only)}
@@ -7738,6 +7661,83 @@ All the above @option{-Wunused} options combined.
 In order to get a warning about an unused function parameter, you must
 either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
 @option{-Wunused}), or separately specify @option{-Wunused-parameter}.
+
+@opindex Wuse-after-free
+@opindex Wno-use-after-free
+@item -Wuse-after-free @r{(C, Objective-C, C++ and Objective-C++ only)}
+@itemx -Wuse-after-free=@var{n}
+Warn about uses of pointers to dynamically allocated objects that have
+been rendered indeterminate by a call to a deallocation function.
+The warning is enabled at all optimization levels but may yield different
+results with optimization than without.
+
+@table @gcctabopt
+@item -Wuse-after-free=1
+At level 1 the warning attempts to diagnose only unconditional uses
+of pointers made indeterminate by a deallocation call or a successful
+call to @code{realloc}, regardless of whether or not the call resulted
+in an actual reallocation of memory.  This includes double-@code{free}
+calls as well as uses in arithmetic and relational expressions.  Although
+undefined, uses of indeterminate pointers in equality (or inequality)
+expressions are not diagnosed at this level.
+@item -Wuse-after-free=2
+At level 2, in addition to unconditional uses, the warning also diagnoses
+conditional uses of pointers made indeterminate by a deallocation call.
+As at level 2, uses in equality (or inequality) expressions are not
+diagnosed.  For example, the second call to @code{free} in the following
+function is diagnosed at this level:
+@smallexample
+struct A @{ int refcount; void *data; @};
+
+void release (struct A *p)
+@{
+  int refcount = --p->refcount;
+  free (p);
+  if (refcount == 0)
+    free (p->data);   // warning: p may be used after free
+@}
+@end smallexample
+@item -Wuse-after-free=3
+At level 3, the warning also diagnoses uses of indeterminate pointers in
+equality expressions.  All uses of indeterminate pointers are undefined
+but equality tests sometimes appear after calls to @code{realloc} as
+an attempt to determine whether the call resulted in relocating the object
+to a different address.  They are diagnosed at a separate level to aid
+gradually transitioning legacy code to safe alternatives.  For example,
+the equality test in the function below is diagnosed at this level:
+@smallexample
+void adjust_pointers (int**, int);
+
+void grow (int **p, int n)
+@{
+  int **q = (int**)realloc (p, n *= 2);
+  if (q == p)
+    return;
+  adjust_pointers ((int**)q, n);
+@}
+@end smallexample
+To avoid the warning at this level, store offsets into allocated memory
+instead of pointers.  This approach obviates needing to adjust the stored
+pointers after reallocation.
+@end table
+
+@option{-Wuse-after-free=2} is included in @option{-Wall}.
+
+@opindex Wuseless-cast
+@opindex Wno-useless-cast
+@item -Wuseless-cast @r{(C, Objective-C, C++ and Objective-C++ only)}
+Warn when an expression is cast to its own type.  This warning does not
+occur when a class object is converted to a non-reference type as that
+is a way to create a temporary:
+
+@smallexample
+struct S @{ @};
+void g (S&&);
+void f (S&& arg)
+@{
+  g (S(arg)); // make arg prvalue so that it can bind to S&&
+@}
+@end smallexample
 
 @opindex Wuninitialized
 @opindex Wno-uninitialized
