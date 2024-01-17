@@ -337,6 +337,9 @@ TopLevel::visit (AST::TupleStruct &tuple_struct)
 {
   insert_or_error_out (tuple_struct.get_struct_name (), tuple_struct,
 		       Namespace::Types);
+
+  insert_or_error_out (tuple_struct.get_struct_name (), tuple_struct,
+		       Namespace::Values);
 }
 
 void
