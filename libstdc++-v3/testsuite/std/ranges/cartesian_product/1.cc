@@ -24,9 +24,9 @@ test01()
   int w[] = {9};
 
   auto v0 = views::cartesian_product();
-  VERIFY( ranges::end(v0) - ranges::begin(v0) == 0 );
-  VERIFY( ranges::size(v0) == 0 );
-  VERIFY( ranges::empty(v0) );
+  VERIFY( ranges::end(v0) - ranges::begin(v0) == 1 );
+  VERIFY( ranges::size(v0) == 1 );
+  VERIFY( !ranges::empty(v0) );
 
   auto v1 = views::cartesian_product(x);
   VERIFY( ranges::end(v1) - ranges::begin(v1) == 3 );
