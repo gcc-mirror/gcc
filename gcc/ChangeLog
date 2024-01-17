@@ -1,3 +1,72 @@
+2024-01-16  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add 'cobalt-100' CPU.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* doc/invoke.texi (-mcpu): Add cobalt-100 core.
+
+2024-01-16  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/112573
+	* config/aarch64/aarch64.cc (aarch64_legitimize_address): Reassociate
+	badly formed CONST expressions.
+
+2024-01-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.cc (next_active_non_empty_insn): Length 0 treated as empty
+
+2024-01-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.cc (atomic_insn_for_leon3_p): Treat membar_storeload as atomic
+	* config/sparc/sync.md (membar_storeload): Turn into named insn
+	and add GR712RC errata workaround.
+	(membar_v8): Add GR712RC errata workaround.
+
+2024-01-16  Andreas Larsson  <andreas@gaisler.com>
+
+	* config/sparc/sync.md (*membar_storeload_leon3): Remove
+	(*membar_storeload): Enable for LEON
+
+2024-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113372
+	PR middle-end/90348
+	PR middle-end/110115
+	PR middle-end/111422
+	* cfgexpand.cc (add_scope_conflicts_2): New function.
+	(add_scope_conflicts_1): Use it.
+
+2024-01-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (avr16eb14, avr16eb20, avr16eb28, avr16eb32)
+	(avr16ea28, avr16ea32, avr16ea48, avr32ea28, avr32ea32, avr32ea48): Add.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2024-01-16  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/113091
+	* tree-vect-slp.cc (vect_slp_has_scalar_use): New function.
+	(vect_bb_slp_mark_live_stmts): New parameter scalar_use_map, check
+	scalar use with new function.
+	(vect_bb_slp_mark_live_stmts): New function as entry to existing
+	overriden functions with same name.
+	(vect_slp_analyze_operations): Call new entry function to mark
+	live statements.
+
+2024-01-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113404
+	* config/riscv/riscv.cc (riscv_override_options_internal): Report sorry
+	for RVV in big-endian mode.
+
+2024-01-16  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* config/riscv/riscv.cc (riscv_arg_has_vector): Delete.
+	(riscv_pass_in_vector_p): Delete.
+	(riscv_init_cumulative_args): Delete the checking.
+	(riscv_get_arg_info): Delete the checking.
+	(riscv_function_value): Delete the checking.
+	* config/riscv/riscv.h: Delete the member for checking.
+
 2024-01-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/invoke.texi (AVR Options) [-mskip-bug]: Add documentation.

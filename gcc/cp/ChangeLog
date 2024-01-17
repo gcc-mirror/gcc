@@ -1,3 +1,40 @@
+2024-01-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113292
+	* decl2.cc (get_tls_wrapper_fn): Set DECL_CONTEXT.
+	(c_parse_final_cleanups): Suppress warning for no definition of
+	TLS wrapper functions in header modules.
+	* module.cc (trees_out::lang_decl_vals): Write wrapped variable
+	for TLS wrapper functions.
+	(trees_in::lang_decl_vals): Read it.
+	(trees_out::decl_value): Write TLS model for thread-local vars.
+	(trees_in::decl_value): Read it for new decls. Remember to emit
+	definitions of TLS wrapper functions later.
+
+2024-01-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.h (enum scope_kind): Add 'sk_count'.
+	* name-lookup.cc (cp_binding_level_descriptor): Add missing
+	scope kinds. Add assertion that the list is up to date. Fix
+	handling of explicit_spec_p.
+
+2024-01-16  Marek Polacek  <polacek@redhat.com>
+
+	* decl.cc (grokdeclarator) <case cdk_function>: Tweak diagnostic
+	messages.
+
+2024-01-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113340
+	* decl.cc (grokdeclarator) <case cdk_function>: Clear
+	is_xobj_member_function in case of an error.
+
+2024-01-16  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/113307
+	* parser.cc (cp_parser_parameter_declaration): Reject packs
+	on xobj params.
+
 2024-01-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/110065

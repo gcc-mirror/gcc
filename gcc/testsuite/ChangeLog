@@ -1,3 +1,1702 @@
+2024-01-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113292
+	* g++.dg/modules/pr113292_a.H: New test.
+	* g++.dg/modules/pr113292_b.C: New test.
+	* g++.dg/modules/pr113292_c.C: New test.
+
+2024-01-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113340
+	* g++.dg/cpp23/explicit-obj-diagnostics9.C: New test.
+
+2024-01-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr111409.c: Add hppa*-*-hpux* to targets which do
+	not support split DWARF.
+
+2024-01-16  waffl3x  <waffl3x@protonmail.com>
+
+	PR c++/113307
+	* g++.dg/cpp23/explicit-obj-diagnostics3.C: Add test for
+	rejection of packs.
+
+2024-01-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/array-quals-1.c: Add .data.rel.ro.local to read only
+	sections.
+
+2024-01-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/atomic/stdatomic-flag.c: Remove xfail.
+	* gcc.dg/atomic/stdatomic-flag-2.c: Likewise.
+
+2024-01-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR tree-optimization/110794
+	* g++.dg/pr99966.C: xfail scan-tree-dump-not throw on hppa*64*-*-*.
+
+2024-01-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/c23-tag-alias-2.c: Require target lto.
+	* gcc.dg/c23-tag-alias-3.c: Likewise.
+	* gcc.dg/gnu23-tag-alias-3.c: Likewise.
+	* gcc.dg/scantest-lto.c: Likewise.
+
+2024-01-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/cmp-mem-const-3.c: Skip on lp64 hppa*-*-*.
+	* gcc.dg/cmp-mem-const-4.c: Likewise.
+	* gcc.dg/cmp-mem-const-5.c: Likewise.
+	* gcc.dg/cmp-mem-const-6.c: Likewise.
+
+2024-01-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR tree-optimization/91624
+	* gcc.dg/tree-ssa/sra-17.c: xfail all scan-tree-dump-times
+	checks on hppa*64*-*-*.
+	* gcc.dg/tree-ssa/sra-18.c: Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/tuple_float_index.rs: New test.
+
+2024-01-16  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/v0-mangle2.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/invalid_variadics.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/invalid_label_name.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/lifetime_name_validation.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/pattern_variadic.rs: New test.
+	* rust/execute/torture/named_variadic.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/extern_c_named_variadic.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/parse_variadic_function.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-2709.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/not_a_float_literal_tuple_index.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-2665.rs: New test.
+
+2024-01-16  Jakub Dupak  <dev@jakubdupak.com>
+
+	* rust/compile/tupple_struct_pattern_tuple.rs: New test.
+
+2024-01-16  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/v0-mangle1.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/closure_in_closure.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/macro-issue2653.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/macro57.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/macro_rules_macro_rules.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/while_break_expr.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/range_from_expr_for_loop.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/parse_item_default_macro.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/parse_generic_path_expr.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/match_break.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/parse_pub_unit_type.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/parse_global_path_generic.rs: New test.
+
+2024-01-16  Jakub Dupak  <dev@jakubdupak.com>
+
+	* rust/compile/issue-2645.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/wrong_lhs_assignment.rs: update error message
+	* rust/compile/issue-2391.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/variadic.rs: Added new checks.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/assume.rs: New test.
+
+2024-01-16  Dave Evans  <dave@dmetwo.org>
+
+	* rust/compile/issue-2431.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/privacy6.rs: Uncomment commented out functions.
+	* rust/compile/privacy9.rs: Fix unused variables.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/privacy9.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/cfg2.rs: Updated according to new message.
+	* rust/compile/issue-2139.rs: likewise.
+	* rust/compile/issue-2190-1.rs: likewise.
+	* rust/compile/method1.rs: likewise.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/iter1.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/generics7.rs: Added Errorcode hint.
+	* rust/compile/generics8.rs: Updated dejagnu comment.
+	* rust/compile/issue-925.rs: Added Errorcode hint.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/issue-2029.rs:
+	Updated for dejagnu testcase.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/privacy1.rs: Added errorcode.
+	* rust/compile/privacy3.rs: likewise.
+	* rust/compile/privacy4.rs: likewise.
+	* rust/compile/privacy5.rs: likewise.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/type-if.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/let_alt.rs: Updated comment.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/iterators1.rs: this should be casting to the $ty
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-2583.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nested_macro_definition.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/match4.rs:
+	Updated new error commment.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/issue-1725-2.rs:
+	Updated dejagnu message.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/iterators1.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/generics13.rs:
+	for dejagnu,
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/issue-2479.rs: Updated comment.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/issue-1589.rs: Updated comment for dejagnu.
+	* rust/compile/trait-cycle.rs: New relevant test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/generics10.rs: for dejagnu.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/generics6.rs: Updated dejagnu comment.
+	* rust/compile/generics7.rs: likewise.
+	* rust/compile/issue-925.rs: likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-2514.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/match5.rs:
+	Updated comment for dejagnu.
+	* rust/compile/pattern-struct.rs: New test for ICE.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/inline_2.rs: Added new message.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/auto_trait_invalid.rs:
+	Updated comment.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/bad_inner_doc.rs:
+	Updated comment to pass testcase.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/inline_2.rs: Added new case.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/bad_as_bool_char.rs:
+	Updated comment to pass test case.
+	* rust/compile/cast1.rs: likewise.
+	* rust/compile/cast4.rs: likewise.
+	* rust/compile/cast5.rs: likewise.
+	* rust/compile/all-cast.rs: New test for all error codes.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/attr_deprecated_2.rs:
+	Updated comment to pass the testcase.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/abi-options1.rs: updated comment for testcase.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/arrays2.rs: changed comment to pass
+	testcase.
+
+2024-01-16  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/unicode_norm1.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/name_resolution10.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/name_resolution6.rs: New test.
+	* rust/compile/name_resolution7.rs: New test.
+	* rust/compile/name_resolution8.rs: New test.
+	* rust/compile/name_resolution9.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/undeclared_label.rs: New test for E0426.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/feature.rs: Added new unknown feature.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/arrays1.rs: changed comment to pass testcase.
+	* rust/compile/bad_type1.rs: likewise.
+	* rust/compile/bad_type2.rs: likewise.
+	* rust/compile/const_generics_6.rs: likewise.
+	* rust/compile/deadcode_err1.rs: likewise.
+	* rust/compile/deadcode_err2.rs: likewise.
+	* rust/compile/func1.rs: likewise.
+	* rust/compile/func3.rs: likewise.
+	* rust/compile/func4.rs: likewise.
+	* rust/compile/func5.rs: likewise.
+	* rust/compile/generics1.rs: likewise.
+	* rust/compile/generics2.rs: likewise.
+	* rust/compile/generics3.rs: likewise.
+	* rust/compile/implicit_returns_err1.rs: likewise.
+	* rust/compile/implicit_returns_err2.rs: likewise.
+	* rust/compile/implicit_returns_err3.rs: likewise.
+	* rust/compile/implicit_returns_err4.rs: likewise.
+	* rust/compile/issue-1152.rs: likewise.
+	* rust/compile/issue-2477.rs: likewise.
+	* rust/compile/reference1.rs: likewise.
+	* rust/compile/stmt_with_block_err1.rs: likewise.
+	* rust/compile/traits1.rs: likewise.
+	* rust/compile/traits2.rs: likewise.
+	* rust/compile/tuple_mismatch.rs: likewise.
+	* rust/compile/tuple_struct3.rs: likewise.
+	* rust/compile/mismatched-types.rs: New test from rustc.
+
+2024-01-16  Marc Poulhiès  <dkm@kataplop.net>
+
+	* rust/compile/empty_file: New file.
+	* rust/compile/issue-2421_str.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2479.rs: New test.
+
+2024-01-16  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/bad-crate-name.rs: Moved to...
+	* rust/compile/bad-crate-name1.rs: ...here.
+	* rust/compile/bad-crate-name2.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2477.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/bounds1.rs: Apply sized trait
+	* rust/compile/canonical_paths1.rs: likewise
+	* rust/compile/cast_generics.rs: likewise
+	* rust/compile/closure_no_type_anno.rs: likewise
+	* rust/compile/complex_qualified_path_in_expr.rs: likewise
+	* rust/compile/const-issue1440.rs: likewise
+	* rust/compile/const_generics_1.rs: likewise
+	* rust/compile/const_generics_8.rs: likewise
+	* rust/compile/derive_macro1.rs: likewise
+	* rust/compile/derive_macro3.rs: likewise
+	* rust/compile/derive_macro4.rs: likewise
+	* rust/compile/derive_macro6.rs: likewise
+	* rust/compile/expected_type_args2.rs: likewise
+	* rust/compile/expected_type_args3.rs: likewise
+	* rust/compile/generics1.rs: likewise
+	* rust/compile/generics11.rs: likewise
+	* rust/compile/generics12.rs: likewise
+	* rust/compile/generics2.rs: likewise
+	* rust/compile/generics3.rs: likewise
+	* rust/compile/generics4.rs: likewise
+	* rust/compile/generics6.rs: likewise
+	* rust/compile/generics7.rs: likewise
+	* rust/compile/generics8.rs: likewise
+	* rust/compile/if_let_expr.rs: likewise
+	* rust/compile/issue-1005.rs: likewise
+	* rust/compile/issue-1019.rs: likewise
+	* rust/compile/issue-1031.rs: likewise
+	* rust/compile/issue-1034.rs: likewise
+	* rust/compile/issue-1128.rs: likewise
+	* rust/compile/issue-1129-2.rs: likewise
+	* rust/compile/issue-1130.rs: likewise
+	* rust/compile/issue-1131.rs: likewise
+	* rust/compile/issue-1165.rs: likewise
+	* rust/compile/issue-1173.rs: likewise
+	* rust/compile/issue-1235.rs: likewise
+	* rust/compile/issue-1237.rs: likewise
+	* rust/compile/issue-1289.rs: likewise
+	* rust/compile/issue-1383.rs: likewise
+	* rust/compile/issue-1447.rs: likewise
+	* rust/compile/issue-1589.rs: likewise
+	* rust/compile/issue-1725-1.rs: likewise
+	* rust/compile/issue-1725-2.rs: likewise
+	* rust/compile/issue-1773.rs: likewise
+	* rust/compile/issue-1786.rs: likewise
+	* rust/compile/issue-1893.rs: likewise
+	* rust/compile/issue-1901.rs: likewise
+	* rust/compile/issue-1930.rs: likewise
+	* rust/compile/issue-1981.rs: likewise
+	* rust/compile/issue-2019-1.rs: likewise
+	* rust/compile/issue-2019-2.rs: likewise
+	* rust/compile/issue-2019-3.rs: likewise
+	* rust/compile/issue-2036.rs: likewise
+	* rust/compile/issue-2037.rs: likewise
+	* rust/compile/issue-2070.rs: likewise
+	* rust/compile/issue-2105.rs: likewise
+	* rust/compile/issue-2106.rs: likewise
+	* rust/compile/issue-2135.rs: likewise
+	* rust/compile/issue-2136-1.rs: likewise
+	* rust/compile/issue-2136-2.rs: likewise
+	* rust/compile/issue-2139.rs: likewise
+	* rust/compile/issue-2142.rs: likewise
+	* rust/compile/issue-2165.rs: likewise
+	* rust/compile/issue-2166.rs: likewise
+	* rust/compile/issue-2190-1.rs: likewise
+	* rust/compile/issue-2190-2.rs: likewise
+	* rust/compile/issue-2195.rs: likewise
+	* rust/compile/issue-2238.rs: likewise
+	* rust/compile/issue-2304.rs: likewise
+	* rust/compile/issue-850.rs: likewise
+	* rust/compile/issue-855.rs: likewise
+	* rust/compile/issue-925.rs: likewise
+	* rust/compile/macro-issue1400.rs: likewise
+	* rust/compile/macro20.rs: likewise
+	* rust/compile/macro23.rs: likewise
+	* rust/compile/macro40.rs: likewise
+	* rust/compile/macro54.rs: likewise
+	* rust/compile/name_resolution2.rs: likewise
+	* rust/compile/name_resolution4.rs: likewise
+	* rust/compile/nested_generic.rs: likewise
+	* rust/compile/parse_associated_type_as_generic_arg.rs: likewise
+	* rust/compile/parse_associated_type_as_generic_arg2.rs: likewise
+	* rust/compile/parse_associated_type_as_generic_arg3.rs: likewise
+	* rust/compile/parse_complex_generic_application.rs: likewise
+	* rust/compile/parse_complex_generic_application2.rs: likewise
+	* rust/compile/path_as_generic_arg.rs: likewise
+	* rust/compile/privacy4.rs: likewise
+	* rust/compile/privacy6.rs: likewise
+	* rust/compile/sizeof-stray-infer-var-bug.rs: likewise
+	* rust/compile/stmt_with_block_dot.rs: likewise
+	* rust/compile/torture/associated_types1.rs: likewise
+	* rust/compile/torture/forward_decl_5.rs: likewise
+	* rust/compile/torture/generics1.rs: likewise
+	* rust/compile/torture/generics10.rs: likewise
+	* rust/compile/torture/generics11.rs: likewise
+	* rust/compile/torture/generics12.rs: likewise
+	* rust/compile/torture/generics13.rs: likewise
+	* rust/compile/torture/generics14.rs: likewise
+	* rust/compile/torture/generics15.rs: likewise
+	* rust/compile/torture/generics16.rs: likewise
+	* rust/compile/torture/generics17.rs: likewise
+	* rust/compile/torture/generics18.rs: likewise
+	* rust/compile/torture/generics19.rs: likewise
+	* rust/compile/torture/generics2.rs: likewise
+	* rust/compile/torture/generics20.rs: likewise
+	* rust/compile/torture/generics21.rs: likewise
+	* rust/compile/torture/generics22.rs: likewise
+	* rust/compile/torture/generics23.rs: likewise
+	* rust/compile/torture/generics24.rs: likewise
+	* rust/compile/torture/generics25.rs: likewise
+	* rust/compile/torture/generics26.rs: likewise
+	* rust/compile/torture/generics27.rs: likewise
+	* rust/compile/torture/generics28.rs: likewise
+	* rust/compile/torture/generics29.rs: likewise
+	* rust/compile/torture/generics3.rs: likewise
+	* rust/compile/torture/generics30.rs: likewise
+	* rust/compile/torture/generics31.rs: likewise
+	* rust/compile/torture/generics32.rs: likewise
+	* rust/compile/torture/generics4.rs: likewise
+	* rust/compile/torture/generics5.rs: likewise
+	* rust/compile/torture/generics6.rs: likewise
+	* rust/compile/torture/generics7.rs: likewise
+	* rust/compile/torture/generics8.rs: likewise
+	* rust/compile/torture/generics9.rs: likewise
+	* rust/compile/torture/intrinsics-2.rs: likewise
+	* rust/compile/torture/intrinsics-6.rs: likewise
+	* rust/compile/torture/intrinsics-7.rs: likewise
+	* rust/compile/torture/intrinsics-8.rs: likewise
+	* rust/compile/torture/issue-1024.rs: likewise
+	* rust/compile/torture/issue-1075.rs: likewise
+	* rust/compile/torture/issue-1432.rs: likewise
+	* rust/compile/torture/issue-1555.rs: likewise
+	* rust/compile/torture/issue-368.rs: likewise
+	* rust/compile/torture/issue-808.rs: likewise
+	* rust/compile/torture/issue-862.rs: likewise
+	* rust/compile/torture/issue-893-2.rs: likewise
+	* rust/compile/torture/issue-893.rs: likewise
+	* rust/compile/torture/must_use2.rs: likewise
+	* rust/compile/torture/nested_fn2.rs: likewise
+	* rust/compile/torture/phantom_data.rs: likewise
+	* rust/compile/torture/range-lang-item1.rs: likewise
+	* rust/compile/torture/traits1.rs: likewise
+	* rust/compile/torture/traits11.rs: likewise
+	* rust/compile/torture/traits12.rs: likewise
+	* rust/compile/torture/traits13.rs: likewise
+	* rust/compile/torture/traits14.rs: likewise
+	* rust/compile/torture/traits15.rs: likewise
+	* rust/compile/torture/traits16.rs: likewise
+	* rust/compile/torture/traits17.rs: likewise
+	* rust/compile/torture/traits18.rs: likewise
+	* rust/compile/torture/traits19.rs: likewise
+	* rust/compile/torture/traits2.rs: likewise
+	* rust/compile/torture/traits3.rs: likewise
+	* rust/compile/torture/traits4.rs: likewise
+	* rust/compile/torture/traits5.rs: likewise
+	* rust/compile/torture/traits6.rs: likewise
+	* rust/compile/torture/traits7.rs: likewise
+	* rust/compile/torture/traits8.rs: likewise
+	* rust/compile/torture/traits9.rs: likewise
+	* rust/compile/torture/transmute-size-check-1.rs: likewise
+	* rust/compile/torture/transmute1.rs: likewise
+	* rust/compile/torture/uninit-intrinsic-1.rs: likewise
+	* rust/compile/torture/utf8_identifiers.rs: likewise
+	* rust/compile/traits1.rs: likewise
+	* rust/compile/traits10.rs: likewise
+	* rust/compile/traits11.rs: likewise
+	* rust/compile/traits12.rs: likewise
+	* rust/compile/traits2.rs: likewise
+	* rust/compile/traits3.rs: likewise
+	* rust/compile/traits4.rs: likewise
+	* rust/compile/traits5.rs: likewise
+	* rust/compile/traits6.rs: likewise
+	* rust/compile/traits7.rs: likewise
+	* rust/compile/traits8.rs: likewise
+	* rust/compile/traits9.rs: likewise
+	* rust/compile/type-bindings1.rs: likewise
+	* rust/compile/unconstrained_type_param.rs: likewise
+	* rust/compile/unsafe10.rs: likewise
+	* rust/execute/torture/closure1.rs: likewise
+	* rust/execute/torture/closure2.rs: likewise
+	* rust/execute/torture/closure3.rs: likewise
+	* rust/execute/torture/closure4.rs: likewise
+	* rust/execute/torture/coercion1.rs: likewise
+	* rust/execute/torture/coercion2.rs: likewise
+	* rust/execute/torture/coercion3.rs: likewise
+	* rust/execute/torture/copy_nonoverlapping1.rs: likewise
+	* rust/execute/torture/derive_macro1.rs: likewise
+	* rust/execute/torture/derive_macro3.rs: likewise
+	* rust/execute/torture/derive_macro4.rs: likewise
+	* rust/execute/torture/index1.rs: likewise
+	* rust/execute/torture/issue-1120.rs: likewise
+	* rust/execute/torture/issue-1133.rs: likewise
+	* rust/execute/torture/issue-1198.rs: likewise
+	* rust/execute/torture/issue-1232.rs: likewise
+	* rust/execute/torture/issue-1249.rs: likewise
+	* rust/execute/torture/issue-1436.rs: likewise
+	* rust/execute/torture/issue-1496.rs: likewise
+	* rust/execute/torture/issue-1720-2.rs: likewise
+	* rust/execute/torture/issue-1720.rs: likewise
+	* rust/execute/torture/issue-2052.rs: likewise
+	* rust/execute/torture/issue-2179.rs: likewise
+	* rust/execute/torture/issue-2180.rs: likewise
+	* rust/execute/torture/issue-2236.rs: likewise
+	* rust/execute/torture/issue-647.rs: likewise
+	* rust/execute/torture/issue-845.rs: likewise
+	* rust/execute/torture/issue-851.rs: likewise
+	* rust/execute/torture/issue-858.rs: likewise
+	* rust/execute/torture/macros23.rs: likewise
+	* rust/execute/torture/macros28.rs: likewise
+	* rust/execute/torture/method2.rs: likewise
+	* rust/execute/torture/method3.rs: likewise
+	* rust/execute/torture/method4.rs: likewise
+	* rust/execute/torture/operator_overload_1.rs: likewise
+	* rust/execute/torture/operator_overload_10.rs: likewise
+	* rust/execute/torture/operator_overload_11.rs: likewise
+	* rust/execute/torture/operator_overload_12.rs: likewise
+	* rust/execute/torture/operator_overload_2.rs: likewise
+	* rust/execute/torture/operator_overload_3.rs: likewise
+	* rust/execute/torture/operator_overload_4.rs: likewise
+	* rust/execute/torture/operator_overload_5.rs: likewise
+	* rust/execute/torture/operator_overload_6.rs: likewise
+	* rust/execute/torture/operator_overload_7.rs: likewise
+	* rust/execute/torture/operator_overload_8.rs: likewise
+	* rust/execute/torture/operator_overload_9.rs: likewise
+	* rust/execute/torture/prefetch_data.rs: likewise
+	* rust/execute/torture/ref-pattern2.rs: likewise
+	* rust/execute/torture/slice-magic.rs: likewise
+	* rust/execute/torture/slice-magic2.rs: likewise
+	* rust/execute/torture/slice1.rs: likewise
+	* rust/execute/torture/str-layout1.rs: likewise
+	* rust/execute/torture/trait1.rs: likewise
+	* rust/execute/torture/trait10.rs: likewise
+	* rust/execute/torture/trait11.rs: likewise
+	* rust/execute/torture/trait12.rs: likewise
+	* rust/execute/torture/trait13.rs: likewise
+	* rust/execute/torture/trait2.rs: likewise
+	* rust/execute/torture/trait3.rs: likewise
+	* rust/execute/torture/trait4.rs: likewise
+	* rust/execute/torture/trait5.rs: likewise
+	* rust/execute/torture/trait6.rs: likewise
+	* rust/execute/torture/trait7.rs: likewise
+	* rust/execute/torture/trait8.rs: likewise
+	* rust/execute/torture/trait9.rs: likewise
+	* rust/execute/torture/transmute1.rs: likewise
+	* rust/execute/torture/wrapping_op1.rs: likewise
+	* rust/execute/torture/wrapping_op2.rs: likewise
+	* rust/link/generic_function_0.rs: likewise
+	* rust/link/generic_function_1.rs: likewise
+	* rust/compile/issue-2375.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/non_member_const.rs: add missing error message
+	* rust/compile/issue-2478.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/break2.rs: Modified file to pass test case.
+	* rust/compile/break_with_value_inside_loop.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/proc_macro_attribute_non_root_function.rs: New test.
+	* rust/compile/proc_macro_attribute_non_root_method.rs: New test.
+	* rust/compile/proc_macro_attribute_non_root_module.rs: New test.
+	* rust/compile/proc_macro_derive_non_root_function.rs: New test.
+	* rust/compile/proc_macro_derive_non_root_method.rs: New test.
+	* rust/compile/proc_macro_derive_non_root_module.rs: New test.
+	* rust/compile/proc_macro_non_root_function.rs: New test.
+	* rust/compile/proc_macro_non_root_method.rs: New test.
+	* rust/compile/proc_macro_non_root_module.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/proc_macro_pub_function.rs: New test.
+	* rust/compile/proc_macro_pub_module.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/proc_macro_attribute_crate_type.rs: Replace
+	dg-excess-errors with dg-error and fix the line so the test
+	can pass.
+	* rust/compile/proc_macro_crate_type.rs: Likewise.
+	* rust/compile/proc_macro_derive_crate_type.rs: Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/proc_macro_attribute_private.rs: New test.
+	* rust/compile/proc_macro_derive_private.rs: New test.
+	* rust/compile/proc_macro_private.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/proc_macro_derive_non_function.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/proc_macro_attribute_non_function.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/proc_macro_non_function.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/abi-vardaic.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/non_member_const.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/break1.rs: Modified to pass test case.
+	* rust/compile/continue1.rs: likewise.
+	* rust/compile/break_continue_outside_loop.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/proc_macro_derive_malformed.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/proc_macro_attribute_crate_type.rs: New test.
+	* rust/compile/proc_macro_crate_type.rs: New test.
+	* rust/compile/proc_macro_derive_crate_type.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/found_struct.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/changed_intrinsics.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/torture/intrinsics-3.rs: Updated comment to pass the test case.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/bad_pub_enumitems.rs: changed comment to pass test cases.
+	* rust/compile/dup_fields.rs: likewise.
+	* rust/execute/same_field_name.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/wrong_lhs_assignment.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/func2.rs: updated comment to pass new test cases.
+	* rust/compile/tuple_struct2.rs: likewise.
+	* rust/compile/wrong_no_of_parameters.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+	    GuillaumeGomez  <guillaume1.gomez@gmail.com>
+
+	* rust/compile/name_resolution1.rs: New test.
+	* rust/compile/name_resolution2.rs: New test.
+	* rust/compile/name_resolution3.rs: New test.
+	* rust/compile/name_resolution4.rs: New test.
+	* rust/compile/name_resolution5.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/link/trait_import_0.rs: Mark test as xfail.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/break-rust2.rs: Updated comment to pass testcase.
+	* rust/compile/const_generics_3.rs: likewise.
+	* rust/compile/const_generics_4.rs: likewise.
+	* rust/compile/not_find_value_in_scope.rs: New test.
+
+2024-01-16  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/missing_constructor_fields.rs: New test.
+
+2024-01-16  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/broken_utf8.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro-issue2273.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2105.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/rust_abi.rs: New test.
+
+2024-01-16  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/bytecharstring.rs:add test for it
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro56.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1981.rs: Fix badly copied libcore code test
+	* rust/compile/issue-2330.rs: New test.
+
+2024-01-16  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/torture/raw_identifiers.rs: New test.
+	* rust/compile/torture/utf8_identifiers.rs: New test.
+
+2024-01-16  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/torture/utf8_whitespaces.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro-issue2268.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro-issue2264.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2304.rs: New test.
+
+2024-01-16  Matthew Jasper  <mjjasper1@gmail.com>
+
+	* rust/compile/macro54.rs: New test.
+	* rust/compile/macro55.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1893.rs: fully compile the test case
+
+2024-01-16  Matthew Jasper  <mjjasper1@gmail.com>
+
+	* rust/compile/braced_macro_arm.rs: New test.
+	* rust/compile/braced_macro_statements1.rs: New test.
+	* rust/compile/braced_macro_statements2.rs: New test.
+	* rust/compile/braced_macro_statements3.rs: New test.
+	* rust/compile/issue-2225.rs: Update test.
+	* rust/compile/macro53.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro6.rs: Remove check for direct error.
+	* rust/compile/macro7.rs: Likewise.
+	* rust/compile/macro-issue2229.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2036.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2019-2.rs: New test.
+	* rust/compile/issue-2019-3.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2019-1.rs: New test.
+
+2024-01-16  Dave Evans  <dave@dmetwo.org>
+
+	* rust/compile/issue-1813.rs: New test.
+
+2024-01-16  TieWay59  <tieway59@foxmail.com>
+
+	* rust/compile/break1.rs: remove dg-error "failed to type resolve expression"
+	* rust/compile/break2.rs: Likewise
+	* rust/compile/cfg2.rs: Likewise
+	* rust/compile/continue1.rs: Likewise
+	* rust/compile/generics4.rs: Likewise
+	* rust/compile/generics6.rs: Likewise
+	* rust/compile/generics7.rs: Likewise
+	* rust/compile/issue-2029.rs: Likewise
+	* rust/compile/issue-2139.rs: Likewise
+	* rust/compile/issue-2190-1.rs: Likewise
+	* rust/compile/issue-925.rs: Likewise
+	* rust/compile/method1.rs: Likewise
+	* rust/compile/shadow1.rs: Likewise
+	* rust/compile/type-bindings1.rs: Likewise
+	* rust/compile/unary_negation.rs: Likewise
+	* rust/compile/unary_not.rs: Likewise
+	* rust/compile/unconstrained_type_param.rs: Likewise
+	* rust/compile/usize1.rs: Likewise
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/traits2.rs: update error message
+	* rust/compile/traits3.rs: update error message
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/derive_empty.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/test_mod.rs: Moved to...
+	* rust/compile/issue-1089/test_mod.rs: ...here.
+	* rust/compile/mod_missing_middle.rs: Fix paths.
+	* rust/compile/missing_middle/both_path.rs: Moved to...
+	* rust/compile/mod_missing_middle/missing_middle/both_path.rs: ...here.
+	* rust/compile/missing_middle/explicit.not.rs: Moved to...
+	* rust/compile/mod_missing_middle/missing_middle/explicit.not.rs: ...here.
+	* rust/compile/missing_middle/other.rs: Moved to...
+	* rust/compile/mod_missing_middle/missing_middle/explicit.not/other.rs: ...here.
+	* rust/compile/missing_middle/inner_path.rs: Moved to...
+	* rust/compile/mod_missing_middle/missing_middle/inner_path.rs: ...here.
+	* rust/compile/missing_middle/outer_path.rs: Moved to...
+	* rust/compile/mod_missing_middle/missing_middle/outer_path.rs: ...here.
+	* rust/compile/missing_middle/sub/mod.rs: Moved to...
+	* rust/compile/mod_missing_middle/missing_middle/sub/mod.rs: ...here.
+	* rust/compile/torture/modules/mod.rs: Moved to...
+	* rust/compile/torture/extern_mod1/modules/mod.rs: ...here.
+	* rust/execute/torture/modules/mod.rs: Moved to...
+	* rust/execute/torture/extern_mod4/modules/mod.rs: ...here.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/derive_macro8.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2165.rs: New test.
+	* rust/compile/issue-2166.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/struct-expr-parse.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive_macro7.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive_macro4.rs: New test.
+	* rust/compile/derive_macro6.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/execute/torture/derive_macro4.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro-delim.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/macro43.rs: Fix test with new derive macros.
+	* rust/compile/derive_macro1.rs: New test.
+	* rust/compile/derive_macro3.rs: New test.
+	* rust/execute/torture/derive_macro1.rs: New test.
+	* rust/execute/torture/derive_macro3.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/cfg6.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2195.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2238.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-2225.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-2207.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-2236.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2190-1.rs: New test.
+	* rust/compile/issue-2190-2.rs: New test.
+
+2024-01-16  Matthew Jasper  <mjjasper1@gmail.com>
+
+	* rust/compile/nested_macro_use3.rs: New test.
+
+2024-01-16  Matthew Jasper  <mjjasper1@gmail.com>
+
+	* rust/compile/cfg-attr.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/doc_macro.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro-issue2194.rs: New test.
+
+2024-01-16  Matthew Jasper  <mjjasper1@gmail.com>
+
+	* rust/compile/for_expr.rs: New test.
+	* rust/compile/issue-407-2.rs: Update compiler output.
+	* rust/compile/issue-407.rs: Update compiler output.
+	* rust/compile/issue-867.rs: Update compiler output.
+	* rust/compile/issue-2189.rs: New test.
+	* rust/compile/macro_call_statement.rs: New test.
+	* rust/compile/stmt_with_block_dot.rs: New test.
+	* rust/compile/torture/loop8.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro-issue2192.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/const-issue1440.rs: Remove LE conditional compilation.
+	* rust/compile/torture/issue-1432.rs: Likewise.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/coercion3.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-2179.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-2180.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2188.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/parse_specialization.rs:
+	Add "default unsafe" coverage.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2178.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/macro_use1.rs: New test.
+	* rust/execute/torture/macro_use1.rs: New test.
+	* rust/compile/nested_macro_use1.rs: New test.
+	* rust/compile/nested_macro_use2.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-1446.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/execute/torture/cfg-tail.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro52.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-2125.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2135.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2106.rs: New test.
+	* rust/compile/issue-1524.rs: regression (placeholder generic)
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2142.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2136-1.rs: New test.
+	* rust/compile/issue-2136-2.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2139.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1893.rs: regression
+	* rust/compile/traits12.rs: rustc uses a custom error message here
+	* rust/compile/unconstrained_type_param.rs: extra error message
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/execute/torture/issue-1852-1.rs: New test.
+	* rust/execute/torture/issue-1852.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/issue-1807.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/let_alt.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-852.rs: New test.
+
+2024-01-16  Sergey Bugaev  <bugaevc@gmail.com>
+
+	* lib/prune.exp (prune_ices):
+	Also prune "You have broken GCC Rust. This is a feature."
+	* rust/compile/break-rust1.rs: New test
+	* rust/compile/break-rust2.rs: New test
+	* rust/compile/break-rust3.rs: New test
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/if_let_expr.rs: Increase test coverage.
+
+2024-01-16  Sebastian Kirmayer  <gnu@kirmayer.eu>
+
+	* rust/compile/macro-issue2092.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macro51.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2070.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-2080.rs: New test.
+
+2024-01-16  Emanuele Micheletti  <micheletti.emanuele@hotmail.com>
+
+	* rust/compile/cast5.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/const_generics_5.rs: update test case
+	* rust/compile/issue-2043.rs: New test.
+	* rust/compile/issue-2039.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2042.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-925.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/bounds1.rs: Moved to...
+	* rust/compile/bounds1.rs: ...here.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2029.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-2052.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/array4.rs: New test.
+	* rust/execute/torture/arrays.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/privacy8.rs: New test.
+
+2024-01-16  emanuele-em  <micheletti.emanuele@hotmail.com>
+
+	* rust/compile/cast4.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/macro49.rs: New test.
+	* rust/compile/macro50.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2037.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1893.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-850.rs: New test.
+	* rust/compile/issue-855.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1981.rs: New test.
+
+2024-01-16  Mahmoud Mohamed  <mahadelr19@gmail.com>
+
+	* rust/compile/torture/alt_patterns1.rs: New test.
+
+2024-01-16  Mahmoud Mohamed  <mahadelr19@gmail.com>
+
+	* rust/compile/multiple_bindings2.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/sizeof-stray-infer-var-bug.rs: New test.
+
+2024-01-16  Tage Johansson  <frans.tage@gmail.com>
+
+	* rust/compile/macro47.rs: Test that :vis can be followed by some keywords
+	* rust/compile/macro48.rs: Test that :vis cannot be followed by the keyword priv
+
+2024-01-16  Mahmoud Mohamed  <mahadelr19@gmail.com>
+
+	* rust/compile/multiple_bindings1.rs: New test.
+
+2024-01-16  Mahmoud Mohamed  <mahadelr19@gmail.com>
+
+	* rust/execute/torture/closure4.rs: New test.
+	* rust/execute/torture/ref-pattern2.rs: New test.
+
+2024-01-16  Mahmoud Mohamed  <mahadelr19@gmail.com>
+
+	* rust/compile/ref_pattern_fn_param.rs: Moved to...
+	* rust/compile/ref_pattern_fn_param1.rs: ...here.
+	* rust/compile/ref_pattern_fn_param2.rs: New test.
+	* rust/execute/torture/ref-pattern1.rs: New test.
+
+2024-01-16  goar5670  <mahadelr19@gmail.com>
+
+	* rust/compile/ref_pattern_fn_param.rs: New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/lang-impl.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/stringify.rs: Add a basic test with some text.
+	* rust/execute/torture/builtin_macro_stringify.rs: Verify the
+	text is left as is without any other macro expansion.
+
+2024-01-16  Nikos Alexandris  <nikos-alexandris@protonmail.com>
+
+	* rust/compile/tuple_mismatch.rs: New test.
+
+2024-01-16  goar5670  <mahadelr19@gmail.com>
+
+	* rust/compile/complex_qualified_path_in_expr.rs : New test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/closure_no_type_anno.rs: Extend test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1524.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/parse_associated_type_as_generic_arg3.rs: remove -fsyntax-only
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/parse_associated_type_as_generic_arg.rs: it now works without -fsyntax-only
+	* rust/compile/parse_associated_type_as_generic_arg2.rs: likewise
+
+2024-01-16  goar5670  <mahadelr19@gmail.com>
+
+	* rust/compile/closure_no_type_anno.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/while_let_expr.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/torture/uninit-intrinsic-1.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/zero_sized_slice.rs: New test.
+
+2024-01-16  Nikos Alexandris  <nikos-alexandris@protonmail.com>
+
+	* rust/compile/builtin_macro_include_bytes_location_info.rs: New test.
+	* rust/compile/builtin_macro_include_str_location_info.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/slice_rest_pattern.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/if_let_expr.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/torture/intrinsics-8.rs: New test.
+
+2024-01-16  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/feature_extern_types.rs:New file.
+
+2024-01-16  bl7awy  <mahadelr19@gmail.com>
+
+	* rust/compile/cast_generics.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1901.rs: New test.
+
+2024-01-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1930.rs: New test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/extern_type_item_missing_semi.rs: New failing
+	test.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/extern_type_item.rs: New test.
+
+2024-01-16  omkar-mohanty  <franzohouser@gmail.com>
+
+	* rust/compile/builtin_macro_eager3.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/parse_invalid_specialization.rs: New test.
+	* rust/compile/parse_specialization.rs: New test.
+	* rust/compile/default_not_a_kw.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/expand_macro_qual_path_in_type.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/auto_trait_invalid.rs: New test.
+	* rust/compile/auto_trait_valid.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/parse_associated_type_as_generic_arg3.rs: New test.
+
+2024-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/parse_associated_type_as_generic_arg.rs: New test.
+	* rust/compile/parse_associated_type_as_generic_arg2.rs: New test.
+	* rust/compile/path_as_generic_arg.rs: New test.
+	* rust/compile/nested_generic.rs: New test.
+
+2024-01-16  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/builtin_macro_compile_error.rs: Add
+	crate feature `rustc_attri`.
+	* rust/compile/builtin_macro_concat.rs: Likewise.
+	* rust/compile/builtin_macro_eager1.rs: Likewise.
+	* rust/compile/builtin_macro_eager2.rs: Likewise.
+	* rust/compile/builtin_macro_env.rs: Likewise.
+	* rust/compile/builtin_macro_include_bytes.rs:
+	Likewise.
+	* rust/compile/builtin_macro_include_str.rs:
+	Likewise.
+	* rust/compile/builtin_macro_not_found.rs:
+	Likewise.
+	* rust/compile/builtin_macro_recurse2.rs:
+	Likewise.
+	* rust/compile/feature_rust_attri0.rs:New file.
+	* rust/compile/feature_rust_attri1.rs:New file.
+	* rust/compile/include_empty.rs:Add crate feature
+	`rustc_attri`.
+	* rust/compile/issue-1830_bytes.rs:Likewise.
+	* rust/compile/issue-1830_str.rs:Likewise.
+	* rust/compile/macro42.rs:Likewise.
+	* rust/execute/torture/builtin_macro_cfg.rs:
+	Likewise.
+	* rust/execute/torture/builtin_macro_concat.rs:
+	Likewise.
+	* rust/execute/torture/builtin_macro_env.rs:
+	Likewise.
+	* rust/execute/torture/builtin_macro_include_bytes.rs:
+	Likewise.
+	* rust/execute/torture/builtin_macro_include_str.rs:
+	Likewise.
+	* rust/execute/torture/builtin_macro_line.rs:
+	Likewise.
+	* rust/execute/torture/builtin_macros1.rs:
+	Likewise.
+	* rust/execute/torture/builtin_macros3.rs:
+	Likewise.
+	* rust/execute/torture/macros29.rs:Likewise.
+	* rust/execute/torture/macros30.rs:Likewise.
+	* rust/execute/torture/macros31.rs:Likewise.
+
+2024-01-16  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/112573
+	* gcc.target/aarch64/pr112573.c: Add new test.
+
+2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/pattern-or.rs: New test.
+
+2024-01-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* gcc.dg/lto/pr88077_0.c: Change type to match alignment for SPARC
+
+2024-01-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* gcc.dg/ifcvt-4.c: Skip for SPARC V8
+
+2024-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113372
+	PR middle-end/90348
+	PR middle-end/110115
+	PR middle-end/111422
+	* gcc.dg/torture/bitint-49.c: New test.
+	* gcc.c-torture/execute/pr90348.c: New test.
+	* gcc.c-torture/execute/pr110115.c: New test.
+	* gcc.c-torture/execute/pr111422.c: New test.
+
+2024-01-16  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* gcc.target/aarch64/bb-slp-pr113091.c: New test.
+
+2024-01-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113404
+	* gcc.target/riscv/rvv/base/big_endian-1.c: New test.
+	* gcc.target/riscv/rvv/base/big_endian-2.c: New test.
+
+2024-01-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/109705
+	* lib/target-supports.exp (check_effective_target_vect_long_mult):
+	Fix powerpc*-*-* checks.
+
+2024-01-16  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* gcc.target/riscv/rvv/base/abi-call-args-1-run.c: Delete the
+	-Wno-psabi.
+	* gcc.target/riscv/rvv/base/abi-call-args-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-2-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-3-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-4-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-error-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-return-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-return.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-variant_cc.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-fixed-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-fixed-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-save-restore.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-zcmp.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-save-restore.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-zcmp.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/fixed-point-vxrm-error.c: Ditto.
+	* gcc.target/riscv/rvv/base/fixed-point-vxrm.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-cvt-f.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-cvt-x.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-cvt-xu.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-11.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-12.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-13.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-14.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-15.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-16.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-17.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-18.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-19.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-20.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-21.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-22.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-23.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-24.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-25.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-26.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-27.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-28.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-29.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-30.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-31.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-32.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-33.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-34.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-35.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-36.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-37.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-38.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-39.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-40.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-41.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-42.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-43.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-44.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-45.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-46.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-47.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-48.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-49.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-50.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-51.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-52.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-53.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-54.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-55.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-56.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-57.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-58.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-59.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-60.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-61.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-62.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-63.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-64.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-65.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-66.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-67.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-68.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-69.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-70.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-71.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-72.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-73.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-74.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-75.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-76.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-77.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-autovec-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-autovec-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-autovec-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-autovec-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-error.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-fwmacc.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-macc.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-madd.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-msac.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-msub.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-ncvt-f.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-ncvt-x.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-ncvt-xu.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-nmacc.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-nmadd.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-nmsac.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-nmsub.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-rec7.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-redosum.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-redusum.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-single-div.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-single-mul.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-single-rdiv.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-single-rsub.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-single-sub.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-sqrt.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-wcvt-x.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-wcvt-xu.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-widening-add.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-widening-mul.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-widening-sub.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-wmsac.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-wnmacc.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-wnmsac.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-wredosum.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-wredusum.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrisinc-vrgatherei16.c: Ditto.
+	* gcc.target/riscv/rvv/base/no-honor-frm-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vadd.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vfadd.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vget_vset.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vloxseg2ei16.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vmv.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vreinterpret.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vadd.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vfadd.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vget_vset.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vloxseg2ei16.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vmv.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vreinterpret.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110119-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110119-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110265-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110265-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110265-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110277-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110277-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110299-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110299-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110299-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110299-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-0.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111720-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111935.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar-move-merged-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/simplify-vdiv.c: Ditto.
+	* gcc.target/riscv/rvv/base/simplify-vrsub.c: Ditto.
+	* gcc.target/riscv/rvv/base/tuple-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/tuple_vundefined.c: Ditto.
+	* gcc.target/riscv/rvv/base/vcreate.c: Ditto.
+	* gcc.target/riscv/rvv/base/vlmul_ext-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/vslide1down-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/vslide1down-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/vslide1down-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/vslide1up-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/vslide1up-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/vslide1up-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvbb-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvbb_vandn_vx_constraint.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvbc-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvbc_vx_constraint-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvbc_vx_constraint-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvkg-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvkned-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvknha-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvknhb-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvksed-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvksh-intrinsic.c: Ditto.
+
+2024-01-16  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-120.c: Delete the -Wno-psabi.
+	* gcc.target/riscv/rvv/base/integer_compare_insn_shortcut.c: Ditto.
+	* gcc.target/riscv/rvv/base/mask_insn_shortcut.c: Ditto.
+	* gcc.target/riscv/rvv/base/misc_vreinterpret_vbool_vint.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110109-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar_move-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-11.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/vlmul_ext-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/zero_base_load_store_optimization.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvfh-intrinsic.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvfh-over-zvfhmin.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/vector-abi-1.c: Removed.
+	* gcc.target/riscv/rvv/base/vector-abi-2.c: Removed.
+	* gcc.target/riscv/rvv/base/vector-abi-3.c: Removed.
+	* gcc.target/riscv/rvv/base/vector-abi-4.c: Removed.
+	* gcc.target/riscv/rvv/base/vector-abi-5.c: Removed.
+	* gcc.target/riscv/rvv/base/vector-abi-6.c: Removed.
+	* gcc.target/riscv/rvv/base/vector-abi-7.c: Removed.
+	* gcc.target/riscv/rvv/base/vector-abi-8.c: Removed.
+
 2024-01-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106229
