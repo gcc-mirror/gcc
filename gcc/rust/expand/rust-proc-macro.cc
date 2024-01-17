@@ -171,7 +171,7 @@ load_macros (std::string path)
   if (array == nullptr)
     return {};
 
-  rust_debug ("Found %lu procedural macros", array->length);
+  rust_debug ("Found %lu procedural macros", (unsigned long) array->length);
 
   return std::vector<ProcMacro::Procmacro> (array->macros,
 					    array->macros + array->length);

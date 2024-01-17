@@ -1122,10 +1122,10 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
 
   auto candidate = *candidates.begin ();
   rust_debug_loc (expr.get_method_name ().get_locus (),
-		  "resolved method to: {%u} {%s} with [%zu] adjustments",
+		  "resolved method to: {%u} {%s} with [%lu] adjustments",
 		  candidate.candidate.ty->get_ref (),
 		  candidate.candidate.ty->debug_str ().c_str (),
-		  candidate.adjustments.size ());
+		  (unsigned long) candidate.adjustments.size ());
 
   // Get the adjusted self
   Adjuster adj (receiver_tyty);
