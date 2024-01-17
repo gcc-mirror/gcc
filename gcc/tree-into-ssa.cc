@@ -2499,7 +2499,7 @@ public:
   /* opt_pass methods: */
   bool gate (function *fun) final override
     {
-      /* Do nothing for funcions that was produced already in SSA form.  */
+      /* Do nothing for functions that were produced already in SSA form.  */
       return !(fun->curr_properties & PROP_ssa);
     }
 

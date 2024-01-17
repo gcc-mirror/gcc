@@ -324,7 +324,7 @@ struct attr_access
      in TREE_VALUE and their positions in the argument list (stored
      in TREE_PURPOSE).  Each expression may be a PARM_DECL or some
      other DECL (for ordinary variables), or an EXPR for other
-     expressions (e.g., funcion calls).  */
+     expressions (e.g., function calls).  */
   tree size;
 
   /* The zero-based position of each of the formal function arguments.
