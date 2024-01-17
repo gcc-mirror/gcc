@@ -2352,6 +2352,26 @@ AArch64 target that is able to generate and execute armv8.3-a FJCVTZS
 instruction.
 @end table
 
+@subsubsection LoongArch specific attributes
+
+@table @code
+@item loongarch_sx
+LoongArch target that generates instructions for SX.
+
+@item loongarch_asx
+LoongArch target that generates instructions for ASX.
+
+@item loongarch_sx_hw
+LoongArch target that is able to generate and execute SX code.
+
+@item loongarch_asx_hw
+LoongArch target that is able to generate and execute ASX code.
+
+@item loongarch_call36_support
+LoongArch binutils supports call36 relocation.
+
+@end table
+
 @subsubsection MIPS-specific attributes
 
 @table @code
