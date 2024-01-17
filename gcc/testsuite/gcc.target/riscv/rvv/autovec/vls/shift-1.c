@@ -53,5 +53,5 @@ DEF_OP_VV (shift, 128, int64_t, >>)
 DEF_OP_VV (shift, 256, int64_t, >>)
 DEF_OP_VV (shift, 512, int64_t, >>)
 
-/* { dg-final { scan-assembler-times {vsra\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 39 } } */
+/* { dg-final { scan-assembler-times {vsra\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 42 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
