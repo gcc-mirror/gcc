@@ -16832,19 +16832,27 @@ void __builtin_bfin_ssync (void);
 The following built-in functions are available for eBPF targets.
 
 @defbuiltin{{unsigned long long} __builtin_bpf_load_byte (unsigned long long @var{offset})}
-Load a byte from the @code{struct sk_buff} packet data pointed by the register @code{%r6} and return it.
+Load a byte from the @code{struct sk_buff} packet data pointed to by the
+register @code{%r6}, and return it.
 @enddefbuiltin
 
 @defbuiltin{{unsigned long long} __builtin_bpf_load_half (unsigned long long @var{offset})}
-Load 16 bits from the @code{struct sk_buff} packet data pointed by the register @code{%r6} and return it.
+Load 16 bits from the @code{struct sk_buff} packet data pointed to by the
+register @code{%r6}, and return it.
 @enddefbuiltin
 
 @defbuiltin{{unsigned long long} __builtin_bpf_load_word (unsigned long long @var{offset})}
-Load 32 bits from the @code{struct sk_buff} packet data pointed by the register @code{%r6} and return it.
+Load 32 bits from the @code{struct sk_buff} packet data pointed to by the
+register @code{%r6}, and return it.
 @enddefbuiltin
 
-@defbuiltin{{void *} __builtin_preserve_access_index (@var{expr})}
-BPF Compile Once-Run Everywhere (CO-RE) support. Instruct GCC to generate CO-RE relocation records for any accesses to aggregate data structures (struct, union, array types) in @var{expr}. This builtin is otherwise transparent, the return value is whatever @var{expr} evaluates to. It is also overloaded: @var{expr} may be of any type (not necessarily a pointer), the return type is the same. Has no effect if @code{-mco-re} is not in effect (either specified or implied).
+@defbuiltin{@var{type} __builtin_preserve_access_index (@var{type} @var{expr})}
+BPF Compile Once-Run Everywhere (CO-RE) support.  Instruct GCC to
+generate CO-RE relocation records for any accesses to aggregate
+data structures (struct, union, array types) in @var{expr}.  This builtin
+is otherwise transparent; @var{expr} may have any type and its value is
+returned.  This builtin has no effect if @code{-mco-re} is not in effect
+(either specified or implied).
 @enddefbuiltin
 
 @defbuiltin{{unsigned int} __builtin_preserve_field_info (@var{expr}, unsigned int @var{kind})}
@@ -16946,36 +16954,38 @@ The return value is the enum value in the target kernel.
 
 @defbuiltin{{unsigned int} __builtin_btf_type_id (@var{type}, unsigned int @var{kind})}
 BPF Compile Once-Run Everywhere (CO-RE) support. This builtin is used to get
-the BTF type ID of a specified type. Depending on the @var{kind} argument, it
-will either return the ID of the local BTF information, or the BTF type ID in
+the BTF type ID of a specified @var{type}.
+Depending on the @var{kind} argument, it
+either returns the ID of the local BTF information, or the BTF type ID in
 the target kernel.
 
 The following values are supported for @var{kind}:
 @table @code
 @item BTF_TYPE_ID_LOCAL = 0
-Return the local BTF type ID. Always succeeds.
+Return the local BTF type ID.  Always succeeds.
 
 @item BTF_TYPE_ID_TARGET = 1
-Return the target BTF type ID. If type does not exist in the target, returns 0.
+Return the target BTF type ID.  If @var{type} does not exist in the target,
+returns 0.
 @end table
 @enddefbuiltin
 
 @defbuiltin{{unsigned int} __builtin_preserve_type_info (@var{type}, unsigned int @var{kind})}
 BPF Compile Once-Run Everywhere (CO-RE) support. This builtin performs named
 type (struct/union/enum/typedef) verifications. The type of verification
-dependents on the @var{kind} argument provided.  This builtin will always
-return 0 if type does not exists in the target kernel.
+depends on the @var{kind} argument provided.  This builtin always
+returns 0 if @var{type} does not exist in the target kernel.
 
 The following values are supported for @var{kind}:
 @table @code
 @item BTF_TYPE_EXISTS = 0
-Checks if type exists in the target.
+Checks if @var{type} exists in the target.
 
 @item BTF_TYPE_MATCHES = 1
-Checks if type matches the local definition in the target kernel.
+Checks if @var{type} matches the local definition in the target kernel.
 
 @item BTF_TYPE_SIZE = 2
-Returns the size of the type within the target.
+Returns the size of the @var{type} within the target.
 @end table
 @enddefbuiltin
 
