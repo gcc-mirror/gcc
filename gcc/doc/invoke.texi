@@ -207,7 +207,7 @@ in the following sections.
 -fopenmp  -fopenmp-simd  -fopenmp-target-simd-clone@r{[}=@var{device-type}@r{]}
 -fpermitted-flt-eval-methods=@var{standard}
 -fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields
--fsigned-char  -funsigned-char -fstrict-flex-arrays[=@var{n}]
+-fsigned-char  -funsigned-char  -fstrict-flex-arrays[=@var{n}]
 -fsso-struct=@var{endianness}}
 
 @item C++ Language Options
@@ -405,7 +405,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n}
 -Wstring-compare
 -Wno-stringop-overflow -Wno-stringop-overread
--Wno-stringop-truncation -Wstrict-flex-arrays
+-Wno-stringop-truncation  -Wstrict-flex-arrays
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]}
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand
@@ -2945,21 +2945,21 @@ is always just like one of those two.
 
 @opindex fstrict-flex-arrays
 @opindex fno-strict-flex-arrays
-@item -fstrict-flex-arrays
-Control when to treat the trailing array of a structure as a flexible array
-member for the purpose of accessing the elements of such an array.
-The positive form is equivalent to @option{-fstrict-flex-arrays=3}, which is the
-strictest.  A trailing array is treated as a flexible array member only when it
-is declared as a flexible array member per C99 standard onwards.
-The negative form is equivalent to @option{-fstrict-flex-arrays=0}, which is the
-least strict.  All trailing arrays of structures are treated as flexible array
-members.
-
 @opindex fstrict-flex-arrays=@var{level}
-@item -fstrict-flex-arrays=@var{level}
+@item -fstrict-flex-arrays @r{(C and C++ only)}
+@itemx -fstrict-flex-arrays=@var{level} @r{(C and C++ only)}
 Control when to treat the trailing array of a structure as a flexible array
 member for the purpose of accessing the elements of such an array.  The value
 of @var{level} controls the level of strictness.
+
+@option{-fstrict-flex-arrays} is equivalent to
+@option{-fstrict-flex-arrays=3}, which is the strictest; all
+trailing arrays of structures are treated as flexible array members.
+
+The negative form @option{-fno-strict-flex-arrays} is equivalent to
+@option{-fstrict-flex-arrays=0}, which is the least strict.  In this
+case a trailing array is treated as a flexible array member only when
+it is declared as a flexible array member per C99 standard onwards.
 
 The possible values of @var{level} are the same as for the
 @code{strict_flex_array} attribute (@pxref{Variable Attributes}).
@@ -2967,6 +2967,10 @@ The possible values of @var{level} are the same as for the
 You can control this behavior for a specific trailing array field of a
 structure by using the variable attribute @code{strict_flex_array} attribute
 (@pxref{Variable Attributes}).
+
+The @option{-fstrict_flex_arrays} option interacts with the
+@option{-Wstrict-flex-arrays} option.  @xref{Warning Options}, for more
+information.
 
 @opindex fsso-struct
 @item -fsso-struct=@var{endianness}
@@ -8161,28 +8165,31 @@ safe.  @xref{Common Variable Attributes}.
 
 @opindex Wstrict-flex-arrays
 @opindex Wno-strict-flex-arrays
-@item -Wstrict-flex-arrays
-Warn about inproper usages of flexible array members
+@item -Wstrict-flex-arrays @r{(C and C++ only)}
+Warn about improper usages of flexible array members
 according to the @var{level} of the @code{strict_flex_array (@var{level})}
 attribute attached to the trailing array field of a structure if it's
 available, otherwise according to the @var{level} of the option
-@option{-fstrict-flex-arrays=@var{level}}.
+@option{-fstrict-flex-arrays=@var{level}}.  @xref{Common Variable Attributes},
+for more information about the attribute, and @ref{C Dialect Options} for
+more information about the option.  @code{-Wstrict-flex-arrays}
+is effective only when @var{level} is greater than 0.
 
-This option is effective only when @var{level} is bigger than 0.  Otherwise,
-it will be ignored with a warning.
-
-when @var{level}=1, warnings will be issued for a trailing array reference
+When @var{level}=1, warnings are issued for a trailing array reference
 of a structure that have 2 or more elements if the trailing array is referenced
 as a flexible array member.
 
-when @var{level}=2, in addition to @var{level}=1, additional warnings will be
+When @var{level}=2, in addition to @var{level}=1, additional warnings are
 issued for a trailing one-element array reference of a structure
 if the array is referenced as a flexible array member.
 
-when @var{level}=3, in addition to @var{level}=2, additional warnings will be
+When @var{level}=3, in addition to @var{level}=2, additional warnings are
 issued for a trailing zero-length array reference of a structure
 if the array is referenced as a flexible array member.
 
+This option is more effective when @option{-ftree-vrp} is active (the
+default for @option{-O2} and above) but some warnings may be diagnosed
+even without optimization.
 
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
