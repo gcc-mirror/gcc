@@ -15112,6 +15112,11 @@ package body Sem_Ch13 is
       then
          Append_Freeze_Action (Ent, Subp_Decl);
 
+         --  We may freeze Subp_Id immediately since Ent has just been frozen.
+         --  This will help to shield us from potential late freezing issues.
+
+         Set_Is_Frozen (Subp_Id);
+
       else
          Insert_Action (N, Subp_Decl);
          Set_Entity (N, Subp_Id);
