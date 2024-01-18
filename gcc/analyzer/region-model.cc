@@ -3605,6 +3605,14 @@ svalue_byte_range_has_null_terminator_1 (const svalue *sval,
 					 byte_offset_t *out_bytes_read,
 					 logger *logger)
 {
+  if (bytes.m_start_byte_offset == 0
+      && sval->all_zeroes_p ())
+    {
+      /* The initial byte of an all-zeroes SVAL is a zero byte.  */
+      *out_bytes_read = 1;
+      return tristate (true);
+    }
+
   switch (sval->get_kind ())
     {
     case SK_CONSTANT:
@@ -3631,7 +3639,6 @@ svalue_byte_range_has_null_terminator_1 (const svalue *sval,
 	    return tristate::TS_UNKNOWN;
 
 	  default:
-	    gcc_unreachable ();
 	    break;
 	  }
       }
