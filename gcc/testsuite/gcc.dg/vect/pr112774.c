@@ -1,6 +1,7 @@
+/* PR tree-optimization/112774 */
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details" } */
+/* { dg-additional-options "-O2 -ftree-vectorize" } */
 
 int A[1024 * 2];
 
