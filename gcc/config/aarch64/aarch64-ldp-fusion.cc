@@ -2672,7 +2672,15 @@ try_promote_writeback (insn_info *insn)
   for (unsigned i = 0; i < ARRAY_SIZE (changes); i++)
     gcc_assert (rtl_ssa::restrict_movement_ignoring (*changes[i], is_changing));
 
-  gcc_assert (rtl_ssa::recog_ignoring (attempt, pair_change, is_changing));
+  if (!rtl_ssa::recog_ignoring (attempt, pair_change, is_changing))
+    {
+      if (dump_file)
+	fprintf (dump_file, "i%d: recog failed on wb pair, bailing out\n",
+		 insn->uid ());
+      cancel_changes (0);
+      return;
+    }
+
   gcc_assert (crtl->ssa->verify_insn_changes (changes));
   confirm_change_group ();
   crtl->ssa->change_insns (changes);
