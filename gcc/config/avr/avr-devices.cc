@@ -130,7 +130,7 @@ avr_mcu_types[] =
 
 #ifndef IN_GEN_AVR_MMCU_TEXI
 
-static char*
+static char *
 avr_archs_str (void)
 {
   char *archs = concat ("", NULL);
@@ -144,7 +144,7 @@ avr_archs_str (void)
   return archs;
 }
 
-  
+
 void
 avr_inform_core_architectures (void)
 {
