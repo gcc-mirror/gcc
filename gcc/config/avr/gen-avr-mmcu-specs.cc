@@ -143,22 +143,28 @@ diagnose_mrodata_in_ram (FILE *f, const char *spec, const avr_mcu_t *mcu)
   const bool rodata_in_flash = (arch_id == ARCH_AVRTINY
 				|| (arch_id == ARCH_AVRXMEGA3
 				    && have_avrxmega3_rodata_in_flash));
+  // Device name as used by the vendor, extracted from "__AVR_<Name>__".
+  char mcu_Name[50] = { 0 };
+  if (! is_arch)
+    snprintf (mcu_Name, 1 + strlen (mcu->macro) - strlen ("__AVR___"),
+	      "%s", mcu->macro + strlen ("__AVR_"));
+
   fprintf (f, "%s:\n", spec);
   if (rodata_in_flash && is_arch)
-    fprintf (f, "\t%%{mrodata-in-ram: %%e-mrodata-in-ram not supported"
+    fprintf (f, "\t%%{mrodata-in-ram: %%e-mrodata-in-ram is not supported"
 	     " for %s}", mcu->name);
   else if (rodata_in_flash)
-    fprintf (f, "\t%%{mrodata-in-ram: %%e-mrodata-in-ram not supported"
-	     " for %s (arch=%s)}", mcu->name, arch->name);
+    fprintf (f, "\t%%{mrodata-in-ram: %%e-mrodata-in-ram is not supported"
+	     " for %s (arch=%s)}", mcu_Name, arch->name);
   else if (is_arch)
     {
       if (! have_flmap2 && ! have_flmap4)
-	fprintf (f, "\t%%{mno-rodata-in-ram: %%e-mno-rodata-in-ram not"
+	fprintf (f, "\t%%{mno-rodata-in-ram: %%e-mno-rodata-in-ram is not"
 		 " supported for %s}", mcu->name);
     }
   else if (! have_flmap)
-    fprintf (f, "\t%%{mno-rodata-in-ram: %%e-mno-rodata-in-ram not supported"
-	     " for %s (arch=%s)}", mcu->name, arch->name);
+    fprintf (f, "\t%%{mno-rodata-in-ram: %%e-mno-rodata-in-ram is not supported"
+	     " for %s (arch=%s)}", mcu_Name, arch->name);
   fprintf (f, "\n\n");
 }
 
@@ -265,6 +271,9 @@ print_mcu (const avr_mcu_t *mcu)
     }
 #endif  // WITH_AVRLIBC
 
+  // Diagnose usage of -m[no-]rodata-in-ram.
+  diagnose_mrodata_in_ram (f, "*check_rodata_in_ram", mcu);
+
   // avr-gcc specific specs for the compilation / the compiler proper.
 
   int n_flash = 1 + (mcu->flash_size - 1) / 0x10000;
@@ -285,9 +294,7 @@ print_mcu (const avr_mcu_t *mcu)
            : "\t%{mabsdata}");
 
   // -m[no-]rodata-in-ram basically affects linking, but sanity-check early.
-  diagnose_mrodata_in_ram (f, "*cc1_rodata_in_ram", mcu);
-
-  fprintf (f, "*cc1_misc:\n\t%%(cc1_rodata_in_ram)\n\n");
+  fprintf (f, "*cc1_misc:\n\t%%(check_rodata_in_ram)\n\n");
 
   // avr-gcc specific specs for assembling / the assembler.
 
@@ -332,9 +339,6 @@ print_mcu (const avr_mcu_t *mcu)
 
   fprintf (f, "*link_relax:\n\t%s\n\n", LINK_RELAX_SPEC);
 
-  // -m[no-]rodata-in-ram affects linking.  Sanity check its usage.
-  diagnose_mrodata_in_ram (f, "*link_rodata_in_ram", mcu);
-
   fprintf (f, "*link_arch:\n\t%s", link_arch_spec);
   if (is_device
       && flash_pm_offset)
@@ -356,7 +360,8 @@ print_mcu (const avr_mcu_t *mcu)
       fprintf (f, "\n\n");
     }
 
-  fprintf (f, "*link_misc:\n\t%%(link_rodata_in_ram)\n\n");
+  // -m[no-]rodata-in-ram affects linking.  Sanity check its usage.
+  fprintf (f, "*link_misc:\n\t%%(check_rodata_in_ram)\n\n");
 
   // Specs known to GCC.
 
