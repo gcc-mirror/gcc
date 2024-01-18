@@ -410,7 +410,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs
--Wtrivial-auto-var-init -Wtsan -Wtype-limits  -Wundef
+-Wtrivial-auto-var-init  -Wno-tsan  -Wtype-limits  -Wundef
 -Wuninitialized  -Wunknown-pragmas
 -Wunsuffixed-float-constants  -Wunused
 -Wunused-but-set-parameter  -Wunused-but-set-variable
@@ -424,7 +424,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wvector-operation-performance
 -Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than
 -Wvolatile-register-var  -Wwrite-strings
--Wxor-used-as-pow
+-Wno-xor-used-as-pow
 -Wzero-length-bounds}
 
 @item Static Analyzer Options
@@ -9090,13 +9090,12 @@ This warning is enabled by default.
 
 @opindex Wtsan
 @opindex Wno-tsan
-@item -Wtsan
-Warn about unsupported features in ThreadSanitizer.
+@item -Wno-tsan
+
+Disable warnings about unsupported features in ThreadSanitizer.
 
 ThreadSanitizer does not support @code{std::atomic_thread_fence} and
 can report false positives.
-
-This warning is enabled by default.
 
 @opindex Wtype-limits
 @opindex Wno-type-limits
@@ -10434,17 +10433,18 @@ and/or writes to register variables.  This warning is enabled by
 
 @opindex Wxor-used-as-pow
 @opindex Wno-xor-used-as-pow
-@item -Wxor-used-as-pow @r{(C, C++, Objective-C and Objective-C++ only)}
-Warn about uses of @code{^}, the exclusive or operator, where it appears
-the user meant exponentiation.  Specifically, the warning occurs when the
+@item -Wno-xor-used-as-pow @r{(C, C++, Objective-C and Objective-C++ only)}
+Disable warnings about uses of @code{^}, the exclusive or operator,
+where it appears the code meant exponentiation.
+Specifically, the warning occurs when the
 left-hand side is the decimal constant 2 or 10 and the right-hand side
 is also a decimal constant.
 
 In C and C++, @code{^} means exclusive or, whereas in some other languages
 (e.g. TeX and some versions of BASIC) it means exponentiation.
 
-This warning is enabled by default.  It can be silenced by converting one
-of the operands to hexadecimal.
+This warning can be silenced by converting one of the operands to
+hexadecimal as well as by compiling with @option{-Wno-xor-used-as-pow}.
 
 @opindex Wdisabled-optimization
 @opindex Wno-disabled-optimization
