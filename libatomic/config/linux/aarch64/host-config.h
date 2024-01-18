@@ -24,9 +24,20 @@
 #if HAVE_IFUNC
 #include <sys/auxv.h>
 
+#if __has_include(<sys/ifunc.h>)
+# include <sys/ifunc.h>
+#else
+typedef struct __ifunc_arg_t {
+  unsigned long _size;
+  unsigned long _hwcap;
+  unsigned long _hwcap2;
+} __ifunc_arg_t;
+# define _IFUNC_ARG_HWCAP (1ULL << 62)
+#endif
+
 #ifdef HWCAP_USCAT
 # if N == 16
-#  define IFUNC_COND_1	ifunc1 (hwcap)
+#  define IFUNC_COND_1	ifunc1 (hwcap, features)
 # else
 #  define IFUNC_COND_1	(hwcap & HWCAP_ATOMICS)
 # endif
@@ -48,7 +59,7 @@
 #define MIDR_PARTNUM(midr)	(((midr) >> 4) & 0xfff)
 
 static inline bool
-ifunc1 (unsigned long hwcap)
+ifunc1 (unsigned long hwcap, const __ifunc_arg_t *features)
 {
   if (hwcap & HWCAP_USCAT)
     return true;
