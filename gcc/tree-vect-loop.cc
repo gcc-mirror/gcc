@@ -977,8 +977,8 @@ vec_init_loop_exit_info (class loop *loop)
   if (exits.length () == 1)
     return exits[0];
 
-  /* If we have multiple exits we only support counting IV at the moment.  Analyze
-     all exits and return one */
+  /* If we have multiple exits we only support counting IV at the moment.
+     Analyze all exits and return the last one we can analyze.  */
   class tree_niter_desc niter_desc;
   edge candidate = NULL;
   for (edge exit : exits)
@@ -990,7 +990,9 @@ vec_init_loop_exit_info (class loop *loop)
 	  && !chrec_contains_undetermined (niter_desc.niter))
 	{
 	  tree may_be_zero = niter_desc.may_be_zero;
-	  if (integer_zerop (may_be_zero)
+	  if ((integer_zerop (may_be_zero)
+	       || integer_nonzerop (may_be_zero)
+	       || COMPARISON_CLASS_P (may_be_zero))
 	      && (!candidate
 		  || dominated_by_p (CDI_DOMINATORS, exit->src,
 				     candidate->src)))
@@ -1745,14 +1747,18 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 
   /* Check if we have any control flow that doesn't leave the loop.  */
   class loop *v_loop = loop->inner ? loop->inner : loop;
-  basic_block *bbs= get_loop_body (v_loop);
+  basic_block *bbs = get_loop_body (v_loop);
   for (unsigned i = 0; i < v_loop->num_nodes; i++)
     if (EDGE_COUNT (bbs[i]->succs) != 1
 	&& (EDGE_COUNT (bbs[i]->succs) != 2
 	    || !loop_exits_from_bb_p (bbs[i]->loop_father, bbs[i])))
-      return opt_result::failure_at (vect_location,
-				     "not vectorized:"
-				     " unsupported control flow in loop.\n");
+      {
+	free (bbs);
+	return opt_result::failure_at (vect_location,
+				       "not vectorized:"
+				       " unsupported control flow in loop.\n");
+      }
+  free (bbs);
 
   /* Different restrictions apply when we are considering an inner-most loop,
      vs. an outer (nested) loop.
@@ -1761,17 +1767,7 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
   info->inner_loop_cond = NULL;
   if (!loop->inner)
     {
-      /* Inner-most loop.  We currently require that the number of BBs is
-	 exactly 2 (the header and latch).  Vectorizable inner-most loops
-	 look like this:
-
-                        (pre-header)
-                           |
-                          header <--------+
-                           | |            |
-                           | +--> latch --+
-                           |
-                        (exit-bb)  */
+      /* Inner-most loop.  */
 
       if (empty_block_p (loop->header))
 	return opt_result::failure_at (vect_location,
@@ -1783,7 +1779,8 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
       edge entryedge;
 
       /* Nested loop. We currently require that the loop is doubly-nested,
-	 contains a single inner loop, and the number of BBs is exactly 5.
+	 contains a single inner loop with a single exit to the block
+	 with the single exit condition in the outer loop.
 	 Vectorizable outer-loops look like this:
 
 			(pre-header)
@@ -1796,7 +1793,7 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 			   |
 		        (exit-bb)
 
-	 The inner-loop has the properties expected of inner-most loops
+	 The inner-loop also has the properties expected of inner-most loops
 	 as described above.  */
 
       if ((loop->inner)->inner || (loop->inner)->next)
@@ -1845,16 +1842,13 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 				   "not vectorized:"
 				   " too many incoming edges.\n");
 
-  /* We assume that the loop exit condition is at the end of the loop. i.e,
-     that the loop is represented as a do-while (with a proper if-guard
-     before the loop if needed), where the loop header contains all the
-     executable statements, and the latch is empty.  */
+  /* We assume that the latch is empty.  */
   if (!empty_block_p (loop->latch)
       || !gimple_seq_empty_p (phi_nodes (loop->latch)))
     return opt_result::failure_at (vect_location,
 				   "not vectorized: latch block not empty.\n");
 
-  /* Make sure the exit is not abnormal.  */
+  /* Make sure there is no abnormal exit.  */
   auto_vec<edge> exits = get_loop_exit_edges (loop);
   for (edge e : exits)
     {
@@ -1868,7 +1862,6 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
     = vect_get_loop_niters (loop, exit_e, &info->assumptions,
 			    &info->number_of_iterations,
 			    &info->number_of_iterationsm1);
-
   if (info->conds.is_empty ())
     return opt_result::failure_at
       (vect_location,
