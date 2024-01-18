@@ -893,7 +893,6 @@ Curated Extensions
 
 * Local Declarations Without Block:: 
 * Conditional when constructs:: 
-* Case pattern matching:: 
 * Fixed lower bounds for array types and subtypes:: 
 * Prefixed-view notation for calls to primitive subprograms of untagged types:: 
 * Expression defaults for generic formal functions:: 
@@ -905,6 +904,7 @@ Experimental Language Extensions
 
 * Pragma Storage_Model:: 
 * Simpler accessibility model:: 
+* Case pattern matching:: 
 
 Security Hardening Features
 
@@ -28787,7 +28787,6 @@ for serious projects, and is only means as a playground/technology preview.
 @menu
 * Local Declarations Without Block:: 
 * Conditional when constructs:: 
-* Case pattern matching:: 
 * Fixed lower bounds for array types and subtypes:: 
 * Prefixed-view notation for calls to primitive subprograms of untagged types:: 
 * Expression defaults for generic formal functions:: 
@@ -28820,7 +28819,7 @@ if X > 5 then
 end if;
 @end example
 
-@node Conditional when constructs,Case pattern matching,Local Declarations Without Block,Curated Extensions
+@node Conditional when constructs,Fixed lower bounds for array types and subtypes,Local Declarations Without Block,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{443}
 @subsection Conditional when constructs
 
@@ -28892,140 +28891,8 @@ end;
 Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional-when-constructs.rst}
 
-@node Case pattern matching,Fixed lower bounds for array types and subtypes,Conditional when constructs,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{444}
-@subsection Case pattern matching
-
-
-The selector for a case statement (but not yet for a case expression) may be of a composite type, subject to
-some restrictions (described below). Aggregate syntax is used for choices
-of such a case statement; however, in cases where a “normal” aggregate would
-require a discrete value, a discrete subtype may be used instead; box
-notation can also be used to match all values.
-
-Consider this example:
-
-@example
-type Rec is record
-   F1, F2 : Integer;
-end record;
-
-procedure Caser_1 (X : Rec) is
-begin
-   case X is
-      when (F1 => Positive, F2 => Positive) =>
-         Do_This;
-      when (F1 => Natural, F2 => <>) | (F1 => <>, F2 => Natural) =>
-         Do_That;
-      when others =>
-          Do_The_Other_Thing;
-   end case;
-end Caser_1;
-@end example
-
-If @code{Caser_1} is called and both components of X are positive, then
-@code{Do_This} will be called; otherwise, if either component is nonnegative
-then @code{Do_That} will be called; otherwise, @code{Do_The_Other_Thing} will be
-called.
-
-In addition, pattern bindings are supported. This is a mechanism
-for binding a name to a component of a matching value for use within
-an alternative of a case statement. For a component association
-that occurs within a case choice, the expression may be followed by
-@code{is <identifier>}. In the special case of a “box” component association,
-the identifier may instead be provided within the box. Either of these
-indicates that the given identifier denotes (a constant view of) the matching
-subcomponent of the case selector.
-
-@cartouche
-@quotation Attention 
-Binding is not yet supported for arrays or subcomponents
-thereof.
-@end quotation
-@end cartouche
-
-Consider this example (which uses type @code{Rec} from the previous example):
-
-@example
-procedure Caser_2 (X : Rec) is
-begin
-   case X is
-      when (F1 => Positive is Abc, F2 => Positive) =>
-         Do_This (Abc)
-      when (F1 => Natural is N1, F2 => <N2>) |
-           (F1 => <N2>, F2 => Natural is N1) =>
-         Do_That (Param_1 => N1, Param_2 => N2);
-      when others =>
-         Do_The_Other_Thing;
-   end case;
-end Caser_2;
-@end example
-
-This example is the same as the previous one with respect to determining
-whether @code{Do_This}, @code{Do_That}, or @code{Do_The_Other_Thing} will be called. But
-for this version, @code{Do_This} takes a parameter and @code{Do_That} takes two
-parameters. If @code{Do_This} is called, the actual parameter in the call will be
-@code{X.F1}.
-
-If @code{Do_That} is called, the situation is more complex because there are two
-choices for that alternative. If @code{Do_That} is called because the first choice
-matched (i.e., because @code{X.F1} is nonnegative and either @code{X.F1} or @code{X.F2}
-is zero or negative), then the actual parameters of the call will be (in order)
-@code{X.F1} and @code{X.F2}. If @code{Do_That} is called because the second choice
-matched (and the first one did not), then the actual parameters will be
-reversed.
-
-Within the choice list for single alternative, each choice must define the same
-set of bindings and the component subtypes for for a given identifer must all
-statically match. Currently, the case of a binding for a nondiscrete component
-is not implemented.
-
-If the set of values that match the choice(s) of an earlier alternative
-overlaps the corresponding set of a later alternative, then the first set shall
-be a proper subset of the second (and the later alternative will not be
-executed if the earlier alternative “matches”). All possible values of the
-composite type shall be covered. The composite type of the selector shall be an
-array or record type that is neither limited nor class-wide. Currently, a “when
-others =>” case choice is required; it is intended that this requirement will
-be relaxed at some point.
-
-If a subcomponent’s subtype does not meet certain restrictions, then the only
-value that can be specified for that subcomponent in a case choice expression
-is a “box” component association (which matches all possible values for the
-subcomponent). This restriction applies if:
-
-
-@itemize -
-
-@item 
-the component subtype is not a record, array, or discrete type; or
-
-@item 
-the component subtype is subject to a non-static constraint or has a
-predicate; or:
-
-@item 
-the component type is an enumeration type that is subject to an enumeration
-representation clause; or
-
-@item 
-the component type is a multidimensional array type or an array type with a
-nonstatic index subtype.
-@end itemize
-
-Support for casing on arrays (and on records that contain arrays) is
-currently subject to some restrictions. Non-positional
-array aggregates are not supported as (or within) case choices. Likewise
-for array type and subtype names. The current implementation exceeds
-compile-time capacity limits in some annoyingly common scenarios; the
-message generated in such cases is usually “Capacity exceeded in compiling
-case statement with composite selector type”.
-
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-pattern-matching.rst}
-
-@node Fixed lower bounds for array types and subtypes,Prefixed-view notation for calls to primitive subprograms of untagged types,Case pattern matching,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions fixed-lower-bounds-for-array-types-and-subtypes}@anchor{445}
+@node Fixed lower bounds for array types and subtypes,Prefixed-view notation for calls to primitive subprograms of untagged types,Conditional when constructs,Curated Extensions
+@anchor{gnat_rm/gnat_language_extensions fixed-lower-bounds-for-array-types-and-subtypes}@anchor{444}
 @subsection Fixed lower bounds for array types and subtypes
 
 
@@ -29079,7 +28946,7 @@ Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-fixed-lower-bound.rst}
 
 @node Prefixed-view notation for calls to primitive subprograms of untagged types,Expression defaults for generic formal functions,Fixed lower bounds for array types and subtypes,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions prefixed-view-notation-for-calls-to-primitive-subprograms-of-untagged-types}@anchor{446}
+@anchor{gnat_rm/gnat_language_extensions prefixed-view-notation-for-calls-to-primitive-subprograms-of-untagged-types}@anchor{445}
 @subsection Prefixed-view notation for calls to primitive subprograms of untagged types
 
 
@@ -29132,7 +28999,7 @@ Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-prefixed-untagged.rst}
 
 @node Expression defaults for generic formal functions,String interpolation,Prefixed-view notation for calls to primitive subprograms of untagged types,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions expression-defaults-for-generic-formal-functions}@anchor{447}
+@anchor{gnat_rm/gnat_language_extensions expression-defaults-for-generic-formal-functions}@anchor{446}
 @subsection Expression defaults for generic formal functions
 
 
@@ -29161,7 +29028,7 @@ Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-expression-functions-as-default-for-generic-formal-function-parameters.rst}
 
 @node String interpolation,Constrained attribute for generic objects,Expression defaults for generic formal functions,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions string-interpolation}@anchor{448}
+@anchor{gnat_rm/gnat_language_extensions string-interpolation}@anchor{447}
 @subsection String interpolation
 
 
@@ -29327,7 +29194,7 @@ Here is a link to the original RFC   :
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-string-interpolation.rst}
 
 @node Constrained attribute for generic objects,Static aspect on intrinsic functions,String interpolation,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{449}
+@anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{448}
 @subsection Constrained attribute for generic objects
 
 
@@ -29335,7 +29202,7 @@ The @code{Constrained} attribute is permitted for objects of generic types. The
 result indicates whether the corresponding actual is constrained.
 
 @node Static aspect on intrinsic functions,,Constrained attribute for generic objects,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions static-aspect-on-intrinsic-functions}@anchor{44a}
+@anchor{gnat_rm/gnat_language_extensions static-aspect-on-intrinsic-functions}@anchor{449}
 @subsection @code{Static} aspect on intrinsic functions
 
 
@@ -29344,18 +29211,19 @@ and the compiler will evaluate some of these intrinsics statically, in
 particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
 
 @node Experimental Language Extensions,,Curated Extensions,GNAT language extensions
-@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6a}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{44b}
+@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6a}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{44a}
 @section Experimental Language Extensions
 
 
 @menu
 * Pragma Storage_Model:: 
 * Simpler accessibility model:: 
+* Case pattern matching:: 
 
 @end menu
 
 @node Pragma Storage_Model,Simpler accessibility model,,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions pragma-storage-model}@anchor{44c}
+@anchor{gnat_rm/gnat_language_extensions pragma-storage-model}@anchor{44b}
 @subsection Pragma Storage_Model
 
 
@@ -29369,8 +29237,8 @@ support interactions with GPU.
 Here is a link to the full RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-storage-model.rst}
 
-@node Simpler accessibility model,,Pragma Storage_Model,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{44d}
+@node Simpler accessibility model,Case pattern matching,Pragma Storage_Model,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{44c}
 @subsection Simpler accessibility model
 
 
@@ -29381,6 +29249,138 @@ while removing dynamic accessibility checking.
 
 Here is a link to the full RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-simpler-accessibility.md}
+
+@node Case pattern matching,,Simpler accessibility model,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{44d}
+@subsection Case pattern matching
+
+
+The selector for a case statement (but not yet for a case expression) may be of a composite type, subject to
+some restrictions (described below). Aggregate syntax is used for choices
+of such a case statement; however, in cases where a “normal” aggregate would
+require a discrete value, a discrete subtype may be used instead; box
+notation can also be used to match all values.
+
+Consider this example:
+
+@example
+type Rec is record
+   F1, F2 : Integer;
+end record;
+
+procedure Caser_1 (X : Rec) is
+begin
+   case X is
+      when (F1 => Positive, F2 => Positive) =>
+         Do_This;
+      when (F1 => Natural, F2 => <>) | (F1 => <>, F2 => Natural) =>
+         Do_That;
+      when others =>
+          Do_The_Other_Thing;
+   end case;
+end Caser_1;
+@end example
+
+If @code{Caser_1} is called and both components of X are positive, then
+@code{Do_This} will be called; otherwise, if either component is nonnegative
+then @code{Do_That} will be called; otherwise, @code{Do_The_Other_Thing} will be
+called.
+
+In addition, pattern bindings are supported. This is a mechanism
+for binding a name to a component of a matching value for use within
+an alternative of a case statement. For a component association
+that occurs within a case choice, the expression may be followed by
+@code{is <identifier>}. In the special case of a “box” component association,
+the identifier may instead be provided within the box. Either of these
+indicates that the given identifier denotes (a constant view of) the matching
+subcomponent of the case selector.
+
+@cartouche
+@quotation Attention 
+Binding is not yet supported for arrays or subcomponents
+thereof.
+@end quotation
+@end cartouche
+
+Consider this example (which uses type @code{Rec} from the previous example):
+
+@example
+procedure Caser_2 (X : Rec) is
+begin
+   case X is
+      when (F1 => Positive is Abc, F2 => Positive) =>
+         Do_This (Abc)
+      when (F1 => Natural is N1, F2 => <N2>) |
+           (F1 => <N2>, F2 => Natural is N1) =>
+         Do_That (Param_1 => N1, Param_2 => N2);
+      when others =>
+         Do_The_Other_Thing;
+   end case;
+end Caser_2;
+@end example
+
+This example is the same as the previous one with respect to determining
+whether @code{Do_This}, @code{Do_That}, or @code{Do_The_Other_Thing} will be called. But
+for this version, @code{Do_This} takes a parameter and @code{Do_That} takes two
+parameters. If @code{Do_This} is called, the actual parameter in the call will be
+@code{X.F1}.
+
+If @code{Do_That} is called, the situation is more complex because there are two
+choices for that alternative. If @code{Do_That} is called because the first choice
+matched (i.e., because @code{X.F1} is nonnegative and either @code{X.F1} or @code{X.F2}
+is zero or negative), then the actual parameters of the call will be (in order)
+@code{X.F1} and @code{X.F2}. If @code{Do_That} is called because the second choice
+matched (and the first one did not), then the actual parameters will be
+reversed.
+
+Within the choice list for single alternative, each choice must define the same
+set of bindings and the component subtypes for for a given identifer must all
+statically match. Currently, the case of a binding for a nondiscrete component
+is not implemented.
+
+If the set of values that match the choice(s) of an earlier alternative
+overlaps the corresponding set of a later alternative, then the first set shall
+be a proper subset of the second (and the later alternative will not be
+executed if the earlier alternative “matches”). All possible values of the
+composite type shall be covered. The composite type of the selector shall be an
+array or record type that is neither limited nor class-wide. Currently, a “when
+others =>” case choice is required; it is intended that this requirement will
+be relaxed at some point.
+
+If a subcomponent’s subtype does not meet certain restrictions, then the only
+value that can be specified for that subcomponent in a case choice expression
+is a “box” component association (which matches all possible values for the
+subcomponent). This restriction applies if:
+
+
+@itemize -
+
+@item 
+the component subtype is not a record, array, or discrete type; or
+
+@item 
+the component subtype is subject to a non-static constraint or has a
+predicate; or:
+
+@item 
+the component type is an enumeration type that is subject to an enumeration
+representation clause; or
+
+@item 
+the component type is a multidimensional array type or an array type with a
+nonstatic index subtype.
+@end itemize
+
+Support for casing on arrays (and on records that contain arrays) is
+currently subject to some restrictions. Non-positional
+array aggregates are not supported as (or within) case choices. Likewise
+for array type and subtype names. The current implementation exceeds
+compile-time capacity limits in some annoyingly common scenarios; the
+message generated in such cases is usually “Capacity exceeded in compiling
+case statement with composite selector type”.
+
+Link to the original RFC:
+@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-pattern-matching.rst}
 
 @node Security Hardening Features,Obsolescent Features,GNAT language extensions,Top
 @anchor{gnat_rm/security_hardening_features doc}@anchor{44e}@anchor{gnat_rm/security_hardening_features id1}@anchor{44f}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
