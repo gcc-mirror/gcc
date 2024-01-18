@@ -3666,13 +3666,17 @@ propagation.
 @cindex @code{noinline} function attribute
 @item noinline
 This function attribute prevents a function from being considered for
-inlining.
+inlining.  It also disables some other interprocedural optimizations; it's
+preferable to use the more comprehensive @code{noipa} attribute instead
+if that is your goal.
+
 @c Don't enumerate the optimizations by name here; we try to be
 @c future-compatible with this mechanism.
-If the function does not have side effects, there are optimizations
-other than inlining that cause function calls to be optimized away,
-although the function call is live.  To keep such calls from being
-optimized away, put
+Even if a function is declared with the @code{noinline} attribute,
+there are optimizations other than inlining that can cause calls to be
+optimized away if it does not have side effects, although the function
+call is live.  To keep such calls from being optimized away, put
+
 @smallexample
 asm ("");
 @end smallexample
@@ -3691,8 +3695,7 @@ the body.  This attribute implies @code{noinline}, @code{noclone} and
 to a combination of other attributes, because its purpose is to suppress
 existing and future optimizations employing interprocedural analysis,
 including those that do not have an attribute suitable for disabling
-them individually.  This attribute is supported mainly for the purpose
-of testing the compiler.
+them individually.
 
 @cindex @code{nonnull} function attribute
 @cindex functions with non-null pointer arguments
