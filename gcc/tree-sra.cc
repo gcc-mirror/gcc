@@ -1559,15 +1559,32 @@ scan_function (void)
 	    case GIMPLE_ASM:
 	      {
 		gasm *asm_stmt = as_a <gasm *> (stmt);
-		for (i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
+		if (stmt_ends_bb_p (asm_stmt)
+		    && !single_succ_p (gimple_bb (asm_stmt)))
 		  {
-		    t = TREE_VALUE (gimple_asm_input_op (asm_stmt, i));
-		    ret |= build_access_from_expr (t, asm_stmt, false);
+		    for (i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
+		      {
+			t = TREE_VALUE (gimple_asm_input_op (asm_stmt, i));
+			disqualify_base_of_expr (t, "OP of asm goto.");
+		      }
+		    for (i = 0; i < gimple_asm_noutputs (asm_stmt); i++)
+		      {
+			t = TREE_VALUE (gimple_asm_output_op (asm_stmt, i));
+			disqualify_base_of_expr (t, "OP of asm goto.");
+		      }
 		  }
-		for (i = 0; i < gimple_asm_noutputs (asm_stmt); i++)
+		else
 		  {
-		    t = TREE_VALUE (gimple_asm_output_op (asm_stmt, i));
-		    ret |= build_access_from_expr (t, asm_stmt, true);
+		    for (i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
+		      {
+			t = TREE_VALUE (gimple_asm_input_op (asm_stmt, i));
+			ret |= build_access_from_expr (t, asm_stmt, false);
+		      }
+		    for (i = 0; i < gimple_asm_noutputs (asm_stmt); i++)
+		      {
+			t = TREE_VALUE (gimple_asm_output_op (asm_stmt, i));
+			ret |= build_access_from_expr (t, asm_stmt, true);
+		      }
 		  }
 	      }
 	      break;
