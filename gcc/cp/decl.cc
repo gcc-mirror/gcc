@@ -13391,6 +13391,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  if (TREE_PURPOSE (parm) != this_identifier)
 		    continue;
 		  bad_xobj_parm_encountered = true;
+		  TREE_PURPOSE (parm) = NULL_TREE;
 		  gcc_rich_location bad_xobj_parm
 		    (DECL_SOURCE_LOCATION (TREE_VALUE (parm)));
 		  error_at (&bad_xobj_parm,
