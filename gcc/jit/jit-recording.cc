@@ -4356,6 +4356,23 @@ recording::function::new_local (recording::location *loc,
   return result;
 }
 
+/* Create a recording::local instance and add it to
+   the functions's context's list of mementos, and to the function's
+   list of locals.
+
+   Implements the post-error-checking part of
+   gcc_jit_function_new_temp.  */
+
+recording::lvalue *
+recording::function::new_temp (recording::location *loc,
+			       type *type)
+{
+  local *result = new local (this, loc, type, NULL);
+  m_ctxt->record (result);
+  m_locals.safe_push (result);
+  return result;
+}
+
 /* Create a recording::block instance and add it to
    the functions's context's list of mementos, and to the function's
    list of blocks.
@@ -7226,16 +7243,26 @@ void
 recording::local::write_reproducer (reproducer &r)
 {
   const char *id = r.make_identifier (this, "local");
-  r.write ("  gcc_jit_lvalue *%s =\n"
-	   "    gcc_jit_function_new_local (%s, /* gcc_jit_function *func */\n"
-	   "                                %s, /* gcc_jit_location *loc */\n"
-	   "                                %s, /* gcc_jit_type *type */\n"
-	   "                                %s); /* const char *name */\n",
-	   id,
-	   r.get_identifier (m_func),
-	   r.get_identifier (m_loc),
-	   r.get_identifier_as_type (m_type),
-	   m_name->get_debug_string ());
+  if (m_name)
+    r.write ("  gcc_jit_lvalue *%s =\n"
+	     "    gcc_jit_function_new_local (%s, /* gcc_jit_function *func */\n"
+	     "                                %s, /* gcc_jit_location *loc */\n"
+	     "                                %s, /* gcc_jit_type *type */\n"
+	     "                                %s); /* const char *name */\n",
+	     id,
+	     r.get_identifier (m_func),
+	     r.get_identifier (m_loc),
+	     r.get_identifier_as_type (m_type),
+	     m_name->get_debug_string ());
+  else
+    r.write ("  gcc_jit_lvalue *%s =\n"
+	     "    gcc_jit_function_new_temp (%s, /* gcc_jit_function *func */\n"
+	     "                               %s, /* gcc_jit_location *loc */\n"
+	     "                               %s); /* gcc_jit_type *type */\n",
+	     id,
+	     r.get_identifier (m_func),
+	     r.get_identifier (m_loc),
+	     r.get_identifier_as_type (m_type));
 }
 
 /* The implementation of class gcc::jit::recording::statement.  */

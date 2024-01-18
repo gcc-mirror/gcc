@@ -315,3 +315,8 @@ LIBGCCJIT_ABI_32 {
   global:
     gcc_jit_context_get_target_builtin_function;
 } LIBGCCJIT_ABI_31;
+
+LIBGCCJIT_ABI_33 {
+  global:
+    gcc_jit_function_new_temp;
+} LIBGCCJIT_ABI_32;

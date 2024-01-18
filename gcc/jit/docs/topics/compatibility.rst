@@ -436,3 +436,12 @@ on functions and variables:
 ``LIBGCCJIT_ABI_32`` covers the addition of a function to get target builtins:
 
   * :func:`gcc_jit_context_get_target_builtin_function`
+
+.. _LIBGCCJIT_ABI_33:
+
+``LIBGCCJIT_ABI_33``
+--------------------
+``LIBGCCJIT_ABI_33`` covers the addition of a function to create a new
+temporary variable:
+
+  * :func:`gcc_jit_function_new_temp`

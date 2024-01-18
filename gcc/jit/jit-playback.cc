@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tree-cfg.h"
 #include "convert.h"
+#include "gimple-expr.h"
 #include "stor-layout.h"
 #include "print-tree.h"
 #include "gimplify.h"
@@ -2167,10 +2168,20 @@ new_local (location *loc,
 				       std::string>> &attributes)
 {
   gcc_assert (type);
-  gcc_assert (name);
-  tree inner = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+  tree inner;
+  if (name)
+    inner = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 			   get_identifier (name),
 			   type->as_tree ());
+  else
+  {
+    inner = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			create_tmp_var_name ("JITTMP"),
+			type->as_tree ());
+    DECL_ARTIFICIAL (inner) = 1;
+    DECL_IGNORED_P (inner) = 1;
+    DECL_NAMELESS (inner) = 1;
+  }
   DECL_CONTEXT (inner) = this->m_inner_fndecl;
 
   /* Prepend to BIND_EXPR_VARS: */

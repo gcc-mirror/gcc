@@ -2950,6 +2950,37 @@ gcc_jit_function_new_local (gcc_jit_function *func,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::function::new_temp method in jit-recording.cc.  */
+
+gcc_jit_lvalue *
+gcc_jit_function_new_temp (gcc_jit_function *func,
+			   gcc_jit_location *loc,
+			   gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (func, NULL, loc, "NULL function");
+  gcc::jit::recording::context *ctxt = func->m_ctxt;
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (func->get_kind () != GCC_JIT_FUNCTION_IMPORTED,
+		       ctxt, loc,
+		       "Cannot add temps to an imported function");
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+  RETURN_NULL_IF_FAIL_PRINTF1 (
+    type->has_known_size (),
+    ctxt, loc,
+    "unknown size for temp (type: %s)",
+    type->get_debug_string ());
+  RETURN_NULL_IF_FAIL (
+    !type->is_void (),
+    ctxt, loc,
+    "void type for temp");
+
+  return (gcc_jit_lvalue *)func->new_temp (loc, type);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::block::add_eval method in jit-recording.cc.  */
 
 void

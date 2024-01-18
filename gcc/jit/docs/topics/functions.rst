@@ -190,6 +190,26 @@ Functions
    underlying string, so it is valid to pass in a pointer to an on-stack
    buffer.
 
+.. function:: gcc_jit_lvalue *\
+              gcc_jit_function_new_temp (gcc_jit_function *func,\
+                                         gcc_jit_location *loc,\
+                                         gcc_jit_type *type)
+
+   Create a new local variable within the function, of the given type.
+   This function is similar to :func:`gcc_jit_function_new_local`, but
+   it is to be used for compiler-generated variables (as opposed to
+   user-defined variables in the language to be compiled) and these
+   variables won't show up in the debug info.
+
+   The parameter ``type`` must be non-`void`.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_33`; you can test
+   for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_function_new_temp
+
 .. function::  size_t \
                gcc_jit_function_get_param_count (gcc_jit_function *func)
 

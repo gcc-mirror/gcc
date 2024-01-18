@@ -1523,6 +1523,10 @@ public:
 	     type *type,
 	     const char *name);
 
+  lvalue *
+  new_temp (location *loc,
+	    type *type);
+
   block*
   new_block (const char *name);
 
@@ -2417,7 +2421,12 @@ public:
   void write_to_dump (dump &d) final override;
 
 private:
-  string * make_debug_string () final override { return m_name; }
+  string * make_debug_string () final override {
+    if (m_name)
+      return m_name;
+    else
+      return m_ctxt->new_string ("temp");
+  }
   void write_reproducer (reproducer &r) final override;
   enum precedence get_precedence () const final override
   {

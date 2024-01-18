@@ -390,6 +390,9 @@
 /* test-target-builtins.c: This can't be in the testcases array as it
    is target-specific.  */
 
+/* test-temp.c: This can't be in the testcases array as it
+   is target-specific.  */
+
 /* test-string-literal.c */
 #define create_code create_code_string_literal
 #define verify_code verify_code_string_literal
