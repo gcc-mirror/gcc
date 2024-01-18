@@ -119,6 +119,8 @@ proc hwasan_init { args } {
 
     if [istarget x86_64-*-*] {
       set target_hwasan_flags "-mlam=u57"
+    } else {
+      set target_hwasan_flags ""
     }
 
     set link_flags ""
