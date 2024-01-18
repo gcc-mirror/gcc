@@ -94,8 +94,8 @@ private
 
         // Declared as an extern instead of importing core.exception
         // to avoid inlining - see https://issues.dlang.org/show_bug.cgi?id=13725.
-        void onInvalidMemoryOperationError(void* pretend_sideffect = null) @trusted pure nothrow @nogc;
-        void onOutOfMemoryErrorNoGC() @trusted nothrow @nogc;
+        void onInvalidMemoryOperationError(void* pretend_sideffect = null, string file = __FILE__, size_t line = __LINE__) @trusted pure nothrow @nogc;
+        void onOutOfMemoryError(void* pretend_sideffect = null, string file = __FILE__, size_t line = __LINE__) @trusted nothrow @nogc;
 
         version (COLLECT_FORK)
             version (OSX)
@@ -141,7 +141,7 @@ private GC initialize()
 
     auto gc = cast(ConservativeGC) cstdlib.malloc(__traits(classInstanceSize, ConservativeGC));
     if (!gc)
-        onOutOfMemoryErrorNoGC();
+        onOutOfMemoryError();
 
     return emplace(gc);
 }
@@ -160,7 +160,7 @@ class ConservativeGC : GC
 
     Gcx *gcx;                   // implementation
 
-    static gcLock = shared(AlignedSpinLock)(SpinLock.Contention.lengthy);
+    static gcLock = shared(AlignedSpinLock)(SpinLock.Contention.brief);
     static bool _inFinalizer;
     __gshared bool isPrecise = false;
 
@@ -188,7 +188,7 @@ class ConservativeGC : GC
 
         gcx = cast(Gcx*)cstdlib.calloc(1, Gcx.sizeof);
         if (!gcx)
-            onOutOfMemoryErrorNoGC();
+            onOutOfMemoryError();
         gcx.initialize();
 
         if (config.initReserve)
@@ -509,7 +509,7 @@ class ConservativeGC : GC
 
         auto p = gcx.alloc(size + SENTINEL_EXTRA, alloc_size, bits, ti);
         if (!p)
-            onOutOfMemoryErrorNoGC();
+            onOutOfMemoryError();
 
         debug (SENTINEL)
         {
@@ -1968,7 +1968,7 @@ struct Gcx
             // tryAlloc will succeed if a new pool was allocated above, if it fails allocate a new pool now
             if (!tryAlloc() && (!newPool(1, false) || !tryAlloc()))
                 // out of luck or memory
-                onOutOfMemoryErrorNoGC();
+                onOutOfMemoryError();
         }
         assert(p !is null);
     L_hasBin:
@@ -2008,7 +2008,7 @@ struct Gcx
         size_t pn;
         immutable npages = LargeObjectPool.numPages(size);
         if (npages == size_t.max)
-            onOutOfMemoryErrorNoGC(); // size just below size_t.max requested
+            onOutOfMemoryError(); // size just below size_t.max requested
 
         bool tryAlloc() nothrow
         {
@@ -2248,7 +2248,7 @@ struct Gcx
             enum initSize = 64 * 1024; // Windows VirtualAlloc granularity
             immutable ncap = _cap ? 2 * _cap : initSize / RANGE.sizeof;
             auto p = cast(RANGE*)os_mem_map(ncap * RANGE.sizeof);
-            if (p is null) onOutOfMemoryErrorNoGC();
+            if (p is null) onOutOfMemoryError();
             debug (VALGRIND) makeMemUndefined(p[0..ncap]);
             if (_p !is null)
             {
@@ -3394,7 +3394,7 @@ Lmark:
 
         scanThreadData = cast(ScanThreadData*) cstdlib.calloc(numScanThreads, ScanThreadData.sizeof);
         if (!scanThreadData)
-            onOutOfMemoryErrorNoGC();
+            onOutOfMemoryError();
 
         evStart.initialize(false, false);
         evDone.initialize(false, false);
@@ -3610,7 +3610,7 @@ struct Pool
             {
                 rtinfo = cast(immutable(size_t)**)cstdlib.malloc(npages * (size_t*).sizeof);
                 if (!rtinfo)
-                    onOutOfMemoryErrorNoGC();
+                    onOutOfMemoryError();
                 memset(rtinfo, 0, npages * (size_t*).sizeof);
             }
             else
@@ -3633,13 +3633,13 @@ struct Pool
 
         pagetable = cast(Bins*)cstdlib.malloc(npages * Bins.sizeof);
         if (!pagetable)
-            onOutOfMemoryErrorNoGC();
+            onOutOfMemoryError();
 
         if (npages > 0)
         {
             bPageOffsets = cast(uint*)cstdlib.malloc(npages * uint.sizeof);
             if (!bPageOffsets)
-                onOutOfMemoryErrorNoGC();
+                onOutOfMemoryError();
 
             if (isLargeObject)
             {
@@ -4643,14 +4643,14 @@ debug (LOGGING)
                 {
                     data = cast(Log*)cstdlib.malloc(allocdim * Log.sizeof);
                     if (!data && allocdim)
-                        onOutOfMemoryErrorNoGC();
+                        onOutOfMemoryError();
                 }
                 else
                 {   Log *newdata;
 
                     newdata = cast(Log*)cstdlib.malloc(allocdim * Log.sizeof);
                     if (!newdata && allocdim)
-                        onOutOfMemoryErrorNoGC();
+                        onOutOfMemoryError();
                     memcpy(newdata, data, dim * Log.sizeof);
                     cstdlib.free(data);
                     data = newdata;
@@ -4989,8 +4989,8 @@ version (D_LP64) unittest
         // only run if the system has enough physical memory
         size_t sz = 2L^^32;
         //import core.stdc.stdio;
-        //printf("availphys = %lld", os_physical_mem());
-        if (os_physical_mem() > sz)
+        //printf("availphys = %lld", os_physical_mem(true));
+        if (os_physical_mem(true) > sz)
         {
             import core.memory;
             GC.collect();

@@ -72,7 +72,7 @@ private struct PathStack
 
 final class FileManager
 {
-    private StringTable!(const(ubyte)[]) files;
+    private StringTable!(const(ubyte)[]) files;  // contents of files indexed by file name
     private StringTable!(bool) packageStatus;
 
     // check if the package path of the given path exists. The input path is
@@ -247,35 +247,37 @@ nothrow:
     }
 
     /**
-     * Looks up the given filename from the internal file buffer table.
-     * If the file does not already exist within the table, it will be read from the filesystem.
-     * If it has been read before,
-     *
-     * Returns: the loaded source file if it was found in memory,
-     *      otherwise `null`
+     * Retrieve the cached contents of the file given by `filename`.
+     * If the file has not been read before, read it and add the contents
+     * to the file cache.
+     * Params:
+     *  filename = the name of the file
+     * Returns:
+     *  the contents of the file, or `null` if it could not be read or was empty
      */
-    const(ubyte)[] lookup(FileName filename)
+    const(ubyte)[] getFileContents(FileName filename)
     {
         const name = filename.toString;
-        if (auto val = files.lookup(name))
-            return val.value;
+        if (auto val = files.lookup(name))      // if `name` is cached
+            return val.value;                   // return its contents
 
-        if (name == "__stdin.d")
+        if (name == "__stdin.d")                // special name for reading from stdin
         {
-            auto buffer = readFromStdin().extractSlice();
+            const ubyte[] buffer = readFromStdin().extractSlice();
             if (this.files.insert(name, buffer) is null)
+                // this.files already contains the name
                 assert(0, "stdin: Insert after lookup failure should never return `null`");
             return buffer;
         }
 
-        if (FileName.exists(name) != 1)
+        if (FileName.exists(name) != 1) // if not an ordinary file
             return null;
 
         auto readResult = File.read(name);
         if (!readResult.success)
             return null;
 
-        auto fb = readResult.extractSlice();
+        const ubyte[] fb = readResult.extractSlice();
         if (files.insert(name, fb) is null)
             assert(0, "Insert after lookup failure should never return `null`");
 

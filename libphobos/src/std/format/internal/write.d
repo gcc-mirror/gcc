@@ -570,9 +570,9 @@ void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) obj,
                                       scope const ref FormatSpec!Char f)
 if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 {
-    import std.algorithm.searching : find;
     import std.format : enforceFmt;
     import std.range.primitives : put;
+    import std.format.internal.floats : printFloat, isFloatSpec;
 
     FloatingPointTypeOf!T val = obj;
     const char spec = f.spec;
@@ -597,11 +597,9 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
         return;
     }
 
-    enforceFmt(find("fgFGaAeEs", spec).length,
-        "incompatible format character for floating point argument: %" ~ spec);
-
     FormatSpec!Char fs = f; // fs is copy for change its values.
     fs.spec = spec == 's' ? 'g' : spec;
+    enforceFmt(isFloatSpec(fs.spec), "incompatible format character for floating point argument: %" ~ spec);
 
     static if (is(T == float) || is(T == double)
                || (is(T == real) && (T.mant_dig == double.mant_dig || T.mant_dig == 64)))
@@ -631,7 +629,6 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
             tval = -doubleLowest;
     }
 
-    import std.format.internal.floats : printFloat;
     printFloat(w, tval, fs);
 }
 

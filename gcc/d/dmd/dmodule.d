@@ -679,23 +679,23 @@ extern (C++) final class Module : Package
         /* Preprocess the file if it's a .c file
          */
         FileName filename = srcfile;
-        bool ifile = false;             // did we generate a .i file
-        scope (exit)
-        {
-            if (ifile)
-                File.remove(filename.toChars());        // remove generated file
-        }
 
+        const(ubyte)[] srctext;
         if (global.preprocess &&
             FileName.equalsExt(srcfile.toString(), c_ext) &&
             FileName.exists(srcfile.toString()))
         {
-            filename = global.preprocess(srcfile, loc, ifile, &defines);  // run C preprocessor
+            /* Apply C preprocessor to the .c file, returning the contents
+             * after preprocessing
+             */
+            srctext = global.preprocess(srcfile, loc, defines).data;
         }
+        else
+            srctext = global.fileManager.getFileContents(filename);
+        this.src = srctext;
 
-        if (auto result = global.fileManager.lookup(filename))
+        if (srctext)
         {
-            this.src = result;
             if (global.params.makeDeps.doOutput)
                 global.params.makeDeps.files.push(srcfile.toChars());
             return true;

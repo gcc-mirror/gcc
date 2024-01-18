@@ -1355,6 +1355,7 @@ void toDocBuffer(Dsymbol s, ref OutBuffer buf, Scope* sc)
             {
                 if (type.ty == Tclass || type.ty == Tstruct || type.ty == Tenum)
                 {
+                    import dmd.typesem : toDsymbol;
                     if (Dsymbol s = type.toDsymbol(null)) // elaborate type
                         prettyPrintDsymbol(s, ad.parent);
                     else

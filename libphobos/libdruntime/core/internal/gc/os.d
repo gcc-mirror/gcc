@@ -254,23 +254,26 @@ bool isLowOnMem(size_t mapped) nothrow @nogc
 /**
    Get the size of available physical memory
 
+   Params:
+       avail = if supported on the current platform, return the currently unused memory
+               rather than the installed physical memory
    Returns:
        size of installed physical RAM
 */
 version (Windows)
 {
-    ulong os_physical_mem() nothrow @nogc
+    ulong os_physical_mem(bool avail) nothrow @nogc
     {
         import core.sys.windows.winbase : GlobalMemoryStatus, MEMORYSTATUS;
         MEMORYSTATUS stat;
         GlobalMemoryStatus(&stat);
-        return stat.dwTotalPhys; // limited to 4GB for Win32
+        return avail ? stat.dwAvailPhys : stat.dwTotalPhys; // limited to 4GB for Win32
     }
 }
 else version (Darwin)
 {
     extern (C) int sysctl(const int* name, uint namelen, void* oldp, size_t* oldlenp, const void* newp, size_t newlen) @nogc nothrow;
-    ulong os_physical_mem() nothrow @nogc
+    ulong os_physical_mem(bool avail) nothrow @nogc
     {
         enum
         {
@@ -287,11 +290,15 @@ else version (Darwin)
 }
 else version (Posix)
 {
-    ulong os_physical_mem() nothrow @nogc
+    ulong os_physical_mem(bool avail) nothrow @nogc
     {
-        import core.sys.posix.unistd : sysconf, _SC_PAGESIZE, _SC_PHYS_PAGES;
+        import core.sys.posix.unistd;
         const pageSize = sysconf(_SC_PAGESIZE);
-        const pages = sysconf(_SC_PHYS_PAGES);
+        static if (__traits(compiles, _SC_AVPHYS_PAGES)) // not available on all platforms
+            const sc = avail ? _SC_AVPHYS_PAGES : _SC_PHYS_PAGES;
+        else
+            const sc = _SC_PHYS_PAGES;
+        const pages = sysconf(sc);
         return pageSize * pages;
     }
 }

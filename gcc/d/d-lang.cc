@@ -1344,7 +1344,10 @@ d_parse_file (void)
     }
 
   if (global.params.v.templates)
-    printTemplateStats ();
+    {
+      printTemplateStats (global.params.v.templatesListInstances,
+			  global.errorSink);
+    }
 
   /* Generate JSON files.  */
   if (global.params.json.doOutput)

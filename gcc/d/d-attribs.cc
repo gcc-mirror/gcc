@@ -327,7 +327,7 @@ build_attributes (Expressions *eattrs)
   for (size_t i = 0; i < eattrs->length; i++)
     {
       Expression *attr = (*eattrs)[i];
-      Dsymbol *sym = attr->type->toDsymbol (0);
+      Dsymbol *sym = toDsymbol (attr->type, NULL);
 
       if (!sym)
 	{

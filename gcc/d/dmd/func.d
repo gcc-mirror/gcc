@@ -1195,7 +1195,7 @@ extern (C++) class FuncDeclaration : Declaration
      *
      * Returns: the `LabelDsymbol` for `ident`
      */
-    final LabelDsymbol searchLabel(Identifier ident, const ref Loc loc = Loc.initial)
+    final LabelDsymbol searchLabel(Identifier ident, const ref Loc loc)
     {
         Dsymbol s;
         if (!labtab)
@@ -1471,6 +1471,9 @@ extern (C++) class FuncDeclaration : Declaration
     final PURE isPure()
     {
         //printf("FuncDeclaration::isPure() '%s'\n", toChars());
+
+        import dmd.typesem : purityLevel;
+
         TypeFunction tf = type.toTypeFunction();
         if (purityInprocess)
             setImpure();
@@ -1782,6 +1785,7 @@ extern (C++) class FuncDeclaration : Declaration
             case Tstruct:
                 /* Drill down and check the struct's fields
                  */
+                import dmd.typesem : toDsymbol;
                 auto sym = t.toDsymbol(null).isStructDeclaration();
                 const tName = t.toChars.toDString;
                 const entry = parentTypes.insert(tName, t);
@@ -1863,6 +1867,7 @@ extern (C++) class FuncDeclaration : Declaration
                     case Tstruct:
                         /* Drill down and check the struct's fields
                          */
+                        import dmd.typesem : toDsymbol;
                         auto sym = tp.toDsymbol(null).isStructDeclaration();
                         foreach (v; sym.fields)
                         {
@@ -2727,6 +2732,7 @@ extern (C++) class FuncDeclaration : Declaration
                 {
                     Type t1 = fdv.type.nextOf().toBasetype();
                     Type t2 = this.type.nextOf().toBasetype();
+                    import dmd.typesem : isBaseOf;
                     if (t1.isBaseOf(t2, null))
                     {
                         /* Making temporary reference variable is necessary
@@ -3294,7 +3300,7 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         printf("\tfnames: %s\n", fnames ? fnames.toChars() : "null");
     }
 
-    if (tiargs && arrayObjectIsError(tiargs))
+    if (tiargs && arrayObjectIsError(*tiargs))
         return null;
     if (fargs !is null)
         foreach (arg; *fargs)
@@ -3441,16 +3447,19 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
             return null;
         }
 
-        const(char)* failMessage;
-        functionResolve(m, orig_s, loc, sc, tiargs, tthis, argumentList, &failMessage);
-        if (failMessage)
+        bool calledHelper;
+        void errorHelper(const(char)* failMessage) scope
         {
             .error(loc, "%s `%s%s%s` is not callable using argument types `%s`",
                    fd.kind(), fd.toPrettyChars(), parametersTypeToChars(tf.parameterList),
                    tf.modToChars(), fargsBuf.peekChars());
             errorSupplemental(loc, failMessage);
-            return null;
+            calledHelper = true;
         }
+
+        functionResolve(m, orig_s, loc, sc, tiargs, tthis, argumentList, &errorHelper);
+        if (calledHelper)
+            return null;
 
         if (fd.isCtorDeclaration())
             .error(loc, "%s%s `%s` cannot construct a %sobject",
@@ -3505,10 +3514,13 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
                 }
             }
         }
-        const(char)* failMessage;
-        functionResolve(m, orig_s, loc, sc, tiargs, tthis, argumentList, &failMessage);
-        if (failMessage)
+
+        void errorHelper2(const(char)* failMessage) scope
+        {
             errorSupplemental(loc, failMessage);
+        }
+
+        functionResolve(m, orig_s, loc, sc, tiargs, tthis, argumentList, &errorHelper2);
     }
     return null;
 }
@@ -3624,6 +3636,7 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
  */
 Type getIndirection(Type t)
 {
+    import dmd.typesem : hasPointers;
     t = t.baseElemOf();
     if (t.ty == Tarray || t.ty == Tpointer)
         return t.nextOf().toBasetype();
@@ -3670,6 +3683,7 @@ private bool traverseIndirections(Type ta, Type tb)
 
     static bool traverse(Type ta, Type tb, ref scope AssocArray!(const(char)*, bool) table, bool reversePass)
     {
+        import dmd.typesem : hasPointers;
         //printf("traverse(%s, %s)\n", ta.toChars(), tb.toChars());
         ta = ta.baseElemOf();
         tb = tb.baseElemOf();
@@ -3706,6 +3720,7 @@ private bool traverseIndirections(Type ta, Type tb)
             else
                 *found = true;
 
+            import dmd.typesem : toDsymbol;
             AggregateDeclaration sym = tb.toDsymbol(null).isAggregateDeclaration();
             foreach (v; sym.fields)
             {

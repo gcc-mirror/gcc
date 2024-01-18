@@ -1804,7 +1804,7 @@ if (!is(S : T) && isAssociativeArray!S &&
     }
     static void testFloatingToIntegral(Floating, Integral)()
     {
-        import std.math : floatTraits, RealFormat;
+        import std.math.traits : floatTraits, RealFormat;
 
         bool convFails(Source, Target, E)(Source src)
         {
@@ -3430,7 +3430,7 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
     Target result = cast(Target) (sign ? -ldval : ldval);
 
     // if overflow occurred
-    import std.math : isFinite;
+    import std.math.traits : isFinite;
     enforce(isFinite(result), new ConvException("Range error"));
 
     advanceSource();
@@ -3598,7 +3598,7 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
 @system unittest
 {
     // @system because strtod is not @safe.
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     static if (floatTraits!real.realFormat == RealFormat.ieeeDouble)
     {
@@ -3682,7 +3682,7 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
 {
     import core.stdc.errno;
     import core.stdc.stdlib;
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     errno = 0;  // In case it was set by another unittest in a different module.
     struct longdouble

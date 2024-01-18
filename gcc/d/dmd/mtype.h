@@ -233,7 +233,6 @@ public:
     uinteger_t size();
     virtual uinteger_t size(const Loc &loc);
     virtual unsigned alignsize();
-    Type *trySemantic(const Loc &loc, Scope *sc);
     Type *merge2();
     void modToBuffer(OutBuffer& buf) const;
     char *modToChars() const;
@@ -287,9 +286,7 @@ public:
     virtual Type *makeSharedWild();
     virtual Type *makeSharedWildConst();
     virtual Type *makeMutable();
-    virtual Dsymbol *toDsymbol(Scope *sc);
     Type *toBasetype();
-    virtual bool isBaseOf(Type *t, int *poffset);
     virtual MATCH implicitConvTo(Type *to);
     virtual MATCH constConv(Type *to);
     virtual unsigned char deduceWild(Type *t, bool isRef);
@@ -302,9 +299,7 @@ public:
     virtual structalign_t alignment();
     virtual Expression *defaultInitLiteral(const Loc &loc);
     virtual bool isZeroInit(const Loc &loc = Loc()); // if initializer is 0
-    Identifier *getTypeInfoIdent();
     virtual int hasWild() const;
-    virtual bool hasPointers();
     virtual bool hasVoidInitPointers();
     virtual bool hasSystemFields();
     virtual bool hasInvariant();
@@ -451,7 +446,6 @@ public:
     MATCH constConv(Type *to) override;
     MATCH implicitConvTo(Type *to) override;
     Expression *defaultInitLiteral(const Loc &loc) override;
-    bool hasPointers() override;
     bool hasSystemFields() override;
     bool hasVoidInitPointers() override;
     bool hasInvariant() override;
@@ -474,7 +468,6 @@ public:
     bool isZeroInit(const Loc &loc) override;
     bool isBoolean() override;
     MATCH implicitConvTo(Type *to) override;
-    bool hasPointers() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -491,7 +484,6 @@ public:
     uinteger_t size(const Loc &loc) override;
     bool isZeroInit(const Loc &loc) override;
     bool isBoolean() override;
-    bool hasPointers() override;
     MATCH implicitConvTo(Type *to) override;
     MATCH constConv(Type *to) override;
 
@@ -509,7 +501,6 @@ public:
     MATCH constConv(Type *to) override;
     bool isscalar() override;
     bool isZeroInit(const Loc &loc) override;
-    bool hasPointers() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -605,10 +596,8 @@ public:
     static TypeFunction *create(Parameters *parameters, Type *treturn, VarArg varargs, LINK linkage, StorageClass stc = 0);
     const char *kind() override;
     TypeFunction *syntaxCopy() override;
-    void purityLevel();
     bool hasLazyParameters();
     bool isDstyleVariadic() const;
-    StorageClass parameterStorageClass(Type* tthis, Parameter *p, VarDeclarations* outerVars = nullptr, bool indirect = false);
     Type *addStorageClass(StorageClass stc) override;
 
     Type *substWildTo(unsigned mod) override;
@@ -659,7 +648,6 @@ public:
     MATCH implicitConvTo(Type *to) override;
     bool isZeroInit(const Loc &loc) override;
     bool isBoolean() override;
-    bool hasPointers() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -675,7 +663,6 @@ class TypeTraits final : public Type
     const char *kind() override;
     TypeTraits *syntaxCopy() override;
     uinteger_t size(const Loc &loc) override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -687,7 +674,6 @@ class TypeMixin final : public Type
 
     const char *kind() override;
     TypeMixin *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -713,7 +699,6 @@ public:
     static TypeIdentifier *create(const Loc &loc, Identifier *ident);
     const char *kind() override;
     TypeIdentifier *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -726,7 +711,6 @@ public:
 
     const char *kind() override;
     TypeInstance *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -738,7 +722,6 @@ public:
 
     const char *kind() override;
     TypeTypeof *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     uinteger_t size(const Loc &loc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -748,7 +731,6 @@ class TypeReturn final : public TypeQualified
 public:
     const char *kind() override;
     TypeReturn *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -776,7 +758,6 @@ public:
     uinteger_t size(const Loc &loc) override;
     unsigned alignsize() override;
     TypeStruct *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     structalign_t alignment() override;
     Expression *defaultInitLiteral(const Loc &loc) override;
     bool isZeroInit(const Loc &loc) override;
@@ -785,7 +766,6 @@ public:
     bool needsDestruction() override;
     bool needsCopyOrPostblit() override;
     bool needsNested() override;
-    bool hasPointers() override;
     bool hasVoidInitPointers() override;
     bool hasSystemFields() override;
     bool hasInvariant() override;
@@ -806,8 +786,7 @@ public:
     TypeEnum *syntaxCopy() override;
     uinteger_t size(const Loc &loc) override;
     unsigned alignsize() override;
-    Type *memType(const Loc &loc = Loc());
-    Dsymbol *toDsymbol(Scope *sc) override;
+    Type *memType(const Loc &loc);
     bool isintegral() override;
     bool isfloating() override;
     bool isreal() override;
@@ -824,7 +803,6 @@ public:
     MATCH implicitConvTo(Type *to) override;
     MATCH constConv(Type *to) override;
     bool isZeroInit(const Loc &loc) override;
-    bool hasPointers() override;
     bool hasVoidInitPointers() override;
     bool hasSystemFields() override;
     bool hasInvariant() override;
@@ -843,9 +821,7 @@ public:
     const char *kind() override;
     uinteger_t size(const Loc &loc) override;
     TypeClass *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     ClassDeclaration *isClassHandle() override;
-    bool isBaseOf(Type *t, int *poffset) override;
     MATCH implicitConvTo(Type *to) override;
     MATCH constConv(Type *to) override;
     unsigned char deduceWild(Type *t, bool isRef) override;
@@ -853,7 +829,6 @@ public:
     bool isZeroInit(const Loc &loc) override;
     bool isscope() override;
     bool isBoolean() override;
-    bool hasPointers() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -894,7 +869,6 @@ public:
 
     TypeNull *syntaxCopy() override;
     MATCH implicitConvTo(Type *to) override;
-    bool hasPointers() override;
     bool isBoolean() override;
 
     uinteger_t size(const Loc &loc) override;
@@ -925,6 +899,13 @@ public:
 
 /**************************************************************/
 
+
 // If the type is a class or struct, returns the symbol for it, else null.
 AggregateDeclaration *isAggregate(Type *t);
+bool hasPointers(Type *t);
+// return the symbol to which type t resolves
+Dsymbol *toDsymbol(Type *t, Scope *sc);
 Covariant covariant(Type *, Type *, StorageClass * = NULL, bool = false);
+bool isBaseOf(Type *tthis, Type *t, int *poffset);
+Type *trySemantic(Type *type, const Loc &loc, Scope *sc);
+void purityLevel(TypeFunction *type);

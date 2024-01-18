@@ -15,7 +15,9 @@ import core.stdc.stdio;
 import core.stdc.stdint;
 import core.stdc.string;
 
+import dmd.astenums;
 import dmd.root.array;
+import dmd.root.file;
 import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.errorsink;
@@ -308,7 +310,7 @@ extern (C++) struct Global
     ErrorSink errorSink;       /// where the error messages go
     ErrorSink errorSinkNull;   /// where the error messages are ignored
 
-    extern (C++) FileName function(FileName, ref const Loc, out bool, OutBuffer*) preprocess;
+    extern (C++) DArray!ubyte function(FileName, ref const Loc, ref OutBuffer) preprocess;
 
   nothrow:
 

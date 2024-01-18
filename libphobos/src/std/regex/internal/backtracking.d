@@ -682,7 +682,7 @@ final:
                     while (prevStack()) {}
                     return re.ir[pc].data;
                 default:
-                    debug printBytecode(re.ir[0..$]);
+                    debug(std_regex_debug) printBytecode(re.ir[0..$]);
                     assert(0);
                 L_backtrack:
                     if (!popState())

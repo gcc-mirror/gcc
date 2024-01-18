@@ -31,6 +31,7 @@ import dmd.location;
 bool checkMustUse(Expression e, Scope* sc)
 {
     import dmd.id : Id;
+    import dmd.typesem : toDsymbol;
 
     assert(e.type);
     if (auto sym = e.type.toDsymbol(sc))

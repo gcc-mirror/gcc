@@ -2566,6 +2566,7 @@ void checkObErrors(ref ObState obstate)
                 //printf("%s: ", obstate.vars[i].toChars()); pvs.print(obstate.vars[]);
                 if (pvs.state == PtrState.Owner)
                 {
+                    import dmd.typesem : hasPointers;
                     auto v = obstate.vars[i];
                     if (v.type.hasPointers())
                         .error(v.loc, "%s `%s` is not disposed of before return", v.kind, v.toPrettyChars);

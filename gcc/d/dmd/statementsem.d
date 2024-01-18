@@ -3753,7 +3753,10 @@ public bool throwSemantic(const ref Loc loc, ref Expression exp, Scope* sc)
 {
     if (!global.params.useExceptions)
     {
-        loc.error("cannot use `throw` statements with %s", global.params.betterC ? "-betterC".ptr : "-nothrow".ptr);
+        version (IN_GCC)
+            loc.error("cannot use `throw` statements with `-fno-exceptions`");
+        else
+            loc.error("cannot use `throw` statements with %s", global.params.betterC ? "-betterC".ptr : "-nothrow".ptr);
         return false;
     }
 

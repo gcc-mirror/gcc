@@ -1740,8 +1740,8 @@ enum {
     I_CHILDRENCALLBACK = -1
 }
 
-mixin DECLARE_HANDLE!("HTREEITEM");
-mixin DECLARE_HANDLE!("HIMAGELIST");
+alias HTREEITEM = HANDLE;
+alias HIMAGELIST = HANDLE;
 
 version (Win64)
 {
@@ -4482,8 +4482,8 @@ static if (_WIN32_IE >= 0x400) {
     alias RBHITTESTINFO* LPRBHITTESTINFO;
 }
 
-mixin DECLARE_HANDLE!("HDSA");
-mixin DECLARE_HANDLE!("HDPA");
+alias HDSA = HANDLE;
+alias HDPA = HANDLE;
 
 version (Unicode) {
     alias HDITEMW HDITEM;

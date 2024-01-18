@@ -259,7 +259,8 @@ create_tinfo_types (Module *mod)
 			  array_type_node, array_type_node, array_type_node,
 			  array_type_node, ptr_type_node, ptr_type_node,
 			  ptr_type_node, d_uint_type, ptr_type_node,
-			  array_type_node, ptr_type_node, ptr_type_node, NULL);
+			  array_type_node, ptr_type_node, d_ulong_type,
+			  d_ulong_type, ptr_type_node, NULL);
 
   object_module = mod;
 }
@@ -814,6 +815,7 @@ public:
 	void *deallocator;
 	OffsetTypeInfo[] m_offTi;
 	void function(Object) defaultConstructor;
+	ulong[2] nameSig
 	immutable(void)* m_RTInfo;
 
      Information relating to interfaces, and their vtables are laid out
@@ -932,6 +934,10 @@ public:
 	else
 	  this->layout_field (null_pointer_node);
 
+	/* ulong[2] nameSig;  */
+	this->layout_field (build_zero_cst (d_ulong_type));
+	this->layout_field (build_zero_cst (d_ulong_type));
+
 	/* immutable(void)* m_RTInfo;  */
 	if (cd->getRTInfo)
 	  this->layout_field (build_expr (cd->getRTInfo, true));
@@ -978,6 +984,10 @@ public:
 	this->layout_field (null_pointer_node);
 	this->layout_field (null_array_node);
 	this->layout_field (null_pointer_node);
+
+	/* ulong[2] nameSig;  */
+	this->layout_field (build_zero_cst (d_ulong_type));
+	this->layout_field (build_zero_cst (d_ulong_type));
 
 	/* immutable(void)* m_RTInfo;  */
 	if (cd->getRTInfo)
@@ -1084,7 +1094,7 @@ public:
 
     /* StructFlags m_flags;  */
     int m_flags = StructFlags::none;
-    if (ti->hasPointers ())
+    if (hasPointers (ti))
       m_flags |= StructFlags::hasPointers;
     this->layout_field (build_integer_cst (m_flags, d_uint_type));
 

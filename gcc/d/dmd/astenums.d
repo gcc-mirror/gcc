@@ -459,3 +459,9 @@ extern (C++) struct structalign_t
     bool isPack() const    { return pack; }
     void setPack(bool pack) { this.pack = pack; }
 }
+
+/// Use to return D arrays from C++ functions
+extern (C++) struct DArray(T)
+{
+    T[] data;
+}

@@ -384,7 +384,6 @@ private Expression reorderSettingAAElem(BinExp exp, Scope* sc)
     return Expression.combine(e0, be);
 }
 
-
 private Expression checkOpAssignTypes(BinExp binExp, Scope* sc)
 {
     auto e1 = binExp.e1;
@@ -561,6 +560,39 @@ private Expression extractOpDollarSideEffect(Scope* sc, UnaExp ue)
     }
     ue.e1 = e1;
     return e0;
+}
+
+/****************************************
+ * Expand alias this tuples.
+ */
+TupleDeclaration isAliasThisTuple(Expression e)
+{
+    if (!e.type)
+        return null;
+
+    Type t = e.type.toBasetype();
+    while (true)
+    {
+        if (Dsymbol s = t.toDsymbol(null))
+        {
+            if (auto ad = s.isAggregateDeclaration())
+            {
+                s = ad.aliasthis ? ad.aliasthis.sym : null;
+                if (s && s.isVarDeclaration())
+                {
+                    TupleDeclaration td = s.isVarDeclaration().toAlias().isTupleDeclaration();
+                    if (td && td.isexp)
+                        return td;
+                }
+                if (Type att = t.aliasthisOf())
+                {
+                    t = att;
+                    continue;
+                }
+            }
+        }
+        return null;
+    }
 }
 
 /**************************************
@@ -5115,7 +5147,16 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 tb = tb.isTypeDArray().next.toBasetype();
             }
 
-            if (global.params.betterC || !sc.needsCodegen())
+            if (!global.params.useGC && sc.needsCodegen())
+            {
+                version(IN_GCC)
+                    error(exp.loc, "expression `%s` allocates with the GC and cannot be used with switch `-fno-rtti`", exp.toChars());
+                else
+                    error(exp.loc, "expression `%s` allocates with the GC and cannot be used with switch `-betterC`", exp.toChars());
+                return setError();
+            }
+
+            if (!sc.needsCodegen())
                     goto LskipNewArrayLowering;
 
             /* Class types may inherit base classes that have errors.
@@ -6432,8 +6473,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 return setError();
             }
 
-            const(char)* failMessage;
-            if (!tf.callMatch(null, exp.argumentList, 0, &failMessage, sc))
+            void errorHelper(const(char)* failMessage) scope
             {
                 OutBuffer buf;
                 buf.writeByte('(');
@@ -6447,8 +6487,11 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     p, exp.e1.toChars(), parametersTypeToChars(tf.parameterList), buf.peekChars());
                 if (failMessage)
                     errorSupplemental(exp.loc, "%s", failMessage);
-                return setError();
             }
+
+            if (tf.callMatch(null, exp.argumentList, 0, &errorHelper, sc) == MATCH.nomatch)
+                return setError();
+
             // Purity and safety check should run after testing arguments matching
             if (exp.f)
             {
@@ -6505,8 +6548,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             {
                 exp.f = exp.f.toAliasFunc();
                 TypeFunction tf = cast(TypeFunction)exp.f.type;
-                const(char)* failMessage;
-                if (!tf.callMatch(null, exp.argumentList, 0, &failMessage, sc))
+
+                void errorHelper2(const(char)* failMessage) scope
                 {
                     OutBuffer buf;
                     buf.writeByte('(');
@@ -6527,6 +6570,9 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                         errorSupplemental(exp.loc, "%s", failMessage);
                     exp.f = null;
                 }
+
+                if (tf.callMatch(null, exp.argumentList, 0, &errorHelper2, sc) == MATCH.nomatch)
+                    exp.f = null;
             }
             if (!exp.f || exp.f.errors)
                 return setError();
@@ -7041,7 +7087,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             sc2.tinst = null;
             sc2.minst = null;
             sc2.flags |= SCOPE.fullinst;
-            Type t = e.targ.trySemantic(e.loc, sc2);
+            Type t = dmd.typesem.trySemantic(e.targ, e.loc, sc2);
             sc2.pop();
             if (!t) // errors, so condition is false
                 return no();
@@ -7271,7 +7317,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             Objects dedtypes = Objects(e.parameters.length);
             dedtypes.zero();
 
-            MATCH m = deduceType(e.targ, sc, e.tspec, e.parameters, &dedtypes, null, 0, e.tok == TOK.equal);
+            MATCH m = deduceType(e.targ, sc, e.tspec, *e.parameters, dedtypes, null, 0, e.tok == TOK.equal);
 
             if (m == MATCH.nomatch || (m != MATCH.exact && e.tok == TOK.equal))
             {
@@ -7292,7 +7338,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     TemplateParameter tp = (*e.parameters)[i];
                     Declaration s = null;
 
-                    m = tp.matchArg(e.loc, sc, &tiargs, i, e.parameters, &dedtypes, &s);
+                    m = tp.matchArg(e.loc, sc, &tiargs, i, e.parameters, dedtypes, &s);
                     if (m == MATCH.nomatch)
                         return no();
                     s.dsymbolSemantic(sc);
@@ -7437,7 +7483,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         result = (cast(BinExp)e).reorderSettingAAElem(sc);
     }
 
-    private Expression compileIt(MixinExp exp)
+    private Expression compileIt(MixinExp exp, Scope *sc)
     {
         OutBuffer buf;
         if (expressionsToString(buf, sc, exp.exps))
@@ -7478,7 +7524,13 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             printf("MixinExp::semantic('%s')\n", exp.toChars());
         }
 
-        auto e = compileIt(exp);
+        // The expression is not treated as part of a default argument,
+        // because it is evaluated at compile time.
+        Scope* sc2 = sc.push();
+        sc2.inDefaultArg = false;
+
+        auto e = compileIt(exp, sc2);
+        sc2.pop();
         if (!e)
             return setError();
         result = e.expressionSemantic(sc);
@@ -7575,7 +7627,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         {
             auto fileName = FileName(resolvedNamez);
-            if (auto fmResult = global.fileManager.lookup(fileName))
+            if (auto fmResult = global.fileManager.getFileContents(fileName))
             {
                 se = new StringExp(e.loc, fmResult);
             }
@@ -7721,7 +7773,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             // if the assert condition is a mixin expression, try to compile it
             if (auto ce = exp.e1.isMixinExp())
             {
-                if (auto e1 = compileIt(ce))
+                if (auto e1 = compileIt(ce, sc))
                     exp.e1 = e1;
             }
 
@@ -13924,45 +13976,34 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
     {
         //printf("FileInitExp::semantic()\n");
         e.type = Type.tstring;
-        result = e;
+        result = e.resolveLoc(e.loc, sc);
     }
 
     override void visit(LineInitExp e)
     {
         e.type = Type.tint32;
-        result = e;
+        result = e.resolveLoc(e.loc, sc);
     }
 
     override void visit(ModuleInitExp e)
     {
         //printf("ModuleInitExp::semantic()\n");
         e.type = Type.tstring;
-        result = e;
+        result = e.resolveLoc(e.loc, sc);
     }
 
     override void visit(FuncInitExp e)
     {
         //printf("FuncInitExp::semantic()\n");
         e.type = Type.tstring;
-        if (sc.func)
-        {
-            result = e.resolveLoc(Loc.initial, sc);
-            return;
-        }
-        result = e;
+        result = e.resolveLoc(e.loc, sc);
     }
 
     override void visit(PrettyFuncInitExp e)
     {
         //printf("PrettyFuncInitExp::semantic()\n");
         e.type = Type.tstring;
-        if (sc.func)
-        {
-            result = e.resolveLoc(Loc.initial, sc);
-            return;
-        }
-
-        result = e;
+        result = e.resolveLoc(e.loc, sc);
     }
 }
 
@@ -15047,10 +15088,21 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
  */
 Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
 {
+    // Don't replace the special keywords, while we are inside a default
+    // argument. They are replaced later when copied to the call site.
+    if (sc.inDefaultArg)
+        return exp;
+
     exp.loc = loc;
 
     Expression visit(Expression exp)
     {
+        if (auto binExp = exp.isBinExp())
+        {
+            binExp.e1 = binExp.e1.resolveLoc(loc, sc);
+            binExp.e2 = binExp.e2.resolveLoc(loc, sc);
+            return binExp;
+        }
         if (auto unaExp = exp.isUnaExp())
         {
             unaExp.e1 = unaExp.e1.resolveLoc(loc, sc);
@@ -15059,10 +15111,121 @@ Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
         return exp;
     }
 
+    Expression visitCond(CondExp exp)
+    {
+        exp.e1 = exp.e1.resolveLoc(loc, sc);
+        exp.e2 = exp.e2.resolveLoc(loc, sc);
+        exp.econd = exp.econd.resolveLoc(loc, sc);
+        return exp;
+    }
+
     Expression visitCat(CatExp exp)
     {
         exp.e1 = exp.e1.resolveLoc(loc, sc);
         exp.e2 = exp.e2.resolveLoc(loc, sc);
+        if (exp.lowering)
+            exp.lowering = exp.lowering.resolveLoc(loc, sc);
+        return exp;
+    }
+
+    Expression visitStructLiteral(StructLiteralExp exp)
+    {
+        foreach (ref element; *exp.elements)
+        {
+            if (element)
+                element = element.resolveLoc(loc, sc);
+        }
+
+        return exp;
+    }
+
+    Expression visitNew(NewExp exp)
+    {
+        if (exp.thisexp)
+            exp.thisexp = exp.thisexp.resolveLoc(loc, sc);
+        if (exp.argprefix)
+            exp.argprefix = exp.argprefix.resolveLoc(loc, sc);
+        if (exp.lowering)
+            exp.lowering = exp.lowering.resolveLoc(loc, sc);
+
+        foreach (ref element; *exp.arguments)
+        {
+            if (element)
+                element = element.resolveLoc(loc, sc);
+        }
+
+        return exp;
+    }
+
+    Expression visitCall(CallExp exp)
+    {
+        foreach (ref element; *exp.arguments)
+        {
+            if (element)
+                element = element.resolveLoc(loc, sc);
+        }
+
+        return exp;
+    }
+
+    Expression visitArray(ArrayExp exp)
+    {
+        exp.e1 = exp.e1.resolveLoc(loc, sc);
+
+        foreach (ref element; *exp.arguments)
+        {
+            if (element)
+                element = element.resolveLoc(loc, sc);
+        }
+
+        return exp;
+    }
+
+    Expression visitSlice(SliceExp exp)
+    {
+        exp.e1 = exp.e1.resolveLoc(loc, sc);
+        exp.lwr = exp.lwr.resolveLoc(loc, sc);
+        exp.upr = exp.upr.resolveLoc(loc, sc);
+
+        return exp;
+    }
+
+    Expression visitInterval(IntervalExp exp)
+    {
+        exp.lwr = exp.lwr.resolveLoc(loc, sc);
+        exp.upr = exp.upr.resolveLoc(loc, sc);
+
+        return exp;
+    }
+
+    Expression visitArrayLiteral(ArrayLiteralExp exp)
+    {
+        if (exp.basis)
+            exp.basis = exp.basis.resolveLoc(loc, sc);
+
+        foreach (ref element; *exp.elements)
+        {
+            if (element)
+                element = element.resolveLoc(loc, sc);
+        }
+
+        return exp;
+    }
+
+    Expression visitAssocArrayLiteral(AssocArrayLiteralExp exp)
+    {
+        foreach (ref element; *exp.keys)
+        {
+            if (element)
+                element = element.resolveLoc(loc, sc);
+        }
+
+        foreach (ref element; *exp.values)
+        {
+            if (element)
+                element = element.resolveLoc(loc, sc);
+        }
+
         return exp;
     }
 
@@ -15079,20 +15242,20 @@ Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
         return e.expressionSemantic(sc);
     }
 
-    Expression visitLineInit(LineInitExp _)
+    Expression visitLineInit(LineInitExp exp)
     {
         Expression e = new IntegerExp(loc, loc.linnum, Type.tint32);
         return e.expressionSemantic(sc);
     }
 
-    Expression visitModuleInit(ModuleInitExp _)
+    Expression visitModuleInit(ModuleInitExp exp)
     {
         const auto s = (sc.callsc ? sc.callsc : sc)._module.toPrettyChars().toDString();
         Expression e = new StringExp(loc, s);
         return e.expressionSemantic(sc);
     }
 
-    Expression visitFuncInit(FuncInitExp _)
+    Expression visitFuncInit(FuncInitExp exp)
     {
         const(char)* s;
         if (sc.callsc && sc.callsc.func)
@@ -15105,7 +15268,7 @@ Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
         return e.expressionSemantic(sc);
     }
 
-    Expression visitPrettyFunc(PrettyFuncInitExp _)
+    Expression visitPrettyFunc(PrettyFuncInitExp exp)
     {
         FuncDeclaration fd = (sc.callsc && sc.callsc.func)
                         ? sc.callsc.func
@@ -15133,7 +15296,16 @@ Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
     switch(exp.op)
     {
         default:                 return visit(exp);
+        case EXP.structLiteral:  return visitStructLiteral(exp.isStructLiteralExp());
+        case EXP.new_:           return visitNew(exp.isNewExp());
         case EXP.concatenate:    return visitCat(exp.isCatExp());
+        case EXP.call:           return visitCall(exp.isCallExp());
+        case EXP.question:       return visitCond(exp.isCondExp());
+        case EXP.array:          return visitArray(exp.isArrayExp());
+        case EXP.slice:          return visitSlice(exp.isSliceExp());
+        case EXP.interval:       return visitInterval(exp.isIntervalExp());
+        case EXP.arrayLiteral:   return visitArrayLiteral(exp.isArrayLiteralExp());
+        case EXP.assocArrayLiteral: return visitAssocArrayLiteral(exp.isAssocArrayLiteralExp());
         case EXP.file:
         case EXP.fileFullPath:   return visitFileInit(exp.isFileInitExp());
         case EXP.line:           return visitLineInit(exp.isLineInitExp);
@@ -16193,7 +16365,10 @@ Expression getVarExp(EnumMember em, const ref Loc loc, Scope* sc)
     em.checkDisabled(loc, sc);
 
     if (em.depdecl && !em.depdecl._scope)
+    {
         em.depdecl._scope = sc;
+        em.depdecl._scope.setNoFree();
+    }
     em.checkDeprecated(loc, sc);
 
     if (em.errors)

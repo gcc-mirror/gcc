@@ -1749,6 +1749,35 @@ extern (C++) final class SymbolDeclaration : Declaration
 
 /***********************************************************
  */
+private Identifier getTypeInfoIdent(Type t)
+{
+    import dmd.dmangle;
+    import core.stdc.stdlib;
+    import dmd.root.rmem;
+    // _init_10TypeInfo_%s
+    OutBuffer buf;
+    buf.reserve(32);
+    mangleToBuffer(t, buf);
+
+    const slice = buf[];
+
+    // Allocate buffer on stack, fail over to using malloc()
+    char[128] namebuf;
+    const namelen = 19 + size_t.sizeof * 3 + slice.length + 1;
+    auto name = namelen <= namebuf.length ? namebuf.ptr : cast(char*)Mem.check(malloc(namelen));
+
+    const length = snprintf(name, namelen, "_D%lluTypeInfo_%.*s6__initZ",
+            cast(ulong)(9 + slice.length), cast(int)slice.length, slice.ptr);
+    //printf("%p %s, deco = %s, name = %s\n", this, toChars(), deco, name);
+    assert(0 < length && length < namelen); // don't overflow the buffer
+
+    auto id = Identifier.idPool(name[0 .. length]);
+
+    if (name != namebuf.ptr)
+        free(name);
+    return id;
+}
+
 extern (C++) class TypeInfoDeclaration : VarDeclaration
 {
     Type tinfo;

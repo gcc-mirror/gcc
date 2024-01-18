@@ -18,7 +18,7 @@ void* xrealloc(void* ptr, size_t sz) nothrow @nogc
 
     if (!sz) { .free(ptr); return null; }
     if (auto nptr = .realloc(ptr, sz)) return nptr;
-    .free(ptr); onOutOfMemoryErrorNoGC();
+    .free(ptr); onOutOfMemoryError();
     assert(0);
 }
 
@@ -27,7 +27,7 @@ void* xmalloc(size_t sz) nothrow @nogc
     import core.exception;
     if (auto nptr = .malloc(sz))
         return nptr;
-    onOutOfMemoryErrorNoGC();
+    onOutOfMemoryError();
     assert(0);
 }
 

@@ -72,8 +72,15 @@ version (ReturnStrerrorR)
     const(char)* strerror_r(int errnum, return scope char* buf, size_t buflen);
 }
 // This one is
+else version (CRuntime_Newlib)
+{
+    ///
+    pragma(mangle, "__xpg_strerror_r")
+    int strerror_r(int errnum, scope char* buf, size_t buflen);
+}
 else
 {
+    ///
     int strerror_r(int errnum, scope char* buf, size_t buflen);
 }
 ///

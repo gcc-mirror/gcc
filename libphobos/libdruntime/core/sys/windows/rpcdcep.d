@@ -15,7 +15,7 @@ import core.sys.windows.basetyps;
 import core.sys.windows.w32api;
 import core.sys.windows.windef;
 
-mixin DECLARE_HANDLE!("I_RPC_HANDLE");
+alias I_RPC_HANDLE = HANDLE;
 alias long RPC_STATUS;
 
 enum RPC_NCA_FLAGS_DEFAULT=0;

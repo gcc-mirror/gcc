@@ -6553,7 +6553,8 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
     TemplateDeclaration tempdecl = tempinst.tempdecl.isTemplateDeclaration();
     assert(tempdecl);
 
-    TemplateStats.incInstance(tempdecl, tempinst);
+    if (global.params.v.templates)
+        TemplateStats.incInstance(tempdecl, tempinst, global.params.v.templatesListInstances);
 
     tempdecl.checkDeprecated(tempinst.loc, sc);
 
@@ -6746,7 +6747,8 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
     tempinst.parent = tempinst.enclosing ? tempinst.enclosing : tempdecl.parent;
     //printf("parent = '%s'\n", parent.kind());
 
-    TemplateStats.incUnique(tempdecl, tempinst);
+    if (global.params.v.templates)
+        TemplateStats.incUnique(tempdecl, tempinst);
 
     TemplateInstance tempdecl_instance_idx = tempdecl.addInstance(tempinst);
 

@@ -307,7 +307,7 @@ struct Global
     ErrorSink* errorSink;       // where the error messages go
     ErrorSink* errorSinkNull;   // where the error messages disappear
 
-    FileName (*preprocess)(FileName, const Loc&, bool&, OutBuffer&);
+    DArray<unsigned char> (*preprocess)(FileName, const Loc&, OutBuffer&);
 
     /* Start gagging. Return the current number of gagged errors
      */

@@ -87,6 +87,7 @@ struct Scope
     Dsymbol *inunion;           // !=null if processing members of a union
     d_bool nofree;                // true if shouldn't free it
     d_bool inLoop;                // true if inside a loop (where constructor calls aren't allowed)
+    d_bool inDefaultArg;          // true if inside a default argument (where __FILE__, etc are evaluated at the call site)
     int intypeof;               // in typeof(exp)
     VarDeclaration *lastVar;    // Previous symbol used to prevent goto-skips-init
     ErrorSink *eSink;           // sink for error messages

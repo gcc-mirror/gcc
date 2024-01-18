@@ -34,6 +34,7 @@ import dmd.mtype;
 import dmd.printast;
 import dmd.rootobject;
 import dmd.tokens;
+import dmd.typesem : hasPointers, parameterStorageClass;
 import dmd.visitor;
 import dmd.arraytypes;
 

@@ -279,10 +279,8 @@ See_Also: $(REF BitFlags, std,typecons)
 */
 string bitfields(T...)()
 {
-    import std.conv : to;
-
     static assert(T.length % 3 == 0,
-                  "Wrong number of arguments (" ~ to!string(T.length) ~ "): Must be a multiple of 3");
+                  "Wrong number of arguments (" ~ T.length.stringof ~ "): Must be a multiple of 3");
 
     static foreach (i, ARG; T)
     {

@@ -28,6 +28,15 @@ if (is(T == float) || is(T == double)
     return w.data;
 }
 
+/// Returns: whether `c` is a supported format specifier for floats
+package(std.format) bool isFloatSpec(char c) nothrow @nogc pure @safe
+{
+    return c == 'a' || c == 'A'
+           || c == 'e' || c == 'E'
+           || c == 'f' || c == 'F'
+           || c == 'g' || c == 'G';
+}
+
 package(std.format) void printFloat(Writer, T, Char)(auto ref Writer w, const(T) val, FormatSpec!Char f)
 if (is(T == float) || is(T == double)
     || (is(T == real) && (T.mant_dig == double.mant_dig || T.mant_dig == 64)))
@@ -43,10 +52,7 @@ if (is(T == float) || is(T == double)
     if (sgn == "" && f.flPlus) sgn = "+";
     if (sgn == "" && f.flSpace) sgn = " ";
 
-    assert(f.spec == 'a' || f.spec == 'A'
-           || f.spec == 'e' || f.spec == 'E'
-           || f.spec == 'f' || f.spec == 'F'
-           || f.spec == 'g' || f.spec == 'G', "unsupported format specifier");
+    assert(isFloatSpec(f.spec), "unsupported format specifier");
     bool is_upper = f.spec == 'A' || f.spec == 'E' || f.spec=='F' || f.spec=='G';
 
     // special treatment for nan and inf
