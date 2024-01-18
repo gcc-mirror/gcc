@@ -7221,6 +7221,10 @@ aarch64_function_arg_boundary (machine_mode mode, const_tree type)
 static fixed_size_mode
 aarch64_get_reg_raw_mode (int regno)
 {
+  /* Don't use any non GP registers for __builtin_apply and
+     __builtin_return if general registers only mode is requested. */
+  if (TARGET_GENERAL_REGS_ONLY && !GP_REGNUM_P (regno))
+    return as_a <fixed_size_mode> (VOIDmode);
   if (TARGET_SVE && FP_REGNUM_P (regno))
     /* Don't use the SVE part of the register for __builtin_apply and
        __builtin_return.  The SVE registers aren't used by the normal PCS,
