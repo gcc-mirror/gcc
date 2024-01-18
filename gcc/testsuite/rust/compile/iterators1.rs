@@ -232,24 +232,6 @@ macro_rules! impl_uint {
                     }
                 }
 
-                pub fn to_le(self) -> Self {
-                    #[cfg(target_endian = "little")]
-                    {
-                        self
-                    }
-                }
-
-                pub const fn from_le_bytes(bytes: [u8; mem::size_of::<Self>()]) -> Self {
-                    Self::from_le(Self::from_ne_bytes(bytes))
-                }
-
-                pub const fn from_le(x: Self) -> Self {
-                    #[cfg(target_endian = "little")]
-                    {
-                        x
-                    }
-                }
-
                 pub const fn from_ne_bytes(bytes: [u8; mem::size_of::<Self>()]) -> Self {
                     unsafe { mem::transmute(bytes) }
                 }
