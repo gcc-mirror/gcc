@@ -70,6 +70,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Character Escapes::   @samp{\e} stands for the character @key{ESC}.
 * Alignment::           Determining the alignment of a function, type or variable.
 * Inline::              Defining inline functions (as fast as macros).
+* Const and Volatile Functions :: GCC interprets these specially in C.
 * Volatiles::           What constitutes an access to a volatile object.
 * Using Assembly Language with C:: Instructions and extensions for interfacing C with assembler.
 * Alternate Keywords::  @code{__const__}, @code{__asm__}, etc., for header files.
@@ -2522,8 +2523,6 @@ the enclosing block.
 @section Declaring Attributes of Functions
 @cindex function attributes
 @cindex declaring attributes of functions
-@cindex @code{volatile} applied to function
-@cindex @code{const} applied to function
 
 In GNU C and C++, you can use function attributes to specify certain
 function properties that may help the compiler optimize calls or
@@ -10396,6 +10395,40 @@ definition (lacking @code{inline} and @code{extern}) in a library file.
 The definition in the header file causes most calls to the function
 to be inlined.  If any uses of the function remain, they refer to
 the single copy in the library.
+
+@node Const and Volatile Functions
+@section Const and Volatile Functions
+@cindex @code{const} applied to function
+@cindex @code{volatile} applied to function
+
+The C standard explicitly leaves the behavior of the @code{const} and
+@code{volatile} type qualifiers applied to functions undefined; these
+constructs can only arise through the use of @code{typedef}.  As an extension,
+GCC defines this use of the @code{const} qualifier to have the same meaning
+as the GCC @code{const} function attribute, and the @code{volatile} qualifier
+to be equivalent to the @code{noreturn} attribute.
+@xref{Common Function Attributes}, for more information.
+
+As examples of this usage,
+
+@smallexample
+
+/* @r{Equivalent to:}
+   void fatal () __attribute__ ((noreturn));  */
+typedef void voidfn ();
+volatile voidfn fatal;
+
+/* @r{Equivalent to:}
+   extern int square (int) __attribute__ ((const));  */
+typedef int intfn (int);
+extern const intfn square;
+@end smallexample
+
+In general, using function attributes instead is preferred, since the
+attributes make both the intent of the code and its reliance on a GNU
+extension explicit.  Additionally, using @code{const} and
+@code{volatile} in this way is specific to GNU C and does not work in
+GNU C++.
 
 @node Volatiles
 @section When is a Volatile Object Accessed?
