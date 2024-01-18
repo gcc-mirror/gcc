@@ -3028,19 +3028,6 @@ types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
 The message attached to the attribute is affected by the setting of
 the @option{-fmessage-length} option.
 
-@cindex @code{unavailable} function attribute
-@item unavailable
-@itemx unavailable (@var{msg})
-The @code{unavailable} attribute results in an error if the function
-is used anywhere in the source file.  This is useful when identifying
-functions that have been removed from a particular variation of an
-interface.  Other than emitting an error rather than a warning, the
-@code{unavailable} attribute behaves in the same manner as
-@code{deprecated}.
-
-The @code{unavailable} attribute can also be used for variables and
-types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
-
 @cindex @code{error} function attribute
 @cindex @code{warning} function attribute
 @item error ("@var{message}")
@@ -3666,6 +3653,10 @@ This attribute locally overrides the @option{-fstack-limit-register}
 and @option{-fstack-limit-symbol} command-line options; it has the effect
 of disabling stack limit checking in the function it applies to.
 
+@cindex @code{no_stack_protector} function attribute
+@item no_stack_protector
+This attribute prevents stack protection code for the function.
+
 @cindex @code{noclone} function attribute
 @item noclone
 This function attribute prevents a function from being considered for
@@ -3761,63 +3752,6 @@ my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
 
-@cindex @code{null_terminated_string_arg} function attribute
-@item null_terminated_string_arg
-@itemx null_terminated_string_arg (@var{N})
-The @code{null_terminated_string_arg} attribute may be applied to a
-function that takes a @code{char *} or @code{const char *} at
-referenced argument @var{N}.
-
-It indicates that the passed argument must be a C-style null-terminated
-string.  Specifically, the presence of the attribute implies that, if
-the pointer is non-null, the function may scan through the referenced
-buffer looking for the first zero byte.
-
-In particular, when the analyzer is enabled (via @option{-fanalyzer}),
-if the pointer is non-null, it will simulate scanning for the first
-zero byte in the referenced buffer, and potentially emit
-@option{-Wanalyzer-use-of-uninitialized-value}
-or @option{-Wanalyzer-out-of-bounds} on improperly terminated buffers.
-
-For example, given the following:
-
-@smallexample
-char *example_1 (const char *p)
-  __attribute__((null_terminated_string_arg (1)));
-@end smallexample
-
-the analyzer will check that any non-null pointers passed to the function
-are validly terminated.
-
-If the parameter must be non-null, it is appropriate to use both this
-attribute and the attribute @code{nonnull}, such as in:
-
-@smallexample
-extern char *example_2 (const char *p)
-  __attribute__((null_terminated_string_arg (1),
-                 nonnull (1)));
-@end smallexample
-
-See the @code{nonnull} attribute for more information and
-caveats.
-
-If the pointer argument is also referred to by an @code{access} attribute on the
-function with @var{access-mode} either @code{read_only} or @code{read_write}
-and the latter attribute has the optional @var{size-index} argument
-referring to a size argument, this expressses the maximum size of the access.
-For example, given:
-
-@smallexample
-extern char *example_fn (const char *p, size_t n)
-  __attribute__((null_terminated_string_arg (1),
-                 access (read_only, 1, 2),
-                 nonnull (1)));
-@end smallexample
-
-the analyzer will require the first parameter to be non-null, and either
-be validly null-terminated, or validly readable up to the size specified by
-the second parameter.
-
 @cindex @code{noplt} function attribute
 @item noplt
 The @code{noplt} attribute is the counterpart to option @option{-fno-plt}.
@@ -3895,6 +3829,63 @@ function cannot throw an exception.  For example, most functions in
 the standard C library can be guaranteed not to throw an exception
 with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.
+
+@cindex @code{null_terminated_string_arg} function attribute
+@item null_terminated_string_arg
+@itemx null_terminated_string_arg (@var{N})
+The @code{null_terminated_string_arg} attribute may be applied to a
+function that takes a @code{char *} or @code{const char *} at
+referenced argument @var{N}.
+
+It indicates that the passed argument must be a C-style null-terminated
+string.  Specifically, the presence of the attribute implies that, if
+the pointer is non-null, the function may scan through the referenced
+buffer looking for the first zero byte.
+
+In particular, when the analyzer is enabled (via @option{-fanalyzer}),
+if the pointer is non-null, it will simulate scanning for the first
+zero byte in the referenced buffer, and potentially emit
+@option{-Wanalyzer-use-of-uninitialized-value}
+or @option{-Wanalyzer-out-of-bounds} on improperly terminated buffers.
+
+For example, given the following:
+
+@smallexample
+char *example_1 (const char *p)
+  __attribute__((null_terminated_string_arg (1)));
+@end smallexample
+
+the analyzer will check that any non-null pointers passed to the function
+are validly terminated.
+
+If the parameter must be non-null, it is appropriate to use both this
+attribute and the attribute @code{nonnull}, such as in:
+
+@smallexample
+extern char *example_2 (const char *p)
+  __attribute__((null_terminated_string_arg (1),
+                 nonnull (1)));
+@end smallexample
+
+See the @code{nonnull} attribute for more information and
+caveats.
+
+If the pointer argument is also referred to by an @code{access} attribute on the
+function with @var{access-mode} either @code{read_only} or @code{read_write}
+and the latter attribute has the optional @var{size-index} argument
+referring to a size argument, this expressses the maximum size of the access.
+For example, given:
+
+@smallexample
+extern char *example_fn (const char *p, size_t n)
+  __attribute__((null_terminated_string_arg (1),
+                 access (read_only, 1, 2),
+                 nonnull (1)));
+@end smallexample
+
+the analyzer will require the first parameter to be non-null, and either
+be validly null-terminated, or validly readable up to the size specified by
+the second parameter.
 
 @cindex @code{optimize} function attribute
 @item optimize (@var{level}, @dots{})
@@ -3996,6 +3987,16 @@ function with both the @code{pure} and the @code{const} attribute is
 diagnosed.  Because a pure function cannot have any observable side
 effects it does not make sense for such a function to return @code{void}.
 Declaring such a function is diagnosed.
+
+@cindex @code{retain} function attribute
+@item retain
+For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
+will save the function from linker garbage collection.  To support
+this behavior, functions that have not been placed in specific sections
+(e.g. by the @code{section} attribute, or the @code{-ffunction-sections}
+option), will be placed in new, unique sections.
+
+This additional functionality requires Binutils version 2.36 or later.
 
 @cindex @code{returns_nonnull} function attribute
 @item returns_nonnull
@@ -4099,54 +4100,6 @@ This attribute adds stack protection code to the function if
 flags @option{-fstack-protector}, @option{-fstack-protector-strong}
 or @option{-fstack-protector-explicit} are set.
 
-@cindex @code{no_stack_protector} function attribute
-@item no_stack_protector
-This attribute prevents stack protection code for the function.
-
-@cindex @code{target} function attribute
-@item target (@var{string}, @dots{})
-Multiple target back ends implement the @code{target} attribute
-to specify that a function is to
-be compiled with different target options than specified on the
-command line.  The original target command-line options are ignored.
-One or more strings can be provided as arguments.
-Each string consists of one or more comma-separated suffixes to
-the @code{-m} prefix jointly forming the name of a machine-dependent
-option.  @xref{Submodel Options,,Machine-Dependent Options}.
-
-The @code{target} attribute can be used for instance to have a function
-compiled with a different ISA (instruction set architecture) than the
-default.  @samp{#pragma GCC target} can be used to specify target-specific
-options for more than one function.  @xref{Function Specific Option Pragmas},
-for details about the pragma.
-
-For instance, on an x86, you could declare one function with the
-@code{target("sse4.1,arch=core2")} attribute and another with
-@code{target("sse4a,arch=amdfam10")}.  This is equivalent to
-compiling the first function with @option{-msse4.1} and
-@option{-march=core2} options, and the second function with
-@option{-msse4a} and @option{-march=amdfam10} options.  It is up to you
-to make sure that a function is only invoked on a machine that
-supports the particular ISA it is compiled for (for example by using
-@code{cpuid} on x86 to determine what feature bits and architecture
-family are used).
-
-@smallexample
-int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
-int sse3_func (void) __attribute__ ((__target__ ("sse3")));
-@end smallexample
-
-Providing multiple strings as arguments separated by commas to specify
-multiple options is equivalent to separating the option suffixes with
-a comma (@samp{,}) within a single string.  Spaces are not permitted
-within the strings.
-
-The options supported are specific to each target; refer to @ref{x86
-Function Attributes}, @ref{PowerPC Function Attributes},
-@ref{ARM Function Attributes}, @ref{AArch64 Function Attributes},
-@ref{Nios II Function Attributes}, and @ref{S/390 Function Attributes}
-for details.
-
 @cindex @code{symver} function attribute
 @item symver ("@var{name2}@@@var{nodename}")
 On ELF targets this attribute creates a symbol version.  The @var{name2} part
@@ -4218,6 +4171,50 @@ The analyzer will pay particular attention to such functions when
 @option{-Wanalyzer-tainted-offset},
 and @option{-Wanalyzer-tainted-size}.
 
+@cindex @code{target} function attribute
+@item target (@var{string}, @dots{})
+Multiple target back ends implement the @code{target} attribute
+to specify that a function is to
+be compiled with different target options than specified on the
+command line.  The original target command-line options are ignored.
+One or more strings can be provided as arguments.
+Each string consists of one or more comma-separated suffixes to
+the @code{-m} prefix jointly forming the name of a machine-dependent
+option.  @xref{Submodel Options,,Machine-Dependent Options}.
+
+The @code{target} attribute can be used for instance to have a function
+compiled with a different ISA (instruction set architecture) than the
+default.  @samp{#pragma GCC target} can be used to specify target-specific
+options for more than one function.  @xref{Function Specific Option Pragmas},
+for details about the pragma.
+
+For instance, on an x86, you could declare one function with the
+@code{target("sse4.1,arch=core2")} attribute and another with
+@code{target("sse4a,arch=amdfam10")}.  This is equivalent to
+compiling the first function with @option{-msse4.1} and
+@option{-march=core2} options, and the second function with
+@option{-msse4a} and @option{-march=amdfam10} options.  It is up to you
+to make sure that a function is only invoked on a machine that
+supports the particular ISA it is compiled for (for example by using
+@code{cpuid} on x86 to determine what feature bits and architecture
+family are used).
+
+@smallexample
+int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
+int sse3_func (void) __attribute__ ((__target__ ("sse3")));
+@end smallexample
+
+Providing multiple strings as arguments separated by commas to specify
+multiple options is equivalent to separating the option suffixes with
+a comma (@samp{,}) within a single string.  Spaces are not permitted
+within the strings.
+
+The options supported are specific to each target; refer to @ref{x86
+Function Attributes}, @ref{PowerPC Function Attributes},
+@ref{ARM Function Attributes}, @ref{AArch64 Function Attributes},
+@ref{Nios II Function Attributes}, and @ref{S/390 Function Attributes}
+for details.
+
 @cindex @code{target_clones} function attribute
 @item target_clones (@var{options})
 The @code{target_clones} attribute is used to specify that a function
@@ -4246,6 +4243,19 @@ from a @code{target_clone} caller will not lead to copying
 If you want to enforce such behaviour,
 we recommend declaring the calling function with the @code{flatten} attribute?
 
+@cindex @code{unavailable} function attribute
+@item unavailable
+@itemx unavailable (@var{msg})
+The @code{unavailable} attribute results in an error if the function
+is used anywhere in the source file.  This is useful when identifying
+functions that have been removed from a particular variation of an
+interface.  Other than emitting an error rather than a warning, the
+@code{unavailable} attribute behaves in the same manner as
+@code{deprecated}.
+
+The @code{unavailable} attribute can also be used for variables and
+types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
+
 @cindex @code{unused} function attribute
 @item unused
 This attribute, attached to a function, means that the function is meant
@@ -4262,16 +4272,6 @@ inline assembly.
 When applied to a member function of a C++ class template, the
 attribute also means that the function is instantiated if the
 class itself is instantiated.
-
-@cindex @code{retain} function attribute
-@item retain
-For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
-will save the function from linker garbage collection.  To support
-this behavior, functions that have not been placed in specific sections
-(e.g. by the @code{section} attribute, or the @code{-ffunction-sections}
-option), will be placed in new, unique sections.
-
-This additional functionality requires Binutils version 2.36 or later.
 
 @cindex @code{visibility} function attribute
 @item visibility ("@var{visibility_type}")
@@ -7636,6 +7636,7 @@ which syntax you use.  @xref{Attribute Syntax}, for details.
 The following attributes are supported on most targets.
 
 @table @code
+@c Keep this table alphabetized by attribute name.  Treat _ as space.
 
 @cindex @code{alias} variable attribute
 @item alias ("@var{target}")
@@ -7742,73 +7743,6 @@ align them on any target.
 The @code{aligned} attribute can also be used for functions
 (@pxref{Common Function Attributes}.)
 
-@cindex @code{warn_if_not_aligned} variable attribute
-@item warn_if_not_aligned (@var{alignment})
-This attribute specifies a threshold for the structure field, measured
-in bytes.  If the structure field is aligned below the threshold, a
-warning will be issued.  For example, the declaration:
-
-@smallexample
-struct foo
-@{
-  int i1;
-  int i2;
-  unsigned long long x __attribute__ ((warn_if_not_aligned (16)));
-@};
-@end smallexample
-
-@noindent
-causes the compiler to issue an warning on @code{struct foo}, like
-@samp{warning: alignment 8 of 'struct foo' is less than 16}.
-The compiler also issues a warning, like @samp{warning: 'x' offset
-8 in 'struct foo' isn't aligned to 16}, when the structure field has
-the misaligned offset:
-
-@smallexample
-struct __attribute__ ((aligned (16))) foo
-@{
-  int i1;
-  int i2;
-  unsigned long long x __attribute__ ((warn_if_not_aligned (16)));
-@};
-@end smallexample
-
-This warning can be disabled by @option{-Wno-if-not-aligned}.
-The @code{warn_if_not_aligned} attribute can also be used for types
-(@pxref{Common Type Attributes}.)
-
-@cindex @code{strict_flex_array} variable attribute
-@item strict_flex_array (@var{level})
-The @code{strict_flex_array} attribute should be attached to the trailing
-array field of a structure.  It controls when to treat the trailing array
-field of a structure as a flexible array member for the purposes of accessing
-the elements of such an array.
-@var{level} must be an integer betwen 0 to 3.
-
-@var{level}=0 is the least strict level, all trailing arrays of structures
-are treated as flexible array members. @var{level}=3 is the strictest level,
-only when the trailing array is declared as a flexible array member per C99
-standard onwards (@samp{[]}), it is treated as a flexible array member.
-
-There are two more levels in between 0 and 3, which are provided to
-support older codes that use GCC zero-length array extension
-(@samp{[0]}) or one-element array as flexible array members
-(@samp{[1]}).  When @var{level} is 1, the trailing array is treated as
-a flexible array member when it is declared as either @samp{[]},
-@samp{[0]}, or @samp{[1]}; When @var{level} is 2, the trailing array
-is treated as a flexible array member when it is declared as either
-@samp{[]}, or @samp{[0]}.
-
-This attribute can be used with or without the
-@option{-fstrict-flex-arrays} command-line option.  When both the
-attribute and the option are present at the same time, the level of
-the strictness for the specific trailing array field is determined by
-the attribute.
-
-The @code{strict_flex_array} attribute interacts with the
-@option{-Wstrict-flex-arrays} option.  @xref{Warning Options}, for more
-information.
-
 @cindex @code{alloc_size} variable attribute
 @item alloc_size (@var{position})
 @itemx alloc_size (@var{position-1}, @var{position-2})
@@ -7912,22 +7846,6 @@ types (@pxref{Common Function Attributes},
 The message attached to the attribute is affected by the setting of
 the @option{-fmessage-length} option.
 
-@cindex @code{unavailable} variable attribute
-@item unavailable
-@itemx unavailable (@var{msg})
-The @code{unavailable} attribute indicates that the variable so marked
-is not available, if it is used anywhere in the source file.  It behaves
-in the same manner as the @code{deprecated} attribute except that the
-compiler will emit an error rather than a warning.
-
-It is expected that items marked as @code{deprecated} will eventually be
-withdrawn from interfaces, and then become unavailable.  This attribute
-allows for marking them appropriately.
-
-The @code{unavailable} attribute can also be used for functions and
-types (@pxref{Common Function Attributes},
-@pxref{Common Type Attributes}).
-
 @cindex @code{mode} variable attribute
 @item mode (@var{mode})
 This attribute specifies the data type for the declaration---whichever
@@ -7940,6 +7858,21 @@ You may also specify a mode of @code{byte} or @code{__byte__} to
 indicate the mode corresponding to a one-byte integer, @code{word} or
 @code{__word__} for the mode of a one-word integer, and @code{pointer}
 or @code{__pointer__} for the mode used to represent pointers.
+
+@cindex @code{no_icf} variable attribute
+@item no_icf
+This variable attribute prevents a variable from being merged with another
+equivalent variable.
+
+@cindex @code{noinit} variable attribute
+@item noinit
+Any data with the @code{noinit} attribute will not be initialized by
+the C runtime startup code, or the program loader.  Not initializing
+data in this way can reduce program startup times.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place sections with the @code{.noinit} prefix in the right
+location.
 
 @cindex @code{nonstring} variable attribute
 @item nonstring
@@ -7976,6 +7909,32 @@ int f (struct Data *pd, const char *s)
 @}
 @end smallexample
 
+@cindex @code{objc_nullability} variable attribute
+@item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective-C++ only)}
+This attribute applies to pointer variables only.  It allows marking the
+pointer with one of four possible values describing the conditions under
+which the pointer might have a @code{nil} value. In most cases, the
+attribute is intended to be an internal representation for property and
+method nullability (specified by language keywords); it is not recommended
+to use it directly.
+
+When @var{nullability kind} is @code{"unspecified"} or @code{0}, nothing is
+known about the conditions in which the pointer might be @code{nil}. Making
+this state specific serves to avoid false positives in diagnostics.
+
+When @var{nullability kind} is @code{"nonnull"} or @code{1}, the pointer has
+no meaning if it is @code{nil} and thus the compiler is free to emit
+diagnostics if it can be determined that the value will be @code{nil}.
+
+When @var{nullability kind} is @code{"nullable"} or @code{2}, the pointer might
+be @code{nil} and carry meaning as such.
+
+When @var{nullability kind} is @code{"resettable"} or @code{3} (used only in
+the context of property attribute lists) this describes the case in which a
+property setter may take the value @code{nil} (which perhaps causes the
+property to be reset in some manner to a default) but for which the property
+getter will never validly return @code{nil}.
+
 @cindex @code{packed} variable attribute
 @item packed
 The @code{packed} attribute specifies that a structure member should have
@@ -7999,6 +7958,18 @@ struct foo
 been fixed in GCC 4.4 but the change can lead to differences in the
 structure layout.  See the documentation of
 @option{-Wpacked-bitfield-compat} for more information.
+
+@cindex @code{persistent} variable attribute
+@item persistent
+Any data with the @code{persistent} attribute will not be initialized by
+the C runtime startup code, but will be initialized by the program
+loader.  This enables the value of the variable to @samp{persist}
+between processor resets.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place the sections with the @code{.persistent} prefix in the
+right location.  Specifically, some type of non-volatile, writeable
+memory is required.
 
 @cindex @code{section} variable attribute
 @item section ("@var{section-name}")
@@ -8049,6 +8020,38 @@ attribute is not available on all platforms.
 If you need to map the entire contents of a module to a particular
 section, consider using the facilities of the linker instead.
 
+@cindex @code{strict_flex_array} variable attribute
+@item strict_flex_array (@var{level})
+The @code{strict_flex_array} attribute should be attached to the trailing
+array field of a structure.  It controls when to treat the trailing array
+field of a structure as a flexible array member for the purposes of accessing
+the elements of such an array.
+@var{level} must be an integer betwen 0 to 3.
+
+@var{level}=0 is the least strict level, all trailing arrays of structures
+are treated as flexible array members. @var{level}=3 is the strictest level,
+only when the trailing array is declared as a flexible array member per C99
+standard onwards (@samp{[]}), it is treated as a flexible array member.
+
+There are two more levels in between 0 and 3, which are provided to
+support older codes that use GCC zero-length array extension
+(@samp{[0]}) or one-element array as flexible array members
+(@samp{[1]}).  When @var{level} is 1, the trailing array is treated as
+a flexible array member when it is declared as either @samp{[]},
+@samp{[0]}, or @samp{[1]}; When @var{level} is 2, the trailing array
+is treated as a flexible array member when it is declared as either
+@samp{[]}, or @samp{[0]}.
+
+This attribute can be used with or without the
+@option{-fstrict-flex-arrays} command-line option.  When both the
+attribute and the option are present at the same time, the level of
+the strictness for the specific trailing array field is determined by
+the attribute.
+
+The @code{strict_flex_array} attribute interacts with the
+@option{-Wstrict-flex-arrays} option.  @xref{Warning Options}, for more
+information.
+
 @cindex @code{tls_model} variable attribute
 @item tls_model ("@var{tls_model}")
 The @code{tls_model} attribute sets thread-local storage model
@@ -8059,6 +8062,22 @@ The @var{tls_model} argument should be one of @code{global-dynamic},
 @code{local-dynamic}, @code{initial-exec} or @code{local-exec}.
 
 Not all targets support this attribute.
+
+@cindex @code{unavailable} variable attribute
+@item unavailable
+@itemx unavailable (@var{msg})
+The @code{unavailable} attribute indicates that the variable so marked
+is not available, if it is used anywhere in the source file.  It behaves
+in the same manner as the @code{deprecated} attribute except that the
+compiler will emit an error rather than a warning.
+
+It is expected that items marked as @code{deprecated} will eventually be
+withdrawn from interfaces, and then become unavailable.  This attribute
+allows for marking them appropriately.
+
+The @code{unavailable} attribute can also be used for functions and
+types (@pxref{Common Function Attributes},
+@pxref{Common Type Attributes}).
 
 @cindex @code{unused} variable attribute
 @item unused
@@ -8142,63 +8161,45 @@ This attribute affects the linkage of the declaration to which it is attached.
 The @code{visibility} attribute is described in
 @ref{Common Function Attributes}.
 
+@cindex @code{warn_if_not_aligned} variable attribute
+@item warn_if_not_aligned (@var{alignment})
+This attribute specifies a threshold for the structure field, measured
+in bytes.  If the structure field is aligned below the threshold, a
+warning will be issued.  For example, the declaration:
+
+@smallexample
+struct foo
+@{
+  int i1;
+  int i2;
+  unsigned long long x __attribute__ ((warn_if_not_aligned (16)));
+@};
+@end smallexample
+
+@noindent
+causes the compiler to issue an warning on @code{struct foo}, like
+@samp{warning: alignment 8 of 'struct foo' is less than 16}.
+The compiler also issues a warning, like @samp{warning: 'x' offset
+8 in 'struct foo' isn't aligned to 16}, when the structure field has
+the misaligned offset:
+
+@smallexample
+struct __attribute__ ((aligned (16))) foo
+@{
+  int i1;
+  int i2;
+  unsigned long long x __attribute__ ((warn_if_not_aligned (16)));
+@};
+@end smallexample
+
+This warning can be disabled by @option{-Wno-if-not-aligned}.
+The @code{warn_if_not_aligned} attribute can also be used for types
+(@pxref{Common Type Attributes}.)
+
 @cindex @code{weak} variable attribute
 @item weak
 The @code{weak} attribute is described in
 @ref{Common Function Attributes}.
-
-@cindex @code{noinit} variable attribute
-@item noinit
-Any data with the @code{noinit} attribute will not be initialized by
-the C runtime startup code, or the program loader.  Not initializing
-data in this way can reduce program startup times.
-
-This attribute is specific to ELF targets and relies on the linker
-script to place sections with the @code{.noinit} prefix in the right
-location.
-
-@cindex @code{persistent} variable attribute
-@item persistent
-Any data with the @code{persistent} attribute will not be initialized by
-the C runtime startup code, but will be initialized by the program
-loader.  This enables the value of the variable to @samp{persist}
-between processor resets.
-
-This attribute is specific to ELF targets and relies on the linker
-script to place the sections with the @code{.persistent} prefix in the
-right location.  Specifically, some type of non-volatile, writeable
-memory is required.
-
-@cindex @code{no_icf} variable attribute
-@item no_icf
-This variable attribute prevents a variable from being merged with another
-equivalent variable.
-
-@cindex @code{objc_nullability} variable attribute
-@item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective-C++ only)}
-This attribute applies to pointer variables only.  It allows marking the
-pointer with one of four possible values describing the conditions under
-which the pointer might have a @code{nil} value. In most cases, the
-attribute is intended to be an internal representation for property and
-method nullability (specified by language keywords); it is not recommended
-to use it directly.
-
-When @var{nullability kind} is @code{"unspecified"} or @code{0}, nothing is
-known about the conditions in which the pointer might be @code{nil}. Making
-this state specific serves to avoid false positives in diagnostics.
-
-When @var{nullability kind} is @code{"nonnull"} or @code{1}, the pointer has
-no meaning if it is @code{nil} and thus the compiler is free to emit
-diagnostics if it can be determined that the value will be @code{nil}.
-
-When @var{nullability kind} is @code{"nullable"} or @code{2}, the pointer might
-be @code{nil} and carry meaning as such.
-
-When @var{nullability kind} is @code{"resettable"} or @code{3} (used only in
-the context of property attribute lists) this describes the case in which a
-property setter may take the value @code{nil} (which perhaps causes the
-property to be reset in some manner to a default) but for which the property
-getter will never validly return @code{nil}.
 
 @end table
 
@@ -8738,6 +8739,8 @@ the closing brace.  You can also include type attributes in a
 The following type attributes are supported on most targets.
 
 @table @code
+@c Keep this table alphabetized by attribute name.  Treat _ as space.
+
 @cindex @code{aligned} type attribute
 @item aligned
 @itemx aligned (@var{alignment})
@@ -8823,58 +8826,6 @@ only increase the alignment; in order to decrease it, the @code{packed}
 attribute must be specified as well.  When used as part of a typedef, the
 @code{aligned} attribute can both increase and decrease alignment, and
 specifying the @code{packed} attribute generates a warning.
-
-@cindex @code{warn_if_not_aligned} type attribute
-@item warn_if_not_aligned (@var{alignment})
-This attribute specifies a threshold for the structure field, measured
-in bytes.  If the structure field is aligned below the threshold, a
-warning will be issued.  For example, the declaration:
-
-@smallexample
-typedef unsigned long long __u64
-   __attribute__((aligned (4), warn_if_not_aligned (8)));
-
-struct foo
-@{
-  int i1;
-  int i2;
-  __u64 x;
-@};
-@end smallexample
-
-@noindent
-causes the compiler to issue an warning on @code{struct foo}, like
-@samp{warning: alignment 4 of 'struct foo' is less than 8}.
-It is used to define @code{struct foo} in such a way that
-@code{struct foo} has the same layout and the structure field @code{x}
-has the same alignment when @code{__u64} is aligned at either 4 or
-8 bytes.  Align @code{struct foo} to 8 bytes:
-
-@smallexample
-struct __attribute__ ((aligned (8))) foo
-@{
-  int i1;
-  int i2;
-  __u64 x;
-@};
-@end smallexample
-
-@noindent
-silences the warning.  The compiler also issues a warning, like
-@samp{warning: 'x' offset 12 in 'struct foo' isn't aligned to 8},
-when the structure field has the misaligned offset:
-
-@smallexample
-struct __attribute__ ((aligned (8))) foo
-@{
-  int i1;
-  int i2;
-  int i3;
-  __u64 x;
-@};
-@end smallexample
-
-This warning can be disabled by @option{-Wno-if-not-aligned}.
 
 @cindex @code{alloc_size} type attribute
 @item alloc_size (@var{position})
@@ -8973,17 +8924,6 @@ variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
 
 The message attached to the attribute is affected by the setting of
 the @option{-fmessage-length} option.
-
-@cindex @code{unavailable} type attribute
-@item unavailable
-@itemx unavailable (@var{msg})
-The @code{unavailable} attribute behaves in the same manner as the
-@code{deprecated} one, but emits an error rather than a warning.  It is
-used to indicate that a (perhaps previously @code{deprecated}) type is
-no longer usable.
-
-The @code{unavailable} attribute can also be used for functions and
-variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
 
 @cindex @code{designated_init} type attribute
 @item designated_init
@@ -9116,6 +9056,12 @@ indicate the mode corresponding to a one-byte integer, @code{word} or
 @code{__word__} for the mode of a one-word integer, and @code{pointer}
 or @code{__pointer__} for the mode used to represent pointers.
 
+@cindex @code{objc_root_class} type attribute
+@item objc_root_class @r{(Objective-C and Objective-C++ only)}
+This attribute marks a class as being a root class, and thus allows
+the compiler to elide any warnings about a missing superclass and to
+make additional checks for mandatory methods as needed.
+
 @cindex @code{packed} type attribute
 @item packed
 This attribute, attached to a @code{struct}, @code{union}, or C++ @code{class}
@@ -9198,68 +9144,6 @@ Moreover, the use of type punning or aliasing to toggle the storage order
 is not supported; that is to say, if a given scalar object can be accessed
 through distinct types that assign a different storage order to it, then the
 behavior is undefined.
-
-@cindex @code{transparent_union} type attribute
-@item transparent_union
-
-This attribute, attached to a @code{union} type definition, indicates
-that any function parameter having that union type causes calls to that
-function to be treated in a special way.
-
-First, the argument corresponding to a transparent union type can be of
-any type in the union; no cast is required.  Also, if the union contains
-a pointer type, the corresponding argument can be a null pointer
-constant or a void pointer expression; and if the union contains a void
-pointer type, the corresponding argument can be any pointer expression.
-If the union member type is a pointer, qualifiers like @code{const} on
-the referenced type must be respected, just as with normal pointer
-conversions.
-
-Second, the argument is passed to the function using the calling
-conventions of the first member of the transparent union, not the calling
-conventions of the union itself.  All members of the union must have the
-same machine representation; this is necessary for this argument passing
-to work properly.
-
-Transparent unions are designed for library functions that have multiple
-interfaces for compatibility reasons.  For example, suppose the
-@code{wait} function must accept either a value of type @code{int *} to
-comply with POSIX, or a value of type @code{union wait *} to comply with
-the 4.1BSD interface.  If @code{wait}'s parameter were @code{void *},
-@code{wait} would accept both kinds of arguments, but it would also
-accept any other pointer type and this would make argument type checking
-less useful.  Instead, @code{<sys/wait.h>} might define the interface
-as follows:
-
-@smallexample
-typedef union __attribute__ ((__transparent_union__))
-  @{
-    int *__ip;
-    union wait *__up;
-  @} wait_status_ptr_t;
-
-pid_t wait (wait_status_ptr_t);
-@end smallexample
-
-@noindent
-This interface allows either @code{int *} or @code{union wait *}
-arguments to be passed, using the @code{int *} calling convention.
-The program can call @code{wait} with arguments of either type:
-
-@smallexample
-int w1 () @{ int w; return wait (&w); @}
-int w2 () @{ union wait w; return wait (&w); @}
-@end smallexample
-
-@noindent
-With this interface, @code{wait}'s implementation might look like this:
-
-@smallexample
-pid_t wait (wait_status_ptr_t p)
-@{
-  return waitpid (-1, p.__ip, 0);
-@}
-@end smallexample
 
 @cindex @code{strub} type attribute
 @item strub
@@ -9523,6 +9407,79 @@ __attribute__ ((noipa)) void flop (void) @{@}
 inline __attribute__ ((noclone, always_inline)) void flip (void) @{@}
 @end smallexample
 
+@cindex @code{transparent_union} type attribute
+@item transparent_union
+
+This attribute, attached to a @code{union} type definition, indicates
+that any function parameter having that union type causes calls to that
+function to be treated in a special way.
+
+First, the argument corresponding to a transparent union type can be of
+any type in the union; no cast is required.  Also, if the union contains
+a pointer type, the corresponding argument can be a null pointer
+constant or a void pointer expression; and if the union contains a void
+pointer type, the corresponding argument can be any pointer expression.
+If the union member type is a pointer, qualifiers like @code{const} on
+the referenced type must be respected, just as with normal pointer
+conversions.
+
+Second, the argument is passed to the function using the calling
+conventions of the first member of the transparent union, not the calling
+conventions of the union itself.  All members of the union must have the
+same machine representation; this is necessary for this argument passing
+to work properly.
+
+Transparent unions are designed for library functions that have multiple
+interfaces for compatibility reasons.  For example, suppose the
+@code{wait} function must accept either a value of type @code{int *} to
+comply with POSIX, or a value of type @code{union wait *} to comply with
+the 4.1BSD interface.  If @code{wait}'s parameter were @code{void *},
+@code{wait} would accept both kinds of arguments, but it would also
+accept any other pointer type and this would make argument type checking
+less useful.  Instead, @code{<sys/wait.h>} might define the interface
+as follows:
+
+@smallexample
+typedef union __attribute__ ((__transparent_union__))
+  @{
+    int *__ip;
+    union wait *__up;
+  @} wait_status_ptr_t;
+
+pid_t wait (wait_status_ptr_t);
+@end smallexample
+
+@noindent
+This interface allows either @code{int *} or @code{union wait *}
+arguments to be passed, using the @code{int *} calling convention.
+The program can call @code{wait} with arguments of either type:
+
+@smallexample
+int w1 () @{ int w; return wait (&w); @}
+int w2 () @{ union wait w; return wait (&w); @}
+@end smallexample
+
+@noindent
+With this interface, @code{wait}'s implementation might look like this:
+
+@smallexample
+pid_t wait (wait_status_ptr_t p)
+@{
+  return waitpid (-1, p.__ip, 0);
+@}
+@end smallexample
+
+@cindex @code{unavailable} type attribute
+@item unavailable
+@itemx unavailable (@var{msg})
+The @code{unavailable} attribute behaves in the same manner as the
+@code{deprecated} one, but emits an error rather than a warning.  It is
+used to indicate that a (perhaps previously @code{deprecated}) type is
+no longer usable.
+
+The @code{unavailable} attribute can also be used for functions and
+variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
+
 @cindex @code{unused} type attribute
 @item unused
 When attached to a type (including a @code{union} or a @code{struct}),
@@ -9580,11 +9537,57 @@ and caught in another, the class must have default visibility.
 Otherwise the two shared objects are unable to use the same
 typeinfo node and exception handling will break.
 
-@cindex @code{objc_root_class} type attribute
-@item objc_root_class @r{(Objective-C and Objective-C++ only)}
-This attribute marks a class as being a root class, and thus allows
-the compiler to elide any warnings about a missing superclass and to
-make additional checks for mandatory methods as needed.
+@cindex @code{warn_if_not_aligned} type attribute
+@item warn_if_not_aligned (@var{alignment})
+This attribute specifies a threshold for the structure field, measured
+in bytes.  If the structure field is aligned below the threshold, a
+warning will be issued.  For example, the declaration:
+
+@smallexample
+typedef unsigned long long __u64
+   __attribute__((aligned (4), warn_if_not_aligned (8)));
+
+struct foo
+@{
+  int i1;
+  int i2;
+  __u64 x;
+@};
+@end smallexample
+
+@noindent
+causes the compiler to issue an warning on @code{struct foo}, like
+@samp{warning: alignment 4 of 'struct foo' is less than 8}.
+It is used to define @code{struct foo} in such a way that
+@code{struct foo} has the same layout and the structure field @code{x}
+has the same alignment when @code{__u64} is aligned at either 4 or
+8 bytes.  Align @code{struct foo} to 8 bytes:
+
+@smallexample
+struct __attribute__ ((aligned (8))) foo
+@{
+  int i1;
+  int i2;
+  __u64 x;
+@};
+@end smallexample
+
+@noindent
+silences the warning.  The compiler also issues a warning, like
+@samp{warning: 'x' offset 12 in 'struct foo' isn't aligned to 8},
+when the structure field has the misaligned offset:
+
+@smallexample
+struct __attribute__ ((aligned (8))) foo
+@{
+  int i1;
+  int i2;
+  int i3;
+  __u64 x;
+@};
+@end smallexample
+
+This warning can be disabled by @option{-Wno-if-not-aligned}.
 
 @end table
 
