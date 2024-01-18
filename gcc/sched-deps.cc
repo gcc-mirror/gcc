@@ -4791,7 +4791,7 @@ find_inc (struct mem_inc_info *mii, bool backwards)
   sd_iterator_def sd_it;
   dep_t dep;
   sd_list_types_def mem_deps = backwards ? SD_LIST_HARD_BACK : SD_LIST_FORW;
-  int n_mem_deps = sd_lists_size (mii->mem_insn, mem_deps);
+  int n_mem_deps = dep_list_size (mii->mem_insn, mem_deps);
 
   sd_it = sd_iterator_start (mii->mem_insn, mem_deps);
   while (sd_iterator_cond (&sd_it, &dep))
@@ -4808,12 +4808,12 @@ find_inc (struct mem_inc_info *mii, bool backwards)
       if (backwards)
 	{
 	  inc_cand = pro;
-	  n_inc_deps = sd_lists_size (inc_cand, SD_LIST_BACK);
+	  n_inc_deps = dep_list_size (inc_cand, SD_LIST_BACK);
 	}
       else
 	{
 	  inc_cand = con;
-	  n_inc_deps = sd_lists_size (inc_cand, SD_LIST_FORW);
+	  n_inc_deps = dep_list_size (inc_cand, SD_LIST_FORW);
 	}
 
       /* In the FOR_EACH_DEP loop below we will create additional n_inc_deps
