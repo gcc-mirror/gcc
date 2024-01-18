@@ -22746,7 +22746,10 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   if (TARGET_64BIT)
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tleaq\t%sP%d(%%rip),%%r11\n", LPREFIX, labelno);
+      if (ASSEMBLER_DIALECT == ASM_INTEL)
+	fprintf (file, "\tlea\tr11, %sP%d[rip]\n", LPREFIX, labelno);
+      else
+	fprintf (file, "\tleaq\t%sP%d(%%rip), %%r11\n", LPREFIX, labelno);
 #endif
 
       if (!TARGET_PECOFF)
@@ -22757,12 +22760,29 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	      /* NB: R10 is caller-saved.  Although it can be used as a
 		 static chain register, it is preserved when calling
 		 mcount for nested functions.  */
-	      fprintf (file, "1:\tmovabsq\t$%s, %%r10\n\tcall\t*%%r10\n",
-		       mcount_name);
+	      if (ASSEMBLER_DIALECT == ASM_INTEL)
+		fprintf (file, "1:\tmovabs\tr10, OFFSET FLAT:%s\n"
+			       "\tcall\tr10\n", mcount_name);
+	      else
+		fprintf (file, "1:\tmovabsq\t$%s, %%r10\n\tcall\t*%%r10\n",
+			 mcount_name);
 	      break;
 	    case CM_LARGE_PIC:
 #ifdef NO_PROFILE_COUNTERS
-	      fprintf (file, "1:\tmovabsq\t$_GLOBAL_OFFSET_TABLE_-1b, %%r11\n");
+	      if (ASSEMBLER_DIALECT == ASM_INTEL)
+		{
+		  fprintf (file, "1:movabs\tr11, "
+				 "OFFSET FLAT:_GLOBAL_OFFSET_TABLE_-1b\n");
+		  fprintf (file, "\tlea\tr10, 1b[rip]\n");
+		  fprintf (file, "\tadd\tr10, r11\n");
+		  fprintf (file, "\tmovabs\tr11, OFFSET FLAT:%s@PLTOFF\n",
+			   mcount_name);
+		  fprintf (file, "\tadd\tr10, r11\n");
+		  fprintf (file, "\tcall\tr10\n");
+		  break;
+		}
+	      fprintf (file,
+		       "1:\tmovabsq\t$_GLOBAL_OFFSET_TABLE_-1b, %%r11\n");
 	      fprintf (file, "\tleaq\t1b(%%rip), %%r10\n");
 	      fprintf (file, "\taddq\t%%r11, %%r10\n");
 	      fprintf (file, "\tmovabsq\t$%s@PLTOFF, %%r11\n", mcount_name);
@@ -22776,7 +22796,12 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	    case CM_MEDIUM_PIC:
 	      if (!ix86_direct_extern_access)
 		{
-		  fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+		  if (ASSEMBLER_DIALECT == ASM_INTEL)
+		    fprintf (file, "1:\tcall\t[QWORD PTR %s@GOTPCREL[rip]]",
+			     mcount_name);
+		  else
+		    fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n",
+			     mcount_name);
 		  break;
 		}
 	      /* fall through */
@@ -22791,23 +22816,37 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   else if (flag_pic)
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tleal\t%sP%d@GOTOFF(%%ebx),%%" PROFILE_COUNT_REGISTER "\n",
-	       LPREFIX, labelno);
+      if (ASSEMBLER_DIALECT == ASM_INTEL)
+	fprintf (file,
+		 "\tlea\t" PROFILE_COUNT_REGISTER ", %sP%d@GOTOFF[ebx]\n",
+		 LPREFIX, labelno);
+      else
+	fprintf (file,
+		 "\tleal\t%sP%d@GOTOFF(%%ebx), %%" PROFILE_COUNT_REGISTER "\n",
+		 LPREFIX, labelno);
 #endif
-      fprintf (file, "1:\tcall\t*%s@GOT(%%ebx)\n", mcount_name);
+      if (ASSEMBLER_DIALECT == ASM_INTEL)
+	fprintf (file, "1:\tcall\t[DWORD PTR %s@GOT[ebx]]\n", mcount_name);
+      else
+	fprintf (file, "1:\tcall\t*%s@GOT(%%ebx)\n", mcount_name);
     }
   else
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tmovl\t$%sP%d,%%" PROFILE_COUNT_REGISTER "\n",
-	       LPREFIX, labelno);
+      if (ASSEMBLER_DIALECT == ASM_INTEL)
+	fprintf (file,
+		 "\tmov\t" PROFILE_COUNT_REGISTER ", OFFSET FLAT:%sP%d\n",
+		 LPREFIX, labelno);
+      else
+	fprintf (file, "\tmovl\t$%sP%d, %%" PROFILE_COUNT_REGISTER "\n",
+		 LPREFIX, labelno);
 #endif
       x86_print_call_or_nop (file, mcount_name);
     }
 
   if (flag_record_mcount
-	|| lookup_attribute ("fentry_section",
-                                DECL_ATTRIBUTES (current_function_decl)))
+      || lookup_attribute ("fentry_section",
+			   DECL_ATTRIBUTES (current_function_decl)))
     {
       const char *sname = "__mcount_loc";
 
