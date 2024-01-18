@@ -90,7 +90,6 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
@@ -138,8 +137,8 @@ libm2log_la_M2FLAGS = \
  -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
  -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
  -Wcase-enum -Wreturn-type \
- -fcase -fm2-prefix=m2log \
- $(TARGET_LONGDOUBLE_ABI)
+ -fcase -fm2-prefix=m2log
+
 if TARGET_DARWIN
 libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
 else

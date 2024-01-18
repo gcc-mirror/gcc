@@ -98,9 +98,6 @@ GM2_PROG_DEP=gm2$(exeext) xgcc$(exeext) cc1gm2$(exeext)
 
 include m2/config-make
 
-# Determine if float128 should represent the Modula-2 type LONGREAL.
-host_mc_longreal := $(if $(strip $(filter powerpc64le%,$(host))),--longreal=__float128)
-
 LIBSTDCXX=../$(TARGET_SUBDIR)/libstdc++-v3/src/.libs/libstdc++.a
 
 PGE=m2/pge$(exeext)
@@ -474,8 +471,7 @@ MC_ARGS= --olang=c++ \
  -I$(srcdir)/m2/gm2-gcc \
  --quiet \
  $(MC_COPYRIGHT) \
- --gcc-config-system \
- $(host_mc_longreal)
+ --gcc-config-system
 
 MCDEPS=m2/boot-bin/mc$(exeext)
 

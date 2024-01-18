@@ -639,6 +639,16 @@ gm2_langhook_handle_option (
     case OPT_fm2_whole_program:
       M2Options_SetWholeProgram (value);
       return 1;
+#ifdef OPT_mabi_ibmlongdouble
+    case OPT_mabi_ibmlongdouble:
+      M2Options_SetIBMLongDouble (value);
+      return 1;
+#endif
+#ifdef OPT_mabi_ieeelongdouble
+    case OPT_mabi_ieeelongdouble:
+      M2Options_SetIEEELongDouble (value);
+      return 1;
+#endif
     case OPT_flocation_:
       if (strcmp (arg, "builtins") == 0)
         {
