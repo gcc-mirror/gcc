@@ -1,3 +1,8 @@
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113409
+	* testsuite/libgomp.c/bitint-1.c: New test.
+
 2024-01-11  Julian Brown  <julian@codesourcery.com>
 
 	* libgomp.texi: C/C++ lvalues are supported now for map/to/from.

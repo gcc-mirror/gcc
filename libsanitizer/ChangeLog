@@ -1,3 +1,10 @@
+2024-01-17  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* interception/interception.h (substitution_##func_name):
+	Use macro C_ASM_TAIL_CALL.
+	* sanitizer_common/sanitizer_asm.h: Define C_ASM_TAIL_CALL
+	for MIPS with help of t9.
+
 2024-01-02  Andreas Schwab  <schwab@suse.de>
 
 	* configure.tgt (riscv64-*-linux*): Enable LSan and TSan.

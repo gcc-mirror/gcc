@@ -1,3 +1,85 @@
+2024-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/112588
+	* g++.dg/modules/merge-16.h: New test.
+	* g++.dg/modules/merge-16_a.C: New test.
+	* g++.dg/modules/merge-16_b.C: New test.
+
+2024-01-17  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113221
+	* gcc.c-torture/compile/pr113221-1.c: New test.
+
+2024-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113242
+	PR c++/99493
+	* g++.dg/cpp2a/nontype-class61.C: New test.
+	* g++.dg/cpp2a/nontype-class62.C: New test.
+
+2024-01-17  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/torture/inline-mem-cpy-1.c: Pass -DRUN_FRACTION=11
+	when testing in a simulator.
+	* gcc.dg/memcmp-1.c [RUN_FRACTION]: Add machinery to run only
+	for each RUN_FRACTION:th iteration.
+	(main): Call initialize_skip_iteration_count.
+	(test_driver_memcmp): Check SKIP_ITERATION for each iteration.
+
+2024-01-17  Jan Hubicka  <jh@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110852
+	* gcc.dg/predict-18.c: Update template to expect combined value predictor.
+	* gcc.dg/predict-23.c: New test.
+	* gcc.dg/tree-ssa/predict-1.c: New test.
+	* gcc.dg/tree-ssa/predict-2.c: New test.
+	* gcc.dg/tree-ssa/predict-3.c: New test.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113421
+	* gcc.dg/torture/bitint-50.c: New test.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113410
+	* gcc.dg/bitint-72.c: New test.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113408
+	* gcc.dg/bitint-71.c: New test.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113406
+	* gcc.dg/bitint-70.c: New test.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110251
+	* gcc.c-torture/compile/pr110251.c: New test.
+
+2024-01-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/shift-1.c: Fix asm check
+	count.
+	* gcc.target/riscv/rvv/autovec/vls/shift-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/shift-3.c: Ditto.
+
+2024-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113371
+	* gcc.dg/vect/pr113371.c: New testcase.
+
+2024-01-17  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/mips.exp (mips_option_groups):
+	Add -mxgot/-mno-xgot options.
+	* gcc.target/mips/xgot-n32-avoid-gp.c: New test.
+	* gcc.target/mips/xgot-n32-need-gp.c: New test.
+
 2024-01-16  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/113292

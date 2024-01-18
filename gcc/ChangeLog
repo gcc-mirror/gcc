@@ -1,3 +1,148 @@
+2024-01-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/111659
+	* doc/extend.texi (Common Variable Attributes): Fix long lines
+	in documentation of strict_flex_array + other minor copy-editing.
+	Add a cross-reference to -Wstrict-flex-arrays.
+	* doc/invoke.texi (Option Summary): Fix whitespace in tables
+	before -fstrict-flex-arrays and -Wstrict-flex-arrays.
+	(C Dialect Options): Combine the docs for the two
+	-fstrict-flex-arrays forms into a single entry.  Note this option
+	is for C/C++ only.  Add a cross-reference to -Wstrict-flex-arrays.
+	(Warning Options): Note -Wstrict-flex-arrays is for C/C++ only.
+	Minor copy-editing.  Add cross references to the strict_flex_array
+	attribute and -fstrict-flex-arrays option.  Add note that this
+	option depends on -ftree-vrp.
+
+2024-01-17  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113221
+	* config/aarch64/predicates.md (aarch64_ldp_reg_operand): For subreg,
+	only allow REG operands instead of allowing all.
+
+2024-01-17  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv-vsetvl.cc (earliest_fuse_vsetvl_info):
+	Remove redundant checks in else condition for readablity.
+	(earliest_fuse_vsetvl_info) Print iteration count in debug
+	prints.
+	(earliest_fuse_vsetvl_info) Fix misleading vsetvl info
+	dump details in certain cases.
+
+2024-01-17  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.opt: New -param=vsetvl-strategy.
+	* config/riscv/riscv-opts.h: New enum vsetvl_strategy_enum.
+	* config/riscv/riscv-vsetvl.cc
+	(pre_vsetvl::pre_global_vsetvl_info): Use vsetvl_strategy.
+	(pass_vsetvl::execute): Use vsetvl_strategy.
+
+2024-01-17  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-polymorphic-call.cc (ipa_polymorphic_call_context::set_by_invariant): Remove
+	accidental hack reseting offset.
+
+2024-01-17  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal): Fix
+	handling of X86_TUNE_AVOID_512FMA_CHAINS.
+
+2024-01-17  Jan Hubicka  <jh@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110852
+	* predict.cc (expr_expected_value_1): Fix profile merging of PHI and
+	binary operations
+	(get_predictor_value): Handle PRED_COMBINED_VALUE_PREDICTIONS and
+	PRED_COMBINED_VALUE_PREDICTIONS_PHI
+	* predict.def (PRED_COMBINED_VALUE_PREDICTIONS): New predictor.
+	(PRED_COMBINED_VALUE_PREDICTIONS_PHI): New predictor.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113421
+	* gimple-lower-bitint.cc (stmt_needs_operand_addr): Adjust function
+	comment.
+	(bitint_dom_walker::before_dom_children): Add g temporary to simplify
+	formatting.  Start at vop rather than cvop even if stmt is a store
+	and needs_operand_addr.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113410
+	* gimple-ssa-warn-access.cc (pass_waccess::maybe_check_access_sizes):
+	If access_nelts is integral with larger precision than sizetype,
+	fold_convert it to sizetype.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113408
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_stmt): For
+	VIEW_CONVERT_EXPR, pass TREE_OPERAND (rhs1, 0) rather than rhs1
+	to handle_cast.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113406
+	* ipa-strub.cc (pass_ipa_strub::execute): Check aggregate_value_p
+	regardless of whether is_gimple_reg_type (restype) or not.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-into-ssa.cc (pass_build_ssa::gate): Fix comment typo,
+	funcions -> functions, and use were instead of was.
+	* gengtype.cc (dump_typekind): Fix comment typos, funcion -> function
+	and guaranteee -> guarantee.
+	* attribs.h (struct attr_access): Fix comment typo funcion -> function.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113409
+	* omp-general.cc (omp_adjust_for_condition): Handle BITINT_TYPE like
+	INTEGER_TYPE.
+	(omp_extract_for_data): Use build_bitint_type rather than
+	build_nonstandard_integer_type if either iter_type or loop->v type
+	is BITINT_TYPE.
+	* omp-expand.cc (expand_omp_for_generic,
+	expand_omp_taskloop_for_outer, expand_omp_taskloop_for_inner): Handle
+	BITINT_TYPE like INTEGER_TYPE.
+
+2024-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113371
+	* tree-vect-data-refs.cc (vect_enhance_data_refs_alignment):
+	Do not peel when LOOP_VINFO_EARLY_BREAKS_VECT_PEELED.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Assert we do
+	not perform prologue peeling when LOOP_VINFO_EARLY_BREAKS_VECT_PEELED.
+
+2024-01-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	PR rtl-optimization/96388
+	PR rtl-optimization/111554
+	* sched-deps.cc (find_inc): Avoid exponential behavior.
+
+2024-01-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/111693
+	* doc/invoke.texi (Option Summary): Move -Wuseless-cast
+	from C++ Language Options to Warning Options.  Add entry for
+	-Wuse-after-free.
+	(C++ Dialect Options): Move -Wuse-after-free and -Wuseless-cast
+	from here....
+	(Warning Options): ...to here.  Minor copy-editing to fix typo
+	and grammar.
+
+2024-01-17  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.cc (mips_compute_frame_info): If another
+	register is used as global_pointer, mark $GP live false.
+
+2024-01-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/112973
+	* doc/extend.texi (BPF Built-in Functions): Wrap long lines and
+	give the section a light copy-editing pass.
+
 2024-01-16  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add 'cobalt-100' CPU.
