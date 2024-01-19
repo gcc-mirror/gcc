@@ -339,6 +339,32 @@ build_template_info (tree template_decl, tree template_args)
   return result;
 }
 
+/* DECL_TEMPLATE_INFO, if applicable, or NULL_TREE.  */
+
+static tree
+decl_template_info (const_tree decl)
+{
+  /* This needs to match template_info_decl_check.  */
+  if (DECL_LANG_SPECIFIC (decl))
+    switch (TREE_CODE (decl))
+      {
+      case FUNCTION_DECL:
+	if (DECL_THUNK_P (decl))
+	  break;
+	gcc_fallthrough ();
+      case VAR_DECL:
+      case FIELD_DECL:
+      case TYPE_DECL:
+      case CONCEPT_DECL:
+      case TEMPLATE_DECL:
+	return DECL_TEMPLATE_INFO (decl);
+
+      default:
+	break;
+      }
+  return NULL_TREE;
+}
+
 /* Return the template info node corresponding to T, whatever T is.  */
 
 tree
@@ -353,8 +379,8 @@ get_template_info (const_tree t)
       || TREE_CODE (t) == PARM_DECL)
     return NULL;
 
-  if (DECL_P (t) && DECL_LANG_SPECIFIC (t))
-    tinfo = DECL_TEMPLATE_INFO (t);
+  if (DECL_P (t))
+    tinfo = decl_template_info (t);
 
   if (!tinfo && DECL_IMPLICIT_TYPEDEF_P (t))
     t = TREE_TYPE (t);
