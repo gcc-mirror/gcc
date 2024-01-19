@@ -4,4 +4,4 @@ int foo()
 {
 }
 
-/* { dg-error "'i', 'e' or 'g' must be the first extension" "" { target *-*-* } 0 } */
+/* { dg-error "i, e or g must be the first extension" "" { target *-*-* } 0 } */
