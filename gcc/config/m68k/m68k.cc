@@ -5471,7 +5471,7 @@ output_andsi3 (rtx *operands)
 	operands[1] = GEN_INT (logval);
       else
         {
-	  operands[0] = adjust_address (operands[0], SImode, 3 - (logval / 8));
+	  operands[0] = adjust_address (operands[0], QImode, 3 - (logval / 8));
 	  operands[1] = GEN_INT (logval % 8);
         }
       return "bclr %1,%0";
@@ -5510,7 +5510,7 @@ output_iorsi3 (rtx *operands)
 	operands[1] = GEN_INT (logval);
       else
         {
-	  operands[0] = adjust_address (operands[0], SImode, 3 - (logval / 8));
+	  operands[0] = adjust_address (operands[0], QImode, 3 - (logval / 8));
 	  operands[1] = GEN_INT (logval % 8);
 	}
       return "bset %1,%0";
@@ -5548,7 +5548,7 @@ output_xorsi3 (rtx *operands)
 	operands[1] = GEN_INT (logval);
       else
         {
-	  operands[0] = adjust_address (operands[0], SImode, 3 - (logval / 8));
+	  operands[0] = adjust_address (operands[0], QImode, 3 - (logval / 8));
 	  operands[1] = GEN_INT (logval % 8);
 	}
       return "bchg %1,%0";
