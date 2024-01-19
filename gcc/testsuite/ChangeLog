@@ -1,3 +1,191 @@
+2024-01-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pic-2.c: Skip on hppa*64*-*-*.
+
+2024-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111361
+	* c-c++-common/analyzer/strlen-pr111361.c: New test.
+	* c-c++-common/analyzer/strncpy-1.c (test_zero_fill): Remove fixed
+	xfail.
+	* c-c++-common/analyzer/strncpy-pr111361.c: New test.
+
+2024-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112811
+	* c-c++-common/analyzer/strlen-pr112811.c: New test.
+
+2024-01-18  H.J. Lu  <(no_default)>
+
+	* lib/hwasan-dg.exp (hwasan_init): Always set target_hwasan_flags.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/rvv/xtheadvector/vlb-vsb.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/vlbu-vsb.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/vlh-vsh.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/vlhu-vsh.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/vlw-vsw.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/vlwu-vsw.c: New test.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/rvv/base/pragma-1.c: Add XTheadVector.
+	* gcc.target/riscv/rvv/base/abi-1.c: Exclude XTheadVector.
+	* lib/target-supports.exp: Add target for XTheadVector.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/rvv/xtheadvector/prefix.c: New test.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/predef-__riscv_th_v_intrinsic.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector.c: New test.
+
+2024-01-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113389
+	* g++.dg/cpp23/explicit-obj-diagnostics10.C: New test.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-ggc-bugfix.c: Add libSystem for Darwin.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-always_inline-attribute.c: Handle Darwin in
+	jit-verify-assembler-output.
+	* jit.dg/test-noinline-attribute.c: Likewise.
+	* jit.dg/test-setting-alignment.c: Likewise.
+	* jit.dg/test-used-attribute.c: Likewise.
+	* jit.dg/test-variable-attribute.c: Likewise.
+	* jit.dg/test-weak-attribute.c: Likewise.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/jit.exp: Accept target clauses in jit-verify-assembler
+	handling.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-link-section-assembler.c: Accept any whitespace
+	between the .section directive and its arguments.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-alias-attribute.c: Require target alias
+	support.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105522
+	* gcc.dg/pr105522.c: New file.
+
+2024-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/113445
+	* gcc.dg/pr113445.c: New test.
+
+2024-01-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/110422
+	* gcc.dg/torture/pr110422.c: New test.
+
+2024-01-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	* lib/hwasan-dg.exp (check_effective_target_hwaddress_exec):
+	Return 1 if Intel LAM_U57 is enabled.
+	(hwasan_init): Add -mlam=u57 on x86-64.
+
+2024-01-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cmp/cmp_vi-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/cmp_vi-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/cmp_vi-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/cmp_vi-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/cmp_vi-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/cmp_vi-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/cmp_vi-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/cmp_vi-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/cmp_vi-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/macro.h: New test.
+
+2024-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/113122
+	* gcc.target/i386/pr113122-1.c: New test.
+	* gcc.target/i386/pr113122-2.c: New test.
+	* gcc.target/i386/pr113122-3.c: New test.
+	* gcc.target/i386/pr113122-4.c: New test.
+
+2024-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112774
+	PR testsuite/113446
+	* gcc.dg/tree-ssa/scev-16.c: Move test ...
+	* gcc.dg/vect/pr112774.c: ... here.  Add PR comment line, use
+	dg-additional-options instead of dg-options and drop
+	-fdump-tree-vect-details.
+
+2024-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/113452
+	* gcc.target/i386/sse4_1-stv-1.c: Add -fno-tree-vectorize to
+	dg-options.
+
+2024-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113431
+	* gcc.dg/vect/pr113431.c: New testcase.
+
+2024-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113374
+	* gcc.dg/vect/vect-early-break_106-pr113374.c: New testcase.
+
+2024-01-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-subgroups-3.c: Add !vect128.
+
+2024-01-18  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.dg/tree-ssa/gen-vect-2.c: Added detection of compilation
+	behavior and "-mlsx" option on LoongArch.
+	* gcc.dg/tree-ssa/gen-vect-25.c: Dito.
+
+2024-01-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* g++.target/loongarch/got-load.C: New test.
+
+2024-01-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-43.c: Add vect128.
+
+2024-01-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/111850
+	* gcc.target/powerpc/fold-vec-extract-char.p7.c: Update the
+	checking count of addi to 6.
+
+2024-01-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113429
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-4.c: Adapt test.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-5.c: Ditto.
+
 2024-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/112588

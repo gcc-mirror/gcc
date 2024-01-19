@@ -1,3 +1,45 @@
+2024-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_pair.h [__cplusplus > 202002L]:
+	Guard P2321R2 changes with __glibcxx_ranges_zip instead.
+
+2024-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/tuple [__cplusplus > 202002L]: Guard P2321R2
+	changes with __cpp_lib_ranges_zip instead.
+
+2024-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/109536
+	* include/debug/safe_base.h (_Safe_sequence_base::_M_swap):
+	Remove _GLIBCXX20_CONSTEXPR from non-inline member function.
+	* include/debug/safe_iterator.h
+	(_GLIBCXX20_CONSTEXPR_NON_LITERAL_SCOPE_BEGIN): Define.
+	(_GLIBCXX20_CONSTEXPR_NON_LITERAL_SCOPE_END): Define.
+	(_Safe_iterator::operator=): Use them around the code path that
+	defines a variable of type __gnu_cxx::__scoped_lock.
+	(_Safe_iterator::operator++): Likewise.
+	(_Safe_iterator::operator--): Likewise.
+	(_Safe_iterator::operator+=): Likewise.
+	(_Safe_iterator::operator-=): Likewise.
+	* testsuite/23_containers/vector/element_access/constexpr.cc
+	(test_iterators): Test more iterator operations.
+	* testsuite/23_containers/vector/bool/element_access/constexpr.cc
+	(test_iterators): Likewise.
+	* testsuite/std/ranges/adaptors/all.cc (test08) [_GLIBCXX_DEBUG]:
+	Remove.
+
+2024-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (__charset_alias_match): Initialize
+	__var_a and __var_b.
+
+2024-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113450
+	* testsuite/std/format/functions/format.cc: Use signed char
+	instead of int8_t.
+
 2024-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/113318

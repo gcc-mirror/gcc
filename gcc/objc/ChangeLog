@@ -1,3 +1,8 @@
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.cc (objc_init): Initialize interface and class
+	name hash maps before the preprocessor uses them.
+
 2024-01-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-next-runtime-abi-02.cc

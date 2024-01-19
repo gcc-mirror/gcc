@@ -1,3 +1,31 @@
+2024-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111361
+	* region-model.cc (svalue_byte_range_has_null_terminator_1): The
+	initial byte of an all-zeroes SVAL is a zero byte.  Remove
+	gcc_unreachable from SK_CONSTANT for constants that aren't
+	STRING_CST or INTEGER_CST.
+
+2024-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112811
+	* region-model.cc (fragment::dump_to_pp): New.
+	(fragment::has_null_terminator): Convert to...
+	(svalue_byte_range_has_null_terminator_1): ...this new function,
+	updating to use a byte_range relative to the start of the svalue.
+	(svalue_byte_range_has_null_terminator): New.
+	(fragment::string_cst_has_null_terminator): Convert to...
+	(string_cst_has_null_terminator): ...this, updating to use a
+	byte_range relative to the start of the svalue.
+	(iterable_cluster::dump_to_pp): New.
+	(region_model::scan_for_null_terminator): Add logging, moving body
+	to...
+	(region_model::scan_for_null_terminator_1): ...this new function,
+	adding more logging, and updating to use
+	svalue_byte_range_has_null_terminator.
+	* region-model.h (region_model::scan_for_null_terminator_1): New
+	decl.
+
 2024-01-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106229

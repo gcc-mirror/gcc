@@ -1,3 +1,9 @@
+2024-01-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113389
+	* decl.cc (grokdeclarator) <case cdk_function>: Set TREE_PURPOSE to
+	NULL_TREE when emitting an error.
+
 2024-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/112588

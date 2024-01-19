@@ -1,3 +1,51 @@
+2024-01-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111956
+	* Make-lang.in (host_mc_longreal): Remove.
+	* configure: Regenerate.
+	* configure.ac (M2C_LONGREAL_FLOAT128): Remove.
+	(M2C_LONGREAL_PPC64LE): Remove.
+	* gm2-compiler/M2Options.def (SetIBMLongDouble): New procedure.
+	(GetIBMLongDouble): New procedure function.
+	(SetIEEELongDouble): New procedure.
+	(GetIEEELongDouble): New procedure function.
+	* gm2-compiler/M2Options.mod (SetIBMLongDouble): New procedure.
+	(GetIBMLongDouble): New procedure function.
+	(SetIEEELongDouble): New procedure.
+	(GetIEEELongDouble): New procedure function.
+	(InitializeLongDoubleFlags): New procedure called during
+	module block initialization.
+	* gm2-gcc/m2configure.cc: Remove duplicate includes.
+	(m2configure_M2CLongRealFloat128): Remove.
+	(m2configure_M2CLongRealIBM128): Remove.
+	(m2configure_M2CLongRealLongDouble): Remove.
+	(m2configure_M2CLongRealLongDoublePPC64LE): Remove.
+	(m2configure_TargetIEEEQuadDefault): New function.
+	* gm2-gcc/m2configure.def (M2CLongRealFloat128): Remove.
+	(M2CLongRealIBM128): Remove.
+	(M2CLongRealLongDouble): Remove.
+	(M2CLongRealLongDoublePPC64LE): Remove.
+	(TargetIEEEQuadDefault): New function.
+	* gm2-gcc/m2configure.h (m2configure_M2CLongRealFloat128): Remove.
+	(m2configure_M2CLongRealIBM128): Remove.
+	(m2configure_M2CLongRealLongDouble): Remove.
+	(m2configure_M2CLongRealLongDoublePPC64LE): Remove.
+	(m2configure_TargetIEEEQuadDefault): New function.
+	* gm2-gcc/m2options.h (M2Options_SetIBMLongDouble): New prototype.
+	(M2Options_GetIBMLongDouble): New prototype.
+	(M2Options_SetIEEELongDouble): New prototype.
+	(M2Options_GetIEEELongDouble): New prototype.
+	* gm2-gcc/m2type.cc (build_m2_long_real_node): Re-implement using
+	results of M2Options_GetIBMLongDouble and M2Options_GetIEEELongDouble.
+	* gm2-lang.cc (gm2_langhook_handle_option): Add case
+	OPT_mabi_ibmlongdouble and call M2Options_SetIBMLongDouble.
+	Add case OPT_mabi_ieeelongdouble and call M2Options_SetIEEELongDouble.
+	* gm2config.aci.in: Regenerate.
+	* gm2spec.cc (lang_specific_driver): Remove block defined by
+	M2C_LONGREAL_PPC64LE.
+	Remove case OPT_mabi_ibmlongdouble.
+	Remove case OPT_mabi_ieeelongdouble.
+
 2024-01-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/112946
