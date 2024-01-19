@@ -718,8 +718,8 @@ ASTLoweringBase::lower_qualifiers (const AST::FunctionQualifiers &qualifiers)
   Unsafety unsafety
     = qualifiers.is_unsafe () ? Unsafety::Unsafe : Unsafety::Normal;
   bool has_extern = qualifiers.is_extern ();
+  ABI abi = has_extern ? ABI::C : ABI::RUST;
 
-  ABI abi = ABI::RUST;
   if (qualifiers.has_abi ())
     {
       const std::string &extern_abi = qualifiers.get_extern_abi ();
@@ -965,7 +965,7 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
       extern_items.push_back (std::unique_ptr<HIR::ExternalItem> (lowered));
     }
 
-  ABI abi = ABI::RUST;
+  ABI abi = ABI::C;
   if (extern_block.has_abi ())
     {
       const std::string &extern_abi = extern_block.get_abi ();
