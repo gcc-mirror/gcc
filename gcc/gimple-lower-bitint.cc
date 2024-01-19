@@ -6249,7 +6249,8 @@ gimple_lower_bitint (void)
 		  if (is_gimple_debug (use_stmt))
 		    continue;
 		  if (gimple_code (use_stmt) == GIMPLE_PHI
-		      || is_gimple_call (use_stmt))
+		      || is_gimple_call (use_stmt)
+		      || gimple_code (use_stmt) == GIMPLE_ASM)
 		    {
 		      optimizable_load = false;
 		      break;
