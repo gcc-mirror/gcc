@@ -7782,6 +7782,11 @@ with static storage duration.  The function must take one parameter,
 a pointer to a type compatible with the variable.  The return value
 of the function (if any) is ignored.
 
+When multiple variables in the same scope have @code{cleanup}
+attributes, at exit from the scope their associated cleanup functions
+are run in reverse order of definition (last defined, first
+cleanup).
+
 If @option{-fexceptions} is enabled, then @var{cleanup_function}
 is run during the stack unwinding that happens during the
 processing of the exception.  Note that the @code{cleanup} attribute
