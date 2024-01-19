@@ -53,4 +53,11 @@ enum mips_cb_setting {
   MIPS_CB_OPTIMAL,
   MIPS_CB_ALWAYS
 };
+
+/* Enumerates the setting of the -mexplicit-relocs= option.  */
+enum mips_explicit_relocs {
+  MIPS_EXPLICIT_RELOCS_NONE,
+  MIPS_EXPLICIT_RELOCS_BASE,
+  MIPS_EXPLICIT_RELOCS_PCREL
+};
 #endif

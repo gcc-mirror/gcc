@@ -20033,8 +20033,6 @@ mips_set_compression_mode (unsigned int compression_mode)
 	 call.  */
       flag_move_loop_invariants = 0;
 
-      target_flags |= MASK_EXPLICIT_RELOCS;
-
       /* Experiments suggest we get the best overall section-anchor
 	 results from using the range of an unextended LW or SW.  Code
 	 that makes heavy use of byte or short accesses can do better
@@ -20064,6 +20062,9 @@ mips_set_compression_mode (unsigned int compression_mode)
 
       if (TARGET_MSA)
 	sorry ("MSA MIPS16 code");
+
+      if (!TARGET_EXPLICIT_RELOCS)
+	sorry ("MIPS16 requires %<-mexplicit-relocs%>");
     }
   else
     {

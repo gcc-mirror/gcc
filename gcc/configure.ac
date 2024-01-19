@@ -5241,13 +5241,24 @@ LCF0:
     ;;
 
   mips*-*-*)
-    gcc_GAS_CHECK_FEATURE([explicit relocation support],
+    gcc_GAS_CHECK_FEATURE([explicit relocation support: %pcrel_hi/%pcrel_lo],
+      gcc_cv_as_mips_explicit_relocs_pcrel,,
+[	lui $4,%pcrel_hi(foo)],,
+      [AC_DEFINE(MIPS_EXPLICIT_RELOCS, MIPS_EXPLICIT_RELOCS_PCREL,
+		 [Define if assembler supports %pcrel_hi/%pcrel_lo.])])
+
+    if test x$gcc_cv_as_mips_explicit_relocs_pcrel = xno; then \
+    gcc_GAS_CHECK_FEATURE([explicit relocation support: %gp_rel],
       gcc_cv_as_mips_explicit_relocs,,
 [	lw $4,%gp_rel(foo)($4)],,
-      [if test x$target_cpu_default = x
-       then target_cpu_default=MASK_EXPLICIT_RELOCS
-       else target_cpu_default="($target_cpu_default)|MASK_EXPLICIT_RELOCS"
-       fi])
+      [AC_DEFINE(MIPS_EXPLICIT_RELOCS, MIPS_EXPLICIT_RELOCS_BASE,
+		 [Define if assembler supports %reloc.])])
+    fi
+
+    if test x$gcc_cv_as_mips_explicit = xno; then \
+      AC_DEFINE(MIPS_EXPLICIT_RELOCS, MIPS_EXPLICIT_RELOCS_NONE,
+		[Define if assembler supports %reloc.])
+    fi
 
     gcc_GAS_CHECK_FEATURE([-mno-shared support],
       gcc_cv_as_mips_no_shared,[-mno-shared], [nop],,
