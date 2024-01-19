@@ -1696,7 +1696,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	      /* Check if we've already created a new phi node during edge
 		 redirection.  If we have, only propagate the value
 		 downwards in case there is no merge block.  */
-	      if (tree *res = new_phi_args.get (new_arg))
+	      tree *res;
+	      if ((res = new_phi_args.get (new_arg)))
 		{
 		  if (multiple_exits_p)
 		    new_arg = *res;
@@ -1717,7 +1718,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		  /* Similar to the single exit case, If we have an existing
 		     LCSSA variable thread through the original value otherwise
 		     skip it and directly use the final value.  */
-		  if (tree *res = new_phi_args.get (tmp_arg))
+		  if ((res = new_phi_args.get (tmp_arg)))
 		    new_arg = *res;
 		  else if (!virtual_operand_p (new_arg))
 		    new_arg = tmp_arg;
@@ -1728,9 +1729,20 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 
 	      /* Otherwise, main loop exit should use the final iter value.  */
 	      if (multiple_exits_p)
-		SET_PHI_ARG_DEF_ON_EDGE (lcssa_phi,
-					 single_succ_edge (main_loop_exit_block),
-					 new_arg);
+		{
+		  /* Create a LC PHI if it doesn't already exist.  */
+		  if (!virtual_operand_p (new_arg) && !res)
+		    {
+		      tree new_def = copy_ssa_name (new_arg);
+		      gphi *lc_phi
+			= create_phi_node (new_def, main_loop_exit_block);
+		      SET_PHI_ARG_DEF (lc_phi, 0, new_arg);
+		      new_arg = new_def;
+		    }
+		  SET_PHI_ARG_DEF_ON_EDGE (lcssa_phi,
+					   single_succ_edge (main_loop_exit_block),
+					   new_arg);
+		}
 	      else
 		SET_PHI_ARG_DEF_ON_EDGE (lcssa_phi, loop_exit, new_arg);
 
@@ -1765,6 +1777,18 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 			 for gcc.c-torture/execute/20150611-1.c  */
 		      if (vphi)
 			alt_arg = gimple_phi_result (vphi);
+		    }
+		  /* For other live args we didn't create LC PHI nodes.
+		     Do so here.  */
+		  else
+		    {
+		      tree alt_def = copy_ssa_name (alt_arg);
+		      gphi *lc_phi
+			= create_phi_node (alt_def, alt_loop_exit_block);
+		      for (unsigned i = 0; i < gimple_phi_num_args (lc_phi);
+			   ++i)
+			SET_PHI_ARG_DEF (lc_phi, i, alt_arg);
+		      alt_arg = alt_def;
 		    }
 		  edge main_e = single_succ_edge (alt_loop_exit_block);
 		  SET_PHI_ARG_DEF_ON_EDGE (to_phi, main_e, alt_arg);

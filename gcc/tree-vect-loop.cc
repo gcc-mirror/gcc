@@ -6017,7 +6017,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   int j, i;
   vec<tree> &scalar_results = reduc_info->reduc_scalar_results;
   unsigned int group_size = 1, k;
-  auto_vec<gimple *> phis;
   /* SLP reduction without reduction chain, e.g.,
      # a1 = phi <a2, a0>
      # b1 = phi <b2, b0>
@@ -6930,12 +6929,12 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
           use <s_out4> */
 
   gcc_assert (live_out_stmts.size () == scalar_results.length ());
+  auto_vec<gimple *> phis;
   for (k = 0; k < live_out_stmts.size (); k++)
     {
       stmt_vec_info scalar_stmt_info = vect_orig_stmt (live_out_stmts[k]);
       scalar_dest = gimple_get_lhs (scalar_stmt_info->stmt);
 
-      phis.create (3);
       /* Find the loop-closed-use at the loop exit of the original scalar
          result.  (The reduction result is expected to have two immediate uses,
          one at the latch block, and one at the loop exit).  For double
@@ -6988,7 +6987,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	    }
         }
 
-      phis.release ();
+      phis.truncate (0);
     }
 }
 
@@ -10710,18 +10709,6 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
   return new_tree;
 }
 
-/* Find the edge that's the final one in the path from SRC to DEST and
-   return it.  This edge must exist in at most one forwarder edge between.  */
-
-static edge
-find_connected_edge (edge src, basic_block dest)
-{
-   if (src->dest == dest)
-     return src;
-
-  return find_edge (src->dest, dest);
-}
-
 /* Function vectorizable_live_operation.
 
    STMT_INFO computes a value that is used outside the loop.  Check if
@@ -10964,13 +10951,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	    {
 	      edge e = gimple_phi_arg_edge (as_a <gphi *> (use_stmt),
 					   phi_arg_index_from_use (use_p));
-	      bool main_exit_edge = e == main_e
-				    || find_connected_edge (main_e, e->src);
-
-	      /* Early exits have an merge block, we want the merge block itself
-		 so use ->src.  For main exit the merge block is the
-		 destination.  */
-	      basic_block dest = main_exit_edge ? main_e->dest : e->src;
+	      gcc_assert (loop_exit_edge_p (loop, e));
+	      bool main_exit_edge = e == main_e;
 	      tree tmp_vec_lhs = vec_lhs;
 	      tree tmp_bitstart = bitstart;
 
@@ -10988,22 +10970,18 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	      gimple_stmt_iterator exit_gsi;
 	      tree new_tree
 		= vectorizable_live_operation_1 (loop_vinfo, stmt_info,
-						 dest, vectype, ncopies,
+						 e->dest, vectype, ncopies,
 						 slp_node, bitsize,
 						 tmp_bitstart, tmp_vec_lhs,
 						 lhs_type, &exit_gsi);
 
-	      if (gimple_phi_num_args (use_stmt) == 1)
-		{
-		  auto gsi = gsi_for_stmt (use_stmt);
-		  remove_phi_node (&gsi, false);
-		  tree lhs_phi = gimple_phi_result (use_stmt);
-		  gimple *copy = gimple_build_assign (lhs_phi, new_tree);
-		  gsi_insert_before (&exit_gsi, copy, GSI_SAME_STMT);
-		}
-	      else
-		SET_PHI_ARG_DEF (use_stmt, e->dest_idx, new_tree);
-	  }
+	      auto gsi = gsi_for_stmt (use_stmt);
+	      remove_phi_node (&gsi, false);
+	      tree lhs_phi = gimple_phi_result (use_stmt);
+	      gimple *copy = gimple_build_assign (lhs_phi, new_tree);
+	      gsi_insert_before (&exit_gsi, copy, GSI_SAME_STMT);
+	      break;
+	    }
 
       /* There a no further out-of-loop uses of lhs by LC-SSA construction.  */
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
