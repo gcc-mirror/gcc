@@ -144,7 +144,7 @@ FROM M2System IMPORT IsPseudoSystemFunction, IsSystemType,
 FROM M2Bitset IMPORT Bitset, Bitnum ;
 FROM SymbolConversion IMPORT AddModGcc, Mod2Gcc, GccKnowsAbout, Poison, RemoveMod2Gcc ;
 FROM M2GenGCC IMPORT ResolveConstantExpressions ;
-FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo ;
+FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo3 ;
 
 FROM M2ALU IMPORT Addn, Sub, Equ, GreEqu, Gre, Less, PushInt, PushCard, ConvertToType,
                   PushIntegerTree, PopIntegerTree, PopRealTree, ConvertToInt, PopSetTree,
@@ -2865,7 +2865,7 @@ BEGIN
    PushBinding (scope) ;
    REPEAT
       copy := DupGroup (copy) ;
-      ForeachScopeBlockDo (sb, DeclareTypesConstantsProceduresInRange)
+      ForeachScopeBlockDo3 (sb, DeclareTypesConstantsProceduresInRange)
    UNTIL EqualGroup (copy, GlobalGroup) ;
    KillGroup (copy) ;
    PopBinding (scope) ;

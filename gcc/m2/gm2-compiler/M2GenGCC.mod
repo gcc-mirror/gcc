@@ -415,7 +415,7 @@ END IsExportedGcc ;
                         the GCC tree structure.
 *)
 
-PROCEDURE ConvertQuadsToTree (Scope: CARDINAL; Start, End: CARDINAL) ;
+PROCEDURE ConvertQuadsToTree (Start, End: CARDINAL) ;
 BEGIN
    REPEAT
       CodeStatement (Start) ;
@@ -1311,7 +1311,9 @@ END GetSizeOfHighFromUnbounded ;
 
 
 (*
-   MaybeDebugBuiltinAlloca -
+   MaybeDebugBuiltinAlloca - if DebugBuiltins is set
+                             then call Builtins.alloca_trace
+                             else call Builtins.alloca.
 *)
 
 PROCEDURE MaybeDebugBuiltinAlloca (location: location_t; tok: CARDINAL; high: Tree) : Tree ;
@@ -1339,10 +1341,12 @@ END MaybeDebugBuiltinAlloca ;
 
 
 (*
-   MaybeDebugBuiltinMemcpy -
+   MaybeDebugBuiltinMemcpy - if DebugBuiltins is set
+                             then call memcpy
+                             else call Builtins.memcpy.
 *)
 
-PROCEDURE MaybeDebugBuiltinMemcpy (location: location_t; tok: CARDINAL; src, dest, nbytes: Tree) : Tree ;
+PROCEDURE MaybeDebugBuiltinMemcpy (location: location_t; src, dest, nbytes: Tree) : Tree ;
 VAR
    call,
    func: Tree ;
@@ -1357,28 +1361,6 @@ BEGIN
    SetLastFunction (call) ;
    RETURN BuildFunctValue (location, call)
 END MaybeDebugBuiltinMemcpy ;
-
-
-(*
-   MaybeDebugBuiltinMemset -
-*)
-
-PROCEDURE MaybeDebugBuiltinMemset (location: location_t; tok: CARDINAL;
-                                   ptr, bytevalue, nbytes: Tree) : Tree ;
-VAR
-   call,
-   func: Tree ;
-BEGIN
-   IF DebugBuiltins
-   THEN
-      func := Mod2Gcc (Memset) ;
-      call := BuildCall3 (location, func, GetPointerType (), ptr, bytevalue, nbytes) ;
-   ELSE
-      call := BuiltinMemSet (location, ptr, bytevalue, nbytes)
-   END ;
-   SetLastFunction (call) ;
-   RETURN BuildFunctValue (location, call)
-END MaybeDebugBuiltinMemset ;
 
 
 (*
@@ -1411,7 +1393,7 @@ BEGIN
    Addr := GetAddressOfUnbounded (location, param) ;
 
    NewArray := MaybeDebugBuiltinAlloca (location, tokenno, High) ;
-   NewArray := MaybeDebugBuiltinMemcpy (location, tokenno, NewArray, Addr, High) ;
+   NewArray := MaybeDebugBuiltinMemcpy (location, NewArray, Addr, High) ;
 
    (* now assign  param.Addr := ADR(NewArray) *)
 
@@ -2784,7 +2766,6 @@ VAR
    exprpos, becomespos,
    virtpos            : CARDINAL ;
    op                 : QuadOperator ;
-   desloc, exprloc    : location_t ;
 BEGIN
    GetQuadOtok (quad, becomespos, op,
                 des, op2, expr, overflowChecking,
@@ -3106,9 +3087,8 @@ END PrepareCopyString ;
 
 PROCEDURE checkArrayElements (des, expr: CARDINAL; virtpos, despos, exprpos: CARDINAL) : BOOLEAN ;
 VAR
-   e1, e3  : Tree ;
-   t1, t3  : CARDINAL ;
-   location: location_t ;
+   e1, e3: Tree ;
+   t1, t3: CARDINAL ;
 BEGIN
    t1 := GetType (des) ;
    t3 := GetType (expr) ;
@@ -3304,7 +3284,7 @@ BEGIN
                       expr, des)
       END ;
       AddStatement (location,
-                    MaybeDebugBuiltinMemcpy (location, virtpos,
+                    MaybeDebugBuiltinMemcpy (location,
                                              BuildAddr (location, Mod2Gcc (des), FALSE),
                                              BuildAddr (location, exprt, FALSE),
                                              length))
@@ -3319,7 +3299,7 @@ BEGIN
       THEN
          checkDeclare (des) ;
          AddStatement (location,
-                       MaybeDebugBuiltinMemcpy (location, virtpos,
+                       MaybeDebugBuiltinMemcpy (location,
                                                 BuildAddr(location, Mod2Gcc (des), FALSE),
                                                 BuildAddr(location, Mod2Gcc (expr), FALSE),
                                                 BuildSize(location, Mod2Gcc (des), FALSE)))
@@ -3624,7 +3604,7 @@ END CodeBinary ;
    NoWalkProcedure -
 *)
 
-PROCEDURE NoWalkProcedure (param: CARDINAL) ;
+PROCEDURE NoWalkProcedure (param: CARDINAL <* unused *>) ;
 BEGIN
 END NoWalkProcedure ;
 
@@ -3688,12 +3668,12 @@ END CheckBinaryExpressionTypes ;
 
 (*
    CheckElementSetTypes - returns TRUE if all expression checks pass.
-                                If the expression check fails quad is removed,
-                                the walk procedure (des) is called and NoChange is
-                                set to FALSE.
+                          If the expression check fails quad is removed,
+                          the walk procedure (des) is called and NoChange is
+                          set to FALSE.
 *)
 
-PROCEDURE CheckElementSetTypes (quad: CARDINAL; p: WalkAction) : BOOLEAN ;
+PROCEDURE CheckElementSetTypes (quad: CARDINAL) : BOOLEAN ;
 VAR
    lefttype,
    righttype,
@@ -6472,7 +6452,7 @@ BEGIN
             (* does not work t := BuildCoerce(Mod2Gcc(op1), Mod2Gcc(op2), Mod2Gcc(op3)) *)
             checkDeclare (op1) ;
             AddStatement (location,
-                          MaybeDebugBuiltinMemcpy(location, CurrentQuadToken,
+                          MaybeDebugBuiltinMemcpy(location,
                                                   BuildAddr(location, Mod2Gcc(op1), FALSE),
                                                   BuildAddr(location, Mod2Gcc(op3), FALSE),
                                                   FindSize(CurrentQuadToken, op2)))
@@ -7371,7 +7351,7 @@ BEGIN
    IF IsConst(op1) AND IsConst(op2)
    THEN
       InternalError ('should not get to here (if we do we should consider calling FoldIfIn)')
-   ELSIF CheckElementSetTypes (quad, NoWalkProcedure)
+   ELSIF CheckElementSetTypes (quad)
    THEN
       IF IsConst(op1)
       THEN
@@ -7438,7 +7418,7 @@ BEGIN
    IF IsConst(op1) AND IsConst(op2)
    THEN
       InternalError ('should not get to here (if we do we should consider calling FoldIfIn)')
-   ELSIF CheckElementSetTypes (quad, NoWalkProcedure)
+   ELSIF CheckElementSetTypes (quad)
    THEN
       IF IsConst(op1)
       THEN
@@ -7576,7 +7556,7 @@ BEGIN
                       op3, op1)
       END ;
       AddStatement (location,
-                    MaybeDebugBuiltinMemcpy (location, tokenno,
+                    MaybeDebugBuiltinMemcpy (location,
                                              Mod2Gcc (op1),
                                              BuildAddr (location, newstr, FALSE),
                                              length))

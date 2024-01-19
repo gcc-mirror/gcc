@@ -38,7 +38,8 @@ FROM NumberIO IMPORT WriteCard ;
 FROM M2Error IMPORT InternalError ;
 FROM M2Batch IMPORT GetModuleNo ;
 FROM M2Quiet IMPORT qprintf1 ;
-FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo ;
+FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock,
+                    ForeachScopeBlockDo2, ForeachScopeBlockDo3 ;
 
 FROM SymbolTable IMPORT GetSymName,
                         GetProcedureQuads, GetModuleQuads,
@@ -336,13 +337,13 @@ BEGIN
    IF IsProcedure(scope)
    THEN
       PutProcedureReachable(scope) ;
-      ForeachScopeBlockDo(sb, KnownReachable)
+      ForeachScopeBlockDo2 (sb, KnownReachable)
    ELSIF IsModuleWithinProcedure(scope)
    THEN
-      ForeachScopeBlockDo(sb, KnownReachable) ;
+      ForeachScopeBlockDo2 (sb, KnownReachable) ;
       ForeachProcedureDo(scope, CheckExportedReachable)
    ELSE
-      ForeachScopeBlockDo(sb, KnownReachable) ;
+      ForeachScopeBlockDo2 (sb, KnownReachable) ;
       ForeachProcedureDo(scope, CheckExportedReachable)
    END ;
    ForeachInnerModuleDo(scope, RemoveProcedures) ;
@@ -351,8 +352,7 @@ BEGIN
 END RemoveProcedures ;
 
 
-PROCEDURE KnownReachable (Scope: CARDINAL;
-                          Start, End: CARDINAL) ;
+PROCEDURE KnownReachable (Start, End: CARDINAL) ;
 VAR
    Op           : QuadOperator ;
    Op1, Op2, Op3: CARDINAL ;
