@@ -434,7 +434,7 @@ namespace __format
 	    if constexpr (__literal_encoding_is_unicode<_CharT>())
 	      {
 		// Accept any UCS scalar value as fill character.
-		_Utf32_view __uv(ranges::subrange(__first, __last));
+		_Utf32_view<ranges::subrange<iterator>> __uv({__first, __last});
 		if (!__uv.empty())
 		  {
 		    auto __beg = __uv.begin();
