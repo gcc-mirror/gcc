@@ -4038,6 +4038,7 @@ loop:
     default:
       gfc_error ("Unexpected %s statement in INTERFACE block at %C",
 		 gfc_ascii_statement (st));
+      current_interface = save;
       reject_statement ();
       gfc_free_namespace (gfc_current_ns);
       goto loop;
