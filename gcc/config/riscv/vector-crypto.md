@@ -81,7 +81,7 @@
 
 (define_int_iterator UNSPEC_VRBB8 [UNSPEC_VBREV UNSPEC_VBREV8 UNSPEC_VREV8])
 
-(define_int_iterator UNSPEC_CLMUL [UNSPEC_VCLMUL UNSPEC_VCLMULH])
+(define_int_iterator UNSPEC_CLMUL_VC [UNSPEC_VCLMUL UNSPEC_VCLMULH])
 
 (define_int_iterator UNSPEC_CRYPTO_VV [UNSPEC_VGMUL    UNSPEC_VAESEFVV UNSPEC_VAESEMVV
                                        UNSPEC_VAESDFVV UNSPEC_VAESDMVV UNSPEC_VAESEFVS
@@ -377,7 +377,7 @@
           (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
        (unspec:VI_D
          [(match_operand:VI_D 3 "register_operand"     "vr, vr,vr, vr")
-          (match_operand:VI_D 4 "register_operand"     "vr, vr,vr, vr")]UNSPEC_CLMUL)
+          (match_operand:VI_D 4 "register_operand"     "vr, vr,vr, vr")] UNSPEC_CLMUL_VC)
        (match_operand:VI_D 2 "vector_merge_operand"    "vu, vu, 0,  0")))]
   "TARGET_ZVBC"
   "vclmul<h>.vv\t%0,%3,%4%p1"
@@ -399,7 +399,7 @@
        (unspec:VI_D
          [(vec_duplicate:VI_D
             (match_operand:<VEL> 4 "register_operand"))
-          (match_operand:VI_D 3 "register_operand")]UNSPEC_CLMUL)
+          (match_operand:VI_D 3 "register_operand")] UNSPEC_CLMUL_VC)
        (match_operand:VI_D 2 "vector_merge_operand")))]
   "TARGET_ZVBC"
 {
@@ -432,7 +432,7 @@
       (unspec:VI_D
         [(vec_duplicate:VI_D
            (match_operand:<VEL> 4 "reg_or_0_operand"   "rJ, rJ,rJ, rJ"))
-         (match_operand:VI_D 3 "register_operand"      "vr, vr,vr, vr")]UNSPEC_CLMUL)
+         (match_operand:VI_D 3 "register_operand"      "vr, vr,vr, vr")] UNSPEC_CLMUL_VC)
       (match_operand:VI_D 2 "vector_merge_operand"     "vu, vu, 0,  0")))]
   "TARGET_ZVBC"
   "vclmul<h>.vx\t%0,%3,%4%p1"
@@ -454,7 +454,7 @@
         [(vec_duplicate:VI_D
 	   (sign_extend:<VEL>
              (match_operand:<VSUBEL> 4 "reg_or_0_operand" " rJ, rJ,rJ, rJ")))
-         (match_operand:VI_D 3 "register_operand"        "vr, vr,vr, vr")]UNSPEC_CLMUL)
+         (match_operand:VI_D 3 "register_operand"        "vr, vr,vr, vr")] UNSPEC_CLMUL_VC)
       (match_operand:VI_D 2 "vector_merge_operand"       "vu, vu, 0,  0")))]
   "TARGET_ZVBC"
   "vclmul<h>.vx\t%0,%3,%4%p1"
