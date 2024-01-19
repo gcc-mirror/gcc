@@ -3600,7 +3600,7 @@ array_bound_check_elemental (gfc_se * se, gfc_ss * ss, gfc_expr * expr)
 	      continue;
 	    }
 
-	  if (ref->type == REF_ARRAY && ref->u.ar.dimen > 0)
+	  if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION)
 	    {
 	      ar = &ref->u.ar;
 	      for (dim = 0; dim < ar->dimen; dim++)
