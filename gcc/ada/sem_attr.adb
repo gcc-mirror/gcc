@@ -8729,14 +8729,15 @@ package body Sem_Attr is
       --  Unconstrained_Array are again exceptions, because they apply as well
       --  to unconstrained types.
 
+      --  Folding can also be done for Preelaborable_Initialization based on
+      --  whether the prefix type has preelaborable initialization, even though
+      --  the attribute is nonstatic.
+
       --  In addition Component_Size is an exception since it is possibly
       --  foldable, even though it is never static, and it does apply to
       --  unconstrained arrays. Furthermore, it is essential to fold this
       --  in the packed case, since otherwise the value will be incorrect.
-
-      --  Folding can also be done for Preelaborable_Initialization based on
-      --  whether the prefix type has preelaborable initialization, even though
-      --  the attribute is nonstatic.
+      --  Moreover, the exact same reasoning can be applied to Alignment.
 
       elsif Id = Attribute_Atomic_Always_Lock_Free      or else
             Id = Attribute_Definite                     or else
@@ -8747,7 +8748,8 @@ package body Sem_Attr is
             Id = Attribute_Preelaborable_Initialization or else
             Id = Attribute_Type_Class                   or else
             Id = Attribute_Unconstrained_Array          or else
-            Id = Attribute_Component_Size
+            Id = Attribute_Component_Size               or else
+            Id = Attribute_Alignment
       then
          Static := False;
          Set_Is_Static_Expression (N, False);
