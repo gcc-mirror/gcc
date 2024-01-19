@@ -942,6 +942,8 @@ namespace views::__adaptor
     concept __is_range_adaptor_closure
       = requires (_Tp __t) { __adaptor::__is_range_adaptor_closure_fn(__t, __t); };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-reference"
   // range | adaptor is equivalent to adaptor(range).
   template<typename _Self, typename _Range>
     requires __is_range_adaptor_closure<_Self>
@@ -961,6 +963,7 @@ namespace views::__adaptor
       return _Pipe<decay_t<_Lhs>, decay_t<_Rhs>>{std::forward<_Lhs>(__lhs),
 						 std::forward<_Rhs>(__rhs)};
     }
+#pragma GCC diagnostic pop
 
   // The base class of every range adaptor non-closure.
   //
