@@ -1299,7 +1299,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Error if construction from U... would create a dangling ref.
 # if __cpp_fold_expressions
 #  define __glibcxx_dangling_refs(U) \
-  (__reference_constructs_from_temporary(_Elements, U) && ...)
+  (__reference_constructs_from_temporary(_Elements, U) || ...)
 # else
 #  define __glibcxx_dangling_refs(U) \
   __or_<__bool_constant<__reference_constructs_from_temporary(_Elements, U) \
