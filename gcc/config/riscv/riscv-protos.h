@@ -780,4 +780,11 @@ const struct riscv_tune_info *
 riscv_parse_tune (const char *, bool);
 const cpu_vector_cost *get_vector_costs ();
 
+enum
+{
+  RISCV_MAJOR_VERSION_BASE = 1000000,
+  RISCV_MINOR_VERSION_BASE = 1000,
+  RISCV_REVISION_VERSION_BASE = 1,
+};
+
 #endif /* ! GCC_RISCV_PROTOS_H */

@@ -30207,7 +30207,8 @@ with @option{--with-isa-spec=} specifying a different default version.
 @item -march=@var{ISA-string}
 Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
 lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
-@samp{rv32imaf}.
+@samp{rv32imaf}. Additionally, a special value @option{help}
+(@option{-march=help}) is accepted to list all supported extensions.
 
 The syntax of the ISA string is defined as follows:
 
