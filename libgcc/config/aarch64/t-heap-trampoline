@@ -16,4 +16,5 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2ADD += $(srcdir)/config/aarch64/heap-trampoline.c
+LIB2ADDEH += $(srcdir)/config/aarch64/heap-trampoline.c
+LIB2ADDEHSHARED += $(srcdir)/config/aarch64/heap-trampoline.c
