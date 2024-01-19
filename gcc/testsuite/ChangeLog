@@ -1,3 +1,11 @@
+2024-01-18  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2022-10-21  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+	* g++.target/i386/mv29.C: Likewise.
+
 2023-12-24  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

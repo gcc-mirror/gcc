@@ -1,3 +1,92 @@
+2024-01-18  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Fix handling of X86_TUNE_AVOID_512FMA_CHAINS
+
+2024-01-18  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-12-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-expand.c (ix86_expand_set_or_cpymem): Add
+	TARGET_AVX512_SPLIT_REGS
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Honor x86_TONE_AVOID_256FMA_CHAINS.
+	* config/i386/i386.c (ix86_vec_cost): Honor TARGET_AVX512_SPLIT_REGS.
+	(ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (TARGET_AVX512_SPLIT_REGS): New tune.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): Disable
+	for znver4.
+	(X86_TUNE_USE_GATHER_4PARTS): Likewise.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Set for znver4.
+	(X86_TUNE_AVOID_512FMA_CHAINS): New utne; set for znver4.
+	(X86_TUNE_AVX256_OPTIMAL): Add znver4.
+	(X86_TUNE_AVX512_SPLIT_REGS): New tune.
+	(X86_TUNE_AVX256_MOVE_BY_PIECES): Add znver1-3.
+	(X86_TUNE_AVX256_STORE_BY_PIECES): Add znver1-3.
+	(X86_TUNE_AVX512_MOVE_BY_PIECES): Add znver4.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Add znver4.
+
+2024-01-18  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2023-01-05  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/i386-common.c (processor_alias_table):
+	Use CPU_ZNVER4 for znver4.
+	* config/i386/i386.md: Add znver4.md.
+	* config/i386/znver4.md: New.
+
+2024-01-18  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2022-10-25  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/i386-common.c (processor_alias_table): Use
+	CPU_ZNVER3 for znver4.
+	* config/i386/znver.md: Remove znver4 reservations.
+
+2024-01-18  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2022-10-21  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_amd_cpu): Recognize znver4.
+	* common/config/i386/i386-common.c (processor_names): Add znver4.
+	(processor_alias_table): Add znver4 and modularize old znvers.
+	* common/config/i386/i386-cpuinfo.h (processor_subtypes):
+	AMDFAM19H_ZNVER4.
+	* config.gcc (x86_64-*-* |...): Likewise.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Let
+	-march=native recognize znver4 cpus.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add znver4.
+	* config/i386/i386-options.c (m_ZNVER4): New definition.
+	(m_ZNVER): Include m_ZNVER4.
+	(processor_cost_table): Add znver4.
+	* config/i386/i386.c (ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (processor_type): Add PROCESSOR_ZNVER4.
+	(PTA_ZNVER1): New definition.
+	(PTA_ZNVER2): Likewise.
+	(PTA_ZNVER3): Likewise.
+	(PTA_ZNVER4): Likewise.
+	* config/i386/i386.md (define_attr "cpu"): Add znver4 and rename
+	md file.
+	* config/i386/x86-tune-sched.c (ix86_issue_rate): Add znver4.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/znver1.md: Rename to znver.md.
+	* config/i386/znver.md: Add new reservations for znver4.
+	* doc/extend.texi: Add details about znver4.
+	* doc/invoke.texi: Likewise.
+
+2024-01-18  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-12-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (znver4_cost): Upate costs of FP and SSE
+	moves, division multiplication, gathers, L2 cache size, and more
+	complex FP instrutions.
+
 2023-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
