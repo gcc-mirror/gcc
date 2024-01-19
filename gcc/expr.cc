@@ -12389,6 +12389,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       /* If the input and output modes are both the same, we are done.  */
       if (mode == GET_MODE (op0))
 	;
+      /* Similarly if the output mode is BLKmode and input is a MEM,
+	 adjust_address done below is all we need.  */
+      else if (mode == BLKmode && MEM_P (op0))
+	;
       /* If neither mode is BLKmode, and both modes are the same size
 	 then we can use gen_lowpart.  */
       else if (mode != BLKmode
