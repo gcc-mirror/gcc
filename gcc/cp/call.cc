@@ -14123,7 +14123,10 @@ do_warn_dangling_reference (tree expr, bool arg_p)
       tree e = expr;
       while (handled_component_p (e))
 	e = TREE_OPERAND (e, 0);
-      if (!reference_like_class_p (TREE_TYPE (e)))
+      tree type = TREE_TYPE (e);
+      /* If the temporary represents a lambda, we don't really know
+	 what's going on here.  */
+      if (!reference_like_class_p (type) && !LAMBDA_TYPE_P (type))
 	return expr;
     }
 
@@ -14180,10 +14183,10 @@ do_warn_dangling_reference (tree expr, bool arg_p)
 	       initializing this reference parameter.  */
 	    if (do_warn_dangling_reference (arg, /*arg_p=*/true))
 	      return expr;
-	  /* Don't warn about member function like:
+	  /* Don't warn about member functions like:
 	      std::any a(...);
 	      S& s = a.emplace<S>({0}, 0);
-	     which constructs a new object and returns a reference to it, but
+	     which construct a new object and return a reference to it, but
 	     we still want to detect:
 	       struct S { const S& self () { return *this; } };
 	       const S& s = S().self();
