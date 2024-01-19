@@ -1,3 +1,21 @@
+2024-01-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-01-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/67277
+	* gfortran.dg/ishftc_optional_size_1.f90: New test.
+
+2024-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113242
+	PR c++/99493
+	* g++.dg/cpp2a/nontype-class61.C: New test.
+	* g++.dg/cpp2a/nontype-class62.C: New test.
+
 2024-01-16  Daniel Cederman  <cederman@gaisler.com>
 
 	* gcc.dg/lto/pr88077_0.c: Change type to match alignment for SPARC

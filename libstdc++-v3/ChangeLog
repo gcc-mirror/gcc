@@ -1,3 +1,31 @@
+2024-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113450
+	* testsuite/std/format/functions/format.cc: Use signed char
+	instead of int8_t.
+
+2024-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/113366
+	* include/std/format (basic_format_arg): Use __formattable
+	variable template instead of __format::__formattable_with
+	concept.
+
+2024-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdata.zi: Import new file from 2023d release.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds)
+	Update expiry date for leap seconds list.
+
 2024-01-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
