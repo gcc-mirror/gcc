@@ -158,9 +158,9 @@ package body Exp_Ch6 is
       Alloc_Form     : BIP_Allocation_Form := Unspecified;
       Alloc_Form_Exp : Node_Id             := Empty;
       Pool_Actual    : Node_Id             := Make_Null (No_Location));
-   --  Ada 2005 (AI-318-02): Add the actuals needed for a build-in-place
-   --  function call that returns a caller-unknown-size result (BIP_Alloc_Form
-   --  and BIP_Storage_Pool). If Alloc_Form_Exp is present, then use it,
+   --  Ada 2005 (AI-318-02): If the result type of a build-in-place call needs
+   --  them, add the actuals parameters BIP_Alloc_Form and BIP_Storage_Pool.
+   --  If Alloc_Form_Exp is present, then pass it for the first parameter,
    --  otherwise pass a literal corresponding to the Alloc_Form parameter
    --  (which must not be Unspecified in that case). Pool_Actual is the
    --  parameter to pass to BIP_Storage_Pool.
@@ -8328,9 +8328,11 @@ package body Exp_Ch6 is
       Set_Can_Never_Be_Null (Acc_Type, False);
       --  It gets initialized to null, so we can't have that
 
-      --  When the result subtype is constrained, the return object is created
-      --  on the caller side, and access to it is passed to the function. This
-      --  optimization is disabled when the result subtype needs finalization
+      --  When the result subtype is returned on the secondary stack or is
+      --  tagged, the called function itself must perform the allocation of
+      --  the return object, so we pass parameters indicating that.
+
+      --  But that's also the case when the result subtype needs finalization
       --  actions because the caller side allocation may result in undesirable
       --  finalization. Consider the following example:
       --
@@ -8350,11 +8352,6 @@ package body Exp_Ch6 is
       --  Result (and Obj by extension) should not be finalized. However Obj
       --  will be finalized when access type Lim_Ctrl_Ptr goes out of scope
       --  since it is already attached on the related finalization master.
-
-      --  Here and in related routines, we must examine the full view of the
-      --  type, because the view at the point of call may differ from the
-      --  one in the function body, and the expansion mechanism depends on
-      --  the characteristics of the full view.
 
       if Needs_BIP_Alloc_Form (Function_Id) then
          Temp_Init := Empty;
@@ -8385,6 +8382,10 @@ package body Exp_Ch6 is
          --  have to pass null for the object access actual.
 
          Return_Obj_Actual := Empty;
+
+      --  When the result subtype neither is returned on the secondary stack
+      --  nor is tagged, the return object is created on the caller side, and
+      --  access to it is passed to the function.
 
       else
          --  Replace the initialized allocator of form "new T'(Func (...))"
@@ -8428,11 +8429,6 @@ package body Exp_Ch6 is
            (Result_Subt,
             Make_Explicit_Dereference (Loc,
               Prefix => New_Occurrence_Of (Return_Obj_Access, Loc)));
-
-      --  When the result subtype is unconstrained, the function itself must
-      --  perform the allocation of the return object, so we pass parameters
-      --  indicating that.
-
       end if;
 
       --  Declare the temp object
@@ -9636,6 +9632,12 @@ package body Exp_Ch6 is
       Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
    begin
+      --  See Make_Build_In_Place_Call_In_Allocator for the rationale
+
+      if Needs_BIP_Finalization_Master (Func_Id) then
+         return True;
+      end if;
+
       --  A formal giving the allocation method is needed for build-in-place
       --  functions whose result type is returned on the secondary stack or
       --  is a tagged type. Tagged primitive build-in-place functions need

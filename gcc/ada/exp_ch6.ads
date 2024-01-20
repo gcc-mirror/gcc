@@ -47,8 +47,8 @@ package Exp_Ch6 is
    --  nodes (e.g. the filling of the corresponding Dispatch Table for
    --  Primitive Operations)
 
-   --  The following type defines the various forms of allocation used for the
-   --  results of build-in-place function calls.
+   --  Ada 2005 (AI-318-02): The following type defines the various forms of
+   --  allocation used for the result of build-in-place function calls.
 
    type BIP_Allocation_Form is
      (Unspecified,
@@ -57,22 +57,24 @@ package Exp_Ch6 is
       Global_Heap,
       User_Storage_Pool);
 
-   type BIP_Formal_Kind is
    --  Ada 2005 (AI-318-02): This type defines the kinds of implicit extra
    --  formals created for build-in-place functions. The order of these
    --  enumeration literals matches the order in which the formals are
    --  declared. See Sem_Ch6.Create_Extra_Formals.
 
+   type BIP_Formal_Kind is
      (BIP_Alloc_Form,
-      --  Present if result subtype is unconstrained or tagged. Indicates
-      --  whether the return object is allocated by the caller or callee, and
-      --  if the callee, whether to use the secondary stack or the heap. See
-      --  Create_Extra_Formals.
+      --  Present if result subtype is returned on the secondary stack or is
+      --  tagged: in this case, this indicates whether the return object is
+      --  allocated by the caller or callee, and if the callee, whether to
+      --  use the secondary stack, the global heap or a storage pool. Also
+      --  present if result type needs finalization.
 
       BIP_Storage_Pool,
-      --  Present if result subtype is unconstrained or tagged. If
-      --  BIP_Alloc_Form = User_Storage_Pool, this is a pointer to the pool
-      --  (of type access to Root_Storage_Pool'Class). Otherwise null.
+      --  Present if result subtype is returned on the secondary stack or is
+      --  tagged: in this case, if BIP_Alloc_Form = User_Storage_Pool, this
+      --  is a pointer to the pool (of type Root_Storage_Pool_Ptr); otherwise
+      --  this is null. Also present if result type needs finalization.
 
       BIP_Finalization_Master,
       --  Present if result type needs finalization. Pointer to caller's

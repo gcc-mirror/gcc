@@ -595,8 +595,9 @@ package body Exp_Ch7 is
       --    then
       --       declare
       --          type Ptr_Typ is access Fun_Typ;
-      --          for Ptr_Typ'Storage_Pool
-      --            use Base_Pool (BIPfinalizationmaster);
+      --          for Ptr_Typ'Storage_Pool use
+      --                Base_Pool (BIPfinalizationmaster.all).all;
+      --
       --       begin
       --          Free (Ptr_Typ (Obj_Addr));
       --       end;
@@ -612,10 +613,11 @@ package body Exp_Ch7 is
         (Func_Id  : Entity_Id;
          Obj_Addr : Node_Id) return Node_Id
       is
+         Alloc_Id   : constant Entity_Id :=
+           Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
          Decls      : constant List_Id := New_List;
          Fin_Mas_Id : constant Entity_Id :=
-                        Build_In_Place_Formal
-                          (Func_Id, BIP_Finalization_Master);
+           Build_In_Place_Formal (Func_Id, BIP_Finalization_Master);
          Func_Typ   : constant Entity_Id := Etype (Func_Id);
 
          Cond      : Node_Id;
@@ -700,38 +702,22 @@ package body Exp_Ch7 is
                  Statements => New_List (Free_Stmt)));
 
          --  Generate:
-         --    if BIPfinalizationmaster /= null then
-
-         Cond :=
-           Make_Op_Ne (Loc,
-             Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
-             Right_Opnd => Make_Null (Loc));
-
-         --  For unconstrained or tagged results, escalate the condition to
-         --  include the allocation format. Generate:
-
          --    if BIPallocform > Secondary_Stack'Pos
          --      and then BIPfinalizationmaster /= null
          --    then
 
-         if Needs_BIP_Alloc_Form (Func_Id) then
-            declare
-               Alloc : constant Entity_Id :=
-                         Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
-            begin
-               Cond :=
-                 Make_And_Then (Loc,
-                   Left_Opnd  =>
-                     Make_Op_Gt (Loc,
-                       Left_Opnd  => New_Occurrence_Of (Alloc, Loc),
-                       Right_Opnd =>
-                         Make_Integer_Literal (Loc,
-                           UI_From_Int
-                             (BIP_Allocation_Form'Pos (Secondary_Stack)))),
-
-                   Right_Opnd => Cond);
-            end;
-         end if;
+         Cond :=
+           Make_And_Then (Loc,
+             Left_Opnd  =>
+               Make_Op_Gt (Loc,
+                 Left_Opnd  => New_Occurrence_Of (Alloc_Id, Loc),
+                 Right_Opnd =>
+                   Make_Integer_Literal (Loc,
+                     UI_From_Int (BIP_Allocation_Form'Pos (Secondary_Stack)))),
+             Right_Opnd =>
+               Make_Op_Ne (Loc,
+                 Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
+                 Right_Opnd => Make_Null (Loc)));
 
          --  Generate:
          --    if <Cond> then
@@ -744,11 +730,15 @@ package body Exp_Ch7 is
              Then_Statements => New_List (Free_Blk));
       end Build_BIP_Cleanup_Stmts;
 
+      --  Local variables
+
       Fin_Id             : Entity_Id;
       Master_Node_Attach : Node_Id;
       Master_Node_Ins    : Node_Id;
       Obj_Ref            : Node_Id;
       Obj_Typ            : Entity_Id;
+
+      --  Start of processing for Attach_Object_To_Master_Node
 
    begin
       --  Finalize_Address is not generated in CodePeer mode because the
@@ -790,23 +780,10 @@ package body Exp_Ch7 is
          Obj_Typ := Available_View (Designated_Type (Obj_Typ));
       end if;
 
-      --  If we are dealing with a return object of a build-in-place
-      --  function, generate the following cleanup statements:
-
-      --    if BIPallocform > Secondary_Stack'Pos
-      --      and then BIPfinalizationmaster /= null
-      --    then
-      --       declare
-      --          type Ptr_Typ is access Obj_Typ;
-      --          for Ptr_Typ'Storage_Pool use
-      --                Base_Pool (BIPfinalizationmaster.all).all;
-      --       begin
-      --          Free (Ptr_Typ (Obj'Address));
-      --       end;
-      --    end if;
-
-      --  The generated code effectively detaches the temporary from the
-      --  caller finalization master and deallocates the object.
+      --  If we are dealing with a return object of a build-in-place function
+      --  and its allocation has been done in the function, we additionally
+      --  need to detach it from the caller's finalization master in order to
+      --  prevent double finalization.
 
       if Present (Func_Id)
         and then Is_Build_In_Place_Function (Func_Id)

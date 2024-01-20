@@ -8746,6 +8746,14 @@ package body Exp_Ch3 is
             Initialize_Return_Object
               (Tag_Assign, Adj_Call, Expr_Q, Init_Stmt, Init_After);
 
+            --  Save the assignment statement when returning a controlled
+            --  object. This reference is used later by the finalization
+            --  machinery to mark the object as successfully initialized.
+
+            if Present (Init_Stmt) and then Needs_Finalization (Typ) then
+               Set_Last_Aggregate_Assignment (Def_Id, Init_Stmt);
+            end if;
+
             --  Replace the return object declaration with a renaming of a
             --  dereference of the access value designating the return object.
 
