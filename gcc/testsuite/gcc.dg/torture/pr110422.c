@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target lra } } */
 
 struct T { int x; };
 int foo(void) {
