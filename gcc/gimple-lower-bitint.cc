@@ -1250,7 +1250,7 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 {
   tree rhs_type = TREE_TYPE (rhs1);
   gimple *g;
-  if (TREE_CODE (rhs1) == SSA_NAME
+  if ((TREE_CODE (rhs1) == SSA_NAME || TREE_CODE (rhs1) == INTEGER_CST)
       && TREE_CODE (lhs_type) == BITINT_TYPE
       && TREE_CODE (rhs_type) == BITINT_TYPE
       && bitint_precision_kind (lhs_type) >= bitint_prec_large
