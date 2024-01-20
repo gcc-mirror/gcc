@@ -1,3 +1,16 @@
+2024-01-19  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-builtins.cc (ensure_optimization_builtins_exist): Add
+	popcount builtins.
+
+2024-01-19  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-recording.h (is_numeric_vector, vector_type::new_int): New
+	functions.
+	* libgccjit.cc (gcc_jit_context_new_unary_op,
+	gcc_jit_context_new_binary_op): add checks for
+	is_numeric_vector.
+
 2024-01-12  Guillaume Gomez  <guillaume1.gomez@gmail.com>
 	    Antoni Boucher  <bouanto@zoho.com>
 

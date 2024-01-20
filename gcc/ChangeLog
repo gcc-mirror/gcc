@@ -1,3 +1,126 @@
+2024-01-19  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/110934
+	* config/m68k/m68k.cc (m68k_zero_call_used_regs): New function.
+	(TARGET_ZERO_CALL_USED_REGS): Define.
+
+2024-01-19  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/108640
+	* config/m68k/m68k.cc (output_andsi3): Use QImode for
+	address adjusted for 1-byte RMW access.
+	(output_iorsi3): Likewise.
+	(output_xorsi3): Likewise.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/invoke.texi (RISC-V Options): Add list of supported
+	extensions.
+
+2024-01-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113495
+	* config/riscv/riscv-protos.h (RVV_VLMAX): Change to regno_reg_rtx[X0_REGNUM].
+	(RVV_VUNDEF): Ditto.
+	* config/riscv/riscv-vsetvl.cc: Add timevar.
+
+2024-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR debug/113488
+	* lto-streamer-in.cc (lto_read_tree_1): When there isn't
+	an early DIE but there should be, do not pretend there is.
+
+2024-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113494
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Handle endless loop on exit.  Handle re-allocated PHI.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113464
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Don't try to
+	optimize loads into GIMPLE_ASM stmts.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113463
+	* gimple-ssa-warn-restrict.cc (builtin_memref::extend_offset_range):
+	Only look through NOP_EXPRs if rhs1 doesn't have wider type than
+	lhs.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113459
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::push_partial_def): Use
+	TREE_INT_CST_LOW of TYPE_SIZE_UNIT rather than GET_MODE_SIZE
+	of SCALAR_INT_TYPE_MODE if type has BLKmode.
+	(vn_reference_lookup_3): Likewise.  Formatting fix.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.cc (discover_nonconstant_array_refs_r): Force non-BLKmode
+	VAR_DECLs referenced in BLKmode VIEW_CONVERT_EXPRs into memory.
+	* expr.cc (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: Do nothing
+	but adjust_address also for BLKmode mode and MEM op0.
+
+2024-01-19  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc: Add Zihpm and Zicnttr
+	extensions.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/invoke.texi (RISC-V Options): Document the syntax of -march.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_std_ext): Remove.
+	(riscv_subset_list::parse_multiletter_ext): Remove.
+	* config/riscv/riscv-subset.h
+	(riscv_subset_list::parse_std_ext): Remove.
+	(riscv_subset_list::parse_multiletter_ext): Remove.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_single_std_ext): New parameter.
+	(riscv_subset_list::parse_single_multiletter_ext): Ditto.
+	(riscv_subset_list::parse_single_ext): Ditto.
+	(riscv_subset_list::parse): Relax the order for the input of ISA
+	string.
+	* config/riscv/riscv-subset.h
+	(riscv_subset_list::parse_single_std_ext): New parameter.
+	(riscv_subset_list::parse_single_multiletter_ext): Ditto.
+	(riscv_subset_list::parse_single_ext): Ditto.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_base_ext): New.
+	(riscv_subset_list::parse): Extract part of logic into
+	riscv_subset_list::parse_base_ext.
+	* config/riscv/riscv-subset.h (riscv_subset_list::parse_base_ext):
+	New.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_override_options_internal): Tweak
+	sorry message.
+
+2024-01-19  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/vector-crypto.md (UNSPEC_CLMUL): Rename to
+	UNSPEC_CLMUL_VC.
+
+2024-01-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/110029
+	* doc/extend.texi (Common Variable Attributes): Explain what
+	happens when multiple variables with cleanups are in the same scope.
+
 2024-01-18  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR ipa/108470

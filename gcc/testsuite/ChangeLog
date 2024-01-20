@@ -1,3 +1,111 @@
+2024-01-19  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/110934
+	* gcc.target/m68k/pr110934.c: New test.
+
+2024-01-19  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/108640
+	* gcc.target/m68k/pr108640.c: New test.
+
+2024-01-19  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit.dg/all-non-failing-tests.h: New test.
+	* jit.dg/test-popcount.c: New test.
+
+2024-01-19  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit.dg/test-reflection.c: Add check to make sure
+	gcc_jit_type_is_integral returns 0 on a vector type.
+
+2024-01-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113471
+	* gfortran.dg/bounds_check_24.f90: New test.
+
+2024-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113498
+	* g++.dg/cpp2a/concepts-using4.C: New test.
+
+2024-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112632
+	PR c++/112594
+	PR c++/111357
+	PR c++/104594
+	PR c++/67898
+	* g++.dg/cpp0x/alias-decl-nontype1.C: New test.
+	* g++.dg/cpp2a/concepts-narrowing1.C: New test.
+	* g++.dg/cpp2a/nontype-class63.C: New test.
+	* g++.dg/cpp2a/nontype-class63a.C: New test.
+
+2024-01-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/torture/pr47917.c: Limit dg-xfail-run-if for
+	hpux11.[012]* to -O0.
+
+2024-01-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pthread-init-2.c: Change dg-options for hpux
+	to define _HPUX_SOURCE.
+
+2024-01-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr84877.c: Only xfail on 32-bit hppa*-*-*.
+
+2024-01-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR analyzer/112705
+	* gcc.dg/analyzer/pr94688.c: Skip on hppa*64*-*-*.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-27.c: Update scan message.
+	* gcc.target/riscv/arch-28.c: Ditto.
+	* gcc.target/riscv/attribute-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/big_endian-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvl-unimplemented-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvl-unimplemented-2.c: Ditto.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113464
+	* gcc.dg/bitint-75.c: New test.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113463
+	* gcc.dg/bitint-74.c: New test.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113459
+	* gcc.dg/bitint-73.c: New test.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-23.c: Update test.
+	* gcc.target/riscv/arch-27.c: Ditto.
+	* gcc.target/riscv/arch-28.c: Ditto.
+	* gcc.target/riscv/attribute-10.c: Ditto.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-33.c: New.
+	* gcc.target/riscv/arch-34.c: New.
+
+2024-01-19  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/part-vect-copysignhf.c: Remove
+	-ftree-vectorize from dg-options.
+
+2024-01-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR testsuite/113437
+	* gcc.dg/tree-ssa/pr95906.c: Scan either MAX_EXPR or
+	VEC_COND_EXPR.
+
 2024-01-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/pic-2.c: Skip on hppa*64*-*-*.

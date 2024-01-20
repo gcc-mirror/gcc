@@ -1,3 +1,22 @@
+2024-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (_Spec::_M_parse_fill_and_align): Do not
+	use CTAD for _Utf32_view.
+
+2024-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108822
+	* include/std/tuple (__glibcxx_no_dangling_refs) [C++17]: Fix
+	wrong fold-operator.
+	* testsuite/20_util/tuple/dangling_ref.cc: Check tuples with one
+	element and three elements. Check allocator-extended
+	constructors.
+
+2024-01-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/precompiled/stdc++.h [_GLIBCXX_HOSTED]: Include
+	<print> and <text_encoding> for C++23 and C++26 respectively.
+
 2024-01-18  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/stl_pair.h [__cplusplus > 202002L]:

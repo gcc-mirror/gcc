@@ -1,3 +1,44 @@
+2024-01-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2BasicBlock.mod (InitBasicBlocks): Rename
+	ForeachScopeBlockDo to ForeachScopeBlockDo3.
+	* gm2-compiler/M2Code.mod: Import ForeachScopeBlockDo2.
+	(OptimizeScopeBlock): Call ForeachScopeBlockDo3 for
+	procedures with three parameters and ForeachScopeBlockDo2
+	for two parameters.
+	(CodeBlock): Ditto.
+	* gm2-compiler/M2GCCDeclare.mod (DeclareTypesConstantsProcedures):
+	Rename ForeachScopeBlockDo to ForeachScopeBlockDo3.
+	* gm2-compiler/M2GenGCC.def (ConvertQuadsToTree): Remove Scope
+	parameter.
+	* gm2-compiler/M2GenGCC.mod (ConvertQuadsToTree): Remove Scope
+	parameter.
+	(MaybeDebugBuiltinMemcpy): Remove parameter tok.
+	(MaybeDebugBuiltinMemset): Remove.
+	(MakeCopyUse): Remove tokenno from call to
+	MaybeDebugBuiltinMemcpy.
+	(PerformFoldBecomes): Remove desloc and exprloc.
+	(checkArrayElements): Remove location.  Remove virtpos
+	as a parameter to MaybeDebugBuiltinMemcpy.
+	(NoWalkProcedure): Add attribute unused.
+	(CheckElementSetTypes): Remove parameter p.
+	Remove CurrentQuadToken in call to MaybeDebugBuiltinMemcpy.
+	Remove NoWalkProcedure from call to CheckElementSetTypes.
+	Remove tokenno from call to MaybeDebugBuiltinMemcpy.
+	* gm2-compiler/M2Optimize.mod (RemoveProcedures): Replace
+	two parameter indirect procedure iterator with
+	ForeachScopeBlockDo2.
+	* gm2-compiler/M2SSA.mod: Remove ForeachScopeBlockDo.
+	* gm2-compiler/M2Scope.def (ForeachScopeBlockDo2): New
+	declaration.
+	(ForeachScopeBlockDo): Rename ...
+	(ForeachScopeBlockDo3): ... to this.
+	(ScopeProcedure2): New declaration.
+	* gm2-compiler/M2Scope.mod (ForeachScopeBlockDo2): New
+	procedure.
+	(ForeachScopeBlockDo): Rename ...
+	(ForeachScopeBlockDo3): ... to this.
+
 2024-01-18  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111956

@@ -1,3 +1,9 @@
+2024-01-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113471
+	* trans-array.cc (array_bound_check_elemental): Array bounds check
+	shall apply here to elemental dimensions of an array section only.
+
 2024-01-13  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/67277

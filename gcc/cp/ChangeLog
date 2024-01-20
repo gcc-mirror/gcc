@@ -1,3 +1,24 @@
+2024-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113498
+	* pt.cc (decl_template_info): New fn.
+	(get_template_info): Use it.
+
+2024-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112632
+	PR c++/112594
+	PR c++/111357
+	PR c++/104594
+	PR c++/67898
+	* cp-tree.h (IMPLICIT_CONV_EXPR_FORCED): New.
+	* pt.cc (expand_integer_pack): Remove 111357 workaround.
+	(maybe_convert_nontype_argument): Add force parm.
+	(convert_template_argument): Handle alias template args
+	specially.
+	(tsubst_expr): Don't ignore IMPLICIT_CONV_EXPR_NONTYPE_ARG.
+	* error.cc (dump_expr) [CASE_CONVERT]: Handle null optype.
+
 2024-01-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113389
