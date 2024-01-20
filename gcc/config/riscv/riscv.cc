@@ -4876,7 +4876,7 @@ void
 riscv_init_cumulative_args (CUMULATIVE_ARGS *cum,
 			    tree fntype ATTRIBUTE_UNUSED,
 			    rtx libname ATTRIBUTE_UNUSED,
-			    tree fndecl,
+			    tree fndecl ATTRIBUTE_UNUSED,
 			    int caller ATTRIBUTE_UNUSED)
 {
   memset (cum, 0, sizeof (*cum));
@@ -10534,7 +10534,7 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
 /* Implements target hook vector_mode_supported_any_target_p.  */
 
 static bool
-riscv_vector_mode_supported_any_target_p (machine_mode mode)
+riscv_vector_mode_supported_any_target_p (machine_mode)
 {
   if (TARGET_XTHEADVECTOR)
     return false;
