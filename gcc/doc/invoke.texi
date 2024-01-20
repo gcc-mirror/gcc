@@ -332,6 +332,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-aggressive-loop-optimizations
 -Warith-conversion
 -Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare
+-Warray-parameter  -Warray-parameter=@var{n}
 -Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias
 -Wno-attribute-warning
 -Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{|}ucn@r{]}
@@ -8467,25 +8468,28 @@ bool same = arr1 == arr2;
 @option{-Warray-compare} is enabled by @option{-Wall}.
 
 @opindex Wno-array-parameter
+@opindex Warray-parameter
 @item -Warray-parameter
 @itemx -Warray-parameter=@var{n}
-Warn about redeclarations of functions involving arguments of array or
+Warn about redeclarations of functions involving parameters of array or
 pointer types of inconsistent kinds or forms, and enable the detection
 of out-of-bounds accesses to such parameters by warnings such as
 @option{-Warray-bounds}.
 
-If the first function declaration uses the array form the bound specified
+If the first function declaration uses the array form for a parameter
+declaration, the bound specified
 in the array is assumed to be the minimum number of elements expected to
 be provided in calls to the function and the maximum number of elements
 accessed by it.  Failing to provide arguments of sufficient size or accessing
 more than the maximum number of elements may be diagnosed by warnings such
-as @option{-Warray-bounds}.  At level 1 the warning diagnoses inconsistencies
+as @option{-Warray-bounds} or @option{-Wstringop-overflow}.
+At level 1, the warning diagnoses inconsistencies
 involving array parameters declared using the @code{T[static N]} form.
 
-For example, the warning triggers for the following redeclarations because
-the first one allows an array of any size to be passed to @code{f} while
-the second one with the keyword @code{static} specifies that the array
-argument must have at least four elements.
+For example, the warning triggers for the second declaration of @code{f}
+because the first one with the keyword @code{static} specifies that
+the array argument must have at least four elements, while the second
+allows an array of any size to be passed to @code{f}.
 
 @smallexample
 void f (int[static 4]);
@@ -8493,7 +8497,7 @@ void f (int[]);           // warning (inconsistent array form)
 
 void g (void)
 @{
-  int *p = (int *)malloc (4);
+  int *p = (int *)malloc (1 * sizeof (int));
   f (p);                  // warning (array too small)
   @dots{}
 @}
@@ -8513,6 +8517,10 @@ void g (int[8]);    // warning (inconsistent array bound)
 @option{-Warray-parameter=2} is included in @option{-Wall}.  The
 @option{-Wvla-parameter} option triggers warnings for similar inconsistencies
 involving Variable Length Array arguments.
+
+The short form of the option @option{-Warray-parameter} is equivalent to
+@option{-Warray-parameter=2}.  The negative form @option{-Wno-array-parameter}
+is equivalent to @option{-Warray-parameter=0}.
 
 @opindex Wattribute-alias
 @opindex Wno-attribute-alias
