@@ -10542,7 +10542,10 @@ package body Sem_Util is
             H := High_Bound (Range_Expression (Constraint (N)));
          end if;
 
-      elsif Is_Entity_Name (N) and then Is_Type (Entity (N)) then
+      elsif Is_Entity_Name (N)
+        and then Present (Entity (N))
+        and then Is_Type (Entity (N))
+      then
          Rng := Scalar_Range_Of_Type (Entity (N));
 
          if Error_Posted (Rng) then
