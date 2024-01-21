@@ -9423,51 +9423,63 @@ levels but may yield different results with optimization than without.
 
 @table @gcctabopt
 @item -Wdangling-pointer=1
-At level 1 the warning diagnoses only unconditional uses of dangling pointers.
-For example
-@smallexample
-int f (int c1, int c2, x)
-@{
-  char *p = strchr ((char[])@{ c1, c2 @}, c3);
-  // warning: dangling pointer to a compound literal
-  return p ? *p : 'x';
-@}
-@end smallexample
-In the following function the store of the address of the local variable
-@code{x} in the escaped pointer @code{*p} also triggers the warning.
-@smallexample
-void g (int **p)
-@{
-  int x = 7;
-  // warning: storing the address of a local variable in *p
-  *p = &x;
-@}
-@end smallexample
+At level 1, the warning diagnoses only unconditional uses of dangling pointers.
 
 @item -Wdangling-pointer=2
 At level 2, in addition to unconditional uses the warning also diagnoses
 conditional uses of dangling pointers.
+@end table
 
-For example, because the array @var{a} in the following function is out of
-scope when the pointer @var{s} that was set to point is used, the warning
-triggers at this level.
+The short form @option{-Wdangling-pointer} is equivalent to
+@option{-Wdangling-pointer=2}, while @option{-Wno-dangling-pointer} and
+@option{-Wdangling-pointer=0} have the same effect of disabling the warnings.
+@option{-Wdangling-pointer=2} is included in @option{-Wall}.
+
+This example triggers the warning at level 1; the address of the unnamed
+temporary is unconditionally referenced outside of its scope.
 
 @smallexample
-void f (char *s)
+char f (char c1, char c2, char c3)
+@{
+  char *p;
+  @{
+    p = (char[]) @{ c1, c2, c3 @};
+  @}
+  // warning: using dangling pointer 'p' to an unnamed temporary
+  return *p;
+@}
+@end smallexample
+
+In the following function the store of the address of the local variable
+@code{x} in the escaped pointer @code{*p} triggers the warning at
+level 1.
+
+@smallexample
+void g (int **p)
+@{
+  int x = 7;
+  // warning: storing the address of local variable 'x' in '*p'
+  *p = &x;
+@}
+@end smallexample
+
+In this example, the array @var{a} is out of
+scope when the pointer @var{s} is used.  Since the code that sets @code{s}
+is conditional, the warning triggers at level 2.
+
+@smallexample
+extern void frob (const char *);
+void h (char *s)
 @{
   if (!s)
     @{
       char a[12] = "tmpname";
       s = a;
     @}
-  // warning: dangling pointer to a may be used
-  strcat (s, ".tmp");
-  ...
+  // warning: dangling pointer 's' to 'a' may be used
+  frob (s);
 @}
 @end smallexample
-@end table
-
-@option{-Wdangling-pointer=2} is included in @option{-Wall}.
 
 @opindex Wdate-time
 @opindex Wno-date-time
