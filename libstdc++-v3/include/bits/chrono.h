@@ -1455,14 +1455,14 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 #if __cplusplus > 201703L
       template<typename _Dur>
 	static
-	chrono::file_time<_Dur>
+	chrono::file_time<common_type_t<_Dur, chrono::seconds>>
 	from_sys(const chrono::sys_time<_Dur>& __t) noexcept
 	{ return _S_from_sys(__t); }
 
       // For internal use only
       template<typename _Dur>
 	static
-	chrono::sys_time<_Dur>
+	chrono::sys_time<common_type_t<_Dur, chrono::seconds>>
 	to_sys(const chrono::file_time<_Dur>& __t) noexcept
 	{ return _S_to_sys(__t); }
 #endif // C++20
@@ -1479,20 +1479,22 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       // For internal use only
       template<typename _Dur>
 	static
-	chrono::time_point<__file_clock, _Dur>
+	chrono::time_point<__file_clock, common_type_t<_Dur, chrono::seconds>>
 	_S_from_sys(const chrono::time_point<__sys_clock, _Dur>& __t) noexcept
 	{
-	  using __file_time = chrono::time_point<__file_clock, _Dur>;
+	  using _CDur = common_type_t<_Dur, chrono::seconds>;
+	  using __file_time = chrono::time_point<__file_clock, _CDur>;
 	  return __file_time{__t.time_since_epoch()} - _S_epoch_diff;
 	}
 
       // For internal use only
       template<typename _Dur>
 	static
-	chrono::time_point<__sys_clock, _Dur>
+	chrono::time_point<__sys_clock, common_type_t<_Dur, chrono::seconds>>
 	_S_to_sys(const chrono::time_point<__file_clock, _Dur>& __t) noexcept
 	{
-	  using __sys_time = chrono::time_point<__sys_clock, _Dur>;
+	  using _CDur = common_type_t<_Dur, chrono::seconds>;
+	  using __sys_time = chrono::time_point<__sys_clock, _CDur>;
 	  return __sys_time{__t.time_since_epoch()} + _S_epoch_diff;
 	}
     };
