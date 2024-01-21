@@ -7598,6 +7598,8 @@ This warning is enabled by @option{-Wall}.
 @opindex Wno-unused-parameter
 @item -Wunused-parameter
 Warn whenever a function parameter is unused aside from its declaration.
+This option is not enabled by @code{-Wunused} unless @code{-Wextra} is also
+specified.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
@@ -7624,25 +7626,26 @@ To suppress this warning use the @code{unused} attribute
 @item -Wunused-const-variable
 @itemx -Wunused-const-variable=@var{n}
 Warn whenever a constant static variable is unused aside from its declaration.
-@option{-Wunused-const-variable=1} is enabled by @option{-Wunused-variable}
-for C, but not for C++. In C this declares variable storage, but in C++ this
-is not an error since const variables take the place of @code{#define}s.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
 @table @gcctabopt
 @item -Wunused-const-variable=1
-This is the warning level that is enabled by @option{-Wunused-variable} for
-C.  It warns only about unused static const variables defined in the main
+Warn about unused static const variables defined in the main
 compilation unit, but not about static const variables declared in any
 header included.
 
+@option{-Wunused-const-variable=1} is enabled by either
+@option{-Wunused-variable} or @option{-Wunused} for C, but not for
+C++. In C this declares variable storage, but in C++ this is not an
+error since const variables take the place of @code{#define}s.
+
 @item -Wunused-const-variable=2
 This warning level also warns for unused constant static variables in
-headers (excluding system headers).  This is the warning level of
-@option{-Wunused-const-variable} and must be explicitly requested since
-in C++ this isn't an error and in C it might be harder to clean up all
+headers (excluding system headers).  It is equivalent to the short form
+@option{-Wunused-const-variable}.  This level must be explicitly
+requested in both C and C++ because it might be hard to clean up all
 headers included.
 @end table
 
@@ -7661,11 +7664,16 @@ This warning is enabled by @option{-Wall}.
 @opindex Wunused
 @opindex Wno-unused
 @item -Wunused
-All the above @option{-Wunused} options combined.
+All the above @option{-Wunused} options combined, except those documented
+as needing to be specified explicitly.
 
 In order to get a warning about an unused function parameter, you must
 either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
-@option{-Wunused}), or separately specify @option{-Wunused-parameter}.
+@option{-Wunused}), or separately specify @option{-Wunused-parameter} and/or
+@option{-Wunused-but-set-parameter}.
+
+@option{-Wunused} enables only @option{-Wunused-const-variable=1} rather than
+@option{-Wunused-const-variable}, and only for C, not C++.
 
 @opindex Wuse-after-free
 @opindex Wno-use-after-free
