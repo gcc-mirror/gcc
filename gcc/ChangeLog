@@ -1,3 +1,35 @@
+2024-01-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/102998
+	* doc/invoke.texi (Option Summary): Add -Warray-parameter.
+	(Warning Options): Correct/edit discussion of -Warray-parameter
+	to make the first example less confusing, and fill in missing info.
+
+2024-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113462
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast):
+	Handle rhs1 INTEGER_CST like SSA_NAME.
+
+2024-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113491
+	* tree-switch-conversion.cc (switch_conversion::build_constructors):
+	If elt.index has precision higher than sizetype, fold_convert it to
+	sizetype.
+	(switch_conversion::array_value_type): Return type if type is
+	BITINT_TYPE with precision above MAX_FIXED_MODE_SIZE or with BLKmode.
+	(switch_conversion::build_arrays): Use unsigned_type_for rather than
+	lang_hooks.types.type_for_mode if utype is BITINT_TYPE with precision
+	above MAX_FIXED_MODE_SIZE or with BLKmode.  If utype has precision
+	higher than sizetype, use sizetype as tidx type and fold_convert the
+	subtraction to sizetype.
+
+2024-01-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_init_cumulative_args): Suppress warning.
+	(riscv_vector_mode_supported_any_target_p): Ditto.
+
 2024-01-19  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	PR target/110934

@@ -1,3 +1,9 @@
+2024-01-20  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/48776
+	PR fortran/111291
+	* parse.cc: Restore current interface to its previous value on error.
+
 2024-01-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/113471

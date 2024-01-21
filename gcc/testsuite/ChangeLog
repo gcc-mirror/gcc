@@ -1,3 +1,40 @@
+2024-01-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/ipa/iinline-4.c: Remove dg-final xfail for
+	32-bit hppa*-*-*.
+	* gcc.dg/ipa/inline-5.c: Likewise.
+	* gcc.dg/ipa/ipcp-cstagg-7.c: Likewise.
+	* gcc.dg/tree-ssa/vector-4.c: Likewise.
+
+2024-01-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/slsr-13.c: xfail scan-tree-dump-times
+	checks on hppa*64*-*-*.
+
+2024-01-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/torture/pr110422.c: Require target lra.
+
+2024-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111410
+	* g++.dg/warn/Wdangling-reference17.C: New test.
+
+2024-01-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR ipa/110705
+	* gcc.c-torture/compile/pr110705-1.c: New test.
+
+2024-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113462
+	* gcc.dg/bitint-76.c: New test.
+
+2024-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113491
+	* gcc.dg/torture/bitint-51.c: New test.
+
 2024-01-19  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	PR target/110934
