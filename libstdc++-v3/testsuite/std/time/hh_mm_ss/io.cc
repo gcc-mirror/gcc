@@ -35,9 +35,31 @@ test_ostream()
     VERIFY( out.str() == "18:15:45.123" );
   }
 
-  ostringstream out;
-  out << hh_mm_ss{65745s};
-  VERIFY( out.str() == "18:15:45" );
+  {
+    ostringstream out;
+    out << hh_mm_ss{65745s};
+    VERIFY( out.str() == "18:15:45" );
+  }
+
+  {
+    ostringstream out;
+    out << hh_mm_ss{0.020s};
+    // hh_mm_ss<duration<long double>>::fractional_width == 0 so no subseconds:
+    VERIFY( out.str() == "00:00:00" );
+  }
+
+  {
+    ostringstream out;
+    out << hh_mm_ss<std::chrono::duration<long double, std::nano>>{0.020s};
+    // hh_mm_ss<duration<long double, nano>>::fractional_width == 9:
+    VERIFY( out.str() == "00:00:00.020000000" );
+  }
+
+  {
+    ostringstream out;
+    out << hh_mm_ss{65745s + 20ms};
+    VERIFY( out.str() == "18:15:45.020" );
+  }
 }
 
 void

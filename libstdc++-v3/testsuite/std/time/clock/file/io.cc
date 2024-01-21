@@ -18,6 +18,23 @@ test_ostream()
 }
 
 void
+test_format()
+{
+  using namespace std::chrono;
+  auto t = file_clock::now();
+
+  auto s = std::format("{}", t);
+  std::ostringstream ss;
+  ss << t;
+  VERIFY( s == ss.str() );
+
+  // PR libstdc++/113500
+  auto ft = clock_cast<file_clock>(sys_days(2024y/January/21)) + 0ms + 2.5s;
+  s = std::format("{}", ft);
+  VERIFY( s == "2024-01-17 00:00:02.500");
+}
+
+void
 test_parse()
 {
   using namespace std::chrono;
