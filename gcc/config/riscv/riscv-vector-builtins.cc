@@ -4341,22 +4341,20 @@ registered_function::overloaded_hash () const
 					 : TYPE_UNSIGNED (type);
       mode_p = POINTER_TYPE_P (type) ? TYPE_MODE (TREE_TYPE (type))
 				     : TYPE_MODE (type);
-      h.add_int (unsigned_p);
-      h.add_int (mode_p);
+      if (POINTER_TYPE_P (type) || lookup_vector_type_attribute (type))
+	{
+	  h.add_int (unsigned_p);
+	  h.add_int (mode_p);
+	}
+      else if (instance.base->may_require_vxrm_p ()
+	       || instance.base->may_require_frm_p ())
+	{
+	  h.add_int (argument_types.length ());
+	  break;
+	}
     }
 
   return h.end ();
-}
-
-bool
-has_vxrm_or_frm_p (function_instance &instance, const vec<tree, va_gc> &arglist)
-{
-  if (instance.base->may_require_vxrm_p ()
-      || (instance.base->may_require_frm_p ()
-	  && (TREE_CODE (TREE_TYPE (arglist[arglist.length () - 2]))
-	      == INTEGER_TYPE)))
-    return true;
-  return false;
 }
 
 hashval_t
@@ -4366,68 +4364,8 @@ registered_function::overloaded_hash (const vec<tree, va_gc> &arglist)
   unsigned int len = arglist.length ();
 
   for (unsigned int i = 0; i < len; i++)
-    {
-      /* vint8m1_t __riscv_vget_i8m1(vint8m2_t src, size_t index);
-	     When the user calls vget intrinsic, the __riscv_vget_i8m1(src, 1)
-       form is used. The compiler recognizes that the parameter index is signed
-       int, which is inconsistent with size_t, so the index is converted to
-       size_t type in order to get correct hash value. vint8m2_t
-       __riscv_vset(vint8m2_t dest, size_t index, vint8m1_t value); The reason
-       is the same as above. */
-      if ((instance.base == bases::vget && (i == (len - 1)))
-	  || ((instance.base == bases::vset
-               || instance.shape == shapes::crypto_vi)
-             && (i == (len - 2))))
-	argument_types.safe_push (size_type_node);
-      /* Vector fixed-point arithmetic instructions requiring argument vxrm.
-	     For example: vuint32m4_t __riscv_vaaddu(vuint32m4_t vs2,
-      vuint32m4_t vs1, unsigned int vxrm, size_t vl); The user calls vaaddu
-      intrinsic in the form of __riscv_vaaddu(vs2, vs1, 2, vl). The compiler
-      recognizes that the parameter vxrm is a signed int, which is inconsistent
-      with the parameter unsigned int vxrm declared by intrinsic, so the
-      parameter vxrm is converted to an unsigned int type in order to get
-      correct hash value.
+    argument_types.safe_push (TREE_TYPE (arglist[i]));
 
-      Vector Floating-Point Instructions requiring argument frm.
-      DEF_RVV_FUNCTION (vfadd, alu, full_preds, f_vvv_ops)
-      DEF_RVV_FUNCTION (vfadd_frm, alu_frm, full_preds, f_vvv_ops)
-      Taking vfadd as an example, theoretically we can add base or shape to the
-      hash value to distinguish whether the frm parameter is required.
-      vfloat32m1_t __riscv_vfadd(vfloat32m1_t vs2, float32_t rs1, size_t vl);
-      vfloat32m1_t __riscv_vfadd(vfloat32m1_t vs2, vfloat32m1_t vs1, unsigned int
-      frm, size_t vl);
-
-	    However, the current registration mechanism of overloaded intinsic for gcc
-      limits the intrinsic obtained by entering the hook to always be vfadd, not
-      vfadd_frm. Therefore, the correct hash value cannot be obtained through the
-      parameter list and overload name, base or shape.
-      +--------+---------------------------+-------------------+
-      | index  | name                      | kind              |
-      +--------+---------------------------+-------------------+
-      | 124733 | __riscv_vfadd             | Overloaded        | <- Hook fun code
-      +--------+---------------------------+-------------------+
-      | 124735 |  __riscv_vfadd_vv_f32m1   | Non-overloaded    |
-      +--------+---------------------------+-------------------+
-      | 124737 | __riscv_vfadd             | Placeholder       |
-      +--------+---------------------------+-------------------+
-      | ...                                                    |
-      +--------+---------------------------+-------------------+
-      | ...                                                    |
-      +--------+---------------------------+-------------------+
-      | 125739 | __riscv_vfadd             | Overloaded        |
-      +--------+---------------------------+-------------------+
-      | 125741 | __riscv_vfadd_vv_f32m1_rm | Non-overloaded    |
-      +--------+---------------------------+-------------------+
-      | 125743 | __riscv_vfadd             | Placeholder       |
-      +--------+---------------------------+-------------------+
-
-	    Therefore, the hash value cannot be added with base or shape, and needs
-      to be distinguished by whether the penultimate parameter is INTEGER_TYPE. */
-      else if (has_vxrm_or_frm_p (instance, arglist) && (i == (len - 2)))
-	argument_types.safe_push (unsigned_type_node);
-      else
-	argument_types.safe_push (TREE_TYPE (arglist[i]));
-    }
   return overloaded_hash ();
 }
 
@@ -4681,8 +4619,9 @@ resolve_overloaded_builtin (unsigned int code, vec<tree, va_gc> *arglist)
   hashval_t hash = rfun->overloaded_hash (*arglist);
   registered_function *rfn
     = non_overloaded_function_table->find_with_hash (rfun, hash);
-  gcc_assert (rfn);
-  return rfn->decl;
+  if (rfn)
+    return rfn->decl;
+  return NULL_TREE;
 }
 
 function_instance
