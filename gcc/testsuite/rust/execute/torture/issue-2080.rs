@@ -1,4 +1,4 @@
-// { dg-output "hello world: gccrs\n" }
+// { dg-output "hello world: gccrs\r*\n" }
 // { dg-additional-options "-w" }
 static TEST_1: &str = "gccrs";
 static TEST_2: i32 = 123;
