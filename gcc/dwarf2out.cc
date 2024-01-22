@@ -32191,24 +32191,12 @@ dwarf2out_finish (const char *filename)
       reset_dies (comp_unit_die ());
       for (limbo_die_node *node = cu_die_list; node; node = node->next)
 	reset_dies (node->die);
-
-      hash_table<comdat_type_hasher> comdat_type_table (100);
       for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
 	{
-	  comdat_type_node **slot
-	      = comdat_type_table.find_slot (ctnode, INSERT);
-
-	  /* Don't reset types twice.  */
-	  if (*slot != HTAB_EMPTY_ENTRY)
-	    continue;
-
 	  /* Remove the pointer to the line table.  */
 	  remove_AT (ctnode->root_die, DW_AT_stmt_list);
-
 	  if (debug_info_level >= DINFO_LEVEL_TERSE)
 	    reset_dies (ctnode->root_die);
-
-	  *slot = ctnode;
 	}
 
       /* Reset die CU symbol so we don't output it twice.  */
