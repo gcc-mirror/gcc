@@ -31,7 +31,7 @@ test_format()
   // PR libstdc++/113500
   auto ft = clock_cast<file_clock>(sys_days(2024y/January/21)) + 0ms + 2.5s;
   s = std::format("{}", ft);
-  VERIFY( s == "2024-01-17 00:00:02.500");
+  VERIFY( s == "2024-01-21 00:00:02.500");
 }
 
 void
@@ -54,5 +54,6 @@ test_parse()
 int main()
 {
   test_ostream();
+  test_format();
   test_parse();
 }
