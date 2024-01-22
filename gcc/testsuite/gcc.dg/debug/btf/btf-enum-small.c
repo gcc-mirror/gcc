@@ -1,7 +1,7 @@
 /* Test BTF generation for small enums.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -gbtf -dA" } */
+/* { dg-options "-O2 -gbtf -gno-strict-dwarf -dA" } */
 
 /* { dg-final { scan-assembler-not "bte_value_lo32" } } */
 /* { dg-final { scan-assembler-not "bte_value_hi32" } } */
