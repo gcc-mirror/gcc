@@ -6202,27 +6202,37 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 @option{-Wall} turns on the following warning flags:
 
 @gccoptlist{-Waddress
+-Waligned-new @r{(C++ and Objective-C++ only)}
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}
 -Warray-compare
--Warray-parameter=2 @r{(C and Objective-C only)}
+-Warray-parameter=2
 -Wbool-compare
 -Wbool-operation
--Wc++11-compat  -Wc++14-compat
+-Wc++11-compat  -Wc++14-compat  -Wc++17compat  -Wc++20compat
 -Wcatch-value @r{(C++ and Objective-C++ only)}
 -Wchar-subscripts
+-Wclass-memaccess @r{(C++ and Objective-C++ only)}
 -Wcomment
+-Wdangling-else
 -Wdangling-pointer=2
+-Wdelete-non-virtual-dtor @r{(C++ and Objective-C++ only)}
 -Wduplicate-decl-specifier @r{(C and Objective-C only)}
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)}
 -Wenum-int-mismatch @r{(C and Objective-C only)}
--Wformat
--Wformat-overflow
--Wformat-truncation
--Wint-in-bool-context
+-Wformat=1
+-Wformat-contains-nul
+-Wformat-diag
+-Wformat-extra-args
+-Wformat-overflow=1
+-Wformat-truncation=1
+-Wformat-zero-length
+-Wframe-address
 -Wimplicit @r{(C and Objective-C only)}
--Wimplicit-int @r{(C and Objective-C only)}
 -Wimplicit-function-declaration @r{(C and Objective-C only)}
--Winit-self @r{(only for C++)}
+-Wimplicit-int @r{(C and Objective-C only)}
+-Winfinite-recursion
+-Winit-self @r{(C++ and Objective-C++ only)}
+-Wint-in-bool-context
 -Wlogical-not-parentheses
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}
 -Wmaybe-uninitialized
@@ -6230,24 +6240,26 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wmemset-transposed-args
 -Wmisleading-indentation @r{(only for C/C++)}
 -Wmismatched-dealloc
--Wmismatched-new-delete @r{(only for C/C++)}
+-Wmismatched-new-delete @r{(C++ and Objective-C++ only)}
 -Wmissing-attributes
 -Wmissing-braces @r{(only for C/ObjC)}
 -Wmultistatement-macros
--Wnarrowing @r{(only for C++)}
+-Wnarrowing  @r{(C++ and Objective-C++ only)}
 -Wnonnull
 -Wnonnull-compare
--Wopenmp-simd
+-Wopenmp-simd @r{(C and C++ only)}
+-Woverloaded-virtual=1 @r{(C++ and Objective-C++ only)}
+-Wpacked-not-aligned
 -Wparentheses
--Wpessimizing-move @r{(only for C++)}
--Wpointer-sign
--Wrange-loop-construct @r{(only for C++)}
--Wreorder
+-Wpessimizing-move @r{(C++ and Objective-C++ only)}
+-Wpointer-sign @r{(only for C/ObjC)}
+-Wrange-loop-construct @r{(C++ and Objective-C++ only)}
+-Wreorder @r{(C++ and Objective-C++ only)}
 -Wrestrict
 -Wreturn-type
--Wself-move @r{(only for C++)}
+-Wself-move @r{(C++ and Objective-C++ only)}
 -Wsequence-point
--Wsign-compare @r{(only in C++)}
+-Wsign-compare @r{(C++ and Objective-C++ only)}
 -Wsizeof-array-div
 -Wsizeof-pointer-div
 -Wsizeof-pointer-memaccess
@@ -6258,12 +6270,16 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wtrigraphs
 -Wuninitialized
 -Wunknown-pragmas
+-Wunused
+-Wunused-but-set-variable
+-Wunused-const-variable=1 @r{(only for C/ObjC)}
 -Wunused-function
 -Wunused-label
+-Wunused-local-typedefs
 -Wunused-value
 -Wunused-variable
 -Wuse-after-free=2
--Wvla-parameter @r{(C and Objective-C only)}
+-Wvla-parameter
 -Wvolatile-register-var
 -Wzero-length-bounds}
 
@@ -6283,26 +6299,31 @@ This enables some extra warning flags that are not enabled by
 @option{-Wall}. (This option used to be called @option{-W}.  The older
 name is still supported, but the newer name is more descriptive.)
 
-@gccoptlist{-Wclobbered
+@gccoptlist{-Wabsolute-value @r{(only for C/ObjC)}
+-Walloc-size
+-Wcalloc-transposed-args
 -Wcast-function-type
--Wdeprecated-copy @r{(C++ only)}
+-Wclobbered
+-Wdeprecated-copy @r{(C++ and Objective-C++ only)}
 -Wempty-body
--Wenum-conversion @r{(C only)}
--Wignored-qualifiers
+-Wenum-conversion @r{(only for C/ObjC)}
+-Wexpansion-to-defined
+-Wignored-qualifiers  @r{(only for C/C++)}
 -Wimplicit-fallthrough=3
+-Wmaybe-uninitialized
 -Wmissing-field-initializers
--Wmissing-parameter-type @r{(C only)}
--Wold-style-declaration @r{(C only)}
--Woverride-init
--Wsign-compare @r{(C only)}
+-Wmissing-parameter-type @r{(C/ObjC only)}
+-Wold-style-declaration @r{(C/ObjC only)}
+-Woverride-init @r{(C/ObjC only)}
+-Wredundant-move @r{(C++ and Objective-C++ only)}
+-Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}
+-Wsign-compare @r{(C++ and Objective-C++ only)}
+-Wsized-deallocation @r{(C++ and Objective-C++ only)}
 -Wstring-compare
--Wredundant-move @r{(only for C++)}
 -Wtype-limits
 -Wuninitialized
--Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}}
-
 
 The option @option{-Wextra} also prints warning messages for the
 following cases:
