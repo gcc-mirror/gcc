@@ -1,4 +1,4 @@
-// { dg-output "1\n2\n" }
+// { dg-output "1\r*\n2\r*\n" }
 #![feature(intrinsics)]
 
 pub use option::Option::{self, None, Some};
