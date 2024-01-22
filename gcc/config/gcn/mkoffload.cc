@@ -124,7 +124,7 @@ static const char *gcn_dumpbase;
 static struct obstack files_to_cleanup;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
-uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX803;  // Default GPU architecture.
+uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX900;  // Default GPU architecture.
 uint32_t elf_flags = EF_AMDGPU_FEATURE_SRAMECC_ANY_V4;
 
 static int gcn_stack_size = 0;  /* Zero means use default.  */
@@ -154,7 +154,7 @@ maybe_unlink (const char *file)
   if (!save_temps)
     {
       if (unlink_if_ordinary (file) && errno != ENOENT)
-	fatal_error (input_location, "deleting file %s: %m", file);
+	fatal_error (input_location, "deleting file %qs: %m", file);
     }
   else if (verbose)
     fprintf (stderr, "[Leaving %s]\n", file);
@@ -320,10 +320,7 @@ copy_early_debug_info (const char *infile, const char *outfile)
 
   errmsg = simple_object_copy_lto_debug_sections (inobj, outfile, &err, true);
   if (errmsg)
-    {
-      unlink_if_ordinary (outfile);
-      return false;
-    }
+    return false;
 
   simple_object_release_read (inobj);
   close (infd);
@@ -804,7 +801,7 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
   const char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
   if (!collect_gcc_options)
     fatal_error (input_location,
-		 "environment variable COLLECT_GCC_OPTIONS must be set");
+		 "environment variable %<COLLECT_GCC_OPTIONS%> must be set");
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
@@ -859,11 +856,11 @@ main (int argc, char **argv)
 
   obstack_init (&files_to_cleanup);
   if (atexit (mkoffload_cleanup) != 0)
-    fatal_error (input_location, "atexit failed");
+    fatal_error (input_location, "%<atexit%> failed");
 
   char *collect_gcc = getenv ("COLLECT_GCC");
   if (collect_gcc == NULL)
-    fatal_error (input_location, "COLLECT_GCC must be set.");
+    fatal_error (input_location, "%<COLLECT_GCC%> must be set");
   const char *gcc_path = dirname (ASTRDUP (collect_gcc));
   const char *gcc_exec = basename (ASTRDUP (collect_gcc));
 
@@ -909,7 +906,7 @@ main (int argc, char **argv)
 
   if (!found)
     fatal_error (input_location,
-		 "offload compiler %s not found", GCC_INSTALL_NAME);
+		 "offload compiler %qs not found", GCC_INSTALL_NAME);
 
   /* We may be called with all the arguments stored in some file and
      passed with @file.  Expand them into argv before processing.  */
@@ -931,7 +928,7 @@ main (int argc, char **argv)
 	    offload_abi = OFFLOAD_ABI_ILP32;
 	  else
 	    fatal_error (input_location,
-			 "unrecognizable argument of option " STR);
+			 "unrecognizable argument of option %<" STR "%>");
 	}
 #undef STR
       else if (strcmp (argv[i], "-fopenmp") == 0)
@@ -994,7 +991,8 @@ main (int argc, char **argv)
     }
 
   if (!(fopenacc ^ fopenmp))
-    fatal_error (input_location, "either -fopenacc or -fopenmp must be set");
+    fatal_error (input_location,
+		 "either %<-fopenacc%> or %<-fopenmp%> must be set");
 
   const char *abi;
   switch (offload_abi)
@@ -1066,7 +1064,7 @@ main (int argc, char **argv)
 
   cfile = fopen (gcn_cfile_name, "w");
   if (!cfile)
-    fatal_error (input_location, "cannot open '%s'", gcn_cfile_name);
+    fatal_error (input_location, "cannot open %qs", gcn_cfile_name);
 
   /* Currently, we only support offloading in 64-bit configurations.  */
   if (offload_abi == OFFLOAD_ABI_LP64)
@@ -1130,7 +1128,6 @@ main (int argc, char **argv)
 		    }
 		  else
 		    dbgobj = make_temp_file (".mkoffload.dbg.o");
-		  obstack_ptr_grow (&files_to_cleanup, dbgobj);
 
 		  /* If the copy fails then just ignore it.  */
 		  if (copy_early_debug_info (argv[ix], dbgobj))
@@ -1139,7 +1136,10 @@ main (int argc, char **argv)
 		      obstack_ptr_grow (&files_to_cleanup, dbgobj);
 		    }
 		  else
-		    free (dbgobj);
+		    {
+		      maybe_unlink (dbgobj);
+		      free (dbgobj);
+		    }
 		}
 	    }
 	}
@@ -1214,7 +1214,7 @@ main (int argc, char **argv)
 
       out = fopen (gcn_s2_name, "w");
       if (!out)
-	fatal_error (input_location, "cannot open '%s'", gcn_s2_name);
+	fatal_error (input_location, "cannot open %qs", gcn_s2_name);
 
       process_asm (in, out, cfile);
 
