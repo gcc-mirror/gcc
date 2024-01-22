@@ -1977,8 +1977,15 @@
 	  (match_operand:V_VLS 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
 {
+  /* Transform vmv.v.x/vfmv.v.f (avl = 1) into vmv.s.x since vmv.s.x/vfmv.s.f
+     has better chances to do vsetvl fusion in vsetvl pass.  */
+  if (riscv_vector::splat_to_scalar_move_p (operands))
+    {
+      operands[1] = riscv_vector::gen_scalar_move_mask (<VM>mode);
+      operands[3] = force_reg (<VEL>mode, operands[3]);
+    }
   /* Handle vmv.s.x instruction (Wb1 mask) which has memory scalar.  */
-  if (satisfies_constraint_Wdm (operands[3]))
+  else if (satisfies_constraint_Wdm (operands[3]))
     {
       if (satisfies_constraint_Wb1 (operands[1]))
 	{

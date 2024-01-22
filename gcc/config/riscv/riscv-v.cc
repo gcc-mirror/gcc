@@ -5151,4 +5151,16 @@ whole_reg_to_reg_move_p (rtx *ops, machine_mode mode, int avl_type_index)
   return false;
 }
 
+/* Return true if we can transform vmv.v.x/vfmv.v.f to vmv.s.x/vfmv.s.f.  */
+bool
+splat_to_scalar_move_p (rtx *ops)
+{
+  return satisfies_constraint_Wc1 (ops[1])
+	 && satisfies_constraint_vu (ops[2])
+	 && !MEM_P (ops[3])
+	 && satisfies_constraint_c01 (ops[4])
+	 && INTVAL (ops[7]) == NONVLMAX
+	 && known_ge (GET_MODE_SIZE (Pmode), GET_MODE_SIZE (GET_MODE (ops[3])));
+}
+
 } // namespace riscv_vector
