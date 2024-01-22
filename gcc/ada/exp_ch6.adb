@@ -157,22 +157,22 @@ package body Exp_Ch6 is
       Function_Id    : Entity_Id;
       Alloc_Form     : BIP_Allocation_Form := Unspecified;
       Alloc_Form_Exp : Node_Id             := Empty;
-      Pool_Actual    : Node_Id             := Make_Null (No_Location));
+      Pool_Exp       : Node_Id             := Empty);
    --  Ada 2005 (AI-318-02): If the result type of a build-in-place call needs
    --  them, add the actuals parameters BIP_Alloc_Form and BIP_Storage_Pool.
    --  If Alloc_Form_Exp is present, then pass it for the first parameter,
    --  otherwise pass a literal corresponding to the Alloc_Form parameter
-   --  (which must not be Unspecified in that case). Pool_Actual is the
-   --  parameter to pass to BIP_Storage_Pool.
+   --  (which must not be Unspecified in that case). If Pool_Exp is present,
+   --  then use it for BIP_Storage_Pool, otherwise pass "null".
 
    procedure Add_Finalization_Master_Actual_To_Build_In_Place_Call
-     (Func_Call  : Node_Id;
-      Func_Id    : Entity_Id;
-      Ptr_Typ    : Entity_Id := Empty;
-      Master_Exp : Node_Id   := Empty);
+     (Function_Call : Node_Id;
+      Function_Id   : Entity_Id;
+      Ptr_Typ       : Entity_Id := Empty;
+      Master_Exp    : Node_Id   := Empty);
    --  Ada 2005 (AI-318-02): If the result type of a build-in-place call needs
    --  finalization actions, add an actual parameter which is a pointer to the
-   --  finalization master of the caller. If Master_Exp is not Empty, then that
+   --  finalization master of the caller. If Master_Exp is present, then that
    --  will be passed as the actual. Otherwise, if Ptr_Typ is left Empty, this
    --  will result in an automatic "null" value for the actual.
 
@@ -424,13 +424,12 @@ package body Exp_Ch6 is
       Function_Id    : Entity_Id;
       Alloc_Form     : BIP_Allocation_Form := Unspecified;
       Alloc_Form_Exp : Node_Id             := Empty;
-      Pool_Actual    : Node_Id             := Make_Null (No_Location))
+      Pool_Exp       : Node_Id             := Empty)
    is
       Loc : constant Source_Ptr := Sloc (Function_Call);
 
       Alloc_Form_Actual : Node_Id;
       Alloc_Form_Formal : Node_Id;
-      Pool_Formal       : Node_Id;
 
    begin
       --  Nothing to do when the size of the object is known, and the caller is
@@ -472,10 +471,16 @@ package body Exp_Ch6 is
       --  those targets do not support pools.
 
       if RTE_Available (RE_Root_Storage_Pool_Ptr) then
-         Pool_Formal := Build_In_Place_Formal (Function_Id, BIP_Storage_Pool);
-         Analyze_And_Resolve (Pool_Actual, Etype (Pool_Formal));
-         Add_Extra_Actual_To_Call
-           (Function_Call, Pool_Formal, Pool_Actual);
+         declare
+            Pool_Actual : constant Node_Id :=
+              (if Present (Pool_Exp) then Pool_Exp else Make_Null (Loc));
+            Pool_Formal : constant Node_Id :=
+              Build_In_Place_Formal (Function_Id, BIP_Storage_Pool);
+
+         begin
+            Analyze_And_Resolve (Pool_Actual, Etype (Pool_Formal));
+            Add_Extra_Actual_To_Call (Function_Call, Pool_Formal, Pool_Actual);
+         end;
       end if;
    end Add_Unconstrained_Actuals_To_Build_In_Place_Call;
 
@@ -484,92 +489,88 @@ package body Exp_Ch6 is
    -----------------------------------------------------------
 
    procedure Add_Finalization_Master_Actual_To_Build_In_Place_Call
-     (Func_Call  : Node_Id;
-      Func_Id    : Entity_Id;
-      Ptr_Typ    : Entity_Id := Empty;
-      Master_Exp : Node_Id   := Empty)
+     (Function_Call : Node_Id;
+      Function_Id   : Entity_Id;
+      Ptr_Typ       : Entity_Id := Empty;
+      Master_Exp    : Node_Id   := Empty)
    is
+      Loc : constant Source_Ptr := Sloc (Function_Call);
+
+      Actual    : Node_Id;
+      Formal    : Node_Id;
+      Desig_Typ : Entity_Id;
+
    begin
-      if not Needs_BIP_Finalization_Master (Func_Id) then
+      if not Needs_BIP_Finalization_Master (Function_Id) then
          return;
       end if;
 
-      declare
-         Formal : constant Entity_Id :=
-                    Build_In_Place_Formal (Func_Id, BIP_Finalization_Master);
-         Loc    : constant Source_Ptr := Sloc (Func_Call);
+      Formal := Build_In_Place_Formal (Function_Id, BIP_Finalization_Master);
 
-         Actual    : Node_Id;
-         Desig_Typ : Entity_Id;
+      --  If there is a finalization master actual, such as the implicit
+      --  finalization master of an enclosing build-in-place function,
+      --  then this must be added as an extra actual of the call.
 
-      begin
-         pragma Assert (Present (Formal));
+      if Present (Master_Exp) then
+         Actual := Master_Exp;
 
-         --  If there is a finalization master actual, such as the implicit
-         --  finalization master of an enclosing build-in-place function,
-         --  then this must be added as an extra actual of the call.
+      --  Case where the context does not require an actual master
 
-         if Present (Master_Exp) then
-            Actual := Master_Exp;
+      elsif No (Ptr_Typ) then
+         Actual := Make_Null (Loc);
 
-         --  Case where the context does not require an actual master
+      else
+         Desig_Typ := Directly_Designated_Type (Ptr_Typ);
 
-         elsif No (Ptr_Typ) then
+         --  Check for a library-level access type whose designated type has
+         --  suppressed finalization or the access type is subject to pragma
+         --  No_Heap_Finalization. Such an access type lacks a master. Pass
+         --  a null actual to callee in order to signal a missing master.
+
+         if Is_Library_Level_Entity (Ptr_Typ)
+           and then (Finalize_Storage_Only (Desig_Typ)
+                      or else No_Heap_Finalization (Ptr_Typ))
+         then
             Actual := Make_Null (Loc);
 
-         else
-            Desig_Typ := Directly_Designated_Type (Ptr_Typ);
+         --  Types in need of finalization actions
 
-            --  Check for a library-level access type whose designated type has
-            --  suppressed finalization or the access type is subject to pragma
-            --  No_Heap_Finalization. Such an access type lacks a master. Pass
-            --  a null actual to callee in order to signal a missing master.
+         elsif Needs_Finalization (Desig_Typ) then
 
-            if Is_Library_Level_Entity (Ptr_Typ)
-              and then (Finalize_Storage_Only (Desig_Typ)
-                         or else No_Heap_Finalization (Ptr_Typ))
+            --  The general mechanism of creating finalization masters for
+            --  anonymous access types is disabled by default, otherwise
+            --  finalization masters will pop all over the place. Such types
+            --  use context-specific masters.
+
+            if Ekind (Ptr_Typ) = E_Anonymous_Access_Type
+              and then No (Finalization_Master (Ptr_Typ))
             then
-               Actual := Make_Null (Loc);
-
-            --  Types in need of finalization actions
-
-            elsif Needs_Finalization (Desig_Typ) then
-
-               --  The general mechanism of creating finalization masters for
-               --  anonymous access types is disabled by default, otherwise
-               --  finalization masters will pop all over the place. Such types
-               --  use context-specific masters.
-
-               if Ekind (Ptr_Typ) = E_Anonymous_Access_Type
-                 and then No (Finalization_Master (Ptr_Typ))
-               then
-                  Build_Anonymous_Master (Ptr_Typ);
-               end if;
-
-               --  Access-to-controlled types should always have a master
-
-               pragma Assert (Present (Finalization_Master (Ptr_Typ)));
-
-               Actual :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix =>
-                     New_Occurrence_Of (Finalization_Master (Ptr_Typ), Loc),
-                   Attribute_Name => Name_Unrestricted_Access);
-
-            --  Tagged types
-
-            else
-               Actual := Make_Null (Loc);
+               Build_Anonymous_Master (Ptr_Typ);
             end if;
+
+            --  Access-to-controlled types should always have a master
+
+            pragma Assert (Present (Finalization_Master (Ptr_Typ)));
+
+            Actual :=
+              Make_Attribute_Reference (Loc,
+                Prefix =>
+                  New_Occurrence_Of (Finalization_Master (Ptr_Typ), Loc),
+                Attribute_Name => Name_Unrestricted_Access);
+
+         --  Tagged types
+
+         else
+            Actual := Make_Null (Loc);
          end if;
+      end if;
 
-         Analyze_And_Resolve (Actual, Etype (Formal));
+      Analyze_And_Resolve (Actual, Etype (Formal));
 
-         --  Build the parameter association for the new actual and add it to
-         --  the end of the function's actuals.
+      --  Build the parameter association for the new actual and add it to
+      --  the end of the function's actuals.
 
-         Add_Extra_Actual_To_Call (Func_Call, Formal, Actual);
-      end;
+      Add_Extra_Actual_To_Call (Function_Call, Formal, Actual);
    end Add_Finalization_Master_Actual_To_Build_In_Place_Call;
 
    ------------------------------
@@ -8283,7 +8284,7 @@ package body Exp_Ch6 is
       Return_Obj_Access : Entity_Id; -- temp for function result
       Temp_Init         : Node_Id; -- initial value of Return_Obj_Access
       Alloc_Form        : BIP_Allocation_Form;
-      Pool              : Node_Id; -- nonnull if Alloc_Form = User_Storage_Pool
+      Pool_Actual       : Node_Id; -- Present if Alloc_Form = User_Storage_Pool
       Return_Obj_Actual : Node_Id; -- the temp.all, in caller-allocates case
       Chain             : Entity_Id; -- activation chain, in case of tasks
 
@@ -8358,12 +8359,12 @@ package body Exp_Ch6 is
 
          --  Case of a user-defined storage pool. Pass an allocation parameter
          --  indicating that the function should allocate its result in the
-         --  pool, and pass the pool. Use 'Unrestricted_Access because the
-         --  pool may not be aliased.
+         --  pool, and pass an access to the pool. Use 'Unrestricted_Access
+         --  because the pool may not be aliased.
 
          if Present (Associated_Storage_Pool (Acc_Type)) then
-            Alloc_Form := User_Storage_Pool;
-            Pool :=
+            Alloc_Form  := User_Storage_Pool;
+            Pool_Actual :=
               Make_Attribute_Reference (Loc,
                 Prefix         =>
                   New_Occurrence_Of
@@ -8374,8 +8375,8 @@ package body Exp_Ch6 is
          --  the function should allocate its result on the heap.
 
          else
-            Alloc_Form := Global_Heap;
-            Pool := Make_Null (No_Location);
+            Alloc_Form  := Global_Heap;
+            Pool_Actual := Empty;
          end if;
 
          --  The caller does not provide the return object in this case, so we
@@ -8423,8 +8424,8 @@ package body Exp_Ch6 is
 
          --  Indicate that caller allocates, and pass in the return object
 
-         Alloc_Form := Caller_Allocation;
-         Pool := Make_Null (No_Location);
+         Alloc_Form  := Caller_Allocation;
+         Pool_Actual := Empty;
          Return_Obj_Actual := Unchecked_Convert_To
            (Result_Subt,
             Make_Explicit_Dereference (Loc,
@@ -8500,13 +8501,18 @@ package body Exp_Ch6 is
       --  to functions with unconstrained result subtypes.
 
       Add_Unconstrained_Actuals_To_Build_In_Place_Call
-        (Func_Call, Function_Id, Alloc_Form, Pool_Actual => Pool);
+        (Func_Call,
+         Function_Id,
+         Alloc_Form => Alloc_Form,
+         Pool_Exp   => Pool_Actual);
 
       Add_Finalization_Master_Actual_To_Build_In_Place_Call
-        (Func_Call, Function_Id, Acc_Type);
+        (Func_Call, Function_Id, Ptr_Typ => Acc_Type);
 
       Add_Task_Actuals_To_Build_In_Place_Call
-        (Func_Call, Function_Id, Master_Actual => Master_Id (Acc_Type),
+        (Func_Call,
+         Function_Id,
+         Master_Actual => Master_Id (Acc_Type),
          Chain => Chain);
 
       --  Add an implicit actual to the function call that provides access
@@ -8822,7 +8828,7 @@ package body Exp_Ch6 is
       Caller_Object   : Node_Id;
       Def_Id          : Entity_Id;
       Designated_Type : Entity_Id;
-      Fmaster_Actual  : Node_Id := Empty;
+      Master_Actual   : Node_Id := Empty;
       Pool_Actual     : Node_Id;
       Ptr_Typ         : Entity_Id;
       Ptr_Typ_Decl    : Node_Id;
@@ -9004,7 +9010,7 @@ package body Exp_Ch6 is
                Alloc_Form_Exp =>
                  New_Occurrence_Of
                    (Build_In_Place_Formal (Encl_Func, BIP_Alloc_Form), Loc),
-               Pool_Actual    => Pool_Actual);
+               Pool_Exp       => Pool_Actual);
 
          --  Otherwise, if enclosing function has a definite result subtype,
          --  then caller allocation will be used.
@@ -9015,7 +9021,7 @@ package body Exp_Ch6 is
          end if;
 
          if Needs_BIP_Finalization_Master (Encl_Func) then
-            Fmaster_Actual :=
+            Master_Actual :=
               New_Occurrence_Of
                 (Build_In_Place_Formal
                    (Encl_Func, BIP_Finalization_Master), Loc);
@@ -9070,7 +9076,7 @@ package body Exp_Ch6 is
                For_Lib_Level  => True,
                Insertion_Node => Ptr_Typ_Decl);
 
-            Fmaster_Actual :=
+            Master_Actual :=
               Make_Attribute_Reference (Loc,
                 Prefix         =>
                   New_Occurrence_Of (Finalization_Master (Ptr_Typ), Loc),
@@ -9095,9 +9101,7 @@ package body Exp_Ch6 is
       --  enclosing build-in-place function.
 
       Add_Finalization_Master_Actual_To_Build_In_Place_Call
-        (Func_Call  => Func_Call,
-         Func_Id    => Function_Id,
-         Master_Exp => Fmaster_Actual);
+        (Func_Call, Function_Id, Master_Exp => Master_Actual);
 
       if Nkind (Parent (Obj_Decl)) = N_Extended_Return_Statement
         and then Needs_BIP_Task_Actuals (Function_Id)
