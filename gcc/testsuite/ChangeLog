@@ -1,3 +1,28 @@
+2024-01-21  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* gcc.target/riscv/cv-alu-fail-compile.c: Change warning to error.
+
+2024-01-21  Co-authored-by: Thorsten Otto  <admin@tho-otto.de>
+
+	PR target/82420
+	* gcc.target/m68k/pr82420.c: New test.
+
+2024-01-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/111267
+	* gcc.target/i386/pr111267.c: New test case.
+
+2024-01-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* gfortran.dg/optional_absent_9.f90: New test.
+
+2024-01-21  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113492
+	* gcc.dg/pr113492.c: New test.
+
 2024-01-20  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/ipa/iinline-4.c: Remove dg-final xfail for

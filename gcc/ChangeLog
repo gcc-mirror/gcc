@@ -1,3 +1,48 @@
+2024-01-21  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/82420
+	PR target/111279
+	* calls.cc (emit_library_call_value_1): Pass valid TYPE
+	to emit_push_insn.
+	* expr.cc (emit_push_insn): Likewise.
+
+2024-01-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_init_cumulative_args): Install
+	correcction version of last change.
+
+2024-01-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_init_cumulative_args): Update and
+	fix bugs in signature.
+
+2024-01-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/111267
+	* fwprop.cc (fwprop_propagation::profitabe_p): Rename
+	profitable_p method to likely_profitable_p.
+	(try_fwprop_subst_node): Update call to likely_profitable_p.
+	Only bail-out early when !prop.likely_profitable_p for instructions
+	that are not single sets.  When comparing costs, bail-out if the
+	cost is unchanged and !prop.likely_profitable_p.
+
+2024-01-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/90464
+	* doc/invoke.texi (Warning Options): Document that -Wunused-parameter
+	isn't enabled by -Wunused unless -Wextra is provided, and that
+	-Wunused does enable -Wunused-const-variable=1 for C.  Clarify that
+	-Wunused doesn't enable -Wunused-* options documented as behaving
+	otherwise, and list them explicitly.
+
+2024-01-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/109708
+	* doc/invoke.texi (Warning Options): Fix broken example and
+	clean up/reorganize the others.  Also describe what the short-form
+	options mean.
+
 2024-01-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR c/102998

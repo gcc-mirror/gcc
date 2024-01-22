@@ -1,3 +1,35 @@
+2024-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113500
+	* include/bits/chrono_io.h (__formatter_chrono::_M_S): Fix
+	printing of subseconds with floating-point rep.
+	(__formatter_chrono::_M_format_to_ostream): Do not write
+	time_point specializations directly to the ostream.
+	(formatter<chrono::sys_time<D>, C>::parse): Do not allow an
+	empty chrono-spec if the type fails to meet the constraints for
+	writing to an ostream with operator<<.
+	* testsuite/std/time/clock/file/io.cc: Check formatting
+	non-integral times with empty chrono-specs.
+	* testsuite/std/time/clock/gps/io.cc: Likewise.
+	* testsuite/std/time/clock/utc/io.cc: Likewise.
+	* testsuite/std/time/hh_mm_ss/io.cc: Likewise.
+
+2024-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (__file_clock::from_sys)
+	(__file_clock::to_sys, __file_clock::_S_from_sys)
+	(__file_clock::_S_to_sys): Use common_type for return type.
+	* testsuite/std/time/clock/file/members.cc: Check round trip
+	conversion for time with lower precision that seconds.
+
+2024-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113512
+	* include/std/format (__formatter_fp::format): Fix logic for
+	alternate forms.
+	* testsuite/std/format/functions/format.cc: Check buggy cases of
+	alternate forms with g presentation type.
+
 2024-01-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/111410

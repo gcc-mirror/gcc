@@ -1,3 +1,10 @@
+2024-01-21  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113492
+	* c-decl.cc (grokdeclarator): Use c_common_unsigned_type instead of
+	unsigned_type_for to create the unsigned type for bitfields declared
+	with int when using -funsigned-bitfields.
+
 2024-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/113315
