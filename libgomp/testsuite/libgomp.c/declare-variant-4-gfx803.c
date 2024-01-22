@@ -3,6 +3,8 @@
 /* { dg-additional-options -foffload=-march=fiji } */
 /* { dg-additional-options "-foffload=-fdump-tree-optimized" } */
 
+/* { dg-xfail-if "fiji/gfx803 is no longer enabled by default & deprectated in ROCm/LLVM/GCC" { *-*-* } } */
+
 #include "declare-variant-4.h"
 
 /* { dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-tree-dump "= gfx803 \\(\\);" "optimized" } } */
