@@ -1776,8 +1776,7 @@
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
   "TARGET_64BIT && !TARGET_ZBA && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
-   && !(register_operand (operands[1], SImode)
-        && reg_or_subregno (operands[1]) == VL_REGNUM)"
+   && !(REG_P (operands[1]) && VL_REG_P (REGNO (operands[1])))"
   "@
    #
    lwu\t%0,%1"
@@ -2214,8 +2213,7 @@
 	(match_operand:SI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f,vp"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
-    && !(register_operand (operands[1], SImode)
-         && reg_or_subregno (operands[1]) == VL_REGNUM)"
+    && !(REG_P (operands[1]) && VL_REG_P (REGNO (operands[1])))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fpstore,rdvlenb")
    (set_attr "mode" "SI")
