@@ -1682,77 +1682,60 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	    }
 
 	  /* Create the merge PHI nodes in new_preheader and populate the
-	     arguments for the main exit.  */
-	  for (auto gsi_from = gsi_start_phis (loop->header),
-	       gsi_to = gsi_start_phis (new_loop->header);
-	       !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
-	       gsi_next (&gsi_from), gsi_next (&gsi_to))
+	     arguments for the exits.  */
+	  if (multiple_exits_p)
 	    {
-	      gimple *from_phi = gsi_stmt (gsi_from);
-	      gimple *to_phi = gsi_stmt (gsi_to);
-	      tree new_arg = PHI_ARG_DEF_FROM_EDGE (from_phi,
-						    loop_latch_edge (loop));
-
-	      /* Check if we've already created a new phi node during edge
-		 redirection.  If we have, only propagate the value
-		 downwards in case there is no merge block.  */
-	      tree *res;
-	      if ((res = new_phi_args.get (new_arg)))
+	      for (auto gsi_from = gsi_start_phis (loop->header),
+		   gsi_to = gsi_start_phis (new_loop->header);
+		   !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
+		   gsi_next (&gsi_from), gsi_next (&gsi_to))
 		{
-		  if (multiple_exits_p)
+		  gimple *from_phi = gsi_stmt (gsi_from);
+		  gimple *to_phi = gsi_stmt (gsi_to);
+
+		  /* When the vector loop is peeled then we need to use the
+		     value at start of the loop, otherwise the main loop exit
+		     should use the final iter value.  */
+		  tree new_arg;
+		  if (peeled_iters)
+		    new_arg = gimple_phi_result (from_phi);
+		  else
+		    new_arg = PHI_ARG_DEF_FROM_EDGE (from_phi,
+						     loop_latch_edge (loop));
+
+		  /* Check if we've already created a new phi node during edge
+		     redirection and re-use it if so.  Otherwise create a
+		     LC PHI node to feed the merge PHI.  */
+		  tree *res;
+		  if (virtual_operand_p (new_arg))
+		    /* Use the existing virtual LC SSA from exit block.  */
+		    new_arg = gimple_phi_result
+				(get_virtual_phi (main_loop_exit_block));
+		  else if ((res = new_phi_args.get (new_arg)))
 		    new_arg = *res;
 		  else
 		    {
-		      adjust_phi_and_debug_stmts (to_phi, loop_entry, *res);
-		      continue;
-		    }
-		}
-	      /* If we have multiple exits and the vector loop is peeled then we
-		 need to use the value at start of loop.  If we're looking at
-		 virtual operands we have to keep the original link.   Virtual
-		 operands don't all become the same because we'll corrupt the
-		 vUSE chains among others.  */
-	      if (peeled_iters)
-		{
-		  tree tmp_arg = gimple_phi_result (from_phi);
-		  /* Similar to the single exit case, If we have an existing
-		     LCSSA variable thread through the original value otherwise
-		     skip it and directly use the final value.  */
-		  if ((res = new_phi_args.get (tmp_arg)))
-		    new_arg = *res;
-		  else if (!virtual_operand_p (new_arg))
-		    new_arg = tmp_arg;
-		}
-
-	      tree new_res = copy_ssa_name (gimple_phi_result (from_phi));
-	      gphi *lcssa_phi = create_phi_node (new_res, new_preheader);
-
-	      /* Otherwise, main loop exit should use the final iter value.  */
-	      if (multiple_exits_p)
-		{
-		  /* Create a LC PHI if it doesn't already exist.  */
-		  if (!virtual_operand_p (new_arg) && !res)
-		    {
+		      /* Create the LC PHI node for the exit.  */
 		      tree new_def = copy_ssa_name (new_arg);
 		      gphi *lc_phi
-			= create_phi_node (new_def, main_loop_exit_block);
+			  = create_phi_node (new_def, main_loop_exit_block);
 		      SET_PHI_ARG_DEF (lc_phi, 0, new_arg);
 		      new_arg = new_def;
 		    }
-		  SET_PHI_ARG_DEF_ON_EDGE (lcssa_phi,
-					   single_succ_edge (main_loop_exit_block),
-					   new_arg);
+
+		  /* Create the PHI node in the merge block merging the
+		     main and early exit values.  */
+		  tree new_res = copy_ssa_name (gimple_phi_result (from_phi));
+		  gphi *lcssa_phi = create_phi_node (new_res, new_preheader);
+		  edge main_e = single_succ_edge (main_loop_exit_block);
+		  SET_PHI_ARG_DEF_ON_EDGE (lcssa_phi, main_e, new_arg);
+
+		  /* And adjust the epilog entry value.  */
+		  adjust_phi_and_debug_stmts (to_phi, loop_entry, new_res);
 		}
-	      else
-		SET_PHI_ARG_DEF_ON_EDGE (lcssa_phi, loop_exit, new_arg);
 
-	      adjust_phi_and_debug_stmts (to_phi, loop_entry, new_res);
-	    }
-
-	  /* Now fill in the values for the merge PHI in new_preheader
-	     for the alternative exits.  */
-	  if (multiple_exits_p)
-	    {
+	      /* After creating the merge PHIs handle the early exits those
+		 should use the values at the start of the loop.  */
 	      for (auto gsi_from = gsi_start_phis (loop->header),
 		   gsi_to = gsi_start_phis (new_preheader);
 		   !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
@@ -1790,8 +1773,38 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 			SET_PHI_ARG_DEF (lc_phi, i, alt_arg);
 		      alt_arg = alt_def;
 		    }
-		  edge main_e = single_succ_edge (alt_loop_exit_block);
-		  SET_PHI_ARG_DEF_ON_EDGE (to_phi, main_e, alt_arg);
+		  edge alt_e = single_succ_edge (alt_loop_exit_block);
+		  SET_PHI_ARG_DEF_ON_EDGE (to_phi, alt_e, alt_arg);
+		}
+	    }
+	  /* For the single exit case only create the missing LC PHI nodes
+	     for the continuation of the loop IVs that are not also already
+	     reductions and thus had LC PHI nodes on the exit already.  */
+	  else
+	    {
+	      for (auto gsi_from = gsi_start_phis (loop->header),
+		   gsi_to = gsi_start_phis (new_loop->header);
+		   !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
+		   gsi_next (&gsi_from), gsi_next (&gsi_to))
+		{
+		  gimple *from_phi = gsi_stmt (gsi_from);
+		  gimple *to_phi = gsi_stmt (gsi_to);
+		  tree new_arg = PHI_ARG_DEF_FROM_EDGE (from_phi,
+							loop_latch_edge (loop));
+
+		  /* Check if we've already created a new phi node during edge
+		     redirection.  If we have, only propagate the value
+		     downwards.  */
+		  if (tree *res = new_phi_args.get (new_arg))
+		    {
+		      adjust_phi_and_debug_stmts (to_phi, loop_entry, *res);
+		      continue;
+		    }
+
+		  tree new_res = copy_ssa_name (gimple_phi_result (from_phi));
+		  gphi *lcssa_phi = create_phi_node (new_res, new_preheader);
+		  SET_PHI_ARG_DEF_ON_EDGE (lcssa_phi, loop_exit, new_arg);
+		  adjust_phi_and_debug_stmts (to_phi, loop_entry, new_res);
 		}
 	    }
 	}
