@@ -1415,10 +1415,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			     false);
 		  }
 
-		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
-		    && !valid_constant_size_p (TYPE_SIZE_UNIT (gnu_alloc_type)))
-		  post_error ("??Storage_Error will be raised at run time!",
-			      gnat_entity);
+		/* Give a warning if the size is constant but too large.  */
+		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST)
+		  {
+		    if (valid_constant_size_p (TYPE_SIZE_UNIT (gnu_alloc_type)))
+		      {
+			post_error
+			  ("??too large object cannot be allocated statically",
+			   gnat_entity);
+			post_error ("\\?dynamic allocation will be used instead",
+				    gnat_entity);
+		      }
+
+		    else
+		      post_error ("??Storage_Error will be raised at run time!",
+				  gnat_entity);
+		  }
 
 		gnu_expr
 		  = build_allocator (gnu_alloc_type, gnu_expr, gnu_type,
@@ -6822,9 +6834,12 @@ constructor_address_p (tree gnu_expr)
 static bool
 allocatable_size_p (tree gnu_size, bool static_p)
 {
-  /* We can allocate a fixed size if it is a valid for the middle-end.  */
+  /* We can allocate a fixed size if it is a valid for the middle-end but, for
+     a static allocation, we do not allocate more than 2 GB because this would
+     very likely be unintended and problematic for usual code models.  */
   if (TREE_CODE (gnu_size) == INTEGER_CST)
-    return valid_constant_size_p (gnu_size);
+    return valid_constant_size_p (gnu_size)
+	   && (!static_p || tree_to_uhwi (gnu_size) <= INT_MAX);
 
   /* We can allocate a variable size if this isn't a static allocation.  */
   else
