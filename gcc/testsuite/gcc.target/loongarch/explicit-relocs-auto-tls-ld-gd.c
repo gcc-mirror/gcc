@@ -6,4 +6,5 @@ extern __thread int b __attribute__((visibility("default")));
 
 int test() { return a + b; }
 
-/* { dg-final { scan-assembler-not "la.tls" { target tls_native } } } */
+/* { dg-final { scan-assembler "la\\.tls\\.ld" { target tls_native } } } */
+/* { dg-final { scan-assembler "la\\.tls\\.gd" { target tls_native } } } */

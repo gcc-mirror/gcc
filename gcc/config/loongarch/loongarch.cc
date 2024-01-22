@@ -1970,11 +1970,11 @@ loongarch_explicit_relocs_p (enum loongarch_symbol_type type)
     {
       case SYMBOL_TLS_IE:
       case SYMBOL_TLS_LE:
-      case SYMBOL_TLSGD:
-      case SYMBOL_TLSLDM:
       case SYMBOL_PCREL64:
-	/* The linker don't know how to relax TLS accesses or 64-bit
-	   pc-relative accesses.  */
+	/* TLS IE cannot be relaxed.  TLS LE relaxation is different from
+	   the normal R_LARCH_RELAX-based relaxation and it **requires**
+	   using the explicit %le_{lo12,hi20,add}_r relocs.  The linker
+	   does not relax 64-bit pc-relative accesses as at now.  */
 	return true;
       case SYMBOL_GOT_DISP:
 	/* The linker don't know how to relax GOT accesses in extreme
@@ -2789,7 +2789,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
   start_sequence ();
 
-  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
+  if (la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS)
     {
       /* Split tls symbol to high and low.  */
       rtx high = gen_rtx_HIGH (Pmode, copy_rtx (loc));
