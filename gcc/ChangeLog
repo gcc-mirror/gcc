@@ -1,3 +1,52 @@
+2024-01-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113030
+	* config/arm/parsecpu.awk (check_cpu): Use cpu_opt_alias
+	instead of cpu_optaliases.
+	(check_arch): Use arch_opt_alias instead of arch_optaliases.
+
+2024-01-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (splat_to_scalar_move_p): New function.
+	* config/riscv/riscv-v.cc (splat_to_scalar_move_p): Ditto.
+	* config/riscv/vector.md: Simplify vmv.v.x. into vmv.s.x.
+
+2024-01-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109092
+	* config/riscv/riscv.md: Use reg instead of subreg.
+
+2024-01-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR other/111966
+	* config/gcn/mkoffload.cc (elf_arch): Change default to gfx900
+	to match the compiler default.
+	(simple_object_copy_lto_debug_sections): Never unlink the outfile
+	on error as the caller does so.
+	(maybe_unlink, compile_native): Use %<...%> and %qs in fatal_error.
+	(main): Likewise. Fix 'mkoffload.dbg.o' cleanup.
+
+2024-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113373
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Create LC PHIs in the exit blocks where necessary.
+	* tree-vect-loop.cc (vectorizable_live_operation): Do not try
+	to handle missing LC PHIs.
+	(find_connected_edge): Remove.
+	(vect_create_epilog_for_reduction): Cleanup use of auto_vec.
+
+2024-01-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix vfirst/vmsbf/vmsof ratio attributes.
+
+2024-01-22  xuli  <xuli1@eswincomputing.com>
+
+	PR target/113420
+	* config/riscv/riscv-vector-builtins.cc (has_vxrm_or_frm_p):remove.
+	(registered_function::overloaded_hash):refactor.
+	(resolve_overloaded_builtin):avoid internal ICE.
+
 2024-01-21  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	PR target/82420

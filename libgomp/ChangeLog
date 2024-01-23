@@ -1,3 +1,9 @@
+2024-01-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4-fiji.c: Xfail as fiji
+	support is no longer enabled by default.
+	* testsuite/libgomp.c/declare-variant-4-gfx803.c: Likewise.
+
 2024-01-20  John David Anglin  <danglin@gcc.gnu.org>
 
 	* testsuite/libgomp.fortran/alloc-comp-3.f90: Increase

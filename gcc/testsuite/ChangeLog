@@ -1,3 +1,46 @@
+2024-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109642
+	* g++.dg/warn/Wdangling-reference17.C: Additional testing.
+
+2024-01-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR debug/113382
+	* gcc.dg/debug/btf/btf-bitfields-3.c: Add -gno-strict-dwarf
+	option to dg-options.
+	* gcc.dg/debug/btf/btf-enum-1.c: Likewise.
+	* gcc.dg/debug/btf/btf-enum-small.c: Likewise.
+	* gcc.dg/debug/btf/btf-enum64-1.c: Likewise.
+
+2024-01-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/attribute-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/attribute-3.c: New test.
+
+2024-01-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109092
+	* gcc.target/riscv/rvv/base/pr109092.c: New test.
+
+2024-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113373
+	* gcc.dg/vect/vect-early-break_104-pr113373.c: New testcase.
+
+2024-01-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/attribute-1.c: New test.
+
+2024-01-22  xuli  <xuli1@eswincomputing.com>
+
+	PR target/113420
+	* gcc.target/riscv/rvv/base/pr113420-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr113420-2.c: New test.
+
+2024-01-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/sh/pr59533-1.c: Adjust expected output.
+
 2024-01-21  Mary Bennett  <mary.bennett@embecosm.com>
 
 	* gcc.target/riscv/cv-alu-fail-compile.c: Change warning to error.

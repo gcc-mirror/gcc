@@ -1,3 +1,8 @@
+2024-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/clock/file/io.cc: Fix expected result in
+	assertion and call test_format() from main.
+
 2024-01-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/113500
