@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mabi=lp64d -O2 -mexplicit-relocs -mcmodel=normal -fdump-rtl-expand" } */
+/* { dg-options "-mabi=lp64d -O2 -mexplicit-relocs -mcmodel=normal -fdump-rtl-expand -fno-stack-protector" } */
 /* { dg-final { scan-rtl-dump-times "mem/u" 2 "expand" } } */
 
 #include <bits/stdc++.h>
