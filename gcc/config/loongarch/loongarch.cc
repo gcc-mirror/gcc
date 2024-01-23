@@ -1924,11 +1924,7 @@ loongarch_symbolic_constant_p (rtx x, enum loongarch_symbol_type *symbol_type)
       x = UNSPEC_ADDRESS (x);
     }
   else if (SYMBOL_REF_P (x) || LABEL_REF_P (x))
-    {
-      *symbol_type = loongarch_classify_symbol (x);
-      if (*symbol_type == SYMBOL_TLS)
-	return true;
-    }
+    *symbol_type = loongarch_classify_symbol (x);
   else
     return false;
 
@@ -1939,17 +1935,21 @@ loongarch_symbolic_constant_p (rtx x, enum loongarch_symbol_type *symbol_type)
      relocations.  */
   switch (*symbol_type)
     {
-    case SYMBOL_TLS_IE:
-    case SYMBOL_TLS_LE:
-    case SYMBOL_TLSGD:
-    case SYMBOL_TLSLDM:
     case SYMBOL_PCREL:
     case SYMBOL_PCREL64:
       /* GAS rejects offsets outside the range [-2^31, 2^31-1].  */
       return sext_hwi (INTVAL (offset), 32) == INTVAL (offset);
 
+    /* The following symbol types do not allow non-zero offsets.  */
     case SYMBOL_GOT_DISP:
+    case SYMBOL_TLS_IE:
+    case SYMBOL_TLSGD:
+    case SYMBOL_TLSLDM:
     case SYMBOL_TLS:
+    /* From an implementation perspective, tls_le symbols are allowed to
+       have non-zero offsets, but currently binutils has not added support,
+       so the generation of non-zero offsets is prohibited here.  */
+    case SYMBOL_TLS_LE:
       return false;
     }
   gcc_unreachable ();
