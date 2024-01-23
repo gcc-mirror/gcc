@@ -617,22 +617,6 @@ same_equiv_note_p (set_info *set1, set_info *set2)
   return source_equal_p (insn1, insn2);
 }
 
-static unsigned
-get_expr_id (unsigned bb_index, unsigned regno, unsigned num_bbs)
-{
-  return regno * num_bbs + bb_index;
-}
-static unsigned
-get_regno (unsigned expr_id, unsigned num_bb)
-{
-  return expr_id / num_bb;
-}
-static unsigned
-get_bb_index (unsigned expr_id, unsigned num_bb)
-{
-  return expr_id % num_bb;
-}
-
 /* Return true if the SET result is not used by any instructions.  */
 static bool
 has_no_uses (basic_block cfg_bb, rtx_insn *rinsn, int regno)
@@ -1337,9 +1321,6 @@ public:
 class demand_system
 {
 private:
-  sbitmap *m_avl_def_in;
-  sbitmap *m_avl_def_out;
-
   /* predictors.  */
 
   inline bool always_true (const vsetvl_info &prev ATTRIBUTE_UNUSED,
@@ -1743,14 +1724,6 @@ private:
   }
 
 public:
-  demand_system () : m_avl_def_in (nullptr), m_avl_def_out (nullptr) {}
-
-  void set_avl_in_out_data (sbitmap *m_avl_def_in, sbitmap *m_avl_def_out)
-  {
-    m_avl_def_in = m_avl_def_in;
-    m_avl_def_out = m_avl_def_out;
-  }
-
   /* Can we move vsetvl info between prev_insn and next_insn safe? */
   bool avl_vl_unmodified_between_p (insn_info *prev_insn, insn_info *next_insn,
 				    const vsetvl_info &info,
@@ -1778,32 +1751,66 @@ public:
       }
     else
       {
+	basic_block prev_cfg_bb = prev_insn->bb ()->cfg_bb ();
 	if (!ignore_vl && info.has_vl ())
 	  {
-	    bitmap live_out = df_get_live_out (prev_insn->bb ()->cfg_bb ());
+	    bitmap live_out = df_get_live_out (prev_cfg_bb);
 	    if (bitmap_bit_p (live_out, REGNO (info.get_vl ())))
 	      return false;
 	  }
 
-	if (info.has_nonvlmax_reg_avl () && m_avl_def_in && m_avl_def_out)
+	/* Find set_info at location of PREV_INSN and NEXT_INSN, Return
+	   false if those 2 set_info are different.
+
+	     PREV_INSN --- multiple nested blocks --- NEXT_INSN.
+
+	   Return false if there is any modifications of AVL inside those
+	   multiple nested blocks.  */
+	if (info.has_nonvlmax_reg_avl ())
 	  {
-	    bool has_avl_out = false;
-	    unsigned regno = REGNO (info.get_avl ());
-	    unsigned expr_id;
-	    sbitmap_iterator sbi;
-	    EXECUTE_IF_SET_IN_BITMAP (m_avl_def_out[prev_insn->bb ()->index ()],
-				      0, expr_id, sbi)
-	      {
-		if (get_regno (expr_id, last_basic_block_for_fn (cfun))
-		    != regno)
-		  continue;
-		has_avl_out = true;
-		if (!bitmap_bit_p (m_avl_def_in[next_insn->bb ()->index ()],
-				   expr_id))
-		  return false;
-	      }
-	    if (!has_avl_out)
+	    resource_info resource = full_register (REGNO (info.get_avl ()));
+	    def_lookup dl1 = crtl->ssa->find_def (resource, prev_insn);
+	    def_lookup dl2 = crtl->ssa->find_def (resource, next_insn);
+	    if (dl2.matching_set ())
 	      return false;
+
+	    auto is_phi_or_real
+	      = [&] (insn_info *h) { return h->is_real () || h->is_phi (); };
+
+	    def_info *def1 = dl1.matching_set_or_last_def_of_prev_group ();
+	    def_info *def2 = dl2.prev_def (next_insn);
+	    set_info *set1 = safe_dyn_cast<set_info *> (def1);
+	    set_info *set2 = safe_dyn_cast<set_info *> (def2);
+	    if (!set1 || !set2)
+	      return false;
+
+	    auto is_same_ultimate_def = [&] (set_info *s1, set_info *s2) {
+	      return s1->insn ()->is_phi () && s2->insn ()->is_phi ()
+		     && look_through_degenerate_phi (s1)
+			  == look_through_degenerate_phi (s2);
+	    };
+
+	    if (set1 != set2 && !is_same_ultimate_def (set1, set2))
+	      {
+		if (!is_phi_or_real (set1->insn ())
+		    || !is_phi_or_real (set2->insn ()))
+		  return false;
+
+		if (set1->insn ()->is_real () && set2->insn ()->is_phi ())
+		  {
+		    hash_set<set_info *> sets
+		      = get_all_sets (set2, true, false, true);
+		    if (!sets.contains (set1))
+		      return false;
+		  }
+		else
+		  {
+		    insn_info *def_insn1 = extract_single_source (set1);
+		    insn_info *def_insn2 = extract_single_source (set2);
+		    if (!def_insn1 || !def_insn2 || def_insn1 != def_insn2)
+		      return false;
+		  }
+	      }
 	  }
 
 	for (insn_info *i = next_insn; i != next_insn->bb ()->head_insn ();
@@ -2043,9 +2050,6 @@ private:
   auto_vec<vsetvl_block_info> m_vector_block_infos;
 
   /* data for avl reaching defintion.  */
-  sbitmap m_avl_regs;
-  sbitmap *m_avl_def_in;
-  sbitmap *m_avl_def_out;
   sbitmap *m_reg_def_loc;
 
   /* data for vsetvl info reaching defintion.  */
@@ -2292,8 +2296,7 @@ private:
 
 public:
   pre_vsetvl ()
-    : m_avl_def_in (nullptr), m_avl_def_out (nullptr),
-      m_vsetvl_def_in (nullptr), m_vsetvl_def_out (nullptr), m_avloc (nullptr),
+    : m_vsetvl_def_in (nullptr), m_vsetvl_def_out (nullptr), m_avloc (nullptr),
       m_avin (nullptr), m_avout (nullptr), m_kill (nullptr), m_antloc (nullptr),
       m_transp (nullptr), m_insert (nullptr), m_del (nullptr), m_edges (nullptr)
   {
@@ -2318,15 +2321,8 @@ public:
     delete crtl->ssa;
     crtl->ssa = nullptr;
 
-    if (m_avl_regs)
-      sbitmap_free (m_avl_regs);
     if (m_reg_def_loc)
       sbitmap_vector_free (m_reg_def_loc);
-
-    if (m_avl_def_in)
-      sbitmap_vector_free (m_avl_def_in);
-    if (m_avl_def_out)
-      sbitmap_vector_free (m_avl_def_out);
 
     if (m_vsetvl_def_in)
       sbitmap_vector_free (m_vsetvl_def_in);
@@ -2354,7 +2350,6 @@ public:
       free_edge_list (m_edges);
   }
 
-  void compute_avl_def_data ();
   void compute_vsetvl_def_data ();
   void compute_lcm_local_properties ();
 
@@ -2392,114 +2387,6 @@ public:
       }
   }
 };
-
-void
-pre_vsetvl::compute_avl_def_data ()
-{
-  if (bitmap_empty_p (m_avl_regs))
-    return;
-
-  unsigned num_regs = GP_REG_LAST + 1;
-  unsigned num_bbs = last_basic_block_for_fn (cfun);
-
-  sbitmap *avl_def_loc_temp = sbitmap_vector_alloc (num_bbs, num_regs);
-  for (const bb_info *bb : crtl->ssa->bbs ())
-    {
-      bitmap_and (avl_def_loc_temp[bb->index ()], m_avl_regs,
-		  m_reg_def_loc[bb->index ()]);
-
-      vsetvl_block_info &block_info = get_block_info (bb);
-      if (block_info.has_info ())
-	{
-	  vsetvl_info &footer_info = block_info.get_exit_info ();
-	  gcc_assert (footer_info.valid_p ());
-	  if (footer_info.has_vl ())
-	    bitmap_set_bit (avl_def_loc_temp[bb->index ()],
-			    REGNO (footer_info.get_vl ()));
-	}
-    }
-
-  if (m_avl_def_in)
-    sbitmap_vector_free (m_avl_def_in);
-  if (m_avl_def_out)
-    sbitmap_vector_free (m_avl_def_out);
-
-  unsigned num_exprs = num_bbs * num_regs;
-  sbitmap *avl_def_loc = sbitmap_vector_alloc (num_bbs, num_exprs);
-  sbitmap *m_kill = sbitmap_vector_alloc (num_bbs, num_exprs);
-  m_avl_def_in = sbitmap_vector_alloc (num_bbs, num_exprs);
-  m_avl_def_out = sbitmap_vector_alloc (num_bbs, num_exprs);
-
-  bitmap_vector_clear (avl_def_loc, num_bbs);
-  bitmap_vector_clear (m_kill, num_bbs);
-  bitmap_vector_clear (m_avl_def_out, num_bbs);
-
-  unsigned regno;
-  sbitmap_iterator sbi;
-  for (const bb_info *bb : crtl->ssa->bbs ())
-    EXECUTE_IF_SET_IN_BITMAP (avl_def_loc_temp[bb->index ()], 0, regno, sbi)
-      {
-	bitmap_set_bit (avl_def_loc[bb->index ()],
-			get_expr_id (bb->index (), regno, num_bbs));
-	bitmap_set_range (m_kill[bb->index ()], regno * num_bbs, num_bbs);
-      }
-
-  basic_block entry = ENTRY_BLOCK_PTR_FOR_FN (cfun);
-  EXECUTE_IF_SET_IN_BITMAP (m_avl_regs, 0, regno, sbi)
-    bitmap_set_bit (m_avl_def_out[entry->index],
-		    get_expr_id (entry->index, regno, num_bbs));
-
-  compute_reaching_defintion (avl_def_loc, m_kill, m_avl_def_in, m_avl_def_out);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file,
-	       "  Compute avl reaching defition data (num_bbs %d, num_regs "
-	       "%d):\n\n",
-	       num_bbs, num_regs);
-      fprintf (dump_file, "    avl_regs: ");
-      dump_bitmap_file (dump_file, m_avl_regs);
-      fprintf (dump_file, "\n    bitmap data:\n");
-      for (const bb_info *bb : crtl->ssa->bbs ())
-	{
-	  unsigned int i = bb->index ();
-	  fprintf (dump_file, "      BB %u:\n", i);
-	  fprintf (dump_file, "        avl_def_loc:");
-	  unsigned expr_id;
-	  sbitmap_iterator sbi;
-	  EXECUTE_IF_SET_IN_BITMAP (avl_def_loc[i], 0, expr_id, sbi)
-	    {
-	      fprintf (dump_file, " (r%u,bb%u)", get_regno (expr_id, num_bbs),
-		       get_bb_index (expr_id, num_bbs));
-	    }
-	  fprintf (dump_file, "\n        kill:");
-	  EXECUTE_IF_SET_IN_BITMAP (m_kill[i], 0, expr_id, sbi)
-	    {
-	      fprintf (dump_file, " (r%u,bb%u)", get_regno (expr_id, num_bbs),
-		       get_bb_index (expr_id, num_bbs));
-	    }
-	  fprintf (dump_file, "\n        avl_def_in:");
-	  EXECUTE_IF_SET_IN_BITMAP (m_avl_def_in[i], 0, expr_id, sbi)
-	    {
-	      fprintf (dump_file, " (r%u,bb%u)", get_regno (expr_id, num_bbs),
-		       get_bb_index (expr_id, num_bbs));
-	    }
-	  fprintf (dump_file, "\n        avl_def_out:");
-	  EXECUTE_IF_SET_IN_BITMAP (m_avl_def_out[i], 0, expr_id, sbi)
-	    {
-	      fprintf (dump_file, " (r%u,bb%u)", get_regno (expr_id, num_bbs),
-		       get_bb_index (expr_id, num_bbs));
-	    }
-	  fprintf (dump_file, "\n");
-	}
-    }
-
-  sbitmap_vector_free (avl_def_loc);
-  sbitmap_vector_free (m_kill);
-  sbitmap_vector_free (avl_def_loc_temp);
-
-  m_dem.set_avl_in_out_data (m_avl_def_in, m_avl_def_out);
-}
 
 void
 pre_vsetvl::compute_vsetvl_def_data ()
@@ -2957,29 +2844,12 @@ pre_vsetvl::fuse_local_vsetvl_info ()
       if (prev_info.valid_p () || prev_info.unknown_p ())
 	block_info.local_infos.safe_push (prev_info);
     }
-
-  m_avl_regs = sbitmap_alloc (GP_REG_LAST + 1);
-  bitmap_clear (m_avl_regs);
-  for (const bb_info *bb : crtl->ssa->bbs ())
-    {
-      vsetvl_block_info &block_info = get_block_info (bb);
-      if (block_info.empty_p ())
-	continue;
-
-      vsetvl_info &header_info = block_info.get_entry_info ();
-      if (header_info.valid_p () && header_info.has_nonvlmax_reg_avl ())
-	{
-	  gcc_assert (GP_REG_P (REGNO (header_info.get_avl ())));
-	  bitmap_set_bit (m_avl_regs, REGNO (header_info.get_avl ()));
-	}
-    }
 }
 
 
 bool
 pre_vsetvl::earliest_fuse_vsetvl_info (int iter)
 {
-  compute_avl_def_data ();
   compute_vsetvl_def_data ();
   compute_lcm_local_properties ();
 
@@ -3235,7 +3105,6 @@ pre_vsetvl::earliest_fuse_vsetvl_info (int iter)
 void
 pre_vsetvl::pre_global_vsetvl_info ()
 {
-  compute_avl_def_data ();
   compute_vsetvl_def_data ();
   compute_lcm_local_properties ();
 
