@@ -6767,6 +6767,14 @@ On x86-32 targets, the @code{stdcall} attribute causes the compiler to
 assume that the called function pops off the stack space used to
 pass arguments, unless it takes a variable number of arguments.
 
+@cindex @code{no_callee_saved_registers} function attribute, x86
+@item no_callee_saved_registers
+Use this attribute to indicate that the specified function has no
+callee-saved registers. That is, all registers can be used as scratch
+registers. For example, this attribute can be used for a function
+called from the interrupt handler assembly stub which will preserve
+all registers and return from interrupt.
+
 @cindex @code{no_caller_saved_registers} function attribute, x86
 @item no_caller_saved_registers
 Use this attribute to indicate that the specified function has no
