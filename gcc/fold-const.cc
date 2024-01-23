@@ -8773,8 +8773,7 @@ native_interpret_int (tree type, const unsigned char *ptr, int len)
   else
     total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
 
-  if (total_bytes > len
-      || total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
+  if (total_bytes > len)
     return NULL_TREE;
 
   wide_int result = wi::from_buffer (ptr, total_bytes);
@@ -9329,9 +9328,10 @@ fold_view_convert_vector_encoding (tree type, tree expr)
 static tree
 fold_view_convert_expr (tree type, tree expr)
 {
-  /* We support up to 1024-bit values (for GCN/RISC-V V128QImode).  */
   unsigned char buffer[128];
+  unsigned char *buf;
   int len;
+  HOST_WIDE_INT l;
 
   /* Check that the host and target are sane.  */
   if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
@@ -9341,11 +9341,23 @@ fold_view_convert_expr (tree type, tree expr)
     if (tree res = fold_view_convert_vector_encoding (type, expr))
       return res;
 
-  len = native_encode_expr (expr, buffer, sizeof (buffer));
+  l = int_size_in_bytes (type);
+  if (l > (int) sizeof (buffer)
+      && l <= WIDE_INT_MAX_PRECISION / BITS_PER_UNIT)
+    {
+      buf = XALLOCAVEC (unsigned char, l);
+      len = l;
+    }
+  else
+    {
+      buf = buffer;
+      len = sizeof (buffer);
+    }
+  len = native_encode_expr (expr, buf, len);
   if (len == 0)
     return NULL_TREE;
 
-  return native_interpret_expr (type, buffer, len);
+  return native_interpret_expr (type, buf, len);
 }
 
 /* Build an expression for the address of T.  Folds away INDIRECT_REF
