@@ -1919,6 +1919,24 @@ configuration  pragma, or in a declaration sequence where it applies
 till the end of the scope. If an ``Entity`` argument is present,
 the action applies only to that entity.
 
+Pragma Exceptional_Cases
+========================
+.. index:: Exceptional_Cases
+
+Syntax:
+
+
+::
+
+  pragma Exceptional_Cases (EXCEPTIONAL_CASE_LIST);
+
+  EXCEPTIONAL_CASE_LIST ::= EXCEPTIONAL_CASE {, EXCEPTIONAL_CASE}
+  EXCEPTIONAL_CASE      ::= exception_choice {'|' exception_choice} => CONSEQUENCE
+  CONSEQUENCE           ::= Boolean_expression
+
+For the semantics of this aspect, see the SPARK 2014 Reference Manual, section
+6.1.9.
+
 Pragma Export_Function
 ======================
 .. index:: Argument passing mechanisms

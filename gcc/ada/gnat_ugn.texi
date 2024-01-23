@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Dec 21, 2023
+GNAT User's Guide for Native Platforms , Apr 15, 2024
 
 AdaCore
 
@@ -29580,8 +29580,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{d1}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{d1}@w{                              }
 
 @c %**end of body
 @bye

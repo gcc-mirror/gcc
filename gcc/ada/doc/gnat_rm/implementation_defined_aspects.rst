@@ -243,6 +243,18 @@ Aspect Effective_Writes
 
 This aspect is equivalent to :ref:`pragma Effective_Writes<Pragma-Effective_Writes>`.
 
+Aspect Exceptional_Cases
+========================
+.. index:: Exceptional_Cases
+
+This aspect may be specified for procedures and functions with side effects;
+it can be used to list exceptions that might be propagated by the subprogram
+with side effects in the context of its precondition, and associate them
+with a specific postcondition.
+
+For the syntax and semantics of this aspect, see the SPARK 2014 Reference
+Manual, section 6.1.9.
+
 Aspect Extensions_Visible
 =========================
 .. index:: Extensions_Visible
