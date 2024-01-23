@@ -595,8 +595,7 @@ package body Exp_Ch7 is
       --    then
       --       declare
       --          type Ptr_Typ is access Fun_Typ;
-      --          for Ptr_Typ'Storage_Pool use
-      --                Base_Pool (BIPfinalizationmaster.all).all;
+      --          for Ptr_Typ'Storage_Pool use BIPstoragepool.all;
       --
       --       begin
       --          Free (Ptr_Typ (Obj_Addr));
@@ -628,25 +627,32 @@ package body Exp_Ch7 is
 
       begin
          --  Generate:
-         --    Pool_Id renames Base_Pool (BIPfinalizationmaster.all).all;
+         --    Pool_Id renames BIPstoragepool.all;
 
-         Pool_Id := Make_Temporary (Loc, 'P');
+         --  This formal is not added on ZFP as those targets do not
+         --  support pools.
 
-         Append_To (Decls,
-           Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Pool_Id,
-             Subtype_Mark        =>
-               New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc),
-             Name                =>
-               Make_Explicit_Dereference (Loc,
-                 Prefix =>
-                   Make_Function_Call (Loc,
-                     Name                   =>
-                       New_Occurrence_Of (RTE (RE_Base_Pool), Loc),
-                     Parameter_Associations => New_List (
-                       Make_Explicit_Dereference (Loc,
-                         Prefix =>
-                           New_Occurrence_Of (Fin_Mas_Id, Loc)))))));
+         if RTE_Available (RE_Root_Storage_Pool_Ptr) then
+            Pool_Id := Make_Temporary (Loc, 'P');
+
+            Append_To (Decls,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Pool_Id,
+                Subtype_Mark        =>
+                  New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc),
+                Name                =>
+                  Make_Explicit_Dereference (Loc,
+                    New_Occurrence_Of
+                      (Build_In_Place_Formal
+                         (Func_Id, BIP_Storage_Pool), Loc))));
+
+            if Debug_Generated_Code then
+               Set_Debug_Info_Needed (Pool_Id);
+            end if;
+
+         else
+            Pool_Id := Empty;
+         end if;
 
          --  Create an access type which uses the storage pool of the
          --  caller's finalization master.
@@ -669,10 +675,6 @@ package body Exp_Ch7 is
          Mutate_Ekind (Ptr_Typ, E_Access_Type);
          Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
          Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
-
-         if Debug_Generated_Code then
-            Set_Debug_Info_Needed (Pool_Id);
-         end if;
 
          --  Create an explicit free statement. Note that the free uses the
          --  caller's pool expressed as a renaming.
@@ -1008,7 +1010,6 @@ package body Exp_Ch7 is
          Decls     : List_Id;
          FM_Decl   : Node_Id;
          FM_Id     : Entity_Id;
-         FM_Init   : Node_Id;
          Unit_Spec : Node_Id;
 
       begin
@@ -1022,21 +1023,6 @@ package body Exp_Ch7 is
              Defining_Identifier => FM_Id,
              Object_Definition   =>
                New_Occurrence_Of (RTE (RE_Finalization_Master), Loc));
-
-         --  Generate:
-         --    Set_Base_Pool
-         --      (<FM_Id>, Global_Pool_Object'Unrestricted_Access);
-
-         FM_Init :=
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
-             Parameter_Associations => New_List (
-               New_Occurrence_Of (FM_Id, Loc),
-               Make_Attribute_Reference (Loc,
-                 Prefix         =>
-                   New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
-                 Attribute_Name => Name_Unrestricted_Access)));
 
          --  Find the declarative list of the unit
 
@@ -1069,7 +1055,6 @@ package body Exp_Ch7 is
             end if;
          end if;
 
-         Prepend_To (Decls, FM_Init);
          Prepend_To (Decls, FM_Decl);
 
          --  Use the scope of the unit when analyzing the declaration of the
@@ -1077,7 +1062,6 @@ package body Exp_Ch7 is
 
          Push_Scope (Unit_Id);
          Analyze (FM_Decl);
-         Analyze (FM_Init);
          Pop_Scope;
 
          --  Mark the master as servicing this specific designated type
@@ -1620,19 +1604,6 @@ package body Exp_Ch7 is
             Pool_Id := RTE (RE_Global_Pool_Object);
             Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
          end if;
-
-         --  Generate:
-         --    Set_Base_Pool (<Ptr_Typ>FM, Pool_Id'Unchecked_Access);
-
-         Append_To (Actions,
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
-             Parameter_Associations => New_List (
-               New_Occurrence_Of (Fin_Mas_Id, Loc),
-               Make_Attribute_Reference (Loc,
-                 Prefix         => New_Occurrence_Of (Pool_Id, Loc),
-                 Attribute_Name => Name_Unrestricted_Access))));
 
          --  A finalization master created for an access designating a type
          --  with private components is inserted before a context-dependent

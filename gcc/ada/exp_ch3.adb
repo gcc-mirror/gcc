@@ -6254,8 +6254,7 @@ package body Exp_Ch3 is
       --       else
       --          declare
       --             type Ptr_Typ is access Ret_Typ;
-      --             for Ptr_Typ'Storage_Pool use
-      --                   Base_Pool (BIPfinalizationmaster.all).all;
+      --             for Ptr_Typ'Storage_Pool use BIPstoragepool.all;
       --             Local : Ptr_Typ;
       --
       --          begin
@@ -6497,25 +6496,27 @@ package body Exp_Ch3 is
 
             begin
                --  Generate:
-               --    Pool_Id renames Base_Pool (BIPfinalizationmaster.all).all;
+               --    Pool_Id renames BIPstoragepool.all;
 
-               Pool_Id := Make_Temporary (Loc, 'P');
+               --  This formal is not added on ZFP as those targets do not
+               --  support pools.
 
-               Append_To (Decls,
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier => Pool_Id,
-                   Subtype_Mark        =>
-                     New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc),
-                   Name                =>
-                     Make_Explicit_Dereference (Loc,
-                       Prefix =>
-                         Make_Function_Call (Loc,
-                           Name                   =>
-                             New_Occurrence_Of (RTE (RE_Base_Pool), Loc),
-                           Parameter_Associations => New_List (
-                             Make_Explicit_Dereference (Loc,
-                               Prefix =>
-                                 New_Occurrence_Of (Fin_Mas_Id, Loc)))))));
+               if RTE_Available (RE_Root_Storage_Pool_Ptr) then
+                  Pool_Id := Make_Temporary (Loc, 'P');
+
+                  Append_To (Decls,
+                    Make_Object_Renaming_Declaration (Loc,
+                      Defining_Identifier => Pool_Id,
+                      Subtype_Mark        =>
+                        New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc),
+                      Name                =>
+                        Make_Explicit_Dereference (Loc,
+                          New_Occurrence_Of
+                            (Build_In_Place_Formal
+                               (Func_Id, BIP_Storage_Pool), Loc))));
+               else
+                  Pool_Id := Empty;
+               end if;
 
                --  Create an access type which uses the storage pool of the
                --  caller's master. This additional type is necessary because
@@ -6572,10 +6573,8 @@ package body Exp_Ch3 is
                      Unchecked_Convert_To (Temp_Typ,
                        New_Occurrence_Of (Local_Id, Loc))));
 
-               --  Wrap the allocation in a block. This is further conditioned
-               --  by checking the caller finalization master at runtime. A
-               --  null value indicates a non-existent master, most likely due
-               --  to a Finalize_Storage_Only allocation.
+               --  Wrap the allocation in a block to make it conditioned by the
+               --  presence of the caller's finalization master at run time.
 
                --  Generate:
                --    if BIPfinalizationmaster = null then

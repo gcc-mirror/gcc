@@ -8372,7 +8372,16 @@ package body Exp_Ch6 is
                 Attribute_Name => Name_Unrestricted_Access);
 
          --  No user-defined pool; pass an allocation parameter indicating that
-         --  the function should allocate its result on the heap.
+         --  the function should allocate its result on the heap. When there is
+         --  a finalization master, a pool reference is required.
+
+         elsif Needs_BIP_Finalization_Master (Function_Id) then
+            Alloc_Form  := Global_Heap;
+            Pool_Actual :=
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
+                Attribute_Name => Name_Unrestricted_Access);
 
          else
             Alloc_Form  := Global_Heap;
@@ -9062,15 +9071,11 @@ package body Exp_Ch6 is
       elsif Is_Library_Level_Entity (Obj_Def_Id)
         and then not Restriction_Active (No_Implicit_Heap_Allocations)
       then
-         Add_Unconstrained_Actuals_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Alloc_Form => Global_Heap);
-         Caller_Object := Empty;
-
          --  Create a finalization master for the access result type to ensure
          --  that the heap allocation can properly chain the object and later
          --  finalize it when the library unit goes out of scope.
 
-         if Needs_Finalization (Etype (Func_Call)) then
+         if Needs_BIP_Finalization_Master (Func_Call) then
             Build_Finalization_Master
               (Typ            => Ptr_Typ,
                For_Lib_Level  => True,
@@ -9081,7 +9086,23 @@ package body Exp_Ch6 is
                 Prefix         =>
                   New_Occurrence_Of (Finalization_Master (Ptr_Typ), Loc),
                 Attribute_Name => Name_Unrestricted_Access);
+
+            Pool_Actual :=
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
+                Attribute_Name => Name_Unrestricted_Access);
+
+         else
+            Pool_Actual := Empty;
          end if;
+
+         Add_Unconstrained_Actuals_To_Build_In_Place_Call
+           (Func_Call,
+            Function_Id,
+            Alloc_Form => Global_Heap,
+            Pool_Exp   => Pool_Actual);
+         Caller_Object := Empty;
 
       --  In other indefinite cases, pass an indication to do the allocation
       --  on the secondary stack and set Caller_Object to Empty so that a null

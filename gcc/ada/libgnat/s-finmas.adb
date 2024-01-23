@@ -68,17 +68,6 @@ package body System.Finalization_Masters is
       L.Next      := N;
    end Attach_Unprotected;
 
-   ---------------
-   -- Base_Pool --
-   ---------------
-
-   function Base_Pool
-     (Master : Finalization_Master) return Any_Storage_Pool_Ptr
-   is
-   begin
-      return Master.Base_Pool;
-   end Base_Pool;
-
    ------------------------
    -- Detach_Unprotected --
    ------------------------
@@ -240,13 +229,6 @@ package body System.Finalization_Masters is
       Put ("Master   : ");
       Put_Line (Address_Image (Master'Address));
 
-      Put ("Base_Pool: ");
-      if Master.Base_Pool = null then
-         Put_Line ("null");
-      else
-         Put_Line (Address_Image (Master.Base_Pool'Address));
-      end if;
-
       Put ("Fin_Start: ");
       Put_Line (Master.Finalization_Started'Img);
 
@@ -340,17 +322,5 @@ package body System.Finalization_Masters is
          N_Ptr := N_Ptr.Next;
       end loop;
    end Print_Master;
-
-   -------------------
-   -- Set_Base_Pool --
-   -------------------
-
-   procedure Set_Base_Pool
-     (Master   : in out Finalization_Master;
-      Pool_Ptr : Any_Storage_Pool_Ptr)
-   is
-   begin
-      Master.Base_Pool := Pool_Ptr;
-   end Set_Base_Pool;
 
 end System.Finalization_Masters;

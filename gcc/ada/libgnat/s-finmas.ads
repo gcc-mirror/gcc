@@ -31,7 +31,6 @@
 
 with Ada.Finalization;
 with System.Storage_Elements;
-with System.Storage_Pools;
 
 package System.Finalization_Masters is
    pragma Preelaborate;
@@ -49,13 +48,6 @@ package System.Finalization_Masters is
    type FM_Node is private;
    type FM_Node_Ptr is access all FM_Node;
    pragma No_Strict_Aliasing (FM_Node_Ptr);
-
-   --  A reference to any derivation from Root_Storage_Pool. Since this type
-   --  may not be used to allocate objects, its storage size is zero.
-
-   type Any_Storage_Pool_Ptr is
-     access System.Storage_Pools.Root_Storage_Pool'Class;
-   for Any_Storage_Pool_Ptr'Storage_Size use 0;
 
    --  Finalization master type structure. A unique master is associated with
    --  each access-to-controlled or access-to-class-wide type. Masters also act
@@ -115,10 +107,6 @@ private
    type Finalization_Master is
      new Ada.Finalization.Limited_Controlled with
    record
-      Base_Pool : Any_Storage_Pool_Ptr := null;
-      --  A reference to the pool which this finalization master services. This
-      --  field is used in conjunction with the build-in-place machinery.
-
       Objects : aliased FM_Node;
       --  A doubly linked list which contains the headers of all controlled
       --  objects allocated in a [sub]pool.
@@ -136,17 +124,7 @@ private
      (Addr   : System.Address;
       Offset : System.Storage_Elements.Storage_Offset) return System.Address;
 
-   function Base_Pool
-     (Master : Finalization_Master) return Any_Storage_Pool_Ptr;
-   --  Return a reference to the underlying storage pool on which the master
-   --  operates.
-
    overriding procedure Initialize (Master : in out Finalization_Master);
    --  Initialize the dummy head of a finalization master
-
-   procedure Set_Base_Pool
-     (Master   : in out Finalization_Master;
-      Pool_Ptr : Any_Storage_Pool_Ptr);
-   --  Set the underlying pool of a finalization master
 
 end System.Finalization_Masters;
