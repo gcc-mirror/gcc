@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-additional-options "-mtune=k8 -mstringop-strategy=rep_8byte" { target { x86_64-*-* i?86-*-* } } } */
+/* { dg-additional-options "-mtune=k8 -mstringop-strategy=rep_8byte" { target { { i?86-*-* x86_64-*-* } && { ! ia32 } } } } */
 
 struct S { unsigned a[10]; unsigned y; unsigned b[6]; } g[2];
 
