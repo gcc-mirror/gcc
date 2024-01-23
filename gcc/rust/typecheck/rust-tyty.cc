@@ -596,6 +596,7 @@ BaseType::monomorphized_clone () const
 			 fn->get_identifier (), fn->ident, fn->get_flags (),
 			 fn->get_abi (), std::move (cloned_params), retty,
 			 fn->clone_substs (), fn->get_substitution_arguments (),
+			 fn->get_region_constraints (),
 			 fn->get_combined_refs ());
     }
   else if (auto fn = x->try_as<const FnPtr> ())
@@ -620,6 +621,7 @@ BaseType::monomorphized_clone () const
 			  adt->get_adt_kind (), cloned_variants,
 			  adt->clone_substs (), adt->get_repr_options (),
 			  adt->get_used_arguments (),
+			  adt->get_region_constraints (),
 			  adt->get_combined_refs ());
     }
   else
@@ -1639,7 +1641,7 @@ ADTType::clone () const
   return new ADTType (get_ref (), get_ty_ref (), identifier, ident,
 		      get_adt_kind (), cloned_variants, clone_substs (),
 		      get_repr_options (), used_arguments,
-		      get_combined_refs ());
+		      get_region_constraints (), get_combined_refs ());
 }
 
 static bool
@@ -1958,7 +1960,8 @@ FnType::clone () const
   return new FnType (get_ref (), get_ty_ref (), get_id (), get_identifier (),
 		     ident, flags, abi, std::move (cloned_params),
 		     get_return_type ()->clone (), clone_substs (),
-		     get_substitution_arguments (), get_combined_refs ());
+		     get_substitution_arguments (), get_region_constraints (),
+		     get_combined_refs ());
 }
 
 FnType *
@@ -3573,11 +3576,13 @@ PlaceholderType::is_equal (const BaseType &other) const
 ProjectionType::ProjectionType (
   HirId ref, BaseType *base, const Resolver::TraitReference *trait, DefId item,
   std::vector<SubstitutionParamMapping> subst_refs,
-  SubstitutionArgumentMappings generic_arguments, std::set<HirId> refs)
+  SubstitutionArgumentMappings generic_arguments,
+  RegionConstraints region_constraints, std::set<HirId> refs)
   : BaseType (ref, ref, KIND,
 	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
-	      refs),
-    SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
+	      std::move (refs)),
+    SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
+		     std::move (region_constraints)),
     base (base), trait (trait), item (item)
 {}
 
@@ -3585,11 +3590,13 @@ ProjectionType::ProjectionType (
   HirId ref, HirId ty_ref, BaseType *base,
   const Resolver::TraitReference *trait, DefId item,
   std::vector<SubstitutionParamMapping> subst_refs,
-  SubstitutionArgumentMappings generic_arguments, std::set<HirId> refs)
+  SubstitutionArgumentMappings generic_arguments,
+  RegionConstraints region_constraints, std::set<HirId> refs)
   : BaseType (ref, ty_ref, KIND,
 	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
-    SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
+    SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
+		     std::move (region_constraints)),
     base (base), trait (trait), item (item)
 {}
 
@@ -3640,7 +3647,7 @@ ProjectionType::clone () const
 {
   return new ProjectionType (get_ref (), get_ty_ref (), base->clone (), trait,
 			     item, clone_substs (), used_arguments,
-			     get_combined_refs ());
+			     region_constraints, get_combined_refs ());
 }
 
 ProjectionType *

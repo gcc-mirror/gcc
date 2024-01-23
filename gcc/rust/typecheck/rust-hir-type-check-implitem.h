@@ -97,6 +97,7 @@ private:
   HIR::ImplBlock *parent;
   TyTy::BaseType *self;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  TyTy::RegionConstraints region_costraints;
 };
 
 } // namespace Resolver

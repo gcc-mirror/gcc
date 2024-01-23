@@ -57,7 +57,8 @@ public:
   void visit (HIR::UseDeclaration &) override {}
 
 protected:
-  std::vector<TyTy::SubstitutionParamMapping>
+  std::pair<std::vector<TyTy::SubstitutionParamMapping>,
+	    TyTy::RegionConstraints>
   resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
 				    bool &failure_flag);
 
