@@ -21,6 +21,8 @@
 # see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # <http://www.gnu.org/licenses/>.
 
+#include "aarch64-asm.h"
+
 /* An executable stack is *not* required for these functions.  */
 #if defined(__ELF__) && defined(__linux__)
 .section .note.GNU-stack,"",%progbits
@@ -30,12 +32,6 @@
 # This file creates a stack frame for the contents of the .fini and
 # .init sections.  Users may put any desired instructions in those
 # sections.
-
-#ifdef __ELF__
-#define TYPE(x) .type x,function
-#else
-#define TYPE(x)
-#endif
 
 	# Note - this macro is complemented by the FUNC_END macro
 	# in crtn.S.  If you change this macro you must also change
@@ -53,7 +49,7 @@
 	.section	".init"
 	.align 2
 	.global	_init
-	TYPE(_init)
+	SYMBOL_TYPE(_init, function)
 _init:
 	FUNC_START
 
@@ -61,7 +57,7 @@ _init:
 	.section	".fini"
 	.align	2
 	.global	_fini
-	TYPE(_fini)
+	SYMBOL_TYPE(_fini, function)
 _fini:
 	FUNC_START
 

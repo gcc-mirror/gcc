@@ -30,7 +30,7 @@
    - Takes no argument.
    - Returns SME state in x0 and TPIDR2_EL0 in x1.  */
 
-.hidden __aarch64_have_sme
+HIDDEN (__aarch64_have_sme)
 
 variant_pcs (__arm_sme_state)
 
