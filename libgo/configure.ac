@@ -209,6 +209,10 @@ AM_CONDITIONAL(LIBGO_IS_BSD, test $is_darwin = yes -o $is_dragonfly = yes -o $is
 AC_SUBST(GOOS)
 AC_SUBST(ALLGOOS)
 
+if test "${GOOS}" = "unknown"; then
+   AC_MSG_ERROR("could not determine GOOS from ${host}")
+fi
+
 dnl Test whether we need to use DejaGNU or whether we can use the
 dnl simpler gotest approach.  We can only use gotest for a native
 dnl build.
@@ -375,6 +379,10 @@ esac
 AC_SUBST(GOARCH)
 AC_SUBST(ALLGOARCH)
 AC_SUBST(ALLGOARCHFAMILY)
+
+if test "${GOARCH}" = "unknown"; then
+   AC_MSG_ERROR("could not determine GOARCH from ${host}")
+fi
 
 AM_CONDITIONAL(LIBGO_IS_X86, test "$GOARCH" = "386" -o "$GOARCH" = "amd64" -o "$GOARCH" = "amd64p32")
 
