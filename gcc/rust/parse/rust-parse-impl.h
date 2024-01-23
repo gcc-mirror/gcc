@@ -2946,8 +2946,8 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
       && initial_param.error () != ParseSelfError::NOT_SELF)
     return nullptr;
 
-  if (initial_param.has_value ())
-    skip_token (COMMA);
+  if (initial_param.has_value () && lexer.peek_token ()->get_id () == COMMA)
+    skip_token ();
 
   // parse function parameters (only if next token isn't right paren)
   std::vector<std::unique_ptr<AST::Param>> function_params;
