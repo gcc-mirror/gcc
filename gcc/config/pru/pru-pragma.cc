@@ -40,7 +40,7 @@
 
    WARNING: Only immediate constant addresses are currently supported.  */
 static void
-pru_pragma_ctable_entry (cpp_reader * reader ATTRIBUTE_UNUSED)
+pru_pragma_ctable_entry (cpp_reader *)
 {
   tree ctable_index, base_addr;
   enum cpp_ttype type;

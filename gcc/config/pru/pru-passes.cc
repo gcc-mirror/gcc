@@ -68,7 +68,7 @@ public:
   /* opt_pass methods: */
   virtual unsigned int execute (function *);
 
-  virtual bool gate (function *fun ATTRIBUTE_UNUSED)
+  virtual bool gate (function *)
   {
     return pru_current_abi == PRU_ABI_TI;
   }

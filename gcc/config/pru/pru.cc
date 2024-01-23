@@ -405,7 +405,7 @@ pru_get_return_address (int count)
 
 /* Implement FUNCTION_PROFILER macro.  */
 void
-pru_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
+pru_function_profiler (FILE *file, int)
 {
   fprintf (file, "\tmov\tr1, ra\n");
   fprintf (file, "\tcall\t_mcount\n");
@@ -467,7 +467,7 @@ prologue_saved_reg_p (int regno)
 
 /* Implement TARGET_CAN_ELIMINATE.  */
 static bool
-pru_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+pru_can_eliminate (const int, const int to)
 {
   if (to == STACK_POINTER_REGNUM)
     return !frame_pointer_needed;
@@ -637,9 +637,7 @@ pru_option_override (void)
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
 static bool
-pru_rtx_costs (rtx x, machine_mode mode,
-	       int outer_code, int opno ATTRIBUTE_UNUSED,
-	       int *total, bool speed ATTRIBUTE_UNUSED)
+pru_rtx_costs (rtx x, machine_mode mode, int outer_code, int, int *total, bool)
 {
   const int code = GET_CODE (x);
 
@@ -2174,7 +2172,7 @@ pru_nongeneric_pointer_addrspace (tree typ)
    during the "mov<mode>" pattern expansion.  */
 
 static void
-pru_insert_attributes (tree node, tree *attributes ATTRIBUTE_UNUSED)
+pru_insert_attributes (tree node, tree *)
 {
 
   /* Validate __regio_symbol variable declarations.  */
@@ -2399,15 +2397,14 @@ pru_function_arg_advance (cumulative_args_t cum_v,
 
 /* Implement TARGET_FUNCTION_VALUE.  */
 static rtx
-pru_function_value (const_tree ret_type, const_tree fn ATTRIBUTE_UNUSED,
-		      bool outgoing ATTRIBUTE_UNUSED)
+pru_function_value (const_tree ret_type, const_tree, bool)
 {
   return gen_rtx_REG (TYPE_MODE (ret_type), FIRST_RETVAL_REGNUM);
 }
 
 /* Implement TARGET_LIBCALL_VALUE.  */
 static rtx
-pru_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+pru_libcall_value (machine_mode mode, const_rtx)
 {
   return gen_rtx_REG (mode, FIRST_RETVAL_REGNUM);
 }
@@ -2421,7 +2418,7 @@ pru_function_value_regno_p (const unsigned int regno)
 
 /* Implement TARGET_RETURN_IN_MEMORY.  */
 bool
-pru_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
+pru_return_in_memory (const_tree type, const_tree)
 {
   bool in_memory = (!pru_arg_in_reg_bysize (int_size_in_bytes (type))
 		    || int_size_in_bytes (type) == -1);
@@ -2989,7 +2986,7 @@ pru_init_builtins (void)
 /* Implement TARGET_BUILTIN_DECL.  */
 
 static tree
-pru_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+pru_builtin_decl (unsigned code, bool)
 {
   switch (code)
     {
@@ -3068,10 +3065,7 @@ pru_expand_delay_cycles (rtx arg)
    IGNORE is nonzero if the value is to be ignored.  */
 
 static rtx
-pru_expand_builtin (tree exp, rtx target,
-		    rtx subtarget ATTRIBUTE_UNUSED,
-		    machine_mode mode,
-		    int ignore ATTRIBUTE_UNUSED)
+pru_expand_builtin (tree exp, rtx target, rtx, machine_mode mode, int)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
