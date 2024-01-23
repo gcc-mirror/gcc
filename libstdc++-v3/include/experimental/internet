@@ -1314,20 +1314,12 @@ namespace ip
       {
 	auto __str = address().to_string(__a);
 	const unsigned __addrlen = __str.length();
-	const unsigned __preflen = prefix_length() >= 10 ? 2 : 1;
-	auto __write = [=](char* __p, size_t __n) {
-	  __p[__addrlen] = '/';
-	  std::__detail::__to_chars_10_impl(__p + __addrlen + 1, __preflen,
-					    (unsigned char)prefix_length());
-	  return __n;
-	};
-	const unsigned __len = __addrlen + 1 + __preflen;
-#if __cpp_lib_string_resize_and_overwrite
-	__str.resize_and_overwrite(__len, __write);
-#else
-	__str.resize(__len);
-	__write(&__str.front(), __len);
-#endif
+	const unsigned __preflenlen = _M_prefix_len >= 10 ? 2 : 1;
+	__str.resize(__addrlen + 1 + __preflenlen);
+	__str[__addrlen] = '/';
+	std::__detail::__to_chars_10_impl(&__str.front() + __addrlen + 1,
+					  __preflenlen,
+					  (unsigned char)_M_prefix_len);
 	return __str;
       }
 
