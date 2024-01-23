@@ -99,6 +99,8 @@ public:
   HirId get_ty_ref () const;
   void set_ty_ref (HirId id);
 
+  HirId get_orig_ref () const;
+
   virtual void accept_vis (TyVisitor &vis) = 0;
   virtual void accept_vis (TyConstVisitor &vis) const = 0;
 
@@ -243,6 +245,7 @@ protected:
   TypeKind kind;
   HirId ref;
   HirId ty_ref;
+  const HirId orig_ref;
   std::set<HirId> combined;
   RustIdent ident;
 
