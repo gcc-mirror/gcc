@@ -9064,19 +9064,6 @@ proc check_effective_target_vect_long_mult { } {
     return $answer
 }
 
-# Return 1 if the target supports vector int modulus, 0 otherwise.
-
-proc check_effective_target_vect_int_mod { } {
-    return [check_cached_effective_target_indexed vect_int_mod {
-      expr { ([istarget powerpc*-*-*]
-	      && [check_effective_target_has_arch_pwr10])
-             || [istarget amdgcn-*-*]
-             || ([istarget loongarch*-*-*]
-		 && [check_effective_target_loongarch_sx])
-             || ([istarget riscv*-*-*]
-		 && [check_effective_target_riscv_v]) }}]
-}
-
 # Return 1 if the target supports vector even/odd elements extraction, 0 otherwise.
 
 proc check_effective_target_vect_extract_even_odd { } {
