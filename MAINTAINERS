@@ -55,7 +55,7 @@ aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
 alpha port		Richard Henderson	<rth@gcc.gnu.org>
 amdgcn port		Julian Brown		<julian@codesourcery.com>
-amdgcn port		Andrew Stubbs		<ams@codesourcery.com>
+amdgcn port		Andrew Stubbs		<ams@baylibre.com>
 arc port		Joern Rennecke		<gnu@amylaar.uk>
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 arm port		Nick Clifton		<nickc@redhat.com>
