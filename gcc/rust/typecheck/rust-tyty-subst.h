@@ -30,8 +30,17 @@
 namespace Rust {
 namespace TyTy {
 
-class BaseType;
 class ParamType;
+
+struct RegionConstraints
+{
+  /** 'a: 'b */
+  std::vector<std::pair<Region, Region>> region_region;
+  /** T: 'a */
+  std::vector<std::pair<ParamType *, Region>> type_region;
+};
+
+class BaseType;
 class SubstitutionArgumentMappings;
 class SubstitutionParamMapping
 {
@@ -249,7 +258,8 @@ class SubstitutionRef
 {
 public:
   SubstitutionRef (std::vector<SubstitutionParamMapping> substitutions,
-		   SubstitutionArgumentMappings arguments);
+		   SubstitutionArgumentMappings arguments,
+		   RegionConstraints region_constraints);
 
   bool has_substitutions () const;
 
@@ -404,9 +414,12 @@ public:
 
   WARN_UNUSED_RESULT tl::optional<SubstitutionArg> get_arg_at (size_t i) const;
 
+  const RegionConstraints &get_region_constraints () const;
+
 protected:
   std::vector<SubstitutionParamMapping> substitutions;
   SubstitutionArgumentMappings used_arguments;
+  RegionConstraints region_constraints;
 };
 
 } // namespace TyTy

@@ -189,6 +189,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   std::vector<TyTy::SubstitutionParamMapping> substitutions
     = inherited_substitutions;
 
+  TyTy::RegionConstraints region_constraints;
   HIR::TraitFunctionDecl &function = fn.get_decl ();
   if (function.has_generics ())
     {
@@ -222,6 +223,13 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	      break;
 	    }
 	}
+    }
+
+  if (function.has_where_clause ())
+    {
+      for (auto &where_clause_item : function.get_where_clause ().get_items ())
+	ResolveWhereClauseItem::Resolve (*where_clause_item,
+					 region_constraints);
     }
 
   TyTy::BaseType *ret_type = nullptr;
@@ -336,7 +344,8 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 			  : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
     ABI::RUST, std::move (params), ret_type, substitutions,
     TyTy::SubstitutionArgumentMappings::empty (
-      context->get_lifetime_resolver ().get_num_bound_regions ()));
+      context->get_lifetime_resolver ().get_num_bound_regions ()),
+    region_constraints);
   context->insert_type (fn.get_mappings (), resolved);
   return resolved;
 }

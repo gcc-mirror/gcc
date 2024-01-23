@@ -96,6 +96,16 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 	}
     }
 
+  TyTy::RegionConstraints region_constraints;
+  if (function.has_where_clause ())
+    {
+      for (auto &where_clause_item : function.get_where_clause ().get_items ())
+	{
+	  ResolveWhereClauseItem::Resolve (*where_clause_item.get (),
+					   region_constraints);
+	}
+    }
+
   TyTy::BaseType *ret_type = nullptr;
   if (!function.has_return_type ())
     ret_type
@@ -166,7 +176,8 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
     function.get_item_name ().as_string (), ident, flags, parent.get_abi (),
     std::move (params), ret_type, std::move (substitutions),
     TyTy::SubstitutionArgumentMappings::empty (
-      context->get_lifetime_resolver ().get_num_bound_regions ()));
+      context->get_lifetime_resolver ().get_num_bound_regions ()),
+    region_constraints);
 
   context->insert_type (function.get_mappings (), fnType);
   resolved = fnType;
@@ -206,9 +217,11 @@ TypeCheckImplItem::visit (HIR::Function &function)
   if (function.has_generics ())
     resolve_generic_params (function.get_generic_params (), substitutions);
 
+  TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : function.get_where_clause ().get_items ())
     {
-      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+      ResolveWhereClauseItem::Resolve (*where_clause_item.get (),
+				       region_constraints);
     }
 
   TyTy::BaseType *ret_type = nullptr;
@@ -334,7 +347,8 @@ TypeCheckImplItem::visit (HIR::Function &function)
 			  : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
     ABI::RUST, std::move (params), ret_type, std::move (substitutions),
     TyTy::SubstitutionArgumentMappings::empty (
-      context->get_lifetime_resolver ().get_num_bound_regions ()));
+      context->get_lifetime_resolver ().get_num_bound_regions ()),
+    region_constraints);
 
   context->insert_type (function.get_mappings (), fnType);
   result = fnType;
@@ -389,9 +403,11 @@ TypeCheckImplItem::visit (HIR::TypeAlias &alias)
 
   context->insert_type (alias.get_mappings (), actual_type);
   result = actual_type;
+  TyTy::RegionConstraints region_constraints;
   for (auto &where_clause_item : alias.get_where_clause ().get_items ())
     {
-      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+      ResolveWhereClauseItem::Resolve (*where_clause_item.get (),
+				       region_constraints);
     }
 }
 

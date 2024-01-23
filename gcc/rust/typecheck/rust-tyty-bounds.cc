@@ -306,7 +306,7 @@ namespace TyTy {
 TypeBoundPredicate::TypeBoundPredicate (
   const Resolver::TraitReference &trait_reference, BoundPolarity polarity,
   location_t locus)
-  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty (), {}),
     reference (trait_reference.get_mappings ().get_defid ()), locus (locus),
     error_flag (false), polarity (polarity)
 {
@@ -324,7 +324,7 @@ TypeBoundPredicate::TypeBoundPredicate (
 TypeBoundPredicate::TypeBoundPredicate (
   DefId reference, std::vector<SubstitutionParamMapping> subst,
   BoundPolarity polarity, location_t locus)
-  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty (), {}),
     reference (reference), locus (locus), error_flag (false),
     polarity (polarity)
 {
@@ -340,13 +340,13 @@ TypeBoundPredicate::TypeBoundPredicate (
 }
 
 TypeBoundPredicate::TypeBoundPredicate (mark_is_error)
-  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty (), {}),
     reference (UNKNOWN_DEFID), locus (UNDEF_LOCATION), error_flag (true),
     polarity (BoundPolarity::RegularBound)
 {}
 
 TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
-  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty (), {}),
     reference (other.reference), locus (other.locus),
     error_flag (other.error_flag), polarity (other.polarity)
 {

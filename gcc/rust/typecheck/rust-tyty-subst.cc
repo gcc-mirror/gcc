@@ -440,8 +440,9 @@ SubstitutionArgumentMappings::trait_item_mode () const
 
 SubstitutionRef::SubstitutionRef (
   std::vector<SubstitutionParamMapping> substitutions,
-  SubstitutionArgumentMappings arguments)
-  : substitutions (substitutions), used_arguments (arguments)
+  SubstitutionArgumentMappings arguments, RegionConstraints region_constraints)
+  : substitutions (substitutions), used_arguments (arguments),
+    region_constraints (region_constraints)
 {}
 
 bool
@@ -586,6 +587,12 @@ const SubstitutionArgumentMappings &
 SubstitutionRef::get_used_arguments () const
 {
   return used_arguments;
+}
+
+const RegionConstraints &
+SubstitutionRef::get_region_constraints () const
+{
+  return region_constraints;
 }
 
 SubstitutionArgumentMappings

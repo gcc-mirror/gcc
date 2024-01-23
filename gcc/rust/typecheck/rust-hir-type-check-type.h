@@ -115,15 +115,21 @@ private:
 
 class ResolveWhereClauseItem : public TypeCheckBase
 {
+  // pair(a, b) => a: b
+  TyTy::RegionConstraints &region_constraints;
+
 public:
-  static void Resolve (HIR::WhereClauseItem &item);
+  static void Resolve (HIR::WhereClauseItem &item,
+		       TyTy::RegionConstraints &region_constraints);
 
 protected:
   void visit (HIR::LifetimeWhereClauseItem &item);
   void visit (HIR::TypeBoundWhereClauseItem &item);
 
 private:
-  ResolveWhereClauseItem () : TypeCheckBase () {}
+  ResolveWhereClauseItem (TyTy::RegionConstraints &region_constraints)
+    : region_constraints (region_constraints)
+  {}
 };
 
 } // namespace Resolver
