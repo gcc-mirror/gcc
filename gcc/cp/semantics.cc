@@ -4953,7 +4953,8 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
       /* If a cleanup might throw, we need to clear current_retval_sentinel on
 	 the exception path so an outer cleanup added by
 	 maybe_splice_retval_cleanup doesn't run.  */
-      if (cp_function_chain->throwing_cleanup)
+      if (current_retval_sentinel
+	  && cp_function_chain->throwing_cleanup)
 	{
 	  tree clear = build2 (MODIFY_EXPR, boolean_type_node,
 			       current_retval_sentinel,
