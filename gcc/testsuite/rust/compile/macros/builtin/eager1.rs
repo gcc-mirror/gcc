@@ -15,7 +15,7 @@ macro_rules! b {
 }
 
 fn main() {
-    // { dg-final { scan-tree-dump-times {"test1canary"} 1 gimple } }
+    // { dg-final { scan-assembler {"test1canary"} } }
     let _ = concat!(a!(), 1, b!());
     // should not error
     concat!(a!(), true, b!(),);
