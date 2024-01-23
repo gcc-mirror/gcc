@@ -2189,6 +2189,15 @@ ix86_option_override_internal (bool main_args_p,
       && opts->x_ix86_abi != DEFAULT_ABI)
     error ("%<-mabi=%s%> not supported with %<-fsanitize=thread%>", abi_name);
 
+  /* Hwasan is supported with lam_u57 only.  */
+  if (opts->x_flag_sanitize & SANITIZE_HWADDRESS)
+    {
+      if (ix86_lam_type == lam_u48)
+	warning (0, "%<-mlam=u48%> is not compatible with Hardware-assisted "
+		 "AddressSanitizer, override to %<-mlam=u57%>");
+      ix86_lam_type = lam_u57;
+    }
+
   /* For targets using ms ABI enable ms-extensions, if not
      explicit turned off.  For non-ms ABI we turn off this
      option.  */
