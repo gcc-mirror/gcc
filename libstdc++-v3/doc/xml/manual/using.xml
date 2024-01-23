@@ -468,9 +468,9 @@ Unless specified otherwise below, they are also available in later modes
 
 <para>
 <xref linkend="table.cxx20_headers"/>
-shows the C++2a include files.
-These are available in C++2a compilation
-mode, i.e. <literal>-std=c++2a</literal> or <literal>-std=gnu++2a</literal>.
+shows the C++20 include files.
+These are available in C++20 compilation
+mode, i.e. <literal>-std=c++20</literal> or <literal>-std=gnu++20</literal>.
 Including these headers in earlier modes will not result in
 compilation errors, but will not define anything.
 <!--
@@ -483,28 +483,46 @@ Unless specified otherwise below, they are also available in later modes
 <table frame="all" xml:id="table.cxx20_headers">
 <title>C++ 2020 Library Headers</title>
 
-<tgroup cols="2" align="left" colsep="1" rowsep="1">
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
 <colspec colname="c1"/>
 <colspec colname="c2"/>
-<!--
 <colspec colname="c3"/>
 <colspec colname="c4"/>
 <colspec colname="c5"/>
--->
 <tbody>
 <row>
+<entry><filename class="headerfile">barrier</filename></entry>
 <entry><filename class="headerfile">bit</filename></entry>
-<entry><filename class="headerfile">version</filename></entry>
+<entry><filename class="headerfile">charconv</filename></entry>
+<entry><filename class="headerfile">compare</filename></entry>
+<entry><filename class="headerfile">concepts</filename></entry>
 </row>
-<!-- TODO compare, concepts, contract, span, syncstream -->
+<row>
+<entry><filename class="headerfile">coroutine</filename></entry>
+<entry><filename class="headerfile">format</filename></entry>
+<entry><filename class="headerfile">latch</filename></entry>
+<entry><filename class="headerfile">numbers</filename></entry>
+<entry><filename class="headerfile">ranges</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">semaphore</filename></entry>
+<entry><filename class="headerfile">source_location</filename></entry>
+<entry><filename class="headerfile">span</filename></entry>
+<entry><filename class="headerfile">stop_token</filename></entry>
+<entry><filename class="headerfile">syncstream</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">version</filename></entry>
+<entry namest="c2" nameend="c5"/>
+</row>
 </tbody>
 </tgroup>
 </table>
 
 <para>
-  The following headers have been removed in the C++2a working draft.
+  The following headers have been removed in the C++20 standard.
   They are still available when using this implementation, but in future
-  they might start to produce warnings or errors when included in C++2a mode.
+  they might start to produce warnings or errors when included in C++20 mode.
   Programs that intend to be portable should not include them.
 </para>
 
@@ -530,9 +548,85 @@ Unless specified otherwise below, they are also available in later modes
 </table>
 
 <para>
+<xref linkend="table.cxx23_headers"/>
+shows the C++23 include files.
+These are available in C++23 compilation
+mode, i.e. <literal>-std=c++23</literal> or <literal>-std=gnu++23</literal>.
+Including these headers in earlier modes will not result in
+compilation errors, but will not define anything.
+<!--
+Unless specified otherwise below, they are also available in later modes
+(C++26 etc).
+-->
+</para>
+
+<para/>
+<table frame="all" xml:id="table.cxx23_headers">
+<title>C++ 2023 Library Headers</title>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
+<tbody>
+<row>
+<entry><filename class="headerfile">expected</filename></entry>
+<entry><filename class="headerfile">generator</filename></entry>
+<entry><filename class="headerfile">print</filename></entry>
+<entry><filename class="headerfile">spanstream</filename></entry>
+<entry><filename class="headerfile">stacktrace</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">stdatomic.h</filename></entry>
+<entry><filename class="headerfile">stdfloat</filename></entry>
+<entry namest="c3" nameend="c5"/>
+<!-- TODO flat_map, flat_set, mdspan -->
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+<xref linkend="table.cxx26_headers"/>
+shows the C++26 include files.
+These are available in C++26 compilation
+mode, i.e. <literal>-std=c++26</literal> or <literal>-std=gnu++26</literal>.
+Including these headers in earlier modes will not result in
+compilation errors, but will not define anything.
+<!--
+Unless specified otherwise below, they are also available in later modes
+(C++2d etc).
+-->
+</para>
+
+<para/>
+<table frame="all" xml:id="table.cxx26_headers">
+<title>C++ 2026 Library Headers</title>
+
+<tgroup cols="1" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<!--
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
+-->
+<tbody>
+<row>
+<entry><filename class="headerfile">text_encoding</filename></entry>
+<!-- TODO debugging, hazard_pointer, linalg, rcu -->
+</row>
+</tbody>
+</tgroup>
+</table>
+
+
+<para>
 <xref linkend="table.filesystemts_headers"/>,
 shows the additional include file define by the
-File System Technical Specification, ISO/IEC TS 18822.
+File System Technical Specification, ISO/IEC TS 18822:2015.
 This is available in C++11 and later compilation modes.
 Including this header in earlier modes will not result in
 compilation errors, but will not define anything.
@@ -556,8 +650,11 @@ compilation errors, but will not define anything.
 <para>
 <xref linkend="table.libfundts_headers"/>,
 shows the additional include files define by the C++ Extensions for
-Library Fundamentals Technical Specification, ISO/IEC TS 19568.
-These are available in C++14 and later compilation modes.
+Library Fundamentals Technical Specification, ISO/IEC TS 19568:2015,
+ISO/IEC TS 19568:2017, and ISO/IEC TS 19568:2024.
+These are available in C++14 and later compilation modes, except for
+<filename class="headerfile">&lt;experimental/scope&gt;</filename>
+which is available in C++20 and later compilation modes.
 Including these headers in earlier modes will not result in
 compilation errors, but will not define anything.
 </para>
@@ -598,22 +695,58 @@ compilation errors, but will not define anything.
 <entry><filename class="headerfile">experimental/random</filename></entry>
 <entry><filename class="headerfile">experimental/ratio</filename></entry>
 <entry><filename class="headerfile">experimental/regex</filename></entry>
+<entry><filename class="headerfile">experimental/scope</filename></entry>
 <entry><filename class="headerfile">experimental/set</filename></entry>
-<entry><filename class="headerfile">experimental/source_location</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">experimental/source_location</filename></entry>
 <entry><filename class="headerfile">experimental/string</filename></entry>
 <entry><filename class="headerfile">experimental/string_view</filename></entry>
 <entry><filename class="headerfile">experimental/system_error</filename></entry>
 <entry><filename class="headerfile">experimental/tuple</filename></entry>
-<entry><filename class="headerfile">experimental/type_traits</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">experimental/type_traits</filename></entry>
 <entry><filename class="headerfile">experimental/unordered_map</filename></entry>
 <entry><filename class="headerfile">experimental/unordered_set</filename></entry>
 <entry><filename class="headerfile">experimental/utility</filename></entry>
 <entry><filename class="headerfile">experimental/vector</filename></entry>
-<entry />
+</row>
+</tbody>
+</tgroup>
+</table>
+
+
+<para>
+<xref linkend="table.networkingts_headers"/>,
+shows the additional include files define by the
+Networking Technical Specification, ISO/IEC TS 19216:2018.
+These are available in C++14 and later compilation modes.
+Including these headers in earlier modes will not result in
+compilation errors, but will not define anything.
+</para>
+
+<para/>
+<table frame="all" xml:id="table.networkingts_headers">
+<title>Networking TS Headers</title>
+
+<tgroup cols="4" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<tbody>
+<row>
+<entry><filename class="headerfile">experimental/buffer</filename></entry>
+<entry><filename class="headerfile">experimental/executor</filename></entry>
+<entry><filename class="headerfile">experimental/internet</filename></entry>
+<entry><filename class="headerfile">experimental/io_context</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">experimental/net</filename></entry>
+<entry><filename class="headerfile">experimental/netfwd</filename></entry>
+<entry><filename class="headerfile">experimental/socket</filename></entry>
+<entry><filename class="headerfile">experimental/timer</filename></entry>
 </row>
 </tbody>
 </tgroup>
