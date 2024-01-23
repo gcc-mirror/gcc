@@ -36,6 +36,18 @@ print("#ifndef _GLIBCXX_GET_ENCODING_DATA")
 print('# error "This is not a public header, do not include it directly"')
 print("#endif\n")
 
+# We need to generate a list of initializers of the form { mib, alias }, e.g.,
+# { 3, "US-ASCII" },
+# { 3, "ISO646-US" },
+# { 3, "csASCII" },
+# { 4, "ISO_8859-1:1987" },
+# { 4, "latin1" },
+# The initializers must be sorted by the mib value. The first entry for
+# a given mib must be the primary name for the encoding. Any aliases for
+# the encoding come after the primary name.
+# We also define a macro _GLIBCXX_TEXT_ENCODING_UTF8_OFFSET which is the
+# offset into the list of the mib=106, alias="UTF-8" entry. This is used
+# to optimize the common case, so we don't need to search for "UTF-8".
 
 charsets = {}
 with open(sys.argv[1], newline='') as f:
@@ -52,9 +64,14 @@ with open(sys.argv[1], newline='') as f:
             aliases.remove(name)
         charsets[mib] = [name] + aliases
 
-# Remove "NATS-DANO" and "NATS-DANO-ADD"
+# Remove "NATS-DANO" and "NATS-DANO-ADD" as specified by the C++ standard.
 charsets.pop(33, None)
 charsets.pop(34, None)
+
+# This is not an official IANA alias, but we include it in the
+# implementation-defined superset of aliases for US-ASCII.
+# See also LWG 4043.
+extra_aliases = {3: ["ASCII"]}
 
 count = 0
 for mib in sorted(charsets.keys()):
@@ -64,6 +81,11 @@ for mib in sorted(charsets.keys()):
     for name in names:
         print('  {{ {:4}, "{}" }},'.format(mib, name))
     count += len(names)
+    if mib in extra_aliases:
+        names = extra_aliases[mib]
+        for name in names:
+            print('  {{ {:4}, "{}" }}, // libstdc++ extension'.format(mib, name))
+        count += len(names)
 
 # <text_encoding> gives an error if this macro is left defined.
 # Do this last, so that the generated output is not usable unless we reach here.

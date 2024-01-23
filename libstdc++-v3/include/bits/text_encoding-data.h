@@ -14,6 +14,7 @@
   {    3, "IBM367" },
   {    3, "cp367" },
   {    3, "csASCII" },
+  {    3, "ASCII" }, // libstdc++ extension
   {    4, "ISO_8859-1:1987" },
   {    4, "iso-ir-100" },
   {    4, "ISO_8859-1" },
@@ -417,7 +418,7 @@
   {  104, "csISO2022CN" },
   {  105, "ISO-2022-CN-EXT" },
   {  105, "csISO2022CNEXT" },
-#define _GLIBCXX_TEXT_ENCODING_UTF8_OFFSET 413
+#define _GLIBCXX_TEXT_ENCODING_UTF8_OFFSET 414
   {  106, "UTF-8" },
   {  106, "csUTF8" },
   {  109, "ISO-8859-13" },
