@@ -3886,7 +3886,8 @@ ia64_expand_prologue (void)
 /* Output the textual info surrounding the prologue.  */
 
 void
-ia64_start_function (FILE *file, const char *fnname, tree decl)
+ia64_start_function (FILE *file, const char *fnname,
+		     tree decl ATTRIBUTE_UNUSED)
 {
 #if TARGET_ABI_OPEN_VMS
   vms_start_function (fnname);
