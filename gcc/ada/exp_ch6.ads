@@ -76,9 +76,9 @@ package Exp_Ch6 is
       --  is a pointer to the pool (of type Root_Storage_Pool_Ptr); otherwise
       --  this is null. Also present if result type needs finalization.
 
-      BIP_Finalization_Master,
-      --  Present if result type needs finalization. Pointer to caller's
-      --  finalization master.
+      BIP_Collection,
+      --  Present if result type needs finalization. Pointer to the collection
+      --  of the access type used by the caller.
 
       BIP_Task_Master,
       --  Present if result type contains tasks. Master associated with
@@ -287,7 +287,7 @@ package Exp_Ch6 is
    --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
    --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
 
-   function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean;
+   function Needs_BIP_Collection (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the result subtype of function
    --  Func_Id might need finalization actions. This includes build-in-place
    --  functions with tagged result types, since they can be invoked via

@@ -254,7 +254,6 @@ package Rtsfind is
       System_Fat_LFlt,
       System_Fat_LLF,
       System_Fat_SFlt,
-      System_Finalization_Masters,
       System_Finalization_Primitives,
       System_Finalization_Root,
       System_Fore_Decimal_32,
@@ -918,16 +917,15 @@ package Rtsfind is
 
      RE_Attr_Long_Long_Float,            -- System.Fat_LLF
 
-     RE_Add_Offset_To_Address,           -- System.Finalization_Masters
-     RE_Finalization_Master,             -- System.Finalization_Masters
-     RE_Finalization_Master_Ptr,         -- System.Finalization_Masters
-
+     RE_Add_Offset_To_Address,           -- System.Finalization_Primitives
      RE_Attach_Object_To_Master,         -- System.Finalization_Primitives
      RE_Attach_Object_To_Node,           -- System.Finalization_Primitives
      RE_Chain_Node_To_Master,            -- System.Finalization_Primitives
+     RE_Finalization_Collection,         -- System.Finalization_Primitives
+     RE_Finalization_Collection_Ptr,     -- System.Finalization_Primitives
+     RE_Finalization_Scope_Master,       -- System.Finalization_Primitives
      RE_Finalize_Master,                 -- System.Finalization_Primitives
      RE_Finalize_Object,                 -- System.Finalization_Primitives
-     RE_Finalization_Scope_Master,       -- System.Finalization_Primitives
      RE_Master_Node,                     -- System.Finalization_Primitives
      RE_Suppress_Object_Finalize_At_End, -- System.Finalization_Primitives
 
@@ -2568,16 +2566,15 @@ package Rtsfind is
 
      RE_Attr_Long_Long_Float             => System_Fat_LLF,
 
-     RE_Add_Offset_To_Address            => System_Finalization_Masters,
-     RE_Finalization_Master              => System_Finalization_Masters,
-     RE_Finalization_Master_Ptr          => System_Finalization_Masters,
-
+     RE_Add_Offset_To_Address            => System_Finalization_Primitives,
      RE_Attach_Object_To_Master          => System_Finalization_Primitives,
      RE_Attach_Object_To_Node            => System_Finalization_Primitives,
      RE_Chain_Node_To_Master             => System_Finalization_Primitives,
+     RE_Finalization_Collection          => System_Finalization_Primitives,
+     RE_Finalization_Collection_Ptr      => System_Finalization_Primitives,
+     RE_Finalization_Scope_Master        => System_Finalization_Primitives,
      RE_Finalize_Master                  => System_Finalization_Primitives,
      RE_Finalize_Object                  => System_Finalization_Primitives,
-     RE_Finalization_Scope_Master        => System_Finalization_Primitives,
      RE_Master_Node                      => System_Finalization_Primitives,
      RE_Suppress_Object_Finalize_At_End  => System_Finalization_Primitives,
 

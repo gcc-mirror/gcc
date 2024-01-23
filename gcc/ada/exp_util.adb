@@ -937,11 +937,11 @@ package body Exp_Util is
           and then not No_Heap_Finalization (Ptr_Typ);
 
       --  The allocation/deallocation of a controlled object must be associated
-      --  with an attachment to/detachment from a finalization master, but the
-      --  implementation cannot guarantee this property for every anonymous
-      --  access tyoe, see Build_Anonymous_Collection.
+      --  with an attachment to/detachment from a finalization collection, but
+      --  the implementation cannot guarantee this property for every anonymous
+      --  access type, see Build_Anonymous_Collection.
 
-      if Needs_Fin and then No (Finalization_Master (Ptr_Typ)) then
+      if Needs_Fin and then No (Finalization_Collection (Ptr_Typ)) then
          pragma Assert (Ekind (Ptr_Typ) = E_Anonymous_Access_Type);
          Needs_Fin := False;
       end if;
@@ -975,8 +975,8 @@ package body Exp_Util is
          Alloc_Nod    : Node_Id := Empty;
          Alloc_Expr   : Node_Id := Empty;
          Fin_Addr_Id  : Entity_Id;
-         Fin_Mas_Act  : Node_Id;
-         Fin_Mas_Id   : Entity_Id;
+         Fin_Coll_Act : Node_Id;
+         Fin_Coll_Id  : Entity_Id;
          Proc_To_Call : Entity_Id;
          Subpool      : Node_Id := Empty;
 
@@ -1035,21 +1035,21 @@ package body Exp_Util is
                Append_To (Actuals, Make_Null (Loc));
             end if;
 
-            --  c) Finalization master
+            --  c) Finalization collection
 
             if Needs_Fin then
-               Fin_Mas_Id  := Finalization_Master (Ptr_Typ);
-               Fin_Mas_Act := New_Occurrence_Of (Fin_Mas_Id, Loc);
+               Fin_Coll_Id  := Finalization_Collection (Ptr_Typ);
+               Fin_Coll_Act := New_Occurrence_Of (Fin_Coll_Id, Loc);
 
-               --  Handle the case where the master is actually a pointer to a
-               --  master. This case arises in build-in-place functions.
+               --  Handle the case where the collection is actually a pointer
+               --  to a collection. This arises in build-in-place functions.
 
-               if Is_Access_Type (Etype (Fin_Mas_Id)) then
-                  Append_To (Actuals, Fin_Mas_Act);
+               if Is_Access_Type (Etype (Fin_Coll_Id)) then
+                  Append_To (Actuals, Fin_Coll_Act);
                else
                   Append_To (Actuals,
                     Make_Attribute_Reference (Loc,
-                      Prefix         => Fin_Mas_Act,
+                      Prefix         => Fin_Coll_Act,
                       Attribute_Name => Name_Unrestricted_Access));
                end if;
             else
@@ -1293,6 +1293,7 @@ package body Exp_Util is
                   New_Occurrence_Of (RTE (RE_Storage_Count), Loc)));
 
             Formal_Params : List_Id;
+
          begin
             if Use_Secondary_Stack_Pool then
                --  Gigi expects a different profile in the Secondary_Stack_Pool
@@ -8751,7 +8752,7 @@ package body Exp_Util is
           and then not Is_Aliased (Obj_Id, Decl)
 
           --  Do not consider transient objects allocated on the heap since
-          --  they are attached to a finalization master.
+          --  they are attached to a finalization collection.
 
           and then not Is_Allocated (Obj_Id)
 
@@ -13063,15 +13064,15 @@ package body Exp_Util is
             end if;
 
          --  Inspect the freeze node of an access-to-controlled type and look
-         --  for a delayed finalization master. This case arises when the
+         --  for a delayed finalization collection. This case arises when the
          --  freeze actions are inserted at a later time than the expansion of
          --  the context. Since Build_Finalizer is never called on a single
-         --  construct twice, the master will be ultimately left out and never
-         --  finalized. This is also needed for freeze actions of designated
-         --  types themselves, since in some cases the finalization master is
-         --  associated with a designated type's freeze node rather than that
-         --  of the access type (see handling for freeze actions in
-         --  Build_Finalization_Master).
+         --  construct twice, the collection would be ultimately left out and
+         --  never finalized. This is also needed for the freeze actions of
+         --  designated types themselves, since in some cases the finalization
+         --  collection is associated with a designated type's freeze node
+         --  rather than that of the access type (see handling for freeze
+         --  actions in Build_Finalization_Collection).
 
          elsif Nkind (Decl) = N_Freeze_Entity
            and then Present (Actions (Decl))

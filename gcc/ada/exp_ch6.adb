@@ -128,12 +128,12 @@ package body Exp_Ch6 is
 
    --  Suffixes for Build-In-Place extra formals
 
-   BIP_Alloc_Suffix               : constant String := "BIPalloc";
-   BIP_Storage_Pool_Suffix        : constant String := "BIPstoragepool";
-   BIP_Finalization_Master_Suffix : constant String := "BIPfinalizationmaster";
-   BIP_Task_Master_Suffix         : constant String := "BIPtaskmaster";
-   BIP_Activation_Chain_Suffix    : constant String := "BIPactivationchain";
-   BIP_Object_Access_Suffix       : constant String := "BIPaccess";
+   BIP_Alloc_Suffix            : constant String := "BIPalloc";
+   BIP_Storage_Pool_Suffix     : constant String := "BIPstoragepool";
+   BIP_Collection_Suffix       : constant String := "BIPcollection";
+   BIP_Task_Master_Suffix      : constant String := "BIPtaskmaster";
+   BIP_Activation_Chain_Suffix : constant String := "BIPactivationchain";
+   BIP_Object_Access_Suffix    : constant String := "BIPaccess";
 
    -----------------------
    -- Local Subprograms --
@@ -165,16 +165,16 @@ package body Exp_Ch6 is
    --  (which must not be Unspecified in that case). If Pool_Exp is present,
    --  then use it for BIP_Storage_Pool, otherwise pass "null".
 
-   procedure Add_Finalization_Master_Actual_To_Build_In_Place_Call
-     (Function_Call : Node_Id;
-      Function_Id   : Entity_Id;
-      Ptr_Typ       : Entity_Id := Empty;
-      Master_Exp    : Node_Id   := Empty);
+   procedure Add_Collection_Actual_To_Build_In_Place_Call
+     (Function_Call  : Node_Id;
+      Function_Id    : Entity_Id;
+      Ptr_Typ        : Entity_Id := Empty;
+      Collection_Exp : Node_Id   := Empty);
    --  Ada 2005 (AI-318-02): If the result type of a build-in-place call needs
    --  finalization actions, add an actual parameter which is a pointer to the
-   --  finalization master of the caller. If Master_Exp is present, then that
-   --  will be passed as the actual. Otherwise, if Ptr_Typ is left Empty, this
-   --  will result in an automatic "null" value for the actual.
+   --  collection of the access type used by the caller. If Collection_Exp is
+   --  present, then that will be passed as the actual. Otherwise, if Ptr_Typ
+   --  is Empty, this will result in an automatic "null" value for the actual.
 
    procedure Add_Task_Actuals_To_Build_In_Place_Call
      (Function_Call : Node_Id;
@@ -484,15 +484,15 @@ package body Exp_Ch6 is
       end if;
    end Add_Unconstrained_Actuals_To_Build_In_Place_Call;
 
-   -----------------------------------------------------------
-   -- Add_Finalization_Master_Actual_To_Build_In_Place_Call --
-   -----------------------------------------------------------
+   --------------------------------------------------
+   -- Add_Collection_Actual_To_Build_In_Place_Call --
+   --------------------------------------------------
 
-   procedure Add_Finalization_Master_Actual_To_Build_In_Place_Call
-     (Function_Call : Node_Id;
-      Function_Id   : Entity_Id;
-      Ptr_Typ       : Entity_Id := Empty;
-      Master_Exp    : Node_Id   := Empty)
+   procedure Add_Collection_Actual_To_Build_In_Place_Call
+     (Function_Call  : Node_Id;
+      Function_Id    : Entity_Id;
+      Ptr_Typ        : Entity_Id := Empty;
+      Collection_Exp : Node_Id   := Empty)
    is
       Loc : constant Source_Ptr := Sloc (Function_Call);
 
@@ -501,20 +501,20 @@ package body Exp_Ch6 is
       Desig_Typ : Entity_Id;
 
    begin
-      if not Needs_BIP_Finalization_Master (Function_Id) then
+      if not Needs_BIP_Collection (Function_Id) then
          return;
       end if;
 
-      Formal := Build_In_Place_Formal (Function_Id, BIP_Finalization_Master);
+      Formal := Build_In_Place_Formal (Function_Id, BIP_Collection);
 
-      --  If there is a finalization master actual, such as the implicit
-      --  finalization master of an enclosing build-in-place function,
+      --  If there is a finalization collection actual, such as the implicit
+      --  finalization collection of an enclosing build-in-place function,
       --  then this must be added as an extra actual of the call.
 
-      if Present (Master_Exp) then
-         Actual := Master_Exp;
+      if Present (Collection_Exp) then
+         Actual := Collection_Exp;
 
-      --  Case where the context does not require an actual master
+      --  Case where the context does not require an actual collection
 
       elsif No (Ptr_Typ) then
          Actual := Make_Null (Loc);
@@ -524,8 +524,8 @@ package body Exp_Ch6 is
 
          --  Check for a library-level access type whose designated type has
          --  suppressed finalization or the access type is subject to pragma
-         --  No_Heap_Finalization. Such an access type lacks a master. Pass
-         --  a null actual to callee in order to signal a missing master.
+         --  No_Heap_Finalization. Such an access type lacks a collection. Pass
+         --  a null actual to callee in order to signal a missing collection.
 
          if Is_Library_Level_Entity (Ptr_Typ)
            and then (Finalize_Storage_Only (Desig_Typ)
@@ -537,25 +537,25 @@ package body Exp_Ch6 is
 
          elsif Needs_Finalization (Desig_Typ) then
 
-            --  The general mechanism of creating finalization masters for
-            --  anonymous access types is disabled by default, otherwise
-            --  finalization masters will pop all over the place. Such types
-            --  use context-specific masters.
+            --  The general mechanism of creating finalization collections
+            --  for anonymous access types is disabled by default, otherwise
+            --  finalization collections will pop all over the place. Instead
+            --  such types use context-specific collections.
 
             if Ekind (Ptr_Typ) = E_Anonymous_Access_Type
-              and then No (Finalization_Master (Ptr_Typ))
+              and then No (Finalization_Collection (Ptr_Typ))
             then
-               Build_Anonymous_Master (Ptr_Typ);
+               Build_Anonymous_Collection (Ptr_Typ);
             end if;
 
-            --  Access-to-controlled types should always have a master
+            --  Access-to-controlled types should always have a collection
 
-            pragma Assert (Present (Finalization_Master (Ptr_Typ)));
+            pragma Assert (Present (Finalization_Collection (Ptr_Typ)));
 
             Actual :=
               Make_Attribute_Reference (Loc,
                 Prefix =>
-                  New_Occurrence_Of (Finalization_Master (Ptr_Typ), Loc),
+                  New_Occurrence_Of (Finalization_Collection (Ptr_Typ), Loc),
                 Attribute_Name => Name_Unrestricted_Access);
 
          --  Tagged types
@@ -571,7 +571,7 @@ package body Exp_Ch6 is
       --  the end of the function's actuals.
 
       Add_Extra_Actual_To_Call (Function_Call, Formal, Actual);
-   end Add_Finalization_Master_Actual_To_Build_In_Place_Call;
+   end Add_Collection_Actual_To_Build_In_Place_Call;
 
    ------------------------------
    -- Add_Extra_Actual_To_Call --
@@ -851,8 +851,8 @@ package body Exp_Ch6 is
          when BIP_Storage_Pool =>
             return BIP_Storage_Pool_Suffix;
 
-         when BIP_Finalization_Master =>
-            return BIP_Finalization_Master_Suffix;
+         when BIP_Collection =>
+            return BIP_Collection_Suffix;
 
          when BIP_Task_Master =>
             return BIP_Task_Master_Suffix;
@@ -891,8 +891,8 @@ package body Exp_Ch6 is
       elsif Has_Suffix (BIP_Storage_Pool_Suffix) then
          return BIP_Storage_Pool;
 
-      elsif Has_Suffix (BIP_Finalization_Master_Suffix) then
-         return BIP_Finalization_Master;
+      elsif Has_Suffix (BIP_Collection_Suffix) then
+         return BIP_Collection;
 
       elsif Has_Suffix (BIP_Task_Master_Suffix) then
          return BIP_Task_Master;
@@ -3361,7 +3361,7 @@ package body Exp_Ch6 is
                Analyze_And_Resolve (Actual, Standard_Integer);
                Add_Extra_Actual_To_Call (N, Formal, Actual);
 
-            --  BIPstoragepool, BIPfinalizationmaster, BIPactivationchain,
+            --  BIPstoragepool, BIPcollection, BIPactivationchain,
             --  and BIPaccess.
 
             elsif Is_Access_Type (Etype (Formal)) then
@@ -7973,7 +7973,7 @@ package body Exp_Ch6 is
    begin
       return Has_Suffix (BIP_Alloc_Suffix)
         or else Has_Suffix (BIP_Storage_Pool_Suffix)
-        or else Has_Suffix (BIP_Finalization_Master_Suffix)
+        or else Has_Suffix (BIP_Collection_Suffix)
         or else Has_Suffix (BIP_Task_Master_Suffix)
         or else Has_Suffix (BIP_Activation_Chain_Suffix)
         or else Has_Suffix (BIP_Object_Access_Suffix);
@@ -8348,11 +8348,11 @@ package body Exp_Ch6 is
       --
       --  Even though the size of limited controlled type Lim_Ctrl is known,
       --  allocating Obj at the caller side will chain Obj on Lim_Ctrl_Ptr's
-      --  finalization master. The subsequent call to Make_Lim_Ctrl will fail
-      --  during the initialization actions for Result, which implies that
+      --  finalization collection. The subsequent call to Make_Lim_Ctrl will
+      --  fail during the initialization actions for Result, which means that
       --  Result (and Obj by extension) should not be finalized. However Obj
       --  will be finalized when access type Lim_Ctrl_Ptr goes out of scope
-      --  since it is already attached on the related finalization master.
+      --  since it is already attached on the its finalization collection.
 
       if Needs_BIP_Alloc_Form (Function_Id) then
          Temp_Init := Empty;
@@ -8373,9 +8373,9 @@ package body Exp_Ch6 is
 
          --  No user-defined pool; pass an allocation parameter indicating that
          --  the function should allocate its result on the heap. When there is
-         --  a finalization master, a pool reference is required.
+         --  a finalization collection, a pool reference is required.
 
-         elsif Needs_BIP_Finalization_Master (Function_Id) then
+         elsif Needs_BIP_Collection (Function_Id) then
             Alloc_Form  := Global_Heap;
             Pool_Actual :=
               Make_Attribute_Reference (Loc,
@@ -8515,7 +8515,7 @@ package body Exp_Ch6 is
          Alloc_Form => Alloc_Form,
          Pool_Exp   => Pool_Actual);
 
-      Add_Finalization_Master_Actual_To_Build_In_Place_Call
+      Add_Collection_Actual_To_Build_In_Place_Call
         (Func_Call, Function_Id, Ptr_Typ => Acc_Type);
 
       Add_Task_Actuals_To_Build_In_Place_Call
@@ -8650,7 +8650,7 @@ package body Exp_Ch6 is
          Add_Unconstrained_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
 
-         Add_Finalization_Master_Actual_To_Build_In_Place_Call
+         Add_Collection_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id);
 
          Add_Task_Actuals_To_Build_In_Place_Call
@@ -8677,7 +8677,7 @@ package body Exp_Ch6 is
          Add_Unconstrained_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id, Alloc_Form => Secondary_Stack);
 
-         Add_Finalization_Master_Actual_To_Build_In_Place_Call
+         Add_Collection_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id);
 
          Add_Task_Actuals_To_Build_In_Place_Call
@@ -8742,7 +8742,7 @@ package body Exp_Ch6 is
       Add_Unconstrained_Actuals_To_Build_In_Place_Call
         (Func_Call, Func_Id, Alloc_Form => Caller_Allocation);
 
-      Add_Finalization_Master_Actual_To_Build_In_Place_Call
+      Add_Collection_Actual_To_Build_In_Place_Call
         (Func_Call, Func_Id);
 
       Add_Task_Actuals_To_Build_In_Place_Call
@@ -8833,16 +8833,16 @@ package body Exp_Ch6 is
       Encl_Func   : constant Entity_Id  := Enclosing_Subprogram (Obj_Def_Id);
       Result_Subt : constant Entity_Id  := Etype (Function_Id);
 
-      Call_Deref      : Node_Id;
-      Caller_Object   : Node_Id;
-      Def_Id          : Entity_Id;
-      Designated_Type : Entity_Id;
-      Master_Actual   : Node_Id := Empty;
-      Pool_Actual     : Node_Id;
-      Ptr_Typ         : Entity_Id;
-      Ptr_Typ_Decl    : Node_Id;
-      Pass_Caller_Acc : Boolean := False;
-      Res_Decl        : Node_Id;
+      Call_Deref        : Node_Id;
+      Caller_Object     : Node_Id;
+      Collection_Actual : Node_Id := Empty;
+      Def_Id            : Entity_Id;
+      Designated_Type   : Entity_Id;
+      Pool_Actual       : Node_Id;
+      Ptr_Typ           : Entity_Id;
+      Ptr_Typ_Decl      : Node_Id;
+      Pass_Caller_Acc   : Boolean := False;
+      Res_Decl          : Node_Id;
 
       Definite : constant Boolean :=
                    Caller_Known_Size (Func_Call, Result_Subt)
@@ -9029,11 +9029,11 @@ package body Exp_Ch6 is
               (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
          end if;
 
-         if Needs_BIP_Finalization_Master (Encl_Func) then
-            Master_Actual :=
+         if Needs_BIP_Collection (Encl_Func) then
+            Collection_Actual :=
               New_Occurrence_Of
                 (Build_In_Place_Formal
-                   (Encl_Func, BIP_Finalization_Master), Loc);
+                   (Encl_Func, BIP_Collection), Loc);
          end if;
 
          --  Retrieve the BIPacc formal from the enclosing function and convert
@@ -9071,20 +9071,20 @@ package body Exp_Ch6 is
       elsif Is_Library_Level_Entity (Obj_Def_Id)
         and then not Restriction_Active (No_Implicit_Heap_Allocations)
       then
-         --  Create a finalization master for the access result type to ensure
-         --  that the heap allocation can properly chain the object and later
-         --  finalize it when the library unit goes out of scope.
+         --  Create a finalization collection for the access result type to
+         --  ensure that the heap allocation can properly chain the object
+         --  and later finalize it when the library unit goes out of scope.
 
-         if Needs_BIP_Finalization_Master (Func_Call) then
-            Build_Finalization_Master
+         if Needs_BIP_Collection (Func_Call) then
+            Build_Finalization_Collection
               (Typ            => Ptr_Typ,
                For_Lib_Level  => True,
                Insertion_Node => Ptr_Typ_Decl);
 
-            Master_Actual :=
+            Collection_Actual :=
               Make_Attribute_Reference (Loc,
                 Prefix         =>
-                  New_Occurrence_Of (Finalization_Master (Ptr_Typ), Loc),
+                  New_Occurrence_Of (Finalization_Collection (Ptr_Typ), Loc),
                 Attribute_Name => Name_Unrestricted_Access);
 
             Pool_Actual :=
@@ -9117,12 +9117,12 @@ package body Exp_Ch6 is
          Establish_Transient_Scope (Obj_Decl, Manage_Sec_Stack => True);
       end if;
 
-      --  Pass along any finalization master actual, which is needed in the
-      --  case where the called function initializes a return object of an
-      --  enclosing build-in-place function.
+      --  Pass along any finalization collection actual, which is needed in
+      --  the case where the called function initializes a return object of
+      --  an enclosing build-in-place function.
 
-      Add_Finalization_Master_Actual_To_Build_In_Place_Call
-        (Func_Call, Function_Id, Master_Exp => Master_Actual);
+      Add_Collection_Actual_To_Build_In_Place_Call
+        (Func_Call, Function_Id, Collection_Exp => Collection_Actual);
 
       if Nkind (Parent (Obj_Decl)) = N_Extended_Return_Statement
         and then Needs_BIP_Task_Actuals (Function_Id)
@@ -9625,16 +9625,15 @@ package body Exp_Ch6 is
       end if;
    end Needs_BIP_Task_Actuals;
 
-   -----------------------------------
-   -- Needs_BIP_Finalization_Master --
-   -----------------------------------
+   --------------------------
+   -- Needs_BIP_Collection --
+   --------------------------
 
-   function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean
-   is
+   function Needs_BIP_Collection (Func_Id : Entity_Id) return Boolean is
       Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
    begin
-      --  A formal giving the finalization master is needed for build-in-place
+      --  A formal for the finalization collection is needed for build-in-place
       --  functions whose result type needs finalization or is a tagged type.
       --  Tagged primitive build-in-place functions need such a formal because
       --  they can be called by a dispatching call, and extensions may require
@@ -9647,7 +9646,7 @@ package body Exp_Ch6 is
       return not Restriction_Active (No_Finalization)
         and then (Needs_Finalization (Typ) or else Is_Tagged_Type (Typ))
         and then not Has_Foreign_Convention (Typ);
-   end Needs_BIP_Finalization_Master;
+   end Needs_BIP_Collection;
 
    --------------------------
    -- Needs_BIP_Alloc_Form --
@@ -9659,7 +9658,7 @@ package body Exp_Ch6 is
    begin
       --  See Make_Build_In_Place_Call_In_Allocator for the rationale
 
-      if Needs_BIP_Finalization_Master (Func_Id) then
+      if Needs_BIP_Collection (Func_Id) then
          return True;
       end if;
 

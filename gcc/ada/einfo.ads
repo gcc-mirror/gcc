@@ -426,15 +426,14 @@ package Einfo is
 --       definition clause with an (obsolescent) mod clause is converted
 --       into an attribute definition clause for this purpose.
 
---    Anonymous_Designated_Type
---       Defined in variables which represent anonymous finalization masters.
---       Contains the designated type which is being serviced by the master.
-
---    Anonymous_Masters
+--    Anonymous_Collections
 --       Defined in packages, subprograms, and subprogram bodies. Contains a
---       list of anonymous finalization masters declared within the related
---       unit. The list acts as a mapping between a master and a designated
---       type.
+--       list of anonymous finalization collections declared in this unit.
+--       The list acts as a mapping between collections and designated types.
+
+--    Anonymous_Designated_Type
+--       Defined in entities that represent anonymous finalization collections.
+--       Contains the designated type that is being serviced by the collection.
 
 --    Anonymous_Object
 --       Present in protected and task type entities. Contains the entity of
@@ -1298,12 +1297,13 @@ package Einfo is
 --       families. Returns first extra formal of the subprogram or entry.
 --       Returns Empty if there are no extra formals.
 
---    Finalization_Master [root type only]
+--    Finalization_Collection [root type only]
 --       Defined in access-to-controlled or access-to-class-wide types. The
---       field contains the entity of the finalization master which handles
---       dynamically allocated controlled objects referenced by the access
---       type. Empty for access-to-subprogram types. Empty for access types
---       whose designated type does not need finalization actions.
+--       field contains the entity of the finalization collection of a type,
+--       which is the set of objects created by allocators of the type, or
+--       of types derived from the type. Empty for access-to-object types
+--       whose designated type does not need finalization actions as well
+--       as for access-to-subprogram types.
 
 --    Finalization_Master_Node
 --       Defined in variables and constants that require finalization actions.
@@ -5139,8 +5139,8 @@ package Einfo is
    --    Direct_Primitive_Operations $$$ type
    --    Master_Id
    --    Directly_Designated_Type
-   --    Associated_Storage_Pool               (base type only)
-   --    Finalization_Master                   (base type only)
+   --    Associated_Storage_Pool               (root type only)
+   --    Finalization_Collection               (root type only)
    --    Storage_Size_Variable                 (base type only)
    --    Has_Pragma_Controlled                 (base type only)
    --    Has_Storage_Size_Clause               (base type only)
@@ -5173,7 +5173,7 @@ package Einfo is
 
    --  E_Anonymous_Access_Type
    --    Directly_Designated_Type
-   --    Finalization_Master
+   --    Finalization_Collection
    --    Storage_Size_Variable                 is this needed ???
    --    Associated_Storage_Pool $$$
    --    (plus type attributes)
@@ -5500,7 +5500,7 @@ package Einfo is
    --    Overridden_Operation
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
-   --    Anonymous_Masters                    (non-generic case only)
+   --    Anonymous_Collections                (non-generic case only)
    --    Corresponding_Equality               (implicit /= only)
    --    Thunk_Entity                         (thunk case only)
    --    Corresponding_Procedure              (generate C code only)
@@ -5585,7 +5585,7 @@ package Einfo is
    --    Master_Id
    --    Directly_Designated_Type
    --    Associated_Storage_Pool              (root type only)
-   --    Finalization_Master                  (root type only)
+   --    Finalization_Collection              (root type only)
    --    Storage_Size_Variable                (base type only)
    --    (plus type attributes)
 
@@ -5764,7 +5764,7 @@ package Einfo is
    --    Package_Instantiation
    --    Current_Use_Clause
    --    Finalizer                            (non-generic case only)
-   --    Anonymous_Masters                    (non-generic case only)
+   --    Anonymous_Collections                (non-generic case only)
    --    Contract
    --    SPARK_Pragma
    --    SPARK_Aux_Pragma
@@ -5861,7 +5861,7 @@ package Einfo is
    --    Overridden_Operation                 (never for init proc)
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
-   --    Anonymous_Masters                    (non-generic case only)
+   --    Anonymous_Collections                (non-generic case only)
    --    Static_Initialization                (init_proc only)
    --    Thunk_Entity                         (thunk case only)
    --    Corresponding_Function               (generate C code only)
@@ -6085,7 +6085,7 @@ package Einfo is
    --    Last_Entity
    --    Scope_Depth_Value
    --    Extra_Formals
-   --    Anonymous_Masters
+   --    Anonymous_Collections
    --    Contract
    --    SPARK_Pragma
    --    Contains_Ignored_Ghost_Code

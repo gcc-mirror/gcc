@@ -638,7 +638,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    Ab (Access_Kind, Elementary_Kind,
        (Sm (Associated_Storage_Pool, Node_Id, Root_Type_Only),
         Sm (Directly_Designated_Type, Node_Id),
-        Sm (Finalization_Master, Node_Id, Root_Type_Only),
+        Sm (Finalization_Collection, Node_Id, Root_Type_Only),
         Sm (Has_Pragma_Controlled, Flag, Impl_Base_Type_Only),
         Sm (Has_Storage_Size_Clause, Flag, Impl_Base_Type_Only),
         Sm (Is_Access_Constant, Flag),
@@ -991,7 +991,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Function, Subprogram_Kind,
        --  A function, created by a function declaration or a function body
        --  that acts as its own declaration.
-       (Sm (Anonymous_Masters, Elist_Id),
+       (Sm (Anonymous_Collections, Elist_Id),
         Sm (Corresponding_Equality, Node_Id,
             Pre => "not Comes_From_Source (N) and then Chars (N) = Name_Op_Ne"),
         Sm (Corresponding_Procedure, Node_Id),
@@ -1040,7 +1040,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Procedure, Subprogram_Kind,
        --  A procedure, created by a procedure declaration or a procedure
        --  body that acts as its own declaration.
-       (Sm (Anonymous_Masters, Elist_Id),
+       (Sm (Anonymous_Collections, Elist_Id),
         Sm (Associated_Node_For_Itype, Node_Id),
         Sm (Corresponding_Function, Node_Id),
         Sm (DT_Position, Uint,
@@ -1249,7 +1249,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Package, Entity_Kind,
        --  A package, created by a package declaration
        (Sm (Abstract_States, Elist_Id),
-        Sm (Anonymous_Masters, Elist_Id),
+        Sm (Anonymous_Collections, Elist_Id),
         Sm (Associated_Formal_Package, Node_Id),
         Sm (Body_Entity, Node_Id),
         Sm (Body_Needed_For_Inlining, Flag),
@@ -1328,7 +1328,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  to represent the entity for the body. This entity serves almost no
        --  function, since all semantic analysis uses the subprogram entity
        --  for the declaration (E_Function or E_Procedure).
-       (Sm (Anonymous_Masters, Elist_Id),
+       (Sm (Anonymous_Collections, Elist_Id),
         Sm (Contract, Node_Id),
         Sm (Extra_Formals, Node_Id),
         Sm (First_Entity, Node_Id),

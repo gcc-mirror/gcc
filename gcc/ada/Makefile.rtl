@@ -596,7 +596,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-ficobl$(objext) \
   s-filatt$(objext) \
   s-fileio$(objext) \
-  s-finmas$(objext) \
   s-finpri$(objext) \
   s-finroo$(objext) \
   s-flocon$(objext) \

@@ -31,7 +31,7 @@
 
 with Ada.Unchecked_Deallocation;
 
-with System.Finalization_Masters; use System.Finalization_Masters;
+with System.Finalization_Primitives; use System.Finalization_Primitives;
 
 package body System.Storage_Pools.Subpools.Finalization is
 
@@ -53,9 +53,9 @@ package body System.Storage_Pools.Subpools.Finalization is
          return;
       end if;
 
-      --  Clean up all controlled objects chained on the subpool's master
+      --  Clean up all controlled objects chained on the subpool's collection
 
-      Finalize (Subpool.Master);
+      Finalize (Subpool.Collection);
 
       --  Remove the subpool from its owner's list of subpools
 

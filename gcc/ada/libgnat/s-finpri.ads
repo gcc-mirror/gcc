@@ -29,6 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Finalization;
+
+with System.Storage_Elements;
+
 --  This package encapsulates the types and operations used by the compiler
 --  to support finalization of objects of Ada controlled types (types derived
 --  from types Controlled and Limited_Controlled).
@@ -108,7 +112,76 @@ package System.Finalization_Primitives with Preelaborate is
    --  is completed normally (it will still be finalized if an exception
    --  is raised before the normal completion of the return statement).
 
+   --------------------------------------------------------------------------
+   --  Types and operations of finalization collections: A finalization
+   --  collection is used to manage a set of controlled objects associated
+   --  with an access type. Such collections are always associated with a
+   --  finalization master, either at the library-level or within a subprogram,
+   --  depending on where the access type is declared, and the collection
+   --  object itself is managed via a Master_Node attached to its finalization
+   --  master.
+
+   type Finalization_Collection is
+     new Ada.Finalization.Limited_Controlled with private;
+   --  Objects of this type encapsulate a set of zero or more controlled
+   --  objects associated with an access type. The compiler ensures that
+   --  each finalization collection is in turn associated with a finalization
+   --  master.
+
+   type Finalization_Collection_Ptr is access all Finalization_Collection;
+   for Finalization_Collection_Ptr'Storage_Size use 0;
+   --  A reference to a collection. Since this type may not be used to
+   --  allocate objects, its storage size is zero.
+
+   overriding procedure Initialize
+     (Collection : in out Finalization_Collection);
+   --  Initializes the dummy head of a collection
+
+   overriding procedure Finalize
+     (Collection : in out Finalization_Collection);
+   --  Finalizes each object that has been associated with a finalization
+   --  collection, in some arbitrary order. Calls to this procedure with
+   --  a collection that has already been finalized have no effect.
+
+   function Finalization_Started
+     (Master : Finalization_Collection) return Boolean;
+   --  Return the finalization status of a collection
+
+   type Collection_Node is private;
+   --  Each controlled object associated with a finalization collection has
+   --  an associated object of this type.
+
+   type Collection_Node_Ptr is access all Collection_Node;
+   for Collection_Node_Ptr'Storage_Size use 0;
+   pragma No_Strict_Aliasing (Collection_Node_Ptr);
+   --  A reference to a collection node. Since this type may not be used to
+   --  allocate objects, its storage size is zero.
+
+   procedure Attach_Node_To_Collection
+     (Node             : not null Collection_Node_Ptr;
+      Finalize_Address : not null Finalize_Address_Ptr;
+      Collection       : in out Finalization_Collection);
+   --  Associates a collection node with a finalization collection. The node
+   --  can be associated with at most one finalization collection.
+
+   procedure Detach_Node_From_Collection (Node : not null Collection_Node_Ptr);
+   --  Removes a collection node from its associated finalization collection.
+   --  Calls to the procedure with a Node that has already been detached have
+   --  no effects.
+
+   function Header_Size return System.Storage_Elements.Storage_Count;
+   --  Return the size of type Collection_Node as Storage_Count
+
 private
+
+   --  Since RTSfind cannot contain names of the form RE_"+", the following
+   --  routine serves as a wrapper around System.Storage_Elements."+".
+
+   function Add_Offset_To_Address
+     (Addr   : System.Address;
+      Offset : System.Storage_Elements.Storage_Offset) return System.Address;
+
+   --  Finalization masters:
 
    --  Master node type structure
 
@@ -136,5 +209,32 @@ private
    pragma Inline (Chain_Node_To_Master);
    pragma Inline (Finalize_Object);
    pragma Inline (Suppress_Object_Finalize_At_End);
+
+   --  Finalization collections:
+
+   --  Collection node type structure
+
+   type Collection_Node is record
+      Finalize_Address : Finalize_Address_Ptr := null;
+
+      Prev : Collection_Node_Ptr := null;
+      Next : Collection_Node_Ptr := null;
+      --  Finalization_Collections are managed as a circular doubly-linked list
+   end record;
+
+   --  Finalization collection type structure
+
+   type Finalization_Collection is
+     new Ada.Finalization.Limited_Controlled with
+   record
+      Head : aliased Collection_Node;
+      --  The head of the circular doubly-linked list of Collection_Nodes
+
+      Finalization_Started : Boolean := False;
+      pragma Atomic (Finalization_Started);
+      --  A flag used to detect allocations which occur during the finalization
+      --  of a collection. The allocations must raise Program_Error. This may
+      --  arise in a multitask environment.
+   end record;
 
 end System.Finalization_Primitives;

@@ -1461,7 +1461,7 @@ package body Sem_Ch3 is
       Set_Has_Timing_Event         (T, False);
       Set_Has_Controlled_Component (T, False);
 
-      --  Initialize field Finalization_Master explicitly to Empty, to avoid
+      --  Initialize field Finalization_Collection explicitly to Empty to avoid
       --  problems where an incomplete view of this entity has been previously
       --  established by a limited with and an overlaid version of this field
       --  (Stored_Constraint) was initialized for the incomplete view.
@@ -1469,10 +1469,10 @@ package body Sem_Ch3 is
       --  This reset is performed in most cases except where the access type
       --  has been created for the purposes of allocating or deallocating a
       --  build-in-place object. Such access types have explicitly set pools
-      --  and finalization masters.
+      --  and finalization collections.
 
       if No (Associated_Storage_Pool (T)) then
-         Set_Finalization_Master (T, Empty);
+         Set_Finalization_Collection (T, Empty);
       end if;
 
       --  Ada 2005 (AI-231): Propagate the null-excluding and access-constant

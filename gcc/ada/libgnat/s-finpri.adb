@@ -35,6 +35,38 @@ with System.Soft_Links; use System.Soft_Links;
 
 package body System.Finalization_Primitives is
 
+   use type System.Storage_Elements.Storage_Offset;
+
+   ---------------------------
+   -- Add_Offset_To_Address --
+   ---------------------------
+
+   function Add_Offset_To_Address
+     (Addr   : System.Address;
+      Offset : System.Storage_Elements.Storage_Offset) return System.Address
+   is
+   begin
+      return System.Storage_Elements."+" (Addr, Offset);
+   end Add_Offset_To_Address;
+
+   -------------------------------
+   -- Attach_Node_To_Collection --
+   -------------------------------
+
+   procedure Attach_Node_To_Collection
+     (Node             : not null Collection_Node_Ptr;
+      Finalize_Address : not null Finalize_Address_Ptr;
+      Collection       : in out Finalization_Collection)
+   is
+   begin
+      Node.Finalize_Address := Finalize_Address;
+      Node.Prev             := Collection.Head'Unchecked_Access;
+      Node.Next             := Collection.Head.Next;
+
+      Collection.Head.Next.Prev := Node;
+      Collection.Head.Next      := Node;
+   end Attach_Node_To_Collection;
+
    -----------------------------
    -- Attach_Object_To_Master --
    -----------------------------
@@ -79,6 +111,120 @@ package body System.Finalization_Primitives is
       Node.Next   := Master.Head;
       Master.Head := Node;
    end Chain_Node_To_Master;
+
+   ---------------------------------
+   -- Detach_Node_From_Collection --
+   ---------------------------------
+
+   procedure Detach_Node_From_Collection
+     (Node : not null Collection_Node_Ptr)
+   is
+   begin
+      if Node.Prev /= null and then Node.Next /= null then
+         Node.Prev.Next := Node.Next;
+         Node.Next.Prev := Node.Prev;
+         Node.Prev := null;
+         Node.Next := null;
+      end if;
+   end Detach_Node_From_Collection;
+
+   --------------------------
+   -- Finalization_Started --
+   --------------------------
+
+   function Finalization_Started
+     (Master : Finalization_Collection) return Boolean
+   is
+   begin
+      return Master.Finalization_Started;
+   end Finalization_Started;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   overriding procedure Finalize
+     (Collection : in out Finalization_Collection)
+   is
+      Curr_Ptr                      : Collection_Node_Ptr;
+      Exc_Occur                     : Exception_Occurrence;
+      Finalization_Exception_Raised : Boolean := False;
+      Obj_Addr                      : Address;
+
+      function Is_Empty_List (L : not null Collection_Node_Ptr) return Boolean;
+      --  Determine whether a list contains only one element, the dummy head
+
+      -------------------
+      -- Is_Empty_List --
+      -------------------
+
+      function Is_Empty_List (L : not null Collection_Node_Ptr) return Boolean
+      is
+      begin
+         return L.Next = L and then L.Prev = L;
+      end Is_Empty_List;
+
+   begin
+      Lock_Task.all;
+
+      --  Synchronization:
+      --    Read  - allocation, finalization
+      --    Write - finalization
+
+      if Collection.Finalization_Started then
+         Unlock_Task.all;
+
+         --  Double finalization may occur during the handling of stand alone
+         --  libraries or the finalization of a pool with subpools. Due to the
+         --  potential aliasing of masters in these two cases, do not process
+         --  the same master twice.
+
+         return;
+      end if;
+
+      --  Lock the master to prevent any allocations while the objects are
+      --  being finalized. The master remains locked because either the master
+      --  is explicitly deallocated or the associated access type is about to
+      --  go out of scope.
+
+      --  Synchronization:
+      --    Read  - allocation, finalization
+      --    Write - finalization
+
+      Collection.Finalization_Started := True;
+
+      while not Is_Empty_List (Collection.Head'Unchecked_Access) loop
+         Curr_Ptr := Collection.Head.Next;
+
+         --  Synchronization:
+         --    Write - allocation, deallocation, finalization
+
+         Detach_Node_From_Collection (Curr_Ptr);
+
+         --  Skip the list header in order to offer proper object layout for
+         --  finalization.
+
+         Obj_Addr := Curr_Ptr.all'Address + Header_Size;
+
+         begin
+            Curr_Ptr.Finalize_Address (Obj_Addr);
+         exception
+            when Fin_Occur : others =>
+               if not Finalization_Exception_Raised then
+                  Finalization_Exception_Raised := True;
+                  Save_Occurrence (Exc_Occur, Fin_Occur);
+               end if;
+         end;
+      end loop;
+
+      Unlock_Task.all;
+
+      --  If one of the finalization actions raised an exception, reraise it
+
+      if Finalization_Exception_Raised then
+         Reraise_Occurrence (Exc_Occur);
+      end if;
+   end Finalize;
 
    ---------------------
    -- Finalize_Master --
@@ -165,6 +311,31 @@ package body System.Finalization_Primitives is
          FA (Node.Object_Address);
       end if;
    end Finalize_Object;
+
+   -----------------
+   -- Header_Size --
+   -----------------
+
+   function Header_Size return System.Storage_Elements.Storage_Count is
+   begin
+      return Collection_Node'Size / Storage_Unit;
+   end Header_Size;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   overriding procedure Initialize
+     (Collection : in out Finalization_Collection)
+   is
+   begin
+      Collection.Finalization_Started := False;
+
+      --  The dummy head must point to itself in both directions
+
+      Collection.Head.Prev := Collection.Head'Unchecked_Access;
+      Collection.Head.Next := Collection.Head'Unchecked_Access;
+   end Initialize;
 
    -------------------------------------
    -- Suppress_Object_Finalize_At_End --

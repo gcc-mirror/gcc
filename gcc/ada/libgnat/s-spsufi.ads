@@ -38,7 +38,7 @@ package System.Storage_Pools.Subpools.Finalization is
 
    procedure Finalize_And_Deallocate (Subpool : in out Subpool_Handle);
    --  This routine performs the following actions:
-   --    1) Finalize all objects chained on the subpool's master
+   --    1) Finalize all objects chained on the subpool's collection
    --    2) Remove the subpool from the owner's list of subpools
    --    3) Deallocate the doubly linked list node associated with the subpool
    --    4) Call Deallocate_Subpool

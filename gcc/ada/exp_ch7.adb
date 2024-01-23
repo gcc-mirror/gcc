@@ -297,8 +297,8 @@ package body Exp_Ch7 is
                      Finalize_Case   => TSS_Deep_Finalize,
                      Address_Case    => TSS_Finalize_Address);
 
-   function Allows_Finalization_Master (Typ : Entity_Id) return Boolean;
-   --  Determine whether access type Typ may have a finalization master
+   function Allows_Finalization_Collection (Typ : Entity_Id) return Boolean;
+   --  Determine whether access type Typ may have a finalization collection
 
    procedure Build_Array_Deep_Procs (Typ : Entity_Id);
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
@@ -591,7 +591,7 @@ package body Exp_Ch7 is
       --  cleanup code:
       --
       --    if BIPallocform > Secondary_Stack'Pos
-      --      and then BIPfinalizationmaster /= null
+      --      and then BIPcollection /= null
       --    then
       --       declare
       --          type Ptr_Typ is access Fun_Typ;
@@ -612,12 +612,12 @@ package body Exp_Ch7 is
         (Func_Id  : Entity_Id;
          Obj_Addr : Node_Id) return Node_Id
       is
-         Alloc_Id   : constant Entity_Id :=
+         Alloc_Id    : constant Entity_Id :=
            Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
-         Decls      : constant List_Id := New_List;
-         Fin_Mas_Id : constant Entity_Id :=
-           Build_In_Place_Formal (Func_Id, BIP_Finalization_Master);
-         Func_Typ   : constant Entity_Id := Etype (Func_Id);
+         Decls       : constant List_Id := New_List;
+         Fin_Coll_Id : constant Entity_Id :=
+           Build_In_Place_Formal (Func_Id, BIP_Collection);
+         Func_Typ    : constant Entity_Id := Etype (Func_Id);
 
          Cond      : Node_Id;
          Free_Blk  : Node_Id;
@@ -654,8 +654,7 @@ package body Exp_Ch7 is
             Pool_Id := Empty;
          end if;
 
-         --  Create an access type which uses the storage pool of the
-         --  caller's finalization master.
+         --  Create an access type which uses the storage pool of the caller
 
          --  Generate:
          --    type Ptr_Typ is access Func_Typ;
@@ -669,11 +668,11 @@ package body Exp_Ch7 is
                Make_Access_To_Object_Definition (Loc,
                  Subtype_Indication => New_Occurrence_Of (Func_Typ, Loc))));
 
-         --  Perform minor decoration in order to set the master and the
+         --  Perform minor decoration in order to set the collection and the
          --  storage pool attributes.
 
          Mutate_Ekind (Ptr_Typ, E_Access_Type);
-         Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
+         Set_Finalization_Collection (Ptr_Typ, Fin_Coll_Id);
          Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
 
          --  Create an explicit free statement. Note that the free uses the
@@ -705,7 +704,7 @@ package body Exp_Ch7 is
 
          --  Generate:
          --    if BIPallocform > Secondary_Stack'Pos
-         --      and then BIPfinalizationmaster /= null
+         --      and then BIPcollection /= null
          --    then
 
          Cond :=
@@ -718,7 +717,7 @@ package body Exp_Ch7 is
                      UI_From_Int (BIP_Allocation_Form'Pos (Secondary_Stack)))),
              Right_Opnd =>
                Make_Op_Ne (Loc,
-                 Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
+                 Left_Opnd  => New_Occurrence_Of (Fin_Coll_Id, Loc),
                  Right_Opnd => Make_Null (Loc)));
 
          --  Generate:
@@ -784,12 +783,12 @@ package body Exp_Ch7 is
 
       --  If we are dealing with a return object of a build-in-place function
       --  and its allocation has been done in the function, we additionally
-      --  need to detach it from the caller's finalization master in order to
-      --  prevent double finalization.
+      --  need to detach it from the caller's finalization collection in order
+      --  to prevent double finalization.
 
       if Present (Func_Id)
         and then Is_Build_In_Place_Function (Func_Id)
-        and then Needs_BIP_Finalization_Master (Func_Id)
+        and then Needs_BIP_Collection (Func_Id)
       then
          declare
             Ptr_Typ   : constant Node_Id := Make_Temporary (Loc, 'P');
@@ -869,11 +868,11 @@ package body Exp_Ch7 is
         (Master_Node_Ins, Master_Node_Attach, Suppress => All_Checks);
    end Attach_Object_To_Master_Node;
 
-   --------------------------------
-   -- Allows_Finalization_Master --
-   --------------------------------
+   ------------------------------------
+   -- Allows_Finalization_Collection --
+   ------------------------------------
 
-   function Allows_Finalization_Master (Typ : Entity_Id) return Boolean is
+   function Allows_Finalization_Collection (Typ : Entity_Id) return Boolean is
       function In_Deallocation_Instance (E : Entity_Id) return Boolean;
       --  Determine whether entity E is inside a wrapper package created for
       --  an instance of Ada.Unchecked_Deallocation.
@@ -909,11 +908,11 @@ package body Exp_Ch7 is
       Ptr_Typ   : constant Entity_Id :=
                     Root_Type_Of_Full_View (Base_Type (Typ));
 
-   --  Start of processing for Allows_Finalization_Master
+   --  Start of processing for Allows_Finalization_Collection
 
    begin
       --  Certain run-time configurations and targets do not provide support
-      --  for controlled types and therefore do not need masters.
+      --  for controlled types and therefore do not need collections.
 
       if Restriction_Active (No_Finalization) then
          return False;
@@ -946,8 +945,8 @@ package body Exp_Ch7 is
          return False;
 
       --  Do not consider a non-library access type when No_Nested_Finalization
-      --  is in effect since finalization masters are controlled objects and if
-      --  created will violate the restriction.
+      --  is in effect, because finalization collections are controlled objects
+      --  and, if created, will violate the restriction.
 
       elsif Restriction_Active (No_Nested_Finalization)
         and then not Is_Library_Level_Entity (Ptr_Typ)
@@ -961,68 +960,68 @@ package body Exp_Ch7 is
       elsif No_Heap_Finalization (Ptr_Typ) then
          return False;
 
-      --  Do not create finalization masters in GNATprove mode because this
-      --  causes unwanted extra expansion. A compilation in this mode must
+      --  Do not create finalization collections in GNATprove mode because this
+      --  causes unwanted extra expansion. Compilation in this mode must always
       --  keep the tree as close as possible to the original sources.
 
       elsif GNATprove_Mode then
          return False;
 
-      --  Otherwise the access type may use a finalization master
+      --  Otherwise the access type may use a finalization collection
 
       else
          return True;
       end if;
-   end Allows_Finalization_Master;
+   end Allows_Finalization_Collection;
 
-   ----------------------------
-   -- Build_Anonymous_Master --
-   ----------------------------
+   --------------------------------
+   -- Build_Anonymous_Collection --
+   --------------------------------
 
-   procedure Build_Anonymous_Master (Ptr_Typ : Entity_Id) is
-      function Create_Anonymous_Master
+   procedure Build_Anonymous_Collection (Ptr_Typ : Entity_Id) is
+      function Create_Anonymous_Collection
         (Desig_Typ : Entity_Id;
          Unit_Id   : Entity_Id;
          Unit_Decl : Node_Id) return Entity_Id;
-      --  Create a new anonymous master for access type Ptr_Typ with designated
-      --  type Desig_Typ. The declaration of the master and its initialization
-      --  are inserted in the declarative part of unit Unit_Decl. Unit_Id is
-      --  the entity of Unit_Decl.
+      --  Create a new anonymous collection for access type Ptr_Typ with
+      --  designated type Desig_Typ. The declaration of the collection and
+      --  its initialization are inserted in the declarative part of unit
+      --  Unit_Decl. Unit_Id is the entity of Unit_Decl.
 
-      function Current_Anonymous_Master
+      function Current_Anonymous_Collection
         (Desig_Typ : Entity_Id;
          Unit_Id   : Entity_Id) return Entity_Id;
-      --  Find an anonymous master declared within unit Unit_Id which services
-      --  designated type Desig_Typ. If there is no such master, return Empty.
+      --  Find an anonymous collection declared in unit Unit_Id which services
+      --  designated type Desig_Typ. If there is none, return Empty.
 
-      -----------------------------
-      -- Create_Anonymous_Master --
-      -----------------------------
+      ---------------------------------
+      -- Create_Anonymous_Collection --
+      ---------------------------------
 
-      function Create_Anonymous_Master
+      function Create_Anonymous_Collection
         (Desig_Typ : Entity_Id;
          Unit_Id   : Entity_Id;
          Unit_Decl : Node_Id) return Entity_Id
       is
          Loc : constant Source_Ptr := Sloc (Unit_Id);
 
-         All_FMs   : Elist_Id;
+         All_FCs   : Elist_Id;
          Decls     : List_Id;
-         FM_Decl   : Node_Id;
-         FM_Id     : Entity_Id;
+         FC_Decl   : Node_Id;
+         FC_Id     : Entity_Id;
          Unit_Spec : Node_Id;
 
       begin
          --  Generate:
-         --    <FM_Id> : Finalization_Master;
+         --    <FC_Id> : Finalization_Collection;
 
-         FM_Id := Make_Temporary (Loc, 'A');
+         FC_Id := Make_Temporary (Loc, 'A');
 
-         FM_Decl :=
+         FC_Decl :=
            Make_Object_Declaration (Loc,
-             Defining_Identifier => FM_Id,
+             Defining_Identifier => FC_Id,
              Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Finalization_Master), Loc));
+               New_Occurrence_Of (RTE (RE_Finalization_Collection), Loc));
 
          --  Find the declarative list of the unit
 
@@ -1043,8 +1042,8 @@ package body Exp_Ch7 is
 
          --    procedure Comp_Unit_Proc (Param : access Ctrl := new Ctrl);
 
-         --  There is no suitable place to create the master as the subprogram
-         --  is not in a declarative list.
+         --  There is no suitable place to create the collection because the
+         --  subprogram is not in a declarative list.
 
          else
             Decls := Declarations (Unit_Decl);
@@ -1055,89 +1054,89 @@ package body Exp_Ch7 is
             end if;
          end if;
 
-         Prepend_To (Decls, FM_Decl);
+         Prepend_To (Decls, FC_Decl);
 
          --  Use the scope of the unit when analyzing the declaration of the
-         --  master and its initialization actions.
+         --  collection and its initialization actions.
 
          Push_Scope (Unit_Id);
-         Analyze (FM_Decl);
+         Analyze (FC_Decl);
          Pop_Scope;
 
-         --  Mark the master as servicing this specific designated type
+         --  Mark the collection as servicing this specific designated type
 
-         Set_Anonymous_Designated_Type (FM_Id, Desig_Typ);
+         Set_Anonymous_Designated_Type (FC_Id, Desig_Typ);
 
-         --  Include the anonymous master in the list of existing masters which
-         --  appear in this unit. This effectively creates a mapping between a
-         --  master and a designated type which in turn allows for the reuse of
-         --  masters on a per-unit basis.
+         --  Include it in the list of existing anonymous collections which
+         --  appear in this unit. This effectively creates a mapping between
+         --  collections and designated types, which in turn allows for the
+         --  reuse of collections on a per-unit basis.
 
-         All_FMs := Anonymous_Masters (Unit_Id);
+         All_FCs := Anonymous_Collections (Unit_Id);
 
-         if No (All_FMs) then
-            All_FMs := New_Elmt_List;
-            Set_Anonymous_Masters (Unit_Id, All_FMs);
+         if No (All_FCs) then
+            All_FCs := New_Elmt_List;
+            Set_Anonymous_Collections (Unit_Id, All_FCs);
          end if;
 
-         Prepend_Elmt (FM_Id, All_FMs);
+         Prepend_Elmt (FC_Id, All_FCs);
 
-         return FM_Id;
-      end Create_Anonymous_Master;
+         return FC_Id;
+      end Create_Anonymous_Collection;
 
-      ------------------------------
-      -- Current_Anonymous_Master --
-      ------------------------------
+      ----------------------------------
+      -- Current_Anonymous_Collection --
+      ----------------------------------
 
-      function Current_Anonymous_Master
+      function Current_Anonymous_Collection
         (Desig_Typ : Entity_Id;
          Unit_Id   : Entity_Id) return Entity_Id
       is
-         All_FMs : constant Elist_Id := Anonymous_Masters (Unit_Id);
-         FM_Elmt : Elmt_Id;
-         FM_Id   : Entity_Id;
+         All_FCs : constant Elist_Id := Anonymous_Collections (Unit_Id);
+         FC_Elmt : Elmt_Id;
+         FC_Id   : Entity_Id;
 
       begin
-         --  Inspect the list of anonymous masters declared within the unit
-         --  looking for an existing master which services the same designated
+         --  Inspect the list of anonymous collections declared within the unit
+         --  looking for an existing collection which services the designated
          --  type.
 
-         if Present (All_FMs) then
-            FM_Elmt := First_Elmt (All_FMs);
-            while Present (FM_Elmt) loop
-               FM_Id := Node (FM_Elmt);
+         if Present (All_FCs) then
+            FC_Elmt := First_Elmt (All_FCs);
+            while Present (FC_Elmt) loop
+               FC_Id := Node (FC_Elmt);
 
-               --  The currect master services the same designated type. As a
-               --  result the master can be reused and associated with another
-               --  anonymous access-to-controlled type.
+               --  The current collection services the same designated type.
+               --  As a result, the collection can be reused and associated
+               --  with another anonymous access-to-controlled type.
 
-               if Anonymous_Designated_Type (FM_Id) = Desig_Typ then
-                  return FM_Id;
+               if Anonymous_Designated_Type (FC_Id) = Desig_Typ then
+                  return FC_Id;
                end if;
 
-               Next_Elmt (FM_Elmt);
+               Next_Elmt (FC_Elmt);
             end loop;
          end if;
 
          return Empty;
-      end Current_Anonymous_Master;
+      end Current_Anonymous_Collection;
 
       --  Local variables
 
       Desig_Typ : Entity_Id;
-      FM_Id     : Entity_Id;
+      FC_Id     : Entity_Id;
       Priv_View : Entity_Id;
       Scop      : Entity_Id;
       Unit_Decl : Node_Id;
       Unit_Id   : Entity_Id;
 
-   --  Start of processing for Build_Anonymous_Master
+   --  Start of processing for Build_Anonymous_Collection
 
    begin
       --  Nothing to do if the circumstances do not allow for a finalization
-      --  master.
+      --  collection.
 
-      if not Allows_Finalization_Master (Ptr_Typ) then
+      if not Allows_Finalization_Collection (Ptr_Typ) then
          return;
       end if;
 
@@ -1145,8 +1144,8 @@ package body Exp_Ch7 is
       Unit_Id   := Unique_Defining_Entity (Unit_Decl);
 
       --  The compilation unit is a package instantiation. In this case the
-      --  anonymous master is associated with the package spec as both the
-      --  spec and body appear at the same level.
+      --  anonymous collection is associated with the package spec, as both
+      --  the spec and body appear at the same level.
 
       if Nkind (Unit_Decl) = N_Package_Body
         and then Nkind (Original_Node (Unit_Decl)) = N_Package_Instantiation
@@ -1179,18 +1178,18 @@ package body Exp_Ch7 is
       end if;
 
       --  Determine whether the current semantic unit already has an anonymous
-      --  master which services the designated type.
+      --  collection which services the designated type.
 
-      FM_Id := Current_Anonymous_Master (Desig_Typ, Unit_Id);
+      FC_Id := Current_Anonymous_Collection (Desig_Typ, Unit_Id);
 
-      --  If this is not the case, create a new master
+      --  If this is not the case, create a new collection
 
-      if No (FM_Id) then
-         FM_Id := Create_Anonymous_Master (Desig_Typ, Unit_Id, Unit_Decl);
+      if No (FC_Id) then
+         FC_Id := Create_Anonymous_Collection (Desig_Typ, Unit_Id, Unit_Decl);
       end if;
 
-      Set_Finalization_Master (Ptr_Typ, FM_Id);
-   end Build_Anonymous_Master;
+      Set_Finalization_Collection (Ptr_Typ, FC_Id);
+   end Build_Anonymous_Collection;
 
    ----------------------------
    -- Build_Array_Deep_Procs --
@@ -1517,11 +1516,11 @@ package body Exp_Ch7 is
           Statements        => Stmts);
    end Build_Exception_Handler;
 
-   -------------------------------
-   -- Build_Finalization_Master --
-   -------------------------------
+   -----------------------------------
+   -- Build_Finalization_Collection --
+   -----------------------------------
 
-   procedure Build_Finalization_Master
+   procedure Build_Finalization_Collection
      (Typ            : Entity_Id;
       For_Lib_Level  : Boolean   := False;
       For_Private    : Boolean   := False;
@@ -1529,69 +1528,70 @@ package body Exp_Ch7 is
       Insertion_Node : Node_Id   := Empty)
    is
       Ptr_Typ : constant Entity_Id := Root_Type_Of_Full_View (Base_Type (Typ));
-      --  A finalization master created for a named access type is associated
+      --  Finalization collections built for named access types are associated
       --  with the full view (if applicable) as a consequence of freezing. The
       --  full view criteria does not apply to anonymous access types because
       --  those cannot have a private and a full view.
 
-   --  Start of processing for Build_Finalization_Master
+   --  Start of processing for Build_Finalization_Collection
 
    begin
       --  Nothing to do if the circumstances do not allow for a finalization
-      --  master.
+      --  collection.
 
-      if not Allows_Finalization_Master (Typ) then
+      if not Allows_Finalization_Collection (Typ) then
          return;
 
       --  Various machinery such as freezing may have already created a
-      --  finalization master.
+      --  finalization collection.
 
-      elsif Present (Finalization_Master (Ptr_Typ)) then
+      elsif Present (Finalization_Collection (Ptr_Typ)) then
          return;
       end if;
 
       declare
-         Actions    : constant List_Id    := New_List;
-         Loc        : constant Source_Ptr := Sloc (Ptr_Typ);
-         Fin_Mas_Id : Entity_Id;
-         Pool_Id    : Entity_Id;
+         Actions : constant List_Id    := New_List;
+         Loc     : constant Source_Ptr := Sloc (Ptr_Typ);
+
+         Fin_Coll_Id : Entity_Id;
+         Pool_Id     : Entity_Id;
 
       begin
-         --  Source access types use fixed master names since the master is
+         --  Source access types use fixed names since the collection will be
          --  inserted in the same source unit only once. The only exception to
          --  this are instances using the same access type as generic actual.
 
          if Comes_From_Source (Ptr_Typ) and then not Inside_A_Generic then
-            Fin_Mas_Id :=
+            Fin_Coll_Id :=
               Make_Defining_Identifier (Loc,
-                Chars => New_External_Name (Chars (Ptr_Typ), "FM"));
+                Chars => New_External_Name (Chars (Ptr_Typ), "FC"));
 
          --  Internally generated access types use temporaries as their names
          --  due to possible collision with identical names coming from other
          --  packages.
 
          else
-            Fin_Mas_Id := Make_Temporary (Loc, 'F');
+            Fin_Coll_Id := Make_Temporary (Loc, 'F');
          end if;
 
-         Set_Finalization_Master (Ptr_Typ, Fin_Mas_Id);
+         Set_Finalization_Collection (Ptr_Typ, Fin_Coll_Id);
 
          --  Generate:
-         --    <Ptr_Typ>FM : aliased Finalization_Master;
+         --    <Ptr_Typ>FC : aliased Finalization_Collection;
 
          Append_To (Actions,
            Make_Object_Declaration (Loc,
-             Defining_Identifier => Fin_Mas_Id,
+             Defining_Identifier => Fin_Coll_Id,
              Aliased_Present     => True,
              Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Finalization_Master), Loc)));
+               New_Occurrence_Of (RTE (RE_Finalization_Collection), Loc)));
 
          if Debug_Generated_Code then
-            Set_Debug_Info_Needed (Fin_Mas_Id);
+            Set_Debug_Info_Needed (Fin_Coll_Id);
          end if;
 
          --  Set the associated pool and primitive Finalize_Address of the new
-         --  finalization master.
+         --  finalization collection.
 
          --  The access type has a user-defined storage pool, use it
 
@@ -1605,7 +1605,7 @@ package body Exp_Ch7 is
             Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
          end if;
 
-         --  A finalization master created for an access designating a type
+         --  A finalization collection created for an access designating a type
          --  with private components is inserted before a context-dependent
          --  node.
 
@@ -1632,17 +1632,17 @@ package body Exp_Ch7 is
 
             Pop_Scope;
 
-         --  The finalization master belongs to an access result type related
+         --  The finalization collection belongs to an access type related
          --  to a build-in-place function call used to initialize a library
-         --  level object. The master must be inserted in front of the access
-         --  result type declaration denoted by Insertion_Node.
+         --  level object. The collection must be inserted in front of the
+         --  access type declaration denoted by Insertion_Node.
 
          elsif For_Lib_Level then
             pragma Assert (Present (Insertion_Node));
             Insert_Actions (Insertion_Node, Actions);
 
-         --  Otherwise the finalization master and its initialization become a
-         --  part of the freeze node.
+         --  Otherwise the finalization collection and its initialization
+         --  become a part of the freeze node.
 
          else
             Append_Freeze_Actions (Ptr_Typ, Actions);
@@ -1650,16 +1650,16 @@ package body Exp_Ch7 is
 
          Analyze_List (Actions);
 
-         --  When the type the finalization master is being generated for was
-         --  created to store a 'Old object, then mark it as such so its
+         --  When the type the finalization collection is being generated for
+         --  was created to store a 'Old object, then mark it as such so its
          --  finalization can be delayed until after postconditions have been
          --  checked.
 
          if Stores_Attribute_Old_Prefix (Ptr_Typ) then
-            Set_Stores_Attribute_Old_Prefix (Fin_Mas_Id);
+            Set_Stores_Attribute_Old_Prefix (Fin_Coll_Id);
          end if;
       end;
-   end Build_Finalization_Master;
+   end Build_Finalization_Collection;
 
    ---------------------
    -- Build_Finalizer --
@@ -2451,15 +2451,15 @@ package body Exp_Ch7 is
                end if;
 
             --  Inspect the freeze node of an access-to-controlled type and
-            --  look for a delayed finalization master. This case arises when
-            --  the freeze actions are inserted at a later time than the
+            --  look for a delayed finalization collection. This case arises
+            --  when the freeze actions are inserted at a later time than the
             --  expansion of the context. Since Build_Finalizer is never called
-            --  on a single construct twice, the master will be ultimately
+            --  on a single construct twice, the collection would be ultimately
             --  left out and never finalized. This is also needed for freeze
             --  actions of designated types themselves, since in some cases the
-            --  finalization master is associated with a designated type's
+            --  finalization collection is associated with a designated type's
             --  freeze node rather than that of the access type (see handling
-            --  for freeze actions in Build_Finalization_Master).
+            --  for freeze actions in Build_Finalization_Collection).
 
             elsif Nkind (Decl) = N_Freeze_Entity
               and then Present (Actions (Decl))
@@ -2479,8 +2479,8 @@ package body Exp_Ch7 is
                then
                   --  Freeze nodes are considered to be identical to packages
                   --  and blocks in terms of nesting. The difference is that
-                  --  a finalization master created inside the freeze node is
-                  --  at the same nesting level as the node itself.
+                  --  a finalization collection created inside the freeze node
+                  --  is at the same nesting level as the node itself.
 
                   Process_Declarations (Actions (Decl), Preprocess);
                end if;
