@@ -3997,37 +3997,18 @@ expand_gimple_stmt_1 (gimple *stmt)
 	  {
 	    rtx target, temp;
 	    bool nontemporal = gimple_assign_nontemporal_move_p (assign_stmt);
-	    struct separate_ops ops;
 	    bool promoted = false;
 
 	    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 	    if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
 	      promoted = true;
 
-	    ops.code = gimple_assign_rhs_code (assign_stmt);
-	    ops.type = TREE_TYPE (lhs);
-	    switch (get_gimple_rhs_class (ops.code))
-	      {
-		case GIMPLE_TERNARY_RHS:
-		  ops.op2 = gimple_assign_rhs3 (assign_stmt);
-		  /* Fallthru */
-		case GIMPLE_BINARY_RHS:
-		  ops.op1 = gimple_assign_rhs2 (assign_stmt);
-		  /* Fallthru */
-		case GIMPLE_UNARY_RHS:
-		  ops.op0 = gimple_assign_rhs1 (assign_stmt);
-		  break;
-		default:
-		  gcc_unreachable ();
-	      }
-	    ops.location = gimple_location (stmt);
-
-	    /* If we want to use a nontemporal store, force the value to
-	       register first.  If we store into a promoted register,
-	       don't directly expand to target.  */
+	   /* If we want to use a nontemporal store, force the value to
+	      register first.  If we store into a promoted register,
+	      don't directly expand to target.  */
 	    temp = nontemporal || promoted ? NULL_RTX : target;
-	    temp = expand_expr_real_2 (&ops, temp, GET_MODE (target),
-				       EXPAND_NORMAL);
+	    temp = expand_expr_real_gassign (assign_stmt, temp,
+					     GET_MODE (target), EXPAND_NORMAL);
 
 	    if (temp == target)
 	      ;
@@ -4039,7 +4020,7 @@ expand_gimple_stmt_1 (gimple *stmt)
 		if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
 		  {
 		    temp = convert_modes (GET_MODE (target),
-					  TYPE_MODE (ops.type),
+					  TYPE_MODE (TREE_TYPE (lhs)),
 					  temp, unsignedp);
 		    temp = convert_modes (GET_MODE (SUBREG_REG (target)),
 					  GET_MODE (target), temp, unsignedp);
