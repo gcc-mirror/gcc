@@ -585,6 +585,11 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	  /* Setup the struct/union type.  Because we inherit all variably
 	     modified components, we can ignore the size expression.  */
 	  tree expr = NULL_TREE;
+
+	  /* Set TYPE_STUB_DECL for debugging symbols.  */
+	  TYPE_STUB_DECL (n) = pushdecl (build_decl (input_location, TYPE_DECL,
+						     NULL_TREE, n));
+
 	  n = finish_struct(input_location, n, fields, attributes, NULL, &expr);
 
 	  n = qualify_type (n, t1);
