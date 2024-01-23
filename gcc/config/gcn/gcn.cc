@@ -6565,7 +6565,8 @@ output_file_start (void)
    comments that pass information to mkoffload.  */
 
 void
-gcn_hsa_declare_function_name (FILE *file, const char *name, tree decl)
+gcn_hsa_declare_function_name (FILE *file, const char *name,
+			       tree decl ATTRIBUTE_UNUSED)
 {
   int sgpr, vgpr, avgpr;
   bool xnack_enabled = TARGET_XNACK;
