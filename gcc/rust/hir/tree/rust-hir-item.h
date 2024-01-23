@@ -3062,6 +3062,11 @@ public:
   // Returns whether item has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
+  WARN_UNUSED_RESULT const WhereClause &get_where_clause () const
+  {
+    return where_clause;
+  }
+
   ExternalFunctionItem (
     Analysis::NodeMapping mappings, Identifier item_name,
     std::vector<std::unique_ptr<GenericParam>> generic_params,
