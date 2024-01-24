@@ -5045,12 +5045,12 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
   AST::AttrVec inner_attrs = parse_inner_attributes ();
 
   // parse trait items
-  std::vector<std::unique_ptr<AST::TraitItem>> trait_items;
+  std::vector<std::unique_ptr<AST::AssociatedItem>> trait_items;
 
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () != RIGHT_CURLY)
     {
-      std::unique_ptr<AST::TraitItem> trait_item = parse_trait_item ();
+      std::unique_ptr<AST::AssociatedItem> trait_item = parse_trait_item ();
 
       if (trait_item == nullptr)
 	{
@@ -5082,7 +5082,7 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
 
 // Parses a trait item used inside traits (not trait, the Item).
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::TraitItem>
+std::unique_ptr<AST::AssociatedItem>
 Parser<ManagedTokenSource>::parse_trait_item ()
 {
   // parse outer attributes (if they exist)

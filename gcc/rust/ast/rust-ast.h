@@ -1907,11 +1907,11 @@ public:
     return std::move (item);
   }
 
-  std::unique_ptr<TraitItem> take_trait_item ()
+  std::unique_ptr<AssociatedItem> take_trait_item ()
   {
     rust_assert (!is_error ());
-    return std::unique_ptr<TraitItem> (
-      static_cast<TraitItem *> (assoc_item.release ()));
+    return std::unique_ptr<AssociatedItem> (
+      static_cast<AssociatedItem *> (assoc_item.release ()));
   }
 
   std::unique_ptr<ExternalItem> take_external_item ()

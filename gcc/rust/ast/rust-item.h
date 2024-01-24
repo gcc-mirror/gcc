@@ -3140,7 +3140,7 @@ class Trait : public VisItem
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   WhereClause where_clause;
   std::vector<Attribute> inner_attrs;
-  std::vector<std::unique_ptr<TraitItem>> trait_items;
+  std::vector<std::unique_ptr<AssociatedItem>> trait_items;
   location_t locus;
 
 public:
@@ -3171,9 +3171,9 @@ public:
 	 std::vector<std::unique_ptr<GenericParam>> generic_params,
 	 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 	 WhereClause where_clause,
-	 std::vector<std::unique_ptr<TraitItem>> trait_items, Visibility vis,
-	 std::vector<Attribute> outer_attrs, std::vector<Attribute> inner_attrs,
-	 location_t locus)
+	 std::vector<std::unique_ptr<AssociatedItem>> trait_items,
+	 Visibility vis, std::vector<Attribute> outer_attrs,
+	 std::vector<Attribute> inner_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       has_unsafe (is_unsafe), has_auto (is_auto), name (std::move (name)),
       generic_params (std::move (generic_params)),
@@ -3199,7 +3199,7 @@ public:
 
     trait_items.reserve (other.trait_items.size ());
     for (const auto &e : other.trait_items)
-      trait_items.push_back (e->clone_trait_item ());
+      trait_items.push_back (e->clone_associated_item ());
   }
 
   // Overloaded assignment operator with vector clone
@@ -3223,7 +3223,7 @@ public:
 
     trait_items.reserve (other.trait_items.size ());
     for (const auto &e : other.trait_items)
-      trait_items.push_back (e->clone_trait_item ());
+      trait_items.push_back (e->clone_associated_item ());
 
     return *this;
   }
@@ -3244,11 +3244,11 @@ public:
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
-  const std::vector<std::unique_ptr<TraitItem>> &get_trait_items () const
+  const std::vector<std::unique_ptr<AssociatedItem>> &get_trait_items () const
   {
     return trait_items;
   }
-  std::vector<std::unique_ptr<TraitItem>> &get_trait_items ()
+  std::vector<std::unique_ptr<AssociatedItem>> &get_trait_items ()
   {
     return trait_items;
   }

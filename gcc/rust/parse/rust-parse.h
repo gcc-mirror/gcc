@@ -169,7 +169,7 @@ public:
 					 = ParseRestrictions ());
   std::unique_ptr<AST::Type> parse_type (bool save_errors = true);
   std::unique_ptr<AST::ExternalItem> parse_external_item ();
-  std::unique_ptr<AST::TraitItem> parse_trait_item ();
+  std::unique_ptr<AST::AssociatedItem> parse_trait_item ();
   std::unique_ptr<AST::AssociatedItem> parse_inherent_impl_item ();
   std::unique_ptr<AST::AssociatedItem> parse_trait_impl_item ();
   AST::PathInExpression parse_path_in_expression ();
