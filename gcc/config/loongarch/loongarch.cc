@@ -9917,17 +9917,12 @@ loongarch_expand_vector_group_init (rtx target, rtx vals)
       gcc_unreachable ();
     }
 
-  if (high == CONST0_RTX (half_mode))
-    emit_insn (gen_vec_concatz (vmode, target, low, high));
-  else
-    {
-      if (!register_operand (low, half_mode))
-	low = force_reg (half_mode, low);
-      if (!register_operand (high, half_mode))
-	high = force_reg (half_mode, high);
-      emit_insn (gen_rtx_SET (target,
-			      gen_rtx_VEC_CONCAT (vmode, low, high)));
-    }
+  if (!register_operand (low, half_mode))
+    low = force_reg (half_mode, low);
+  if (!register_operand (high, half_mode))
+    high = force_reg (half_mode, high);
+  emit_insn (gen_rtx_SET (target,
+			  gen_rtx_VEC_CONCAT (vmode, low, high)));
 }
 
 /* Expand initialization of a vector which has all same elements.  */

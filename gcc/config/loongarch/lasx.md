@@ -582,21 +582,6 @@
   [(set_attr "type" "simd_insert")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@vec_concatz<mode>"
-  [(set (match_operand:LASX 0 "register_operand" "=f")
-    (vec_concat:LASX
-      (match_operand:<VHMODE256_ALL> 1 "nonimmediate_operand")
-      (match_operand:<VHMODE256_ALL> 2 "const_0_operand")))]
-  "ISA_HAS_LASX"
-{
-  if (MEM_P (operands[1]))
-    return "vld\t%w0,%1";
-  else
-    return "vori.b\t%w0,%w1,0";
-}
-  [(set_attr "type" "simd_splat")
-   (set_attr "mode" "<MODE>")])
-
 (define_insn "vec_concat<mode>"
   [(set (match_operand:LASX 0 "register_operand" "=f")
 	(vec_concat:LASX
