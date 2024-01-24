@@ -389,26 +389,6 @@
   [(set_attr "type" "neon_mul_<Vetype><q>")]
 )
 
-;; Advanced SIMD does not support vector DImode MUL, but SVE does.
-;; Make use of the overlap between Z and V registers to implement the V2DI
-;; optab for TARGET_SVE.  The mulvnx2di3 expander can
-;; handle the TARGET_SVE2 case transparently.
-(define_expand "mulv2di3"
-  [(set (match_operand:V2DI 0 "register_operand")
-        (mult:V2DI (match_operand:V2DI 1 "register_operand")
-		   (match_operand:V2DI 2 "aarch64_sve_vsm_operand")))]
-  "TARGET_SVE"
-  {
-    machine_mode sve_mode = VNx2DImode;
-    rtx sve_op0 = simplify_gen_subreg (sve_mode, operands[0], V2DImode, 0);
-    rtx sve_op1 = simplify_gen_subreg (sve_mode, operands[1], V2DImode, 0);
-    rtx sve_op2 = simplify_gen_subreg (sve_mode, operands[2], V2DImode, 0);
-
-    emit_insn (gen_mulvnx2di3 (sve_op0, sve_op1, sve_op2));
-    DONE;
-  }
-)
-
 (define_insn "bswap<mode>2"
   [(set (match_operand:VDQHSD 0 "register_operand" "=w")
         (bswap:VDQHSD (match_operand:VDQHSD 1 "register_operand" "w")))]
@@ -2676,27 +2656,6 @@
  "TARGET_SIMD"
  "fdiv\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_fp_div_<stype><q>")]
-)
-
-;; SVE has vector integer divisions, unlike Advanced SIMD.
-;; We can use it with Advanced SIMD modes to expose the V2DI and V4SI
-;; optabs to the midend.
-(define_expand "<su_optab>div<mode>3"
-  [(set (match_operand:VQDIV 0 "register_operand")
-	(ANY_DIV:VQDIV
-	  (match_operand:VQDIV 1 "register_operand")
-	  (match_operand:VQDIV 2 "register_operand")))]
-  "TARGET_SVE"
-  {
-    machine_mode sve_mode
-      = aarch64_full_sve_mode (GET_MODE_INNER (<MODE>mode)).require ();
-    rtx sve_op0 = simplify_gen_subreg (sve_mode, operands[0], <MODE>mode, 0);
-    rtx sve_op1 = simplify_gen_subreg (sve_mode, operands[1], <MODE>mode, 0);
-    rtx sve_op2 = simplify_gen_subreg (sve_mode, operands[2], <MODE>mode, 0);
-
-    emit_insn (gen_<su_optab>div<vnx>3 (sve_op0, sve_op1, sve_op2));
-    DONE;
-  }
 )
 
 (define_insn "neg<mode>2<vczle><vczbe>"

@@ -615,29 +615,29 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_mul_lane_<mode>"
-  [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w")
-	(mult:SVE_FULL_HSDI
-	  (unspec:SVE_FULL_HSDI
-	    [(match_operand:SVE_FULL_HSDI 2 "register_operand" "<sve_lane_con>")
+  [(set (match_operand:SVE_FULL_HSDI_SIMD_DI 0 "register_operand" "=w")
+	(mult:SVE_FULL_HSDI_SIMD_DI
+	  (unspec:SVE_FULL_HSDI_SIMD_DI
+	    [(match_operand:SVE_FULL_HSDI_SIMD_DI 2 "register_operand" "<sve_lane_con>")
 	     (match_operand:SI 3 "const_int_operand")]
 	    UNSPEC_SVE_LANE_SELECT)
-	  (match_operand:SVE_FULL_HSDI 1 "register_operand" "w")))]
+	  (match_operand:SVE_FULL_HSDI_SIMD_DI 1 "register_operand" "w")))]
   "TARGET_SVE2"
-  "mul\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>[%3]"
+  "mul\t%Z0.<Vetype>, %Z1.<Vetype>, %Z2.<Vetype>[%3]"
 )
 
 ;; The 2nd and 3rd alternatives are valid for just TARGET_SVE as well but
 ;; we include them here to allow matching simpler, unpredicated RTL.
 (define_insn "*aarch64_mul_unpredicated_<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(mult:SVE_I
-	  (match_operand:SVE_I 1 "register_operand")
-	  (match_operand:SVE_I 2 "aarch64_sve_vsm_operand")))]
+  [(set (match_operand:SVE_I_SIMD_DI 0 "register_operand")
+	(mult:SVE_I_SIMD_DI
+	  (match_operand:SVE_I_SIMD_DI 1 "register_operand")
+	  (match_operand:SVE_I_SIMD_DI 2 "aarch64_sve_vsm_operand")))]
   "TARGET_SVE2"
   {@ [ cons: =0 , 1 , 2   ; attrs: movprfx ]
-     [ w        , w , w   ; *              ] mul\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>
-     [ w        , 0 , vsm ; *              ] mul\t%0.<Vetype>, %0.<Vetype>, #%2
-     [ ?&w      , w , vsm ; yes            ] movprfx\t%0, %1\;mul\t%0.<Vetype>, %0.<Vetype>, #%2
+     [ w        , w , w   ; *              ] mul\t%Z0.<Vetype>, %Z1.<Vetype>, %Z2.<Vetype>
+     [ w        , 0 , vsm ; *              ] mul\t%Z0.<Vetype>, %Z0.<Vetype>, #%2
+     [ ?&w      , w , vsm ; yes            ] movprfx\t%Z0, %Z1\;mul\t%Z0.<Vetype>, %Z0.<Vetype>, #%2
   }
 )
 
