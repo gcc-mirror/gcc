@@ -11725,10 +11725,11 @@ c_finish_goto_ptr (location_t loc, c_expr val)
    to return, or a null pointer for `return;' with no value.  LOC is
    the location of the return statement, or the location of the expression,
    if the statement has any.  If ORIGTYPE is not NULL_TREE, it
-   is the original type of RETVAL.  */
+   is the original type of RETVAL.  MUSTTAIL_P indicates a musttail
+   attribute.  */
 
 tree
-c_finish_return (location_t loc, tree retval, tree origtype)
+c_finish_return (location_t loc, tree retval, tree origtype, bool musttail_p)
 {
   tree valtype = TREE_TYPE (TREE_TYPE (current_function_decl)), ret_stmt;
   bool no_warning = false;
@@ -11741,6 +11742,8 @@ c_finish_return (location_t loc, tree retval, tree origtype)
   if (TREE_THIS_VOLATILE (current_function_decl))
     warning_at (xloc, 0,
 		"function declared %<noreturn%> has a %<return%> statement");
+
+  set_musttail_on_return (retval, xloc, musttail_p);
 
   if (retval)
     {
