@@ -631,10 +631,6 @@ DefaultResolver::visit (AST::TupleType &)
 {}
 
 void
-DefaultResolver::visit (AST::RawPointerType &)
-{}
-
-void
 DefaultResolver::visit (AST::ReferenceType &)
 {}
 
