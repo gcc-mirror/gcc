@@ -1249,6 +1249,7 @@ maybe_complain_about_tail_call (tree call_expr, const char *reason)
     return;
 
   error_at (EXPR_LOCATION (call_expr), "cannot tail-call: %s", reason);
+  CALL_EXPR_MUST_TAIL_CALL (call_expr) = 0;
 }
 
 /* Fill in ARGS_SIZE and ARGS array based on the parameters found in
@@ -2650,7 +2651,13 @@ expand_call (tree exp, rtx target, int ignore)
   /* The type of the function being called.  */
   tree fntype;
   bool try_tail_call = CALL_EXPR_TAILCALL (exp);
-  bool must_tail_call = CALL_EXPR_MUST_TAIL_CALL (exp);
+  /* tree-tailcall decided not to do tail calls. Error for the musttail case,
+     unfortunately we don't know the reason so it's fairly vague.
+     When tree-tailcall reported an error it already cleared the flag,
+     so this shouldn't really happen unless the
+     the musttail pass gave up walking before finding the call.  */
+  if (!try_tail_call)
+      maybe_complain_about_tail_call (exp, "other reasons");
   int pass;
 
   /* Register in which non-BLKmode value will be returned,
@@ -3022,10 +3029,21 @@ expand_call (tree exp, rtx target, int ignore)
      pushed these optimizations into -O2.  Don't try if we're already
      expanding a call, as that means we're an argument.  Don't try if
      there's cleanups, as we know there's code to follow the call.  */
-  if (currently_expanding_call++ != 0
-      || (!flag_optimize_sibling_calls && !CALL_FROM_THUNK_P (exp))
-      || args_size.var
-      || dbg_cnt (tail_call) == false)
+  if (currently_expanding_call++ != 0)
+    {
+      maybe_complain_about_tail_call (exp, "inside another call");
+      try_tail_call = 0;
+    }
+  if (!flag_optimize_sibling_calls
+	&& !CALL_FROM_THUNK_P (exp)
+	&& !CALL_EXPR_MUST_TAIL_CALL (exp))
+    try_tail_call = 0;
+  if (args_size.var)
+    {
+      maybe_complain_about_tail_call (exp, "variable size arguments");
+      try_tail_call = 0;
+    }
+  if (dbg_cnt (tail_call) == false)
     try_tail_call = 0;
 
   /* Workaround buggy C/C++ wrappers around Fortran routines with
@@ -3046,13 +3064,15 @@ expand_call (tree exp, rtx target, int ignore)
 	    if (MEM_P (*iter))
 	      {
 		try_tail_call = 0;
+		maybe_complain_about_tail_call (exp,
+				"hidden string length argument passed on stack");
 		break;
 	      }
 	}
 
   /* If the user has marked the function as requiring tail-call
      optimization, attempt it.  */
-  if (must_tail_call)
+  if (CALL_EXPR_MUST_TAIL_CALL (exp))
     try_tail_call = 1;
 
   /*  Rest of purposes for tail call optimizations to fail.  */
