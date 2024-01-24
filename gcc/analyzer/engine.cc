@@ -179,7 +179,7 @@ on_liveness_change (const svalue_set &live_svalues,
 		    const region_model *model)
 {
   for (sm_state_map *smap : m_new_state->m_checker_states)
-    smap->on_liveness_change (live_svalues, model, this);
+    smap->on_liveness_change (live_svalues, model, m_ext_state, this);
 }
 
 void

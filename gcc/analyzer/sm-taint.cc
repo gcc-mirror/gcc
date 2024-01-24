@@ -86,6 +86,12 @@ public:
 				   const extrinsic_state &ext_state)
     const final override;
 
+  bool
+  has_alt_get_inherited_state_p () const final override
+  {
+    return true;
+  }
+
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
 		const gimple *stmt) const final override;
@@ -1199,6 +1205,9 @@ taint_state_machine::on_bounded_ranges (sm_context *sm_ctxt,
 bool
 taint_state_machine::can_purge_p (state_t s ATTRIBUTE_UNUSED) const
 {
+  if (s == m_has_lb || s == m_has_ub)
+    return false;
+
   return true;
 }
 

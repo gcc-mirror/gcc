@@ -155,6 +155,7 @@ public:
 		       impl_region_model_context *ctxt);
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model,
+			   const extrinsic_state &ext_state,
 			   impl_region_model_context *ctxt);
 
   void on_unknown_change (const svalue *sval,
