@@ -561,7 +561,7 @@ specification in version 5.2.
 * Thread Affinity Routines::
 * Teams Region Routines::
 * Tasking Routines::
-@c * Resource Relinquishing Routines::
+* Resource Relinquishing Routines::
 * Device Information Routines::
 * Device Memory Routines::
 * Lock Routines::
@@ -1504,16 +1504,78 @@ and @code{false} represent their language-specific counterparts.
 
 
 
-@c @node Resource Relinquishing Routines
-@c @section Resource Relinquishing Routines
-@c
-@c Routines releasing resources used by the OpenMP runtime.
-@c They have C linkage and do not throw exceptions.
-@c
-@c @menu
-@c * omp_pause_resource:: <fixme>
-@c * omp_pause_resource_all:: <fixme>
-@c @end menu
+@node Resource Relinquishing Routines
+@section Resource Relinquishing Routines
+
+Routines releasing resources used by the OpenMP runtime.
+They have C linkage and do not throw exceptions.
+
+@menu
+* omp_pause_resource:: Release OpenMP resources on a device
+* omp_pause_resource_all:: Release OpenMP resources on all devices
+@end menu
+
+
+
+@node omp_pause_resource
+@subsection @code{omp_pause_resource} -- Release OpenMP resources on a device
+@table @asis
+@item @emph{Description}:
+Free resources used by the OpenMP program and the runtime library on and for the
+device specified by @var{device_num}; on success, zero is returned and non-zero
+otherwise.
+
+The value of @var{device_num} must be a conforming device number.  The routine
+may not be called from within any explicit region and all explicit threads that
+do not bind to the implicit parallel region have finalized execution.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_pause_resource(omp_pause_resource_t kind, int device_num);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_pause_resource(kind, device_num)}
+@item                   @tab @code{integer (kind=omp_pause_resource_kind) kind}
+@item                   @tab @code{integer device_num}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.43.
+@end table
+
+
+
+@node omp_pause_resource_all
+@subsection @code{omp_pause_resource_all} -- Release OpenMP resources on all devices
+@table @asis
+@item @emph{Description}:
+Free resources used by the OpenMP program and the runtime library on all devices,
+including the host. On success, zero is returned and non-zero otherwise.
+
+The routine may not be called from within any explicit region and all explicit
+threads that do not bind to the implicit parallel region have finalized execution.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_pause_resource(omp_pause_resource_t kind);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_pause_resource(kind)}
+@item                   @tab @code{integer (kind=omp_pause_resource_kind) kind}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_pause_resource}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.44.
+@end table
+
+
 
 @node Device Information Routines
 @section Device Information Routines
@@ -1720,10 +1782,10 @@ pointers on devices. They have C linkage and do not throw exceptions.
 * omp_target_free:: Free device memory
 * omp_target_is_present:: Check whether storage is mapped
 * omp_target_is_accessible:: Check whether memory is device accessible
-@c * omp_target_memcpy:: <fixme>
-@c * omp_target_memcpy_rect:: <fixme>
-@c * omp_target_memcpy_async:: <fixme>
-@c * omp_target_memcpy_rect_async:: <fixme>
+* omp_target_memcpy:: Copy data between devices
+* omp_target_memcpy_rect:: Copy a subvolume of data between devices
+* omp_target_memcpy_async:: Copy data between devices asynchronously
+* omp_target_memcpy_rect_async:: Copy a subvolume of data between devices asynchronously
 @c * omp_target_memset:: <fixme>/TR12
 @c * omp_target_memset_async:: <fixme>/TR12
 * omp_target_associate_ptr:: Associate a device pointer with a host pointer
@@ -1895,6 +1957,246 @@ is not supported.
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.4
+@end table
+
+
+
+@node omp_target_memcpy
+@subsection @code{omp_target_memcpy} -- Copy data between devices
+@table @asis
+@item @emph{Description}:
+This routine copies @var{length} of bytes of data from the device
+identified by device number @var{src_device_num} to device @var{dst_device_num}.
+The data is copied from the source device from the address provided by
+@var{src}, shifted by the offset of @var{src_offset} bytes, to the destination
+device's @var{dst} address shifted by @var{dst_offset}.  The routine returns
+zero on success and non-zero otherwise.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_memcpy(void *dst,}
+@item                   @tab @code{                           const void *src,}
+@item                   @tab @code{                           size_t length,}
+@item                   @tab @code{                           size_t dst_offset,}
+@item                   @tab @code{                           size_t src_offset,}
+@item                   @tab @code{                           int dst_device_num,}
+@item                   @tab @code{                           int src_device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_memcpy( &}
+@item                   @tab @code{    dst, src, length, dst_offset, src_offset, &}
+@item                   @tab @code{    dst_device_num, src_device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int}
+@item                   @tab @code{type(c_ptr), value :: dst, src}
+@item                   @tab @code{integer(c_size_t), value :: length, dst_offset, src_offset}
+@item                   @tab @code{integer(c_int), value :: dst_device_num, src_device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_memcpy_async}, @ref{omp_target_memcpy_rect}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.5
+@end table
+
+
+
+@node omp_target_memcpy_async
+@subsection @code{omp_target_memcpy_async} -- Copy data between devices asynchronously
+@table @asis
+@item @emph{Description}:
+This routine copies asynchronously @var{length} of bytes of data from the
+device identified by device number @var{src_device_num} to device
+@var{dst_device_num}.  The data is copied from the source device from the
+address provided by @var{src}, shifted by the offset of @var{src_offset} bytes,
+to the destination device's @var{dst} address shifted by @var{dst_offset}.
+Task dependence is expressed by passing an array of depend objects to
+@var{depobj_list}, where the number of array elements is passed as
+@var{depobj_count}; if the count is zero, the @var{depobj_list} argument is
+ignored.  The routine returns zero if the copying process has successfully
+been started and non-zero otherwise.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_memcpy_async(void *dst,}
+@item                   @tab @code{                           const void *src,}
+@item                   @tab @code{                           size_t length,}
+@item                   @tab @code{                           size_t dst_offset,}
+@item                   @tab @code{                           size_t src_offset,}
+@item                   @tab @code{                           int dst_device_num,}
+@item                   @tab @code{                           int src_device_num,}
+@item                   @tab @code{                           int depobj_count,}
+@item                   @tab @code{                           omp_depend_t *depobj_list)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_memcpy_async( &}
+@item                   @tab @code{    dst, src, length, dst_offset, src_offset, &}
+@item                   @tab @code{    dst_device_num, src_device_num, &}
+@item                   @tab @code{    depobj_count, depobj_list) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int}
+@item                   @tab @code{type(c_ptr), value :: dst, src}
+@item                   @tab @code{integer(c_size_t), value :: length, dst_offset, src_offset}
+@item                   @tab @code{integer(c_int), value :: dst_device_num, src_device_num, depobj_count}
+@item                   @tab @code{integer(omp_depend_kind), optional :: depobj_list(*)}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_memcpy}, @ref{omp_target_memcpy_rect_async}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.7
+@end table
+
+
+
+@node omp_target_memcpy_rect
+@subsection @code{omp_target_memcpy_rect} -- Copy a subvolume of data between devices
+@table @asis
+@item @emph{Description}:
+This routine copies a subvolume of data from the device identified by
+device number @var{src_device_num} to device @var{dst_device_num}. 
+The array has @var{num_dims} dimensions and each array element has a size of
+@var{element_size} bytes.  The @var{volume} array specifies how many elements
+per dimension are copied.  The full sizes of the destination and source arrays
+are given by the @var{dst_dimensions} and @var{src_dimensions} arguments,
+respectively.  The offset per dimension to the first element to be copied is
+given by the @var{dst_offset} and @var{src_offset} arguments.  The routine
+returns zero on success and non-zero otherwise.
+
+The OpenMP specification only requires that @var{num_dims} up to three is
+supported.  In order to find implementation-specific maximally supported number
+of dimensions, the routine returns this value when invoked with a null pointer
+to both the @var{dst} and @var{src} arguments.  As GCC supports arbitrary
+dimensions, it returns @code{INT_MAX}.
+
+The device-number arguments must be conforming device numbers, the @var{src} and
+@var{dst} must be either both null pointers or all of the following must be
+fulfilled: @var{element_size} and @var{num_dims} must be positive and the
+@var{volume}, offset and dimension arrays must have at least @var{num_dims}
+dimensions.
+
+Running this routine in a @code{target} region is not supported except on
+the initial device.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_memcpy_rect(void *dst,}
+@item                   @tab @code{                           const void *src,}
+@item                   @tab @code{                           size_t element_size,}
+@item                   @tab @code{                           int num_dims,}
+@item                   @tab @code{                           const size_t *volume,}
+@item                   @tab @code{                           const size_t *dst_offset,}
+@item                   @tab @code{                           const size_t *src_offset,}
+@item                   @tab @code{                           const size_t *dst_dimensions,}
+@item                   @tab @code{                           const size_t *src_dimensions,}
+@item                   @tab @code{                           int dst_device_num,}
+@item                   @tab @code{                           int src_device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_memcpy_rect( &}
+@item                   @tab @code{    dst, src, element_size, num_dims, volume, &}
+@item                   @tab @code{    dst_offset, src_offset, dst_dimensions, &}
+@item                   @tab @code{    src_dimensions, dst_device_num, src_device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int}
+@item                   @tab @code{type(c_ptr), value :: dst, src}
+@item                   @tab @code{integer(c_size_t), value :: element_size, dst_offset, src_offset}
+@item                   @tab @code{integer(c_size_t), value :: volume, dst_dimensions, src_dimensions}
+@item                   @tab @code{integer(c_int), value :: num_dims, dst_device_num, src_device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_memcpy_rect_async}, @ref{omp_target_memcpy}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.6
+@end table
+
+
+
+@node omp_target_memcpy_rect_async
+@subsection @code{omp_target_memcpy_rect_async} -- Copy a subvolume of data between devices asynchronously
+@table @asis
+@item @emph{Description}:
+This routine copies asynchronously a subvolume of data from the device
+identified by device number @var{src_device_num} to device @var{dst_device_num}.
+The array has @var{num_dims} dimensions and each array element has a size of
+@var{element_size} bytes.  The @var{volume} array specifies how many elements
+per dimension are copied.  The full sizes of the destination and source arrays
+are given by the @var{dst_dimensions} and @var{src_dimensions} arguments,
+respectively.  The offset per dimension to the first element to be copied is
+given by the @var{dst_offset} and @var{src_offset} arguments.  Task dependence
+is expressed by passing an array of depend objects to @var{depobj_list}, where
+the number of array elements is passed as @var{depobj_count}; if the count is
+zero, the @var{depobj_list} argument is ignored.  The routine
+returns zero on success and non-zero otherwise.
+
+The OpenMP specification only requires that @var{num_dims} up to three is
+supported.  In order to find implementation-specific maximally supported number
+of dimensions, the routine returns this value when invoked with a null pointer
+to both the @var{dst} and @var{src} arguments.  As GCC supports arbitrary
+dimensions, it returns @code{INT_MAX}.
+
+The device-number arguments must be conforming device numbers, the @var{src} and
+@var{dst} must be either both null pointers or all of the following must be
+fulfilled: @var{element_size} and @var{num_dims} must be positive and the
+@var{volume}, offset and dimension arrays must have at least @var{num_dims}
+dimensions.
+
+Running this routine in a @code{target} region is not supported except on
+the initial device.
+
+
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_memcpy_rect_async(void *dst,}
+@item                   @tab @code{                           const void *src,}
+@item                   @tab @code{                           size_t element_size,}
+@item                   @tab @code{                           int num_dims,}
+@item                   @tab @code{                           const size_t *volume,}
+@item                   @tab @code{                           const size_t *dst_offset,}
+@item                   @tab @code{                           const size_t *src_offset,}
+@item                   @tab @code{                           const size_t *dst_dimensions,}
+@item                   @tab @code{                           const size_t *src_dimensions,}
+@item                   @tab @code{                           int dst_device_num,}
+@item                   @tab @code{                           int src_device_num,}
+@item                   @tab @code{                           int depobj_count,}
+@item                   @tab @code{                           omp_depend_t *depobj_list)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_memcpy_rect_async( &}
+@item                   @tab @code{    dst, src, element_size, num_dims, volume, &}
+@item                   @tab @code{    dst_offset, src_offset, dst_dimensions, &}
+@item                   @tab @code{    src_dimensions, dst_device_num, src_device_num, &}
+@item                   @tab @code{    depobj_count, depobj_list) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int}
+@item                   @tab @code{type(c_ptr), value :: dst, src}
+@item                   @tab @code{integer(c_size_t), value :: element_size, dst_offset, src_offset}
+@item                   @tab @code{integer(c_size_t), value :: volume, dst_dimensions, src_dimensions}
+@item                   @tab @code{integer(c_int), value :: num_dims, dst_device_num, src_device_num}
+@item                   @tab @code{integer(c_int), value :: depobj_count}
+@item                   @tab @code{integer(omp_depend_kind), optional :: depobj_list(*)}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_memcpy_rect}, @ref{omp_target_memcpy_async}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.8
 @end table
 
 
