@@ -903,7 +903,8 @@ ExpandVisitor::visit (AST::Trait &trait)
 
   expander.push_context (MacroExpander::ContextType::TRAIT);
 
-  std::function<std::unique_ptr<AST::TraitItem> (AST::SingleASTNode)> extractor
+  std::function<std::unique_ptr<AST::AssociatedItem> (AST::SingleASTNode)>
+    extractor
     = [] (AST::SingleASTNode node) { return node.take_trait_item (); };
 
   expand_macro_children (MacroExpander::ContextType::TRAIT,
