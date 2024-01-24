@@ -151,7 +151,6 @@ public:
   void visit (AST::ImplTraitTypeOneBound &);
   void visit (AST::TraitObjectTypeOneBound &);
   void visit (AST::TupleType &);
-  void visit (AST::RawPointerType &);
   void visit (AST::ReferenceType &);
   void visit (AST::ArrayType &);
   void visit (AST::SliceType &);
