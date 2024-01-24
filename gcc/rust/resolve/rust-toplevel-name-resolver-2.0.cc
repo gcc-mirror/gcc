@@ -81,8 +81,13 @@ void
 GlobbingVisitor::visit (AST::TupleStruct &tuple_struct)
 {
   if (tuple_struct.get_visibility ().is_public ())
-    ctx.insert_shadowable (tuple_struct.get_identifier (),
-			   tuple_struct.get_node_id (), Namespace::Values);
+    {
+      ctx.insert_shadowable (tuple_struct.get_identifier (),
+			     tuple_struct.get_node_id (), Namespace::Types);
+
+      ctx.insert_shadowable (tuple_struct.get_identifier (),
+			     tuple_struct.get_node_id (), Namespace::Values);
+    }
 }
 
 void
