@@ -2350,6 +2350,38 @@
    (set_attr "type" "sfb_alu")
    (set_attr "mode" "<GPR:MODE>")])
 
+;; Combine creates this form ((typeof(y))zero_one * z) <op> y
+;; for SiFive short forward branches.
+
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (sign_extract:X (match_operand:X 1 "register_operand")
+			       (const_int 1)
+			       (match_operand 2 "immediate_operand"))
+	       (match_operand:X 3 "register_operand")))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_SFB_ALU"
+  [(set (match_dup 4) (zero_extract:X (match_dup 1) (const_int 1) (match_dup 2)))
+   (set (match_dup 0) (if_then_else:X (ne (match_dup 4) (const_int 0))
+				      (match_dup 3)
+				      (const_int 0)))])
+
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (sign_extract:X (match_operand:X 1 "register_operand")
+			       (const_int 1)
+			       (match_operand 2 "immediate_operand"))
+	       (match_operand:X 3 "register_operand")))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_SFB_ALU && (UINTVAL (operands[2]) < 11)"
+  [(set (match_dup 4) (and:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (if_then_else:X (ne (match_dup 4) (const_int 0))
+				      (match_dup 3)
+				      (const_int 0)))]
+{
+  operands[2] = GEN_INT (1 << UINTVAL(operands[2]));
+})
+
 ;; Used to implement built-in functions.
 (define_expand "condjump"
   [(set (pc)
