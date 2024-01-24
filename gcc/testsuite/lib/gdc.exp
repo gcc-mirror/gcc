@@ -133,6 +133,28 @@ proc gdc_link_flags { paths } {
 	set include_cxx_flags 0
     }
 
+    # We need to add options to locate libgphobos and libstdc++
+    # Usually '-L' options are added to point to the relevant directories for
+    # the uninstalled libraries.
+
+    # In cases where libraries are available as both shared and convenience
+    # some additional checks are made.
+
+    # For some targets -static-xxxx options are handled by specs substitution
+    # and need a '-B' option rather than '-L'.  For Darwin, when embedded
+    # runpaths are in use (the default for all versions after macOS 10.11),
+    # '-B' is also needed to provide the runpath.
+    # When '-B' is used, this results in a '-L' for each path that exists (so
+    # that appending a '-L' as well is a needless duplicate).  There are also
+    # cases where tools warn for duplicates, leading to spurious fails.
+    # Therefore the objective of the code below is to add just one '-L' or
+    # '-B' for each of the libraries.
+
+    set target_wants_B_option 0
+    if { [istarget *-*-darwin9* ] || [istarget *-*-darwin\[12\]* ] } {
+      set target_wants_B_option 1
+    }
+
     if { $gccpath != "" } {
 	# Path to libgphobos.spec.
 	append flags "-B${gccpath}/libphobos/src "
@@ -143,7 +165,11 @@ proc gdc_link_flags { paths } {
 
 	if { [file exists "${gccpath}/libphobos/src/.libs/libgphobos.a"] \
 	     || [file exists "${gccpath}/libphobos/src/.libs/libgphobos.${shlib_ext}"] } {
-	    append flags "-L${gccpath}/libphobos/src/.libs "
+	    if { $target_wants_B_option } {
+		append flags "-B${gccpath}/libphobos/src/.libs "
+	    } else {
+		append flags "-L${gccpath}/libphobos/src/.libs "
+	    }
 	    append ld_library_path ":${gccpath}/libphobos/src/.libs"
 	}
 	# Static linking is default. If only the shared lib is available adjust
@@ -163,7 +189,11 @@ proc gdc_link_flags { paths } {
 	if $include_cxx_flags {
 	    if { [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] \
 		 || [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] } {
-		append flags "-L${gccpath}/libstdc++-v3/src/.libs "
+		if { $target_wants_B_option } {
+		    append flags "-B${gccpath}/libstdc++-v3/src/.libs "
+		} else {
+		    append flags "-L${gccpath}/libstdc++-v3/src/.libs "
+		}
 		append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
 	    }
 	}
@@ -173,7 +203,11 @@ proc gdc_link_flags { paths } {
 
 	set libphobos [lookfor_file ${tool_root_dir} libgphobos]
 	if { $libphobos != "" } {
-	    append flags "-B${libphobos} -L${libphobos} "
+	    if { $target_wants_B_option } {
+	      append flags "-B${libphobos} "
+	    } else { 
+	      append flags " -L${libphobos} "
+	    }
 	    append ld_library_path ":${libphobos}"
 	}
 	set libiberty [lookfor_file ${tool_root_dir} libiberty]
