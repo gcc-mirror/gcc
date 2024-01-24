@@ -401,6 +401,9 @@ TopLevel::visit (AST::Union &union_item)
 void
 TopLevel::visit (AST::ConstantItem &const_item)
 {
+  insert_or_error_out (const_item.get_identifier (), const_item,
+		       Namespace::Values);
+
   auto expr_vis
     = [this, &const_item] () { const_item.get_expr ().accept_vis (*this); };
 
