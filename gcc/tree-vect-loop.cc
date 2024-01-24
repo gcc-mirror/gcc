@@ -5892,25 +5892,26 @@ vect_create_partial_epilog (tree vec_def, tree vectype, code_helper code,
 }
 
 /* Retrieves the definining statement to be used for a reduction.
-   For MAIN_EXIT_P we use the current VEC_STMTs and otherwise we look at
-   the reduction definitions.  */
+   For LAST_VAL_REDUC_P we use the current VEC_STMTs which correspond to the
+   final value after vectorization and otherwise we look at the reduction
+   definitions to get the first.  */
 
 tree
 vect_get_vect_def (stmt_vec_info reduc_info, slp_tree slp_node,
-		   slp_instance slp_node_instance, bool main_exit_p, unsigned i,
-		   vec <gimple *> &vec_stmts)
+		   slp_instance slp_node_instance, bool last_val_reduc_p,
+		   unsigned i, vec <gimple *> &vec_stmts)
 {
   tree def;
 
   if (slp_node)
     {
-      if (!main_exit_p)
+      if (!last_val_reduc_p)
         slp_node = slp_node_instance->reduc_phis;
       def = vect_get_slp_vect_def (slp_node, i);
     }
   else
     {
-      if (!main_exit_p)
+      if (!last_val_reduc_p)
 	reduc_info = STMT_VINFO_REDUC_DEF (vect_orig_stmt (reduc_info));
       vec_stmts = STMT_VINFO_VEC_STMTS (reduc_info);
       def = gimple_get_lhs (vec_stmts[0]);
@@ -5982,8 +5983,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      loop-closed PHI of the inner loop which we remember as
      def for the reduction PHI generation.  */
   bool double_reduc = false;
-  bool main_exit_p = LOOP_VINFO_IV_EXIT (loop_vinfo) == loop_exit
-		     && !LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo);
+  bool last_val_reduc_p = LOOP_VINFO_IV_EXIT (loop_vinfo) == loop_exit
+			  && !LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo);
   stmt_vec_info rdef_info = stmt_info;
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     {
@@ -6233,7 +6234,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     {
       gimple_seq stmts = NULL;
       def = vect_get_vect_def (rdef_info, slp_node, slp_node_instance,
-			       main_exit_p, i, vec_stmts);
+			       last_val_reduc_p, i, vec_stmts);
       for (j = 0; j < ncopies; j++)
 	{
 	  tree new_def = copy_ssa_name (def);
