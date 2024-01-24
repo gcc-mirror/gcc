@@ -18837,11 +18837,12 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case LABEL_EXPR:
       {
 	tree decl = LABEL_EXPR_LABEL (t);
-	tree label;
-
-	label = finish_label_stmt (DECL_NAME (decl));
+	tree label = finish_label_stmt (DECL_NAME (decl));
 	if (TREE_CODE (label) == LABEL_DECL)
-	  FALLTHROUGH_LABEL_P (label) = FALLTHROUGH_LABEL_P (decl);
+	  {
+	    FALLTHROUGH_LABEL_P (label) = FALLTHROUGH_LABEL_P (decl);
+	    copy_warning (label, decl);
+	  }
 	if (DECL_ATTRIBUTES (decl) != NULL_TREE)
 	  cplus_decl_attributes (&label, DECL_ATTRIBUTES (decl), 0);
       }

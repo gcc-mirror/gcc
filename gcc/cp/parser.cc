@@ -13108,7 +13108,11 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
       /* Anything else must be an ordinary label.  */
       label = finish_label_stmt (cp_parser_identifier (parser));
       if (label && TREE_CODE (label) == LABEL_DECL)
-	FALLTHROUGH_LABEL_P (label) = fallthrough_p;
+	{
+	  FALLTHROUGH_LABEL_P (label) = fallthrough_p;
+	  if (!warning_enabled_at (input_location, OPT_Wunused_label))
+	    suppress_warning (label, OPT_Wunused_label);
+	}
       break;
     }
 

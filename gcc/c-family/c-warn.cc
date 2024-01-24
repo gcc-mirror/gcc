@@ -2185,7 +2185,9 @@ warn_for_unused_label (tree label)
 {
   if (!TREE_USED (label))
     {
-      if (DECL_INITIAL (label))
+      if (warning_suppressed_p (label, OPT_Wunused_label))
+	/* Don't warn.  */;
+      else if (DECL_INITIAL (label))
 	warning (OPT_Wunused_label, "label %q+D defined but not used", label);
       else
 	warning (OPT_Wunused_label, "label %q+D declared but not defined", label);
