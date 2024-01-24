@@ -10847,16 +10847,23 @@ void loongarch_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
   /* x0 = 1./b estimate.  */
   emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
 					      unspec)));
-  /* 2.0 - b * x0  */
+  /* e0 = 2.0 - b * x0.  */
   emit_insn (gen_rtx_SET (e0, gen_rtx_FMA (mode,
 					   gen_rtx_NEG (mode, b), x0, mtwo)));
 
-  /* x0 = a * x0  */
   if (a != CONST1_RTX (mode))
-    emit_insn (gen_rtx_SET (x0, gen_rtx_MULT (mode, a, x0)));
-
-  /* res = e0 * x0  */
-  emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, e0, x0)));
+    {
+      rtx e1 = gen_reg_rtx (mode);
+      /* e1 = a * x0.  */
+      emit_insn (gen_rtx_SET (e1, gen_rtx_MULT (mode, a, x0)));
+      /* res = e0 * e1.  */
+      emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, e0, e1)));
+    }
+  else
+    {
+      /* res = e0 * x0.  */
+      emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, e0, x0)));
+    }
 }
 
 static bool
