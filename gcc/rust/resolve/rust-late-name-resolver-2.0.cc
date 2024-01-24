@@ -151,7 +151,10 @@ Late::visit (AST::IdentifierPattern &identifier)
   // do we insert in labels or in values
   // but values does not allow shadowing... since functions cannot shadow
   // do we insert functions in labels as well?
-  new_label (identifier.get_ident (), identifier.get_node_id ());
+  auto ok
+    = ctx.values.insert (identifier.get_ident (), identifier.get_node_id ());
+
+  rust_assert (ok);
 }
 
 void
