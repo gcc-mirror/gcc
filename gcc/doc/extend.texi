@@ -9921,7 +9921,7 @@ same manner as the @code{deprecated} attribute.
 @section Statement Attributes
 @cindex Statement Attributes
 
-GCC allows attributes to be set on null statements.  @xref{Attribute Syntax},
+GCC allows attributes to be set on statements.  @xref{Attribute Syntax},
 for details of the exact syntax for using attributes.  Other attributes are
 available for functions (@pxref{Function Attributes}), variables
 (@pxref{Variable Attributes}), labels (@pxref{Label Attributes}), enumerators
@@ -9978,6 +9978,25 @@ foo (int x, int y)
 @code{y} is not actually incremented and the compiler can but does not
 have to optimize it to just @code{return 42 + 42;}.
 
+@cindex @code{musttail} statement attribute
+@item musttail
+
+The @code{gnu::musttail} or @code{clang::musttail} attribute
+can be applied to a @code{return} statement with a return-value expression
+that is a function call.  It asserts that the call must be a tail call that
+does not allocate extra stack space, so it is safe to use tail recursion
+to implement long running loops.
+
+@smallexample
+[[gnu::musttail]] return foo();
+@end smallexample
+
+If the compiler cannot generate a @code{musttail} tail call it will report
+an error. On some targets tail calls may never be supported.
+Tail calls cannot reference locals in memory, which may affect
+builds without optimization when passing small structures, or passing
+or returning large structures. Enabling -O1 or -O2 can improve
+the success of tail calls.
 @end table
 
 @node Attribute Syntax
@@ -10101,7 +10120,9 @@ the constant expression, if present.
 
 @subsubheading Statement Attributes
 In GNU C, an attribute specifier list may appear as part of a null
-statement.  The attribute goes before the semicolon.
+statement. The attribute goes before the semicolon.
+Some attributes in new style syntax are also supported
+on non-null statements.
 
 @subsubheading Type Attributes
 
