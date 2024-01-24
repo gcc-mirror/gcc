@@ -12744,6 +12744,18 @@ proc check_effective_target_tail_call { } {
     } {-O2 -fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
 }
 
+# Return 1 if the target can perform tail-call optimizations for structures
+# checking with C++ because the C++ compiler has less tail call ability
+# due to PR115606 on some targets
+proc check_effective_target_struct_tail_call { } {
+    return [check_no_messages_and_pattern tail_call ",SIBCALL" rtl-expand {
+	// C++
+	struct foo { int a, b; };
+	__attribute__((__noipa__)) struct foo foo (void) { return {}; }
+	__attribute__((__noipa__)) struct foo bar (void) { return foo(); }
+    } {-O2 -fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
+}
+
 # Return 1 if the target's calling sequence or its ABI
 # create implicit stack probes at or prior to function entry.
 proc check_effective_target_caller_implicit_probes { } {
