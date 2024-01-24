@@ -102,7 +102,7 @@ nds32 port		Shiva Chen		<shiva0217@gmail.com>
 nios2 port		Chung-Lin Tang		<cltang@codesourcery.com>
 nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
 nvptx port		Tom de Vries		<tdevries@suse.de>
-nvptx port		Thomas Schwinge		<thomas@codesourcery.com>
+nvptx port		Thomas Schwinge		<tschwinge@baylibre.com>
 or1k port		Stafford Horne		<shorne@gmail.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
@@ -181,7 +181,7 @@ libgcc			Ian Lance Taylor	<ian@airs.com>
 libgo			Ian Lance Taylor	<ian@airs.com>
 libgomp			Jakub Jelinek		<jakub@redhat.com>
 libgomp			Tobias Burnus		<tburnus@baylibre.com>
-libgomp (OpenACC)	Thomas Schwinge		<thomas@codesourcery.com>
+libgomp (OpenACC)	Thomas Schwinge		<tschwinge@baylibre.com>
 libgrust		All Rust front end maintainers
 libiberty		Ian Lance Taylor	<ian@airs.com>
 libitm			Torvald Riegel		<triegel@redhat.com>
@@ -253,7 +253,7 @@ auto-vectorizer		Zdenek Dvorak		<ook@ucw.cz>
 loop infrastructure	Zdenek Dvorak		<ook@ucw.cz>
 loop ivopts		Bin Cheng		<bin.cheng@linux.alibaba.com>
 loop optimizer		Bin Cheng		<bin.cheng@linux.alibaba.com>
-OpenACC			Thomas Schwinge		<thomas@codesourcery.com>
+OpenACC			Thomas Schwinge		<tschwinge@baylibre.com>
 OpenACC			Tobias Burnus		<tburnus@baylibre.com>
 OpenMP			Jakub Jelinek		<jakub@redhat.com>
 OpenMP			Tobias Burnus		<tburnus@baylibre.com>
