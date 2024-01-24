@@ -2637,6 +2637,28 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
   return aarch64_gen_compare_reg (code, x, y);
 }
 
+/* Generate conditional branch to LABEL, comparing X to 0 using CODE.
+   Return the jump instruction.  */
+
+static rtx
+aarch64_gen_compare_zero_and_branch (rtx_code code, rtx x,
+				     rtx_code_label *label)
+{
+  if (aarch64_track_speculation)
+    {
+      /* Emit an explicit compare instruction, so that we can correctly
+	 track the condition codes.  */
+      rtx cc_reg = aarch64_gen_compare_reg (code, x, const0_rtx);
+      x = gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+  else
+    x = gen_rtx_fmt_ee (code, VOIDmode, x, const0_rtx);
+
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+			    gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
+  return gen_rtx_SET (pc_rtx, x);
+}
+
 /* Consider the operation:
 
      OPERANDS[0] = CODE (OPERANDS[1], OPERANDS[2]) + OPERANDS[3]
@@ -9882,11 +9904,10 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
 	 to be SP; letting the CFA move during this adjustment
 	 is just as correct as retaining the CFA from the body
 	 of the function.  Therefore, do nothing special.  */
-      rtx label = gen_label_rtx ();
-      rtx x = gen_rtx_EQ (VOIDmode, EH_RETURN_TAKEN_RTX, const0_rtx);
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
-      rtx jump = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
+      rtx_code_label *label = gen_label_rtx ();
+      rtx x = aarch64_gen_compare_zero_and_branch (EQ, EH_RETURN_TAKEN_RTX,
+						   label);
+      rtx jump = emit_jump_insn (x);
       JUMP_LABEL (jump) = label;
       LABEL_NUSES (label)++;
       emit_insn (gen_add2_insn (stack_pointer_rtx,
@@ -24657,19 +24678,8 @@ aarch64_split_compare_and_swap (rtx operands[])
 
   if (!is_weak)
     {
-      if (aarch64_track_speculation)
-	{
-	  /* Emit an explicit compare instruction, so that we can correctly
-	     track the condition codes.  */
-	  rtx cc_reg = aarch64_gen_compare_reg (NE, scratch, const0_rtx);
-	  x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
-	}
-      else
-	x = gen_rtx_NE (VOIDmode, scratch, const0_rtx);
-
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				gen_rtx_LABEL_REF (Pmode, label1), pc_rtx);
-      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+      x = aarch64_gen_compare_zero_and_branch (NE, scratch, label1);
+      aarch64_emit_unlikely_jump (x);
     }
   else
     aarch64_gen_compare_reg (NE, scratch, const0_rtx);
@@ -24685,18 +24695,8 @@ aarch64_split_compare_and_swap (rtx operands[])
       emit_label (label2);
       aarch64_emit_store_exclusive (mode, scratch, mem, rval, model_rtx);
 
-      if (aarch64_track_speculation)
-	{
-	  /* Emit an explicit compare instruction, so that we can correctly
-	     track the condition codes.  */
-	  rtx cc_reg = aarch64_gen_compare_reg (NE, scratch, const0_rtx);
-	  x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
-	}
-      else
-	x = gen_rtx_NE (VOIDmode, scratch, const0_rtx);
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				gen_rtx_LABEL_REF (Pmode, label1), pc_rtx);
-      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+      x = aarch64_gen_compare_zero_and_branch (NE, scratch, label1);
+      aarch64_emit_unlikely_jump (x);
 
       label2 = label3;
     }
@@ -24780,19 +24780,8 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   aarch64_emit_store_exclusive (mode, cond, mem,
 				gen_lowpart (mode, new_out), model_rtx);
 
-  if (aarch64_track_speculation)
-    {
-      /* Emit an explicit compare instruction, so that we can correctly
-	 track the condition codes.  */
-      rtx cc_reg = aarch64_gen_compare_reg (NE, cond, const0_rtx);
-      x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
-    }
-  else
-    x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-			    gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
-  aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+  x = aarch64_gen_compare_zero_and_branch (NE, cond, label);
+  aarch64_emit_unlikely_jump (x);
 
   /* Emit any final barrier needed for a __sync operation.  */
   if (is_sync)
