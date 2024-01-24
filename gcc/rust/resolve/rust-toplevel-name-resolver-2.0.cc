@@ -68,8 +68,13 @@ void
 GlobbingVisitor::visit (AST::StructStruct &struct_item)
 {
   if (struct_item.get_visibility ().is_public ())
-    ctx.insert_shadowable (struct_item.get_identifier (),
-			   struct_item.get_node_id (), Namespace::Values);
+    {
+      ctx.insert_shadowable (struct_item.get_identifier (),
+			     struct_item.get_node_id (), Namespace::Types);
+      if (struct_item.is_unit_struct ())
+	ctx.insert_shadowable (struct_item.get_identifier (),
+			       struct_item.get_node_id (), Namespace::Values);
+    }
 }
 
 void
