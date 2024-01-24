@@ -3555,28 +3555,61 @@
 ;; }}}
 ;; {{{ Int/int conversions
 
+(define_code_iterator all_convert [truncate zero_extend sign_extend])
 (define_code_iterator zero_convert [truncate zero_extend])
 (define_code_attr convop [
 	(sign_extend "extend")
 	(zero_extend "zero_extend")
 	(truncate "trunc")])
 
-(define_insn "<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>"
+(define_expand "<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>"
+  [(set (match_operand:V_INT_1REG 0 "register_operand"      "=v")
+        (all_convert:V_INT_1REG
+	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
+  "")
+
+(define_insn "*<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>_sdwa<exec>"
   [(set (match_operand:V_INT_1REG 0 "register_operand"      "=v")
         (zero_convert:V_INT_1REG
 	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
-  ""
+  "!TARGET_RDNA3"
   "v_mov_b32_sdwa\t%0, %1 dst_sel:<V_INT_1REG:sdwa> dst_unused:UNUSED_PAD src0_sel:<V_INT_1REG_ALT:sdwa>"
   [(set_attr "type" "vop_sdwa")
    (set_attr "length" "8")])
 
-(define_insn "extend<V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>"
+(define_insn "extend<V_INT_1REG_ALT:mode><V_INT_1REG:mode>_sdwa<exec>"
   [(set (match_operand:V_INT_1REG 0 "register_operand"	    "=v")
         (sign_extend:V_INT_1REG
 	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
-  ""
+  "!TARGET_RDNA3"
   "v_mov_b32_sdwa\t%0, sext(%1) src0_sel:<V_INT_1REG_ALT:sdwa>"
   [(set_attr "type" "vop_sdwa")
+   (set_attr "length" "8")])
+
+(define_insn "*<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>_shift<exec>"
+  [(set (match_operand:V_INT_1REG 0 "register_operand"      "=v")
+        (all_convert:V_INT_1REG
+	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
+  "TARGET_RDNA3"
+  {
+    enum {extend, zero_extend, trunc};
+    rtx shiftwidth = (<V_INT_1REG_ALT:SCALAR_MODE>mode == QImode
+		      || <V_INT_1REG:SCALAR_MODE>mode == QImode
+		      ? GEN_INT (24)
+		      : <V_INT_1REG_ALT:SCALAR_MODE>mode == HImode
+		        || <V_INT_1REG:SCALAR_MODE>mode == HImode
+		      ? GEN_INT (16)
+		      : NULL);
+    operands[2] = shiftwidth;
+
+    if (!shiftwidth)
+      return "v_mov_b32 %0, %1";
+    else if (<convop> == extend || <convop> == trunc)
+      return "v_lshlrev_b32\t%0, %2, %1\;v_ashrrev_i32\t%0, %2, %0";
+    else
+      return "v_lshlrev_b32\t%0, %2, %1\;v_lshrrev_b32\t%0, %2, %0";
+  }
+  [(set_attr "type" "mult")
    (set_attr "length" "8")])
 
 ;; GCC can already do these for scalar types, but not for vector types.

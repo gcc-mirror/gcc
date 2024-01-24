@@ -1741,11 +1741,13 @@ max_isa_vgprs (int isa)
     case EF_AMDGPU_MACH_AMDGCN_GFX900:
     case EF_AMDGPU_MACH_AMDGCN_GFX906:
     case EF_AMDGPU_MACH_AMDGCN_GFX908:
-    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
-    case EF_AMDGPU_MACH_AMDGCN_GFX1100:
       return 256;
     case EF_AMDGPU_MACH_AMDGCN_GFX90a:
       return 512;
+    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+      return 512;  /* 512 SIMD32 = 256 wavefrontsize64.  */
+    case EF_AMDGPU_MACH_AMDGCN_GFX1100:
+      return 1536; /* 1536 SIMD32 = 768 wavefrontsize64.  */
     }
   GOMP_PLUGIN_fatal ("unhandled ISA in max_isa_vgprs");
 }
