@@ -547,6 +547,7 @@ Objective-C and Objective-C++ Dialects}.
 -falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
 -falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
+-fmin-function-alignment=[@var{n}]
 -fno-allocation-dce -fallow-store-data-races
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}]
 -fauto-inc-dec  -fbranch-probabilities
@@ -14234,6 +14235,9 @@ Align the start of functions to the next power-of-two greater than or
 equal to @var{n}, skipping up to @var{m}-1 bytes.  This ensures that at
 least the first @var{m} bytes of the function can be fetched by the CPU
 without crossing an @var{n}-byte alignment boundary.
+This is an optimization of code performance and alignment is ignored for
+functions considered cold.  If alignment is required for all functions,
+use @option{-fmin-function-alignment}.
 
 If @var{m} is not specified, it defaults to @var{n}.
 
@@ -14297,6 +14301,8 @@ Enabled at levels @option{-O2}, @option{-O3}.
 Align loops to a power-of-two boundary.  If the loops are executed
 many times, this makes up for any execution of the dummy padding
 instructions.
+This is an optimization of code performance and alignment is ignored for
+loops considered cold.
 
 If @option{-falign-labels} is greater than this value, then its value
 is used instead.
@@ -14319,6 +14325,8 @@ Enabled at levels @option{-O2}, @option{-O3}.
 Align branch targets to a power-of-two boundary, for branch targets
 where the targets can only be reached by jumping.  In this case,
 no dummy operations need be executed.
+This is an optimization of code performance and alignment is ignored for
+jumps considered cold.
 
 If @option{-falign-labels} is greater than this value, then its value
 is used instead.
@@ -14331,6 +14339,14 @@ If @var{n} is not specified or is zero, use a machine-dependent default.
 The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
+
+@opindex fmin-function-alignment=@var{n}
+@item -fmin-function-alignment
+Specify minimal alignment of functions to the next power-of-two greater than or
+equal to @var{n}. Unlike @option{-falign-functions} this alignment is applied
+also to all functions (even those considered cold).  The alignment is also not
+affected by @option{-flimit-function-alignment}
+
 
 @opindex fno-allocation-dce
 @item -fno-allocation-dce
@@ -14428,7 +14444,7 @@ To use the link-time optimizer, @option{-flto} and optimization
 options should be specified at compile time and during the final link.
 It is recommended that you compile all the files participating in the
 same link with the same options and also specify those options at
-link time.  
+link time.
 For example:
 
 @smallexample
