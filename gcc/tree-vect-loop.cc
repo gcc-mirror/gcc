@@ -5982,7 +5982,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      loop-closed PHI of the inner loop which we remember as
      def for the reduction PHI generation.  */
   bool double_reduc = false;
-  bool main_exit_p = LOOP_VINFO_IV_EXIT (loop_vinfo) == loop_exit;
+  bool main_exit_p = LOOP_VINFO_IV_EXIT (loop_vinfo) == loop_exit
+		     && !LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo);
   stmt_vec_info rdef_info = stmt_info;
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     {
