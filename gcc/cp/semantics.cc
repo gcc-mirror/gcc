@@ -4979,6 +4979,7 @@ simplify_aggr_init_expr (tree *tp)
     = CALL_EXPR_OPERATOR_SYNTAX (aggr_init_expr);
   CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (aggr_init_expr);
   CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (aggr_init_expr);
+  CALL_EXPR_MUST_TAIL_CALL (call_expr) = AGGR_INIT_EXPR_MUST_TAIL (aggr_init_expr);
 
   if (style == ctor)
     {

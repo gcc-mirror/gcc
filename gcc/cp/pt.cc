@@ -21094,12 +21094,19 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    bool op = CALL_EXPR_OPERATOR_SYNTAX (t);
 	    bool ord = CALL_EXPR_ORDERED_ARGS (t);
 	    bool rev = CALL_EXPR_REVERSE_ARGS (t);
-	    if (op || ord || rev)
+	    bool mtc = false;
+	    if (TREE_CODE (t) == CALL_EXPR)
+	      mtc = CALL_EXPR_MUST_TAIL_CALL (t);
+	    if (op || ord || rev || mtc)
 	      if (tree call = extract_call_expr (ret))
 		{
 		  CALL_EXPR_OPERATOR_SYNTAX (call) = op;
 		  CALL_EXPR_ORDERED_ARGS (call) = ord;
 		  CALL_EXPR_REVERSE_ARGS (call) = rev;
+		  if (TREE_CODE (call) == CALL_EXPR)
+		    CALL_EXPR_MUST_TAIL_CALL (call) = mtc;
+		  else if (TREE_CODE (call) == AGGR_INIT_EXPR)
+		    AGGR_INIT_EXPR_MUST_TAIL (call) = mtc;
 		}
 	    if (warning_suppressed_p (t, OPT_Wpessimizing_move))
 	      /* This also suppresses -Wredundant-move.  */
