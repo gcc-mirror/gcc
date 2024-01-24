@@ -10700,13 +10700,29 @@ contain any instructions recognized by the assembler, including directives.
 GCC does not parse the assembler instructions themselves and 
 does not know what they mean or even whether they are valid assembler input. 
 
-You may place multiple assembler instructions together in a single @code{asm} 
-string, separated by the characters normally used in assembly code for the 
-system. A combination that works in most places is a newline to break the 
+You may place multiple assembler instructions together in a single @code{asm}
+string, separated by the characters normally used in assembly code for the
+system. A combination that works in most places is a newline to break the
 line, plus a tab character (written as @samp{\n\t}).
-Some assemblers allow semicolons as a line separator. However, 
-note that some assembler dialects use semicolons to start a comment. 
+Some assemblers allow semicolons as a line separator. However,
+note that some assembler dialects use semicolons to start a comment.
 @end table
+
+@node asm constexprs
+With gnu++11 or later the string can also be a compile time constant expression
+inside parens.  The constant expression can return a string or a container
+with data and size members, following similar rules as C++26 @code{static_assert}
+message. Any string is converted to the character set of the source code.
+When this feature is available the @code{__GXX_CONSTEXPR_ASM__} cpp symbol is defined.
+
+@example
+constexpr const char *genfoo() @{ return "foo"; @}
+
+void function()
+@{
+  asm((genfoo()));
+@}
+@end example
 
 @subsubheading Remarks
 Using extended @code{asm} (@pxref{Extended Asm}) typically produces
@@ -10850,20 +10866,27 @@ perform a jump to one of the labels listed in the @var{GotoLabels}.
 @item AssemblerTemplate
 This is a literal string that is the template for the assembler code. It is a 
 combination of fixed text and tokens that refer to the input, output, 
-and goto parameters. @xref{AssemblerTemplate}.
+and goto parameters. @xref{AssemblerTemplate}. With gnu++11 or later it can
+also be a constant expression inside parens (see @ref{asm constexprs}).
 
 @item OutputOperands
 A comma-separated list of the C variables modified by the instructions in the 
 @var{AssemblerTemplate}.  An empty list is permitted.  @xref{OutputOperands}.
+With gnu++11 or later the strings can also be constant expressions inside parens
+(see @ref{asm constexprs})
 
 @item InputOperands
 A comma-separated list of C expressions read by the instructions in the 
 @var{AssemblerTemplate}.  An empty list is permitted.  @xref{InputOperands}.
+With gnu++11 or later the strings can also be constant expressions inside parens
+(see @ref{asm constexprs})
 
 @item Clobbers
 A comma-separated list of registers or other values changed by the 
 @var{AssemblerTemplate}, beyond those listed as outputs.
 An empty list is permitted.  @xref{Clobbers and Scratch Registers}.
+With gnu++11 or later the strings can also be constant expressions inside parens
+(see @ref{asm constexprs})
 
 @item GotoLabels
 When you are using the @code{goto} form of @code{asm}, this section contains 
