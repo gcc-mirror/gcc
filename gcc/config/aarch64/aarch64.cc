@@ -28620,7 +28620,8 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   if (known_eq (clonei->simdlen, 0U))
     {
       simdlen = exact_div (poly_uint64 (64), nds_elt_bits);
-      simdlens.safe_push (simdlen);
+      if (maybe_ne (simdlen, 1U))
+	simdlens.safe_push (simdlen);
       simdlens.safe_push (simdlen * 2);
     }
   else
