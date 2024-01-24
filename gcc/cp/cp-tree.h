@@ -4228,6 +4228,10 @@ templated_operator_saved_lookups (tree t)
 #define AGGR_INIT_FROM_THUNK_P(NODE) \
   (AGGR_INIT_EXPR_CHECK (NODE)->base.protected_flag)
 
+/* Nonzero means that the call was marked musttail.  */
+#define AGGR_INIT_EXPR_MUST_TAIL(NODE) \
+  (AGGR_INIT_EXPR_CHECK (NODE)->base.static_flag)
+
 /* AGGR_INIT_EXPR accessors.  These are equivalent to the CALL_EXPR
    accessors, except for AGGR_INIT_EXPR_SLOT (which takes the place of
    CALL_EXPR_STATIC_CHAIN).  */

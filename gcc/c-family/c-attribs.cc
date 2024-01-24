@@ -672,6 +672,26 @@ attribute_takes_identifier_p (const_tree attr_id)
     return targetm.attribute_takes_identifier_p (attr_id);
 }
 
+/* Set a musttail attribute MUSTTAIL_P on return expression RETVAL
+   at LOC.  */
+
+void
+set_musttail_on_return (tree retval, location_t loc, bool musttail_p)
+{
+  if (retval && musttail_p)
+    {
+      tree t = retval;
+      if (TREE_CODE (t) == TARGET_EXPR)
+	t = TARGET_EXPR_INITIAL (t);
+      if (TREE_CODE (t) != CALL_EXPR)
+	error_at (loc, "cannot tail-call: return value must be a call");
+      else
+	CALL_EXPR_MUST_TAIL_CALL (t) = 1;
+    }
+  else if (musttail_p && !retval)
+    error_at (loc, "cannot tail-call: return value must be a call");
+}
+
 /* Verify that argument value POS at position ARGNO to attribute NAME
    applied to function FN (which is either a function declaration or function
    type) refers to a function parameter at position POS and the expected type
