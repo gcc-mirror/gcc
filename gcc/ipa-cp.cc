@@ -2298,7 +2298,7 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	return false;
       }
 
-  if (!same_lat_gen_level && values_count == opt_for_fn (cs->caller->decl,
+  if (!same_lat_gen_level && values_count >= opt_for_fn (cs->callee->decl,
 						param_ipa_cp_value_list_size))
     {
       /* We can only free sources, not the values themselves, because sources
