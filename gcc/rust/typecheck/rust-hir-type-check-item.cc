@@ -279,9 +279,11 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
     {
       auto nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-      auto canonical_path = nr_ctx.values.to_canonical_path (
+      auto canonical_path = nr_ctx.types.to_canonical_path (
 	struct_decl.get_mappings ().get_nodeid ());
 
+      if (!canonical_path.has_value ())
+	rust_unreachable ();
       path = canonical_path.value ();
     }
   else
