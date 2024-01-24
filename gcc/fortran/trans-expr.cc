@@ -6075,6 +6075,105 @@ conv_cond_temp (gfc_se * parmse, gfc_expr * e, tree cond)
 }
 
 
+/* Helper function for the handling of (currently) scalar dummy variables
+   with the VALUE attribute.  Argument parmse should already be set up.  */
+static void
+conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
+		  vec<tree, va_gc> *& optionalargs)
+{
+  tree tmp;
+
+  gcc_assert (fsym && fsym->attr.value && !fsym->attr.dimension);
+
+  /* Absent actual argument for optional scalar dummy.  */
+  if (e == NULL && fsym->attr.optional && !fsym->attr.dimension)
+    {
+      /* For scalar arguments with VALUE attribute which are passed by
+	 value, pass "0" and a hidden argument for the optional status.  */
+      if (fsym->ts.type == BT_CHARACTER)
+	{
+	  /* Pass a NULL pointer for an absent CHARACTER arg and a length of
+	     zero.  */
+	  parmse->expr = null_pointer_node;
+	  parmse->string_length = build_int_cst (gfc_charlen_type_node, 0);
+	}
+      else
+	parmse->expr = fold_convert (gfc_sym_type (fsym),
+				     integer_zero_node);
+      vec_safe_push (optionalargs, boolean_false_node);
+
+      return;
+    }
+
+  /* gfortran argument passing conventions:
+     actual arguments to CHARACTER(len=1),VALUE
+     dummy arguments are actually passed by value.
+     Strings are truncated to length 1.  */
+  if (gfc_length_one_character_type_p (&fsym->ts))
+    {
+      if (e->expr_type == EXPR_CONSTANT
+	  && e->value.character.length > 1)
+	{
+	  e->value.character.length = 1;
+	  gfc_conv_expr (parmse, e);
+	}
+
+      tree slen1 = build_int_cst (gfc_charlen_type_node, 1);
+      gfc_conv_string_parameter (parmse);
+      parmse->expr = gfc_string_to_single_character (slen1, parmse->expr,
+						     e->ts.kind);
+      /* Truncate resulting string to length 1.  */
+      parmse->string_length = slen1;
+    }
+
+  if (fsym->attr.optional
+      && fsym->ts.type != BT_CLASS
+      && fsym->ts.type != BT_DERIVED)
+    {
+      /* F2018:15.5.2.12 Argument presence and
+	 restrictions on arguments not present.  */
+      if (e->expr_type == EXPR_VARIABLE
+	  && e->rank == 0
+	  && (gfc_expr_attr (e).allocatable
+	      || gfc_expr_attr (e).pointer))
+	{
+	  gfc_se argse;
+	  tree cond;
+	  gfc_init_se (&argse, NULL);
+	  argse.want_pointer = 1;
+	  gfc_conv_expr (&argse, e);
+	  cond = fold_convert (TREE_TYPE (argse.expr), null_pointer_node);
+	  cond = fold_build2_loc (input_location, NE_EXPR,
+				  logical_type_node,
+				  argse.expr, cond);
+	  vec_safe_push (optionalargs,
+			 fold_convert (boolean_type_node, cond));
+	  /* Create "conditional temporary".  */
+	  conv_cond_temp (parmse, e, cond);
+	}
+      else if (e->expr_type != EXPR_VARIABLE
+	       || !e->symtree->n.sym->attr.optional
+	       || (e->ref != NULL && e->ref->type != REF_ARRAY))
+	vec_safe_push (optionalargs, boolean_true_node);
+      else
+	{
+	  tmp = gfc_conv_expr_present (e->symtree->n.sym);
+	  if (e->ts.type != BT_CHARACTER && !e->symtree->n.sym->attr.value)
+	    parmse->expr
+	      = fold_build3_loc (input_location, COND_EXPR,
+				 TREE_TYPE (parmse->expr),
+				 tmp, parmse->expr,
+				 fold_convert (TREE_TYPE (parmse->expr),
+					       integer_zero_node));
+
+	  vec_safe_push (optionalargs,
+			 fold_convert (boolean_type_node, tmp));
+	}
+    }
+}
+
+
+
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
    Return nonzero, if the call has alternate specifiers.
@@ -6279,19 +6378,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  && !fsym->attr.dimension && fsym->ts.type != BT_CLASS
 		  && !gfc_bt_struct (sym->ts.type))
 		{
-		  if (fsym->ts.type == BT_CHARACTER)
-		    {
-		      /* Pass a NULL pointer for an absent CHARACTER arg
-			 and a length of zero.  */
-		      parmse.expr = null_pointer_node;
-		      parmse.string_length
-			= build_int_cst (gfc_charlen_type_node,
-					 0);
-		    }
-		  else
-		    parmse.expr = fold_convert (gfc_sym_type (fsym),
-						integer_zero_node);
-		  vec_safe_push (optionalargs, boolean_false_node);
+		  conv_dummy_value (&parmse, e, fsym, optionalargs);
 		}
 	      else
 		{
@@ -6392,12 +6479,20 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		}
 	    }
 
+	  /* Scalar dummy arguments of intrinsic type with VALUE attribute.  */
+	  if (fsym
+	      && fsym->attr.value
+	      && fsym->ts.type != BT_DERIVED
+	      && fsym->ts.type != BT_CLASS)
+	    conv_dummy_value (&parmse, e, fsym, optionalargs);
+
 	  /* If we are passing an absent array as optional dummy to an
 	     elemental procedure, make sure that we pass NULL when the data
 	     pointer is NULL.  We need this extra conditional because of
 	     scalarization which passes arrays elements to the procedure,
 	     ignoring the fact that the array can be absent/unallocated/...  */
-	  if (ss->info->can_be_null_ref && ss->info->type != GFC_SS_REFERENCE)
+	  else if (ss->info->can_be_null_ref
+		   && ss->info->type != GFC_SS_REFERENCE)
 	    {
 	      tree descriptor_data;
 
@@ -6487,76 +6582,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		    }
 		  else
 		    {
-		    gfc_conv_expr (&parmse, e);
-
-		    /* ABI: actual arguments to CHARACTER(len=1),VALUE
-		       dummy arguments are actually passed by value.
-		       Strings are truncated to length 1.  */
-		    if (gfc_length_one_character_type_p (&fsym->ts))
-		      {
-			if (e->expr_type == EXPR_CONSTANT
-			    && e->value.character.length > 1)
-			  {
-			    e->value.character.length = 1;
-			    gfc_conv_expr (&parmse, e);
-			  }
-
-			tree slen1 = build_int_cst (gfc_charlen_type_node, 1);
-			gfc_conv_string_parameter (&parmse);
-			parmse.expr
-			    = gfc_string_to_single_character (slen1,
-							      parmse.expr,
-							      e->ts.kind);
-			/* Truncate resulting string to length 1.  */
-			parmse.string_length = slen1;
-		      }
-
-		    if (fsym->attr.optional
-			&& fsym->ts.type != BT_CLASS
-			&& fsym->ts.type != BT_DERIVED)
-		      {
-			/* F2018:15.5.2.12 Argument presence and
-			   restrictions on arguments not present.  */
-			if (e->expr_type == EXPR_VARIABLE
-			    && (gfc_expr_attr (e).allocatable
-				|| gfc_expr_attr (e).pointer))
-			  {
-			    gfc_se argse;
-			    tree cond;
-			    gfc_init_se (&argse, NULL);
-			    argse.want_pointer = 1;
-			    gfc_conv_expr (&argse, e);
-			    cond = fold_convert (TREE_TYPE (argse.expr),
-						 null_pointer_node);
-			    cond = fold_build2_loc (input_location, NE_EXPR,
-						    logical_type_node,
-						    argse.expr, cond);
-			    vec_safe_push (optionalargs,
-					   fold_convert (boolean_type_node,
-							 cond));
-			    /* Create "conditional temporary".  */
-			    conv_cond_temp (&parmse, e, cond);
-			  }
-			else if (e->expr_type != EXPR_VARIABLE
-				 || !e->symtree->n.sym->attr.optional
-				 || e->ref != NULL)
-			  vec_safe_push (optionalargs, boolean_true_node);
-			else
-			  {
-			    tmp = gfc_conv_expr_present (e->symtree->n.sym);
-			    if (!e->symtree->n.sym->attr.value)
-			      parmse.expr
-				= fold_build3_loc (input_location, COND_EXPR,
-					TREE_TYPE (parmse.expr),
-					tmp, parmse.expr,
-					fold_convert (TREE_TYPE (parmse.expr),
-						      integer_zero_node));
-
-			    vec_safe_push (optionalargs,
-					   fold_convert (boolean_type_node,
-							 tmp));
-			  }
-		      }
+		      gfc_conv_expr (&parmse, e);
+		      conv_dummy_value (&parmse, e, fsym, optionalargs);
 		    }
 		}
 
