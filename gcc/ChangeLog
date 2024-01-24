@@ -1,3 +1,178 @@
+2024-01-23  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100942
+	* ccmp.cc (ccmp_candidate_p): Add outer argument.
+	Allow if the outer is true and the lhs is used more
+	than once.
+	(expand_ccmp_expr): Update call to ccmp_candidate_p.
+	* expr.h (expand_expr_real_gassign): Declare.
+	* expr.cc (expand_expr_real_gassign): New function, split out from...
+	(expand_expr_real_1): ...here.
+	* cfgexpand.cc (expand_gimple_stmt_1): Use expand_expr_real_gassign.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113089
+	* config/aarch64/aarch64-ldp-fusion.cc (reset_debug_use): New.
+	(fixup_debug_use): New.
+	(fixup_debug_uses_trailing_add): New.
+	(fixup_debug_uses): New. Use it ...
+	(ldp_bb_info::fuse_pair): ... here.
+	(try_promote_writeback): Call fixup_debug_uses_trailing_add to
+	fix up debug uses of the base register that are affected by
+	folding in the trailing add insn.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113089
+	* config/aarch64/aarch64-ldp-fusion.cc (ldp_bb_info::fuse_pair):
+	Update trailing nondebug uses of the base register in the case
+	of cancelling writeback.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113089
+	* rtl-ssa/accesses.h (use_info::next_debug_insn_use): New.
+	(debug_insn_use_iterator): New.
+	(set_info::first_debug_insn_use): New.
+	(set_info::debug_insn_uses): New.
+	* rtl-ssa/member-fns.inl (use_info::next_debug_insn_use): New.
+	(set_info::first_debug_insn_use): New.
+	(set_info::debug_insn_uses): New.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113356
+	* config/aarch64/aarch64-ldp-fusion.cc (ldp_bb_info::try_fuse_pair):
+	Don't record hazards against the opposite insn in the pair.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113070
+	* config/aarch64/aarch64-ldp-fusion.cc
+	(struct stp_change_builder): New.
+	(decide_stp_strategy): Reanme to ...
+	(try_repurpose_store): ... this.
+	(ldp_bb_info::fuse_pair): Refactor to use stp_change_builder to
+	construct stp changes.  Fix up uses when inserting new stp insns.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113070
+	* rtl-ssa.h: Include hash-set.h.
+	* rtl-ssa/changes.cc (function_info::finalize_new_accesses): Add
+	new_sets parameter and use it to keep track of new user-created sets.
+	(function_info::apply_changes_to_insn): Also call add_def on new sets.
+	(function_info::change_insns): Add hash_set to keep track of new
+	user-created defs.  Plumb it through.
+	* rtl-ssa/functions.h: Add hash_set parameter to finalize_new_accesses and
+	apply_changes_to_insn.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113070
+	* rtl-ssa/accesses.cc (function_info::create_use): New.
+	* rtl-ssa/changes.cc (function_info::finalize_new_accesses):
+	Ensure new uses end up referring to permanent defs.
+	* rtl-ssa/functions.h (function_info::create_use): Declare.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113070
+	* rtl-ssa/changes.cc (function_info::change_insns): Split out the call
+	to finalize_new_accesses from the backwards placement loop, run it
+	forwards in a separate loop.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113552
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Use
+	floor_log2 instead of exact_log2 on the number of calls.
+
+2024-01-23  Jeff Law  <jlaw@ventanamicro.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/ia64.cc (ia64_start_function): Add ATTRIBUTE_UNUSED to
+	decl.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Separate single and multi-exit case when creating PHIs between
+	the main and epilogue.
+
+2024-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112989
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (build_one): Skip
+	MODE_single variants of functions that don't take tuple arguments.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113114
+	* config/aarch64/aarch64-ldp-fusion.cc (try_promote_writeback):
+	Don't assert recog success, just punt if the writeback pair
+	isn't recognized.
+
+2024-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Add
+	ATTRIBUTE_UNUSED to decl.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/107058
+	* dwarf2out.cc (dwarf2out_die_ref_for_decl): Gracefully
+	handle unexpected but bogus DIE contexts when not checking
+	enabled.
+
+2024-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113462
+	* fold-const.cc (native_interpret_int): Don't punt if total_bytes
+	is larger than HOST_BITS_PER_DOUBLE_INT / BITS_PER_UNIT.
+	(fold_view_convert_expr): Use XALLOCAVEC buffers for types with
+	sizes between 129 and 8192 bytes.
+
+2024-01-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_explicit_relocs_p):
+	If la_opt_explicit_relocs is EXPLICIT_RELOCS_AUTO, return false
+	for SYMBOL_TLS_LDM and SYMBOL_TLS_GD.
+	(loongarch_call_tls_get_addr): Do not split symbols of
+	SYMBOL_TLS_LDM or SYMBOL_TLS_GD if la_opt_explicit_relocs is
+	EXPLICIT_RELOCS_AUTO.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	* alias.cc (known_base_value_p): Remove.
+	(find_base_value): Remove PLUS/MINUS handling
+	when both operands are not CONST_INT_P.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/113255
+	* alias.cc (find_base_term): Remove PLUS/MINUS handling
+	when both operands are not CONST_INT_P.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/112718
+	* dwarf2out.cc (dwarf2out_finish): Reset all type units
+	for the fat part of an LTO compile.
+
+2024-01-23  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* doc/sourcebuild.texi: Add attributes for keywords.
+
+2024-01-23  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/90463
+	* doc/invoke.texi (Warning Options): Correct lists of options
+	enabled by -Wall and -Wextra by checking against common.opt
+	and c-family/c.opt.
+
 2024-01-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR target/113030

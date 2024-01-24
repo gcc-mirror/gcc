@@ -1,3 +1,86 @@
+2024-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/pr113292_c.C: Require TLS.
+
+2024-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113256
+	PR c++/111607
+	PR c++/109640
+	* g++.dg/warn/Wdangling-reference14.C: New test.
+	* g++.dg/warn/Wdangling-reference15.C: New test.
+	* g++.dg/warn/Wdangling-reference16.C: New test.
+
+2024-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/113518
+	* gcc.dg/bitint-77.c: New test.
+
+2024-01-23  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100942
+	* gcc.target/aarch64/ccmp_3.c: New test.
+	* gcc.target/aarch64/ccmp_4.c: New test.
+	* gcc.target/aarch64/ccmp_5.c: New test.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113089
+	* gcc.c-torture/compile/pr113089.c: New test.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113356
+	* gcc.target/aarch64/pr113356.C: New test.
+
+2024-01-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* g++.target/loongarch/got-load.C (dg-options): Add
+	-fno-stack-protector.
+
+2024-01-23  H.J. Lu  <(no_default)>
+
+	PR rtl-optimization/113255
+	* gcc.dg/torture/pr113255.c (dg-additional-options): Add only
+	if not ia32.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113114
+	* gcc.c-torture/compile/pr113114.c: New test.
+	* gcc.target/aarch64/pr113114.c: New test.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/107058
+	* c-c++-common/pr107058.c: New testcase.
+
+2024-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/112820
+	PR c++/102607
+	* g++.dg/modules/debug-2_a.C: New test.
+	* g++.dg/modules/debug-2_b.C: New test.
+	* g++.dg/modules/debug-2_c.C: New test.
+	* g++.dg/modules/debug-3_a.C: New test.
+	* g++.dg/modules/debug-3_b.C: New test.
+
+2024-01-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/explicit-relocs-auto-tls-ld-gd.c: Check
+	for la.tls.ld and la.tls.gd.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/113255
+	* gcc.dg/torture/pr113255.c: New testcase.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/112718
+	* gcc.dg/debug/pr112718.c: New testcase.
+
 2024-01-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/109642

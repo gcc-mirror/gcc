@@ -1,3 +1,23 @@
+2024-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113256
+	PR c++/111607
+	PR c++/109640
+	* call.cc (do_warn_dangling_reference): Don't warn if the temporary
+	is of lambda type.
+
+2024-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/112820
+	PR c++/102607
+	* module.cc (trees_out::lang_type_bools): Write interface_only
+	and interface_unknown.
+	(trees_in::lang_type_bools): Read the above flags.
+	(trees_in::decl_value): Reset CLASSTYPE_INTERFACE_* except for
+	extern templates.
+	(trees_in::read_class_def): Remove buggy extern template
+	handling.
+
 2024-01-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113498

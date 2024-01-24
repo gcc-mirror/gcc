@@ -1,3 +1,10 @@
+2024-01-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/113554
+	* mc/mc.flex (alloca): Don't redefine.
+	(handleDate): Replace (long *)0 with (time_t *)0 when calling
+	time.
+
 2024-01-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2BasicBlock.mod (InitBasicBlocks): Rename

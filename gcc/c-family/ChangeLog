@@ -1,3 +1,13 @@
+2024-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/113518
+	* c-common.cc (atomic_bitint_fetch_using_cas_loop): Call c_fully_fold
+	on lhs_addr, val and model for C.
+
+2024-01-23  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c.opt: Improve sorting of warning options.
+
 2024-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/113397

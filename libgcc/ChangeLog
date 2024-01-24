@@ -1,3 +1,13 @@
+2024-01-23  Zac Walker  <zacwalker@microsoft.com>
+
+	* config/aarch64/aarch64-asm.h (HIDDEN, SYMBOL_SIZE, SYMBOL_TYPE)
+	(ENTRY_ALIGN, GNU_PROPERTY): New macros.
+	* config/aarch64/__arm_sme_state.S: Use them.
+	* config/aarch64/__arm_tpidr2_save.S: Likewise.
+	* config/aarch64/__arm_za_disable.S: Likewise.
+	* config/aarch64/crti.S: Likewise.
+	* config/aarch64/lse.S: Likewise.
+
 2024-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgcc2.h (UBILtype): New typedef with may_alias attribute.
