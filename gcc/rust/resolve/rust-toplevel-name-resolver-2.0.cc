@@ -95,7 +95,7 @@ GlobbingVisitor::visit (AST::Enum &enum_item)
 {
   if (enum_item.get_visibility ().is_public ())
     ctx.insert_shadowable (enum_item.get_identifier (),
-			   enum_item.get_node_id (), Namespace::Values);
+			   enum_item.get_node_id (), Namespace::Types);
 }
 
 void
