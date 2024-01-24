@@ -991,8 +991,13 @@ vec_init_loop_exit_info (class loop *loop)
 	{
 	  tree may_be_zero = niter_desc.may_be_zero;
 	  if ((integer_zerop (may_be_zero)
-	       || integer_nonzerop (may_be_zero)
-	       || COMPARISON_CLASS_P (may_be_zero))
+	       /* As we are handling may_be_zero that's not false by
+		  rewriting niter to may_be_zero ? 0 : niter we require
+		  an empty latch.  */
+	       || (single_pred_p (loop->latch)
+		   && exit->src == single_pred (loop->latch)
+		   && (integer_nonzerop (may_be_zero)
+		       || COMPARISON_CLASS_P (may_be_zero))))
 	      && (!candidate
 		  || dominated_by_p (CDI_DOMINATORS, exit->src,
 				     candidate->src)))
