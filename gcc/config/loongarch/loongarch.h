@@ -931,6 +931,7 @@ typedef struct {
   { "t8",	20 + GP_REG_FIRST },					\
   { "x",	21 + GP_REG_FIRST },					\
   { "fp",	22 + GP_REG_FIRST },					\
+  { "s9",	22 + GP_REG_FIRST },					\
   { "s0",	23 + GP_REG_FIRST },					\
   { "s1",	24 + GP_REG_FIRST },					\
   { "s2",	25 + GP_REG_FIRST },					\
