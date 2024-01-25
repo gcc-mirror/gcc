@@ -1,3 +1,10 @@
+2024-01-24  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* libgomp.texi (Runtime Library Routines): Document
+	omp_pause_resource, omp_pause_resource_all and
+	omp_target_memcpy{,_rect}{,_async}.
+
 2024-01-22  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.c/declare-variant-4-fiji.c: Xfail as fiji

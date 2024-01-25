@@ -1,3 +1,121 @@
+2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108007
+	PR ipa/112616
+	* cgraph.h (cgraph_edge): Add a parameter to
+	redirect_call_stmt_to_callee.
+	* ipa-param-manipulation.h (ipa_param_adjustments): Add a
+	parameter to modify_call.
+	(ipa_release_ssas_in_hash): Declare.
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): New
+	parameter killed_ssas, pass it to padjs->modify_call.
+	* ipa-param-manipulation.cc (purge_all_uses): New function.
+	(ipa_param_adjustments::modify_call): New parameter killed_ssas.
+	Instead of substituting uses, invoke purge_all_uses.  If
+	hash of killed SSAs has not been provided, create a temporary one
+	and release SSAs that have been added to it.
+	(compare_ssa_versions): New function.
+	(ipa_release_ssas_in_hash): Likewise.
+	* tree-inline.cc (redirect_all_calls): Create
+	id->killed_new_ssa_names earlier, pass it to edge redirection,
+	adjust a comment.
+	(copy_body): Release SSAs in id->killed_new_ssa_names.
+
+2024-01-24  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113486
+	* config/aarch64/aarch64.cc (aarch64_get_reg_raw_mode): For
+	TARGET_GENERAL_REGS_ONLY, return VOIDmode for non-GP_REGNUM_P regno.
+
+2024-01-24  Monk Chiang  <monk.chiang@sifive.com>
+
+	PR target/113095
+	* config/riscv/sfb.md: New splitters to rewrite single bit
+	sign extension as the condition to SFB instructions.
+
+2024-01-24  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/88345
+	* common.opt: (flimit-function-alignment): Reorder alphabeticaly
+	(fmin-function-alignment): New parameter.
+	* doc/invoke.texi: (-fmin-function-alignment): Document.
+	(-falign-functions,-falign-loops,-falign-labels): Mention that
+	aglinments are ignored in cold code.
+	* varasm.cc (assemble_start_function): Handle min-function-alignment.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/109636
+	* config/aarch64/aarch64-simd.md (<su_optab>div<mode>3,
+	mulv2di3): Remove.
+	* config/aarch64/iterators.md (VQDIV): Remove.
+	(SVE_FULL_SDI_SIMD, SVE_FULL_HSDI_SIMD_DI,
+	SVE_I_SIMD_DI): New.
+	(VPRED, sve_lane_con): Add V4SI and V2DI.
+	* config/aarch64/aarch64-sve.md (<optab><mode>3,
+	@aarch64_pred_<optab><mode>): Support Advanced SIMD types.
+	(mul<mode>3): New, split from <optab><mode>3.
+	(@aarch64_pred_<optab><mode>, *post_ra_<optab><mode>3): New.
+	* config/aarch64/aarch64-sve2.md (@aarch64_mul_lane_<mode>,
+	*aarch64_mul_unpredicated_<mode>): Change SVE_FULL_HSDI to
+	SVE_FULL_HSDI_SIMD_DI.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113552
+	* config/aarch64/aarch64.cc
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): Block simdlen 1.
+
+2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113490
+	* ipa-cp.cc (ipcp_lattice<valtype>::add_value): Bail out if value
+	count is equal or greater than the limit.  Use the limit from the
+	callee.
+
+2024-01-24  YunQiang Su  <syq@gcc.gnu.org>
+
+	* configure.ac: Detect the explicit relocs support for
+	mips, and define C macro MIPS_EXPLICIT_RELOCS.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* doc/invoke.texi(MIPS Options): Add -mexplicit-relocs.
+	* config/mips/mips-opts.h: Define enum mips_explicit_relocs.
+	* config/mips/mips.cc(mips_set_compression_mode): Sorry if
+	!TARGET_EXPLICIT_RELOCS instead of just set it.
+	* config/mips/mips.h: Define TARGET_EXPLICIT_RELOCS and
+	TARGET_EXPLICIT_RELOCS_PCREL with mips_opt_explicit_relocs.
+	* config/mips/mips.opt: Introduce -mexplicit-relocs= option
+	and define -m(no-)explicit-relocs as aliases.
+
+2024-01-24  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.opt (-mearly-ldp-fusion): Set default
+	to 1.
+	(-mlate-ldp-fusion): Likewise.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-loop.cc (vect_get_vect_def,
+	vect_create_epilog_for_reduction): Rename main_exit_p to
+	last_val_reduc_p.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113364
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): If all exits all
+	early exits then we must reduce from the first offset for all of them.
+
+2024-01-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113495
+	* config/riscv/riscv-vsetvl.cc (get_expr_id): Remove.
+	(get_regno): Ditto.
+	(get_bb_index): Ditto.
+	(pre_vsetvl::compute_avl_def_data): Ditto.
+	(pre_vsetvl::earliest_fuse_vsetvl_info): Fix large memory usage.
+	(pre_vsetvl::pre_global_vsetvl_info): Ditto.
+
 2024-01-23  Andrew Pinski  <quic_apinski@quicinc.com>
 	    Richard Sandiford  <richard.sandiford@arm.com>
 

@@ -1,3 +1,104 @@
+2024-01-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113529
+	* g++.dg/cpp2a/spaceship-sfinae3.C: New test.
+
+2024-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113347
+	* g++.dg/eh/return3.C: New test.
+
+2024-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* gfortran.dg/optional_absent_10.f90: New test.
+
+2024-01-24  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/109705
+	* lib/target-supports.exp (check_effective_target_vect_long_mult):
+	Fix aarch64*-*-* checks.
+
+2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108007
+	PR ipa/112616
+	* gcc.dg/ipa/pr108007.c: New test.
+	* gcc.dg/ipa/pr112616.c: Likewise.
+
+2024-01-24  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113486
+	* gcc.target/aarch64/builtin_apply-1.c: New test.
+
+2024-01-24  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/sfb.c: New test.
+	* gcc.target/riscv/pr113095.c: New test.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/109636
+	* gcc.target/aarch64/sve/pr109636_1.c: New test.
+	* gcc.target/aarch64/sve/pr109636_2.c: New test.
+	* gcc.target/aarch64/sve2/pr109636_1.c: New test.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113552
+	* gcc.target/aarch64/pr113552.c: New test.
+	* gcc.target/aarch64/simd_pcs_attribute-3.c: Remove bogus check.
+
+2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113490
+	* gcc.dg/ipa/pr113490.c: New test.
+
+2024-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112977
+	* gcc.dg/plugin/plugin.exp: Add taint-pr112977.c.
+	* gcc.dg/plugin/taint-pr112977.c: New test.
+
+2024-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112927
+	* gcc.dg/plugin/analyzer_kernel_plugin.c
+	(class known_function___check_object_size): New.
+	(kernel_analyzer_init_cb): Register it.
+	* gcc.dg/plugin/plugin.exp: Add taint-pr112927.c.
+	* gcc.dg/plugin/taint-pr112927.c: New test.
+
+2024-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/113556
+	* gcc.dg/vect/vect-simd-clone-16c.c: Don't wildcard x86_64 in
+	target specs.  Allow any i?86 target instead of i686 only.
+	* gcc.dg/vect/vect-simd-clone-16d.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-17c.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-17d.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18c.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18d.c: Likewise.
+
+2024-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr80833-1.c: Add -mno-stackrealign to dg-options.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113364
+	* gcc.dg/vect/vect-early-break_107-pr113364.c: New test.
+
+2024-01-24  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/113429
+	* gcc.target/riscv/rvv/vsetvl/pr113429.c: New test.
+
+2024-01-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113495
+	* gcc.target/riscv/rvv/vsetvl/avl_single-107.c: Adapt test.
+
 2024-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* g++.dg/modules/pr113292_c.C: Require TLS.

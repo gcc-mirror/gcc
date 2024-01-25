@@ -1,3 +1,11 @@
+2024-01-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113559
+	* gm2-libs/FIO.mod (SetPositionFromBeginning): Convert pos into
+	CSSIZE_T during call to lseek.
+	(SetPositionFromEnd): Convert pos into CSSIZE_T during call to
+	lseek.
+
 2024-01-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/113554

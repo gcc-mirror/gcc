@@ -1,3 +1,9 @@
+2024-01-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113529
+	* call.cc (add_operator_candidates): Propagate error_mark_node
+	result after recursing to find rewritten candidates.
+
 2024-01-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113256
