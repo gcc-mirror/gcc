@@ -1,3 +1,12 @@
+2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-01-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/110422
+	* tree-sra.cc (scan_function): Disqualify bases of operands of asm
+	gotos.
+
 2024-01-16  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sparc.cc (next_active_non_empty_insn): Length 0 treated as empty
