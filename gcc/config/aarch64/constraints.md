@@ -118,7 +118,7 @@
 (define_constraint "J"
  "A constant that can be used with a SUB operation (once negated)."
  (and (match_code "const_int")
-      (match_test "aarch64_uimm12_shift (-ival)")))
+      (match_test "aarch64_uimm12_shift (- (unsigned HOST_WIDE_INT) ival)")))
 
 ;; We can't use the mode of a CONST_INT to determine the context in
 ;; which it is being used, so we must have a separate constraint for
