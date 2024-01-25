@@ -553,10 +553,13 @@ Name(vsetvl_strategy) Type(enum vsetvl_strategy_enum)
 Valid arguments to -param=vsetvl-strategy=:
 
 EnumValue
+Enum(vsetvl_strategy) String(optim) Value(VSETVL_OPT)
+
+EnumValue
 Enum(vsetvl_strategy) String(simple) Value(VSETVL_SIMPLE)
 
 EnumValue
-Enum(vsetvl_strategy) String(optim) Value(VSETVL_OPT)
+Enum(vsetvl_strategy) String(optim-no-fusion) Value(VSETVL_OPT_NO_FUSION)
 
 -param=vsetvl-strategy=
 Target Undocumented RejectNegative Joined Enum(vsetvl_strategy) Var(vsetvl_strategy) Init(VSETVL_OPT)

@@ -3495,16 +3495,18 @@ pass_vsetvl::lazy_vsetvl ()
   /* Phase 2:  Fuse header and footer vsetvl infos between basic blocks.  */
   if (dump_file)
     fprintf (dump_file, "\nPhase 2: Lift up vsetvl info.\n\n");
-  bool changed;
-  int fused_count = 0;
-  do
+  if (vsetvl_strategy != VSETVL_OPT_NO_FUSION)
     {
-      if (dump_file)
-	fprintf (dump_file, "  Try lift up %d.\n\n", fused_count);
-      changed = pre.earliest_fuse_vsetvl_info (fused_count);
-      fused_count += 1;
-  } while (changed);
-
+      bool changed = true;
+      int fused_count = 0;
+      do
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "  Try lift up %d.\n\n", fused_count);
+	  changed = pre.earliest_fuse_vsetvl_info (fused_count);
+	  fused_count += 1;
+      } while (changed);
+    }
   if (dump_file && (dump_flags & TDF_DETAILS))
     pre.dump (dump_file, "phase 2");
 
@@ -3545,7 +3547,7 @@ pass_vsetvl::execute (function *)
   if (!has_vector_insn (cfun))
     return 0;
 
-  if (!optimize || vsetvl_strategy & VSETVL_SIMPLE)
+  if (!optimize || vsetvl_strategy == VSETVL_SIMPLE)
     simple_vsetvl ();
   else
     lazy_vsetvl ();
