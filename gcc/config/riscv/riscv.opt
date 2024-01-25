@@ -543,11 +543,6 @@ Target RejectNegative Joined Enum(riscv_autovec_lmul) Var(riscv_autovec_lmul) In
 madjust-lmul-cost
 Target Var(TARGET_ADJUST_LMUL_COST) Init(0)
 
--param=riscv-vector-abi
-Target Undocumented Var(riscv_vector_abi) Init(0)
-Enable the use of vector registers for function arguments and return value.
-This is an experimental switch and may be subject to change in the future.
-
 Enum
 Name(vsetvl_strategy) Type(enum vsetvl_strategy_enum)
 Valid arguments to -param=vsetvl-strategy=:

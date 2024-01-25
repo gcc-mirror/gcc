@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvfh -mabi=lp64 -O1 --param=riscv-vector-abi" } */
+/* { dg-options "-march=rv64gcv_zvfh -mabi=lp64 -O1" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include "riscv_vector.h"

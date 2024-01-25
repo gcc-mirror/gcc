@@ -4999,7 +4999,7 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
 
   /* When disable vector_abi or scalable vector argument is anonymous, this
      argument is passed by reference.  */
-  if (riscv_v_ext_mode_p (mode) && (!riscv_vector_abi || !named))
+  if (riscv_v_ext_mode_p (mode) && !named)
     return NULL_RTX;
 
   if (named)
@@ -5320,9 +5320,8 @@ riscv_fntype_abi (const_tree fntype)
 
      You can enable this feature via the `--param=riscv-vector-abi` compiler
      option.  */
-  if (riscv_vector_abi
-      && (riscv_return_value_is_vector_type_p (fntype)
-	  || riscv_arguments_is_vector_type_p (fntype)))
+  if (riscv_return_value_is_vector_type_p (fntype)
+	  || riscv_arguments_is_vector_type_p (fntype))
     return riscv_v_abi ();
 
   return default_function_abi;

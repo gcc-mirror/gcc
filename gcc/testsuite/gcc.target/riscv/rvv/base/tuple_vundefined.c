@@ -69,5 +69,5 @@ test_vundefined_u64m4x2 ()
   return __riscv_vundefined_u64m4x2 ();
 }
 
-/* { dg-final { scan-assembler-times {vse[0-9]+\.v\s+v[0-9]+,\s*0\([0-9ax]+\)} 18 } } */
-/* { dg-final { scan-assembler-times {vs[0-9]+r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 28 } } */
+/* { dg-final { scan-assembler-times {vse[0-9]+\.v\s+v[0-9]+,\s*0\([0-9ax]+\)} 0 } } */
+/* { dg-final { scan-assembler-times {vs[0-9]+r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 0 } } */

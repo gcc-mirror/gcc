@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-options "-O1 --param=riscv-vector-abi" } */
+/* { dg-options "-O1" } */
 /* { dg-additional-sources abi-call-args-4.c } */
 
 #include <stdbool.h>
