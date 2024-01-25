@@ -8221,11 +8221,21 @@
 	   || (memory_operand (operands[0], V8DImode)
 	       && register_operand (operands[1], V8DImode)))
     {
+      std::pair<rtx, rtx> last_pair = {};
       for (int offset = 0; offset < 64; offset += 16)
-	emit_move_insn (simplify_gen_subreg (TImode, operands[0],
-					     V8DImode, offset),
-			simplify_gen_subreg (TImode, operands[1],
-					     V8DImode, offset));
+        {
+	  std::pair<rtx, rtx> pair = {
+	    simplify_gen_subreg (TImode, operands[0], V8DImode, offset),
+	    simplify_gen_subreg (TImode, operands[1], V8DImode, offset)
+	  };
+	  if (register_operand (pair.first, TImode)
+	      && reg_overlap_mentioned_p (pair.first, pair.second))
+	    last_pair = pair;
+	  else
+	    emit_move_insn (pair.first, pair.second);
+        }
+      if (last_pair.first)
+	emit_move_insn (last_pair.first, last_pair.second);
       DONE;
     }
   else
