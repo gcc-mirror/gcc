@@ -14082,6 +14082,24 @@ reference_like_class_p (tree ctype)
 	return true;
     }
 
+  /* Avoid warning if CTYPE looks like std::span: it's a class template,
+     has a T* member, and a trivial destructor.  For example,
+
+      template<typename T>
+      struct Span {
+	T* data_;
+	std::size len_;
+      };
+
+     is considered std::span-like.  */
+  if (NON_UNION_CLASS_TYPE_P (ctype)
+      && CLASSTYPE_TEMPLATE_INSTANTIATION (ctype)
+      && TYPE_HAS_TRIVIAL_DESTRUCTOR (ctype))
+    for (tree field = next_aggregate_field (TYPE_FIELDS (ctype));
+	 field; field = next_aggregate_field (DECL_CHAIN (field)))
+      if (TYPE_PTR_P (TREE_TYPE (field)))
+	return true;
+
   /* Some classes, such as std::tuple, have the reference member in its
      (non-direct) base class.  */
   if (dfs_walk_once (TYPE_BINFO (ctype), class_has_reference_member_p_r,

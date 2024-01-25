@@ -3916,6 +3916,20 @@ where @code{std::minmax} returns @code{std::pair<const int&, const int&>}, and
 both references dangle after the end of the full expression that contains
 the call to @code{std::minmax}.
 
+The warning does not warn for @code{std::span}-like classes.  We consider
+classes of the form:
+
+@smallexample
+template<typename T>
+struct Span @{
+  T* data_;
+  std::size len_;
+@};
+@end smallexample
+
+as @code{std::span}-like; that is, the class is a non-union class template
+that has a pointer data member and a trivial destructor.
+
 This warning is enabled by @option{-Wall}.
 
 @opindex Wdelete-non-virtual-dtor
