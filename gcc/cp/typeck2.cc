@@ -2378,7 +2378,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
       ptype = build_pointer_type (type);
-      datum = cp_convert (ptype, datum, complain);
+      datum = convert (ptype, datum);
       if (!processing_template_decl)
 	datum = build2 (POINTER_PLUS_EXPR, ptype,
 			datum, convert_to_ptrofftype (component));
