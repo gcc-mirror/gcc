@@ -3474,7 +3474,7 @@ vector_cst_all_same (tree v, unsigned int step)
   unsigned int nelts = lcm * VECTOR_CST_NELTS_PER_PATTERN (v);
   tree first_el = VECTOR_CST_ENCODED_ELT (v, 0);
   for (unsigned int i = 0; i < nelts; i += step)
-    if (!operand_equal_p (VECTOR_CST_ENCODED_ELT (v, i), first_el, 0))
+    if (!operand_equal_p (VECTOR_CST_ELT (v, i), first_el, 0))
       return false;
 
   return true;
