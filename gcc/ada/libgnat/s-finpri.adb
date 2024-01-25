@@ -174,24 +174,28 @@ package body System.Finalization_Primitives is
       if Collection.Finalization_Started then
          Unlock_Task.all;
 
-         --  Double finalization may occur during the handling of stand alone
-         --  libraries or the finalization of a pool with subpools. Due to the
-         --  potential aliasing of masters in these two cases, do not process
-         --  the same master twice.
+         --  Double finalization may occur during the handling of stand-alone
+         --  libraries or the finalization of a pool with subpools.
 
          return;
       end if;
 
-      --  Lock the master to prevent any allocations while the objects are
-      --  being finalized. The master remains locked because either the master
-      --  is explicitly deallocated or the associated access type is about to
-      --  go out of scope.
+      --  Lock the collection to prevent any allocation while the objects are
+      --  being finalized. The collection remains locked because either it is
+      --  explicitly deallocated or the associated access type is about to go
+      --  out of scope.
 
       --  Synchronization:
       --    Read  - allocation, finalization
       --    Write - finalization
 
       Collection.Finalization_Started := True;
+
+      --  Note that we cannot walk the list while finalizing its elements
+      --  because the finalization of one may call Unchecked_Deallocation
+      --  on another and, therefore, detach it from anywhere on the list.
+      --  Instead, we empty the list by repeatedly finalizing the first
+      --  element (after the dummy head) and detaching it from the list.
 
       while not Is_Empty_List (Collection.Head'Unchecked_Access) loop
          Curr_Ptr := Collection.Head.Next;

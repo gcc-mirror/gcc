@@ -196,16 +196,15 @@ package body System.Storage_Pools.Subpools is
       --  object or a record with controlled components.
 
       if Is_Controlled then
-
-         --  Synchronization:
-         --    Read  - allocation, finalization
-         --    Write - finalization
-
          Lock_Taken := True;
          Lock_Task.all;
 
          --  Do not allow the allocation of controlled objects while the
          --  associated collection is being finalized.
+
+         --  Synchronization:
+         --    Read  - allocation, finalization
+         --    Write - finalization
 
          if Finalization_Started (Collection.all) then
             raise Program_Error with "allocation after finalization started";
