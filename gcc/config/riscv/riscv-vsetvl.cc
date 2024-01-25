@@ -654,6 +654,31 @@ invalid_opt_bb_p (basic_block cfg_bb)
   return false;
 }
 
+/* Get all predecessors of BB.  */
+static hash_set<basic_block>
+get_all_predecessors (basic_block bb)
+{
+  hash_set<basic_block> blocks;
+  auto_vec<basic_block> work_list;
+  hash_set<basic_block> visited_list;
+  work_list.safe_push (bb);
+
+  while (!work_list.is_empty ())
+    {
+      basic_block new_bb = work_list.pop ();
+      visited_list.add (new_bb);
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, new_bb->preds)
+	{
+	  if (!visited_list.contains (e->src))
+	    work_list.safe_push (e->src);
+	  blocks.add (e->src);
+	}
+    }
+  return blocks;
+}
+
 /* This flags indicates the minimum demand of the vl and vtype values by the
    RVV instruction. For example, DEMAND_RATIO_P indicates that this RVV
    instruction only needs the SEW/LMUL ratio to remain the same, and does not
@@ -3142,6 +3167,23 @@ pre_vsetvl::pre_global_vsetvl_info ()
       const vsetvl_block_info &block_info = get_block_info (info.get_bb ());
       gcc_assert (block_info.get_entry_info () == info);
       info.set_delete ();
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file,
+		   "\nLCM deleting vsetvl of block %d, it has predecessors: \n",
+		   bb->index ());
+	  hash_set<basic_block> all_preds
+	    = get_all_predecessors (bb->cfg_bb ());
+	  int i = 0;
+	  for (const auto pred : all_preds)
+	    {
+	      fprintf (dump_file, "%d ", pred->index);
+	      i++;
+	      if (i % 32 == 0)
+		fprintf (dump_file, "\n");
+	    }
+	  fprintf (dump_file, "\n");
+	}
     }
 
   /* Remove vsetvl infos if all precessors are available to the block.  */
