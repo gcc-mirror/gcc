@@ -1843,7 +1843,7 @@ vector.  For example @{ 0, 1 @} could be seen as two patterns with
 one element each or one pattern with two elements (@var{base0} and
 @var{base1}).  The canonical encoding is always the one with the
 fewest patterns or (if both encodings have the same number of
-petterns) the one with the fewest encoded elements.
+patterns) the one with the fewest encoded elements.
 
 @samp{const_vector_encoding_nelts (@var{v})} gives the total number of
 encoded elements in @var{v}, which is 6 in the example above.
