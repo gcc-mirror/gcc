@@ -8505,6 +8505,18 @@
   [(set_attr "type" "neon_permute<q>")]
 )
 
+;; ZIP1 ignores the contents of the upper halves of the registers,
+;; so we can describe 128-bit operations in terms of 64-bit inputs.
+(define_insn "aarch64_zip1<mode>_low"
+  [(set (match_operand:VQ 0 "register_operand" "=w")
+	(unspec:VQ [(match_operand:<VHALF> 1 "register_operand" "w")
+		    (match_operand:<VHALF> 2 "register_operand" "w")]
+		   UNSPEC_ZIP1))]
+  "TARGET_SIMD"
+  "zip1\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_permute_q")]
+)
+
 ;; This instruction's pattern is generated directly by
 ;; aarch64_expand_vec_perm_const, so any changes to the pattern would
 ;; need corresponding changes there.  Note that the immediate (third)
@@ -9685,9 +9697,8 @@
        not sufficient uses of the zero to make the split worthwhile.  */
     rtx res = simplify_gen_subreg (<VNARROWQ2>mode, operands[0],
 				   <MODE>mode, 0);
-    rtx zero = aarch64_gen_shareable_zero (<VNARROWQ2>mode);
-    rtx op = lowpart_subreg (<VNARROWQ2>mode, operands[1], <VNARROWQ>mode);
-    emit_insn (gen_aarch64_zip1<Vnarrowq2> (res, op, zero));
+    rtx zero = aarch64_gen_shareable_zero (<VNARROWQ>mode);
+    emit_insn (gen_aarch64_zip1<Vnarrowq2>_low (res, operands[1], zero));
     DONE;
   }
   [(set_attr "type" "neon_shift_imm_long")]
