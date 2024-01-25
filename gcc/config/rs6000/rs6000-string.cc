@@ -1950,11 +1950,13 @@ expand_block_compare (rtx operands[])
   /* TARGET_POPCNTD is already guarded at expand cmpmemsi.  */
   gcc_assert (TARGET_POPCNTD);
 
-  /* This case is complicated to handle because the subtract
-     with carry instructions do not generate the 64-bit
-     carry and so we must emit code to calculate it ourselves.
-     We choose not to implement this yet.  */
-  if (TARGET_32BIT && TARGET_POWERPC64)
+  /* For P8, this case is complicated to handle because the subtract
+     with carry instructions do not generate the 64-bit carry and so
+     we must emit code to calculate it ourselves.  We skip it on P8
+     but setb works well on P9.  */
+  if (TARGET_32BIT
+      && TARGET_POWERPC64
+      && !TARGET_P9_MISC)
     return false;
 
   /* Allow this param to shut off all expansion.  */
