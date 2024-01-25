@@ -9092,7 +9092,7 @@ proc check_effective_target_vect_long_mult { } {
 	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32])
 	 || ([istarget aarch64*-*-*]
 	     && ([check_effective_target_ilp32]
-		 || check_effective_target_aarch64_sve]))
+		 || [check_effective_target_aarch64_sve]))
 	 || ([istarget mips*-*-*]
 	      && [et-is-effective-target mips_msa])
 	 || ([istarget riscv*-*-*]
