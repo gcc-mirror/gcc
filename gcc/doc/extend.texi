@@ -29327,6 +29327,54 @@ Some_Class  B  __attribute__ ((init_priority (543)));
 Note that the particular values of @var{priority} do not matter; only their
 relative ordering.
 
+@cindex @code{no_dangling} type attribute
+@cindex @code{no_dangling} function attribute
+@item no_dangling
+
+This attribute can be applied on a class type, function, or member
+function.  Dangling references to classes marked with this attribute
+will have the @option{-Wdangling-reference} diagnostic suppressed; so
+will references returned from the @code{gnu::no_dangling}-marked
+functions.  For example:
+
+@smallexample
+class [[gnu::no_dangling]] S @{ @dots{} @};
+@end smallexample
+
+Or:
+
+@smallexample
+class A @{
+  int *p;
+  [[gnu::no_dangling]] int &foo() @{ return *p; @}
+@};
+
+[[gnu::no_dangling]] const int &
+foo (const int &i)
+@{
+  @dots{}
+@}
+@end smallexample
+
+This attribute takes an optional argument, which must be an expression that
+evaluates to true or false:
+
+@smallexample
+template <typename T>
+struct [[gnu::no_dangling(std::is_reference_v<T>)]] S @{
+  @dots{}
+@};
+@end smallexample
+
+Or:
+
+@smallexample
+template <typename T>
+[[gnu::no_dangling(std::is_reference_v<T>)]] int& foo (T& t) @{
+  @dots{}
+@};
+@end smallexample
+
 @cindex @code{warn_unused} type attribute
 @item warn_unused
 

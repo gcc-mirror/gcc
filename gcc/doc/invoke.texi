@@ -3908,6 +3908,9 @@ const T& foo (const T&) @{ @dots{} @}
 #pragma GCC diagnostic pop
 @end smallexample
 
+The @code{#pragma} can also surround the class; in that case, the warning
+will be disabled for all the member functions.
+
 @option{-Wdangling-reference} also warns about code like
 
 @smallexample
@@ -3931,6 +3934,9 @@ struct Span @{
 
 as @code{std::span}-like; that is, the class is a non-union class
 that has a pointer data member and a trivial destructor.
+
+The warning can be disabled by using the @code{gnu::no_dangling} attribute
+(@pxref{C++ Attributes}).
 
 This warning is enabled by @option{-Wall}.
 
