@@ -150,6 +150,7 @@ set plugin_test_list [list \
 	  infoleak-CVE-2017-18550-1.c \
 	  infoleak-antipatterns-1.c \
 	  infoleak-fixit-1.c \
+	  infoleak-pr112969.c \
 	  infoleak-uninit-size-1.c \
 	  infoleak-uninit-size-2.c \
 	  infoleak-net-ethtool-ioctl.c \
