@@ -1935,8 +1935,13 @@ loongarch_symbolic_constant_p (rtx x, enum loongarch_symbol_type *symbol_type)
      relocations.  */
   switch (*symbol_type)
     {
-    case SYMBOL_PCREL:
     case SYMBOL_PCREL64:
+      /* When the code model is extreme, the non-zero offset situation
+	 has not been handled well, so it is disabled here now.  */
+      if (!loongarch_explicit_relocs_p (SYMBOL_PCREL64))
+	return false;
+    /* fall through */
+    case SYMBOL_PCREL:
       /* GAS rejects offsets outside the range [-2^31, 2^31-1].  */
       return sext_hwi (INTVAL (offset), 32) == INTVAL (offset);
 
@@ -2739,9 +2744,15 @@ static GTY (()) rtx loongarch_tls_symbol;
 /* Load an entry for a TLS access.  */
 
 static rtx
-loongarch_load_tls (rtx dest, rtx sym)
+loongarch_load_tls (rtx dest, rtx sym, enum loongarch_symbol_type type)
 {
-  return gen_load_tls (Pmode, dest, sym);
+  /* TLS LE gets a 32 or 64 bit offset here, so one register can do it.  */
+  if (type == SYMBOL_TLS_LE)
+    return gen_load_tls (Pmode, dest, sym);
+
+  return loongarch_symbol_extreme_p (type)
+    ? gen_movdi_symbolic_off64 (dest, sym, gen_reg_rtx (DImode))
+    : gen_load_tls (Pmode, dest, sym);
 }
 
 /* Return an instruction sequence that calls __tls_get_addr.  SYM is
@@ -2773,8 +2784,6 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
       if (TARGET_CMODEL_EXTREME)
 	{
-	  gcc_assert (TARGET_EXPLICIT_RELOCS);
-
 	  rtx tmp1 = gen_reg_rtx (Pmode);
 	  emit_insn (gen_tls_low (Pmode, tmp1, gen_rtx_REG (Pmode, 0), loc));
 	  emit_insn (gen_lui_h_lo20 (tmp1, tmp1, loc));
@@ -2785,7 +2794,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 	emit_insn (gen_tls_low (Pmode, a0, high, loc));
     }
   else
-    emit_insn (loongarch_load_tls (a0, loc));
+    emit_insn (loongarch_load_tls (a0, loc, type));
 
   if (flag_plt)
     {
@@ -2852,22 +2861,28 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
 	case CMODEL_EXTREME:
 	    {
-	      gcc_assert (TARGET_EXPLICIT_RELOCS);
+	      if (loongarch_explicit_relocs_p (SYMBOL_GOT_DISP))
+		{
+		  rtx tmp1 = gen_reg_rtx (Pmode);
+		  rtx high = gen_reg_rtx (Pmode);
 
-	      rtx tmp1 = gen_reg_rtx (Pmode);
-	      rtx high = gen_reg_rtx (Pmode);
-
-	      loongarch_emit_move (high,
-				   gen_rtx_HIGH (Pmode, loongarch_tls_symbol));
-	      loongarch_emit_move (tmp1, gen_rtx_LO_SUM (Pmode,
-							 gen_rtx_REG (Pmode, 0),
-							 loongarch_tls_symbol));
-	      emit_insn (gen_lui_h_lo20 (tmp1, tmp1, loongarch_tls_symbol));
-	      emit_insn (gen_lui_h_hi12 (tmp1, tmp1, loongarch_tls_symbol));
-	      loongarch_emit_move (dest,
-				   gen_rtx_MEM (Pmode,
-						gen_rtx_PLUS (Pmode,
-							      high, tmp1)));
+		  loongarch_emit_move (high,
+				       gen_rtx_HIGH (Pmode,
+						     loongarch_tls_symbol));
+		  loongarch_emit_move (tmp1,
+				       gen_rtx_LO_SUM (Pmode,
+						       gen_rtx_REG (Pmode, 0),
+						       loongarch_tls_symbol));
+		  emit_insn (gen_lui_h_lo20 (tmp1, tmp1, loongarch_tls_symbol));
+		  emit_insn (gen_lui_h_hi12 (tmp1, tmp1, loongarch_tls_symbol));
+		  loongarch_emit_move (dest,
+				       gen_rtx_MEM (Pmode,
+						    gen_rtx_PLUS (Pmode,
+								  high, tmp1)));
+		}
+	      else
+	       emit_insn (gen_movdi_symbolic_off64 (dest, loongarch_tls_symbol,
+						    gen_reg_rtx (DImode)));
 	    }
 	  break;
 
@@ -2932,8 +2947,6 @@ loongarch_legitimize_tls_address (rtx loc)
 
 	      if (TARGET_CMODEL_EXTREME)
 		{
-		  gcc_assert (TARGET_EXPLICIT_RELOCS);
-
 		  rtx tmp3 = gen_reg_rtx (Pmode);
 		  emit_insn (gen_tls_low (Pmode, tmp3,
 					  gen_rtx_REG (Pmode, 0), tmp2));
@@ -2948,7 +2961,7 @@ loongarch_legitimize_tls_address (rtx loc)
 		emit_insn (gen_ld_from_got (Pmode, tmp1, high, tmp2));
 	    }
 	  else
-	    emit_insn (loongarch_load_tls (tmp1, tmp2));
+	    emit_insn (loongarch_load_tls (tmp1, tmp2, SYMBOL_TLS_IE));
 	  emit_insn (gen_add3_insn (dest, tmp1, tp));
 	}
       break;
@@ -3005,14 +3018,12 @@ loongarch_legitimize_tls_address (rtx loc)
 
 	      if (TARGET_CMODEL_EXTREME)
 		{
-		  gcc_assert (TARGET_EXPLICIT_RELOCS);
-
 		  emit_insn (gen_lui_h_lo20 (tmp1, tmp1, tmp2));
 		  emit_insn (gen_lui_h_hi12 (tmp1, tmp1, tmp2));
 		}
 	    }
 	  else
-	    emit_insn (loongarch_load_tls (tmp1, tmp2));
+	    emit_insn (loongarch_load_tls (tmp1, tmp2, SYMBOL_TLS_LE));
 	  emit_insn (gen_add3_insn (dest, tmp1, tp));
 	}
       break;
@@ -3085,7 +3096,7 @@ loongarch_force_address (rtx x, machine_mode mode)
   return x;
 }
 
-static bool
+bool
 loongarch_symbol_extreme_p (enum loongarch_symbol_type type)
 {
   switch (type)
@@ -3403,6 +3414,21 @@ loongarch_legitimize_move (machine_mode mode, rtx dest, rtx src)
     {
       loongarch_legitimize_const_move (mode, dest, src);
       set_unique_reg_note (get_last_insn (), REG_EQUAL, copy_rtx (src));
+      return true;
+    }
+
+  /* Obtain the address of the symbol through the macro instruction
+     of two registers.  */
+  enum loongarch_symbol_type symbol_type;
+  if (TARGET_64BIT && register_operand (dest, mode)
+      && loongarch_symbolic_constant_p (src, &symbol_type)
+      && loongarch_symbol_extreme_p (symbol_type))
+    {
+      gcc_assert (can_create_pseudo_p ());
+      rtx tmp_reg = gen_reg_rtx (DImode);
+      emit_insn (gen_movdi_symbolic_off64 (dest, src, tmp_reg));
+      set_unique_reg_note (get_last_insn (), REG_UNUSED, tmp_reg);
+      set_unique_reg_note (get_last_insn (), REG_EQUAL, src);
       return true;
     }
 
@@ -7462,12 +7488,22 @@ loongarch_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      allowed, otherwise load the address into a register first.  */
   if (use_sibcall_p)
     {
-      insn = emit_call_insn (gen_sibcall_internal (fnaddr, const0_rtx));
+      if (TARGET_CMODEL_EXTREME)
+	{
+	  emit_insn (gen_movdi_symbolic_off64 (temp1, fnaddr, temp2));
+	  insn = emit_call_insn (gen_sibcall_internal (temp1, const0_rtx));
+	}
+      else
+	insn = emit_call_insn (gen_sibcall_internal (fnaddr, const0_rtx));
       SIBLING_CALL_P (insn) = 1;
     }
   else
     {
-      loongarch_emit_move (temp1, fnaddr);
+      if (TARGET_CMODEL_EXTREME)
+	emit_insn (gen_movdi_symbolic_off64 (temp1, fnaddr, temp2));
+      else
+	loongarch_emit_move (temp1, fnaddr);
+
       emit_jump_insn (gen_indirect_jump (temp1));
     }
 
@@ -7572,10 +7608,6 @@ loongarch_option_override_internal (struct gcc_options *opts,
   switch (la_target.cmodel)
     {
       case CMODEL_EXTREME:
-	if (la_opt_explicit_relocs == EXPLICIT_RELOCS_NONE)
-	  error ("code model %qs is not compatible with %s",
-		 "extreme", "-mexplicit-relocs=none");
-
 	if (opts->x_flag_plt)
 	  {
 	    if (global_options_set.x_flag_plt)
@@ -7990,14 +8022,6 @@ loongarch_handle_model_attribute (tree *node, tree name, tree arg, int,
 	  error_at (DECL_SOURCE_LOCATION (decl),
 		    "%qE attribute cannot be specified for register "
 		    "variables", name);
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
-      if (la_opt_explicit_relocs == EXPLICIT_RELOCS_NONE)
-	{
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "%qE attribute is not compatible with %s", name,
-		    "-mexplicit-relocs=none");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}

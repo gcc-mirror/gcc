@@ -82,6 +82,8 @@
 
   UNSPEC_SIBCALL_VALUE_MULTIPLE_INTERNAL_1
   UNSPEC_CALL_VALUE_MULTIPLE_INTERNAL_1
+
+  UNSPEC_LOAD_SYMBOL_OFFSET64
 ])
 
 (define_c_enum "unspecv" [
@@ -2182,6 +2184,46 @@
   [(set_attr "move_type" "move,const,load,store,mgtf,fpload,mftg,fpstore")
    (set_attr "mode" "DI")])
 
+;; Use two registers to get the global symbol address from the got table.
+;; la.global rd, rt, sym
+
+(define_insn_and_split "movdi_symbolic_off64"
+ [(set (match_operand:DI 0 "register_operand" "=r,r")
+       (match_operand:DI 1 "symbolic_off64_or_reg_operand" "Yd,r"))
+  (unspec:DI [(const_int 0)]
+    UNSPEC_LOAD_SYMBOL_OFFSET64)
+  (clobber (match_operand:DI 2 "register_operand" "=&r,r"))]
+ "TARGET_64BIT && TARGET_CMODEL_EXTREME"
+{
+  if (which_alternative == 1)
+    return "#";
+
+  enum loongarch_symbol_type symbol_type;
+  gcc_assert (loongarch_symbolic_constant_p (operands[1], &symbol_type));
+
+  switch (symbol_type)
+    {
+    case SYMBOL_PCREL64:
+      return "la.local\t%0,%2,%1";
+    case SYMBOL_GOT_DISP:
+      return "la.global\t%0,%2,%1";
+    case SYMBOL_TLS_IE:
+      return "la.tls.ie\t%0,%2,%1";
+    case SYMBOL_TLSGD:
+      return "la.tls.gd\t%0,%2,%1";
+    case SYMBOL_TLSLDM:
+      return "la.tls.ld\t%0,%2,%1";
+
+    default:
+      gcc_unreachable ();
+  }
+}
+ "&& REG_P (operands[1]) && find_reg_note (insn, REG_UNUSED, operands[2]) != 0"
+ [(set (match_dup 0) (match_dup 1))]
+ ""
+ [(set_attr "mode" "DI")
+  (set_attr "insn_count" "5")])
+
 ;; 32-bit Integer moves
 
 (define_expand "movsi"
@@ -2724,7 +2766,11 @@
     }
 }
   [(set_attr "mode" "<MODE>")
-   (set_attr "insn_count" "2")])
+   (set (attr "insn_count")
+      (if_then_else
+	(match_test "TARGET_CMODEL_EXTREME")
+	(const_int 4)
+	(const_int 2)))])
 
 ;; Move operand 1 to the high word of operand 0 using movgr2frh.w, preserving the
 ;; value in the low word.
