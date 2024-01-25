@@ -4032,12 +4032,25 @@ package body Exp_Ch9 is
       Nam : Node_Id;
 
    begin
-      --  If the associated protected object has entries, a protected
-      --  procedure has to service entry queues. In this case generate:
+      --  If the associated protected object has entries, the expanded
+      --  exclusive protected operation has to service entry queues. In
+      --  this case generate:
 
       --    Service_Entries (_object._object'Access);
 
-      if Nkind (Op_Spec) = N_Procedure_Specification
+      if (Nkind (Op_Spec) = N_Procedure_Specification
+            or else
+          (Nkind (Op_Spec) = N_Function_Specification
+             and then Has_Aspect (Conc_Typ, Aspect_Exclusive_Functions)
+             and then
+               (No
+                 (Find_Value_Of_Aspect (Conc_Typ,
+                    Aspect_Exclusive_Functions))
+                  or else
+                Is_True
+                  (Static_Boolean
+                     (Find_Value_Of_Aspect
+                        (Conc_Typ, Aspect_Exclusive_Functions))))))
         and then Has_Entries (Conc_Typ)
       then
          case Corresponding_Runtime_Package (Conc_Typ) is
