@@ -645,96 +645,70 @@ package body Sem_Util is
    -- Append_Entity_Name --
    ------------------------
 
-   procedure Append_Entity_Name (Buf : in out Bounded_String; E : Entity_Id) is
-      Temp : Bounded_String;
-
-      procedure Inner (E : Entity_Id);
-      --  Inner recursive routine, keep outer routine nonrecursive to ease
-      --  debugging when we get strange results from this routine.
-
-      -----------
-      -- Inner --
-      -----------
-
-      procedure Inner (E : Entity_Id) is
-         Scop : Node_Id;
-
-      begin
-         --  If entity has an internal name, skip by it, and print its scope.
-         --  Note that we strip a final R from the name before the test; this
-         --  is needed for some cases of instantiations.
-
-         declare
-            E_Name : Bounded_String;
-
-         begin
-            Append (E_Name, Chars (E));
-
-            if E_Name.Chars (E_Name.Length) = 'R' then
-               E_Name.Length := E_Name.Length - 1;
-            end if;
-
-            if Is_Internal_Name (E_Name) then
-               Inner (Scope (E));
-               return;
-            end if;
-         end;
-
-         Scop := Scope (E);
-
-         --  Just print entity name if its scope is at the outer level
-
-         if Scop = Standard_Standard then
-            null;
-
-         --  If scope comes from source, write scope and entity
-
-         elsif Comes_From_Source (Scop) then
-            Append_Entity_Name (Temp, Scop);
-            Append (Temp, '.');
-
-         --  If in wrapper package skip past it
-
-         elsif Present (Scop) and then Is_Wrapper_Package (Scop) then
-            Append_Entity_Name (Temp, Scope (Scop));
-            Append (Temp, '.');
-
-         --  Otherwise nothing to output (happens in unnamed block statements)
-
-         else
-            null;
-         end if;
-
-         --  Output the name
-
-         declare
-            E_Name : Bounded_String;
-
-         begin
-            Append_Unqualified_Decoded (E_Name, Chars (E));
-
-            --  Remove trailing upper-case letters from the name (useful for
-            --  dealing with some cases of internal names generated in the case
-            --  of references from within a generic).
-
-            while E_Name.Length > 1
-              and then E_Name.Chars (E_Name.Length) in 'A' .. 'Z'
-            loop
-               E_Name.Length := E_Name.Length - 1;
-            end loop;
-
-            --  Adjust casing appropriately (gets name from source if possible)
-
-            Adjust_Name_Case (E_Name, Sloc (E));
-            Append (Temp, E_Name);
-         end;
-      end Inner;
-
-   --  Start of processing for Append_Entity_Name
-
+   procedure Append_Entity_Name
+     (Buf : in out Bounded_String; E : Entity_Id)
+   is
+      Scop : constant Node_Id := Scope (E);
+      --  We recursively print the scope to Buf, and then print the simple
+      --  name, along with some special cases (see below). So for A.B.C.D,
+      --  recursively print A.B.C, then print D.
    begin
-      Inner (E);
-      Append (Buf, Temp);
+      --  If E is not a source entity, then skip the simple name and just
+      --  recursively print its scope. However, subprogram instances have
+      --  Comes_From_Source = False, but we do want to print the simple name
+      --  of the instance.
+
+      if not Comes_From_Source (E) then
+         if Is_Generic_Instance (E)
+           and then Ekind (E) in E_Function | E_Procedure
+         then
+            null;
+         else
+            Append_Entity_Name (Buf, Scope (E));
+            return;
+         end if;
+      end if;
+
+      --  Just print entity name if its scope is at the outer level
+
+      if No (Scop) or Scop = Standard_Standard then
+         null;
+
+      --  If scope comes from source, write scope and entity
+
+      elsif Comes_From_Source (Scop) then
+         Append_Entity_Name (Buf, Scop);
+         Append (Buf, '.');
+
+      --  Otherwise (non-source scope) skip one level
+
+      else
+         Append_Entity_Name (Buf, Scope (Scop));
+         Append (Buf, '.');
+      end if;
+
+      --  Print the simple name
+
+      declare
+         E_Name : Bounded_String;
+      begin
+         Append_Unqualified_Decoded (E_Name, Chars (E));
+
+         --  Remove trailing upper-case letters from the name (useful for
+         --  dealing with some cases of internal names generated in the case
+         --  of references from within a generic).
+
+         while E_Name.Length > 1
+           and then E_Name.Chars (E_Name.Length) in 'A' .. 'Z'
+         loop
+            E_Name.Length := E_Name.Length - 1;
+         end loop;
+
+         --  Adjust casing appropriately (gets name from source if possible)
+
+         Adjust_Name_Case (E_Name, Sloc (E));
+         Append (Buf, E_Name);
+      end;
    end Append_Entity_Name;
 
    ---------------------------------

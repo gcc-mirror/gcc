@@ -110,10 +110,9 @@ package Sem_Util is
    --  because those are the only dynamic cases.
 
    procedure Append_Entity_Name (Buf : in out Bounded_String; E : Entity_Id);
-   --  Recursive procedure to construct string for qualified name of enclosing
-   --  program unit. The qualification stops at an enclosing scope has no
-   --  source name (block or loop). If entity is a subprogram instance, skip
-   --  enclosing wrapper package. The name is appended to Buf.
+   --  Construct a user-readable expanded name for E, for printing in messages,
+   --  such as run-time errors for unhandled exceptions. Names created for
+   --  internal use are not included. The name is appended to Buf.
 
    procedure Append_Inherited_Subprogram (S : Entity_Id);
    --  If the parent of the operation is declared in the visible part of
