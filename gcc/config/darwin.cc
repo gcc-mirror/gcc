@@ -3834,6 +3834,7 @@ darwin_build_constant_cfstring (tree str)
       /* global namespace.  */
       DECL_CONTEXT (var) = NULL_TREE;
       DECL_INITIAL (var) = constructor;
+      DECL_USER_ALIGN (var) = 1;
       lang_hooks.decls.pushdecl (var);
       rest_of_decl_compilation (var, 1, 0);
       desc->ccf_str = var;
