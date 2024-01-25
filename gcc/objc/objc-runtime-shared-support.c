@@ -689,6 +689,7 @@ generate_strings (void)
       decl = TREE_PURPOSE (chain);
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
+      DECL_USER_ALIGN (decl) = 1;
       finish_var_decl (decl, string_expr);
     }
 
@@ -698,6 +699,7 @@ generate_strings (void)
       decl = TREE_PURPOSE (chain);
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
+      DECL_USER_ALIGN (decl) = 1;
       finish_var_decl (decl, string_expr);
     }
 
@@ -707,6 +709,7 @@ generate_strings (void)
       decl = TREE_PURPOSE (chain);
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
+      DECL_USER_ALIGN (decl) = 1;
       finish_var_decl (decl, string_expr);
     }
 
@@ -716,6 +719,7 @@ generate_strings (void)
       decl = TREE_PURPOSE (chain);
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
+      DECL_USER_ALIGN (decl) = 1;
       finish_var_decl (decl, string_expr);
     }
 }
