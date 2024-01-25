@@ -10246,7 +10246,9 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
       type = ADDRESS_REG_UXTW;
       index = XEXP (XEXP (x, 0), 0);
       shift = exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)));
-      if (INTVAL (XEXP (x, 1)) != (HOST_WIDE_INT)0xffffffff << shift)
+      /* Avoid undefined code dealing with shift being -1. */
+      if (shift != -1
+	  && INTVAL (XEXP (x, 1)) != (HOST_WIDE_INT)0xffffffff << shift)
 	shift = -1;
     }
   /* (and:DI (ashift:DI (reg:DI) (const_int shift))
