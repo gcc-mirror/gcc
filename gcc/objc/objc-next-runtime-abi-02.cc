@@ -2246,6 +2246,7 @@ build_v2_address_table (vec<tree, va_gc> *src, const char *nam, tree attr)
   DECL_PRESERVE_P (decl) = 1;
   expr = objc_build_constructor (type, initlist);
   OBJCMETA (decl, objc_meta, attr);
+  DECL_USER_ALIGN (decl) = 1;
   finish_var_decl (decl, expr);
 }
 
@@ -2320,8 +2321,9 @@ build_v2_protocol_list_address_table (void)
 	decl = create_global_decl (objc_protocol_type, buf, /*is def=*/true);
       expr = convert (objc_protocol_type, build_fold_addr_expr (ref->refdecl));
       OBJCMETA (decl, objc_meta, meta_label_protocollist);
-      finish_var_decl (decl, expr);
       DECL_PRESERVE_P (decl) = 1;
+      DECL_USER_ALIGN (decl) = 1;
+      finish_var_decl (decl, expr);
     }
 
     /* TODO: delete the vec.  */
@@ -2399,6 +2401,7 @@ generate_v2_protocol_list (tree i_or_p, tree klass_ctxt)
   /* ObjC2 puts all these in the base section.  */
   OBJCMETA (refs_decl, objc_meta, meta_base);
   DECL_PRESERVE_P (refs_decl) = 1;
+  DECL_USER_ALIGN (refs_decl) = 1;
   finish_var_decl (refs_decl,
 		   objc_build_constructor (TREE_TYPE (refs_decl),initlist));
   return refs_decl;
@@ -2507,6 +2510,7 @@ generate_v2_meth_descriptor_table (tree chain, tree protocol,
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, initlist);
   /* Get into the right section.  */
   OBJCMETA (decl, objc_meta, attr);
+  DECL_USER_ALIGN (decl) = 1;
   finish_var_decl (decl, objc_build_constructor (method_list_template, v));
   return decl;
 }
@@ -2525,13 +2529,14 @@ generate_v2_meth_type_list (vec<tree>& all_meths, tree protocol,
 	    IDENTIFIER_POINTER (PROTOCOL_NAME (protocol)));
   tree decl = start_var_decl (list_type, nam);
   free (nam);
-  OBJCMETA (decl, objc_meta, meta_base);
   vec<constructor_elt, va_gc> *v = NULL;
 
   for (unsigned i = 0; i < size; ++i)
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			    add_objc_string (METHOD_ENCODING (all_meths[i]),
 					     meth_var_types));
+  OBJCMETA (decl, objc_meta, meta_base);
+  DECL_USER_ALIGN (decl) = 1;
   finish_var_decl (decl, objc_build_constructor (list_type, v));
   return decl;
 }
@@ -2654,6 +2659,7 @@ generate_v2_property_table (tree context, tree klass_ctxt)
   CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE, initlist);
 
   OBJCMETA (decl, objc_meta, meta_base);
+  DECL_USER_ALIGN (decl) = 1;
   finish_var_decl (decl, objc_build_constructor (TREE_TYPE (decl), inits));
   return decl;
 }
@@ -2865,6 +2871,7 @@ generate_v2_dispatch_table (tree chain, const char *name, tree attr)
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, initlist);
 
   OBJCMETA (decl, objc_meta, attr);
+  DECL_USER_ALIGN (decl) = 1;
   finish_var_decl (decl,
 		   objc_build_constructor (TREE_TYPE (decl), v));
   return decl;
@@ -3162,6 +3169,7 @@ generate_v2_ivars_list (tree chain, const char *name, tree attr, tree templ)
 			  build_int_cst (integer_type_node, size));
   CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE, initlist);
   OBJCMETA (decl, objc_meta, attr);
+  DECL_USER_ALIGN (decl) = 1;
   finish_var_decl (decl, objc_build_constructor (TREE_TYPE (decl), inits));
   generating_instance_variables = 0;
   return decl;
@@ -3429,7 +3437,6 @@ generate_v2_class_structs (struct imp_entry *impent)
   decl = start_var_decl (objc_v2_class_ro_template,
 			 newabi_append_ro (IDENTIFIER_POINTER
 						(DECL_NAME (metaclass_decl))));
-
   /* TODO: ivarLayout needs t be built.  */
   initlist =
 	build_v2_class_ro_t_initializer (TREE_TYPE (decl), name_expr,
@@ -3439,6 +3446,7 @@ generate_v2_class_structs (struct imp_entry *impent)
 					class_ivars, NULL_TREE);
   /* The ROs sit in the default const section.  */
   OBJCMETA (decl, objc_meta, meta_base);
+  DECL_USER_ALIGN (decl) = 1;
   finish_var_decl (decl, initlist);
 
   /* static struct class_t _OBJC_METACLASS_Foo = { ... }; */
@@ -3450,6 +3458,7 @@ generate_v2_class_structs (struct imp_entry *impent)
 				      build_fold_addr_expr (UOBJC_V2_CACHE_decl),
 				      build_fold_addr_expr (UOBJC_V2_VTABLE_decl));
   /* The class section attributes are set when they are created.  */
+  DECL_USER_ALIGN (metaclass_decl) = 1;
   finish_var_decl (metaclass_decl, initlist);
   impent->meta_decl = metaclass_decl;
 
@@ -3529,6 +3538,7 @@ generate_v2_class_structs (struct imp_entry *impent)
 					 inst_ivars, props);
   /* The ROs sit in the default const section.  */
   OBJCMETA (decl, objc_meta, meta_base);
+  DECL_USER_ALIGN (decl) = 1;
   finish_var_decl (decl, initlist);
 
   /* static struct class_t _OBJC_CLASS_Foo = { ... }; */
@@ -3540,6 +3550,7 @@ generate_v2_class_structs (struct imp_entry *impent)
 					build_fold_addr_expr (UOBJC_V2_VTABLE_decl));
 
   /* The class section attributes are set when they are created.  */
+  DECL_USER_ALIGN (class_decl) = 1;
   finish_var_decl (class_decl, initlist);
   impent->class_decl = class_decl;
 
@@ -3714,6 +3725,7 @@ build_ehtype (tree name, const char *eh_name, bool weak)
     DECL_WEAK (ehtype_decl) = 1;
   inits = objc2_build_ehtype_initializer (name_expr, class_name_expr);
   OBJCMETA (ehtype_decl, objc_meta, meta_ehtype);
+  DECL_USER_ALIGN (ehtype_decl) = 1;
   finish_var_decl (ehtype_decl, inits);
   return ehtype_decl;
 }
