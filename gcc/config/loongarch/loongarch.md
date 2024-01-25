@@ -51,10 +51,7 @@
   UNSPEC_BITREV_8B
 
   ;; TLS
-  UNSPEC_TLS_GD
-  UNSPEC_TLS_LD
-  UNSPEC_TLS_LE
-  UNSPEC_TLS_IE
+  UNSPEC_TLS
 
   ;; Stack tie
   UNSPEC_TIE
@@ -2701,45 +2698,33 @@
 
 ;; Thread-Local Storage
 
-(define_insn "@got_load_tls_gd<mode>"
+(define_insn "@load_tls<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(unspec:P
 	    [(match_operand:P 1 "symbolic_operand" "")]
-	    UNSPEC_TLS_GD))]
+	    UNSPEC_TLS))]
   ""
-  "la.tls.gd\t%0,%1"
-  [(set_attr "got" "load")
-   (set_attr "mode" "<MODE>")])
+{
+  enum loongarch_symbol_type symbol_type;
+  gcc_assert (loongarch_symbolic_constant_p (operands[1], &symbol_type));
 
-(define_insn "@got_load_tls_ld<mode>"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P
-	    [(match_operand:P 1 "symbolic_operand" "")]
-	    UNSPEC_TLS_LD))]
-  ""
-  "la.tls.ld\t%0,%1"
-  [(set_attr "got" "load")
-   (set_attr "mode" "<MODE>")])
+  switch (symbol_type)
+    {
+    case SYMBOL_TLS_LE:
+      return "la.tls.le\t%0,%1";
+    case SYMBOL_TLS_IE:
+      return "la.tls.ie\t%0,%1";
+    case SYMBOL_TLSLDM:
+      return "la.tls.ld\t%0,%1";
+    case SYMBOL_TLSGD:
+      return "la.tls.gd\t%0,%1";
 
-(define_insn "@got_load_tls_le<mode>"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P
-	    [(match_operand:P 1 "symbolic_operand" "")]
-	    UNSPEC_TLS_LE))]
-  ""
-  "la.tls.le\t%0,%1"
-  [(set_attr "got" "load")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "@got_load_tls_ie<mode>"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P
-	    [(match_operand:P 1 "symbolic_operand" "")]
-	    UNSPEC_TLS_IE))]
-  ""
-  "la.tls.ie\t%0,%1"
-  [(set_attr "got" "load")
-   (set_attr "mode" "<MODE>")])
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "mode" "<MODE>")
+   (set_attr "insn_count" "2")])
 
 ;; Move operand 1 to the high word of operand 0 using movgr2frh.w, preserving the
 ;; value in the low word.

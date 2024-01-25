@@ -2736,36 +2736,12 @@ loongarch_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
 /* The __tls_get_attr symbol.  */
 static GTY (()) rtx loongarch_tls_symbol;
 
-/* Load an entry from the GOT for a TLS GD access.  */
+/* Load an entry for a TLS access.  */
 
 static rtx
-loongarch_got_load_tls_gd (rtx dest, rtx sym)
+loongarch_load_tls (rtx dest, rtx sym)
 {
-  return gen_got_load_tls_gd (Pmode, dest, sym);
-}
-
-/* Load an entry from the GOT for a TLS LD access.  */
-
-static rtx
-loongarch_got_load_tls_ld (rtx dest, rtx sym)
-{
-  return gen_got_load_tls_ld (Pmode, dest, sym);
-}
-
-/* Load an entry from the GOT for a TLS IE access.  */
-
-static rtx
-loongarch_got_load_tls_ie (rtx dest, rtx sym)
-{
-  return gen_got_load_tls_ie (Pmode, dest, sym);
-}
-
-/* Add in the thread pointer for a TLS LE access.  */
-
-static rtx
-loongarch_got_load_tls_le (rtx dest, rtx sym)
-{
-  return gen_got_load_tls_le (Pmode, dest, sym);
+  return gen_load_tls (Pmode, dest, sym);
 }
 
 /* Return an instruction sequence that calls __tls_get_addr.  SYM is
@@ -2809,14 +2785,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 	emit_insn (gen_tls_low (Pmode, a0, high, loc));
     }
   else
-    {
-      if (type == SYMBOL_TLSLDM)
-	emit_insn (loongarch_got_load_tls_ld (a0, loc));
-      else if (type == SYMBOL_TLSGD)
-	emit_insn (loongarch_got_load_tls_gd (a0, loc));
-      else
-	gcc_unreachable ();
-    }
+    emit_insn (loongarch_load_tls (a0, loc));
 
   if (flag_plt)
     {
@@ -2953,10 +2922,10 @@ loongarch_legitimize_tls_address (rtx loc)
 	  /* la.tls.ie; tp-relative add.  */
 	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
 	  tmp1 = gen_reg_rtx (Pmode);
+	  tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_IE);
 	  dest = gen_reg_rtx (Pmode);
 	  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
 	    {
-	      tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_IE);
 	      tmp3 = gen_reg_rtx (Pmode);
 	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
 	      high = loongarch_force_temporary (tmp3, high);
@@ -2979,7 +2948,7 @@ loongarch_legitimize_tls_address (rtx loc)
 		emit_insn (gen_ld_from_got (Pmode, tmp1, high, tmp2));
 	    }
 	  else
-	    emit_insn (loongarch_got_load_tls_ie (tmp1, loc));
+	    emit_insn (loongarch_load_tls (tmp1, tmp2));
 	  emit_insn (gen_add3_insn (dest, tmp1, tp));
 	}
       break;
@@ -3011,11 +2980,11 @@ loongarch_legitimize_tls_address (rtx loc)
 
 	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
 	  tmp1 = gen_reg_rtx (Pmode);
+	  tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_LE);
 	  dest = gen_reg_rtx (Pmode);
 
 	  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
 	    {
-	      tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_LE);
 	      tmp3 = gen_reg_rtx (Pmode);
 	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
 	      high = loongarch_force_temporary (tmp3, high);
@@ -3043,7 +3012,7 @@ loongarch_legitimize_tls_address (rtx loc)
 		}
 	    }
 	  else
-	    emit_insn (loongarch_got_load_tls_le (tmp1, loc));
+	    emit_insn (loongarch_load_tls (tmp1, tmp2));
 	  emit_insn (gen_add3_insn (dest, tmp1, tp));
 	}
       break;
