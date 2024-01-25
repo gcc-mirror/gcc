@@ -6086,7 +6086,7 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
   gcc_assert (fsym && fsym->attr.value && !fsym->attr.dimension);
 
   /* Absent actual argument for optional scalar dummy.  */
-  if (e == NULL && fsym->attr.optional && !fsym->attr.dimension)
+  if ((e == NULL || e->expr_type == EXPR_NULL) && fsym->attr.optional)
     {
       /* For scalar arguments with VALUE attribute which are passed by
 	 value, pass "0" and a hidden argument for the optional status.  */
@@ -6354,7 +6354,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  e->ts = temp_ts;
 	}
 
-      if (e == NULL)
+      if (e == NULL
+	  || (e->expr_type == EXPR_NULL
+	      && fsym
+	      && fsym->attr.value
+	      && fsym->attr.optional
+	      && !fsym->attr.dimension
+	      && fsym->ts.type != BT_DERIVED
+	      && fsym->ts.type != BT_CLASS))
 	{
 	  if (se->ignore_optional)
 	    {
