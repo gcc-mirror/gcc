@@ -1,5 +1,4 @@
 /* Test for @encode in templates.  */
-/* { dg-options "-lobjc" } */
 /* { dg-do run } */
 #include <string.h>           
 #include <stdlib.h>
