@@ -1256,9 +1256,7 @@ public:
   vsetvl_info global_info;
   bb_info *bb;
 
-  bool full_available;
-
-  vsetvl_block_info () : bb (nullptr), full_available (false)
+  vsetvl_block_info () : bb (nullptr)
   {
     local_infos.safe_grow_cleared (0);
     global_info.set_empty ();
@@ -2489,34 +2487,6 @@ pre_vsetvl::compute_vsetvl_def_data ()
 	}
     }
 
-  for (const bb_info *bb : crtl->ssa->bbs ())
-    {
-      vsetvl_block_info &block_info = get_block_info (bb);
-      if (block_info.empty_p ())
-	continue;
-      vsetvl_info &curr_info = block_info.get_entry_info ();
-      if (!curr_info.valid_p ())
-	continue;
-
-      unsigned int expr_index;
-      sbitmap_iterator sbi;
-      gcc_assert (
-	!bitmap_empty_p (m_vsetvl_def_in[curr_info.get_bb ()->index ()]));
-      bool full_available = true;
-      EXECUTE_IF_SET_IN_BITMAP (m_vsetvl_def_in[bb->index ()], 0, expr_index,
-				sbi)
-	{
-	  vsetvl_info &prev_info = *m_vsetvl_def_exprs[expr_index];
-	  if (!prev_info.valid_p ()
-	      || !m_dem.available_p (prev_info, curr_info))
-	    {
-	      full_available = false;
-	      break;
-	    }
-	}
-      block_info.full_available = full_available;
-    }
-
   sbitmap_vector_free (def_loc);
   sbitmap_vector_free (m_kill);
 }
@@ -3178,11 +3148,30 @@ pre_vsetvl::pre_global_vsetvl_info ()
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
       vsetvl_block_info &block_info = get_block_info (bb);
-      if (block_info.empty_p () || !block_info.full_available)
+      if (block_info.empty_p ())
+	continue;
+      vsetvl_info &curr_info = block_info.get_entry_info ();
+      if (!curr_info.valid_p ())
 	continue;
 
-      vsetvl_info &info = block_info.get_entry_info ();
-      info.set_delete ();
+      unsigned int expr_index;
+      sbitmap_iterator sbi;
+      gcc_assert (
+	!bitmap_empty_p (m_vsetvl_def_in[curr_info.get_bb ()->index ()]));
+      bool full_available = true;
+      EXECUTE_IF_SET_IN_BITMAP (m_vsetvl_def_in[bb->index ()], 0, expr_index,
+				sbi)
+	{
+	  vsetvl_info &prev_info = *m_vsetvl_def_exprs[expr_index];
+	  if (!prev_info.valid_p ()
+	      || !m_dem.available_p (prev_info, curr_info))
+	    {
+	      full_available = false;
+	      break;
+	    }
+	}
+      if (full_available)
+	curr_info.set_delete ();
     }
 
   for (const bb_info *bb : crtl->ssa->bbs ())
