@@ -1,3 +1,37 @@
+2024-01-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113347
+	* g++.dg/eh/return3.C: New test.
+
+2024-01-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2023-12-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103185
+	* g++.dg/cpp1z/array-prvalue2.C: New test.
+	* g++.dg/cpp1z/eval-order3.C: Test swapped operands.
+
+2024-01-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2023-12-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113088
+	PR c++/33799
+	* g++.dg/eh/return2.C: New test.
+
+2024-01-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2023-08-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92407
+	* g++.dg/opt/nrv22.C: New test.
+
 2024-01-15  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
