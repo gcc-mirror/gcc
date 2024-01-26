@@ -1,3 +1,20 @@
+2024-01-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-01-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113601
+	* config/avr/avr-mcus.def (atmega3208, atmega3209): Fix data_section_start.
+
+2024-01-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-01-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (avr16eb14, avr16eb20, avr16eb28, avr16eb32)
+	(avr16ea28, avr16ea32, avr16ea48, avr32ea28, avr32ea32, avr32ea48): Add.
+	* doc/avr-mmcu.texi: Regenerate.
+
 2024-01-24  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
