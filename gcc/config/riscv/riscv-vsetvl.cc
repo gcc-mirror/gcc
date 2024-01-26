@@ -2930,28 +2930,19 @@ pre_vsetvl::earliest_fuse_vsetvl_info (int iter)
       EXECUTE_IF_SET_IN_BITMAP (e, 0, expr_index, sbi)
 	{
 	  vsetvl_info &curr_info = *m_exprs[expr_index];
-	  if (!curr_info.valid_p ())
-	    continue;
-
 	  edge eg = INDEX_EDGE (m_edges, ed);
-	  if (eg->probability == profile_probability::never ())
-	    continue;
-	  if (eg->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
-	      || eg->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
-	    continue;
-
-	  /* When multiple set bits in earliest edge, such edge may
-	     have infinite loop in preds or succs or multiple conflict
-	     vsetvl expression which make such edge is unrelated.  We
-	     don't perform fusion for such situation.  */
-	  if (bitmap_count_bits (e) != 1)
-	    continue;
-
 	  vsetvl_block_info &src_block_info = get_block_info (eg->src);
 	  vsetvl_block_info &dest_block_info = get_block_info (eg->dest);
 
-	  if (src_block_info.probability
-	      == profile_probability::uninitialized ())
+	  if (!curr_info.valid_p ()
+	      || eg->probability == profile_probability::never ()
+	      || src_block_info.probability
+		   == profile_probability::uninitialized ()
+	      /* When multiple set bits in earliest edge, such edge may
+		 have infinite loop in preds or succs or multiple conflict
+		 vsetvl expression which make such edge is unrelated.  We
+		 don't perform fusion for such situation.  */
+	      || bitmap_count_bits (e) != 1)
 	    continue;
 
 	  if (src_block_info.empty_p ())
@@ -3058,29 +3049,27 @@ pre_vsetvl::earliest_fuse_vsetvl_info (int iter)
 	    {
 	      vsetvl_info &prev_info = src_block_info.get_exit_info ();
 	      if (!prev_info.valid_p ()
-		  || m_dem.available_p (prev_info, curr_info))
+		  || m_dem.available_p (prev_info, curr_info)
+		  || !m_dem.compatible_p (prev_info, curr_info))
 		continue;
 
-	      if (m_dem.compatible_p (prev_info, curr_info))
+	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file, "    Fuse curr info since prev info "
-					  "compatible with it:\n");
-		      fprintf (dump_file, "      prev_info: ");
-		      prev_info.dump (dump_file, "        ");
-		      fprintf (dump_file, "      curr_info: ");
-		      curr_info.dump (dump_file, "        ");
-		    }
-		  m_dem.merge (prev_info, curr_info);
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file, "      prev_info after fused: ");
-		      prev_info.dump (dump_file, "        ");
-		      fprintf (dump_file, "\n");
-		    }
-		  changed = true;
+		  fprintf (dump_file, "    Fuse curr info since prev info "
+				      "compatible with it:\n");
+		  fprintf (dump_file, "      prev_info: ");
+		  prev_info.dump (dump_file, "        ");
+		  fprintf (dump_file, "      curr_info: ");
+		  curr_info.dump (dump_file, "        ");
 		}
+	      m_dem.merge (prev_info, curr_info);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "      prev_info after fused: ");
+		  prev_info.dump (dump_file, "        ");
+		  fprintf (dump_file, "\n");
+		}
+	      changed = true;
 	    }
 	}
     }
@@ -3344,15 +3333,11 @@ pre_vsetvl::emit_vsetvl ()
     {
       edge eg = INDEX_EDGE (m_edges, ed);
       sbitmap i = m_insert[ed];
-      if (bitmap_count_bits (i) < 1)
-	continue;
-
-      if (bitmap_count_bits (i) > 1)
+      if (bitmap_count_bits (i) != 1)
 	/* For code with infinite loop (e.g. pr61634.c), The data flow is
 	   completely wrong.  */
 	continue;
 
-      gcc_assert (bitmap_count_bits (i) == 1);
       unsigned expr_index = bitmap_first_set_bit (i);
       const vsetvl_info &info = *m_exprs[expr_index];
       gcc_assert (info.valid_p ());
