@@ -1182,7 +1182,12 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
       base = TREE_OPERAND (base, 0);
     }
   else
-    base = build_fold_addr_expr (base);
+    {
+      if (may_be_nonaddressable_p (base))
+	return opt_result::failure_at (stmt,
+				       "failed: base not addressable.\n");
+      base = build_fold_addr_expr (base);
+    }
 
   if (in_loop)
     {
