@@ -19950,6 +19950,7 @@ package body Sem_Prag is
             Val : Boolean;
 
          begin
+            GNAT_Pragma;
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
 
