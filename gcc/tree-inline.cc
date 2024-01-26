@@ -3684,6 +3684,10 @@ initialize_inlined_parameters (copy_body_data *id, gimple *stmt,
       setup_one_parameter (id, p, static_chain, fn, bb, &vars);
     }
 
+  /* Reverse so the variables appear in the correct order in DWARF
+     debug info.  */
+  vars = nreverse (vars);
+
   declare_inline_vars (id->block, vars);
 }
 
