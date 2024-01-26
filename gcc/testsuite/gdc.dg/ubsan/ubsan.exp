@@ -20,7 +20,8 @@ load_lib ubsan-dg.exp
 
 # Initialize `dg'.
 dg-init
-ubsan_init
+# libubsan uses libstdc++ so make sure we provide paths for it.
+ubsan_init 1
 
 # Main loop.
 if [check_effective_target_fsanitize_undefined] {
