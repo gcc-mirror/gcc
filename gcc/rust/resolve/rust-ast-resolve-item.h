@@ -35,6 +35,7 @@ public:
   static void go (AST::AssociatedItem *item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
+  void visit (AST::Function &type) override;
   void visit (AST::TraitItemType &type) override;
   void visit (AST::TraitItemFunc &func) override;
   void visit (AST::TraitItemMethod &func) override;
