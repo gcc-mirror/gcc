@@ -1971,6 +1971,10 @@ loongarch_explicit_relocs_p (enum loongarch_symbol_type type)
   if (la_opt_explicit_relocs != EXPLICIT_RELOCS_AUTO)
     return la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS;
 
+  /* The linker don't know how to relax accesses in extreme code model.  */
+  if (loongarch_symbol_extreme_p (type))
+    return true;
+
   switch (type)
     {
       case SYMBOL_TLS_IE:
@@ -1982,11 +1986,6 @@ loongarch_explicit_relocs_p (enum loongarch_symbol_type type)
 	   does not relax 64-bit pc-relative accesses as at now.  */
 	return true;
       case SYMBOL_GOT_DISP:
-	/* The linker don't know how to relax GOT accesses in extreme
-	   code model.  */
-	if (TARGET_CMODEL_EXTREME)
-	  return true;
-
 	/* If we are performing LTO for a final link, and we have the
 	   linker plugin so we know the resolution of the symbols, then
 	   all GOT references are binding to external symbols or
@@ -2776,7 +2775,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
   start_sequence ();
 
-  if (la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS)
+  if (loongarch_explicit_relocs_p (type))
     {
       /* Split tls symbol to high and low.  */
       rtx high = gen_rtx_HIGH (Pmode, copy_rtx (loc));
@@ -2809,7 +2808,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 	case CMODEL_MEDIUM:
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
-	      if (TARGET_EXPLICIT_RELOCS)
+	      if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
 		{
 		  emit_insn (gen_pcalau12i (Pmode, reg, loongarch_tls_symbol));
 		  rtx call = gen_call_value_internal_1 (Pmode, v0, reg,
@@ -2845,7 +2844,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 	case CMODEL_NORMAL:
 	case CMODEL_MEDIUM:
 	    {
-	      if (TARGET_EXPLICIT_RELOCS)
+	      if (loongarch_explicit_relocs_p (SYMBOL_GOT_DISP))
 		{
 		  rtx high = gen_reg_rtx (Pmode);
 		  loongarch_emit_move (high,
@@ -2939,7 +2938,7 @@ loongarch_legitimize_tls_address (rtx loc)
 	  tmp1 = gen_reg_rtx (Pmode);
 	  tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_IE);
 	  dest = gen_reg_rtx (Pmode);
-	  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
+	  if (loongarch_explicit_relocs_p (SYMBOL_TLS_IE))
 	    {
 	      tmp3 = gen_reg_rtx (Pmode);
 	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
@@ -2996,7 +2995,7 @@ loongarch_legitimize_tls_address (rtx loc)
 	  tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_LE);
 	  dest = gen_reg_rtx (Pmode);
 
-	  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
+	  if (loongarch_explicit_relocs_p (SYMBOL_TLS_LE))
 	    {
 	      tmp3 = gen_reg_rtx (Pmode);
 	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
