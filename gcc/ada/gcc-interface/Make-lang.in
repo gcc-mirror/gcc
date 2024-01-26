@@ -572,7 +572,6 @@ GNATBIND_OBJS = \
  ada/ali-util.o   \
  ada/ali.o        \
  ada/alloc.o      \
- ada/aspects.o    \
  ada/atree.o      \
  ada/bcheck.o     \
  ada/binde.o      \
@@ -602,12 +601,10 @@ GNATBIND_OBJS = \
  ada/exit.o       \
  ada/final.o      \
  ada/fmap.o       \
- ada/fname-uf.o   \
  ada/fname.o      \
  ada/gnatbind.o   \
  ada/gnatvsn.o    \
  ada/hostparm.o   \
- ada/krunch.o     \
  ada/lib.o        \
  ada/link.o       \
  ada/namet.o      \
@@ -618,7 +615,6 @@ GNATBIND_OBJS = \
  ada/output.o     \
  ada/rident.o     \
  ada/scans.o      \
- ada/scil_ll.o    \
  ada/scng.o       \
  ada/sdefault.o   \
  ada/seinfo.o	  \
@@ -631,7 +627,6 @@ GNATBIND_OBJS = \
  ada/snames.o     \
  ada/stand.o      \
  ada/stringt.o    \
- ada/style.o      \
  ada/styleg.o     \
  ada/stylesw.o    \
  ada/switch-b.o   \
