@@ -2837,6 +2837,13 @@ typedef hash_map<tree,uintptr_t,
 		 simple_hashmap_traits<nodel_ptr_hash<tree_node>,uintptr_t> >
 duplicate_hash_map;
 
+/* Data needed for post-processing.  */
+struct post_process_data {
+  tree decl;
+  location_t start_locus;
+  location_t end_locus;
+};
+
 /* Tree stream reader.  Note that reading a stream doesn't mark the
    read trees with TREE_VISITED.  Thus it's quite safe to have
    multiple concurrent readers.  Which is good, because lazy
@@ -2848,7 +2855,7 @@ private:
   module_state *state;		/* Module being imported.  */
   vec<tree> back_refs;		/* Back references.  */
   duplicate_hash_map *duplicates;	/* Map from existings to duplicate.  */
-  vec<tree> post_decls;		/* Decls to post process.  */
+  vec<post_process_data> post_decls;	/* Decls to post process.  */
   unsigned unused;		/* Inhibit any interior TREE_USED
 				   marking.  */
 
@@ -2945,16 +2952,16 @@ public:
   tree odr_duplicate (tree decl, bool has_defn);
 
 public:
-  /* Return the next decl to postprocess, or NULL.  */
-  tree post_process ()
+  /* Return the decls to postprocess.  */
+  const vec<post_process_data>& post_process ()
   {
-    return post_decls.length () ? post_decls.pop () : NULL_TREE;
+    return post_decls;
   }
 private:
-  /* Register DECL for postprocessing.  */
-  void post_process (tree decl)
+  /* Register DATA for postprocessing.  */
+  void post_process (post_process_data data)
   {
-    post_decls.safe_push (decl);
+    post_decls.safe_push (data);
   }
 
 private:
@@ -11667,14 +11674,24 @@ trees_out::write_function_def (tree decl)
       tree_node (cexpr->body);
     }
 
+  function* f = DECL_STRUCT_FUNCTION (decl);
+
   if (streaming_p ())
     {
       unsigned flags = 0;
 
+      if (f)
+	flags |= 2;
       if (DECL_NOT_REALLY_EXTERN (decl))
 	flags |= 1;
 
       u (flags);
+    }
+
+  if (state && f)
+    {
+      state->write_location (*this, f->function_start_locus);
+      state->write_location (*this, f->function_end_locus);
     }
 }
 
@@ -11692,6 +11709,8 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   tree saved = tree_node ();
   tree context = tree_node ();
   constexpr_fundef cexpr;
+  post_process_data pdata {};
+  pdata.decl = maybe_template;
 
   tree maybe_dup = odr_duplicate (maybe_template, DECL_SAVED_TREE (decl));
   bool installing = maybe_dup && !DECL_SAVED_TREE (decl);
@@ -11708,6 +11727,12 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 
   unsigned flags = u ();
 
+  if (flags & 2)
+    {
+      pdata.start_locus = state->read_location (*this);
+      pdata.end_locus = state->read_location (*this);
+    }
+
   if (get_overrun ())
     return NULL_TREE;
 
@@ -11722,7 +11747,7 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 	SET_DECL_FRIEND_CONTEXT (decl, context);
       if (cexpr.decl)
 	register_constexpr_fundef (cexpr);
-      post_process (maybe_template);
+      post_process (pdata);
     }
   else if (maybe_dup)
     {
@@ -15100,8 +15125,10 @@ module_state::read_cluster (unsigned snum)
      push_function_context does too much work.   */
   tree old_cfd = current_function_decl;
   struct function *old_cfun = cfun;
-  while (tree decl = sec.post_process ())
+  for (const post_process_data& pdata : sec.post_process ())
     {
+      tree decl = pdata.decl;
+
       bool abstract = false;
       if (TREE_CODE (decl) == TEMPLATE_DECL)
 	{
@@ -15113,6 +15140,8 @@ module_state::read_cluster (unsigned snum)
       allocate_struct_function (decl, abstract);
       cfun->language = ggc_cleared_alloc<language_function> ();
       cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
+      cfun->function_start_locus = pdata.start_locus;
+      cfun->function_end_locus = pdata.end_locus;
 
       if (abstract)
 	;
