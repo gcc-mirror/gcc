@@ -1,3 +1,34 @@
+2024-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113599
+	* typeck2.cc (build_m_component_ref): Use convert instead of
+	cp_convert for pointer conversion.
+
+2024-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113598
+	* init.cc (build_vec_init): Don't use {} for PMF.
+
+2024-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109227
+	* coroutines.cc (build_co_await): Use cxx_maybe_build_cleanup.
+	(build_actor_fn, process_conditional, maybe_promote_temps)
+	(morph_fn_to_coro): Likewise.
+	(expand_one_await_expression): Use build_cleanup.
+
+2024-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113405
+	* module.cc (set_defining_module): Track partial specialisations
+	for all declarations.
+
+2024-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/100707
+	* name-lookup.cc (add_imported_namespace): Don't mark namespaces
+	as imported.
+
 2024-01-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/113529

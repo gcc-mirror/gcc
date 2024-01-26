@@ -1,3 +1,380 @@
+2024-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113599
+	* g++.dg/expr/ptrmem11.C: New test.
+
+2024-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113598
+	* g++.dg/cpp0x/initlist-pmf2.C: New test.
+
+2024-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109227
+	* g++.dg/coroutines/co-await-initlist2.C: New test.
+
+2024-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/pim/fail/badpointer.mod: New test.
+	* gm2/pim/fail/badpointer2.mod: New test.
+	* gm2/pim/fail/badpointer3.mod: New test.
+	* gm2/projects/pim/run/pass/pegfive/pegfive.mod: New test.
+	* gm2/projects/pim/run/pass/pegfive/projects-pim-run-pass-pegfive.exp: New test.
+
+2024-01-25  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* gcc.target/riscv/rvv/autovec/pr112971.c: New test.
+
+2024-01-25  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR testsuite/113558
+	* gcc.dg/vect/no-scevccp-outer-7.c: Add target check.
+	* gcc.dg/vect/vect-outer-4c-big-array.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-s16a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-s8a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-u16b.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-u8a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-u8b.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-1a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-1b-big-array.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-1c-big-array.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-2a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-2b-big-array.c: Ditto.
+	* gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c: Ditto.
+
+2024-01-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112969
+	* c-c++-common/analyzer/compound-assignment-5.c (test_3): Remove
+	xfails, reorder tests.
+	* c-c++-common/analyzer/compound-assignment-pr112969.c: New test.
+	* gcc.dg/plugin/infoleak-pr112969.c: New test.
+	* gcc.dg/plugin/plugin.exp: Add infoleak-pr112969.c to
+	analyzer_kernel_plugin.c tests.
+
+2024-01-25  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* gcc.target/riscv/cv-simd-abs-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-abs-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-add-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-add-div2-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-add-div4-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-add-div8-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-add-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-add-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-add-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-and-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-and-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-and-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-and-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-avg-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-avg-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-avg-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-avg-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-avgu-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-avgu-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-avgu-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-avgu-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpeq-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpeq-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpeq-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpeq-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpge-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpge-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpge-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpge-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgeu-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgeu-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgeu-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgeu-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgt-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgt-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgt-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgt-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgtu-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgtu-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgtu-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpgtu-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmple-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmple-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmple-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmple-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpleu-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpleu-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpleu-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpleu-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmplt-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmplt-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmplt-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmplt-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpltu-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpltu-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpltu-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpltu-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpne-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpne-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpne-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cmpne-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cplxconj-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cplxmul-i-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cplxmul-i-div2-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cplxmul-i-div4-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cplxmul-i-div8-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cplxmul-r-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cplxmul-r-div2-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cplxmul-r-div4-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-cplxmul-r-div8-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotsp-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotsp-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotsp-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotsp-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotup-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotup-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotup-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotup-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotusp-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotusp-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotusp-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-dotusp-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-extract-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-extract-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-extractu-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-extractu-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-insert-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-insert-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-march-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-max-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-max-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-max-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-max-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-maxu-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-maxu-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-maxu-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-maxu-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-min-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-min-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-min-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-min-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-minu-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-minu-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-minu-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-minu-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-neg-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-neg-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-or-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-or-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-or-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-or-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-pack-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-pack-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-packhi-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-packlo-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotsp-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotsp-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotsp-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotsp-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotup-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotup-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotup-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotup-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotusp-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotusp-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotusp-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sdotusp-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-shuffle-sci-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-shuffle2-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-shuffle2-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-shufflei0-sci-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-shufflei1-sci-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-shufflei2-sci-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-shufflei3-sci-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sll-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sll-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sll-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sll-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sra-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sra-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sra-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sra-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-srl-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-srl-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-srl-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-srl-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sub-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sub-div2-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sub-div4-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sub-div8-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sub-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sub-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-sub-sc-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-subrotmj-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-subrotmj-div2-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-subrotmj-div4-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-subrotmj-div8-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-xor-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-xor-h-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-xor-sc-b-compile-1.c: New test.
+	* gcc.target/riscv/cv-simd-xor-sc-h-compile-1.c: New test.
+	* lib/target-supports.exp: Add proc for XCVsimd extension.
+
+2024-01-25  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	PR target/113538
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-7.c: Fix the asm
+	check.
+	* gcc.target/riscv/rvv/base/abi-call-args-1-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-2-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-3-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-4-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-error-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-return-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-return.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-variant_cc.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-fixed-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-fixed-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-save-restore.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-zcmp.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-save-restore.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-zcmp.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-69.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-70.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-71.c: Ditto.
+	* gcc.target/riscv/rvv/base/misc_vreinterpret_vbool_vint.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vadd.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vfadd.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vget_vset.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vloxseg2ei16.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vreinterpret.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vadd.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vfadd.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vget_vset.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vloxseg2ei16.c: Ditto.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vreinterpret.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-11.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/tuple_vundefined.c: Ditto.
+	* gcc.target/riscv/rvv/base/vcreate.c: Ditto.
+	* gcc.target/riscv/rvv/base/vlmul_ext-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvfh-over-zvfhmin.c: Ditto.
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: Ditto.
+	* lib/target-supports.exp: Remove the flag.
+
+2024-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113574
+	* gcc.dg/torture/bitint-52.c: New test.
+
+2024-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113572
+	* gcc.target/aarch64/sve/pr113572.c: New test.
+
+2024-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113550
+	* gcc.target/aarch64/pr113550.c: New test.
+
+2024-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113485
+	* gcc.target/aarch64/pr113485.c: New test.
+	* gcc.target/aarch64/pr113573.c: Likewise.
+
+2024-01-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/113548
+	* gcc.dg/vect/slp-reduc-10a.c: Use `__SIZETYPE__` instead of `unsigned long`.
+	* gcc.dg/vect/slp-reduc-10b.c: Likewise.
+	* gcc.dg/vect/slp-reduc-10c.c: Likewise.
+	* gcc.dg/vect/slp-reduc-10d.c: Likewise.
+	* gcc.dg/vect/slp-reduc-10e.c: Likewise.
+	* gcc.dg/vect/vect-cond-arith-2.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-19.c: Likewise.
+
+2024-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113576
+	* gcc.dg/vect/pr113576.c: New testcase.
+
+2024-01-25  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/block-cmp-1.c: Exclude m32 and mpowerpc64.
+	* gcc.target/powerpc/block-cmp-4.c: Likewise.
+	* gcc.target/powerpc/block-cmp-8.c: New.
+
+2024-01-25  liuhongt  <hongtao.liu@intel.com>
+
+	* c-c++-common/hwasan/alloca-outside-caught.c: Adjust
+	testcase.
+	* c-c++-common/hwasan/hwasan-poison-optimisation.c: Ditto.
+	* c-c++-common/hwasan/vararray-outside-caught.c: Ditto.
+
+2024-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113405
+	* g++.dg/modules/concept-9.h: New test.
+	* g++.dg/modules/concept-9_a.C: New test.
+	* g++.dg/modules/concept-9_b.C: New test.
+	* g++.dg/modules/concept-10_a.H: New test.
+	* g++.dg/modules/concept-10_b.C: New test.
+
+2024-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/100707
+	* g++.dg/modules/indirect-1_b.C: Adjust to handle namespaces not
+	being attached to the module they were imported from.
+	* g++.dg/modules/indirect-1_c.C: Likewise.
+	* g++.dg/modules/indirect-2_b.C: Likewise.
+	* g++.dg/modules/indirect-2_c.C: Likewise.
+	* g++.dg/modules/indirect-3_b.C: Likewise.
+	* g++.dg/modules/indirect-3_c.C: Likewise.
+	* g++.dg/modules/indirect-4_b.C: Likewise.
+	* g++.dg/modules/indirect-4_c.C: Likewise.
+	* g++.dg/modules/namespace-5_a.C: New test.
+	* g++.dg/modules/namespace-5_b.C: New test.
+	* g++.dg/modules/namespace-5_c.C: New test.
+
+2024-01-25  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/adx-check.h: Include stdio.h when DEBUG
+	is defined.
+	* gcc.target/i386/avx512fp16-vscalefph-1b.c: Do not define
+	DEBUG.
+	* gcc.target/i386/avx512fp16vl-vaddph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vcmpph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vdivph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfpclassph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vgetexpph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vgetmantph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vmaxph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vminph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vmulph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vrcpph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vreduceph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vrndscaleph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vrsqrtph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vscalefph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vsqrtph-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vsubph-1b.c: Ditto.
+	* gcc.target/i386/readeflags-1.c: Include stdio.h when DEBUG
+	is defined.
+	* gcc.target/i386/rtm-check.h: Ditto.
+	* gcc.target/i386/sha-check.h: Ditto.
+	* gcc.target/i386/writeeflags-1.c: Ditto.
+
+2024-01-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_long_mult): Fix
+	small typo for aarch64*-*-*.
+
 2024-01-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/113529

@@ -1,3 +1,144 @@
+2024-01-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/100204
+	* config/aarch64/constraints.md (J): Cast to `unsigned HOST_WIDE_INT`
+	before taking the negative of it.
+
+2024-01-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/113526
+	* lra-constraints.cc (curr_insn_transform): Change class even for
+	spilled pseudo successfully matched with with NO_REGS.
+
+2024-01-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113601
+	* config/avr/avr-mcus.def (atmega3208, atmega3209): Fix data_section_start.
+
+2024-01-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/112987
+	* config/aarch64/aarch64.cc (aarch64_gen_compare_zero_and_branch): New.
+	(aarch64_expand_epilogue): Use the new function.
+	(aarch64_split_compare_and_swap): Likewise.
+	(aarch64_split_atomic_op): Likewise.
+
+2024-01-25  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR middle-end/112971
+	* fold-const.cc (simplify_const_binop): New function for binop
+	simplification of two constant vectors when element-wise
+	handling is not necessary.
+	(const_binop): Call new function.
+
+2024-01-25  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* common/config/riscv/riscv-common.cc: Add XCVbitmanip.
+	* config/riscv/constraints.md: Likewise.
+	* config/riscv/corev.def: Likewise.
+	* config/riscv/corev.md: Likewise.
+	* config/riscv/predicates.md: Likewise.
+	* config/riscv/riscv-builtins.cc (AVAIL): Likewise.
+	* config/riscv/riscv-ftypes.def: Likewise.
+	* config/riscv/riscv.opt: Likewise.
+	* config/riscv/riscv.cc (riscv_print_operand): Add new operand 'Y'.
+	* doc/extend.texi: Add XCVbitmanip builtin documentation.
+	* doc/sourcebuild.texi: Likewise.
+
+2024-01-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-hsa.h (ASM_SPEC): Add space after -mxnack= argument.
+
+2024-01-25  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	PR target/113538
+	* config/riscv/riscv.cc (riscv_get_arg_info): Remove the flag.
+	(riscv_fntype_abi): Ditto.
+	* config/riscv/riscv.opt: Ditto.
+
+2024-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113574
+	* convert.cc (convert_to_integer_1) <case LSHIFT_EXPR>: Compare shift
+	count against TYPE_PRECISION rather than TYPE_SIZE.
+
+2024-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113572
+	* config/aarch64/aarch64-sve-builtins.cc (vector_cst_all_same):
+	Check VECTOR_CST_ELT instead of VECTOR_CST_ENCODED_ELT
+
+2024-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113550
+	* config/aarch64/aarch64-simd.md: In the movv8di splitter, check
+	whether each split instruction is a load that clobbers the source
+	address.  Emit that instruction last if so.
+
+2024-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113485
+	* config/aarch64/aarch64-simd.md (aarch64_zip1<mode>_low): New
+	pattern.
+	(<optab><Vnarrowq><mode>2): Use it instead of generating a
+	paradoxical subreg for the input.
+
+2024-01-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (get_all_predecessors): New function.
+	(pre_vsetvl::pre_global_vsetvl_info): Add LCM delete block all
+	predecessors dump information.
+
+2024-01-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::compute_vsetvl_def_data): Remove
+	redundant full available computation.
+	(pre_vsetvl::pre_global_vsetvl_info): Ditto.
+
+2024-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/generic.texi (VECTOR_CST): Fix typo - petterns -> patterns.
+	* doc/rtl.texi (CONST_VECTOR): Likewise.
+
+2024-01-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-opts.h (enum vsetvl_strategy_enum): Add optim-no-fusion option.
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::lazy_vsetvl): Ditto.
+	(pass_vsetvl::execute): Ditto.
+	* config/riscv/riscv.opt: Ditto.
+
+2024-01-25  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (@vec_concatz<mode>): Remove this define_insn pattern.
+	* config/loongarch/loongarch.cc (loongarch_expand_vector_group_init): Use vec_concat<mode>.
+
+2024-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113576
+	* tree-vect-loop.cc (vec_init_loop_exit_info): Only allow
+	exits with may_be_zero niters when its the last one.
+
+2024-01-25  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_symbolic_constant_p):
+	For symbols of type tls, non-zero Offset is not generated.
+
+2024-01-25  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-string.cc (expand_block_compare): Enable
+	P9 with m32 and mpowerpc64.
+
+2024-01-25  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Enable -mlam=u57 by default when compiled with
+	-fsanitize=hwaddress.
+
+2024-01-25  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_implied_info):
+	Remove {"ztso", "a"}.
+
 2024-01-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/108007

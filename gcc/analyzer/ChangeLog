@@ -1,3 +1,10 @@
+2024-01-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112969
+	* store.cc (binding_cluster::maybe_get_compound_binding): When
+	populating default_map, express the bit-range of the default key
+	for REG relative to REG, rather than to the base region.
+
 2024-01-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/112977

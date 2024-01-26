@@ -1,3 +1,8 @@
+2024-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs/libc.def (lseek): Change the second parameter
+	type to	CSSIZE_T and make the return value optional.
+
 2024-01-24  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/113559
