@@ -95,24 +95,28 @@ ASTValidation::visit (AST::Union &item)
 void
 ASTValidation::visit (AST::Function &function)
 {
-  std::set<Context> valid_context
-    = {Context::INHERENT_IMPL, Context::TRAIT_IMPL};
-
   const auto &qualifiers = function.get_qualifiers ();
   if (qualifiers.is_async () && qualifiers.is_const ())
     rust_error_at (function.get_locus (),
 		   "functions cannot be both %<const%> and %<async%>");
 
-  if (qualifiers.is_const () && context.back () == Context::TRAIT_IMPL)
+  if (qualifiers.is_const ()
+      && (context.back () == Context::TRAIT_IMPL
+	  || context.back () == Context::TRAIT))
     rust_error_at (function.get_locus (), ErrorCode::E0379,
-		   "functions in traits cannot be declared const");
+		   "functions in traits cannot be declared %<const%>");
 
   // may change soon
-  if (qualifiers.is_async () && context.back () == Context::TRAIT_IMPL)
+  if (qualifiers.is_async ()
+      && (context.back () == Context::TRAIT_IMPL
+	  || context.back () == Context::TRAIT))
     rust_error_at (function.get_locus (), ErrorCode::E0706,
 		   "functions in traits cannot be declared %<async%>");
 
-  if (valid_context.find (context.back ()) == valid_context.end ()
+  // if not an associated function but has a self parameter
+  if (context.back () != Context::TRAIT
+      && context.back () != Context::TRAIT_IMPL
+      && context.back () != Context::INHERENT_IMPL
       && function.has_self_param ())
     rust_error_at (
       function.get_self_param ()->get_locus (),
