@@ -5094,6 +5094,18 @@ Parser<ManagedTokenSource>::parse_trait_item ()
   const_TokenPtr tok = lexer.peek_token ();
   switch (tok->get_id ())
     {
+    case SUPER:
+    case SELF:
+    case CRATE:
+    case DOLLAR_SIGN:
+      // these seem to be SimplePath tokens, so this is a macro invocation
+      // semi
+      return parse_macro_invocation_semi (std::move (outer_attrs));
+    case IDENTIFIER:
+      if (lexer.peek_token ()->get_str () == Values::WeakKeywords::DEFAULT)
+	return parse_function (std::move (vis), std::move (outer_attrs));
+      else
+	return parse_macro_invocation_semi (std::move (outer_attrs));
     case TYPE:
       return parse_trait_type (std::move (outer_attrs), vis);
     case CONST:
@@ -5110,25 +5122,14 @@ Parser<ManagedTokenSource>::parse_trait_item ()
     case EXTERN_KW:
     case FN_KW:
       return parse_function (std::move (vis), std::move (outer_attrs));
-
-      default: {
-	// TODO: try and parse macro invocation semi - if fails, maybe error.
-	std::unique_ptr<AST::TraitItem> macro_invoc
-	  = parse_macro_invocation_semi (outer_attrs);
-
-	if (macro_invoc == nullptr)
-	  {
-	    // TODO: error?
-	    return nullptr;
-	  }
-	else
-	  {
-	    return macro_invoc;
-	  }
-	/* FIXME: macro invocations can only start with certain tokens. be
-	 * more picky with these? */
-      }
+    default:
+      break;
     }
+  add_error (Error (tok->get_locus (),
+		    "unrecognised token %qs for item in trait",
+		    tok->get_token_description ()));
+  // skip?
+  return nullptr;
 }
 
 // Parse a typedef trait item.
