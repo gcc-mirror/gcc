@@ -5629,7 +5629,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
       by_ref = true;
     }
 
-  /* If we were requested or muss pass by reference, do so.
+  /* If we were requested or must pass by reference, do so.
      If we were requested to pass by copy, do so.
      Otherwise, for foreign conventions, pass In Out or Out parameters
      or aggregates by reference.  For COBOL and Fortran, pass all
