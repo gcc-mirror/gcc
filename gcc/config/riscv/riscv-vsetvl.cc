@@ -2543,8 +2543,10 @@ pre_vsetvl::compute_lcm_local_properties ()
       vsetvl_info &header_info = block_info.get_entry_info ();
       vsetvl_info &footer_info = block_info.get_exit_info ();
       gcc_assert (footer_info.valid_p () || footer_info.unknown_p ());
-      add_expr (m_exprs, header_info);
-      add_expr (m_exprs, footer_info);
+      if (header_info.valid_p ())
+	add_expr (m_exprs, header_info);
+      if (footer_info.valid_p ())
+	add_expr (m_exprs, footer_info);
     }
 
   int num_exprs = m_exprs.length ();
@@ -2702,18 +2704,17 @@ pre_vsetvl::compute_lcm_local_properties ()
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
       unsigned bb_index = bb->index ();
-      bitmap_ior (m_kill[bb_index], m_transp[bb_index], m_avloc[bb_index]);
-      bitmap_not (m_kill[bb_index], m_kill[bb_index]);
-    }
-
-  for (const bb_info *bb : crtl->ssa->bbs ())
-    {
-      unsigned bb_index = bb->index ();
       if (invalid_opt_bb_p (bb->cfg_bb ()))
 	{
 	  bitmap_clear (m_antloc[bb_index]);
 	  bitmap_clear (m_transp[bb_index]);
 	}
+      /* Compute ae_kill for each basic block using:
+
+	 ~(TRANSP | COMP)
+      */
+      bitmap_ior (m_kill[bb_index], m_transp[bb_index], m_avloc[bb_index]);
+      bitmap_not (m_kill[bb_index], m_kill[bb_index]);
     }
 }
 
