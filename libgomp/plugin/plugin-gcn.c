@@ -384,6 +384,7 @@ struct gcn_image_desc
    See https://llvm.org/docs/AMDGPUUsage.html#amdgpu-ef-amdgpu-mach-table */
 
 typedef enum {
+  EF_AMDGPU_MACH_UNSUPPORTED = -1,
   EF_AMDGPU_MACH_AMDGCN_GFX803 = 0x02a,
   EF_AMDGPU_MACH_AMDGCN_GFX900 = 0x02c,
   EF_AMDGPU_MACH_AMDGCN_GFX906 = 0x02f,
@@ -1727,7 +1728,7 @@ isa_code(const char *isa) {
   if (!strncmp (isa, gcn_gfx1100_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX1100;
 
-  return -1;
+  return EF_AMDGPU_MACH_UNSUPPORTED;
 }
 
 /* CDNA2 devices have twice as many VGPRs compared to older devices.  */
@@ -3374,7 +3375,7 @@ GOMP_OFFLOAD_init_device (int n)
     return hsa_error ("Error querying the name of the agent", status);
 
   agent->device_isa = isa_code (agent->name);
-  if (agent->device_isa < 0)
+  if (agent->device_isa == EF_AMDGPU_MACH_UNSUPPORTED)
     return hsa_error ("Unknown GCN agent architecture", HSA_STATUS_ERROR);
 
   status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AGENT_INFO_VENDOR_NAME,
