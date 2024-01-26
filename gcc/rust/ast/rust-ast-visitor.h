@@ -156,8 +156,6 @@ public:
   virtual void visit (Union &union_item) = 0;
   virtual void visit (ConstantItem &const_item) = 0;
   virtual void visit (StaticItem &static_item) = 0;
-  virtual void visit (TraitItemFunc &item) = 0;
-  virtual void visit (TraitItemMethod &item) = 0;
   virtual void visit (TraitItemConst &item) = 0;
   virtual void visit (TraitItemType &item) = 0;
   virtual void visit (Trait &trait) = 0;
@@ -330,8 +328,6 @@ protected:
   virtual void visit (AST::Union &union_item) override;
   virtual void visit (AST::ConstantItem &const_item) override;
   virtual void visit (AST::StaticItem &static_item) override;
-  virtual void visit (AST::TraitItemFunc &item) override;
-  virtual void visit (AST::TraitItemMethod &item) override;
   virtual void visit (AST::TraitItemConst &item) override;
   virtual void visit (AST::TraitItemType &item) override;
   virtual void visit (AST::Trait &trait) override;
@@ -420,8 +416,6 @@ protected:
   virtual void visit (AST::WhereClause &where);
   virtual void visit (AST::StructField &field);
   virtual void visit (AST::TupleField &field);
-  virtual void visit (AST::TraitFunctionDecl &decl);
-  virtual void visit (AST::TraitMethodDecl &decl);
   virtual void visit (AST::NamedFunctionParam &param);
   virtual void visit (AST::MacroRule &rule);
   virtual void visit (AST::MacroInvocData &data);

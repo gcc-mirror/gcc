@@ -114,8 +114,6 @@ public:
   void visit (AST::EnumItemDiscriminant &);
   void visit (AST::ConstantItem &);
   void visit (AST::StaticItem &);
-  void visit (AST::TraitItemFunc &);
-  void visit (AST::TraitItemMethod &);
   void visit (AST::TraitItemConst &);
   void visit (AST::TraitItemType &);
   void visit (AST::ExternalTypeItem &);

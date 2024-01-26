@@ -376,56 +376,6 @@ CfgStrip::maybe_strip_where_clause (AST::WhereClause &where_clause)
 }
 
 void
-CfgStrip::maybe_strip_trait_function_decl (AST::TraitFunctionDecl &decl)
-{
-  // just expand sub-stuff - can't actually strip generic params themselves
-  for (auto &param : decl.get_generic_params ())
-    param->accept_vis (*this);
-
-  /* strip function parameters if required - this is specifically
-   * allowed by spec */
-  maybe_strip_function_params (decl.get_function_params ());
-
-  if (decl.has_return_type ())
-    {
-      auto &return_type = decl.get_return_type ();
-      return_type->accept_vis (*this);
-
-      if (return_type->is_marked_for_strip ())
-	rust_error_at (return_type->get_locus (),
-		       "cannot strip type in this position");
-    }
-
-  if (decl.has_where_clause ())
-    maybe_strip_where_clause (decl.get_where_clause ());
-}
-
-void
-CfgStrip::maybe_strip_trait_method_decl (AST::TraitMethodDecl &decl)
-{
-  // just expand sub-stuff - can't actually strip generic params themselves
-  for (auto &param : decl.get_generic_params ())
-    param->accept_vis (*this);
-
-  /* strip function parameters if required - this is specifically
-   * allowed by spec */
-  maybe_strip_function_params (decl.get_function_params ());
-
-  if (decl.has_return_type ())
-    {
-      auto &return_type = decl.get_return_type ();
-      return_type->accept_vis (*this);
-
-      if (return_type->is_marked_for_strip ())
-	rust_error_at (return_type->get_locus (),
-		       "cannot strip type in this position");
-    }
-
-  if (decl.has_where_clause ())
-    maybe_strip_where_clause (decl.get_where_clause ());
-}
-
-void
 CfgStrip::visit (AST::IdentifierExpr &ident_expr)
 {
   // strip test based on outer attrs
@@ -2079,61 +2029,6 @@ CfgStrip::visit (AST::StaticItem &static_item)
     rust_error_at (expr->get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
-}
-void
-CfgStrip::visit (AST::TraitItemFunc &item)
-{
-  // initial test based on outer attrs
-  expand_cfg_attrs (item.get_outer_attrs ());
-  if (fails_cfg_with_expand (item.get_outer_attrs ()))
-    {
-      item.mark_for_strip ();
-      return;
-    }
-
-  maybe_strip_trait_function_decl (item.get_trait_function_decl ());
-
-  AST::DefaultASTVisitor::visit (item);
-
-  if (item.has_definition ())
-    {
-      /* strip any internal sub-expressions - expression itself isn't
-       * allowed to have external attributes in this position so can't be
-       * stripped. */
-      auto &block = item.get_definition ();
-      if (block->is_marked_for_strip ())
-	rust_error_at (block->get_locus (),
-		       "cannot strip block expression in this "
-		       "position - outer attributes not allowed");
-    }
-}
-
-void
-CfgStrip::visit (AST::TraitItemMethod &item)
-{
-  // initial test based on outer attrs
-  expand_cfg_attrs (item.get_outer_attrs ());
-  if (fails_cfg_with_expand (item.get_outer_attrs ()))
-    {
-      item.mark_for_strip ();
-      return;
-    }
-
-  maybe_strip_trait_method_decl (item.get_trait_method_decl ());
-
-  AST::DefaultASTVisitor::visit (item);
-
-  if (item.has_definition ())
-    {
-      /* strip any internal sub-expressions - expression itself isn't
-       * allowed to have external attributes in this position so can't be
-       * stripped. */
-      auto &block = item.get_definition ();
-      if (block->is_marked_for_strip ())
-	rust_error_at (block->get_locus (),
-		       "cannot strip block expression in this "
-		       "position - outer attributes not allowed");
-    }
 }
 
 void

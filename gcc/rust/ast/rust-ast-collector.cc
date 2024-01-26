@@ -1949,23 +1949,6 @@ TokenCollector::visit_function_common (std::unique_ptr<Type> &return_type,
 }
 
 void
-TokenCollector::visit (TraitItemFunc &item)
-{
-  auto func = item.get_trait_function_decl ();
-  auto id = func.get_identifier ().as_string ();
-
-  push (Rust::Token::make (FN_KW, item.get_locus ()));
-  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
-  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
-
-  visit_items_joined_by_separator (func.get_function_params ());
-
-  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
-
-  visit_function_common (func.get_return_type (), item.get_definition ());
-}
-
-void
 TokenCollector::visit (SelfParam &param)
 {
   if (param.get_has_ref ())
@@ -1985,23 +1968,6 @@ TokenCollector::visit (SelfParam &param)
       push (Rust::Token::make (COLON, UNDEF_LOCATION));
       visit (param.get_type ());
     }
-}
-
-void
-TokenCollector::visit (TraitItemMethod &item)
-{
-  auto method = item.get_trait_method_decl ();
-  auto id = method.get_identifier ().as_string ();
-
-  push (Rust::Token::make (FN_KW, item.get_locus ()));
-  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
-  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
-
-  visit_items_joined_by_separator (method.get_function_params (), COMMA);
-
-  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
-
-  visit_function_common (method.get_return_type (), item.get_definition ());
 }
 
 void

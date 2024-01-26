@@ -49,8 +49,6 @@ class ASTLowerTraitItem : public ASTLoweringBase
 public:
   static HIR::TraitItem *translate (AST::AssociatedItem *item);
   void visit (AST::Function &func) override;
-  void visit (AST::TraitItemFunc &func) override;
-  void visit (AST::TraitItemMethod &method) override;
   void visit (AST::TraitItemConst &constant) override;
   void visit (AST::TraitItemType &type) override;
 

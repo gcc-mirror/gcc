@@ -86,8 +86,6 @@ public:
   // FIXME: Add documentation
   void expand_closure_params (std::vector<AST::ClosureParam> &params);
   void expand_where_clause (AST::WhereClause &where_clause);
-  void expand_trait_function_decl (AST::TraitFunctionDecl &decl);
-  void expand_trait_method_decl (AST::TraitMethodDecl &decl);
 
   /**
    * Expand a set of values, erasing them if they are marked for strip, and
@@ -248,8 +246,6 @@ public:
   void visit (AST::Union &union_item) override;
   void visit (AST::ConstantItem &const_item) override;
   void visit (AST::StaticItem &static_item) override;
-  void visit (AST::TraitItemFunc &item) override;
-  void visit (AST::TraitItemMethod &item) override;
   void visit (AST::TraitItemConst &item) override;
   void visit (AST::Trait &trait) override;
   void visit (AST::InherentImpl &impl) override;
