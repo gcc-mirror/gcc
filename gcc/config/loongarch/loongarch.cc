@@ -2807,17 +2807,27 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
 	case CMODEL_MEDIUM:
 	    {
-	      rtx reg = gen_reg_rtx (Pmode);
 	      if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
 		{
-		  emit_insn (gen_pcalau12i (Pmode, reg, loongarch_tls_symbol));
-		  rtx call = gen_call_value_internal_1 (Pmode, v0, reg,
-							loongarch_tls_symbol,
-							const0_rtx);
-		  insn = emit_call_insn (call);
+		  rtx call;
+
+		 if (HAVE_AS_SUPPORT_CALL36)
+		   call = gen_call_value_internal (v0, loongarch_tls_symbol,
+						   const0_rtx);
+		 else
+		   {
+		     rtx reg = gen_reg_rtx (Pmode);
+		     emit_insn (gen_pcalau12i (Pmode, reg,
+					       loongarch_tls_symbol));
+		     call = gen_call_value_internal_1 (Pmode, v0, reg,
+						       loongarch_tls_symbol,
+						       const0_rtx);
+		   }
+		 insn = emit_call_insn (call);
 		}
 	      else
 		{
+		  rtx reg = gen_reg_rtx (Pmode);
 		  emit_move_insn (reg, loongarch_tls_symbol);
 		  insn = emit_call_insn (gen_call_value_internal (v0,
 								  reg,
