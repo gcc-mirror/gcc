@@ -21889,86 +21889,6 @@ package body Sem_Prag is
                Check_Arg_Is_One_Of (Arg1, Name_Semaphore, Name_No);
             end if;
 
-         ----------------------------------
-         -- Preelaborable_Initialization --
-         ----------------------------------
-
-         --  pragma Preelaborable_Initialization (DIRECT_NAME);
-
-         when Pragma_Preelaborable_Initialization => Preelab_Init : declare
-            Ent : Entity_Id;
-
-         begin
-            Ada_2005_Pragma;
-            Check_Arg_Count (1);
-            Check_No_Identifiers;
-            Check_Arg_Is_Identifier (Arg1);
-            Check_Arg_Is_Local_Name (Arg1);
-            Check_First_Subtype (Arg1);
-            Ent := Entity (Get_Pragma_Arg (Arg1));
-
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Ghost_Pragma (N, Ent);
-
-            --  The pragma may come from an aspect on a private declaration,
-            --  even if the freeze point at which this is analyzed in the
-            --  private part after the full view.
-
-            if Has_Private_Declaration (Ent)
-              and then From_Aspect_Specification (N)
-            then
-               null;
-
-            --  Check appropriate type argument
-
-            elsif Is_Private_Type (Ent)
-              or else Is_Protected_Type (Ent)
-              or else (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent))
-
-              --  AI05-0028: The pragma applies to all composite types. Note
-              --  that we apply this binding interpretation to earlier versions
-              --  of Ada, so there is no Ada 2012 guard. Seems a reasonable
-              --  choice since there are other compilers that do the same.
-
-              or else Is_Composite_Type (Ent)
-            then
-               null;
-
-            else
-               Error_Pragma_Arg
-                 ("pragma % can only be applied to private, formal derived, "
-                  & "protected, or composite type", Arg1);
-            end if;
-
-            --  Give an error if the pragma is applied to a protected type that
-            --  does not qualify (due to having entries, or due to components
-            --  that do not qualify).
-
-            if Is_Protected_Type (Ent)
-              and then not Has_Preelaborable_Initialization (Ent)
-            then
-               Error_Msg_N
-                 ("protected type & does not have preelaborable "
-                  & "initialization", Ent);
-
-            --  Otherwise mark the type as definitely having preelaborable
-            --  initialization.
-
-            else
-               Set_Known_To_Have_Preelab_Init (Ent);
-            end if;
-
-            if Has_Pragma_Preelab_Init (Ent)
-              and then Warn_On_Redundant_Constructs
-            then
-               Error_Pragma ("?r?duplicate pragma%!");
-            else
-               Set_Has_Pragma_Preelab_Init (Ent);
-            end if;
-         end Preelab_Init;
-
          --------------------
          -- Persistent_BSS --
          --------------------
@@ -22056,6 +21976,86 @@ package body Sem_Prag is
                Persistent_BSS_Mode := True;
             end if;
          end Persistent_BSS;
+
+         ----------------------------------
+         -- Preelaborable_Initialization --
+         ----------------------------------
+
+         --  pragma Preelaborable_Initialization (DIRECT_NAME);
+
+         when Pragma_Preelaborable_Initialization => Preelab_Init : declare
+            Ent : Entity_Id;
+
+         begin
+            Ada_2005_Pragma;
+            Check_Arg_Count (1);
+            Check_No_Identifiers;
+            Check_Arg_Is_Identifier (Arg1);
+            Check_Arg_Is_Local_Name (Arg1);
+            Check_First_Subtype (Arg1);
+            Ent := Entity (Get_Pragma_Arg (Arg1));
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Ent);
+
+            --  The pragma may come from an aspect on a private declaration,
+            --  even if the freeze point at which this is analyzed in the
+            --  private part after the full view.
+
+            if Has_Private_Declaration (Ent)
+              and then From_Aspect_Specification (N)
+            then
+               null;
+
+            --  Check appropriate type argument
+
+            elsif Is_Private_Type (Ent)
+              or else Is_Protected_Type (Ent)
+              or else (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent))
+
+              --  AI05-0028: The pragma applies to all composite types. Note
+              --  that we apply this binding interpretation to earlier versions
+              --  of Ada, so there is no Ada 2012 guard. Seems a reasonable
+              --  choice since there are other compilers that do the same.
+
+              or else Is_Composite_Type (Ent)
+            then
+               null;
+
+            else
+               Error_Pragma_Arg
+                 ("pragma % can only be applied to private, formal derived, "
+                  & "protected, or composite type", Arg1);
+            end if;
+
+            --  Give an error if the pragma is applied to a protected type that
+            --  does not qualify (due to having entries, or due to components
+            --  that do not qualify).
+
+            if Is_Protected_Type (Ent)
+              and then not Has_Preelaborable_Initialization (Ent)
+            then
+               Error_Msg_N
+                 ("protected type & does not have preelaborable "
+                  & "initialization", Ent);
+
+            --  Otherwise mark the type as definitely having preelaborable
+            --  initialization.
+
+            else
+               Set_Known_To_Have_Preelab_Init (Ent);
+            end if;
+
+            if Has_Pragma_Preelab_Init (Ent)
+              and then Warn_On_Redundant_Constructs
+            then
+               Error_Pragma ("?r?duplicate pragma%!");
+            else
+               Set_Has_Pragma_Preelab_Init (Ent);
+            end if;
+         end Preelab_Init;
 
          --------------------
          -- Rename_Pragma --
