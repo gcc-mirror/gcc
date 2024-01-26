@@ -37,8 +37,6 @@ public:
 
   void visit (AST::Function &type) override;
   void visit (AST::TraitItemType &type) override;
-  void visit (AST::TraitItemFunc &func) override;
-  void visit (AST::TraitItemMethod &func) override;
   void visit (AST::TraitItemConst &constant) override;
 
 private:

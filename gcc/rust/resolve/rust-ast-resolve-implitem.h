@@ -130,46 +130,6 @@ public:
     mappings->insert_canonical_path (function.get_node_id (), cpath);
   }
 
-  void visit (AST::TraitItemFunc &function) override
-  {
-    auto decl = CanonicalPath::new_seg (
-      function.get_node_id (),
-      function.get_trait_function_decl ().get_identifier ().as_string ());
-    auto path = prefix.append (decl);
-    auto cpath = canonical_prefix.append (decl);
-
-    resolver->get_name_scope ().insert (
-      path, function.get_node_id (), function.get_locus (), false,
-      Rib::ItemType::Function,
-      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	rich_location r (line_table, function.get_locus ());
-	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
-      });
-
-    mappings->insert_canonical_path (function.get_node_id (), cpath);
-  }
-
-  void visit (AST::TraitItemMethod &method) override
-  {
-    auto decl = CanonicalPath::new_seg (
-      method.get_node_id (),
-      method.get_trait_method_decl ().get_identifier ().as_string ());
-    auto path = prefix.append (decl);
-    auto cpath = canonical_prefix.append (decl);
-
-    resolver->get_name_scope ().insert (
-      path, method.get_node_id (), method.get_locus (), false,
-      Rib::ItemType::Function,
-      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	rich_location r (line_table, method.get_locus ());
-	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
-      });
-
-    mappings->insert_canonical_path (method.get_node_id (), cpath);
-  }
-
   void visit (AST::TraitItemConst &constant) override
   {
     auto decl

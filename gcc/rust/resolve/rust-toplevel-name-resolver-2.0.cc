@@ -229,16 +229,6 @@ TopLevel::visit (AST::StaticItem &static_item)
 }
 
 void
-TopLevel::visit (AST::TraitItemFunc &item)
-{
-  auto def_vis
-    = [this, &item] () { item.get_definition ()->accept_vis (*this); };
-
-  if (item.has_definition ())
-    ctx.scoped (Rib::Kind::Function, item.get_node_id (), def_vis);
-}
-
-void
 TopLevel::visit (AST::StructStruct &struct_item)
 {
   insert_or_error_out (struct_item.get_struct_name (), struct_item,

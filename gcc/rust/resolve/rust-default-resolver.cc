@@ -403,14 +403,6 @@ DefaultResolver::visit (AST::StaticItem &item)
 }
 
 void
-DefaultResolver::visit (AST::TraitItemFunc &)
-{}
-
-void
-DefaultResolver::visit (AST::TraitItemMethod &)
-{}
-
-void
 DefaultResolver::visit (AST::TraitItemConst &)
 {}
 

@@ -42,8 +42,6 @@ public:
   void maybe_strip_closure_params (std::vector<AST::ClosureParam> &params);
   void maybe_strip_self_param (AST::SelfParam &self_param);
   void maybe_strip_where_clause (AST::WhereClause &where_clause);
-  void maybe_strip_trait_function_decl (AST::TraitFunctionDecl &decl);
-  void maybe_strip_trait_method_decl (AST::TraitMethodDecl &decl);
 
   /**
    * maybe_strip a set of values, erasing them if they are marked for strip.
@@ -145,8 +143,6 @@ public:
   void visit (AST::Union &union_item) override;
   void visit (AST::ConstantItem &const_item) override;
   void visit (AST::StaticItem &static_item) override;
-  void visit (AST::TraitItemFunc &item) override;
-  void visit (AST::TraitItemMethod &item) override;
   void visit (AST::TraitItemConst &item) override;
   void visit (AST::TraitItemType &item) override;
   void visit (AST::Trait &trait) override;

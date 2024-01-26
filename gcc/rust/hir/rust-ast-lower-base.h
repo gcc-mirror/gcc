@@ -177,8 +177,6 @@ public:
   virtual void visit (AST::Union &union_item);
   virtual void visit (AST::ConstantItem &const_item);
   virtual void visit (AST::StaticItem &static_item);
-  virtual void visit (AST::TraitItemFunc &item);
-  virtual void visit (AST::TraitItemMethod &item);
   virtual void visit (AST::TraitItemConst &item);
   virtual void visit (AST::TraitItemType &item);
   virtual void visit (AST::Trait &trait);

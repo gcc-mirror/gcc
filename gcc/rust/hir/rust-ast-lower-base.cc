@@ -321,12 +321,6 @@ void
 ASTLoweringBase::visit (AST::StaticItem &)
 {}
 void
-ASTLoweringBase::visit (AST::TraitItemFunc &)
-{}
-void
-ASTLoweringBase::visit (AST::TraitItemMethod &)
-{}
-void
 ASTLoweringBase::visit (AST::TraitItemConst &)
 {}
 void
