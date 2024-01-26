@@ -4981,7 +4981,7 @@ loongarch_output_move (rtx dest, rtx src)
 	  if (type == SYMBOL_TLS_LE)
 	    return "lu12i.w\t%0,%h1";
 	  else
-	    return "pcalau12i\t%0,%h1";
+	    return "%Q1pcalau12i\t%0,%h1";
 	}
 
       if (src_code == CONST_INT)
@@ -6145,6 +6145,7 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
    'L'  Print the low-part relocation associated with OP.
    'm'	Print one less than CONST_INT OP in decimal.
    'N'	Print the inverse of the integer branch condition for comparison OP.
+   'Q'  Print R_LARCH_RELAX for TLS IE.
    'r'  Print address 12-31bit relocation associated with OP.
    'R'  Print address 32-51bit relocation associated with OP.
    'T'	Print 'f' for (eq:CC ...), 't' for (ne:CC ...),
@@ -6280,6 +6281,18 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
     case 'N':
       loongarch_print_int_branch_condition (file, reverse_condition (code),
 					    letter);
+      break;
+
+    case 'Q':
+      if (!TARGET_LINKER_RELAXATION)
+	break;
+
+      if (code == HIGH)
+	op = XEXP (op, 0);
+
+      if (loongarch_classify_symbolic_expression (op) == SYMBOL_TLS_IE)
+	fprintf (file, ".reloc\t.,R_LARCH_RELAX\n\t");
+
       break;
 
     case 'r':

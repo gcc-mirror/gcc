@@ -2620,7 +2620,7 @@
 				(match_operand:P 2 "symbolic_operand")))]
 	UNSPEC_LOAD_FROM_GOT))]
   ""
-  "ld.<d>\t%0,%1,%L2"
+  "%Q2ld.<d>\t%0,%1,%L2"
   [(set_attr "type" "move")]
 )
 
