@@ -1427,6 +1427,8 @@ init_hsa_runtime_functions (void)
 #undef DLSYM_FN
 }
 
+static gcn_isa isa_code (const char *isa);
+
 /* Return true if the agent is a GPU and can accept of concurrent submissions
    from different threads.  */
 
@@ -1443,6 +1445,18 @@ suitable_hsa_agent_p (hsa_agent_t agent)
   switch (device_type)
     {
     case HSA_DEVICE_TYPE_GPU:
+      {
+	char name[64];
+	hsa_status_t status
+	  = hsa_fns.hsa_agent_get_info_fn (agent, HSA_AGENT_INFO_NAME, name);
+	if (status != HSA_STATUS_SUCCESS
+	    || isa_code (name) == EF_AMDGPU_MACH_UNSUPPORTED)
+	  {
+	    GCN_DEBUG ("Ignoring unsupported agent '%s'\n",
+		       status == HSA_STATUS_SUCCESS ? name : "invalid");
+	    return false;
+	  }
+      }
       break;
     case HSA_DEVICE_TYPE_CPU:
       if (!support_cpu_devices)
