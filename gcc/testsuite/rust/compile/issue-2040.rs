@@ -4,7 +4,7 @@ trait Foo {
 
 impl Foo for u32 {
     const fn f() -> u32 {
-        // { dg-error "functions in traits cannot be declared const" "" { target *-*-* } .-1 }
+        // { dg-error "functions in traits cannot be declared .const." "" { target *-*-* } .-1 }
         22
     }
 }
