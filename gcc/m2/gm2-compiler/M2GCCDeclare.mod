@@ -4060,6 +4060,7 @@ END PrintProcedure ;
 
 PROCEDURE PrintVerboseFromList (l: List; i: CARDINAL) ;
 VAR
+   len,
    type,
    low,
    high,
@@ -4227,7 +4228,9 @@ BEGIN
          ELSIF IsConstStringCnul (sym)
          THEN
             printf0(' a nul terminated C string')
-         END
+         END ;
+         len := GetStringLength (sym) ;
+         printf1(' length %d', len)
       ELSIF IsConstructor(sym)
       THEN
          printf0(' constant constructor ') ;

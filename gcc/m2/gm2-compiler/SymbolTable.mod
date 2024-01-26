@@ -5373,6 +5373,7 @@ BEGIN
 
       ConstStringSym: ConstString.Length := LengthKey (contents) ;
                       ConstString.Contents := contents ;
+                      InitWhereDeclaredTok (tok, ConstString.At) ;
                       InitWhereFirstUsedTok (tok, ConstString.At) |
 
       ConstVarSym   : (* ok altering this to ConstString *)

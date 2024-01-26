@@ -3606,7 +3606,6 @@ BEGIN
       PopTrwtok (Des, w, destok) ;
       MarkAsWrite (w) ;
       CheckCompatibleWithBecomes (Des, Exp, destok, exptok) ;
-      combinedtok := MakeVirtualTok (becomesTokNo, destok, exptok) ;
       IF DebugTokPos
       THEN
          MetaErrorT1 (becomesTokNo, 'becomestok {%1Oad}', Des) ;
@@ -3629,7 +3628,7 @@ BEGIN
          CheckBecomesMeta (Des, Exp, combinedtok, destok, exptok)
       END ;
       (* Simple assignment.  *)
-      MoveWithMode (becomesTokNo, Des, Exp, Array, destok, exptok, checkOverflow) ;
+      MoveWithMode (combinedtok, Des, Exp, Array, destok, exptok, checkOverflow) ;
       IF checkTypes
       THEN
          (*
@@ -5428,13 +5427,14 @@ BEGIN
                               Actual, FormalI, Proc, i)
             ELSIF IsConstString (Actual)
             THEN
-               IF (GetStringLength (Actual) = 0)   (* if = 0 then it maybe unknown at this time *)
+               IF (GetStringLength (Actual) = 0)   (* If = 0 then it maybe unknown at this time.  *)
                THEN
-                  (* dont check this yet *)
+                  (* We dont check this yet, it is checked in M2GenGCC.mod:CodeParam
+                     after the string has been created.  *)
                ELSIF IsArray(GetDType(FormalI)) AND (GetSType(GetDType(FormalI))=Char)
                THEN
-                  (* allow string literals to be passed to ARRAY [0..n] OF CHAR *)
-               ELSIF (GetStringLength(Actual) = 1)   (* if = 1 then it maybe treated as a char *)
+                  (* Allow string literals to be passed to ARRAY [0..n] OF CHAR.  *)
+               ELSIF (GetStringLength(Actual) = 1)   (* If = 1 then it maybe treated as a char.  *)
                THEN
                   CheckParameter (paramtok, Actual, Dim, FormalI, Proc, i, NIL)
                ELSIF NOT IsUnboundedParam(Proc, i)
@@ -5864,8 +5864,9 @@ VAR
    ExpectType: CARDINAL ;
    s, s1, s2 : String ;
 BEGIN
-   MetaError2 ('parameter mismatch between the {%2N} parameter of procedure {%1Ead}',
-               ProcedureSym, ParameterNo) ;
+   MetaErrorT2 (tokpos,
+                'parameter mismatch between the {%2N} parameter of procedure {%1Ead}',
+                ProcedureSym, ParameterNo) ;
    s := InitString ('{%kPROCEDURE} {%1Eau} (') ;
    IF NoOfParam(ProcedureSym)>=ParameterNo
    THEN
@@ -5905,7 +5906,13 @@ BEGIN
    s := ConCat (s, Mark (InitString ('){%1Tau:% : {%1Tau}} ;'))) ;
    MetaErrorStringT1 (First, Dup (s), ProcedureSym) ;
    MetaErrorStringT1 (tokpos, s, ProcedureSym) ;
-   MetaError1 ('item being passed is {%1EDda} {%1Dad} of type {%1Dtsd}', Given)
+   IF GetLType (Given) = NulSym
+   THEN
+      MetaError1 ('item being passed is {%1EDda} {%1Dad}', Given)
+   ELSE
+      MetaError1 ('item being passed is {%1EDda} {%1Dad} of type {%1Dts}',
+                  Given)
+   END
 END FailParameter ;
 
 
@@ -12461,6 +12468,8 @@ BEGIN
       ELSE
          (* CheckForGenericNulSet(e1, e2, t1, t2) *)
       END ;
+      OldPos := OperatorPos ;
+      OperatorPos := MakeVirtualTok (OperatorPos, leftpos, rightpos) ;
       IF (Operator = PlusTok) AND IsConstString(left) AND IsConstString(right)
       THEN
          (* handle special addition for constant strings *)
@@ -12469,8 +12478,6 @@ BEGIN
          value := MakeConstLitString (OperatorPos, makekey (string (s))) ;
          s := KillString (s)
       ELSE
-         OldPos := OperatorPos ;
-         OperatorPos := MakeVirtualTok (OperatorPos, leftpos, rightpos) ;
          IF checkTypes
          THEN
             BuildRange (InitTypesExpressionCheck (OperatorPos, left, right, FALSE, FALSE))
