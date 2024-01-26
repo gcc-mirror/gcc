@@ -1,7 +1,6 @@
 /* PR rtl-optimization/105314 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
-/* { dg-final { scan-assembler-not "\tbeq\t" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Os" "-Oz" } } */
 
 long
 foo (long a, long b, long c)
@@ -10,3 +9,5 @@ foo (long a, long b, long c)
     a = 0;
   return a;
 }
+
+/* { dg-final { scan-assembler-not "\\s(?:beq|bne)\\s" } } */
