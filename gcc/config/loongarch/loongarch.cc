@@ -4157,6 +4157,37 @@ loongarch_vector_costs::determine_suggested_unroll_factor (loop_vec_info loop_vi
   return 1 << ceil_log2 (uf);
 }
 
+/* Check if assign stmt rhs op comes from a multiply-add operation.  */
+static bool
+loongarch_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info)
+{
+  gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
+  if (!assign)
+    return false;
+  tree_code code = gimple_assign_rhs_code (assign);
+  if (code != PLUS_EXPR && code != MINUS_EXPR)
+    return false;
+
+  auto is_mul_result = [&](int i)
+    {
+      tree rhs = gimple_op (assign, i);
+      if (TREE_CODE (rhs) != SSA_NAME)
+	return false;
+
+      stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
+      if (!def_stmt_info
+	  || STMT_VINFO_DEF_TYPE (def_stmt_info) != vect_internal_def)
+	return false;
+      gassign *rhs_assign = dyn_cast<gassign *> (def_stmt_info->stmt);
+      if (!rhs_assign || gimple_assign_rhs_code (rhs_assign) != MULT_EXPR)
+	return false;
+
+      return true;
+    };
+
+  return is_mul_result (1) || is_mul_result (2);
+}
+
 unsigned
 loongarch_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				       stmt_vec_info stmt_info, slp_tree,
@@ -4169,6 +4200,23 @@ loongarch_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     {
       int stmt_cost = loongarch_builtin_vectorization_cost (kind, vectype,
 							    misalign);
+      if (vectype && stmt_info)
+	{
+	  gassign *assign = dyn_cast<gassign *> (STMT_VINFO_STMT (stmt_info));
+	  machine_mode mode = TYPE_MODE (vectype);
+
+	  /* We found through testing that this strategy (the stmt that
+	     matches the multiply-add pattern) has positive returns only
+	     when applied to the 128-bit vector stmt, so this restriction
+	     is currently made.  */
+	  if (kind == vector_stmt && GET_MODE_SIZE (mode) == 16 && assign)
+	    {
+	      if (!vect_is_reduction (stmt_info)
+		  && loongarch_multiply_add_p (m_vinfo, stmt_info))
+		stmt_cost = 0;
+	    }
+	}
+
       retval = adjust_cost_for_freq (stmt_info, where, count * stmt_cost);
       m_costs[where] += retval;
 
