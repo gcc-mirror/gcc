@@ -1330,7 +1330,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Contract, Node_Kind,
        (Sm (Classifications, Node_Id),
         Sm (Contract_Test_Cases, Node_Id),
-        Sm (Is_Expanded_Contract, Flag),
         Sm (Pre_Post_Conditions, Node_Id)));
 
    Cc (N_Derived_Type_Definition, Node_Kind,

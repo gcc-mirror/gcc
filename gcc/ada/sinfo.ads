@@ -1720,10 +1720,6 @@ package Sinfo is
    --    actuals to support a build-in-place style of call have been added to
    --    the call.
 
-   --  Is_Expanded_Contract
-   --    Present in N_Contract nodes. Set if the contract has already undergone
-   --    expansion activities.
-
    --  Is_Generic_Contract_Pragma
    --    This flag is present in N_Pragma nodes. It is set when the pragma is
    --    a source construct, applies to a generic unit or its body, and denotes
@@ -7959,7 +7955,6 @@ package Sinfo is
       --  Pre_Post_Conditions (set to Empty if none)
       --  Contract_Test_Cases (set to Empty if none)
       --  Classifications (set to Empty if none)
-      --  Is_Expanded_Contract
 
       --  Pre_Post_Conditions contains a collection of pragmas that correspond
       --  to pre- and postconditions associated with an entry or a subprogram

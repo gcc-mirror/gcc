@@ -254,7 +254,6 @@ package Gen_IL.Fields is
       Is_Elsif,
       Is_Entry_Barrier_Function,
       Is_Expanded_Build_In_Place_Call,
-      Is_Expanded_Contract,
       Is_Folded_In_Parser,
       Is_Generic_Contract_Pragma,
       Is_Homogeneous_Aggregate,
