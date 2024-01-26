@@ -46,6 +46,94 @@ ResolveTraitItems::go (AST::AssociatedItem *item, const CanonicalPath &prefix,
 }
 
 void
+ResolveTraitItems::visit (AST::Function &function)
+{
+  auto decl
+    = CanonicalPath::new_seg (function.get_node_id (),
+			      function.get_function_name ().as_string ());
+  auto path = prefix.append (decl);
+  auto cpath = canonical_prefix.append (decl);
+  mappings->insert_canonical_path (function.get_node_id (), cpath);
+
+  NodeId scope_node_id = function.get_node_id ();
+  resolver->get_name_scope ().push (scope_node_id);
+  resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
+  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+  if (function.has_generics ())
+    for (auto &generic : function.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+
+  if (function.has_return_type ())
+    ResolveType::go (function.get_return_type ().get ());
+
+  // self turns into (self: Self) as a function param
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
+  // we make a new scope so the names of parameters are resolved and shadowed
+  // correctly
+  for (auto &p : function.get_function_params ())
+    {
+      if (p->is_variadic ())
+	{
+	  auto param = static_cast<AST::VariadicParam *> (p.get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
+      else if (p->is_self ())
+	{
+	  auto param = static_cast<AST::SelfParam *> (p.get ());
+	  // FIXME: which location should be used for Rust::Identifier `self`?
+	  AST::IdentifierPattern self_pattern (
+	    param->get_node_id (), {"self"}, param->get_locus (),
+	    param->get_has_ref (), param->get_is_mut (),
+	    std::unique_ptr<AST::Pattern> (nullptr));
+
+	  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
+
+	  if (param->has_type ())
+	    {
+	      // This shouldn't happen the parser should already error for this
+	      rust_assert (!param->get_has_ref ());
+	      ResolveType::go (param->get_type ().get ());
+	    }
+	  else
+	    {
+	      // here we implicitly make self have a type path of Self
+	      std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
+	      segments.push_back (std::unique_ptr<AST::TypePathSegment> (
+		new AST::TypePathSegment ("Self", false, param->get_locus ())));
+
+	      AST::TypePath self_type_path (std::move (segments),
+					    param->get_locus ());
+	      ResolveType::go (&self_type_path);
+	    }
+	}
+      else
+	{
+	  auto param = static_cast<AST::FunctionParam *> (p.get ());
+	  ResolveType::go (param->get_type ().get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
+    }
+
+  if (function.has_where_clause ())
+    ResolveWhereClause::Resolve (function.get_where_clause ());
+
+  // trait items have an optional body
+  if (function.has_body ())
+    ResolveExpr::go (function.get_definition ()->get (), path, cpath);
+
+  resolver->get_name_scope ().pop ();
+  resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
+}
+void
 ResolveTraitItems::visit (AST::TraitItemType &type)
 {
   auto decl = CanonicalPath::new_seg (type.get_node_id (),

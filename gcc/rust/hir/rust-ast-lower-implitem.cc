@@ -228,6 +228,92 @@ ASTLowerTraitItem::translate (AST::AssociatedItem *item)
 }
 
 void
+ASTLowerTraitItem::visit (AST::Function &func)
+{
+  std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+  HIR::WhereClause where_clause (std::move (where_clause_items));
+  HIR::FunctionQualifiers qualifiers
+    = lower_qualifiers (func.get_qualifiers ());
+
+  std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+  if (func.has_generics ())
+    generic_params = lower_generic_params (func.get_generic_params ());
+
+  std::unique_ptr<HIR::Type> return_type
+    = func.has_return_type () ? std::unique_ptr<HIR::Type> (
+	ASTLoweringType::translate (func.get_return_type ().get ()))
+			      : nullptr;
+
+  // set self parameter to error if this is a method
+  // else lower to hir
+  HIR::SelfParam self_param = func.has_self_param ()
+				? lower_self (func.get_self_param ())
+				: HIR::SelfParam::error ();
+
+  std::vector<HIR::FunctionParam> function_params;
+  for (auto &p : func.get_function_params ())
+    {
+      if (p->is_variadic () || p->is_self ())
+	continue;
+
+      auto param = static_cast<AST::FunctionParam *> (p.get ());
+
+      auto translated_pattern = std::unique_ptr<HIR::Pattern> (
+	ASTLoweringPattern::translate (param->get_pattern ().get ()));
+      auto translated_type = std::unique_ptr<HIR::Type> (
+	ASTLoweringType::translate (param->get_type ().get ()));
+
+      auto crate_num = mappings->get_current_crate ();
+      Analysis::NodeMapping mapping (crate_num, param->get_node_id (),
+				     mappings->get_next_hir_id (crate_num),
+				     UNKNOWN_LOCAL_DEFID);
+
+      auto hir_param
+	= HIR::FunctionParam (mapping, std::move (translated_pattern),
+			      std::move (translated_type), param->get_locus ());
+      function_params.push_back (hir_param);
+    }
+
+  HIR::TraitFunctionDecl decl (func.get_function_name (),
+			       std::move (qualifiers),
+			       std::move (generic_params),
+			       std::move (self_param),
+			       std::move (function_params),
+			       std::move (return_type),
+			       std::move (where_clause));
+  bool terminated = false;
+  std::unique_ptr<HIR::BlockExpr> block_expr
+    = func.has_body () ? std::unique_ptr<HIR::BlockExpr> (
+	ASTLoweringBlock::translate (func.get_definition ()->get (),
+				     &terminated))
+		       : nullptr;
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, func.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 mappings->get_next_localdef_id (crate_num));
+
+  auto *trait_item
+    = new HIR::TraitItemFunc (mapping, std::move (decl), std::move (block_expr),
+			      func.get_outer_attrs (), func.get_locus ());
+  translated = trait_item;
+  if (func.has_self_param ())
+    {
+      // insert mappings for self
+      mappings->insert_hir_self_param (&self_param);
+      mappings->insert_location (self_param.get_mappings ().get_hirid (),
+				 self_param.get_locus ());
+    }
+
+  // add the mappings for the function params at the end
+  for (auto &param : trait_item->get_decl ().get_function_params ())
+    {
+      mappings->insert_hir_param (&param);
+      mappings->insert_location (mapping.get_hirid (), param.get_locus ());
+    }
+}
+
+void
 ASTLowerTraitItem::visit (AST::TraitItemFunc &func)
 {
   AST::TraitFunctionDecl &ref = func.get_trait_function_decl ();
