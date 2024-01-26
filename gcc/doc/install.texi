@@ -1258,12 +1258,12 @@ default set of libraries is selected based on the value of
 
 @item amdgcn*-*-*
 @var{list} is a comma separated list of ISA names (allowed values: @code{fiji},
-@code{gfx900}, @code{gfx906}, @code{gfx908}, @code{gfx90a}). It ought not
-include the name of the default ISA, specified via @option{--with-arch}.  If
-@var{list} is empty, then there will be no multilibs and only the default
-run-time library will be built.  If @var{list} is @code{default} or
-@option{--with-multilib-list=} is not specified, then the default set of
-libraries is selected.
+@code{gfx900}, @code{gfx906}, @code{gfx908}, @code{gfx90a}, @code{gfx1030},
+@code{gfx1100}).  It ought not include the name of the default ISA, specified
+via @option{--with-arch}.  If @var{list} is empty, then there will be no
+multilibs and only the default run-time library will be built.  If @var{list}
+is @code{default} or @option{--with-multilib-list=} is not specified, then
+the default set of libraries is selected.
 
 @item arm*-*-*
 @var{list} is a comma separated list of @code{aprofile} and

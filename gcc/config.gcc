@@ -4564,7 +4564,7 @@ case "${target}" in
 			TM_MULTILIB_CONFIG=
 			;;
 		xdefault | xyes)
-			TM_MULTILIB_CONFIG=`echo "gfx900,gfx906,gfx908,gfx90a" | sed "s/${with_arch},\?//;s/,$//"`
+			TM_MULTILIB_CONFIG=`echo "gfx900,gfx906,gfx908,gfx90a,gfx1030,gfx1100" | sed "s/${with_arch},\?//;s/,$//"`
 			;;
 		*)
 			TM_MULTILIB_CONFIG="${with_multilib_list}"

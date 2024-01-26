@@ -21739,6 +21739,12 @@ Compile for CDNA1 Instinct MI100 series devices (gfx908).
 @item gfx90a
 Compile for CDNA2 Instinct MI200 series devices (gfx90a).
 
+@item gfx1030
+Compile for RDNA2 gfx1030 devices (GFX10 series).
+
+@item gfx1100
+Compile for RDNA3 gfx1100 devices (GFX11 series).
+
 @end table
 
 @opindex msram-ecc
