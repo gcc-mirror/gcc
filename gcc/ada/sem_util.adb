@@ -13484,6 +13484,28 @@ package body Sem_Util is
       return False;
    end Has_Effectively_Volatile_Component;
 
+   ------------------------
+   -- Has_Enabled_Aspect --
+   ------------------------
+
+   function Has_Enabled_Aspect
+     (Id : Entity_Id;
+      A  : Aspect_Id)
+      return Boolean
+   is
+      Asp : constant Node_Id := Find_Aspect (Id, A);
+   begin
+      if Present (Asp) then
+         if Present (Expression (Asp)) then
+            return Is_True (Static_Boolean (Expression (Asp)));
+         else
+            return True;
+         end if;
+      else
+         return False;
+      end if;
+   end Has_Enabled_Aspect;
+
    ----------------------------
    -- Has_Volatile_Component --
    ----------------------------
@@ -20356,11 +20378,7 @@ package body Sem_Util is
       --  for efficiency.
 
       return Ada_Version >= Ada_2022
-        and then Has_Aspect (Subp, Aspect_Static)
-        and then
-          (No (Find_Value_Of_Aspect (Subp, Aspect_Static))
-            or else Is_True (Static_Boolean
-                               (Find_Value_Of_Aspect (Subp, Aspect_Static))));
+        and then Has_Enabled_Aspect (Subp, Aspect_Static);
    end Is_Static_Function;
 
    -----------------------------

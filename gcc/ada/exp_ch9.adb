@@ -3835,13 +3835,7 @@ package body Exp_Ch9 is
                 Expression => New_Occurrence_Of (R, Loc));
          end if;
 
-         if Has_Aspect (Pid, Aspect_Exclusive_Functions)
-           and then
-             (No (Find_Value_Of_Aspect (Pid, Aspect_Exclusive_Functions))
-               or else
-                 Is_True (Static_Boolean (Find_Value_Of_Aspect
-                   (Pid, Aspect_Exclusive_Functions))))
-         then
+         if Has_Enabled_Aspect (Pid, Aspect_Exclusive_Functions) then
             Lock_Kind := RE_Lock;
          else
             Lock_Kind := RE_Lock_Read_Only;
@@ -4041,16 +4035,9 @@ package body Exp_Ch9 is
       if (Nkind (Op_Spec) = N_Procedure_Specification
             or else
           (Nkind (Op_Spec) = N_Function_Specification
-             and then Has_Aspect (Conc_Typ, Aspect_Exclusive_Functions)
              and then
-               (No
-                 (Find_Value_Of_Aspect (Conc_Typ,
-                    Aspect_Exclusive_Functions))
-                  or else
-                Is_True
-                  (Static_Boolean
-                     (Find_Value_Of_Aspect
-                        (Conc_Typ, Aspect_Exclusive_Functions))))))
+           Has_Enabled_Aspect
+             (Conc_Typ, Aspect_Exclusive_Functions)))
         and then Has_Entries (Conc_Typ)
       then
          case Corresponding_Runtime_Package (Conc_Typ) is

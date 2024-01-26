@@ -1559,6 +1559,12 @@ package Sem_Util is
    --  Given arbitrary type Typ, determine whether it contains at least one
    --  effectively volatile component.
 
+   function Has_Enabled_Aspect (Id : Entity_Id; A : Aspect_Id) return Boolean
+     with Pre => A in Boolean_Aspects;
+   --  Returns True if a Boolean-valued aspect is enabled on entity Id; i.e. it
+   --  is present and either has no aspect definition or its aspect definition
+   --  statically evaluates to True.
+
    function Has_Volatile_Component (Typ : Entity_Id) return Boolean;
    --  Given arbitrary type Typ, determine whether it contains at least one
    --  volatile component.
