@@ -6344,22 +6344,33 @@ gimple_lower_bitint (void)
 	      }
 	  }
       tree atype = NULL_TREE;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Mapping SSA_NAMEs to decls:\n");
       EXECUTE_IF_SET_IN_BITMAP (large_huge.m_names, 0, i, bi)
 	{
 	  tree s = ssa_name (i);
 	  int p = var_to_partition (large_huge.m_map, s);
-	  if (large_huge.m_vars[p] != NULL_TREE)
-	    continue;
-	  if (atype == NULL_TREE
-	      || !tree_int_cst_equal (TYPE_SIZE (atype),
-				      TYPE_SIZE (TREE_TYPE (s))))
+	  if (large_huge.m_vars[p] == NULL_TREE)
 	    {
-	      unsigned HOST_WIDE_INT nelts
-		= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (s))) / limb_prec;
-	      atype = build_array_type_nelts (large_huge.m_limb_type, nelts);
+	      if (atype == NULL_TREE
+		  || !tree_int_cst_equal (TYPE_SIZE (atype),
+					  TYPE_SIZE (TREE_TYPE (s))))
+		{
+		  unsigned HOST_WIDE_INT nelts
+		    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (s))) / limb_prec;
+		  atype = build_array_type_nelts (large_huge.m_limb_type,
+						  nelts);
+		}
+	      large_huge.m_vars[p] = create_tmp_var (atype, "bitint");
+	      mark_addressable (large_huge.m_vars[p]);
 	    }
-	  large_huge.m_vars[p] = create_tmp_var (atype, "bitint");
-	  mark_addressable (large_huge.m_vars[p]);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      print_generic_expr (dump_file, s, TDF_SLIM);
+	      fprintf (dump_file, " -> ");
+	      print_generic_expr (dump_file, large_huge.m_vars[p], TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
 	}
     }
 
