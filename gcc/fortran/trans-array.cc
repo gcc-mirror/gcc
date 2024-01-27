@@ -4063,7 +4063,10 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
     }
 
   decl = se->expr;
-  if (IS_CLASS_ARRAY (sym) && sym->attr.dummy && ar->as->type != AS_DEFERRED)
+  if (UNLIMITED_POLY(sym)
+      && IS_CLASS_ARRAY (sym)
+      && sym->attr.dummy
+      && ar->as->type != AS_DEFERRED)
     decl = sym->backend_decl;
 
   cst_offset = offset = gfc_index_zero_node;
