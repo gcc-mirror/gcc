@@ -3381,9 +3381,10 @@ static void
 ix86_set_func_type (tree fndecl)
 {
   /* No need to save and restore callee-saved registers for a noreturn
-     function with nothrow or compiled with -fno-exceptions.
+     function with nothrow or compiled with -fno-exceptions unless when
+     compiling with -O0 or -Og.
 
-     NB: Don't use TREE_THIS_VOLATILE to check if this is a noreturn
+     NB: Can't use just TREE_THIS_VOLATILE to check if this is a noreturn
      function.  The local-pure-const pass turns an interrupt function
      into a noreturn function by setting TREE_THIS_VOLATILE.  Normally
      the local-pure-const pass is run after ix86_set_func_type is called.
@@ -3391,8 +3392,11 @@ ix86_set_func_type (tree fndecl)
      function is marked as noreturn in the IR output, which leads the
      incompatible attribute error in LTO1.  */
   bool has_no_callee_saved_registers
-    = (((TREE_NOTHROW (fndecl) || !flag_exceptions)
-	&& lookup_attribute ("noreturn", DECL_ATTRIBUTES (fndecl)))
+    = ((TREE_THIS_VOLATILE (fndecl)
+	&& lookup_attribute ("noreturn", DECL_ATTRIBUTES (fndecl))
+	&& optimize
+	&& !optimize_debug
+	&& (TREE_NOTHROW (fndecl) || !flag_exceptions))
        || lookup_attribute ("no_callee_saved_registers",
 			    TYPE_ATTRIBUTES (TREE_TYPE (fndecl))));
 
