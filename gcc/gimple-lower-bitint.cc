@@ -6102,17 +6102,27 @@ gimple_lower_bitint (void)
 		      && (TREE_CODE (rhs1) != SSA_NAME
 			  || !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)))
 		    {
-		      if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
-			  || (bitint_precision_kind (TREE_TYPE (rhs1))
-			      < bitint_prec_large))
-			continue;
 		      if (is_gimple_assign (use_stmt))
 			switch (gimple_assign_rhs_code (use_stmt))
 			  {
-			  case MULT_EXPR:
 			  case TRUNC_DIV_EXPR:
 			  case TRUNC_MOD_EXPR:
 			  case FLOAT_EXPR:
+			    /* For division, modulo and casts to floating
+			       point, avoid representing unsigned operands
+			       using negative prec if they were sign-extended
+			       from narrower precision.  */
+			    if (TYPE_UNSIGNED (TREE_TYPE (s))
+				&& !TYPE_UNSIGNED (TREE_TYPE (rhs1))
+				&& (TYPE_PRECISION (TREE_TYPE (s))
+				    > TYPE_PRECISION (TREE_TYPE (rhs1))))
+			      goto force_name;
+			    /* FALLTHRU */
+			  case MULT_EXPR:
+			    if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
+				|| (bitint_precision_kind (TREE_TYPE (rhs1))
+				    < bitint_prec_large))
+			      continue;
 			    /* Uses which use handle_operand_addr can't
 			       deal with nested casts.  */
 			    if (TREE_CODE (rhs1) == SSA_NAME
@@ -6126,6 +6136,10 @@ gimple_lower_bitint (void)
 			  default:
 			    break;
 			}
+		      if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
+			  || (bitint_precision_kind (TREE_TYPE (rhs1))
+			      < bitint_prec_large))
+			continue;
 		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
 			   >= TYPE_PRECISION (TREE_TYPE (s)))
 			  && mergeable_op (use_stmt))
