@@ -2401,6 +2401,8 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
       rhs1 = gimple_assign_rhs1 (store_operand
 				 ? SSA_NAME_DEF_STMT (store_operand)
 				 : stmt);
+      if (TREE_CODE (rhs1) == VIEW_CONVERT_EXPR)
+	rhs1 = TREE_OPERAND (rhs1, 0);
       /* Optimize mergeable ops ending with widening cast to _BitInt
 	 (or followed by store).  We can lower just the limbs of the
 	 cast operand and widen afterwards.  */
