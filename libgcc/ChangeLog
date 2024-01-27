@@ -1,3 +1,7 @@
+2024-01-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/amdgcn_veclib.h (CDNA3_PLUS): Handle RDNA3.
+
 2024-01-23  Zac Walker  <zacwalker@microsoft.com>
 
 	* config/aarch64/aarch64-asm.h (HIDDEN, SYMBOL_SIZE, SYMBOL_TYPE)

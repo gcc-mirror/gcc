@@ -1,3 +1,86 @@
+2024-01-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/Wattributes-3.C: Adjust expected warning.
+	* gcc.dg/fail_always_inline.c: Ditto.
+
+2024-01-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113580
+	* g++.dg/modules/pr113580_a.C: New test.
+	* g++.dg/modules/pr113580_b.C: New test.
+
+2024-01-26  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/cset-sext-rtl.c: New file.
+	* gcc.target/riscv/cset-sext-rtl32.c: New file.
+	* gcc.target/riscv/cset-sext-sfb-rtl.c: New file.
+	* gcc.target/riscv/cset-sext-sfb-rtl32.c: New file.
+	* gcc.target/riscv/cset-sext-thead-rtl.c: New file.
+	* gcc.target/riscv/cset-sext-ventana-rtl.c: New file.
+	* gcc.target/riscv/cset-sext-zicond-rtl.c: New file.
+	* gcc.target/riscv/cset-sext-zicond-rtl32.c: New file.
+
+2024-01-26  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/pr105314-rtl.c: New file.
+	* gcc.target/riscv/pr105314-rtl32.c: New file.
+
+2024-01-26  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/pr105314.c: Scan the RTL "ce1" pass too.
+
+2024-01-26  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/pr105314.c: Replace `dg-options' command with
+	`dg-skip-if'.  Also reject "bne" with `dg-final'.
+
+2024-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/pim/fail/badpointer4.mod: New test.
+	* gm2/pim/fail/strconst.def: New test.
+
+2024-01-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/112899
+	* g++.dg/modules/init-4_a.C: New test.
+	* g++.dg/modules/init-4_b.C: New test.
+	* g++.dg/modules/init-6_a.H: New test.
+	* g++.dg/modules/init-6_b.C: New test.
+
+2024-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113602
+	* gcc.dg/pr113602.c: New testcase.
+
+2024-01-26  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/vect-extract.c: New test.
+
+2024-01-26  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/short-circuit.c: New test.
+
+2024-01-26  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.dg/signbit-2.c: Added additional "-mlsx" compilation options.
+	* gfortran.dg/graphite/vect-pr40979.f90: Dito.
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Dito.
+
+2024-01-26  Li Wei  <liwei@loongson.cn>
+
+	* gcc.target/loongarch/invariant-recip.c: New test.
+
+2024-01-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/109705
+	* gcc.dg/vect/pr25413a.c: Expect 1 vectorized loops for !vect_long_mult
+	and 2 for vect_long_mult.
+
+2024-01-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113469
+	* gcc.target/riscv/rvv/autovec/pr113469.c: New test.
+
 2024-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/113599

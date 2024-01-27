@@ -1,3 +1,33 @@
+2024-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Check.mod (dumpIndice): New procedure.
+	(dumpIndex): New procedure.
+	(dumptInfo): New procedure.
+	(buildError4): Add comment and pass formal and actual to
+	MetaError4.  Improve text describing error.
+	(buildError2): Generate different error descriptions for
+	the three error kinds.
+	(checkConstMeta): Add block comment.  Add more meta checks
+	and call doCheckPair to complete string const checking.
+	Add tinfo parameter.
+	(checkConstEquivalence): Add tinfo parameter.
+	* gm2-compiler/M2GCCDeclare.mod (PrintVerboseFromList):
+	Print the length of a const string.
+	* gm2-compiler/M2GenGCC.mod (CodeParam): Remove parameters
+	op1, op2 and op3.
+	(doParam): Add paramtok parameter.  Use paramtok instead rather
+	than CurrentQuadToken.
+	(CodeParam): Rewrite.
+	* gm2-compiler/M2Quads.mod (CheckProcedureParameters):
+	Add comments explaining that const strings are not checked
+	in M2Quads.mod.
+	(FailParameter): Use MetaErrorT2 with tokpos rather than
+	MetaError2.
+	(doBuildBinaryOp): Assign OldPos and OperatorPos before the
+	IF block.
+	* gm2-compiler/SymbolTable.mod (PutConstString): Add call to
+	InitWhereDeclaredTok.
+
 2024-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-libs/libc.def (lseek): Change the second parameter

@@ -1,3 +1,27 @@
+2024-01-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113580
+	* module.cc (struct post_process_data): Create.
+	(trees_in::post_decls): Use.
+	(trees_in::post_process): Return entire vector at once.
+	Change overload to take post_process_data instead of tree.
+	(trees_out::write_function_def): Write needed flags from
+	DECL_STRUCT_FUNCTION.
+	(trees_in::read_function_def): Read them and pass to
+	post_process.
+	(module_state::read_cluster): Write flags into cfun.
+
+2024-01-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/112899
+	* cp-tree.h (note_variable_template_instantiation): Rename to...
+	(note_vague_linkage_variable): ...this.
+	* decl2.cc (note_variable_template_instantiation): Rename to...
+	(note_vague_linkage_variable): ...this.
+	* pt.cc (instantiate_decl): Rename usage of above function.
+	* module.cc (trees_in::read_var_def): Remember pending statics
+	that we stream in.
+
 2024-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/113599

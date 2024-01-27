@@ -1,3 +1,78 @@
+2024-01-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* cgraphunit.cc (process_function_and_variable_attributes): Tweak
+	the warning for an attribute-always_inline without inline declaration.
+
+2024-01-26  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR other/113575
+	* genopinit.cc (main): Split init_all_optabs into functions
+	of 1000 patterns each.
+
+2024-01-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config.gcc (amdgcn-*-*): Add gfx1030 and gfx1100 to
+	TM_MULTILIB_CONFIG.
+	* doc/install.texi (Configuration amdgcn-*-*): Mention gfx1030/gfx1100.
+	* doc/invoke.texi (AMD GCN Options): Add gfx1030 and gfx1100 to
+	-march/-mtune.
+
+2024-01-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-opts.h (TARGET_PACKED_WORK_ITEMS): Add TARGET_RDNA3.
+	* config/gcn/gcn-valu.md (all_convert): New iterator.
+	(<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>): New
+	define_expand, and rename the old one to ...
+	(*<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>_sdwa<exec>): ... this.
+	(extend<V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>): Likewise, to ...
+	(extend<V_INT_1REG_ALT:mode><V_INT_1REG:mode>_sdwa<exec>): .. this.
+	(*<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>_shift<exec>): New.
+	* config/gcn/gcn.cc (gcn_global_address_p): Use "offsetbits" correctly.
+	(gcn_hsa_declare_function_name): Update the vgpr counting for gfx1100.
+	* config/gcn/gcn.md (<u>mulhisi3): Disable on RDNA3.
+	(<u>mulqihi3_scalar): Likewise.
+
+2024-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113602
+	* tree-data-ref.cc (dr_analyze_innermost): Fail when
+	the base object isn't addressable.
+
+2024-01-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-hsa.h (ABI_VERSION_SPEC): New; creates the
+	"--amdhsa-code-object-version=" argument.
+	(ASM_SPEC): Use it; replace previous version of it.
+
+2024-01-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::earliest_fuse_vsetvl_info): Refine some codes.
+	(pre_vsetvl::emit_vsetvl): Ditto.
+
+2024-01-26  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_extract<mode>_0):
+	New define_insn_and_split patten.
+
+2024-01-26  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/loongarch.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Define.
+
+2024-01-26  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_emit_swdivsf): Adjust.
+
+2024-01-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113469
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::compute_lcm_local_properties): Fix bug.
+
+2024-01-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/100212
+	* config/aarch64/aarch64.cc (aarch64_classify_index): Avoid
+	undefined shift after the call to exact_log2.
+
 2024-01-25  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR target/100204

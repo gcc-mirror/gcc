@@ -1,3 +1,28 @@
+2024-01-26  Richard Biener  <rguenther@suse.de>
+
+	* plugin/plugin-gcn.c (suitable_hsa_agent_p): Filter out
+	agents with unsupported ISA.
+
+2024-01-26  Richard Biener  <rguenther@suse.de>
+
+	* plugin/plugin-gcn.c
+	(EF_AMDGPU_MACH::EF_AMDGPU_MACH_UNSUPPORTED): Add.
+	(isa_code): Return that instead of -1.
+	(GOMP_OFFLOAD_init_device): Adjust.
+
+2024-01-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4.h: Add variant functions
+	for gfx1030 and gfx1100.
+	* testsuite/libgomp.c/declare-variant-4-gfx1030.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1100.c: New test.
+
+2024-01-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/time.c (RTC_TICKS): Configure RDNA3.
+	(omp_get_wtime): Add RDNA3-compatible variant.
+	* plugin/plugin-gcn.c (max_isa_vgprs): Tune for gfx1030 and gfx1100.
+
 2024-01-24  Tobias Burnus  <tburnus@baylibre.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
