@@ -58,7 +58,9 @@
 */
 typedef struct call_context
 {
+#if !defined(__loongarch_soft_float)
   ABI_FLOAT fa[8];
+#endif
   size_t a[10];
 } call_context;
 
