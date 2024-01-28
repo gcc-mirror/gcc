@@ -1,3 +1,67 @@
+2024-01-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/helper-skb-ancestor-cgroup-id.c: Add constant
+	version of kernel helper static pointer.
+
+2024-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104908
+	* gfortran.dg/pr104908.f90: New test.
+
+2024-01-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/38534
+	* gcc.target/i386/pr38534-1.c: New file.
+	* gcc.target/i386/pr38534-2.c: Likewise.
+	* gcc.target/i386/pr38534-3.c: Likewise.
+	* gcc.target/i386/pr38534-4.c: Likewise.
+	* gcc.target/i386/stack-check-17.c: Updated.
+
+2024-01-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103503
+	PR target/113312
+	* gcc.dg/torture/no-callee-saved-run-1a.c: New file.
+	* gcc.dg/torture/no-callee-saved-run-1b.c: Likewise.
+	* gcc.target/i386/no-callee-saved-1.c: Likewise.
+	* gcc.target/i386/no-callee-saved-2.c: Likewise.
+	* gcc.target/i386/no-callee-saved-3.c: Likewise.
+	* gcc.target/i386/no-callee-saved-4.c: Likewise.
+	* gcc.target/i386/no-callee-saved-5.c: Likewise.
+	* gcc.target/i386/no-callee-saved-6.c: Likewise.
+	* gcc.target/i386/no-callee-saved-7.c: Likewise.
+	* gcc.target/i386/no-callee-saved-8.c: Likewise.
+	* gcc.target/i386/no-callee-saved-9.c: Likewise.
+	* gcc.target/i386/no-callee-saved-10.c: Likewise.
+	* gcc.target/i386/no-callee-saved-11.c: Likewise.
+	* gcc.target/i386/no-callee-saved-12.c: Likewise.
+	* gcc.target/i386/no-callee-saved-13.c: Likewise.
+	* gcc.target/i386/no-callee-saved-14.c: Likewise.
+	* gcc.target/i386/no-callee-saved-15.c: Likewise.
+	* gcc.target/i386/no-callee-saved-16.c: Likewise.
+	* gcc.target/i386/no-callee-saved-17.c: Likewise.
+	* gcc.target/i386/no-callee-saved-18.c: Likewise.
+
+2024-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113614
+	* gcc.dg/torture/bitint-54.c: New test.
+
+2024-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113568
+	* gcc.dg/bitint-78.c: New test.
+
+2024-01-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/105608
+	* g++.dg/pch/line-map-1.C: New test.
+	* g++.dg/pch/line-map-1.Hs: New test.
+	* g++.dg/pch/line-map-2.C: New test.
+	* g++.dg/pch/line-map-2.Hs: New test.
+	* g++.dg/pch/line-map-3.C: New test.
+	* g++.dg/pch/line-map-3.Hs: New test.
+
 2024-01-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* g++.dg/Wattributes-3.C: Adjust expected warning.

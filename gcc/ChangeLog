@@ -1,3 +1,69 @@
+2024-01-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/38534
+	* config/i386/i386-options.cc (ix86_set_func_type): Don't
+	save and restore callee saved registers for a noreturn function
+	with nothrow or compiled with -fno-exceptions.
+
+2024-01-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103503
+	PR target/113312
+	* config/i386/i386-expand.cc (ix86_expand_call): Replace
+	no_caller_saved_registers check with call_saved_registers check.
+	Clobber all registers that are not used by the callee with
+	no_callee_saved_registers attribute.
+	* config/i386/i386-options.cc (ix86_set_func_type): Set
+	call_saved_registers to TYPE_NO_CALLEE_SAVED_REGISTERS for
+	noreturn function.  Disallow no_callee_saved_registers with
+	interrupt or no_caller_saved_registers attributes together.
+	(ix86_set_current_function): Replace no_caller_saved_registers
+	check with call_saved_registers check.
+	(ix86_handle_no_caller_saved_registers_attribute): Renamed to ...
+	(ix86_handle_call_saved_registers_attribute): This.
+	(ix86_gnu_attributes): Add
+	ix86_handle_call_saved_registers_attribute.
+	* config/i386/i386.cc (ix86_conditional_register_usage): Replace
+	no_caller_saved_registers check with call_saved_registers check.
+	(ix86_function_ok_for_sibcall): Don't allow callee with
+	no_callee_saved_registers attribute when the calling function
+	has callee-saved registers.
+	(ix86_comp_type_attributes): Also check
+	no_callee_saved_registers.
+	(ix86_epilogue_uses): Replace no_caller_saved_registers check
+	with call_saved_registers check.
+	(ix86_hard_regno_scratch_ok): Likewise.
+	(ix86_save_reg): Replace no_caller_saved_registers check with
+	call_saved_registers check.  Don't save any registers for
+	TYPE_NO_CALLEE_SAVED_REGISTERS.  Save all registers with
+	TYPE_DEFAULT_CALL_SAVED_REGISTERS if function with
+	no_callee_saved_registers attribute is called.
+	(find_drap_reg): Replace no_caller_saved_registers check with
+	call_saved_registers check.
+	* config/i386/i386.h (call_saved_registers_type): New enum.
+	(machine_function): Replace no_caller_saved_registers with
+	call_saved_registers.
+	* doc/extend.texi: Document no_callee_saved_registers attribute.
+
+2024-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113614
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Don't merge
+	widening casts from signed to unsigned types with TRUNC_DIV_EXPR,
+	TRUNC_MOD_EXPR or FLOAT_EXPR uses.
+
+2024-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113568
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_mergeable_stmt):
+	For VIEW_CONVERT_EXPR use first operand of rhs1 instead of rhs1
+	in the widening extension checks.
+
+2024-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (gimple_lower_bitint): For
+	TDF_DETAILS dump mapping of SSA_NAMEs to decls.
+
 2024-01-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* cgraphunit.cc (process_function_and_variable_attributes): Tweak
