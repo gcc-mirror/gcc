@@ -756,6 +756,25 @@ struct OutBuffer
     }
 
     /**
+     * Write an array as a string of hexadecimal digits
+     * Params:
+     *     data = bytes to write
+     *     upperCase = whether to upper case hex digits A-F
+     */
+    void writeHexString(scope const(ubyte)[] data, bool upperCase) pure nothrow @safe
+    {
+        auto slice = this.allocate(2 * data.length);
+        const a = upperCase ? 'A' : 'a';
+        foreach (i, c; data)
+        {
+            char hi = (c >> 4) & 0xF;
+            slice[i * 2] = cast(char)(hi < 10 ? hi + '0' : hi - 10 + a);
+            char lo = c & 0xF;
+            slice[i * 2 + 1] = cast(char)(lo < 10 ? lo + '0' : lo - 10 + a);
+        }
+    }
+
+    /**
     Destructively saves the contents of `this` to `filename`. As an
     optimization, if the file already has identical contents with the buffer,
     no copying is done. This is because on SSD drives reading is often much
@@ -942,4 +961,12 @@ unittest
         assert(buf[] == "\r\nabc\r\n\r\n");
     else
         assert(buf[] == "\nabc\n\n");
+}
+
+unittest
+{
+    OutBuffer buf;
+    buf.writeHexString([0xAA, 0xBB], false);
+    buf.writeHexString([0xCC], true);
+    assert(buf[] == "aabbCC");
 }

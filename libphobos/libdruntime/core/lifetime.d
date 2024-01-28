@@ -3009,5 +3009,5 @@ version (D_ProfileGC)
 template TypeInfoSize(T)
 {
     import core.internal.traits : hasElaborateDestructor;
-    enum TypeInfoSize = hasElaborateDestructor!T ? size_t.sizeof : 0;
+    enum TypeInfoSize = (is (T == struct) && hasElaborateDestructor!T) ? size_t.sizeof : 0;
 }

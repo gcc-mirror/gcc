@@ -8,8 +8,6 @@ Source: $(DRUNTIMESRC core/internal/_array/_duplication.d)
 */
 module core.internal.array.duplication;
 
-private extern (C) void[] _d_newarrayU(const scope TypeInfo ti, size_t length) pure nothrow;
-
 U[] _dup(T, U)(scope T[] a) pure nothrow @trusted if (__traits(isPOD, T))
 {
     if (__ctfe)
@@ -22,8 +20,9 @@ U[] _dup(T, U)(scope T[] a) pure nothrow @trusted if (__traits(isPOD, T))
     else
     {
         import core.stdc.string : memcpy;
-        auto arr = _d_newarrayU(typeid(T[]), a.length);
-        memcpy(arr.ptr, cast(const(void)*) a.ptr, T.sizeof * a.length);
+        import core.internal.array.construction: _d_newarrayUPureNothrow;
+        auto arr = _d_newarrayUPureNothrow!T(a.length, is(T == shared));
+        memcpy(cast(void*) arr.ptr, cast(const(void)*) a.ptr, T.sizeof * a.length);
         return *cast(U[]*) &arr;
     }
 }
@@ -55,8 +54,9 @@ U[] _dup(T, U)(T[] a) if (!__traits(isPOD, T))
     else
     {
         import core.lifetime: copyEmplace;
+        import core.internal.array.construction: _d_newarrayU;
         U[] res = () @trusted {
-            auto arr = cast(U*) _d_newarrayU(typeid(T[]), a.length);
+            auto arr = cast(U*) _d_newarrayU!T(a.length, is(T == shared));
             size_t i;
             scope (failure)
             {

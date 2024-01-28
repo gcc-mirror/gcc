@@ -240,7 +240,7 @@ build_frontend_type (tree type)
       sdecl->sizeok = Sizeok::done;
       sdecl->type = (TypeStruct::create (sdecl))->addMod (mod);
       sdecl->type->ctype = type;
-      sdecl->type->merge2 ();
+      merge2 (sdecl->type);
 
       /* Add both named and anonymous fields as members of the struct.
 	 Anonymous fields still need a name in D, so call them "__pad%u".  */

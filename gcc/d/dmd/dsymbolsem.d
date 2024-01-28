@@ -38,11 +38,13 @@ import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.dtemplate;
 import dmd.dversion;
+import dmd.enumsem;
 import dmd.errors;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
@@ -440,6 +442,15 @@ private bool checkDeprecatedAliasThis(AliasThis at, const ref Loc loc, Scope* sc
     return false;
 }
 
+// Save the scope and defer semantic analysis on the Dsymbol.
+void deferDsymbolSemantic(Scope* sc, Dsymbol s, Scope *scx)
+{
+    s._scope = scx ? scx : sc.copy();
+    s._scope.setNoFree();
+    Module.addDeferredSemantic(s);
+}
+
+
 private extern(C++) final class DsymbolSemanticVisitor : Visitor
 {
     alias visit = Visitor.visit;
@@ -448,14 +459,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     this(Scope* sc) scope @safe
     {
         this.sc = sc;
-    }
-
-    // Save the scope and defer semantic analysis on the Dsymbol.
-    private void deferDsymbolSemantic(Dsymbol s, Scope *scx)
-    {
-        s._scope = scx ? scx : sc.copy();
-        s._scope.setNoFree();
-        Module.addDeferredSemantic(s);
     }
 
     override void visit(Dsymbol dsym)
@@ -2301,543 +2304,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(EnumDeclaration ed)
     {
-        //printf("EnumDeclaration::semantic(sd = %p, '%s') %s\n", sc.scopesym, sc.scopesym.toChars(), ed.toChars());
-        //printf("EnumDeclaration::semantic() %p %s\n", ed, ed.toChars());
-        if (ed.semanticRun >= PASS.semanticdone)
-            return; // semantic() already completed
-        if (ed.semanticRun == PASS.semantic)
-        {
-            assert(ed.memtype);
-            error(ed.loc, "circular reference to enum base type `%s`", ed.memtype.toChars());
-            ed.errors = true;
-            ed.semanticRun = PASS.semanticdone;
-            return;
-        }
-        Scope* scx = null;
-        if (ed._scope)
-        {
-            sc = ed._scope;
-            scx = ed._scope; // save so we don't make redundant copies
-            ed._scope = null;
-        }
-
-        if (!sc)
-            return;
-
-        ed.parent = sc.parent;
-        ed.type = ed.type.typeSemantic(ed.loc, sc);
-
-        ed.visibility = sc.visibility;
-        if (sc.stc & STC.deprecated_)
-            ed.isdeprecated = true;
-        ed.userAttribDecl = sc.userAttribDecl;
-        ed.cppnamespace = sc.namespace;
-
-        ed.semanticRun = PASS.semantic;
-        UserAttributeDeclaration.checkGNUABITag(ed, sc.linkage);
-        checkMustUseReserved(ed);
-
-        if (!ed.members && !ed.memtype) // enum ident;
-        {
-            ed.semanticRun = PASS.semanticdone;
-            return;
-        }
-
-        if (!ed.symtab)
-            ed.symtab = new DsymbolTable();
-
-        /* The separate, and distinct, cases are:
-         *  1. enum { ... }
-         *  2. enum : memtype { ... }
-         *  3. enum ident { ... }
-         *  4. enum ident : memtype { ... }
-         *  5. enum ident : memtype;
-         *  6. enum ident;
-         */
-
-        if (ed.memtype)
-        {
-            ed.memtype = ed.memtype.typeSemantic(ed.loc, sc);
-
-            /* Check to see if memtype is forward referenced
-             */
-            if (auto te = ed.memtype.isTypeEnum())
-            {
-                auto sym = te.toDsymbol(sc).isEnumDeclaration();
-                // Special enums like __c_[u]long[long] are fine to forward reference
-                // see https://issues.dlang.org/show_bug.cgi?id=20599
-                if (!sym.isSpecial() && (!sym.memtype ||  !sym.members || !sym.symtab || sym._scope))
-                {
-                    // memtype is forward referenced, so try again later
-                    deferDsymbolSemantic(ed, scx);
-                    //printf("\tdeferring %s\n", toChars());
-                    ed.semanticRun = PASS.initial;
-                    return;
-                }
-                else
-                    // Ensure that semantic is run to detect. e.g. invalid forward references
-                    sym.dsymbolSemantic(sc);
-            }
-            if (ed.memtype.ty == Tvoid)
-            {
-                .error(ed.loc, "%s `%s` base type must not be `void`", ed.kind, ed.toPrettyChars);
-                ed.memtype = Type.terror;
-            }
-            if (ed.memtype.ty == Terror)
-            {
-                ed.errors = true;
-                // poison all the members
-                ed.members.foreachDsymbol( (s) { s.errors = true; } );
-                ed.semanticRun = PASS.semanticdone;
-                return;
-            }
-        }
-
-        if (!ed.members) // enum ident : memtype;
-        {
-            ed.semanticRun = PASS.semanticdone;
-            return;
-        }
-
-        if (ed.members.length == 0)
-        {
-            .error(ed.loc, "%s `%s enum `%s` must have at least one member", ed.kind, ed.toPrettyChars, ed.toChars());
-            ed.errors = true;
-            ed.semanticRun = PASS.semanticdone;
-            return;
-        }
-
-        if (!(sc.flags & SCOPE.Cfile))  // C enum remains incomplete until members are done
-            ed.semanticRun = PASS.semanticdone;
-
-        version (none)
-        {
-            // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
-            // Deprecated in 2.100
-            // Make an error in 2.110
-            if (sc.stc & STC.scope_)
-                deprecation(ed.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
-        }
-
-        Scope* sce;
-        if (ed.isAnonymous())
-            sce = sc;
-        else
-        {
-            sce = sc.push(ed);
-            sce.parent = ed;
-        }
-        sce = sce.startCTFE();
-        sce.setNoFree(); // needed for getMaxMinValue()
-
-        /* Each enum member gets the sce scope
-         */
-        ed.members.foreachDsymbol( (s)
-        {
-            EnumMember em = s.isEnumMember();
-            if (em)
-                em._scope = sce;
-        });
-
-        /* addMember() is not called when the EnumDeclaration appears as a function statement,
-         * so we have to do what addMember() does and install the enum members in the right symbol
-         * table
-         */
-        addEnumMembersToSymtab(ed, sc, sc.getScopesym());
-
-        if (sc.flags & SCOPE.Cfile)
-        {
-            /* C11 6.7.2.2
-             */
-            Type commonType = ed.memtype;
-            if (!commonType)
-                commonType = Type.tint32;
-            ulong nextValue = 0;        // C11 6.7.2.2-3 first member value defaults to 0
-
-            // C11 6.7.2.2-2 value must be representable as an int.
-            // The sizemask represents all values that int will fit into,
-            // from 0..uint.max.  We want to cover int.min..uint.max.
-            IntRange ir = IntRange.fromType(commonType);
-
-            void emSemantic(EnumMember em, ref ulong nextValue)
-            {
-                static void errorReturn(EnumMember em)
-                {
-                    em.value = ErrorExp.get();
-                    em.errors = true;
-                    em.semanticRun = PASS.semanticdone;
-                }
-
-                em.semanticRun = PASS.semantic;
-                em.type = commonType;
-                em._linkage = LINK.c;
-                em.storage_class |= STC.manifest;
-                if (em.value)
-                {
-                    Expression e = em.value;
-                    assert(e.dyncast() == DYNCAST.expression);
-
-                    /* To merge the type of e with commonType, add 0 of type commonType
-                     */
-                    if (!ed.memtype)
-                        e = new AddExp(em.loc, e, new IntegerExp(em.loc, 0, commonType));
-
-                    e = e.expressionSemantic(sc);
-                    e = resolveProperties(sc, e);
-                    e = e.integralPromotions(sc);
-                    e = e.ctfeInterpret();
-                    if (e.op == EXP.error)
-                        return errorReturn(em);
-                    auto ie = e.isIntegerExp();
-                    if (!ie)
-                    {
-                        // C11 6.7.2.2-2
-                        .error(em.loc, "%s `%s` enum member must be an integral constant expression, not `%s` of type `%s`", em.kind, em.toPrettyChars, e.toChars(), e.type.toChars());
-                        return errorReturn(em);
-                    }
-                    if (ed.memtype && !ir.contains(getIntRange(ie)))
-                    {
-                        // C11 6.7.2.2-2
-                        .error(em.loc, "%s `%s` enum member value `%s` does not fit in `%s`", em.kind, em.toPrettyChars, e.toChars(), commonType.toChars());
-                        return errorReturn(em);
-                    }
-                    nextValue = ie.toInteger();
-                    if (!ed.memtype)
-                        commonType = e.type;
-                    em.value = new IntegerExp(em.loc, nextValue, commonType);
-                }
-                else
-                {
-                    // C11 6.7.2.2-3 add 1 to value of previous enumeration constant
-                    bool first = (em == (*em.ed.members)[0]);
-                    if (!first)
-                    {
-                        Expression max = getProperty(commonType, null, em.loc, Id.max, 0);
-                        if (nextValue == max.toInteger())
-                        {
-                            .error(em.loc, "%s `%s` initialization with `%s+1` causes overflow for type `%s`", em.kind, em.toPrettyChars, max.toChars(), commonType.toChars());
-                            return errorReturn(em);
-                        }
-                        nextValue += 1;
-                    }
-                    em.value = new IntegerExp(em.loc, nextValue, commonType);
-                }
-                em.type = commonType;
-                em.semanticRun = PASS.semanticdone;
-            }
-
-            ed.members.foreachDsymbol( (s)
-            {
-                if (EnumMember em = s.isEnumMember())
-                    emSemantic(em, nextValue);
-            });
-
-            if (!ed.memtype)
-            {
-                // cast all members to commonType
-                ed.members.foreachDsymbol( (s)
-                {
-                    if (EnumMember em = s.isEnumMember())
-                    {
-                        em.type = commonType;
-                        em.value = em.value.castTo(sc, commonType);
-                    }
-                });
-            }
-
-            ed.memtype = commonType;
-            ed.semanticRun = PASS.semanticdone;
-            return;
-        }
-
-        ed.members.foreachDsymbol( (s)
-        {
-            if (EnumMember em = s.isEnumMember())
-                em.dsymbolSemantic(em._scope);
-        });
-        //printf("defaultval = %lld\n", defaultval);
-
-        //if (defaultval) printf("defaultval: %s %s\n", defaultval.toChars(), defaultval.type.toChars());
-        //printf("members = %s\n", members.toChars());
+        enumSemantic(sc, ed);
     }
 
     override void visit(EnumMember em)
     {
-        //printf("EnumMember::semantic() %s\n", em.toChars());
-
-        void errorReturn()
-        {
-            em.errors = true;
-            em.semanticRun = PASS.semanticdone;
-        }
-
-        if (em.errors || em.semanticRun >= PASS.semanticdone)
-            return;
-        if (em.semanticRun == PASS.semantic)
-        {
-            .error(em.loc, "%s `%s` circular reference to `enum` member", em.kind, em.toPrettyChars);
-            return errorReturn();
-        }
-        assert(em.ed);
-
-        em.ed.dsymbolSemantic(sc);
-        if (em.ed.errors)
-            return errorReturn();
-        if (em.errors || em.semanticRun >= PASS.semanticdone)
-            return;
-
-        if (em._scope)
-            sc = em._scope;
-        if (!sc)
-            return;
-
-        em.semanticRun = PASS.semantic;
-
-        em.visibility = em.ed.isAnonymous() ? em.ed.visibility : Visibility(Visibility.Kind.public_);
-        em._linkage = LINK.d;
-        em.storage_class |= STC.manifest;
-
-        // https://issues.dlang.org/show_bug.cgi?id=9701
-        if (em.ed.isAnonymous())
-        {
-            if (em.userAttribDecl)
-                em.userAttribDecl.userAttribDecl = em.ed.userAttribDecl;
-            else
-                em.userAttribDecl = em.ed.userAttribDecl;
-        }
-
-        // Eval UDA in this same scope. Issues 19344, 20835, 21122
-        if (em.userAttribDecl)
-        {
-            // Set scope but avoid extra sc.uda attachment inside setScope()
-            auto inneruda = em.userAttribDecl.userAttribDecl;
-            em.userAttribDecl.setScope(sc);
-            em.userAttribDecl.userAttribDecl = inneruda;
-            em.userAttribDecl.dsymbolSemantic(sc);
-        }
-
-        // The first enum member is special
-        bool first = (em == (*em.ed.members)[0]);
-
-        if (em.origType)
-        {
-            em.origType = em.origType.typeSemantic(em.loc, sc);
-            em.type = em.origType;
-            assert(em.value); // "type id;" is not a valid enum member declaration
-        }
-
-        if (em.value)
-        {
-            Expression e = em.value;
-            assert(e.dyncast() == DYNCAST.expression);
-            e = e.expressionSemantic(sc);
-            e = resolveProperties(sc, e);
-            e = e.ctfeInterpret();
-            if (e.op == EXP.error)
-                return errorReturn();
-            if (first && !em.ed.memtype && !em.ed.isAnonymous())
-            {
-                em.ed.memtype = e.type;
-                if (em.ed.memtype.ty == Terror)
-                {
-                    em.ed.errors = true;
-                    return errorReturn();
-                }
-                if (em.ed.memtype.ty != Terror)
-                {
-                    /* https://issues.dlang.org/show_bug.cgi?id=11746
-                     * All of named enum members should have same type
-                     * with the first member. If the following members were referenced
-                     * during the first member semantic, their types should be unified.
-                     */
-                    em.ed.members.foreachDsymbol( (s)
-                    {
-                        EnumMember enm = s.isEnumMember();
-                        if (!enm || enm == em || enm.semanticRun < PASS.semanticdone || enm.origType)
-                            return;
-
-                        //printf("[%d] em = %s, em.semanticRun = %d\n", i, toChars(), em.semanticRun);
-                        Expression ev = enm.value;
-                        ev = ev.implicitCastTo(sc, em.ed.memtype);
-                        ev = ev.ctfeInterpret();
-                        ev = ev.castTo(sc, em.ed.type);
-                        if (ev.op == EXP.error)
-                            em.ed.errors = true;
-                        enm.value = ev;
-                    });
-
-                    if (em.ed.errors)
-                    {
-                        em.ed.memtype = Type.terror;
-                        return errorReturn();
-                    }
-                }
-            }
-
-            if (em.ed.memtype && !em.origType)
-            {
-                e = e.implicitCastTo(sc, em.ed.memtype);
-                e = e.ctfeInterpret();
-
-                // save origValue for better json output
-                em.origValue = e;
-
-                if (!em.ed.isAnonymous())
-                {
-                    e = e.castTo(sc, em.ed.type.addMod(e.type.mod)); // https://issues.dlang.org/show_bug.cgi?id=12385
-                    e = e.ctfeInterpret();
-                }
-            }
-            else if (em.origType)
-            {
-                e = e.implicitCastTo(sc, em.origType);
-                e = e.ctfeInterpret();
-                assert(em.ed.isAnonymous());
-
-                // save origValue for better json output
-                em.origValue = e;
-            }
-            em.value = e;
-        }
-        else if (first)
-        {
-            Type t;
-            if (em.ed.memtype)
-                t = em.ed.memtype;
-            else
-            {
-                t = Type.tint32;
-                if (!em.ed.isAnonymous())
-                    em.ed.memtype = t;
-            }
-            const errors = global.startGagging();
-            Expression e = new IntegerExp(em.loc, 0, t);
-            e = e.ctfeInterpret();
-            if (global.endGagging(errors))
-            {
-                error(em.loc, "cannot generate 0 value of type `%s` for `%s`",
-                    t.toChars(), em.toChars());
-            }
-            // save origValue for better json output
-            em.origValue = e;
-
-            if (!em.ed.isAnonymous())
-            {
-                e = e.castTo(sc, em.ed.type);
-                e = e.ctfeInterpret();
-            }
-            em.value = e;
-        }
-        else
-        {
-            /* Find the previous enum member,
-             * and set this to be the previous value + 1
-             */
-            EnumMember emprev = null;
-            em.ed.members.foreachDsymbol( (s)
-            {
-                if (auto enm = s.isEnumMember())
-                {
-                    if (enm == em)
-                        return 1;       // found
-                    emprev = enm;
-                }
-                return 0;       // continue
-            });
-
-            assert(emprev);
-            if (emprev.semanticRun < PASS.semanticdone) // if forward reference
-                emprev.dsymbolSemantic(emprev._scope); // resolve it
-            if (emprev.errors)
-                return errorReturn();
-
-            auto errors = global.startGagging();
-            Expression eprev = emprev.value;
-            assert(eprev);
-            // .toHeadMutable() due to https://issues.dlang.org/show_bug.cgi?id=18645
-            Type tprev = eprev.type.toHeadMutable().equals(em.ed.type.toHeadMutable())
-                ? em.ed.memtype
-                : eprev.type;
-            /*
-                https://issues.dlang.org/show_bug.cgi?id=20777
-                Previously this used getProperty, which doesn't consider anything user defined,
-                this construct does do that and thus fixes the bug.
-            */
-            Expression emax = DotIdExp.create(em.ed.loc, new TypeExp(em.ed.loc, tprev), Id.max);
-            emax = emax.expressionSemantic(sc);
-            emax = emax.ctfeInterpret();
-
-            // check that (eprev != emax)
-            Expression e = new EqualExp(EXP.equal, em.loc, eprev, emax);
-            e = e.expressionSemantic(sc);
-            e = e.ctfeInterpret();
-            if (global.endGagging(errors))
-            {
-                // display an introductory error before showing what actually failed
-                error(em.loc, "cannot check `%s` value for overflow", em.toPrettyChars());
-                // rerun to show errors
-                Expression e2 = DotIdExp.create(em.ed.loc, new TypeExp(em.ed.loc, tprev), Id.max);
-                e2 = e2.expressionSemantic(sc);
-                e2 = e2.ctfeInterpret();
-                e2 = new EqualExp(EXP.equal, em.loc, eprev, e2);
-                e2 = e2.expressionSemantic(sc);
-                e2 = e2.ctfeInterpret();
-            }
-            // now any errors are for generating a value
-            if (e.toInteger())
-            {
-                auto mt = em.ed.memtype;
-                if (!mt)
-                    mt = eprev.type;
-                .error(em.loc, "%s `%s` initialization with `%s.%s+1` causes overflow for type `%s`", em.kind, em.toPrettyChars,
-                    emprev.ed.toChars(), emprev.toChars(), mt.toChars());
-                return errorReturn();
-            }
-            errors = global.startGagging();
-            // Now set e to (eprev + 1)
-            e = new AddExp(em.loc, eprev, IntegerExp.literal!1);
-            e = e.expressionSemantic(sc);
-            e = e.castTo(sc, eprev.type);
-            e = e.ctfeInterpret();
-            if (global.endGagging(errors))
-            {
-                error(em.loc, "cannot generate value for `%s`", em.toPrettyChars());
-                // rerun to show errors
-                Expression e2 = new AddExp(em.loc, eprev, IntegerExp.literal!1);
-                e2 = e2.expressionSemantic(sc);
-                e2 = e2.castTo(sc, eprev.type);
-                e2 = e2.ctfeInterpret();
-            }
-            // save origValue (without cast) for better json output
-            if (e.op != EXP.error) // avoid duplicate diagnostics
-            {
-                assert(emprev.origValue);
-                em.origValue = new AddExp(em.loc, emprev.origValue, IntegerExp.literal!1);
-                em.origValue = em.origValue.expressionSemantic(sc);
-                em.origValue = em.origValue.ctfeInterpret();
-            }
-
-            if (e.op == EXP.error)
-                return errorReturn();
-            if (e.type.isfloating())
-            {
-                // Check that e != eprev (not always true for floats)
-                Expression etest = new EqualExp(EXP.equal, em.loc, e, eprev);
-                etest = etest.expressionSemantic(sc);
-                etest = etest.ctfeInterpret();
-                if (etest.toInteger())
-                {
-                    .error(em.loc, "%s `%s` has inexact value due to loss of precision", em.kind, em.toPrettyChars);
-                    return errorReturn();
-                }
-            }
-            em.value = e;
-        }
-        if (!em.origType)
-            em.type = em.value.type;
-
-        assert(em.origValue);
-        em.semanticRun = PASS.semanticdone;
+        enumMemberSemantic(sc, em);
     }
 
     override void visit(TemplateDeclaration tempdecl)
@@ -3026,7 +2498,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             if (tm.semanticRun == PASS.initial) // forward reference had occurred
             {
                 //printf("forward reference - deferring\n");
-                return deferDsymbolSemantic(tm, scx);
+                return deferDsymbolSemantic(sc, tm, scx);
             }
 
             tm.inst = tm;
@@ -3740,7 +3212,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         continue;
                     if (cbd.parent && cbd.parent.isTemplateInstance())
                     {
-                        if (!f2.functionSemantic())
+                        if (!functionSemantic(f2))
                             goto Ldone;
                     }
                     may_override = true;
@@ -4945,7 +4417,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             sc2.pop();
 
             if (log) printf("\tdeferring %s\n", sd.toChars());
-            return deferDsymbolSemantic(sd, scx);
+            return deferDsymbolSemantic(sc, sd, scx);
         }
 
         /* Look for special member functions.
@@ -5336,7 +4808,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             {
                 // Forward referencee of one or more bases, try again later
                 //printf("\tL%d semantic('%s') failed due to forward references\n", __LINE__, toChars());
-                return deferDsymbolSemantic(cldec, scx);
+                return deferDsymbolSemantic(sc, cldec, scx);
             }
             cldec.baseok = Baseok.done;
 
@@ -5446,7 +4918,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 if (tc.sym._scope)
                     Module.addDeferredSemantic(tc.sym);
                 //printf("\tL%d semantic('%s') failed due to forward references\n", __LINE__, toChars());
-                return deferDsymbolSemantic(cldec, scx);
+                return deferDsymbolSemantic(sc, cldec, scx);
             }
         }
 
@@ -5563,7 +5035,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             sc2.pop();
 
             //printf("\tdeferring %s\n", toChars());
-            return deferDsymbolSemantic(cldec, scx);
+            return deferDsymbolSemantic(sc, cldec, scx);
         }
 
         /* Look for special member functions.
@@ -5905,7 +5377,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             if (idec.baseok == Baseok.none)
             {
                 // Forward referencee of one or more bases, try again later
-                return deferDsymbolSemantic(idec, scx);
+                return deferDsymbolSemantic(sc, idec, scx);
             }
             idec.baseok = Baseok.done;
 
@@ -5942,7 +5414,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 // Forward referencee of one or more bases, try again later
                 if (tc.sym._scope)
                     Module.addDeferredSemantic(tc.sym);
-                return deferDsymbolSemantic(idec, scx);
+                return deferDsymbolSemantic(sc, idec, scx);
             }
         }
 
@@ -6281,7 +5753,7 @@ private extern(C++) class AddMemberVisitor : Visitor
             }
             else
             {
-                if (findCondition(m.debugidsNot, ds.ident))
+                if (m.debugidsNot && findCondition(*m.debugidsNot, ds.ident))
                 {
                     .error(ds.loc, "%s `%s` defined after use", ds.kind, ds.toPrettyChars);
                     ds.errors = true;
@@ -6319,7 +5791,7 @@ private extern(C++) class AddMemberVisitor : Visitor
             }
             else
             {
-                if (findCondition(m.versionidsNot, vs.ident))
+                if (m.versionidsNot && findCondition(*m.versionidsNot, vs.ident))
                 {
                     .error(vs.loc, "%s `%s` defined after use", vs.kind, vs.toPrettyChars);
                     vs.errors = true;

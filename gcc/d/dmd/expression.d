@@ -721,6 +721,7 @@ extern (C++) abstract class Expression : ASTNode
         inout(SuperExp)     isSuperExp() { return op == EXP.super_ ? cast(typeof(return))this : null; }
         inout(NullExp)      isNullExp() { return op == EXP.null_ ? cast(typeof(return))this : null; }
         inout(StringExp)    isStringExp() { return op == EXP.string_ ? cast(typeof(return))this : null; }
+        inout(InterpExp)    isInterpExp() { return op == EXP.interpolated ? cast(typeof(return))this : null; }
         inout(TupleExp)     isTupleExp() { return op == EXP.tuple ? cast(typeof(return))this : null; }
         inout(ArrayLiteralExp) isArrayLiteralExp() { return op == EXP.arrayLiteral ? cast(typeof(return))this : null; }
         inout(AssocArrayLiteralExp) isAssocArrayLiteralExp() { return op == EXP.assocArrayLiteral ? cast(typeof(return))this : null; }
@@ -1499,6 +1500,7 @@ extern (C++) final class StringExp : Expression
         char* string;   // if sz == 1
         wchar* wstring; // if sz == 2
         dchar* dstring; // if sz == 4
+        ulong* lstring; // if sz == 8
     }                   // (const if ownedByCtfe == OwnedBy.code)
     size_t len;         // number of code units
     ubyte sz = 1;       // 1: char, 2: wchar, 4: dchar
@@ -1662,6 +1664,13 @@ extern (C++) final class StringExp : Expression
      */
     dchar getCodeUnit(size_t i) const pure
     {
+        assert(this.sz <= dchar.sizeof);
+        return cast(dchar) getIndex(i);
+    }
+
+    /// Returns: integer at index `i`
+    dinteger_t getIndex(size_t i) const pure
+    {
         assert(i < len);
         final switch (sz)
         {
@@ -1671,6 +1680,8 @@ extern (C++) final class StringExp : Expression
             return wstring[i];
         case 4:
             return dstring[i];
+        case 8:
+            return lstring[i];
         }
     }
 
@@ -1682,6 +1693,11 @@ extern (C++) final class StringExp : Expression
      */
     extern (D) void setCodeUnit(size_t i, dchar c)
     {
+        return setIndex(i, c);
+    }
+
+    extern (D) void setIndex(size_t i, long c)
+    {
         assert(i < len);
         final switch (sz)
         {
@@ -1692,7 +1708,10 @@ extern (C++) final class StringExp : Expression
             wstring[i] = cast(wchar)c;
             break;
         case 4:
-            dstring[i] = c;
+            dstring[i] = cast(dchar) c;
+            break;
+        case 8:
+            lstring[i] = c;
             break;
         }
     }
@@ -1846,6 +1865,28 @@ extern (C++) final class StringExp : Expression
         v.visit(this);
     }
 }
+
+extern (C++) final class InterpExp : Expression
+{
+    char postfix = NoPostfix;   // 'c', 'w', 'd'
+    OwnedBy ownedByCtfe = OwnedBy.code;
+    InterpolatedSet* interpolatedSet;
+
+    enum char NoPostfix = 0;
+
+    extern (D) this(const ref Loc loc, InterpolatedSet* set, char postfix = NoPostfix) scope
+    {
+        super(loc, EXP.interpolated);
+        this.interpolatedSet = set;
+        this.postfix = postfix;
+    }
+
+    override void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+
 
 /***********************************************************
  * A sequence of expressions
@@ -5494,6 +5535,7 @@ private immutable ubyte[EXP.max+1] expSize = [
     EXP.preMinusMinus: __traits(classInstanceSize, PreExp),
     EXP.identifier: __traits(classInstanceSize, IdentifierExp),
     EXP.string_: __traits(classInstanceSize, StringExp),
+    EXP.interpolated: __traits(classInstanceSize, InterpExp),
     EXP.this_: __traits(classInstanceSize, ThisExp),
     EXP.super_: __traits(classInstanceSize, SuperExp),
     EXP.halt: __traits(classInstanceSize, HaltExp),

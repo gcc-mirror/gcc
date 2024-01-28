@@ -33,6 +33,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
@@ -440,7 +441,7 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
         fdError("circular dependency. Functions cannot be interpreted while being compiled");
         return CTFEExp.cantexp;
     }
-    if (!fd.functionSemantic3())
+    if (!functionSemantic3(fd))
         return CTFEExp.cantexp;
     if (fd.semanticRun < PASS.semantic3done)
     {
@@ -6097,11 +6098,35 @@ public:
             result.type = e.to;
             return;
         }
+
         // Disallow array type painting, except for conversions between built-in
         // types of identical size.
         if ((e.to.ty == Tsarray || e.to.ty == Tarray) && (e1.type.ty == Tsarray || e1.type.ty == Tarray) && !isSafePointerCast(e1.type.nextOf(), e.to.nextOf()))
         {
+            auto se = e1.isStringExp();
+            // Allow casting a hex string literal to short[], int[] or long[]
+            if (se && se.hexString && se.postfix == StringExp.NoPostfix)
+            {
+                const sz = cast(size_t) e.to.nextOf().size;
+                if ((se.len % sz) != 0)
+                {
+                    error(e.loc, "hex string length %d must be a multiple of %d to cast to `%s`",
+                        cast(int) se.len, cast(int) sz, e.to.toChars());
+                    result = CTFEExp.cantexp;
+                    return;
+                }
+
+                auto str = arrayCastBigEndian((cast(const ubyte[]) se.peekString()), sz);
+                emplaceExp!(StringExp)(pue, e1.loc, str, se.len / sz, cast(ubyte) sz);
+                result = pue.exp();
+                result.type = e.to;
+                return;
+            }
             error(e.loc, "array cast from `%s` to `%s` is not supported at compile time", e1.type.toChars(), e.to.toChars());
+            if (se && se.hexString && se.postfix != StringExp.NoPostfix)
+                errorSupplemental(e.loc, "perhaps remove postfix `%s` from hex string",
+                    (cast(char) se.postfix ~ "\0").ptr);
+
             result = CTFEExp.cantexp;
             return;
         }
@@ -7718,4 +7743,45 @@ private void removeHookTraceImpl(ref CallExp ce, ref FuncDeclaration fd)
 
     if (global.params.v.verbose)
         message("strip     %s =>\n          %s", oldCE.toChars(), ce.toChars());
+}
+
+/**
+ * Cast a `ubyte[]` to an array of larger integers as if we are on a big endian architecture
+ * Params:
+ *   data = array with big endian data
+ *   size = 1 for ubyte[], 2 for ushort[], 4 for uint[], 8 for ulong[]
+ * Returns: copy of `data`, with bytes shuffled if compiled for `version(LittleEndian)`
+ */
+ubyte[] arrayCastBigEndian(const ubyte[] data, size_t size)
+{
+    ubyte[] impl(T)()
+    {
+        auto result = new T[](data.length / T.sizeof);
+        foreach (i; 0 .. result.length)
+        {
+            result[i] = 0;
+            foreach (j; 0 .. T.sizeof)
+            {
+                result[i] |= T(data[i * T.sizeof + j]) << ((T.sizeof - 1 - j) * 8);
+            }
+        }
+        return cast(ubyte[]) result;
+    }
+    switch (size)
+    {
+        case 1: return data.dup;
+        case 2: return impl!ushort;
+        case 4: return impl!uint;
+        case 8: return impl!ulong;
+        default: assert(0);
+    }
+}
+
+unittest
+{
+    ubyte[] data = [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x11, 0x22];
+    assert(cast(ulong[]) arrayCastBigEndian(data, 8) == [0xAABBCCDDEEFF1122]);
+    assert(cast(uint[]) arrayCastBigEndian(data, 4) == [0xAABBCCDD, 0xEEFF1122]);
+    assert(cast(ushort[]) arrayCastBigEndian(data, 2) == [0xAABB, 0xCCDD, 0xEEFF, 0x1122]);
+    assert(cast(ubyte[]) arrayCastBigEndian(data, 1) == data);
 }

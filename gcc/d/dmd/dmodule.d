@@ -490,7 +490,7 @@ extern (C++) final class Module : Package
 
     extern (D) static const(char)[] find(const(char)[] filename)
     {
-        return global.fileManager.lookForSourceFile(filename, global.path ? (*global.path)[] : null);
+        return global.fileManager.lookForSourceFile(filename, global.path[]);
     }
 
     extern (C++) static Module load(const ref Loc loc, Identifiers* packages, Identifier ident)
@@ -644,9 +644,9 @@ extern (C++) final class Module : Package
         {
             /* Print path
              */
-            if (global.path)
+            if (global.path.length)
             {
-                foreach (i, p; *global.path)
+                foreach (i, p; global.path[])
                     fprintf(stderr, "import path[%llu] = %s\n", cast(ulong)i, p);
             }
             else

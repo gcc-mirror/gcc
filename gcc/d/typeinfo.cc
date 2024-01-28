@@ -259,8 +259,9 @@ create_tinfo_types (Module *mod)
 			  array_type_node, array_type_node, array_type_node,
 			  array_type_node, ptr_type_node, ptr_type_node,
 			  ptr_type_node, d_uint_type, ptr_type_node,
-			  array_type_node, ptr_type_node, d_ulong_type,
-			  d_ulong_type, ptr_type_node, NULL);
+			  array_type_node, ptr_type_node, ptr_type_node,
+			  d_uint_type, d_uint_type, d_uint_type, d_uint_type,
+			  NULL);
 
   object_module = mod;
 }
@@ -577,7 +578,7 @@ public:
   void visit (TypeInfoConstDeclaration *d) final override
   {
     Type *tm = d->tinfo->mutableOf ();
-    tm = tm->merge2 ();
+    tm = merge2 (tm);
 
     /* The vtable for TypeInfo_Const.  */
     this->layout_base (Type::typeinfoconst);
@@ -594,7 +595,7 @@ public:
   void visit (TypeInfoInvariantDeclaration *d) final override
   {
     Type *tm = d->tinfo->mutableOf ();
-    tm = tm->merge2 ();
+    tm = merge2 (tm);
 
     /* The vtable for TypeInfo_Invariant.  */
     this->layout_base (Type::typeinfoinvariant);
@@ -611,7 +612,7 @@ public:
   void visit (TypeInfoSharedDeclaration *d) final override
   {
     Type *tm = d->tinfo->unSharedOf ();
-    tm = tm->merge2 ();
+    tm = merge2 (tm);
 
     /* The vtable for TypeInfo_Shared.  */
     this->layout_base (Type::typeinfoshared);
@@ -628,7 +629,7 @@ public:
   void visit (TypeInfoWildDeclaration *d) final override
   {
     Type *tm = d->tinfo->mutableOf ();
-    tm = tm->merge2 ();
+    tm = merge2 (tm);
 
     /* The vtable for TypeInfo_Inout.  */
     this->layout_base (Type::typeinfowild);
@@ -934,10 +935,6 @@ public:
 	else
 	  this->layout_field (null_pointer_node);
 
-	/* ulong[2] nameSig;  */
-	this->layout_field (build_zero_cst (d_ulong_type));
-	this->layout_field (build_zero_cst (d_ulong_type));
-
 	/* immutable(void)* m_RTInfo;  */
 	if (cd->getRTInfo)
 	  this->layout_field (build_expr (cd->getRTInfo, true));
@@ -945,6 +942,12 @@ public:
 	  this->layout_field (size_one_node);
 	else
 	  this->layout_field (null_pointer_node);
+
+	/* uint[4] nameSig;  */
+	this->layout_field (build_zero_cst (d_uint_type));
+	this->layout_field (build_zero_cst (d_uint_type));
+	this->layout_field (build_zero_cst (d_uint_type));
+	this->layout_field (build_zero_cst (d_uint_type));
       }
     else
       {
@@ -985,15 +988,17 @@ public:
 	this->layout_field (null_array_node);
 	this->layout_field (null_pointer_node);
 
-	/* ulong[2] nameSig;  */
-	this->layout_field (build_zero_cst (d_ulong_type));
-	this->layout_field (build_zero_cst (d_ulong_type));
-
 	/* immutable(void)* m_RTInfo;  */
 	if (cd->getRTInfo)
 	  this->layout_field (build_expr (cd->getRTInfo, true));
 	else
 	  this->layout_field (null_pointer_node);
+
+	/* uint[4] nameSig;  */
+	this->layout_field (build_zero_cst (d_uint_type));
+	this->layout_field (build_zero_cst (d_uint_type));
+	this->layout_field (build_zero_cst (d_uint_type));
+	this->layout_field (build_zero_cst (d_uint_type));
       }
 
     /* Put out array of Interfaces.  */
@@ -1546,7 +1551,7 @@ create_typeinfo (Type *type, Module *mod, bool generate)
     create_frontend_tinfo_types ();
 
   /* Do this since not all Type's are merged.  */
-  Type *t = type->merge2 ();
+  Type *t = merge2 (type);
   Identifier *ident;
 
   if (!t->vtinfo)

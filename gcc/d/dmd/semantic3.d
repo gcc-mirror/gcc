@@ -41,6 +41,7 @@ import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
@@ -384,7 +385,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 }
             }
 
-            funcdecl.declareThis(sc2);
+            declareThis(funcdecl, sc2);
 
             // Reverts: https://issues.dlang.org/show_bug.cgi?id=5710
             // No compiler supports this, and there was never any spec for it.

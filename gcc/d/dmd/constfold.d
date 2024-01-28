@@ -711,7 +711,7 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
             cmp = 1; // if dim1 winds up being 0
             foreach (i; 0 .. dim1)
             {
-                uinteger_t c = es1.getCodeUnit(i);
+                uinteger_t c = es1.getIndex(i);
                 auto ee2 = es2[i];
                 if (ee2.isConst() != 1)
                 {
@@ -1119,7 +1119,7 @@ UnionExp Index(Type type, Expression e1, Expression e2, bool indexIsInBounds)
         }
         else
         {
-            emplaceExp!(IntegerExp)(&ue, loc, es1.getCodeUnit(cast(size_t) i), type);
+            emplaceExp!(IntegerExp)(&ue, loc, es1.getIndex(cast(size_t) i), type);
         }
     }
     else if (e1.type.toBasetype().ty == Tsarray && e2.op == EXP.int64)
@@ -1282,7 +1282,7 @@ void sliceAssignArrayLiteralFromString(ArrayLiteralExp existingAE, const StringE
     Type elemType = existingAE.type.nextOf();
     foreach (j; 0 .. len)
     {
-        const val = newval.getCodeUnit(j);
+        const val = newval.getIndex(j);
         (*existingAE.elements)[j + firstIndex] = new IntegerExp(newval.loc, val, elemType);
     }
 }

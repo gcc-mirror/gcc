@@ -1,8 +1,9 @@
 /+
 TEST_OUTPUT:
 ---
-fail_compilation/fail24301.d(18): Error: function `fail24301.fun(S __param_0)` is not callable using argument types `(S)`
-fail_compilation/fail24301.d(18):        `ref S(ref S)` copy constructor cannot be used because it is annotated with `@disable`
+fail_compilation/fail24301.d(19): Error: function `fun` is not callable using argument types `(S)`
+fail_compilation/fail24301.d(19):        `ref S(ref S)` copy constructor cannot be used because it is annotated with `@disable`
+fail_compilation/fail24301.d(14):        `fail24301.fun(S __param_0)` declared here
 ---
 +/
 struct S

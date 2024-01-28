@@ -2283,7 +2283,7 @@ struct Gcx
         alias toscan = scanStack!precise;
 
         debug(MARK_PRINTF)
-            printf("marking range: [%p..%p] (%#llx)\n", pbot, ptop, cast(long)(ptop - pbot));
+            printf("marking range: [%p..%p] (%#llx)\n", rng.pbot, rng.ptop, cast(long)(rng.ptop - rng.pbot));
 
         // limit the amount of ranges added to the toscan stack
         enum FANOUT_LIMIT = 32;
@@ -2351,7 +2351,7 @@ struct Gcx
                 size_t bin = pool.pagetable[pn]; // not Bins to avoid multiple size extension instructions
 
                 debug(MARK_PRINTF)
-                    printf("\t\tfound pool %p, base=%p, pn = %lld, bin = %d\n", pool, pool.baseAddr, cast(long)pn, bin);
+                    printf("\t\tfound pool %p, base=%p, pn = %llu, bin = %llu\n", pool, pool.baseAddr, cast(ulong)pn, cast(ulong)bin);
 
                 // Adjust bit to be at start of allocated memory block
                 if (bin < Bins.B_PAGE)

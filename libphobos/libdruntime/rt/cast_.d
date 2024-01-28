@@ -24,11 +24,18 @@ pure:
 extern (D) private bool areClassInfosEqual(scope const ClassInfo a, scope const ClassInfo b) @safe
 {
     // same class if signatures match, works with potential duplicates across binaries
-    return a is b ||
-        (a.m_flags & TypeInfo_Class.ClassFlags.hasNameSig
-        ? (a.nameSig[0] == b.nameSig[0] &&
-           a.nameSig[1] == b.nameSig[1])  // new fast way
-        : (a is b || a.name == b.name));  // old slow way for temporary binary compatibility
+    if (a is b)
+        return true;
+
+    // new fast way
+    if (a.m_flags & TypeInfo_Class.ClassFlags.hasNameSig)
+        return a.nameSig[0] == b.nameSig[0]
+            && a.nameSig[1] == b.nameSig[1]
+            && a.nameSig[2] == b.nameSig[2]
+            && a.nameSig[3] == b.nameSig[3];
+
+    // old slow way for temporary binary compatibility
+    return a.name == b.name;
 }
 
 /******************************************

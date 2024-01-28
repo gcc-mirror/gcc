@@ -133,6 +133,7 @@ enum class TOK : unsigned char
     // Leaf operators
     identifier,
     string_,
+    interpolated,
     hexadecimalString,
     this_,
     super_,
@@ -390,6 +391,7 @@ enum class EXP : unsigned char
     // Leaf operators
     identifier,
     string_,
+    interpolated,
     this_,
     super_,
     halt,
@@ -461,7 +463,12 @@ struct Token
         real_t floatvalue;
 
         struct
-        {   utf8_t *ustring;     // UTF8 string
+        {
+            union
+            {
+                utf8_t *ustring;     // UTF8 string
+                void *interpolatedSet;
+            };
             unsigned len;
             unsigned char postfix;      // 'c', 'w', 'd'
         };

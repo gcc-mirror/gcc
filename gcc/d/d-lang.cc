@@ -306,9 +306,6 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.v.errorLimit = flag_max_errors;
   global.params.v.messageStyle = MessageStyle::gnu;
 
-  global.params.imppath = d_gc_malloc<Strings> ();
-  global.params.fileImppath = d_gc_malloc<Strings> ();
-
   /* Extra GDC-specific options.  */
   d_option.fonly = NULL;
   d_option.multilib = NULL;
@@ -724,11 +721,11 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_I:
-      global.params.imppath->push (arg);
+      global.params.imppath.push (arg);
       break;
 
     case OPT_J:
-      global.params.fileImppath->push (arg);
+      global.params.fileImppath.push (arg);
       break;
 
     case OPT_MM:
@@ -1045,25 +1042,24 @@ d_parse_file (void)
 {
   if (global.params.v.verbose)
     {
+      /* Dump information about the D compiler and language version.  */
       message ("binary    %s", global.params.argv0.ptr);
       message ("version   %s", global.versionChars ());
 
-      if (global.versionids)
+      /* Dump all predefined version identifiers.  */
+      obstack buffer;
+      gcc_obstack_init (&buffer);
+      obstack_grow (&buffer, "predefs  ", 9);
+      for (size_t i = 0; i < global.versionids.length; i++)
 	{
-	  obstack buffer;
-	  gcc_obstack_init (&buffer);
-	  obstack_grow (&buffer, "predefs  ", 9);
-	  for (size_t i = 0; i < global.versionids->length; i++)
-	    {
-	      Identifier *id = (*global.versionids)[i];
-	      const char *str = id->toChars ();
-	      obstack_1grow (&buffer, ' ');
-	      obstack_grow (&buffer, str, strlen (str));
-	    }
-
-	  obstack_1grow (&buffer, '\0');
-	  message ("%s", (char *) obstack_finish (&buffer));
+	  Identifier *id = global.versionids[i];
+	  const char *str = id->toChars ();
+	  obstack_1grow (&buffer, ' ');
+	  obstack_grow (&buffer, str, strlen (str));
 	}
+
+      obstack_1grow (&buffer, '\0');
+      message ("%s", (char *) obstack_finish (&buffer));
     }
 
   /* Start the main input file, if the debug writer wants it.  */

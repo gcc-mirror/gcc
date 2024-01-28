@@ -52,8 +52,6 @@ public:
     bool isDeprecated() const override;       // is Dsymbol deprecated?
     Visibility visible() override;
     bool isSpecial() const;
-    Expression *getDefaultValue(const Loc &loc);
-    Type *getMemtype(const Loc &loc);
 
     EnumDeclaration *isEnumDeclaration() override { return this; }
 

@@ -539,7 +539,7 @@ public:
 	  continue;
 
 	/* Ensure function has a return value.  */
-	if (!fd->functionSemantic ())
+	if (!functionSemantic (fd))
 	  has_errors = true;
 
 	/* No name hiding to check for.  */
@@ -563,20 +563,23 @@ public:
 	    if (fd2->isFuture ())
 	      continue;
 
-	    if (fd->leastAsSpecialized (fd2, NULL) != MATCH::nomatch
-		|| fd2->leastAsSpecialized (fd, NULL) != MATCH::nomatch)
-	      {
-		error_at (make_location_t (fd->loc), "use of %qs",
-			  fd->toPrettyChars ());
-		inform (make_location_t (fd2->loc), "is hidden by %qs",
-			fd2->toPrettyChars ());
-		inform (make_location_t (d->loc),
-			"use %<alias %s = %s.%s;%> to introduce base class "
-			"overload set", fd->toChars (),
-			fd->parent->toChars (), fd->toChars ());
-		has_errors = true;
-		break;
-	      }
+	    if (FuncDeclaration::leastAsSpecialized (fd, fd2, NULL)
+		    == MATCH::nomatch
+		&& FuncDeclaration::leastAsSpecialized (fd2, fd, NULL)
+		    == MATCH::nomatch)
+	      continue;
+
+	    /* Hiding detected; same name, overlapping specializations.  */
+	    error_at (make_location_t (fd->loc), "use of %qs",
+		      fd->toPrettyChars ());
+	    inform (make_location_t (fd2->loc), "is hidden by %qs",
+		    fd2->toPrettyChars ());
+	    inform (make_location_t (d->loc),
+		    "use %<alias %s = %s.%s;%> to introduce base class "
+		    "overload set", fd->toChars (),
+		    fd->parent->toChars (), fd->toChars ());
+	    has_errors = true;
+	    break;
 	  }
       }
 
@@ -943,7 +946,7 @@ public:
 	gcc_assert (!doing_semantic_analysis_p);
 
 	doing_semantic_analysis_p = true;
-	d->functionSemantic3 ();
+	functionSemantic3 (d);
 	Module::runDeferredSemantic3 ();
 	doing_semantic_analysis_p = false;
       }
@@ -1231,7 +1234,7 @@ get_symbol_decl (Declaration *decl)
   if (fd)
     {
       /* Run full semantic on functions we need to know about.  */
-      if (!fd->functionSemantic ())
+      if (!functionSemantic (fd))
 	{
 	  decl->csym = error_mark_node;
 	  return decl->csym;

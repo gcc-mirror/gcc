@@ -195,6 +195,7 @@ class ThisExp;
 class SuperExp;
 class NullExp;
 class StringExp;
+class InterpExp;
 class TupleExp;
 class ArrayLiteralExp;
 class AssocArrayLiteralExp;
@@ -480,6 +481,7 @@ public:
     virtual void visit(TypeidExp *e) { visit((Expression *)e); }
     virtual void visit(TraitsExp *e) { visit((Expression *)e); }
     virtual void visit(StringExp *e) { visit((Expression *)e); }
+    virtual void visit(InterpExp *e) { visit((Expression *)e); }
     virtual void visit(NewExp *e) { visit((Expression *)e); }
     virtual void visit(AssocArrayLiteralExp *e) { visit((Expression *)e); }
     virtual void visit(ArrayLiteralExp *e) { visit((Expression *)e); }

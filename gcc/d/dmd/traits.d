@@ -36,6 +36,7 @@ import dmd.errorsink;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
@@ -1306,7 +1307,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         // attribute inference.
         if (fd && fd.parent && fd.parent.isTemplateInstance)
         {
-            fd.functionSemantic3();
+            functionSemantic3(fd);
             tf = fd.type.isTypeFunction();
         }
 

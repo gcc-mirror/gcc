@@ -219,8 +219,8 @@ extern (C++) struct Param
 
     const(char)[] argv0;                // program name
     Array!(const(char)*) modFileAliasStrings; // array of char*'s of -I module filename alias strings
-    Array!(const(char)*)* imppath;      // array of char*'s of where to look for import modules
-    Array!(const(char)*)* fileImppath;  // array of char*'s of where to look for file import modules
+    Array!(const(char)*) imppath;       // array of char*'s of where to look for import modules
+    Array!(const(char)*) fileImppath;   // array of char*'s of where to look for file import modules
     const(char)[] objdir;                // .obj/.lib file output directory
     const(char)[] objname;               // .obj file output name
     const(char)[] libname;               // .lib file output name
@@ -280,8 +280,8 @@ extern (C++) struct Global
     string copyright = "Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved";
     string written = "written by Walter Bright";
 
-    Array!(const(char)*)* path;         /// Array of char*'s which form the import lookup path
-    Array!(const(char)*)* filePath;     /// Array of char*'s which form the file import lookup path
+    Array!(const(char)*) path;         /// Array of char*'s which form the import lookup path
+    Array!(const(char)*) filePath;     /// Array of char*'s which form the file import lookup path
 
     private enum string _version = import("VERSION");
     char[26] datetime;      /// string returned by ctime()
@@ -296,8 +296,8 @@ extern (C++) struct Global
 
     void* console;         /// opaque pointer to console for controlling text attributes
 
-    Array!Identifier* versionids; /// command line versions and predefined versions
-    Array!Identifier* debugids;   /// command line debug versions and predefined versions
+    Array!Identifier versionids; /// command line versions and predefined versions
+    Array!Identifier debugids;   /// command line debug versions and predefined versions
 
     bool hasMainFunction; /// Whether a main function has already been compiled in (for -main switch)
     uint varSequenceNumber = 1; /// Relative lifetime of `VarDeclaration` within a function, used for `scope` checks

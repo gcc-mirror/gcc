@@ -335,6 +335,12 @@ immutable Msgtable[] msgtable =
     { "_d_arrayassign_l" },
     { "_d_arrayassign_r" },
 
+    { "imported" },
+    { "InterpolationHeader" },
+    { "InterpolationFooter" },
+    { "InterpolatedLiteral" },
+    { "InterpolatedExpression" },
+
     // For pragma's
     { "Pinline", "inline" },
     { "lib" },

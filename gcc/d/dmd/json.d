@@ -873,12 +873,9 @@ public:
 
         propertyStart("predefinedVersions");
         arrayStart();
-        if (global.versionids)
+        foreach (const versionid; global.versionids)
         {
-            foreach (const versionid; *global.versionids)
-            {
-                item(versionid.toString());
-            }
+            item(versionid.toString());
         }
         arrayEnd();
 
@@ -905,12 +902,9 @@ public:
 
         propertyStart("importPaths");
         arrayStart();
-        if (global.params.imppath)
+        foreach (importPath; global.params.imppath[])
         {
-            foreach (importPath; *global.params.imppath)
-            {
-                item(importPath.toDString);
-            }
+            item(importPath.toDString);
         }
         arrayEnd();
 

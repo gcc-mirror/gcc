@@ -43,6 +43,7 @@ import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.gluelayer;
 import dmd.hdrgen;
@@ -1284,7 +1285,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 Type tfront;
                 if (auto fd = sfront.isFuncDeclaration())
                 {
-                    if (!fd.functionSemantic())
+                    if (!functionSemantic(fd))
                         return rangeError();
                     tfront = fd.type;
                 }

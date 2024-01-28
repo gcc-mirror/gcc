@@ -124,6 +124,7 @@ enum TOK : ubyte
     // Leaf operators
     identifier,
     string_,
+    interpolated,
     hexadecimalString,
     this_,
     super_,
@@ -380,6 +381,7 @@ enum EXP : ubyte
     // Leaf operators
     identifier,
     string_,
+    interpolated,
     this_,
     super_,
     halt,
@@ -623,6 +625,10 @@ static immutable TOK[TOK.max + 1] Ckeywords =
     }
 } ();
 
+struct InterpolatedSet {
+    // all strings in the parts are zero terminated at length+1
+    string[] parts;
+}
 
 /***********************************************************
  */
@@ -645,7 +651,11 @@ extern (C++) struct Token
 
         struct
         {
-            const(char)* ustring; // UTF8 string
+            union
+            {
+                const(char)* ustring; // UTF8 string
+                InterpolatedSet* interpolatedSet;
+            }
             uint len;
             ubyte postfix; // 'c', 'w', 'd'
         }
@@ -833,6 +843,7 @@ extern (C++) struct Token
         // For debugging
         TOK.error: "error",
         TOK.string_: "string",
+        TOK.interpolated: "interpolated string",
         TOK.onScopeExit: "scope(exit)",
         TOK.onScopeSuccess: "scope(success)",
         TOK.onScopeFailure: "scope(failure)",
@@ -910,6 +921,24 @@ nothrow:
         return 0;
     }
 
+    extern(D) void appendInterpolatedPart(const ref OutBuffer buf) {
+        appendInterpolatedPart(cast(const(char)*)buf[].ptr, buf.length);
+    }
+    extern(D) void appendInterpolatedPart(const(char)[] str) {
+        appendInterpolatedPart(str.ptr, str.length);
+    }
+    extern(D) void appendInterpolatedPart(const(char)* ptr, size_t length) {
+        assert(value == TOK.interpolated);
+        if (interpolatedSet is null)
+            interpolatedSet = new InterpolatedSet;
+
+        auto s = cast(char*)mem.xmalloc_noscan(length + 1);
+        memcpy(s, ptr, length);
+        s[length] = 0;
+
+        interpolatedSet.parts ~= cast(string) s[0 .. length];
+    }
+
     /****
      * Set to contents of ptr[0..length]
      * Params:
@@ -918,6 +947,7 @@ nothrow:
      */
     void setString(const(char)* ptr, size_t length)
     {
+        value = TOK.string_;
         auto s = cast(char*)mem.xmalloc_noscan(length + 1);
         memcpy(s, ptr, length);
         s[length] = 0;
@@ -941,6 +971,7 @@ nothrow:
      */
     void setString()
     {
+        value = TOK.string_;
         ustring = "";
         len = 0;
         postfix = 0;

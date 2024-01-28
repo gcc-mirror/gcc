@@ -27,9 +27,11 @@ import dmd.denum;
 import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.dtemplate;
+import dmd.enumsem;
 import dmd.errors;
 import dmd.expression;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
@@ -516,16 +518,39 @@ extern (C++) abstract class Type : ASTNode
             Terror
         ];
 
+        static Type merge(Type t)
+        {
+            import dmd.basicmangle : tyToDecoBuffer;
+
+            OutBuffer buf;
+            buf.reserve(3);
+
+            if (t.ty == Tnoreturn)
+                buf.writestring("Nn");
+            else
+                tyToDecoBuffer(buf, t.ty);
+
+            auto sv = t.stringtable.update(buf[]);
+            if (sv.value)
+                return sv.value;
+            else
+            {
+                t.deco = cast(char*)sv.toDchars();
+                sv.value = t;
+                return t;
+            }
+        }
+
         for (size_t i = 0; basetab[i] != Terror; i++)
         {
             Type t = new TypeBasic(basetab[i]);
-            t = t.merge();
+            t = merge(t);
             basic[basetab[i]] = t;
         }
         basic[Terror] = new TypeError();
 
         tnoreturn = new TypeNoreturn();
-        tnoreturn.deco = tnoreturn.merge().deco;
+        tnoreturn.deco = merge(tnoreturn).deco;
         basic[Tnoreturn] = tnoreturn;
 
         tvoid = basic[Tvoid];
@@ -560,7 +585,7 @@ extern (C++) abstract class Type : ASTNode
         terror = basic[Terror];
         tnoreturn = basic[Tnoreturn];
         tnull = new TypeNull();
-        tnull.deco = tnull.merge().deco;
+        tnull.deco = merge(tnull).deco;
 
         tvoidptr = tvoid.pointerTo();
         tstring = tchar.immutableOf().arrayOf();
@@ -599,29 +624,6 @@ extern (C++) abstract class Type : ASTNode
     uint alignsize()
     {
         return cast(uint)size(Loc.initial);
-    }
-
-    /*************************************
-     * This version does a merge even if the deco is already computed.
-     * Necessary for types that have a deco, but are not merged.
-     */
-    final Type merge2()
-    {
-        //printf("merge2(%s)\n", toChars());
-        Type t = this;
-        assert(t);
-        if (!t.deco)
-            return t.merge();
-
-        auto sv = stringtable.lookup(t.deco, strlen(t.deco));
-        if (sv && sv.value)
-        {
-            t = sv.value;
-            assert(t.deco);
-        }
-        else
-            assert(0);
-        return t;
     }
 
     /*********************************
@@ -1693,7 +1695,7 @@ extern (C++) abstract class Type : ASTNode
         if (callable)
         {
             auto fd = resolveFuncCall(Loc.initial, null, callable, null, this, ArgumentList(), FuncResolveFlag.quiet);
-            if (!fd || fd.errors || !fd.functionSemantic())
+            if (!fd || fd.errors || !functionSemantic(fd))
                 return Type.terror;
 
             auto t = fd.type.nextOf();

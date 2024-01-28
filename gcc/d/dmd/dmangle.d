@@ -137,6 +137,7 @@ import core.stdc.string;
 import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
+import dmd.basicmangle;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dinterpret;
@@ -160,89 +161,6 @@ import dmd.root.utf;
 import dmd.target;
 import dmd.tokens;
 import dmd.visitor;
-
-private immutable char[TMAX] mangleChar =
-[
-    Tchar        : 'a',
-    Tbool        : 'b',
-    Tcomplex80   : 'c',
-    Tfloat64     : 'd',
-    Tfloat80     : 'e',
-    Tfloat32     : 'f',
-    Tint8        : 'g',
-    Tuns8        : 'h',
-    Tint32       : 'i',
-    Timaginary80 : 'j',
-    Tuns32       : 'k',
-    Tint64       : 'l',
-    Tuns64       : 'm',
-    Tnull        : 'n',
-    Timaginary32 : 'o',
-    Timaginary64 : 'p',
-    Tcomplex32   : 'q',
-    Tcomplex64   : 'r',
-    Tint16       : 's',
-    Tuns16       : 't',
-    Twchar       : 'u',
-    Tvoid        : 'v',
-    Tdchar       : 'w',
-    //              x   // const
-    //              y   // immutable
-    Tint128      : 'z', // zi
-    Tuns128      : 'z', // zk
-
-    Tarray       : 'A',
-    Ttuple       : 'B',
-    Tclass       : 'C',
-    Tdelegate    : 'D',
-    Tenum        : 'E',
-    Tfunction    : 'F', // D function
-    Tsarray      : 'G',
-    Taarray      : 'H',
-    //              I   // in
-    //              J   // out
-    //              K   // ref
-    //              L   // lazy
-    //              M   // has this, or scope
-    //              N   // Nh:vector Ng:wild Nn:noreturn
-    //              O   // shared
-    Tpointer     : 'P',
-    //              Q   // Type/symbol/identifier backward reference
-    Treference   : 'R',
-    Tstruct      : 'S',
-    //              T   // Ttypedef
-    //              U   // C function
-    //              W   // Windows function
-    //              X   // variadic T t...)
-    //              Y   // variadic T t,...)
-    //              Z   // not variadic, end of parameters
-
-    // '@' shouldn't appear anywhere in the deco'd names
-    Tnone        : '@',
-    Tident       : '@',
-    Tinstance    : '@',
-    Terror       : '@',
-    Ttypeof      : '@',
-    Tslice       : '@',
-    Treturn      : '@',
-    Tvector      : '@',
-    Ttraits      : '@',
-    Tmixin       : '@',
-    Ttag         : '@',
-    Tnoreturn    : '@',         // becomes 'Nn'
-];
-
-unittest
-{
-    foreach (i, mangle; mangleChar)
-    {
-        if (mangle == char.init)
-        {
-            fprintf(stderr, "ty = %u\n", cast(uint)i);
-            assert(0);
-        }
-    }
-}
 
 /************************************************
  * Append the mangling of type `t` to `buf`.
@@ -582,6 +500,20 @@ public:
     {
         if (!backref.addRefToIdentifier(*buf, id))
             toBuffer(*buf, id.toString(), s);
+    }
+
+    void mangleInteger(dinteger_t v)
+    {
+        if (cast(sinteger_t) v < 0)
+        {
+            buf.writeByte('N');
+            buf.print(-v);
+        }
+        else
+        {
+            buf.writeByte('i');
+            buf.print(v);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -991,17 +923,7 @@ public:
 
     override void visit(IntegerExp e)
     {
-        const v = e.toInteger();
-        if (cast(sinteger_t)v < 0)
-        {
-            buf.writeByte('N');
-            buf.print(-v);
-        }
-        else
-        {
-            buf.writeByte('i');
-            buf.print(v);
-        }
+        mangleInteger(e.toInteger());
     }
 
     override void visit(RealExp e)
@@ -1028,6 +950,7 @@ public:
         char m;
         OutBuffer tmp;
         const(char)[] q;
+
         /* Write string in UTF-8 format
          */
         switch (e.sz)
@@ -1065,7 +988,15 @@ public:
             q = tmp[];
             break;
         }
-
+        case 8:
+            // String of size 8 has to be hexstring cast to long[], mangle as array literal
+            buf.writeByte('A');
+            buf.print(e.len);
+            foreach (i; 0 .. e.len)
+            {
+                mangleInteger(e.getIndex(i));
+            }
+            return;
         default:
             assert(0);
         }
@@ -1073,14 +1004,7 @@ public:
         buf.writeByte(m);
         buf.print(q.length);
         buf.writeByte('_');    // nbytes <= 11
-        auto slice = buf.allocate(2 * q.length);
-        foreach (i, c; q)
-        {
-            char hi = (c >> 4) & 0xF;
-            slice[i * 2] = cast(char)(hi < 10 ? hi + '0' : hi - 10 + 'a');
-            char lo = c & 0xF;
-            slice[i * 2 + 1] = cast(char)(lo < 10 ? lo + '0' : lo - 10 + 'a');
-        }
+        buf.writeHexString(cast(const(ubyte)[]) q, false);
     }
 
     override void visit(ArrayLiteralExp e)
@@ -1168,6 +1092,7 @@ private struct Backref
         {
             if (t.isFunction_Delegate_PtrToFunction())
             {
+                import dmd.typesem : merge2;
                 t = t.merge2();
             }
         }
@@ -1211,19 +1136,6 @@ private struct Backref
     Type rootType;                          /// avoid infinite recursion
     AssocArray!(Type, size_t) types;        /// Type => (offset+1) in buf
     AssocArray!(Identifier, size_t) idents; /// Identifier => (offset+1) in buf
-}
-
-
-/***********************
- * Mangle basic type ty to buf.
- */
-
-private void tyToDecoBuffer(ref OutBuffer buf, int ty) @safe
-{
-    const c = mangleChar[ty];
-    buf.writeByte(c);
-    if (c == 'z')
-        buf.writeByte(ty == Tint128 ? 'i' : 'k');
 }
 
 /*********************************

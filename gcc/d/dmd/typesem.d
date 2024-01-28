@@ -35,6 +35,7 @@ import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
+import dmd.enumsem;
 import dmd.errors;
 import dmd.errorsink;
 import dmd.expression;
@@ -2919,6 +2920,29 @@ extern (C++) Type merge(Type type)
     return type;
 }
 
+/*************************************
+ * This version does a merge even if the deco is already computed.
+ * Necessary for types that have a deco, but are not merged.
+ */
+extern(C++) Type merge2(Type type)
+{
+    //printf("merge2(%s)\n", toChars());
+    Type t = type;
+    assert(t);
+    if (!t.deco)
+        return t.merge();
+
+    auto sv = Type.stringtable.lookup(t.deco, strlen(t.deco));
+    if (sv && sv.value)
+    {
+        t = sv.value;
+        assert(t.deco);
+    }
+    else
+        assert(0);
+    return t;
+}
+
 /***************************************
  * Calculate built-in properties which just the type is necessary.
  *
@@ -5697,7 +5721,7 @@ Type getComplexLibraryType(const ref Loc loc, Scope* sc, TY ty)
  * Returns:
  *     An enum value of either `Covariant.yes` or a reason it's not covariant.
  */
-extern (C++) Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool cppCovariant = false)
+extern(C++) Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool cppCovariant = false)
 {
     version (none)
     {

@@ -263,9 +263,9 @@ Implementation_details: `Bitfields` are internally stored in an
 `ubyte`, `ushort`, `uint` or `ulong` depending on the number of bits
 used. The bits are filled in the order given by the parameters,
 starting with the lowest significant bit. The name of the (private)
-variable used for saving the `bitfield` is created by a prefix `_bf`
-and concatenating all of the variable names, each preceded by an
-underscore.
+variable used for saving the `bitfield` is created by concatenating
+all of the variable names, each preceded by an underscore, and
+a suffix `_bf`.
 
 Params: T = A list of template parameters divided into chunks of 3
             items. Each chunk consists (in this order) of a type, a

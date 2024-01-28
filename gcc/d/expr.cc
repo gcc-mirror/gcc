@@ -2495,17 +2495,18 @@ public:
 
 	for (size_t i = 0; i < e->len; i++)
 	  {
-	    tree value = build_integer_cst (e->getCodeUnit (i), etype);
+	    tree value = build_integer_cst (e->getIndex (i), etype);
 	    CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
 	  }
 
 	tree ctor = build_constructor (type, elms);
 	TREE_CONSTANT (ctor) = 1;
 	this->result_ = ctor;
+	return;
       }
     else
       {
-	/* Copy the string contents to a null terminated string.  */
+	/* Copy the string contents to a null terminated STRING_CST.  */
 	dinteger_t length = (e->len * e->sz);
 	char *string = XALLOCAVEC (char, length + e->sz);
 	memset (string, 0, length + e->sz);
@@ -2514,7 +2515,18 @@ public:
 
 	/* String value and type includes the null terminator.  */
 	tree value = build_string (length + e->sz, string);
-	TREE_TYPE (value) = make_array_type (tb->nextOf (), length + 1);
+	if (e->sz <= 4)
+	  TREE_TYPE (value) = make_array_type (tb->nextOf (), length + 1);
+	else
+	  {
+	    /* Hexadecimal literal strings with an 8-byte character type are
+	       just an alternative way to store an array of `ulong'.
+	       Treat it as if it were a `uint[]' array instead.  */
+	    dinteger_t resize = e->sz / 4;
+	    TREE_TYPE (value) = make_array_type (Type::tuns32,
+						 (length * resize) + resize);
+	  }
+
 	value = build_address (value);
 
 	if (tb->ty == TY::Tarray)

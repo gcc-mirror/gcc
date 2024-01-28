@@ -241,6 +241,27 @@ void test12950()
     assert(0b00_00_00_01UL.op12950() == 12951);
 }
 
+void testHexstring()
+{
+    static immutable uint[] x = cast(immutable uint[]) x"FFAADDEE";
+    static assert(x[0] == 0xFFAADDEE);
+    assert(x[0] == 0xFFAADDEE);
+
+    static immutable ulong[] y = cast(immutable ulong[]) x"1122334455667788AABBCCDDEEFF0099";
+    static assert(y[0] == 0x1122334455667788);
+    static assert(y[1] == 0xAABBCCDDEEFF0099);
+    assert(y[0] == 0x1122334455667788);
+    assert(y[1] == 0xAABBCCDDEEFF0099);
+
+    // Test that mangling of StringExp with size 8 is the same as array literal mangling:
+    void f(immutable ulong[] a)() {}
+    static assert(f!y.mangleof == f!([0x1122334455667788, 0xAABBCCDDEEFF0099]).mangleof);
+
+    // Test printing StringExp with size 8
+    enum toStr(immutable ulong[] v) = v.stringof;
+    static assert(toStr!y == `x"88776655443322119900FFEEDDCCBBAA"`);
+}
+
 /***************************************************/
 
 int main()
@@ -249,6 +270,7 @@ int main()
     test2();
     test13907();
     test12950();
+    testHexstring();
 
     printf("Success\n");
     return 0;

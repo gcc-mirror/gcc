@@ -87,6 +87,7 @@ D_FRONTEND_OBJS = \
 	d/ast_node.o \
 	d/astcodegen.o \
 	d/astenums.o \
+	d/basicmangle.o \
 	d/blockexit.o \
 	d/builtin.o \
 	d/canthrow.o \
@@ -122,6 +123,7 @@ D_FRONTEND_OBJS = \
 	d/dtoh.o \
 	d/dversion.o \
 	d/entity.o \
+	d/enumsem.o \
 	d/errors.o \
 	d/errorsink.o \
 	d/escape.o \
@@ -130,6 +132,7 @@ D_FRONTEND_OBJS = \
 	d/file_manager.o \
 	d/foreachvar.o \
 	d/func.o \
+	d/funcsem.o \
 	d/globals.o \
 	d/gluelayer.o \
 	d/hdrgen.o \
@@ -192,6 +195,7 @@ D_FRONTEND_OBJS = \
 	d/stmtstate.o \
 	d/target.o \
 	d/templateparamsem.o \
+	d/templatesem.o \
 	d/tokens.o \
 	d/traits.o \
 	d/transitivevisitor.o \

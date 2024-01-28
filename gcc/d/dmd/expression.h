@@ -38,6 +38,7 @@ class TemplateDeclaration;
 class ClassDeclaration;
 class OverloadSet;
 class StringExp;
+class InterpExp;
 class LoweredAssignExp;
 #ifdef IN_GCC
 typedef union tree_node Symbol;
@@ -129,6 +130,7 @@ public:
     SuperExp* isSuperExp();
     NullExp* isNullExp();
     StringExp* isStringExp();
+    InterpExp* isInterpExp();
     TupleExp* isTupleExp();
     ArrayLiteralExp* isArrayLiteralExp();
     AssocArrayLiteralExp* isAssocArrayLiteralExp();
@@ -352,7 +354,7 @@ class StringExp final : public Expression
 public:
     utf8_t postfix;      // 'c', 'w', 'd'
     OwnedBy ownedByCtfe;
-    void *string;       // char, wchar, or dchar data
+    void *string;       // char, wchar, dchar, or long data
     size_t len;         // number of chars, wchars, or dchars
     unsigned char sz;   // 1: char, 2: wchar, 4: dchar
     d_bool committed;   // if type is committed
@@ -362,12 +364,23 @@ public:
     static StringExp *create(const Loc &loc, const void *s, d_size_t len);
     bool equals(const RootObject * const o) const override;
     char32_t getCodeUnit(d_size_t i) const;
+    dinteger_t getIndex(d_size_t i) const;
     StringExp *toStringExp() override;
     Optional<bool> toBool() override;
     bool isLvalue() override;
     void accept(Visitor *v) override { v->visit(this); }
     size_t numberOfCodeUnits(int tynto = 0) const;
     void writeTo(void* dest, bool zero, int tyto = 0) const;
+};
+
+class InterpExp final : public Expression
+{
+public:
+    utf8_t postfix;   // 'c', 'w', 'd'
+    OwnedBy ownedByCtfe;
+    void* interpolatedSet;
+
+    void accept(Visitor* v) override { v->visit(this); }
 };
 
 // Tuple

@@ -5204,6 +5204,7 @@ void highlightCode2(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t offset)
             highlight = "$(D_COMMENT ";
             break;
         case TOK.string_:
+        case TOK.interpolated:
             highlight = "$(D_STRING ";
             break;
         default:
@@ -5216,7 +5217,7 @@ void highlightCode2(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t offset)
             res.writestring(highlight);
             size_t o = res.length;
             highlightCode3(sc, res, tok.ptr, lex.p);
-            if (tok.value == TOK.comment || tok.value == TOK.string_)
+            if (tok.value == TOK.comment || tok.value == TOK.string_ || tok.value == TOK.interpolated)
                 /* https://issues.dlang.org/show_bug.cgi?id=7656
                  * https://issues.dlang.org/show_bug.cgi?id=7715
                  * https://issues.dlang.org/show_bug.cgi?id=10519

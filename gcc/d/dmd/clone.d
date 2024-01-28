@@ -27,6 +27,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
@@ -905,7 +906,7 @@ void buildDtors(AggregateDeclaration ad, Scope* sc)
                 a.addMember(sc, ad); // temporarily add to symbol table
             }
 
-            sdv.dtor.functionSemantic();
+            functionSemantic(sdv.dtor);
 
             stc = mergeFuncAttrs(stc, sdv.dtor);
             if (stc & STC.disable)
@@ -1154,7 +1155,7 @@ private DtorDeclaration buildExternDDtor(AggregateDeclaration ad, Scope* sc)
     ad.members.push(func);
     func.addMember(sc2, ad);
     func.dsymbolSemantic(sc2);
-    func.functionSemantic(); // to infer attributes
+    functionSemantic(func); // to infer attributes
 
     sc2.pop();
     return func;
@@ -1336,7 +1337,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
         // perform semantic on the member postblit in order to
         // be able to aggregate it later on with the rest of the
         // postblits
-        sdv.postblit.functionSemantic();
+        functionSemantic(sdv.postblit);
 
         stc = mergeFuncAttrs(stc, sdv.postblit);
         stc = mergeFuncAttrs(stc, sdv.dtor);
@@ -1401,7 +1402,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
          */
         if (sdv.dtor)
         {
-            sdv.dtor.functionSemantic();
+            functionSemantic(sdv.dtor);
 
             // keep a list of fields that need to be destroyed in case
             // of a future postblit failure

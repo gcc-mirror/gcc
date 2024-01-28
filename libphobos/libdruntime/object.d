@@ -65,7 +65,7 @@ alias ptrdiff_t = typeof(cast(void*)0 - cast(void*)0);
 alias sizediff_t = ptrdiff_t; // For backwards compatibility only.
 /**
  * Bottom type.
- * See $(DDSUBLINK spec/type, noreturn).
+ * See $(DDSUBLINK spec/type, noreturn, `noreturn`).
  */
 alias noreturn = typeof(*null);
 
@@ -1667,10 +1667,11 @@ class TypeInfo_Class : TypeInfo
     void*      deallocator;
     OffsetTypeInfo[] m_offTi;
     void function(Object) defaultConstructor;   // default Constructor
-    ulong[2] nameSig;            /// unique signature for `name`
 
     immutable(void)* m_RTInfo;        // data for precise GC
     override @property immutable(void)* rtInfo() const { return m_RTInfo; }
+
+    uint[4] nameSig;            /// unique signature for `name`
 
     /**
      * Search all modules for TypeInfo_Class corresponding to classname.

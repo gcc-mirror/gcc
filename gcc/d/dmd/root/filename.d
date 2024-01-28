@@ -78,7 +78,7 @@ nothrow:
     private const(char)[] str;
 
     ///
-    extern (D) this(const(char)[] str) pure
+    extern (D) this(const char[] str) pure
     {
         this.str = str.xarraydup;
     }
@@ -96,7 +96,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static bool equals(const(char)[] name1, const(char)[] name2) pure @nogc
+    extern (D) static bool equals(const char[] name1, const char[] name2) pure @nogc
     {
         if (name1.length != name2.length)
             return false;
@@ -125,7 +125,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static bool absolute(const(char)[] name) pure @nogc @safe
+    extern (D) static bool absolute(const char[] name) pure @nogc @safe
     {
         if (!name.length)
             return false;
@@ -189,7 +189,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static const(char)[] ext(const(char)[] str) nothrow pure @safe @nogc
+    extern (D) static const(char)[] ext(const char[] str) nothrow pure @safe @nogc
     {
         foreach_reverse (idx, char e; str)
         {
@@ -249,7 +249,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static const(char)[] removeExt(const(char)[] str)
+    extern (D) static const(char)[] removeExt(const char[] str)
     {
         auto e = ext(str);
         if (e.length)
@@ -278,7 +278,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static const(char)[] name(const(char)[] str) pure @nogc @safe
+    extern (D) static const(char)[] name(const char[] str) pure @nogc @safe
     {
         foreach_reverse (idx, char e; str)
         {
@@ -333,7 +333,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static const(char)[] path(const(char)[] str)
+    extern (D) static const(char)[] path(const char[] str)
     {
         const n = name(str);
         bool hasTrailingSlash;
@@ -358,7 +358,7 @@ nothrow:
     /**************************************
      * Replace filename portion of path.
      */
-    extern (D) static const(char)[] replaceName(const(char)[] path, const(char)[] name)
+    extern (D) static const(char)[] replaceName(const char[] path, const char[] name)
     {
         if (absolute(name))
             return name;
@@ -387,7 +387,7 @@ nothrow:
     }
 
     /// Ditto
-    extern(D) static const(char)[] combine(const(char)[] path, const(char)[] name)
+    extern(D) static const(char)[] combine(const char[] path, const char[] name)
     {
         return !path.length ? name : buildPath(path, name);
     }
@@ -401,7 +401,7 @@ nothrow:
         assert(combine("foo/"[], "bar"[]) == "foo/bar");
     }
 
-    static const(char)[] buildPath(const(char)[][] fragments...)
+    static const(char)[] buildPath(const char[][] fragments...)
     {
         size_t size;
         foreach (f; fragments)
@@ -563,7 +563,7 @@ nothrow:
      * Returns:
      *   A newly allocated string (free with `FileName.free`)
      */
-    extern(D) static char[] addExt(const(char)[] name, const(char)[] ext) pure
+    extern(D) static char[] addExt(const char[] name, const char[] ext) pure
     {
         const len = name.length + ext.length + 2;
         auto s = cast(char*)mem.xmalloc(len);
@@ -584,7 +584,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static const(char)[] defaultExt(const(char)[] name, const(char)[] ext)
+    extern (D) static const(char)[] defaultExt(const char[] name, const char[] ext)
     {
         auto e = FileName.ext(name);
         if (e.length) // it already has an extension
@@ -608,7 +608,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static const(char)[] forceExt(const(char)[] name, const(char)[] ext)
+    extern (D) static const(char)[] forceExt(const char[] name, const char[] ext)
     {
         if (auto e = FileName.ext(name))
             return addExt(name[0 .. $ - e.length - 1], ext);
@@ -630,7 +630,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static bool equalsExt(const(char)[] name, const(char)[] ext) pure @nogc
+    extern (D) static bool equalsExt(const char[] name, const char[] ext) pure @nogc
     {
         auto e = FileName.ext(name);
         if (!e.length && !ext.length)
@@ -665,12 +665,12 @@ nothrow:
      * Returns:
      *  if found, filename combined with path, otherwise null
      */
-    extern (C++) static const(char)* searchPath(Strings* path, const(char)* name, bool cwd)
+    extern (C++) static const(char)* searchPath(const ref Strings path, const char* name, bool cwd)
     {
-        return searchPath(path, name.toDString, cwd).ptr;
+        return searchPath(path[], name.toDString, cwd).ptr;
     }
 
-    extern (D) static const(char)[] searchPath(Strings* path, const(char)[] name, bool cwd)
+    extern (D) static const(char)[] searchPath(const char*[] path, const char[] name, bool cwd)
     {
         if (absolute(name))
         {
@@ -681,24 +681,21 @@ nothrow:
             if (exists(name))
                 return name;
         }
-        if (path)
+        foreach (p; path)
         {
-            foreach (p; *path)
+            auto n = combine(p.toDString, name);
+            if (exists(n))
+                return n;
+            //combine might return name
+            if (n.ptr != name.ptr)
             {
-                auto n = combine(p.toDString, name);
-                if (exists(n))
-                    return n;
-                //combine might return name
-                if (n.ptr != name.ptr)
-                {
-                    mem.xfree(cast(void*)n.ptr);
-                }
+                mem.xfree(cast(void*)n.ptr);
             }
         }
         return null;
     }
 
-    extern (D) static const(char)[] searchPath(const(char)* path, const(char)[] name, bool cwd)
+    extern (D) static const(char)[] searchPath(const char* path, const char[] name, bool cwd)
     {
         if (absolute(name))
         {
@@ -738,7 +735,7 @@ nothrow:
      * Returns:
      *  index of the first reserved character in path if found, size_t.max otherwise
      */
-    extern (D) static size_t findReservedChar(const(char)[] name) pure @nogc @safe
+    extern (D) static size_t findReservedChar(const char[] name) pure @nogc @safe
     {
         version (Windows)
         {
@@ -787,7 +784,7 @@ nothrow:
      * Returns:
      *  true if path contains '..' reference to parent directory
      */
-    extern (D) static bool refersToParentDir(const(char)[] name) pure @nogc @safe
+    extern (D) static bool refersToParentDir(const char[] name) pure @nogc @safe
     {
         size_t s = 0;
         foreach (i; 0 .. name.length)
@@ -845,7 +842,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static int exists(const(char)[] name)
+    extern (D) static int exists(const char[] name)
     {
         if (!name.length)
             return 0;
@@ -892,7 +889,7 @@ nothrow:
        Returns:
          `true` if the directory exists or was successfully created
      */
-    extern (D) static bool ensurePathExists(const(char)[] path)
+    extern (D) static bool ensurePathExists(const char[] path)
     {
         //printf("FileName::ensurePathExists(%s)\n", path ? path : "");
         if (!path.length)
@@ -967,7 +964,7 @@ nothrow:
     }
 
     /// Ditto
-    extern (D) static const(char)[] canonicalName(const(char)[] name)
+    extern (D) static const(char)[] canonicalName(const char[] name)
     {
         version (Posix)
         {
@@ -1127,7 +1124,7 @@ version(Windows)
      * References:
      *  https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
      */
-    private int _mkdir(const(char)[] path) nothrow
+    private int _mkdir(const char[] path) nothrow
     {
         const createRet = path.extendedPathThen!(
             p => CreateDirectoryW(&p[0], null /*securityAttributes*/));
@@ -1175,7 +1172,7 @@ version(Windows)
      * Returns:
      *  The result of calling F on the UTF16 version of str.
      */
-    private auto toWStringzThen(alias F)(const(char)[] str) nothrow
+    private auto toWStringzThen(alias F)(const char[] str) nothrow
     {
         import dmd.common.smallbuffer : SmallBuffer, toWStringz;
 

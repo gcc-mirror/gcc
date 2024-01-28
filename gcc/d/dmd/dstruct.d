@@ -616,7 +616,7 @@ bool _isZeroInit(Expression exp)
 
             foreach (i; 0 .. se.len)
             {
-                if (se.getCodeUnit(i))
+                if (se.getIndex(i) != 0)
                     return false;
             }
             return true;

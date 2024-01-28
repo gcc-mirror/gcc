@@ -1,12 +1,14 @@
 /*
 TEST_OUTPUT:
----
-fail_compilation/ice12501.d(31): Error: function `ice12501.foo(int value)` is not callable using argument types `(int, int)`
-fail_compilation/ice12501.d(31):        expected 1 argument(s), not 2
-fail_compilation/ice12501.d(31): Error: function `ice12501.foo(int value)` is not callable using argument types `(int, int)`
-fail_compilation/ice12501.d(31):        expected 1 argument(s), not 2
-fail_compilation/ice12501.d(45): Error: template instance `ice12501.reduce!(foo, foo).reduce!(Tuple!(int, int), int[])` error instantiating
----
+----
+fail_compilation/ice12501.d(33): Error: function `foo` is not callable using argument types `(int, int)`
+fail_compilation/ice12501.d(33):        expected 1 argument(s), not 2
+fail_compilation/ice12501.d(40):        `ice12501.foo(int value)` declared here
+fail_compilation/ice12501.d(33): Error: function `foo` is not callable using argument types `(int, int)`
+fail_compilation/ice12501.d(33):        expected 1 argument(s), not 2
+fail_compilation/ice12501.d(40):        `ice12501.foo(int value)` declared here
+fail_compilation/ice12501.d(47): Error: template instance `ice12501.reduce!(foo, foo).reduce!(Tuple!(int, int), int[])` error instantiating
+----
 */
 
 struct Tuple(T...)

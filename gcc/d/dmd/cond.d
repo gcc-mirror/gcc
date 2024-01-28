@@ -548,8 +548,6 @@ extern (C++) final class DebugCondition : DVCondition
     /// Ditto
     extern(D) static void addGlobalIdent(const(char)[] ident)
     {
-        if (!global.debugids)
-            global.debugids = new Identifiers();
         global.debugids.push(Identifier.idPool(ident));
     }
 
@@ -579,7 +577,7 @@ extern (C++) final class DebugCondition : DVCondition
             bool definedInModule = false;
             if (ident)
             {
-                if (findCondition(mod.debugids, ident))
+                if (mod.debugids && findCondition(*mod.debugids, ident))
                 {
                     inc = Include.yes;
                     definedInModule = true;
@@ -830,8 +828,6 @@ extern (C++) final class VersionCondition : DVCondition
     /// Ditto
     extern(D) static void addPredefinedGlobalIdent(const(char)[] ident)
     {
-        if (!global.versionids)
-            global.versionids = new Identifiers();
         global.versionids.push(Identifier.idPool(ident));
     }
 
@@ -861,7 +857,7 @@ extern (C++) final class VersionCondition : DVCondition
             bool definedInModule = false;
             if (ident)
             {
-                if (findCondition(mod.versionids, ident))
+                if (mod.versionids && findCondition(*mod.versionids, ident))
                 {
                     inc = Include.yes;
                     definedInModule = true;
@@ -983,15 +979,12 @@ extern (C++) final class StaticIfCondition : Condition
  * Returns:
  *      true if found
  */
-bool findCondition(Identifiers* ids, Identifier ident) @safe nothrow pure
+bool findCondition(ref Identifiers ids, Identifier ident) @safe nothrow pure
 {
-    if (ids)
+    foreach (id; ids)
     {
-        foreach (id; *ids)
-        {
-            if (id == ident)
-                return true;
-        }
+        if (id == ident)
+            return true;
     }
     return false;
 }

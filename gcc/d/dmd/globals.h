@@ -202,8 +202,8 @@ struct Param
 
     DString  argv0;    // program name
     Array<const char *> modFileAliasStrings; // array of char*'s of -I module filename alias strings
-    Array<const char *> *imppath;     // array of char*'s of where to look for import modules
-    Array<const char *> *fileImppath; // array of char*'s of where to look for file import modules
+    Array<const char *> imppath;     // array of char*'s of where to look for import modules
+    Array<const char *> fileImppath; // array of char*'s of where to look for file import modules
     DString objdir;    // .obj/.lib file output directory
     DString objname;   // .obj file output name
     DString libname;   // .lib file output name
@@ -282,8 +282,8 @@ struct Global
 
     const DString copyright;
     const DString written;
-    Array<const char *> *path;        // Array of char*'s which form the import lookup path
-    Array<const char *> *filePath;    // Array of char*'s which form the file import lookup path
+    Array<const char *> path;        // Array of char*'s which form the import lookup path
+    Array<const char *> filePath;    // Array of char*'s which form the file import lookup path
 
     char datetime[26];       /// string returned by ctime()
     CompileEnv compileEnv;
@@ -297,8 +297,8 @@ struct Global
 
     void* console;         // opaque pointer to console for controlling text attributes
 
-    Array<class Identifier*>* versionids; // command line versions and predefined versions
-    Array<class Identifier*>* debugids;   // command line debug versions and predefined versions
+    Array<class Identifier*> versionids; // command line versions and predefined versions
+    Array<class Identifier*> debugids;   // command line debug versions and predefined versions
 
     d_bool hasMainFunction;
     unsigned varSequenceNumber;

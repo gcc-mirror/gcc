@@ -65,6 +65,7 @@ extern (C++) bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope
         fatal();
     }
 
+    import dmd.typesem : merge2;
     Type t = torig.merge2(); // do this since not all Type's are merge'd
     bool needsCodegen = false;
     if (!t.vtinfo)

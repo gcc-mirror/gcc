@@ -234,7 +234,8 @@ struct ClassFlags
         hasTypeInfo = 0x20,
         isAbstract = 0x40,
         isCPPclass = 0x80,
-        hasDtor = 0x100
+        hasDtor = 0x100,
+        hasNameSig = 0x200,
     };
 };
 

@@ -42,10 +42,12 @@ import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.errorsink;
+import dmd.enumsem;
 import dmd.escape;
 import dmd.expression;
 import dmd.file_manager;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
@@ -1579,7 +1581,7 @@ Lagain:
     if (auto f = s.isFuncDeclaration())
     {
         f = f.toAliasFunc();
-        if (!f.functionSemantic())
+        if (!functionSemantic(f))
             return ErrorExp.get();
 
         if (!hasOverloads && f.checkForwardRef(loc))
@@ -2866,7 +2868,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
     // If inferring return type, and semantic3() needs to be run if not already run
     if (!tf.next && fd.inferRetType)
     {
-        fd.functionSemantic();
+        functionSemantic(fd);
     }
     else if (fd && fd.parent)
     {
@@ -4145,6 +4147,84 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         result = e;
     }
 
+    override void visit(InterpExp e)
+    {
+        // the lexer breaks up into an odd/even array of literals and expression code
+        // we need to turn that into:
+        /+
+            tuple(
+                .object.imported!"core.interpolation".InterpolationHeader(),
+                ...
+                .object.imported!"core.interpolation".InterpolationFooter()
+            )
+
+            There the ... loops through them all, making the even ones
+                .object.imported!"core.interpolation".InterpolatedLiteral!str()
+            and making the odd ones
+                .object.imported!"core.interpolation".InterpolatedExpression!str(),
+                the code represented by str
+
+            Empty string literals are skipped as they provide no additional information.
+        +/
+
+        if (e.postfix)
+            error(e.loc, "String postfixes on interpolated expression sequences are not allowed.");
+
+        Expression makeNonTemplateItem(Identifier which) {
+            Expression id = new IdentifierExp(e.loc, Id.empty);
+            id = new DotIdExp(e.loc, id, Id.object);
+            auto moduleNameArgs = new Objects();
+            moduleNameArgs.push(new StringExp(e.loc, "core.interpolation"));
+            id = new DotTemplateInstanceExp(e.loc, id, Id.imported, moduleNameArgs);
+            id = new DotIdExp(e.loc, id, which);
+            id = new CallExp(e.loc, id, new Expressions());
+            return id;
+        }
+
+        Expression makeTemplateItem(Identifier which, string arg) {
+            Expression id = new IdentifierExp(e.loc, Id.empty);
+            id = new DotIdExp(e.loc, id, Id.object);
+            auto moduleNameArgs = new Objects();
+            moduleNameArgs.push(new StringExp(e.loc, "core.interpolation"));
+            id = new DotTemplateInstanceExp(e.loc, id, Id.imported, moduleNameArgs);
+            auto tiargs = new Objects();
+            auto templateStringArg = new StringExp(e.loc, arg);
+            // banning those instead of forwarding them
+            // templateStringArg.postfix = e.postfix; // forward the postfix to these literals
+            tiargs.push(templateStringArg);
+            id = new DotTemplateInstanceExp(e.loc, id, which, tiargs);
+            id = new CallExp(e.loc, id, new Expressions());
+            return id;
+        }
+
+        auto arguments = new Expressions();
+        arguments.push(makeNonTemplateItem(Id.InterpolationHeader));
+
+        foreach (idx, str; e.interpolatedSet.parts)
+        {
+            if (idx % 2 == 0)
+            {
+                if (str.length > 0)
+                    arguments.push(makeTemplateItem(Id.InterpolatedLiteral, str));
+            }
+            else
+            {
+                arguments.push(makeTemplateItem(Id.InterpolatedExpression, str));
+                Expressions* mix = new Expressions();
+                mix.push(new StringExp(e.loc, str));
+                // FIXME: i'd rather not use MixinExp but idk how to do it lol
+                arguments.push(new MixinExp(e.loc, mix));
+            }
+        }
+
+        arguments.push(makeNonTemplateItem(Id.InterpolationFooter));
+
+        auto loweredTo = new TupleExp(e.loc, arguments);
+        visit(loweredTo);
+
+        result = loweredTo;
+    }
+
     override void visit(StringExp e)
     {
         static if (LOGSEMANTIC)
@@ -5366,7 +5446,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (fd)
         {
             //printf("L%d fd = %s\n", __LINE__, f.toChars());
-            if (!fd.functionSemantic())
+            if (!functionSemantic(fd))
                 return setError();
         }
 
@@ -6564,10 +6644,11 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                         .errorSupplemental(exp.loc, "the following error occured while looking for a UFCS match");
                     }
 
-                    .error(exp.loc, "%s `%s%s` is not callable using argument types `%s`",
-                        exp.f.kind(), exp.f.toPrettyChars(), parametersTypeToChars(tf.parameterList), buf.peekChars());
+                    .error(exp.loc, "%s `%s` is not callable using argument types `%s`",
+                        exp.f.kind(), exp.f.toChars(), buf.peekChars());
                     if (failMessage)
                         errorSupplemental(exp.loc, "%s", failMessage);
+                    .errorSupplemental(exp.f.loc, "`%s%s` declared here", exp.f.toPrettyChars(), parametersTypeToChars(tf.parameterList));
                     exp.f = null;
                 }
 
@@ -7549,7 +7630,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         se = se.toUTF8(sc);
 
         auto namez = se.toStringz();
-        if (!global.filePath)
+        if (!global.filePath.length)
         {
             error(e.loc, "need `-J` switch to import text file `%s`", namez.ptr);
             return setError();
@@ -7580,12 +7661,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return setError();
         }
 
-        auto resolvedNamez = FileName.searchPath(global.filePath, namez, false);
+        auto resolvedNamez = FileName.searchPath(global.filePath[], namez, false);
         if (!resolvedNamez)
         {
             error(e.loc, "file `%s` cannot be found or not in a path specified with `-J`", se.toChars());
             errorSupplemental(e.loc, "Path(s) searched (as provided by `-J`):");
-            foreach (idx, path; *global.filePath)
+            foreach (idx, path; global.filePath[])
             {
                 const attr = FileName.exists(path);
                 const(char)* err = attr == 2 ? "" :
@@ -8170,7 +8251,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (FuncDeclaration fd = exp.var.isFuncDeclaration())
         {
             // for functions, do checks after overload resolution
-            if (!fd.functionSemantic())
+            if (!functionSemantic(fd))
                 return setError();
 
             /* https://issues.dlang.org/show_bug.cgi?id=13843
@@ -8937,7 +9018,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         bool err = false;
         if (cd.dtor)
         {
-            err |= !cd.dtor.functionSemantic();
+            err |= !functionSemantic(cd.dtor);
             err |= cd.dtor.checkPurity(exp.loc, sc);
             err |= cd.dtor.checkSafety(exp.loc, sc);
             err |= cd.dtor.checkNogc(exp.loc, sc);
@@ -14356,7 +14437,7 @@ Expression dotIdSemanticProp(DotIdExp exp, Scope* sc, bool gag)
             if (auto f = s.isFuncDeclaration())
             {
                 //printf("it's a function\n");
-                if (!f.functionSemantic())
+                if (!functionSemantic(f))
                     return ErrorExp.get();
                 Expression e;
                 if (f.needThis())

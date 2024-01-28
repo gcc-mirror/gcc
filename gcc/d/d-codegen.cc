@@ -150,7 +150,7 @@ declaration_type (Declaration *decl)
       TypeFunction *tf = TypeFunction::create (NULL, decl->type,
 					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
-      return build_ctype (t->merge2 ());
+      return build_ctype (merge2 (t));
     }
 
   /* Static array va_list have array->pointer conversions applied.  */
@@ -200,7 +200,7 @@ parameter_type (Parameter *arg)
       TypeFunction *tf = TypeFunction::create (NULL, arg->type,
 					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
-      return build_ctype (t->merge2 ());
+      return build_ctype (merge2 (t));
     }
 
   /* Static array va_list have array->pointer conversions applied.  */

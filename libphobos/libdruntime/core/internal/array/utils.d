@@ -33,7 +33,6 @@ private
 auto gcStatsPure() nothrow pure
 {
     import core.memory : GC;
-
     auto impureBypass = cast(GC.Stats function() pure nothrow)&GC.stats;
     return impureBypass();
 }

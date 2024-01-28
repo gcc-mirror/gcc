@@ -568,6 +568,9 @@ StringExp createBlockDuplicatedStringLiteral(UnionExp* pue, const ref Loc loc, T
         case 4:
             (cast(dchar*)s)[elemi] = value;
             break;
+        case 8:
+            (cast(ulong*)s)[elemi] = value;
+            break;
         default:
             assert(0);
         }
@@ -1494,7 +1497,7 @@ Expression ctfeIndex(UnionExp* pue, const ref Loc loc, Type type, Expression e1,
             error(loc, "string index %llu is out of bounds `[0 .. %llu]`", indx, cast(ulong)es1.len);
             return CTFEExp.cantexp;
         }
-        emplaceExp!IntegerExp(pue, loc, es1.getCodeUnit(cast(size_t) indx), type);
+        emplaceExp!IntegerExp(pue, loc, es1.getIndex(cast(size_t) indx), type);
         return pue.exp();
     }
 
@@ -1704,7 +1707,7 @@ Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray 
         void* s = mem.xcalloc(newlen + 1, oldse.sz);
         const data = oldse.peekData();
         memcpy(s, data.ptr, copylen * oldse.sz);
-        const defaultValue = cast(uint)defaultElem.toInteger();
+        const defaultValue = cast(ulong)defaultElem.toInteger();
         foreach (size_t elemi; copylen .. newlen)
         {
             switch (oldse.sz)
@@ -1717,6 +1720,9 @@ Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray 
                 break;
             case 4:
                 (cast(dchar*)s)[cast(size_t)(indxlo + elemi)] = cast(dchar)defaultValue;
+                break;
+            case 8:
+                (cast(ulong*)s)[cast(size_t)(indxlo + elemi)] = cast(ulong)defaultValue;
                 break;
             default:
                 assert(0);

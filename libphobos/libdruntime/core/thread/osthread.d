@@ -493,9 +493,8 @@ class Thread : ThreadBase
         slock.lock_nothrow();
         scope(exit) slock.unlock_nothrow();
         {
-            ++nAboutToStart;
-            pAboutToStart = cast(ThreadBase*)realloc(pAboutToStart, Thread.sizeof * nAboutToStart);
-            pAboutToStart[nAboutToStart - 1] = this;
+            incrementAboutToStart(this);
+
             version (Windows)
             {
                 if ( ResumeThread( m_hndl ) == -1 )
