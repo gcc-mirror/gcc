@@ -1,3 +1,10 @@
+2024-01-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/105608
+	* c-pch.cc (c_common_read_pch): Start a new line map before asking
+	libcpp to restore macros defined prior to reading the PCH, instead
+	of afterward.
+
 2023-11-10  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
