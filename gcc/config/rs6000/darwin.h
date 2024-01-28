@@ -113,6 +113,9 @@
   -lSystem								\
 }"
 
+#undef DARWIN_HEAP_T_LIB
+#define DARWIN_HEAP_T_LIB " "
+
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  The "-faltivec" option should have been
    called "-maltivec" all along.  */

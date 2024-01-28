@@ -51,5 +51,18 @@ LIB2ADDEH = $(srcdir)/unwind-dw2.c \
 # Do not build a shared unwind lib by default.
 LIBEHSOBJS=
 
+# Make heap trampoline helpers weak definitions so that we can merge them from
+# multiple DSOs.
+heap-trampoline.o: HOST_LIBGCC2_CFLAGS += \
+  -DHEAP_T_ATTR='__attribute__((__weak__,__visibility__("default")))'
+heap-trampoline_s.o: HOST_LIBGCC2_CFLAGS += \
+  -DHEAP_T_ATTR='__attribute__((__weak__,__visibility__("default")))'
+
+# Make a heap trampoline support CRT so that it can be linked optionally, use
+# the shared version so that we can link with DSOs.
+libheapt_w.a: heap-trampoline_s.o
+	$(AR_CREATE_FOR_TARGET) $@ $<
+	$(RANLIB_FOR_TARGET) $@
+
 # Symbols for all the sub-ports.
 SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/libgcc-libsystem.ver
