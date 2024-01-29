@@ -4203,7 +4203,7 @@ package body Sem_Util is
             -------------------
 
             function Has_No_Output (Subp : Entity_Id) return Boolean is
-               Param : Node_Id;
+               Param : Entity_Id;
 
             begin
                --  A function has its result as output
