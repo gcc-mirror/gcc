@@ -3927,14 +3927,15 @@ This is a synonym for @samp{x86_64-*-solaris2*}.
 @heading amdgcn-*-amdhsa
 AMD GCN GPU target.
 
-Instead of GNU Binutils, you will need to install LLVM 13.0.1, or later, and copy
+Instead of GNU Binutils, you will need to install LLVM 15, or later, and copy
 @file{bin/llvm-mc} to @file{amdgcn-amdhsa/bin/as},
 @file{bin/lld} to @file{amdgcn-amdhsa/bin/ld},
 @file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
 @file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
-@file{bin/amdgcn-amdhsa-ranlib}.
+@file{bin/amdgcn-amdhsa-ranlib}.  Note that LLVM 13.0.1 or LLVM 14 can be used
+by specifying a @code{--with-multilib-list=} that does not list @code{gfx1100}.
 
-Use Newlib (4.3.0 or newer).
+Use Newlib (4.3.0 or newer; 4.4.0 or later is recommended).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
