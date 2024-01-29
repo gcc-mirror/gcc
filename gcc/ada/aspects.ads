@@ -198,9 +198,9 @@ package Aspects is
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Full_Access_Only,
       Aspect_Ghost,                         -- GNAT
+      Aspect_Import,
       Aspect_Independent,
       Aspect_Independent_Components,
-      Aspect_Import,
       Aspect_Inline,
       Aspect_Inline_Always,                 -- GNAT
       Aspect_Interrupt_Handler,
@@ -971,6 +971,7 @@ package Aspects is
       Aspect_Shared_Passive               => Always_Delay,
       Aspect_Simple_Storage_Pool          => Always_Delay,
       Aspect_Simple_Storage_Pool_Type     => Always_Delay,
+      Aspect_Stable_Properties            => Always_Delay,
       Aspect_Static_Predicate             => Always_Delay,
       Aspect_Storage_Model_Type           => Always_Delay,
       Aspect_Storage_Pool                 => Always_Delay,
@@ -1032,7 +1033,6 @@ package Aspects is
       Aspect_Relaxed_Initialization       => Never_Delay,
       Aspect_Side_Effects                 => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
-      Aspect_Stable_Properties            => Always_Delay,
       Aspect_Static                       => Never_Delay,
       Aspect_Subprogram_Variant           => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
