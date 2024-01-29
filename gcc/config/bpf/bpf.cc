@@ -420,9 +420,8 @@ bpf_expand_epilogue (void)
   /* See note in bpf_expand_prologue for an explanation on why we are
      not restoring callee-saved registers in BPF.  */
 
-  /* If we ever need to do anything else than just generating a return
-     instruction here, please mind the `naked' function attribute.  */
-
+  if (lookup_attribute ("naked", DECL_ATTRIBUTES (cfun->decl)) != NULL_TREE)
+    return;
   emit_jump_insn (gen_exit ());
 }
 

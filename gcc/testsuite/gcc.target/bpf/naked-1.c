@@ -9,4 +9,3 @@ int __attribute__((naked)) foo()
   __asm__ volatile ("@ naked");
 }
 /* { dg-final { scan-assembler "\t@ naked" } } */
-/* { dg-final { scan-assembler "\texit\n" } } */
