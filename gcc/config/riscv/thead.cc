@@ -1141,7 +1141,7 @@ th_print_operand_address (FILE *file, machine_mode mode, rtx x)
       return true;
 
     case ADDRESS_REG_WB:
-      fprintf (file, "(%s),%ld,%u", reg_names[REGNO (addr.reg)],
+      fprintf (file, "(%s),"HOST_WIDE_INT_PRINT_DEC",%u", reg_names[REGNO (addr.reg)],
 	       INTVAL (addr.offset) >> addr.shift, addr.shift);
 	return true;
 
