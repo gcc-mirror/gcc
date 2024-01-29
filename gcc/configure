@@ -30417,7 +30417,7 @@ fi
 
     fi
 
-    if test x$gcc_cv_as_mips_explicit = xno; then \
+    if test x$gcc_cv_as_mips_explicit_relocs = xno; then \
 
 $as_echo "#define MIPS_EXPLICIT_RELOCS MIPS_EXPLICIT_RELOCS_NONE" >>confdefs.h
 

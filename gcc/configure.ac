@@ -5255,7 +5255,7 @@ LCF0:
 		 [Define if assembler supports %reloc.])])
     fi
 
-    if test x$gcc_cv_as_mips_explicit = xno; then \
+    if test x$gcc_cv_as_mips_explicit_relocs = xno; then \
       AC_DEFINE(MIPS_EXPLICIT_RELOCS, MIPS_EXPLICIT_RELOCS_NONE,
 		[Define if assembler supports %reloc.])
     fi
