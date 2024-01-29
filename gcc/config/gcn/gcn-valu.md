@@ -4274,7 +4274,8 @@
  [(match_operand:<SCALAR_MODE> 0 "register_operand")
   (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand")
   (match_operand:V_FP 2 "gcn_alu_operand")]
-  "can_create_pseudo_p ()
+  "!TARGET_RDNA2_PLUS
+   && can_create_pseudo_p ()
    && (flag_openacc || flag_openmp
        || flag_associative_math)"
   {
