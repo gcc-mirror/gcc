@@ -111,6 +111,7 @@ GRS_OBJS = \
     rust/rust-ast-lower-base.o \
     rust/rust-ast-lower-pattern.o \
     rust/rust-ast-lower-item.o \
+    rust/rust-ast-lower-implitem.o \
     rust/rust-ast-lower-expr.o \
     rust/rust-ast-lower-type.o \
     rust/rust-ast-lower-stmt.o \
