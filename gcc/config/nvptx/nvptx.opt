@@ -108,7 +108,13 @@ Target RejectNegative Alias(misa=,sm_80)
 march-map=sm_87
 Target RejectNegative Alias(misa=,sm_80)
 
+march-map=sm_89
+Target RejectNegative Alias(misa=,sm_80)
+
 march-map=sm_90
+Target RejectNegative Alias(misa=,sm_80)
+
+march-map=sm_90a
 Target RejectNegative Alias(misa=,sm_80)
 
 Enum
