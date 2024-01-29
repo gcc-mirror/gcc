@@ -1,3 +1,10 @@
+2024-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* trans-expr.cc (conv_dummy_value): Treat NULL actual argument to
+	optional dummy with the VALUE attribute as not present.
+	(gfc_conv_procedure_call): Likewise.
+
 2024-01-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104908

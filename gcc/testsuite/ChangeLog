@@ -1,3 +1,18 @@
+2024-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* gfortran.dg/optional_absent_11.f90: New test.
+
+2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/encode-10.mm: Remove unneeded '-lobjc' option addition.
+	* obj-c++.dg/encode-9.mm: Likewise.
+
+2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/jit.exp: Filter error output to remove per-run
+	variable content.
+
 2024-01-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* gcc.target/bpf/helper-skb-ancestor-cgroup-id.c: Add constant

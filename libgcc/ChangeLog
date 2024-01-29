@@ -1,3 +1,17 @@
+2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR libgcc/113402
+	* config/aarch64/heap-trampoline.c: Rename
+	__builtin_nested_func_ptr_created to __gcc_nested_func_ptr_created and
+	__builtin_nested_func_ptr_deleted to __gcc_nested_func_ptr_deleted.
+	* config/i386/heap-trampoline.c: Likewise.
+	* libgcc2.h: Likewise.
+	* libgcc-std.ver.in (GCC_7.0.0): Likewise and then move
+	__gcc_nested_func_ptr_created and
+	__gcc_nested_func_ptr_deleted from this symbol version to ...
+	(GCC_14.0.0): ... this one.
+
 2024-01-26  Andrew Stubbs  <ams@baylibre.com>
 
 	* config/gcn/amdgcn_veclib.h (CDNA3_PLUS): Handle RDNA3.

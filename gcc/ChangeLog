@@ -1,3 +1,30 @@
+2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_build_constant_cfstring): Prevent over-
+	alignment of CFString constants by setting DECL_USER_ALIGN.
+
+2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR libgcc/113402
+	* builtins.cc (expand_builtin): Handle BUILT_IN_GCC_NESTED_PTR_CREATED
+	and BUILT_IN_GCC_NESTED_PTR_DELETED.
+	* builtins.def (BUILT_IN_GCC_NESTED_PTR_CREATED,
+	BUILT_IN_GCC_NESTED_PTR_DELETED): Make these builtins LIB-EXT and
+	rename the library fallbacks to __gcc_nested_func_ptr_created and
+	__gcc_nested_func_ptr_deleted.
+	* doc/invoke.texi: Rename these to __gcc_nested_func_ptr_created
+	and __gcc_nested_func_ptr_deleted.
+	* tree-nested.cc (finalize_nesting_tree_1): Use builtin_explicit for
+	BUILT_IN_GCC_NESTED_PTR_CREATED and BUILT_IN_GCC_NESTED_PTR_DELETED.
+	* tree.cc (build_common_builtin_nodes): Build the
+	BUILT_IN_GCC_NESTED_PTR_CREATED and BUILT_IN_GCC_NESTED_PTR_DELETED local
+	builtins only for non-explicit.
+
+2024-01-28  YunQiang Su  <syq@gcc.gnu.org>
+
+	* doc/invoke.texi: Remove duplicate MIPS explicit-relocs option.
+
 2024-01-27  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/38534
