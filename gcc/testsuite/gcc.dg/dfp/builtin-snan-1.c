@@ -1,6 +1,5 @@
 /* Test __builtin_nansd* functions.  Test not requiring runtime
    exceptions support.  */
-/* { dg-do run } */
 /* { dg-options "" } */
 
 volatile _Decimal32 d32 = __builtin_nansd32 ("");

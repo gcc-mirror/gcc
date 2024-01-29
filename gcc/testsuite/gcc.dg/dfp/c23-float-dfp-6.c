@@ -2,7 +2,6 @@
    quiet not signaling.  (This would only actually fail for a
    signaling NaN in the hardware DFP case, because the software DFP
    support in libgcc does not integrate with hardware exceptions.)  */
-/* { dg-do run } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-options "-std=c23" } */
 

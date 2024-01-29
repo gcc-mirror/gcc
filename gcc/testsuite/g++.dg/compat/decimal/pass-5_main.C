@@ -1,4 +1,5 @@
 /* { dg-require-effective-target dfp } */
+/* { dg-require-effective-target dfprt } */
 
 /* Test passing decimal scalars and typedef'd classes by value.  */
 

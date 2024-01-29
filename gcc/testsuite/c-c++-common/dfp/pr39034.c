@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-O" } */
 
 /* DFP TR 24732 == WG14 / N1176, N1312 */
