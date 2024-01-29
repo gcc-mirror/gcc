@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-fmt.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace Fmt {
@@ -26,13 +27,12 @@ Pieces::collect (const std::string &to_parse)
 {
   auto piece_slice = collect_pieces (to_parse.c_str ());
 
-  rust_debug ("[ARTHUR] %p, %lu", (void *) piece_slice.ptr, piece_slice.len);
+  rust_debug ("[ARTHUR] %p, %lu", (const void *) piece_slice.base_ptr,
+	      piece_slice.len);
 
   // this performs multiple copies, can we avoid them maybe?
-  auto pieces
-    = std::vector (piece_slice.ptr, piece_slice.ptr + piece_slice.len);
-
-  rust_debug ("[ARTHUR] %p, %lu", (void *) pieces.data (), pieces.size ());
+  // auto pieces = std::vector<Piece> (piece_slice.base_ptr,
+  // 	     piece_slice.base_ptr + piece_slice.len);
 
   return Pieces{};
 }
