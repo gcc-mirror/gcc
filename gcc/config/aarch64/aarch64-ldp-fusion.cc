@@ -1480,7 +1480,7 @@ fixup_debug_uses_trailing_add (obstack_watermark &attempt,
   def_info *def = defs[0];
 
   if (auto set = safe_dyn_cast<set_info *> (def->prev_def ()))
-    for (auto use : set->debug_insn_uses ())
+    for (auto use : iterate_safely (set->debug_insn_uses ()))
       if (*use->insn () > *pair_dst)
 	// DEF is getting re-ordered above USE, fix up USE accordingly.
 	fixup_debug_use (attempt, use, def, base, wb_offset);
@@ -1544,13 +1544,16 @@ fixup_debug_uses (obstack_watermark &attempt,
       auto def = memory_access (insns[0]->defs ());
       auto last_def = memory_access (insns[1]->defs ());
       for (; def != last_def; def = def->next_def ())
-	for (auto use : as_a<set_info *> (def)->debug_insn_uses ())
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "  i%d: resetting debug use of mem\n",
-		       use->insn ()->uid ());
-	    reset_debug_use (use);
-	  }
+	{
+	  auto set = as_a<set_info *> (def);
+	  for (auto use : iterate_safely (set->debug_insn_uses ()))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "  i%d: resetting debug use of mem\n",
+			 use->insn ()->uid ());
+	      reset_debug_use (use);
+	    }
+	}
     }
 
   // Now let's take care of register uses, starting with debug uses
@@ -1577,7 +1580,7 @@ fixup_debug_uses (obstack_watermark &attempt,
 
       // Now that we've characterized the defs involved, go through the
       // debug uses and determine how to update them (if needed).
-      for (auto use : set->debug_insn_uses ())
+      for (auto use : iterate_safely (set->debug_insn_uses ()))
 	{
 	  if (*pair_dst < *use->insn () && defs[1])
 	    // We're re-ordering defs[1] above a previous use of the
@@ -1609,7 +1612,7 @@ fixup_debug_uses (obstack_watermark &attempt,
 
       // We have a def in insns[1] which isn't def'd by the first insn.
       // Look to the previous def and see if it has any debug uses.
-      for (auto use : prev_set->debug_insn_uses ())
+      for (auto use : iterate_safely (prev_set->debug_insn_uses ()))
 	if (*pair_dst < *use->insn ())
 	  // We're ordering DEF above a previous use of the same register.
 	  update_debug_use (use, def, writeback_pat);
@@ -1622,7 +1625,8 @@ fixup_debug_uses (obstack_watermark &attempt,
       // second writeback def which need re-parenting: do that.
       auto def = find_access (insns[1]->defs (), base_regno);
       gcc_assert (def);
-      for (auto use : as_a<set_info *> (def)->debug_insn_uses ())
+      auto set = as_a<set_info *> (def);
+      for (auto use : iterate_safely (set->debug_insn_uses ()))
 	{
 	  insn_change change (use->insn ());
 	  change.new_uses = check_remove_regno_access (attempt,
@@ -2921,26 +2925,16 @@ ldp_bb_info::cleanup_tombstones ()
   if (!m_emitted_tombstone)
     return;
 
-  insn_info *insn = m_bb->head_insn ();
-  while (insn)
+  for (auto insn : iterate_safely (m_bb->nondebug_insns ()))
     {
-      insn_info *next = insn->next_nondebug_insn ();
       if (!insn->is_real ()
 	  || !bitmap_bit_p (&m_tombstone_bitmap, insn->uid ()))
-	{
-	  insn = next;
-	  continue;
-	}
+	continue;
 
-      auto def = memory_access (insn->defs ());
-      auto set = dyn_cast<set_info *> (def);
-      if (set && set->has_any_uses ())
+      auto set = as_a<set_info *> (memory_access (insn->defs ()));
+      if (set->has_any_uses ())
 	{
-	  def_info *prev_def = def->prev_def ();
-	  auto prev_set = dyn_cast<set_info *> (prev_def);
-	  if (!prev_set)
-	    gcc_unreachable ();
-
+	  auto prev_set = as_a<set_info *> (set->prev_def ());
 	  while (set->first_use ())
 	    crtl->ssa->reparent_use (set->first_use (), prev_set);
 	}
@@ -2948,7 +2942,6 @@ ldp_bb_info::cleanup_tombstones ()
       // Now set has no uses, we can delete it.
       insn_change change (insn, insn_change::DELETE);
       crtl->ssa->change_insn (change);
-      insn = next;
     }
 }
 

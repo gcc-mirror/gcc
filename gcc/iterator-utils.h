@@ -200,4 +200,77 @@ list_iterator<T, Next>::operator++ (int)
   return ret;
 }
 
+// An iterator that pre-computes the next value if we haven't already got to the
+// end.  This is useful in cases where a standard iterator would get invalidated
+// (e.g. elements getting removed from a container) during the body of a loop.
+template<typename T>
+class safe_iterator
+{
+  T m_current;
+  const T m_end;
+  T m_next;
+
+  T get_next ()
+  {
+    if (m_current != m_end)
+      {
+	// FIXME: we should use std::next here but that would mean having
+	// #include <iterator> everywhere that iterator-utils.h is included.
+	//
+	// For now we just implement it directly.
+	T iter = m_current;
+	return ++iter;
+      }
+    return m_end;
+  }
+
+  void advance ()
+  {
+    m_current = m_next;
+    if (m_next != m_end)
+      ++m_next;
+  }
+
+public:
+  bool operator== (const safe_iterator &other) const
+  {
+    return m_current == other.m_current;
+  }
+
+  bool operator!= (const safe_iterator &other) const
+  {
+    return m_current != other.m_current;
+  }
+
+  typename T::value_type operator*() const { return *m_current; }
+
+  safe_iterator &operator++ ()
+  {
+    advance ();
+    return *this;
+  }
+
+  safe_iterator operator++ (int)
+  {
+    auto ret = *this;
+    advance ();
+    return ret;
+  }
+
+  safe_iterator (T iter, T end)
+    : m_current (iter), m_end (end), m_next (get_next ()) {}
+};
+
+// Convert a container RANGE into a container of safe_iterators.
+template<typename Container>
+inline
+iterator_range<safe_iterator<typename Container::const_iterator>>
+iterate_safely (Container range)
+{
+  return {
+    { range.begin (), range.end () },
+    { range.end (), range.end () }
+  };
+}
+
 #endif
