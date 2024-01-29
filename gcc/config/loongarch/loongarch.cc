@@ -2737,7 +2737,7 @@ loongarch_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
   return plus_constant (Pmode, reg, offset);
 }
 
-/* The __tls_get_attr symbol.  */
+/* The __tls_get_addr symbol.  */
 static GTY (()) rtx loongarch_tls_symbol;
 
 /* Load an entry for a TLS access.  */
@@ -2777,20 +2777,22 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
   if (loongarch_explicit_relocs_p (type))
     {
-      /* Split tls symbol to high and low.  */
-      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (loc));
-      high = loongarch_force_temporary (tmp, high);
-
       if (TARGET_CMODEL_EXTREME)
 	{
-	  rtx tmp1 = gen_reg_rtx (Pmode);
-	  emit_insn (gen_tls_low (Pmode, tmp1, gen_rtx_REG (Pmode, 0), loc));
-	  emit_insn (gen_lui_h_lo20 (tmp1, tmp1, loc));
-	  emit_insn (gen_lui_h_hi12 (tmp1, tmp1, loc));
-	  emit_move_insn (a0, gen_rtx_PLUS (Pmode, high, tmp1));
+	  rtx part1 = gen_reg_rtx (Pmode);
+	  rtx part2 = gen_reg_rtx (Pmode);
+
+	  emit_insn (gen_la_pcrel64_two_parts (part1, part2, loc));
+	  emit_move_insn (a0, gen_rtx_PLUS (Pmode, part1, part2));
 	}
       else
-	emit_insn (gen_tls_low (Pmode, a0, high, loc));
+	{
+	  /* Split tls symbol to high and low.  */
+	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (loc));
+
+	  high = loongarch_force_temporary (tmp, high);
+	  emit_insn (gen_tls_low (Pmode, a0, high, loc));
+	}
     }
   else
     emit_insn (loongarch_load_tls (a0, loc, type));
@@ -2872,22 +2874,28 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 	    {
 	      if (loongarch_explicit_relocs_p (SYMBOL_GOT_DISP))
 		{
-		  rtx tmp1 = gen_reg_rtx (Pmode);
-		  rtx high = gen_reg_rtx (Pmode);
+		  gcc_assert (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE);
 
-		  loongarch_emit_move (high,
-				       gen_rtx_HIGH (Pmode,
-						     loongarch_tls_symbol));
-		  loongarch_emit_move (tmp1,
-				       gen_rtx_LO_SUM (Pmode,
-						       gen_rtx_REG (Pmode, 0),
+		  rtx part1 = gen_reg_rtx (Pmode);
+		  rtx part2 = gen_reg_rtx (Pmode);
+
+		  emit_insn (gen_la_pcrel64_two_parts (part1, part2,
 						       loongarch_tls_symbol));
-		  emit_insn (gen_lui_h_lo20 (tmp1, tmp1, loongarch_tls_symbol));
-		  emit_insn (gen_lui_h_hi12 (tmp1, tmp1, loongarch_tls_symbol));
-		  loongarch_emit_move (dest,
-				       gen_rtx_MEM (Pmode,
-						    gen_rtx_PLUS (Pmode,
-								  high, tmp1)));
+		  loongarch_emit_move (
+		    dest,
+		    gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode,
+						      part1,
+						      part2)));
+
+		  /* Put an REG_EQUAL note here to allow CSE (storing
+		     part1 + part2, i.e. the address of tls_get_addr into
+		     a saved register and use it for multiple TLS
+		     accesses).  */
+		  rtx sum = gen_rtx_UNSPEC (
+		    Pmode, gen_rtvec (1, loongarch_tls_symbol),
+		    UNSPEC_ADDRESS_FIRST
+		    + loongarch_classify_symbol (loongarch_tls_symbol));
+		  set_unique_reg_note (get_last_insn (), REG_EQUAL, sum);
 		}
 	      else
 	       emit_insn (gen_movdi_symbolic_off64 (dest, loongarch_tls_symbol,
@@ -2950,24 +2958,30 @@ loongarch_legitimize_tls_address (rtx loc)
 	  dest = gen_reg_rtx (Pmode);
 	  if (loongarch_explicit_relocs_p (SYMBOL_TLS_IE))
 	    {
-	      tmp3 = gen_reg_rtx (Pmode);
-	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
-	      high = loongarch_force_temporary (tmp3, high);
-
 	      if (TARGET_CMODEL_EXTREME)
 		{
-		  rtx tmp3 = gen_reg_rtx (Pmode);
-		  emit_insn (gen_tls_low (Pmode, tmp3,
-					  gen_rtx_REG (Pmode, 0), tmp2));
-		  emit_insn (gen_lui_h_lo20 (tmp3, tmp3, tmp2));
-		  emit_insn (gen_lui_h_hi12 (tmp3, tmp3, tmp2));
+		  gcc_assert (la_opt_explicit_relocs
+			      != EXPLICIT_RELOCS_NONE);
+
+		  rtx part1 = gen_reg_rtx (Pmode);
+		  rtx part2 = gen_reg_rtx (Pmode);
+
+		  emit_insn (gen_la_pcrel64_two_parts (part1, part2,
+						       tmp2));
 		  emit_move_insn (tmp1,
 				  gen_rtx_MEM (Pmode,
 					       gen_rtx_PLUS (Pmode,
-							     high, tmp3)));
+							     part1,
+							     part2)));
 		}
 	      else
-		emit_insn (gen_ld_from_got (Pmode, tmp1, high, tmp2));
+		{
+		  tmp3 = gen_reg_rtx (Pmode);
+		  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
+
+		  high = loongarch_force_temporary (tmp3, high);
+		  emit_insn (gen_ld_from_got (Pmode, tmp1, high, tmp2));
+		}
 	    }
 	  else
 	    emit_insn (loongarch_load_tls (tmp1, tmp2, SYMBOL_TLS_IE));
@@ -3146,24 +3160,23 @@ loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
       || !loongarch_split_symbol_type (symbol_type))
     return false;
 
-  rtx high, temp1 = NULL;
+  rtx high;
 
   if (temp == NULL)
     temp = gen_reg_rtx (Pmode);
-
-  /* Get the 12-31 bits of the address.  */
-  high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
-  high = loongarch_force_temporary (temp, high);
 
   if (loongarch_symbol_extreme_p (symbol_type) && can_create_pseudo_p ())
     {
       gcc_assert (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE);
 
-      temp1 = gen_reg_rtx (Pmode);
-      emit_move_insn (temp1, gen_rtx_LO_SUM (Pmode, gen_rtx_REG (Pmode, 0),
-					     addr));
-      emit_insn (gen_lui_h_lo20 (temp1, temp1, addr));
-      emit_insn (gen_lui_h_hi12 (temp1, temp1, addr));
+      high = gen_reg_rtx (Pmode);
+      emit_insn (gen_la_pcrel64_two_parts (high, temp, addr));
+    }
+  else
+    {
+      /* Get the 12-31 bits of the address.  */
+      high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
+      high = loongarch_force_temporary (temp, high);
     }
 
   if (low_out)
@@ -3172,7 +3185,7 @@ loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
       case SYMBOL_PCREL64:
 	if (can_create_pseudo_p ())
 	  {
-	    *low_out = gen_rtx_PLUS (Pmode, high, temp1);
+	    *low_out = gen_rtx_PLUS (Pmode, high, temp);
 	    break;
 	  }
 	/* fall through */
@@ -3184,7 +3197,8 @@ loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 	/* SYMBOL_GOT_DISP symbols are loaded from the GOT.  */
 	{
 	  if (TARGET_CMODEL_EXTREME && can_create_pseudo_p ())
-	    *low_out = gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, high, temp1));
+	    *low_out = gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, high,
+							 temp));
 	  else
 	    {
 	      rtx low = gen_rtx_LO_SUM (Pmode, high, addr);
@@ -7497,21 +7511,24 @@ loongarch_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      allowed, otherwise load the address into a register first.  */
   if (use_sibcall_p)
     {
-      if (TARGET_CMODEL_EXTREME)
-	{
-	  emit_insn (gen_movdi_symbolic_off64 (temp1, fnaddr, temp2));
-	  insn = emit_call_insn (gen_sibcall_internal (temp1, const0_rtx));
-	}
-      else
-	insn = emit_call_insn (gen_sibcall_internal (fnaddr, const0_rtx));
+      /* If TARGET_CMODEL_EXTREME, we cannot do a direct jump at all
+	 and const_call_insn_operand should have returned false.  */
+      gcc_assert (!TARGET_CMODEL_EXTREME);
+
+      insn = emit_call_insn (gen_sibcall_internal (fnaddr, const0_rtx));
       SIBLING_CALL_P (insn) = 1;
     }
   else
     {
-      if (TARGET_CMODEL_EXTREME)
+      if (!TARGET_CMODEL_EXTREME)
+	loongarch_emit_move (temp1, fnaddr);
+      else if (la_opt_explicit_relocs == EXPLICIT_RELOCS_NONE)
 	emit_insn (gen_movdi_symbolic_off64 (temp1, fnaddr, temp2));
       else
-	loongarch_emit_move (temp1, fnaddr);
+	{
+	  emit_insn (gen_la_pcrel64_two_parts (temp1, temp2, fnaddr));
+	  emit_move_insn (temp1, gen_rtx_PLUS (Pmode, temp1, temp2));
+	}
 
       emit_jump_insn (gen_indirect_jump (temp1));
     }
