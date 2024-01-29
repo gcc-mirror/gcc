@@ -341,7 +341,7 @@ Syntax:
   pragma Always_Terminates [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Always_Terminates``
-in the SPARK 2014 Reference Manual, section 7.1.2.
+in the SPARK 2014 Reference Manual, section 6.1.10.
 
 .. _Pragma-Annotate:
 
@@ -2381,7 +2381,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Favor_Top_Level (type_NAME);
+  pragma Favor_Top_Level (type_LOCAL_NAME);
 
 
 The argument of pragma ``Favor_Top_Level`` must be a named access-to-subprogram
@@ -2838,7 +2838,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Independent (Local_NAME);
+  pragma Independent (component_LOCAL_NAME);
 
 
 This pragma is standard in Ada 2012 mode (which also provides an aspect
@@ -3537,6 +3537,11 @@ Pragma Lock_Free
 ================
 
 Syntax:
+
+.. code-block:: ada
+
+  pragma Lock_Free [ (static_boolean_EXPRESSION) ];
+
 This pragma may be specified for protected types or objects. It specifies that
 the implementation of protected operations must be implemented without locks.
 Compilation fails if the compiler cannot generate lock-free code for the
@@ -3850,7 +3855,7 @@ same name) that establishes the restriction ``No_Elaboration_Code`` for
 the current unit and any extended main source units (body and subunits).
 It also has the effect of enforcing a transitive application of this
 aspect, so that if any unit is implicitly or explicitly with'ed by the
-current unit, it must also have the No_Elaboration_Code_All aspect set.
+current unit, it must also have the `No_Elaboration_Code_All` aspect set.
 It may be applied to package or subprogram specs or their generic versions.
 
 Pragma No_Heap_Finalization
@@ -4508,7 +4513,7 @@ Syntax:
 
 ::
 
-  pragma Persistent_BSS [(LOCAL_NAME)]
+  pragma Persistent_BSS [(object_LOCAL_NAME)]
 
 
 This pragma allows selected objects to be placed in the ``.persistent_bss``
@@ -6500,12 +6505,12 @@ Syntax:
 
 ::
 
-  pragma Suppress_Initialization ([Entity =>] variable_or_subtype_Name);
+  pragma Suppress_Initialization ([Entity =>] variable_or_subtype_LOCAL_NAME);
 
 
-Here variable_or_subtype_Name is the name introduced by a type declaration
-or subtype declaration or the name of a variable introduced by an
-object declaration.
+Here variable_or_subtype_LOCAL_NAME is the name introduced by a type
+declaration or subtype declaration or the name of a variable introduced by
+an object declaration.
 
 In the case of a type or subtype
 this pragma suppresses any implicit or explicit initialization
@@ -6889,22 +6894,24 @@ Syntax:
 
 
 This configuration pragma defines a new aspect, making it available for
-subsequent use in a User_Aspect aspect specification. The first
-identifier is the name of the new aspect. Any subsequent arguments
-specify the names of other aspects. A subsequent name for which no parenthesized
-arguments are given shall denote either a Boolean-valued
-non-representation aspect or an aspect that has been defined by another
-User_Aspect_Definition pragma. A name for which one or more arguments are
-given shall be either Annotate or Local_Restrictions (and the arguments shall
-be appropriate for the named aspect). This pragma, together with the
-User_Aspect aspect, provides a mechanism for
-avoiding textual duplication if some set of aspect specifications is needed
-in multiple places. This is somewhat analogous to how profiles allow avoiding
-duplication of Restrictions pragmas. The visibility rules for an aspect
-defined by a User_Aspect_Definition pragma are the same as for a check name
-introduced by a Check_Name pragma. If multiple
-definitions are visible for some aspect at some point, then the
-definitions must agree. A predefined aspect cannot be redefined.
+subsequent use in a `User_Aspect` aspect specification. The first identifier
+is the name of the new aspect. Any subsequent arguments specify the names
+of other aspects. A subsequent name for which no parenthesized arguments
+are given shall denote either a Boolean-valued non-representation aspect
+or an aspect that has been defined by another `User_Aspect_Definition`
+pragma. A name for which one or more arguments are given shall be either
+`Annotate` or `Local_Restrictions` (and the arguments shall be appropriate
+for the named aspect).
+
+This pragma, together with the `User_Aspect` aspect, provides a mechanism
+for avoiding textual duplication if some set of aspect specifications
+is needed in multiple places. This is somewhat analogous to how profiles
+allow avoiding duplication of `Restrictions` pragmas.
+
+The visibility rules for an aspect defined by a `User_Aspect_Definition`
+pragma are the same as for a check name introduced by a `Check_Name`
+pragma. If multiple definitions are visible for some aspect at some point,
+then the definitions must agree. A predefined aspect cannot be redefined.
 
 
 Pragma Unimplemented_Unit

@@ -13993,11 +13993,11 @@ package body Sem_Prag is
          --                          No_Caching                          --
          ------------------------------------------------------------------
 
-         --  pragma Async_Readers    [ (boolean_EXPRESSION) ];
-         --  pragma Async_Writers    [ (boolean_EXPRESSION) ];
-         --  pragma Effective_Reads  [ (boolean_EXPRESSION) ];
-         --  pragma Effective_Writes [ (boolean_EXPRESSION) ];
-         --  pragma No_Caching       [ (boolean_EXPRESSION) ];
+         --  pragma Async_Readers    [ (static_boolean_EXPRESSION) ];
+         --  pragma Async_Writers    [ (static_boolean_EXPRESSION) ];
+         --  pragma Effective_Reads  [ (static_boolean_EXPRESSION) ];
+         --  pragma Effective_Writes [ (static_boolean_EXPRESSION) ];
+         --  pragma No_Caching       [ (static_boolean_EXPRESSION) ];
 
          when Pragma_Async_Readers
             | Pragma_Async_Writers
@@ -15425,6 +15425,8 @@ package body Sem_Prag is
          -- CUDA_Device --
          -----------------
 
+         --  pragma CUDA_Device (LOCAL_NAME);
+
          when Pragma_CUDA_Device => CUDA_Device : declare
             Arg_Node      : Node_Id;
             Device_Entity : Entity_Id;
@@ -15457,11 +15459,11 @@ package body Sem_Prag is
          -- CUDA_Execute --
          ------------------
 
-         --    pragma CUDA_Execute (PROCEDURE_CALL_STATEMENT,
-         --                         EXPRESSION,
-         --                         EXPRESSION,
-         --                         [, EXPRESSION
-         --                         [, EXPRESSION]]);
+         --  pragma CUDA_Execute (PROCEDURE_CALL_STATEMENT,
+         --                       EXPRESSION,
+         --                       EXPRESSION,
+         --                       [, EXPRESSION
+         --                       [, EXPRESSION]]);
 
          when Pragma_CUDA_Execute => CUDA_Execute : declare
 
@@ -15556,7 +15558,7 @@ package body Sem_Prag is
          -- CUDA_Global --
          -----------------
 
-         --  pragma CUDA_Global ([Entity =>] IDENTIFIER);
+         --  pragma CUDA_Global ([Entity =>] procedure_LOCAL_NAME);
 
          when Pragma_CUDA_Global => CUDA_Global : declare
             Arg_Node    : Node_Id;
@@ -17326,7 +17328,7 @@ package body Sem_Prag is
          -- Extensions_Visible --
          ------------------------
 
-         --  pragma Extensions_Visible [ (boolean_EXPRESSION) ];
+         --  pragma Extensions_Visible [ (static_boolean_EXPRESSION) ];
 
          --  Characteristics:
 
@@ -17565,7 +17567,7 @@ package body Sem_Prag is
          -- Favor_Top_Level --
          --------------------------
 
-         --  pragma Favor_Top_Level (type_NAME);
+         --  pragma Favor_Top_Level (type_LOCAL_NAME);
 
          when Pragma_Favor_Top_Level => Favor_Top_Level : declare
             Typ : Entity_Id;
@@ -17643,7 +17645,7 @@ package body Sem_Prag is
          -- Ghost --
          -----------
 
-         --  pragma Ghost [ (boolean_EXPRESSION) ];
+         --  pragma Ghost [ (static_boolean_EXPRESSION) ];
 
          when Pragma_Ghost => Ghost : declare
             Context   : Node_Id;
@@ -19668,8 +19670,8 @@ package body Sem_Prag is
          ------------------
 
          --  pragma Linker_Alias (
-         --      [Entity =>]  LOCAL_NAME
-         --      [Target =>]  static_string_EXPRESSION);
+         --      [Entity =>] LOCAL_NAME
+         --      [Target =>] static_string_EXPRESSION);
 
          when Pragma_Linker_Alias =>
             GNAT_Pragma;
@@ -19940,7 +19942,7 @@ package body Sem_Prag is
          -- Lock_Free --
          ---------------
 
-         --  pragma Lock_Free [(Boolean_EXPRESSION)];
+         --  pragma Lock_Free [(static_boolean_EXPRESSION)];
 
          when Pragma_Lock_Free => Lock_Free : declare
             P   : constant Node_Id := Parent (N);
@@ -20685,7 +20687,7 @@ package body Sem_Prag is
          -- No_Return --
          ---------------
 
-         --  pragma No_Return (procedure_LOCAL_NAME {, procedure_Local_Name});
+         --  pragma No_Return (procedure_LOCAL_NAME {, procedure_LOCAL_NAME});
 
          when Pragma_No_Return => Prag_No_Return : declare
 
@@ -21971,7 +21973,7 @@ package body Sem_Prag is
          -- Persistent_BSS --
          --------------------
 
-         --  pragma Persistent_BSS [(object_NAME)];
+         --  pragma Persistent_BSS [(object_LOCAL_NAME)];
 
          when Pragma_Persistent_BSS => Persistent_BSS :  declare
             Decl : Node_Id;
@@ -25318,7 +25320,7 @@ package body Sem_Prag is
          -- Suppress_Initialization --
          -----------------------------
 
-         --  pragma Suppress_Initialization ([Entity =>] type_Name);
+         --  pragma Suppress_Initialization ([Entity =>] type_LOCAL_NAME);
 
          when Pragma_Suppress_Initialization => Suppress_Init : declare
             E    : Entity_Id;
@@ -25945,7 +25947,7 @@ package body Sem_Prag is
          -- Unchecked_Union --
          ---------------------
 
-         --  pragma Unchecked_Union (first_subtype_LOCAL_NAME)
+         --  pragma Unchecked_Union (first_subtype_LOCAL_NAME);
 
          when Pragma_Unchecked_Union => Unchecked_Union : declare
             Assoc   : constant Node_Id := Arg1;
@@ -26155,7 +26157,7 @@ package body Sem_Prag is
 
          --    or when used in a context clause:
 
-         --  pragma Unreferenced (library_unit_NAME {, library_unit_NAME}
+         --  pragma Unreferenced (library_unit_NAME {, library_unit_NAME});
 
          when Pragma_Unreferenced =>
             Analyze_Unreferenced_Or_Unused;
@@ -26563,7 +26565,7 @@ package body Sem_Prag is
          -- Volatile_Function --
          -----------------------
 
-         --  pragma Volatile_Function [ (boolean_EXPRESSION) ];
+         --  pragma Volatile_Function [ (static_boolean_EXPRESSION) ];
 
          when Pragma_Volatile_Function => Volatile_Function : declare
             Over_Id   : Entity_Id;
