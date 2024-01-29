@@ -77,7 +77,8 @@ gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
       tree pos = TREE_OPERAND (lhs, 1);
       tree view_op0 = TREE_OPERAND (op0, 0);
       machine_mode outermode = TYPE_MODE (TREE_TYPE (view_op0));
-      if (auto_var_in_fn_p (view_op0, fun->decl)
+      if ((auto_var_in_fn_p (view_op0, fun->decl)
+	   || (VAR_P (view_op0) && DECL_HARD_REGISTER (view_op0)))
 	  && !TREE_ADDRESSABLE (view_op0) && can_vec_set_var_idx_p (outermode))
 	{
 	  location_t loc = gimple_location (stmt);
