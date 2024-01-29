@@ -1228,7 +1228,6 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 		{
 		  tree type = vr.type ();
 		  pdata->minlen = wide_int_to_tree (type, vr.lower_bound ());
-		  pdata->maxlen = wide_int_to_tree (type, vr.upper_bound ());
 		}
 	    }
 	  else
@@ -1253,9 +1252,21 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 		{
 		  ++off;   /* Increment for the terminating nul.  */
 		  tree toffset = build_int_cst (size_type_node, off);
-		  pdata->maxlen = fold_build2 (MINUS_EXPR, size_type_node, size,
-					       toffset);
-		  pdata->maxbound = pdata->maxlen;
+		  pdata->maxlen = fold_build2 (MINUS_EXPR, size_type_node,
+					       size, toffset);
+		  if (tree_int_cst_lt (pdata->maxlen, pdata->minlen))
+		    /* This can happen when triggering UB, when base is an
+		       array which is known to be filled with at least size
+		       non-zero bytes.  E.g. for
+		       char a[2]; memcpy (a, "12", sizeof a);
+		       We don't want to create an invalid range [2, 1]
+		       where 2 comes from the number of non-zero bytes and
+		       1 from longest valid zero-terminated string that can
+		       be stored in such an array, so pick just one of
+		       those, pdata->minlen.  See PR110603.  */
+		    pdata->maxlen = build_all_ones_cst (size_type_node);
+		  else
+		    pdata->maxbound = pdata->maxlen;
 		}
 	      else	
 		pdata->maxlen = build_all_ones_cst (size_type_node);
