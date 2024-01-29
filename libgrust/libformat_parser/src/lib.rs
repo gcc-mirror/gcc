@@ -5,8 +5,31 @@
 
 use std::ffi::CStr;
 
+trait IntoFFI {
+    type Output;
+
+    fn into_ffi(&self) -> Self::Output;
+}
+
+impl<T> IntoFFI for Option<T>
+where
+    T: Sized,
+{
+    type Output = *const T;
+
+    fn into_ffi(&self) -> Self::Output {
+        match self.as_ref() {
+            None => std::ptr::null(),
+            Some(r) => r as *const T,
+        }
+    }
+}
+
+// FIXME: Make an ffi module in a separate file
+// FIXME: Remember to leak the boxed type somehow
+// FIXME: How to encode the Option type? As a pointer? Option<T> -> Option<&T> -> *const T could work maybe?
 mod ffi {
-    use std::ops::Deref;
+    use super::IntoFFI;
 
     // Note: copied from rustc_span
     /// Range inside of a `Span` used for diagnostics when we only have access to relative positions.
@@ -102,31 +125,31 @@ mod ffi {
         /// Optionally specified character to fill alignment with.
         pub fill: Option<char>,
         /// Span of the optionally specified fill character.
-        pub fill_span: Option<InnerSpan>,
+        pub fill_span: *const InnerSpan,
         /// Optionally specified alignment.
         pub align: Alignment,
         /// The `+` or `-` flag.
-        pub sign: Option<Sign>,
+        pub sign: *const Sign,
         /// The `#` flag.
         pub alternate: bool,
         /// The `0` flag.
         pub zero_pad: bool,
         /// The `x` or `X` flag. (Only for `Debug`.)
-        pub debug_hex: Option<DebugHex>,
+        pub debug_hex: *const DebugHex,
         /// The integer precision to use.
         pub precision: Count<'a>,
         /// The span of the precision formatting flag (for diagnostics).
-        pub precision_span: Option<InnerSpan>,
+        pub precision_span: *const InnerSpan,
         /// The string width requested for the resulting format.
         pub width: Count<'a>,
         /// The span of the width formatting flag (for diagnostics).
-        pub width_span: Option<InnerSpan>,
+        pub width_span: *const InnerSpan,
         /// The descriptor string representing the name of the format desired for
         /// this argument, this can be empty or any number of characters, although
         /// it is required to be one word.
         pub ty: &'a str,
         /// The span of the descriptor string (for diagnostics).
-        pub ty_span: Option<InnerSpan>,
+        pub ty_span: *const InnerSpan,
     }
 
     /// Enum describing where an argument for a format can be located.
@@ -197,6 +220,11 @@ mod ffi {
             match old {
                 generic_format_parser::Piece::String(x) => Piece::String(x),
                 generic_format_parser::Piece::NextArgument(x) => {
+                    // FIXME: This is problematic - if we do this, then we probably run into the issue that the Box
+                    // is freed at the end of the call to collect_pieces. if we just .leak() it, then we have
+                    // a memory leak... should we resend the info back to the Rust lib afterwards to free it?
+                    // this is definitely the best way - store that pointer in the FFI piece and rebuild the box
+                    // in a Rust destructor
                     Piece::NextArgument(Box::new(Into::<Argument>::into(*x)))
                 }
             }
@@ -240,18 +268,18 @@ mod ffi {
         fn from(old: generic_format_parser::FormatSpec<'a>) -> Self {
             FormatSpec {
                 fill: old.fill,
-                fill_span: old.fill_span.map(Into::into),
+                fill_span: old.fill_span.map(Into::into).into_ffi(),
                 align: old.align.into(),
-                sign: old.sign.map(Into::into),
+                sign: old.sign.map(Into::into).into_ffi(),
                 alternate: old.alternate,
                 zero_pad: old.zero_pad,
-                debug_hex: old.debug_hex.map(Into::into),
+                debug_hex: old.debug_hex.map(Into::into).into_ffi(),
                 precision: old.precision.into(),
-                precision_span: old.precision_span.map(Into::into),
+                precision_span: old.precision_span.map(Into::into).into_ffi(),
                 width: old.width.into(),
-                width_span: old.width_span.map(Into::into),
+                width_span: old.width_span.map(Into::into).into_ffi(),
                 ty: old.ty,
-                ty_span: old.ty_span.map(Into::into),
+                ty_span: old.ty_span.map(Into::into).into_ffi(),
             }
         }
     }
@@ -326,6 +354,8 @@ pub extern "C" fn collect_pieces(input: *const libc::c_char) -> PieceSlice {
         .into_iter()
         .map(Into::into)
         .collect();
+
+    println!("debug: {:?}, {:?}", pieces.as_ptr(), pieces.len());
 
     PieceSlice {
         base_ptr: pieces.as_ptr(),
