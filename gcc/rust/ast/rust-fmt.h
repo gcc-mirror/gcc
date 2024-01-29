@@ -92,11 +92,11 @@ struct FormatSpec
   /// The `x` or `X` flag. (Only for `Debug`.)
   tl::optional<DebugHex> debug_hex;
   /// The integer precision to use.
-  // Count <'a> precision;
+  Count precision;
   /// The span of the precision formatting flag (for diagnostics).
   tl::optional<InnerSpan> precision_span;
   /// The string width requested for the resulting format.
-  // Count <'a> width;
+  Count width;
   /// The span of the width formatting flag (for diagnostics).
   tl::optional<InnerSpan> width_span;
   /// The descriptor string representing the name of the format desired for
