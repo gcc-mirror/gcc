@@ -9086,8 +9086,9 @@ proc check_effective_target_vect_int_mult { } {
 proc check_effective_target_vect_long_mult { } {
     if { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	 || ([istarget powerpc*-*-*]
-	      && [check_effective_target_powerpc_vsx_ok]
-	      && [check_effective_target_has_arch_pwr10])
+	      && ([check_effective_target_ilp32]
+		  || ([check_effective_target_powerpc_vsx_ok]
+		      && [check_effective_target_has_arch_pwr10])))
 	 || [is-effective-target arm_neon]
 	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32])
 	 || ([istarget aarch64*-*-*]
