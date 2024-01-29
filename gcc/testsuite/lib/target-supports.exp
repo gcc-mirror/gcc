@@ -1391,10 +1391,16 @@ proc check_effective_target_aarch64_tlsle32 { } {
 proc check_effective_target_shared { } {
     # Note that M68K has a multilib that supports -fpic but not
     # -fPIC, so we need to check both.  We test with a program that
-    # requires GOT references.
+    # requires GOT references, and with a libc symbol that would
+    # bring in significant parts of a static-only libc.  Absent a
+    # shared libc, this would make -shared tests fail, so we don't
+    # want to enable the shared effective target then.
     return [check_no_compiler_messages shared executable {
+	#include <stdlib.h>
 	extern int foo (void); extern int bar;
-	int baz (void) { return foo () + bar; }
+	char *baz (void) {
+	    return foo () + (char*) malloc (bar);
+	}
     } "-shared -fpic"]
 }
 
