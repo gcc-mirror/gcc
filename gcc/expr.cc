@@ -6061,6 +6061,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    to_rtx = adjust_address (to_rtx, BLKmode, 0);
 	}
  
+      rtx stemp = NULL_RTX, old_to_rtx = NULL_RTX;
       if (offset != 0)
 	{
 	  machine_mode address_mode;
@@ -6070,9 +6071,22 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    {
 	      /* We can get constant negative offsets into arrays with broken
 		 user code.  Translate this to a trap instead of ICEing.  */
-	      gcc_assert (TREE_CODE (offset) == INTEGER_CST);
-	      expand_builtin_trap ();
-	      to_rtx = gen_rtx_MEM (BLKmode, const0_rtx);
+	      if (TREE_CODE (offset) == INTEGER_CST)
+		{
+		  expand_builtin_trap ();
+		  to_rtx = gen_rtx_MEM (BLKmode, const0_rtx);
+		}
+	      /* Else spill for variable offset to the destination.  We expect
+		 to run into this only for hard registers.  */
+	      else
+		{
+		  gcc_assert (VAR_P (tem) && DECL_HARD_REGISTER (tem));
+		  stemp = assign_stack_temp (GET_MODE (to_rtx),
+					     GET_MODE_SIZE (GET_MODE (to_rtx)));
+		  emit_move_insn (stemp, to_rtx);
+		  old_to_rtx = to_rtx;
+		  to_rtx = stemp;
+		}
 	    }
 
 	  offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
@@ -6305,6 +6319,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 				  bitregion_start, bitregion_end,
 				  mode1, from, get_alias_set (to),
 				  nontemporal, reversep);
+	  /* Move the temporary storage back to the non-MEM_P.  */
+	  if (stemp)
+	    emit_move_insn (old_to_rtx, stemp);
 	}
 
       if (result)
