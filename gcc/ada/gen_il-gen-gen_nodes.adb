@@ -1439,7 +1439,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Is_Generic_Contract_Pragma, Flag),
         Sm (Is_Ignored, Flag),
         Sm (Is_Ignored_Ghost_Pragma, Flag),
-        Sm (Is_Inherited_Pragma, Flag),
         Sm (Next_Pragma, Node_Id),
         Sm (Next_Rep_Item, Node_Id),
         Sm (Uneval_Old_Accept, Flag),

@@ -1763,10 +1763,6 @@ package Sinfo is
    --    discriminant check has a correct value cannot be performed in this
    --    case (or the discriminant check may be optimized away).
 
-   --  Is_Inherited_Pragma
-   --    This flag is set in an N_Pragma node that appears in a N_Contract node
-   --    to indicate that the pragma has been inherited from a parent context.
-
    --  Is_Initialization_Block
    --    Defined in block nodes. Set when the block statement was created by
    --    the finalization machinery to wrap initialization statements. This
@@ -2694,7 +2690,6 @@ package Sinfo is
       --  Next_Rep_Item
       --  Is_Generic_Contract_Pragma
       --  Is_Checked_Ghost_Pragma
-      --  Is_Inherited_Pragma
       --  Is_Analyzed_Pragma
       --  Class_Present set if from Aspect with 'Class
       --  Uneval_Old_Accept
