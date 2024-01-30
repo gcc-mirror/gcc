@@ -457,7 +457,8 @@ btf_collect_datasec (ctf_container_ref ctfc)
       func_dtd->dtd_data.ctti_type = dtd->dtd_type;
       func_dtd->linkage = dtd->linkage;
       func_dtd->dtd_name = dtd->dtd_name;
-      func_dtd->dtd_type = num_types_added + num_types_created;
+      /* +1 for the sentinel type not in the types map.  */
+      func_dtd->dtd_type = num_types_added + num_types_created + 1;
 
       /* Only the BTF_KIND_FUNC type actually references the name. The
 	 BTF_KIND_FUNC_PROTO is always anonymous.  */
@@ -480,8 +481,7 @@ btf_collect_datasec (ctf_container_ref ctfc)
 
 	  struct btf_var_secinfo info;
 
-	  /* +1 for the sentinel type not in the types map.  */
-	  info.type = func_dtd->dtd_type + 1;
+	  info.type = func_dtd->dtd_type;
 
 	  /* Both zero at compile time.  */
 	  info.size = 0;
