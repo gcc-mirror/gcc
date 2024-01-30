@@ -5834,6 +5834,9 @@ AC_LANG_SAVE
   AC_MSG_CHECKING([whether nl_langinfo_l is defined in <langinfo.h>])
   AC_TRY_COMPILE([
   #include <locale.h>
+  #if __has_include(<xlocale.h>)
+  # include <xlocale.h>
+  #endif
   #include <langinfo.h>
   ],[
     locale_t loc = newlocale(LC_ALL_MASK, "", (locale_t)0);
