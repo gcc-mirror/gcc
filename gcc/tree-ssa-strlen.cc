@@ -5044,6 +5044,9 @@ strlen_pass::handle_store (bool *zero_write)
 
   if (si != NULL)
     {
+      /* The count_nonzero_bytes call above might have unshared si.
+	 Fetch it again from the vector.  */
+      si = get_strinfo (idx);
       /* The corresponding element is set to 1 if the first and last
 	 element, respectively, of the sequence of characters being
 	 written over the string described by SI ends before
