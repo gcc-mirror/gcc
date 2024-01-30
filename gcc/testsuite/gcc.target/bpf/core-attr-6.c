@@ -45,6 +45,6 @@ func (struct T *t, int i)
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:3\"\\)" 2 } } */
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:2\"\\)" 1 } } */
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:0\"\\)" 1 } } */
-/* { dg-final { scan-assembler-times "bpfcr_type \\(struct T \\*\\)" 3 } } */
-/* { dg-final { scan-assembler-times "bpfcr_type \\(struct U \\*\\)" 2 } } */
+/* { dg-final { scan-assembler-times "bpfcr_type \\(struct T\\)" 3 } } */
+/* { dg-final { scan-assembler-times "bpfcr_type \\(struct U\\)" 2 } } */
 
