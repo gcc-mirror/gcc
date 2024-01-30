@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "df.h"
+#include "subreg-live-range.h"
 #include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
@@ -1344,8 +1345,860 @@ df_lr_verify_transfer_functions (void)
   bitmap_clear (&all_blocks);
 }
 
+/*----------------------------------------------------------------------------
+   REGISTER AND SUBREGS LIVES
+   Like DF_LR, but include tracking subreg liveness. Currently used to provide
+   subreg liveness related information to the register allocator. The subreg
+   information is currently tracked for registers that satisfy the following
+   conditions:
+     1. REG is a pseudo register
+     2. MODE_SIZE > UNIT_SIZE
+     3. MODE_SIZE is a multiple of UNIT_SIZE
+     4. REG is used via subreg pattern
+   Assuming: MODE = the machine mode of the REG
+	     MODE_SIZE = GET_MODE_SIZE (MODE)
+	     UNIT_SIZE = REGMODE_NATURAL_SIZE (MODE)
+   Condition 3 is currently strict, maybe it can be removed in the future, but
+   for now it is sufficient.
+   ----------------------------------------------------------------------------*/
 
-
+/* These two empty data are used as default data in case the user does not turn
+ * on the track-subreg-liveness feature.  */
+bitmap_head empty_bitmap;
+subregs_live empty_live;
+
+/* Private data for live_subreg problem.  */
+struct df_live_subreg_problem_data
+{
+  /* Record registers that need to track subreg liveness.  */
+  bitmap_head tracked_regs;
+  /* An obstack for the bitmaps we need for this problem.  */
+  bitmap_obstack live_subreg_bitmaps;
+};
+
+/* Helper functions */
+
+static df_live_subreg_bb_info *
+df_live_subreg_get_bb_info (unsigned int index)
+{
+  if (index < df_live_subreg->block_info_size)
+    return &(
+      (class df_live_subreg_bb_info *) df_live_subreg->block_info)[index];
+  else
+    return NULL;
+}
+
+static df_live_subreg_local_bb_info *
+get_live_subreg_local_bb_info (unsigned int bb_index)
+{
+  return df_live_subreg_get_bb_info (bb_index);
+}
+
+/* Return true if regno is a multireg.  */
+bool
+multireg_p (int regno)
+{
+  if (regno < FIRST_PSEUDO_REGISTER)
+    return false;
+  rtx regno_rtx = regno_reg_rtx[regno];
+  machine_mode reg_mode = GET_MODE (regno_rtx);
+  poly_int64 total_size = GET_MODE_SIZE (reg_mode);
+  poly_int64 natural_size = REGMODE_NATURAL_SIZE (reg_mode);
+  return maybe_gt (total_size, natural_size)
+	 && multiple_p (total_size, natural_size);
+}
+
+/* Return true if the REGNO need be track with subreg liveness.  */
+
+static bool
+need_track_subreg_p (unsigned regno)
+{
+  struct df_live_subreg_problem_data *problem_data
+    = (struct df_live_subreg_problem_data *) df_live_subreg->problem_data;
+  return bitmap_bit_p (&problem_data->tracked_regs, regno);
+}
+
+/* Return the subreg_range of REF.  */
+void
+init_range (rtx op, sbitmap range)
+{
+  rtx reg = SUBREG_P (op) ? SUBREG_REG (op) : op;
+  machine_mode reg_mode = GET_MODE (reg);
+
+  if (!read_modify_subreg_p (op))
+    {
+      bitmap_set_range (range, 0, get_nblocks (reg_mode));
+      return;
+    }
+
+  rtx subreg = op;
+  machine_mode subreg_mode = GET_MODE (subreg);
+  poly_int64 offset = SUBREG_BYTE (subreg);
+  int nblocks = get_nblocks (reg_mode);
+  poly_int64 unit_size = REGMODE_NATURAL_SIZE (reg_mode);
+  poly_int64 subreg_size = GET_MODE_SIZE (subreg_mode);
+  poly_int64 left = offset + subreg_size;
+
+  int subreg_start = -1;
+  int subreg_nblocks = -1;
+  for (int i = 0; i < nblocks; i += 1)
+    {
+      poly_int64 right = unit_size * (i + 1);
+      if (subreg_start < 0 && maybe_lt (offset, right))
+	subreg_start = i;
+      if (subreg_nblocks < 0 && maybe_le (left, right))
+	{
+	  subreg_nblocks = i + 1 - subreg_start;
+	  break;
+	}
+    }
+  gcc_assert (subreg_start >= 0 && subreg_nblocks > 0);
+
+  bitmap_set_range (range, subreg_start, subreg_nblocks);
+}
+
+/* Remove RANGE from BB_INFO's use data.  */
+void
+remove_subreg_range (df_live_subreg_local_bb_info *bb_info, unsigned int regno,
+		     const_sbitmap range)
+{
+  bitmap partial = &bb_info->partial_use;
+
+  bb_info->range_use->remove_range (regno, range);
+  if (bb_info->range_use->empty_p (regno))
+    bitmap_clear_bit (partial, regno);
+}
+
+/* Remove RANGE of REF from BB_INFO's use data.  */
+static void
+remove_subreg_range (df_live_subreg_local_bb_info *bb_info, df_ref ref)
+{
+  unsigned int regno = DF_REF_REGNO (ref);
+  machine_mode reg_mode = GET_MODE (DF_REF_REAL_REG (ref));
+
+  if (need_track_subreg_p (regno))
+    {
+      auto_sbitmap range (get_nblocks (reg_mode));
+      init_range (DF_REF_REG (ref), range);
+      remove_subreg_range (bb_info, regno, range);
+    }
+  else
+    {
+      bitmap_clear_bit (&bb_info->full_use, regno);
+      gcc_assert (!bitmap_bit_p (&bb_info->partial_use, regno));
+      gcc_assert (!bitmap_bit_p (&bb_info->partial_def, regno));
+    }
+}
+
+/* add RANGE to BB_INFO's def/use. If is_def is true, means for BB_INFO's def,
+   otherwise for BB_INFO's use.  */
+void
+add_subreg_range (df_live_subreg_local_bb_info *bb_info, unsigned int regno,
+		  const_sbitmap range, bool is_def)
+{
+  bitmap partial = is_def ? &bb_info->partial_def : &bb_info->partial_use;
+  subregs_live *range_live = is_def ? bb_info->range_def : bb_info->range_use;
+
+  bitmap_set_bit (partial, regno);
+  range_live->add_range (regno, range);
+}
+
+/* add RANGE of REF to BB_INFO def/use. If is_def is true, means for BB_INFO's
+   def, otherwise for BB_INFO's use.  */
+static void
+add_subreg_range (df_live_subreg_local_bb_info *bb_info, df_ref ref,
+		  bool is_def)
+{
+  unsigned int regno = DF_REF_REGNO (ref);
+  machine_mode reg_mode = GET_MODE (DF_REF_REAL_REG (ref));
+
+  if (need_track_subreg_p (regno))
+    {
+      auto_sbitmap range (get_nblocks (reg_mode));
+      init_range (DF_REF_REG (ref), range);
+      add_subreg_range (bb_info, regno, range, is_def);
+    }
+  else
+    {
+      bitmap full = is_def ? &bb_info->full_def : &bb_info->full_use;
+      bitmap partial = is_def ? &bb_info->partial_def : &bb_info->partial_use;
+      bitmap_set_bit (full, regno);
+      gcc_assert (!bitmap_bit_p (partial, regno));
+    }
+}
+
+/* Free basic block info.  */
+
+static void
+df_live_subreg_free_bb_info (basic_block bb ATTRIBUTE_UNUSED, void *vbb_info)
+{
+  df_live_subreg_bb_info *bb_info = (df_live_subreg_bb_info *) vbb_info;
+  if (bb_info)
+    {
+      delete bb_info->range_in;
+      bb_info->range_in = NULL;
+      delete bb_info->range_out;
+      bb_info->range_out = NULL;
+
+      bitmap_clear (&bb_info->all_in);
+      bitmap_clear (&bb_info->full_in);
+      bitmap_clear (&bb_info->partial_in);
+      bitmap_clear (&bb_info->all_out);
+      bitmap_clear (&bb_info->full_out);
+      bitmap_clear (&bb_info->partial_out);
+    }
+}
+
+/* Allocate or reset bitmaps for DF_LIVE_SUBREG blocks. The solution bits are
+   not touched unless the block is new.  */
+
+static void
+df_live_subreg_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
+{
+  struct df_live_subreg_problem_data *problem_data;
+  df_grow_bb_info (df_live_subreg);
+  if (df_live_subreg->problem_data)
+    problem_data
+      = (struct df_live_subreg_problem_data *) df_live_subreg->problem_data;
+  else
+    {
+      problem_data = XNEW (struct df_live_subreg_problem_data);
+      df_live_subreg->problem_data = problem_data;
+
+      bitmap_obstack_initialize (&problem_data->live_subreg_bitmaps);
+      bitmap_initialize (&problem_data->tracked_regs,
+			 &problem_data->live_subreg_bitmaps);
+    }
+
+  bitmap_clear (&problem_data->tracked_regs);
+
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, cfun)
+    bitmap_set_bit (df_live_subreg->out_of_date_transfer_functions, bb->index);
+
+  bitmap_set_bit (df_live_subreg->out_of_date_transfer_functions, ENTRY_BLOCK);
+  bitmap_set_bit (df_live_subreg->out_of_date_transfer_functions, EXIT_BLOCK);
+
+  unsigned int bb_index;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (df_live_subreg->out_of_date_transfer_functions, 0,
+			    bb_index, bi)
+    {
+      /* Find the regs which we need to track it's subreg liveness.  */
+      rtx_insn *insn;
+      df_ref use;
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+
+	  FOR_EACH_INSN_INFO_USE (use, insn_info)
+	    {
+	      unsigned int regno = DF_REF_REGNO (use);
+              /* A multireg which is used via subreg pattern.  */
+	      if (multireg_p (regno)
+		  && DF_REF_FLAGS (use) & (DF_REF_SUBREG))
+		bitmap_set_bit (&problem_data->tracked_regs, regno);
+	    }
+	}
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, ";; regs need to be tracked subreg liveness: ");
+      df_print_regset (dump_file, &problem_data->tracked_regs);
+    }
+
+  size_t n = bitmap_count_bits (&problem_data->tracked_regs);
+
+  EXECUTE_IF_SET_IN_BITMAP (df_live_subreg->out_of_date_transfer_functions, 0,
+			    bb_index, bi)
+    {
+      /* Clean global infos.  */
+      df_live_subreg_bb_info *bb_info = df_live_subreg_get_bb_info (bb_index);
+
+      /* When bitmaps are already initialized, just clear them.  */
+      if (bb_info->all_in.obstack)
+	{
+	  bitmap_clear (&bb_info->all_in);
+	  bitmap_clear (&bb_info->full_in);
+	  bitmap_clear (&bb_info->partial_in);
+	  bitmap_clear (&bb_info->all_out);
+	  bitmap_clear (&bb_info->full_out);
+	  bitmap_clear (&bb_info->partial_out);
+	}
+      else
+	{
+	  bitmap_initialize (&bb_info->all_in,
+			     &problem_data->live_subreg_bitmaps);
+	  bitmap_initialize (&bb_info->full_in,
+			     &problem_data->live_subreg_bitmaps);
+	  bitmap_initialize (&bb_info->partial_in,
+			     &problem_data->live_subreg_bitmaps);
+	  bitmap_initialize (&bb_info->all_out,
+			     &problem_data->live_subreg_bitmaps);
+	  bitmap_initialize (&bb_info->full_out,
+			     &problem_data->live_subreg_bitmaps);
+	  bitmap_initialize (&bb_info->partial_out,
+			     &problem_data->live_subreg_bitmaps);
+	}
+
+      if (bb_info->range_in)
+	{
+	  bb_info->range_in->clear (n);
+	  bb_info->range_out->clear (n);
+	}
+      else
+	{
+	  bb_info->range_in = new subregs_live (n);
+	  bb_info->range_out = new subregs_live (n);
+	}
+
+      /* Clean local infos.  */
+      df_live_subreg_local_bb_info *local_bb_info
+	= get_live_subreg_local_bb_info (bb_index);
+
+      /* When bitmaps are already initialized, just clear them.  */
+      if (local_bb_info->full_use.obstack)
+	{
+	  bitmap_clear (&local_bb_info->full_def);
+	  bitmap_clear (&local_bb_info->partial_def);
+	  bitmap_clear (&local_bb_info->full_use);
+	  bitmap_clear (&local_bb_info->partial_use);
+	}
+      else
+	{
+	  bitmap_initialize (&local_bb_info->full_def,
+			     &problem_data->live_subreg_bitmaps);
+	  bitmap_initialize (&local_bb_info->partial_def,
+			     &problem_data->live_subreg_bitmaps);
+	  bitmap_initialize (&local_bb_info->full_use,
+			     &problem_data->live_subreg_bitmaps);
+	  bitmap_initialize (&local_bb_info->partial_use,
+			     &problem_data->live_subreg_bitmaps);
+	}
+
+      if (local_bb_info->range_def)
+	{
+	  local_bb_info->range_def->clear (n);
+	  local_bb_info->range_use->clear (n);
+	}
+      else
+	{
+	  local_bb_info->range_def = new subregs_live (n);
+	  local_bb_info->range_use = new subregs_live (n);
+	}
+    }
+
+  df_live_subreg->optional_p = true;
+}
+
+/* Reset the global solution for recalculation.  */
+
+static void
+df_live_subreg_reset (bitmap all_blocks)
+{
+  unsigned int bb_index;
+  bitmap_iterator bi;
+
+  EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
+    {
+      df_live_subreg_bb_info *bb_info = df_live_subreg_get_bb_info (bb_index);
+      gcc_assert (bb_info);
+      bitmap_clear (&bb_info->all_in);
+      bitmap_clear (&bb_info->full_in);
+      bitmap_clear (&bb_info->partial_in);
+      bitmap_clear (&bb_info->all_out);
+      bitmap_clear (&bb_info->full_out);
+      bitmap_clear (&bb_info->partial_out);
+      bb_info->range_in->clear ();
+      bb_info->range_out->clear ();
+    }
+}
+
+/* Compute local live register info for basic block BB.  */
+
+static void
+df_live_subreg_bb_local_compute (unsigned int bb_index)
+{
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
+  df_live_subreg_local_bb_info *local_bb_info
+    = get_live_subreg_local_bb_info (bb_index);
+
+  rtx_insn *insn;
+  df_ref def, use;
+
+  /* Process the registers set in an exception handler.  */
+  FOR_EACH_ARTIFICIAL_DEF (def, bb_index)
+    if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
+      {
+	add_subreg_range (local_bb_info, def, true);
+	remove_subreg_range (local_bb_info, def);
+      }
+
+  /* Process the hardware registers that are always live.  */
+  FOR_EACH_ARTIFICIAL_USE (use, bb_index)
+    if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == 0)
+      add_subreg_range (local_bb_info, use, false);
+
+  FOR_BB_INSNS_REVERSE (bb, insn)
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+
+      df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+      FOR_EACH_INSN_INFO_DEF (def, insn_info)
+	{
+	  remove_subreg_range (local_bb_info, def);
+	  add_subreg_range (local_bb_info, def, true);
+	}
+
+      FOR_EACH_INSN_INFO_USE (use, insn_info)
+	{
+	  unsigned int regno = DF_REF_REGNO (use);
+	  /* Ignore the use of subreg which is used as dest operand.  */
+	  if (need_track_subreg_p (regno)
+	      && DF_REF_FLAGS (use) & (DF_REF_READ_WRITE | DF_REF_SUBREG))
+	    continue;
+	  add_subreg_range (local_bb_info, use, false);
+	}
+    }
+
+  /* Process the registers set in an exception handler or the hard
+     frame pointer if this block is the target of a non local
+     goto.  */
+  FOR_EACH_ARTIFICIAL_DEF (def, bb_index)
+    if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+      {
+	add_subreg_range (local_bb_info, def, true);
+	remove_subreg_range (local_bb_info, def);
+      }
+
+#ifdef EH_USES
+  /* Process the uses that are live into an exception handler.  */
+  FOR_EACH_ARTIFICIAL_USE (use, bb_index)
+    /* Add use to set of uses in this BB.  */
+    if (DF_REF_FLAGS (use) & DF_REF_AT_TOP)
+      add_subreg_range (local_bb_info, use, false);
+#endif
+}
+
+/* Compute local live register info for each basic block within BLOCKS.  */
+
+static void
+df_live_subreg_local_compute (bitmap all_blocks ATTRIBUTE_UNUSED)
+{
+  unsigned int bb_index, i;
+  bitmap_iterator bi;
+
+  bitmap_clear (&df->hardware_regs_used);
+
+  /* The all-important stack pointer must always be live.  */
+  bitmap_set_bit (&df->hardware_regs_used, STACK_POINTER_REGNUM);
+
+  /* Global regs are always live, too.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (global_regs[i])
+      bitmap_set_bit (&df->hardware_regs_used, i);
+
+  /* Before reload, there are a few registers that must be forced
+     live everywhere -- which might not already be the case for
+     blocks within infinite loops.  */
+  if (!reload_completed)
+    {
+      unsigned int pic_offset_table_regnum = PIC_OFFSET_TABLE_REGNUM;
+      /* Any reference to any pseudo before reload is a potential
+	 reference of the frame pointer.  */
+      bitmap_set_bit (&df->hardware_regs_used, FRAME_POINTER_REGNUM);
+
+      /* Pseudos with argument area equivalences may require
+	 reloading via the argument pointer.  */
+      if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  && fixed_regs[ARG_POINTER_REGNUM])
+	bitmap_set_bit (&df->hardware_regs_used, ARG_POINTER_REGNUM);
+
+      /* Any constant, or pseudo with constant equivalences, may
+	 require reloading from memory using the pic register.  */
+      if (pic_offset_table_regnum != INVALID_REGNUM
+	  && fixed_regs[pic_offset_table_regnum])
+	bitmap_set_bit (&df->hardware_regs_used, pic_offset_table_regnum);
+    }
+
+  EXECUTE_IF_SET_IN_BITMAP (df_live_subreg->out_of_date_transfer_functions, 0,
+			    bb_index, bi)
+    {
+      if (bb_index == EXIT_BLOCK)
+	{
+	  /* The exit block is special for this problem and its bits are
+	     computed from thin air.  */
+	  df_live_subreg_local_bb_info *local_bb_info
+	    = get_live_subreg_local_bb_info (EXIT_BLOCK);
+	  bitmap_copy (&local_bb_info->full_use, df->exit_block_uses);
+	}
+      else
+	df_live_subreg_bb_local_compute (bb_index);
+    }
+
+  bitmap_clear (df_live_subreg->out_of_date_transfer_functions);
+}
+
+/* Initialize the solution vectors.  */
+
+static void
+df_live_subreg_init (bitmap all_blocks)
+{
+  unsigned int bb_index;
+  bitmap_iterator bi;
+
+  EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
+    {
+      df_live_subreg_bb_info *bb_info = df_live_subreg_get_bb_info (bb_index);
+      df_live_subreg_local_bb_info *local_bb_info
+	= get_live_subreg_local_bb_info (bb_index);
+      bitmap_copy (&bb_info->full_in, &local_bb_info->full_use);
+      bitmap_copy (&bb_info->partial_in, &local_bb_info->partial_use);
+      bb_info->range_in->copy_lives (*local_bb_info->range_use);
+      bitmap_clear (&bb_info->full_out);
+      bitmap_clear (&bb_info->partial_out);
+      bb_info->range_out->clear ();
+    }
+}
+
+/* Check that the status of the final result is correct.  */
+
+void
+df_live_subreg_check_result (bitmap full, bitmap partial,
+			     subregs_live *partial_live)
+{
+  unsigned int regno;
+  bitmap_iterator bi;
+  /* Make sure that full and partial do not overlap. */
+  gcc_assert (!bitmap_intersect_p (full, partial));
+  /* Ensure that registers belonging to full are not partially live. */
+  EXECUTE_IF_SET_IN_BITMAP (full, 0, regno, bi)
+    gcc_assert (partial_live->empty_p (regno));
+  /* Ensure that registers belonging to partial are partially live. */
+  EXECUTE_IF_SET_IN_BITMAP (partial, 0, regno, bi)
+    gcc_assert (!partial_live->empty_p (regno));
+}
+
+/* Confluence function that processes infinite loops.  This might be a
+   noreturn function that throws.  And even if it isn't, getting the
+   unwind info right helps debugging.  */
+static void
+df_live_subreg_confluence_0 (basic_block bb)
+{
+  bitmap full_out = &df_live_subreg_get_bb_info (bb->index)->full_out;
+  if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
+    bitmap_copy (full_out, &df->hardware_regs_used);
+}
+
+/* Confluence function that ignores fake edges.  */
+
+static bool
+df_live_subreg_confluence_n (edge e)
+{
+  class df_live_subreg_bb_info *src_bb_info
+    = df_live_subreg_get_bb_info (e->src->index);
+  class df_live_subreg_bb_info *dest_bb_info
+    = df_live_subreg_get_bb_info (e->dest->index);
+
+  bool changed = false;
+
+  /* Call-clobbered registers die across exception and call edges.
+     Conservatively treat partially-clobbered registers as surviving
+     across the edges; they might or might not, depending on what
+     mode they have.  */
+  /* ??? Abnormal call edges ignored for the moment, as this gets
+     confused by sibling call edges, which crashes reg-stack.  */
+  if (e->flags & EDGE_EH)
+    {
+      bitmap_view<HARD_REG_SET> eh_kills (eh_edge_abi.full_reg_clobbers ());
+      changed = bitmap_ior_and_compl_into (&src_bb_info->full_out,
+					   &dest_bb_info->full_in, eh_kills);
+    }
+  else
+    changed = bitmap_ior_into (&src_bb_info->full_out, &dest_bb_info->full_in);
+
+  changed |= bitmap_ior_into (&src_bb_info->full_out, &df->hardware_regs_used);
+
+  /* Handle partial live case.  */
+  if (!bitmap_empty_p (&dest_bb_info->partial_in))
+    {
+      unsigned int regno;
+      bitmap_iterator bi;
+      EXECUTE_IF_SET_IN_BITMAP (&dest_bb_info->partial_in,
+				FIRST_PSEUDO_REGISTER, regno, bi)
+	{
+	  sbitmap dest_range = dest_bb_info->range_in->get_range (regno);
+	  changed |= src_bb_info->range_out->add_range (regno, dest_range);
+	}
+      changed |= bitmap_ior_into (&src_bb_info->partial_out,
+				  &dest_bb_info->partial_in);
+
+      df_live_subreg_check_result (&src_bb_info->full_out,
+				   &src_bb_info->partial_out,
+				   src_bb_info->range_out);
+    }
+
+  return changed;
+}
+
+/* Transfer function. IN = USE | (OUT & ~DEF).  */
+
+static bool
+df_live_subreg_transfer_function (int bb_index)
+{
+  class df_live_subreg_bb_info *bb_info = df_live_subreg_get_bb_info (bb_index);
+  class df_live_subreg_local_bb_info *local_bb_info
+    = get_live_subreg_local_bb_info (bb_index);
+
+  bool changed = false;
+
+  changed
+    |= bitmap_ior_and_compl (&bb_info->full_in, &local_bb_info->full_use,
+			     &bb_info->full_out, &local_bb_info->full_def);
+
+  /* Handle partial live case.  */
+  if (!bitmap_empty_p (&bb_info->partial_out)
+      || !bitmap_empty_p (&local_bb_info->partial_use))
+    {
+      unsigned int regno;
+      bitmap_iterator bi;
+      bitmap_head temp_partial_out;
+      subregs_live temp_range_out;
+
+      /* TEMP = (OUT & ~DEF) */
+      bitmap_initialize (&temp_partial_out, &bitmap_default_obstack);
+      EXECUTE_IF_SET_IN_BITMAP (&bb_info->partial_out, FIRST_PSEUDO_REGISTER,
+				regno, bi)
+	{
+	  sbitmap out_range = bb_info->range_out->get_range (regno);
+	  temp_range_out.add_range (regno, out_range);
+	  if (bitmap_bit_p (&local_bb_info->partial_def, regno))
+	    {
+	      sbitmap def_range = local_bb_info->range_def->get_range (regno);
+	      temp_range_out.remove_range (regno, def_range);
+	      if (!temp_range_out.empty_p (regno))
+		bitmap_set_bit (&temp_partial_out, regno);
+	    }
+	  else
+	    bitmap_set_bit (&temp_partial_out, regno);
+	}
+
+      /* TEMP = USE | TEMP */
+      EXECUTE_IF_SET_IN_BITMAP (&local_bb_info->partial_use,
+				FIRST_PSEUDO_REGISTER, regno, bi)
+	{
+	  sbitmap use_range = local_bb_info->range_use->get_range (regno);
+          temp_range_out.add_range (regno, use_range);
+	}
+      bitmap_ior_into (&temp_partial_out, &local_bb_info->partial_use);
+
+      /* IN = TEMP */
+      changed |= bb_info->range_in->copy_lives (temp_range_out);
+      bitmap_copy (&bb_info->partial_in, &temp_partial_out);
+      df_live_subreg_check_result (&bb_info->full_in, &bb_info->partial_in,
+				   bb_info->range_in);
+    }
+  else if (!bitmap_empty_p (&bb_info->partial_in))
+    {
+      changed = true;
+      bitmap_clear (&bb_info->partial_in);
+      bb_info->range_in->clear ();
+    }
+
+  return changed;
+}
+
+/* Calculating ALL_IN from FULL_IN and PARTIAL_IN
+   and ALL_OUT from FULL_OUT and PARTIAL_OUT.  */
+
+void
+df_live_subreg_finalize (bitmap all_blocks)
+{
+  unsigned int bb_index;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
+    {
+      class df_live_subreg_bb_info *bb_info
+	= df_live_subreg_get_bb_info (bb_index);
+      gcc_assert (bb_info);
+      bitmap_ior (&bb_info->all_in, &bb_info->full_in, &bb_info->partial_in);
+      bitmap_ior (&bb_info->all_out, &bb_info->full_out, &bb_info->partial_out);
+
+      /* Move full live reg in partial_in/partial_out to full_in/full_out.  */
+      unsigned int regno;
+      bitmap_iterator ri;
+      bool changed = false;
+      EXECUTE_IF_SET_IN_BITMAP (&bb_info->partial_in, FIRST_PSEUDO_REGISTER,
+				regno, ri)
+	{
+	  if (bb_info->range_in->full_p (regno))
+	    {
+	      bitmap_set_bit (&bb_info->full_in, regno);
+	      bb_info->range_in->remove_range (regno);
+	      changed = true;
+	    }
+	}
+      if (changed)
+	bitmap_and_compl_into (&bb_info->partial_in, &bb_info->full_in);
+
+      changed = false;
+      EXECUTE_IF_SET_IN_BITMAP (&bb_info->partial_out, FIRST_PSEUDO_REGISTER,
+				regno, ri)
+	{
+	  if (bb_info->range_out->full_p (regno))
+	    {
+	      bitmap_set_bit (&bb_info->full_out, regno);
+	      bb_info->range_out->remove_range (regno);
+	      changed = true;
+	    }
+	}
+      if (changed)
+	bitmap_and_compl_into (&bb_info->partial_out, &bb_info->full_out);
+    }
+}
+
+/* Free all storage associated with the problem.  */
+
+static void
+df_live_subreg_free (void)
+{
+  df_live_subreg_problem_data *problem_data
+    = (df_live_subreg_problem_data *) df_live_subreg->problem_data;
+  if (df_live_subreg->block_info)
+    {
+      bitmap_obstack_release (&problem_data->live_subreg_bitmaps);
+      basic_block bb;
+      FOR_ALL_BB_FN (bb, cfun)
+	{
+	  df_live_subreg_bb_info *bb_info
+	    = df_live_subreg_get_bb_info (bb->index);
+	  df_live_subreg_local_bb_info *local_bb_info
+	    = get_live_subreg_local_bb_info (bb->index);
+	  delete bb_info->range_in;
+	  delete bb_info->range_out;
+	  delete local_bb_info->range_def;
+	  delete local_bb_info->range_use;
+	}
+      free (problem_data);
+      df_live_subreg->problem_data = NULL;
+
+      df_live_subreg->block_info_size = 0;
+      free (df_live_subreg->block_info);
+      df_live_subreg->block_info = NULL;
+    }
+
+  BITMAP_FREE (df_live_subreg->out_of_date_transfer_functions);
+  free (df_live_subreg);
+}
+
+/* Debugging info at top of bb.  */
+
+static void
+df_live_subreg_top_dump (basic_block bb, FILE *file)
+{
+  df_live_subreg_bb_info *bb_info = df_live_subreg_get_bb_info (bb->index);
+  df_live_subreg_local_bb_info *local_bb_info
+    = get_live_subreg_local_bb_info (bb->index);
+
+  if (!bb_info)
+    return;
+
+  fprintf (file, ";; subreg live all in  \t");
+  df_print_regset (file, &bb_info->all_in);
+  fprintf (file, ";;   subreg live full in   \t");
+  df_print_regset (file, &bb_info->full_in);
+  fprintf (file, ";;   subreg live partial in  \t");
+  df_print_regset (file, &bb_info->partial_in);
+  fprintf (file, ";;   subreg live range in   \t");
+  bb_info->range_in->dump (file, "");
+
+  fprintf (file, "\n;;   subreg live full use  \t");
+  df_print_regset (file, &local_bb_info->full_use);
+  fprintf (file, ";;   subreg live partial use  \t");
+  df_print_regset (file, &local_bb_info->partial_use);
+  fprintf (file, ";;   subreg live range use   \t");
+  local_bb_info->range_use->dump (file, "");
+
+  fprintf (file, "\n;;   subreg live full def  \t");
+  df_print_regset (file, &local_bb_info->full_def);
+  fprintf (file, ";;   subreg live partial def  \t");
+  df_print_regset (file, &local_bb_info->partial_def);
+  fprintf (file, ";;   subreg live range def  \t");
+  local_bb_info->range_def->dump (file, "");
+}
+
+/* Debugging info at bottom of bb.  */
+
+static void
+df_live_subreg_bottom_dump (basic_block bb, FILE *file)
+{
+  df_live_subreg_bb_info *bb_info = df_live_subreg_get_bb_info (bb->index);
+  if (!bb_info)
+    return;
+
+  fprintf (file, ";; subreg live all out  \t");
+  df_print_regset (file, &bb_info->all_out);
+  fprintf (file, ";;   subreg live full out  \t");
+  df_print_regset (file, &bb_info->full_out);
+  fprintf (file, ";;   subreg live partial out  \t");
+  df_print_regset (file, &bb_info->partial_out);
+  fprintf (file, ";;   subreg live range out  \t");
+  bb_info->range_out->dump (file, "");
+}
+
+/* All of the information associated with every instance of the problem.  */
+
+static const struct df_problem problem_LIVE_SUBREG = {
+  DF_LIVE_SUBREG,		    /* Problem id.  */
+  DF_BACKWARD,			    /* Direction.  */
+  df_live_subreg_alloc,		    /* Allocate the problem specific data.  */
+  df_live_subreg_reset,		    /* Reset global information.  */
+  df_live_subreg_free_bb_info,	    /* Free basic block info.  */
+  df_live_subreg_local_compute,	    /* Local compute function.  */
+  df_live_subreg_init,		    /* Init the solution specific data.  */
+  df_worklist_dataflow,		    /* Worklist solver.  */
+  df_live_subreg_confluence_0,	    /* Confluence operator 0.  */
+  df_live_subreg_confluence_n,	    /* Confluence operator n.  */
+  df_live_subreg_transfer_function, /* Transfer function.  */
+  df_live_subreg_finalize,	    /* Finalize function.  */
+  df_live_subreg_free,		    /* Free all of the problem information.  */
+  df_live_subreg_free,	      /* Remove this problem from the stack of dataflow
+				 problems.  */
+  NULL,			      /* Debugging.  */
+  df_live_subreg_top_dump,    /* Debugging start block.  */
+  df_live_subreg_bottom_dump, /* Debugging end block.  */
+  NULL,			      /* Debugging start insn.  */
+  NULL,			      /* Debugging end insn.  */
+  NULL,			      /* Incremental solution verify start.  */
+  NULL,			      /* Incremental solution verify end.  */
+  &problem_LR,			      /* Dependent problem.  */
+  sizeof (df_live_subreg_bb_info), /* Size of entry of block_info array. */
+  TV_DF_LIVE_SUBREG,		   /* Timing variable.  */
+  false /* Reset blocks on dropping out of blocks_to_analyze.  */
+};
+
+/* Create a new DATAFLOW instance and add it to an existing instance
+   of DF.  The returned structure is what is used to get at the
+   solution.  */
+
+void
+df_live_subreg_add_problem (void)
+{
+  gcc_assert (flag_track_subreg_liveness);
+
+  df_add_problem (&problem_LIVE_SUBREG);
+
+  /* These will be initialized when df_scan_blocks processes each
+     block.  */
+  df_live_subreg->out_of_date_transfer_functions
+    = BITMAP_ALLOC (&df_bitmap_obstack);
+}
+
 /*----------------------------------------------------------------------------
    LIVE AND MAY-INITIALIZED REGISTERS.
 

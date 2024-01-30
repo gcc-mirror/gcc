@@ -47,6 +47,7 @@ enum df_problem_id
   {
     DF_SCAN,
     DF_LR,                /* Live Registers backward. */
+    DF_LIVE_SUBREG,       /* Live Regs and Subregs */
     DF_LIVE,              /* Live Registers & Uninitialized Registers */
     DF_RD,                /* Reaching Defs. */
     DF_CHAIN,             /* Def-Use and/or Use-Def Chains. */
@@ -878,6 +879,33 @@ public:
   bitmap_head out;   /* At the bottom of the block.  */
 };
 
+class subregs_live; /* Defined in subreg-range.{h,cc} */
+
+/* Local live info in basic block. Use by live_subreg problem and LRA pass.  */
+class df_live_subreg_local_bb_info
+{
+public:
+  bitmap_head full_def;
+  bitmap_head full_use;
+  /* Only for pseudo registers.  */
+  bitmap_head partial_def;
+  bitmap_head partial_use;
+  subregs_live *range_def = nullptr;
+  subregs_live *range_use = nullptr;
+};
+
+/* Live in/out infos of each basic.  */
+class df_live_subreg_bb_info : public df_live_subreg_local_bb_info
+{
+public:
+  bitmap_head all_in, full_in;
+  bitmap_head all_out, full_out;
+  /* Only for pseudo registers.  */
+  bitmap_head partial_in;
+  bitmap_head partial_out;
+  subregs_live *range_in = nullptr;
+  subregs_live *range_out = nullptr;
+};
 
 /* Uninitialized registers.  All bitmaps are referenced by the
    register number.  Anded results of the forwards and backward live
@@ -940,6 +968,7 @@ extern class df_d *df;
 #define df_scan    (df->problems_by_index[DF_SCAN])
 #define df_rd      (df->problems_by_index[DF_RD])
 #define df_lr      (df->problems_by_index[DF_LR])
+#define df_live_subreg (df->problems_by_index[DF_LIVE_SUBREG])
 #define df_live    (df->problems_by_index[DF_LIVE])
 #define df_chain   (df->problems_by_index[DF_CHAIN])
 #define df_word_lr (df->problems_by_index[DF_WORD_LR])
@@ -1031,6 +1060,8 @@ extern void df_lr_add_problem (void);
 extern void df_lr_verify_transfer_functions (void);
 extern void df_live_verify_transfer_functions (void);
 extern void df_live_add_problem (void);
+extern void df_live_subreg_add_problem ();
+extern void df_live_subreg_finalize (bitmap all_blocks);
 extern void df_live_set_all_dirty (void);
 extern void df_chain_add_problem (unsigned int);
 extern void df_word_lr_add_problem (void);
@@ -1059,6 +1090,16 @@ extern bool can_move_insns_across (rtx_insn *, rtx_insn *,
 				   rtx_insn *, rtx_insn *,
 				   basic_block, regset,
 				   regset, rtx_insn **);
+extern void
+df_live_subreg_check_result (bitmap, bitmap, subregs_live *);
+extern bool multireg_p (int);
+extern void init_range (rtx, sbitmap);
+extern void
+add_subreg_range (df_live_subreg_local_bb_info *, unsigned int, const_sbitmap,
+		  bool);
+extern void
+remove_subreg_range (df_live_subreg_local_bb_info *, unsigned int,
+		     const_sbitmap);
 /* Functions defined in df-scan.cc.  */
 
 extern void df_scan_alloc (bitmap);
@@ -1190,6 +1231,120 @@ df_get_live_in (basic_block bb)
     return DF_LIVE_IN (bb);
   else
     return DF_LR_IN (bb);
+}
+
+/* Get the subreg live at in set for BB. The live set include full and partial
+ * live. we only track and use subreg liveness when -ftrack-subreg-liveness,
+ * otherwise use DF_LR_IN.  This function is used by the register allocators. */
+
+inline bitmap
+df_get_subreg_live_in (basic_block bb)
+{
+  if (flag_track_subreg_liveness)
+    {
+      df_live_subreg_bb_info *bb_info = &(
+	(class df_live_subreg_bb_info *) df_live_subreg->block_info)[bb->index];
+      return &(bb_info->all_in);
+    }
+  return DF_LR_IN (bb);
+}
+
+/* Get the subreg live at out set for BB. The live set include full and
+ * partial live. we only track and use subreg liveness when
+ * -ftrack-subreg-liveness, otherwise use DF_LR_OUT.  This function is used by
+ * the register allocators.  */
+
+inline bitmap
+df_get_subreg_live_out (basic_block bb)
+{
+  if (flag_track_subreg_liveness)
+    {
+      df_live_subreg_bb_info *bb_info = &(
+	(class df_live_subreg_bb_info *) df_live_subreg->block_info)[bb->index];
+      return &(bb_info->all_out);
+    }
+  return DF_LR_OUT (bb);
+}
+
+/* Get the subreg live at in set for BB. The live set only include full and
+ * partial live. we only track and use subreg liveness when
+ * -ftrack-subreg-liveness, otherwise use DF_LR_OUT.  This function is used by
+ * the register allocators.  */
+
+inline bitmap
+df_get_subreg_live_full_in (basic_block bb)
+{
+  if (flag_track_subreg_liveness)
+    {
+      df_live_subreg_bb_info *bb_info = &(
+	(class df_live_subreg_bb_info *) df_live_subreg->block_info)[bb->index];
+      return &(bb_info->full_in);
+    }
+  return DF_LR_IN (bb);
+}
+
+inline bitmap
+df_get_subreg_live_full_out (basic_block bb)
+{
+  if (flag_track_subreg_liveness)
+    {
+      df_live_subreg_bb_info *bb_info = &(
+	(class df_live_subreg_bb_info *) df_live_subreg->block_info)[bb->index];
+      return &(bb_info->full_out);
+    }
+  return DF_LR_OUT (bb);
+}
+
+/* Define in df-problems.cc, used when disable track-subreg-liveness.  */
+extern bitmap_head empty_bitmap;
+extern subregs_live empty_live;
+
+inline bitmap
+df_get_subreg_live_partial_in (basic_block bb)
+{
+  if (flag_track_subreg_liveness)
+    {
+      df_live_subreg_bb_info *bb_info = &(
+	(class df_live_subreg_bb_info *) df_live_subreg->block_info)[bb->index];
+      return &(bb_info->partial_in);
+    }
+  return &empty_bitmap;
+}
+
+inline bitmap
+df_get_subreg_live_partial_out (basic_block bb)
+{
+  if (flag_track_subreg_liveness)
+    {
+      df_live_subreg_bb_info *bb_info = &(
+	(class df_live_subreg_bb_info *) df_live_subreg->block_info)[bb->index];
+      return &(bb_info->partial_out);
+    }
+  return &empty_bitmap;
+}
+
+inline subregs_live *
+df_get_subreg_live_range_in (basic_block bb)
+{
+  if (flag_track_subreg_liveness)
+    {
+      df_live_subreg_bb_info *bb_info = &(
+	(class df_live_subreg_bb_info *) df_live_subreg->block_info)[bb->index];
+      return bb_info->range_in;
+    }
+  return &empty_live;
+}
+
+inline subregs_live *
+df_get_subreg_live_range_out (basic_block bb)
+{
+  if (flag_track_subreg_liveness)
+    {
+      df_live_subreg_bb_info *bb_info = &(
+	(class df_live_subreg_bb_info *) df_live_subreg->block_info)[bb->index];
+      return bb_info->range_out;
+    }
+  return &empty_live;
 }
 
 /* Get basic block info.  */

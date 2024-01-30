@@ -267,6 +267,7 @@ extern void bitmap_copy (sbitmap, const_sbitmap);
 extern bool bitmap_equal_p (const_sbitmap, const_sbitmap);
 extern unsigned int bitmap_count_bits (const_sbitmap);
 extern bool bitmap_empty_p (const_sbitmap);
+extern bool bitmap_full_p (const_sbitmap);
 extern void bitmap_clear (sbitmap);
 extern void bitmap_clear_range (sbitmap, unsigned, unsigned);
 extern void bitmap_set_range (sbitmap, unsigned, unsigned);
@@ -287,6 +288,7 @@ extern bool bitmap_and (sbitmap, const_sbitmap, const_sbitmap);
 extern bool bitmap_ior (sbitmap, const_sbitmap, const_sbitmap);
 extern bool bitmap_xor (sbitmap, const_sbitmap, const_sbitmap);
 extern bool bitmap_subset_p (const_sbitmap, const_sbitmap);
+extern bool bitmap_same_p (const_sbitmap, const_sbitmap);
 extern bool bitmap_bit_in_range_p (const_sbitmap, unsigned int, unsigned int);
 
 extern int bitmap_first_set_bit (const_sbitmap);

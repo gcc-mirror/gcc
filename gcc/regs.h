@@ -389,4 +389,9 @@ range_in_hard_reg_set_p (const_hard_reg_set set, unsigned regno, int nregs)
   return true;
 }
 
+/* Return the number of blocks the MODE overlap. One block equal to mode's
+   natural size.  */
+#define get_nblocks(mode)                                                      \
+  (exact_div (GET_MODE_SIZE (mode), REGMODE_NATURAL_SIZE (mode)).to_constant ())
+
 #endif /* GCC_REGS_H */

@@ -208,6 +208,29 @@ bitmap_empty_p (const_sbitmap bmap)
   return true;
 }
 
+/* Return true if the bitmap is full, i.e. all bits are set.  */
+
+bool
+bitmap_full_p (const_sbitmap bmap)
+{
+  unsigned int end_word = bmap->n_bits / SBITMAP_ELT_BITS;
+  unsigned int i = 0;
+  for (; i < end_word; i++)
+    if (bmap->elms[i] != (SBITMAP_ELT_TYPE) -1)
+      return false;
+
+  unsigned int end_bitno = bmap->n_bits % SBITMAP_ELT_BITS;
+
+  if (end_bitno == 0)
+    return true;
+
+  gcc_checking_assert (i + 1 == bmap->size);
+
+  SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE) 1 << end_bitno) - 1;
+  /* Make sure the tail bits are set.  */
+  return (bmap->elms[i] & mask) == mask;
+}
+
 /* Clear COUNT bits from START in BMAP.  */
 
 void
@@ -662,6 +685,36 @@ bitmap_subset_p (const_sbitmap a, const_sbitmap b)
   return true;
 }
 
+/* Return true if the bits in A and B are set the same and the number of bits is
+   the same. */
+
+bool
+bitmap_same_p (const_sbitmap a, const_sbitmap b)
+{
+  if (a->n_bits != b->n_bits)
+    return false;
+
+  gcc_checking_assert (a->size == b->size);
+
+  unsigned int end_word = a->n_bits / SBITMAP_ELT_BITS;
+  unsigned int i = 0;
+  for (; i < end_word; i++)
+    if (a->elms[i] != b->elms[i])
+      return false;
+
+  unsigned int end_bitno = a->n_bits % SBITMAP_ELT_BITS;
+
+  if (end_bitno == 0)
+    return true;
+
+  gcc_checking_assert (i + 1 == a->size);
+
+  SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE) 1 << end_bitno) - 1;
+
+  /* Make sure the tail bits are same.  */
+  return (a->elms[i] & mask) == (b->elms[i] & mask);
+}
+
 /* Set DST to be (A or (B and C)).
    Return nonzero if any change is made.  */
 
@@ -994,6 +1047,49 @@ test_bit_in_range ()
   sbitmap_free (s);
 }
 
+/* Verify bitmap_full_p functions for sbitmap.  */
+
+static void
+test_full ()
+{
+  sbitmap s = sbitmap_alloc (193);
+
+  bitmap_clear (s);
+  ASSERT_FALSE (bitmap_full_p (s));
+
+  bitmap_ones (s);
+  ASSERT_TRUE (bitmap_full_p (s));
+
+  bitmap_clear_bit (s, 192);
+  ASSERT_FALSE (bitmap_full_p (s));
+
+  bitmap_ones (s);
+  bitmap_clear_bit (s, 17);
+  ASSERT_FALSE (bitmap_full_p (s));
+}
+
+/* Verify bitmap_same_p functions for sbitmap.  */
+
+static void
+test_same ()
+{
+  sbitmap s1 = sbitmap_alloc (193);
+  sbitmap s2 = sbitmap_alloc (193);
+  sbitmap s3 = sbitmap_alloc (192);
+  
+  ASSERT_FALSE (bitmap_same_p (s1, s3));
+
+  bitmap_clear (s1);
+  bitmap_clear (s2);
+  ASSERT_TRUE (bitmap_same_p (s1, s2));
+  
+  bitmap_set_bit (s2, 192);
+  ASSERT_FALSE (bitmap_same_p (s1, s2));
+  
+  bitmap_set_bit (s1, 192);
+  ASSERT_TRUE (bitmap_same_p (s1, s2));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -1001,6 +1097,8 @@ sbitmap_cc_tests ()
 {
   test_set_range ();
   test_bit_in_range ();
+  test_full ();
+  test_same ();
 }
 
 } // namespace selftest
