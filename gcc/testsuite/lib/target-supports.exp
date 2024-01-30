@@ -1304,10 +1304,6 @@ proc check_stack_check_available { stack_kind } {
 
 # Return 1 if the target supports stack scrubbing.
 proc check_effective_target_strub {} {
-    # strub is not supported on AIX.
-    if { [istarget powerpc*-*-aix*] } {
-	return 0
-    }
     return [check_no_compiler_messages strub assembly {
 	void __attribute__ ((__strub__)) fn (void) {}
     } ""]
