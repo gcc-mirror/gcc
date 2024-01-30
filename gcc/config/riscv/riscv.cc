@@ -1382,6 +1382,41 @@ riscv_v_ext_mode_p (machine_mode mode)
 	 || riscv_v_ext_vls_mode_p (mode);
 }
 
+static unsigned
+riscv_v_vls_mode_aggregate_gpr_count (unsigned vls_unit_size,
+				      unsigned scalar_unit_size)
+{
+  gcc_assert (vls_unit_size != 0 && scalar_unit_size != 0);
+
+  if (vls_unit_size < scalar_unit_size)
+    return 1;
+
+  /* Ensure the vls mode is exact_div by scalar_unit_size.  */
+  gcc_assert ((vls_unit_size % scalar_unit_size) == 0);
+
+  return vls_unit_size / scalar_unit_size;
+}
+
+static machine_mode
+riscv_v_vls_to_gpr_mode (unsigned vls_mode_size)
+{
+  switch (vls_mode_size)
+    {
+      case 16:
+	return TImode;
+      case 8:
+	return DImode;
+      case 4:
+	return SImode;
+      case 2:
+	return HImode;
+      case 1:
+	return QImode;
+      default:
+	gcc_unreachable ();
+    }
+}
+
 /* Call from ADJUST_NUNITS in riscv-modes.def. Return the correct
    NUNITS size for corresponding machine_mode.  */
 
@@ -4868,6 +4903,41 @@ riscv_pass_fpr_pair (machine_mode mode, unsigned regno1,
 				   GEN_INT (offset2))));
 }
 
+static rtx
+riscv_pass_vls_aggregate_in_gpr (struct riscv_arg_info *info, machine_mode mode,
+				 unsigned gpr_base)
+{
+  gcc_assert (riscv_v_ext_vls_mode_p (mode));
+
+  unsigned count = 0;
+  unsigned regnum = 0;
+  machine_mode gpr_mode = VOIDmode;
+  unsigned vls_size = GET_MODE_SIZE (mode).to_constant ();
+  unsigned gpr_size =  GET_MODE_SIZE (Xmode);
+
+  if (IN_RANGE (vls_size, 0, gpr_size * 2))
+    {
+      count = riscv_v_vls_mode_aggregate_gpr_count (vls_size, gpr_size);
+
+      if (count + info->gpr_offset <= MAX_ARGS_IN_REGISTERS)
+	{
+	  regnum = gpr_base + info->gpr_offset;
+	  info->num_gprs = count;
+	  gpr_mode = riscv_v_vls_to_gpr_mode (vls_size);
+	}
+    }
+
+  if (!regnum)
+    return NULL_RTX; /* Return NULL_RTX if we cannot find a suitable reg.  */
+
+  gcc_assert (gpr_mode != VOIDmode);
+
+  rtx reg = gen_rtx_REG (gpr_mode, regnum);
+  rtx x = gen_rtx_EXPR_LIST (VOIDmode, reg, CONST0_RTX (gpr_mode));
+
+  return gen_rtx_PARALLEL (mode, gen_rtvec (1, x));
+}
+
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
@@ -5067,6 +5137,10 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
       /* For scalable vector argument.  */
       if (riscv_vector_type_p (type) && riscv_v_ext_mode_p (mode))
 	return riscv_get_vector_arg (info, cum, mode, return_p);
+
+      /* For vls mode aggregated in gpr.  */
+      if (riscv_v_ext_vls_mode_p (mode))
+	return riscv_pass_vls_aggregate_in_gpr (info, mode, gpr_base);
     }
 
   /* Work out the size of the argument.  */
@@ -5194,6 +5268,10 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
       /* Don't pass by reference if we can use a floating-point register.  */
       riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
       if (info.num_fprs)
+	return false;
+
+      /* Don't pass by reference if we can use general register(s) for vls.  */
+      if (info.num_gprs && riscv_v_ext_vls_mode_p (arg.mode))
 	return false;
 
       /* Don't pass by reference if we can use vector register groups.  */

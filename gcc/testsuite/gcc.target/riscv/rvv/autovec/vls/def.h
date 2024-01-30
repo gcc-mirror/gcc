@@ -860,3 +860,77 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     TYPE1 v = {__VA_ARGS__};                                                   \
     *(TYPE1 *) out = v;                                                        \
   }
+
+#define DEF_RET1_ARG0(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG0 ()                                                          \
+  {                                                                            \
+    TYPE r = {};                                                               \
+    return r;                                                                  \
+  }
+
+#define DEF_RET1_ARG1(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG1 (TYPE a1)                                                   \
+  {                                                                            \
+    return a1;                                                                 \
+  }
+
+#define DEF_RET1_ARG2(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG2 (TYPE a1, TYPE a2)                                          \
+  {                                                                            \
+    return a1 + a2;                                                            \
+  }
+
+#define DEF_RET1_ARG3(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG3 (TYPE a1, TYPE a2, TYPE a3)                                 \
+  {                                                                            \
+    return a1 + a2 + a3;                                                       \
+  }
+
+#define DEF_RET1_ARG4(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG4 (TYPE a1, TYPE a2, TYPE a3, TYPE a4)                        \
+  {                                                                            \
+    return a1 + a2 + a3 + a4;                                                  \
+  }
+
+#define DEF_RET1_ARG5(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG5 (TYPE a1, TYPE a2, TYPE a3, TYPE a4, TYPE a5)               \
+  {                                                                            \
+    return a1 + a2 + a3 + a4 + a5;                                             \
+  }
+
+#define DEF_RET1_ARG6(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG6 (TYPE a1, TYPE a2, TYPE a3, TYPE a4, TYPE a5, TYPE a6)      \
+  {                                                                            \
+    return a1 + a2 + a3 + a4 + a5 + a6;                                        \
+  }
+
+#define DEF_RET1_ARG7(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG7 (TYPE a1, TYPE a2, TYPE a3, TYPE a4, TYPE a5, TYPE a6,      \
+		    TYPE a7)                                                   \
+  {                                                                            \
+    return a1 + a2 + a3 + a4 + a5 + a6 + a7;                                   \
+  }
+
+#define DEF_RET1_ARG8(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG8 (TYPE a1, TYPE a2, TYPE a3, TYPE a4, TYPE a5, TYPE a6,      \
+		    TYPE a7, TYPE a8)                                          \
+  {                                                                            \
+    return a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8;                              \
+  }
+
+#define DEF_RET1_ARG9(TYPE)                                                    \
+  TYPE __attribute__((noinline))                                               \
+  TYPE##_RET1_ARG9 (TYPE a1, TYPE a2, TYPE a3, TYPE a4, TYPE a5, TYPE a6,      \
+		    TYPE a7, TYPE a8, TYPE a9)                                 \
+  {                                                                            \
+    return a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9;                         \
+  }
