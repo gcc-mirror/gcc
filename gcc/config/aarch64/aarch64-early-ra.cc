@@ -1173,6 +1173,15 @@ early_ra::preprocess_insns ()
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
+      // Mark all registers that occur in addresses as needing a GPR.
+      vec_rtx_properties properties;
+      properties.add_insn (insn, true);
+      for (rtx_obj_reference ref : properties.refs ())
+	if (ref.is_reg ()
+	    && ref.in_address ()
+	    && !HARD_REGISTER_NUM_P (ref.regno))
+	  m_pseudo_regs[ref.regno].flags |= ALLOWS_NONFPR | NEEDS_NONFPR;
+
       if (GET_CODE (PATTERN (insn)) == USE
 	  || GET_CODE (PATTERN (insn)) == CLOBBER)
 	continue;
