@@ -3349,6 +3349,76 @@ private:
   svalue_set result_set; /* Used as a mapping of svalue*->bool.  */
 };
 
+/* Return true if SIZE_CST is a power of 2, and we have
+   CAPACITY_SVAL == ((X | (Y - 1) ) + 1), since it is then a multiple
+   of SIZE_CST, as used by Linux kernel's round_up macro.  */
+
+static bool
+is_round_up (tree size_cst,
+	     const svalue *capacity_sval)
+{
+  if (!integer_pow2p (size_cst))
+    return false;
+  const binop_svalue *binop_sval = capacity_sval->dyn_cast_binop_svalue ();
+  if (!binop_sval)
+    return false;
+  if (binop_sval->get_op () != PLUS_EXPR)
+    return false;
+  tree rhs_cst = binop_sval->get_arg1 ()->maybe_get_constant ();
+  if (!rhs_cst)
+    return false;
+  if (!integer_onep (rhs_cst))
+    return false;
+
+  /* We have CAPACITY_SVAL == (LHS + 1) for some LHS expression.  */
+
+  const binop_svalue *lhs_binop_sval
+    = binop_sval->get_arg0 ()->dyn_cast_binop_svalue ();
+  if (!lhs_binop_sval)
+    return false;
+  if (lhs_binop_sval->get_op () != BIT_IOR_EXPR)
+    return false;
+
+  tree inner_rhs_cst = lhs_binop_sval->get_arg1 ()->maybe_get_constant ();
+  if (!inner_rhs_cst)
+    return false;
+
+  if (wi::to_widest (inner_rhs_cst) + 1 != wi::to_widest (size_cst))
+    return false;
+  return true;
+}
+
+/* Return true if CAPACITY_SVAL is known to be a multiple of SIZE_CST.  */
+
+static bool
+is_multiple_p (tree size_cst,
+	       const svalue *capacity_sval)
+{
+  if (const svalue *sval = capacity_sval->maybe_undo_cast ())
+    return is_multiple_p (size_cst, sval);
+
+  if (is_round_up (size_cst, capacity_sval))
+    return true;
+
+  return false;
+}
+
+/* Return true if we should emit a dubious_allocation_size warning
+   on assigning a region of capacity CAPACITY_SVAL bytes to a pointer
+   of type with size SIZE_CST, where CM expresses known constraints.  */
+
+static bool
+is_dubious_capacity (tree size_cst,
+		     const svalue *capacity_sval,
+		     constraint_manager *cm)
+{
+  if (is_multiple_p (size_cst, capacity_sval))
+    return false;
+  size_visitor v (size_cst, capacity_sval, cm);
+  return v.is_dubious_capacity ();
+}
+
+
 /* Return true if a struct or union either uses the inheritance pattern,
    where the first field is a base struct, or the flexible array member
    pattern, where the last field is an array without a specified size.  */
@@ -3456,8 +3526,9 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
       {
 	if (!is_struct)
 	  {
-	    size_visitor v (pointee_size_tree, capacity, m_constraints);
-	    if (v.is_dubious_capacity ())
+	    if (is_dubious_capacity (pointee_size_tree,
+				     capacity,
+				     m_constraints))
 	      {
 		tree expr = get_representative_tree (capacity);
 		ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg,
