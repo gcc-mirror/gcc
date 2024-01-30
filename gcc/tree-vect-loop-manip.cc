@@ -1708,9 +1708,23 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		     LC PHI node to feed the merge PHI.  */
 		  tree *res;
 		  if (virtual_operand_p (new_arg))
-		    /* Use the existing virtual LC SSA from exit block.  */
-		    new_arg = gimple_phi_result
-				(get_virtual_phi (main_loop_exit_block));
+		    {
+		      /* Use the existing virtual LC SSA from exit block.  */
+		      gphi *vphi = get_virtual_phi (main_loop_exit_block);
+		      /* ???  When the exit yields to a path without
+			 any virtual use we can miss a LC PHI for the
+			 live virtual operand.  Simply choosing the
+			 one live at the start of the loop header isn't
+			 correct, but we should get here only with
+			 early-exit vectorization which will move all
+			 defs after the main exit, so leave a temporarily
+			 wrong virtual operand in place.  This happens
+			 for gcc.dg/pr113659.c.  */
+		      if (vphi)
+			new_arg = gimple_phi_result (vphi);
+		      else
+			new_arg = gimple_phi_result (from_phi);
+		    }
 		  else if ((res = new_phi_args.get (new_arg)))
 		    new_arg = *res;
 		  else
