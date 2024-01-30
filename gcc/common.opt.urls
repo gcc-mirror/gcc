@@ -880,6 +880,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fira-share-save-slots)
 fira-share-spill-slots
 UrlSuffix(gcc/Optimize-Options.html#index-fira-share-spill-slots)
 
+ftrack-subreg-liveness
+UrlSuffix(gcc/Optimize-Options.html#index-ftrack-subreg-liveness)
+
 fira-verbose=
 UrlSuffix(gcc/Developer-Options.html#index-fira-verbose)
 

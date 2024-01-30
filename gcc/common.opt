@@ -2157,6 +2157,10 @@ fira-share-spill-slots
 Common Var(flag_ira_share_spill_slots) Init(1) Optimization
 Share stack slots for spilled pseudo-registers.
 
+ftrack-subreg-liveness
+Common Var(flag_track_subreg_liveness) Init(0) Optimization
+Track subreg liveness information.
+
 fira-verbose=
 Common RejectNegative Joined UInteger Var(flag_ira_verbose) Init(5)
 -fira-verbose=<number>	Control IRA's level of diagnostic messages.

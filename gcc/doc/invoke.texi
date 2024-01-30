@@ -13186,6 +13186,14 @@ Disable sharing of stack slots allocated for pseudo-registers.  Each
 pseudo-register that does not get a hard register gets a separate
 stack slot, and as a result function stack frames are larger.
 
+@opindex ftrack-subreg-liveness
+@item -ftrack-subreg-liveness
+Enable tracking subreg liveness information. This infomation allows IRA
+and LRA to support subreg coalesce feature which can improve the quality
+of register allocation.
+
+This option is enabled at level @option{-O3} for all targets.
+
 @opindex flra-remat
 @item -flra-remat
 Enable CFG-sensitive rematerialization in LRA.  Instead of loading
