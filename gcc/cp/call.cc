@@ -5256,7 +5256,7 @@ keep_unused_object_arg (tree result, tree obj, tree fn)
 {
   if (result == NULL_TREE
       || result == error_mark_node
-      || TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+      || DECL_OBJECT_MEMBER_FUNCTION_P (fn)
       || !TREE_SIDE_EFFECTS (obj))
     return result;
 
