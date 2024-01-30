@@ -3620,7 +3620,7 @@ package body Contracts is
          end if;
       end Inherit_Pragma;
 
-   --   Start of processing for Inherit_Subprogram_Contract
+   --  Start of processing for Inherit_Subprogram_Contract
 
    begin
       --  Inheritance is carried out only when both entities are subprograms

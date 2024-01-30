@@ -2158,7 +2158,7 @@ package body Sem_Ch5 is
          return Etype (Ent);
       end Get_Cursor_Type;
 
-   --   Start of processing for Analyze_Iterator_Specification
+   --  Start of processing for Analyze_Iterator_Specification
 
    begin
       Enter_Name (Def_Id);
