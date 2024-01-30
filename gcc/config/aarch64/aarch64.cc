@@ -2361,7 +2361,7 @@ aarch64_reg_save_mode (unsigned int regno)
       case ARM_PCS_SIMD:
 	/* The vector PCS saves the low 128 bits (which is the full
 	   register on non-SVE targets).  */
-	return TFmode;
+	return V16QImode;
 
       case ARM_PCS_SVE:
 	/* Use vectors of DImode for registers that need frame
