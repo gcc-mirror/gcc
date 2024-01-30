@@ -9592,18 +9592,18 @@ and,
 
 /* Detect simplification for vector condition folding where
 
-  c = mask1 ? (masked_op mask2 a b) : b
+  c = mask1 ? (masked_op mask2 a b els) : els
 
   into
 
-  c = masked_op (mask1 & mask2) a b
+  c = masked_op (mask1 & mask2) a b els
 
   where the operation can be partially applied to one operand. */
 
 (for cond_op (COND_BINARY)
  (simplify
   (vec_cond @0
-   (cond_op:s @1 @2 @3 @4) @3)
+   (cond_op:s @1 @2 @3 @4) @4)
   (cond_op (bit_and @1 @0) @2 @3 @4)))
 
 /* And same for ternary expressions.  */
@@ -9611,7 +9611,7 @@ and,
 (for cond_op (COND_TERNARY)
  (simplify
   (vec_cond @0
-   (cond_op:s @1 @2 @3 @4 @5) @4)
+   (cond_op:s @1 @2 @3 @4 @5) @5)
   (cond_op (bit_and @1 @0) @2 @3 @4 @5)))
 
 /* For pointers @0 and @2 and nonnegative constant offset @1, look for
