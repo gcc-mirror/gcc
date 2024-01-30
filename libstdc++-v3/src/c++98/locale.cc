@@ -323,7 +323,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   locale::_Impl::
   _M_install_facet(const locale::id* __idp, const facet* __fp)
   {
-    if (__fp)
+    if (__builtin_expect(__fp != 0, 1))
       {
 	size_t __index = __idp->_M_id();
 

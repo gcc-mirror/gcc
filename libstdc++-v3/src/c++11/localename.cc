@@ -326,7 +326,9 @@ const int num_facets = (
   _M_replace_categories(const _Impl* __imp, category __cat)
   {
     category __mask = 1;
-    if (!_M_names[0] || !__imp->_M_names[0])
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3676. Name of locale composed using std::locale::none
+    if (!_M_names[0] || (__cat != none && !__imp->_M_names[0]))
       {
 	if (_M_names[0])
 	  {
