@@ -1,3 +1,117 @@
+2024-01-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp (check_effective_target_shared):
+	Check for a static-only libc.
+
+2024-01-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/dfp/pr36800.c: Drop dg-do overrider.
+	* c-c++-common/dfp/pr39034.c: Likewise.
+	* c-c++-common/dfp/pr39035.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d32-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d32-2.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d64-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d64-2.c: Likewise.
+	* gcc.dg/dfp/builtin-snan-1.c: Likewise.
+	* gcc.dg/dfp/builtin-tgmath-dfp.c: Likewise.
+	* gcc.dg/dfp/c23-float-dfp-4.c: Likewise.
+	* gcc.dg/dfp/c23-float-dfp-5.c: Likewise.
+	* gcc.dg/dfp/c23-float-dfp-6.c: Likewise.
+	* gcc.dg/dfp/c23-float-dfp-7.c: Likewise.
+	* gcc.dg/dfp/pr108068.c: Likewise.
+	* gcc.dg/dfp/pr97439.c: Likewise.
+	* g++.dg/compat/decimal/pass-1_main.C: Require dfprt.
+	* g++.dg/compat/decimal/pass-2_main.C: Likewise.
+	* g++.dg/compat/decimal/pass-3_main.C: Likewise.
+	* g++.dg/compat/decimal/pass-4_main.C: Likewise.
+	* g++.dg/compat/decimal/pass-5_main.C: Likewise.
+	* g++.dg/compat/decimal/pass-6_main.C: Likewise.
+	* g++.dg/compat/decimal/return-1_main.C: Likewise.
+	* g++.dg/compat/decimal/return-2_main.C: Likewise.
+	* g++.dg/compat/decimal/return-3_main.C: Likewise.
+	* g++.dg/compat/decimal/return-4_main.C: Likewise.
+	* g++.dg/compat/decimal/return-5_main.C: Likewise.
+	* g++.dg/compat/decimal/return-6_main.C: Likewise.
+	* g++.dg/eh/dfp-1.C: Likewise.
+	* g++.dg/eh/dfp-2.C: Likewise.
+	* g++.dg/eh/dfp-saves-aarch64.C: Likewise.
+	* gcc.c-torture/execute/pr80692.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-2.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-3.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-4.c: Likewise.
+
+2024-01-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/naked-1.c: Update test to not expect an exit
+	instruction in naked function.
+	* gcc.target/bpf/naked-2.c: New test.
+
+2024-01-29  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/rvv/vsetvl/pr113429.c: Add
+	require-effective-target rv64 and riscv_v
+
+2024-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113544
+	* g++.dg/cpp1y/lambda-generic-nested3.C: New test.
+
+2024-01-29  Matthieu Longo  <matthieu.longo@arm.com>
+
+	PR target/108933
+	* gcc.target/arm/rev16.c: Moved to...
+	* gcc.target/arm/rev16_1.c: ...here.
+	* gcc.target/arm/rev16_2.c: New test to check that rev16 is emitted.
+
+2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113622
+	* gcc.target/i386/pr113622-2.c: New testcase.
+	* gcc.target/i386/pr113622-3.c: Likewise.
+
+2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113622
+	* gcc.target/i386/pr113622-1.c: New testcase.
+
+2024-01-29  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113616
+	* gcc.c-torture/compile/pr113616.c: New test.
+
+2024-01-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/38534
+	* gcc.target/i386/pr38534-5.c: New file.
+	* gcc.target/i386/pr38534-6.c: Likewise.
+
+2024-01-29  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/112950
+	* gcc.target/aarch64/sve/acle/general/dupq_5.c: Remove include directive
+	and instead use #pragma GCC for including arm_sve.h.
+
+2024-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113281
+	* gcc.dg/vect/pr113281-1.c: New test.
+	* gcc.dg/vect/pr113281-2.c: Likewise.
+	* gcc.dg/vect/pr113281-3.c: Likewise.
+	* gcc.dg/vect/pr113281-4.c: Likewise.
+	* gcc.dg/vect/pr113281-5.c: Likewise.
+
+2024-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110603
+	* gcc.c-torture/compile/pr110603.c: New test.
+
+2024-01-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/109705
+	* lib/target-supports.exp (check_effective_target_vect_long_mult):
+	Fix powerpc*-*-* checks by considering ilp32.
+
 2024-01-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/113377

@@ -1,3 +1,8 @@
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4.h: Use gfx1100/gfx1030
+	function not gfx90a for gfx1100/gfx1030 context selector.
+
 2024-01-26  Richard Biener  <rguenther@suse.de>
 
 	* plugin/plugin-gcn.c (suitable_hsa_agent_p): Filter out

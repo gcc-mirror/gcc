@@ -1,3 +1,113 @@
+2024-01-29  Manos Anagnostakis  <manos.anagnostakis@vrull.eu>
+	    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-ldpstp.md: Remove unused mode.
+	* config/aarch64/aarch64-protos.h (aarch64_operands_ok_for_ldpstp):
+	Likewise.
+	* config/aarch64/aarch64.cc (aarch64_operands_ok_for_ldpstp):
+	Call on framework moved later.
+
+2024-01-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_expand_epilogue): Do not emit a return
+	instruction in naked function epilogues.
+
+2024-01-29  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR target/113655
+	* configure.ac: Fix typo gcc_cv_as_mips_explicit should be
+	gcc_cv_as_mips_explicit_relocs.
+	* configure: Regnerated.
+
+2024-01-29  Matthieu Longo  <matthieu.longo@arm.com>
+
+	PR target/108933
+	* config/arm/arm.md (arm_rev16si2): Convert to define_insn.
+	Correct generated RTL.
+	(arm_rev16si2_alt1): Correctly handle conditional execution.
+	(arm_rev16si2_alt2): Likewise.
+
+2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113622
+	* expr.cc (expand_assignment): Spill hard registers if
+	we index them with a variable offset.
+
+2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113622
+	* gimple-isel.cc (gimple_expand_vec_set_extract_expr):
+	Also allow DECL_HARD_REGISTER variables.
+
+2024-01-29  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113616
+	* config/aarch64/aarch64-ldp-fusion.cc (fixup_debug_uses_trailing_add):
+	Use iterate_safely when iterating over debug uses.
+	(fixup_debug_uses): Likewise.
+	(ldp_bb_info::cleanup_tombstones): Use iterate_safely to iterate
+	over nondebug insns instead of manually maintaining the next insn.
+	* iterator-utils.h (class safe_iterator): New.
+	(iterate_safely): New.
+
+2024-01-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/38534
+	* config/i386/i386-options.cc (ix86_set_func_type): Save
+	callee-saved registers in noreturn functions for -O0/-Og.
+
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR target/113615
+	* config/gcn/gcn-valu.md (fold_left_plus_<mode>): Only
+	define for !TARGET_RDNA2_PLUS.
+
+2024-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113281
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern): Remove
+	workaround for right shifts.
+	(vect_truncatable_operation_p): Handle NEGATE_EXPR and BIT_NOT_EXPR.
+	(vect_determine_precisions_from_range): Be more selective about
+	which codes can be narrowed based on their input and output ranges.
+	For shifts, require at least one more bit of precision than the
+	maximum shift amount.
+
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/nvptx/nvptx.opt (march-map=): Add sm_89 and sm_90a.
+
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (amdgcn): Recommend LLVM 15+ and newlib 4.4+,
+	but keep requiring only newlib 4.3+ and, if gfx1100 is disabled,
+	LLVM 13.0.1+.
+
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR other/111966
+	* config/gcn/mkoffload.cc (SET_XNACK_UNSET, TEST_SRAM_ECC_UNSET): New.
+	(SET_SRAM_ECC_UNSUPPORTED): Renamed to ...
+	(SET_SRAM_ECC_UNSET): ... this.
+	(copy_early_debug_info): Remove gfx900 special case, now handled as
+	part of the generic handling.
+	(main): Update SRAM_ECC and XNACK for the -march as done in gcn-hsa.h.
+
+2024-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110603
+	* tree-ssa-strlen.cc (get_range_strlen_dynamic): Remove incorrect
+	setting of pdata->maxlen to vr.upper_bound (which is unconditionally
+	overwritten anyway).  Avoid creating invalid range with minlen
+	larger than maxlen.  Formatting fix.
+
+2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR debug/103047
+	* tree-inline.cc (initialize_inlined_parameters): Reverse
+	the decl chain of inlined parameters.
+
 2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.cc (darwin_build_constant_cfstring): Prevent over-

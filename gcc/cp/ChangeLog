@@ -1,3 +1,9 @@
+2024-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113544
+	* pt.cc (instantiate_class_template): Don't partially instantiate.
+	(tsubst_stmt): Likewise.
+
 2024-01-26  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/113580
