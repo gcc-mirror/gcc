@@ -1896,17 +1896,18 @@
   [(set_attr "type" "neon_load1_2reg")]
 )
 
-(define_insn "loadwb_pair<TX:mode>_<P:mode>"
+(define_insn "loadwb_pair<TX_V16QI:mode>_<P:mode>"
   [(parallel
     [(set (match_operand:P 0 "register_operand" "=k")
-          (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
-     (set (match_operand:TX 2 "register_operand" "=w")
-          (mem:TX (match_dup 1)))
-     (set (match_operand:TX 3 "register_operand" "=w")
-          (mem:TX (plus:P (match_dup 1)
+	  (plus:P (match_operand:P 1 "register_operand" "0")
+		  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
+     (set (match_operand:TX_V16QI 2 "register_operand" "=w")
+	  (mem:TX_V16QI (match_dup 1)))
+     (set (match_operand:TX_V16QI 3 "register_operand" "=w")
+	  (mem:TX_V16QI (plus:P (match_dup 1)
 			  (match_operand:P 5 "const_int_operand" "n"))))])]
-  "TARGET_SIMD && INTVAL (operands[5]) == GET_MODE_SIZE (<TX:MODE>mode)"
+  "TARGET_SIMD
+   && known_eq (INTVAL (operands[5]), GET_MODE_SIZE (<TX_V16QI:MODE>mode))"
   "ldp\\t%q2, %q3, [%1], %4"
   [(set_attr "type" "neon_ldp_q")]
 )
@@ -1945,20 +1946,20 @@
   [(set_attr "type" "neon_store1_2reg<q>")]
 )
 
-(define_insn "storewb_pair<TX:mode>_<P:mode>"
+(define_insn "storewb_pair<TX_V16QI:mode>_<P:mode>"
   [(parallel
     [(set (match_operand:P 0 "register_operand" "=&k")
-          (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
-     (set (mem:TX (plus:P (match_dup 0)
+	  (plus:P (match_operand:P 1 "register_operand" "0")
+		  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
+     (set (mem:TX_V16QI (plus:P (match_dup 0)
 			  (match_dup 4)))
-          (match_operand:TX 2 "register_operand" "w"))
-     (set (mem:TX (plus:P (match_dup 0)
+	  (match_operand:TX_V16QI 2 "register_operand" "w"))
+     (set (mem:TX_V16QI (plus:P (match_dup 0)
 			  (match_operand:P 5 "const_int_operand" "n")))
-          (match_operand:TX 3 "register_operand" "w"))])]
+	  (match_operand:TX_V16QI 3 "register_operand" "w"))])]
   "TARGET_SIMD
-   && INTVAL (operands[5])
-      == INTVAL (operands[4]) + GET_MODE_SIZE (<TX:MODE>mode)"
+   && known_eq (INTVAL (operands[5]),
+		INTVAL (operands[4]) + GET_MODE_SIZE (<TX_V16QI:MODE>mode))"
   "stp\\t%q2, %q3, [%0, %4]!"
   [(set_attr "type" "neon_stp_q")]
 )

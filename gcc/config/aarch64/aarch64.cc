@@ -4074,7 +4074,7 @@ aarch64_reg_save_mode (unsigned int regno)
       case ARM_PCS_SIMD:
 	/* The vector PCS saves the low 128 bits (which is the full
 	   register on non-SVE targets).  */
-	return TFmode;
+	return V16QImode;
 
       case ARM_PCS_SVE:
 	/* Use vectors of DImode for registers that need frame
@@ -8863,6 +8863,10 @@ aarch64_gen_storewb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
       return gen_storewb_pairtf_di (base, base, reg, reg2,
 				    GEN_INT (-adjustment),
 				    GEN_INT (UNITS_PER_VREG - adjustment));
+    case E_V16QImode:
+      return gen_storewb_pairv16qi_di (base, base, reg, reg2,
+				       GEN_INT (-adjustment),
+				       GEN_INT (UNITS_PER_VREG - adjustment));
     default:
       gcc_unreachable ();
     }
@@ -8908,6 +8912,10 @@ aarch64_gen_loadwb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
     case E_TFmode:
       return gen_loadwb_pairtf_di (base, base, reg, reg2, GEN_INT (adjustment),
 				   GEN_INT (UNITS_PER_VREG));
+    case E_V16QImode:
+      return gen_loadwb_pairv16qi_di (base, base, reg, reg2,
+				      GEN_INT (adjustment),
+				      GEN_INT (UNITS_PER_VREG));
     default:
       gcc_unreachable ();
     }
@@ -8990,6 +8998,9 @@ aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
 
     case E_V4SImode:
       return gen_load_pairv4siv4si (reg1, mem1, reg2, mem2);
+
+    case E_V16QImode:
+      return gen_load_pairv16qiv16qi (reg1, mem1, reg2, mem2);
 
     default:
       gcc_unreachable ();
