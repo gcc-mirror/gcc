@@ -3113,16 +3113,15 @@ class dubious_allocation_size
 {
 public:
   dubious_allocation_size (const region *lhs, const region *rhs,
+			   const svalue *capacity_sval, tree expr,
 			   const gimple *stmt)
-  : m_lhs (lhs), m_rhs (rhs), m_expr (NULL_TREE), m_stmt (stmt),
+  : m_lhs (lhs), m_rhs (rhs),
+    m_capacity_sval (capacity_sval), m_expr (expr),
+    m_stmt (stmt),
     m_has_allocation_event (false)
-  {}
-
-  dubious_allocation_size (const region *lhs, const region *rhs,
-			   tree expr, const gimple *stmt)
-  : m_lhs (lhs), m_rhs (rhs), m_expr (expr), m_stmt (stmt),
-    m_has_allocation_event (false)
-  {}
+  {
+    gcc_assert (m_capacity_sval);
+  }
 
   const char *get_kind () const final override
   {
@@ -3196,9 +3195,21 @@ public:
     interest->add_region_creation (m_rhs);
   }
 
+  void maybe_add_sarif_properties (sarif_object &result_obj)
+    const final override
+  {
+    sarif_property_bag &props = result_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/dubious_allocation_size/"
+    props.set (PROPERTY_PREFIX "lhs", m_lhs->to_json ());
+    props.set (PROPERTY_PREFIX "rhs", m_rhs->to_json ());
+    props.set (PROPERTY_PREFIX "capacity_sval", m_capacity_sval->to_json ());
+#undef PROPERTY_PREFIX
+  }
+
 private:
   const region *m_lhs;
   const region *m_rhs;
+  const svalue *m_capacity_sval;
   const tree m_expr;
   const gimple *m_stmt;
   bool m_has_allocation_event;
@@ -3437,7 +3448,7 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	    && !capacity_compatible_with_type (cst_cap, pointee_size_tree,
 					       is_struct))
 	  ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg, rhs_reg,
-							     cst_cap,
+							     capacity, cst_cap,
 							     ctxt->get_stmt ()));
       }
       break;
@@ -3451,7 +3462,7 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 		tree expr = get_representative_tree (capacity);
 		ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg,
 								   rhs_reg,
-								   expr,
+								   capacity, expr,
 								   ctxt->get_stmt ()));
 	      }
 	  }
