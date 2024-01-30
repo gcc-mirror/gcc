@@ -947,7 +947,24 @@ tl::optional<AST::Fragment>
 MacroBuiltin::format_args_handler (location_t invoc_locus,
 				   AST::MacroInvocData &invoc)
 {
-  Fmt::Pieces::collect ("heyo this {is} what I {} want to {3}, {parse}");
+  auto fmt_expr
+    = parse_single_string_literal (BuiltinMacro::FormatArgs,
+				   invoc.get_delim_tok_tree (), invoc_locus,
+				   invoc.get_expander ());
+
+  if (!fmt_expr)
+    return AST::Fragment::create_error ();
+
+  // if it is not a literal, it's an eager macro invocation - return it
+  if (!fmt_expr->is_literal ())
+    {
+      auto token_tree = invoc.get_delim_tok_tree ();
+      return AST::Fragment ({AST::SingleASTNode (std::move (fmt_expr))},
+			    token_tree.to_token_stream ());
+    }
+
+  auto format_string = fmt_expr->as_string ();
+  auto pieces = Fmt::Pieces::collect (format_string);
 
   return AST::Fragment::create_empty ();
 }
