@@ -235,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 117. basic_ostream uses nonexistent num_put member functions.
-	return _M_insert(static_cast<double>(__f));
+	return _M_insert(_S_cast_flt<double>(__f));
       }
 
       __ostream_type&
@@ -248,7 +248,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ostream_type&
       operator<<(_Float16 __f)
       {
-	return _M_insert(static_cast<double>(__f));
+	return _M_insert(_S_cast_flt<double>(__f));
       }
 #endif
 
@@ -257,7 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ostream_type&
       operator<<(_Float32 __f)
       {
-	return _M_insert(static_cast<double>(__f));
+	return _M_insert(_S_cast_flt<double>(__f));
       }
 #endif
 
@@ -266,7 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ostream_type&
       operator<<(_Float64 __f)
       {
-	return _M_insert(static_cast<double>(__f));
+	return _M_insert(_S_cast_flt<double>(__f));
       }
 #endif
 
@@ -275,7 +275,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ostream_type&
       operator<<(_Float128 __f)
       {
-	return _M_insert(static_cast<long double>(__f));
+	return _M_insert(_S_cast_flt<long double>(__f));
       }
 #endif
 
@@ -284,7 +284,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ostream_type&
       operator<<(__gnu_cxx::__bfloat16_t __f)
       {
-	return _M_insert(static_cast<double>(__f));
+	return _M_insert(_S_cast_flt<double>(__f));
       }
 #endif
 
@@ -475,7 +475,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_write(const char_type* __s, streamsize __n)
       { std::__ostream_insert(*this, __s, __n); }
 #endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // for if-constexpr
+      template<typename _To, typename _From>
+	static _To
+	_S_cast_flt(_From __f)
+	{
+	  _To __d = static_cast<_To>(__f);
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 4101: LWG 117 loses the sign for negative NaN on some arches.
+#if defined __riscv
+	  _To __sign;
+#if __cpp_constexpr && __has_builtin(__builtin_bit_cast)
+	  if constexpr (sizeof(__f) == sizeof(short))
+	    __sign = static_cast<_To>(__builtin_bit_cast(short, __f));
+	  else if constexpr (sizeof(__f) == sizeof(int))
+	    __sign = static_cast<_To>(__builtin_bit_cast(int, __f));
+	  else if constexpr (sizeof(__f) == sizeof(long long))
+	    __sign = static_cast<_To>(__builtin_bit_cast(long long, __f));
+	  else
+#endif
+	  __sign = __builtin_signbit(__f) ? _To(-1.0) : _To(+1.0);
+
+	  if _GLIBCXX17_CONSTEXPR (__is_same(_To, double))
+	    __d = __builtin_copysign(__d, __sign);
+	  else if _GLIBCXX17_CONSTEXPR (__is_same(_To, long double))
+	    __d = __builtin_copysignl(__d, __sign);
+#endif
+	  return __d;
+	}
     };
+#pragma GCC diagnostic pop
 
   /**
    *  @brief  Performs setup work for output streams.
