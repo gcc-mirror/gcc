@@ -30845,7 +30845,6 @@ package body Sem_Prag is
       Loc        : constant Source_Ptr := Sloc (Prag);
       Prag_Nam   : constant Name_Id    := Pragma_Name (Prag);
       Check_Prag : Node_Id;
-      Msg_Arg    : Node_Id;
       Nam        : Name_Id;
 
    --  Start of processing for Build_Pragma_Check_Equivalent
@@ -30928,23 +30927,6 @@ package body Sem_Prag is
          Prepend_To (Pragma_Argument_Associations (Check_Prag),
            Make_Pragma_Argument_Association (Loc,
              Expression => Make_Identifier (Loc, Nam)));
-      end if;
-
-      --  Update the error message when the pragma is inherited
-
-      if Present (Inher_Id) then
-         Msg_Arg := Last (Pragma_Argument_Associations (Check_Prag));
-
-         if Chars (Msg_Arg) = Name_Message then
-            String_To_Name_Buffer (Strval (Expression (Msg_Arg)));
-
-            --  Insert "inherited" to improve the error message
-
-            if Name_Buffer (1 .. 8) = "failed p" then
-               Insert_Str_In_Name_Buffer ("inherited ", 8);
-               Set_Strval (Expression (Msg_Arg), String_From_Name_Buffer);
-            end if;
-         end if;
       end if;
 
       return Check_Prag;

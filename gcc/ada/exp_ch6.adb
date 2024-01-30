@@ -78,7 +78,6 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Snames;         use Snames;
 with Stand;          use Stand;
-with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 with Validsw;        use Validsw;
@@ -7677,47 +7676,37 @@ package body Exp_Ch6 is
            (Id       : Entity_Id;
             Is_First : in out Boolean)
          is
-            Prag   : constant Node_Id := Get_Class_Wide_Pragma (Id,
-                                         Pragma_Precondition);
-            Msg    : Node_Id;
-            Str_Id : String_Id;
+            Prag : constant Node_Id :=
+              Get_Class_Wide_Pragma (Id, Pragma_Precondition);
 
          begin
             if No (Prag) or else Is_Ignored (Prag) then
                return;
             end if;
 
-            Msg    := Expression (Last (Pragma_Argument_Associations (Prag)));
-            Str_Id := Strval (Msg);
-
             if Is_First then
                Is_First := False;
 
-               Append (Global_Name_Buffer, Strval (Msg));
-
-               if Id /= Subp_Id
-                 and then Name_Buffer (1 .. 19) = "failed precondition"
-               then
-                  Insert_Str_In_Name_Buffer ("inherited ", 8);
+               if Id /= Subp_Id then
+                  Append
+                    (Global_Name_Buffer, "failed inherited precondition ");
+               else
+                  Append (Global_Name_Buffer, "failed precondition ");
                end if;
 
             else
-               declare
-                  Str      : constant String := To_String (Str_Id);
-                  From_Idx : Integer;
+               Append (Global_Name_Buffer, ASCII.LF);
+               Append (Global_Name_Buffer, "  or ");
 
-               begin
-                  Append (Global_Name_Buffer, ASCII.LF);
-                  Append (Global_Name_Buffer, "  or ");
-
-                  From_Idx := Name_Len;
-                  Append (Global_Name_Buffer, Str_Id);
-
-                  if Str (1 .. 19) = "failed precondition" then
-                     Insert_Str_In_Name_Buffer ("inherited ", From_Idx + 8);
-                  end if;
-               end;
+               Append (Global_Name_Buffer, "failed inherited precondition ");
             end if;
+
+            Append (Global_Name_Buffer, "from " &
+              Build_Location_String
+                (Sloc
+                  (First_Node
+                     (Expression
+                        (First (Pragma_Argument_Associations (Prag)))))));
          end Append_Message;
 
          --  Local variables

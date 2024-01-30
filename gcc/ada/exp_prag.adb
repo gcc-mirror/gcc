@@ -284,24 +284,6 @@ package body Exp_Prag is
    --------------------------
 
    procedure Expand_Pragma_Check (N : Node_Id) is
-      Cond : constant Node_Id := Arg_N (N, 2);
-      Nam  : constant Name_Id := Chars (Arg_N (N, 1));
-      Msg  : Node_Id;
-
-      Loc : constant Source_Ptr := Sloc (First_Node (Cond));
-      --  Source location used in the case of a failed assertion: point to the
-      --  failing condition, not Loc. Note that the source location of the
-      --  expression is not usually the best choice here, because it points to
-      --  the location of the topmost tree node, which may be an operator in
-      --  the middle of the source text of the expression. For example, it gets
-      --  located on the last AND keyword in a chain of boolean expressions
-      --  AND'ed together. It is best to put the message on the first character
-      --  of the condition, which is the effect of the First_Node call here.
-      --  This source location is used to build the default exception message,
-      --  and also as the sloc of the call to the runtime subprogram raising
-      --  Assert_Failure, so that coverage analysis tools can relate the
-      --  call to the failed check.
-
       procedure Replace_Discriminals_Of_Protected_Op (Expr : Node_Id);
       --  Discriminants of the enclosing protected object may be referenced
       --  in the expression of a precondition of a protected operation.
@@ -314,6 +296,94 @@ package body Exp_Prag is
       --  because the condition has been replaced by a Check pragma and
       --  analyzed earlier, before the creation of the discriminal renaming
       --  declarations that are added to the subprogram body.
+
+      function Make_Failure_Message
+        (Nam  : Name_Id;
+         Cond : Node_Id)
+         return Node_Id;
+      --  Build node with a string literal of a message for check Nam with
+      --  condition Cond failing at runtime.
+
+      --------------------------
+      -- Make_Failure_Message --
+      --------------------------
+
+      function Make_Failure_Message
+        (Nam  : Name_Id;
+         Cond : Node_Id)
+         return Node_Id
+      is
+         Loc     : constant Source_Ptr := Sloc (First_Node (Cond));
+         Loc_Str : constant String := Build_Location_String (Loc);
+
+      begin
+         Name_Len := 0;
+
+         --  For Assert, we just use the location
+
+         if Nam = Name_Assert then
+            null;
+
+         --  For predicate, we generate the string "predicate failed at yyy".
+         --  We prefer all lower case for predicate.
+
+         elsif Nam = Name_Predicate then
+            Add_Str_To_Name_Buffer ("predicate failed at ");
+
+         --  For special case of Precondition/Postcondition the string is
+         --  "failed xx from yy" where xx is precondition/postcondition in all
+         --  lower case. The reason for this different wording is that the
+         --  failure is not at the point of occurrence of the pragma, unlike
+         --  the other Check cases.
+
+         elsif Nam in Name_Pre
+                    | Name_Precondition
+                    | Name_Post
+                    | Name_Postcondition
+         then
+            Add_Str_To_Name_Buffer ("failed ");
+
+            --  Enhance information for inherited pragmas
+
+            if Comes_From_Inherited_Pragma (Loc) then
+               Add_Str_To_Name_Buffer ("inherited ");
+            end if;
+
+            if Nam = Name_Pre then
+               Get_Name_String_And_Append (Name_Precondition);
+            elsif Nam = Name_Post then
+               Get_Name_String_And_Append (Name_Postcondition);
+            else
+               Get_Name_String_And_Append (Nam);
+            end if;
+
+            Add_Str_To_Name_Buffer (" from ");
+
+         --  For special case of Invariant, the string is "failed invariant
+         --  from yy", to be consistent with the string that is generated for
+         --  the aspect case (the code later on checks for this specific string
+         --  to modify it in some cases, so this is functionally important).
+
+         elsif Nam = Name_Invariant then
+            Add_Str_To_Name_Buffer ("failed invariant from ");
+
+         --  For all other checks, the string is "xxx failed at yyy"
+         --  where xxx is the check name with appropriate casing.
+
+         else
+            Get_Name_String (Nam);
+            Set_Casing (Identifier_Casing (Source_Index (Current_Sem_Unit)));
+            Add_Str_To_Name_Buffer (" failed at ");
+         end if;
+
+         --  In all cases, add location string
+
+         Add_Str_To_Name_Buffer (Loc_Str);
+
+         --  Build the message
+
+         return Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len));
+      end Make_Failure_Message;
 
       ------------------------------------------
       -- Replace_Discriminals_Of_Protected_Op --
@@ -382,6 +452,26 @@ package body Exp_Prag is
       begin
          Replace_Discriminant_References (Expr);
       end Replace_Discriminals_Of_Protected_Op;
+
+      --  Local variables
+
+      Cond : constant Node_Id := Arg_N (N, 2);
+      Nam  : constant Name_Id := Chars (Arg_N (N, 1));
+      Msg  : Node_Id;
+
+      Loc : constant Source_Ptr := Sloc (First_Node (Cond));
+      --  Source location used in the case of a failed assertion: point to the
+      --  failing condition, not Loc. Note that the source location of the
+      --  expression is not usually the best choice here, because it points to
+      --  the location of the topmost tree node, which may be an operator in
+      --  the middle of the source text of the expression. For example, it gets
+      --  located on the last AND keyword in a chain of boolean expressions
+      --  AND'ed together. It is best to put the message on the first character
+      --  of the condition, which is the effect of the First_Node call here.
+      --  This source location is used to build the default exception message,
+      --  and also as the sloc of the call to the runtime subprogram raising
+      --  Assert_Failure, so that coverage analysis tools can relate the
+      --  call to the failed check.
 
    --  Start of processing for Expand_Pragma_Check
 
@@ -469,71 +559,6 @@ package body Exp_Prag is
       --  Case where we call the procedure
 
       else
-         --  If we have a message given, use it
-
-         if Present (Arg_N (N, 3)) then
-            Msg := Get_Pragma_Arg (Arg_N (N, 3));
-
-         --  Here we have no string, so prepare one
-
-         else
-            declare
-               Loc_Str : constant String := Build_Location_String (Loc);
-
-            begin
-               Name_Len := 0;
-
-               --  For Assert, we just use the location
-
-               if Nam = Name_Assert then
-                  null;
-
-               --  For predicate, we generate the string "predicate failed at
-               --  yyy". We prefer all lower case for predicate.
-
-               elsif Nam = Name_Predicate then
-                  Add_Str_To_Name_Buffer ("predicate failed at ");
-
-               --  For special case of Precondition/Postcondition the string is
-               --  "failed xx from yy" where xx is precondition/postcondition
-               --  in all lower case. The reason for this different wording is
-               --  that the failure is not at the point of occurrence of the
-               --  pragma, unlike the other Check cases.
-
-               elsif Nam in Name_Precondition | Name_Postcondition then
-                  Get_Name_String (Nam);
-                  Insert_Str_In_Name_Buffer ("failed ", 1);
-                  Add_Str_To_Name_Buffer (" from ");
-
-               --  For special case of Invariant, the string is "failed
-               --  invariant from yy", to be consistent with the string that is
-               --  generated for the aspect case (the code later on checks for
-               --  this specific string to modify it in some cases, so this is
-               --  functionally important).
-
-               elsif Nam = Name_Invariant then
-                  Add_Str_To_Name_Buffer ("failed invariant from ");
-
-               --  For all other checks, the string is "xxx failed at yyy"
-               --  where xxx is the check name with appropriate casing.
-
-               else
-                  Get_Name_String (Nam);
-                  Set_Casing
-                    (Identifier_Casing (Source_Index (Current_Sem_Unit)));
-                  Add_Str_To_Name_Buffer (" failed at ");
-               end if;
-
-               --  In all cases, add location string
-
-               Add_Str_To_Name_Buffer (Loc_Str);
-
-               --  Build the message
-
-               Msg := Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len));
-            end;
-         end if;
-
          --  For a precondition, replace references to discriminants of a
          --  protected type with the local discriminals.
 
@@ -546,16 +571,86 @@ package body Exp_Prag is
 
          --  Now rewrite as an if statement
 
-         Rewrite (N,
-           Make_If_Statement (Loc,
-             Condition       => Make_Op_Not (Loc, Right_Opnd => Cond),
-             Then_Statements => New_List (
-               Make_Procedure_Call_Statement (Loc,
-                 Name                   =>
-                   New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
-                 Parameter_Associations => New_List (Relocate_Node (Msg))))));
+         declare
+            function Make_Elsif_Check (Conj : Node_Id) return Node_Id;
+            --  Create an elsif part that checks a conjunct expression Conj and
+            --  emits a message with the exact location when the check fails.
 
-         Set_Comes_From_Check_Or_Contract (N);
+            ----------------------
+            -- Make_Elsif_Check --
+            ----------------------
+
+            function Make_Elsif_Check (Conj : Node_Id) return Node_Id is
+            begin
+               return
+                 Make_Elsif_Part (Loc,
+                   Condition       =>
+                     Make_Op_Not (Loc,
+                       Relocate_Node (Conj)),
+                   Then_Statements =>
+                     New_List (
+                       Make_Procedure_Call_Statement (Loc,
+                         Name                   =>
+                           New_Occurrence_Of
+                             (RTE (RE_Raise_Assert_Failure), Loc),
+                       Parameter_Associations =>
+                         New_List (
+                           Make_Failure_Message (Nam, Conj)))));
+            end Make_Elsif_Check;
+
+            Conjunct : Node_Id := Cond;
+            Elsifs   : List_Id := No_List;
+
+         begin
+            --  If we have a message given, use it
+
+            if Present (Arg_N (N, 3)) then
+               Msg := Get_Pragma_Arg (Arg_N (N, 3));
+
+            --  If check is for a Pre/Post expression of the form "A and then
+            --  B", then we split condition into separate conjuncts with
+            --  messages pointing to their exact locations, i.e.:
+            --
+            --    if not A then
+            --       Raise_Assert_Failure ("failed pre/post from [sloc of A]");
+            --    elsif not B then then
+            --       Raise_Assert_Failure ("failed pre/post from [sloc of B]");
+            --    end if;
+            --
+            --  This makes it easier to debug a failed complex contract.
+
+            else
+               if Nam in Name_Pre
+                       | Name_Precondition
+                       | Name_Post
+                       | Name_Postcondition
+               then
+                  while Nkind (Conjunct) = N_And_Then loop
+                     Prepend_New_To (Elsifs,
+                       Make_Elsif_Check (Right_Opnd (Conjunct)));
+                     Conjunct := Left_Opnd (Conjunct);
+                  end loop;
+               end if;
+
+               Msg := Make_Failure_Message (Nam, Conjunct);
+            end if;
+
+            Rewrite (N,
+              Make_If_Statement (Loc,
+                Condition       =>
+                  Make_Op_Not (Loc, Relocate_Node (Conjunct)),
+                Then_Statements =>
+                  New_List (
+                    Make_Procedure_Call_Statement (Loc,
+                      Name                   =>
+                        New_Occurrence_Of
+                          (RTE (RE_Raise_Assert_Failure), Loc),
+                    Parameter_Associations =>
+                      New_List (Msg))),
+                Elsif_Parts     => Elsifs));
+
+            Set_Comes_From_Check_Or_Contract (N);
+         end;
       end if;
 
       Analyze (N);

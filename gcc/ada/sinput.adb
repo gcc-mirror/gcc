@@ -244,9 +244,28 @@ package body Sinput is
          Append (Buf, ':');
          Append (Buf, Nat (Get_Logical_Line_Number (Ptr)));
 
+         --  For inherited pragmas, the location will be appended to a messsage
+         --  that already says "inherited"; also, we are not interested where
+         --  the pragma has been inherited. Progress directly to instantiation
+         --  locations.
+
+         if Comes_From_Inherited_Pragma (Ptr) then
+            Ptr := Instantiation_Location (Ptr);
+         end if;
+
          Ptr := Instantiation_Location (Ptr);
          exit when Ptr = No_Location;
-         Append (Buf, " instantiated at ");
+
+         --  Make sure that we don't mention "instantiated" when in fact the
+         --  location comes from other mechanisms.
+
+         pragma Assert (not Comes_From_Inherited_Pragma (Ptr));
+
+         if Comes_From_Inlined_Body (Ptr) then
+            Append (Buf, " inlined at ");
+         else
+            Append (Buf, " instantiated at ");
+         end if;
       end loop;
    end Build_Location_String;
 
