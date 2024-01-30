@@ -34,8 +34,10 @@ Pieces::collect (const std::string &to_parse)
   // auto pieces = std::vector<Piece> (piece_slice.base_ptr,
   // 	     piece_slice.base_ptr + piece_slice.len);
 
-  return Pieces{};
+  return Pieces (piece_slice);
 }
+
+Pieces::~Pieces () { destroy_pieces (slice); }
 
 } // namespace Fmt
 } // namespace Rust
