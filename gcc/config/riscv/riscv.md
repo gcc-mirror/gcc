@@ -89,6 +89,10 @@
 
   ;; Workaround for HFmode without hardware extension
   UNSPEC_FMV_SFP16_X
+
+  ;; XTheadFmv moves
+  UNSPEC_XTHEADFMV
+  UNSPEC_XTHEADFMV_HW
 ])
 
 (define_c_enum "unspecv" [
@@ -126,10 +130,6 @@
 
   ;; Zihintpause unspec
   UNSPECV_PAUSE
-
-  ;; XTheadFmv unspec
-  UNSPEC_XTHEADFMV
-  UNSPEC_XTHEADFMV_HW
 
   ;; XTheadInt unspec
   UNSPECV_XTHEADINT_PUSH
