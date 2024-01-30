@@ -3,21 +3,17 @@
 // what's the plan? Have a function return something that can be constructed into a vector?
 // or an iterator?
 
-use std::ffi::CStr;
+use std::{ffi::CStr, mem};
 
-trait IntoFFI {
-    type Output;
-
-    fn into_ffi(&self) -> Self::Output;
+trait IntoFFI<T> {
+    fn into_ffi(self) -> T;
 }
 
-impl<T> IntoFFI for Option<T>
+impl<T> IntoFFI<*const T> for Option<T>
 where
     T: Sized,
 {
-    type Output = *const T;
-
-    fn into_ffi(&self) -> Self::Output {
+    fn into_ffi(self) -> *const T {
         match self.as_ref() {
             None => std::ptr::null(),
             Some(r) => r as *const T,
@@ -40,12 +36,6 @@ mod ffi {
         pub end: usize,
     }
 
-    // impl InnerSpan {
-    //     pub fn new(start: usize, end: usize) -> InnerSpan {
-    //         InnerSpan { start, end }
-    //     }
-    // }
-
     /// The location and before/after width of a character whose width has changed from its source code
     /// representation
     #[derive(Copy, Clone, PartialEq, Eq)]
@@ -59,35 +49,27 @@ mod ffi {
         pub after: usize,
     }
 
-    // impl InnerWidthMapping {
-    //     pub fn new(position: usize, before: usize, after: usize) -> InnerWidthMapping {
-    //         InnerWidthMapping {
-    //             position,
-    //             before,
-    //             after,
-    //         }
-    //     }
+    // TODO: Not needed for now?
+    // /// Whether the input string is a literal. If yes, it contains the inner width mappings.
+    // #[derive(Clone, PartialEq, Eq)]
+    // #[repr(C)]
+    // enum InputStringKind {
+    //     NotALiteral,
+    //     Literal {
+    //         width_mappings: Vec<InnerWidthMapping>,
+    //     },
     // }
 
-    /// Whether the input string is a literal. If yes, it contains the inner width mappings.
-    #[derive(Clone, PartialEq, Eq)]
-    #[repr(C)]
-    enum InputStringKind {
-        NotALiteral,
-        Literal {
-            width_mappings: Vec<InnerWidthMapping>,
-        },
-    }
-
-    /// The type of format string that we are parsing.
-    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-    #[repr(C)]
-    pub enum ParseMode {
-        /// A normal format string as per `format_args!`.
-        Format,
-        /// An inline assembly template string for `asm!`.
-        InlineAsm,
-    }
+    // TODO: Not needed for now?
+    // /// The type of format string that we are parsing.
+    // #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    // #[repr(C)]
+    // pub enum ParseMode {
+    //     /// A normal format string as per `format_args!`.
+    //     Format,
+    //     /// An inline assembly template string for `asm!`.
+    //     InlineAsm,
+    // }
 
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -102,7 +84,13 @@ mod ffi {
         String(&'a str),
         /// This describes that formatting should process the next argument (as
         /// specified inside) for emission.
-        NextArgument(Box<Argument<'a>>),
+        NextArgument(*const Argument<'a>),
+    }
+
+    impl<'a> Drop for Piece<'a> {
+        fn drop(&mut self) {
+            println!("dropping Piece: {:?}", self)
+        }
     }
 
     /// Representation of an argument specification.
@@ -225,7 +213,10 @@ mod ffi {
                     // a memory leak... should we resend the info back to the Rust lib afterwards to free it?
                     // this is definitely the best way - store that pointer in the FFI piece and rebuild the box
                     // in a Rust destructor
-                    Piece::NextArgument(Box::new(Into::<Argument>::into(*x)))
+                    let ptr = Box::leak(x);
+                    let dst = Into::<Argument>::into(*ptr);
+
+                    Piece::NextArgument(&dst as *const Argument)
                 }
             }
         }
@@ -331,17 +322,18 @@ pub mod rust {
     use generic_format_parser::{ParseMode, Parser, Piece};
 
     pub fn collect_pieces(input: &str) -> Vec<Piece<'_>> {
-        // let parser = Parser::new();
         let parser = Parser::new(input, None, None, true, ParseMode::Format);
 
         parser.into_iter().collect()
     }
 }
 
+// TODO: Should we instead make an FFIVector struct?
 #[repr(C)]
 pub struct PieceSlice {
-    base_ptr: *const ffi::Piece<'static /* FIXME: That's wrong */>,
+    base_ptr: *mut ffi::Piece<'static /* FIXME: That's wrong */>,
     len: usize,
+    cap: usize,
 }
 
 #[no_mangle]
@@ -355,10 +347,16 @@ pub extern "C" fn collect_pieces(input: *const libc::c_char) -> PieceSlice {
         .map(Into::into)
         .collect();
 
-    println!("debug: {:?}, {:?}", pieces.as_ptr(), pieces.len());
+    println!("[ARTHUR]: debug: {:?}, {:?}", pieces.as_ptr(), pieces.len());
 
     PieceSlice {
-        base_ptr: pieces.as_ptr(),
         len: pieces.len(),
+        cap: pieces.capacity(),
+        base_ptr: pieces.leak().as_mut_ptr(),
     }
+}
+
+#[no_mangle]
+pub extern "C" fn destroy_pieces(PieceSlice { base_ptr, len, cap }: PieceSlice) {
+    let _ = unsafe { Vec::from_raw_parts(base_ptr, len, cap) };
 }

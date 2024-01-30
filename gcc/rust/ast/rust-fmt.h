@@ -237,6 +237,7 @@ struct PieceSlice
 {
   const Piece *base_ptr;
   size_t len;
+  size_t cap;
 };
 
 extern "C" {
@@ -244,11 +245,19 @@ extern "C" {
 PieceSlice
 collect_pieces (const char *input);
 
+void destroy_pieces (PieceSlice);
+
 } // extern "C"
 
 struct Pieces
 {
   static Pieces collect (const std::string &to_parse);
+  ~Pieces ();
+
+private:
+  Pieces (PieceSlice slice) : slice (slice) {}
+
+  PieceSlice slice;
 };
 
 } // namespace Fmt
