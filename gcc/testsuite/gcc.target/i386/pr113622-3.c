@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-msse" } */
+/* { dg-options "-msse2" } */
 
 typedef double __attribute__ ((vector_size (16))) vec;
 
