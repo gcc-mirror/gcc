@@ -1731,7 +1731,8 @@ aarch64_init_tme_builtins (void)
 static void
 aarch64_init_rng_builtins (void)
 {
-  tree unsigned_ptr_type = build_pointer_type (unsigned_intDI_type_node);
+  tree unsigned_ptr_type
+    = build_pointer_type (get_typenode_from_name (UINT64_TYPE));
   tree ftype
     = build_function_type_list (integer_type_node, unsigned_ptr_type, NULL);
   aarch64_builtin_decls[AARCH64_BUILTIN_RNG_RNDR]
