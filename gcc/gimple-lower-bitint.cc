@@ -2159,6 +2159,8 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	      gcc_assert (gimple_assign_cast_p (g));
 	      tree rhs1 = gimple_assign_rhs1 (g);
 	      bitint_prec_kind kind = bitint_prec_small;
+	      if (TREE_CODE (rhs1) == VIEW_CONVERT_EXPR)
+		rhs1 = TREE_OPERAND (rhs1, 0);
 	      gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)));
 	      if (TREE_CODE (TREE_TYPE (rhs1)) == BITINT_TYPE)
 		kind = bitint_precision_kind (TREE_TYPE (rhs1));
