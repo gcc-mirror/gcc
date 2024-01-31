@@ -433,7 +433,6 @@ package body Aspects is
    -------------------
 
    procedure Copy_Aspects (From : Node_Id; To : Node_Id) is
-
    begin
       if not Has_Aspects (From) then
          return;

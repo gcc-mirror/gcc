@@ -512,7 +512,6 @@ package body Contracts is
                if Present (It) then
                   Validate_Iterable_Aspect (E, It);
                end if;
-
                if Present (I_Lit) then
                   Validate_Literal_Aspect (E, I_Lit);
                end if;
@@ -4980,9 +4979,7 @@ package body Contracts is
 
       Push_Scope (Gen_Id);
 
-      if Permits_Aspect_Specifications (Templ)
-        and then Has_Aspects (Templ)
-      then
+      if Permits_Aspect_Specifications (Templ) then
          Save_Global_References_In_Aspects (Templ);
       end if;
 

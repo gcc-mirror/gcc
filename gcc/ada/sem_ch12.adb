@@ -9663,21 +9663,17 @@ package body Sem_Ch12 is
       A_Spec : Node_Id;
       A_Id   : Aspect_Id;
    begin
-      if No (A_List) then
-         return False;
-      else
-         A_Spec := First (A_List);
-         while Present (A_Spec) loop
-            A_Id := Get_Aspect_Id (A_Spec);
-            if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
-               return True;
-            end if;
+      A_Spec := First (A_List);
+      while Present (A_Spec) loop
+         A_Id := Get_Aspect_Id (A_Spec);
+         if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
+            return True;
+         end if;
 
-            Next (A_Spec);
-         end loop;
+         Next (A_Spec);
+      end loop;
 
-         return False;
-      end if;
+      return False;
    end Has_Contracts;
 
    ----------

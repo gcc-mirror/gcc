@@ -1696,10 +1696,6 @@ package body Par_SCO is
          C1 : Character;
 
       begin
-         if not Has_Aspects (N) then
-            return;
-         end if;
-
          AN := First (Aspect_Specifications (N));
          while Present (AN) loop
             AE := Expression (AN);
@@ -2414,7 +2410,9 @@ package body Par_SCO is
                end if;
          end case;
 
-         Traverse_Aspects (N);
+         if Permits_Aspect_Specifications (N) then
+            Traverse_Aspects (N);
+         end if;
       end Traverse_One;
 
    --  Start of processing for Traverse_Declarations_Or_Statements

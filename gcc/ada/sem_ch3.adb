@@ -4153,24 +4153,22 @@ package body Sem_Ch3 is
          A_Id : Aspect_Id;
 
       begin
-         if Present (Aspect_Specifications (N)) then
-            A := First (Aspect_Specifications (N));
+         A := First (Aspect_Specifications (N));
 
-            while Present (A) loop
-               A_Id := Get_Aspect_Id (Chars (Identifier (A)));
+         while Present (A) loop
+            A_Id := Get_Aspect_Id (Chars (Identifier (A)));
 
-               if A_Id = Aspect_Address then
+            if A_Id = Aspect_Address then
 
-                  --  Set flag on object entity, for later processing at
-                  --  the freeze point.
+               --  Set flag on object entity, for later processing at the
+               --  freeze point.
 
-                  Set_Has_Delayed_Aspects (Id);
-                  return True;
-               end if;
+               Set_Has_Delayed_Aspects (Id);
+               return True;
+            end if;
 
-               Next (A);
-            end loop;
-         end if;
+            Next (A);
+         end loop;
 
          return False;
       end Delayed_Aspect_Present;
@@ -18013,16 +18011,14 @@ package body Sem_Ch3 is
             Prev_Asp  : Node_Id;
 
          begin
-            if Present (Prev_Asps) then
-               Prev_Asp := First (Prev_Asps);
-               while Present (Prev_Asp) loop
-                  if Get_Aspect_Id (Prev_Asp) = Asp_Id then
-                     return Prev_Asp;
-                  end if;
+            Prev_Asp := First (Prev_Asps);
+            while Present (Prev_Asp) loop
+               if Get_Aspect_Id (Prev_Asp) = Asp_Id then
+                  return Prev_Asp;
+               end if;
 
-                  Next (Prev_Asp);
-               end loop;
-            end if;
+               Next (Prev_Asp);
+            end loop;
 
             return Empty;
          end Get_Partial_View_Aspect;
@@ -18036,38 +18032,35 @@ package body Sem_Ch3 is
       --  Start of processing for Check_Duplicate_Aspects
 
       begin
-         if Present (Full_Asps) then
-            Full_Asp := First (Full_Asps);
-            while Present (Full_Asp) loop
-               Part_Asp := Get_Partial_View_Aspect (Full_Asp);
+         Full_Asp := First (Full_Asps);
+         while Present (Full_Asp) loop
+            Part_Asp := Get_Partial_View_Aspect (Full_Asp);
 
-               --  An aspect and its class-wide counterpart are two distinct
-               --  aspects and may apply to both views of an entity.
+            --  An aspect and its class-wide counterpart are two distinct
+            --  aspects and may apply to both views of an entity.
 
-               if Present (Part_Asp)
-                 and then Class_Present (Part_Asp) = Class_Present (Full_Asp)
-               then
-                  Error_Msg_N
-                    ("aspect already specified in private declaration",
-                     Full_Asp);
+            if Present (Part_Asp)
+              and then Class_Present (Part_Asp) = Class_Present (Full_Asp)
+            then
+               Error_Msg_N
+                 ("aspect already specified in private declaration", Full_Asp);
 
-                  Remove (Full_Asp);
-                  return;
-               end if;
+               Remove (Full_Asp);
+               return;
+            end if;
 
-               if Has_Discriminants (Prev)
-                 and then not Has_Unknown_Discriminants (Prev)
-                 and then Get_Aspect_Id (Full_Asp) =
-                            Aspect_Implicit_Dereference
-               then
-                  Error_Msg_N
-                    ("cannot specify aspect if partial view has known "
-                     & "discriminants", Full_Asp);
-               end if;
+            if Has_Discriminants (Prev)
+              and then not Has_Unknown_Discriminants (Prev)
+              and then Get_Aspect_Id (Full_Asp) =
+                         Aspect_Implicit_Dereference
+            then
+               Error_Msg_N
+                 ("cannot specify aspect if partial view has known "
+                  & "discriminants", Full_Asp);
+            end if;
 
-               Next (Full_Asp);
-            end loop;
-         end if;
+            Next (Full_Asp);
+         end loop;
       end Check_Duplicate_Aspects;
 
       ------------------
