@@ -318,6 +318,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
   struct save_macro_data *smd;
   expanded_location saved_loc;
   bool saved_trace_includes;
+  int cpp_result;
 
   timevar_push (TV_PCH_RESTORE);
 
@@ -343,19 +344,25 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
   cpp_set_line_map (pfile, line_table);
   rebuild_location_adhoc_htab (line_table);
   line_table->trace_includes = saved_trace_includes;
-  linemap_add (line_table, LC_ENTER, 0, saved_loc.file, saved_loc.line);
+
+  /* Set the current location to the line containing the #include (or the
+     #pragma GCC pch_preprocess) for the purpose of assigning locations to any
+     macros that are about to be restored.  */
+  linemap_add (line_table, LC_ENTER, 0, saved_loc.file,
+	       saved_loc.line > 1 ? saved_loc.line - 1 : saved_loc.line);
 
   timevar_push (TV_PCH_CPP_RESTORE);
-  if (cpp_read_state (pfile, name, f, smd) != 0)
-    {
-      fclose (f);
-      timevar_pop (TV_PCH_CPP_RESTORE);
-      goto end;
-    }
+  cpp_result = cpp_read_state (pfile, name, f, smd);
+
+  /* Set the current location to the line following the #include, where we
+     were prior to processing the PCH.  */
+  linemap_line_start (line_table, saved_loc.line, 0);
+
   timevar_pop (TV_PCH_CPP_RESTORE);
-
-
   fclose (f);
+
+  if (cpp_result != 0)
+    goto end;
 
   /* Give the front end a chance to take action after a PCH file has
      been loaded.  */
