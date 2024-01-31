@@ -1,4 +1,4 @@
-MODULE builtins ;  (*!m2pim+gm2*)
+MODULE testbuiltins ;  (*!m2pim+gm2*)
 
 FROM Builtins IMPORT log10l ;
 FROM libc IMPORT printf, exit ;
@@ -76,4 +76,4 @@ BEGIN
    code := 0 ;
    test ;
    exit (code)
-END builtins.
+END testbuiltins.

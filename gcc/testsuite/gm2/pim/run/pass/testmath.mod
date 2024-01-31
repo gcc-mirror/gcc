@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License along
 with gm2; see the file COPYING.  If not, write to the Free Software
 Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
 
-MODULE math2 ;
+MODULE testmath ;
 
 IMPORT MathLib0, SMathLib0 ;
 FROM libc IMPORT printf, exit ;
@@ -37,8 +37,8 @@ VAR
 BEGIN
    r := 2.3 ;
    printf("value of entier (10.0 + r) = %d (should be 12)\n", MathLib0.entier (10.0 + r)) ;
-   Assert(MathLib0.entier (r + 10.0) = 12, __FILE__, __LINE__) ;
+   Assert(MathLib0.entier (10.0 + r) = 12, __FILE__, __LINE__) ;
    s := 5.9 ;
    printf("value of SMathLib0.entier (10.0 + s) = %d (should be 15)\n", SMathLib0.entier (10.0 + s)) ;
-   Assert(SMathLib0.entier (s + 10.0) = 15, __FILE__, __LINE__) ;
-END math2.
+   Assert(SMathLib0.entier (10.0 + s) = 15, __FILE__, __LINE__) ;
+END testmath.
