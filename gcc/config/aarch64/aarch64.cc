@@ -19872,6 +19872,62 @@ build_ifunc_arg_type ()
   return pointer_type;
 }
 
+/* Implement TARGET_MANGLE_DECL_ASSEMBLER_NAME, to add function multiversioning
+   suffixes.  */
+
+tree
+aarch64_mangle_decl_assembler_name (tree decl, tree id)
+{
+  /* For function version, add the target suffix to the assembler name.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (decl))
+    {
+      aarch64_fmv_feature_mask feature_mask = get_feature_mask_for_version (decl);
+
+      std::string name = IDENTIFIER_POINTER (id);
+
+      /* For the default version, append ".default".  */
+      if (feature_mask == 0ULL)
+	{
+	  name += ".default";
+	  return get_identifier (name.c_str());
+	}
+
+      name += "._";
+
+      for (int i = 0; i < FEAT_MAX; i++)
+	{
+	  if (feature_mask & aarch64_fmv_feature_data[i].feature_mask)
+	    {
+	      name += "M";
+	      name += aarch64_fmv_feature_data[i].name;
+	    }
+	}
+
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	SET_DECL_RTL (decl, NULL);
+
+      id = get_identifier (name.c_str());
+    }
+  return id;
+}
+
+/* Return an identifier for the base assembler name of a versioned function.
+   This is computed by taking the default version's assembler name, and
+   stripping off the ".default" suffix if it's already been appended.  */
+
+static tree
+get_suffixed_assembler_name (tree default_decl, const char *suffix)
+{
+  std::string name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (default_decl));
+
+  auto size = name.size ();
+  if (size >= 8 && name.compare (size - 8, 8, ".default") == 0)
+    name.resize (size - 8);
+  name += suffix;
+  return get_identifier (name.c_str());
+}
+
 /* Make the resolver function decl to dispatch the versions of
    a multi-versioned function,  DEFAULT_DECL.  IFUNC_ALIAS_DECL is
    ifunc alias that will point to the created resolver.  Create an
@@ -19885,8 +19941,9 @@ make_resolver_func (const tree default_decl,
 {
   tree decl, type, t;
 
-  /* Create resolver function name based on default_decl.  */
-  tree decl_name = clone_function_name (default_decl, "resolver");
+  /* Create resolver function name based on default_decl.  We need to remove an
+     existing ".default" suffix if this has already been appended.  */
+  tree decl_name = get_suffixed_assembler_name (default_decl, ".resolver");
   const char *resolver_name = IDENTIFIER_POINTER (decl_name);
 
   /* The resolver function should have signature
@@ -20233,6 +20290,28 @@ aarch64_generate_version_dispatcher_body (void *node_p)
   dispatch_function_versions (resolver_decl, &fn_ver_vec, &empty_bb);
   cgraph_edge::rebuild_edges ();
   pop_cfun ();
+
+  /* Fix up symbol names.  First we need to obtain the base name, which may
+     have already been mangled.  */
+  tree base_name = get_suffixed_assembler_name (default_ver_decl, "");
+
+  /* We need to redo the version mangling on the non-default versions for the
+     target_clones case.  Redoing the mangling for the target_version case is
+     redundant but does no harm.  We need to skip the default version, because
+     expand_clones will append ".default" later; fortunately that suffix is the
+     one we want anyway.  */
+  for (versn_info = node_version_info->next->next; versn_info;
+       versn_info = versn_info->next)
+    {
+      tree version_decl = versn_info->this_node->decl;
+      tree name = aarch64_mangle_decl_assembler_name (version_decl,
+						      base_name);
+      symtab->change_decl_assembler_name (version_decl, name);
+    }
+
+  /* We also need to use the base name for the ifunc declaration.  */
+  symtab->change_decl_assembler_name (node->decl, base_name);
+
   return resolver_decl;
 }
 
@@ -20343,42 +20422,6 @@ aarch64_common_function_versions (tree fn1, tree fn2)
     return false;
 
   return (aarch64_compare_version_priority (fn1, fn2) != 0);
-}
-
-/* Implement TARGET_MANGLE_DECL_ASSEMBLER_NAME, to add function multiversioning
-   suffixes.  */
-
-tree
-aarch64_mangle_decl_assembler_name (tree decl, tree id)
-{
-  /* For function version, add the target suffix to the assembler name.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_FUNCTION_VERSIONED (decl))
-    {
-      aarch64_fmv_feature_mask feature_mask = get_feature_mask_for_version (decl);
-
-      /* No suffix for the default version.  */
-      if (feature_mask == 0ULL)
-	return id;
-
-      std::string name = IDENTIFIER_POINTER (id);
-      name += "._";
-
-      for (int i = 0; i < FEAT_MAX; i++)
-	{
-	  if (feature_mask & aarch64_fmv_feature_data[i].feature_mask)
-	    {
-	      name += "M";
-	      name += aarch64_fmv_feature_data[i].name;
-	    }
-	}
-
-      if (DECL_ASSEMBLER_NAME_SET_P (decl))
-	SET_DECL_RTL (decl, NULL);
-
-      id = get_identifier (name.c_str());
-    }
-  return id;
 }
 
 /* Implement TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P.  Use an opt-out
