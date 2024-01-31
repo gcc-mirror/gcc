@@ -5084,8 +5084,7 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
   info->gpr_offset = cum->num_gprs;
   info->fpr_offset = cum->num_fprs;
 
-  /* When disable vector_abi or scalable vector argument is anonymous, this
-     argument is passed by reference.  */
+  /* Passed by reference when the scalable vector argument is anonymous.  */
   if (riscv_v_ext_mode_p (mode) && !named)
     return NULL_RTX;
 
@@ -5282,8 +5281,9 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
      so we can avoid the call to riscv_get_arg_info in this case.  */
   if (cum != NULL)
     {
-      /* Don't pass by reference if we can use a floating-point register.  */
       riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
+
+      /* Don't pass by reference if we can use a floating-point register.  */
       if (info.num_fprs)
 	return false;
 
@@ -5296,9 +5296,9 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 	return false;
     }
 
-  /* When vector abi disabled(without --param=riscv-vector-abi option) or
-     scalable vector argument is anonymous or cannot be passed through vector
-     registers, this argument is passed by reference. */
+  /* Passed by reference when:
+     1. The scalable vector argument is anonymous.
+     2. Args cannot be passed through vector registers.  */
   if (riscv_v_ext_mode_p (arg.mode))
     return true;
 
@@ -5409,12 +5409,9 @@ riscv_arguments_is_vector_type_p (const_tree fntype)
 static const predefined_function_abi &
 riscv_fntype_abi (const_tree fntype)
 {
-  /* Implementing an experimental vector calling convention, the proposal
-     can be viewed at the bellow link:
-       https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389
-
-     You can enable this feature via the `--param=riscv-vector-abi` compiler
-     option.  */
+  /* Implement the vector calling convention.  For more details please
+     reference the below link.
+     https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389  */
   if (riscv_return_value_is_vector_type_p (fntype)
 	  || riscv_arguments_is_vector_type_p (fntype))
     return riscv_v_abi ();
