@@ -12799,7 +12799,7 @@ situations.
 
 @deftypefn {Built-in Function} {void *} __builtin_stack_address ()
 This function returns the stack pointer register, offset by
-@code{STACK_POINTER_OFFSET}.
+@code{STACK_ADDRESS_OFFSET} if that's defined.
 
 Conceptually, the returned address returned by this built-in function is
 the boundary between the stack area allocated for use by its caller, and

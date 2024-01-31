@@ -5450,7 +5450,7 @@ expand_builtin_stack_address ()
   rtx ret = convert_to_mode (ptr_mode, copy_to_reg (stack_pointer_rtx),
 			     STACK_UNSIGNED);
 
-#ifdef SPARC_STACK_BOUNDARY_HACK
+#ifdef STACK_ADDRESS_OFFSET
   /* Unbias the stack pointer, bringing it to the boundary between the
      stack area claimed by the active function calling this builtin,
      and stack ranges that could get clobbered if it called another
@@ -5477,8 +5477,7 @@ expand_builtin_stack_address ()
      (caller) function's active area as well, whereas those pushed or
      allocated temporarily for a call are regarded as part of the
      callee's stack range, rather than the caller's.  */
-  if (SPARC_STACK_BOUNDARY_HACK)
-    ret = plus_constant (ptr_mode, ret, STACK_POINTER_OFFSET);
+  ret = plus_constant (ptr_mode, ret, STACK_ADDRESS_OFFSET);
 #endif
 
   return force_reg (ptr_mode, ret);
