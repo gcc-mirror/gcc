@@ -2790,25 +2790,29 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    }
 	  else
 	    {
-	      tree *saved_last_vuse_ptr = data->last_vuse_ptr;
-	      /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
-	      data->last_vuse_ptr = NULL;
 	      tree saved_vuse = vr->vuse;
 	      hashval_t saved_hashcode = vr->hashcode;
-	      void *res = vn_reference_lookup_2 (ref, gimple_vuse (def_stmt),
-						 data);
+	      if (vr->vuse)
+		vr->hashcode = vr->hashcode - SSA_NAME_VERSION (vr->vuse);
+	      vr->vuse = vuse_ssa_val (gimple_vuse (def_stmt));
+	      if (vr->vuse)
+		vr->hashcode = vr->hashcode + SSA_NAME_VERSION (vr->vuse);
+	      vn_reference_t vnresult = NULL;
+	      /* Do not use vn_reference_lookup_2 since that might perform
+		 expression hashtable insertion but this lookup crosses
+		 a possible may-alias making such insertion conditionally
+		 invalid.  */
+	      vn_reference_lookup_1 (vr, &vnresult);
 	      /* Need to restore vr->vuse and vr->hashcode.  */
 	      vr->vuse = saved_vuse;
 	      vr->hashcode = saved_hashcode;
-	      data->last_vuse_ptr = saved_last_vuse_ptr;
-	      if (res && res != (void *)-1)
+	      if (vnresult)
 		{
-		  vn_reference_t vnresult = (vn_reference_t) res;
 		  if (TREE_CODE (rhs) == SSA_NAME)
 		    rhs = SSA_VAL (rhs);
 		  if (vnresult->result
 		      && operand_equal_p (vnresult->result, rhs, 0))
-		    return res;
+		    return vnresult;
 		}
 	    }
 	}
