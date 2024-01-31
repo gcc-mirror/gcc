@@ -110,7 +110,6 @@ static constexpr cp_feature_info cp_feature_table[] =
   { "cxx_alignof", cxx11 },
   { "cxx_attributes", cxx11 },
   { "cxx_constexpr", cxx11 },
-  { "cxx_constexpr_string_builtins", cxx11 },
   { "cxx_decltype", cxx11 },
   { "cxx_decltype_incomplete_return_types", cxx11 },
   { "cxx_default_function_template_args", cxx11 },
