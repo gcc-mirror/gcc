@@ -6363,6 +6363,22 @@ build_c_cast (location_t loc, tree type, tree expr)
 		    " from %qT to %qT", otype, type);
 
       ovalue = value;
+      /* If converting to boolean a value with integer operands that
+	 is not itself represented as an INTEGER_CST, the call below
+	 to note_integer_operands may insert a C_MAYBE_CONST_EXPR, but
+	 build_binary_op as called by c_common_truthvalue_conversion
+	 may also insert a C_MAYBE_CONST_EXPR to indicate that a
+	 subexpression has been fully folded.  To avoid nested
+	 C_MAYBE_CONST_EXPR, ensure that
+	 c_objc_common_truthvalue_conversion receives an argument
+	 properly marked as having integer operands in that case.  */
+      if (int_operands
+	  && TREE_CODE (value) != INTEGER_CST
+	  && (TREE_CODE (type) == BOOLEAN_TYPE
+	      || (TREE_CODE (type) == ENUMERAL_TYPE
+		  && ENUM_UNDERLYING_TYPE (type) != NULL_TREE
+		  && TREE_CODE (ENUM_UNDERLYING_TYPE (type)) == BOOLEAN_TYPE)))
+	value = note_integer_operands (value);
       value = convert (type, value);
 
       /* Ignore any integer overflow caused by the cast.  */
@@ -13509,11 +13525,11 @@ build_binary_op (location_t location, enum tree_code code,
 }
 
 
-/* Convert EXPR to be a truth-value, validating its type for this
+/* Convert EXPR to be a truth-value (type TYPE), validating its type for this
    purpose.  LOCATION is the source location for the expression.  */
 
 tree
-c_objc_common_truthvalue_conversion (location_t location, tree expr)
+c_objc_common_truthvalue_conversion (location_t location, tree expr, tree type)
 {
   bool int_const, int_operands;
 
@@ -13556,14 +13572,17 @@ c_objc_common_truthvalue_conversion (location_t location, tree expr)
   if (int_operands && TREE_CODE (expr) != INTEGER_CST)
     {
       expr = remove_c_maybe_const_expr (expr);
-      expr = build2 (NE_EXPR, integer_type_node, expr,
+      expr = build2 (NE_EXPR, type, expr,
 		     convert (TREE_TYPE (expr), integer_zero_node));
       expr = note_integer_operands (expr);
     }
   else
-    /* ??? Should we also give an error for vectors rather than leaving
-       those to give errors later?  */
-    expr = c_common_truthvalue_conversion (location, expr);
+    {
+      /* ??? Should we also give an error for vectors rather than leaving
+	 those to give errors later?  */
+      expr = c_common_truthvalue_conversion (location, expr);
+      expr = fold_convert_loc (location, type, expr);
+    }
 
   if (TREE_CODE (expr) == INTEGER_CST && int_operands && !int_const)
     {

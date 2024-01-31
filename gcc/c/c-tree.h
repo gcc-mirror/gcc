@@ -755,7 +755,8 @@ bool c_type_variably_modified_p (tree t)
 
 
 extern bool char_type_p (tree);
-extern tree c_objc_common_truthvalue_conversion (location_t, tree);
+extern tree c_objc_common_truthvalue_conversion (location_t, tree,
+						 tree = integer_type_node);
 extern tree require_complete_type (location_t, tree);
 extern bool same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
