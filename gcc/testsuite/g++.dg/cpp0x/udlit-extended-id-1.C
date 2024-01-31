@@ -1,5 +1,6 @@
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-Wno-error=normalized" }
+// { dg-require-effective-target ucn }
 #include <cstring>
 #include <cstddef>
 using namespace std;
