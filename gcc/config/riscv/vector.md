@@ -1054,7 +1054,7 @@
 	(reg:SI FRM_REGNUM))]
   "TARGET_VECTOR"
   "frrm\t%0"
-  [(set_attr "type" "rdfrm")
+  [(set_attr "type" "fmove")
    (set_attr "mode" "SI")]
 )
 

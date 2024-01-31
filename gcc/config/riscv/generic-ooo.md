@@ -115,9 +115,20 @@
 (define_insn_reservation "generic_ooo_alu" 1
   (and (eq_attr "tune" "generic_ooo")
        (eq_attr "type" "unknown,const,arith,shift,slt,multi,auipc,nop,logical,\
-			move,bitmanip,min,max,minu,maxu,clz,ctz"))
+			move,bitmanip,rotate,min,max,minu,maxu,clz,ctz,atomic,\
+			condmove,mvpair,zicond"))
   "generic_ooo_issue,generic_ooo_ixu_alu")
 
+(define_insn_reservation "generic_ooo_sfb_alu" 2
+  (and (eq_attr "tune" "generic_ooo")
+       (eq_attr "type" "sfb_alu"))
+  "generic_ooo_issue,generic_ooo_ixu_alu")
+
+;; Branch instructions
+(define_insn_reservation "generic_ooo_branch" 1
+  (and (eq_attr "tune" "generic_ooo")
+       (eq_attr "type" "branch,jump,call,jalr,ret,trap"))
+  "generic_ooo_issue,generic_ooo_ixu_alu")
 
 ;; Float move, convert and compare.
 (define_insn_reservation "generic_ooo_float_move" 3
@@ -184,7 +195,7 @@
 (define_insn_reservation "generic_ooo_vec_alu" 3
   (and (eq_attr "tune" "generic_ooo")
        (eq_attr "type" "vialu,viwalu,vext,vicalu,vshift,vnshift,viminmax,vicmp,\
-		        vimov,vsalu,vaalu,vsshift,vnclip,vmov,vfmov"))
+		        vimov,vsalu,vaalu,vsshift,vnclip,vmov,vfmov,vector"))
   "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
 
 ;; Vector float comparison, conversion etc.
