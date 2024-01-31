@@ -4029,6 +4029,11 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   if (!multiple_p (pbitpos, BITS_PER_UNIT))
     return false;
 
+  /* We need to be able to form an address to the base which for example
+     isn't possible for hard registers.  */
+  if (may_be_nonaddressable_p (base))
+    return false;
+
   poly_int64 pbytepos = exact_div (pbitpos, BITS_PER_UNIT);
 
   if (TREE_CODE (base) == MEM_REF)
