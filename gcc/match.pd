@@ -6754,19 +6754,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		   >= TYPE_PRECISION (TREE_TYPE (@10)))
 		  && (TYPE_UNSIGNED (TREE_TYPE (@00))
 		      == TYPE_UNSIGNED (TREE_TYPE (@10))))
-	      || (TREE_CODE (@10) == INTEGER_CST
+	      || (TREE_CODE (@1) == INTEGER_CST
 		  && INTEGRAL_TYPE_P (TREE_TYPE (@00))
-		  && int_fits_type_p (@10, TREE_TYPE (@00)))))
+		  && int_fits_type_p (@1, TREE_TYPE (@00)))))
       (cmp @00 (convert @10))
-      (if (TREE_CODE (@10) == INTEGER_CST
+      (if (TREE_CODE (@1) == INTEGER_CST
 	   && INTEGRAL_TYPE_P (TREE_TYPE (@00))
-	   && !int_fits_type_p (@10, TREE_TYPE (@00)))
+	   && !int_fits_type_p (@1, TREE_TYPE (@00)))
        (with
 	{
 	  tree min = lower_bound_in_type (TREE_TYPE (@10), TREE_TYPE (@00));
 	  tree max = upper_bound_in_type (TREE_TYPE (@10), TREE_TYPE (@00));
-	  bool above = integer_nonzerop (const_binop (LT_EXPR, type, max, @10));
-	  bool below = integer_nonzerop (const_binop (LT_EXPR, type, @10, min));
+	  bool above = integer_nonzerop (const_binop (LT_EXPR, type, max, @1));
+	  bool below = integer_nonzerop (const_binop (LT_EXPR, type, @1, min));
 	}
 	(if (above || below)
 	 (if (cmp == EQ_EXPR || cmp == NE_EXPR)
