@@ -7791,7 +7791,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       default:
 	break;
       }
-  if (sanitize_flags_p (SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
+  if (sanitize_flags_p (SANITIZE_ADDRESS | SANITIZE_HWADDRESS)
+		  && asan_intercepted_p (fcode))
     return expand_call (exp, target, ignore);
 
   /* When not optimizing, generate calls to library functions for a certain
