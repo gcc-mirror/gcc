@@ -3399,11 +3399,16 @@ package body Errout is
 
       if Warning_Mode = Treat_As_Error then
          declare
-            Compile_Time_Pragma_Warnings : constant Int :=
+            Compile_Time_Pragma_Warnings : constant Nat :=
                Count_Compile_Time_Pragma_Warnings;
-         begin
-            Total_Errors_Detected := Total_Errors_Detected + Warnings_Detected
+            Total : constant Int := Total_Errors_Detected + Warnings_Detected
                - Warning_Info_Messages - Compile_Time_Pragma_Warnings;
+            --  We need to protect against a negative Total here, because
+            --  if a pragma Compile_Time_Warning occurs in dead code, it
+            --  gets counted in Compile_Time_Pragma_Warnings but not in
+            --  Warnings_Detected.
+         begin
+            Total_Errors_Detected := Int'Max (Total, 0);
             Warnings_Detected :=
                Warning_Info_Messages + Compile_Time_Pragma_Warnings;
          end;
