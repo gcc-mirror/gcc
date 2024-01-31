@@ -2052,36 +2052,17 @@ walk_regimplify_phi (gphi *stmt)
   return needs_commit;
 }
 
-/* Create a reference type to use for PARM when turning it into a reference.
-   NONALIASED causes the reference type to gain its own separate alias set, so
-   that accessing the indirectly-passed parm won'will not add aliasing
-   noise.  */
+/* Create a reference type to use for PARM when turning it into a
+   reference.  */
 
 static tree
-build_ref_type_for (tree parm, bool nonaliased = true)
+build_ref_type_for (tree parm)
 {
   gcc_checking_assert (TREE_CODE (parm) == PARM_DECL);
 
   tree ref_type = build_reference_type (TREE_TYPE (parm));
 
-  if (!nonaliased)
-    return ref_type;
-
-  /* Each PARM turned indirect still points to the distinct memory area at the
-     wrapper, and the reference in unchanging, so we might qualify it, but...
-     const is not really important, since we're only using default defs for the
-     reference parm anyway, and not introducing any defs, and restrict seems to
-     cause trouble.  E.g., libgnat/s-concat3.adb:str_concat_3 has memmoves that,
-     if it's wrapped, the memmoves are deleted in dse1.  Using a distinct alias
-     set seems to not run afoul of this problem, and it hopefully enables the
-     compiler to tell the pointers do point to objects that are not otherwise
-     aliased.  */
-  tree qref_type = build_variant_type_copy (ref_type);
-
-  TYPE_ALIAS_SET (qref_type) = new_alias_set ();
-  record_alias_subset (TYPE_ALIAS_SET (qref_type), get_alias_set (ref_type));
-
-  return qref_type;
+  return ref_type;
 }
 
 /* Add cgraph edges from current_function_decl to callees in SEQ with frequency
@@ -2909,9 +2890,7 @@ pass_ipa_strub::execute (function *)
 	     if with transparent reference, and the wrapper doesn't take any
 	     extra parms that could point into wrapper's parms.  So we can
 	     probably drop the TREE_ADDRESSABLE and keep the TRUE.  */
-	  tree ref_type = build_ref_type_for (nparm,
-					      true
-					      || !TREE_ADDRESSABLE (parm));
+	  tree ref_type = build_ref_type_for (nparm);
 
 	  DECL_ARG_TYPE (nparm) = TREE_TYPE (nparm) = ref_type;
 	  relayout_decl (nparm);
