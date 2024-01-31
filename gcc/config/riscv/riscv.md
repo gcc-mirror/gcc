@@ -3847,6 +3847,7 @@
 (include "generic.md")
 (include "sifive-7.md")
 (include "thead.md")
+(include "generic-vector-ooo.md")
 (include "generic-ooo.md")
 (include "vector.md")
 (include "vector-crypto.md")
