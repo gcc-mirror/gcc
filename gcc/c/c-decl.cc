@@ -9587,8 +9587,11 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
 
   if (ENUM_FIXED_UNDERLYING_TYPE_P (enumtype)
       && fixed_underlying_type == NULL_TREE)
-    error_at (loc, "%<enum%> declared with but defined without "
-	      "fixed underlying type");
+    {
+      error_at (loc, "%<enum%> declared with but defined without "
+		"fixed underlying type");
+      ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) = false;
+    }
 
   the_enum->enum_next_value = integer_zero_node;
   the_enum->enum_type = enumtype;
