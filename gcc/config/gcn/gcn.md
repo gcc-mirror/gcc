@@ -23,9 +23,7 @@
 
 ; Named registers
 (define_constants
-  [(FIRST_SGPR_REG		 0)
-   (CC_SAVE_REG			 22)
-   (LAST_SGPR_REG		 101)
+  [(CC_SAVE_REG			 22)
    (FLAT_SCRATCH_REG		 102)
    (FLAT_SCRATCH_LO_REG		 102)
    (FLAT_SCRATCH_HI_REG		 103)
@@ -49,11 +47,7 @@
    (EXEC_LO_REG			 126)
    (EXEC_HI_REG			 127)
    (EXECZ_REG			 128)
-   (SCC_REG			 129)
-   (FIRST_VGPR_REG		 160)
-   (LAST_VGPR_REG		 415)
-   (FIRST_AVGPR_REG		 416)
-   (LAST_AVGPR_REG		 671)])
+   (SCC_REG			 129)])
 
 (define_constants
   [(SP_REGNUM 16)
