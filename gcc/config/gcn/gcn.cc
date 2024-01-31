@@ -6585,15 +6585,15 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
 
   /* Determine count of sgpr/vgpr registers by looking for last
      one used.  */
-  for (sgpr = 101; sgpr >= 0; sgpr--)
+  for (sgpr = LAST_SGPR_REG - FIRST_SGPR_REG; sgpr >= 0; sgpr--)
     if (df_regs_ever_live_p (FIRST_SGPR_REG + sgpr))
       break;
   sgpr++;
-  for (vgpr = 255; vgpr >= 0; vgpr--)
+  for (vgpr = LAST_VGPR_REG - FIRST_VGPR_REG; vgpr >= 0; vgpr--)
     if (df_regs_ever_live_p (FIRST_VGPR_REG + vgpr))
       break;
   vgpr++;
-  for (avgpr = 255; avgpr >= 0; avgpr--)
+  for (avgpr = LAST_AVGPR_REG - FIRST_AVGPR_REG; avgpr >= 0; avgpr--)
     if (df_regs_ever_live_p (FIRST_AVGPR_REG + avgpr))
       break;
   avgpr++;

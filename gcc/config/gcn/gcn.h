@@ -146,13 +146,22 @@
 #define EXEC_HI_REG	    127
 #define EXECZ_REG	    128
 #define SCC_REG		    129
+
 /* 132-159 are reserved to simplify masks.  */
+
 #define FIRST_VGPR_REG	    160
 #define VGPR_REGNO(N)	    ((N)+FIRST_VGPR_REG)
 #define LAST_VGPR_REG	    415
+
 #define FIRST_AVGPR_REG     416
 #define AVGPR_REGNO(N)      ((N)+FIRST_AVGPR_REG)
 #define LAST_AVGPR_REG      671
+
+#ifndef USED_FOR_TARGET
+STATIC_ASSERT (LAST_SGPR_REG + 1 - FIRST_SGPR_REG == 102);
+STATIC_ASSERT (LAST_VGPR_REG + 1 - FIRST_VGPR_REG == 256);
+STATIC_ASSERT (LAST_AVGPR_REG + 1 - FIRST_AVGPR_REG == 256);
+#endif /* USED_FOR_TARGET */
 
 /* Frame Registers, and other registers */
 
@@ -180,9 +189,9 @@
 #define HARD_FRAME_POINTER_IS_ARG_POINTER   0
 #define HARD_FRAME_POINTER_IS_FRAME_POINTER 0
 
-#define SGPR_REGNO_P(N)		((N) <= LAST_SGPR_REG)
-#define VGPR_REGNO_P(N)		((N)>=FIRST_VGPR_REG && (N) <= LAST_VGPR_REG)
-#define AVGPR_REGNO_P(N)        ((N)>=FIRST_AVGPR_REG && (N) <= LAST_AVGPR_REG)
+#define SGPR_REGNO_P(N)		((N) >= FIRST_SGPR_REG && (N) <= LAST_SGPR_REG)
+#define VGPR_REGNO_P(N)		((N) >= FIRST_VGPR_REG && (N) <= LAST_VGPR_REG)
+#define AVGPR_REGNO_P(N)        ((N) >= FIRST_AVGPR_REG && (N) <= LAST_AVGPR_REG)
 #define SSRC_REGNO_P(N)		((N) <= SCC_REG && (N) != VCCZ_REG)
 #define SDST_REGNO_P(N)		((N) <= EXEC_HI_REG && (N) != VCCZ_REG)
 #define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
