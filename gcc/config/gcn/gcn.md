@@ -2074,7 +2074,12 @@
 	   (match_operand:SIDI 3 "register_operand" "  v")]
 	  UNSPECV_ATOMIC))]
   ""
-  "ds_cmpst_rtn_b<bitsize> %0, %1, %2, %3\;s_waitcnt\tlgkmcnt(0)"
+  {
+    if (TARGET_RDNA3)
+      return "ds_cmpstore_rtn_b<bitsize> %0, %1, %3, %2\;s_waitcnt\tlgkmcnt(0)";
+    else
+      return "ds_cmpst_rtn_b<bitsize> %0, %1, %2, %3\;s_waitcnt\tlgkmcnt(0)";
+  }
   [(set_attr "type" "ds")
    (set_attr "length" "12")])
 
