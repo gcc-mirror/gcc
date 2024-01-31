@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_GLOAD
 #include "libatomic_i.h"
 
 
@@ -98,3 +99,4 @@ libat_load (size_t n, void *mptr, void *rptr, int smodel)
 }
 
 EXPORT_ALIAS (load);
+#undef LAT_GLOAD

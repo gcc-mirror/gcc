@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_GLFREE
 #include "libatomic_i.h"
 
 /* Accesses with a power-of-two size are not lock-free if we don't have an
@@ -80,3 +81,4 @@ libat_is_lock_free (size_t n, void *ptr)
 }
 
 EXPORT_ALIAS (is_lock_free);
+#undef LAT_GLFREE

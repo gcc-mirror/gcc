@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_FADD_N
 #include <libatomic_i.h>
 
 #define NAME	add
@@ -43,3 +44,4 @@
 #endif
 
 #include "fop_n.c"
+#undef LAT_FADD_N

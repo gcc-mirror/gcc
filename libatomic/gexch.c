@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_GEXCH
 #include "libatomic_i.h"
 
 
@@ -142,3 +143,4 @@ libat_exchange (size_t n, void *mptr, void *vptr, void *rptr, int smodel)
 }
 
 EXPORT_ALIAS (exchange);
+#undef LAT_GEXCH

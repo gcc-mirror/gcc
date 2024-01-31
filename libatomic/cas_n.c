@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_CAS_N
 #include "libatomic_i.h"
 
 
@@ -122,3 +123,4 @@ SIZE(libat_compare_exchange) (UTYPE *mptr, UTYPE *eptr, UTYPE newval,
 #endif
 
 EXPORT_ALIAS (SIZE(compare_exchange));
+#undef LAT_CAS_N

@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_EXCH_N
 #include "libatomic_i.h"
 
 
@@ -126,3 +127,4 @@ SIZE(libat_exchange) (UTYPE *mptr, UTYPE newval, int smodel UNUSED)
 #endif
 
 EXPORT_ALIAS (SIZE(exchange));
+#undef LAT_EXCH_N
