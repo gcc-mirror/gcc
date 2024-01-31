@@ -10406,63 +10406,57 @@ package body Exp_Ch3 is
         (Decl     : Node_Id;
          Rec_Type : Entity_Id) return Boolean
       is
-         References_Current_Instance : Boolean := False;
-         Has_Access_Discriminant     : Boolean := False;
-         Has_Internal_Call           : Boolean := False;
-
-         function Find_Access_Discriminant
+         function Is_Access_Discriminant
            (N : Node_Id) return Traverse_Result;
          --  Look for a name denoting an access discriminant
 
-         function Find_Current_Instance
+         function Is_Current_Instance
            (N : Node_Id) return Traverse_Result;
          --  Look for a reference to the current instance of the type
 
-         function Find_Internal_Call
+         function Is_Internal_Call
            (N : Node_Id) return Traverse_Result;
          --  Look for an internal protected function call
 
-         ------------------------------
-         -- Find_Access_Discriminant --
-         ------------------------------
+         ----------------------------
+         -- Is_Access_Discriminant --
+         ----------------------------
 
-         function Find_Access_Discriminant
+         function Is_Access_Discriminant
            (N : Node_Id) return Traverse_Result is
          begin
             if Is_Entity_Name (N)
               and then Denotes_Discriminant (N)
               and then Is_Access_Type (Etype (N))
             then
-               Has_Access_Discriminant := True;
                return Abandon;
             else
                return OK;
             end if;
-         end Find_Access_Discriminant;
+         end Is_Access_Discriminant;
 
-         ---------------------------
-         -- Find_Current_Instance --
-         ---------------------------
+         -------------------------
+         -- Is_Current_Instance --
+         -------------------------
 
-         function Find_Current_Instance
+         function Is_Current_Instance
            (N : Node_Id) return Traverse_Result is
          begin
             if Is_Entity_Name (N)
               and then Present (Entity (N))
               and then Is_Current_Instance (N)
             then
-               References_Current_Instance := True;
                return Abandon;
             else
                return OK;
             end if;
-         end Find_Current_Instance;
+         end Is_Current_Instance;
 
-         ------------------------
-         -- Find_Internal_Call --
-         ------------------------
+         ----------------------
+         -- Is_Internal_Call --
+         ----------------------
 
-         function Find_Internal_Call (N : Node_Id) return Traverse_Result is
+         function Is_Internal_Call (N : Node_Id) return Traverse_Result is
 
             function Call_Scope (N : Node_Id) return Entity_Id;
             --  Return the scope enclosing a given call node N
@@ -10486,21 +10480,20 @@ package body Exp_Ch3 is
               and then Call_Scope (N)
                          = Corresponding_Concurrent_Type (Rec_Type)
             then
-               Has_Internal_Call := True;
                return Abandon;
             else
                return OK;
             end if;
-         end Find_Internal_Call;
+         end Is_Internal_Call;
 
-         procedure Search_Access_Discriminant is new
-           Traverse_Proc (Find_Access_Discriminant);
+         function Search_Access_Discriminant is new
+           Traverse_Func (Is_Access_Discriminant);
 
-         procedure Search_Current_Instance is new
-           Traverse_Proc (Find_Current_Instance);
+         function Search_Current_Instance is new
+           Traverse_Func (Is_Current_Instance);
 
-         procedure Search_Internal_Call is new
-           Traverse_Proc (Find_Internal_Call);
+         function Search_Internal_Call is new
+           Traverse_Func (Is_Internal_Call);
 
          --  Start of processing for Requires_Late_Init
 
@@ -10521,9 +10514,7 @@ package body Exp_Ch3 is
             --  it has an initialization expression that includes a name
             --  denoting an access discriminant;
 
-            Search_Access_Discriminant (Expression (Decl));
-
-            if Has_Access_Discriminant then
+            if Search_Access_Discriminant (Expression (Decl)) = Abandon then
                return True;
             end if;
 
@@ -10531,18 +10522,14 @@ package body Exp_Ch3 is
             --  reference to the current instance of the type either by
             --  name...
 
-            Search_Current_Instance (Expression (Decl));
-
-            if References_Current_Instance then
+            if Search_Current_Instance (Expression (Decl)) = Abandon then
                return True;
             end if;
 
             --  ...or implicitly as the target object of a call.
 
             if Is_Protected_Record_Type (Rec_Type) then
-               Search_Internal_Call (Expression (Decl));
-
-               if Has_Internal_Call then
+               if Search_Internal_Call (Expression (Decl)) = Abandon then
                   return True;
                end if;
             end if;

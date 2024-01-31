@@ -5848,10 +5848,6 @@ package body Exp_Util is
    is
       U_Typ : constant Entity_Id := Unique_Entity (Typ);
 
-      Calls_OK : Boolean := False;
-      --  This flag is set to True when expression Expr contains at least one
-      --  call to a nondispatching primitive function of Typ.
-
       function Search_Primitive_Calls (N : Node_Id) return Traverse_Result;
       --  Search for nondispatching calls to primitive functions of type Typ
 
@@ -5886,8 +5882,6 @@ package body Exp_Util is
                if Present (Disp_Typ)
                  and then Unique_Entity (Disp_Typ) = U_Typ
                then
-                  Calls_OK := True;
-
                   --  There is no need to continue the traversal, as one such
                   --  call suffices.
 
@@ -5899,13 +5893,12 @@ package body Exp_Util is
          return OK;
       end Search_Primitive_Calls;
 
-      procedure Search_Calls is new Traverse_Proc (Search_Primitive_Calls);
+      function Search_Calls is new Traverse_Func (Search_Primitive_Calls);
 
    --  Start of processing for Expression_Contains_Primitives_Calls_Of_Type
 
    begin
-      Search_Calls (Expr);
-      return Calls_OK;
+      return Search_Calls (Expr) = Abandon;
    end Expression_Contains_Primitives_Calls_Of;
 
    ----------------------

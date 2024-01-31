@@ -4324,11 +4324,9 @@ package body Sem_Util is
          -------------------------
 
          function Mentions_Post_State (N : Node_Id) return Boolean is
-            Post_State_Seen : Boolean := False;
-
             function Is_Post_State (N : Node_Id) return Traverse_Result;
-            --  Attempt to find a construct that denotes a post-state. If this
-            --  is the case, set flag Post_State_Seen.
+            --  If called with a construct that denotes a post-state, then
+            --  abandon the search.
 
             -------------------
             -- Is_Post_State --
@@ -4339,7 +4337,6 @@ package body Sem_Util is
 
             begin
                if Nkind (N) in N_Explicit_Dereference | N_Function_Call then
-                  Post_State_Seen := True;
                   return Abandon;
 
                elsif Nkind (N) in N_Expanded_Name | N_Identifier then
@@ -4363,7 +4360,6 @@ package body Sem_Util is
                               and then Nkind (Parent (N)) =
                                          N_Selected_Component)
                   then
-                     Post_State_Seen := True;
                      return Abandon;
                   end if;
 
@@ -4372,7 +4368,6 @@ package body Sem_Util is
                      return Skip;
 
                   elsif Attribute_Name (N) = Name_Result then
-                     Post_State_Seen := True;
                      return Abandon;
                   end if;
                end if;
@@ -4380,14 +4375,12 @@ package body Sem_Util is
                return OK;
             end Is_Post_State;
 
-            procedure Find_Post_State is new Traverse_Proc (Is_Post_State);
+            function Find_Post_State is new Traverse_Func (Is_Post_State);
 
          --  Start of processing for Mentions_Post_State
 
          begin
-            Find_Post_State (N);
-
-            return Post_State_Seen;
+            return Find_Post_State (N) = Abandon;
          end Mentions_Post_State;
 
          --  Local variables

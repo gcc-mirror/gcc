@@ -13637,8 +13637,6 @@ package body Sem_Prag is
             -------------------------
 
             function Contains_Loop_Entry (Expr : Node_Id) return Boolean is
-               Has_Loop_Entry : Boolean := False;
-
                function Process (N : Node_Id) return Traverse_Result;
                --  Process function for traversal to look for Loop_Entry
 
@@ -13651,20 +13649,18 @@ package body Sem_Prag is
                   if Nkind (N) = N_Attribute_Reference
                     and then Attribute_Name (N) = Name_Loop_Entry
                   then
-                     Has_Loop_Entry := True;
                      return Abandon;
                   else
                      return OK;
                   end if;
                end Process;
 
-               procedure Traverse is new Traverse_Proc (Process);
+               function Traverse is new Traverse_Func (Process);
 
             --  Start of processing for Contains_Loop_Entry
 
             begin
-               Traverse (Expr);
-               return Has_Loop_Entry;
+               return Traverse (Expr) = Abandon;
             end Contains_Loop_Entry;
 
             --  Local variables
