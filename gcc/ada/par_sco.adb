@@ -1704,11 +1704,6 @@ package body Par_SCO is
          while Present (AN) loop
             AE := Expression (AN);
 
-            --  SCOs are generated before semantic analysis/expansion:
-            --  PPCs are not split yet.
-
-            pragma Assert (not Split_PPC (AN));
-
             C1 := ASCII.NUL;
 
             case Get_Aspect_Id (AN) is

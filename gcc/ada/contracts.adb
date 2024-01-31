@@ -2714,22 +2714,7 @@ package body Contracts is
          --  Otherwise, add the item
 
          else
-            if No (List) then
-               List := New_List;
-            end if;
-
-            --  If the pragma is a conjunct in a composite postcondition, it
-            --  has been processed in reverse order. In the postcondition body
-            --  it must appear before the others.
-
-            if Nkind (Item) = N_Pragma
-              and then From_Aspect_Specification (Item)
-              and then Split_PPC (Item)
-            then
-               Prepend (Item, List);
-            else
-               Append (Item, List);
-            end if;
+            Append_New (Item, List);
          end if;
       end Append_Enabled_Item;
 

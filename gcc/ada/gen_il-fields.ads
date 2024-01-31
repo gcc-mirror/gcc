@@ -386,7 +386,6 @@ package Gen_IL.Fields is
       Shift_Count_OK,
       Source_Type,
       Specification,
-      Split_PPC,
       Statements,
       Storage_Pool,
       Subpool_Handle_Name,

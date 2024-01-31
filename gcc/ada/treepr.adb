@@ -301,8 +301,6 @@ package body Treepr is
             return "SCIL_Target_Prim";
          when F_Shift_Count_OK =>
             return "Shift_Count_OK";
-         when F_Split_PPC =>
-            return "Split_PPC";
          when F_TSS_Elist =>
             return "TSS_Elist";
 

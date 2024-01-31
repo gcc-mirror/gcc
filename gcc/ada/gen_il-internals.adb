@@ -339,8 +339,6 @@ package body Gen_IL.Internals is
             return "SPARK_Pragma";
          when SPARK_Pragma_Inherited =>
             return "SPARK_Pragma_Inherited";
-         when Split_PPC =>
-            return "Split_PPC";
          when SSO_Set_High_By_Default =>
             return "SSO_Set_High_By_Default";
          when SSO_Set_Low_By_Default =>
