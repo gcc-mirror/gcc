@@ -1,3 +1,258 @@
+2024-01-30  Fangrui Song  <maskray@google.com>
+
+	PR target/105576
+	* gcc.target/i386/asm-raw-symbol.c: New testcase.
+
+2024-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110358
+	PR c++/109640
+	* g++.dg/warn/Wdangling-reference18.C: New test.
+	* g++.dg/warn/Wdangling-reference19.C: New test.
+	* g++.dg/warn/Wdangling-reference20.C: New test.
+
+2024-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67898
+	* g++.dg/cpp0x/temp_default8.C: New test.
+
+2024-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112846
+	* g++.dg/abi/anon6.C: Specify ABI v18.
+	* g++.dg/abi/anon6a.C: New test for ABI v19.
+
+2024-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113451
+	* g++.dg/abi/mangle-regparm1a.C: Use -Wabi=0.
+
+2024-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113640
+	* g++.dg/cpp23/explicit-obj-lambda14.C: New test.
+
+2024-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113644
+	* g++.dg/template/nontype30.C: New test.
+
+2024-01-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add new helper macro.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-run-6.c: New test.
+
+2024-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113654
+	* c-c++-common/analyzer/allocation-size-pr113654-1.c: New test.
+
+2024-01-30  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/execute/torture/builtin_macros1.rs: Fix output pattern.
+	* rust/execute/torture/coercion3.rs: Likewise.
+	* rust/execute/torture/issue-2080.rs: Likewise.
+	* rust/execute/torture/issue-2179.rs: Likewise.
+	* rust/execute/torture/issue-2180.rs: Likewise.
+	* rust/execute/torture/iter1.rs: Likewise.
+
+2024-01-30  Robert Goss  <goss.robert@gmail.com>
+
+	* rust/compile/missing_constructor_fields.rs: Added case with no initializers
+
+2024-01-30  Jakub Dupak  <dev@jakubdupak.com>
+
+	* rust/compile/for_lifetimes.rs: New test.
+
+2024-01-30  Jakub Dupak  <dev@jakubdupak.com>
+
+	* rust/compile/torture/utf8_identifiers.rs: add mising lifetime
+
+2024-01-30  Robert Goss  <goss.robert@gmail.com>
+
+	* rust/compile/repeated_constructor_fields.rs: Added case with constructor field repeated
+
+2024-01-30  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/compile/issue-2788.rs: New test.
+
+2024-01-30  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/compile/const_trait_fn.rs:
+	Enclose const in single quotes.
+
+2024-01-30  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/compile/issue-2785.rs: New test.
+
+2024-01-30  Nirmal Patel  <nirmal@nirmal.dev>
+
+	* rust/compile/issue-2187.rs: New file.
+	* rust/execute/torture/issue-2187.rs: New file.
+
+2024-01-30  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/compile/issue-2767.rs: New test.
+
+2024-01-30  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/torture/intrinsics-4.rs: Adjust.
+	* rust/compile/torture/intrinsics-math.rs: Adjust.
+	* rust/execute/torture/atomic_load.rs: Adjust.
+	* rust/execute/torture/atomic_store.rs: Adjust.
+	* rust/compile/torture/intrinsics-1.rs: Removed.
+	* rust/compile/torture/builtin_abort.rs: New test.
+	* rust/execute/torture/builtin_abort.rs: New test.
+
+2024-01-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/sized-stub.rs: New test.
+
+2024-01-30  Nobel Singh  <nobel2073@gmail.com>
+
+	* rust/compile/issue-2040.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/functions_without_body.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/execute/torture/name_resolution.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/name_resolution11.rs: New test.
+	* rust/compile/name_resolution12.rs: New test.
+	* rust/compile/name_resolution13.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/const_trait_fn.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/const_async_function.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/unsafe_module.rs: New test.
+
+2024-01-30  M V V S Manoj Kumar  <mvvsmanojkumar@gmail.com>
+
+	* rust/compile/issue-2650-1.rs: New test.(edition=2018)
+	* rust/compile/issue-2650-2.rs: New test.(edition=2015)
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/const_generics_8.rs: Fill the union with dummy values.
+	* rust/compile/empty_union.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/non_foreign_variadic_function.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/auto_trait_invalid.rs: Update old test with updated
+	error message.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/auto_trait_super_trait.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/generic_auto_trait.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/self_const_ptr.rs: New test.
+	* rust/compile/self_mut_ptr.rs: New test.
+	* rust/compile/self_ptr.rs: New test.
+
+2024-01-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/trait_pub_type.rs: New test.
+
+2024-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113659
+	* gcc.dg/pr113659.c: New testcase.
+
+2024-01-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/112861
+	* lib/gdc.exp: Decide on whether to present -B or -L to reference
+	the paths to uninstalled libphobos and libstdc++ and use that to
+	generate the link flags.
+
+2024-01-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113623
+	* gcc.c-torture/compile/pr113623.c: New test.
+
+2024-01-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113636
+	* go.dg/pr113636.go: New test.
+
+2024-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113603
+	* gcc.c-torture/compile/pr113603.c: New test.
+
+2024-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101195
+	* gcc.dg/pr101195.c: New test.
+
+2024-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113622
+	* gcc.target/i386/pr113622-2.c: Use -msse2 instead of -msse in
+	dg-options.
+	* gcc.target/i386/pr113622-3.c: Likewise.
+
+2024-01-30  Alexandre Oliva  <oliva@adacore.com>
+
+	Revert:
+	2023-12-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* c-c++-common/strub-unsupported-2.c: Require strub.
+	* c-c++-common/strub-unsupported-3.c: Same.
+	* c-c++-common/strub-unsupported.c: Same.
+	* lib/target-supports.exp (check_effective_target_strub): Return 0
+	for AIX.
+
+2024-01-30  H.J. Lu  <(no_default)>
+
+	* gcc.target/i386/libcall-1.c: Limit to lp64 target.
+	* gcc.target/i386/pr107057.c: Likewise.
+
+2024-01-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/shift-rv32gcv.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/binop/shift-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mod-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/shift-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/shift-2.c: Ditto.
+
 2024-01-29  Alexandre Oliva  <oliva@adacore.com>
 
 	* lib/target-supports.exp (check_effective_target_shared):

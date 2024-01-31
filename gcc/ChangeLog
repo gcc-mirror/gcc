@@ -1,3 +1,102 @@
+2024-01-30  Fangrui Song  <maskray@google.com>
+
+	PR target/105576
+	* config/i386/constraints.md: Define constraint "Ws".
+	* doc/md.texi: Document it.
+
+2024-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110358
+	PR c++/109640
+	* doc/invoke.texi: Update -Wdangling-reference description.
+
+2024-01-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/constraints.md (R, T, U):
+	Change define_constraint to define_memory_constraint.
+	* config/xtensa/predicates.md (move_operand): Don't check that a
+	constant pool operand size is a multiple of UNITS_PER_WORD.
+	* config/xtensa/xtensa.cc
+	(xtensa_lra_p, TARGET_LRA_P): Remove.
+	(xtensa_emit_move_sequence): Remove "if (reload_in_progress)"
+	clause as it can no longer be true.
+	(fixup_subreg_mem): Drop function.
+	(xtensa_output_integer_literal_parts): Consider 16-bit wide
+	constants.
+	(xtensa_legitimate_constant_p): Add short-circuit path for
+	integer load instructions. Don't check that mode size is
+	at least UNITS_PER_WORD.
+	* config/xtensa/xtensa.md (movsf): Use can_create_pseudo_p()
+	rather reload_in_progress and reload_completed.
+	(doloop_end): Drop operand 2.
+	(movhi_internal): Add alternative loading constant from a
+	literal pool.
+	(define_split for DI register_operand): Don't limit to
+	!TARGET_AUTO_LITPOOLS.
+	* config/xtensa/xtensa.opt (mlra): Change to no effect.
+
+2024-01-30  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_v_vls_mode_aggregate_gpr_count): New function to
+	calculate the gpr count required by vls mode.
+	(riscv_v_vls_to_gpr_mode): New function convert vls mode to gpr mode.
+	(riscv_pass_vls_aggregate_in_gpr): New function to return the rtx of gpr
+	for vls mode.
+	(riscv_get_arg_info): Add vls mode handling.
+	(riscv_pass_by_reference): Return false if arg info has no zero gpr count.
+
+2024-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113659
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Handle main exit without virtual use.
+
+2024-01-30  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.md: Move UNSPEC_XTHEADFMV* to unspec enum.
+
+2024-01-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libgcc/113403
+	* config/darwin.h (DARWIN_SHARED_WEAK_ADDS, DARWIN_WEAK_CRTS): New.
+	(REAL_LIBGCC_SPEC): Move weak CRT handling to separate spec.
+	* config/i386/darwin.h (DARWIN_HEAP_T_LIB): New.
+	* config/i386/darwin32-biarch.h (DARWIN_HEAP_T_LIB): New.
+	* config/i386/darwin64-biarch.h (DARWIN_HEAP_T_LIB): New.
+	* config/rs6000/darwin.h (DARWIN_HEAP_T_LIB): New.
+
+2024-01-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113623
+	* config/aarch64/aarch64-early-ra.cc (early_ra::preprocess_insns):
+	Mark all registers that occur in addresses as needing a GPR.
+
+2024-01-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113636
+	* config/aarch64/aarch64-early-ra.cc (early_ra::replace_regs): Take
+	the containing insn as an extra parameter.  Reset debug instructions
+	if they reference a register that is no longer used by real insns.
+	(early_ra::apply_allocation): Update calls accordingly.
+
+2024-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113603
+	* tree-ssa-strlen.cc (strlen_pass::handle_store): After
+	count_nonzero_bytes call refetch si using get_strinfo in case it
+	has been unshared in the meantime.
+
+2024-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101195
+	* except.cc (expand_builtin_eh_return_data_regno): If which doesn't
+	fit into unsigned HOST_WIDE_INT, return constm1_rtx.
+
+2024-01-30  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/thead.cc (th_print_operand_address): Change %ld
+	to %lld.
+
 2024-01-29  Manos Anagnostakis  <manos.anagnostakis@vrull.eu>
 	    Manolis Tsamis  <manolis.tsamis@vrull.eu>
 	    Philipp Tomsich  <philipp.tomsich@vrull.eu>

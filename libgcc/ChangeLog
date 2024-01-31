@@ -1,3 +1,23 @@
+2024-01-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libgcc/113403
+	* config.host: Build libheap_t.a for i686/x86_64 Darwin.
+	* config/aarch64/heap-trampoline.c (HEAP_T_ATTR): New.
+	(allocate_tramp_ctrl): Allow a target to build this as a weak def.
+	(__gcc_nested_func_ptr_created): Likewise.
+	* config/i386/heap-trampoline.c (HEAP_T_ATTR): New.
+	(allocate_tramp_ctrl): Allow a target to build this as a weak def.
+	(__gcc_nested_func_ptr_created): Likewise.
+	* config/t-darwin: Build libheap_t.a (a CRT with heap trampoline
+	support).
+
+2024-01-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libgcc/113403
+	* config/aarch64/t-heap-trampoline: Move the heap trampoline
+	support functions from libgcc.a to libgcc_eh.a.
+	* config/i386/t-heap-trampoline: Likewise.
+
 2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jakub Jelinek   <jakub@redhat.com>
 

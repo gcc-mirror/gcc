@@ -1,3 +1,22 @@
+2024-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113654
+	* region-model.cc (is_round_up): New.
+	(is_multiple_p): New.
+	(is_dubious_capacity): New.
+	(region_model::check_region_size): Move usage of size_visitor into
+	is_dubious_capacity.
+
+2024-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc
+	(dubious_allocation_size::dubious_allocation_size): Add
+	"capacity_sval" param.  Drop unused ctor.
+	(dubious_allocation_size::maybe_add_sarif_properties): New.
+	(dubious_allocation_size::m_capacity_sval): New field.
+	(region_model::check_region_size): Pass capacity svalue to
+	dubious_allocation_size ctor.
+
 2024-01-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/112969

@@ -1,3 +1,26 @@
+2024-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110358
+	PR c++/109640
+	* call.cc (reference_like_class_p): Don't warn for std::span-like
+	classes.
+
+2024-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113640
+	* call.cc (keep_unused_object_arg): Punt for an xobj member
+	function.
+
+2024-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113644
+	* pt.cc (unify) <case INTEGER_CST>: Handle NULL_TREE type.
+
+2024-01-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107594
+	* module.cc (get_module): Bail on empty name.
+
 2024-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113544

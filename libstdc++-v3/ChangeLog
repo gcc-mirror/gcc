@@ -1,3 +1,8 @@
+2024-01-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/clock/gps/io.cc: Fix expected result in
+	assertion and call test_format() from main.
+
 2024-01-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* doc/xml/manual/debug_mode.xml: Link against libstdc++exp.a to use
