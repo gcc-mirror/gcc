@@ -17,4 +17,4 @@
 # <http://www.gnu.org/licenses/>.
 
 LIB2ADDEH += $(srcdir)/config/i386/heap-trampoline.c
-LIB2ADDEHSHARED += $(srcdir)/config/aarch64/heap-trampoline.c
+LIB2ADDEHSHARED += $(srcdir)/config/i386/heap-trampoline.c
