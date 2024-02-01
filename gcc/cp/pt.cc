@@ -22105,9 +22105,16 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
   DECL_TI_TEMPLATE (fndecl) = tmpl;
   DECL_TI_ARGS (fndecl) = targ_ptr;
   if (VAR_P (pattern))
-    /* Now that we we've formed this variable template specialization,
-       remember the result of most_specialized_partial_spec for it.  */
-    TI_PARTIAL_INFO (DECL_TEMPLATE_INFO (fndecl)) = partial_ti;
+    {
+      /* Now that we we've formed this variable template specialization,
+	 remember the result of most_specialized_partial_spec for it.  */
+      TI_PARTIAL_INFO (DECL_TEMPLATE_INFO (fndecl)) = partial_ti;
+
+      /* And remember if the variable was declared with [].  */
+      if (TREE_CODE (TREE_TYPE (fndecl)) == ARRAY_TYPE
+	  && TYPE_DOMAIN (TREE_TYPE (fndecl)) == NULL_TREE)
+	SET_VAR_HAD_UNKNOWN_BOUND (fndecl);
+    }
 
   fndecl = register_specialization (fndecl, gen_tmpl, targ_ptr, false, hash);
   if (fndecl == error_mark_node)
