@@ -10578,13 +10578,13 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "atomic_storedi_1"
   [(set (mem:DI (match_operand:SI 0 "register_operand" "r,r"))
         (match_operand:DI 1 "reg_or_0_operand" "M,r"))
-   (clobber (match_scratch:DI 2 "=X,f"))]
+   (clobber (match_scratch:DI 2 "=f,f"))]
   "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
   "@
-   {fstds|fstd} %%fr0,0(%0)
+   fcpy,dbl %%fr0,%2\n\t{fstds|fstd} %2,0(%0)
    {stws|stw} %1,-16(%%sp)\n\t{stws|stw} %R1,-12(%%sp)\n\t{fldds|fldd} -16(%%sp),%2\n\t{fstds|fstd} %2,0(%0)"
   [(set_attr "type" "move,move")
-   (set_attr "length" "4,16")])
+   (set_attr "length" "8,16")])
 
 ;; PA 2.0 hardware supports out-of-order execution of loads and stores, so
 ;; we need memory barriers to enforce program order for memory references
