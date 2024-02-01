@@ -75,7 +75,7 @@ package body System.Finalization_Primitives is
      (Object_Address   : System.Address;
       Finalize_Address : not null Finalize_Address_Ptr;
       Node             : not null Master_Node_Ptr;
-      Master           : in out Finalization_Scope_Master)
+      Master           : in out Finalization_Master)
    is
    begin
       Attach_Object_To_Node (Object_Address, Finalize_Address, Node.all);
@@ -105,7 +105,7 @@ package body System.Finalization_Primitives is
 
    procedure Chain_Node_To_Master
      (Node   : not null Master_Node_Ptr;
-      Master : in out Finalization_Scope_Master)
+      Master : in out Finalization_Master)
    is
    begin
       Node.Next   := Master.Head;
@@ -234,7 +234,7 @@ package body System.Finalization_Primitives is
    -- Finalize_Master --
    ---------------------
 
-   procedure Finalize_Master (Master : in out Finalization_Scope_Master) is
+   procedure Finalize_Master (Master : in out Finalization_Master) is
       procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
       pragma Import (Ada, Raise_From_Controlled_Operation,
                                  "__gnat_raise_from_controlled_operation");

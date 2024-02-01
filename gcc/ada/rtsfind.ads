@@ -923,7 +923,7 @@ package Rtsfind is
      RE_Chain_Node_To_Master,            -- System.Finalization_Primitives
      RE_Finalization_Collection,         -- System.Finalization_Primitives
      RE_Finalization_Collection_Ptr,     -- System.Finalization_Primitives
-     RE_Finalization_Scope_Master,       -- System.Finalization_Primitives
+     RE_Finalization_Master,             -- System.Finalization_Primitives
      RE_Finalize_Master,                 -- System.Finalization_Primitives
      RE_Finalize_Object,                 -- System.Finalization_Primitives
      RE_Master_Node,                     -- System.Finalization_Primitives
@@ -2572,7 +2572,7 @@ package Rtsfind is
      RE_Chain_Node_To_Master             => System_Finalization_Primitives,
      RE_Finalization_Collection          => System_Finalization_Primitives,
      RE_Finalization_Collection_Ptr      => System_Finalization_Primitives,
-     RE_Finalization_Scope_Master        => System_Finalization_Primitives,
+     RE_Finalization_Master              => System_Finalization_Primitives,
      RE_Finalize_Master                  => System_Finalization_Primitives,
      RE_Finalize_Object                  => System_Finalization_Primitives,
      RE_Master_Node                      => System_Finalization_Primitives,

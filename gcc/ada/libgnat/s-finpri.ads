@@ -60,7 +60,7 @@ package System.Finalization_Primitives with Preelaborate is
    --  level of the program or associated with the declarative part of a
    --  subprogram or other closed scopes (block statements, for example).
 
-   type Finalization_Scope_Master
+   type Finalization_Master
      (Exceptions_OK : Boolean;
       Extra_Info    : Boolean;
       Library_Level : Boolean) is limited private;
@@ -71,7 +71,7 @@ package System.Finalization_Primitives with Preelaborate is
      (Object_Address   : System.Address;
       Finalize_Address : not null Finalize_Address_Ptr;
       Node             : not null Master_Node_Ptr;
-      Master           : in out Finalization_Scope_Master);
+      Master           : in out Finalization_Master);
    --  Associates a controlled object and its master node with a given master.
    --  Finalize_Address denotes the operation to be called to finalize the
    --  object (which could be a user-declared Finalize procedure or a procedure
@@ -89,12 +89,12 @@ package System.Finalization_Primitives with Preelaborate is
 
    procedure Chain_Node_To_Master
      (Node   : not null Master_Node_Ptr;
-      Master : in out Finalization_Scope_Master);
+      Master : in out Finalization_Master);
    --  Chain a master node to the given master. This is used to chain the node
    --  to the master of the enclosing scope for the objects that need special
    --  processing mentioned for Attach_Object_To_Node.
 
-   procedure Finalize_Master (Master : in out Finalization_Scope_Master);
+   procedure Finalize_Master (Master : in out Finalization_Master);
    --  Finalizes each of the controlled objects associated with Master, in the
    --  reverse of the order in which they were attached. Calls to the procedure
    --  with a Master that has already been finalized have no effects.
@@ -191,10 +191,10 @@ private
       Next             : Master_Node_Ptr      := null;
    end record;
 
-    --  Finalization scope master type structure. A unique master is associated
+    --  Finalization master type structure. A unique master is associated
     --  with each scope containing controlled objects.
 
-   type Finalization_Scope_Master
+   type Finalization_Master
      (Exceptions_OK : Boolean;
       Extra_Info    : Boolean;
       Library_Level : Boolean) is limited
