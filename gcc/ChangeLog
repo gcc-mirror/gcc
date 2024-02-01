@@ -1,3 +1,12 @@
+2024-01-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-01-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add AVR64DU28, AVR64DU32, ATA5787,
+	ATA5835, ATtiny64AUTO, ATA5700M322.
+	* doc/avr-mmcu.texi: Rebuild.
+
 2024-01-26  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	Backported from master:
