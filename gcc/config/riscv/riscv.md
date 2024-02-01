@@ -326,7 +326,9 @@
 ;; rotate   rotation instructions
 ;; atomic   atomic instructions
 ;; condmove	conditional moves
+;; cbo    cache block instructions
 ;; crypto cryptography instructions
+;; pushpop    zc push and pop instructions
 ;; mvpair    zc move pair instructions
 ;; zicond    zicond instructions
 ;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
@@ -466,8 +468,8 @@
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,trap,ghost,bitmanip,
    rotate,clmul,min,max,minu,maxu,clz,ctz,cpop,
-   atomic,condmove,crypto,mvpair,zicond,rdvlenb,rdvl,wrvxrm,wrfrm,
-   vsetvl,vsetvl_pre,vlde,vste,vldm,vstm,vlds,vsts,
+   atomic,condmove,cbo,crypto,pushpop,mvpair,zicond,rdvlenb,rdvl,wrvxrm,wrfrm,
+   rdfrm,vsetvl,vsetvl_pre,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
    vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
@@ -3671,7 +3673,7 @@
     UNSPECV_CLEAN)]
   "TARGET_ZICBOM"
   "cbo.clean\t%a0"
-  [(set_attr "type" "store")]
+  [(set_attr "type" "cbo")]
 )
 
 (define_insn "riscv_flush_<mode>"
@@ -3679,7 +3681,7 @@
     UNSPECV_FLUSH)]
   "TARGET_ZICBOM"
   "cbo.flush\t%a0"
-  [(set_attr "type" "store")]
+  [(set_attr "type" "cbo")]
 )
 
 (define_insn "riscv_inval_<mode>"
@@ -3687,7 +3689,7 @@
     UNSPECV_INVAL)]
   "TARGET_ZICBOM"
   "cbo.inval\t%a0"
-  [(set_attr "type" "store")]
+  [(set_attr "type" "cbo")]
 )
 
 (define_insn "riscv_zero_<mode>"
@@ -3695,7 +3697,7 @@
     UNSPECV_ZERO)]
   "TARGET_ZICBOZ"
   "cbo.zero\t%a0"
-  [(set_attr "type" "store")]
+  [(set_attr "type" "cbo")]
 )
 
 (define_insn "prefetch"
@@ -3711,7 +3713,7 @@
     default: gcc_unreachable ();
   }
 }
-  [(set_attr "type" "store")])
+  [(set_attr "type" "cbo")])
 
 (define_insn "riscv_prefetchi_<mode>"
   [(unspec_volatile:X [(match_operand:X 0 "address_operand" "r")
@@ -3719,7 +3721,7 @@
               UNSPECV_PREI)]
   "TARGET_ZICBOP"
   "prefetch.i\t%a0"
-  [(set_attr "type" "store")])
+  [(set_attr "type" "cbo")])
 
 (define_expand "extv<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=r")
