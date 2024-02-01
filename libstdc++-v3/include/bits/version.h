@@ -48,7 +48,6 @@
 
 #include <bits/c++config.h>
 
-// from version.def line 65
 #if !defined(__cpp_lib_incomplete_container_elements)
 # if _GLIBCXX_HOSTED
 #  define __glibcxx_incomplete_container_elements 201505L
@@ -59,7 +58,6 @@
 #endif /* !defined(__cpp_lib_incomplete_container_elements) && defined(__glibcxx_want_incomplete_container_elements) */
 #undef __glibcxx_want_incomplete_container_elements
 
-// from version.def line 73
 #if !defined(__cpp_lib_uncaught_exceptions)
 # if ((defined(__STRICT_ANSI__) && __cplusplus >= 201703L) || (!defined(__STRICT_ANSI__) && __cplusplus >= 199711L))
 #  define __glibcxx_uncaught_exceptions 201411L
@@ -70,7 +68,6 @@
 #endif /* !defined(__cpp_lib_uncaught_exceptions) && defined(__glibcxx_want_uncaught_exceptions) */
 #undef __glibcxx_want_uncaught_exceptions
 
-// from version.def line 82
 #if !defined(__cpp_lib_allocator_traits_is_always_equal)
 # if (__cplusplus >= 201103L)
 #  define __glibcxx_allocator_traits_is_always_equal 201411L
@@ -81,7 +78,6 @@
 #endif /* !defined(__cpp_lib_allocator_traits_is_always_equal) && defined(__glibcxx_want_allocator_traits_is_always_equal) */
 #undef __glibcxx_want_allocator_traits_is_always_equal
 
-// from version.def line 90
 #if !defined(__cpp_lib_is_null_pointer)
 # if (__cplusplus >= 201103L)
 #  define __glibcxx_is_null_pointer 201309L
@@ -92,7 +88,6 @@
 #endif /* !defined(__cpp_lib_is_null_pointer) && defined(__glibcxx_want_is_null_pointer) */
 #undef __glibcxx_want_is_null_pointer
 
-// from version.def line 98
 #if !defined(__cpp_lib_result_of_sfinae)
 # if (__cplusplus >= 201103L)
 #  define __glibcxx_result_of_sfinae 201210L
@@ -103,7 +98,6 @@
 #endif /* !defined(__cpp_lib_result_of_sfinae) && defined(__glibcxx_want_result_of_sfinae) */
 #undef __glibcxx_want_result_of_sfinae
 
-// from version.def line 106
 #if !defined(__cpp_lib_shared_ptr_arrays)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_shared_ptr_arrays 201707L
@@ -119,7 +113,6 @@
 #endif /* !defined(__cpp_lib_shared_ptr_arrays) && defined(__glibcxx_want_shared_ptr_arrays) */
 #undef __glibcxx_want_shared_ptr_arrays
 
-// from version.def line 120
 #if !defined(__cpp_lib_is_swappable)
 # if ((defined(__STRICT_ANSI__) && __cplusplus >= 201703L) || (!defined(__STRICT_ANSI__) && __cplusplus >= 201103L))
 #  define __glibcxx_is_swappable 201603L
@@ -130,7 +123,6 @@
 #endif /* !defined(__cpp_lib_is_swappable) && defined(__glibcxx_want_is_swappable) */
 #undef __glibcxx_want_is_swappable
 
-// from version.def line 129
 #if !defined(__cpp_lib_void_t)
 # if ((defined(__STRICT_ANSI__) && __cplusplus >= 201703L) || (!defined(__STRICT_ANSI__) && __cplusplus >= 201103L))
 #  define __glibcxx_void_t 201411L
@@ -141,7 +133,6 @@
 #endif /* !defined(__cpp_lib_void_t) && defined(__glibcxx_want_void_t) */
 #undef __glibcxx_want_void_t
 
-// from version.def line 138
 #if !defined(__cpp_lib_enable_shared_from_this)
 # if ((defined(__STRICT_ANSI__) && __cplusplus >= 201703L) || (!defined(__STRICT_ANSI__) && __cplusplus >= 201103L)) && _GLIBCXX_HOSTED
 #  define __glibcxx_enable_shared_from_this 201603L
@@ -152,7 +143,6 @@
 #endif /* !defined(__cpp_lib_enable_shared_from_this) && defined(__glibcxx_want_enable_shared_from_this) */
 #undef __glibcxx_want_enable_shared_from_this
 
-// from version.def line 148
 #if !defined(__cpp_lib_math_spec_funcs)
 # if (__cplusplus >= 201103L)
 #  define __glibcxx_math_spec_funcs 201003L
@@ -163,7 +153,6 @@
 #endif /* !defined(__cpp_lib_math_spec_funcs) && defined(__glibcxx_want_math_spec_funcs) */
 #undef __glibcxx_want_math_spec_funcs
 
-// from version.def line 157
 #if !defined(__cpp_lib_coroutine)
 # if (__cplusplus >= 201402L) && (__cpp_impl_coroutine)
 #  define __glibcxx_coroutine 201902L
@@ -174,7 +163,6 @@
 #endif /* !defined(__cpp_lib_coroutine) && defined(__glibcxx_want_coroutine) */
 #undef __glibcxx_want_coroutine
 
-// from version.def line 168
 #if !defined(__cpp_lib_exchange_function)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_exchange_function 201304L
@@ -185,7 +173,6 @@
 #endif /* !defined(__cpp_lib_exchange_function) && defined(__glibcxx_want_exchange_function) */
 #undef __glibcxx_want_exchange_function
 
-// from version.def line 176
 #if !defined(__cpp_lib_integer_sequence)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_integer_sequence 201304L
@@ -196,7 +183,6 @@
 #endif /* !defined(__cpp_lib_integer_sequence) && defined(__glibcxx_want_integer_sequence) */
 #undef __glibcxx_want_integer_sequence
 
-// from version.def line 184
 #if !defined(__cpp_lib_integral_constant_callable)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_integral_constant_callable 201304L
@@ -207,7 +193,6 @@
 #endif /* !defined(__cpp_lib_integral_constant_callable) && defined(__glibcxx_want_integral_constant_callable) */
 #undef __glibcxx_want_integral_constant_callable
 
-// from version.def line 192
 #if !defined(__cpp_lib_is_final)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_is_final 201402L
@@ -218,7 +203,6 @@
 #endif /* !defined(__cpp_lib_is_final) && defined(__glibcxx_want_is_final) */
 #undef __glibcxx_want_is_final
 
-// from version.def line 200
 #if !defined(__cpp_lib_make_reverse_iterator)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_make_reverse_iterator 201402L
@@ -229,7 +213,6 @@
 #endif /* !defined(__cpp_lib_make_reverse_iterator) && defined(__glibcxx_want_make_reverse_iterator) */
 #undef __glibcxx_want_make_reverse_iterator
 
-// from version.def line 208
 #if !defined(__cpp_lib_null_iterators)
 # if (__cplusplus >= 201402L) && (!defined(_GLIBCXX_DEBUG))
 #  define __glibcxx_null_iterators 201304L
@@ -240,7 +223,6 @@
 #endif /* !defined(__cpp_lib_null_iterators) && defined(__glibcxx_want_null_iterators) */
 #undef __glibcxx_want_null_iterators
 
-// from version.def line 217
 #if !defined(__cpp_lib_transformation_trait_aliases)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_transformation_trait_aliases 201304L
@@ -251,7 +233,6 @@
 #endif /* !defined(__cpp_lib_transformation_trait_aliases) && defined(__glibcxx_want_transformation_trait_aliases) */
 #undef __glibcxx_want_transformation_trait_aliases
 
-// from version.def line 225
 #if !defined(__cpp_lib_transparent_operators)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_transparent_operators 201510L
@@ -262,7 +243,6 @@
 #endif /* !defined(__cpp_lib_transparent_operators) && defined(__glibcxx_want_transparent_operators) */
 #undef __glibcxx_want_transparent_operators
 
-// from version.def line 233
 #if !defined(__cpp_lib_tuple_element_t)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_tuple_element_t 201402L
@@ -273,7 +253,6 @@
 #endif /* !defined(__cpp_lib_tuple_element_t) && defined(__glibcxx_want_tuple_element_t) */
 #undef __glibcxx_want_tuple_element_t
 
-// from version.def line 241
 #if !defined(__cpp_lib_tuples_by_type)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_tuples_by_type 201304L
@@ -284,7 +263,6 @@
 #endif /* !defined(__cpp_lib_tuples_by_type) && defined(__glibcxx_want_tuples_by_type) */
 #undef __glibcxx_want_tuples_by_type
 
-// from version.def line 249
 #if !defined(__cpp_lib_robust_nonmodifying_seq_ops)
 # if (__cplusplus >= 201402L)
 #  define __glibcxx_robust_nonmodifying_seq_ops 201304L
@@ -295,7 +273,6 @@
 #endif /* !defined(__cpp_lib_robust_nonmodifying_seq_ops) && defined(__glibcxx_want_robust_nonmodifying_seq_ops) */
 #undef __glibcxx_want_robust_nonmodifying_seq_ops
 
-// from version.def line 257
 #if !defined(__cpp_lib_to_chars)
 # if (__cplusplus >  202302L) && (_GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 && __SIZE_WIDTH__ >= 32)
 #  define __glibcxx_to_chars 202306L
@@ -311,7 +288,6 @@
 #endif /* !defined(__cpp_lib_to_chars) && defined(__glibcxx_want_to_chars) */
 #undef __glibcxx_want_to_chars
 
-// from version.def line 275
 #if !defined(__cpp_lib_chrono_udls)
 # if (__cplusplus >= 201402L) && _GLIBCXX_HOSTED
 #  define __glibcxx_chrono_udls 201304L
@@ -322,7 +298,6 @@
 #endif /* !defined(__cpp_lib_chrono_udls) && defined(__glibcxx_want_chrono_udls) */
 #undef __glibcxx_want_chrono_udls
 
-// from version.def line 284
 #if !defined(__cpp_lib_complex_udls)
 # if (__cplusplus >= 201402L) && _GLIBCXX_HOSTED
 #  define __glibcxx_complex_udls 201309L
@@ -333,7 +308,6 @@
 #endif /* !defined(__cpp_lib_complex_udls) && defined(__glibcxx_want_complex_udls) */
 #undef __glibcxx_want_complex_udls
 
-// from version.def line 293
 #if !defined(__cpp_lib_generic_associative_lookup)
 # if (__cplusplus >= 201402L) && _GLIBCXX_HOSTED
 #  define __glibcxx_generic_associative_lookup 201304L
@@ -344,7 +318,6 @@
 #endif /* !defined(__cpp_lib_generic_associative_lookup) && defined(__glibcxx_want_generic_associative_lookup) */
 #undef __glibcxx_want_generic_associative_lookup
 
-// from version.def line 302
 #if !defined(__cpp_lib_make_unique)
 # if (__cplusplus >= 201402L) && _GLIBCXX_HOSTED
 #  define __glibcxx_make_unique 201304L
@@ -355,7 +328,6 @@
 #endif /* !defined(__cpp_lib_make_unique) && defined(__glibcxx_want_make_unique) */
 #undef __glibcxx_want_make_unique
 
-// from version.def line 311
 #if !defined(__cpp_lib_quoted_string_io)
 # if (__cplusplus >= 201402L) && _GLIBCXX_HOSTED
 #  define __glibcxx_quoted_string_io 201304L
@@ -366,7 +338,6 @@
 #endif /* !defined(__cpp_lib_quoted_string_io) && defined(__glibcxx_want_quoted_string_io) */
 #undef __glibcxx_want_quoted_string_io
 
-// from version.def line 320
 #if !defined(__cpp_lib_shared_timed_mutex)
 # if (__cplusplus >= 201402L) && defined(_GLIBCXX_HAS_GTHREADS) && _GLIBCXX_HOSTED
 #  define __glibcxx_shared_timed_mutex 201402L
@@ -377,7 +348,6 @@
 #endif /* !defined(__cpp_lib_shared_timed_mutex) && defined(__glibcxx_want_shared_timed_mutex) */
 #undef __glibcxx_want_shared_timed_mutex
 
-// from version.def line 330
 #if !defined(__cpp_lib_string_udls)
 # if (__cplusplus >= 201402L) && _GLIBCXX_HOSTED
 #  define __glibcxx_string_udls 201304L
@@ -388,7 +358,6 @@
 #endif /* !defined(__cpp_lib_string_udls) && defined(__glibcxx_want_string_udls) */
 #undef __glibcxx_want_string_udls
 
-// from version.def line 339
 #if !defined(__cpp_lib_addressof_constexpr)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_addressof_constexpr 201603L
@@ -399,7 +368,6 @@
 #endif /* !defined(__cpp_lib_addressof_constexpr) && defined(__glibcxx_want_addressof_constexpr) */
 #undef __glibcxx_want_addressof_constexpr
 
-// from version.def line 349
 #if !defined(__cpp_lib_any)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_any 201606L
@@ -410,7 +378,6 @@
 #endif /* !defined(__cpp_lib_any) && defined(__glibcxx_want_any) */
 #undef __glibcxx_want_any
 
-// from version.def line 357
 #if !defined(__cpp_lib_apply)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_apply 201603L
@@ -421,7 +388,6 @@
 #endif /* !defined(__cpp_lib_apply) && defined(__glibcxx_want_apply) */
 #undef __glibcxx_want_apply
 
-// from version.def line 365
 #if !defined(__cpp_lib_as_const)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_as_const 201510L
@@ -432,7 +398,6 @@
 #endif /* !defined(__cpp_lib_as_const) && defined(__glibcxx_want_as_const) */
 #undef __glibcxx_want_as_const
 
-// from version.def line 373
 #if !defined(__cpp_lib_atomic_is_always_lock_free)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_atomic_is_always_lock_free 201603L
@@ -443,7 +408,6 @@
 #endif /* !defined(__cpp_lib_atomic_is_always_lock_free) && defined(__glibcxx_want_atomic_is_always_lock_free) */
 #undef __glibcxx_want_atomic_is_always_lock_free
 
-// from version.def line 381
 #if !defined(__cpp_lib_bool_constant)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_bool_constant 201505L
@@ -454,7 +418,6 @@
 #endif /* !defined(__cpp_lib_bool_constant) && defined(__glibcxx_want_bool_constant) */
 #undef __glibcxx_want_bool_constant
 
-// from version.def line 389
 #if !defined(__cpp_lib_byte)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_byte 201603L
@@ -465,7 +428,6 @@
 #endif /* !defined(__cpp_lib_byte) && defined(__glibcxx_want_byte) */
 #undef __glibcxx_want_byte
 
-// from version.def line 397
 #if !defined(__cpp_lib_has_unique_object_representations)
 # if (__cplusplus >= 201703L) && (defined(_GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP))
 #  define __glibcxx_has_unique_object_representations 201606L
@@ -476,7 +438,6 @@
 #endif /* !defined(__cpp_lib_has_unique_object_representations) && defined(__glibcxx_want_has_unique_object_representations) */
 #undef __glibcxx_want_has_unique_object_representations
 
-// from version.def line 406
 #if !defined(__cpp_lib_hardware_interference_size)
 # if (__cplusplus >= 201703L) && (defined(__GCC_DESTRUCTIVE_SIZE))
 #  define __glibcxx_hardware_interference_size 201703L
@@ -487,7 +448,6 @@
 #endif /* !defined(__cpp_lib_hardware_interference_size) && defined(__glibcxx_want_hardware_interference_size) */
 #undef __glibcxx_want_hardware_interference_size
 
-// from version.def line 415
 #if !defined(__cpp_lib_invoke)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_invoke 201411L
@@ -498,7 +458,6 @@
 #endif /* !defined(__cpp_lib_invoke) && defined(__glibcxx_want_invoke) */
 #undef __glibcxx_want_invoke
 
-// from version.def line 423
 #if !defined(__cpp_lib_is_aggregate)
 # if (__cplusplus >= 201703L) && (defined(_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE))
 #  define __glibcxx_is_aggregate 201703L
@@ -509,7 +468,6 @@
 #endif /* !defined(__cpp_lib_is_aggregate) && defined(__glibcxx_want_is_aggregate) */
 #undef __glibcxx_want_is_aggregate
 
-// from version.def line 432
 #if !defined(__cpp_lib_is_invocable)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_is_invocable 201703L
@@ -520,7 +478,6 @@
 #endif /* !defined(__cpp_lib_is_invocable) && defined(__glibcxx_want_is_invocable) */
 #undef __glibcxx_want_is_invocable
 
-// from version.def line 440
 #if !defined(__cpp_lib_launder)
 # if (__cplusplus >= 201703L) && (defined(_GLIBCXX_HAVE_BUILTIN_LAUNDER))
 #  define __glibcxx_launder 201606L
@@ -531,7 +488,6 @@
 #endif /* !defined(__cpp_lib_launder) && defined(__glibcxx_want_launder) */
 #undef __glibcxx_want_launder
 
-// from version.def line 449
 #if !defined(__cpp_lib_logical_traits)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_logical_traits 201510L
@@ -542,7 +498,6 @@
 #endif /* !defined(__cpp_lib_logical_traits) && defined(__glibcxx_want_logical_traits) */
 #undef __glibcxx_want_logical_traits
 
-// from version.def line 457
 #if !defined(__cpp_lib_make_from_tuple)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_make_from_tuple 201606L
@@ -553,7 +508,6 @@
 #endif /* !defined(__cpp_lib_make_from_tuple) && defined(__glibcxx_want_make_from_tuple) */
 #undef __glibcxx_want_make_from_tuple
 
-// from version.def line 465
 #if !defined(__cpp_lib_not_fn)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_not_fn 201603L
@@ -564,7 +518,6 @@
 #endif /* !defined(__cpp_lib_not_fn) && defined(__glibcxx_want_not_fn) */
 #undef __glibcxx_want_not_fn
 
-// from version.def line 473
 #if !defined(__cpp_lib_type_trait_variable_templates)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_type_trait_variable_templates 201510L
@@ -575,7 +528,6 @@
 #endif /* !defined(__cpp_lib_type_trait_variable_templates) && defined(__glibcxx_want_type_trait_variable_templates) */
 #undef __glibcxx_want_type_trait_variable_templates
 
-// from version.def line 481
 #if !defined(__cpp_lib_variant)
 # if (__cplusplus >= 202002L) && (__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L)
 #  define __glibcxx_variant 202106L
@@ -591,7 +543,6 @@
 #endif /* !defined(__cpp_lib_variant) && defined(__glibcxx_want_variant) */
 #undef __glibcxx_want_variant
 
-// from version.def line 495
 #if !defined(__cpp_lib_lcm)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_lcm 201606L
@@ -602,7 +553,6 @@
 #endif /* !defined(__cpp_lib_lcm) && defined(__glibcxx_want_lcm) */
 #undef __glibcxx_want_lcm
 
-// from version.def line 504
 #if !defined(__cpp_lib_gcd)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_gcd 201606L
@@ -613,7 +563,6 @@
 #endif /* !defined(__cpp_lib_gcd) && defined(__glibcxx_want_gcd) */
 #undef __glibcxx_want_gcd
 
-// from version.def line 512
 #if !defined(__cpp_lib_gcd_lcm)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_gcd_lcm 201606L
@@ -624,7 +573,6 @@
 #endif /* !defined(__cpp_lib_gcd_lcm) && defined(__glibcxx_want_gcd_lcm) */
 #undef __glibcxx_want_gcd_lcm
 
-// from version.def line 520
 #if !defined(__cpp_lib_raw_memory_algorithms)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_raw_memory_algorithms 201606L
@@ -635,7 +583,6 @@
 #endif /* !defined(__cpp_lib_raw_memory_algorithms) && defined(__glibcxx_want_raw_memory_algorithms) */
 #undef __glibcxx_want_raw_memory_algorithms
 
-// from version.def line 528
 #if !defined(__cpp_lib_array_constexpr)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_array_constexpr 201811L
@@ -651,7 +598,6 @@
 #endif /* !defined(__cpp_lib_array_constexpr) && defined(__glibcxx_want_array_constexpr) */
 #undef __glibcxx_want_array_constexpr
 
-// from version.def line 540
 #if !defined(__cpp_lib_nonmember_container_access)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_nonmember_container_access 201411L
@@ -662,7 +608,6 @@
 #endif /* !defined(__cpp_lib_nonmember_container_access) && defined(__glibcxx_want_nonmember_container_access) */
 #undef __glibcxx_want_nonmember_container_access
 
-// from version.def line 548
 #if !defined(__cpp_lib_clamp)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_clamp 201603L
@@ -673,7 +618,6 @@
 #endif /* !defined(__cpp_lib_clamp) && defined(__glibcxx_want_clamp) */
 #undef __glibcxx_want_clamp
 
-// from version.def line 556
 #if !defined(__cpp_lib_sample)
 # if (__cplusplus >= 201703L)
 #  define __glibcxx_sample 201603L
@@ -684,7 +628,6 @@
 #endif /* !defined(__cpp_lib_sample) && defined(__glibcxx_want_sample) */
 #undef __glibcxx_want_sample
 
-// from version.def line 564
 #if !defined(__cpp_lib_boyer_moore_searcher)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_boyer_moore_searcher 201603L
@@ -695,7 +638,6 @@
 #endif /* !defined(__cpp_lib_boyer_moore_searcher) && defined(__glibcxx_want_boyer_moore_searcher) */
 #undef __glibcxx_want_boyer_moore_searcher
 
-// from version.def line 573
 #if !defined(__cpp_lib_chrono)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_chrono 201907L
@@ -711,7 +653,6 @@
 #endif /* !defined(__cpp_lib_chrono) && defined(__glibcxx_want_chrono) */
 #undef __glibcxx_want_chrono
 
-// from version.def line 587
 #if !defined(__cpp_lib_execution)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_execution 201902L
@@ -722,7 +663,6 @@
 #endif /* !defined(__cpp_lib_execution) && defined(__glibcxx_want_execution) */
 #undef __glibcxx_want_execution
 
-// from version.def line 596
 #if !defined(__cpp_lib_filesystem)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_filesystem 201703L
@@ -733,7 +673,6 @@
 #endif /* !defined(__cpp_lib_filesystem) && defined(__glibcxx_want_filesystem) */
 #undef __glibcxx_want_filesystem
 
-// from version.def line 605
 #if !defined(__cpp_lib_hypot)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_hypot 201603L
@@ -744,7 +683,6 @@
 #endif /* !defined(__cpp_lib_hypot) && defined(__glibcxx_want_hypot) */
 #undef __glibcxx_want_hypot
 
-// from version.def line 614
 #if !defined(__cpp_lib_map_try_emplace)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_map_try_emplace 201411L
@@ -755,7 +693,6 @@
 #endif /* !defined(__cpp_lib_map_try_emplace) && defined(__glibcxx_want_map_try_emplace) */
 #undef __glibcxx_want_map_try_emplace
 
-// from version.def line 623
 #if !defined(__cpp_lib_math_special_functions)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_math_special_functions 201603L
@@ -766,7 +703,6 @@
 #endif /* !defined(__cpp_lib_math_special_functions) && defined(__glibcxx_want_math_special_functions) */
 #undef __glibcxx_want_math_special_functions
 
-// from version.def line 632
 #if !defined(__cpp_lib_memory_resource)
 # if (__cplusplus >= 201703L) && defined(_GLIBCXX_HAS_GTHREADS) && _GLIBCXX_HOSTED
 #  define __glibcxx_memory_resource 201603L
@@ -782,7 +718,6 @@
 #endif /* !defined(__cpp_lib_memory_resource) && defined(__glibcxx_want_memory_resource) */
 #undef __glibcxx_want_memory_resource
 
-// from version.def line 649
 #if !defined(__cpp_lib_node_extract)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_node_extract 201606L
@@ -793,7 +728,6 @@
 #endif /* !defined(__cpp_lib_node_extract) && defined(__glibcxx_want_node_extract) */
 #undef __glibcxx_want_node_extract
 
-// from version.def line 658
 #if !defined(__cpp_lib_parallel_algorithm)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_parallel_algorithm 201603L
@@ -804,7 +738,6 @@
 #endif /* !defined(__cpp_lib_parallel_algorithm) && defined(__glibcxx_want_parallel_algorithm) */
 #undef __glibcxx_want_parallel_algorithm
 
-// from version.def line 667
 #if !defined(__cpp_lib_scoped_lock)
 # if (__cplusplus >= 201703L) && defined(_GLIBCXX_HAS_GTHREADS) && _GLIBCXX_HOSTED
 #  define __glibcxx_scoped_lock 201703L
@@ -815,7 +748,6 @@
 #endif /* !defined(__cpp_lib_scoped_lock) && defined(__glibcxx_want_scoped_lock) */
 #undef __glibcxx_want_scoped_lock
 
-// from version.def line 677
 #if !defined(__cpp_lib_shared_mutex)
 # if (__cplusplus >= 201703L) && defined(_GLIBCXX_HAS_GTHREADS) && _GLIBCXX_HOSTED
 #  define __glibcxx_shared_mutex 201505L
@@ -826,7 +758,6 @@
 #endif /* !defined(__cpp_lib_shared_mutex) && defined(__glibcxx_want_shared_mutex) */
 #undef __glibcxx_want_shared_mutex
 
-// from version.def line 687
 #if !defined(__cpp_lib_shared_ptr_weak_type)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_shared_ptr_weak_type 201606L
@@ -837,7 +768,6 @@
 #endif /* !defined(__cpp_lib_shared_ptr_weak_type) && defined(__glibcxx_want_shared_ptr_weak_type) */
 #undef __glibcxx_want_shared_ptr_weak_type
 
-// from version.def line 696
 #if !defined(__cpp_lib_string_view)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_string_view 201803L
@@ -848,7 +778,6 @@
 #endif /* !defined(__cpp_lib_string_view) && defined(__glibcxx_want_string_view) */
 #undef __glibcxx_want_string_view
 
-// from version.def line 705
 #if !defined(__cpp_lib_unordered_map_try_emplace)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_unordered_map_try_emplace 201411L
@@ -859,7 +788,6 @@
 #endif /* !defined(__cpp_lib_unordered_map_try_emplace) && defined(__glibcxx_want_unordered_map_try_emplace) */
 #undef __glibcxx_want_unordered_map_try_emplace
 
-// from version.def line 714
 #if !defined(__cpp_lib_assume_aligned)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_assume_aligned 201811L
@@ -870,7 +798,6 @@
 #endif /* !defined(__cpp_lib_assume_aligned) && defined(__glibcxx_want_assume_aligned) */
 #undef __glibcxx_want_assume_aligned
 
-// from version.def line 722
 #if !defined(__cpp_lib_atomic_flag_test)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_atomic_flag_test 201907L
@@ -881,7 +808,6 @@
 #endif /* !defined(__cpp_lib_atomic_flag_test) && defined(__glibcxx_want_atomic_flag_test) */
 #undef __glibcxx_want_atomic_flag_test
 
-// from version.def line 730
 #if !defined(__cpp_lib_atomic_float)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_atomic_float 201711L
@@ -892,7 +818,6 @@
 #endif /* !defined(__cpp_lib_atomic_float) && defined(__glibcxx_want_atomic_float) */
 #undef __glibcxx_want_atomic_float
 
-// from version.def line 738
 #if !defined(__cpp_lib_atomic_lock_free_type_aliases)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_atomic_lock_free_type_aliases 201907L
@@ -903,7 +828,6 @@
 #endif /* !defined(__cpp_lib_atomic_lock_free_type_aliases) && defined(__glibcxx_want_atomic_lock_free_type_aliases) */
 #undef __glibcxx_want_atomic_lock_free_type_aliases
 
-// from version.def line 746
 #if !defined(__cpp_lib_atomic_ref)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_atomic_ref 201806L
@@ -914,7 +838,6 @@
 #endif /* !defined(__cpp_lib_atomic_ref) && defined(__glibcxx_want_atomic_ref) */
 #undef __glibcxx_want_atomic_ref
 
-// from version.def line 754
 #if !defined(__cpp_lib_atomic_value_initialization)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_atomic_value_initialization 201911L
@@ -925,7 +848,6 @@
 #endif /* !defined(__cpp_lib_atomic_value_initialization) && defined(__glibcxx_want_atomic_value_initialization) */
 #undef __glibcxx_want_atomic_value_initialization
 
-// from version.def line 762
 #if !defined(__cpp_lib_bind_front)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_bind_front 201907L
@@ -936,7 +858,6 @@
 #endif /* !defined(__cpp_lib_bind_front) && defined(__glibcxx_want_bind_front) */
 #undef __glibcxx_want_bind_front
 
-// from version.def line 770
 #if !defined(__cpp_lib_bind_back)
 # if (__cplusplus >= 202100L) && (__cpp_explicit_this_parameter)
 #  define __glibcxx_bind_back 202202L
@@ -947,7 +868,6 @@
 #endif /* !defined(__cpp_lib_bind_back) && defined(__glibcxx_want_bind_back) */
 #undef __glibcxx_want_bind_back
 
-// from version.def line 779
 #if !defined(__cpp_lib_starts_ends_with)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_starts_ends_with 201711L
@@ -958,7 +878,6 @@
 #endif /* !defined(__cpp_lib_starts_ends_with) && defined(__glibcxx_want_starts_ends_with) */
 #undef __glibcxx_want_starts_ends_with
 
-// from version.def line 787
 #if !defined(__cpp_lib_bit_cast)
 # if (__cplusplus >= 202002L) && (__has_builtin(__builtin_bit_cast))
 #  define __glibcxx_bit_cast 201806L
@@ -969,7 +888,6 @@
 #endif /* !defined(__cpp_lib_bit_cast) && defined(__glibcxx_want_bit_cast) */
 #undef __glibcxx_want_bit_cast
 
-// from version.def line 796
 #if !defined(__cpp_lib_bitops)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_bitops 201907L
@@ -980,7 +898,6 @@
 #endif /* !defined(__cpp_lib_bitops) && defined(__glibcxx_want_bitops) */
 #undef __glibcxx_want_bitops
 
-// from version.def line 804
 #if !defined(__cpp_lib_bounded_array_traits)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_bounded_array_traits 201902L
@@ -991,7 +908,6 @@
 #endif /* !defined(__cpp_lib_bounded_array_traits) && defined(__glibcxx_want_bounded_array_traits) */
 #undef __glibcxx_want_bounded_array_traits
 
-// from version.def line 812
 #if !defined(__cpp_lib_concepts)
 # if (__cplusplus >= 202002L) && (__cpp_concepts >= 201907L)
 #  define __glibcxx_concepts 202002L
@@ -1002,7 +918,6 @@
 #endif /* !defined(__cpp_lib_concepts) && defined(__glibcxx_want_concepts) */
 #undef __glibcxx_want_concepts
 
-// from version.def line 822
 #if !defined(__cpp_lib_optional)
 # if (__cplusplus >= 202100L) && (__glibcxx_concepts)
 #  define __glibcxx_optional 202110L
@@ -1023,7 +938,6 @@
 #endif /* !defined(__cpp_lib_optional) && defined(__glibcxx_want_optional) */
 #undef __glibcxx_want_optional
 
-// from version.def line 839
 #if !defined(__cpp_lib_destroying_delete)
 # if (__cplusplus >= 202002L) && (__cpp_impl_destroying_delete)
 #  define __glibcxx_destroying_delete 201806L
@@ -1034,7 +948,6 @@
 #endif /* !defined(__cpp_lib_destroying_delete) && defined(__glibcxx_want_destroying_delete) */
 #undef __glibcxx_want_destroying_delete
 
-// from version.def line 848
 #if !defined(__cpp_lib_constexpr_string_view)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_constexpr_string_view 201811L
@@ -1045,7 +958,6 @@
 #endif /* !defined(__cpp_lib_constexpr_string_view) && defined(__glibcxx_want_constexpr_string_view) */
 #undef __glibcxx_want_constexpr_string_view
 
-// from version.def line 856
 #if !defined(__cpp_lib_endian)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_endian 201907L
@@ -1056,7 +968,6 @@
 #endif /* !defined(__cpp_lib_endian) && defined(__glibcxx_want_endian) */
 #undef __glibcxx_want_endian
 
-// from version.def line 864
 #if !defined(__cpp_lib_int_pow2)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_int_pow2 202002L
@@ -1067,7 +978,6 @@
 #endif /* !defined(__cpp_lib_int_pow2) && defined(__glibcxx_want_int_pow2) */
 #undef __glibcxx_want_int_pow2
 
-// from version.def line 872
 #if !defined(__cpp_lib_integer_comparison_functions)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_integer_comparison_functions 202002L
@@ -1078,7 +988,6 @@
 #endif /* !defined(__cpp_lib_integer_comparison_functions) && defined(__glibcxx_want_integer_comparison_functions) */
 #undef __glibcxx_want_integer_comparison_functions
 
-// from version.def line 880
 #if !defined(__cpp_lib_is_constant_evaluated)
 # if (__cplusplus >= 202002L) && (defined(_GLIBCXX_HAVE_IS_CONSTANT_EVALUATED))
 #  define __glibcxx_is_constant_evaluated 201811L
@@ -1089,7 +998,6 @@
 #endif /* !defined(__cpp_lib_is_constant_evaluated) && defined(__glibcxx_want_is_constant_evaluated) */
 #undef __glibcxx_want_is_constant_evaluated
 
-// from version.def line 890
 #if !defined(__cpp_lib_constexpr_char_traits)
 # if (__cplusplus >= 202002L) && (defined(__glibcxx_is_constant_evaluated))
 #  define __glibcxx_constexpr_char_traits 201811L
@@ -1105,7 +1013,6 @@
 #endif /* !defined(__cpp_lib_constexpr_char_traits) && defined(__glibcxx_want_constexpr_char_traits) */
 #undef __glibcxx_want_constexpr_char_traits
 
-// from version.def line 906
 #if !defined(__cpp_lib_is_layout_compatible)
 # if (__cplusplus >= 202002L) && (__has_builtin(__is_layout_compatible) && __has_builtin(__builtin_is_corresponding_member))
 #  define __glibcxx_is_layout_compatible 201907L
@@ -1116,7 +1023,6 @@
 #endif /* !defined(__cpp_lib_is_layout_compatible) && defined(__glibcxx_want_is_layout_compatible) */
 #undef __glibcxx_want_is_layout_compatible
 
-// from version.def line 916
 #if !defined(__cpp_lib_is_nothrow_convertible)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_is_nothrow_convertible 201806L
@@ -1127,7 +1033,6 @@
 #endif /* !defined(__cpp_lib_is_nothrow_convertible) && defined(__glibcxx_want_is_nothrow_convertible) */
 #undef __glibcxx_want_is_nothrow_convertible
 
-// from version.def line 924
 #if !defined(__cpp_lib_is_pointer_interconvertible)
 # if (__cplusplus >= 202002L) && (__has_builtin(__is_pointer_interconvertible_base_of) && __has_builtin(__builtin_is_pointer_interconvertible_with_class))
 #  define __glibcxx_is_pointer_interconvertible 201907L
@@ -1138,7 +1043,6 @@
 #endif /* !defined(__cpp_lib_is_pointer_interconvertible) && defined(__glibcxx_want_is_pointer_interconvertible) */
 #undef __glibcxx_want_is_pointer_interconvertible
 
-// from version.def line 935
 #if !defined(__cpp_lib_math_constants)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_math_constants 201907L
@@ -1149,7 +1053,6 @@
 #endif /* !defined(__cpp_lib_math_constants) && defined(__glibcxx_want_math_constants) */
 #undef __glibcxx_want_math_constants
 
-// from version.def line 943
 #if !defined(__cpp_lib_make_obj_using_allocator)
 # if (__cplusplus >= 202002L) && (__cpp_concepts)
 #  define __glibcxx_make_obj_using_allocator 201811L
@@ -1160,7 +1063,6 @@
 #endif /* !defined(__cpp_lib_make_obj_using_allocator) && defined(__glibcxx_want_make_obj_using_allocator) */
 #undef __glibcxx_want_make_obj_using_allocator
 
-// from version.def line 953
 #if !defined(__cpp_lib_remove_cvref)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_remove_cvref 201711L
@@ -1171,7 +1073,6 @@
 #endif /* !defined(__cpp_lib_remove_cvref) && defined(__glibcxx_want_remove_cvref) */
 #undef __glibcxx_want_remove_cvref
 
-// from version.def line 961
 #if !defined(__cpp_lib_source_location)
 # if (__cplusplus >= 202002L) && (__has_builtin(__builtin_source_location))
 #  define __glibcxx_source_location 201907L
@@ -1182,7 +1083,6 @@
 #endif /* !defined(__cpp_lib_source_location) && defined(__glibcxx_want_source_location) */
 #undef __glibcxx_want_source_location
 
-// from version.def line 970
 #if !defined(__cpp_lib_span)
 # if (__cplusplus >  202302L) && (__glibcxx_concepts)
 #  define __glibcxx_span 202311L
@@ -1198,7 +1098,6 @@
 #endif /* !defined(__cpp_lib_span) && defined(__glibcxx_want_span) */
 #undef __glibcxx_want_span
 
-// from version.def line 984
 #if !defined(__cpp_lib_ssize)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_ssize 201902L
@@ -1209,7 +1108,6 @@
 #endif /* !defined(__cpp_lib_ssize) && defined(__glibcxx_want_ssize) */
 #undef __glibcxx_want_ssize
 
-// from version.def line 992
 #if !defined(__cpp_lib_three_way_comparison)
 # if (__cplusplus >= 202002L) && (__cpp_impl_three_way_comparison >= 201907L && __glibcxx_concepts)
 #  define __glibcxx_three_way_comparison 201907L
@@ -1220,7 +1118,6 @@
 #endif /* !defined(__cpp_lib_three_way_comparison) && defined(__glibcxx_want_three_way_comparison) */
 #undef __glibcxx_want_three_way_comparison
 
-// from version.def line 1002
 #if !defined(__cpp_lib_to_address)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_to_address 201711L
@@ -1231,7 +1128,6 @@
 #endif /* !defined(__cpp_lib_to_address) && defined(__glibcxx_want_to_address) */
 #undef __glibcxx_want_to_address
 
-// from version.def line 1010
 #if !defined(__cpp_lib_to_array)
 # if (__cplusplus >= 202002L) && (__cpp_generic_lambdas >= 201707L)
 #  define __glibcxx_to_array 201907L
@@ -1242,7 +1138,6 @@
 #endif /* !defined(__cpp_lib_to_array) && defined(__glibcxx_want_to_array) */
 #undef __glibcxx_want_to_array
 
-// from version.def line 1019
 #if !defined(__cpp_lib_type_identity)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_type_identity 201806L
@@ -1253,7 +1148,6 @@
 #endif /* !defined(__cpp_lib_type_identity) && defined(__glibcxx_want_type_identity) */
 #undef __glibcxx_want_type_identity
 
-// from version.def line 1027
 #if !defined(__cpp_lib_unwrap_ref)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_unwrap_ref 201811L
@@ -1264,7 +1158,6 @@
 #endif /* !defined(__cpp_lib_unwrap_ref) && defined(__glibcxx_want_unwrap_ref) */
 #undef __glibcxx_want_unwrap_ref
 
-// from version.def line 1035
 #if !defined(__cpp_lib_constexpr_iterator)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_constexpr_iterator 201811L
@@ -1275,7 +1168,6 @@
 #endif /* !defined(__cpp_lib_constexpr_iterator) && defined(__glibcxx_want_constexpr_iterator) */
 #undef __glibcxx_want_constexpr_iterator
 
-// from version.def line 1043
 #if !defined(__cpp_lib_interpolate)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_interpolate 201902L
@@ -1286,7 +1178,6 @@
 #endif /* !defined(__cpp_lib_interpolate) && defined(__glibcxx_want_interpolate) */
 #undef __glibcxx_want_interpolate
 
-// from version.def line 1051
 #if !defined(__cpp_lib_constexpr_utility)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_constexpr_utility 201811L
@@ -1297,7 +1188,6 @@
 #endif /* !defined(__cpp_lib_constexpr_utility) && defined(__glibcxx_want_constexpr_utility) */
 #undef __glibcxx_want_constexpr_utility
 
-// from version.def line 1059
 #if !defined(__cpp_lib_shift)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_shift 201806L
@@ -1308,7 +1198,6 @@
 #endif /* !defined(__cpp_lib_shift) && defined(__glibcxx_want_shift) */
 #undef __glibcxx_want_shift
 
-// from version.def line 1067
 #if !defined(__cpp_lib_ranges)
 # if (__cplusplus >= 202100L) && (__glibcxx_concepts)
 #  define __glibcxx_ranges 202211L
@@ -1324,7 +1213,6 @@
 #endif /* !defined(__cpp_lib_ranges) && defined(__glibcxx_want_ranges) */
 #undef __glibcxx_want_ranges
 
-// from version.def line 1081
 #if !defined(__cpp_lib_constexpr_numeric)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_constexpr_numeric 201911L
@@ -1335,7 +1223,6 @@
 #endif /* !defined(__cpp_lib_constexpr_numeric) && defined(__glibcxx_want_constexpr_numeric) */
 #undef __glibcxx_want_constexpr_numeric
 
-// from version.def line 1089
 #if !defined(__cpp_lib_constexpr_functional)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_constexpr_functional 201907L
@@ -1346,7 +1233,6 @@
 #endif /* !defined(__cpp_lib_constexpr_functional) && defined(__glibcxx_want_constexpr_functional) */
 #undef __glibcxx_want_constexpr_functional
 
-// from version.def line 1097
 #if !defined(__cpp_lib_constexpr_algorithms)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_constexpr_algorithms 201806L
@@ -1357,7 +1243,6 @@
 #endif /* !defined(__cpp_lib_constexpr_algorithms) && defined(__glibcxx_want_constexpr_algorithms) */
 #undef __glibcxx_want_constexpr_algorithms
 
-// from version.def line 1105
 #if !defined(__cpp_lib_constexpr_tuple)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_constexpr_tuple 201811L
@@ -1368,7 +1253,6 @@
 #endif /* !defined(__cpp_lib_constexpr_tuple) && defined(__glibcxx_want_constexpr_tuple) */
 #undef __glibcxx_want_constexpr_tuple
 
-// from version.def line 1113
 #if !defined(__cpp_lib_constexpr_memory)
 # if (__cplusplus >= 202100L) && (__cpp_constexpr_dynamic_alloc)
 #  define __glibcxx_constexpr_memory 202202L
@@ -1384,7 +1268,6 @@
 #endif /* !defined(__cpp_lib_constexpr_memory) && defined(__glibcxx_want_constexpr_memory) */
 #undef __glibcxx_want_constexpr_memory
 
-// from version.def line 1126
 #if !defined(__cpp_lib_atomic_shared_ptr)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_atomic_shared_ptr 201711L
@@ -1395,7 +1278,6 @@
 #endif /* !defined(__cpp_lib_atomic_shared_ptr) && defined(__glibcxx_want_atomic_shared_ptr) */
 #undef __glibcxx_want_atomic_shared_ptr
 
-// from version.def line 1135
 #if !defined(__cpp_lib_atomic_wait)
 # if (__cplusplus >= 202002L) && defined(_GLIBCXX_HAS_GTHREADS) && _GLIBCXX_HOSTED
 #  define __glibcxx_atomic_wait 201907L
@@ -1411,7 +1293,6 @@
 #endif /* !defined(__cpp_lib_atomic_wait) && defined(__glibcxx_want_atomic_wait) */
 #undef __glibcxx_want_atomic_wait
 
-// from version.def line 1153
 #if !defined(__cpp_lib_barrier)
 # if (__cplusplus >= 202002L) && (__cpp_aligned_new && __glibcxx_atomic_wait)
 #  define __glibcxx_barrier 201907L
@@ -1422,7 +1303,6 @@
 #endif /* !defined(__cpp_lib_barrier) && defined(__glibcxx_want_barrier) */
 #undef __glibcxx_want_barrier
 
-// from version.def line 1170
 #if !defined(__cpp_lib_format)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_format 202110L
@@ -1433,7 +1313,6 @@
 #endif /* !defined(__cpp_lib_format) && defined(__glibcxx_want_format) */
 #undef __glibcxx_want_format
 
-// from version.def line 1179
 #if !defined(__cpp_lib_format_uchar)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_format_uchar 202311L
@@ -1444,7 +1323,6 @@
 #endif /* !defined(__cpp_lib_format_uchar) && defined(__glibcxx_want_format_uchar) */
 #undef __glibcxx_want_format_uchar
 
-// from version.def line 1190
 #if !defined(__cpp_lib_constexpr_complex)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_constexpr_complex 201711L
@@ -1455,7 +1333,6 @@
 #endif /* !defined(__cpp_lib_constexpr_complex) && defined(__glibcxx_want_constexpr_complex) */
 #undef __glibcxx_want_constexpr_complex
 
-// from version.def line 1199
 #if !defined(__cpp_lib_constexpr_dynamic_alloc)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_constexpr_dynamic_alloc 201907L
@@ -1466,7 +1343,6 @@
 #endif /* !defined(__cpp_lib_constexpr_dynamic_alloc) && defined(__glibcxx_want_constexpr_dynamic_alloc) */
 #undef __glibcxx_want_constexpr_dynamic_alloc
 
-// from version.def line 1208
 #if !defined(__cpp_lib_constexpr_string)
 # if (__cplusplus >= 202002L) && _GLIBCXX_USE_CXX11_ABI && _GLIBCXX_HOSTED && (defined(__glibcxx_is_constant_evaluated))
 #  define __glibcxx_constexpr_string 201907L
@@ -1487,7 +1363,6 @@
 #endif /* !defined(__cpp_lib_constexpr_string) && defined(__glibcxx_want_constexpr_string) */
 #undef __glibcxx_want_constexpr_string
 
-// from version.def line 1232
 #if !defined(__cpp_lib_constexpr_vector)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_constexpr_vector 201907L
@@ -1498,7 +1373,6 @@
 #endif /* !defined(__cpp_lib_constexpr_vector) && defined(__glibcxx_want_constexpr_vector) */
 #undef __glibcxx_want_constexpr_vector
 
-// from version.def line 1241
 #if !defined(__cpp_lib_erase_if)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_erase_if 202002L
@@ -1509,7 +1383,6 @@
 #endif /* !defined(__cpp_lib_erase_if) && defined(__glibcxx_want_erase_if) */
 #undef __glibcxx_want_erase_if
 
-// from version.def line 1250
 #if !defined(__cpp_lib_generic_unordered_lookup)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_generic_unordered_lookup 201811L
@@ -1520,7 +1393,6 @@
 #endif /* !defined(__cpp_lib_generic_unordered_lookup) && defined(__glibcxx_want_generic_unordered_lookup) */
 #undef __glibcxx_want_generic_unordered_lookup
 
-// from version.def line 1259
 #if !defined(__cpp_lib_jthread)
 # if (__cplusplus >= 202002L) && defined(_GLIBCXX_HAS_GTHREADS) && _GLIBCXX_HOSTED
 #  define __glibcxx_jthread 201911L
@@ -1531,7 +1403,6 @@
 #endif /* !defined(__cpp_lib_jthread) && defined(__glibcxx_want_jthread) */
 #undef __glibcxx_want_jthread
 
-// from version.def line 1269
 #if !defined(__cpp_lib_latch)
 # if (__cplusplus >= 202002L) && (__glibcxx_atomic_wait)
 #  define __glibcxx_latch 201907L
@@ -1542,7 +1413,6 @@
 #endif /* !defined(__cpp_lib_latch) && defined(__glibcxx_want_latch) */
 #undef __glibcxx_want_latch
 
-// from version.def line 1278
 #if !defined(__cpp_lib_list_remove_return_type)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_list_remove_return_type 201806L
@@ -1553,7 +1423,6 @@
 #endif /* !defined(__cpp_lib_list_remove_return_type) && defined(__glibcxx_want_list_remove_return_type) */
 #undef __glibcxx_want_list_remove_return_type
 
-// from version.def line 1287
 #if !defined(__cpp_lib_polymorphic_allocator)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_polymorphic_allocator 201902L
@@ -1564,7 +1433,6 @@
 #endif /* !defined(__cpp_lib_polymorphic_allocator) && defined(__glibcxx_want_polymorphic_allocator) */
 #undef __glibcxx_want_polymorphic_allocator
 
-// from version.def line 1296
 #if !defined(__cpp_lib_move_iterator_concept)
 # if (__cplusplus >= 202002L) && (__glibcxx_concepts)
 #  define __glibcxx_move_iterator_concept 202207L
@@ -1575,7 +1443,6 @@
 #endif /* !defined(__cpp_lib_move_iterator_concept) && defined(__glibcxx_want_move_iterator_concept) */
 #undef __glibcxx_want_move_iterator_concept
 
-// from version.def line 1306
 #if !defined(__cpp_lib_semaphore)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED && (__glibcxx_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE)
 #  define __glibcxx_semaphore 201907L
@@ -1586,7 +1453,6 @@
 #endif /* !defined(__cpp_lib_semaphore) && defined(__glibcxx_want_semaphore) */
 #undef __glibcxx_want_semaphore
 
-// from version.def line 1316
 #if !defined(__cpp_lib_smart_ptr_for_overwrite)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
 #  define __glibcxx_smart_ptr_for_overwrite 202002L
@@ -1597,7 +1463,6 @@
 #endif /* !defined(__cpp_lib_smart_ptr_for_overwrite) && defined(__glibcxx_want_smart_ptr_for_overwrite) */
 #undef __glibcxx_want_smart_ptr_for_overwrite
 
-// from version.def line 1325
 #if !defined(__cpp_lib_syncbuf)
 # if (__cplusplus >= 202002L) && _GLIBCXX_USE_CXX11_ABI && _GLIBCXX_HOSTED
 #  define __glibcxx_syncbuf 201803L
@@ -1608,7 +1473,6 @@
 #endif /* !defined(__cpp_lib_syncbuf) && defined(__glibcxx_want_syncbuf) */
 #undef __glibcxx_want_syncbuf
 
-// from version.def line 1335
 #if !defined(__cpp_lib_byteswap)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_byteswap 202110L
@@ -1619,7 +1483,6 @@
 #endif /* !defined(__cpp_lib_byteswap) && defined(__glibcxx_want_byteswap) */
 #undef __glibcxx_want_byteswap
 
-// from version.def line 1343
 #if !defined(__cpp_lib_constexpr_charconv)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_constexpr_charconv 202207L
@@ -1630,7 +1493,6 @@
 #endif /* !defined(__cpp_lib_constexpr_charconv) && defined(__glibcxx_want_constexpr_charconv) */
 #undef __glibcxx_want_constexpr_charconv
 
-// from version.def line 1351
 #if !defined(__cpp_lib_constexpr_typeinfo)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_constexpr_typeinfo 202106L
@@ -1641,7 +1503,6 @@
 #endif /* !defined(__cpp_lib_constexpr_typeinfo) && defined(__glibcxx_want_constexpr_typeinfo) */
 #undef __glibcxx_want_constexpr_typeinfo
 
-// from version.def line 1359
 #if !defined(__cpp_lib_expected)
 # if (__cplusplus >= 202100L) && (__cpp_concepts >= 202002L)
 #  define __glibcxx_expected 202211L
@@ -1652,7 +1513,6 @@
 #endif /* !defined(__cpp_lib_expected) && defined(__glibcxx_want_expected) */
 #undef __glibcxx_want_expected
 
-// from version.def line 1368
 #if !defined(__cpp_lib_freestanding_algorithm)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_freestanding_algorithm 202311L
@@ -1663,7 +1523,6 @@
 #endif /* !defined(__cpp_lib_freestanding_algorithm) && defined(__glibcxx_want_freestanding_algorithm) */
 #undef __glibcxx_want_freestanding_algorithm
 
-// from version.def line 1377
 #if !defined(__cpp_lib_freestanding_array)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_freestanding_array 202311L
@@ -1674,7 +1533,6 @@
 #endif /* !defined(__cpp_lib_freestanding_array) && defined(__glibcxx_want_freestanding_array) */
 #undef __glibcxx_want_freestanding_array
 
-// from version.def line 1386
 #if !defined(__cpp_lib_freestanding_cstring)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_freestanding_cstring 202311L
@@ -1685,7 +1543,6 @@
 #endif /* !defined(__cpp_lib_freestanding_cstring) && defined(__glibcxx_want_freestanding_cstring) */
 #undef __glibcxx_want_freestanding_cstring
 
-// from version.def line 1395
 #if !defined(__cpp_lib_freestanding_expected)
 # if (__cplusplus >= 202100L) && (__cpp_lib_expected)
 #  define __glibcxx_freestanding_expected 202311L
@@ -1696,7 +1553,6 @@
 #endif /* !defined(__cpp_lib_freestanding_expected) && defined(__glibcxx_want_freestanding_expected) */
 #undef __glibcxx_want_freestanding_expected
 
-// from version.def line 1405
 #if !defined(__cpp_lib_freestanding_optional)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_freestanding_optional 202311L
@@ -1707,7 +1563,6 @@
 #endif /* !defined(__cpp_lib_freestanding_optional) && defined(__glibcxx_want_freestanding_optional) */
 #undef __glibcxx_want_freestanding_optional
 
-// from version.def line 1414
 #if !defined(__cpp_lib_freestanding_string_view)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_freestanding_string_view 202311L
@@ -1718,7 +1573,6 @@
 #endif /* !defined(__cpp_lib_freestanding_string_view) && defined(__glibcxx_want_freestanding_string_view) */
 #undef __glibcxx_want_freestanding_string_view
 
-// from version.def line 1423
 #if !defined(__cpp_lib_freestanding_variant)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_freestanding_variant 202311L
@@ -1729,7 +1583,6 @@
 #endif /* !defined(__cpp_lib_freestanding_variant) && defined(__glibcxx_want_freestanding_variant) */
 #undef __glibcxx_want_freestanding_variant
 
-// from version.def line 1432
 #if !defined(__cpp_lib_invoke_r)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_invoke_r 202106L
@@ -1740,7 +1593,6 @@
 #endif /* !defined(__cpp_lib_invoke_r) && defined(__glibcxx_want_invoke_r) */
 #undef __glibcxx_want_invoke_r
 
-// from version.def line 1440
 #if !defined(__cpp_lib_is_scoped_enum)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_is_scoped_enum 202011L
@@ -1751,7 +1603,6 @@
 #endif /* !defined(__cpp_lib_is_scoped_enum) && defined(__glibcxx_want_is_scoped_enum) */
 #undef __glibcxx_want_is_scoped_enum
 
-// from version.def line 1448
 #if !defined(__cpp_lib_reference_from_temporary)
 # if (__cplusplus >= 202100L) && (__has_builtin(__reference_constructs_from_temporary) && __has_builtin(__reference_converts_from_temporary))
 #  define __glibcxx_reference_from_temporary 202202L
@@ -1762,7 +1613,6 @@
 #endif /* !defined(__cpp_lib_reference_from_temporary) && defined(__glibcxx_want_reference_from_temporary) */
 #undef __glibcxx_want_reference_from_temporary
 
-// from version.def line 1468
 #if !defined(__cpp_lib_ranges_to_container)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_ranges_to_container 202202L
@@ -1773,7 +1623,6 @@
 #endif /* !defined(__cpp_lib_ranges_to_container) && defined(__glibcxx_want_ranges_to_container) */
 #undef __glibcxx_want_ranges_to_container
 
-// from version.def line 1477
 #if !defined(__cpp_lib_ranges_zip)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_zip 202110L
@@ -1784,7 +1633,6 @@
 #endif /* !defined(__cpp_lib_ranges_zip) && defined(__glibcxx_want_ranges_zip) */
 #undef __glibcxx_want_ranges_zip
 
-// from version.def line 1485
 #if !defined(__cpp_lib_ranges_chunk)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_chunk 202202L
@@ -1795,7 +1643,6 @@
 #endif /* !defined(__cpp_lib_ranges_chunk) && defined(__glibcxx_want_ranges_chunk) */
 #undef __glibcxx_want_ranges_chunk
 
-// from version.def line 1493
 #if !defined(__cpp_lib_ranges_slide)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_slide 202202L
@@ -1806,7 +1653,6 @@
 #endif /* !defined(__cpp_lib_ranges_slide) && defined(__glibcxx_want_ranges_slide) */
 #undef __glibcxx_want_ranges_slide
 
-// from version.def line 1501
 #if !defined(__cpp_lib_ranges_chunk_by)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_chunk_by 202202L
@@ -1817,7 +1663,6 @@
 #endif /* !defined(__cpp_lib_ranges_chunk_by) && defined(__glibcxx_want_ranges_chunk_by) */
 #undef __glibcxx_want_ranges_chunk_by
 
-// from version.def line 1509
 #if !defined(__cpp_lib_ranges_join_with)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_join_with 202202L
@@ -1828,7 +1673,6 @@
 #endif /* !defined(__cpp_lib_ranges_join_with) && defined(__glibcxx_want_ranges_join_with) */
 #undef __glibcxx_want_ranges_join_with
 
-// from version.def line 1517
 #if !defined(__cpp_lib_ranges_repeat)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_repeat 202207L
@@ -1839,7 +1683,6 @@
 #endif /* !defined(__cpp_lib_ranges_repeat) && defined(__glibcxx_want_ranges_repeat) */
 #undef __glibcxx_want_ranges_repeat
 
-// from version.def line 1525
 #if !defined(__cpp_lib_ranges_stride)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_stride 202207L
@@ -1850,7 +1693,6 @@
 #endif /* !defined(__cpp_lib_ranges_stride) && defined(__glibcxx_want_ranges_stride) */
 #undef __glibcxx_want_ranges_stride
 
-// from version.def line 1533
 #if !defined(__cpp_lib_ranges_cartesian_product)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_cartesian_product 202207L
@@ -1861,7 +1703,6 @@
 #endif /* !defined(__cpp_lib_ranges_cartesian_product) && defined(__glibcxx_want_ranges_cartesian_product) */
 #undef __glibcxx_want_ranges_cartesian_product
 
-// from version.def line 1541
 #if !defined(__cpp_lib_ranges_as_rvalue)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_as_rvalue 202207L
@@ -1872,7 +1713,6 @@
 #endif /* !defined(__cpp_lib_ranges_as_rvalue) && defined(__glibcxx_want_ranges_as_rvalue) */
 #undef __glibcxx_want_ranges_as_rvalue
 
-// from version.def line 1549
 #if !defined(__cpp_lib_ranges_as_const)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_as_const 202311L
@@ -1883,7 +1723,6 @@
 #endif /* !defined(__cpp_lib_ranges_as_const) && defined(__glibcxx_want_ranges_as_const) */
 #undef __glibcxx_want_ranges_as_const
 
-// from version.def line 1557
 #if !defined(__cpp_lib_ranges_enumerate)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_enumerate 202302L
@@ -1894,7 +1733,6 @@
 #endif /* !defined(__cpp_lib_ranges_enumerate) && defined(__glibcxx_want_ranges_enumerate) */
 #undef __glibcxx_want_ranges_enumerate
 
-// from version.def line 1565
 #if !defined(__cpp_lib_ranges_fold)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_fold 202207L
@@ -1905,7 +1743,6 @@
 #endif /* !defined(__cpp_lib_ranges_fold) && defined(__glibcxx_want_ranges_fold) */
 #undef __glibcxx_want_ranges_fold
 
-// from version.def line 1573
 #if !defined(__cpp_lib_ranges_contains)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_contains 202207L
@@ -1916,7 +1753,6 @@
 #endif /* !defined(__cpp_lib_ranges_contains) && defined(__glibcxx_want_ranges_contains) */
 #undef __glibcxx_want_ranges_contains
 
-// from version.def line 1581
 #if !defined(__cpp_lib_ranges_iota)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_iota 202202L
@@ -1927,7 +1763,6 @@
 #endif /* !defined(__cpp_lib_ranges_iota) && defined(__glibcxx_want_ranges_iota) */
 #undef __glibcxx_want_ranges_iota
 
-// from version.def line 1589
 #if !defined(__cpp_lib_ranges_find_last)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_ranges_find_last 202207L
@@ -1938,7 +1773,6 @@
 #endif /* !defined(__cpp_lib_ranges_find_last) && defined(__glibcxx_want_ranges_find_last) */
 #undef __glibcxx_want_ranges_find_last
 
-// from version.def line 1597
 #if !defined(__cpp_lib_constexpr_bitset)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED && (__cpp_constexpr_dynamic_alloc)
 #  define __glibcxx_constexpr_bitset 202202L
@@ -1949,7 +1783,6 @@
 #endif /* !defined(__cpp_lib_constexpr_bitset) && defined(__glibcxx_want_constexpr_bitset) */
 #undef __glibcxx_want_constexpr_bitset
 
-// from version.def line 1607
 #if !defined(__cpp_lib_stdatomic_h)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_stdatomic_h 202011L
@@ -1960,7 +1793,6 @@
 #endif /* !defined(__cpp_lib_stdatomic_h) && defined(__glibcxx_want_stdatomic_h) */
 #undef __glibcxx_want_stdatomic_h
 
-// from version.def line 1615
 #if !defined(__cpp_lib_adaptor_iterator_pair_constructor)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_adaptor_iterator_pair_constructor 202106L
@@ -1971,7 +1803,6 @@
 #endif /* !defined(__cpp_lib_adaptor_iterator_pair_constructor) && defined(__glibcxx_want_adaptor_iterator_pair_constructor) */
 #undef __glibcxx_want_adaptor_iterator_pair_constructor
 
-// from version.def line 1624
 #if !defined(__cpp_lib_formatters)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_formatters 202302L
@@ -1982,7 +1813,6 @@
 #endif /* !defined(__cpp_lib_formatters) && defined(__glibcxx_want_formatters) */
 #undef __glibcxx_want_formatters
 
-// from version.def line 1633
 #if !defined(__cpp_lib_forward_like)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_forward_like 202207L
@@ -1993,7 +1823,6 @@
 #endif /* !defined(__cpp_lib_forward_like) && defined(__glibcxx_want_forward_like) */
 #undef __glibcxx_want_forward_like
 
-// from version.def line 1641
 #if !defined(__cpp_lib_ios_noreplace)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_ios_noreplace 202207L
@@ -2004,7 +1833,6 @@
 #endif /* !defined(__cpp_lib_ios_noreplace) && defined(__glibcxx_want_ios_noreplace) */
 #undef __glibcxx_want_ios_noreplace
 
-// from version.def line 1650
 #if !defined(__cpp_lib_move_only_function)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_move_only_function 202110L
@@ -2015,7 +1843,6 @@
 #endif /* !defined(__cpp_lib_move_only_function) && defined(__glibcxx_want_move_only_function) */
 #undef __glibcxx_want_move_only_function
 
-// from version.def line 1659
 #if !defined(__cpp_lib_out_ptr)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_out_ptr 202311L
@@ -2026,7 +1853,6 @@
 #endif /* !defined(__cpp_lib_out_ptr) && defined(__glibcxx_want_out_ptr) */
 #undef __glibcxx_want_out_ptr
 
-// from version.def line 1667
 #if !defined(__cpp_lib_print)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_print 202211L
@@ -2037,7 +1863,6 @@
 #endif /* !defined(__cpp_lib_print) && defined(__glibcxx_want_print) */
 #undef __glibcxx_want_print
 
-// from version.def line 1676
 #if !defined(__cpp_lib_spanstream)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED && (__glibcxx_span)
 #  define __glibcxx_spanstream 202106L
@@ -2048,7 +1873,6 @@
 #endif /* !defined(__cpp_lib_spanstream) && defined(__glibcxx_want_spanstream) */
 #undef __glibcxx_want_spanstream
 
-// from version.def line 1686
 #if !defined(__cpp_lib_stacktrace)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED && (_GLIBCXX_HAVE_STACKTRACE)
 #  define __glibcxx_stacktrace 202011L
@@ -2059,7 +1883,6 @@
 #endif /* !defined(__cpp_lib_stacktrace) && defined(__glibcxx_want_stacktrace) */
 #undef __glibcxx_want_stacktrace
 
-// from version.def line 1696
 #if !defined(__cpp_lib_string_contains)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_string_contains 202011L
@@ -2070,7 +1893,6 @@
 #endif /* !defined(__cpp_lib_string_contains) && defined(__glibcxx_want_string_contains) */
 #undef __glibcxx_want_string_contains
 
-// from version.def line 1705
 #if !defined(__cpp_lib_string_resize_and_overwrite)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_string_resize_and_overwrite 202110L
@@ -2081,7 +1903,6 @@
 #endif /* !defined(__cpp_lib_string_resize_and_overwrite) && defined(__glibcxx_want_string_resize_and_overwrite) */
 #undef __glibcxx_want_string_resize_and_overwrite
 
-// from version.def line 1714
 #if !defined(__cpp_lib_to_underlying)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_to_underlying 202102L
@@ -2092,7 +1913,6 @@
 #endif /* !defined(__cpp_lib_to_underlying) && defined(__glibcxx_want_to_underlying) */
 #undef __glibcxx_want_to_underlying
 
-// from version.def line 1722
 #if !defined(__cpp_lib_unreachable)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_unreachable 202202L
@@ -2103,7 +1923,6 @@
 #endif /* !defined(__cpp_lib_unreachable) && defined(__glibcxx_want_unreachable) */
 #undef __glibcxx_want_unreachable
 
-// from version.def line 1730
 #if !defined(__cpp_lib_fstream_native_handle)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
 #  define __glibcxx_fstream_native_handle 202306L
@@ -2114,7 +1933,6 @@
 #endif /* !defined(__cpp_lib_fstream_native_handle) && defined(__glibcxx_want_fstream_native_handle) */
 #undef __glibcxx_want_fstream_native_handle
 
-// from version.def line 1739
 #if !defined(__cpp_lib_ratio)
 # if (__cplusplus >  202302L)
 #  define __glibcxx_ratio 202306L
@@ -2125,7 +1943,6 @@
 #endif /* !defined(__cpp_lib_ratio) && defined(__glibcxx_want_ratio) */
 #undef __glibcxx_want_ratio
 
-// from version.def line 1747
 #if !defined(__cpp_lib_saturation_arithmetic)
 # if (__cplusplus >  202302L)
 #  define __glibcxx_saturation_arithmetic 202311L
@@ -2136,7 +1953,6 @@
 #endif /* !defined(__cpp_lib_saturation_arithmetic) && defined(__glibcxx_want_saturation_arithmetic) */
 #undef __glibcxx_want_saturation_arithmetic
 
-// from version.def line 1755
 #if !defined(__cpp_lib_text_encoding)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (_GLIBCXX_USE_NL_LANGINFO_L)
 #  define __glibcxx_text_encoding 202306L
@@ -2147,7 +1963,6 @@
 #endif /* !defined(__cpp_lib_text_encoding) && defined(__glibcxx_want_text_encoding) */
 #undef __glibcxx_want_text_encoding
 
-// from version.def line 1765
 #if !defined(__cpp_lib_to_string)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (__glibcxx_to_chars)
 #  define __glibcxx_to_string 202306L
@@ -2158,7 +1973,6 @@
 #endif /* !defined(__cpp_lib_to_string) && defined(__glibcxx_want_to_string) */
 #undef __glibcxx_want_to_string
 
-// from version.def line 1775
 #if !defined(__cpp_lib_generator)
 # if (__cplusplus >= 202100L) && (__glibcxx_coroutine)
 #  define __glibcxx_generator 202207L

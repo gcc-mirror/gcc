@@ -125,8 +125,7 @@ h
 
   }*/
 /*{ FOR ftms
-  }*/// /*{ (def-file-line "name") }*/
-#if !defined(__cpp_lib_/*{name}*/)
+  }*/#if !defined(__cpp_lib_/*{name}*/)
 /*{ FOR values }*//*{ #
 
   This macro block defines two versions of each FTM:
