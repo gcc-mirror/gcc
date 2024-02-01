@@ -1573,8 +1573,8 @@ structural_comptypes (tree t1, tree t2, int strict)
 	return false;
       /* If T1 and T2 don't represent the same class template deduction,
          they aren't equal.  */
-      if (CLASS_PLACEHOLDER_TEMPLATE (t1)
-	  != CLASS_PLACEHOLDER_TEMPLATE (t2))
+      if (!cp_tree_equal (CLASS_PLACEHOLDER_TEMPLATE (t1),
+			  CLASS_PLACEHOLDER_TEMPLATE (t2)))
 	return false;
       /* Constrained 'auto's are distinct from parms that don't have the same
 	 constraints.  */

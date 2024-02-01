@@ -1816,6 +1816,11 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	}
       return iterative_hash_template_arg (TREE_TYPE (arg), val);
 
+    case TEMPLATE_DECL:
+      if (DECL_TEMPLATE_TEMPLATE_PARM_P (arg))
+	return iterative_hash_template_arg (TREE_TYPE (arg), val);
+      break;
+
     case TARGET_EXPR:
       return iterative_hash_template_arg (TARGET_EXPR_INITIAL (arg), val);
 
@@ -4499,6 +4504,8 @@ struct ctp_hasher : ggc_ptr_hash<tree_node>
     hashval_t val = iterative_hash_object (code, 0);
     val = iterative_hash_object (TEMPLATE_TYPE_LEVEL (t), val);
     val = iterative_hash_object (TEMPLATE_TYPE_IDX (t), val);
+    if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+      val = iterative_hash_template_arg (CLASS_PLACEHOLDER_TEMPLATE (t), val);
     if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
       val = iterative_hash_template_arg (TYPE_TI_ARGS (t), val);
     --comparing_specializations;
