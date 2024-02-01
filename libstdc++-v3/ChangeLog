@@ -1,3 +1,28 @@
+2024-01-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_TEXT_ENCODING): Use <xlocale.h> if
+	needed for newlocale.
+	* configure: Regenerate.
+	* src/c++26/text_encoding.cc: Use <xlocale.h>.
+
+2024-01-31  Jonathan Wakely  <jwakely@redhat.com>
+	    Ewan Higgs  <ewan.higgs@gmail.com>
+
+	* include/bits/text_encoding-data.h: Regenerate.
+	* scripts/gen_text_encoding_data.py: Add extra_aliases dict
+	containing "ASCII".
+	* testsuite/std/text_encoding/cons.cc: Check "ascii" is known.
+
+2024-01-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Update tables of supported headers.
+	* doc/html/*: Regenerate.
+
+2024-01-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (_Base_bitset::_M_do_to_ullong): Avoid
+	-Wshift-count-overflow warning.
+
 2024-01-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/std/time/clock/gps/io.cc: Fix expected result in

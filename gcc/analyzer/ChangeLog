@@ -1,3 +1,20 @@
+2024-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113253
+	* region-model.cc (region_model::on_stmt_pre): Add gcc_unreachable
+	for debug statements.
+	* state-purge.cc
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Skip any
+	debug stmts in the FOR_EACH_IMM_USE_FAST list.
+	* supergraph.cc (supergraph::supergraph): Don't add debug stmts
+	to the supernodes.
+
+2024-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113509
+	* checker-event.cc (state_change_event::get_desc): Don't assume
+	"var" is non-NULL.
+
 2024-01-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/113654

@@ -1,3 +1,16 @@
+2024-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111627
+	PR modula2/112506
+	* gm2-compiler/M2Comp.mod (Pass0CheckMod): Test IsDefImp before
+	checking IsDefinitionForC.
+
+2024-01-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Comp.mod (Pass0CheckMod): Tidy up comment.
+	* gm2-compiler/P1Build.bnf (PossiblyExportIdent): Replace
+	PushTF with PushTFtok.
+
 2024-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2Check.mod (dumpIndice): New procedure.

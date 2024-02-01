@@ -1,3 +1,237 @@
+2024-02-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.md (FIRST_SGPR_REG, LAST_SGPR_REG)
+	(FIRST_VGPR_REG, LAST_VGPR_REG, FIRST_AVGPR_REG, LAST_AVGPR_REG):
+	Don't 'define_constants'.
+
+2024-02-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.h (SGPR_OR_VGPR_REGNO_P): Remove.
+
+2024-02-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.md (sync_compare_and_swap<mode>_lds_insn)
+	[TARGET_RDNA3]: Adjust.
+
+2024-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113693
+	* tree-ssa-sccvn.cc (rpo_elim::eliminate_avail): Honor avail
+	data when available.
+
+2024-02-01  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/113531
+	* gimple-low.cc (lower_stmt): Remove .ASAN_MARK calls
+	on variables which were promoted to TREE_STATIC.
+
+2024-02-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR target/113560
+	* tree-ssa-math-opts.cc (is_widening_mult_rhs_p): Use range
+	information via tree_non_zero_bits to check if this operand
+	is suitably extended for a widening (or highpart) multiplication.
+	(convert_mult_to_widen): Insert explicit casts if the RHS or LHS
+	isn't already of the claimed type.
+
+2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	Revert:
+	2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/generic-ooo.md (generic_ooo_sfb_alu): Add reservation
+	(generic_ooo_branch): ditto
+	* config/riscv/generic.md (generic_sfb_alu): ditto
+	(generic_fmul_half): ditto
+	* config/riscv/riscv.md: Remove cbo, pushpop, and rdfrm types
+	* config/riscv/sifive-7.md (sifive_7_hfma):Add reservation
+	(sifive_7_popcount): ditto
+	* config/riscv/vector.md: change rdfrm to fmove
+	* config/riscv/zc.md: change pushpop to load/store
+
+2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	Revert:
+	2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+		    Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/generic-ooo.md (generic_ooo): Move reservation
+	(generic_ooo_vec_load): ditto
+	(generic_ooo_vec_store): ditto
+	(generic_ooo_vec_loadstore_seg): ditto
+	(generic_ooo_vec_alu): ditto
+	(generic_ooo_vec_fcmp): ditto
+	(generic_ooo_vec_imul): ditto
+	(generic_ooo_vec_fadd): ditto
+	(generic_ooo_vec_fmul): ditto
+	(generic_ooo_crypto): ditto
+	(generic_ooo_perm): ditto
+	(generic_ooo_vec_reduction): ditto
+	(generic_ooo_vec_ordered_reduction): ditto
+	(generic_ooo_vec_idiv): ditto
+	(generic_ooo_vec_float_divsqrt): ditto
+	(generic_ooo_vec_mask): ditto
+	(generic_ooo_vec_vesetvl): ditto
+	(generic_ooo_vec_setrm): ditto
+	(generic_ooo_vec_readlen): ditto
+	* config/riscv/riscv.md: include generic-vector-ooo
+	* config/riscv/generic-vector-ooo.md: New file. to here
+
+2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	Revert:
+	2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_sched_variable_issue): enable assert
+
+2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_sched_variable_issue): enable assert
+
+2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+	    Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/generic-ooo.md (generic_ooo): Move reservation
+	(generic_ooo_vec_load): ditto
+	(generic_ooo_vec_store): ditto
+	(generic_ooo_vec_loadstore_seg): ditto
+	(generic_ooo_vec_alu): ditto
+	(generic_ooo_vec_fcmp): ditto
+	(generic_ooo_vec_imul): ditto
+	(generic_ooo_vec_fadd): ditto
+	(generic_ooo_vec_fmul): ditto
+	(generic_ooo_crypto): ditto
+	(generic_ooo_perm): ditto
+	(generic_ooo_vec_reduction): ditto
+	(generic_ooo_vec_ordered_reduction): ditto
+	(generic_ooo_vec_idiv): ditto
+	(generic_ooo_vec_float_divsqrt): ditto
+	(generic_ooo_vec_mask): ditto
+	(generic_ooo_vec_vesetvl): ditto
+	(generic_ooo_vec_setrm): ditto
+	(generic_ooo_vec_readlen): ditto
+	* config/riscv/riscv.md: include generic-vector-ooo
+	* config/riscv/generic-vector-ooo.md: New file. to here
+
+2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/generic-ooo.md (generic_ooo_sfb_alu): Add reservation
+	(generic_ooo_branch): ditto
+	* config/riscv/generic.md (generic_sfb_alu): ditto
+	(generic_fmul_half): ditto
+	* config/riscv/riscv.md: Remove cbo, pushpop, and rdfrm types
+	* config/riscv/sifive-7.md (sifive_7_hfma):Add reservation
+	(sifive_7_popcount): ditto
+	* config/riscv/vector.md: change rdfrm to fmove
+	* config/riscv/zc.md: change pushpop to load/store
+
+2024-02-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113657
+	* config/aarch64/aarch64-simd.md (split for movv8di):
+	For strict aligned mode, use DImode instead of TImode.
+
+2024-01-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/113607
+	* match.pd: Make sure else values match when folding a
+	vec_cond into a conditional operation.
+
+2024-01-31  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Mention that -fconcepts-ts was deprecated in GCC 14.
+
+2024-01-31  Tamar Christina  <tamar.christina@arm.com>
+	    Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	PR sanitizer/112644
+	* asan.h (asan_intercepted_p): Incercept memset, memmove, memcpy and
+	memcmp.
+	* builtins.cc (expand_builtin): Include HWASAN when checking for
+	builtin inlining.
+
+2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110176
+	* match.pd (zext (bool) <= (int) 4294967295u): Make sure
+	to match INTEGER_CST only without outstanding conversion.
+
+2024-01-31  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/111677
+	* config/aarch64/aarch64.cc (aarch64_reg_save_mode): Use
+	V16QImode for the full 16-byte FPR saves in the vector PCS case.
+
+2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111444
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Do not use
+	vn_reference_lookup_2 when optimistically skipping may-defs.
+
+2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113630
+	* tree-ssa-pre.cc (compute_avail): Avoid registering a
+	reference with a representation with not matching base
+	access size.
+
+2024-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113656
+	* simplify-rtx.cc (simplify_context::simplify_unary_operation_1)
+	<case FLOAT_TRUNCATE>: Fix up last argument to simplify_gen_unary.
+
+2024-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/113637
+	* dwarf2out.cc (loc_list_from_tree_1): Assume integral types
+	with BLKmode are larger than DWARF2_ADDR_SIZE.
+
+2024-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113639
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_operand_addr):
+	For VIEW_CONVERT_EXPR set rhs1 to its operand.
+
+2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113670
+	* tree-vect-data-refs.cc (vect_check_gather_scatter):
+	Make sure we can take the address of the reference base.
+
+2024-01-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add AVR64DU28, AVR64DU32, ATA5787,
+	ATA5835, ATtiny64AUTO, ATA5700M322.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2024-01-31  Alexandre Oliva  <oliva@adacore.com>
+
+	PR debug/113394
+	* ipa-strub.cc (build_ref_type_for): Drop nonaliased.  Adjust
+	caller.
+
+2024-01-31  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112917
+	PR middle-end/113100
+	* builtins.cc (expand_builtin_stack_address): Use
+	STACK_ADDRESS_OFFSET.
+	* doc/extend.texi (__builtin_stack_address): Adjust.
+	* config/sparc/sparc.h (STACK_ADDRESS_OFFSET): Define.
+	* doc/tm.texi.in (STACK_ADDRESS_OFFSET): Document.
+	* doc/tm.texi: Rebuilt.
+
+2024-01-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113495
+	* config/riscv/riscv-vsetvl.cc (extract_single_source): Remove.
+	(pre_vsetvl::compute_vsetvl_def_data): Fix compile time issue.
+	(pre_vsetvl::compute_transparent): New function.
+	(pre_vsetvl::compute_lcm_local_properties): Fix compile time time issue.
+
 2024-01-30  Fangrui Song  <maskray@google.com>
 
 	PR target/105576

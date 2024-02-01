@@ -1,3 +1,288 @@
+2024-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113693
+	* gcc.dg/pr113693.c: New testcase.
+
+2024-02-01  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/113531
+	* g++.dg/asan/initlist1.C: New test.
+
+2024-02-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR target/113560
+	* g++.target/i386/pr113560.C: New test case.
+	* gcc.target/i386/pr113560.c: Likewise.
+	* gcc.dg/pr87954.c: Update test case.
+
+2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	Revert:
+	2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/113249
+	* g++.target/riscv/rvv/base/bug-1.C: use default scheduling
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-2.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-102.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-108.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-114.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-119.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-12.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-16.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-17.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-19.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-21.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-23.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-25.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-27.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-29.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-31.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-33.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-35.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-4.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-40.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-44.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-50.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-56.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-62.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-68.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-74.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-79.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-8.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-84.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-90.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-96.c: ditto
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-30.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-1.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-2.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-3.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-4.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-5.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-6.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-7.c: ditto
+	* gcc.target/riscv/rvv/base/shift_vx_constraint-1.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/pr111037-3.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-28.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-29.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-32.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-33.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-17.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-18.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-19.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-10.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-11.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-12.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-4.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-5.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-6.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-7.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-8.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-9.c: ditto
+	* gfortran.dg/vect/vect-8.f90: ditto
+
+2024-02-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/113249
+	* g++.target/riscv/rvv/base/bug-1.C: use default scheduling
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-2.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-102.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-108.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-114.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-119.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-12.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-16.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-17.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-19.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-21.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-23.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-25.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-27.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-29.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-31.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-33.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-35.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-4.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-40.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-44.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-50.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-56.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-62.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-68.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-74.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-79.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-8.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-84.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-90.c: ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-96.c: ditto
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-30.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-1.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-2.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-3.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-4.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-5.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-6.c: ditto
+	* gcc.target/riscv/rvv/base/pr108185-7.c: ditto
+	* gcc.target/riscv/rvv/base/shift_vx_constraint-1.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/pr111037-3.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-28.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-29.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-32.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-33.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-17.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-18.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-19.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-10.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-11.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-12.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-4.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-5.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-6.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-7.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-8.c: ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-9.c: ditto
+	* gfortran.dg/vect/vect-8.f90: ditto
+
+2024-02-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113657
+	* gcc.target/aarch64/acle/ls64_strict_align.c: New test.
+
+2024-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113253
+	* gcc.dg/analyzer/deref-before-check-pr113253.c: New test.
+
+2024-01-31  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112571
+	* gcc.dg/c23-enum-9.c, gcc.dg/c23-enum-10.c: New tests.
+
+2024-01-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/aarch64/sve/pre_cond_share_1.c: XFAIL.
+	* gcc.target/riscv/rvv/autovec/pr113607-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr113607.c: New test.
+
+2024-01-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113438
+	* gcc.dg/pr113438.c: New test.
+
+2024-01-31  Jonathan Yong  <10walls@gmail.com>
+
+	* c-c++-common/analyzer/uninit-pr108968-register.c:
+	Use __UINTPTR_TYPE__ instead of unsigned long for LLP64.
+
+2024-01-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111627
+	* gm2/pim/pass/stdio.mod: Moved to...
+	* gm2/pim/pass/teststdio.mod: ...here.
+	* gm2/pim/run/pass/builtins.mod: Moved to...
+	* gm2/pim/run/pass/testbuiltins.mod: ...here.
+	* gm2/pim/run/pass/math.mod: Moved to...
+	* gm2/pim/run/pass/testmath.mod: ...here.
+	* gm2/pim/run/pass/math2.mod: Moved to...
+	* gm2/pim/run/pass/testmath2.mod: ...here.
+
+2024-01-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/113502
+	* gcc.target/aarch64/sve/vect-early-break-cbranch.c: Ignore exact branch.
+	* gcc.target/aarch64/vect-early-break-cbranch.c: Likewise.
+
+2024-01-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR sanitizer/112644
+	* c-c++-common/hwasan/hwasan-thread-clears-stack.c: Update testcase.
+
+2024-01-31  Tamar Christina  <tamar.christina@arm.com>
+	    Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	PR sanitizer/112644
+	* c-c++-common/hwasan/builtin-special-handling.c: Update testcase.
+
+2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110176
+	* gcc.dg/torture/pr110176.c: New testcase.
+
+2024-01-31  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/111677
+	* gcc.target/aarch64/torture/pr111677.c: New test.
+
+2024-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/auto-init-5.c: Add
+	-fno-asynchronous-unwind-tables to dg-options.
+	* gcc.target/i386/auto-init-6.c: Likewise.
+
+2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111444
+	* gcc.dg/torture/pr111444.c: New testcase.
+
+2024-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cpp0x/udlit-extended-id-1.C: Require ucn support.
+
+2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113630
+	* gcc.dg/torture/pr113630.c: New testcase.
+
+2024-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113656
+	* gcc.target/i386/pr113656.c: New test.
+
+2024-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/113637
+	* gcc.dg/bitint-80.c: New test.
+
+2024-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113639
+	* gcc.dg/bitint-79.c: New test.
+
+2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113670
+	* gcc.target/i386/pr113670.c: New testcase.
+
+2024-01-31  Alexandre Oliva  <oliva@adacore.com>
+
+	PR debug/113394
+	* gcc.dg/strub-internal-pr113394.c: New.
+
+2024-01-31  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/111059
+	PR c/111911
+	* gcc.c-torture/compile/pr111059-1.c,
+	gcc.c-torture/compile/pr111059-2.c,
+	gcc.c-torture/compile/pr111059-3.c,
+	gcc.c-torture/compile/pr111059-4.c,
+	gcc.c-torture/compile/pr111059-5.c,
+	gcc.c-torture/compile/pr111059-6.c,
+	gcc.c-torture/compile/pr111059-7.c,
+	gcc.c-torture/compile/pr111059-8.c,
+	gcc.c-torture/compile/pr111059-9.c,
+	gcc.c-torture/compile/pr111059-10.c,
+	gcc.c-torture/compile/pr111059-11.c,
+	gcc.c-torture/compile/pr111059-12.c,
+	gcc.c-torture/compile/pr111911-1.c,
+	gcc.c-torture/compile/pr111911-2.c: New tests.
+
+2024-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113509
+	* c-c++-common/analyzer/stdarg-pr113509.c: New test.
+
 2024-01-30  Fangrui Song  <maskray@google.com>
 
 	PR target/105576

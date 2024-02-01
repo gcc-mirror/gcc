@@ -1,3 +1,28 @@
+2024-01-31  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112571
+	* c-decl.cc (start_enum): Clear ENUM_FIXED_UNDERLYING_TYPE_P when
+	defining without a fixed underlying type an enumeration previously
+	declared with a fixed underlying type.
+
+2024-01-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113438
+	* c-typeck.cc (composite_type_internal): Set TYPE_STUB_DECL.
+
+2024-01-31  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/111059
+	PR c/111911
+	* c-tree.h (c_objc_common_truthvalue_conversion): Add third
+	argument.
+	* c-convert.cc (c_convert): For conversions to boolean, pass third
+	argument to c_objc_common_truthvalue_conversion rather than
+	converting here.
+	* c-typeck.cc (build_c_cast): Ensure arguments with integer
+	operands are marked as such for conversion to boolean.
+	(c_objc_common_truthvalue_conversion): Add third argument TYPE.
+
 2024-01-21  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/113492

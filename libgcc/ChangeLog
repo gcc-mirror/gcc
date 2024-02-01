@@ -1,3 +1,9 @@
+2024-02-01  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/crti.S: Remove stack marking.
+	* config/aarch64/crtn.S: Remove stack marking, include aarch64-asm.h
+	* config/aarch64/lse.S: Remove stack and GNU property markings.
+
 2024-01-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR libgcc/113403
