@@ -38,8 +38,10 @@
 #include <iomanip> // setw, setfill
 #include <format>
 #include <charconv> // from_chars
+#include <stdexcept> // __sso_string
 
 #include <bits/streambuf_iterator.h>
+#include <bits/unique_ptr.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -216,6 +218,20 @@ namespace __format
     struct _ChronoSpec : _Spec<_CharT>
     {
       basic_string_view<_CharT> _M_chrono_specs;
+
+      // Use one of the reserved bits in __format::_Spec<C>.
+      // This indicates that a locale-dependent conversion specifier such as
+      // %a is used in the chrono-specs. This is not the same as the
+      // _Spec<C>::_M_localized member which indicates that "L" was present
+      // in the format-spec, e.g. "{:L%a}" is localized and locale-specific,
+      // but "{:L}" is only localized and "{:%a}" is only locale-specific.
+      constexpr bool
+      _M_locale_specific() const noexcept
+      { return this->_M_reserved; }
+
+      constexpr void
+      _M_locale_specific(bool __b) noexcept
+      { this->_M_reserved = __b; }
     };
 
   // Represents the information provided by a chrono type.
@@ -310,11 +326,12 @@ namespace __format
 	  const auto __chrono_specs = __first++; // Skip leading '%'
 	  if (*__chrono_specs != '%')
 	    __throw_format_error("chrono format error: no '%' at start of "
-				     "chrono-specs");
+				 "chrono-specs");
 
 	  _CharT __mod{};
 	  bool __conv = true;
 	  int __needed = 0;
+	  bool __locale_specific = false;
 
 	  while (__first != __last)
 	    {
@@ -327,15 +344,18 @@ namespace __format
 		case 'a':
 		case 'A':
 		  __needed = _Weekday;
+		  __locale_specific = true;
 		  break;
 		case 'b':
 		case 'h':
 		case 'B':
 		  __needed = _Month;
+		  __locale_specific = true;
 		  break;
 		case 'c':
 		  __needed = _DateTime;
 		  __allowed_mods = _Mod_E;
+		  __locale_specific = true;
 		  break;
 		case 'C':
 		  __needed = _Year;
@@ -373,6 +393,8 @@ namespace __format
 		  break;
 		case 'p':
 		case 'r':
+		  __locale_specific = true;
+		  [[fallthrough]];
 		case 'R':
 		case 'T':
 		  __needed = _TimeOfDay;
@@ -398,10 +420,12 @@ namespace __format
 		  break;
 		case 'x':
 		  __needed = _Date;
+		  __locale_specific = true;
 		  __allowed_mods = _Mod_E;
 		  break;
 		case 'X':
 		  __needed = _TimeOfDay;
+		  __locale_specific = true;
 		  __allowed_mods = _Mod_E;
 		  break;
 		case 'y':
@@ -441,6 +465,8 @@ namespace __format
 		    || (__mod == 'O' && !(__allowed_mods & _Mod_O)))
 		__throw_format_error("chrono format error: invalid "
 				     " modifier in chrono-specs");
+	      if (__mod && __c != 'z')
+		__locale_specific = true;
 	      __mod = _CharT();
 
 	      if ((__parts & __needed) != __needed)
@@ -472,6 +498,7 @@ namespace __format
 	  _M_spec = __spec;
 	  _M_spec._M_chrono_specs
 		 = __string_view(__chrono_specs, __first - __chrono_specs);
+	  _M_spec._M_locale_specific(__locale_specific);
 
 	  return __first;
 	}
@@ -490,6 +517,24 @@ namespace __format
 	  const auto __last = _M_spec._M_chrono_specs.end();
 	  if (__first == __last)
 	    return _M_format_to_ostream(__t, __fc, __is_neg);
+
+#if defined _GLIBCXX_USE_NL_LANGINFO_L && __CHAR_BIT__ == 8
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3565. Handling of encodings in localized formatting
+	  //       of chrono types is underspecified
+	  if constexpr (is_same_v<_CharT, char>)
+	    if constexpr (__unicode::__literal_encoding_is_utf8())
+	      if (_M_spec._M_localized && _M_spec._M_locale_specific())
+		{
+		  extern locale __with_encoding_conversion(const locale&);
+
+		  // Allocate and cache the necessary state to convert strings
+		  // in the locale's encoding to UTF-8.
+		  locale __loc = __fc.locale();
+		  if (__loc != locale::classic())
+		    __fc._M_loc =  __with_encoding_conversion(__loc);
+		}
+#endif
 
 	  _Sink_iter<_CharT> __out;
 	  __format::_Str_sink<_CharT> __sink;
@@ -768,6 +813,29 @@ namespace __format
       static constexpr _CharT _S_space = _S_chars[14];
       static constexpr const _CharT* _S_empty_spec = _S_chars + 15;
 
+      template<typename _OutIter>
+	_OutIter
+	_M_write(_OutIter __out, const locale& __loc, __string_view __s) const
+	{
+#if defined _GLIBCXX_USE_NL_LANGINFO_L && __CHAR_BIT__ == 8
+	  __sso_string __buf;
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3565. Handling of encodings in localized formatting
+	  //       of chrono types is underspecified
+	  if constexpr (is_same_v<_CharT, char>)
+	    if constexpr (__unicode::__literal_encoding_is_utf8())
+	      if (_M_spec._M_localized && _M_spec._M_locale_specific()
+		    && __loc != locale::classic())
+		{
+		  extern string_view
+		  __locale_encoding_to_utf8(const locale&, string_view, void*);
+
+		  __s = __locale_encoding_to_utf8(__loc, __s, &__buf);
+		}
+#endif
+	  return __format::__write(std::move(__out), __s);
+	}
+
       template<typename _Tp, typename _FormatContext>
 	typename _FormatContext::iterator
 	_M_a_A(const _Tp& __t, typename _FormatContext::iterator __out,
@@ -787,7 +855,7 @@ namespace __format
 	  else
 	    __tp._M_days_abbreviated(__days);
 	  __string_view __str(__days[__wd.c_encoding()]);
-	  return __format::__write(std::move(__out), __str);
+	  return _M_write(std::move(__out), __loc, __str);
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -808,7 +876,7 @@ namespace __format
 	  else
 	    __tp._M_months_abbreviated(__months);
 	  __string_view __str(__months[(unsigned)__m - 1]);
-	  return __format::__write(std::move(__out), __str);
+	  return _M_write(std::move(__out), __loc, __str);
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1085,8 +1153,8 @@ namespace __format
 	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
 	  const _CharT* __ampm[2];
 	  __tp._M_am_pm(__ampm);
-	  return std::format_to(std::move(__out), _S_empty_spec,
-				__ampm[__hms.hours().count() >= 12]);
+	  return _M_write(std::move(__out), __loc,
+			  __ampm[__hms.hours().count() >= 12]);
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1121,8 +1189,9 @@ namespace __format
 	  basic_string<_CharT> __fmt(_S_empty_spec);
 	  __fmt.insert(1u, 1u, _S_colon);
 	  __fmt.insert(2u, __ampm_fmt);
-	  return std::vformat_to(std::move(__out), __fmt,
-				 std::make_format_args<_FormatContext>(__t));
+	  using _FmtStr = _Runtime_format_string<_CharT>;
+	  return _M_write(std::move(__out), __loc,
+			  std::format(__loc, _FmtStr(__fmt), __t));
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1305,8 +1374,9 @@ namespace __format
 	  basic_string<_CharT> __fmt(_S_empty_spec);
 	  __fmt.insert(1u, 1u, _S_colon);
 	  __fmt.insert(2u, __rep);
-	  return std::vformat_to(std::move(__out), __fmt,
-				 std::make_format_args<_FormatContext>(__t));
+	  using _FmtStr = _Runtime_format_string<_CharT>;
+	  return _M_write(std::move(__out), __loc,
+			  std::format(__loc, _FmtStr(__fmt), __t));
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1328,8 +1398,9 @@ namespace __format
 	  basic_string<_CharT> __fmt(_S_empty_spec);
 	  __fmt.insert(1u, 1u, _S_colon);
 	  __fmt.insert(2u, __rep);
-	  return std::vformat_to(std::move(__out), __fmt,
-				 std::make_format_args<_FormatContext>(__t));
+	  using _FmtStr = _Runtime_format_string<_CharT>;
+	  return _M_write(std::move(__out), __loc,
+			  std::format(__loc, _FmtStr(__fmt), __t));
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1606,7 +1677,7 @@ namespace __format
 	  const auto& __tp = use_facet<time_put<_CharT>>(__loc);
 	  __tp.put(__os, __os, _S_space, &__tm, __fmt, __mod);
 	  if (__os)
-	    __out = __format::__write(std::move(__out), __os.view());
+	    __out = _M_write(std::move(__out), __loc, __os.view());
 	  return __out;
 	}
     };

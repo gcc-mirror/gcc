@@ -1161,16 +1161,22 @@ ftms = {
 };
 
 ftms = {
+  name = format;
+  // 202304 P2510R3 Formatting pointers
+  // 202305 P2757R3 Type checking format args
+  // 202306 P2637R3 Member visit
+  // 202311 P2918R2 Runtime format strings II
+  // values = {
+    // v = 202304;
+    // cxxmin = 26;
+    // hosted = yes;
+  // };
   // 201907 Text Formatting, Integration of chrono, printf corner cases.
   // 202106 std::format improvements.
   // 202110 Fixing locale handling in chrono formatters, generator-like types.
   // 202207 Encodings in localized formatting of chrono, basic-format-string.
-  // 202207 P2286R8 Formatting Ranges
-  // 202207 P2585R1 Improving default container formatting
-  // TODO: #define __cpp_lib_format_ranges 202207L
-  name = format;
   values = {
-    v = 202110;
+    v = 202207;
     cxxmin = 20;
     hosted = yes;
   };
@@ -1373,6 +1379,19 @@ ftms = {
     extra_cond = "__cpp_concepts >= 202002L";
   };
 };
+
+// ftms = {
+  // name = format_ranges;
+  // 202207 P2286R8 Formatting Ranges
+  // 202207 P2585R1 Improving default container formatting
+  // LWG3750 Too many papers bump __cpp_lib_format
+  // TODO: #define __cpp_lib_format_ranges 202207L
+  // values = {
+    // v = 202207;
+    // cxxmin = 23;
+    // hosted = yes;
+  // };
+// };
 
 ftms = {
   name = freestanding_algorithm;

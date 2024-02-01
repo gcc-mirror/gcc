@@ -109,7 +109,11 @@ GLIBCXX_3.4 {
       std::[j-k]*;
 #     std::length_error::l*;
 #     std::length_error::~l*;
-      std::locale::[A-Za-e]*;
+      # std::locale::[A-Za-d]*;
+      std::locale::all;
+      std::locale::classic*;
+      std::locale::collate;
+      std::locale::ctype;
       std::locale::facet::[A-Za-z]*;
       std::locale::facet::_S_get_c_locale*;
       std::locale::facet::_S_clone_c_locale*;
@@ -168,7 +172,7 @@ GLIBCXX_3.4 {
       std::strstream*;
       std::strstreambuf*;
 #     std::t[a-q]*;
-      std::t[a-g]*;
+      std::terminate*;
       std::th[a-h]*;
       std::th[j-q]*;
       std::th[s-z]*;
@@ -2527,6 +2531,16 @@ GLIBCXX_3.4.33 {
     # std::basic_file<char>::native_handle()
     _ZNKSt12__basic_fileIcE13native_handleEv;
 } GLIBCXX_3.4.32;
+
+# GCC 15.1.0
+GLIBCXX_3.4.34 {
+    # std::__format::__with_encoding_conversion
+    _ZNSt8__format26__with_encoding_conversionERKSt6locale;
+    # std::__format::__locale_encoding_to_utf8
+    _ZNSt8__format25__locale_encoding_to_utf8ERKSt6localeSt17basic_string_viewIcSt11char_traitsIcEEPv;
+    # __sso_string constructor and destructor
+    _ZNSt12__sso_string[CD][12]Ev;
+} GLIBCXX_3.4.33;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {

@@ -121,7 +121,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__20convenience_la_LIBADD =
-am__objects_1 = tzdb.lo
+am__objects_1 = tzdb.lo format.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = sstream-inst.lo
 @GLIBCXX_HOSTED_TRUE@am_libc__20convenience_la_OBJECTS =  \
 @GLIBCXX_HOSTED_TRUE@	$(am__objects_1) $(am__objects_2)
@@ -432,7 +432,7 @@ headers =
 @ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc
 
-sources = tzdb.cc
+sources = tzdb.cc format.cc
 @GLIBCXX_HOSTED_FALSE@libc__20convenience_la_SOURCES = 
 @GLIBCXX_HOSTED_TRUE@libc__20convenience_la_SOURCES = $(sources)  $(inst_sources)
 
@@ -754,6 +754,12 @@ vpath % $(top_srcdir)/src/c++20
 @USE_STATIC_TZDATA_TRUE@	$(LTCXXCOMPILE) -I. -c $<
 @USE_STATIC_TZDATA_TRUE@tzdb.o: tzdb.cc tzdata.zi.h
 @USE_STATIC_TZDATA_TRUE@	$(CXXCOMPILE) -I. -c $<
+
+# This needs access to std::text_encoding and to the internals of std::locale.
+format.lo: format.cc
+	$(LTCXXCOMPILE) -std=gnu++26 -fno-access-control -c $<
+format.o: format.cc
+	$(CXXCOMPILE) -std=gnu++26 -fno-access-control -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

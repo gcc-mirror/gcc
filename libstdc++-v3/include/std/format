@@ -2342,10 +2342,10 @@ namespace __format
 
 // _GLIBCXX_RESOLVE_LIB_DEFECTS
 // P2510R3 Formatting pointers
-#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
-#define _GLIBCXX_P2518R3 1
+#if __glibcxx_format >= 202304L || ! defined __STRICT_ANSI__
+# define _GLIBCXX_P2518R3 1
 #else
-#define _GLIBCXX_P2518R3 0
+# define _GLIBCXX_P2518R3 0
 #endif
 
 #if _GLIBCXX_P2518R3
@@ -3819,6 +3819,9 @@ namespace __format
     __do_vformat_to(_Out, basic_string_view<_CharT>,
 		    const basic_format_args<_Context>&,
 		    const locale* = nullptr);
+
+  template<typename _CharT> struct __formatter_chrono;
+
 } // namespace __format
 /// @endcond
 
@@ -3829,6 +3832,11 @@ namespace __format
    * this class template explicitly. For typical uses of `std::format` the
    * library will use the specializations `std::format_context` (for `char`)
    * and `std::wformat_context` (for `wchar_t`).
+   *
+   * You are not allowed to define partial or explicit specializations of
+   * this class template.
+   *
+   * @since C++20
    */
   template<typename _Out, typename _CharT>
     class basic_format_context
@@ -3860,6 +3868,8 @@ namespace __format
 	__format::__do_vformat_to(_Out2, basic_string_view<_CharT2>,
 				  const basic_format_args<_Context2>&,
 				  const locale*);
+
+      friend __format::__formatter_chrono<_CharT>;
 
     public:
       ~basic_format_context() = default;
