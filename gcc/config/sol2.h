@@ -255,7 +255,7 @@ along with GCC; see the file COPYING3.  If not see
   " %{!shared:libasan_preinit%O%s} \
     %{static-libasan:%{!shared: -Bstatic "\
     LD_WHOLE_ARCHIVE_OPTION " -lasan " LD_NO_WHOLE_ARCHIVE_OPTION \
-    "-Bdynamic}}%{!static-libasan:-lasan}"
+    " -Bdynamic}}%{!static-libasan:-z now -lasan}"
 
 /* Error out on -fsanitize=thread|leak.  */
 #define LIBTSAN_EARLY_SPEC "\
