@@ -3001,6 +3001,31 @@ pre_vsetvl::earliest_fuse_vsetvl_info (int iter)
 		      src_block_info.set_empty_info ();
 		      src_block_info.probability
 			= profile_probability::uninitialized ();
+		      /* See PR113696, we should reset immediate dominator to
+			 empty since we may uplift ineffective vsetvl which
+			 locate at low probability block.  */
+		      basic_block dom
+			= get_immediate_dominator (CDI_DOMINATORS, eg->src);
+		      auto &dom_block_info = get_block_info (dom);
+		      if (dom_block_info.has_info ()
+			  && !m_dem.compatible_p (
+			    dom_block_info.get_exit_info (), curr_info))
+			{
+			  dom_block_info.set_empty_info ();
+			  dom_block_info.probability
+			    = profile_probability::uninitialized ();
+			  if (dump_file && (dump_flags & TDF_DETAILS))
+			    {
+			      fprintf (dump_file,
+				       "      Reset dominator bb %u:",
+				       dom->index);
+			      prev_info.dump (dump_file, "        ");
+			      fprintf (dump_file,
+				       "	due to (same probability or no "
+				       "compatible reaching):");
+			      curr_info.dump (dump_file, "        ");
+			    }
+			}
 		      changed = true;
 		    }
 		  /* Choose the one with higher probability. */
