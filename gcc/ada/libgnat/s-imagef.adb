@@ -274,8 +274,15 @@ package body System.Image_F is
       --  Aft0 digits (unless V is zero). In both cases, we compute one more
       --  digit than requested so that Set_Decimal_Digits can round at Aft.
 
+      --  Aft0 is bounded by the 'Aft of a type with delta 1/2**(Int'Size - 1)
+      --  which is N = ceil ((Int'Siz - 1) * log2 / log10). Aft lies in the
+      --  range of type Field declared in Ada.Text_IO so is bounded by 255.
+      --  Thus A is bounded by 256 + ceil ((Int'Siz - 1) * log2 / log10).
+
       D : constant Integer :=
             Integer'Max (-Maxdigs, Integer'Min (A, Maxdigs - (For0 - 1)));
+      --  D lies in the range -Maxdigs .. A
+
       Y : constant Int     := Num * 10**Integer'Max (0, D);
       Z : constant Int     := Den * 10**Integer'Max (0, -D);
       --  See the description of the algorithm above
@@ -284,6 +291,8 @@ package body System.Image_F is
       --  Number of remaining digits to be computed after the first round. It
       --  is larger than A if the first round does not compute all the digits
       --  before the decimal point, i.e. (For0 - 1) larger than Maxdigs.
+
+      --  AF is bounded by 256 + Maxdigs + ceil ((Int'Siz - 1) * log2 / log10)
 
       N : constant Natural := 1 + (AF + Maxdigs - 1) / Maxdigs;
       --  Number of rounds of scaled divide to be performed

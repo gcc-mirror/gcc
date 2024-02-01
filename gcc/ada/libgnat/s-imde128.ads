@@ -39,8 +39,9 @@ with System.Image_D;
 package System.Img_Decimal_128 is
 
    subtype Int128 is Interfaces.Integer_128;
+   subtype Uns128 is Interfaces.Unsigned_128;
 
-   package Impl is new Image_D (Int128);
+   package Impl is new Image_D (Int128, Uns128);
 
    procedure Image_Decimal128
      (V     : Int128;

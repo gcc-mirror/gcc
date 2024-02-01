@@ -39,8 +39,9 @@ with System.Image_D;
 package System.Img_Decimal_64 is
 
    subtype Int64 is Interfaces.Integer_64;
+   subtype Uns64 is Interfaces.Unsigned_64;
 
-   package Impl is new Image_D (Int64);
+   package Impl is new Image_D (Int64, Uns64);
 
    procedure Image_Decimal64
      (V     : Int64;
