@@ -45,17 +45,20 @@
 	.arch	armv8-a+lse
 
 #define LSE128(NAME)	libat_##NAME##_i1
-#define LSE2(NAME)	libat_##NAME##_i2
+#define LSE(NAME)	libat_##NAME##_i1
+#define LSE2(NAME)	libat_##NAME##_i1
 #define CORE(NAME)	libat_##NAME
 #define ATOMIC(NAME)	__atomic_##NAME
+
+/* Emit __atomic_* entrypoints if no ifuncs.  */
+#define ENTRY_ALIASED(NAME)	ENTRY2 (CORE (NAME), ALIAS (NAME, ATOMIC, CORE))
 
 #if HAVE_IFUNC
 # define ENTRY(NAME)		ENTRY2 (CORE (NAME), )
 # define ENTRY_FEAT(NAME, FEAT) ENTRY2 (FEAT (NAME), )
 # define END_FEAT(NAME, FEAT)	END2 (FEAT (NAME))
 #else
-/* Emit __atomic_* entrypoints if no ifuncs.  */
-# define ENTRY(NAME)	ENTRY2 (CORE (NAME), ALIAS (NAME, ATOMIC, CORE))
+# define ENTRY(NAME)	ENTRY_ALIASED (NAME)
 #endif
 
 #define END(NAME)		END2 (CORE (NAME))
@@ -291,7 +294,7 @@ END (compare_exchange_16)
 
 
 #if HAVE_FEAT_LSE2
-ENTRY_FEAT (compare_exchange_16, LSE2)
+ENTRY_FEAT (compare_exchange_16, LSE)
 	ldp	exp0, exp1, [x1]
 	mov	tmp0, exp0
 	mov	tmp1, exp1
@@ -324,11 +327,11 @@ ENTRY_FEAT (compare_exchange_16, LSE2)
 	/* ACQ_REL/SEQ_CST.  */
 4:	caspal	exp0, exp1, in0, in1, [x0]
 	b	0b
-END_FEAT (compare_exchange_16, LSE2)
+END_FEAT (compare_exchange_16, LSE)
 #endif
 
 
-ENTRY (fetch_add_16)
+ENTRY_ALIASED (fetch_add_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -350,7 +353,7 @@ ENTRY (fetch_add_16)
 END (fetch_add_16)
 
 
-ENTRY (add_fetch_16)
+ENTRY_ALIASED (add_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -372,7 +375,7 @@ ENTRY (add_fetch_16)
 END (add_fetch_16)
 
 
-ENTRY (fetch_sub_16)
+ENTRY_ALIASED (fetch_sub_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -394,7 +397,7 @@ ENTRY (fetch_sub_16)
 END (fetch_sub_16)
 
 
-ENTRY (sub_fetch_16)
+ENTRY_ALIASED (sub_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -620,7 +623,7 @@ ENTRY_FEAT (and_fetch_16, LSE128)
 END_FEAT (and_fetch_16, LSE128)
 
 
-ENTRY (fetch_xor_16)
+ENTRY_ALIASED (fetch_xor_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -642,7 +645,7 @@ ENTRY (fetch_xor_16)
 END (fetch_xor_16)
 
 
-ENTRY (xor_fetch_16)
+ENTRY_ALIASED (xor_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -664,7 +667,7 @@ ENTRY (xor_fetch_16)
 END (xor_fetch_16)
 
 
-ENTRY (fetch_nand_16)
+ENTRY_ALIASED (fetch_nand_16)
 	mov	x5, x0
 	mvn	in0, in0
 	mvn	in1, in1
@@ -688,7 +691,7 @@ ENTRY (fetch_nand_16)
 END (fetch_nand_16)
 
 
-ENTRY (nand_fetch_16)
+ENTRY_ALIASED (nand_fetch_16)
 	mov	x5, x0
 	mvn	in0, in0
 	mvn	in1, in1
@@ -714,7 +717,7 @@ END (nand_fetch_16)
 
 /* __atomic_test_and_set is always inlined, so this entry is unused and
    only required for completeness.  */
-ENTRY (test_and_set_16)
+ENTRY_ALIASED (test_and_set_16)
 
 	/* RELAXED/ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
 	mov	x5, x0
@@ -724,39 +727,6 @@ ENTRY (test_and_set_16)
 	ret
 END (test_and_set_16)
 
-
-#if HAVE_IFUNC
-
-/* Alias entry points which are the same in LSE2 and LSE128.  */
-ALIAS (load_16, LSE128, LSE2)
-ALIAS (store_16, LSE128, LSE2)
-ALIAS (compare_exchange_16, LSE128, LSE2)
-ALIAS (fetch_add_16, LSE128, LSE2)
-ALIAS (add_fetch_16, LSE128, LSE2)
-ALIAS (fetch_sub_16, LSE128, LSE2)
-ALIAS (sub_fetch_16, LSE128, LSE2)
-ALIAS (fetch_xor_16, LSE128, LSE2)
-ALIAS (xor_fetch_16, LSE128, LSE2)
-ALIAS (fetch_nand_16, LSE128, LSE2)
-ALIAS (nand_fetch_16, LSE128, LSE2)
-ALIAS (test_and_set_16, LSE128, LSE2)
-
-/* Alias entry points which are the same in baseline and LSE2.  */
-ALIAS (exchange_16, LSE2, CORE)
-ALIAS (fetch_add_16, LSE2, CORE)
-ALIAS (add_fetch_16, LSE2, CORE)
-ALIAS (fetch_sub_16, LSE2, CORE)
-ALIAS (sub_fetch_16, LSE2, CORE)
-ALIAS (fetch_or_16, LSE2, CORE)
-ALIAS (or_fetch_16, LSE2, CORE)
-ALIAS (fetch_and_16, LSE2, CORE)
-ALIAS (and_fetch_16, LSE2, CORE)
-ALIAS (fetch_xor_16, LSE2, CORE)
-ALIAS (xor_fetch_16, LSE2, CORE)
-ALIAS (fetch_nand_16, LSE2, CORE)
-ALIAS (nand_fetch_16, LSE2, CORE)
-ALIAS (test_and_set_16, LSE2, CORE)
-#endif
 
 /* GNU_PROPERTY_AARCH64_* macros from elf.h for use in asm code.  */
 #define FEATURE_1_AND 0xc0000000

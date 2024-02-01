@@ -48,14 +48,35 @@ typedef struct __ifunc_arg_t {
 # define _IFUNC_ARG_HWCAP (1ULL << 62)
 #endif
 
-#if N == 16
-# define IFUNC_COND_1		(has_lse128 (hwcap, features))
-# define IFUNC_COND_2		(has_lse2 (hwcap, features))
-# define IFUNC_NCOND(N)	2
-#else
-# define IFUNC_COND_1		(hwcap & HWCAP_ATOMICS)
-# define IFUNC_NCOND(N)	1
+/* From the file which imported `host-config.h' we can ascertain which
+   architectural extension provides relevant atomic support.  From this,
+   we can proceed to tweak the ifunc selector behavior.  */
+#if defined (LAT_CAS_N)
+# define LSE_ATOP
+#elif defined (LAT_LOAD_N) || defined (LAT_STORE_N)
+# define LSE2_ATOP
+#elif defined (LAT_EXCH_N) || defined (LAT_FIOR_N) || defined (LAT_FAND_N)
+# define LSE128_ATOP
 #endif
+
+# if N == 16
+#  if defined (LSE_ATOP)
+#   define IFUNC_NCOND(N)	1
+#   define IFUNC_COND_1	(hwcap & HWCAP_ATOMICS)
+#  elif defined (LSE2_ATOP)
+#   define IFUNC_NCOND(N)	1
+#   define IFUNC_COND_1	(has_lse2 (hwcap, features))
+#  elif defined (LSE128_ATOP)
+#   define IFUNC_NCOND(N)	1
+#   define IFUNC_COND_1	(has_lse128 (hwcap, features))
+#  else
+#   define IFUNC_NCOND(N)	0
+#   define IFUNC_ALT		1
+#  endif
+# else
+#  define IFUNC_COND_1		(hwcap & HWCAP_ATOMICS)
+#  define IFUNC_NCOND(N)	1
+# endif
 
 #define MIDR_IMPLEMENTOR(midr)	(((midr) >> 24) & 255)
 #define MIDR_PARTNUM(midr)	(((midr) >> 4) & 0xfff)
