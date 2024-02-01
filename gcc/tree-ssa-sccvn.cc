@@ -7723,12 +7723,15 @@ rpo_elim::eliminate_avail (basic_block bb, tree op)
       if (SSA_NAME_IS_DEFAULT_DEF (valnum))
 	return valnum;
       vn_ssa_aux_t valnum_info = VN_INFO (valnum);
-      /* See above.  */
-      if (!valnum_info->visited)
-	return valnum;
       vn_avail *av = valnum_info->avail;
       if (!av)
-	return NULL_TREE;
+	{
+	  /* See above.  But when there's availability info prefer
+	     what we recorded there for example to preserve LC SSA.  */
+	  if (!valnum_info->visited)
+	    return valnum;
+	  return NULL_TREE;
+	}
       if (av->location == bb->index)
 	/* On tramp3d 90% of the cases are here.  */
 	return ssa_name (av->leader);
