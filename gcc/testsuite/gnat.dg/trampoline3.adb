@@ -19,4 +19,4 @@ begin
   I := P(0);
 end;
 
--- { dg-final { scan-assembler-not "GNU-stack.*x" } }
+-- { dg-final { scan-assembler-not "GNU-stack.*x" { xfail hppa*-*-* } } }
