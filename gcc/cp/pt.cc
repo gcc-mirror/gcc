@@ -22155,6 +22155,13 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
   DECL_TI_ARGS (fndecl) = targ_ptr;
+  if (VAR_P (pattern))
+    {
+      /* Remember if the variable was declared with [].  */
+      if (TREE_CODE (TREE_TYPE (fndecl)) == ARRAY_TYPE
+	  && TYPE_DOMAIN (TREE_TYPE (fndecl)) == NULL_TREE)
+	SET_VAR_HAD_UNKNOWN_BOUND (fndecl);
+    }
 
   set_instantiating_module (fndecl);
 
