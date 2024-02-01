@@ -2552,12 +2552,47 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
 
   if (TREE_CODE (rhs) == SSA_NAME)
     {
+      /* Use tree_non_zero_bits to see if this operand is zero_extended
+	 for unsigned widening multiplications or non-negative for
+	 signed widening multiplications.  */
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && (TYPE_PRECISION (type) & 1) == 0
+	  && int_mode_for_size (TYPE_PRECISION (type) / 2, 1).exists ())
+	{
+	  unsigned int prec = TYPE_PRECISION (type);
+	  unsigned int hprec = prec / 2;
+	  wide_int bits = wide_int::from (tree_nonzero_bits (rhs), prec,
+					  TYPE_SIGN (TREE_TYPE (rhs)));
+	  if (TYPE_UNSIGNED (type)
+	      && wi::bit_and (bits, wi::mask (hprec, true, prec)) == 0)
+	    {
+	      *type_out = build_nonstandard_integer_type (hprec, true);
+	      /* X & MODE_MASK can be simplified to (T)X.  */
+	      stmt = SSA_NAME_DEF_STMT (rhs);
+	      if (is_gimple_assign (stmt)
+		  && gimple_assign_rhs_code (stmt) == BIT_AND_EXPR
+		  && TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
+		  && wi::to_wide (gimple_assign_rhs2 (stmt))
+		     == wi::mask (hprec, false, prec))
+		*new_rhs_out = gimple_assign_rhs1 (stmt);
+	      else
+		*new_rhs_out = rhs;
+	      return true;
+	    }
+	  else if (!TYPE_UNSIGNED (type)
+		   && wi::bit_and (bits, wi::mask (hprec - 1, true, prec)) == 0)
+	    {
+	      *type_out = build_nonstandard_integer_type (hprec, false);
+	      *new_rhs_out = rhs;
+	      return true;
+	    }
+	}
+
       stmt = SSA_NAME_DEF_STMT (rhs);
       if (is_gimple_assign (stmt))
 	{
-	  if (! widening_mult_conversion_strippable_p (type, stmt))
-	    rhs1 = rhs;
-	  else
+
+	  if (widening_mult_conversion_strippable_p (type, stmt))
 	    {
 	      rhs1 = gimple_assign_rhs1 (stmt);
 
@@ -2568,6 +2603,8 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
 		  return true;
 		}
 	    }
+	  else
+	    rhs1 = rhs;
 	}
       else
 	rhs1 = rhs;
@@ -2827,12 +2864,16 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
   if (2 * actual_precision > TYPE_PRECISION (type))
     return false;
   if (actual_precision != TYPE_PRECISION (type1)
-      || from_unsigned1 != TYPE_UNSIGNED (type1))
+      || from_unsigned1 != TYPE_UNSIGNED (type1)
+      || (TREE_TYPE (rhs1) != type1
+	  && TREE_CODE (rhs1) != INTEGER_CST))
     rhs1 = build_and_insert_cast (gsi, loc,
 				  build_nonstandard_integer_type
 				    (actual_precision, from_unsigned1), rhs1);
   if (actual_precision != TYPE_PRECISION (type2)
-      || from_unsigned2 != TYPE_UNSIGNED (type2))
+      || from_unsigned2 != TYPE_UNSIGNED (type2)
+      || (TREE_TYPE (rhs2) != type2
+	  && TREE_CODE (rhs2) != INTEGER_CST))
     rhs2 = build_and_insert_cast (gsi, loc,
 				  build_nonstandard_integer_type
 				    (actual_precision, from_unsigned2), rhs2);
@@ -3046,7 +3087,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
       || from_unsigned1 != TYPE_UNSIGNED (type1))
     mult_rhs1 = build_and_insert_cast (gsi, loc,
 				       build_nonstandard_integer_type
-				         (actual_precision, from_unsigned1),
+					 (actual_precision, from_unsigned1),
 				       mult_rhs1);
   if (actual_precision != TYPE_PRECISION (type2)
       || from_unsigned2 != TYPE_UNSIGNED (type2))
