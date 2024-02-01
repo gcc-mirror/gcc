@@ -30091,11 +30091,18 @@ These command-line options are defined for PRU target:
 @table @gcctabopt
 @opindex minrt
 @item -minrt
-Link with a minimum runtime environment, with no support for static
-initializers and constructors.  Using this option can significantly reduce
-the size of the final ELF binary.  Beware that the compiler could still
-generate code with static initializers and constructors.  It is up to the
-programmer to ensure that the source program will not use those features.
+Link with a minimum runtime environment.  This can significantly reduce
+the size of the final ELF binary, but some standard C runtime features
+are removed.
+
+This option disables support for static initializers and constructors.
+Beware that the compiler could still generate code with static initializers
+and constructors.  It is up to the programmer to ensure that the source
+program will not use those features.
+
+The minimal startup code would not pass @code{argc} and @code{argv} arguments
+to @code{main}, so the latter must be declared as @code{int main (void)}.
+This is already the norm for most firmware projects.
 
 @opindex mmcu
 @item -mmcu=@var{mcu}
