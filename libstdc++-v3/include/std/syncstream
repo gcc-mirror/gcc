@@ -286,7 +286,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~basic_osyncstream() = default;
 
-      basic_osyncstream& operator=(basic_osyncstream&&) noexcept = default;
+      basic_osyncstream& operator=(basic_osyncstream&&) = default;
 
       syncbuf_type* rdbuf() const noexcept
       { return const_cast<syncbuf_type*>(&_M_syncbuf); }
