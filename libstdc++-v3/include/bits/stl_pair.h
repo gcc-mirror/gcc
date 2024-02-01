@@ -406,6 +406,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _U1, typename _U2>
 	static constexpr bool
+	_S_const_assignable()
+	{
+	  if constexpr (is_assignable_v<const _T1&, _U1>)
+	    return is_assignable_v<const _T2&, _U2>;
+	  return false;
+	}
+
+      template<typename _U1, typename _U2>
+	static constexpr bool
 	_S_nothrow_assignable()
 	{
 	  if constexpr (is_nothrow_assignable_v<_T1&, _U1>)
@@ -468,8 +477,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Copy assignment operator (const)
       constexpr const pair&
       operator=(const pair& __p) const
-      requires is_copy_assignable_v<const first_type>
-	&& is_copy_assignable_v<const second_type>
+      requires (_S_const_assignable<const first_type&, const second_type&>())
       {
 	first = __p.first;
 	second = __p.second;
@@ -479,8 +487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Move assignment operator (const)
       constexpr const pair&
       operator=(pair&& __p) const
-      requires is_assignable_v<const first_type&, first_type>
-	&& is_assignable_v<const second_type&, second_type>
+      requires (_S_const_assignable<first_type, second_type>())
       {
 	first = std::forward<first_type>(__p.first);
 	second = std::forward<second_type>(__p.second);
@@ -491,8 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _U1, typename _U2>
 	constexpr const pair&
 	operator=(const pair<_U1, _U2>& __p) const
-	requires is_assignable_v<const first_type&, const _U1&>
-	  && is_assignable_v<const second_type&, const _U2&>
+	requires (_S_const_assignable<const _U1&, const _U2&>())
 	{
 	  first = __p.first;
 	  second = __p.second;
@@ -503,8 +509,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _U1, typename _U2>
 	constexpr const pair&
 	operator=(pair<_U1, _U2>&& __p) const
-	requires is_assignable_v<const first_type&, _U1>
-	  && is_assignable_v<const second_type&, _U2>
+	requires (_S_const_assignable<_U1, _U2>())
 	{
 	  first = std::forward<_U1>(__p.first);
 	  second = std::forward<_U2>(__p.second);
