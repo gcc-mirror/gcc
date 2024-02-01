@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mtune-ctrl=^prologue_using_move,^epilogue_using_move" } */
+/* { dg-options "-O2 -mtune-ctrl=^prologue_using_move,^epilogue_using_move -fomit-frame-pointer" } */
 
 extern int bar (int) __attribute__ ((no_caller_saved_registers))
 #ifndef __x86_64__
