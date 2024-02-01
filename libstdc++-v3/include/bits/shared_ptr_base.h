@@ -1666,6 +1666,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_ptr; }
 
       /// Return true if the stored pointer is not null.
+#if __cplusplus >= 202002L
+      [[__gnu__::__always_inline__]]
+#endif
       explicit operator bool() const noexcept
       { return _M_ptr != nullptr; }
 
