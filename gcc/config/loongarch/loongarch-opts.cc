@@ -53,8 +53,6 @@ static const int tm_multilib_list[] = { TM_MULTILIB_LIST };
 static int enabled_abi_types[N_ABI_BASE_TYPES][N_ABI_EXT_TYPES] = { 0 };
 
 #define isa_required(ABI) (abi_minimal_isa[(ABI).base][(ABI).ext])
-extern "C" const struct loongarch_isa
-abi_minimal_isa[N_ABI_BASE_TYPES][N_ABI_EXT_TYPES];
 
 static inline int
 is_multilib_enabled (struct loongarch_abi abi)
