@@ -1983,4 +1983,14 @@
 #endif /* !defined(__cpp_lib_generator) && defined(__glibcxx_want_generator) */
 #undef __glibcxx_want_generator
 
+#if !defined(__cpp_lib_tuple_like)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_tuple_like 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_tuple_like)
+#   define __cpp_lib_tuple_like 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_tuple_like) && defined(__glibcxx_want_tuple_like) */
+#undef __glibcxx_want_tuple_like
+
 #undef __glibcxx_want_all

@@ -50,6 +50,7 @@
 #define __glibcxx_want_apply
 #define __glibcxx_want_make_from_tuple
 #define __glibcxx_want_ranges_zip
+#define __glibcxx_want_tuple_like
 #include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -246,6 +247,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Head _M_head_impl;
     };
 
+#if __cpp_lib_tuple_like // >= C++23
+  struct __tuple_like_tag_t { explicit __tuple_like_tag_t() = default; };
+
+  // These forward declarations are used by the operator<=> overload for
+  // tuple-like types.
+  template<typename _Cat, typename _Tp, typename _Up>
+    constexpr _Cat
+    __tuple_cmp(const _Tp&, const _Up&, index_sequence<>);
+
+  template<typename _Cat, typename _Tp, typename _Up,
+	   size_t _Idx0, size_t... _Idxs>
+    constexpr _Cat
+    __tuple_cmp(const _Tp& __t, const _Up& __u,
+		index_sequence<_Idx0, _Idxs...>);
+#endif // C++23
+
   /**
    * Contains the actual implementation of the @c tuple template, stored
    * as a recursive inheritance hierarchy from the first element (most
@@ -342,6 +359,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 #endif // C++23
 
+#if __cpp_lib_tuple_like // >= C++23
+      template<typename _UTuple, size_t... _Is>
+	constexpr
+	_Tuple_impl(__tuple_like_tag_t, _UTuple&& __u, index_sequence<_Is...>)
+	: _Tuple_impl(std::get<_Is>(std::forward<_UTuple>(__u))...)
+	{ }
+#endif // C++23
+
       template<typename _Alloc>
 	_GLIBCXX20_CONSTEXPR
 	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a)
@@ -428,6 +453,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 #endif // C++23
 
+#if __cpp_lib_tuple_like // >= C++23
+      template<typename _Alloc, typename _UTuple, size_t... _Is>
+	constexpr
+	_Tuple_impl(__tuple_like_tag_t, allocator_arg_t __tag, const _Alloc& __a,
+		    _UTuple&& __u, index_sequence<_Is...>)
+	: _Tuple_impl(__tag, __a, std::get<_Is>(std::forward<_UTuple>(__u))...)
+	{ }
+#endif // C++23
+
       template<typename... _UElements>
 	_GLIBCXX20_CONSTEXPR
 	void
@@ -467,6 +501,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    (_Tuple_impl<_Idx, _UHead, _UTails...>::_M_head(__in));
 	  _M_tail(*this)._M_assign(
 	      std::move(_Tuple_impl<_Idx, _UHead, _UTails...>::_M_tail(__in)));
+	}
+#endif // C++23
+
+#if __cpp_lib_tuple_like // >= C++23
+      template<typename _UTuple>
+	constexpr void
+	_M_assign(__tuple_like_tag_t __tag, _UTuple&& __u)
+	{
+	  _M_head(*this) = std::get<_Idx>(std::forward<_UTuple>(__u));
+	  _M_tail(*this)._M_assign(__tag, std::forward<_UTuple>(__u));
+	}
+
+      template<typename _UTuple>
+	constexpr void
+	_M_assign(__tuple_like_tag_t __tag, _UTuple&& __u) const
+	{
+	  _M_head(*this) = std::get<_Idx>(std::forward<_UTuple>(__u));
+	  _M_tail(*this)._M_assign(__tag, std::forward<_UTuple>(__u));
 	}
 #endif // C++23
 
@@ -563,6 +615,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 #endif // C++23
 
+#if __cpp_lib_tuple_like // >= C++23
+      template<typename _UTuple>
+	constexpr
+	_Tuple_impl(__tuple_like_tag_t, _UTuple&& __u, index_sequence<0>)
+	: _Tuple_impl(std::get<0>(std::forward<_UTuple>(__u)))
+	{ }
+#endif // C++23
+
       template<typename _Alloc>
 	_GLIBCXX20_CONSTEXPR
 	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a)
@@ -633,6 +693,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 #endif // C++23
 
+#if __cpp_lib_tuple_like // >= C++23
+      template<typename _Alloc, typename _UTuple>
+	constexpr
+	_Tuple_impl(__tuple_like_tag_t, allocator_arg_t __tag, const _Alloc& __a,
+		    _UTuple&& __u, index_sequence<0>)
+	: _Tuple_impl(__tag, __a, std::get<0>(std::forward<_UTuple>(__u)))
+	{ }
+#endif // C++23
+
       template<typename _UHead>
 	_GLIBCXX20_CONSTEXPR
 	void
@@ -665,6 +734,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_head(*this)
 	    = std::forward<_UHead>(_Tuple_impl<_Idx, _UHead>::_M_head(__in));
 	}
+#endif // C++23
+
+#if __cpp_lib_tuple_like // >= C++23
+    template<typename _UTuple>
+      constexpr void
+      _M_assign(__tuple_like_tag_t, _UTuple&& __u)
+      { _M_head(*this) = std::get<_Idx>(std::forward<_UTuple>(__u)); }
+
+    template<typename _UTuple>
+      constexpr void
+      _M_assign(__tuple_like_tag_t, _UTuple&& __u) const
+      { _M_head(*this) = std::get<_Idx>(std::forward<_UTuple>(__u)); }
 #endif // C++23
 
     protected:
@@ -846,6 +927,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	}
 
+#if __cpp_lib_tuple_like // >= C++23
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4045. tuple can create dangling references from tuple-like
+      template<typename _UTuple>
+	static consteval bool
+	__dangles_from_tuple_like()
+	{
+	  return []<size_t... _Is>(index_sequence<_Is...>) {
+	    return __dangles<decltype(std::get<_Is>(std::declval<_UTuple>()))...>();
+	  }(index_sequence_for<_Elements...>{});
+	}
+
+      template<typename _UTuple>
+	static consteval bool
+	__constructible_from_tuple_like()
+	{
+	  return []<size_t... _Is>(index_sequence<_Is...>) {
+	    return __constructible<decltype(std::get<_Is>(std::declval<_UTuple>()))...>();
+	  }(index_sequence_for<_Elements...>{});
+	}
+
+      template<typename _UTuple>
+	static consteval bool
+	__convertible_from_tuple_like()
+	{
+	  return []<size_t... _Is>(index_sequence<_Is...>) {
+	    return __convertible<decltype(std::get<_Is>(std::declval<_UTuple>()))...>();
+	  }(index_sequence_for<_Elements...>{});
+	}
+#endif // C++23
+
     public:
       constexpr
       explicit(!(__is_implicitly_default_constructible_v<_Elements> && ...))
@@ -1016,10 +1128,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	tuple(const pair<_U1, _U2>&&) = delete;
 #endif // C++23
 
-#if 0 && __cpp_lib_tuple_like // >= C++23
-      template<__tuple_like _UTuple>
-	constexpr explicit(...)
-	tuple(_UTuple&& __u);
+#if __cpp_lib_tuple_like // >= C++23
+      template<__eligible_tuple_like<tuple> _UTuple>
+	requires (__constructible_from_tuple_like<_UTuple>())
+	  && (!__use_other_ctor<_UTuple>())
+	  && (!__dangles_from_tuple_like<_UTuple>())
+	constexpr explicit(!__convertible_from_tuple_like<_UTuple>())
+	tuple(_UTuple&& __u)
+	: _Inherited(__tuple_like_tag_t{},
+		     std::forward<_UTuple>(__u),
+		     index_sequence_for<_Elements...>{})
+	{ }
+
+      template<__eligible_tuple_like<tuple> _UTuple>
+	requires (__constructible_from_tuple_like<_UTuple>())
+	  && (!__use_other_ctor<_UTuple>())
+	  && (__dangles_from_tuple_like<_UTuple>())
+	tuple(_UTuple&&) = delete;
 #endif // C++23
 
       // Allocator-extended constructors.
@@ -1202,10 +1327,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	tuple(allocator_arg_t, const _Alloc&, const pair<_U1, _U2>&&) = delete;
 #endif // C++23
 
-#if 0 && __cpp_lib_tuple_like // >= C++23
-      template<typename _Alloc, __tuple_like _UTuple>
-	constexpr explicit(...)
-	tuple(allocator_arg_t __tag, const _Alloc& __a, _UTuple&& __u);
+#if __cpp_lib_tuple_like // >= C++23
+      template<typename _Alloc, __eligible_tuple_like<tuple> _UTuple>
+	requires (__constructible_from_tuple_like<_UTuple>())
+	  && (!__use_other_ctor<_UTuple>())
+	  && (!__dangles_from_tuple_like<_UTuple>())
+	constexpr explicit(!__convertible_from_tuple_like<_UTuple>())
+	tuple(allocator_arg_t __tag, const _Alloc& __a, _UTuple&& __u)
+	: _Inherited(__tuple_like_tag_t{},
+		     __tag, __a, std::forward<_UTuple>(__u),
+		     index_sequence_for<_Elements...>{})
+	{ }
+
+      template<typename _Alloc, __eligible_tuple_like<tuple> _UTuple>
+	requires (__constructible_from_tuple_like<_UTuple>())
+	  && (!__use_other_ctor<_UTuple>())
+	  && (__dangles_from_tuple_like<_UTuple>())
+	tuple(allocator_arg_t, const _Alloc&, _UTuple&&) = delete;
 #endif // C++23
 
 #else // !(concepts && conditional_explicit)
@@ -1539,6 +1677,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #endif // C++23
 
+#if __cpp_lib_tuple_like // >= C++23
+      template<typename _UTuple>
+	static consteval bool
+	__assignable_from_tuple_like()
+	{
+	  return []<size_t... _Is>(index_sequence<_Is...>) {
+	    return __assignable<decltype(std::get<_Is>(std::declval<_UTuple>()))...>();
+	  }(index_sequence_for<_Elements...>{});
+	}
+
+      template<typename _UTuple>
+	static consteval bool
+	__const_assignable_from_tuple_like()
+	{
+	  return []<size_t... _Is>(index_sequence<_Is...>) {
+	    return __const_assignable<decltype(std::get<_Is>(std::declval<_UTuple>()))...>();
+	  }(index_sequence_for<_Elements...>{});
+	}
+#endif // C++23
+
     public:
 
       tuple& operator=(const tuple& __u) = delete;
@@ -1661,14 +1819,59 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #endif // C++23
 
-#if 0 && __cpp_lib_tuple_like // >= C++23
-      template<__tuple_like _UTuple>
+#if __cpp_lib_tuple_like // >= C++23
+      template<__eligible_tuple_like<tuple> _UTuple>
+	requires (__assignable_from_tuple_like<_UTuple>())
 	constexpr tuple&
-	operator=(_UTuple&& __u);
+	operator=(_UTuple&& __u)
+	{
+	  this->_M_assign(__tuple_like_tag_t{}, std::forward<_UTuple>(__u));
+	  return *this;
+	}
+
+      template<__eligible_tuple_like<tuple> _UTuple>
+	requires (__const_assignable_from_tuple_like<_UTuple>())
+	constexpr const tuple&
+	operator=(_UTuple&& __u) const
+	{
+	  this->_M_assign(__tuple_like_tag_t{}, std::forward<_UTuple>(__u));
+	  return *this;
+	}
 
       template<__tuple_like _UTuple>
-	constexpr tuple&
-	operator=(_UTuple&& __u) const;
+	requires (!__is_tuple_v<_UTuple>)
+	friend constexpr bool
+	operator==(const tuple& __t, const _UTuple& __u)
+	{
+	  static_assert(sizeof...(_Elements) == tuple_size_v<_UTuple>,
+	      "tuple objects can only be compared if they have equal sizes.");
+	  return [&]<size_t... _Is>(index_sequence<_Is...>) {
+	    return (bool(std::get<_Is>(__t) == std::get<_Is>(__u))
+		    && ...);
+	  }(index_sequence_for<_Elements...>{});
+	}
+
+      template<__tuple_like _UTuple,
+	       typename = make_index_sequence<tuple_size_v<_UTuple>>>
+	struct __tuple_like_common_comparison_category;
+
+      template<__tuple_like _UTuple, size_t... _Is>
+	requires requires
+	  { typename void_t<__detail::__synth3way_t<_Elements, tuple_element_t<_Is, _UTuple>>...>; }
+	struct __tuple_like_common_comparison_category<_UTuple, index_sequence<_Is...>>
+	{
+	  using type = common_comparison_category_t
+	    <__detail::__synth3way_t<_Elements, tuple_element_t<_Is, _UTuple>>...>;
+	};
+
+      template<__tuple_like _UTuple>
+	requires (!__is_tuple_v<_UTuple>)
+	friend constexpr typename __tuple_like_common_comparison_category<_UTuple>::type
+	operator<=>(const tuple& __t, const _UTuple& __u)
+	{
+	  using _Cat = typename __tuple_like_common_comparison_category<_UTuple>::type;
+	  return std::__tuple_cmp<_Cat>(__t, __u, index_sequence_for<_Elements...>());
+	}
 #endif // C++23
 
 #else // ! (concepts && consteval)
@@ -2433,27 +2636,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
-  // Declarations of std::array and its std::get overloads, so that
-  // std::tuple_cat can use them if <tuple> is included before <array>.
-
-  template<typename _Tp, size_t _Nm> struct array;
-
-  template<size_t _Int, typename _Tp, size_t _Nm>
-    constexpr _Tp&
-    get(array<_Tp, _Nm>&) noexcept;
-
-  template<size_t _Int, typename _Tp, size_t _Nm>
-    constexpr _Tp&&
-    get(array<_Tp, _Nm>&&) noexcept;
-
-  template<size_t _Int, typename _Tp, size_t _Nm>
-    constexpr const _Tp&
-    get(const array<_Tp, _Nm>&) noexcept;
-
-  template<size_t _Int, typename _Tp, size_t _Nm>
-    constexpr const _Tp&&
-    get(const array<_Tp, _Nm>&&) noexcept;
-
   /// @cond undocumented
   template<size_t, typename, typename, size_t>
     struct __make_tuple_impl;
@@ -2569,8 +2751,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @endcond
 
   /// Create a `tuple` containing all elements from multiple tuple-like objects
+#if __cpp_lib_tuple_like // >= C++23
+  template<__tuple_like... _Tpls>
+#else
   template<typename... _Tpls, typename = typename
            enable_if<__and_<__is_tuple_like<_Tpls>...>::value>::type>
+#endif
     constexpr auto
     tuple_cat(_Tpls&&... __tpls)
     -> typename __tuple_cat_result<_Tpls...>::__type
@@ -2722,7 +2908,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   std::get<_Idx>(std::forward<_Tuple>(__t))...);
     }
 
+#if __cpp_lib_tuple_like // >= C++23
+  template <typename _Fn, __tuple_like _Tuple>
+#else
   template <typename _Fn, typename _Tuple>
+#endif
     constexpr decltype(auto)
     apply(_Fn&& __f, _Tuple&& __t)
     noexcept(__unpack_std_tuple<is_nothrow_invocable, _Fn, _Tuple>)
@@ -2741,7 +2931,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __make_from_tuple_impl(_Tuple&& __t, index_sequence<_Idx...>)
     { return _Tp(std::get<_Idx>(std::forward<_Tuple>(__t))...); }
 
+#if __cpp_lib_tuple_like // >= C++23
+  template <typename _Tp, __tuple_like _Tuple>
+#else
   template <typename _Tp, typename _Tuple>
+#endif
     constexpr _Tp
     make_from_tuple(_Tuple&& __t)
     noexcept(__unpack_std_tuple<is_nothrow_constructible, _Tp, _Tuple>)
@@ -2759,17 +2953,60 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
-#if __cpp_lib_ranges_zip // >= C++23
-  template<typename... _TTypes, typename... _UTypes,
-	   template<typename> class _TQual, template<typename> class _UQual>
-    requires requires { typename tuple<common_reference_t<_TQual<_TTypes>, _UQual<_UTypes>>...>; }
-  struct basic_common_reference<tuple<_TTypes...>, tuple<_UTypes...>, _TQual, _UQual>
-  { using type = tuple<common_reference_t<_TQual<_TTypes>, _UQual<_UTypes>>...>; };
+#if __cpp_lib_tuple_like // >= C++23
+  template<__tuple_like _TTuple, __tuple_like _UTuple,
+	   template<typename> class _TQual, template<typename> class _UQual,
+	   typename = make_index_sequence<tuple_size_v<_TTuple>>>
+  struct __tuple_like_common_reference;
 
-  template<typename... _TTypes, typename... _UTypes>
-    requires requires { typename tuple<common_type_t<_TTypes, _UTypes>...>; }
-  struct common_type<tuple<_TTypes...>, tuple<_UTypes...>>
-  { using type = tuple<common_type_t<_TTypes, _UTypes>...>; };
+  template<__tuple_like _TTuple, __tuple_like _UTuple,
+	   template<typename> class _TQual, template<typename> class _UQual,
+	   size_t... _Is>
+    requires requires
+      { typename tuple<common_reference_t<_TQual<tuple_element_t<_Is, _TTuple>>,
+					  _UQual<tuple_element_t<_Is, _UTuple>>>...>; }
+  struct __tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual, index_sequence<_Is...>>
+  {
+    using type = tuple<common_reference_t<_TQual<tuple_element_t<_Is, _TTuple>>,
+					  _UQual<tuple_element_t<_Is, _UTuple>>>...>;
+  };
+
+  template<__tuple_like _TTuple, __tuple_like _UTuple,
+	   template<typename> class _TQual, template<typename> class _UQual>
+    requires (__is_tuple_v<_TTuple> || __is_tuple_v<_UTuple>)
+      && is_same_v<_TTuple, decay_t<_TTuple>>
+      && is_same_v<_UTuple, decay_t<_UTuple>>
+      && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>)
+      && requires { typename __tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type; }
+  struct basic_common_reference<_TTuple, _UTuple, _TQual, _UQual>
+  {
+    using type = typename __tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
+  };
+
+  template<__tuple_like _TTuple, __tuple_like _UTuple,
+	   typename = make_index_sequence<tuple_size_v<_TTuple>>>
+  struct __tuple_like_common_type;
+
+  template<__tuple_like _TTuple, __tuple_like _UTuple, size_t... _Is>
+    requires requires
+      { typename tuple<common_type_t<tuple_element_t<_Is, _TTuple>,
+				   tuple_element_t<_Is, _UTuple>>...>; }
+  struct __tuple_like_common_type<_TTuple, _UTuple, index_sequence<_Is...>>
+  {
+    using type = tuple<common_type_t<tuple_element_t<_Is, _TTuple>,
+				     tuple_element_t<_Is, _UTuple>>...>;
+  };
+
+  template<__tuple_like _TTuple, __tuple_like _UTuple>
+    requires (__is_tuple_v<_TTuple> || __is_tuple_v<_UTuple>)
+      && is_same_v<_TTuple, decay_t<_TTuple>>
+      && is_same_v<_UTuple, decay_t<_UTuple>>
+      && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>)
+      && requires { typename __tuple_like_common_type<_TTuple, _UTuple>::type; }
+  struct common_type<_TTuple, _UTuple>
+  {
+    using type = typename __tuple_like_common_type<_TTuple, _UTuple>::type;
+  };
 #endif // C++23
 
   /// @}

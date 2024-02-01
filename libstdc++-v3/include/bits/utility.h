@@ -266,6 +266,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
+#if __glibcxx_ranges
+  namespace ranges::__detail
+  {
+    template<typename _Range>
+      inline constexpr bool __is_subrange = false;
+  } // namespace __detail
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

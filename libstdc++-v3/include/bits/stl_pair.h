@@ -85,11 +85,69 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @cond undocumented
 
   // Forward declarations.
+  template<typename _T1, typename _T2>
+    struct pair;
+
   template<typename...>
     class tuple;
 
+  // Declarations of std::array and its std::get overloads, so that
+  // std::tuple_cat can use them if <tuple> is included before <array>.
+  // We also declare the other std::get overloads here so that they're
+  // visible to the P2165R4 tuple-like constructors of pair and tuple.
+  template<typename _Tp, size_t _Nm>
+    struct array;
+
   template<size_t...>
     struct _Index_tuple;
+
+  template<size_t _Int, class _Tp1, class _Tp2>
+    constexpr typename tuple_element<_Int, pair<_Tp1, _Tp2>>::type&
+    get(pair<_Tp1, _Tp2>& __in) noexcept;
+
+  template<size_t _Int, class _Tp1, class _Tp2>
+    constexpr typename tuple_element<_Int, pair<_Tp1, _Tp2>>::type&&
+    get(pair<_Tp1, _Tp2>&& __in) noexcept;
+
+  template<size_t _Int, class _Tp1, class _Tp2>
+    constexpr const typename tuple_element<_Int, pair<_Tp1, _Tp2>>::type&
+    get(const pair<_Tp1, _Tp2>& __in) noexcept;
+
+  template<size_t _Int, class _Tp1, class _Tp2>
+    constexpr const typename tuple_element<_Int, pair<_Tp1, _Tp2>>::type&&
+    get(const pair<_Tp1, _Tp2>&& __in) noexcept;
+
+  template<size_t __i, typename... _Elements>
+    constexpr __tuple_element_t<__i, tuple<_Elements...>>&
+    get(tuple<_Elements...>& __t) noexcept;
+
+  template<size_t __i, typename... _Elements>
+    constexpr const __tuple_element_t<__i, tuple<_Elements...>>&
+    get(const tuple<_Elements...>& __t) noexcept;
+
+  template<size_t __i, typename... _Elements>
+    constexpr __tuple_element_t<__i, tuple<_Elements...>>&&
+    get(tuple<_Elements...>&& __t) noexcept;
+
+  template<size_t __i, typename... _Elements>
+    constexpr const __tuple_element_t<__i, tuple<_Elements...>>&&
+    get(const tuple<_Elements...>&& __t) noexcept;
+
+  template<size_t _Int, typename _Tp, size_t _Nm>
+    constexpr _Tp&
+    get(array<_Tp, _Nm>&) noexcept;
+
+  template<size_t _Int, typename _Tp, size_t _Nm>
+    constexpr _Tp&&
+    get(array<_Tp, _Nm>&&) noexcept;
+
+  template<size_t _Int, typename _Tp, size_t _Nm>
+    constexpr const _Tp&
+    get(const array<_Tp, _Nm>&) noexcept;
+
+  template<size_t _Int, typename _Tp, size_t _Nm>
+    constexpr const _Tp&&
+    get(const array<_Tp, _Nm>&&) noexcept;
 
 #if ! __cpp_lib_concepts
   // Concept utility functions, reused in conditionally-explicit
@@ -158,6 +216,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #endif // lib concepts
 #endif // C++11
+
+#if __glibcxx_tuple_like // >= C++23
+  template<typename _Tp>
+    inline constexpr bool __is_tuple_v = false;
+
+  template<typename... _Ts>
+    inline constexpr bool __is_tuple_v<tuple<_Ts...>> = true;
+
+  // TODO: Reuse __is_tuple_like from <type_traits>?
+  template<typename _Tp>
+    inline constexpr bool __is_tuple_like_v = false;
+
+  template<typename... _Elements>
+    inline constexpr bool __is_tuple_like_v<tuple<_Elements...>> = true;
+
+  template<typename _T1, typename _T2>
+    inline constexpr bool __is_tuple_like_v<pair<_T1, _T2>> = true;
+
+  template<typename _Tp, size_t _Nm>
+    inline constexpr bool __is_tuple_like_v<array<_Tp, _Nm>> = true;
+
+  // __is_tuple_like_v<subrange> is defined in <bits/ranges_util.h>.
+
+  template<typename _Tp>
+    concept __tuple_like = __is_tuple_like_v<remove_cvref_t<_Tp>>;
+
+  template<typename _Tp>
+    concept __pair_like = __tuple_like<_Tp> && tuple_size_v<remove_cvref_t<_Tp>> == 2;
+
+  template<typename _Tp, typename _Tuple>
+    concept __eligible_tuple_like
+      = __detail::__different_from<_Tp, _Tuple> && __tuple_like<_Tp>
+	&& (tuple_size_v<remove_cvref_t<_Tp>> == tuple_size_v<_Tuple>)
+	&& !ranges::__detail::__is_subrange<remove_cvref_t<_Tp>>;
+
+  template<typename _Tp, typename _Pair>
+    concept __eligible_pair_like
+      = __detail::__different_from<_Tp, _Pair> && __pair_like<_Tp>
+	&& !ranges::__detail::__is_subrange<remove_cvref_t<_Tp>>;
+#endif // C++23
 
   template<typename _U1, typename _U2> class __pair_base
   {
@@ -295,6 +393,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
 #endif
 	}
+
+#if __glibcxx_tuple_like // >= C++23
+      template<typename _UPair>
+	static constexpr bool
+	_S_constructible_from_pair_like()
+	{
+	  return _S_constructible<decltype(std::get<0>(std::declval<_UPair>())),
+				  decltype(std::get<1>(std::declval<_UPair>()))>();
+	}
+
+      template<typename _UPair>
+	static constexpr bool
+	_S_convertible_from_pair_like()
+	{
+	  return _S_convertible<decltype(std::get<0>(std::declval<_UPair>())),
+				decltype(std::get<1>(std::declval<_UPair>()))>();
+	}
+
+      template<typename _UPair>
+	static constexpr bool
+	_S_dangles_from_pair_like()
+	{
+	  return _S_dangles<decltype(std::get<0>(std::declval<_UPair>())),
+			    decltype(std::get<1>(std::declval<_UPair>()))>();
+	}
+#endif // C++23
       /// @endcond
 
     public:
@@ -393,6 +517,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	pair(const pair<_U1, _U2>&&) = delete;
 #endif // C++23
 
+#if __glibcxx_tuple_like // >= C++23
+      template<__eligible_pair_like<pair> _UPair>
+	requires (_S_constructible_from_pair_like<_UPair>())
+	  && (!_S_dangles_from_pair_like<_UPair>())
+	constexpr explicit(!_S_convertible_from_pair_like<_UPair>())
+	pair(_UPair&& __p)
+	: first(std::get<0>(std::forward<_UPair>(__p))),
+	  second(std::get<1>(std::forward<_UPair>(__p)))
+	{ }
+
+      template<__eligible_pair_like<pair> _UPair>
+	requires (_S_constructible_from_pair_like<_UPair>())
+	  && (_S_dangles_from_pair_like<_UPair>())
+	constexpr explicit(!_S_convertible_from_pair_like<_UPair>())
+	pair(_UPair&&) = delete;
+#endif // C++23
+
   private:
       /// @cond undocumented
       template<typename _U1, typename _U2>
@@ -421,6 +562,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return is_nothrow_assignable_v<_T2&, _U2>;
 	  return false;
 	}
+
+#if __glibcxx_tuple_like // >= C++23
+      template<typename _UPair>
+	static constexpr bool
+	_S_assignable_from_tuple_like()
+	{
+	  return _S_assignable<decltype(std::get<0>(std::declval<_UPair>())),
+			       decltype(std::get<1>(std::declval<_UPair>()))>();
+	}
+
+      template<typename _UPair>
+	static constexpr bool
+	_S_const_assignable_from_tuple_like()
+	{
+	  return _S_const_assignable<decltype(std::get<0>(std::declval<_UPair>())),
+				     decltype(std::get<1>(std::declval<_UPair>()))>();
+	}
+#endif // C++23
       /// @endcond
 
   public:
@@ -516,6 +675,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 #endif // C++23
+
+#if __glibcxx_tuple_like // >= C++23
+      template<__eligible_pair_like<pair> _UPair>
+	requires (_S_assignable_from_tuple_like<_UPair>())
+	constexpr pair&
+	operator=(_UPair&& __p)
+	{
+	  first = std::get<0>(std::forward<_UPair>(__p));
+	  second = std::get<1>(std::forward<_UPair>(__p));
+	  return *this;
+	}
+
+      template<__eligible_pair_like<pair> _UPair>
+	requires (_S_const_assignable_from_tuple_like<_UPair>())
+	constexpr const pair&
+	operator=(_UPair&& __p) const
+	{
+	  first = std::get<0>(std::forward<_UPair>(__p));
+	  second = std::get<1>(std::forward<_UPair>(__p));
+	  return *this;
+	}
+#endif // C++23
+
 #else // !__cpp_lib_concepts
       // C++11/14/17 implementation using enable_if, partially constexpr.
 
