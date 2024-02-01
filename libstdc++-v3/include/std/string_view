@@ -160,8 +160,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && (!requires (_DRange& __d) {
 		__d.operator ::std::basic_string_view<_CharT, _Traits>();
 	      })
-	  && (!requires { typename _DRange::traits_type; }
-	      || is_same_v<typename _DRange::traits_type, _Traits>)
 	constexpr explicit
 	basic_string_view(_Range&& __r)
 	noexcept(noexcept(ranges::size(__r)) && noexcept(ranges::data(__r)))
