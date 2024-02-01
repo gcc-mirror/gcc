@@ -8960,7 +8960,7 @@ This attribute may only be applied to integral types in C, to introduce
 hardened boolean types.  It turns the integral type into a boolean-like
 type with the same size and precision, that uses the specified values as
 representations for @code{false} and @code{true}.  Underneath, it is
-actually an enumerate type, but its observable behavior is like that of
+actually an enumerated type, but its observable behavior is like that of
 @code{_Bool}, except for the strict internal representations, verified
 by runtime checks.
 
