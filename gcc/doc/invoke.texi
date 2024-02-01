@@ -30106,8 +30106,14 @@ This is already the norm for most firmware projects.
 
 @opindex mmcu
 @item -mmcu=@var{mcu}
-Specify the PRU MCU variant to use.  Check Newlib for the exact list of
-supported MCUs.
+Specify the PRU hardware variant to use.  A correspondingly named
+spec file would be loaded, passing the memory region sizes to
+the linker and defining hardware-specific C macros.
+
+Newlib provides only the @code{sim} spec, intended for running
+regression tests using a simulator.  Specs for real hardware can be
+obtained by installing the
+@w{@uref{https://github.com/dinuxbg/gnuprumcu/,GnuPruMcu}} package.
 
 @opindex mno-relax
 @item -mno-relax
