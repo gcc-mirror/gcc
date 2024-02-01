@@ -8574,7 +8574,8 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
     {
       /* Calculate every element of every permute mask vector explicitly,
 	 instead of relying on the pattern described above.  */
-      if (!nunits.is_constant (&npatterns))
+      if (!nunits.is_constant (&npatterns)
+	  || !TYPE_VECTOR_SUBPARTS (op_vectype).is_constant ())
 	return -1;
       nelts_per_pattern = ncopies = 1;
       if (loop_vec_info linfo = dyn_cast <loop_vec_info> (vinfo))
