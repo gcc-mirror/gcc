@@ -22749,6 +22749,48 @@ current_fentry_section (const char **name)
   return true;
 }
 
+/* Return a caller-saved register which isn't live or a callee-saved
+   register which has been saved on stack in the prologue at entry for
+   profile.  */
+
+static int
+x86_64_select_profile_regnum (bool r11_ok ATTRIBUTE_UNUSED)
+{
+  /* Use %r10 if the profiler is emitted before the prologue or it isn't
+     used by DRAP.  */
+  if (ix86_profile_before_prologue ()
+      || !crtl->drap_reg
+      || REGNO (crtl->drap_reg) != R10_REG)
+    return R10_REG;
+
+  /* The profiler is emitted after the prologue.  If there is a
+     caller-saved register which isn't live or a callee-saved
+     register saved on stack in the prologue, use it.  */
+
+  bitmap reg_live = df_get_live_out (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+
+  int i;
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (GENERAL_REGNO_P (i)
+	&& i != R10_REG
+#ifdef NO_PROFILE_COUNTERS
+	&& (r11_ok || i != R11_REG)
+#else
+	&& i != R11_REG
+#endif
+	&& TEST_HARD_REG_BIT (accessible_reg_set, i)
+	&& (ix86_save_reg (i, true, true)
+	    || (call_used_regs[i]
+		&& !fixed_regs[i]
+		&& !REGNO_REG_SET_P (reg_live, i))))
+      return i;
+
+  sorry ("no register available for profiling %<-mcmodel=large%s%>",
+	 ix86_cmodel == CM_LARGE_PIC ? " -fPIC" : "");
+
+  return INVALID_REGNUM;
+}
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 void
@@ -22783,42 +22825,61 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	fprintf (file, "\tleaq\t%sP%d(%%rip), %%r11\n", LPREFIX, labelno);
 #endif
 
+      int scratch;
+      const char *reg;
+      char legacy_reg[4] = { 0 };
+
       if (!TARGET_PECOFF)
 	{
 	  switch (ix86_cmodel)
 	    {
 	    case CM_LARGE:
-	      /* NB: R10 is caller-saved.  Although it can be used as a
-		 static chain register, it is preserved when calling
-		 mcount for nested functions.  */
+	      scratch = x86_64_select_profile_regnum (true);
+	      reg = hi_reg_name[scratch];
+	      if (LEGACY_INT_REGNO_P (scratch))
+		{
+		  legacy_reg[0] = 'r';
+		  legacy_reg[1] = reg[0];
+		  legacy_reg[2] = reg[1];
+		  reg = legacy_reg;
+		}
 	      if (ASSEMBLER_DIALECT == ASM_INTEL)
-		fprintf (file, "1:\tmovabs\tr10, OFFSET FLAT:%s\n"
-			       "\tcall\tr10\n", mcount_name);
+		fprintf (file, "1:\tmovabs\t%s, OFFSET FLAT:%s\n"
+			       "\tcall\t%s\n", reg, mcount_name, reg);
 	      else
-		fprintf (file, "1:\tmovabsq\t$%s, %%r10\n\tcall\t*%%r10\n",
-			 mcount_name);
+		fprintf (file, "1:\tmovabsq\t$%s, %%%s\n\tcall\t*%%%s\n",
+			 mcount_name, reg, reg);
 	      break;
 	    case CM_LARGE_PIC:
 #ifdef NO_PROFILE_COUNTERS
+	      scratch = x86_64_select_profile_regnum (false);
+	      reg = hi_reg_name[scratch];
+	      if (LEGACY_INT_REGNO_P (scratch))
+		{
+		  legacy_reg[0] = 'r';
+		  legacy_reg[1] = reg[0];
+		  legacy_reg[2] = reg[1];
+		  reg = legacy_reg;
+		}
 	      if (ASSEMBLER_DIALECT == ASM_INTEL)
 		{
 		  fprintf (file, "1:movabs\tr11, "
 				 "OFFSET FLAT:_GLOBAL_OFFSET_TABLE_-1b\n");
-		  fprintf (file, "\tlea\tr10, 1b[rip]\n");
-		  fprintf (file, "\tadd\tr10, r11\n");
+		  fprintf (file, "\tlea\t%s, 1b[rip]\n", reg);
+		  fprintf (file, "\tadd\t%s, r11\n", reg);
 		  fprintf (file, "\tmovabs\tr11, OFFSET FLAT:%s@PLTOFF\n",
 			   mcount_name);
-		  fprintf (file, "\tadd\tr10, r11\n");
-		  fprintf (file, "\tcall\tr10\n");
+		  fprintf (file, "\tadd\t%s, r11\n", reg);
+		  fprintf (file, "\tcall\t%s\n", reg);
 		  break;
 		}
 	      fprintf (file,
 		       "1:\tmovabsq\t$_GLOBAL_OFFSET_TABLE_-1b, %%r11\n");
-	      fprintf (file, "\tleaq\t1b(%%rip), %%r10\n");
-	      fprintf (file, "\taddq\t%%r11, %%r10\n");
+	      fprintf (file, "\tleaq\t1b(%%rip), %%%s\n", reg);
+	      fprintf (file, "\taddq\t%%r11, %%%s\n", reg);
 	      fprintf (file, "\tmovabsq\t$%s@PLTOFF, %%r11\n", mcount_name);
-	      fprintf (file, "\taddq\t%%r11, %%r10\n");
-	      fprintf (file, "\tcall\t*%%r10\n");
+	      fprintf (file, "\taddq\t%%r11, %%%s\n", reg);
+	      fprintf (file, "\tcall\t*%%%s\n", reg);
 #else
 	      sorry ("profiling %<-mcmodel=large%> with PIC is not supported");
 #endif
