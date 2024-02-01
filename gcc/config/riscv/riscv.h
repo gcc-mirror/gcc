@@ -896,7 +896,9 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
    SLT[I][U], AND[I], XOR[I], OR[I], LUI, AUIPC, and their compressed
    counterparts, including C.MV and C.LI) can be in the branch shadow.  */
 
-#define TARGET_SFB_ALU (riscv_microarchitecture == sifive_7)
+#define TARGET_SFB_ALU \
+ ((riscv_microarchitecture == sifive_7) \
+  || (riscv_microarchitecture == sifive_p600))
 
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
