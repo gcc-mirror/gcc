@@ -3929,7 +3929,7 @@ struct Span @{
 @};
 @end smallexample
 
-as @code{std::span}-like; that is, the class is a non-union class template
+as @code{std::span}-like; that is, the class is a non-union class
 that has a pointer data member and a trivial destructor.
 
 This warning is enabled by @option{-Wall}.

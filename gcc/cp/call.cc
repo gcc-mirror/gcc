@@ -14082,8 +14082,8 @@ reference_like_class_p (tree ctype)
 	return true;
     }
 
-  /* Avoid warning if CTYPE looks like std::span: it's a class template,
-     has a T* member, and a trivial destructor.  For example,
+  /* Avoid warning if CTYPE looks like std::span: it has a T* member and
+     a trivial destructor.  For example,
 
       template<typename T>
       struct Span {
@@ -14092,9 +14092,7 @@ reference_like_class_p (tree ctype)
       };
 
      is considered std::span-like.  */
-  if (NON_UNION_CLASS_TYPE_P (ctype)
-      && CLASSTYPE_TEMPLATE_INSTANTIATION (ctype)
-      && TYPE_HAS_TRIVIAL_DESTRUCTOR (ctype))
+  if (NON_UNION_CLASS_TYPE_P (ctype) && TYPE_HAS_TRIVIAL_DESTRUCTOR (ctype))
     for (tree field = next_aggregate_field (TYPE_FIELDS (ctype));
 	 field; field = next_aggregate_field (DECL_CHAIN (field)))
       if (TYPE_PTR_P (TREE_TYPE (field)))
