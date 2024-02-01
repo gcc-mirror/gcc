@@ -869,7 +869,7 @@ BEGIN
       END
    ELSIF GenModuleList
    THEN
-      IF NOT IsDefinitionForC (sym)
+      IF IsDefImp (sym) AND (NOT IsDefinitionForC (sym))
       THEN
          (* The implementation module is only useful if -fgen-module-list= is
             used (to gather all dependencies).  Note that we do not insist
