@@ -225,10 +225,24 @@ Mask(ZIHINTPAUSE) Var(riscv_zi_subext)
 
 Mask(ZICOND)      Var(riscv_zi_subext)
 
+Mask(ZIC64B)      Var(riscv_zi_subext)
+
+Mask(ZICCAMOA)    Var(riscv_zi_subext)
+
+Mask(ZICCIF)      Var(riscv_zi_subext)
+
+Mask(ZICCLSM)     Var(riscv_zi_subext)
+
+Mask(ZICCRSE)     Var(riscv_zi_subext)
+
 TargetVariable
 int riscv_za_subext
 
 Mask(ZAWRS) Var(riscv_za_subext)
+
+Mask(ZA64RS)  Var(riscv_za_subext)
+
+Mask(ZA128RS) Var(riscv_za_subext)
 
 TargetVariable
 int riscv_zb_subext

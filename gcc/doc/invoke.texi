@@ -30262,6 +30262,14 @@ Supported extension are listed below:
 @tab 1.0
 @tab Integer conditional operations extension.
 
+@item za64rs
+@tab 1.0
+@tab Reservation set size of 64 bytes.
+
+@item za128rs
+@tab 1.0
+@tab Reservation set size of 128 bytes.
+
 @item zawrs
 @tab 1.0
 @tab Wait-on-reservation-set extension.
@@ -30369,6 +30377,26 @@ Supported extension are listed below:
 @item zicbop
 @tab 1.0
 @tab Cache-block prefetch extension.
+
+@item zic64b
+@tab 1.0
+@tab Cache block size isf 64 bytes.
+
+@item ziccamoa
+@tab 1.0
+@tab Main memory supports all atomics in A.
+
+@item ziccif
+@tab 1.0
+@tab Main memory supports instruction fetch with atomicity requirement.
+
+@item zicclsm
+@tab 1.0
+@tab Main memory supports misaligned loads/stores.
+
+@item ziccrse
+@tab 1.0
+@tab Main memory supports forward progress on LR/SC sequences.
 
 @item zicntr
 @tab 2.0
