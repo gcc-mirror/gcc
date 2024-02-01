@@ -2277,6 +2277,10 @@ extern bool supportable_widening_operation (vec_info*, code_helper,
 extern bool supportable_narrowing_operation (code_helper, tree, tree,
 					     code_helper *, int *,
 					     vec<tree> *);
+extern bool supportable_indirect_convert_operation (code_helper,
+						    tree, tree,
+						    vec<std::pair<tree, tree_code> > *,
+						    tree = NULL_TREE);
 
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,

@@ -5182,7 +5182,7 @@ vectorizable_conversion (vec_info *vinfo,
   tree scalar_dest;
   tree op0, op1 = NULL_TREE;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  tree_code tc1, tc2;
+  tree_code tc1;
   code_helper code, code1, code2;
   code_helper codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
   tree new_temp;
@@ -5374,6 +5374,7 @@ vectorizable_conversion (vec_info *vinfo,
   scalar_mode lhs_mode = SCALAR_TYPE_MODE (lhs_type);
   scalar_mode rhs_mode = SCALAR_TYPE_MODE (rhs_type);
   opt_scalar_mode rhs_mode_iter;
+  vec<std::pair<tree, tree_code> > converts = vNULL;
 
   /* Supportable by target?  */
   switch (modifier)
@@ -5384,99 +5385,26 @@ vectorizable_conversion (vec_info *vinfo,
 	  && !CONVERT_EXPR_CODE_P (code))
 	return false;
       gcc_assert (code.is_tree_code ());
-      if (supportable_convert_operation ((tree_code) code, vectype_out,
-					 vectype_in, &tc1))
-      {
-	code1 = tc1;
-	break;
-      }
-
-      /* For conversions between float and integer types try whether
-	 we can use intermediate signed integer types to support the
-	 conversion.  */
-      if (GET_MODE_SIZE (lhs_mode) != GET_MODE_SIZE (rhs_mode)
-	  && (code == FLOAT_EXPR ||
-	      (code == FIX_TRUNC_EXPR && !flag_trapping_math)))
+      if (supportable_indirect_convert_operation (code,
+						  vectype_out,
+						  vectype_in,
+						  &converts,
+						  op0))
 	{
-	  bool demotion = GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode);
-	  bool float_expr_p = code == FLOAT_EXPR;
-	  unsigned short target_size;
-	  scalar_mode intermediate_mode;
-	  if (demotion)
-	    {
-	      intermediate_mode = lhs_mode;
-	      target_size = GET_MODE_SIZE (rhs_mode);
-	    }
+	  gcc_assert (converts.length () <= 2);
+	  if (converts.length () == 1)
+	    code1 = converts[0].second;
 	  else
 	    {
-	      target_size = GET_MODE_SIZE (lhs_mode);
-	      if (!int_mode_for_size
-		  (GET_MODE_BITSIZE (rhs_mode), 0).exists (&intermediate_mode))
-		goto unsupported;
-	    }
-	  code1 = float_expr_p ? code : NOP_EXPR;
-	  codecvt1 = float_expr_p ? NOP_EXPR : code;
-	  opt_scalar_mode mode_iter;
-	  FOR_EACH_2XWIDER_MODE (mode_iter, intermediate_mode)
-	    {
-	      intermediate_mode = mode_iter.require ();
-
-	      if (GET_MODE_SIZE (intermediate_mode) > target_size)
-		break;
-
-	      scalar_mode cvt_mode;
-	      if (!int_mode_for_size
-		  (GET_MODE_BITSIZE (intermediate_mode), 0).exists (&cvt_mode))
-		break;
-
-	      cvt_type = build_nonstandard_integer_type
-		(GET_MODE_BITSIZE (cvt_mode), 0);
-
-	      /* Check if the intermediate type can hold OP0's range.
-		 When converting from float to integer this is not necessary
-		 because values that do not fit the (smaller) target type are
-		 unspecified anyway.  */
-	      if (demotion && float_expr_p)
-		{
-		  wide_int op_min_value, op_max_value;
-		  if (!vect_get_range_info (op0, &op_min_value, &op_max_value))
-		    break;
-
-		  if (cvt_type == NULL_TREE
-		      || (wi::min_precision (op_max_value, SIGNED)
-			  > TYPE_PRECISION (cvt_type))
-		      || (wi::min_precision (op_min_value, SIGNED)
-			  > TYPE_PRECISION (cvt_type)))
-		    continue;
-		}
-
-	      cvt_type = get_vectype_for_scalar_type (vinfo, cvt_type, slp_node);
-	      /* This should only happened for SLP as long as loop vectorizer
-		 only supports same-sized vector.  */
-	      if (cvt_type == NULL_TREE
-		  || maybe_ne (TYPE_VECTOR_SUBPARTS (cvt_type), nunits_in)
-		  || !supportable_convert_operation ((tree_code) code1,
-						     vectype_out,
-						     cvt_type, &tc1)
-		  || !supportable_convert_operation ((tree_code) codecvt1,
-						     cvt_type,
-						     vectype_in, &tc2))
-		continue;
-
-	      found_mode = true;
-	      break;
-	    }
-
-	  if (found_mode)
-	    {
-	      multi_step_cvt++;
-	      interm_types.safe_push (cvt_type);
 	      cvt_type = NULL_TREE;
-	      code1 = tc1;
-	      codecvt1 = tc2;
-	      break;
+	      multi_step_cvt = converts.length () - 1;
+	      codecvt1 = converts[0].second;
+	      code1 = converts[1].second;
+	      interm_types.safe_push (converts[0].first);
 	    }
+	  break;
 	}
+
       /* FALLTHRU */
     unsupported:
       if (dump_enabled_p ())
@@ -14648,6 +14576,141 @@ supportable_narrowing_operation (code_helper code,
     }
 
   interm_types->release ();
+  return false;
+}
+
+/* Function supportable_indirect_convert_operation
+
+   Check whether an operation represented by the code CODE is single or multi
+   operations that are supported by the target platform in
+   vector form (i.e., when operating on arguments of type VECTYPE_IN
+   producing a result of type VECTYPE_OUT).
+
+   Convert operations we currently support directly are FIX_TRUNC and FLOAT.
+   This function checks if these operations are supported
+   by the target platform directly (via vector tree-codes).
+
+   Output:
+   - converts contains some pairs to perform the convert operation,
+   the pair's first is the intermediate type, and its second is the code of
+   a vector operation to be used when converting the operation from the
+   previous type to the intermediate type. */
+bool
+supportable_indirect_convert_operation (code_helper code,
+					tree vectype_out,
+					tree vectype_in,
+					vec<std::pair<tree, tree_code> > *converts,
+					tree op0)
+{
+  bool found_mode = false;
+  scalar_mode lhs_mode = GET_MODE_INNER (TYPE_MODE (vectype_out));
+  scalar_mode rhs_mode = GET_MODE_INNER (TYPE_MODE (vectype_in));
+  opt_scalar_mode mode_iter;
+  tree_code tc1, tc2, code1, code2;
+
+  tree cvt_type = NULL_TREE;
+  poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (vectype_in);
+
+  if (supportable_convert_operation ((tree_code) code,
+				     vectype_out,
+				     vectype_in,
+				     &tc1))
+    {
+      converts->safe_push (std::make_pair (vectype_out, tc1));
+      return true;
+    }
+
+  /* For conversions between float and integer types try whether
+     we can use intermediate signed integer types to support the
+     conversion.  */
+  if (GET_MODE_SIZE (lhs_mode) != GET_MODE_SIZE (rhs_mode)
+      && (code == FLOAT_EXPR
+	  || (code == FIX_TRUNC_EXPR && !flag_trapping_math)))
+    {
+      bool demotion = GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode);
+      bool float_expr_p = code == FLOAT_EXPR;
+      unsigned short target_size;
+      scalar_mode intermediate_mode;
+      if (demotion)
+	{
+	  intermediate_mode = lhs_mode;
+	  target_size = GET_MODE_SIZE (rhs_mode);
+	}
+      else
+	{
+	  target_size = GET_MODE_SIZE (lhs_mode);
+	  if (!int_mode_for_size
+	      (GET_MODE_BITSIZE (rhs_mode), 0).exists (&intermediate_mode))
+	    return false;
+	}
+      code1 = float_expr_p ? (tree_code) code : NOP_EXPR;
+      code2 = float_expr_p ? NOP_EXPR : (tree_code) code;
+      opt_scalar_mode mode_iter;
+      FOR_EACH_2XWIDER_MODE (mode_iter, intermediate_mode)
+	{
+	  intermediate_mode = mode_iter.require ();
+
+	  if (GET_MODE_SIZE (intermediate_mode) > target_size)
+	    break;
+
+	  scalar_mode cvt_mode;
+	  if (!int_mode_for_size
+	      (GET_MODE_BITSIZE (intermediate_mode), 0).exists (&cvt_mode))
+	    break;
+
+	  cvt_type = build_nonstandard_integer_type
+	    (GET_MODE_BITSIZE (cvt_mode), 0);
+
+	  /* Check if the intermediate type can hold OP0's range.
+	     When converting from float to integer this is not necessary
+	     because values that do not fit the (smaller) target type are
+	     unspecified anyway.  */
+	  if (demotion && float_expr_p)
+	    {
+	      wide_int op_min_value, op_max_value;
+	      /* For vector form, it looks like op0 doesn't have RANGE_INFO.
+		 In the future, if it is supported, changes may need to be made
+		 to this part, such as checking the RANGE of each element
+		 in the vector.  */
+	      if (!SSA_NAME_RANGE_INFO (op0)
+		  || !vect_get_range_info (op0, &op_min_value, &op_max_value))
+		break;
+
+	      if (cvt_type == NULL_TREE
+		  || (wi::min_precision (op_max_value, SIGNED)
+		      > TYPE_PRECISION (cvt_type))
+		  || (wi::min_precision (op_min_value, SIGNED)
+		      > TYPE_PRECISION (cvt_type)))
+		continue;
+	    }
+
+	  cvt_type = get_related_vectype_for_scalar_type (TYPE_MODE (vectype_in),
+							  cvt_type,
+							  nelts);
+	  /* This should only happened for SLP as long as loop vectorizer
+	     only supports same-sized vector.  */
+	  if (cvt_type == NULL_TREE
+	      || maybe_ne (TYPE_VECTOR_SUBPARTS (cvt_type), nelts)
+	      || !supportable_convert_operation ((tree_code) code1,
+						 vectype_out,
+						 cvt_type, &tc1)
+	      || !supportable_convert_operation ((tree_code) code2,
+						 cvt_type,
+						 vectype_in, &tc2))
+	    continue;
+
+	  found_mode = true;
+	  break;
+	}
+
+      if (found_mode)
+	{
+	  converts->safe_push (std::make_pair (cvt_type, tc2));
+	  if (TYPE_MODE (cvt_type) != TYPE_MODE (vectype_out))
+	    converts->safe_push (std::make_pair (vectype_out, tc1));
+	  return true;
+	}
+    }
   return false;
 }
 
