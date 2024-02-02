@@ -3028,22 +3028,6 @@
   [(set_attr "type" "simd_logic")
    (set_attr "mode" "V8SF")])
 
-(define_insn "negv4df2"
-  [(set (match_operand:V4DF 0 "register_operand" "=f")
-	(neg:V4DF (match_operand:V4DF 1 "register_operand" "f")))]
-  "ISA_HAS_LASX"
-  "xvbitrevi.d\t%u0,%u1,63"
-  [(set_attr "type" "simd_logic")
-   (set_attr "mode" "V4DF")])
-
-(define_insn "negv8sf2"
-  [(set (match_operand:V8SF 0 "register_operand" "=f")
-	(neg:V8SF (match_operand:V8SF 1 "register_operand" "f")))]
-  "ISA_HAS_LASX"
-  "xvbitrevi.w\t%u0,%u1,31"
-  [(set_attr "type" "simd_logic")
-   (set_attr "mode" "V8SF")])
-
 (define_insn "xvfmadd<mode>4"
   [(set (match_operand:FLASX 0 "register_operand" "=f")
 	(fma:FLASX (match_operand:FLASX 1 "register_operand" "f")
