@@ -619,10 +619,10 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   return opt_result::success ();
 }
 
-/* Funcion vect_analyze_early_break_dependences.
+/* Function vect_analyze_early_break_dependences.
 
-   Examime all the data references in the loop and make sure that if we have
-   mulitple exits that we are able to safely move stores such that they become
+   Examine all the data references in the loop and make sure that if we have
+   multiple exits that we are able to safely move stores such that they become
    safe for vectorization.  The function also calculates the place where to move
    the instructions to and computes what the new vUSE chain should be.
 
@@ -639,7 +639,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
      - Multiple loads are allowed as long as they don't alias.
 
    NOTE:
-     This implemementation is very conservative. Any overlappig loads/stores
+     This implementation is very conservative. Any overlapping loads/stores
      that take place before the early break statement gets rejected aside from
      WAR dependencies.
 
@@ -668,7 +668,6 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
   auto_vec<data_reference *> bases;
   basic_block dest_bb = NULL;
 
-  hash_set <gimple *> visited;
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   class loop *loop_nest = loop_outer (loop);
 
@@ -677,19 +676,33 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 		     "loop contains multiple exits, analyzing"
 		     " statement dependencies.\n");
 
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+    if (dump_enabled_p ())
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "alternate exit has been chosen as main exit.\n");
+
   /* Since we don't support general control flow, the location we'll move the
      side-effects to is always the latch connected exit.  When we support
-     general control flow we can do better but for now this is fine.  */
-  dest_bb = single_pred (loop->latch);
+     general control flow we can do better but for now this is fine.  Move
+     side-effects to the in-loop destination of the last early exit.  For the PEELED
+     case we move the side-effects to the latch block as this is guaranteed to be the
+     last block to be executed when a vector iteration finished.  */
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+    dest_bb = loop->latch;
+  else
+    dest_bb = single_pred (loop->latch);
+
+  /* We start looking from dest_bb, for the non-PEELED case we don't want to
+     move any stores already present, but we do want to read and validate the
+     loads.  */
   basic_block bb = dest_bb;
+
+  /* In the peeled case we need to check all the loads in the loop since to move the
+     the stores we lift the stores over all loads into the latch.  */
+  bool check_deps = LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo);
 
   do
     {
-      /* If the destination block is also the header then we have nothing to do.  */
-      if (!single_pred_p (bb))
-	continue;
-
-      bb = single_pred (bb);
       gimple_stmt_iterator gsi = gsi_last_bb (bb);
 
       /* Now analyze all the remaining statements and try to determine which
@@ -707,42 +720,13 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 	  if (!dr_ref)
 	    continue;
 
-	  /* We currently only support statically allocated objects due to
-	     not having first-faulting loads support or peeling for
-	     alignment support.  Compute the size of the referenced object
-	     (it could be dynamically allocated).  */
-	  tree obj = DR_BASE_ADDRESS (dr_ref);
-	  if (!obj || TREE_CODE (obj) != ADDR_EXPR)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "early breaks only supported on statically"
-				 " allocated objects.\n");
-	      return opt_result::failure_at (stmt,
-				 "can't safely apply code motion to "
-				 "dependencies of %G to vectorize "
-				 "the early exit.\n", stmt);
-	    }
-
-	  tree refop = TREE_OPERAND (obj, 0);
-	  tree refbase = get_base_address (refop);
-	  if (!refbase || !DECL_P (refbase) || !DECL_SIZE (refbase)
-	      || TREE_CODE (DECL_SIZE (refbase)) != INTEGER_CST)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "early breaks only supported on"
-				 " statically allocated objects.\n");
-	      return opt_result::failure_at (stmt,
-				 "can't safely apply code motion to "
-				 "dependencies of %G to vectorize "
-				 "the early exit.\n", stmt);
-	    }
-
 	  /* Check if vector accesses to the object will be within bounds.
 	     must be a constant or assume loop will be versioned or niters
-	     bounded by VF so accesses are within range.  */
-	  if (!ref_within_array_bound (stmt, DR_REF (dr_ref)))
+	     bounded by VF so accesses are within range.  We only need to check the
+	     reads since writes are moved to a safe place where if we get there we
+	     know they are safe to perform.  */
+	  if (DR_IS_READ (dr_ref)
+	      && !ref_within_array_bound (stmt, DR_REF (dr_ref)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -754,6 +738,9 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 				 "dependencies of %G to vectorize "
 				 "the early exit.\n", stmt);
 	    }
+
+	  if (!check_deps)
+	    continue;
 
 	  if (DR_IS_READ (dr_ref))
 	    bases.safe_push (dr_ref);
@@ -814,8 +801,19 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 				 "marked statement for vUSE update: %G", stmt);
 	    }
 	}
+
+      if (!single_pred_p (bb))
+	{
+	  gcc_assert (bb == loop->header);
+	  break;
+	}
+
+      /* For the non-PEELED case we don't want to check the loads in the IV exit block
+	 for dependencies with the stores, but any block preceeding it we do.  */
+      check_deps = true;
+      bb = single_pred (bb);
     }
-  while (bb != loop->header);
+  while (1);
 
   /* We don't allow outer -> inner loop transitions which should have been
      trapped already during loop form analysis.  */
