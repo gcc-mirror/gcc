@@ -1,3 +1,20 @@
+2024-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/113402
+	* libgcc2.h (__gcc_nested_func_ptr_created): Change type of last
+	argument from void ** to void *.
+	* config/i386/heap-trampoline.c (__gcc_nested_func_ptr_created):
+	Change type of dst from void ** to void * and cast dst to void **
+	before dereferencing it.
+	* config/aarch64/heap-trampoline.c (__gcc_nested_func_ptr_created):
+	Likewise.
+
+2024-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/113403
+	* config/i386/t-heap-trampoline: Add to LIB2ADDEHSHARED
+	i386/heap-trampoline.c rather than aarch64/heap-trampoline.c.
+
 2024-02-01  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/aarch64/crti.S: Remove stack marking.

@@ -1,3 +1,65 @@
+2024-02-01  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Update -Wdangling-reference documentation.
+
+2024-02-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113701
+	* config/i386/i386.md (*cmp<dwi>_doubleword):
+	Do not force SUBREG pieces to pseudos.
+
+2024-02-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (atomic_storedi_1): Fix bug in
+	alternative 1.
+
+2024-02-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc: Tabify.
+
+2024-02-01  Richard Ball  <richard.ball@arm.com>
+
+	PR tree-optimization/111268
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1):
+	Add variable-length check for vector input arguments
+	to a function.
+
+2024-02-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Don't
+	hard-code number of SGPR/VGPR/AVGPR registers.
+	* config/gcn/gcn.h: Add a 'STATIC_ASSERT's for number of
+	SGPR/VGPR/AVGPR registers.
+
+2024-02-01  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv.md: Add "fcvt_i2f", "fcvt_f2i" type
+	attribute, and include sifive-p600.md.
+	* config/riscv/generic-ooo.md: Update type attribute.
+	* config/riscv/generic.md: Update type attribute.
+	* config/riscv/sifive-7.md: Update type attribute.
+	* config/riscv/sifive-p600.md: New file.
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add parameter.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type):
+	Add sifive_p600.
+	* config/riscv/riscv.cc (sifive_p600_tune_info): New.
+	* config/riscv/riscv.h (TARGET_SFB_ALU): Update.
+	* doc/invoke.texi (RISC-V Options): Add sifive-p600-series
+
+2024-02-01  Monk Chiang  <monk.chiang@sifive.com>
+
+	* common/config/riscv/riscv-common.cc: Add Za64rs, Za128rs,
+	Ziccif, Ziccrse, Ziccamoa, Zicclsm, Zic64b items.
+	* config/riscv/riscv.opt: New macro for 7 new unprivileged
+	extensions.
+	* doc/invoke.texi (RISC-V Options): Add Za64rs, Za128rs,
+	Ziccif, Ziccrse, Ziccamoa, Zicclsm, Zic64b extensions.
+
+2024-02-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (LIBASAN_EARLY_SPEC): Add -z now unless
+	-static-libasan.  Add missing whitespace.
+
 2024-02-01  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/gcn/gcn.md (FIRST_SGPR_REG, LAST_SGPR_REG)

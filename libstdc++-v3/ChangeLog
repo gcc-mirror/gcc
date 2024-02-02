@@ -1,3 +1,122 @@
+2024-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/113309
+	PR libstdc++/109203
+	* include/bits/ranges_util.h (__detail::__pair_like): Don't
+	define in C++23 mode.
+	(__detail::__pair_like_convertible_from): Adjust as per P2165R4.
+	(__detail::__is_subrange<subrange>): Moved from <ranges>.
+	(__detail::__is_tuple_like_v<subrange>): Likewise.
+	* include/bits/stl_iterator.h: Include <bits/utility.h> for
+	C++23.
+	(__different_from): Move to <concepts>.
+	(__iter_key_t): Adjust for C++23 as per P2165R4.
+	(__iter_val_t): Likewise.
+	* include/bits/stl_pair.h (pair, array): Forward declare.
+	(get): Forward declare all overloads relevant to P2165R4
+	tuple-like constructors.
+	(__is_tuple_v): Define for C++23.
+	(__is_tuple_like_v): Define for C++23.
+	(__tuple_like): Define for C++23 as per P2165R4.
+	(__pair_like): Define for C++23 as per P2165R4.
+	(__eligibile_tuple_like): Define for C++23.
+	(__eligibile_pair_like): Define for C++23.
+	(pair::_S_constructible_from_pair_like): Define for C++23.
+	(pair::_S_convertible_from_pair_like): Define for C++23.
+	(pair::_S_dangles_from_pair_like): Define for C++23.
+	(pair::pair): Define overloads taking a tuple-like type for
+	C++23 as per P2165R4.
+	(pair::_S_assignable_from_tuple_like): Define for C++23.
+	(pair::_S_const_assignable_from_tuple_like): Define for C++23.
+	(pair::operator=): Define overloads taking a tuple-like type for
+	C++23 as per P2165R4.
+	* include/bits/utility.h (ranges::__detail::__is_subrange):
+	Moved from <ranges>.
+	* include/bits/version.def (tuple_like): Define for C++23.
+	* include/bits/version.h: Regenerate.
+	* include/std/concepts (__different_from): Moved from
+	<bits/stl_iterator.h>.
+	(ranges::__swap::__adl_swap): Clarify which __detail namespace.
+	* include/std/map (__cpp_lib_tuple_like): Define C++23.
+	* include/std/ranges (__detail::__is_subrange): Moved to
+	<bits/utility.h>.
+	(__detail::__is_subrange<subrange>): Moved to <bits/ranges_util.h>
+	(__detail::__has_tuple_element): Adjust for C++23 as per P2165R4.
+	(__detail::__tuple_or_pair): Remove as per P2165R4.  Replace all
+	uses with plain tuple as per P2165R4.
+	* include/std/tuple (__cpp_lib_tuple_like): Define for C++23.
+	(__tuple_like_tag_t): Define for C++23.
+	(__tuple_cmp): Forward declare for C++23.
+	(_Tuple_impl::_Tuple_impl): Define overloads taking
+	__tuple_like_tag_t and a tuple-like type for C++23.
+	(_Tuple_impl::_M_assign): Likewise.
+	(tuple::__constructible_from_tuple_like): Define for C++23.
+	(tuple::__convertible_from_tuple_like): Define for C++23.
+	(tuple::__dangles_from_tuple_like): Define for C++23.
+	(tuple::tuple): Define overloads taking a tuple-like type for
+	C++23 as per P2165R4.
+	(tuple::__assignable_from_tuple_like): Define for C++23.
+	(tuple::__const_assignable_from_tuple_like): Define for C++23.
+	(tuple::operator=): Define overloads taking a tuple-like type
+	for C++23 as per P2165R4.
+	(tuple::__tuple_like_common_comparison_category): Define for C++23.
+	(tuple::operator<=>): Define overload taking a tuple-like type
+	for C++23 as per P2165R4.
+	(array, get): Forward declarations moved to <bits/stl_pair.h>.
+	(tuple_cat): Constrain with __tuple_like for C++23 as per P2165R4.
+	(apply): Likewise.
+	(make_from_tuple): Likewise.
+	(__tuple_like_common_reference): Define for C++23.
+	(basic_common_reference): Adjust as per P2165R4.
+	(__tuple_like_common_type): Define for C++23.
+	(common_type): Adjust as per P2165R4.
+	* include/std/unordered_map (__cpp_lib_tuple_like): Define for
+	C++23.
+	* include/std/utility (__cpp_lib_tuple_like): Define for C++23.
+	* testsuite/std/ranges/zip/1.cc (test01): Adjust to handle pair
+	and 2-tuple interchangeably.
+	(test05): New test.
+	* testsuite/20_util/pair/p2165r4.cc: New test.
+	* testsuite/20_util/tuple/p2165r4.cc: New test.
+
+2024-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_pair.h (pair::_S_const_assignable): Define,
+	factored out from ...
+	(pair::operator=): ... the constraints of the const overloads.
+
+2024-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.tpl: Do not use def-file-line for each
+	macro being defined.
+	* include/bits/version.h: Regenerate.
+
+2024-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/copy/debug/constexpr_neg.cc: Adjust
+	dg-error pattern.
+	* testsuite/25_algorithms/copy_backward/debug/constexpr_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/equal/debug/constexpr_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_pred_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_valid_range_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_pred_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_valid_range_neg.cc:
+	Likewise.
+
+2024-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (network_v4::to_string()):
+	Remove lambda and use of resize_and_overwrite.
+
 2024-01-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_TEXT_ENCODING): Use <xlocale.h> if

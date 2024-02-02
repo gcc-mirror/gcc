@@ -1,3 +1,26 @@
+2024-02-01  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (reference_like_class_p): Consider even non-templates for
+	std::span-like classes.
+
+2024-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112737
+	* pt.cc (iterative_hash_template_arg) <case TEMPLATE_DECL>:
+	Adjust hashing to match cp_tree_equal.
+	(ctp_hasher::hash): Also hash CLASS_PLACEHOLDER_TEMPLATE.
+	* tree.cc (cp_tree_equal) <case TEMPLATE_DECL>: Return true
+	for ttp TEMPLATE_DECLs if their TEMPLATE_TEMPLATE_PARMs are
+	equivalent.
+	* typeck.cc (structural_comptypes) <case TEMPLATE_TYPE_PARM>:
+	Use cp_tree_equal to compare CLASS_PLACEHOLDER_TEMPLATE.
+
+2024-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112437
+	* typeck.cc (treat_lvalue_as_rvalue_p): Bail out on sk_namespace in
+	the move on throw of parms loop.
+
 2024-01-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/110358

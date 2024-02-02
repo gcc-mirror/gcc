@@ -1,3 +1,9 @@
+2024-02-01  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/105608
+	* pch.cc (cpp_read_state): Set a valid location for restored
+	macros.
+
 2024-01-04  Raiki Tamura  <tamaron1203@gmail.com>
 
 	* charset.cc (cpp_check_xid_property): New.

@@ -1,3 +1,10 @@
+2024-02-01  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/105608
+	* c-pch.cc (c_common_read_pch): Adjust line map so that libcpp
+	assigns a location to restored macros which is the same location
+	that triggered the PCH include.
+
 2024-01-31  Marek Polacek  <polacek@redhat.com>
 
 	* c-opts.cc (c_common_post_options): Add an inform saying that
