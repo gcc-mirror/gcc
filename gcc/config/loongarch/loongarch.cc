@@ -8029,7 +8029,8 @@ struct expand_vec_perm_d
 
 static bool
 loongarch_expand_vselect (rtx target, rtx op0,
-			  const unsigned char *perm, unsigned nelt)
+			  const unsigned char *perm, unsigned nelt,
+			  bool testing_p)
 {
   rtx rperm[MAX_VECT_LEN], x;
   rtx_insn *insn;
@@ -8048,6 +8049,9 @@ loongarch_expand_vselect (rtx target, rtx op0,
       remove_insn (insn);
       return false;
     }
+
+  if (testing_p)
+      remove_insn (insn);
   return true;
 }
 
@@ -8055,7 +8059,8 @@ loongarch_expand_vselect (rtx target, rtx op0,
 
 static bool
 loongarch_expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
-				  const unsigned char *perm, unsigned nelt)
+				  const unsigned char *perm, unsigned nelt,
+				  bool testing_p)
 {
   machine_mode v2mode;
   rtx x;
@@ -8063,7 +8068,7 @@ loongarch_expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
   if (!GET_MODE_2XWIDER_MODE (GET_MODE (op0)).exists (&v2mode))
     return false;
   x = gen_rtx_VEC_CONCAT (v2mode, op0, op1);
-  return loongarch_expand_vselect (target, x, perm, nelt);
+  return loongarch_expand_vselect (target, x, perm, nelt, testing_p);
 }
 
 static tree
@@ -8317,11 +8322,87 @@ loongarch_set_handled_components (sbitmap components)
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
-/* Construct (set target (vec_select op0 (parallel selector))) and
-   return true if that's a valid instruction in the active ISA.  */
+
+/* Use the vshuf instruction to implement all 128-bit constant vector
+   permuatation.  */
 
 static bool
-loongarch_expand_lsx_shuffle (struct expand_vec_perm_d *d)
+loongarch_try_expand_lsx_vshuf_const (struct expand_vec_perm_d *d)
+{
+  int i;
+  rtx target, op0, op1, sel, tmp;
+  rtx rperm[MAX_VECT_LEN];
+
+  if (GET_MODE_SIZE (d->vmode) == 16)
+    {
+      target = d->target;
+      op0 = d->op0;
+      op1 = d->one_vector_p ? d->op0 : d->op1;
+
+      if (GET_MODE (op0) != GET_MODE (op1)
+	  || GET_MODE (op0) != GET_MODE (target))
+	return false;
+
+      if (d->testing_p)
+	return true;
+
+      for (i = 0; i < d->nelt; i += 1)
+	  rperm[i] = GEN_INT (d->perm[i]);
+
+      if (d->vmode == E_V2DFmode)
+	{
+	  sel = gen_rtx_CONST_VECTOR (E_V2DImode, gen_rtvec_v (d->nelt, rperm));
+	  tmp = simplify_gen_subreg (E_V2DImode, d->target, d->vmode, 0);
+	  emit_move_insn (tmp, sel);
+	}
+      else if (d->vmode == E_V4SFmode)
+	{
+	  sel = gen_rtx_CONST_VECTOR (E_V4SImode, gen_rtvec_v (d->nelt, rperm));
+	  tmp = simplify_gen_subreg (E_V4SImode, d->target, d->vmode, 0);
+	  emit_move_insn (tmp, sel);
+	}
+      else
+	{
+	  sel = gen_rtx_CONST_VECTOR (d->vmode, gen_rtvec_v (d->nelt, rperm));
+	  emit_move_insn (d->target, sel);
+	}
+
+      switch (d->vmode)
+	{
+	case E_V2DFmode:
+	  emit_insn (gen_lsx_vshuf_d_f (target, target, op1, op0));
+	  break;
+	case E_V2DImode:
+	  emit_insn (gen_lsx_vshuf_d (target, target, op1, op0));
+	  break;
+	case E_V4SFmode:
+	  emit_insn (gen_lsx_vshuf_w_f (target, target, op1, op0));
+	  break;
+	case E_V4SImode:
+	  emit_insn (gen_lsx_vshuf_w (target, target, op1, op0));
+	  break;
+	case E_V8HImode:
+	  emit_insn (gen_lsx_vshuf_h (target, target, op1, op0));
+	  break;
+	case E_V16QImode:
+	  emit_insn (gen_lsx_vshuf_b (target, op1, op0, target));
+	  break;
+	default:
+	  break;
+	}
+
+      return true;
+    }
+  return false;
+}
+
+/* Construct (set target (vec_select op0 (parallel selector))) and
+   return true if that's a valid instruction in the active ISA.
+   In fact, it matches the special constant vector with repeated
+   4-element sets.  */
+
+static bool
+loongarch_is_imm_set_shuffle (struct expand_vec_perm_d *d)
 {
   rtx x, elts[MAX_VECT_LEN];
   rtvec v;
@@ -8340,6 +8421,9 @@ loongarch_expand_lsx_shuffle (struct expand_vec_perm_d *d)
   if (!loongarch_const_vector_shuffle_set_p (x, d->vmode))
     return false;
 
+  if (d->testing_p)
+    return true;
+
   x = gen_rtx_VEC_SELECT (d->vmode, d->op0, x);
   x = gen_rtx_SET (d->target, x);
 
@@ -8350,6 +8434,27 @@ loongarch_expand_lsx_shuffle (struct expand_vec_perm_d *d)
       return false;
     }
   return true;
+}
+
+static bool
+loongarch_expand_vec_perm_even_odd (struct expand_vec_perm_d *);
+
+/* Try to match and expand all kinds of 128-bit const vector permutation
+   cases.  */
+
+static bool
+loongarch_expand_lsx_shuffle (struct expand_vec_perm_d *d)
+{
+  if (!ISA_HAS_LSX && GET_MODE_SIZE (d->vmode) != 16)
+    return false;
+
+  if (loongarch_is_imm_set_shuffle (d))
+      return true;
+
+  if (loongarch_expand_vec_perm_even_odd (d))
+    return true;
+
+  return loongarch_try_expand_lsx_vshuf_const (d);
 }
 
 /* Try to simplify a two vector permutation using 2 intra-lane interleave
@@ -8444,7 +8549,7 @@ loongarch_expand_vec_perm_interleave (struct expand_vec_perm_d *d)
   return true;
 }
 
-/* Implement extract-even and extract-odd permutations.  */
+/* Implement 128-bit and 256-bit extract-even and extract-odd permutations.  */
 
 static bool
 loongarch_expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
@@ -8459,6 +8564,50 @@ loongarch_expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 
   switch (d->vmode)
     {
+    /* 128 bit.  */
+    case E_V2DFmode:
+      if (odd)
+	emit_insn (gen_lsx_vilvh_d_f (d->target, d->op0, d->op1));
+      else
+	emit_insn (gen_lsx_vilvl_d_f (d->target, d->op0, d->op1));
+      break;
+
+    case E_V2DImode:
+      if (odd)
+	emit_insn (gen_lsx_vilvh_d (d->target, d->op0, d->op1));
+      else
+	emit_insn (gen_lsx_vilvl_d (d->target, d->op0, d->op1));
+      break;
+
+    case E_V4SFmode:
+      if (odd)
+	emit_insn (gen_lsx_vpickod_w_f (d->target, d->op0, d->op1));
+      else
+	emit_insn (gen_lsx_vpickev_w_f (d->target, d->op0, d->op1));
+      break;
+
+    case E_V4SImode:
+      if (odd)
+	emit_insn (gen_lsx_vpickod_w (d->target, d->op0, d->op1));
+      else
+	emit_insn (gen_lsx_vpickev_w (d->target, d->op0, d->op1));
+      break;
+
+    case E_V8HImode:
+      if (odd)
+	emit_insn (gen_lsx_vpickod_h (d->target, d->op0, d->op1));
+      else
+	emit_insn (gen_lsx_vpickev_h (d->target, d->op0, d->op1));
+      break;
+
+    case E_V16QImode:
+      if (odd)
+	emit_insn (gen_lsx_vpickod_b (d->target, d->op0, d->op1));
+      else
+	emit_insn (gen_lsx_vpickev_b (d->target, d->op0, d->op1));
+      break;
+
+    /* 256 bit.  */
     case E_V4DFmode:
       /* Shuffle the lanes around into { 0 4 2 6 } and { 1 5 3 7 }.  */
       if (odd)
@@ -8533,7 +8682,7 @@ static bool
 loongarch_expand_vec_perm_even_odd (struct expand_vec_perm_d *d)
 {
   unsigned i, odd, nelt = d->nelt;
-  if (!ISA_HAS_LASX)
+  if (!ISA_HAS_LASX && !ISA_HAS_LSX)
     return false;
 
   odd = d->perm[0];
@@ -8997,44 +9146,6 @@ loongarch_is_quad_duplicate (struct expand_vec_perm_d *d)
 }
 
 static bool
-loongarch_is_odd_extraction (struct expand_vec_perm_d *d)
-{
-  bool result = true;
-  unsigned char buf = 1;
-
-  for (int i = 0; i < d->nelt; i += 1)
-    {
-      if (buf != d->perm[i])
-	{
-	  result = false;
-	  break;
-	}
-      buf += 2;
-    }
-
-  return result;
-}
-
-static bool
-loongarch_is_even_extraction (struct expand_vec_perm_d *d)
-{
-  bool result = true;
-  unsigned char buf = 0;
-
-  for (int i = 0; i < d->nelt; i += 1)
-    {
-      if (buf != d->perm[i])
-	{
-	  result = false;
-	  break;
-	}
-      buf += 2;
-    }
-
-  return result;
-}
-
-static bool
 loongarch_is_extraction_permutation (struct expand_vec_perm_d *d)
 {
   bool result = true;
@@ -9290,32 +9401,29 @@ loongarch_expand_vec_perm_const (struct expand_vec_perm_d *d)
 	  for (i = 1; i < d->nelt; i += 2)
 	    perm2[i] += d->nelt;
 	  if (loongarch_expand_vselect_vconcat (d->target, d->op0, d->op1,
-						perm2, d->nelt))
+						perm2, d->nelt, d->testing_p))
 	    return true;
 	}
       else
 	{
 	  if (loongarch_expand_vselect_vconcat (d->target, d->op0, d->op1,
-						d->perm, d->nelt))
+						d->perm, d->nelt,
+						d->testing_p))
 	    return true;
 
 	  /* Try again with swapped operands.  */
 	  for (i = 0; i < d->nelt; ++i)
 	    perm2[i] = (d->perm[i] + d->nelt) & (2 * d->nelt - 1);
 	  if (loongarch_expand_vselect_vconcat (d->target, d->op1, d->op0,
-						perm2, d->nelt))
+						perm2, d->nelt, d->testing_p))
 	    return true;
 	}
 
-      if (loongarch_expand_lsx_shuffle (d))
+      if (loongarch_is_imm_set_shuffle (d))
 	return true;
 
-      if (loongarch_is_odd_extraction (d)
-	  || loongarch_is_even_extraction (d))
-	{
-	  if (loongarch_expand_vec_perm_even_odd (d))
-	    return true;
-	}
+      if (loongarch_expand_vec_perm_even_odd (d))
+	return true;
 
       if (loongarch_is_lasx_lowpart_interleave (d)
 	  || loongarch_is_lasx_lowpart_interleave_2 (d)
