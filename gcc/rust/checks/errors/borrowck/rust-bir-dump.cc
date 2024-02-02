@@ -120,19 +120,7 @@ Dump::go (bool enable_simplify_cfg)
 	 << " {\n";
 
   // Print locals declaration.
-  for (PlaceId id = FIRST_VARIABLE_PLACE; id < func.place_db.size (); ++id)
-    {
-      const Place &place = func.place_db[id];
-      if (place.kind == Place::VARIABLE || place.kind == Place::TEMPORARY)
-	{
-	  if (std::find (func.arguments.begin (), func.arguments.end (), id)
-	      != func.arguments.end ())
-	    continue;
-	  stream << indentation << "let _";
-	  stream << place_map[id] << ": "
-		 << get_tyty_name (func.place_db[id].tyty) << ";\n";
-	}
-    }
+  visit_scope (0);
 
   // Print BBs.
   for (statement_bb = 0; statement_bb < func.basic_blocks.size ();
@@ -200,12 +188,12 @@ Dump::visit (Statement &stmt)
       break;
     case Statement::Kind::STORAGE_DEAD:
       stream << "StorageDead(";
-      visit_move_place (stmt.get_place ());
+      visit_place (stmt.get_place ());
       stream << ")";
       break;
     case Statement::Kind::STORAGE_LIVE:
       stream << "StorageLive(";
-      visit_move_place (stmt.get_place ());
+      visit_place (stmt.get_place ());
       stream << ")";
       break;
     }
@@ -333,10 +321,44 @@ Dump::visit (Operator<2> &expr)
   visit_move_place (expr.get_operand<1> ());
   stream << ")";
 }
+
 void
 Dump::visit (Assignment &expr)
 {
   visit_move_place (expr.get_rhs ());
+}
+
+std::ostream &
+Dump::indent (size_t depth)
+{
+  for (size_t i = 0; i < depth; ++i)
+    stream << indentation;
+  return stream;
+}
+
+void
+Dump::visit_scope (ScopeId id, size_t depth)
+{
+  auto scope = func.place_db.get_scope (id);
+  if (scope.locals.empty () && scope.children.empty ())
+    return;
+
+  if (id > 1)
+    {
+      indent (depth) << "scope " << id - 1 << " {\n";
+    }
+  for (auto &local : scope.locals)
+    {
+      indent (depth + 1) << "let _";
+      stream << place_map[local] << ": "
+	     << get_tyty_name (func.place_db[local].tyty) << ";\n";
+    }
+  for (auto &child : scope.children)
+    {
+      visit_scope (child, (id >= 1) ? depth + 1 : depth);
+    }
+  if (id > 1)
+    indent (depth) << "}\n";
 }
 
 } // namespace BIR

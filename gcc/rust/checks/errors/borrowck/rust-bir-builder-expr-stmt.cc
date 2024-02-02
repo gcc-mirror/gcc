@@ -37,9 +37,17 @@ ExprStmtBuilder::setup_loop (HIR::BaseLoopExpr &expr)
   PlaceId label_var = take_or_create_return_place (lookup_type (expr));
 
   BasicBlockId continue_bb = new_bb ();
+  push_goto (continue_bb);
+  ctx.current_bb = continue_bb;
+  // falseUnwind
+  start_new_consecutive_bb ();
+
   BasicBlockId break_bb = new_bb ();
-  ctx.loop_and_label_stack.push_back (
-    {true, label, label_var, break_bb, continue_bb});
+  // We are still outside the loop block;
+  ScopeId continue_scope = ctx.place_db.get_current_scope_id () + 1;
+  ctx.loop_and_label_stack.emplace_back (true, label, label_var, break_bb,
+					 continue_bb, continue_scope);
+
   return ctx.loop_and_label_stack.back ();
 }
 
@@ -289,13 +297,16 @@ ExprStmtBuilder::visit (HIR::FieldAccessExpr &expr)
 void
 ExprStmtBuilder::visit (HIR::BlockExpr &block)
 {
+  push_new_scope ();
+
   if (block.has_label ())
     {
       NodeId label
 	= block.get_label ().get_lifetime ().get_mappings ().get_nodeid ();
       PlaceId label_var = take_or_create_return_place (lookup_type (block));
-      ctx.loop_and_label_stack.push_back (
-	{false, label, label_var, new_bb (), INVALID_BB});
+      ctx.loop_and_label_stack.emplace_back (
+	false, label, label_var, new_bb (), INVALID_BB,
+	ctx.place_db.get_current_scope_id ());
     }
 
   // Eliminates dead code after break, continue, return.
@@ -333,6 +344,8 @@ ExprStmtBuilder::visit (HIR::BlockExpr &block)
 				take_or_create_return_place (
 				  lookup_type (*block.get_final_expr ()))));
     }
+
+  pop_scope ();
 }
 
 void
@@ -340,6 +353,8 @@ ExprStmtBuilder::visit (HIR::ContinueExpr &cont)
 {
   LoopAndLabelCtx info = cont.has_label () ? get_label_ctx (cont.get_label ())
 					   : get_unnamed_loop_ctx ();
+  start_new_consecutive_bb ();
+  unwind_until (info.continue_bb);
   push_goto (info.continue_bb);
   // No code allowed after continue. Handled in BlockExpr.
 }
@@ -352,6 +367,8 @@ ExprStmtBuilder::visit (HIR::BreakExpr &brk)
   if (brk.has_break_expr ())
     push_assignment (info.label_var, visit_expr (*brk.get_expr ()));
 
+  start_new_consecutive_bb ();
+  unwind_until (ctx.place_db.get_scope (info.continue_scope).parent);
   push_goto (info.break_bb);
   // No code allowed after continue. Handled in BlockExpr.
 }
@@ -406,6 +423,7 @@ ExprStmtBuilder::visit (HIR::ReturnExpr &ret)
     {
       push_assignment (RETURN_VALUE_PLACE, visit_expr (*ret.get_expr ()));
     }
+  unwind_until (ROOT_SCOPE);
   ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
 }
 
@@ -420,9 +438,6 @@ ExprStmtBuilder::visit (HIR::LoopExpr &expr)
 {
   auto loop = setup_loop (expr);
 
-  push_goto (loop.continue_bb);
-
-  ctx.current_bb = loop.continue_bb;
   (void) visit_expr (*expr.get_loop_block ());
   if (!ctx.get_current_bb ().is_terminated ())
     push_goto (loop.continue_bb);
@@ -435,9 +450,6 @@ ExprStmtBuilder::visit (HIR::WhileLoopExpr &expr)
 {
   auto loop = setup_loop (expr);
 
-  push_goto (loop.continue_bb);
-
-  ctx.current_bb = loop.continue_bb;
   auto cond_val = visit_expr (*expr.get_predicate_expr ());
   auto body_bb = new_bb ();
   push_switch (cond_val, {body_bb, loop.break_bb});

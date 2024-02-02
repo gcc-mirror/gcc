@@ -66,13 +66,17 @@ struct BuilderContext
     PlaceId label_var; // For break with value.
     BasicBlockId break_bb;
     BasicBlockId continue_bb; // Only valid for loops
+    ScopeId continue_scope;
+    // Break scope is the parent of the `continue_scope`.
 
     LoopAndLabelCtx (bool is_loop = false, NodeId label = UNKNOWN_NODEID,
 		     PlaceId label_var = INVALID_PLACE,
 		     BasicBlockId break_bb = INVALID_BB,
-		     BasicBlockId continue_bb = INVALID_BB)
+		     BasicBlockId continue_bb = INVALID_BB,
+		     ScopeId continue_scope = INVALID_SCOPE)
       : is_loop (is_loop), label (label), label_var (label_var),
-	break_bb (break_bb), continue_bb (continue_bb)
+	break_bb (break_bb), continue_bb (continue_bb),
+	continue_scope (continue_scope)
     {}
   };
 
@@ -174,7 +178,37 @@ protected:
     // In debug mode, check that the variable is not already declared.
     rust_assert (ctx.place_db.lookup_variable (nodeid) == INVALID_PLACE);
 
-    return ctx.place_db.add_variable (nodeid, ty);
+    auto place = ctx.place_db.add_variable (nodeid, ty);
+
+    if (ctx.place_db.get_current_scope_id () != 0)
+      push_storage_live (place);
+
+    return place;
+  }
+
+  void push_new_scope () { ctx.place_db.push_new_scope (); }
+
+  void pop_scope ()
+  {
+    auto &scope = ctx.place_db.get_current_scope ();
+    if (ctx.place_db.get_current_scope_id () != 0)
+      {
+	std::for_each (scope.locals.rbegin (), scope.locals.rend (),
+		       [&] (PlaceId place) { push_storage_dead (place); });
+      }
+    ctx.place_db.pop_scope ();
+  }
+
+  void unwind_until (ScopeId final_scope)
+  {
+    auto current_scope_id = ctx.place_db.get_current_scope_id ();
+    while (current_scope_id != final_scope)
+      {
+	auto &scope = ctx.place_db.get_scope (current_scope_id);
+	std::for_each (scope.locals.rbegin (), scope.locals.rend (),
+		       [&] (PlaceId place) { push_storage_dead (place); });
+	current_scope_id = scope.parent;
+      }
   }
 
 protected: // Helpers to add BIR statements
@@ -192,6 +226,7 @@ protected: // Helpers to add BIR statements
   void push_tmp_assignment (AbstractExpr *rhs, TyTy::BaseType *tyty)
   {
     PlaceId tmp = ctx.place_db.add_temporary (tyty);
+    push_storage_live (tmp);
     push_assignment (tmp, rhs);
   }
 
@@ -212,6 +247,18 @@ protected: // Helpers to add BIR statements
       ctx.get_current_bb ().successors.push_back (bb);
   }
 
+  void push_storage_live (PlaceId place)
+  {
+    ctx.get_current_bb ().statements.emplace_back (
+      Statement::Kind::STORAGE_LIVE, place);
+  }
+
+  void push_storage_dead (PlaceId place)
+  {
+    ctx.get_current_bb ().statements.emplace_back (
+      Statement::Kind::STORAGE_DEAD, place);
+  }
+
   PlaceId declare_rvalue (PlaceId place)
   {
     ctx.place_db[place].is_rvalue = true;
@@ -228,7 +275,10 @@ protected: // Helpers to add BIR statements
   {
     auto copy = ctx.place_db.into_rvalue (arg);
     if (copy != arg)
-      push_assignment (copy, arg);
+      {
+	push_storage_live (copy);
+	push_assignment (copy, arg);
+      }
     return copy;
   }
 
@@ -248,7 +298,14 @@ protected: // CFG helpers
   BasicBlockId start_new_consecutive_bb ()
   {
     BasicBlockId bb = new_bb ();
-    ctx.get_current_bb ().successors.emplace_back (bb);
+    if (!ctx.get_current_bb ().is_terminated ())
+      {
+	push_goto (bb);
+      }
+    else
+      {
+	add_jump_to (bb);
+      }
     ctx.current_bb = bb;
     return bb;
   }
@@ -456,10 +513,17 @@ protected:
 
   PlaceId take_or_create_return_place (TyTy::BaseType *type)
   {
-    auto result = (expr_return_place != INVALID_PLACE)
-		    ? expr_return_place
-		    : ctx.place_db.add_temporary (type);
-    expr_return_place = INVALID_PLACE;
+    PlaceId result = INVALID_PLACE;
+    if (expr_return_place != INVALID_PLACE)
+      {
+	result = expr_return_place;
+	expr_return_place = INVALID_PLACE;
+      }
+    else
+      {
+	result = ctx.place_db.add_temporary (type);
+	push_storage_live (result);
+      }
     return result;
   }
 };
