@@ -617,6 +617,12 @@ TypeCheckContext::compute_inference_variables (bool error)
   });
 }
 
+TyTy::VarianceAnalysis::CrateCtx &
+TypeCheckContext::get_variance_analysis_ctx ()
+{
+  return variance_analysis_ctx;
+}
+
 // TypeCheckContextItem
 
 TypeCheckContextItem::Item::Item (HIR::Function *item) : item (item) {}

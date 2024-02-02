@@ -48,6 +48,7 @@
 #include "rust-attribute-values.h"
 #include "rust-borrow-checker.h"
 #include "rust-ast-validation.h"
+#include "rust-tyty-variance-analysis.h"
 
 #include "input.h"
 #include "selftest.h"
@@ -651,6 +652,8 @@ Session::compile_crate (const char *filename)
 
   // type resolve
   Resolver::TypeResolution::Resolve (hir);
+
+  Resolver::TypeCheckContext::get ()->get_variance_analysis_ctx ().solve ();
 
   if (saw_errors ())
     return;
