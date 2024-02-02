@@ -270,7 +270,7 @@ in the following sections.
 -Wno-non-template-friend  -Wold-style-cast
 -Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
 -Wsized-deallocation  -Wsuggest-final-methods
--Wsuggest-final-types  -Wsuggest-override
+-Wsuggest-final-types  -Wsuggest-override  -Wno-template-id-cdtor
 -Wno-terminate  -Wno-vexing-parse  -Wvirtual-inheritance
 -Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
 
@@ -4603,6 +4603,23 @@ Warn when a namespace definition is opened.  Some coding rules disallow
 namespaces, and this may be used to enforce that rule.  The warning is
 inactive inside a system header file, such as the STL, so one can still
 use the STL.  One may also use using directives and qualified names.
+
+@opindex Wtemplate-id-cdtor
+@opindex Wno-template-id-cdtor
+@item -Wno-template-id-cdtor @r{(C++ and Objective-C++ only)}
+Disable the warning about the use of simple-template-id as the declarator-id
+of a constructor or destructor, which became invalid in C++20 via DR 2237.
+For example:
+
+@smallexample
+template<typename T> struct S @{
+  S<T>(); // should be S();
+  ~S<T>();  // should be ~S();
+@};
+@end smallexample
+
+@option{-Wtemplate-id-cdtor} is enabled by default with
+@option{-std=c++20}; it is also enabled by @option{-Wc++20-compat}.
 
 @opindex Wterminate
 @opindex Wno-terminate
