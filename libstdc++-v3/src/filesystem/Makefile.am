@@ -22,7 +22,10 @@
 
 include $(top_srcdir)/fragment.am
 
+# Separate libstdc++fs.a to be installed.
 toolexeclib_LTLIBRARIES = libstdc++fs.la
+# Duplicate lib that is to be part of libstdc++exp.a
+noinst_LTLIBRARIES = libstdc++fsconvenience.la
 
 headers =
 
@@ -44,6 +47,7 @@ sources = \
 # vpath % $(top_srcdir)/src/filesystem
 
 libstdc__fs_la_SOURCES = $(sources)
+libstdc__fsconvenience_la_SOURCES = $(sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

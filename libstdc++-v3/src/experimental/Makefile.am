@@ -25,7 +25,7 @@ include $(top_srcdir)/fragment.am
 toolexeclib_LTLIBRARIES = libstdc++exp.la
 
 if ENABLE_FILESYSTEM_TS
-filesystem_lib = $(top_builddir)/src/filesystem/libstdc++fs.la
+filesystem_lib = $(top_builddir)/src/filesystem/libstdc++fsconvenience.la
 else
 filesystem_lib =
 endif
