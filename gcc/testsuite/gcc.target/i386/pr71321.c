@@ -12,4 +12,4 @@ unsigned cvt_to_2digit_ascii(uint8_t i)
 {
   return cvt_to_2digit(i, 10) + 0x0a3030;
 }
-/* { dg-final { scan-assembler-not "lea.*0" } } */
+/* { dg-final { scan-assembler-not "lea\[^\n\r]*0" } } */
