@@ -76,6 +76,15 @@ RISCV_CORE("sifive-s76",      "rv64imafdc", "sifive-7-series")
 RISCV_CORE("sifive-u54",      "rv64imafdc", "sifive-5-series")
 RISCV_CORE("sifive-u74",      "rv64imafdc", "sifive-7-series")
 RISCV_CORE("sifive-x280",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl512b", "sifive-7-series")
+RISCV_CORE("sifive-p450",     "rv64imafdc_za64rs_zic64b_zicbom_zicbop_zicboz_"
+			      "ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei_"
+			      "zihintntl_zihintpause_zihpm_zfhmin_zba_zbb_zbs",
+			      "sifive-p400-series")
+RISCV_CORE("sifive-p670",     "rv64imafdcv_za64rs_zic64b_zicbom_zicbop_zicboz_"
+			      "ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei_"
+			      "zihintntl_zihintpause_zihpm_zfhmin_zba_zbb_zbs_"
+			      "zvl128b_zvbb_zvknc_zvkng_zvksc_zvksg",
+			      "sifive-p600-series")
 
 RISCV_CORE("thead-c906",      "rv64imafdc_xtheadba_xtheadbb_xtheadbs_xtheadcmo_"
 			      "xtheadcondmov_xtheadfmemidx_xtheadmac_"
