@@ -1,7 +1,7 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -m64 -mapxf" } */
-/* { dg-final { scan-assembler-times "cmove\[^\n\r]*, %eax" 1 } } */
-/* { dg-final { scan-assembler-times "cmovge\[^\n\r]*, %eax" 1 } } */
+/* { dg-final { scan-assembler-times "cmov(l\.)?e\[^\n\r]*, %eax" 1 } } */
+/* { dg-final { scan-assembler-times "cmov(l\.)?ge\[^\n\r]*, %eax" 1 } } */
 
 unsigned int c[4];
 
