@@ -181,9 +181,7 @@ package body Sem_Attr is
      (Attribute_Enum_Rep                     |
       Attribute_Enum_Val                     |
       Attribute_Index                        |
-      Attribute_Object_Size                  |
-      Attribute_Preelaborable_Initialization |
-      Attribute_Put_Image                    => True,
+      Attribute_Preelaborable_Initialization => True,
       others                                 => False);
 
    --  The following array contains all attributes that imply a modification
