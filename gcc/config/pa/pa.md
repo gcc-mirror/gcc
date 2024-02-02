@@ -96,6 +96,8 @@
    UNSPECV_OPC		; outline_prologue_call
    UNSPECV_OEC		; outline_epilogue_call
    UNSPECV_LONGJMP	; builtin_longjmp
+   UNSPECV_GET_FPSR	; get floating-point status register
+   UNSPECV_SET_FPSR	; set floating-point status register
   ])
 
 ;; Maximum pc-relative branch offsets.
@@ -10784,3 +10786,85 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   "ldo 15(%%sp),%1\n\t{dep|depw} %%r0,31,3,%1\n\t{ldcw|ldcw,co} 0(%1),%1"
   [(set_attr "type" "binary")
    (set_attr "length" "12")])
+
+;; Get floating-point status register.
+
+(define_expand "get_fpsr"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_GET_FPSR))]
+  ""
+{
+  if (TARGET_SOFT_FLOAT)
+    FAIL;
+
+  if (TARGET_64BIT)
+    emit_insn (gen_get_fpsr_64 (operands[0]));
+  else
+    emit_insn (gen_get_fpsr_32 (operands[0]));
+  DONE;
+})
+
+;; The floating-point status register is stored to an unused slot in
+;; the frame marker and then loaded to register operand 0.  The final
+;; floating-point load restores the T bit in the status register.
+
+;; The final load might be avoided if a word mode store was used to
+;; store the status register.  It is unclear why we need a double-word
+;; store.  I suspect PA 1.0 didn't support single-word stores of the
+;; status register.
+
+(define_insn "get_fpsr_32"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_GET_FPSR))]
+  "!TARGET_SOFT_FLOAT && !TARGET_64BIT"
+  "{fstds|fstd} %%fr0,-16(%%sp)\n\tldw -16(%%sp),%0\n\t{fldds|fldd} -16(%%sp),%%fr0"
+  [(set_attr "type" "fpstore_load")
+   (set_attr "length" "12")])
+
+;; The 64-bit pattern is similar to the 32-bit pattern except we need
+;; compute the address of the frame location as long displacements aren't
+;; supported on Linux targets.
+
+(define_insn "get_fpsr_64"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_GET_FPSR))
+   (clobber (match_scratch:DI 1 "=&r"))]
+  "!TARGET_SOFT_FLOAT && TARGET_64BIT"
+  "ldo -40(%%sp),%1\n\tfstd %%fr0,0(%1)\n\tldw 0(%1),%0\n\tfldd 0(%1),%%fr0"
+  [(set_attr "type" "fpstore_load")
+   (set_attr "length" "16")])
+
+;; Set floating-point status register.
+
+(define_expand "set_fpsr"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_SET_FPSR)]
+  ""
+{
+  if (TARGET_SOFT_FLOAT)
+    FAIL;
+
+  if (TARGET_64BIT)
+    emit_insn (gen_set_fpsr_64 (operands[0]));
+  else
+    emit_insn (gen_set_fpsr_32 (operands[0]));
+  DONE;
+})
+
+;; The old T bit is extracted and stored in the new status register.
+
+(define_insn "set_fpsr_32"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_SET_FPSR)
+   (clobber (match_scratch:SI 1 "=&r"))]
+  "!TARGET_SOFT_FLOAT && !TARGET_64BIT"
+  "{fstds|fstd} %%fr0,-16(%%sp)\n\tldw -16(%%sp),%1\n\t{extru|extrw,u} %1,25,1,%1\n\t{dep|depw} %1,25,1,%0\n\tstw %0,-16(%%sp)\n\t{fldds|fldd} -16(%%sp),%%fr0"
+  [(set_attr "type" "store_fpload")
+   (set_attr "length" "24")])
+
+(define_insn "set_fpsr_64"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_SET_FPSR)
+   (clobber (match_scratch:DI 1 "=&r"))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "!TARGET_SOFT_FLOAT && TARGET_64BIT"
+  "ldo -40(%%sp),%1\n\tfstd %%fr0,0(%1)\n\tldw 0(%1),%2\n\textrw,u %2,25,1,%2\n\tdepw %2,25,1,%0\n\tstw %0,0(%1)\n\tfldd 0(%1),%%fr0"
+  [(set_attr "type" "store_fpload")
+   (set_attr "length" "28")])
