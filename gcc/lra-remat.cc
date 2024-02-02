@@ -556,11 +556,11 @@ dump_candidates_and_remat_bb_data (void)
       fprintf (lra_dump_file, "\nBB %d:\n", bb->index);
       /* Livein */
       fprintf (lra_dump_file, "  register live in:");
-      dump_regset (df_get_live_in (bb), lra_dump_file);
+      dump_regset (df_get_subreg_live_in (bb), lra_dump_file);
       putc ('\n', lra_dump_file);
       /* Liveout */
       fprintf (lra_dump_file, "  register live out:");
-      dump_regset (df_get_live_out (bb), lra_dump_file);
+      dump_regset (df_get_subreg_live_out (bb), lra_dump_file);
       putc ('\n', lra_dump_file);
       /* Changed/dead regs: */
       fprintf (lra_dump_file, "  changed regs:");
@@ -727,7 +727,7 @@ calculate_livein_cands (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      bitmap livein_regs = df_get_live_in (bb);
+      bitmap livein_regs = df_get_subreg_live_in (bb);
       bitmap livein_cands = &get_remat_bb_data (bb)->livein_cands;
       for (unsigned int i = 0; i < cands_num; i++)
 	{
@@ -1064,7 +1064,7 @@ do_remat (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       CLEAR_HARD_REG_SET (live_hard_regs);
-      EXECUTE_IF_SET_IN_BITMAP (df_get_live_in (bb), 0, regno, bi)
+      EXECUTE_IF_SET_IN_BITMAP (df_get_subreg_live_in (bb), 0, regno, bi)
 	{
 	  int hard_regno = regno < FIRST_PSEUDO_REGISTER
 			   ? regno

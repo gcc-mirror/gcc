@@ -6515,34 +6515,86 @@ update_ebb_live_info (rtx_insn *head, rtx_insn *tail)
 	{
 	  if (prev_bb != NULL)
 	    {
-	      /* Update df_get_live_in (prev_bb):  */
+	      /* Update subreg live (prev_bb):  */
+	      bitmap subreg_all_in = df_get_subreg_live_in (prev_bb);
+	      bitmap subreg_full_in = df_get_subreg_live_full_in (prev_bb);
+	      bitmap subreg_partial_in = df_get_subreg_live_partial_in (prev_bb);
+	      subregs_live *range_in = df_get_subreg_live_range_in (prev_bb);
 	      EXECUTE_IF_SET_IN_BITMAP (&check_only_regs, 0, j, bi)
 		if (bitmap_bit_p (&live_regs, j))
-		  bitmap_set_bit (df_get_live_in (prev_bb), j);
-		else
-		  bitmap_clear_bit (df_get_live_in (prev_bb), j);
+		  {
+		    bitmap_set_bit (subreg_all_in, j);
+		    if (flag_track_subreg_liveness)
+		      {
+			bitmap_set_bit (subreg_full_in, j);
+			if (bitmap_bit_p (subreg_partial_in, j))
+			  {
+			    bitmap_clear_bit (subreg_partial_in, j);
+			    range_in->remove_range (j);
+			  }
+		      }
+		  }
+		else if (bitmap_bit_p (subreg_all_in, j))
+		  {
+		    bitmap_clear_bit (subreg_all_in, j);
+		    if (flag_track_subreg_liveness)
+		      {
+			bitmap_clear_bit (subreg_full_in, j);
+			if (bitmap_bit_p (subreg_partial_in, j))
+			  {
+			    bitmap_clear_bit (subreg_partial_in, j);
+			    range_in->remove_range (j);
+			  }
+		      }
+		  }
 	    }
+	  bitmap subreg_all_out = df_get_subreg_live_out (curr_bb);
 	  if (curr_bb != last_bb)
 	    {
-	      /* Update df_get_live_out (curr_bb):  */
+	      /* Update subreg live (curr_bb):  */
+	      bitmap subreg_full_out = df_get_subreg_live_full_out (curr_bb);
+	      bitmap subreg_partial_out = df_get_subreg_live_partial_out (curr_bb);
+	      subregs_live *range_out = df_get_subreg_live_range_out (curr_bb);
 	      EXECUTE_IF_SET_IN_BITMAP (&check_only_regs, 0, j, bi)
 		{
 		  live_p = bitmap_bit_p (&live_regs, j);
 		  if (! live_p)
 		    FOR_EACH_EDGE (e, ei, curr_bb->succs)
-		      if (bitmap_bit_p (df_get_live_in (e->dest), j))
+		      if (bitmap_bit_p (df_get_subreg_live_in (e->dest), j))
 			{
 			  live_p = true;
 			  break;
 			}
 		  if (live_p)
-		    bitmap_set_bit (df_get_live_out (curr_bb), j);
-		  else
-		    bitmap_clear_bit (df_get_live_out (curr_bb), j);
+		    {
+		      bitmap_set_bit (subreg_all_out, j);
+		      if (flag_track_subreg_liveness)
+			{
+			  bitmap_set_bit (subreg_full_out, j);
+			  if (bitmap_bit_p (subreg_partial_out, j))
+			    {
+			      bitmap_clear_bit (subreg_partial_out, j);
+			      range_out->remove_range (j);
+			    }
+			}
+		    }
+		  else if (bitmap_bit_p (subreg_all_out, j))
+		    {
+		      bitmap_clear_bit (subreg_all_out, j);
+		      if (flag_track_subreg_liveness)
+			{
+			  bitmap_clear_bit (subreg_full_out, j);
+			  if (bitmap_bit_p (subreg_partial_out, j))
+			    {
+			      bitmap_clear_bit (subreg_partial_out, j);
+			      range_out->remove_range (j);
+			    }
+			}
+		    }
 		}
 	    }
 	  prev_bb = curr_bb;
-	  bitmap_and (&live_regs, &check_only_regs, df_get_live_out (curr_bb));
+	  bitmap_and (&live_regs, &check_only_regs, subreg_all_out);
 	}
       if (! NONDEBUG_INSN_P (curr_insn))
 	continue;
@@ -6659,7 +6711,7 @@ get_live_on_other_edges (basic_block from, basic_block to, bitmap res)
   bitmap_clear (res);
   FOR_EACH_EDGE (e, ei, from->succs)
     if (e->dest != to)
-      bitmap_ior_into (res, df_get_live_in (e->dest));
+      bitmap_ior_into (res, df_get_subreg_live_in (e->dest));
   last = get_last_insertion_point (from);
   if (! JUMP_P (last))
     return;
@@ -6731,7 +6783,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	{
 	  /* We are at the end of BB.  Add qualified living
 	     pseudos for potential splitting.  */
-	  to_process = df_get_live_out (curr_bb);
+	  to_process = df_get_subreg_live_out (curr_bb);
 	  if (last_processed_bb != NULL)
 	    {
 	      /* We are somewhere in the middle of EBB.	 */
@@ -7103,7 +7155,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	{
 	  /* We reached the beginning of the current block -- do
 	     rest of spliting in the current BB.  */
-	  to_process = df_get_live_in (curr_bb);
+	  to_process = df_get_subreg_live_in (curr_bb);
 	  if (BLOCK_FOR_INSN (head) != curr_bb)
 	    {
 	      /* We are somewhere in the middle of EBB.	 */
@@ -7180,7 +7232,7 @@ lra_inheritance (void)
 	fprintf (lra_dump_file, "EBB");
       /* Form a EBB starting with BB.  */
       bitmap_clear (&ebb_global_regs);
-      bitmap_ior_into (&ebb_global_regs, df_get_live_in (bb));
+      bitmap_ior_into (&ebb_global_regs, df_get_subreg_live_in (bb));
       for (;;)
 	{
 	  if (lra_dump_file != NULL)
@@ -7196,7 +7248,7 @@ lra_inheritance (void)
 	    break;
 	  bb = bb->next_bb;
 	}
-      bitmap_ior_into (&ebb_global_regs, df_get_live_out (bb));
+      bitmap_ior_into (&ebb_global_regs, df_get_subreg_live_out (bb));
       if (lra_dump_file != NULL)
 	fprintf (lra_dump_file, "\n");
       if (inherit_in_ebb (BB_HEAD (start_bb), BB_END (bb)))
@@ -7225,15 +7277,26 @@ int lra_undo_inheritance_iter;
 /* Fix BB live info LIVE after removing pseudos created on pass doing
    inheritance/split which are REMOVED_PSEUDOS.	 */
 static void
-fix_bb_live_info (bitmap live, bitmap removed_pseudos)
+fix_bb_live_info (bitmap all, bitmap full, bitmap partial,
+		  bitmap removed_pseudos)
 {
   unsigned int regno;
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (removed_pseudos, 0, regno, bi)
-    if (bitmap_clear_bit (live, regno)
-	&& REG_P (lra_reg_info[regno].restore_rtx))
-      bitmap_set_bit (live, REGNO (lra_reg_info[regno].restore_rtx));
+    {
+      if (bitmap_clear_bit (all, regno)
+	  && REG_P (lra_reg_info[regno].restore_rtx))
+	{
+	  bitmap_set_bit (all, REGNO (lra_reg_info[regno].restore_rtx));
+	  if (flag_track_subreg_liveness)
+	    {
+	      bitmap_clear_bit (full, regno);
+	      bitmap_set_bit (full, REGNO (lra_reg_info[regno].restore_rtx));
+	      gcc_assert (!bitmap_bit_p (partial, regno));
+	    }
+	}
+    }
 }
 
 /* Return regno of the (subreg of) REG. Otherwise, return a negative
@@ -7299,8 +7362,12 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
      constraint pass.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      fix_bb_live_info (df_get_live_in (bb), remove_pseudos);
-      fix_bb_live_info (df_get_live_out (bb), remove_pseudos);
+      fix_bb_live_info (df_get_subreg_live_in (bb),
+			df_get_subreg_live_full_in (bb),
+			df_get_subreg_live_partial_in (bb), remove_pseudos);
+      fix_bb_live_info (df_get_subreg_live_out (bb),
+			df_get_subreg_live_full_out (bb),
+			df_get_subreg_live_partial_out (bb), remove_pseudos);
       FOR_BB_INSNS_REVERSE (bb, curr_insn)
 	{
 	  if (! INSN_P (curr_insn))

@@ -574,7 +574,7 @@ object_allocator<lra_insn_reg> lra_insn_reg_pool ("insn regs");
    EARLY_CLOBBER_ALTS.  */
 static struct lra_insn_reg *
 new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
-	      machine_mode mode, bool subreg_p,
+	      machine_mode mode, bool subreg_p, rtx op,
 	      alternative_mask early_clobber_alts,
 	      struct lra_insn_reg *next)
 {
@@ -586,6 +586,7 @@ new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
   ir->subreg_p = subreg_p;
   ir->early_clobber_alts = early_clobber_alts;
   ir->regno = regno;
+  ir->op = op;
   ir->next = next;
   return ir;
 }
@@ -926,7 +927,7 @@ collect_non_operand_hard_regs (rtx_insn *insn, rtx *x,
 		   && ! (FIRST_STACK_REG <= regno
 			 && regno <= LAST_STACK_REG));
 #endif
-	      list = new_insn_reg (data->insn, regno, type, mode, subreg_p,
+	      list = new_insn_reg (data->insn, regno, type, mode, subreg_p, *x,
 				   early_clobber ? ALL_ALTERNATIVES : 0, list);
 	    }
 	}
@@ -1484,6 +1485,7 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
   code = GET_CODE (x);
   mode = GET_MODE (x);
   subreg_p = false;
+  rtx op = x;
   if (GET_CODE (x) == SUBREG)
     {
       mode = wider_subreg_mode (x);
@@ -1501,7 +1503,7 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
       if (bitmap_set_bit (&lra_reg_info[regno].insn_bitmap, INSN_UID (insn)))
 	{
 	  data->regs = new_insn_reg (data->insn, regno, type, mode, subreg_p,
-				     early_clobber_alts, data->regs);
+				     op, early_clobber_alts, data->regs);
 	  return;
 	}
       else
@@ -1513,7 +1515,7 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
 		  /* The info cannot be integrated into the found
 		     structure.  */
 		  data->regs = new_insn_reg (data->insn, regno, type, mode,
-					     subreg_p, early_clobber_alts,
+					     subreg_p, op, early_clobber_alts,
 					     data->regs);
 		else
 		  {

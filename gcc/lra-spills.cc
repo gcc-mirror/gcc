@@ -566,8 +566,31 @@ spill_pseudos (void)
 			 "Debug insn #%u is reset because it referenced "
 			 "removed pseudo\n", INSN_UID (insn));
 	    }
-	  bitmap_and_compl_into (df_get_live_in (bb), spilled_pseudos);
-	  bitmap_and_compl_into (df_get_live_out (bb), spilled_pseudos);
+	  bitmap_and_compl_into (df_get_subreg_live_in (bb), spilled_pseudos);
+	  bitmap_and_compl_into (df_get_subreg_live_out (bb), spilled_pseudos);
+
+	  if (flag_track_subreg_liveness)
+	    {
+	      bitmap_and_compl_into (df_get_subreg_live_full_in (bb),
+				     spilled_pseudos);
+	      bitmap partial_in = df_get_subreg_live_partial_in (bb);
+	      subregs_live *range_in = df_get_subreg_live_range_in (bb);
+	      unsigned int regno;
+	      bitmap_iterator bi;
+	      EXECUTE_IF_AND_IN_BITMAP (partial_in, spilled_pseudos,
+					FIRST_PSEUDO_REGISTER, regno, bi)
+		range_in->remove_range (regno);
+	      bitmap_and_compl_into (partial_in, spilled_pseudos);
+
+	      bitmap_and_compl_into (df_get_subreg_live_full_out (bb),
+				     spilled_pseudos);
+	      bitmap partial_out = df_get_subreg_live_partial_out (bb);
+	      subregs_live *range_out = df_get_subreg_live_range_out (bb);
+	      EXECUTE_IF_AND_IN_BITMAP (partial_out, spilled_pseudos,
+					FIRST_PSEUDO_REGISTER, regno, bi)
+		range_out->remove_range (regno);
+	      bitmap_and_compl_into (partial_out, spilled_pseudos);
+	    }
 	}
     }
 }

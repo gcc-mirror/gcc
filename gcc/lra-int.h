@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.	If not see
 #ifndef GCC_LRA_INT_H
 #define GCC_LRA_INT_H
 
+#include "subreg-live-range.h"
+
 #define lra_assert(c) gcc_checking_assert (c)
 
 /* The parameter used to prevent infinite reloading for an insn.  Each
@@ -161,6 +163,8 @@ struct lra_insn_reg
   int regno;
   /* Next reg info of the same insn.  */
   struct lra_insn_reg *next;
+  /* The corresponding reg or subreg RTX.  */
+  rtx op;
 };
 
 /* Static part (common info for insns with the same ICODE) of LRA

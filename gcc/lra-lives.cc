@@ -272,8 +272,34 @@ update_pseudo_point (int regno, int point, enum point_type type)
     }
 }
 
-/* The corresponding bitmaps of BB currently being processed.  */
-static bitmap bb_killed_pseudos, bb_gen_pseudos;
+/* Structure describing local BB data used for pseudo
+   live-analysis.  */
+class bb_data_pseudos : public df_live_subreg_local_bb_info
+{
+public:
+  /* Basic block about which the below data are.  */
+  basic_block bb;
+};
+
+/* Array for all BB data.  Indexed by the corresponding BB index.  */
+typedef class bb_data_pseudos *bb_data_t;
+
+/* All basic block data are referred through the following array.  */
+static bb_data_t bb_data;
+
+/* The corresponding df local data of BB currently being processed.  */
+static bb_data_t curr_bb_info;
+
+/* The regs which need to be tracked it's subreg liveness.  */
+static bitmap_head tracked_regs;
+
+/* Return true if the REGNO need be track with subreg liveness.  */
+
+static bool
+need_track_subreg_p (unsigned regno)
+{
+  return bitmap_bit_p (&tracked_regs, regno);
+}
 
 /* Record hard register REGNO as now being live.  It updates
    living hard regs and START_LIVING.  */
@@ -287,7 +313,7 @@ make_hard_regno_live (int regno)
   SET_HARD_REG_BIT (hard_regs_live, regno);
   sparseset_set_bit (start_living, regno);
   if (fixed_regs[regno] || TEST_HARD_REG_BIT (hard_regs_spilled_into, regno))
-    bitmap_set_bit (bb_gen_pseudos, regno);
+    bitmap_set_bit (&curr_bb_info->full_use, regno);
 }
 
 /* Process the definition of hard register REGNO.  This updates
@@ -310,8 +336,8 @@ make_hard_regno_dead (int regno)
   sparseset_set_bit (start_dying, regno);
   if (fixed_regs[regno] || TEST_HARD_REG_BIT (hard_regs_spilled_into, regno))
     {
-      bitmap_clear_bit (bb_gen_pseudos, regno);
-      bitmap_set_bit (bb_killed_pseudos, regno);
+      bitmap_clear_bit (&curr_bb_info->full_use, regno);
+      bitmap_set_bit (&curr_bb_info->full_def, regno);
     }
 }
 
@@ -343,7 +369,7 @@ mark_pseudo_dead (int regno)
 /* Mark register REGNO (pseudo or hard register) in MODE as being live
    and update BB_GEN_PSEUDOS.  */
 static void
-mark_regno_live (int regno, machine_mode mode)
+mark_regno_live (int regno, machine_mode mode, struct lra_insn_reg *reg)
 {
   int last;
 
@@ -355,15 +381,23 @@ mark_regno_live (int regno, machine_mode mode)
   else
     {
       mark_pseudo_live (regno);
-      bitmap_set_bit (bb_gen_pseudos, regno);
+      if (!need_track_subreg_p (regno))
+	bitmap_set_bit (&curr_bb_info->full_use, regno);
+      else
+	{
+	  machine_mode reg_mode
+	    = GET_MODE (SUBREG_P (reg->op) ? SUBREG_REG (reg->op) : reg->op);
+	  auto_sbitmap range (get_nblocks (reg_mode));
+	  init_range (reg->op, range);
+	  add_subreg_range (curr_bb_info, regno, range, false);
+	}
     }
 }
-
 
 /* Mark register REGNO (pseudo or hard register) in MODE as being dead
    and update BB_GEN_PSEUDOS and BB_KILLED_PSEUDOS.  */
 static void
-mark_regno_dead (int regno, machine_mode mode)
+mark_regno_dead (int regno, machine_mode mode, struct lra_insn_reg *reg)
 {
   int last;
 
@@ -375,8 +409,20 @@ mark_regno_dead (int regno, machine_mode mode)
   else
     {
       mark_pseudo_dead (regno);
-      bitmap_clear_bit (bb_gen_pseudos, regno);
-      bitmap_set_bit (bb_killed_pseudos, regno);
+      if (!need_track_subreg_p (regno))
+	{
+	  bitmap_clear_bit (&curr_bb_info->full_use, regno);
+	  bitmap_set_bit (&curr_bb_info->full_def, regno);
+	}
+      else
+	{
+	  machine_mode reg_mode
+	    = GET_MODE (SUBREG_P (reg->op) ? SUBREG_REG (reg->op) : reg->op);
+	  auto_sbitmap range (get_nblocks (reg_mode));
+	  init_range (reg->op, range);
+	  remove_subreg_range (curr_bb_info, regno, range);
+	  add_subreg_range (curr_bb_info, regno, range, true);
+	}
     }
 }
 
@@ -386,23 +432,6 @@ mark_regno_dead (int regno, machine_mode mode)
    The code works only when pseudo live info is changed on a BB
    border.  That might be a consequence of some global transformations
    in LRA, e.g. PIC pseudo reuse or rematerialization.  */
-
-/* Structure describing local BB data used for pseudo
-   live-analysis.  */
-class bb_data_pseudos
-{
-public:
-  /* Basic block about which the below data are.  */
-  basic_block bb;
-  bitmap_head killed_pseudos; /* pseudos killed in the BB.  */
-  bitmap_head gen_pseudos; /* pseudos generated in the BB.  */
-};
-
-/* Array for all BB data.  Indexed by the corresponding BB index.  */
-typedef class bb_data_pseudos *bb_data_t;
-
-/* All basic block data are referred through the following array.  */
-static bb_data_t bb_data;
 
 /* Two small functions for access to the bb data.  */
 static inline bb_data_t
@@ -429,14 +458,73 @@ static bitmap_head all_hard_regs_bitmap;
 static bool
 live_trans_fun (int bb_index)
 {
-  basic_block bb = get_bb_data_by_index (bb_index)->bb;
-  bitmap bb_liveout = df_get_live_out (bb);
-  bitmap bb_livein = df_get_live_in (bb);
-  bb_data_t bb_info = get_bb_data (bb);
+  bb_data_t local_bb_info = get_bb_data_by_index (bb_index);
+  bitmap full_in = df_get_subreg_live_full_in (local_bb_info->bb);
+  bitmap full_out = df_get_subreg_live_full_out (local_bb_info->bb);
 
-  bitmap_and_compl (&temp_bitmap, bb_liveout, &all_hard_regs_bitmap);
-  return bitmap_ior_and_compl (bb_livein, &bb_info->gen_pseudos,
-			       &temp_bitmap, &bb_info->killed_pseudos);
+  bitmap_and_compl (&temp_bitmap, full_out, &all_hard_regs_bitmap);
+  bool changed = bitmap_ior_and_compl (full_in, &local_bb_info->full_use,
+				       &temp_bitmap, &local_bb_info->full_def);
+
+  /* Handle partial live case.  */
+  if (flag_track_subreg_liveness)
+    {
+      bitmap partial_in = df_get_subreg_live_partial_in (local_bb_info->bb);
+      bitmap partial_out = df_get_subreg_live_partial_out (local_bb_info->bb);
+      subregs_live *range_in = df_get_subreg_live_range_in (local_bb_info->bb);
+      subregs_live *range_out
+	= df_get_subreg_live_range_out (local_bb_info->bb);
+
+      if (!bitmap_empty_p (partial_out)
+	  || !bitmap_empty_p (&local_bb_info->partial_use))
+	{
+	  unsigned int regno;
+	  bitmap_iterator bi;
+	  bitmap_head temp_partial_out;
+	  subregs_live temp_range_out;
+
+	  /* TEMP = (OUT & ~DEF) */
+	  bitmap_initialize (&temp_partial_out, &bitmap_default_obstack);
+	  EXECUTE_IF_SET_IN_BITMAP (partial_out, FIRST_PSEUDO_REGISTER, regno,
+				    bi)
+	    {
+	      sbitmap out_range = range_out->get_range (regno);
+	      temp_range_out.add_range (regno, out_range);
+	      if (bitmap_bit_p (&local_bb_info->partial_def, regno))
+		{
+		  sbitmap def_range
+		    = local_bb_info->range_def->get_range (regno);
+		  temp_range_out.remove_range (regno, def_range);
+		  if (!temp_range_out.empty_p (regno))
+		    bitmap_set_bit (&temp_partial_out, regno);
+		}
+	      else
+		bitmap_set_bit (&temp_partial_out, regno);
+	    }
+
+	  /* TEMP = USE | TEMP */
+	  EXECUTE_IF_SET_IN_BITMAP (&local_bb_info->partial_use,
+				    FIRST_PSEUDO_REGISTER, regno, bi)
+	    {
+	      sbitmap use_range = local_bb_info->range_use->get_range (regno);
+	      temp_range_out.add_range (regno, use_range);
+	    }
+	  bitmap_ior_into (&temp_partial_out, &local_bb_info->partial_use);
+
+	  /* IN = TEMP */
+	  changed |= range_in->copy_lives (temp_range_out);
+	  bitmap_copy (partial_in, &temp_partial_out);
+	  df_live_subreg_check_result (full_in, partial_in, range_in);
+	}
+      else if (!bitmap_empty_p (partial_in))
+	{
+	  changed = true;
+	  bitmap_clear (partial_in);
+	  range_in->clear ();
+	}
+    }
+
+  return changed;
 }
 
 /* The confluence function used by the DF equation solver to set up
@@ -444,7 +532,9 @@ live_trans_fun (int bb_index)
 static void
 live_con_fun_0 (basic_block bb)
 {
-  bitmap_and_into (df_get_live_out (bb), &all_hard_regs_bitmap);
+  bitmap_and_into (df_get_subreg_live_out (bb), &all_hard_regs_bitmap);
+  if (flag_track_subreg_liveness)
+    bitmap_and_into (df_get_subreg_live_full_out (bb), &all_hard_regs_bitmap);
 }
 
 /* The confluence function used by the DF equation solver to propagate
@@ -456,13 +546,37 @@ live_con_fun_0 (basic_block bb)
 static bool
 live_con_fun_n (edge e)
 {
-  basic_block bb = e->src;
-  basic_block dest = e->dest;
-  bitmap bb_liveout = df_get_live_out (bb);
-  bitmap dest_livein = df_get_live_in (dest);
+  bitmap src_full_out = df_get_subreg_live_full_out (e->src);
+  bitmap dest_full_in = df_get_subreg_live_full_in (e->dest);
 
-  return bitmap_ior_and_compl_into (bb_liveout,
-				    dest_livein, &all_hard_regs_bitmap);
+  bool changed = bitmap_ior_and_compl_into (src_full_out, dest_full_in,
+					    &all_hard_regs_bitmap);
+  /* Handle partial live case.  */
+  if (flag_track_subreg_liveness)
+    {
+      bitmap src_partial_out = df_get_subreg_live_partial_out (e->src);
+      subregs_live *src_range_out = df_get_subreg_live_range_out (e->src);
+      bitmap dest_partial_in = df_get_subreg_live_partial_in (e->dest);
+      subregs_live *dest_range_in = df_get_subreg_live_range_in (e->dest);
+
+      if (bitmap_empty_p (dest_partial_in))
+	return changed;
+
+      unsigned int regno;
+      bitmap_iterator bi;
+      EXECUTE_IF_SET_IN_BITMAP (dest_partial_in, FIRST_PSEUDO_REGISTER, regno,
+				bi)
+	{
+	  sbitmap dest_range = dest_range_in->get_range (regno);
+	  changed |= src_range_out->add_range (regno, dest_range);
+	}
+      changed |= bitmap_ior_into (src_partial_out, dest_partial_in);
+
+      df_live_subreg_check_result (src_full_out, src_partial_out,
+				   src_range_out);
+    }
+
+  return changed;
 }
 
 /* Indexes of all function blocks.  */
@@ -479,12 +593,47 @@ initiate_live_solver (void)
   bitmap_initialize (&all_blocks, &reg_obstack);
 
   basic_block bb;
+  if (flag_track_subreg_liveness)
+    {
+      bitmap_initialize (&tracked_regs, &reg_obstack);
+      FOR_ALL_BB_FN (bb, cfun)
+	{
+	  rtx_insn *insn;
+	  df_ref use;
+	  FOR_BB_INSNS (bb, insn)
+	    {
+	      if (!NONDEBUG_INSN_P (insn))
+		continue;
+
+	      df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+
+	      FOR_EACH_INSN_INFO_USE (use, insn_info)
+		{
+		  unsigned int regno = DF_REF_REGNO (use);
+		  /* A multireg which is used via subreg pattern.  */
+		  if (multireg_p (regno)
+		      && DF_REF_FLAGS (use) & (DF_REF_SUBREG))
+		    bitmap_set_bit (&tracked_regs, regno);
+		}
+	    }
+	}
+    }
+
+
   FOR_ALL_BB_FN (bb, cfun)
     {
       bb_data_t bb_info = get_bb_data (bb);
       bb_info->bb = bb;
-      bitmap_initialize (&bb_info->killed_pseudos, &reg_obstack);
-      bitmap_initialize (&bb_info->gen_pseudos, &reg_obstack);
+      bitmap_initialize (&bb_info->full_def, &reg_obstack);
+      bitmap_initialize (&bb_info->full_use, &reg_obstack);
+      if (flag_track_subreg_liveness)
+	{
+	  bitmap_initialize (&bb_info->partial_def, &reg_obstack);
+	  bitmap_initialize (&bb_info->partial_use, &reg_obstack);
+	  size_t num_regs = bitmap_count_bits (&tracked_regs);
+	  bb_info->range_def = new subregs_live (num_regs);
+	  bb_info->range_use = new subregs_live (num_regs);
+	}
       bitmap_set_bit (&all_blocks, bb->index);
     }
 }
@@ -496,11 +645,19 @@ finish_live_solver (void)
   basic_block bb;
 
   bitmap_clear (&all_blocks);
+  bitmap_clear (&tracked_regs);
   FOR_ALL_BB_FN (bb, cfun)
     {
       bb_data_t bb_info = get_bb_data (bb);
-      bitmap_clear (&bb_info->killed_pseudos);
-      bitmap_clear (&bb_info->gen_pseudos);
+      bitmap_clear (&bb_info->full_def);
+      bitmap_clear (&bb_info->full_use);
+      if (flag_track_subreg_liveness)
+	{
+	  bitmap_clear (&bb_info->partial_def);
+	  bitmap_clear (&bb_info->partial_use);
+	  delete bb_info->range_def;
+	  delete bb_info->range_use;
+	}
     }
   free (bb_data);
   bitmap_clear (&all_hard_regs_bitmap);
@@ -663,7 +820,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
   /* Only has a meaningful value once we've seen a call.  */
   function_abi last_call_abi = default_function_abi;
 
-  reg_live_out = df_get_live_out (bb);
+  reg_live_out = df_get_subreg_live_out (bb);
   sparseset_clear (pseudos_live);
   sparseset_clear (pseudos_live_through_calls);
   sparseset_clear (pseudos_live_through_setjumps);
@@ -675,10 +832,16 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       mark_pseudo_live (j);
     }
 
-  bb_gen_pseudos = &get_bb_data (bb)->gen_pseudos;
-  bb_killed_pseudos = &get_bb_data (bb)->killed_pseudos;
-  bitmap_clear (bb_gen_pseudos);
-  bitmap_clear (bb_killed_pseudos);
+  curr_bb_info = get_bb_data (bb);
+  bitmap_clear (&curr_bb_info->full_use);
+  bitmap_clear (&curr_bb_info->full_def);
+  if (flag_track_subreg_liveness)
+    {
+      bitmap_clear (&curr_bb_info->partial_use);
+      bitmap_clear (&curr_bb_info->partial_def);
+      curr_bb_info->range_use->clear ();
+      curr_bb_info->range_def->clear ();
+    }
   freq = REG_FREQ_FROM_BB (bb);
 
   if (lra_dump_file != NULL)
@@ -860,7 +1023,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	if (reg->type != OP_IN)
 	  {
 	    update_pseudo_point (reg->regno, curr_point, USE_POINT);
-	    mark_regno_live (reg->regno, reg->biggest_mode);
+	    mark_regno_live (reg->regno, reg->biggest_mode, reg);
 	    /* ??? Should be a no-op for unused registers.  */
 	    check_pseudos_live_through_calls (reg->regno, last_call_abi);
 	  }
@@ -886,7 +1049,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  {
 	    if (reg->type == OP_OUT)
 	      update_pseudo_point (reg->regno, curr_point, DEF_POINT);
-	    mark_regno_dead (reg->regno, reg->biggest_mode);
+	    mark_regno_dead (reg->regno, reg->biggest_mode, reg);
 	  }
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
@@ -945,8 +1108,12 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  {
 	    if (reg->type == OP_IN)
 	      update_pseudo_point (reg->regno, curr_point, USE_POINT);
-	    mark_regno_live (reg->regno, reg->biggest_mode);
 	    check_pseudos_live_through_calls (reg->regno, last_call_abi);
+	    /* Ignore the use of subreg which is used as dest operand.  */
+	    if (need_track_subreg_p (reg->regno) && reg->subreg_p
+		&& reg->type == OP_INOUT)
+	      continue;
+	    mark_regno_live (reg->regno, reg->biggest_mode, reg);
 	  }
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
@@ -970,12 +1137,12 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  {
 	    if (reg->type == OP_OUT)
 	      update_pseudo_point (reg->regno, curr_point, DEF_POINT);
-	    mark_regno_dead (reg->regno, reg->biggest_mode);
+	    mark_regno_dead (reg->regno, reg->biggest_mode, reg);
 
 	    /* We're done processing inputs, so make sure early clobber
 	       operands that are both inputs and outputs are still live.  */
 	    if (reg->type == OP_INOUT)
-	      mark_regno_live (reg->regno, reg->biggest_mode);
+	      mark_regno_live (reg->regno, reg->biggest_mode, reg);
 	  }
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
@@ -1099,8 +1266,8 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
   bool live_change_p = false;
   /* Check if bb border live info was changed.  */
   unsigned int live_pseudos_num = 0;
-  EXECUTE_IF_SET_IN_BITMAP (df_get_live_in (bb),
-			    FIRST_PSEUDO_REGISTER, j, bi)
+  EXECUTE_IF_SET_IN_BITMAP (df_get_subreg_live_in (bb), FIRST_PSEUDO_REGISTER,
+			    j, bi)
     {
       live_pseudos_num++;
       if (! sparseset_bit_p (pseudos_live, j))
@@ -1118,7 +1285,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       live_change_p = true;
       if (lra_dump_file != NULL)
 	EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, j)
-	  if (! bitmap_bit_p (df_get_live_in (bb), j))
+	  if (! bitmap_bit_p (df_get_subreg_live_in (bb), j))
 	    fprintf (lra_dump_file,
 		     "  r%d is added to live at bb%d start\n", j, bb->index);
     }
@@ -1133,7 +1300,8 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       mark_pseudo_dead (i);
     }
 
-  EXECUTE_IF_SET_IN_BITMAP (df_get_live_in (bb), FIRST_PSEUDO_REGISTER, j, bi)
+  EXECUTE_IF_SET_IN_BITMAP (df_get_subreg_live_in (bb), FIRST_PSEUDO_REGISTER,
+			    j, bi)
     {
       if (sparseset_cardinality (pseudos_live_through_calls) == 0)
 	break;
@@ -1149,7 +1317,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       if (!TEST_HARD_REG_BIT (hard_regs_spilled_into, i))
 	continue;
 
-      if (bitmap_bit_p (df_get_live_in (bb), i))
+      if (bitmap_bit_p (df_get_subreg_live_in (bb), i))
 	continue;
 
       live_change_p = true;
@@ -1157,7 +1325,9 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	fprintf (lra_dump_file,
 		 "  hard reg r%d is added to live at bb%d start\n", i,
 		 bb->index);
-      bitmap_set_bit (df_get_live_in (bb), i);
+      bitmap_set_bit (df_get_subreg_live_in (bb), i);
+      if (flag_track_subreg_liveness)
+	bitmap_set_bit (df_get_subreg_live_full_in (bb), i);
     }
 
   if (need_curr_point_incr)
@@ -1421,12 +1591,30 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
     {
       /* We need to clear pseudo live info as some pseudos can
 	 disappear, e.g. pseudos with used equivalences.  */
-      FOR_EACH_BB_FN (bb, cfun)
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		      EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
 	{
-	  bitmap_clear_range (df_get_live_in (bb), FIRST_PSEUDO_REGISTER,
+	  bitmap_clear_range (df_get_subreg_live_in (bb), FIRST_PSEUDO_REGISTER,
 			      max_regno - FIRST_PSEUDO_REGISTER);
-	  bitmap_clear_range (df_get_live_out (bb), FIRST_PSEUDO_REGISTER,
+	  bitmap_clear_range (df_get_subreg_live_out (bb), FIRST_PSEUDO_REGISTER,
 			      max_regno - FIRST_PSEUDO_REGISTER);
+	  if (flag_track_subreg_liveness)
+	    {
+	      bitmap_clear_range (df_get_subreg_live_full_in (bb),
+				  FIRST_PSEUDO_REGISTER,
+				  max_regno - FIRST_PSEUDO_REGISTER);
+	      bitmap_clear_range (df_get_subreg_live_partial_in (bb),
+				  FIRST_PSEUDO_REGISTER,
+				  max_regno - FIRST_PSEUDO_REGISTER);
+	      bitmap_clear_range (df_get_subreg_live_full_out (bb),
+				  FIRST_PSEUDO_REGISTER,
+				  max_regno - FIRST_PSEUDO_REGISTER);
+	      bitmap_clear_range (df_get_subreg_live_partial_out (bb),
+				  FIRST_PSEUDO_REGISTER,
+				  max_regno - FIRST_PSEUDO_REGISTER);
+	      df_get_subreg_live_range_in (bb)->clear ();
+	      df_get_subreg_live_range_out (bb)->clear ();
+	    }
 	}
       /* As we did not change CFG since LRA start we can use
 	 DF-infrastructure solver to solve live data flow problem.  */
@@ -1439,6 +1627,10 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
 	(DF_BACKWARD, NULL, live_con_fun_0, live_con_fun_n,
 	 live_trans_fun, &all_blocks,
 	 df_get_postorder (DF_BACKWARD), df_get_n_blocks (DF_BACKWARD));
+
+      if (flag_track_subreg_liveness)
+	df_live_subreg_finalize (&all_blocks);
+
       if (lra_dump_file != NULL)
 	{
 	  fprintf (lra_dump_file,
@@ -1447,16 +1639,33 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
 	  FOR_EACH_BB_FN (bb, cfun)
 	    {
 	      bb_data_t bb_info = get_bb_data (bb);
-	      bitmap bb_livein = df_get_live_in (bb);
-	      bitmap bb_liveout = df_get_live_out (bb);
 
 	      fprintf (lra_dump_file, "\nBB %d:\n", bb->index);
-	      lra_dump_bitmap_with_title ("  gen:",
-					  &bb_info->gen_pseudos, bb->index);
-	      lra_dump_bitmap_with_title ("  killed:",
-					  &bb_info->killed_pseudos, bb->index);
-	      lra_dump_bitmap_with_title ("  livein:", bb_livein, bb->index);
-	      lra_dump_bitmap_with_title ("  liveout:", bb_liveout, bb->index);
+	      lra_dump_bitmap_with_title ("  full use", &bb_info->full_use,
+					  bb->index);
+	      lra_dump_bitmap_with_title ("  full def", &bb_info->full_def,
+					  bb->index);
+	      lra_dump_bitmap_with_title ("  live in full",
+					  df_get_subreg_live_full_in (bb),
+					  bb->index);
+	      lra_dump_bitmap_with_title ("  live out full",
+					  df_get_subreg_live_full_out (bb),
+					  bb->index);
+	      if (flag_track_subreg_liveness)
+		{
+		  lra_dump_bitmap_with_title ("  partial use",
+					      &bb_info->partial_use, bb->index);
+		  lra_dump_bitmap_with_title ("  partial def",
+					      &bb_info->partial_def, bb->index);
+		  lra_dump_bitmap_with_title ("  live in partial",
+					      df_get_subreg_live_partial_in (
+						bb),
+					      bb->index);
+		  lra_dump_bitmap_with_title ("  live out partial",
+					      df_get_subreg_live_partial_out (
+						bb),
+					      bb->index);
+		}
 	    }
 	}
     }

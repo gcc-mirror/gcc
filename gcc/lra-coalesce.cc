@@ -186,19 +186,28 @@ static bitmap_head used_pseudos_bitmap;
 /* Set up USED_PSEUDOS_BITMAP, and update LR_BITMAP (a BB live info
    bitmap).  */
 static void
-update_live_info (bitmap lr_bitmap)
+update_live_info (bitmap all, bitmap full, bitmap partial)
 {
   unsigned int j;
   bitmap_iterator bi;
 
   bitmap_clear (&used_pseudos_bitmap);
-  EXECUTE_IF_AND_IN_BITMAP (&coalesced_pseudos_bitmap, lr_bitmap,
+  EXECUTE_IF_AND_IN_BITMAP (&coalesced_pseudos_bitmap, all,
 			    FIRST_PSEUDO_REGISTER, j, bi)
     bitmap_set_bit (&used_pseudos_bitmap, first_coalesced_pseudo[j]);
-  if (! bitmap_empty_p (&used_pseudos_bitmap))
+  if (!bitmap_empty_p (&used_pseudos_bitmap))
     {
-      bitmap_and_compl_into (lr_bitmap, &coalesced_pseudos_bitmap);
-      bitmap_ior_into (lr_bitmap, &used_pseudos_bitmap);
+      bitmap_and_compl_into (all, &coalesced_pseudos_bitmap);
+      bitmap_ior_into (all, &used_pseudos_bitmap);
+
+      if (flag_track_subreg_liveness)
+	{
+	  bitmap_and_compl_into (full, &coalesced_pseudos_bitmap);
+	  bitmap_ior_and_compl_into (full, &used_pseudos_bitmap, partial);
+
+	  bitmap_and_compl_into (partial, &coalesced_pseudos_bitmap);
+	  bitmap_ior_and_compl_into (partial, &used_pseudos_bitmap, full);
+	}
     }
 }
 
@@ -301,8 +310,12 @@ lra_coalesce (void)
   bitmap_initialize (&used_pseudos_bitmap, &reg_obstack);
   FOR_EACH_BB_FN (bb, cfun)
     {
-      update_live_info (df_get_live_in (bb));
-      update_live_info (df_get_live_out (bb));
+      update_live_info (df_get_subreg_live_in (bb),
+			df_get_subreg_live_full_in (bb),
+			df_get_subreg_live_partial_in (bb));
+      update_live_info (df_get_subreg_live_out (bb),
+			df_get_subreg_live_full_out (bb),
+			df_get_subreg_live_partial_out (bb));
       FOR_BB_INSNS_SAFE (bb, insn, next)
 	if (INSN_P (insn)
 	    && bitmap_bit_p (&involved_insns_bitmap, INSN_UID (insn)))
