@@ -90,8 +90,7 @@ package Style is
    --  designator is a reserved word (access, digits, delta or range) to allow
    --  differing rules for the two cases.
 
-   procedure Check_Boolean_Operator (Node : Node_Id)
-     renames Style_Inst.Check_Boolean_Operator;
+   procedure Check_Boolean_Operator (Node : Node_Id);
    --  Called after resolving AND or OR node to check short circuit rules
 
    procedure Check_Box

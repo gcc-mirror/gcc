@@ -63,10 +63,6 @@ package Styleg is
    --  the attribute designator is a reserved word (access, digits,
    --  delta or range) to allow differing rules for the two cases.
 
-   procedure Check_Boolean_Operator (Node : Node_Id);
-   --  Node is a node for an AND or OR operator. Check that the usage meets
-   --  the style rules.
-
    procedure Check_Box;
    --  Called after scanning out a box to check spacing
 
