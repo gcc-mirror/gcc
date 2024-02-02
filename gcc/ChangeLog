@@ -1,3 +1,8 @@
+2024-02-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (atomic_storedi_1): Fix bug in
+	alternative 1.
+
 2024-01-31  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

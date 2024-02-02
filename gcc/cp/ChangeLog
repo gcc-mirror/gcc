@@ -1,3 +1,12 @@
+2024-02-01  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112437
+	* typeck.cc (treat_lvalue_as_rvalue_p): Bail out on sk_namespace in
+	the move on throw of parms loop.
+
 2024-01-26  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
