@@ -2572,7 +2572,8 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
 	      if (is_gimple_assign (stmt)
 		  && gimple_assign_rhs_code (stmt) == BIT_AND_EXPR
 		  && TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
-		  && wi::to_wide (gimple_assign_rhs2 (stmt))
+		  && wide_int::from (wi::to_wide (gimple_assign_rhs2 (stmt)),
+				     prec, TYPE_SIGN (TREE_TYPE (rhs)))
 		     == wi::mask (hprec, false, prec))
 		*new_rhs_out = gimple_assign_rhs1 (stmt);
 	      else
