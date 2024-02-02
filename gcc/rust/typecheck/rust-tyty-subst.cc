@@ -589,6 +589,17 @@ SubstitutionRef::get_used_arguments () const
   return used_arguments;
 }
 
+tl::optional<SubstitutionArg>
+SubstitutionRef::get_arg_at (size_t i) const
+{
+  auto param_ty = get_substs ().at (i).get_param_ty ();
+  SubstitutionArg arg = SubstitutionArg::error ();
+  get_used_arguments ().get_argument_for_symbol (param_ty, &arg);
+  if (arg.is_error ())
+    return tl::nullopt;
+  return arg;
+}
+
 const RegionConstraints &
 SubstitutionRef::get_region_constraints () const
 {
