@@ -14812,6 +14812,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   if (DECL_SECTION_NAME (t))
     set_decl_section_name (r, t);
   if (DECL_DEFAULTED_OUTSIDE_CLASS_P (r)
+      && COMPLETE_TYPE_P (DECL_CONTEXT (r))
       && !processing_template_decl)
     defaulted_late_check (r);
 
