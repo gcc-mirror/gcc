@@ -1114,7 +1114,7 @@ package body Contracts is
       if Comes_From_Source (Obj_Id) and then Is_Ghost_Entity (Obj_Id) then
 
          --  A Ghost object cannot be of a type that yields a synchronized
-         --  object (SPARK RM 6.9(19)).
+         --  object (SPARK RM 6.9(21)).
 
          if Yields_Synchronized_Object (Obj_Typ) then
             Error_Msg_N ("ghost object & cannot be synchronized", Obj_Id);

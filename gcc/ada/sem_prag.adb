@@ -12511,7 +12511,7 @@ package body Sem_Prag is
                procedure Check_Ghost_Synchronous is
                begin
                   --  A synchronized abstract state cannot be Ghost and vice
-                  --  versa (SPARK RM 6.9(19)).
+                  --  versa (SPARK RM 6.9(21)).
 
                   if Ghost_Seen and Synchronous_Seen then
                      SPARK_Msg_N ("synchronized state cannot be ghost", State);
@@ -13883,7 +13883,7 @@ package body Sem_Prag is
 
                      --  Pragma Assertion_Policy specifying a Ghost policy
                      --  cannot occur within a Ghost subprogram or package
-                     --  (SPARK RM 6.9(14)).
+                     --  (SPARK RM 6.9(16)).
 
                      if Ghost_Mode > None then
                         Error_Pragma
@@ -17673,7 +17673,7 @@ package body Sem_Prag is
                   end if;
 
                --  Task unit declared without a definition cannot be subject to
-               --  pragma Ghost (SPARK RM 6.9(19)).
+               --  pragma Ghost (SPARK RM 6.9(21)).
 
                elsif Nkind (Stmt) in
                        N_Single_Task_Declaration | N_Task_Type_Declaration
@@ -17769,7 +17769,7 @@ package body Sem_Prag is
             end if;
 
             --  Protected and task types cannot be subject to pragma Ghost
-            --  (SPARK RM 6.9(19)).
+            --  (SPARK RM 6.9(21)).
 
             if Nkind (Context) in N_Protected_Body | N_Protected_Definition
             then
@@ -17856,7 +17856,7 @@ package body Sem_Prag is
                end if;
 
             --  A synchronized object cannot be subject to pragma Ghost
-            --  (SPARK RM 6.9(19)).
+            --  (SPARK RM 6.9(21)).
 
             elsif Ekind (Id) = E_Variable then
                if Is_Protected_Type (Etype (Id)) then
@@ -29787,7 +29787,7 @@ package body Sem_Prag is
 
                begin
                   --  The Ghost policy in effect at the point of abstract state
-                  --  declaration and constituent must match (SPARK RM 6.9(15))
+                  --  declaration and constituent must match (SPARK RM 6.9(17))
 
                   Check_Ghost_Refinement
                     (State, State_Id, Constit, Constit_Id);

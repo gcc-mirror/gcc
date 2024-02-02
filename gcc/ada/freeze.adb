@@ -4094,7 +4094,7 @@ package body Freeze is
          <<Skip_Packed>>
 
          --  A Ghost type cannot have a component of protected or task type
-         --  (SPARK RM 6.9(19)).
+         --  (SPARK RM 6.9(21)).
 
          if Is_Ghost_Entity (Arr) and then Is_Concurrent_Type (Ctyp) then
             Error_Msg_N
