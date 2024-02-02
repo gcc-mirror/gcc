@@ -59,6 +59,9 @@ protected:
   void visit (Operator<1> &expr) override;
   void visit (Operator<2> &expr) override;
   void visit (Assignment &expr) override;
+  void visit_scope (ScopeId id, size_t depth = 1);
+
+  std::ostream &indent (size_t depth);
 };
 
 } // namespace BIR

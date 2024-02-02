@@ -105,12 +105,30 @@ struct Place
   {}
 };
 
+using ScopeId = uint32_t;
+
+static constexpr ScopeId INVALID_SCOPE = std::numeric_limits<ScopeId>::max ();
+/** Arguments and return value are in the root scope. */
+static constexpr ScopeId ROOT_SCOPE = 0;
+/** Top-level local variables are in the top-level scope. */
+static constexpr ScopeId TOP_LEVEL_SCOPE = 1;
+
+struct Scope
+{
+  ScopeId parent = INVALID_SCOPE;
+  std::vector<ScopeId> children;
+  std::vector<PlaceId> locals;
+};
+
 /** Allocated places and keeps track of paths. */
 class PlaceDB
 {
+private:
   // Possible optimizations: separate variables to speedup lookup.
   std::vector<Place> places;
   std::unordered_map<TyTy::BaseType *, PlaceId> constants_lookup;
+  std::vector<Scope> scopes;
+  ScopeId current_scope = 0;
 
 public:
   PlaceDB ()
@@ -118,12 +136,38 @@ public:
     // Reserved index for invalid place.
     places.push_back (
       {Place::INVALID, 0, {}, false, false, NO_LIFETIME, nullptr});
+
+    scopes.emplace_back (); // Root scope.
   }
 
   Place &operator[] (PlaceId id) { return places.at (id); }
   const Place &operator[] (PlaceId id) const { return places.at (id); }
 
   size_t size () const { return places.size (); }
+
+  ScopeId get_current_scope_id () const { return current_scope; }
+
+  const std::vector<Scope> &get_scopes () const { return scopes; }
+
+  const Scope &get_current_scope () const { return scopes[current_scope]; }
+
+  const Scope &get_scope (ScopeId id) const { return scopes[id]; }
+
+  ScopeId push_new_scope ()
+  {
+    ScopeId new_scope = scopes.size ();
+    scopes.emplace_back ();
+    scopes[new_scope].parent = current_scope;
+    scopes[current_scope].children.push_back (new_scope);
+    current_scope = new_scope;
+    return new_scope;
+  }
+
+  ScopeId pop_scope ()
+  {
+    current_scope = scopes[current_scope].parent;
+    return current_scope;
+  }
 
   PlaceId add_place (Place place, PlaceId last_sibling = 0)
   {
@@ -137,6 +181,12 @@ public:
       {
 	places[last_sibling].path.next_sibling = new_place;
       }
+
+    if (place.kind == Place::VARIABLE || place.kind == Place::TEMPORARY)
+      {
+	scopes[current_scope].locals.push_back (new_place);
+      }
+
     return new_place;
   }
 
@@ -166,9 +216,9 @@ public:
 	    current = places[current].path.next_sibling;
 	  }
       }
-    return add_place (
-      {kind, id, {parent, 0, 0}, is_type_copy (tyty), false, NO_LIFETIME, tyty},
-      current);
+    return add_place ({kind, id, Place::Path{parent, 0, 0}, is_type_copy (tyty),
+		       false, NO_LIFETIME, tyty},
+		      current);
   }
 
   PlaceId add_temporary (TyTy::BaseType *tyty)
