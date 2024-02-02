@@ -2007,7 +2007,8 @@ loongarch_symbol_insns (enum loongarch_symbol_type type, machine_mode mode)
 {
   /* LSX LD.* and ST.* cannot support loading symbols via an immediate
      operand.  */
-  if (LSX_SUPPORTED_MODE_P (mode) || LASX_SUPPORTED_MODE_P (mode))
+  if (mode != MAX_MACHINE_MODE
+      && (LSX_SUPPORTED_MODE_P (mode) || LASX_SUPPORTED_MODE_P (mode)))
     return 0;
 
   switch (type)
