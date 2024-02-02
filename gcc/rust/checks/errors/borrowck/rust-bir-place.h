@@ -229,6 +229,29 @@ public:
 		       places[place].tyty});
   }
 
+  template <typename FN> void for_each_path_from_root (PlaceId var, FN fn) const
+  {
+    PlaceId current = var;
+    current = places[current].path.first_child;
+    while (current != INVALID_PLACE)
+      {
+	fn (current);
+	for_each_path_from_root (current, fn);
+	current = places[current].path.next_sibling;
+      }
+  }
+
+  template <typename FN>
+  void for_each_path_segment (PlaceId place_id, FN fn) const
+  {
+    PlaceId current = place_id;
+    while (current != INVALID_PLACE)
+      {
+	fn (current);
+	current = places[current].path.parent;
+      }
+  }
+
 private:
   static bool is_type_copy (TyTy::BaseType *ty)
   {
