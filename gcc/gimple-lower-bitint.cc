@@ -5200,9 +5200,18 @@ bitint_large_huge::lower_asm (gimple *stmt)
 	  && TREE_CODE (TREE_TYPE (s)) == BITINT_TYPE
 	  && bitint_precision_kind (TREE_TYPE (s)) >= bitint_prec_large)
 	{
-	  int part = var_to_partition (m_map, s);
-	  gcc_assert (m_vars[part] != NULL_TREE);
-	  TREE_VALUE (t) = m_vars[part];
+	  if (SSA_NAME_IS_DEFAULT_DEF (s)
+	      && (!SSA_NAME_VAR (s) || VAR_P (SSA_NAME_VAR (s))))
+	    {
+	      TREE_VALUE (t) = create_tmp_var (TREE_TYPE (s), "bitint");
+	      mark_addressable (TREE_VALUE (t));
+	    }
+	  else
+	    {
+	      int part = var_to_partition (m_map, s);
+	      gcc_assert (m_vars[part] != NULL_TREE);
+	      TREE_VALUE (t) = m_vars[part];
+	    }
 	}
     }
   update_stmt (stmt);
