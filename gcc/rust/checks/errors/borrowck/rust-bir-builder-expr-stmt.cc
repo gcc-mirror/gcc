@@ -84,7 +84,7 @@ ExprStmtBuilder::visit (HIR::ClosureExpr &expr)
     {
       captures.push_back (ctx.place_db.lookup_variable (capture));
     }
-  make_args (captures);
+  move_all (captures);
 
   // Note: Not a coercion site for captures.
   return_expr (new InitializerExpr (std::move (captures)), lookup_type (expr));
@@ -96,7 +96,7 @@ ExprStmtBuilder::visit (HIR::StructExprStructFields &fields)
   auto struct_ty
     = lookup_type (fields)->as<TyTy::ADTType> ()->get_variants ().at (0);
   auto init_values = StructBuilder (ctx, struct_ty).build (fields);
-  make_args (init_values);
+  move_all (init_values);
   return_expr (new InitializerExpr (std::move (init_values)),
 	       lookup_type (fields));
 }
@@ -141,7 +141,7 @@ void
 ExprStmtBuilder::visit (HIR::NegationExpr &expr)
 {
   PlaceId operand = visit_expr (*expr.get_expr ());
-  return_expr (new Operator<1> ({make_arg (operand)}), lookup_type (expr));
+  return_expr (new Operator<1> ({move_place (operand)}), lookup_type (expr));
 }
 
 void
@@ -149,7 +149,7 @@ ExprStmtBuilder::visit (HIR::ArithmeticOrLogicalExpr &expr)
 {
   PlaceId lhs = visit_expr (*expr.get_lhs ());
   PlaceId rhs = visit_expr (*expr.get_rhs ());
-  return_expr (new Operator<2> ({make_arg (lhs), make_arg (rhs)}),
+  return_expr (new Operator<2> ({move_place (lhs), move_place (rhs)}),
 	       lookup_type (expr));
 }
 
@@ -158,7 +158,7 @@ ExprStmtBuilder::visit (HIR::ComparisonExpr &expr)
 {
   PlaceId lhs = visit_expr (*expr.get_lhs ());
   PlaceId rhs = visit_expr (*expr.get_rhs ());
-  return_expr (new Operator<2> ({make_arg (lhs), make_arg (rhs)}),
+  return_expr (new Operator<2> ({move_place (lhs), move_place (rhs)}),
 	       lookup_type (expr));
 }
 
@@ -208,7 +208,7 @@ ExprStmtBuilder::visit (HIR::ArrayExpr &expr)
       case HIR::ArrayElems::VALUES: {
 	auto &elem_vals = (static_cast<HIR::ArrayElemsValues &> (*elems));
 	auto init_values = visit_list (elem_vals.get_values ());
-	make_args (init_values);
+	move_all (init_values);
 	return_expr (new InitializerExpr (std::move (init_values)),
 		     lookup_type (expr));
 	break;
@@ -264,6 +264,7 @@ ExprStmtBuilder::visit (HIR::CallExpr &expr)
       coercion_site (arguments[i], fn_type->get_param_type_at (i));
     }
 
+  move_all (arguments);
   return_expr (new CallExpr (fn, std::move (arguments)), lookup_type (expr),
 	       true);
 }
@@ -502,7 +503,7 @@ ExprStmtBuilder::visit (HIR::IfExpr &expr)
 void
 ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
 {
-  push_switch (make_arg (visit_expr (*expr.get_if_condition ())));
+  push_switch (move_place (visit_expr (*expr.get_if_condition ())));
   BasicBlockId if_end_bb = ctx.current_bb;
 
   PlaceId result = take_or_create_return_place (lookup_type (expr));

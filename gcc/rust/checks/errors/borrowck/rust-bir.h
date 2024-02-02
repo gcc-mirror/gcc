@@ -97,20 +97,7 @@ struct BasicBlock
   std::vector<BasicBlockId> successors;
 
 public:
-  WARN_UNUSED_RESULT bool is_terminated () const
-  {
-    if (statements.empty ())
-      return false;
-    switch (statements.back ().get_kind ())
-      {
-      case Statement::Kind::GOTO:
-      case Statement::Kind::RETURN:
-      case Statement::Kind::SWITCH:
-	return true;
-      default:
-	return false;
-      }
-  }
+  WARN_UNUSED_RESULT bool is_terminated () const;
 
   WARN_UNUSED_RESULT bool is_goto_terminated () const
   {
@@ -119,9 +106,23 @@ public:
   }
 };
 
+enum class ExprKind
+{
+  INITIALIZER,
+  OPERATOR,
+  BORROW,
+  ASSIGNMENT,
+  CALL,
+};
+
 // Rhs expression of BIR assignment statements (abstract).
 class AbstractExpr : public Visitable
 {
+  ExprKind kind;
+
+public:
+  explicit AbstractExpr (ExprKind kind) : kind (kind) {}
+  [[nodiscard]] ExprKind get_kind () const { return kind; }
 };
 
 class InitializerExpr : public VisitableImpl<AbstractExpr, InitializerExpr>
@@ -129,7 +130,10 @@ class InitializerExpr : public VisitableImpl<AbstractExpr, InitializerExpr>
   std::vector<PlaceId> values;
 
 public:
-  explicit InitializerExpr (std::vector<PlaceId> &&values) : values (values) {}
+  explicit InitializerExpr (std::vector<PlaceId> &&values)
+    : VisitableImpl<AbstractExpr, InitializerExpr> (ExprKind::INITIALIZER),
+      values (values)
+  {}
 
 public:
   std::vector<PlaceId> &get_values () { return values; }
@@ -142,7 +146,8 @@ class Operator : public VisitableImpl<AbstractExpr, Operator<ARITY>>
 
 public:
   explicit Operator (std::array<PlaceId, ARITY> &&operands)
-    : operands (operands)
+    : VisitableImpl<AbstractExpr, Operator<ARITY>> (ExprKind::OPERATOR),
+      operands (operands)
   {}
 
 public:
@@ -158,7 +163,9 @@ class BorrowExpr : public VisitableImpl<AbstractExpr, BorrowExpr>
   PlaceId place;
 
 public:
-  explicit BorrowExpr (PlaceId place) : place (place) {}
+  explicit BorrowExpr (PlaceId place)
+    : VisitableImpl<AbstractExpr, BorrowExpr> (ExprKind::BORROW), place (place)
+  {}
   WARN_UNUSED_RESULT PlaceId get_place () const { return place; }
 };
 
@@ -172,7 +179,9 @@ class Assignment : public VisitableImpl<AbstractExpr, Assignment>
   PlaceId rhs;
 
 public:
-  explicit Assignment (PlaceId rhs) : rhs (rhs) {}
+  explicit Assignment (PlaceId rhs)
+    : VisitableImpl<AbstractExpr, Assignment> (ExprKind::ASSIGNMENT), rhs (rhs)
+  {}
 
 public:
   WARN_UNUSED_RESULT PlaceId get_rhs () const { return rhs; }
@@ -185,13 +194,32 @@ class CallExpr : public VisitableImpl<AbstractExpr, CallExpr>
 
 public:
   explicit CallExpr (PlaceId callable, std::vector<PlaceId> &&arguments)
-    : arguments (arguments), callable (callable)
+    : VisitableImpl<AbstractExpr, CallExpr> (ExprKind::CALL),
+      arguments (arguments), callable (callable)
   {}
 
 public:
   const std::vector<PlaceId> &get_arguments () { return arguments; }
   WARN_UNUSED_RESULT PlaceId get_callable () const { return callable; }
 };
+
+inline bool
+BasicBlock::is_terminated () const
+{
+  if (statements.empty ())
+    return false;
+  switch (statements.back ().get_kind ())
+    {
+    case Statement::Kind::GOTO:
+    case Statement::Kind::RETURN:
+    case Statement::Kind::SWITCH:
+      return true;
+    case Statement::Kind::ASSIGNMENT:
+      return statements.back ().get_expr ().get_kind () == ExprKind::CALL;
+    default:
+      return false;
+    }
+}
 
 } // namespace BIR
 

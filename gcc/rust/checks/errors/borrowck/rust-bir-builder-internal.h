@@ -230,10 +230,15 @@ protected: // Helpers to add BIR statements
     push_assignment (tmp, rhs);
   }
 
+  void push_tmp_assignment (PlaceId rhs)
+  {
+    push_tmp_assignment (new Assignment (rhs), ctx.place_db[rhs].tyty);
+  }
+
   void push_switch (PlaceId switch_val,
 		    std::initializer_list<BasicBlockId> destinations = {})
   {
-    auto copy = make_arg (switch_val);
+    auto copy = move_place (switch_val);
     ctx.get_current_bb ().statements.emplace_back (Statement::Kind::SWITCH,
 						   copy);
     ctx.get_current_bb ().successors.insert (
@@ -259,33 +264,21 @@ protected: // Helpers to add BIR statements
       Statement::Kind::STORAGE_DEAD, place);
   }
 
-  PlaceId declare_rvalue (PlaceId place)
+  PlaceId move_place (PlaceId arg)
   {
-    ctx.place_db[place].is_rvalue = true;
-    return place;
-  }
-
-  void declare_rvalues (std::vector<PlaceId> &places)
-  {
-    for (auto &place : places)
-      declare_rvalue (place);
-  }
-
-  PlaceId make_arg (PlaceId arg)
-  {
-    auto copy = ctx.place_db.into_rvalue (arg);
-    if (copy != arg)
+    if (ctx.place_db[arg].is_lvalue ())
       {
-	push_storage_live (copy);
-	push_assignment (copy, arg);
+	push_tmp_assignment (arg);
+	arg = translated;
       }
-    return copy;
+
+    return arg;
   }
 
-  void make_args (std::vector<PlaceId> &args)
+  template <typename T> void move_all (T &args)
   {
     std::transform (args.begin (), args.end (), args.begin (),
-		    [this] (PlaceId arg) { return make_arg (arg); });
+		    [this] (PlaceId arg) { return move_place (arg); });
   }
 
 protected: // CFG helpers

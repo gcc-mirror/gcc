@@ -241,7 +241,7 @@ void
 Dump::visit_move_place (PlaceId place_id)
 {
   const Place &place = func.place_db[place_id];
-  if (place.is_rvalue || !place.is_copy)
+  if (!place.is_constant ())
     stream << "move ";
   visit_place (place_id);
 }
@@ -325,7 +325,14 @@ Dump::visit (Operator<2> &expr)
 void
 Dump::visit (Assignment &expr)
 {
-  visit_move_place (expr.get_rhs ());
+  if (func.place_db[expr.get_rhs ()].is_rvalue ())
+    {
+      visit_move_place (expr.get_rhs ());
+    }
+  else
+    {
+      visit_place (expr.get_rhs ());
+    }
 }
 
 std::ostream &
