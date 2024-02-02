@@ -5264,7 +5264,8 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 	mergeable_cast_p = true;
       else if (TREE_CODE (TREE_TYPE (rhs1)) == BITINT_TYPE
 	       && bitint_precision_kind (TREE_TYPE (rhs1)) >= bitint_prec_large
-	       && INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+	       && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		   || POINTER_TYPE_P (TREE_TYPE (lhs))))
 	{
 	  final_cast_p = true;
 	  if (TREE_CODE (rhs1) == SSA_NAME
@@ -5393,8 +5394,9 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 	 be needed.  */
       gcc_assert (TYPE_PRECISION (lhs_type) <= 2 * limb_prec);
       gimple *g;
-      if (TREE_CODE (lhs_type) == BITINT_TYPE
-	  && bitint_precision_kind (lhs_type) == bitint_prec_middle)
+      if ((TREE_CODE (lhs_type) == BITINT_TYPE
+	   && bitint_precision_kind (lhs_type) == bitint_prec_middle)
+	  || POINTER_TYPE_P (lhs_type))
 	lhs_type = build_nonstandard_integer_type (TYPE_PRECISION (lhs_type),
 						   TYPE_UNSIGNED (lhs_type));
       m_data_cnt = 0;
