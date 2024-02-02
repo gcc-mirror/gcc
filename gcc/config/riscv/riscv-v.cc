@@ -4151,13 +4151,15 @@ expand_reduction (unsigned unspec, unsigned insn_flags, rtx *ops, rtx init)
 
   rtx m1_tmp = gen_reg_rtx (m1_mode);
   rtx scalar_move_ops[] = {m1_tmp, init};
-  emit_nonvlmax_insn (code_for_pred_broadcast (m1_mode), SCALAR_MOVE_OP,
-		      scalar_move_ops,
-		      need_mask_operand_p (insn_flags) ? ops[3]
-						       : CONST1_RTX (Pmode));
+  insn_code icode = code_for_pred_broadcast (m1_mode);
+  if (need_mask_operand_p (insn_flags))
+    emit_nonvlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops, ops[3]);
+  else
+    emit_vlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops);
+
   rtx m1_tmp2 = gen_reg_rtx (m1_mode);
   rtx reduc_ops[] = {m1_tmp2, vector_src, m1_tmp};
-  insn_code icode = code_for_pred (unspec, vmode);
+  icode = code_for_pred (unspec, vmode);
 
   if (need_mask_operand_p (insn_flags))
     {
