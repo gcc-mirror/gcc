@@ -4735,8 +4735,8 @@ find_moveable_pseudos (void)
       bitmap_initialize (local, 0);
       bitmap_initialize (transp, 0);
       bitmap_initialize (moveable, 0);
-      bitmap_copy (live, df_get_live_out (bb));
-      bitmap_and_into (live, df_get_live_in (bb));
+      bitmap_copy (live, df_get_subreg_live_out (bb));
+      bitmap_and_into (live, df_get_subreg_live_in (bb));
       bitmap_copy (transp, live);
       bitmap_clear (moveable);
       bitmap_clear (live);
@@ -5036,7 +5036,8 @@ interesting_dest_for_shprep_1 (rtx set, basic_block call_dom)
   rtx dest = SET_DEST (set);
   if (!REG_P (src) || !HARD_REGISTER_P (src)
       || !REG_P (dest) || HARD_REGISTER_P (dest)
-      || (call_dom && !bitmap_bit_p (df_get_live_in (call_dom), REGNO (dest))))
+      || (call_dom
+	  && !bitmap_bit_p (df_get_subreg_live_in (call_dom), REGNO (dest))))
     return NULL;
   return dest;
 }
@@ -5514,10 +5515,12 @@ allocate_initial_values (void)
 		  /* Update global register liveness information.  */
 		  FOR_EACH_BB_FN (bb, cfun)
 		    {
-		      if (REGNO_REG_SET_P (df_get_live_in (bb), regno))
-			SET_REGNO_REG_SET (df_get_live_in (bb), new_regno);
-		      if (REGNO_REG_SET_P (df_get_live_out (bb), regno))
-			SET_REGNO_REG_SET (df_get_live_out (bb), new_regno);
+		      if (REGNO_REG_SET_P (df_get_subreg_live_in (bb), regno))
+			SET_REGNO_REG_SET (df_get_subreg_live_in (bb),
+					   new_regno);
+		      if (REGNO_REG_SET_P (df_get_subreg_live_out (bb), regno))
+			SET_REGNO_REG_SET (df_get_subreg_live_out (bb),
+					   new_regno);
 		    }
 		}
 	    }
@@ -5679,6 +5682,8 @@ ira (FILE *f)
   if (optimize > 1)
     df_remove_problem (df_live);
   gcc_checking_assert (df_live == NULL);
+  if (flag_track_subreg_liveness)
+    df_live_subreg_add_problem ();
 
   if (flag_checking)
     df->changeable_flags |= DF_VERIFY_SCHEDULED;

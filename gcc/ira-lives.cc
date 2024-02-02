@@ -1254,7 +1254,8 @@ process_out_of_region_eh_regs (basic_block bb)
   if (! eh_p)
     return;
 
-  EXECUTE_IF_SET_IN_BITMAP (df_get_live_out (bb), FIRST_PSEUDO_REGISTER, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (df_get_subreg_live_out (bb), FIRST_PSEUDO_REGISTER,
+			    i, bi)
     {
       ira_allocno_t a = ira_curr_regno_allocno_map[i];
       for (int n = ALLOCNO_NUM_OBJECTS (a) - 1; n >= 0; n--)
@@ -1288,7 +1289,7 @@ add_conflict_from_region_landing_pads (eh_region region, ira_object_t obj,
       if ((landing_label = lp->landing_pad) != NULL
 	  && (landing_bb = BLOCK_FOR_INSN (landing_label)) != NULL
 	  && (region->type != ERT_CLEANUP
-	      || bitmap_bit_p (df_get_live_in (landing_bb),
+	      || bitmap_bit_p (df_get_subreg_live_in (landing_bb),
 			       ALLOCNO_REGNO (a))))
 	{
 	  HARD_REG_SET new_conflict_regs
@@ -1325,7 +1326,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  high_pressure_start_point[ira_pressure_classes[i]] = -1;
 	}
       curr_bb_node = loop_tree_node;
-      reg_live_out = df_get_live_out (bb);
+      reg_live_out = df_get_subreg_live_out (bb);
       sparseset_clear (objects_live);
       REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
       hard_regs_live &= ~(eliminable_regset | ira_no_alloc_regs);
