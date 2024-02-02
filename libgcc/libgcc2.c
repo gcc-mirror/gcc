@@ -1863,12 +1863,46 @@ __divmodbitint4 (UBILtype *q, SItype qprec,
 	      if (uv1 >= vv1)
 		{
 		  /* udiv_qrnnd doesn't support quotients which don't
-		     fit into UWtype, so subtract from uv1:uv0 vv1
-		     first.  */
-		  uv1 -= vv1 + __builtin_sub_overflow (uv0, vv1, &uv0);
-		  udiv_qrnnd (qhat, rhat, uv1, uv0, vv1);
-		  if (!__builtin_add_overflow (rhat, vv1, &rhat))
-		    goto again;
+		     fit into UWtype, while Knuth's algorithm originally
+		     uses a double-word by word to double-word division.
+		     Fortunately, the algorithm guarantees that uv1 <= vv1,
+		     because if uv1 > vv1, then even if v would have all
+		     bits in all words below vv1 set, the previous iteration
+		     would be supposed to use qhat larger by 1 and subtract
+		     v.  With uv1 == vv1 and uv0 >= vv1 the double-word
+		     qhat in Knuth's algorithm would be 1 in the upper word
+		     and 1 in the lower word, say for
+		     uv1 0x8000000000000000ULL
+		     uv0 0xffffffffffffffffULL
+		     vv1 0x8000000000000000ULL
+		     0x8000000000000000ffffffffffffffffuwb
+		     / 0x8000000000000000uwb == 0x10000000000000001uwb, and
+		     exactly like that also for any other value
+		     > 0x8000000000000000ULL in uv1 and vv1 and uv0 >= uv1.
+		     So we need to subtract one or at most two vv1s from
+		     uv1:uv0 (qhat because of that decreases by 1 or 2 and
+		     is then representable in UWtype) and need to increase
+		     rhat by vv1 once or twice because of that.  Now, if
+		     we need to subtract 2 vv1s, i.e. if
+		     uv1 == vv1 && uv0 >= vv1, then rhat (which is uv0 - vv1)
+		     + vv1 computation can't overflow, because it is equal
+		     to uv0 and therefore the original algorithm in that case
+		     performs goto again, but the second vv1 addition must
+		     overflow already because vv1 has msb set from the
+		     canonicalization.  */
+		  uv1 -= __builtin_sub_overflow (uv0, vv1, &uv0);
+		  if (uv1 >= vv1)
+		    {
+		      uv1 -= __builtin_sub_overflow (uv0, vv1, &uv0);
+		      udiv_qrnnd (qhat, rhat, uv1, uv0, vv1);
+		      rhat += 2 * vv1;
+		    }
+		  else
+		    {
+		      udiv_qrnnd (qhat, rhat, uv1, uv0, vv1);
+		      if (!__builtin_add_overflow (rhat, vv1, &rhat))
+			goto again;
+		    }
 		}
 	      else
 		{
