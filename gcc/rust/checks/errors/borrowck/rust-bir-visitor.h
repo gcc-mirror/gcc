@@ -50,6 +50,10 @@ public:
 template <typename BASE, typename T> class VisitableImpl : public BASE
 {
 public:
+  template <typename... Args>
+  explicit VisitableImpl (Args &&... args) : BASE (std::forward<Args> (args)...)
+  {}
+
   void accept_vis (Visitor &visitor) override
   {
     visitor.visit (static_cast<T &> (*this));

@@ -91,18 +91,26 @@ struct Place
   } path;
   /** Copy trait */
   bool is_copy;
-  /** This place can be moved from safety. */
-  bool is_rvalue;
+  bool has_drop = false;
   Lifetime lifetime;
   TyTy::BaseType *tyty;
 
+public:
   Place (Kind kind, uint32_t variable_or_field_index, const Path &path,
-	 bool is_copy, bool is_rvalue, const Lifetime &lifetime,
-	 TyTy::BaseType *tyty)
+	 bool is_copy, const Lifetime &lifetime, TyTy::BaseType *tyty)
     : kind (kind), variable_or_field_index (variable_or_field_index),
-      path (path), is_copy (is_copy), is_rvalue (is_rvalue),
-      lifetime (lifetime), tyty (tyty)
+      path (path), is_copy (is_copy), lifetime (lifetime), tyty (tyty)
   {}
+
+public:
+  [[nodiscard]] bool is_lvalue () const
+  {
+    return kind == VARIABLE || kind == FIELD || kind == INDEX || kind == DEREF;
+  }
+
+  [[nodiscard]] bool is_rvalue () const { return kind == TEMPORARY; }
+
+  bool is_constant () const { return kind == CONSTANT; }
 };
 
 using ScopeId = uint32_t;
@@ -134,8 +142,7 @@ public:
   PlaceDB ()
   {
     // Reserved index for invalid place.
-    places.push_back (
-      {Place::INVALID, 0, {}, false, false, NO_LIFETIME, nullptr});
+    places.push_back ({Place::INVALID, 0, {}, false, NO_LIFETIME, nullptr});
 
     scopes.emplace_back (); // Root scope.
   }
@@ -193,8 +200,7 @@ public:
   PlaceId add_variable (NodeId id, TyTy::BaseType *tyty)
   {
     return add_place (
-      {Place::VARIABLE, id, {}, is_type_copy (tyty), false, NO_LIFETIME, tyty},
-      0);
+      {Place::VARIABLE, id, {}, is_type_copy (tyty), NO_LIFETIME, tyty}, 0);
   }
 
   WARN_UNUSED_RESULT PlaceId lookup_or_add_path (Place::Kind kind,
@@ -217,15 +223,14 @@ public:
 	  }
       }
     return add_place ({kind, id, Place::Path{parent, 0, 0}, is_type_copy (tyty),
-		       false, NO_LIFETIME, tyty},
+		       NO_LIFETIME, tyty},
 		      current);
   }
 
   PlaceId add_temporary (TyTy::BaseType *tyty)
   {
     return add_place (
-      {Place::TEMPORARY, 0, {}, is_type_copy (tyty), false, NO_LIFETIME, tyty},
-      0);
+      {Place::TEMPORARY, 0, {}, is_type_copy (tyty), NO_LIFETIME, tyty}, 0);
   }
 
   PlaceId get_constant (TyTy::BaseType *tyty)
@@ -235,8 +240,7 @@ public:
       return lookup->second;
     Lifetime lifetime
       = tyty->get_kind () == TyTy::REF ? STATIC_LIFETIME : NO_LIFETIME;
-    Place place
-      = {Place::CONSTANT, 0, {}, is_type_copy (tyty), false, lifetime, tyty};
+    Place place = {Place::CONSTANT, 0, {}, is_type_copy (tyty), lifetime, tyty};
     places.push_back (place);
     return places.size () - 1;
   }
@@ -261,23 +265,9 @@ public:
     if (lookup != INVALID_PLACE)
       return lookup;
     add_place (
-      {Place::VARIABLE, id, {}, is_type_copy (tyty), false, NO_LIFETIME, tyty});
+      {Place::VARIABLE, id, {}, is_type_copy (tyty), NO_LIFETIME, tyty});
     return places.size () - 1;
   };
-
-  PlaceId into_rvalue (PlaceId place)
-  {
-    if (places[place].is_rvalue || places[place].kind == Place::CONSTANT
-	|| places[place].tyty->get_kind () == TyTy::REF)
-      return place;
-    return add_place ({Place::TEMPORARY,
-		       0,
-		       {},
-		       places[place].is_copy,
-		       true,
-		       NO_LIFETIME,
-		       places[place].tyty});
-  }
 
   template <typename FN> void for_each_path_from_root (PlaceId var, FN fn) const
   {
