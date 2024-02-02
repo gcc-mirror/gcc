@@ -229,10 +229,10 @@ GCC_13.0.0 {
 
 %inherit GCC_14.0.0 GCC_13.0.0
 GCC_14.0.0 {
-  __PFX__fixxfbitint
-  __PFX__fixtfbitint
-  __PFX__floatbitintbf
-  __PFX__floatbitinthf
-  __PFX__floatbitintxf
-  __PFX__floatbitinttf
+  __fixxfbitint
+  __fixtfbitint
+  __floatbitintbf
+  __floatbitinthf
+  __floatbitintxf
+  __floatbitinttf
 }
