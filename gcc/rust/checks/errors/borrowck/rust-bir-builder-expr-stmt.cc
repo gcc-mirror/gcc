@@ -248,25 +248,12 @@ ExprStmtBuilder::visit (HIR::CallExpr &expr)
   PlaceId fn = visit_expr (*expr.get_fnexpr ());
   std::vector<PlaceId> arguments = visit_list (expr.get_arguments ());
 
-  auto *call_type = ctx.place_db[fn].tyty;
-  if (auto fn_type = call_type->try_as<TyTy::FnType> ())
+  const auto fn_type
+    = ctx.place_db[fn].tyty->as<const TyTy::CallableTypeInterface> ();
+
+  for (size_t i = 0; i < fn_type->get_num_params (); ++i)
     {
-      for (size_t i = 0; i < fn_type->get_params ().size (); ++i)
-	{
-	  coercion_site (arguments[i], fn_type->get_params ()[i].second);
-	}
-    }
-  else if (auto fn_ptr_type = call_type->try_as<TyTy::FnPtr> ())
-    {
-      for (size_t i = 0; i < fn_ptr_type->get_params ().size (); ++i)
-	{
-	  coercion_site (arguments[i],
-			 fn_ptr_type->get_params ()[i].get_tyty ());
-	}
-    }
-  else
-    {
-      rust_unreachable ();
+      coercion_site (arguments[i], fn_type->get_param_type_at (i));
     }
 
   return_expr (new CallExpr (fn, std::move (arguments)), lookup_type (expr),
