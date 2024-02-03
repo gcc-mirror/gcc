@@ -1,3 +1,12 @@
+2024-02-02  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/110422
+	* tree-sra.cc (scan_function): Disqualify bases of operands of asm
+	gotos.
+
 2024-02-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (atomic_storedi_1): Fix bug in
