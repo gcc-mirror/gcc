@@ -227,6 +227,9 @@ package ALI is
       --  signalled by GP appearing on the P line. Not set if 'P' appears in
       --  Ignore_Lines.
 
+      Interrupts_Default_To_System : Boolean;
+      --  Set to True if pragma Interrupts_System_By_Default is seen;
+
       No_Component_Reordering : Boolean;
       --  Set to True if file was compiled with a configuration pragma file
       --  containing pragma No_Component_Reordering. Not set if 'P' appears
@@ -590,6 +593,9 @@ package ALI is
 
    Initialize_Scalars_Used : Boolean := False;
    --  Set True if an ali file contains the Initialize_Scalars flag
+
+   Interrupts_Default_To_System_Specified : Boolean := False;
+   --  Set to True if an pragma Interrupts_System_By_Default is seen.
 
    Locking_Policy_Specified : Character := ' ';
    --  Set to blank by Initialize_ALI. Set to the appropriate locking policy

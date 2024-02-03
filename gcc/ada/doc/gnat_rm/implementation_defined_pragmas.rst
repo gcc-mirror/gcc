@@ -3185,6 +3185,19 @@ Overriding the default state of signals used by the Ada runtime may interfere
 with an application's runtime behavior in the cases of the synchronous signals,
 and in the case of the signal used to implement the ``abort`` statement.
 
+Pragma Interrupts_System_By_Default
+===================================
+
+Syntax:
+
+
+::
+
+  pragma Interrupts_System_By_Default;
+
+Default all interrupts to the System state as defined above in pragma
+``Interrupt_State``. This is a configuration pragma.
+
 .. _Pragma-Invariant:
 
 Pragma Invariant

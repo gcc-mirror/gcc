@@ -1495,6 +1495,7 @@ begin
          | Pragma_No_Inline
          | Pragma_No_Return
          | Pragma_No_Run_Time
+         | Pragma_Interrupts_System_By_Default
          | Pragma_No_Strict_Aliasing
          | Pragma_No_Tagged_Streams
          | Pragma_Normalize_Scalars

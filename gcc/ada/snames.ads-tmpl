@@ -461,6 +461,7 @@ package Snames is
    Name_No_Component_Reordering        : constant Name_Id := N + $; -- GNAT
    Name_No_Heap_Finalization           : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
+   Name_Interrupts_System_By_Default   : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
    Name_Optimize_Alignment             : constant Name_Id := N + $; -- GNAT
@@ -1774,6 +1775,7 @@ package Snames is
       Pragma_No_Component_Reordering,
       Pragma_No_Heap_Finalization,
       Pragma_No_Run_Time,
+      Pragma_Interrupts_System_By_Default,
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,
       Pragma_Optimize_Alignment,

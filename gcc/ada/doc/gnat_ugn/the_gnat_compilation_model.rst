@@ -1430,6 +1430,7 @@ recognized by GNAT::
      Implicit_Packing
      Initialize_Scalars
      Interrupt_State
+     Interrupts_System_By_Default
      License
      Locking_Policy
      No_Component_Reordering
@@ -4516,6 +4517,9 @@ If your application requires that either system or user signals be preserved
 then you need to instruct the Ada part not to install its own signal handler.
 This is done using ``pragma Interrupt_State`` that provides a general
 mechanism for overriding such uses of interrupts.
+
+Additionally, ``pragma Interrupts_System_By_Default`` can be used to default
+all interrupts to System.
 
 The set of interrupts for which the Ada run-time library sets a specific signal
 handler is the following:

@@ -665,6 +665,7 @@ package body ALI is
       No_Object_Specified                    := False;
       No_Component_Reordering_Specified      := False;
       GNATprove_Mode_Specified               := False;
+      Interrupts_Default_To_System_Specified := False;
       Normalize_Scalars_Specified            := False;
       Partition_Elaboration_Policy_Specified := ' ';
       Queuing_Policy_Specified               := ' ';
@@ -1750,6 +1751,7 @@ package body ALI is
         First_Specific_Dispatching   => Specific_Dispatching.Last + 1,
         First_Unit                   => No_Unit_Id,
         GNATprove_Mode               => False,
+        Interrupts_Default_To_System => False,
         Invocation_Graph_Encoding    => No_Encoding,
         Last_CUDA_Kernel             => CUDA_Kernels.Last,
         Last_Interrupt_State         => Interrupt_States.Last,
@@ -2004,6 +2006,13 @@ package body ALI is
                Checkc ('P');
                GNATprove_Mode_Specified := True;
                ALIs.Table (Id).GNATprove_Mode := True;
+
+            --  Processing for ID (Interrupts Default to System)
+
+            elsif C = 'I' then
+               Checkc ('D');
+               Interrupts_Default_To_System_Specified := True;
+               ALIs.Table (Id).Interrupts_Default_To_System := True;
 
             --  Processing for Lx
 

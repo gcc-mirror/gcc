@@ -154,6 +154,12 @@ package body System.Interrupt_Management is
                               System.Task_Primitives.Alternate_Stack_Size /= 0;
       --  Whether to use an alternate signal stack for stack overflows
 
+      Sigsetable_Signal_Mask : aliased sigset_t;
+
+      Interrupts_Default_To_System : Integer;
+      pragma Import (C, Interrupts_Default_To_System,
+                     "__gl_interrupts_default_to_system");
+
    begin
       if Initialized then
          return;
@@ -250,9 +256,25 @@ package body System.Interrupt_Management is
       --  Check all signals for state that requires keeping them unmasked and
       --  reserved.
 
+      --  Unmasking might involve explicit operations later on, typically
+      --  performed on the entire set of relevant signals gathered together
+      --  by way of sigset_t mask. Doing anything of this kind is forbidden
+      --  for very specific signals and would trip assertion checks if
+      --  attempted. Check for this here, preventing the Keep_Unmasked
+      --  request upfront. This is of particular relevance for
+      --  Interrupts_System_By_Default as it would lead to such requests
+      --  for every signal not altered otherwise.
+
+      Result := sigemptyset (Sigsetable_Signal_Mask'Access);
+      pragma Assert (Result = 0);
+
       for J in Interrupt_ID'Range loop
          if State (J) = Default or else State (J) = Runtime then
-            Keep_Unmasked (J) := True;
+            if Interrupts_Default_To_System = 0 or else
+              sigaddset (Sigsetable_Signal_Mask'Access, Signal (J)) = 0
+            then
+               Keep_Unmasked (J) := True;
+            end if;
             Reserve (J) := True;
          end if;
       end loop;

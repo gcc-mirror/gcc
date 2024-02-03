@@ -21080,6 +21080,18 @@ package body Sem_Prag is
                end if;
             end;
 
+         ----------------------------------
+         -- Interrupts_System_By_Default --
+         ----------------------------------
+
+         --  pragma Interrupts_System_By_Default;
+
+         when Pragma_Interrupts_System_By_Default =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            Interrupts_System_By_Default := True;
+
          -----------------------
          -- No_Tagged_Streams --
          -----------------------
@@ -32767,6 +32779,7 @@ package body Sem_Prag is
       Pragma_No_Inline                      =>  0,
       Pragma_No_Return                      =>  0,
       Pragma_No_Run_Time                    => -1,
+      Pragma_Interrupts_System_By_Default   =>  0,
       Pragma_No_Strict_Aliasing             => -1,
       Pragma_No_Tagged_Streams              =>  0,
       Pragma_Normalize_Scalars              =>  0,

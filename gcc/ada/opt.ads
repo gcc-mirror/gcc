@@ -1109,6 +1109,10 @@ package Opt is
    --  This flag is set True if a No_Run_Time pragma is encountered. See spec
    --  of Rtsfind for a full description of handling of this pragma.
 
+   Interrupts_System_By_Default : Boolean := False;
+   --  GNATBIND
+   --  Set True if pragma Interrupts_System_By_Default is seen.
+
    No_Split_Units : Boolean := False;
    --  GPRBUILD
    --  Set to True with switch --no-split-units. When True, unit sources, spec,
