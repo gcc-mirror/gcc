@@ -3269,7 +3269,7 @@
 
 (define_insn_and_split "*eqne_zero_masked_bits"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(match_operator 3 "boolean_operator"
+	(match_operator:SI 3 "boolean_operator"
 		[(and:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "const_int_operand" "i"))
 		 (const_int 0)]))]
