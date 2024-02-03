@@ -33,6 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 struct fnode
 {
   format_token format;
+  format_token pushed;
   int repeat;
   struct fnode *next;
   char *source;
