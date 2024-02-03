@@ -21706,7 +21706,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case REQUIRES_EXPR:
       {
-	tree r = tsubst_requires_expr (t, args, tf_none, in_decl);
+	complain &= ~tf_warning_or_error;
+	tree r = tsubst_requires_expr (t, args, complain, in_decl);
 	RETURN (r);
       }
 
