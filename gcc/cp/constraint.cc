@@ -85,7 +85,7 @@ struct subst_info
   /* True if we should not diagnose errors.  */
   bool quiet() const
   {
-    return complain == tf_none;
+    return !(complain & tf_warning_or_error);
   }
 
   /* True if we should diagnose errors.  */
@@ -1999,8 +1999,9 @@ hash_placeholder_constraint (tree c)
 static tree
 tsubst_valid_expression_requirement (tree t, tree args, sat_info info)
 {
-  tree r = tsubst_expr (t, args, tf_none, info.in_decl);
-  if (convert_to_void (r, ICV_STATEMENT, tf_none) != error_mark_node)
+  tsubst_flags_t quiet = info.complain & ~tf_warning_or_error;
+  tree r = tsubst_expr (t, args, quiet, info.in_decl);
+  if (convert_to_void (r, ICV_STATEMENT, quiet) != error_mark_node)
     return r;
 
   if (info.diagnose_unsatisfaction_p ())
@@ -2036,6 +2037,8 @@ tsubst_simple_requirement (tree t, tree args, sat_info info)
   tree expr = tsubst_valid_expression_requirement (t0, args, info);
   if (expr == error_mark_node)
     return error_mark_node;
+  if (processing_template_decl)
+    return finish_simple_requirement (EXPR_LOCATION (t), expr);
   return boolean_true_node;
 }
 
@@ -2045,7 +2048,8 @@ tsubst_simple_requirement (tree t, tree args, sat_info info)
 static tree
 tsubst_type_requirement_1 (tree t, tree args, sat_info info, location_t loc)
 {
-  tree r = tsubst (t, args, tf_none, info.in_decl);
+  tsubst_flags_t quiet = info.complain & ~tf_warning_or_error;
+  tree r = tsubst (t, args, quiet, info.in_decl);
   if (r != error_mark_node)
     return r;
 
@@ -2076,6 +2080,8 @@ tsubst_type_requirement (tree t, tree args, sat_info info)
   tree type = tsubst_type_requirement_1 (t0, args, info, EXPR_LOCATION (t));
   if (type == error_mark_node)
     return error_mark_node;
+  if (processing_template_decl)
+    return finish_type_requirement (EXPR_LOCATION (t), type);
   return boolean_true_node;
 }
 
@@ -2132,9 +2138,11 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
 
   location_t loc = cp_expr_loc_or_input_loc (expr);
 
+  subst_info quiet (info.complain & ~tf_warning_or_error, info.in_decl);
+
   /* Check the noexcept condition.  */
   bool noexcept_p = COMPOUND_REQ_NOEXCEPT_P (t);
-  if (noexcept_p && !expr_noexcept_p (expr, tf_none))
+  if (noexcept_p && !expr_noexcept_p (expr, quiet.complain))
     {
       if (info.diagnose_unsatisfaction_p ())
 	inform (loc, "%qE is not %<noexcept%>", expr);
@@ -2146,8 +2154,6 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
   tree type = tsubst_type_requirement_1 (t1, args, info, EXPR_LOCATION (t));
   if (type == error_mark_node)
     return error_mark_node;
-
-  subst_info quiet (tf_none, info.in_decl);
 
   /* Check expression against the result type.  */
   if (type)
@@ -2190,6 +2196,9 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
 	}
     }
 
+  if (processing_template_decl)
+    return finish_compound_requirement (EXPR_LOCATION (t),
+					expr, type, noexcept_p);
   return boolean_true_node;
 }
 
@@ -2198,7 +2207,16 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
 static tree
 tsubst_nested_requirement (tree t, tree args, sat_info info)
 {
-  sat_info quiet (tf_none, info.in_decl);
+  if (processing_template_decl)
+    {
+      tree req = TREE_OPERAND (t, 0);
+      req = tsubst_constraint (req, args, info.complain, info.in_decl);
+      if (req == error_mark_node)
+	return error_mark_node;
+      return finish_nested_requirement (EXPR_LOCATION (t), req);
+    }
+
+  sat_info quiet (info.complain & ~tf_warning_or_error, info.in_decl);
   tree result = constraint_satisfaction_value (t, args, quiet);
   if (result == boolean_true_node)
     return boolean_true_node;
@@ -2338,18 +2356,25 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
 
   args = add_extra_args (REQUIRES_EXPR_EXTRA_ARGS (t), args,
 			 info.complain, info.in_decl);
-  if (processing_template_decl)
+  if (processing_template_decl
+      && !processing_constraint_expression_p ())
     {
       /* We're partially instantiating a generic lambda.  Substituting into
 	 this requires-expression now may cause its requirements to get
 	 checked out of order, so instead just remember the template
-	 arguments and wait until we can substitute them all at once.  */
+	 arguments and wait until we can substitute them all at once.
+
+	 Except if this requires-expr is part of associated constraints
+	 that we're substituting into directly (for e.g. declaration
+	 matching or dguide constraint rewriting), in which case we need
+	 to partially substitute.  */
       t = copy_node (t);
       REQUIRES_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, info.complain);
       return t;
     }
 
-  if (tree parms = REQUIRES_EXPR_PARMS (t))
+  tree parms = REQUIRES_EXPR_PARMS (t);
+  if (parms)
     {
       parms = tsubst_constraint_variables (parms, args, info);
       if (parms == error_mark_node)
@@ -2357,10 +2382,13 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
     }
 
   tree result = boolean_true_node;
+  if (processing_template_decl)
+    result = NULL_TREE;
   for (tree reqs = REQUIRES_EXPR_REQS (t); reqs; reqs = TREE_CHAIN (reqs))
     {
       tree req = TREE_VALUE (reqs);
-      if (tsubst_requirement (req, args, info) == error_mark_node)
+      req = tsubst_requirement (req, args, info);
+      if (req == error_mark_node)
 	{
 	  result = boolean_false_node;
 	  if (info.diagnose_unsatisfaction_p ())
@@ -2368,7 +2396,11 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
 	  else
 	    break;
 	}
+      else if (processing_template_decl)
+	result = tree_cons (NULL_TREE, req, result);
     }
+  if (processing_template_decl && result != boolean_false_node)
+    result = finish_requires_expr (EXPR_LOCATION (t), parms, nreverse (result));
   return result;
 }
 
