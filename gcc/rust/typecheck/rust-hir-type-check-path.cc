@@ -456,27 +456,10 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	    }
 	}
 
-      if (tyseg->needs_generic_substitutions ())
-	{
-	  if (!prev_segment->needs_generic_substitutions ())
-	    {
-	      auto used_args_in_prev_segment
-		= GetUsedSubstArgs::From (prev_segment);
-
-	      if (!used_args_in_prev_segment.is_error ())
-		{
-		  if (SubstMapperInternal::mappings_are_bound (
-			tyseg, used_args_in_prev_segment))
-		    {
-		      tyseg = SubstMapperInternal::Resolve (
-			tyseg, used_args_in_prev_segment);
-		    }
-		}
-	    }
-	}
-
       if (seg.has_generic_args ())
 	{
+	  rust_debug_loc (seg.get_locus (), "applying segment generics: %s",
+			  tyseg->as_string ().c_str ());
 	  tyseg
 	    = SubstMapper::Resolve (tyseg, expr_locus, &seg.get_generic_args (),
 				    context->regions_from_generic_args (
