@@ -76,7 +76,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         GetPriority, GetNeedSavePriority,
                         PutConstString,
                         PutConst, PutConstSet, PutConstructor,
-			GetSType,
+			GetSType, GetTypeMode,
                         HasVarParameters,
                         NulSym ;
 
@@ -2944,21 +2944,6 @@ END DefaultConvertGM2 ;
 
 
 (*
-   GetTypeMode -
-*)
-
-PROCEDURE GetTypeMode (sym: CARDINAL) : CARDINAL ;
-BEGIN
-   IF GetMode(sym)=LeftValue
-   THEN
-      RETURN( Address )
-   ELSE
-      RETURN( GetType(sym) )
-   END
-END GetTypeMode ;
-
-
-(*
    FoldConstBecomes - returns a Tree containing op3.
                       The tree will have been folded and
                       type converted if necessary.
@@ -3523,7 +3508,7 @@ BEGIN
    DeclareConstant (op2pos, op2) ;
    location := TokenToLocation (op1pos) ;
 
-   type := MixTypes (FindType (op2), FindType (op3), op3pos) ;
+   type := MixTypesBinary (op2, op3, op1pos, MustCheckOverflow (quad)) ;
    ConvertBinaryOperands (location, tl, tr, type, op2, op3) ;
 
    lowestType := GetLType (op1) ;
@@ -3554,6 +3539,23 @@ END CodeBinaryCheck ;
 
 
 (*
+   MixTypesBinary - depending upon check do not check pointer arithmetic.
+*)
+
+PROCEDURE MixTypesBinary (left, right: CARDINAL;
+                          tokpos: CARDINAL; check: BOOLEAN) : CARDINAL ;
+BEGIN
+   IF (NOT check) AND
+      (IsPointer (GetTypeMode (left)) OR IsPointer (GetTypeMode (right)))
+   THEN
+      RETURN Address
+   ELSE
+      RETURN MixTypes (FindType (left), FindType (right), tokpos)
+   END
+END MixTypesBinary ;
+
+
+(*
    CodeBinary - encode a binary arithmetic operation.
 *)
 
@@ -3576,7 +3578,7 @@ BEGIN
    DeclareConstant (op2pos, op2) ;
    location := TokenToLocation (op1pos) ;
 
-   type := MixTypes (FindType (op2), FindType (op3), op1pos) ;
+   type := MixTypesBinary (op2, op3, op1pos, MustCheckOverflow (quad)) ;
    ConvertBinaryOperands (location, tl, tr, type, op2, op3) ;
 
    tv := binop (location, tl, tr, FALSE) ;
@@ -6742,9 +6744,9 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               MixTypes(SkipType(GetType(op1)),
-                                        SkipType(GetType(op2)),
-                                        CurrentQuadToken),
+                               ComparisonMixTypes (SkipType (GetType (op1)),
+                                                   SkipType (GetType (op2)),
+                                                   CurrentQuadToken),
                                op1, op2) ;
          DoJump(location,
                 BuildLessThan(location, tl, tr), NIL, string(CreateLabelName(op3)))
@@ -6839,9 +6841,9 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               MixTypes(SkipType(GetType(op1)),
-                                        SkipType(GetType(op2)),
-                                        CurrentQuadToken),
+                               ComparisonMixTypes (SkipType (GetType (op1)),
+                                                   SkipType (GetType (op2)),
+                                                   CurrentQuadToken),
                                op1, op2) ;
          DoJump(location, BuildGreaterThan(location, tl, tr), NIL, string(CreateLabelName(op3)))
       END
@@ -6935,9 +6937,9 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               MixTypes(SkipType(GetType(op1)),
-                                        SkipType(GetType(op2)),
-                                        CurrentQuadToken),
+                               ComparisonMixTypes (SkipType (GetType (op1)),
+                                                   SkipType (GetType (op2)),
+                                                   CurrentQuadToken),
                                op1, op2) ;
          DoJump(location, BuildLessThanOrEqual(location, tl, tr), NIL, string(CreateLabelName(op3)))
       END
@@ -7031,9 +7033,9 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               MixTypes(SkipType(GetType(op1)),
-                                        SkipType(GetType(op2)),
-                                        CurrentQuadToken),
+                               ComparisonMixTypes (SkipType (GetType (op1)),
+                                                   SkipType (GetType (op2)),
+                                                   CurrentQuadToken),
                                op1, op2) ;
          DoJump(location, BuildGreaterThanOrEqual(location, tl, tr), NIL, string(CreateLabelName(op3)))
       END
@@ -7147,6 +7149,24 @@ END CodeIfSetNotEqu ;
 
 
 (*
+   ComparisonMixTypes -
+*)
+
+PROCEDURE ComparisonMixTypes (left, right: CARDINAL; tokpos: CARDINAL) : CARDINAL ;
+BEGIN
+   IF IsGenericSystemType (left)
+   THEN
+      RETURN left
+   ELSIF IsGenericSystemType (right)
+   THEN
+      RETURN right
+   ELSE
+      RETURN MixTypes (left, right, tokpos)
+   END
+END ComparisonMixTypes ;
+
+
+(*
    CodeIfEqu - codes the quadruple if op1 = op2 then goto op3
 *)
 
@@ -7185,9 +7205,9 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               MixTypes(SkipType(GetType(op1)),
-                                        SkipType(GetType(op2)),
-                                        CurrentQuadToken),
+                               ComparisonMixTypes (SkipType (GetType (op1)),
+                                                   SkipType (GetType (op2)),
+                                                   CurrentQuadToken),
                                op1, op2) ;
          DoJump(location, BuildEqualTo(location, tl, tr), NIL, string(CreateLabelName(op3)))
       END
@@ -7234,9 +7254,9 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               MixTypes(SkipType(GetType(op1)),
-                                        SkipType(GetType(op2)),
-                                        CurrentQuadToken),
+                               ComparisonMixTypes (SkipType (GetType (op1)),
+                                                   SkipType (GetType (op2)),
+                                                   CurrentQuadToken),
                                op1, op2) ;
          DoJump(location,
                 BuildNotEqualTo(location, tl, tr), NIL, string(CreateLabelName(op3)))
