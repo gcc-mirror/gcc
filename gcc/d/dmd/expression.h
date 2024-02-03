@@ -55,6 +55,7 @@ Expression *resolveLoc(Expression *exp, const Loc &loc, Scope *sc);
 MATCH implicitConvTo(Expression *e, Type *t);
 Expression *toLvalue(Expression *_this, Scope *sc, const char* action);
 Expression *modifiableLvalue(Expression* exp, Scope *sc);
+Expression *optimize(Expression *exp, int result, bool keepLvalue = false);
 
 typedef unsigned char OwnedBy;
 enum
@@ -107,8 +108,6 @@ public:
     virtual bool checkValue();
     Expression *addressOf();
     Expression *deref();
-
-    Expression *optimize(int result, bool keepLvalue = false);
 
     int isConst();
     virtual bool isIdentical(const Expression *e) const;

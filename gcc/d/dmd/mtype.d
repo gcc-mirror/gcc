@@ -52,6 +52,12 @@ enum LOGDEFAULTINIT = 0;    // log ::defaultInit()
 
 enum SIZE_INVALID = (~cast(uinteger_t)0);   // error return from size() functions
 
+static if (__VERSION__ < 2095)
+{
+    // Fix linker errors when building with older compilers.
+    // See: https://issues.dlang.org/show_bug.cgi?id=21299
+    private alias StringValueType = StringValue!Type;
+}
 
 /***************************
  * Return !=0 if modfrom can be implicitly converted to modto
@@ -299,7 +305,7 @@ extern (C++) abstract class Type : ASTNode
         Type swto;      // MODFlags.shared_ | MODFlags.wild
         Type swcto;     // MODFlags.shared_ | MODFlags.wildconst
     }
-    private Mcache* mcache;
+    Mcache* mcache;
 
     Type pto;       // merged pointer to this type
     Type rto;       // reference to this type
@@ -440,7 +446,7 @@ extern (C++) abstract class Type : ASTNode
 
     final bool equivalent(Type t)
     {
-        return immutableOf().equals(t.immutableOf());
+        return immutableOf(this).equals(t.immutableOf());
     }
 
     // kludge for template.isType()
@@ -782,255 +788,6 @@ extern (C++) abstract class Type : ASTNode
             (cast(TypeStruct)t).att = AliasThisRec.fwdref;
         if (t.ty == Tclass)
             (cast(TypeClass)t).att = AliasThisRec.fwdref;
-        return t;
-    }
-
-    /********************************
-     * Convert to 'const'.
-     */
-    final Type constOf()
-    {
-        //printf("Type::constOf() %p %s\n", this, toChars());
-        if (mod == MODFlags.const_)
-            return this;
-        if (mcache && mcache.cto)
-        {
-            assert(mcache.cto.mod == MODFlags.const_);
-            return mcache.cto;
-        }
-        Type t = makeConst();
-        t = t.merge();
-        t.fixTo(this);
-        //printf("-Type::constOf() %p %s\n", t, t.toChars());
-        return t;
-    }
-
-    /********************************
-     * Convert to 'immutable'.
-     */
-    final Type immutableOf()
-    {
-        //printf("Type::immutableOf() %p %s\n", this, toChars());
-        if (isImmutable())
-            return this;
-        if (mcache && mcache.ito)
-        {
-            assert(mcache.ito.isImmutable());
-            return mcache.ito;
-        }
-        Type t = makeImmutable();
-        t = t.merge();
-        t.fixTo(this);
-        //printf("\t%p\n", t);
-        return t;
-    }
-
-    /********************************
-     * Make type mutable.
-     */
-    final Type mutableOf()
-    {
-        //printf("Type::mutableOf() %p, %s\n", this, toChars());
-        Type t = this;
-        if (isImmutable())
-        {
-            getMcache();
-            t = mcache.ito; // immutable => naked
-            assert(!t || (t.isMutable() && !t.isShared()));
-        }
-        else if (isConst())
-        {
-            getMcache();
-            if (isShared())
-            {
-                if (isWild())
-                    t = mcache.swcto; // shared wild const -> shared
-                else
-                    t = mcache.sto; // shared const => shared
-            }
-            else
-            {
-                if (isWild())
-                    t = mcache.wcto; // wild const -> naked
-                else
-                    t = mcache.cto; // const => naked
-            }
-            assert(!t || t.isMutable());
-        }
-        else if (isWild())
-        {
-            getMcache();
-            if (isShared())
-                t = mcache.sto; // shared wild => shared
-            else
-                t = mcache.wto; // wild => naked
-            assert(!t || t.isMutable());
-        }
-        if (!t)
-        {
-            t = makeMutable();
-            t = t.merge();
-            t.fixTo(this);
-        }
-        else
-            t = t.merge();
-        assert(t.isMutable());
-        return t;
-    }
-
-    final Type sharedOf()
-    {
-        //printf("Type::sharedOf() %p, %s\n", this, toChars());
-        if (mod == MODFlags.shared_)
-            return this;
-        if (mcache && mcache.sto)
-        {
-            assert(mcache.sto.mod == MODFlags.shared_);
-            return mcache.sto;
-        }
-        Type t = makeShared();
-        t = t.merge();
-        t.fixTo(this);
-        //printf("\t%p\n", t);
-        return t;
-    }
-
-    final Type sharedConstOf()
-    {
-        //printf("Type::sharedConstOf() %p, %s\n", this, toChars());
-        if (mod == (MODFlags.shared_ | MODFlags.const_))
-            return this;
-        if (mcache && mcache.scto)
-        {
-            assert(mcache.scto.mod == (MODFlags.shared_ | MODFlags.const_));
-            return mcache.scto;
-        }
-        Type t = makeSharedConst();
-        t = t.merge();
-        t.fixTo(this);
-        //printf("\t%p\n", t);
-        return t;
-    }
-
-    /********************************
-     * Make type unshared.
-     *      0            => 0
-     *      const        => const
-     *      immutable    => immutable
-     *      shared       => 0
-     *      shared const => const
-     *      wild         => wild
-     *      wild const   => wild const
-     *      shared wild  => wild
-     *      shared wild const => wild const
-     */
-    final Type unSharedOf()
-    {
-        //printf("Type::unSharedOf() %p, %s\n", this, toChars());
-        Type t = this;
-
-        if (isShared())
-        {
-            getMcache();
-            if (isWild())
-            {
-                if (isConst())
-                    t = mcache.wcto; // shared wild const => wild const
-                else
-                    t = mcache.wto; // shared wild => wild
-            }
-            else
-            {
-                if (isConst())
-                    t = mcache.cto; // shared const => const
-                else
-                    t = mcache.sto; // shared => naked
-            }
-            assert(!t || !t.isShared());
-        }
-
-        if (!t)
-        {
-            t = this.nullAttributes();
-            t.mod = mod & ~MODFlags.shared_;
-            t.ctype = ctype;
-            t = t.merge();
-            t.fixTo(this);
-        }
-        else
-            t = t.merge();
-        assert(!t.isShared());
-        return t;
-    }
-
-    /********************************
-     * Convert to 'wild'.
-     */
-    final Type wildOf()
-    {
-        //printf("Type::wildOf() %p %s\n", this, toChars());
-        if (mod == MODFlags.wild)
-            return this;
-        if (mcache && mcache.wto)
-        {
-            assert(mcache.wto.mod == MODFlags.wild);
-            return mcache.wto;
-        }
-        Type t = makeWild();
-        t = t.merge();
-        t.fixTo(this);
-        //printf("\t%p %s\n", t, t.toChars());
-        return t;
-    }
-
-    final Type wildConstOf()
-    {
-        //printf("Type::wildConstOf() %p %s\n", this, toChars());
-        if (mod == MODFlags.wildconst)
-            return this;
-        if (mcache && mcache.wcto)
-        {
-            assert(mcache.wcto.mod == MODFlags.wildconst);
-            return mcache.wcto;
-        }
-        Type t = makeWildConst();
-        t = t.merge();
-        t.fixTo(this);
-        //printf("\t%p %s\n", t, t.toChars());
-        return t;
-    }
-
-    final Type sharedWildOf()
-    {
-        //printf("Type::sharedWildOf() %p, %s\n", this, toChars());
-        if (mod == (MODFlags.shared_ | MODFlags.wild))
-            return this;
-        if (mcache && mcache.swto)
-        {
-            assert(mcache.swto.mod == (MODFlags.shared_ | MODFlags.wild));
-            return mcache.swto;
-        }
-        Type t = makeSharedWild();
-        t = t.merge();
-        t.fixTo(this);
-        //printf("\t%p %s\n", t, t.toChars());
-        return t;
-    }
-
-    final Type sharedWildConstOf()
-    {
-        //printf("Type::sharedWildConstOf() %p, %s\n", this, toChars());
-        if (mod == (MODFlags.shared_ | MODFlags.wildconst))
-            return this;
-        if (mcache && mcache.swcto)
-        {
-            assert(mcache.swcto.mod == (MODFlags.shared_ | MODFlags.wildconst));
-            return mcache.swcto;
-        }
-        Type t = makeSharedWildConst();
-        t = t.merge();
-        t.fixTo(this);
-        //printf("\t%p %s\n", t, t.toChars());
         return t;
     }
 
@@ -1435,56 +1192,6 @@ extern (C++) abstract class Type : ASTNode
     }
 
     /************************************
-     * Apply MODxxxx bits to existing type.
-     */
-    final Type castMod(MOD mod)
-    {
-        Type t;
-        switch (mod)
-        {
-        case 0:
-            t = unSharedOf().mutableOf();
-            break;
-
-        case MODFlags.const_:
-            t = unSharedOf().constOf();
-            break;
-
-        case MODFlags.wild:
-            t = unSharedOf().wildOf();
-            break;
-
-        case MODFlags.wildconst:
-            t = unSharedOf().wildConstOf();
-            break;
-
-        case MODFlags.shared_:
-            t = mutableOf().sharedOf();
-            break;
-
-        case MODFlags.shared_ | MODFlags.const_:
-            t = sharedConstOf();
-            break;
-
-        case MODFlags.shared_ | MODFlags.wild:
-            t = sharedWildOf();
-            break;
-
-        case MODFlags.shared_ | MODFlags.wildconst:
-            t = sharedWildConstOf();
-            break;
-
-        case MODFlags.immutable_:
-            t = immutableOf();
-            break;
-
-        default:
-            assert(0);
-        }
-        return t;
-    }
-
-    /************************************
      * Add MODxxxx bits to existing type.
      * We're adding, not replacing, so adding const to
      * a shared type => "shared const"
@@ -1506,16 +1213,16 @@ extern (C++) abstract class Type : ASTNode
                 if (isShared())
                 {
                     if (isWild())
-                        t = sharedWildConstOf();
+                        t = this.sharedWildConstOf();
                     else
-                        t = sharedConstOf();
+                        t = this.sharedConstOf();
                 }
                 else
                 {
-                    if (isWild())
-                        t = wildConstOf();
+                    if (this.isWild())
+                        t = this.wildConstOf();
                     else
-                        t = constOf();
+                        t = t.constOf();
                 }
                 break;
 
@@ -1523,63 +1230,63 @@ extern (C++) abstract class Type : ASTNode
                 if (isShared())
                 {
                     if (isConst())
-                        t = sharedWildConstOf();
+                        t = this.sharedWildConstOf();
                     else
-                        t = sharedWildOf();
+                        t = this.sharedWildOf();
                 }
                 else
                 {
                     if (isConst())
-                        t = wildConstOf();
+                        t = this.wildConstOf();
                     else
-                        t = wildOf();
+                        t = this.wildOf();
                 }
                 break;
 
             case MODFlags.wildconst:
                 if (isShared())
-                    t = sharedWildConstOf();
+                    t = this.sharedWildConstOf();
                 else
-                    t = wildConstOf();
+                    t = this.wildConstOf();
                 break;
 
             case MODFlags.shared_:
                 if (isWild())
                 {
                     if (isConst())
-                        t = sharedWildConstOf();
+                        t = this.sharedWildConstOf();
                     else
-                        t = sharedWildOf();
+                        t = this.sharedWildOf();
                 }
                 else
                 {
                     if (isConst())
-                        t = sharedConstOf();
+                        t = this.sharedConstOf();
                     else
-                        t = sharedOf();
+                        t = this.sharedOf();
                 }
                 break;
 
             case MODFlags.shared_ | MODFlags.const_:
                 if (isWild())
-                    t = sharedWildConstOf();
+                    t = this.sharedWildConstOf();
                 else
-                    t = sharedConstOf();
+                    t = this.sharedConstOf();
                 break;
 
             case MODFlags.shared_ | MODFlags.wild:
                 if (isConst())
-                    t = sharedWildConstOf();
+                    t = this.sharedWildConstOf();
                 else
-                    t = sharedWildOf();
+                    t = this.sharedWildOf();
                 break;
 
             case MODFlags.shared_ | MODFlags.wildconst:
-                t = sharedWildConstOf();
+                t = this.sharedWildConstOf();
                 break;
 
             case MODFlags.immutable_:
-                t = immutableOf();
+                t = this.immutableOf();
                 break;
 
             default:
@@ -1990,7 +1697,7 @@ extern (C++) abstract class Type : ASTNode
 
     final Type unqualify(uint m)
     {
-        Type t = mutableOf().unSharedOf();
+        Type t = this.mutableOf().unSharedOf();
 
         Type tn = ty == Tenum ? null : nextOf();
         if (tn && tn.ty != Tfunction)

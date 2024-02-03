@@ -33,6 +33,7 @@ import dmd.mtype;
 import dmd.objc;
 import dmd.root.rmem;
 import dmd.target;
+import dmd.typesem;
 import dmd.visitor;
 
 /***********************************************************

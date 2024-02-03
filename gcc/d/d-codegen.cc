@@ -157,7 +157,7 @@ declaration_type (Declaration *decl)
   if (decl->isParameter () && valist_array_p (decl->type))
     {
       Type *valist = decl->type->nextOf ()->pointerTo ();
-      valist = valist->castMod (decl->type->mod);
+      valist = castMod (valist, decl->type->mod);
       return build_ctype (valist);
     }
 
@@ -207,7 +207,7 @@ parameter_type (Parameter *arg)
   if (valist_array_p (arg->type))
     {
       Type *valist = arg->type->nextOf ()->pointerTo ();
-      valist = valist->castMod (arg->type->mod);
+      valist = castMod (valist, arg->type->mod);
       return build_ctype (valist);
     }
 

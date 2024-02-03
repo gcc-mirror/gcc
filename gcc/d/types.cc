@@ -1329,7 +1329,7 @@ build_ctype (Type *t)
 	t->accept (&v);
       else
 	{
-	  Type *tb = t->castMod (0);
+	  Type *tb = castMod (t, 0);
 	  if (!tb->ctype)
 	    tb->accept (&v);
 	  t->ctype = insert_type_modifiers (tb->ctype, t->mod);

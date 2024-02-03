@@ -829,7 +829,8 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
 }
 
 /**
- * Try lower a variable's static Associative Array to a newaa struct.
+ * Try lower a variable's Associative Array initializer to a newaa struct
+ * so it can be put in static data.
  * Params:
  *   vd = Variable to lower
  *   sc = Scope
@@ -839,11 +840,20 @@ void lowerStaticAAs(VarDeclaration vd, Scope* sc)
     if (vd.storage_class & STC.manifest)
         return;
     if (auto ei = vd._init.isExpInitializer())
-    {
-        scope v = new StaticAAVisitor(sc);
-        v.vd = vd;
-        ei.exp.accept(v);
-    }
+        lowerStaticAAs(ei.exp, sc);
+}
+
+/**
+ * Try lower all Associative Array literals in an expression to a newaa struct
+ * so it can be put in static data.
+ * Params:
+ *   e = Expression to traverse
+ *   sc = Scope
+ */
+void lowerStaticAAs(Expression e, Scope* sc)
+{
+    scope v = new StaticAAVisitor(sc);
+    e.accept(v);
 }
 
 /// Visit Associative Array literals and lower them to structs for static initialization
@@ -851,7 +861,6 @@ private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
 {
     alias visit = SemanticTimeTransitiveVisitor.visit;
     Scope* sc;
-    VarDeclaration vd;
 
     this(Scope* sc) scope @safe
     {

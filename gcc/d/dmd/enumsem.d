@@ -503,6 +503,8 @@ void enumMemberSemantic(Scope* sc, EnumMember em)
     {
         Expression e = em.value;
         assert(e.dyncast() == DYNCAST.expression);
+        if (em.ed.memtype)
+            e = inferType(e, em.ed.memtype);
         e = e.expressionSemantic(sc);
         e = resolveProperties(sc, e);
         e = e.ctfeInterpret();
@@ -571,6 +573,10 @@ void enumMemberSemantic(Scope* sc, EnumMember em)
             em.origValue = e;
         }
         em.value = e;
+        // https://issues.dlang.org/show_bug.cgi?id=24311
+        // First enum member is .init value, which gets put into static segment
+        if (first)
+            lowerStaticAAs(e, sc);
     }
     else if (first)
     {

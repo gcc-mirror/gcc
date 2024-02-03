@@ -34,6 +34,7 @@ import dmd.root.ctfloat;
 import dmd.root.port;
 import dmd.root.rmem;
 import dmd.tokens;
+import dmd.typesem;
 import dmd.visitor;
 
 /****************************************************************/
@@ -640,7 +641,6 @@ bool isSafePointerCast(Type srcPointee, Type destPointee)
     // It's OK if function pointers differ only in safe/pure/nothrow
     if (srcPointee.ty == Tfunction && destPointee.ty == Tfunction)
     {
-        import dmd.typesem : covariant;
         return srcPointee.covariant(destPointee) == Covariant.yes ||
             destPointee.covariant(srcPointee) == Covariant.yes;
     }

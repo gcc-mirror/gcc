@@ -154,6 +154,17 @@ void testLocalStatic() @trusted
 
 /////////////////////////////////////////////
 
+// https://issues.dlang.org/show_bug.cgi?id=24311
+enum E : int[int] { x = [123: 456] }
+
+void testEnumInit()
+{
+    E e = E.init;
+    assert(e[123] == 456);
+}
+
+/////////////////////////////////////////////
+
 void main()
 {
     testSimple();
@@ -163,4 +174,5 @@ void main()
     testClassInit();
     testImmutable();
     testLocalStatic();
+    testEnumInit();
 }

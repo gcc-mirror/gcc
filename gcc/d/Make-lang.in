@@ -163,6 +163,7 @@ D_FRONTEND_OBJS = \
 	d/parsetimevisitor.o \
 	d/permissivevisitor.o \
 	d/postordervisitor.o \
+	d/pragmasem.o \
 	d/printast.o \
 	d/root-aav.o \
 	d/root-array.o \

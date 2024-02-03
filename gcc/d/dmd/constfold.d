@@ -1331,9 +1331,9 @@ int sliceCmpStringWithArray(const StringExp se1, ArrayLiteralExp ae2, size_t lo1
 {
     foreach (j; 0 .. len)
     {
-        const val2 = cast(dchar)ae2[j + lo2].toInteger();
-        const val1 = se1.getCodeUnit(j + lo1);
-        const int c = val1 - val2;
+        const val2 = ae2[j + lo2].toInteger();
+        const val1 = se1.getIndex(j + lo1);
+        const int c = (val1 > val2) - (val1 < val2);
         if (c)
             return c;
     }

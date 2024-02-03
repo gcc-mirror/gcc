@@ -37,6 +37,7 @@ import dmd.location;
 import dmd.mtype;
 import dmd.optimize;
 import dmd.statement;
+import dmd.templatesem;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;

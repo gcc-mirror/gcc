@@ -16,12 +16,10 @@ module dmd.statementsem;
 import core.stdc.stdio;
 
 import dmd.aggregate;
-import dmd.aliasthis;
 import dmd.arrayop;
 import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.astenums;
-import dmd.attrib;
 import dmd.blockexit;
 import dmd.clone;
 import dmd.cond;
@@ -36,9 +34,7 @@ import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
-import dmd.dtemplate;
 import dmd.errors;
-import dmd.errorsink;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
@@ -64,7 +60,6 @@ import dmd.root.string;
 import dmd.semantic2;
 import dmd.sideeffect;
 import dmd.statement;
-import dmd.staticassert;
 import dmd.target;
 import dmd.tokens;
 import dmd.typesem;
@@ -1751,102 +1746,10 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
     {
         /* https://dlang.org/spec/statement.html#pragma-statement
          */
-        // Should be merged with PragmaDeclaration
-
-        //printf("PragmaStatement::semantic() %s\n", ps.toChars());
-        //printf("body = %p\n", ps._body);
-        if (ps.ident == Id.msg)
-        {
-            if (!pragmaMsgSemantic(ps.loc, sc, ps.args))
-                return setError();
-        }
-        else if (ps.ident == Id.lib)
-        {
-            version (all)
-            {
-                /* Should this be allowed?
-                 */
-                error(ps.loc, "`pragma(lib)` not allowed as statement");
-                return setError();
-            }
-            else
-            {
-                if (!ps.args || ps.args.length != 1)
-                {
-                    error(ps.loc, "`string` expected for library name");
-                    return setError();
-                }
-                else
-                {
-                    auto se = semanticString(sc, (*ps.args)[0], "library name");
-                    if (!se)
-                        return setError();
-
-                    if (global.params.v.verbose)
-                    {
-                        message("library   %.*s", cast(int)se.len, se.string);
-                    }
-                }
-            }
-        }
-        else if (ps.ident == Id.linkerDirective)
-        {
-            /* Should this be allowed?
-             */
-            error(ps.loc, "`pragma(linkerDirective)` not allowed as statement");
+        import dmd.pragmasem : pragmaStmtSemantic;
+        if (!pragmaStmtSemantic(ps, sc))
             return setError();
-        }
-        else if (ps.ident == Id.startaddress)
-        {
-            if (!pragmaStartAddressSemantic(ps.loc, sc, ps.args))
-                return setError();
-        }
-        else if (ps.ident == Id.Pinline)
-        {
-            if (auto fd = sc.func)
-            {
-                fd.inlining = evalPragmaInline(ps.loc, sc, ps.args);
-            }
-            else
-            {
-                error(ps.loc, "`pragma(inline)` is not inside a function");
-                return setError();
-            }
-        }
-        else if (ps.ident == Id.mangle)
-        {
-            auto es = ps._body ? ps._body.isExpStatement() : null;
-            auto de = es ? es.exp.isDeclarationExp() : null;
-            if (!de)
-            {
-                error(ps.loc, "`pragma(mangle)` must be attached to a declaration");
-                return setError();
-            }
-            const se = ps.args && (*ps.args).length == 1 ? semanticString(sc, (*ps.args)[0], "pragma mangle argument") : null;
-            if (!se)
-            {
-                error(ps.loc, "`pragma(mangle)` takes a single argument that must be a string literal");
-                return setError();
-            }
-            const cnt = setMangleOverride(de.declaration, cast(const(char)[])se.peekData());
-            if (cnt != 1)
-                assert(0);
-        }
-        else if (!global.params.ignoreUnsupportedPragmas)
-        {
-            error(ps.loc, "unrecognized `pragma(%s)`", ps.ident.toChars());
-            return setError();
-        }
 
-        if (ps._body)
-        {
-            if (ps.ident == Id.msg || ps.ident == Id.startaddress)
-            {
-                error(ps.loc, "`pragma(%s)` is missing a terminating `;`", ps.ident.toChars());
-                return setError();
-            }
-            ps._body = ps._body.statementSemantic(sc);
-        }
         result = ps._body;
     }
 
@@ -5008,86 +4911,6 @@ private void debugThrowWalker(Statement s)
 
     scope walker = new DebugWalker();
     s.accept(walker);
-}
-
-/***********************************************************
- * Evaluate and print a `pragma(msg, args)`
- *
- * Params:
- *    loc = location for error messages
- *    sc = scope for argument interpretation
- *    args = expressions to print
- * Returns:
- *    `true` on success
- */
-bool pragmaMsgSemantic(Loc loc, Scope* sc, Expressions* args)
-{
-    if (!args)
-        return true;
-    foreach (arg; *args)
-    {
-        sc = sc.startCTFE();
-        auto e = arg.expressionSemantic(sc);
-        e = resolveProperties(sc, e);
-        sc = sc.endCTFE();
-
-        // pragma(msg) is allowed to contain types as well as expressions
-        e = ctfeInterpretForPragmaMsg(e);
-        if (e.op == EXP.error)
-        {
-            errorSupplemental(loc, "while evaluating `pragma(msg, %s)`", arg.toChars());
-            return false;
-        }
-        if (auto se = e.toStringExp())
-        {
-            const slice = se.toUTF8(sc).peekString();
-            fprintf(stderr, "%.*s", cast(int)slice.length, slice.ptr);
-        }
-        else
-            fprintf(stderr, "%s", e.toChars());
-    }
-    fprintf(stderr, "\n");
-    return true;
-}
-
-/***********************************************************
- * Evaluate `pragma(startAddress, func)` and store the resolved symbol in `args`
- *
- * Params:
- *    loc = location for error messages
- *    sc = scope for argument interpretation
- *    args = pragma arguments
- * Returns:
- *    `true` on success
- */
-bool pragmaStartAddressSemantic(Loc loc, Scope* sc, Expressions* args)
-{
-    if (!args || args.length != 1)
-    {
-        .error(loc, "function name expected for start address");
-        return false;
-    }
-    else
-    {
-        /* https://issues.dlang.org/show_bug.cgi?id=11980
-         * resolveProperties and ctfeInterpret call are not necessary.
-         */
-        Expression e = (*args)[0];
-        sc = sc.startCTFE();
-        e = e.expressionSemantic(sc);
-        // e = resolveProperties(sc, e);
-        sc = sc.endCTFE();
-
-        // e = e.ctfeInterpret();
-        (*args)[0] = e;
-        Dsymbol sa = getDsymbol(e);
-        if (!sa || !sa.isFuncDeclaration())
-        {
-            .error(loc, "function name expected for start address, not `%s`", e.toChars());
-            return false;
-        }
-    }
-    return true;
 }
 
 /************************************

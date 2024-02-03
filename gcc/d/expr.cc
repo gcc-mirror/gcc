@@ -1178,7 +1178,7 @@ public:
 	  {
 	    libcall = LIBCALL_AAGETY;
 	    ptr = build_address (build_expr (e->e1));
-	    tinfo = build_typeinfo (e, tb1->unSharedOf ()->mutableOf ());
+	    tinfo = build_typeinfo (e, mutableOf (unSharedOf (tb1)));
 	  }
 	else
 	  {
@@ -2170,7 +2170,7 @@ public:
 	      {
 		/* Generate a slice for non-zero initialized aggregates,
 		   otherwise create an empty array.  */
-		gcc_assert (e->type == Type::tvoid->arrayOf ()->constOf ());
+		gcc_assert (e->type == constOf (Type::tvoid->arrayOf ()));
 
 		tree type = build_ctype (e->type);
 		tree length = size_int (sd->dsym->structsize);
@@ -2709,17 +2709,16 @@ public:
 
   void visit (AssocArrayLiteralExp *e) final override
   {
-    if (e->lowering != NULL)
+    if (this->constp_ && e->lowering != NULL)
       {
 	/* When an associative array literal gets lowered, it's converted into a
 	   struct literal suitable for static initialization.  */
-	gcc_assert (this->constp_);
 	this->result_ = build_expr (e->lowering, this->constp_, true);
 	return ;
       }
 
     /* Want the mutable type for typeinfo reference.  */
-    Type *tb = e->type->toBasetype ()->mutableOf ();
+    Type *tb = mutableOf (e->type->toBasetype ());
 
     /* Handle empty assoc array literals.  */
     TypeAArray *ta = tb->isTypeAArray ();

@@ -30,6 +30,7 @@ import dmd.location;
 import dmd.root.filename;
 import dmd.visitor;
 import dmd.tokens;
+import dmd.typesem;
 
 import dmd.common.outbuffer;
 import dmd.utils;

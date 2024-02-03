@@ -5291,7 +5291,7 @@ final class CParser(AST) : Parser!AST
         auto ifn = new AST.ExpInitializer(loc, efn);
         auto lenfn = new AST.IntegerExp(loc, fn.length + 1, AST.Type.tuns32); // +1 for terminating 0
         auto tfn = new AST.TypeSArray(AST.Type.tchar, lenfn);
-        efn.type = tfn.immutableOf();
+        efn.type = tfn.makeImmutable();
         efn.committed = true;
         auto sfn = new AST.VarDeclaration(loc, tfn, Id.__func__, ifn, STC.gshared | STC.immutable_);
         auto e = new AST.DeclarationExp(loc, sfn);

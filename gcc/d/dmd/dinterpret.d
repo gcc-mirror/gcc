@@ -50,6 +50,8 @@ import dmd.rootobject;
 import dmd.root.utf;
 import dmd.statement;
 import dmd.tokens;
+import dmd.typesem : mutableOf;
+import dmd.utils : arrayCastBigEndian;
 import dmd.visitor;
 
 /*************************************
@@ -7743,45 +7745,4 @@ private void removeHookTraceImpl(ref CallExp ce, ref FuncDeclaration fd)
 
     if (global.params.v.verbose)
         message("strip     %s =>\n          %s", oldCE.toChars(), ce.toChars());
-}
-
-/**
- * Cast a `ubyte[]` to an array of larger integers as if we are on a big endian architecture
- * Params:
- *   data = array with big endian data
- *   size = 1 for ubyte[], 2 for ushort[], 4 for uint[], 8 for ulong[]
- * Returns: copy of `data`, with bytes shuffled if compiled for `version(LittleEndian)`
- */
-ubyte[] arrayCastBigEndian(const ubyte[] data, size_t size)
-{
-    ubyte[] impl(T)()
-    {
-        auto result = new T[](data.length / T.sizeof);
-        foreach (i; 0 .. result.length)
-        {
-            result[i] = 0;
-            foreach (j; 0 .. T.sizeof)
-            {
-                result[i] |= T(data[i * T.sizeof + j]) << ((T.sizeof - 1 - j) * 8);
-            }
-        }
-        return cast(ubyte[]) result;
-    }
-    switch (size)
-    {
-        case 1: return data.dup;
-        case 2: return impl!ushort;
-        case 4: return impl!uint;
-        case 8: return impl!ulong;
-        default: assert(0);
-    }
-}
-
-unittest
-{
-    ubyte[] data = [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x11, 0x22];
-    assert(cast(ulong[]) arrayCastBigEndian(data, 8) == [0xAABBCCDDEEFF1122]);
-    assert(cast(uint[]) arrayCastBigEndian(data, 4) == [0xAABBCCDD, 0xEEFF1122]);
-    assert(cast(ushort[]) arrayCastBigEndian(data, 2) == [0xAABB, 0xCCDD, 0xEEFF, 0x1122]);
-    assert(cast(ubyte[]) arrayCastBigEndian(data, 1) == data);
 }

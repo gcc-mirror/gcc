@@ -85,6 +85,7 @@ import dmd.traits;
 import dmd.typesem;
 import dmd.typinf;
 import dmd.utils;
+import dmd.utils : arrayCastBigEndian;
 import dmd.visitor;
 
 enum LOGSEMANTIC = false;
@@ -4242,7 +4243,33 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         size_t u;
         dchar c;
 
-        switch (e.postfix)
+        if (e.hexString)
+        {
+            const data = cast(const ubyte[]) e.peekString();
+            switch (e.postfix)
+            {
+                case 'd':
+                    e.sz = 4;
+                    e.type = Type.tdstring;
+                    break;
+                case 'w':
+                    e.sz = 2;
+                    e.type = Type.twstring;
+                    break;
+                case 'c':
+                default:
+                    e.type = Type.tstring;
+                    e.sz = 1;
+                    break;
+            }
+            if ((e.len % e.sz) != 0)
+                error(e.loc, "hex string with `%s` type needs to be multiple of %d bytes, not %d",
+                    e.type.toChars(), e.sz, cast(int) e.len);
+
+            e.setData(arrayCastBigEndian(data, e.sz).ptr, e.len / e.sz, e.sz);
+            e.committed = true;
+        }
+        else switch (e.postfix)
         {
         case 'd':
             for (u = 0; u < e.len;)
@@ -6263,7 +6290,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 auto ad2 = b.sym;
                 ue.e1 = ue.e1.castTo(sc, ad2.type.addMod(ue.e1.type.mod));
                 ue.e1 = ue.e1.expressionSemantic(sc);
-                auto vi = exp.f.findVtblIndex(&ad2.vtbl, cast(int)ad2.vtbl.length);
+                auto vi = findVtblIndex(exp.f, ad2.vtbl[]);
                 assert(vi >= 0);
                 exp.f = ad2.vtbl[vi].isFuncDeclaration();
                 assert(exp.f);

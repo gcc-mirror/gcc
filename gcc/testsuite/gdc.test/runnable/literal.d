@@ -260,6 +260,19 @@ void testHexstring()
     // Test printing StringExp with size 8
     enum toStr(immutable ulong[] v) = v.stringof;
     static assert(toStr!y == `x"88776655443322119900FFEEDDCCBBAA"`);
+
+    // Hex string postfixes
+    // https://issues.dlang.org/show_bug.cgi?id=24363
+    wstring wStr = x"AA BB CC DD"w;
+    immutable int[] dStr = x"AA BB CC DD"d;
+    assert(wStr[0] == 0xAABB);
+    assert(wStr[1] == 0xCCDD);
+    assert(dStr[0] == 0xAABBCCDD);
+
+    // Test sliceCmpStringWithArray with size 8
+    static immutable ulong[] z0 = cast(immutable ulong[]) x"1111 1111 1111 1111 0000 000F 0000 0000";
+    static immutable ulong[] z1 = [0x1111_1111_1111_1111, 0x0000_000E_0000_0000];
+    static assert(z0 !is z1);
 }
 
 /***************************************************/

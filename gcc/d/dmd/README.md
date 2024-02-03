@@ -119,6 +119,7 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [expressionsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/expressionsem.d)       | Do semantic analysis for expressions                              |
 | [statementsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/statementsem.d)         | Do semantic analysis for statements                               |
 | [initsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/initsem.d)                   | Do semantic analysis for initializers                             |
+| [pragmasem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/pragmasem.d)               | Do semantic analysis for pragmas                                  |
 | [templatesem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/templatesem.d)           | Do semantic analysis for templates                                |
 | [templateparamsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/templateparamsem.d) | Do semantic analysis for template parameters                      |
 | [typesem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/typesem.d)                   | Do semantic analysis for types                                    |

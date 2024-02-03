@@ -951,6 +951,14 @@ public:
         OutBuffer tmp;
         const(char)[] q;
 
+        void mangleAsArray()
+        {
+            buf.writeByte('A');
+            buf.print(e.len);
+            foreach (i; 0 .. e.len)
+                mangleInteger(e.getIndex(i));
+        }
+
         /* Write string in UTF-8 format
          */
         switch (e.sz)
@@ -967,7 +975,7 @@ public:
             {
                 dchar c;
                 if (const s = utf_decodeWchar(slice, u, c))
-                    error(e.loc, "%.*s", cast(int)s.length, s.ptr);
+                    return mangleAsArray();
                 else
                     tmp.writeUTF8(c);
             }
@@ -981,7 +989,7 @@ public:
             foreach (c; slice)
             {
                 if (!utf_isValidDchar(c))
-                    error(e.loc, "invalid UCS-32 char \\U%08x", c);
+                    return mangleAsArray();
                 else
                     tmp.writeUTF8(c);
             }
@@ -990,13 +998,7 @@ public:
         }
         case 8:
             // String of size 8 has to be hexstring cast to long[], mangle as array literal
-            buf.writeByte('A');
-            buf.print(e.len);
-            foreach (i; 0 .. e.len)
-            {
-                mangleInteger(e.getIndex(i));
-            }
-            return;
+            return mangleAsArray();
         default:
             assert(0);
         }

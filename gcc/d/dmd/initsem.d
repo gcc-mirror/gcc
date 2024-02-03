@@ -30,6 +30,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
@@ -59,36 +60,33 @@ Expression toAssocArrayLiteral(ArrayInitializer ai)
 {
     //printf("ArrayInitializer::toAssocArrayInitializer(%s)\n", ai.toChars());
     //static int i; if (++i == 2) assert(0);
-    const dim = ai.value.length;
-    if (!dim)
-    {
-        error(ai.loc, "invalid associative array initializer `%s`, use `null` instead",
-            toChars(ai));
-        return ErrorExp.get();
-    }
+
     auto no(const char* format, Initializer i)
     {
         error(i.loc, format, toChars(i));
         return ErrorExp.get();
     }
-    Expression e;
-    auto keys = new Expressions(dim);
+
+    const dim = ai.value.length;
+    if (!dim)
+        return no("invalid associative array initializer `%s`, use `null` instead", ai);
+
+    auto keys   = new Expressions(dim);
     auto values = new Expressions(dim);
-    for (size_t i = 0; i < dim; i++)
+    foreach (i, iz; ai.value[])
     {
-        Initializer iz = ai.value[i];
         assert(iz);
-        e = iz.initializerToExpression();
-        if (!e)
+        auto ev = iz.initializerToExpression();
+        if (!ev)
             return no("invalid value `%s` in initializer", iz);
-        (*values)[i] = e;
-        e = ai.index[i];
-        if (!e)
+        (*values)[i] = ev;
+
+        auto ei = ai.index[i];
+        if (!ei)
             return no("missing key for value `%s` in initializer", iz);
-        (*keys)[i] = e;
+        (*keys)[i] = ei;
     }
-    e = new AssocArrayLiteralExp(ai.loc, keys, values);
-    return e;
+    return new AssocArrayLiteralExp(ai.loc, keys, values);
 }
 
 /******************************************
@@ -138,8 +136,12 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         /* This works by replacing the StructInitializer with an ExpInitializer.
           */
         t = t.toBasetype();
-        if (t.ty == Tsarray && t.nextOf().toBasetype().ty == Tstruct)
-            t = t.nextOf().toBasetype();
+        if (auto tsa = t.isTypeSArray())
+        {
+            auto ts = tsa.nextOf().toBasetype().isTypeStruct();
+            if (ts)
+                t = ts;
+        }
         if (auto ts = t.isTypeStruct())
         {
             StructDeclaration sd = ts.sym;
@@ -154,16 +156,17 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             if (sd.sizeok != Sizeok.done)
                 return err();
 
-        Expression getExp(size_t j, Type fieldType)
-        {
-            // Convert initializer to Expression `ex`
-            auto tm = fieldType.addMod(t.mod);
-            auto iz = i.value[j].initializerSemantic(sc, tm, needInterpret);
-            auto ex = iz.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0);
-            if (ex.op != EXP.error)
-                i.value[j] = iz;
-            return ex;
-        }
+            Expression getExp(size_t j, Type fieldType)
+            {
+                // Convert initializer to Expression `ex`
+                auto tm = fieldType.addMod(t.mod);
+                auto iz = i.value[j].initializerSemantic(sc, tm, needInterpret);
+                auto ex = iz.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0);
+                if (ex.op != EXP.error)
+                    i.value[j] = iz;
+                return ex;
+            }
+
             auto elements = resolveStructLiteralNamedArgs(sd, t, sc, i.loc, i.field[], &getExp, (size_t j) => i.value[j].loc);
             if (!elements)
                 return err();
@@ -232,17 +235,19 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 auto ei = new ExpInitializer(e.loc, e);
                 return ei.initializerSemantic(sc, t, needInterpret);
             }
+
         case Tpointer:
-            if (t.nextOf().ty != Tfunction)
-                break;
-            goto default;
+            if (t.nextOf().isTypeFunction())
+                goto default;
+            break;
+
         default:
             error(i.loc, "cannot use array to initialize `%s`", t.toChars());
             return err();
         }
         i.type = t;
         length = 0;
-        for (size_t j = 0; j < i.index.length; j++)
+        for (size_t j = 0; j < i.index.length; j++) // don't replace with foreach; j is modified
         {
             Expression idx = i.index[j];
             if (idx)
@@ -277,9 +282,8 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 TupleExp te = ei.exp.isTupleExp();
                 i.index.remove(j);
                 i.value.remove(j);
-                for (size_t k = 0; k < te.exps.length; ++k)
+                foreach (k, e; (*te.exps)[])
                 {
-                    Expression e = (*te.exps)[k];
                     i.index.insert(j + k, cast(Expression)null);
                     i.value.insert(j + k, new ExpInitializer(e.loc, e));
                 }
@@ -290,7 +294,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             {
                 i.value[j] = val;
             }
-            length++;
+            ++length;
             if (length == 0)
             {
                 error(i.loc, "array dimension overflow");
@@ -311,7 +315,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             }
             else
             {
-                uinteger_t edim = tsa.dim.toInteger();
+                ulong edim = tsa.dim.toInteger();
                 if (i.dim > edim)
                 {
                     error(i.loc, "array initializer has %u elements, but array length is %llu", i.dim, edim);
@@ -347,7 +351,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             sc = sc.endCTFE();
         if (i.exp.op == EXP.error)
             return err();
-        uint olderrors = global.errors;
+        const olderrors = global.errors;
 
         /* ImportC: convert arrays to pointers, functions to pointers to functions
          */
@@ -1170,7 +1174,7 @@ Initializer inferType(Initializer init, Scope* sc)
         bool hasOverloads;
         if (auto f = isFuncAddress(init.exp, &hasOverloads))
         {
-            if (f.checkForwardRef(init.loc))
+            if (checkForwardRef(f, init.loc))
             {
                 return new ErrorInitializer();
             }

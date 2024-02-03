@@ -703,7 +703,6 @@ public:
     Expressions *fdensureParams(Expressions *fdep);
     bool equals(const RootObject * const o) const override final;
 
-    int findVtblIndex(Dsymbols *vtbl, int dim);
     bool overloadInsert(Dsymbol *s) override;
     bool inUnittest();
     static MATCH leastAsSpecialized(FuncDeclaration *f, FuncDeclaration *g, Identifiers *names);

@@ -690,7 +690,7 @@ strip_type_modifiers (Type *type)
       return tnext->pointerTo ();
     }
 
-  return type->castMod (0);
+  return castMod (type, 0);
 }
 
 /* Returns true if types T1 and T2 representing return types or types of

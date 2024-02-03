@@ -577,7 +577,7 @@ public:
 
   void visit (TypeInfoConstDeclaration *d) final override
   {
-    Type *tm = d->tinfo->mutableOf ();
+    Type *tm = mutableOf (d->tinfo);
     tm = merge2 (tm);
 
     /* The vtable for TypeInfo_Const.  */
@@ -594,7 +594,7 @@ public:
 
   void visit (TypeInfoInvariantDeclaration *d) final override
   {
-    Type *tm = d->tinfo->mutableOf ();
+    Type *tm = mutableOf (d->tinfo);
     tm = merge2 (tm);
 
     /* The vtable for TypeInfo_Invariant.  */
@@ -611,7 +611,7 @@ public:
 
   void visit (TypeInfoSharedDeclaration *d) final override
   {
-    Type *tm = d->tinfo->unSharedOf ();
+    Type *tm = unSharedOf (d->tinfo);
     tm = merge2 (tm);
 
     /* The vtable for TypeInfo_Shared.  */
@@ -628,7 +628,7 @@ public:
 
   void visit (TypeInfoWildDeclaration *d) final override
   {
-    Type *tm = d->tinfo->mutableOf ();
+    Type *tm = mutableOf (d->tinfo);
     tm = merge2 (tm);
 
     /* The vtable for TypeInfo_Inout.  */
