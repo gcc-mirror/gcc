@@ -729,20 +729,19 @@ wi::set_bit_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
     }
 }
 
-/* Byte swap the integer represented by XVAL and LEN into VAL.  Return
+/* Byte swap the integer represented by XVAL and XLEN into VAL.  Return
    the number of blocks in VAL.  Both XVAL and VAL have PRECISION bits.  */
 unsigned int
 wi::bswap_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
-	         unsigned int len, unsigned int precision)
+		 unsigned int xlen, unsigned int precision)
 {
-  unsigned int i, s;
+  unsigned int s, len = BLOCKS_NEEDED (precision);
 
   /* This is not a well defined operation if the precision is not a
      multiple of 8.  */
   gcc_assert ((precision & 0x7) == 0);
 
-  for (i = 0; i < len; i++)
-    val[i] = 0;
+  memset (val, 0, sizeof (unsigned HOST_WIDE_INT) * len);
 
   /* Only swap the bytes that are not the padding.  */
   for (s = 0; s < precision; s += 8)
@@ -753,7 +752,7 @@ wi::bswap_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
       unsigned int block = s / HOST_BITS_PER_WIDE_INT;
       unsigned int offset = s & (HOST_BITS_PER_WIDE_INT - 1);
 
-      byte = (safe_uhwi (xval, len, block) >> offset) & 0xff;
+      byte = (safe_uhwi (xval, xlen, block) >> offset) & 0xff;
 
       block = d / HOST_BITS_PER_WIDE_INT;
       offset = d & (HOST_BITS_PER_WIDE_INT - 1);
