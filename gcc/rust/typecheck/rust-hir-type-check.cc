@@ -76,40 +76,8 @@ TypeResolution::Resolve (HIR::Crate &crate)
   if (saw_errors ())
     return;
 
-  auto mappings = Analysis::Mappings::get ();
   auto context = TypeCheckContext::get ();
-
-  // default inference variables if possible
-  context->iterate ([&] (HirId id, TyTy::BaseType *ty) mutable -> bool {
-    // nothing to do
-    if (ty->get_kind () != TyTy::TypeKind::INFER)
-      return true;
-
-    TyTy::InferType *infer_var = static_cast<TyTy::InferType *> (ty);
-    TyTy::BaseType *default_type;
-    bool ok = infer_var->default_type (&default_type);
-    if (!ok)
-      {
-	rust_error_at (mappings->lookup_location (id), ErrorCode::E0282,
-		       "type annotations needed");
-	return true;
-      }
-    else
-      {
-	auto result
-	  = unify_site (id, TyTy::TyWithLocation (ty),
-			TyTy::TyWithLocation (default_type), UNDEF_LOCATION);
-	rust_assert (result);
-	rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
-	result->set_ref (id);
-	context->insert_type (
-	  Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
-				 UNKNOWN_LOCAL_DEFID),
-	  result);
-      }
-
-    return true;
-  });
+  context->compute_inference_variables (true);
 }
 
 // rust-hir-trait-ref.h
