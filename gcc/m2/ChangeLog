@@ -1,3 +1,39 @@
+2024-02-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113730
+	* gm2-compiler/M2Base.mod (IsUserType): New procedure function.
+	(MixTypes): Use IsUserType instead of IsType before calling MixTypes.
+	* gm2-compiler/M2GenGCC.mod (GetTypeMode): Remove and import from
+	SymbolTable.
+	(CodeBinaryCheck): Replace call to MixTypes with MixTypesBinary.
+	(CodeBinary): Replace call to MixTypes with MixTypesBinary.
+	(CodeIfLess): Replace MixTypes with ComparisonMixTypes.
+	(CodeIfGre): Replace MixTypes with ComparisonMixTypes.
+	(CodeIfLessEqu): Replace MixTypes with ComparisonMixTypes.
+	(CodeIfGreEqu): Replace MixTypes with ComparisonMixTypes.
+	(CodeIfEqu): Replace MixTypes with ComparisonMixTypes.
+	(CodeIfNotEqu): Replace MixTypes with ComparisonMixTypes.
+	(ComparisonMixTypes): New procedure function.
+	* gm2-compiler/M2Quads.mod (BuildEndFor): Replace GenQuadO
+	with GenQuadOtok and pass tokenpos for the operands to the AddOp
+	and XIndrOp.
+	(CheckRangeIncDec): Check etype against NulSym and dtype for a
+	pointer and set etype to Address.
+	(BuildAddAdrFunction): New variable opa.  Convert operand to an
+	address and save result in opa.  Replace GenQuad with GenQuadOtok.
+	(BuildSubAdrFunction): New variable opa.  Convert operand to an
+	address and save result in opa.  Replace GenQuad with GenQuadOtok.
+	(BuildDiffAdrFunction): New variable opa.  Convert operand to an
+	address and save result in opa.  Replace GenQuad with GenQuadOtok.
+	(calculateMultipicand): Replace GenQuadO with GenQuadOtok.
+	(ConvertToAddress): New procedure function.
+	(BuildDynamicArray): Convert index to address before adding to
+	the base.
+	* gm2-compiler/SymbolTable.def (GetTypeMode): New procedure function.
+	* gm2-compiler/SymbolTable.mod (GetTypeMode): New procedure
+	function implemented (moved from M2GenGCC.mod).
+	* gm2-libs/SArgs.mod (GetArg): Replace cast to PtrToChar with ADDRESS.
+
 2024-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111627

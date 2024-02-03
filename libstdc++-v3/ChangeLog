@@ -1,3 +1,59 @@
+2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113335
+	* include/bits/std_function.h (__function_guide_helper): Add
+	partial specialization for explicit object member functions, as
+	per LWG 3617.
+	* testsuite/20_util/function/cons/deduction_c++23.cc: Check
+	explicit object member functions.
+	* testsuite/30_threads/packaged_task/cons/deduction_c++23.cc:
+	Likewise.
+
+2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc [_AIX]: Undefine "u".
+
+2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (network_v6::network): Define.
+	(network_v6::hosts): Finish implementing.
+	(network_v6::to_string): Do not concatenate std::string to
+	arbitrary std::basic_string specialization.
+	* testsuite/experimental/net/internet/network/v6/cons.cc: New
+	test.
+
+2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90276
+	* testsuite/25_algorithms/pstl/alg_merge/inplace_merge.cc: Fix
+	comparison function to use less-than instead of equality.
+
+2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90276
+	* testsuite/util/pstl/test_utils.h (reverse_invoker): Do not use
+	perfect forwarding for iterator arguments.
+
+2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view(R&&)): Remove
+	constraint that traits_type must be the same, as per LWG 3857.
+	* testsuite/21_strings/basic_string_view/cons/char/range_c++20.cc:
+	Explicit conversion between different specializations should be
+	allowed.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/range_c++20.cc:
+	Likewise.
+
+2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/syncstream (basic_osyncstream::operator=): Remove
+	noexcept, as per LWG 3867.
+
+2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/generator (promise_type::yield_value): Remove
+	noexcept from fourth overload, as per LWG 3894.
+
 2024-02-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/113309

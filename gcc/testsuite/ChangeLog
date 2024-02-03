@@ -1,3 +1,234 @@
+2024-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110006
+	PR c++/112769
+	* g++.dg/cpp2a/class-deduction-alias18.C: New test.
+	* g++.dg/cpp2a/concepts-friend16.C: New test.
+
+2024-02-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113730
+	* gm2/extensions/fail/arith1.mod: New test.
+	* gm2/extensions/fail/arith2.mod: New test.
+	* gm2/extensions/fail/arith3.mod: New test.
+	* gm2/extensions/fail/arith4.mod: New test.
+	* gm2/extensions/fail/arithpromote.mod: New test.
+	* gm2/extensions/fail/extensions-fail.exp: New test.
+	* gm2/linking/fail/badimp.def: New test.
+	* gm2/linking/fail/badimp.mod: New test.
+	* gm2/linking/fail/linking-fail.exp: New test.
+	* gm2/linking/fail/testbadimp.mod: New test.
+
+2024-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113588
+	PR tree-optimization/113467
+	* gcc.dg/vect/vect-early-break_108-pr113588.c: New test.
+	* gcc.dg/vect/vect-early-break_109-pr113588.c: New test.
+
+2024-02-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/vect/vect-avg-1.c: Check optimized dump
+	for `vector *signed short` instead of the `vect` dump.
+	* gcc.dg/vect/vect-avg-11.c: Likewise.
+	* gcc.dg/vect/vect-avg-12.c: Likewise.
+	* gcc.dg/vect/vect-avg-13.c: Likewise.
+	* gcc.dg/vect/vect-avg-14.c: Likewise.
+	* gcc.dg/vect/vect-avg-2.c: Likewise.
+	* gcc.dg/vect/vect-avg-3.c: Likewise.
+	* gcc.dg/vect/vect-avg-4.c: Likewise.
+	* gcc.dg/vect/vect-avg-5.c: Likewise.
+	* gcc.dg/vect/vect-avg-6.c: Likewise.
+	* gcc.dg/vect/vect-avg-7.c: Likewise.
+	* gcc.dg/vect/vect-avg-8.c: Likewise.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/113604
+	* gcc.dg/torture/bitint-53.c: New test.
+	* gcc.dg/torture/bitint-55.c: New test.
+
+2024-02-02  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit.dg/all-non-failing-tests.h: New test.
+	* jit.dg/test-sizeof.c: New test.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110084
+	* g++.dg/cpp2a/spaceship-synth-neg3.C: Check error message.
+	* g++.dg/cpp2a/spaceship-eq16.C: New test.
+
+2024-02-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113697
+	* gcc.target/riscv/rvv/autovec/pr113697.c: New test.
+
+2024-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp (check_effective_target_shared):
+	Allow the external symbols referenced in the test to be undefined.
+
+2024-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/ubsan/ubsan.exp:Add a parameter to init to say that
+	we expect the C++ driver to provide paths for libstdc++.
+	* gcc.dg/ubsan/ubsan.exp: Add a parameter to init to say that
+	we need a path added for libstdc++.
+	* gdc.dg/ubsan/ubsan.exp: Likewise.
+	* gfortran.dg/ubsan/ubsan.exp: Likewise.
+	* lib/ubsan-dg.exp: Handle a single parameter to init that
+	requests addition of a path to libstdc++ to link flags.
+
+2024-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/asan/asan.exp: Add a parameter to init to say that
+	we expect the C++ driver to provide paths for libstdc++.
+	* g++.dg/hwasan/hwasan.exp: Likewise
+	* gcc.dg/asan/asan.exp: Add a parameter to init to say that
+	we need a path added for libstdc++.
+	* gcc.dg/hwasan/hwasan.exp: Likewise.
+	* gdc.dg/asan/asan.exp: Likewise.
+	* gfortran.dg/asan/asan.exp: Likewise.
+	* lib/asan-dg.exp: Handle a single parameter to init that
+	requests addition of a path to libstdc++ to link flags.
+	* lib/hwasan-dg.exp: Likewise.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113691
+	* gcc.dg/bitint-83.c: New test.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113692
+	* gcc.dg/bitint-82.c: New test.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113699
+	* gcc.dg/bitint-81.c: New test.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113705
+	* g++.dg/opt/pr113705.C: New test.
+
+2024-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr71321.c (scan-assembler-not): Avoid multiline
+	matches.
+
+2024-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/sse2-stv-1.c (dg-options): Add -mno-stackrealign.
+
+2024-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr80569.c: Require gas.
+
+2024-02-02  Lehua Ding  <lehua.ding@rivai.ai>
+
+	Revert:
+	2024-02-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/poly_licm-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/poly_licm-2.c: New test.
+
+2024-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/112863
+	* lib/obj-c++.exp: Decide on whether to present -B or -L to
+	reference the paths to uninstalled libobjc/libobjc-gnu and
+	libstdc++ and use that to generate the link flags.
+
+2024-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/112862
+	* gfortran.dg/coarray/caf.exp: Remove duplicate additions of
+	libatomic handling.
+	* gfortran.dg/dg.exp: Likewise.
+	* lib/gfortran.exp: Decide on whether to present -B or -L to
+	reference the paths to uninstalled libgfortran, libqadmath and
+	libatomic and use that to generate the link flags.
+
+2024-02-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/poly_licm-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/poly_licm-2.c: New test.
+
+2024-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pieces-memcpy-7.c (dg-additional-options): Add
+	-mno-stackrealign.
+	* gcc.target/i386/pieces-memcpy-8.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-9.c: Likewise.
+	* gcc.target/i386/pieces-memset-36.c: Likewise.
+	* gcc.target/i386/pieces-memset-40.c: Likewise.
+	* gcc.target/i386/pieces-memset-9.c: Likewise.
+
+2024-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/apx-ndd-cmov.c (scan-assembler-times): Allow for
+	cmovl.e, cmovl.ge.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112439
+	* g++.dg/cpp2a/no_unique_address15.C: New test.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113638
+	* g++.dg/cpp1y/var-templ-array1.C: New test.
+
+2024-02-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_pre-1.c: New test.
+
+2024-02-02  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/larch-frecipe-intrinsic.c: New test.
+
+2024-02-02  Li Wei  <liwei@loongson.cn>
+
+	* gfortran.dg/vect/vect-10.f90: New test.
+
+2024-02-02  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/func-call-extreme-1.c (dg-options):
+	Use -O2 instead of -O0 to ensure the pcalau12i/addi/lu32i/lu52i
+	instruction sequences are not reordered by the compiler.
+	(NOIPA): Disallow interprocedural optimizations.
+	* gcc.target/loongarch/func-call-extreme-2.c: Remove the content
+	duplicated from func-call-extreme-1.c, include it instead.
+	(dg-options): Likewise.
+	* gcc.target/loongarch/func-call-extreme-3.c (dg-options):
+	Likewise.
+	* gcc.target/loongarch/func-call-extreme-4.c (dg-options):
+	Likewise.
+	* gcc.target/loongarch/cmodel-extreme-1.c: New test.
+	* gcc.target/loongarch/cmodel-extreme-2.c: New test.
+	* g++.target/loongarch/cmodel-extreme-mi-thunk-1.C: New test.
+	* g++.target/loongarch/cmodel-extreme-mi-thunk-2.C: New test.
+	* g++.target/loongarch/cmodel-extreme-mi-thunk-3.C: New test.
+
+2024-02-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/explicit-relocs-medium-call36-auto-tls-ld-gd.c: New test.
+
+2024-02-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/explicit-relocs-extreme-auto-tls-ld-gd.c: New test.
+	* gcc.target/loongarch/explicit-relocs-medium-auto-tls-ld-gd.c: New test.
+
+2024-02-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/attr-model-5.c: New test.
+	* gcc.target/loongarch/func-call-extreme-5.c: New test.
+	* gcc.target/loongarch/func-call-extreme-6.c: New test.
+	* gcc.target/loongarch/tls-extreme-macro.c: New test.
+
 2024-02-01  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/warn/Wdangling-reference21.C: New test.

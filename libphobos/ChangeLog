@@ -1,3 +1,28 @@
+2024-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime bce5c1f7b5.
+	* src/MERGE: Merge upstream phobos e4d0dd513.
+
+2024-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d8e3976a58.
+	* src/MERGE: Merge upstream phobos 7a6e95688.
+
+2024-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime f1a045928e.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/stdc/stdatomic.d.
+	* libdruntime/Makefile.in: Regenerate.
+
+2024-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/112864
+	* testsuite/lib/libphobos.exp: Use ${shlib_ext} instead of
+	hard-wiring '.so'.
+	* testsuite/testsuite_flags.in: Remove duplicate -B option
+	for spec file path.
+
 2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* Makefile.am: Allow overriding EXEPCT.

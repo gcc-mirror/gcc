@@ -1,3 +1,169 @@
+2024-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113588
+	PR tree-optimization/113467
+	* tree-vect-data-refs.cc
+	(vect_analyze_data_ref_dependence):  Choose correct dest and fix checks.
+	(vect_analyze_early_break_dependences): Update comments.
+
+2024-02-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/59778
+	* config/pa/pa.cc (enum pa_builtins): Add PA_BUILTIN_GET_FPSR
+	and PA_BUILTIN_SET_FPSR builtins.
+	* (pa_builtins_icode): Declare.
+	* (def_builtin, pa_fpu_init_builtins): New.
+	* (pa_init_builtins): Initialize FPU builtins.
+	* (pa_builtin_decl, pa_expand_builtin_1): New.
+	* (pa_expand_builtin): Handle PA_BUILTIN_GET_FPSR and
+	PA_BUILTIN_SET_FPSR builtins.
+	* (pa_atomic_assign_expand_fenv): New.
+	* config/pa/pa.md (UNSPECV_GET_FPSR, UNSPECV_SET_FPSR): New
+	UNSPECV constants.
+	(get_fpsr, put_fpsr): New expanders.
+	(get_fpsr_32, get_fpsr_64, set_fpsr_32, set_fpsr_64): New
+	insn patterns.
+
+2024-02-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113697
+	* config/riscv/riscv-v.cc (expand_reduction): Pass VLMAX avl to scalar move.
+
+2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Common Type Attributes): Fix typo in
+	description of hardbool.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113692
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_stmt): Handle casts
+	from large/huge BITINT_TYPEs to POINTER_TYPE/REFERENCE_TYPE as
+	final_cast_p.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113699
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_asm): Handle
+	uninitialized large/huge _BitInt SSA_NAME inputs.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113705
+	* tree-ssa-math-opts.cc (is_widening_mult_rhs_p): Use wide_int_from
+	around wi::to_wide in order to compare value in prec precision.
+
+2024-02-02  Lehua Ding  <lehua.ding@rivai.ai>
+
+	Revert:
+	2024-02-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Fix poly_int dest generation.
+
+2024-02-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Fix poly_int dest generation.
+
+2024-02-02  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_get_arg_info): Cleanup comments.
+	(riscv_pass_by_reference): Ditto.
+	(riscv_fntype_abi): Ditto.
+
+2024-02-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vsetvl_pre_insn_p): New function.
+	(pre_vsetvl::cleaup): Remove vsetvl_pre.
+	(pre_vsetvl::remove_vsetvl_pre_insns): New function.
+
+2024-02-02  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/larchintrin.h
+	(__frecipe_s): Update function return type.
+	(__frecipe_d): Ditto.
+	(__frsqrte_s): Ditto.
+	(__frsqrte_d): Ditto.
+
+2024-02-02  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_multiply_add_p): New.
+	(loongarch_vector_costs::add_stmt_cost): Adjust.
+
+2024-02-02  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (unspec): Add
+	UNSPEC_LA_PCREL_64_PART1 and UNSPEC_LA_PCREL_64_PART2.
+	(la_pcrel64_two_parts): New define_insn.
+	* config/loongarch/loongarch.cc (loongarch_tls_symbol): Fix a
+	typo in the comment.
+	(loongarch_call_tls_get_addr): If -mcmodel=extreme
+	-mexplicit-relocs={always,auto}, use la_pcrel64_two_parts for
+	addressing the TLS symbol and __tls_get_addr.  Emit an REG_EQUAL
+	note to allow CSE addressing __tls_get_addr.
+	(loongarch_legitimize_tls_address): If -mcmodel=extreme
+	-mexplicit-relocs={always,auto}, address TLS IE symbols with
+	la_pcrel64_two_parts.
+	(loongarch_split_symbol): If -mcmodel=extreme
+	-mexplicit-relocs={always,auto}, address symbols with
+	la_pcrel64_two_parts.
+	(loongarch_output_mi_thunk): Clean up unreachable code.  If
+	-mcmodel=extreme -mexplicit-relocs={always,auto}, address the MI
+	thunks with la_pcrel64_two_parts.
+
+2024-02-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_call_tls_get_addr):
+	Add support for call36.
+
+2024-02-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_explicit_relocs_p):
+	When the code model of the symbol is extreme and -mexplicit-relocs=auto,
+	the macro instruction loading symbol address is not applicable.
+	(loongarch_call_tls_get_addr): Adjust code.
+	(loongarch_legitimize_tls_address): Likewise.
+
+2024-02-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-protos.h (loongarch_symbol_extreme_p):
+	Add function declaration.
+	* config/loongarch/loongarch.cc (loongarch_symbolic_constant_p):
+	For SYMBOL_PCREL64, non-zero addend of "la.local $rd,$rt,sym+addend"
+	is not allowed
+	(loongarch_load_tls): Added macro support in extreme mode.
+	(loongarch_call_tls_get_addr): Likewise.
+	(loongarch_legitimize_tls_address): Likewise.
+	(loongarch_force_address): Likewise.
+	(loongarch_legitimize_move): Likewise.
+	(loongarch_output_mi_thunk): Likewise.
+	(loongarch_option_override_internal): Remove the code that detects
+	explicit relocs status.
+	(loongarch_handle_model_attribute): Likewise.
+	* config/loongarch/loongarch.md (movdi_symbolic_off64): New template.
+	* config/loongarch/predicates.md (symbolic_off64_operand): New predicate.
+	(symbolic_off64_or_reg_operand): Likewise.
+
+2024-02-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_load_tls):
+	Load all types of tls symbols through one function.
+	(loongarch_got_load_tls_gd): Delete.
+	(loongarch_got_load_tls_ld): Delete.
+	(loongarch_got_load_tls_ie): Delete.
+	(loongarch_got_load_tls_le): Delete.
+	(loongarch_call_tls_get_addr): Modify the called function name.
+	(loongarch_legitimize_tls_address): Likewise.
+	* config/loongarch/loongarch.md (@got_load_tls_gd<mode>): Delete.
+	(@load_tls<mode>): New template.
+	(@got_load_tls_ld<mode>): Delete.
+	(@got_load_tls_le<mode>): Delete.
+	(@got_load_tls_ie<mode>): Delete.
+
+2024-02-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (mem_shadd_or_shadd_rtx_p): New function.
+	(loongarch_legitimize_address): Add logical transformation code.
+
 2024-02-01  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Update -Wdangling-reference documentation.

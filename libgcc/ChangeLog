@@ -1,3 +1,21 @@
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/113604
+	* libgcc2.c (__divmodbitint4): If uv1 >= vv1, subtract
+	vv1 from uv1:uv0 once or twice as needed, rather than
+	subtracting vv1:vv1.
+
+2024-02-02  Khem Raj  <raj.khem@gmail.com>
+
+	* config/i386/enable-execute-stack-mingw32.c: Include
+	stdlib.h for abort() definition.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/113700
+	* config/i386/libgcc-glibc.ver (GCC_14.0.0): Remove __PFX prefixes
+	from symbol names.
+
 2024-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/113402

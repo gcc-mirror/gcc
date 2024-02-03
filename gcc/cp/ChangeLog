@@ -1,3 +1,44 @@
+2024-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110006
+	PR c++/112769
+	* constraint.cc (subst_info::quiet): Accomodate non-diagnostic
+	tsubst flags.
+	(tsubst_valid_expression_requirement): Likewise.
+	(tsubst_simple_requirement): Return a substituted _REQ node when
+	processing_template_decl.
+	(tsubst_type_requirement_1): Accomodate non-diagnostic tsubst
+	flags.
+	(tsubst_type_requirement): Return a substituted _REQ node when
+	processing_template_decl.
+	(tsubst_compound_requirement): Likewise.  Accomodate non-diagnostic
+	tsubst flags.
+	(tsubst_nested_requirement): Likewise.
+	(tsubst_requires_expr): Don't defer partial substitution when
+	processing_constraint_expression_p is true, in which case return
+	a substituted REQUIRES_EXPR.
+	* pt.cc (tsubst_expr) <case REQUIRES_EXPR>: Accomodate
+	non-diagnostic tsubst flags.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110084
+	* pt.cc (tsubst_function_decl): Only check a function defaulted
+	outside the class if the class is complete.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112439
+	* constexpr.cc (cxx_eval_store_expression): Check empty_base
+	before marking a CONSTRUCTOR readonly.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113638
+	* cp-tree.h: Adjust comment.
+	* pt.cc (instantiate_template): Set VAR_HAD_UNKNOWN_BOUND for
+	variable template.
+
 2024-02-01  Marek Polacek  <polacek@redhat.com>
 
 	* call.cc (reference_like_class_p): Consider even non-templates for
