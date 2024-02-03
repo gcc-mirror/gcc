@@ -572,22 +572,6 @@ TypeCheckType::resolve_segments (
     }
 
   context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
-  if (tyseg->needs_generic_substitutions ())
-    {
-      // location_t locus = segments.back ()->get_locus ();
-      if (!prev_segment->needs_generic_substitutions ())
-	{
-	  auto used_args_in_prev_segment
-	    = GetUsedSubstArgs::From (prev_segment);
-	  if (!used_args_in_prev_segment.is_error ())
-	    tyseg
-	      = SubstMapperInternal::Resolve (tyseg, used_args_in_prev_segment);
-	}
-
-      if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
-	return new TyTy::ErrorType (expr_id);
-    }
-
   rust_assert (resolved_node_id != UNKNOWN_NODEID);
 
   // lookup if the name resolver was able to canonically resolve this or not
