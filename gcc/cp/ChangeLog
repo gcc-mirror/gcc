@@ -1,3 +1,31 @@
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110084
+	* pt.cc (tsubst_function_decl): Only check a function defaulted
+	outside the class if the class is complete.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113638
+	* cp-tree.h: Adjust comment.
+	* pt.cc (instantiate_template): Set VAR_HAD_UNKNOWN_BOUND for
+	variable template.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112439
+	* constexpr.cc (cxx_eval_store_expression): Check empty_base
+	before marking a CONSTRUCTOR readonly.
+
 2024-02-01  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

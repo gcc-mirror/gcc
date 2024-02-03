@@ -1,3 +1,28 @@
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110084
+	* g++.dg/cpp2a/spaceship-synth-neg3.C: Check error message.
+	* g++.dg/cpp2a/spaceship-eq16.C: New test.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113638
+	* g++.dg/cpp1y/var-templ-array1.C: New test.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112439
+	* g++.dg/cpp2a/no_unique_address15.C: New test.
+
 2024-02-01  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
