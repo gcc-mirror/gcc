@@ -48,7 +48,7 @@ class vector
   static const size_t default_resize_min = 32;
 
   // Don't try to copy this vector.
-  vector<T, alloc_separate_cl>(const vector<T, alloc_separate_cl>& x);
+  vector(const vector<T, alloc_separate_cl>& x);
 
  public:
   typedef T datatype;
@@ -59,7 +59,7 @@ class vector
   T& operator[] (size_t pos) { return entries[pos]; }
   const T& operator[] (size_t pos) const  { return entries[pos]; }
 
-  vector<T, alloc_separate_cl>(size_t initial_size = default_initial_capacity)
+  vector(size_t initial_size = default_initial_capacity)
     : m_capacity(initial_size),
       m_size(0)
   {
@@ -68,7 +68,7 @@ class vector
     else
       entries = 0;
   }
-  ~vector<T, alloc_separate_cl>() { if (m_capacity) free(entries); }
+  ~vector() { if (m_capacity) free(entries); }
 
   void resize(size_t additional_capacity)
   {
