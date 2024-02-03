@@ -36,6 +36,7 @@ case "${target_cpu}" in
 	XCFLAGS="${XCFLAGS} -mfp-trap-mode=sui"
 	ARCH=alpha
 	;;
+  hppa*)		ARCH=pa ;;
   rs6000 | powerpc*)	ARCH=powerpc ;;
   riscv*)		ARCH=riscv ;;
   sh*)			ARCH=sh ;;
