@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {
@@ -574,6 +575,46 @@ TypeCheckContext::regions_from_generic_args (const HIR::GenericArgs &args) const
       regions.push_back (*resolved);
     }
   return regions;
+}
+
+void
+TypeCheckContext::compute_inference_variables (bool error)
+{
+  auto mappings = Analysis::Mappings::get ();
+
+  // default inference variables if possible
+  iterate ([&] (HirId id, TyTy::BaseType *ty) mutable -> bool {
+    // nothing to do
+    if (ty->get_kind () != TyTy::TypeKind::INFER)
+      return true;
+
+    TyTy::InferType *infer_var = static_cast<TyTy::InferType *> (ty);
+    TyTy::BaseType *default_type;
+
+    rust_debug_loc (mappings->lookup_location (id),
+		    "trying to default infer-var: %s",
+		    infer_var->as_string ().c_str ());
+    bool ok = infer_var->default_type (&default_type);
+    if (!ok)
+      {
+	if (error)
+	  rust_error_at (mappings->lookup_location (id), ErrorCode::E0282,
+			 "type annotations needed");
+	return true;
+      }
+
+    auto result
+      = unify_site (id, TyTy::TyWithLocation (ty),
+		    TyTy::TyWithLocation (default_type), UNDEF_LOCATION);
+    rust_assert (result);
+    rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
+    result->set_ref (id);
+    insert_type (Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
+					UNKNOWN_LOCAL_DEFID),
+		 result);
+
+    return true;
+  });
 }
 
 // TypeCheckContextItem

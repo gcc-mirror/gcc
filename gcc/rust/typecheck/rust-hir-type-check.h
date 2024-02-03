@@ -231,6 +231,8 @@ public:
   WARN_UNUSED_RESULT std::vector<TyTy::Region>
   regions_from_generic_args (const HIR::GenericArgs &args) const;
 
+  void compute_inference_variables (bool error);
+
 private:
   TypeCheckContext ();
 
