@@ -6768,6 +6768,9 @@ package body Exp_Ch3 is
       -------------------------------
 
       procedure Default_Initialize_Object (After : Node_Id) is
+         Exceptions_OK : constant Boolean :=
+                           not Restriction_Active (No_Exception_Propagation);
+
          function New_Object_Reference return Node_Id;
          --  Return a new reference to Def_Id with attributes Assignment_OK and
          --  Must_Not_Freeze already set.
@@ -6806,13 +6809,10 @@ package body Exp_Ch3 is
            (Init_Typ : Entity_Id) return Boolean
          is
          begin
-            --  Do not consider the object declaration if it comes with an
-            --  initialization expression, or is internal in which case it
-            --  will be assigned later.
+            --  Skip internal entities as specified in Einfo
 
             return
               not Is_Internal (Def_Id)
-                and then not Has_Init_Expression (N)
                 and then Needs_Simple_Initialization
                            (Typ         => Init_Typ,
                             Consider_IS =>
@@ -6821,9 +6821,6 @@ package body Exp_Ch3 is
          end Simple_Initialization_OK;
 
          --  Local variables
-
-         Exceptions_OK : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
 
          Aggr_Init  : Node_Id;
          Comp_Init  : List_Id := No_List;
@@ -6836,6 +6833,12 @@ package body Exp_Ch3 is
       --  Start of processing for Default_Initialize_Object
 
       begin
+         --  Nothing to do if the object has an initialization expression or
+         --  need not be initialized.
+
+         if Has_Init_Expression (N) or else No_Initialization (N) then
+            return;
+
          --  Default initialization is suppressed for objects that are already
          --  known to be imported (i.e. whose declaration specifies the Import
          --  aspect). Note that for objects with a pragma Import, we generate
@@ -6843,7 +6846,9 @@ package body Exp_Ch3 is
          --  the pragma. It is also suppressed for variables for which a pragma
          --  Suppress_Initialization has been explicitly given
 
-         if Is_Imported (Def_Id) or else Suppress_Initialization (Def_Id) then
+         elsif Is_Imported (Def_Id)
+           or else Suppress_Initialization (Def_Id)
+         then
             return;
 
          --  Nothing to do if the object being initialized is of a task type
@@ -6877,7 +6882,6 @@ package body Exp_Ch3 is
          --  Initialize the components of the object
 
          if Has_Non_Null_Base_Init_Proc (Typ)
-           and then not No_Initialization (N)
            and then not Initialization_Suppressed (Typ)
          then
             --  Do not initialize the components if No_Default_Initialization
@@ -6950,7 +6954,6 @@ package body Exp_Ch3 is
 
                  and then Simple_Initialization_OK (Component_Type (Typ))
                then
-                  Set_No_Initialization (N, False);
                   Set_Expression (N,
                     Get_Simple_Init_Val
                       (Typ  => Typ,
@@ -6978,7 +6981,6 @@ package body Exp_Ch3 is
          --  Provide a default value if the object needs simple initialization
 
          elsif Simple_Initialization_OK (Typ) then
-            Set_No_Initialization (N, False);
             Set_Expression (N,
               Get_Simple_Init_Val
                 (Typ  => Typ,
@@ -6992,7 +6994,7 @@ package body Exp_Ch3 is
          --  Initialize the object, generate:
          --    [Deep_]Initialize (Obj);
 
-         if Needs_Finalization (Typ) and then not No_Initialization (N) then
+         if Needs_Finalization (Typ) then
             Obj_Init :=
               Make_Init_Call
                 (Obj_Ref => New_Object_Reference,
