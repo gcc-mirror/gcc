@@ -87,6 +87,10 @@
 ;; the same template.
 (define_mode_iterator HQI [HI QI])
 
+;; This mode iterator allows the SI and HI patterns to be defined from
+;; the same template.
+(define_mode_iterator SHI [SI HI])
+
 
 ;; Attributes.
 
@@ -1291,28 +1295,30 @@
    (set_attr "length"	"2,2,2,2,2,2,3,3,3,3,6,3,3,3,3,3")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(match_operand:SI 1 "const_int_operand"))]
+  [(set (match_operand:SHI 0 "register_operand")
+	(match_operand:SHI 1 "const_int_operand"))]
   "!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS
    && ! xtensa_split1_finished_p ()
    && ! xtensa_simm12b (INTVAL (operands[1]))"
   [(set (match_dup 0)
 	(match_dup 1))]
 {
-  operands[1] = force_const_mem (SImode, operands[1]);
+  operands[1] = force_const_mem (<MODE>mode, operands[1]);
 })
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(match_operand:SI 1 "constantpool_operand"))]
+  [(set (match_operand:SHI 0 "register_operand")
+	(match_operand:SHI 1 "constantpool_operand"))]
   "! optimize_debug && reload_completed"
   [(const_int 0)]
 {
-  rtx x = avoid_constant_pool_reference (operands[1]);
+  rtx x = avoid_constant_pool_reference (operands[1]), dst = operands[0];
   if (! CONST_INT_P (x))
     FAIL;
-  if (! xtensa_constantsynth (operands[0], INTVAL (x)))
-    emit_move_insn (operands[0], x);
+  if (<MODE>mode == HImode)
+    dst = gen_rtx_REG (SImode, REGNO (dst));
+  if (! xtensa_constantsynth (dst, INTVAL (x)))
+    emit_move_insn (dst, x);
   DONE;
 })
 
