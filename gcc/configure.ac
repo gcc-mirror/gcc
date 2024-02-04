@@ -5057,6 +5057,50 @@ _start:
       [`if test x"$gcc_cv_as_ix86_got32x" = xyes; then echo 1; else echo 0; fi`],
       [Define 0/1 if your assembler and linker support @GOT.])
 
+    # Check if gas and gld support "addq %r23,foo@GOTTPOFF(%rip), %r15"
+    # with R_X86_64_CODE_6_GOTTPOFF relocation.
+    if echo "$ld_ver" | grep GNU > /dev/null; then
+      if $gcc_cv_ld -V 2>/dev/null | grep elf_x86_64_sol2 > /dev/null; then
+        ld_ix86_gld_64_opt="-melf_x86_64_sol2"
+      else
+        ld_ix86_gld_64_opt="-melf_x86_64"
+      fi
+    fi
+    # Enforce 64-bit output with gas and gld.
+    if test x$gas = xyes; then
+      as_ix86_gas_64_opt="--64"
+    fi
+    conftest_s='
+	.text
+	.globl	_start
+	.type _start, @function
+_start:
+	addq	%r23,foo@GOTTPOFF(%rip), %r15
+	.section .tdata,"awT",@progbits
+	.type foo, @object
+foo:
+	.quad 0'
+    gcc_GAS_CHECK_FEATURE([R_X86_64_CODE_6_GOTTPOFF reloc],
+	gcc_cv_as_x86_64_code_6_gottpoff,
+	[$as_ix86_gas_64_opt],
+	[$conftest_s],
+	[if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
+	    && test x$gcc_cv_readelf != x \
+	    && $gcc_cv_readelf --relocs --wide conftest.o 2>&1 \
+	       | grep R_X86_64_CODE_6_GOTTPOFF > /dev/null 2>&1 \
+	    && $gcc_cv_ld $ld_ix86_gld_64_opt -o conftest conftest.o > /dev/null 2>&1; then
+	   if $gcc_cv_objdump -dw conftest 2>&1 \
+	      | grep "add \+\$0xf\+8,%r23,%r15" > /dev/null 2>&1; then
+	     gcc_cv_as_x86_64_code_6_gottpoff=yes
+	   else
+	     gcc_cv_as_x86_64_code_6_gottpoff=no
+	   fi
+	 fi
+	 rm -f conftest])
+    AC_DEFINE_UNQUOTED(HAVE_AS_R_X86_64_CODE_6_GOTTPOFF,
+      [`if test x"$gcc_cv_as_x86_64_code_6_gottpoff" = xyes; then echo 1; else echo 0; fi`],
+      [Define 0/1 if your assembler and linker support R_X86_64_CODE_6_GOTTPOFF.])
+
     gcc_GAS_CHECK_FEATURE([GOTOFF in data],
       gcc_cv_as_ix86_gotoff_in_data,
       [$as_ix86_gas_32_opt],
