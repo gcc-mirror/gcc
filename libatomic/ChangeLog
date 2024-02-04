@@ -1,3 +1,9 @@
+2024-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/59778
+	* configure.tgt (hppa*): Set ARCH.
+	* config/pa/fenv.c: New file.
+
 2024-01-28  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* config/linux/aarch64/host-config.h (has_lse2): Add test for LSE.

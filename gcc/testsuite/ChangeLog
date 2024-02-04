@@ -1,3 +1,20 @@
+2024-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr84877.c: Adjust xfail parentheses.
+
+2024-02-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/111022
+	* gfortran.dg/fmt_error_10.f: Show D+0 exponent.
+	* gfortran.dg/pr96436_4.f90: Show E+0 exponent.
+	* gfortran.dg/pr96436_5.f90: Show E+0 exponent.
+	* gfortran.dg/pr111022.f90: New test.
+
+2024-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113722
+	* gcc.dg/pr113722.c: New test.
+
 2024-02-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110006

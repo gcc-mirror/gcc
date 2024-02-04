@@ -1,3 +1,23 @@
+2024-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113722
+	* wide-int.cc (wi::bswap_large): Rename third argument from
+	len to xlen and adjust use in safe_uhwi.  Add len variable, set
+	it to BLOCKS_NEEDED (precision) and use it for clearing of val
+	and as canonize argument.  Clear val using memset instead of
+	a loop.
+
+2024-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* ggc-common.cc (gt_pch_save): Allow addr to be equal to
+	mmi.preferred_base + mmi.size - sizeof (void *).
+
+2024-02-03  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-def.h (abi_minimal_isa): Declare.
+	* config/loongarch/loongarch-opts.cc (abi_minimal_isa): Remove
+	the ODR-violating locale declaration.
+
 2024-02-02  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/113588
