@@ -302,7 +302,8 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	  = *static_cast<HIR::TuplePatternItemsMultiple *> (
 	    pattern.get_items ().get ());
 
-	if (parent->get_kind () != TyTy::TUPLE)
+	auto resolved_parent = parent->destructure ();
+	if (resolved_parent->get_kind () != TyTy::TUPLE)
 	  {
 	    rust_error_at (pattern.get_locus (), "expected %s, found tuple",
 			   parent->as_string ().c_str ());
@@ -312,7 +313,8 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	const auto &patterns = ref.get_patterns ();
 	size_t nitems_to_resolve = patterns.size ();
 
-	TyTy::TupleType &par = *static_cast<TyTy::TupleType *> (parent);
+	TyTy::TupleType &par
+	  = *static_cast<TyTy::TupleType *> (resolved_parent);
 	if (patterns.size () != par.get_fields ().size ())
 	  {
 	    emit_pattern_size_error (pattern, par.get_fields ().size (),
