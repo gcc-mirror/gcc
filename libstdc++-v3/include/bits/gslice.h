@@ -169,6 +169,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline gslice&
   gslice::operator=(const gslice& __g)
   {
+    // Safe for self-assignment. Checking for it would add overhead just to
+    // optimize a case that should never happen anyway.
     if (__g._M_index)
       __g._M_index->_M_increment_use();
     if (_M_index && _M_index->_M_decrement_use() == 0)
