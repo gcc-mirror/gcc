@@ -268,7 +268,7 @@ __iocsrrd_b (unsigned int _1)
 
 /* Assembly instruction format:	rd, rj.  */
 /* Data types in instruction templates:  UHI, USI.  */
-extern __inline unsigned char
+extern __inline unsigned short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrrd_h (unsigned int _1)
 {
