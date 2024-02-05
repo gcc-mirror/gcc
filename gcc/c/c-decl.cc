@@ -9555,7 +9555,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  if (width != TYPE_PRECISION (type))
 	    {
 	      if (TREE_CODE (type) == BITINT_TYPE
-		  && (width > 1 || TYPE_UNSIGNED (type)))
+		  && width >= (TYPE_UNSIGNED (type) ? 1 : 2))
 		TREE_TYPE (field)
 		  = build_bitint_type (width, TYPE_UNSIGNED (type));
 	      else
