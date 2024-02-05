@@ -12655,8 +12655,7 @@ package body Exp_Ch3 is
         and then Stream_Operation_OK (Tag_Typ, TSS_Stream_Input)
         and then No (TSS (Tag_Typ, TSS_Stream_Input))
       then
-         Build_Record_Or_Elementary_Input_Function
-           (Tag_Typ, Decl, Ent);
+         Build_Record_Or_Elementary_Input_Function (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 

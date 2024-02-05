@@ -179,7 +179,6 @@ package body Exp_Attr is
    --    * Rec_Typ - the record type whose internals are to be validated
 
    function Default_Streaming_Unavailable (Typ : Entity_Id) return Boolean;
-   --
    --  In most cases, references to unavailable streaming attributes
    --  are rejected at compile time. In some obscure cases involving
    --  generics and formal derived types, the problem is dealt with at runtime.
@@ -4091,10 +4090,8 @@ package body Exp_Attr is
       ----------------------
 
       when Attribute_Has_Same_Storage => Has_Same_Storage : declare
-         Loc : constant Source_Ptr := Sloc (N);
-
-         X   : constant Node_Id := Prefix (N);
-         Y   : constant Node_Id := First (Expressions (N));
+         X : constant Node_Id := Pref;
+         Y : constant Node_Id := First (Exprs);
          --  The arguments
 
          X_Addr : Node_Id;
@@ -4363,7 +4360,7 @@ package body Exp_Attr is
 
          if Restriction_Active (No_Streams) then
             Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
+              Make_Raise_Program_Error (Loc,
                 Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, B_Type);
             return;
@@ -4415,7 +4412,7 @@ package body Exp_Attr is
                --  case where a No_Streams restriction is active.
 
                Rewrite (N,
-                 Make_Raise_Program_Error (Sloc (N),
+                 Make_Raise_Program_Error (Loc,
                    Reason => PE_Stream_Operation_Not_Allowed));
                Set_Etype (N, B_Type);
                return;
@@ -5295,10 +5292,8 @@ package body Exp_Attr is
       ----------------------
 
       when Attribute_Overlaps_Storage => Overlaps_Storage : declare
-         Loc : constant Source_Ptr := Sloc (N);
-         X   : constant Node_Id    := Prefix (N);
-         Y   : constant Node_Id    := First (Expressions (N));
-
+         X : constant Node_Id := Pref;
+         Y : constant Node_Id := First (Exprs);
          --  The arguments
 
          X_Addr, Y_Addr : Node_Id;
@@ -5451,7 +5446,7 @@ package body Exp_Attr is
 
          if Restriction_Active (No_Streams) then
             Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
+              Make_Raise_Program_Error (Loc,
                 Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, Standard_Void_Type);
             return;
@@ -5505,7 +5500,7 @@ package body Exp_Attr is
                --  case where a No_Streams restriction is active.
 
                Rewrite (N,
-                 Make_Raise_Program_Error (Sloc (N),
+                 Make_Raise_Program_Error (Loc,
                    Reason => PE_Stream_Operation_Not_Allowed));
                Set_Etype (N, Standard_Void_Type);
                return;
@@ -6180,10 +6175,9 @@ package body Exp_Attr is
 
       when Attribute_Reduce =>
          declare
-            Loc : constant Source_Ptr := Sloc (N);
-            E1  : constant Node_Id    := First (Expressions (N));
-            E2  : constant Node_Id    := Next (E1);
-            Bnn : constant Entity_Id  := Make_Temporary (Loc, 'B', N);
+            E1  : constant Node_Id   := First (Exprs);
+            E2  : constant Node_Id   := Next (E1);
+            Bnn : constant Entity_Id := Make_Temporary (Loc, 'B', N);
 
             Accum_Typ : Entity_Id := Empty;
             New_Loop  : Node_Id;
@@ -6381,7 +6375,7 @@ package body Exp_Attr is
 
          if Restriction_Active (No_Streams) then
             Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
+              Make_Raise_Program_Error (Loc,
                 Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, B_Type);
             return;
@@ -6453,7 +6447,7 @@ package body Exp_Attr is
                --  case where a No_Streams restriction is active.
 
                Rewrite (N,
-                 Make_Raise_Program_Error (Sloc (N),
+                 Make_Raise_Program_Error (Loc,
                    Reason => PE_Stream_Operation_Not_Allowed));
                Set_Etype (N, B_Type);
                return;
@@ -8096,7 +8090,7 @@ package body Exp_Attr is
 
          if Restriction_Active (No_Streams) then
             Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
+              Make_Raise_Program_Error (Loc,
                 Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, U_Type);
             return;
@@ -8150,7 +8144,7 @@ package body Exp_Attr is
                --  case where a No_Streams restriction is active.
 
                Rewrite (N,
-                 Make_Raise_Program_Error (Sloc (N),
+                 Make_Raise_Program_Error (Loc,
                    Reason => PE_Stream_Operation_Not_Allowed));
                Set_Etype (N, U_Type);
                return;
