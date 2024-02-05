@@ -5832,7 +5832,14 @@ gimple_lower_bitint (void)
 
 	  if (optimize)
 	    group_case_labels_stmt (swtch);
-	  switch_statements.safe_push (swtch);
+	  if (gimple_switch_num_labels (swtch) == 1)
+	    {
+	      single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
+	      gimple_stmt_iterator gsi = gsi_for_stmt (swtch);
+	      gsi_remove (&gsi, true);
+	    }
+	  else
+	    switch_statements.safe_push (swtch);
 	}
     }
 
