@@ -642,7 +642,7 @@ class PassNames:
         self.names = []
         with open(os.path.join(srcdir, 'passes.def')) as f:
             for line in f:
-                m = re.match('\s*NEXT_PASS \(([^,]+).*\);', line)
+                m = re.match(r'\s*NEXT_PASS \(([^,]+).*\);', line)
                 if m:
                     self.names.append(m.group(1))
 
