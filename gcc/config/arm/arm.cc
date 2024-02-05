@@ -29257,6 +29257,8 @@ arm_output_mi_thunk (FILE *file, tree thunk, HOST_WIDE_INT delta,
   const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
 
   assemble_start_function (thunk, fnname);
+  if (aarch_bti_enabled ())
+    emit_insn (aarch_gen_bti_c ());
   if (TARGET_32BIT)
     arm32_output_mi_thunk (file, thunk, delta, vcall_offset, function);
   else
