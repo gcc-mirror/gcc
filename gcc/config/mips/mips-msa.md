@@ -613,7 +613,7 @@
 
 (define_insn "neg<mode>2"
   [(set (match_operand:FMSA 0 "register_operand" "=f")
-	(neg (match_operand:FMSA 1 "register_operand" "f")))]
+	(neg:FMSA (match_operand:FMSA 1 "register_operand" "f")))]
   "ISA_HAS_MSA"
   "bnegi.<msafmt>\t%w0,%w1,<elmsgnbit>"
   [(set_attr "type" "simd_bit")
