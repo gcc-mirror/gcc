@@ -1,3 +1,8 @@
+2024-02-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/reg_subreg_costs.c: New test.
+	Co-authored-by: Jivan Hakobyan <jivanhakobyan9@gmail.com>
+
 2024-02-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/pr84877.c: Adjust xfail parentheses.

@@ -1,3 +1,50 @@
+2024-02-04  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*eqne_zero_masked_bits):
+	Add missing ":SI" to the match_operator.
+
+2024-02-04  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (SHI): New mode iterator.
+	(2 split patterns related to constsynth):
+	Change to also accept HImode operands.
+
+2024-02-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Handle SUBREG and REG
+	similarly.
+
+2024-02-04  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lsx.md (neg<mode:FLSX>2): Remove the
+	incorrect expand.
+	* config/loongarch/simd.md (simdfmt_as_i): New define_mode_attr.
+	(elmsgnbit): Likewise.
+	(neg<mode:FVEC>2): New define_insn.
+	* config/loongarch/lasx.md (negv4df2, negv8sf2): Remove as they
+	are now instantiated in simd.md.
+
+2024-02-04  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_symbol_insns): Do not
+	use LSX_SUPPORTED_MODE_P or LASX_SUPPORTED_MODE_P if mode is
+	MAX_MACHINE_MODE.
+
+2024-02-04  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_expand_vselect): Adjust.
+	(loongarch_expand_vselect_vconcat): Ditto.
+	(loongarch_try_expand_lsx_vshuf_const): New, use vshuf to implement
+	all 128-bit constant permutation situations.
+	(loongarch_expand_lsx_shuffle): Adjust and rename function name.
+	(loongarch_is_imm_set_shuffle): Renamed function name.
+	(loongarch_expand_vec_perm_even_odd): Function forward declaration.
+	(loongarch_expand_vec_perm_even_odd_1): Add implement for 128-bit
+	extract-even and extract-odd permutations.
+	(loongarch_is_odd_extraction): Delete.
+	(loongarch_is_even_extraction): Ditto.
+	(loongarch_expand_vec_perm_const): Adjust.
+
 2024-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/113722

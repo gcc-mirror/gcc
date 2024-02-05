@@ -1,3 +1,24 @@
+2024-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Spec::_M_reserved): Define new
+	bit-field members to reserve padding bits for future extensions.
+
+2024-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/experimental/Makefile.am: Use libstdc++fsconvenience.a
+	instead of libstdc++fs.a.
+	* src/experimental/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.am: Build libstdc++fsconvenience.a as
+	well.
+	* src/filesystem/Makefile.in: Regenerate.
+
+2024-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/text_encoding-data.h: Regenerate.
+	* include/bits/unicode-data.h: Regenerate.
+	* scripts/gen_text_encoding_data.py: Add copyright and license
+	text to the output.
+
 2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/113335
