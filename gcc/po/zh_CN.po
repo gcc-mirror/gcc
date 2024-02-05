@@ -4,7 +4,7 @@
 # Meng Jie <zuxy.meng@gmail.com>, 2005-2014.
 # Jeff Bai <jeffbai@aosc.xyz>, 2015.
 # Mingye Wang (Arthur2e5) <arthur200126@gmail.com>, 2015, 2016.
-# Boyuan Yang <073plan@gmail.com>, 2019, 2023.
+# Boyuan Yang <073plan@gmail.com>, 2019, 2023, 2024.
 # Zixing Zhou <zixingzhou@foxmail.com>, 2023.
 #
 # Fellow translatiors:
@@ -32,19 +32,19 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 13.1-b20230409\n"
+"Project-Id-Version: gcc 13.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2023-07-26 18:38+0000\n"
-"PO-Revision-Date: 2023-04-13 22:07-0400\n"
+"PO-Revision-Date: 2024-02-05 15:48-0500\n"
 "Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.4.3\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"X-Generator: Poedit 3.4.2\n"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
@@ -67,7 +67,6 @@ msgid "function not inlinable"
 msgstr "函数不能内联"
 
 #: cif-code.def:60
-#, fuzzy
 msgid "function body can be overwritten at link time"
 msgstr "函数体可能在链接时被改写"
 
@@ -221,10 +220,9 @@ msgid "permerror: "
 msgstr "永久错误："
 
 #: config/i386/djgpp.h:143
-#, fuzzy, c-format
-#| msgid "-f%s not supported: ignored"
+#, c-format
 msgid "-f%s ignored (not supported for DJGPP)\n"
-msgstr "-f%s 不受支持：已忽略"
+msgstr "-f%s 已被忽略（不支持 DJGPP）\n"
 
 #. The remainder are real diagnostic types.
 #: fortran/gfc-diagnostic.def:33
@@ -372,8 +370,7 @@ msgid "rdynamic is not supported"
 msgstr "不支持 rdynamic"
 
 #: config/dragonfly.h:76 config/i386/freebsd.h:82 config/i386/freebsd64.h:35
-#: config/ia64/freebsd.h:26 config/rs6000/sysv4.h:750
-#: config/sparc/freebsd.h:45
+#: config/ia64/freebsd.h:26 config/rs6000/sysv4.h:750 config/sparc/freebsd.h:45
 msgid "consider using '-pg' instead of '-p' with gprof(1)"
 msgstr "与 gprof(1) 一起使用时请考虑使用‘-pg’以代替‘-p’"
 
@@ -434,7 +431,6 @@ msgid "Darwin does not support -mfentry or associated options"
 msgstr "Darwin 不支持 -mfentry 以及相关选项"
 
 #: config/i386/sol2.h:59
-#, fuzzy
 msgid "-mx32 is not supported on Solaris"
 msgstr "Solaris 不支持 -mx32"
 
@@ -451,10 +447,8 @@ msgid "-msingle-float and -msoft-float cannot both be specified"
 msgstr "不能同时指定 -msingle-float 和 -msoft-float"
 
 #: config/moxie/moxiebox.h:43
-#, fuzzy
-#| msgid "Assume target CPU is configured as little endian"
 msgid "this target is little-endian"
-msgstr "假定目标 CPU 被配置为小端在前"
+msgstr "该目标为小端序"
 
 #: config/msp430/msp430.h:90
 msgid "-mcode-region requires the large memory model (-mlarge)"
@@ -468,16 +462,14 @@ msgstr "-mdata-region 需要大内存模型(-mlarge)"
 msgid "You need a C startup file for -msys-crt0="
 msgstr "-msys-crt0 需要指定C语言启动文件"
 
-#: config/pa/pa-hpux11.h:134 config/pa/pa-hpux11.h:137
-#: config/pa/pa64-hpux.h:29 config/pa/pa64-hpux.h:32 config/pa/pa64-hpux.h:41
-#: config/pa/pa64-hpux.h:44
+#: config/pa/pa-hpux11.h:134 config/pa/pa-hpux11.h:137 config/pa/pa64-hpux.h:29
+#: config/pa/pa64-hpux.h:32 config/pa/pa64-hpux.h:41 config/pa/pa64-hpux.h:44
 #, fuzzy
 msgid "warning: consider linking with '-static' as system libraries with"
 msgstr "警告：考虑链接时使用‘-static’因为系统库"
 
-#: config/pa/pa-hpux11.h:135 config/pa/pa-hpux11.h:138
-#: config/pa/pa64-hpux.h:30 config/pa/pa64-hpux.h:33 config/pa/pa64-hpux.h:42
-#: config/pa/pa64-hpux.h:45
+#: config/pa/pa-hpux11.h:135 config/pa/pa-hpux11.h:138 config/pa/pa64-hpux.h:30
+#: config/pa/pa64-hpux.h:33 config/pa/pa64-hpux.h:42 config/pa/pa64-hpux.h:45
 msgid "  profiling support are only provided in archive format"
 msgstr "取样支持只支持存档格式"
 
@@ -486,9 +478,8 @@ msgid " conflicting code gen style switches are used"
 msgstr "使用了相互冲突的代码生成风格"
 
 #: config/rs6000/freebsd64.h:114
-#, fuzzy
 msgid "consider using `-pg' instead of `-p' with gprof(1)"
-msgstr "与 gprof(1) 一起使用时请考虑使用‘-pg’以代替‘-p’"
+msgstr "与 gprof(1) 一起使用时请考虑使用‘-pg’而非‘-p’"
 
 #: config/rs6000/rs6000.h:170
 msgid "Missing -mcpu option in ASM_CPU_SPEC?"
@@ -515,9 +506,8 @@ msgid "SH2a does not support little-endian"
 msgstr "SH2a 不支持小端在前"
 
 #: config/sparc/linux64.h:142
-#, fuzzy
 msgid "-fsanitize=address is not supported in this configuration"
-msgstr "%s 不为这个配置所支持"
+msgstr "该配置不支持 -fsanitize=address"
 
 #: config/sparc/linux64.h:156 config/sparc/linux64.h:162
 #: config/sparc/netbsd-elf.h:103 config/sparc/netbsd-elf.h:112
@@ -538,14 +528,12 @@ msgid "-c or -S required for Ada"
 msgstr "Ada 需要指定 -c 或 -S"
 
 #: ada/gcc-interface/lang-specs.h:56
-#, fuzzy
 msgid "-c required for gnat2why"
-msgstr "Ada 需要指定 -c 或 -S"
+msgstr "gnat2why 需要 -c"
 
 #: ada/gcc-interface/lang-specs.h:67
-#, fuzzy
 msgid "-c required for gnat2scil"
-msgstr "Ada 需要指定 -c 或 -S"
+msgstr "gnat2scil 需要 -c"
 
 #: fortran/lang-specs.h:60 fortran/lang-specs.h:74
 msgid "gfortran does not support -E without -cpp"
@@ -613,7 +601,7 @@ msgstr "不起作用。为向前兼容保留的选项。"
 #: fortran/lang.opt:218
 #, no-c-format
 msgid "Warn if the type of a variable might be not interoperable with C."
-msgstr "对可能不与C语言互通的类型给出警告"
+msgstr "对可能不与C语言互通的类型给出警告。"
 
 #: fortran/lang.opt:226
 #, fuzzy, no-c-format
@@ -627,10 +615,9 @@ msgid "Warn about equality comparisons involving REAL or COMPLEX expressions."
 msgstr ""
 
 #: fortran/lang.opt:238
-#, fuzzy, no-c-format
-#| msgid "Warn about most implicit conversions"
+#, no-c-format
 msgid "Warn about most implicit conversions."
-msgstr "对大多数隐式类型转换给出警告"
+msgstr "对大多数隐式类型转换给出警告。"
 
 #: fortran/lang.opt:242
 #, fuzzy, no-c-format
@@ -641,7 +628,7 @@ msgstr "可能缺少括号的情况下给出警告"
 #: fortran/lang.opt:250
 #, no-c-format
 msgid "Warn if loops have been interchanged."
-msgstr "当循环被互换时给出警告"
+msgstr "当循环被互换时给出警告。"
 
 #: fortran/lang.opt:254
 #, fuzzy, no-c-format
@@ -686,7 +673,7 @@ msgstr "当格式字符串不是字面量时给出警告"
 #: fortran/lang.opt:298
 #, no-c-format
 msgid "Warn that -fno-automatic may break recursion."
-msgstr "当 -fno-automatic 可能破坏递归时给警告"
+msgstr "当 -fno-automatic 可能破坏递归时给警告。"
 
 #: fortran/lang.opt:306
 #, fuzzy, no-c-format
@@ -782,7 +769,7 @@ msgstr "无论选择何种标准，所有内建过程均可用"
 #: fortran/lang.opt:394
 #, no-c-format
 msgid "Allow a BOZ literal constant to appear in an invalid context and with X instead of Z."
-msgstr "允许 BOZ 字面常量在无效上下文中出现，并且使用 X 代替 Z"
+msgstr "允许 BOZ 字面常量在无效上下文中出现，并且使用 X 代替 Z."
 
 #: fortran/lang.opt:402
 #, fuzzy, no-c-format
@@ -817,7 +804,7 @@ msgstr "对为过程参数而临时创建的数组产生一个运行时警告"
 #: fortran/lang.opt:425
 #, no-c-format
 msgid "-fconvert=<big-endian|little-endian|native|swap|r16_ieee|r16_ibm>\tThe endianness used for unformatted files."
-msgstr "-fconvert=<big-endian|little-endian|native|swap|r16_ieee|r16_ibm>\t用于非格式化文件的字节序"
+msgstr "-fconvert=<big-endian|little-endian|native|swap|r16_ieee|r16_ibm>\t用于非格式化文件的字节序。"
 
 #: fortran/lang.opt:450
 #, fuzzy, no-c-format
@@ -1045,9 +1032,9 @@ msgid "Try to interchange loops if profitable."
 msgstr ""
 
 #: fortran/lang.opt:619
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Enable front end optimization."
-msgstr "启用链接时优化。"
+msgstr "启用前端优化。"
 
 #: fortran/lang.opt:623
 #, fuzzy, no-c-format
@@ -1092,7 +1079,7 @@ msgstr "-finit-real=<zero|nan|inf|-inf>\t初始化局部实变量"
 #: fortran/lang.opt:669
 #, no-c-format
 msgid "-finline-arg-packing\tPerform argument packing inline."
-msgstr "-finline-arg-packing\t内联执行参数打包"
+msgstr "-finline-arg-packing\t内联执行参数打包。"
 
 #: fortran/lang.opt:673
 #, fuzzy, no-c-format
@@ -1158,34 +1145,34 @@ msgid "Enable range checking during compilation."
 msgstr "启用编译时范围检查"
 
 #: fortran/lang.opt:737
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interpret any REAL(4) as a REAL(8)."
-msgstr "解译任何真实 (4) 作为真实 (8)"
+msgstr "将所有 REAL(4) 解译为 REAL(8)。"
 
 #: fortran/lang.opt:741
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interpret any REAL(4) as a REAL(10)."
-msgstr "解译任何真实 (4) 作为真实 (10)"
+msgstr "将所有 REAL(4) 解译为 REAL(10)。"
 
 #: fortran/lang.opt:745
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interpret any REAL(4) as a REAL(16)."
-msgstr "解译任何真实 (4) 作为真实 (16)"
+msgstr "将所有 REAL(4) 解译为 REAL(16)。"
 
 #: fortran/lang.opt:749
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interpret any REAL(8) as a REAL(4)."
-msgstr "解译任何真实 (8) 作为真实 (4)"
+msgstr "将所有 REAL(8) 解译为 REAL(4)。"
 
 #: fortran/lang.opt:753
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interpret any REAL(8) as a REAL(10)."
-msgstr "解译任何真实 (8) 作为真实 (10)"
+msgstr "将所有 REAL(8) 解译为 REAL(10)。"
 
 #: fortran/lang.opt:757
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interpret any REAL(8) as a REAL(16)."
-msgstr "解译任何真实 (8) 作为真实 (16)"
+msgstr "将所有 REAL(8) 解译为 REAL(16)。"
 
 #: fortran/lang.opt:761
 #, fuzzy, no-c-format
@@ -1280,40 +1267,34 @@ msgid "Statically link the GCC Quad-Precision Math Library (libquadmath)."
 msgstr "静态链接 GNU Fortran 助手库(libgfortran)"
 
 #: fortran/lang.opt:872
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO Fortran 2003 standard"
+#, no-c-format
 msgid "Conform to the ISO Fortran 2003 standard."
-msgstr "遵循 ISO Fortran 2003 标准"
+msgstr "遵循 ISO Fortran 2003 标准。"
 
 #: fortran/lang.opt:876
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO Fortran 2008 standard"
+#, no-c-format
 msgid "Conform to the ISO Fortran 2008 standard."
-msgstr "遵循 ISO Fortran 2008 标准"
+msgstr "遵循 ISO Fortran 2008 标准。"
 
 #: fortran/lang.opt:880
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO Fortran 2008 standard including TS 29113"
+#, no-c-format
 msgid "Conform to the ISO Fortran 2008 standard including TS 29113."
-msgstr "遵循 ISO Fortran 2008 标准，包括 TS 29113"
+msgstr "遵循 ISO Fortran 2008 标准，包括 TS 29113."
 
 #: fortran/lang.opt:884
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO Fortran 2008 standard"
+#, no-c-format
 msgid "Conform to the ISO Fortran 2018 standard."
-msgstr "遵循 ISO Fortran 2008 标准"
+msgstr "遵循 ISO Fortran 2008 标准。"
 
 #: fortran/lang.opt:888
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO Fortran 95 standard"
+#, no-c-format
 msgid "Conform to the ISO Fortran 95 standard."
-msgstr "遵循 ISO Fortran 95 标准"
+msgstr "遵循 ISO Fortran 95 标准。"
 
 #: fortran/lang.opt:892
-#, fuzzy, no-c-format
-#| msgid "Conform to nothing in particular"
+#, no-c-format
 msgid "Conform to nothing in particular."
-msgstr "不特别遵循任何标准"
+msgstr "不特别遵循任何标准。"
 
 #: fortran/lang.opt:896
 #, fuzzy, no-c-format
@@ -1322,10 +1303,9 @@ msgid "Accept extensions to support legacy code."
 msgstr "接受一定的扩展以支持传统的代码"
 
 #: rust/lang.opt:47 rust/lang.opt:51 c-family/c.opt:1407 c-family/c.opt:1411
-#, fuzzy, no-c-format
-#| msgid "Warn when a variable is unused"
+#, no-c-format
 msgid "Warn when a const variable is unused."
-msgstr "有未使用的变量时警告"
+msgstr "有未使用的常变量时警告。"
 
 #: rust/lang.opt:55 c-family/c.opt:1399
 #, fuzzy, no-c-format
@@ -1396,10 +1376,9 @@ msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' be
 msgstr "-A<问题>=<答案>\t给出问题的答案。在问题前加一个‘-’将禁用其答案"
 
 #: c-family/c.opt:186
-#, fuzzy, no-c-format
-#| msgid "Do not discard comments"
+#, no-c-format
 msgid "Do not discard comments."
-msgstr "不丢弃注释"
+msgstr "不丢弃注释。"
 
 #: c-family/c.opt:190
 #, fuzzy, no-c-format
@@ -1438,16 +1417,14 @@ msgid "-I <dir>\tAdd <dir> to the end of the main include path."
 msgstr "-I <目录>\t将目录添加至主包含路径末尾"
 
 #: c-family/c.opt:217
-#, fuzzy, no-c-format
-#| msgid "Generate make dependencies"
+#, no-c-format
 msgid "Generate make dependencies."
-msgstr "生成 make 依赖项"
+msgstr "生成 make 依赖项。"
 
 #: c-family/c.opt:221
-#, fuzzy, no-c-format
-#| msgid "Generate make dependencies and compile"
+#, no-c-format
 msgid "Generate make dependencies and compile."
-msgstr "生成 make 依赖规则并编译"
+msgstr "生成 make 依赖规则并编译。"
 
 #: c-family/c.opt:225
 #, fuzzy, no-c-format
@@ -1456,34 +1433,29 @@ msgid "-MF <file>\tWrite dependency output to the given file."
 msgstr "-MF <文件>\t将依赖项输出到给定文件"
 
 #: c-family/c.opt:229
-#, fuzzy, no-c-format
-#| msgid "Treat missing header files as generated files"
+#, no-c-format
 msgid "Treat missing header files as generated files."
-msgstr "将缺失的头文件看作生成的文件"
+msgstr "将缺失的头文件视为生成的文件。"
 
 #: c-family/c.opt:233
-#, fuzzy, no-c-format
-#| msgid "Like -M but ignore system header files"
+#, no-c-format
 msgid "Like -M but ignore system header files."
-msgstr "与 -M 类似但是忽略系统头文件"
+msgstr "与 -M 类似，但是忽略系统头文件。"
 
 #: c-family/c.opt:237
-#, fuzzy, no-c-format
-#| msgid "Like -MD but ignore system header files"
+#, no-c-format
 msgid "Like -MD but ignore system header files."
-msgstr "与 -MD 类似但是忽略系统头文件"
+msgstr "与 -MD 类似，但是忽略系统头文件。"
 
 #: c-family/c.opt:241
-#, fuzzy, no-c-format
-#| msgid "Generate run time type descriptor information"
+#, no-c-format
 msgid "Generate C++ Module dependency information."
-msgstr "生成运行时类型描述信息"
+msgstr "生成 C++ 模块依赖信息。"
 
 #: c-family/c.opt:249
-#, fuzzy, no-c-format
-#| msgid "Generate phony targets for all headers"
+#, no-c-format
 msgid "Generate phony targets for all headers."
-msgstr "为所有头文件生成伪目标"
+msgstr "为所有头文件生成伪目标。"
 
 #: c-family/c.opt:253
 #, fuzzy, no-c-format
@@ -1717,10 +1689,9 @@ msgid "Warn about C++23 constructs in code compiled with an older standard."
 msgstr ""
 
 #: c-family/c.opt:483
-#, fuzzy, no-c-format
-#| msgid "Warn about casting functions to incompatible types"
+#, no-c-format
 msgid "Warn about casts between incompatible function types."
-msgstr "当把函数转换为不兼容类型时给出警告"
+msgstr "当把函数转换为不兼容类型时给出警告。"
 
 #: c-family/c.opt:487
 #, fuzzy, no-c-format
@@ -1753,10 +1724,9 @@ msgstr "当下标类型为“char”时给出警告"
 #: c-family/c.opt:1620 c-family/c.opt:1624 c-family/c.opt:1628
 #: c-family/c.opt:1632 c-family/c.opt:1636 c-family/c.opt:1640
 #: config/i386/i386.opt:999
-#, fuzzy, no-c-format
-#| msgid "Deprecated.  This switch has no effect"
+#, no-c-format
 msgid "Removed in GCC 9.  This switch has no effect."
-msgstr "已弃用。此开关不起作用。"
+msgstr "已在 GCC 9 被移除。此开关不起作用。"
 
 #: c-family/c.opt:511
 #, fuzzy, no-c-format
@@ -2479,10 +2449,9 @@ msgid "Warn if a class interface has no superclass.  Root classes may use an att
 msgstr ""
 
 #: c-family/c.opt:1127
-#, fuzzy, no-c-format
-#| msgid "Warn if a C-style cast is used in a program"
+#, no-c-format
 msgid "Warn if a C-style cast is used in a program."
-msgstr "程序使用 C 风格的类型转换时给出警告"
+msgstr "程序使用 C 风格的类型转换时给出警告。"
 
 #: c-family/c.opt:1131
 #, fuzzy, no-c-format
@@ -2875,12 +2844,12 @@ msgstr ""
 #: c-family/c.opt:1477
 #, no-c-format
 msgid "Warn when a literal '0' is used as null pointer."
-msgstr "在字面“0”被用作空指针时给出警告"
+msgstr "在字面“0”被用作空指针时给出警告。"
 
 #: c-family/c.opt:1481
 #, no-c-format
 msgid "Warn about useless casts."
-msgstr "对无用的类型转换给出警告"
+msgstr "对无用的类型转换给出警告。"
 
 #: c-family/c.opt:1485
 #, no-c-format
@@ -3210,7 +3179,7 @@ msgstr "除非必需，不生成 DLL 导出的内联函数"
 #: c-family/c.opt:1880
 #, no-c-format
 msgid "Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types."
-msgstr "允许具有不同元素数量和/或元素类型的向量间的转换"
+msgstr "允许具有不同元素数量和/或元素类型的向量间的转换。"
 
 #: c-family/c.opt:1884
 #, no-c-format
@@ -5772,7 +5741,7 @@ msgstr "为避免硬件失常，在 CSYNC 或 SSYNC 指令前添加一些 NOP �
 #: config/bfin/bfin.opt:61
 #, no-c-format
 msgid "Avoid speculative loads to work around a hardware anomaly."
-msgstr "禁用投机载入以避免一个硬件异常"
+msgstr "禁用投机载入以避免一个硬件异常。"
 
 #: config/bfin/bfin.opt:65
 #, fuzzy, no-c-format
@@ -7650,7 +7619,7 @@ msgstr "控制产生的倒数估计。"
 #: config/i386/i386.opt:590
 #, no-c-format
 msgid "Generate cld instruction in the function prologue."
-msgstr "在函数序言中生成 cld 指令"
+msgstr "在函数序言中生成 cld 指令。"
 
 #: config/i386/i386.opt:594
 #, fuzzy, no-c-format
@@ -7675,7 +7644,7 @@ msgstr "进行海法调度，当处理器是 bdver1 时也进行派遣调度"
 #: config/i386/i386.opt:613
 #, no-c-format
 msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer."
-msgstr "自动向量化时使用 128 位 AVX 指令而不是 256 位 AVX 指令"
+msgstr "自动向量化时使用 128 位 AVX 指令而不是 256 位 AVX 指令。"
 
 #: config/i386/i386.opt:617
 #, fuzzy, no-c-format
@@ -7777,7 +7746,7 @@ msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2 和 AVX 内建�
 #: config/i386/i386.opt:715
 #, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 AVX2 内建函数及代码生成"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 AVX2 内建函数及代码生成。"
 
 #: config/i386/i386.opt:719
 #, no-c-format
@@ -7787,12 +7756,12 @@ msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 �
 #: config/i386/i386.opt:723
 #, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512PF 内建函数及代码生成"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512PF 内建函数及代码生成。"
 
 #: config/i386/i386.opt:727
 #, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512ER 内建函数及代码生成"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512ER 内建函数及代码生成。"
 
 #: config/i386/i386.opt:731
 #, no-c-format
@@ -7958,7 +7927,7 @@ msgstr "支持 PCLMUL 内建函数及代码生成。"
 #: config/i386/i386.opt:847
 #, no-c-format
 msgid "Support BMI built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 BMI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:851
 #, no-c-format
@@ -9758,7 +9727,7 @@ msgstr "开启调试输出"
 #: config/sparc/sparc.opt:254
 #, no-c-format
 msgid "Enable strict 32-bit psABI struct return checking."
-msgstr "启用严格的 32 位 psABI 结构返回检查"
+msgstr "启用严格的 32 位 psABI 结构返回检查。"
 
 #: config/sparc/sparc.opt:258
 #, fuzzy, no-c-format
@@ -11631,7 +11600,7 @@ msgstr ""
 #: config/rx/elf.opt:38 config/rx/rx.opt:99
 #, no-c-format
 msgid "Specifies the number of registers to reserve for interrupt handlers."
-msgstr "指定保留给中断处理函数使用的寄存器的数量"
+msgstr "指定保留给中断处理函数使用的寄存器的数量。"
 
 #: config/rx/elf.opt:44 config/rx/rx.opt:105
 #, no-c-format
@@ -11662,7 +11631,7 @@ msgstr "启用使用 RX FPU 指令。这是默认值。"
 #: config/rx/rx.opt:50
 #, no-c-format
 msgid "Specify the target RX cpu type."
-msgstr "选择目标 RX CPU 的类型"
+msgstr "指定目标 RX CPU 的类型。"
 
 #: config/rx/rx.opt:71
 #, no-c-format
@@ -12915,7 +12884,7 @@ msgstr "为缺少 MMU 和 FPU 的 SH4 400 系列生成代码"
 #: config/sh/sh.opt:122
 #, no-c-format
 msgid "Generate code for SH4 500 series (FPU-less)."
-msgstr "为缺少 FPU 的 SH4 500 系列生成代码"
+msgstr "为缺少 FPU 的 SH4 500 系列生成代码。"
 
 #: config/sh/sh.opt:127
 #, fuzzy, no-c-format
@@ -15236,7 +15205,7 @@ msgstr "在调试转储中不输出前一条和后一条指令号码"
 #: common.opt:1559
 #, no-c-format
 msgid "Enable CFI tables via GAS assembler directives."
-msgstr "用 GAS 汇编指示来启用 CFI 表"
+msgstr "用 GAS 汇编指示来启用 CFI 表。"
 
 #: common.opt:1563
 #, fuzzy, no-c-format
@@ -16639,7 +16608,7 @@ msgstr "将条件存储转换为非条件存储"
 #: common.opt:2922
 #, no-c-format
 msgid "Perform conversions of switch initializations."
-msgstr "转换开关初始化"
+msgstr "转换开关初始化。"
 
 #: common.opt:2926
 #, fuzzy, no-c-format
@@ -18413,7 +18382,7 @@ msgstr ""
 #: params.opt:950
 #, no-c-format
 msgid "The minimal probability of speculation success (in percents), so that speculative insn will be scheduled."
-msgstr "以百分比表示的投机成功的最小概率，影响对投机指令的调度"
+msgstr "以百分比表示的投机成功的最小概率，影响对投机指令的调度。"
 
 #: params.opt:954
 #, no-c-format
@@ -20615,8 +20584,7 @@ msgstr "使用‘%%&’ 时没有指定任何动态 TLS 引用"
 msgid "invalid %%J value"
 msgstr "无效 %%J 值"
 
-#: config/alpha/alpha.cc:5169 config/ia64/ia64.cc:5578
-#: config/or1k/or1k.cc:1249
+#: config/alpha/alpha.cc:5169 config/ia64/ia64.cc:5578 config/or1k/or1k.cc:1249
 #, c-format
 msgid "invalid %%r value"
 msgstr "无效 %%r 值"
@@ -20801,8 +20769,7 @@ msgstr "代码‘%c’的操作数无效"
 #: config/arm/arm.cc:24675 config/arm/arm.cc:24702 config/arm/arm.cc:24709
 #: config/bfin/bfin.cc:1441 config/bfin/bfin.cc:1448 config/bfin/bfin.cc:1455
 #: config/bfin/bfin.cc:1462 config/bfin/bfin.cc:1471 config/bfin/bfin.cc:1478
-#: config/bfin/bfin.cc:1485 config/bfin/bfin.cc:1492
-#: config/nds32/nds32.cc:3546
+#: config/bfin/bfin.cc:1485 config/bfin/bfin.cc:1492 config/nds32/nds32.cc:3546
 #, c-format
 msgid "invalid operand for code '%c'"
 msgstr "代码‘%c’的操作数无效"
@@ -22097,9 +22064,9 @@ msgstr "({匿名})"
 #: c/c-parser.cc:20351 c/gimple-parser.cc:406 c/gimple-parser.cc:447
 #: c/gimple-parser.cc:456 c/gimple-parser.cc:665 c/gimple-parser.cc:2261
 #: c/gimple-parser.cc:2298 c/gimple-parser.cc:2377 c/gimple-parser.cc:2404
-#: c/c-parser.cc:3671 c/c-parser.cc:3861 c/c-parser.cc:3896
-#: c/c-parser.cc:12051 c/gimple-parser.cc:2069 c/gimple-parser.cc:2126
-#: cp/parser.cc:15350 cp/parser.cc:33084 cp/parser.cc:33720
+#: c/c-parser.cc:3671 c/c-parser.cc:3861 c/c-parser.cc:3896 c/c-parser.cc:12051
+#: c/gimple-parser.cc:2069 c/gimple-parser.cc:2126 cp/parser.cc:15350
+#: cp/parser.cc:33084 cp/parser.cc:33720
 #, gcc-internal-format
 msgid "expected %<;%>"
 msgstr "需要%<;%>"
@@ -22151,8 +22118,8 @@ msgstr "需要 %<;%>、%<,%> 或 %<)%>"
 msgid "expected %<(%>"
 msgstr "需要%<(%>"
 
-#: c/c-parser.cc:5444 c/c-parser.cc:5446 c/c-parser.cc:13856
-#: cp/parser.cc:33735 cp/parser.cc:37503 go/gofrontend/embed.cc:439
+#: c/c-parser.cc:5444 c/c-parser.cc:5446 c/c-parser.cc:13856 cp/parser.cc:33735
+#: cp/parser.cc:37503 go/gofrontend/embed.cc:439
 #, gcc-internal-format
 msgid "expected %<[%>"
 msgstr "需要%<[%>"
@@ -22160,8 +22127,8 @@ msgstr "需要%<[%>"
 #: c/c-parser.cc:6099 c/c-parser.cc:12394 c/c-parser.cc:19377
 #: c/c-parser.cc:19463 c/c-parser.cc:20121 c/c-parser.cc:20993
 #: c/c-parser.cc:24656 c/gimple-parser.cc:399 c/gimple-parser.cc:2337
-#: c/c-parser.cc:3658 c/c-parser.cc:3885 c/c-parser.cc:11946
-#: cp/parser.cc:21039 cp/parser.cc:33729 go/gofrontend/embed.cc:370
+#: c/c-parser.cc:3658 c/c-parser.cc:3885 c/c-parser.cc:11946 cp/parser.cc:21039
+#: cp/parser.cc:33729 go/gofrontend/embed.cc:370
 #, gcc-internal-format
 msgid "expected %<{%>"
 msgstr "需要%<{%>"
@@ -24658,27 +24625,26 @@ msgstr "类型属性在定义后被忽略"
 #: c-family/c-attribs.cc:5812 c-family/c-common.cc:6056
 #: c-family/c-common.cc:6059 config/darwin.cc:2143 config/arm/arm.cc:7444
 #: config/arm/arm.cc:7472 config/arm/arm.cc:7489 config/avr/avr.cc:10158
-#: config/csky/csky.cc:6498 config/csky/csky.cc:6520
-#: config/h8300/h8300.cc:4968 config/h8300/h8300.cc:4992
-#: config/i386/i386-options.cc:3434 config/i386/i386-options.cc:3592
-#: config/i386/i386-options.cc:3824 config/i386/i386-options.cc:3854
-#: config/ia64/ia64.cc:785 config/loongarch/loongarch.cc:6539
-#: config/rs6000/rs6000.cc:20476 ada/gcc-interface/utils.cc:6588
-#: ada/gcc-interface/utils.cc:6604 ada/gcc-interface/utils.cc:6642
-#: ada/gcc-interface/utils.cc:6659 ada/gcc-interface/utils.cc:6676
-#: ada/gcc-interface/utils.cc:6691 ada/gcc-interface/utils.cc:6707
-#: ada/gcc-interface/utils.cc:6733 ada/gcc-interface/utils.cc:6802
-#: ada/gcc-interface/utils.cc:6829 ada/gcc-interface/utils.cc:6850
-#: ada/gcc-interface/utils.cc:6871 ada/gcc-interface/utils.cc:6919
-#: ada/gcc-interface/utils.cc:6935 ada/gcc-interface/utils.cc:6990
-#: c/c-decl.cc:4788 c/c-decl.cc:4791 c/c-decl.cc:4806 c/c-parser.cc:5433
-#: cp/tree.cc:5032 d/d-attribs.cc:480 d/d-attribs.cc:699 d/d-attribs.cc:720
-#: d/d-attribs.cc:736 d/d-attribs.cc:753 d/d-attribs.cc:785 d/d-attribs.cc:914
-#: d/d-attribs.cc:973 d/d-attribs.cc:989 d/d-attribs.cc:1005
-#: d/d-attribs.cc:1154 d/d-attribs.cc:1167 d/d-attribs.cc:1384
-#: d/d-attribs.cc:1402 d/d-attribs.cc:1449 d/d-attribs.cc:1487
-#: d/d-attribs.cc:1503 d/d-attribs.cc:1560 d/d-attribs.cc:1588
-#: jit/dummy-frontend.cc:185 lto/lto-lang.cc:288
+#: config/csky/csky.cc:6498 config/csky/csky.cc:6520 config/h8300/h8300.cc:4968
+#: config/h8300/h8300.cc:4992 config/i386/i386-options.cc:3434
+#: config/i386/i386-options.cc:3592 config/i386/i386-options.cc:3824
+#: config/i386/i386-options.cc:3854 config/ia64/ia64.cc:785
+#: config/loongarch/loongarch.cc:6539 config/rs6000/rs6000.cc:20476
+#: ada/gcc-interface/utils.cc:6588 ada/gcc-interface/utils.cc:6604
+#: ada/gcc-interface/utils.cc:6642 ada/gcc-interface/utils.cc:6659
+#: ada/gcc-interface/utils.cc:6676 ada/gcc-interface/utils.cc:6691
+#: ada/gcc-interface/utils.cc:6707 ada/gcc-interface/utils.cc:6733
+#: ada/gcc-interface/utils.cc:6802 ada/gcc-interface/utils.cc:6829
+#: ada/gcc-interface/utils.cc:6850 ada/gcc-interface/utils.cc:6871
+#: ada/gcc-interface/utils.cc:6919 ada/gcc-interface/utils.cc:6935
+#: ada/gcc-interface/utils.cc:6990 c/c-decl.cc:4788 c/c-decl.cc:4791
+#: c/c-decl.cc:4806 c/c-parser.cc:5433 cp/tree.cc:5032 d/d-attribs.cc:480
+#: d/d-attribs.cc:699 d/d-attribs.cc:720 d/d-attribs.cc:736 d/d-attribs.cc:753
+#: d/d-attribs.cc:785 d/d-attribs.cc:914 d/d-attribs.cc:973 d/d-attribs.cc:989
+#: d/d-attribs.cc:1005 d/d-attribs.cc:1154 d/d-attribs.cc:1167
+#: d/d-attribs.cc:1384 d/d-attribs.cc:1402 d/d-attribs.cc:1449
+#: d/d-attribs.cc:1487 d/d-attribs.cc:1503 d/d-attribs.cc:1560
+#: d/d-attribs.cc:1588 jit/dummy-frontend.cc:185 lto/lto-lang.cc:288
 #, gcc-internal-format
 msgid "%qE attribute ignored"
 msgstr "%qE属性被忽略"
@@ -26135,7 +26101,7 @@ msgstr "无法获取程序状态：%s"
 #: collect-utils.cc:120
 #, gcc-internal-format, gfc-internal-format
 msgid "%s terminated with signal %d [%s]%s"
-msgstr "%s 以信号 %d [%s]%s 退出。"
+msgstr "%s 以信号 %d [%s]%s 退出"
 
 #: collect-utils.cc:136
 #, gcc-internal-format, gfc-internal-format
@@ -26731,7 +26697,7 @@ msgstr "在比较周围组合变量时假定有符号数从不溢出"
 #: fold-const.cc:13568
 #, gcc-internal-format
 msgid "fold check: original tree changed by fold"
-msgstr "折叠检查: 原始树因折叠而改变 "
+msgstr "折叠检查: 原始树因折叠而改变"
 
 #: function.cc:253
 #, fuzzy, gcc-internal-format
@@ -34471,8 +34437,7 @@ msgstr "线程局部的 COMMON 数据没有实现"
 msgid "requested alignment for %q+D is greater than implemented alignment of %wu"
 msgstr "%q+D需要的对齐边界大于实现的对齐边界 %wu"
 
-#: varasm.cc:2304 c/c-decl.cc:5725 c/c-parser.cc:1789
-#: m2/gm2-gcc/m2type.cc:1259
+#: varasm.cc:2304 c/c-decl.cc:5725 c/c-parser.cc:1789 m2/gm2-gcc/m2type.cc:1259
 #, gcc-internal-format
 msgid "storage size of %q+D isn%'t known"
 msgstr "%q+D的存储大小未知"
@@ -34892,9 +34857,8 @@ msgstr "%qE属性需要一个字符串常量作为实参"
 msgid "section attribute cannot be specified for local variables"
 msgstr "不能为局部变量指定节属性"
 
-#: c-family/c-attribs.cc:2284 config/bfin/bfin.cc:4796
-#: config/bfin/bfin.cc:4847 config/bfin/bfin.cc:4873 config/bfin/bfin.cc:4886
-#: d/d-attribs.cc:1055
+#: c-family/c-attribs.cc:2284 config/bfin/bfin.cc:4796 config/bfin/bfin.cc:4847
+#: config/bfin/bfin.cc:4873 config/bfin/bfin.cc:4886 d/d-attribs.cc:1055
 #, gcc-internal-format
 msgid "section of %q+D conflicts with previous declaration"
 msgstr "%q+D的节与早先的声明冲突"
@@ -38904,8 +38868,7 @@ msgstr "-malign-functions=%d 不在 0 和 %d 之间"
 msgid "%<-mbranch-cost=%d%> is not between 0 and 5"
 msgstr "%sbranch-cost=%d%s不在 0 和 5 之间"
 
-#: common/config/i386/i386-common.cc:1873
-#: common/config/s390/s390-common.cc:137
+#: common/config/i386/i386-common.cc:1873 common/config/s390/s390-common.cc:137
 #, gcc-internal-format
 msgid "%<-fsplit-stack%> currently only supported on GNU/Linux"
 msgstr "%<-fsplit-stack%>只在 GNU/Linux 下被支持"
@@ -40239,8 +40202,8 @@ msgstr "L%d 缓存延迟未知，对 %s 来说"
 msgid "bad value %qs for %<-mmemory-latency%>"
 msgstr "-mmemory-latency 开关的值%qs错误"
 
-#: config/alpha/alpha.cc:6657 config/alpha/alpha.cc:6660
-#: config/arc/arc.cc:7099 config/arc/arc.cc:7373 config/s390/s390.cc:949
+#: config/alpha/alpha.cc:6657 config/alpha/alpha.cc:6660 config/arc/arc.cc:7099
+#: config/arc/arc.cc:7373 config/s390/s390.cc:949
 #, gcc-internal-format
 msgid "bad builtin fcode"
 msgstr "错误的内建 fcode"
@@ -43254,14 +43217,12 @@ msgstr "%qs属性只能应用于函数"
 msgid "%qE cannot have both %qs and %qs attributes"
 msgstr "%qE不能同时有%<mips16%>和%<nomips16%>属性"
 
-#: config/mips/mips.cc:1475 config/mips/mips.cc:1481
-#: config/nios2/nios2.cc:4487
+#: config/mips/mips.cc:1475 config/mips/mips.cc:1481 config/nios2/nios2.cc:4487
 #, gcc-internal-format
 msgid "%qE redeclared with conflicting %qs attributes"
 msgstr "%qE重声明有冲突的属性%qs"
 
-#: config/mips/mips.cc:1513 config/mips/mips.cc:1567
-#: config/riscv/riscv.cc:4022
+#: config/mips/mips.cc:1513 config/mips/mips.cc:1567 config/riscv/riscv.cc:4022
 #, fuzzy, gcc-internal-format
 #| msgid "%qE attribute requires a string constant argument"
 msgid "%qE attribute requires a string argument"
@@ -45355,7 +45316,7 @@ msgstr "%qE属性的实参不是一个字符串常量"
 #: config/s390/s390.cc:10240
 #, gcc-internal-format
 msgid "total size of local variables exceeds architecture limit"
-msgstr "局部变量大小总和超过架构极限。"
+msgstr "局部变量大小总和超过架构极限"
 
 #: config/s390/s390.cc:11647
 #, fuzzy, gcc-internal-format
@@ -47970,8 +47931,8 @@ msgstr "需要行尾"
 msgid "ISO C forbids an empty translation unit"
 msgstr "ISO C 不允许翻译单元为空"
 
-#: c/c-parser.cc:1796 c/c-parser.cc:1805 c/c-parser.cc:23171
-#: cp/parser.cc:47460 cp/semantics.cc:3400 cp/semantics.cc:3409
+#: c/c-parser.cc:1796 c/c-parser.cc:1805 c/c-parser.cc:23171 cp/parser.cc:47460
+#: cp/semantics.cc:3400 cp/semantics.cc:3409
 #, gcc-internal-format
 msgid "%qs without corresponding %qs"
 msgstr ""
@@ -49361,8 +49322,7 @@ msgstr "%H折叠变量需要正整常数表达式"
 msgid "%<iterator%> modifier incompatible with %qs"
 msgstr "%qs必须与%qs一起使用"
 
-#: c/c-parser.cc:16994 cp/parser.cc:40371 cp/parser.cc:40760
-#: cp/parser.cc:40810
+#: c/c-parser.cc:16994 cp/parser.cc:40371 cp/parser.cc:40760 cp/parser.cc:40810
 #, fuzzy, gcc-internal-format
 msgid "invalid depend kind"
 msgstr "无效的调度类型"
@@ -49634,8 +49594,8 @@ msgstr "联合定义后需要%<;%>"
 msgid "expected %<==%>, %<<%> or %<>%> comparison in %<if%> condition"
 msgstr ""
 
-#: c/c-parser.cc:19446 cp/parser.cc:42128 cp/parser.cc:42411
-#: cp/parser.cc:42505 cp/parser.cc:42523
+#: c/c-parser.cc:19446 cp/parser.cc:42128 cp/parser.cc:42411 cp/parser.cc:42505
+#: cp/parser.cc:42523
 #, fuzzy, gcc-internal-format
 msgid "invalid form of %<#pragma omp atomic compare%>"
 msgstr "%<#pragma omp atomic%>运算符无效"
@@ -50583,7 +50543,7 @@ msgstr "要求全局寄存器变量%qD的地址"
 #: c/c-typeck.cc:5233 d/d-codegen.cc:721
 #, gcc-internal-format
 msgid "address of register variable %qD requested"
-msgstr "要求寄存器变量%qD的地址。"
+msgstr "要求寄存器变量 %qD 的地址"
 
 #: c/c-typeck.cc:5372
 #, gcc-internal-format
@@ -51224,8 +51184,7 @@ msgstr "初始值设定项末尾有多余的花括号组"
 msgid "braces around scalar initializer"
 msgstr "标量初始化带花括号"
 
-#: c/c-typeck.cc:9291 c/c-typeck.cc:10775 cp/typeck2.cc:1242
-#: cp/typeck2.cc:1600
+#: c/c-typeck.cc:9291 c/c-typeck.cc:10775 cp/typeck2.cc:1242 cp/typeck2.cc:1600
 #, gcc-internal-format
 msgid "initialization of flexible array member in a nested context"
 msgstr "在嵌套的上下文中初始化可变数组成员"
@@ -53212,7 +53171,7 @@ msgstr "备选 2: %q+#F"
 #: cp/call.cc:13226
 #, gcc-internal-format
 msgid "ISO C++ says that these are ambiguous, even though the worst conversion for the first is better than the worst conversion for the second:"
-msgstr "ISO C++ 认为有歧义，尽管第一个备选的最差类型转换要好于第二个备选的最差类型转换"
+msgstr "ISO C++ 认为有歧义，尽管第一个备选的最差类型转换要好于第二个备选的最差类型转换："
 
 #: cp/call.cc:13627
 #, fuzzy, gcc-internal-format
@@ -54201,8 +54160,8 @@ msgstr "成员%qD是未初始化的引用"
 msgid "%qs cannot be constant evaluated because the argument cannot be interpreted"
 msgstr ""
 
-#: cp/constexpr.cc:5632 cp/constexpr.cc:7723
-#: rust/backend/rust-constexpr.cc:872 rust/backend/rust-constexpr.cc:2492
+#: cp/constexpr.cc:5632 cp/constexpr.cc:7723 rust/backend/rust-constexpr.cc:872
+#: rust/backend/rust-constexpr.cc:2492
 #, fuzzy, gcc-internal-format
 #| msgid "dereferencing %<void *%> pointer"
 msgid "dereferencing a null pointer"
@@ -82565,9 +82524,9 @@ msgid "The base procedure at %L must have an explicit interface"
 msgstr "%3$L处 %2$s 中的过程‘%1$s’没有显式接口"
 
 #: fortran/trans-openmp.cc:8043
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Cannot find symbol %qs"
-msgstr "在类%qs中找不到可溢出的寄存器"
+msgstr "无法找到符号 %qs"
 
 #: fortran/trans-openmp.cc:8054
 #, fuzzy, gcc-internal-format
@@ -82679,7 +82638,7 @@ msgstr "gfc_trans_code()：错误的语句代码"
 #: go/gofrontend/embed.cc:278
 #, gcc-internal-format
 msgid "invalid embedcfg: not a JSON object"
-msgstr ""
+msgstr "无效的 embedcfg：不是 JSON 对象"
 
 #: go/gofrontend/embed.cc:285
 #, fuzzy, gcc-internal-format
@@ -82695,7 +82654,7 @@ msgstr ""
 #: go/gofrontend/embed.cc:297
 #, gcc-internal-format
 msgid "invalid embedcfg: missing Files"
-msgstr ""
+msgstr "无效的 embedcfg：缺失文件"
 
 #: go/gofrontend/embed.cc:302
 #, gcc-internal-format
@@ -82766,8 +82725,7 @@ msgid "extraneous data at end of file"
 msgstr "初始值设定项末尾有多余的花括号组"
 
 #: go/gofrontend/embed.cc:645
-#, fuzzy, gcc-internal-format
-#| msgid "Unexpected EOF"
+#, gcc-internal-format
 msgid "unexpected EOF"
 msgstr "非预期的文件结束"
 
@@ -83496,9 +83454,9 @@ msgid "nullability specifier %qE cannot be applied to multi-level pointer type %
 msgstr ""
 
 #: objc/objc-act.cc:1778
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the dot syntax is not available in Objective-C 1.0"
-msgstr "%<@synthesize%> 在 Objective-C 1.0 里不可用"
+msgstr "点语法在 Objective-C 1.0 中不可用"
 
 #. We know that 'class_name' is an Objective-C class name as the
 #. parser won't call this function if it is not.  This is only a
@@ -83515,15 +83473,14 @@ msgid "could not find interface for class %qE"
 msgstr "找不到类%qE的接口"
 
 #: objc/objc-act.cc:1808 objc/objc-act.cc:7144
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a variable"
+#, gcc-internal-format
 msgid "class %qE is unavailable"
-msgstr "%qD不是一个变量"
+msgstr "类 %qE 不可用"
 
 #: objc/objc-act.cc:1810 objc/objc-act.cc:7001 objc/objc-act.cc:7146
 #, gcc-internal-format
 msgid "class %qE is deprecated"
-msgstr "已弃用类%qE"
+msgstr "已弃用类 %qE"
 
 #: objc/objc-act.cc:1839
 #, gcc-internal-format
@@ -84001,15 +83958,14 @@ msgid "cannot find interface declaration for %qE, superclass of %qE"
 msgstr "找不到%2$qE超类%1$qE的接口声明"
 
 #: objc/objc-act.cc:6999
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a variable"
+#, gcc-internal-format
 msgid "class %qE is not available"
-msgstr "%qD不是一个变量"
+msgstr "类 %qE 不可用"
 
 #: objc/objc-act.cc:7032
 #, gcc-internal-format
 msgid "reimplementation of class %qE"
-msgstr "类%qE的重新实现"
+msgstr "类 %qE 的重新实现"
 
 #: objc/objc-act.cc:7065
 #, gcc-internal-format
@@ -84137,10 +84093,9 @@ msgid "definition of protocol %qE not found"
 msgstr "找不到协议%qE的方法定义"
 
 #: objc/objc-act.cc:8272
-#, fuzzy, gcc-internal-format
-#| msgid "protocol %qE is deprecated"
+#, gcc-internal-format
 msgid "protocol %qE is unavailable"
-msgstr "已弃用协议%qE"
+msgstr "协议 %qE 不可用"
 
 #. It would be nice to use warn_deprecated_use() here, but
 #. we are using TREE_CHAIN (which is supposed to be the
