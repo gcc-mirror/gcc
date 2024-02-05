@@ -7776,6 +7776,11 @@ rpo_elim::eliminate_avail (basic_block bb, tree op)
 	  av = av->next;
 	}
       while (av);
+      /* While we prefer avail we have to fallback to using the value
+	 directly if defined outside of the region when none of the
+	 available defs suit.  */
+      if (!valnum_info->visited)
+	return valnum;
     }
   else if (valnum != VN_TOP)
     /* valnum is is_gimple_min_invariant.  */
