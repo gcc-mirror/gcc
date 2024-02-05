@@ -7267,6 +7267,32 @@ package body Exp_Util is
       return False;
    end In_Unconditional_Context;
 
+   ----------------------------
+   -- Init_Proc_Level_Formal --
+   ----------------------------
+
+   function Init_Proc_Level_Formal (Proc : Entity_Id) return Entity_Id is
+      Form : Entity_Id;
+
+   begin
+      --  Go through the formals of the initialization procedure Proc to find
+      --  the extra accessibility level parameter associated with the object
+      --  being initialized.
+
+      Form := First_Formal (Proc);
+      while Present (Form) loop
+         if Chars (Form) = Name_uInit_Level then
+            return Form;
+         end if;
+
+         Next_Formal (Form);
+      end loop;
+
+      --  No formal was found, return Empty
+
+      return Empty;
+   end Init_Proc_Level_Formal;
+
    -------------------
    -- Insert_Action --
    -------------------

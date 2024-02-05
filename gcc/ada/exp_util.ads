@@ -724,9 +724,6 @@ package Exp_Util is
    --  chain, counting only entries in the current scope. If an entity is not
    --  overloaded, the returned number will be one.
 
-   function Inside_Init_Proc return Boolean;
-   --  Returns True if current scope is within an init proc
-
    function In_Library_Level_Package_Body (Id : Entity_Id) return Boolean;
    --  Given an arbitrary entity, determine whether it appears at the library
    --  level of a package body.
@@ -736,6 +733,13 @@ package Exp_Util is
    --  function determines if the statement appears in a context that is
    --  unconditionally executed, i.e. it is not within a loop or a conditional
    --  or a case statement etc.
+
+   function Init_Proc_Level_Formal (Proc : Entity_Id) return Entity_Id;
+   --  Return the extra formal of an initialization procedure corresponding to
+   --  the level of the object being initialized, or Empty if none is present.
+
+   function Inside_Init_Proc return Boolean;
+   --  Return True if current scope is within an init proc
 
    function Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
    --  Return a suitable standard integer type containing at least S bits and

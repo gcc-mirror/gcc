@@ -32,7 +32,6 @@ with Elists;         use Elists;
 with Errout;         use Errout;
 with Einfo.Utils;    use Einfo.Utils;
 with Exp_Atag;       use Exp_Atag;
-with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
