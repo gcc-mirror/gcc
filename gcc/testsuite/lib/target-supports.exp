@@ -5247,25 +5247,25 @@ proc add_options_for_aarch64_sve { flags } {
 
 # Return 1 if this is an ARM target supporting the FP16 alternative
 # format.  Some multilibs may be incompatible with the options needed.  Also
-# set et_arm_neon_fp16_flags to the best options to add.
+# set et_arm_fp16_alternative_flags to the best options to add.
 
 proc check_effective_target_arm_fp16_alternative_ok_nocache { } {
     if { [istarget *-*-vxworks7*] } {
 	# Not supported by the target system.
 	return 0
     }
-    global et_arm_neon_fp16_flags
-    set et_arm_neon_fp16_flags ""
+    global et_arm_fp16_alternative_flags
+    set et_arm_fp16_alternative_flags ""
     if { [check_effective_target_arm32] } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-fp16"
 		       "-mfpu=neon-fp16 -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache \
 		      arm_fp16_alternative_ok object {
-		#if !defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+		#if !defined (__ARM_FP16_FORMAT_ALTERNATIVE) || ! (__ARM_FP & 2)
 		#error __ARM_FP16_FORMAT_ALTERNATIVE not defined
 		#endif
 	    } "$flags -mfp16-format=alternative"] } {
-		set et_arm_neon_fp16_flags "$flags -mfp16-format=alternative"
+		set et_arm_fp16_alternative_flags "$flags -mfp16-format=alternative"
 		return 1
 	    }
 	}
@@ -5404,11 +5404,11 @@ proc add_options_for_arm_fp16_ieee { flags } {
 # half-precision support.  This is valid for ARM targets.
 
 proc add_options_for_arm_fp16_alternative { flags } {
-    if { ! [check_effective_target_arm_fp16_ok] } {
+    if { ! [check_effective_target_arm_fp16_alternative_ok] } {
 	return "$flags"
     }
-    global et_arm_fp16_flags
-    return "$flags $et_arm_fp16_flags -mfp16-format=alternative"
+    global et_arm_fp16_alternative_flags
+    return "$flags $et_arm_fp16_alternative_flags"
 }
 
 # Return 1 if this is an ARM target that can support a VFP fp16 variant.
