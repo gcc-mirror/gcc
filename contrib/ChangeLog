@@ -1,3 +1,8 @@
+2024-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* test_installed: Fill in HOSTCC, HOSTCXX, HOSTCFLAGS and
+	HOSTCXXFLAGS.
+
 2024-02-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unicode/gen_libstdcxx_unicode_data.py: Add copyright and

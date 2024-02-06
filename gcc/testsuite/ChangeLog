@@ -1,3 +1,50 @@
+2024-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109359
+	* g++.dg/ext/frounding-math1.C: New test.
+
+2024-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111286
+	* g++.dg/cpp0x/initlist-array22.C: New test.
+
+2024-02-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113689
+	* gcc.target/i386/pr113689-1.c: New file.
+	* gcc.target/i386/pr113689-2.c: Likewise.
+	* gcc.target/i386/pr113689-3.c: Likewise.
+
+2024-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/113740
+	* gcc.dg/bitint-85.c: New test.
+
+2024-02-05  Richard Ball  <richard.ball@arm.com>
+
+	* lib/target-supports.exp: Add v8_1_m_main_pacbti.
+	* g++.target/arm/bti_thunk.C: New test.
+
+2024-02-05  H.J. Lu  <(no_default)>
+
+	* gcc.target/i386/apx-ndd.c: Updated.
+
+2024-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113707
+	* gcc.dg/torture/pr113707-1.c: New testcase.
+	* gcc.dg/torture/pr113707-2.c: Likewise.
+
+2024-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113737
+	* gcc.dg/bitint-84.c: New test.
+
+2024-02-05  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/mcpu-sifive-p450.c: New test.
+	* gcc.target/riscv/mcpu-sifive-p670.c: New test.
+
 2024-02-04  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/reg_subreg_costs.c: New test.

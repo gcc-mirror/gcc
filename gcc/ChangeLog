@@ -1,3 +1,83 @@
+2024-02-05  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/thead.cc (th_print_operand_address): Fix compiler
+	warning.
+
+2024-02-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113689
+	* config/i386/i386.cc (x86_64_select_profile_regnum): New.
+	(x86_function_profiler): Call x86_64_select_profile_regnum to
+	get a scratch register for large model profiling.
+
+2024-02-05  Richard Ball  <richard.ball@arm.com>
+
+	* config/arm/arm.cc (arm_output_mi_thunk): Emit
+	insn for bti_c when bti is enabled.
+
+2024-02-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/mips/mips-msa.md (neg<mode:MSA>2): Add missing mode for
+	neg.
+
+2024-02-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/mips/mips-msa.md (elmsgnbit): New define_mode_attr.
+	(neg<mode>2): Change the mode iterator from MSA to IMSA because
+	in FP arithmetic we cannot use (0 - x) for -x.
+	(neg<mode>2): New define_insn to implement FP vector negation,
+	using a bnegi instruction to negate the sign bit.
+
+2024-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113707
+	* tree-ssa-sccvn.cc (rpo_elim::eliminate_avail): After
+	checking the avail set treat out-of-region defines as
+	available.
+
+2024-02-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_create_data_ref_ptr): Use
+	the default mode when building a pointer.
+
+2024-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113737
+	* gimple-lower-bitint.cc (gimple_lower_bitint): If GIMPLE_SWITCH
+	has just a single label, remove it and make single successor edge
+	EDGE_FALLTHRU.
+
+2024-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/113059
+	* config/i386/i386-features.cc (rest_of_handle_insert_vzeroupper):
+	Remove REG_DEAD/REG_UNUSED notes at the end of the pass before
+	df_analyze call.
+
+2024-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR target/113255
+	* config/i386/i386-expand.cc
+	(expand_set_or_cpymem_prologue_epilogue_by_misaligned_moves):
+	Use a new pseudo for the skipped number of bytes.
+
+2024-02-05  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv-cores.def: Add sifive-p450, sifive-p670.
+	* doc/invoke.texi (RISC-V Options): Add sifive-p450,
+	sifive-p670.
+
+2024-02-05  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv.md: Include sifive-p400.md.
+	* config/riscv/sifive-p400.md: New file.
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add parameter.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type):
+	Add sifive_p400.
+	* config/riscv/riscv.cc (sifive_p400_tune_info): New.
+	* config/riscv/riscv.h (TARGET_SFB_ALU): Update.
+	* doc/invoke.texi (RISC-V Options): Add sifive-p400-series
+
 2024-02-04  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.md (*eqne_zero_masked_bits):
