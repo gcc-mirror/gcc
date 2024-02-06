@@ -2248,3 +2248,68 @@
     }
   return true;
 })
+
+;; Return true if OP is a memory operand that can be also used in APX
+;; NDD patterns with immediate operand.  With non-default address space,
+;; segment register or address size prefix, APX NDD instruction length
+;; can exceed the 15 byte size limit.
+(define_predicate "apx_ndd_memory_operand"
+  (match_operand 0 "memory_operand")
+{
+  /* OK if immediate operand size < 4 bytes.  */
+  if (GET_MODE_SIZE (mode) < 4)
+    return true;
+
+  bool default_addr = ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (op));
+  bool address_size_prefix = TARGET_X32 && Pmode == SImode;
+
+  struct ix86_address parts;
+  int ok;
+
+  op = XEXP (op, 0);
+  ok = ix86_decompose_address (op, &parts);
+  gcc_assert (ok);
+
+  if (default_addr)
+    {
+      /* Default address space.  */
+
+      /* Not OK with address size prefix, index register and disp.  */
+      if (address_size_prefix
+          && parts.index
+          && parts.disp
+          && parts.disp != const0_rtx)
+        return false;
+    }
+  else
+    {
+      /* Non-default address space.  */
+
+      /* Not OK without base register.  */
+      if (!parts.base)
+        return false;
+
+      /* Not OK with disp and address size prefix.  */
+      if (address_size_prefix && parts.disp)
+        return false;
+    }
+
+  return true;
+})
+
+;; Return true if OP is a memory operand which can be used in APX NDD
+;; ADD with register source operand.  UNSPEC_GOTNTPOFF memory operand
+;; isn't allowed with APX NDD ADD.
+(define_predicate "apx_ndd_add_memory_operand"
+  (match_operand 0 "memory_operand")
+{
+  op = XEXP (op, 0);
+
+  /* Disallow APX NDD ADD with UNSPEC_GOTNTPOFF.  */
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == UNSPEC
+      && XINT (XEXP (op, 0), 1) == UNSPEC_GOTNTPOFF)
+    return false;
+
+  return true;
+})

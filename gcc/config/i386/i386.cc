@@ -23467,31 +23467,6 @@ x86_evex_reg_mentioned_p (rtx operands[], int nops)
   return false;
 }
 
-/* Return true when rtx operand does not contain any UNSPEC_*POFF related
-   constant to avoid APX_NDD instructions excceed encoding length limit.  */
-bool
-x86_poff_operand_p (rtx operand)
-{
-  if (GET_CODE (operand) == CONST)
-    {
-      rtx op = XEXP (operand, 0);
-      if (GET_CODE (op) == PLUS)
-	op = XEXP (op, 0);
-	
-      if (GET_CODE (op) == UNSPEC)
-	{
-	  int unspec = XINT (op, 1);
-	  return (unspec == UNSPEC_NTPOFF
-		  || unspec == UNSPEC_TPOFF
-		  || unspec == UNSPEC_DTPOFF
-		  || unspec == UNSPEC_GOTTPOFF
-		  || unspec == UNSPEC_GOTNTPOFF
-		  || unspec == UNSPEC_INDNTPOFF);
-	}
-    }
-  return false;
-}
-
 /* If profitable, negate (without causing overflow) integer constant
    of mode MODE at location LOC.  Return true in this case.  */
 bool
