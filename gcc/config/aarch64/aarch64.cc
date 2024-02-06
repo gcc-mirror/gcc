@@ -13132,7 +13132,7 @@ aarch64_output_sme_zero_za (rtx mask)
   if (mask_val == 0xff)
     return "zero\t{ za }";
 
-  static constexpr std::pair<unsigned int, char> tiles[] = {
+  static constexpr struct { unsigned char mask; char letter; } tiles[] = {
     { 0xff, 'b' },
     { 0x55, 'h' },
     { 0x11, 's' },
@@ -13146,14 +13146,14 @@ aarch64_output_sme_zero_za (rtx mask)
   const char *prefix = "{ ";
   for (auto &tile : tiles)
     {
-      auto tile_mask = tile.first;
+      unsigned int tile_mask = tile.mask;
       unsigned int tile_index = 0;
       while (tile_mask < 0x100)
 	{
 	  if ((mask_val & tile_mask) == tile_mask)
 	    {
 	      i += snprintf (buffer + i, sizeof (buffer) - i, "%sza%d.%c",
-			     prefix, tile_index, tile.second);
+			     prefix, tile_index, tile.letter);
 	      prefix = ", ";
 	      mask_val &= ~tile_mask;
 	    }
