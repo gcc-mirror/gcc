@@ -236,10 +236,6 @@ DefaultResolver::visit (AST::ReturnExpr &expr)
 {}
 
 void
-DefaultResolver::visit (AST::UnsafeBlockExpr &expr)
-{}
-
-void
 DefaultResolver::visit (AST::LoopExpr &expr)
 {}
 
