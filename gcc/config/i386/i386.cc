@@ -22788,7 +22788,7 @@ x86_64_select_profile_regnum (bool r11_ok ATTRIBUTE_UNUSED)
   sorry ("no register available for profiling %<-mcmodel=large%s%>",
 	 ix86_cmodel == CM_LARGE_PIC ? " -fPIC" : "");
 
-  return INVALID_REGNUM;
+  return R10_REG;
 }
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
