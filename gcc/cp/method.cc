@@ -1222,7 +1222,11 @@ early_check_defaulted_comparison (tree fn)
 	  /* Defaulted outside the class body.  */
 	  ctx = TYPE_MAIN_VARIANT (parmtype);
 	  if (!is_friend (ctx, fn))
-	    error_at (loc, "defaulted %qD is not a friend of %qT", fn, ctx);
+	    {
+	      error_at (loc, "defaulted %qD is not a friend of %qT", fn, ctx);
+	      inform (location_of (ctx), "declared here");
+	      ok = false;
+	    }
 	}
       else if (!same_type_ignoring_top_level_qualifiers_p (parmtype, ctx))
 	saw_bad = true;
