@@ -2865,25 +2865,25 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
   if (2 * actual_precision > TYPE_PRECISION (type))
     return false;
   if (actual_precision != TYPE_PRECISION (type1)
-      || from_unsigned1 != TYPE_UNSIGNED (type1)
-      || (TREE_TYPE (rhs1) != type1
-	  && TREE_CODE (rhs1) != INTEGER_CST))
-    rhs1 = build_and_insert_cast (gsi, loc,
-				  build_nonstandard_integer_type
-				    (actual_precision, from_unsigned1), rhs1);
+      || from_unsigned1 != TYPE_UNSIGNED (type1))
+    type1 = build_nonstandard_integer_type (actual_precision, from_unsigned1);
+  if (!useless_type_conversion_p (type1, TREE_TYPE (rhs1)))
+    {
+      if (TREE_CODE (rhs1) == INTEGER_CST)
+	rhs1 = fold_convert (type1, rhs1);
+      else
+	rhs1 = build_and_insert_cast (gsi, loc, type1, rhs1);
+    }
   if (actual_precision != TYPE_PRECISION (type2)
-      || from_unsigned2 != TYPE_UNSIGNED (type2)
-      || (TREE_TYPE (rhs2) != type2
-	  && TREE_CODE (rhs2) != INTEGER_CST))
-    rhs2 = build_and_insert_cast (gsi, loc,
-				  build_nonstandard_integer_type
-				    (actual_precision, from_unsigned2), rhs2);
-
-  /* Handle constants.  */
-  if (TREE_CODE (rhs1) == INTEGER_CST)
-    rhs1 = fold_convert (type1, rhs1);
-  if (TREE_CODE (rhs2) == INTEGER_CST)
-    rhs2 = fold_convert (type2, rhs2);
+      || from_unsigned2 != TYPE_UNSIGNED (type2))
+    type2 = build_nonstandard_integer_type (actual_precision, from_unsigned2);
+  if (!useless_type_conversion_p (type2, TREE_TYPE (rhs2)))
+    {
+      if (TREE_CODE (rhs2) == INTEGER_CST)
+	rhs2 = fold_convert (type2, rhs2);
+      else
+	rhs2 = build_and_insert_cast (gsi, loc, type2, rhs2);
+    }
 
   gimple_assign_set_rhs1 (stmt, rhs1);
   gimple_assign_set_rhs2 (stmt, rhs2);
@@ -3086,25 +3086,27 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   actual_precision = GET_MODE_PRECISION (actual_mode);
   if (actual_precision != TYPE_PRECISION (type1)
       || from_unsigned1 != TYPE_UNSIGNED (type1))
-    mult_rhs1 = build_and_insert_cast (gsi, loc,
-				       build_nonstandard_integer_type
-					 (actual_precision, from_unsigned1),
-				       mult_rhs1);
+    type1 = build_nonstandard_integer_type (actual_precision, from_unsigned1);
+  if (!useless_type_conversion_p (type1, TREE_TYPE (mult_rhs1)))
+    {
+      if (TREE_CODE (mult_rhs1) == INTEGER_CST)
+	mult_rhs1 = fold_convert (type1, mult_rhs1);
+      else
+	mult_rhs1 = build_and_insert_cast (gsi, loc, type1, mult_rhs1);
+    }
   if (actual_precision != TYPE_PRECISION (type2)
       || from_unsigned2 != TYPE_UNSIGNED (type2))
-    mult_rhs2 = build_and_insert_cast (gsi, loc,
-				       build_nonstandard_integer_type
-					 (actual_precision, from_unsigned2),
-				       mult_rhs2);
+    type2 = build_nonstandard_integer_type (actual_precision, from_unsigned2);
+  if (!useless_type_conversion_p (type2, TREE_TYPE (mult_rhs2)))
+    {
+      if (TREE_CODE (mult_rhs2) == INTEGER_CST)
+	mult_rhs2 = fold_convert (type2, mult_rhs2);
+      else
+	mult_rhs2 = build_and_insert_cast (gsi, loc, type2, mult_rhs2);
+    }
 
   if (!useless_type_conversion_p (type, TREE_TYPE (add_rhs)))
     add_rhs = build_and_insert_cast (gsi, loc, type, add_rhs);
-
-  /* Handle constants.  */
-  if (TREE_CODE (mult_rhs1) == INTEGER_CST)
-    mult_rhs1 = fold_convert (type1, mult_rhs1);
-  if (TREE_CODE (mult_rhs2) == INTEGER_CST)
-    mult_rhs2 = fold_convert (type2, mult_rhs2);
 
   gimple_assign_set_rhs_with_ops (gsi, wmult_code, mult_rhs1, mult_rhs2,
 				  add_rhs);
