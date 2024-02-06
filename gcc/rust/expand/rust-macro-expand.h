@@ -414,7 +414,7 @@ struct MacroExpander
       = mappings->lookup_derive_proc_macro_invocation (path);
     if (!macro.has_value ())
       {
-	rust_error_at (path.get_locus (), "Macro not found");
+	rust_error_at (path.get_locus (), "macro not found");
 	return AST::Fragment::create_error ();
       }
 
@@ -437,7 +437,7 @@ struct MacroExpander
       = mappings->lookup_bang_proc_macro_invocation (invocation);
     if (!macro.has_value ())
       {
-	rust_error_at (invocation.get_locus (), "Macro not found");
+	rust_error_at (invocation.get_locus (), "macro not found");
 	return AST::Fragment::create_error ();
       }
 
@@ -459,7 +459,7 @@ struct MacroExpander
       = mappings->lookup_attribute_proc_macro_invocation (path);
     if (!macro.has_value ())
       {
-	rust_error_at (path.get_locus (), "Macro not found");
+	rust_error_at (path.get_locus (), "macro not found");
 	return AST::Fragment::create_error ();
       }
 
