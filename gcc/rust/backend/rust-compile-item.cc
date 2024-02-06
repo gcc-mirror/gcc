@@ -76,32 +76,48 @@ CompileItem::visit (HIR::StaticItem &var)
 void
 CompileItem::visit (HIR::ConstantItem &constant)
 {
-  if (ctx->lookup_const_decl (constant.get_mappings ().get_hirid (),
-			      &reference))
+  auto &mappings = constant.get_mappings ();
+
+  if (ctx->lookup_const_decl (mappings.get_hirid (), &reference))
     return;
 
   // resolve the type
   TyTy::BaseType *resolved_type = nullptr;
+
   bool ok
-    = ctx->get_tyctx ()->lookup_type (constant.get_mappings ().get_hirid (),
-				      &resolved_type);
+    = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &resolved_type);
   rust_assert (ok);
 
   // canonical path
-  const Resolver::CanonicalPath *canonical_path = nullptr;
-  ok = ctx->get_mappings ()->lookup_canonical_path (
-    constant.get_mappings ().get_nodeid (), &canonical_path);
-  rust_assert (ok);
+  Resolver::CanonicalPath canonical_path
+    = Resolver::CanonicalPath::create_empty ();
+
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      canonical_path
+	= nr_ctx.values.to_canonical_path (mappings.get_nodeid ()).value ();
+    }
+  else
+    {
+      const Resolver::CanonicalPath *canonical_path_ptr = nullptr;
+      ok = ctx->get_mappings ()->lookup_canonical_path (mappings.get_nodeid (),
+							&canonical_path_ptr);
+      rust_assert (ok);
+      canonical_path = *canonical_path_ptr;
+    }
 
   HIR::Expr *const_value_expr = constant.get_expr ().get ();
   ctx->push_const_context ();
   tree const_expr
-    = compile_constant_item (resolved_type, canonical_path, const_value_expr,
+    = compile_constant_item (resolved_type, &canonical_path, const_value_expr,
 			     constant.get_locus ());
   ctx->pop_const_context ();
 
   ctx->push_const (const_expr);
-  ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
+  ctx->insert_const_decl (mappings.get_hirid (), const_expr);
   reference = const_expr;
 }
 
