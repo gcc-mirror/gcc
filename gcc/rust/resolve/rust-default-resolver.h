@@ -66,7 +66,6 @@ public:
   void visit (AST::RangeFromToInclExpr &);
   void visit (AST::RangeToInclExpr &);
   void visit (AST::ReturnExpr &);
-  void visit (AST::UnsafeBlockExpr &);
   void visit (AST::LoopExpr &);
   void visit (AST::WhileLoopExpr &);
   void visit (AST::WhileLetLoopExpr &);
