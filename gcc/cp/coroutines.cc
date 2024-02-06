@@ -4246,7 +4246,7 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
 				  boolean_type_node, i_a_r_c);
       finish_if_stmt_cond (not_iarc, not_iarc_if);
       /* If the initial await resume called value is false, rethrow...  */
-      tree rethrow = build_throw (fn_start, NULL_TREE);
+      tree rethrow = build_throw (fn_start, NULL_TREE, tf_warning_or_error);
       suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
       finish_then_clause (not_iarc_if);
@@ -5151,7 +5151,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       tree del_coro_fr = coro_get_frame_dtor (coro_fp, orig, frame_size,
 					      promise_type, fn_start);
       finish_expr_stmt (del_coro_fr);
-      tree rethrow = build_throw (fn_start, NULL_TREE);
+      tree rethrow = build_throw (fn_start, NULL_TREE, tf_warning_or_error);
       suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
       finish_handler (handler);

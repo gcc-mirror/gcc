@@ -2640,7 +2640,7 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
       break;
 
     case THROW_EXPR:
-      result = build_throw (input_location, op0);
+      result = build_throw (input_location, op0, tf_error);
       break;
 
     case TYPEID_EXPR:
@@ -2664,7 +2664,7 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
       result = make_pack_expansion (op0);
       break;
 
-      // We're using this for sizeof...(pack).  */
+      /* We're using this for sizeof...(pack).  */
     case TYPE_PACK_EXPANSION:
       result = make_pack_expansion (op0);
       PACK_EXPANSION_SIZEOF_P (result) = true;

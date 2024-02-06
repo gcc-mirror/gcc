@@ -486,7 +486,8 @@ expand_end_catch_block (void)
 	  || DECL_DESTRUCTOR_P (current_function_decl))
       && !in_nested_catch ())
     {
-      tree rethrow = build_throw (input_location, NULL_TREE);
+      tree rethrow = build_throw (input_location, NULL_TREE,
+				  tf_warning_or_error);
       /* Disable all warnings for the generated rethrow statement.  */
       suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
@@ -607,7 +608,7 @@ wrap_cleanups_r (tree *tp, int *walk_subtrees, void * /*data*/)
 /* Build a throw expression.  */
 
 tree
-build_throw (location_t loc, tree exp)
+build_throw (location_t loc, tree exp, tsubst_flags_t complain)
 {
   if (exp == error_mark_node)
     return exp;
@@ -621,7 +622,7 @@ build_throw (location_t loc, tree exp)
       return exp;
     }
 
-  if (exp && null_node_p (exp))
+  if (exp && null_node_p (exp) && (complain & tf_warning))
     warning_at (loc, 0,
 		"throwing NULL, which has integral, not pointer type");
 
@@ -641,8 +642,6 @@ build_throw (location_t loc, tree exp)
       tree cleanup;
       tree object, ptr;
       tree allocate_expr;
-
-      tsubst_flags_t complain = tf_warning_or_error;
 
       /* The CLEANUP_TYPE is the internal type of a destructor.  */
       if (!cleanup_type)
@@ -714,7 +713,6 @@ build_throw (location_t loc, tree exp)
       if (CLASS_TYPE_P (temp_type))
 	{
 	  int flags = LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING;
-	  bool converted = false;
 	  location_t exp_loc = cp_expr_loc_or_loc (exp, loc);
 
 	  /* Under C++0x [12.8/16 class.copy], a thrown lvalue is sometimes
@@ -727,23 +725,20 @@ build_throw (location_t loc, tree exp)
 	    exp = moved;
 
 	  /* Call the copy constructor.  */
-	  if (!converted)
-	    {
-	      releasing_vec exp_vec (make_tree_vector_single (exp));
-	      exp = (build_special_member_call
-		     (object, complete_ctor_identifier, &exp_vec,
-		      TREE_TYPE (object), flags, tf_warning_or_error));
-	    }
-
+	  releasing_vec exp_vec (make_tree_vector_single (exp));
+	  exp = build_special_member_call (object, complete_ctor_identifier,
+					   &exp_vec, TREE_TYPE (object), flags,
+					   complain);
 	  if (exp == error_mark_node)
 	    {
-	      inform (exp_loc, "  in thrown expression");
+	      if (complain & tf_error)
+		inform (exp_loc, "  in thrown expression");
 	      return error_mark_node;
 	    }
 	}
       else
 	{
-	  tree tmp = decay_conversion (exp, tf_warning_or_error);
+	  tree tmp = decay_conversion (exp, complain);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
 	  exp = cp_build_init_expr (object, tmp);
@@ -768,7 +763,7 @@ build_throw (location_t loc, tree exp)
 	  tree binfo = TYPE_BINFO (TREE_TYPE (object));
 	  tree dtor_fn = lookup_fnfields (binfo,
 					  complete_dtor_identifier, 0,
-					  tf_warning_or_error);
+					  complain);
 	  dtor_fn = BASELINK_FUNCTIONS (dtor_fn);
 	  if (!mark_used (dtor_fn)
 	      || !perform_or_defer_access_check (binfo, dtor_fn,
@@ -785,7 +780,7 @@ build_throw (location_t loc, tree exp)
 	cleanup = build_int_cst (cleanup_type, 0);
 
       /* ??? Indicate that this function call throws throw_type.  */
-      tree tmp = cp_build_function_call_nary (throw_fn, tf_warning_or_error,
+      tree tmp = cp_build_function_call_nary (throw_fn, complain,
 					      ptr, throw_type, cleanup,
 					      NULL_TREE);
 
@@ -807,7 +802,7 @@ build_throw (location_t loc, tree exp)
 
       /* ??? Indicate that this function call allows exceptions of the type
 	 of the enclosing catch block (if known).  */
-      exp = cp_build_function_call_vec (rethrow_fn, NULL, tf_warning_or_error);
+      exp = cp_build_function_call_vec (rethrow_fn, NULL, complain);
     }
 
   exp = build1_loc (loc, THROW_EXPR, void_type_node, exp);

@@ -21180,7 +21180,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case THROW_EXPR:
       RETURN (build_throw
-       (input_location, RECUR (TREE_OPERAND (t, 0))));
+       (input_location, RECUR (TREE_OPERAND (t, 0)), complain));
 
     case CONSTRUCTOR:
       {

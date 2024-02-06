@@ -29310,7 +29310,7 @@ cp_parser_throw_expression (cp_parser* parser)
      the end at the end of the final token we consumed.  */
   location_t combined_loc = make_location (start_loc, start_loc,
 					   parser->lexer);
-  expression = build_throw (combined_loc, expression);
+  expression = build_throw (combined_loc, expression, tf_warning_or_error);
 
   return expression;
 }
