@@ -57,7 +57,7 @@ proc check_for_all_options {language gcc_options compiler_pattern as_pattern ld_
 	remote_file build delete $dumpfile
     }   
 
-    if {![regexp -- "/${compiler}(\\.exe)? -quiet.*$compiler_pattern" $gcc_output]} {
+    if {![regexp -- "/${compiler}(\\.exe)? \[^\r\n\]*-quiet.*$compiler_pattern" $gcc_output]} {
 	fail "$test (compiler options)"
 	return
     }
