@@ -1229,6 +1229,7 @@ early_check_defaulted_comparison (tree fn)
 	  ctx = TYPE_MAIN_VARIANT (parmtype);
 	  if (!is_friend (ctx, fn))
 	    {
+	      auto_diagnostic_group d;
 	      error_at (loc, "defaulted %qD is not a friend of %qT", fn, ctx);
 	      inform (location_of (ctx), "declared here");
 	      ok = false;
