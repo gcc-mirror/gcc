@@ -134,18 +134,6 @@ DefaultResolver::visit (AST::TraitImpl &impl)
 }
 
 void
-DefaultResolver::visit (AST::ExternBlock &block)
-{
-  auto inner_fn = [this, &block] () {
-    for (auto &item : block.get_extern_items ())
-      item->accept_vis (*this);
-  };
-
-  ctx.scoped (Rib::Kind::Normal /* FIXME: Correct? */, block.get_node_id (),
-	      inner_fn);
-}
-
-void
 DefaultResolver::visit (AST::StructStruct &type)
 {
   // do we need to scope anything here? no, right?
