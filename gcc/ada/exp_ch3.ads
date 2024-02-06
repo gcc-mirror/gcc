@@ -25,9 +25,9 @@
 
 --  Expand routines for chapter 3 constructs
 
-with Types;   use Types;
 with Elists;  use Elists;
 with Exp_Tss; use Exp_Tss;
+with Types;   use Types;
 with Uintp;   use Uintp;
 
 package Exp_Ch3 is
@@ -57,6 +57,30 @@ package Exp_Ch3 is
    --  checks on the relevant aspects. The wrapper body could be simplified to
    --  a null body when expansion is disabled ???
 
+   function Build_Default_Initialization
+     (N          : Node_Id;
+      Typ        : Entity_Id;
+      Obj_Id     : Entity_Id;
+      For_CW     : Boolean := False;
+      Target_Ref : Node_Id := Empty) return List_Id;
+   --  Build the code to default-initialize an object of Typ either declared
+   --  or allocated by node N if this is necessary. In the former case Obj_Id
+   --  is the entity for the object whereas, in the second case, Obj_Id is a
+   --  temporary generated to hold the result of the allocator. For_CW is set
+   --  to True in the second case if this result is of a class-wide type.
+
+   --  Target_Ref is only passed identically to Build_Initialization_Call, so
+   --  its description given for Build_Initialization_Call is also valid here.
+
+   function Build_Default_Simple_Initialization
+     (N      : Node_Id;
+      Typ    : Entity_Id;
+      Obj_Id : Entity_Id) return Node_Id;
+   --  Try to build an expression to default-initialize an object of Typ either
+   --  declared or allocated by node N if this is necessary. In the former case
+   --  Obj_Id is the entity for the object whereas, in the second case, it must
+   --  be set to Empty.
+
    procedure Build_Or_Copy_Discr_Checking_Funcs (N : Node_Id);
    --  For each variant component, builds a function that checks whether
    --  the component name is consistent with the current discriminants
@@ -71,22 +95,31 @@ package Exp_Ch3 is
      (Loc                 : Source_Ptr;
       Id_Ref              : Node_Id;
       Typ                 : Entity_Id;
-      In_Init_Proc        : Boolean := False;
+      In_Init_Proc        : Boolean   := False;
       Enclos_Type         : Entity_Id := Empty;
-      Discr_Map           : Elist_Id := New_Elmt_List;
-      With_Default_Init   : Boolean := False;
-      Constructor_Ref     : Node_Id := Empty;
+      Target_Ref          : Node_Id   := Empty;
+      Discr_Map           : Elist_Id  := New_Elmt_List;
+      With_Default_Init   : Boolean   := False;
+      Constructor_Ref     : Node_Id   := Empty;
       Init_Control_Actual : Entity_Id := Empty) return List_Id;
    --  Builds a call to the initialization procedure for the base type of Typ,
    --  passing it the object denoted by Id_Ref, plus additional parameters as
    --  appropriate for the type (the _Master, for task types, for example).
    --  Loc is the source location for the constructed tree. In_Init_Proc has
    --  to be set to True when the call is itself in an init proc in order to
-   --  enable the use of discriminals. Enclos_Type is the enclosing type when
-   --  initializing a component in an outer init proc, and it is used for
-   --  various expansion cases including the case where Typ is a task type
-   --  which is an array component, the indexes of the enclosing type are
-   --  used to build the string that identifies each task at runtime.
+   --  enable the use of discriminals.
+   --
+   --  Enclos_Type is the enclosing type when initializing a component of a
+   --  composite type, and is used for the case where Typ is a task type of
+   --  an array component: the indices of this enclosing type are then used
+   --  to build the image string that identifies each task at run time.
+   --
+   --  Target_Ref is also used when Typ is a task type if the initialization
+   --  call is to be generated for an allocator. It is either the name of a
+   --  simple assignment whose expression is the allocator, or the defining
+   --  identifier of an object declaration whose initializing expression is
+   --  the allocator, or else the allocator's access type. It is used both
+   --  to build the image string and to pass the task master.
    --
    --  Discr_Map is used to replace discriminants by their discriminals in
    --  expressions used to constrain record components. In the presence of

@@ -718,21 +718,14 @@ package body Sem_Ch4 is
          --  illegal.
 
          if Can_Never_Be_Null (Type_Id) then
-            declare
-               Not_Null_Check : constant Node_Id :=
-                                  Make_Raise_Constraint_Error (Sloc (E),
-                                    Reason => CE_Null_Not_Allowed);
+            if Expander_Active then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "null value not allowed here??", CE_Null_Not_Allowed);
 
-            begin
-               if Expander_Active then
-                  Insert_Action (N, Not_Null_Check);
-                  Analyze (Not_Null_Check);
-
-               elsif Warn_On_Ada_2012_Compatibility then
-                  Error_Msg_N
-                    ("null value not allowed here in Ada 2012?y?", E);
-               end if;
-            end;
+            elsif Warn_On_Ada_2012_Compatibility then
+               Error_Msg_N
+                 ("null value not allowed here in Ada 2012?y?", E);
+            end if;
          end if;
 
          --  Check for missing initialization. Skip this check if the allocator

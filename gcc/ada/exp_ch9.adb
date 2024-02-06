@@ -39,7 +39,6 @@ with Exp_Ch11;       use Exp_Ch11;
 with Exp_Dbug;       use Exp_Dbug;
 with Exp_Sel;        use Exp_Sel;
 with Exp_Smem;       use Exp_Smem;
-with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
 with Hostparm;
@@ -4796,70 +4795,6 @@ package body Exp_Ch9 is
    -------------------------------
 
    procedure Build_Task_Allocate_Block
-     (Actions : List_Id;
-      N       : Node_Id;
-      Args    : List_Id)
-   is
-      T      : constant Entity_Id  := Entity (Expression (N));
-      Init   : constant Entity_Id  := Base_Init_Proc (T);
-      Loc    : constant Source_Ptr := Sloc (N);
-      Chain  : constant Entity_Id  :=
-                 Make_Defining_Identifier (Loc, Name_uChain);
-      Blkent : constant Entity_Id  := Make_Temporary (Loc, 'A');
-      Block  : Node_Id;
-
-   begin
-      Block :=
-        Make_Block_Statement (Loc,
-          Identifier   => New_Occurrence_Of (Blkent, Loc),
-          Declarations => New_List (
-
-            --  _Chain : Activation_Chain;
-
-            Make_Object_Declaration (Loc,
-              Defining_Identifier => Chain,
-              Aliased_Present     => True,
-              Object_Definition   =>
-                New_Occurrence_Of (RTE (RE_Activation_Chain), Loc))),
-
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-
-              Statements => New_List (
-
-                --  Init (Args);
-
-                Make_Procedure_Call_Statement (Loc,
-                  Name                   => New_Occurrence_Of (Init, Loc),
-                  Parameter_Associations => Args),
-
-                --  Activate_Tasks (_Chain);
-
-                Make_Procedure_Call_Statement (Loc,
-                  Name => New_Occurrence_Of (RTE (RE_Activate_Tasks), Loc),
-                  Parameter_Associations => New_List (
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Occurrence_Of (Chain, Loc),
-                      Attribute_Name => Name_Unchecked_Access))))),
-
-          Has_Created_Identifier => True,
-          Is_Task_Allocation_Block => True);
-
-      Append_To (Actions,
-        Make_Implicit_Label_Declaration (Loc,
-          Defining_Identifier => Blkent,
-          Label_Construct     => Block));
-
-      Append_To (Actions, Block);
-
-      Set_Activation_Chain_Entity (Block, Chain);
-   end Build_Task_Allocate_Block;
-
-   -----------------------------------------------
-   -- Build_Task_Allocate_Block_With_Init_Stmts --
-   -----------------------------------------------
-
-   procedure Build_Task_Allocate_Block_With_Init_Stmts
      (Actions    : List_Id;
       N          : Node_Id;
       Init_Stmts : List_Id)
@@ -4906,7 +4841,7 @@ package body Exp_Ch9 is
       Append_To (Actions, Block);
 
       Set_Activation_Chain_Entity (Block, Chain);
-   end Build_Task_Allocate_Block_With_Init_Stmts;
+   end Build_Task_Allocate_Block;
 
    -----------------------------------
    -- Build_Task_Proc_Specification --

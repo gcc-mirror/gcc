@@ -820,7 +820,7 @@ package body Exp_Util is
       Expr                     : Node_Id;
       Needs_Fin                : Boolean;
       Pool_Id                  : Entity_Id;
-      Proc_To_Call             : Node_Id := Empty;
+      Proc_To_Call             : Node_Id;
       Ptr_Typ                  : Entity_Id;
       Use_Secondary_Stack_Pool : Boolean;
 
@@ -841,21 +841,22 @@ package body Exp_Util is
             Expr := N;
          end if;
 
-         --  In certain cases an allocator with a qualified expression may
-         --  be relocated and used as the initialization expression of a
-         --  temporary:
+         --  In certain cases, an allocator with a qualified expression may be
+         --  relocated and used as the initialization expression of a temporary
+         --  and the analysis of the declaration of this temporary may in turn
+         --  create another temporary:
 
          --    before:
          --       Obj : Ptr_Typ := new Desig_Typ'(...);
 
          --    after:
-         --       Tmp : Ptr_Typ := new Desig_Typ'(...);
-         --       Obj : Ptr_Typ := Tmp;
+         --       Tmp2 : Ptr_Typ := new Desig_Typ'(...);
+         --       [constraint_error when Tmp2...]
+         --       Tmp1 : Ptr_Typ := Tmp2
+         --       Obj  : Ptr_Typ := Tmp1;
 
-         --  Since the allocator is always marked as analyzed to avoid infinite
-         --  expansion, it will never be processed by this routine given that
-         --  the designated type needs finalization actions. Detect this case
-         --  and complete the expansion of the allocator.
+         --  Detect this case where we are invoked on Tmp1's declaration by
+         --  recognizing Tmp2 and then proceed to its declaration instead.
 
          if Nkind (Expr) = N_Identifier
            and then Nkind (Parent (Entity (Expr))) = N_Object_Declaration
@@ -865,12 +866,7 @@ package body Exp_Util is
             return;
          end if;
 
-         --  The allocator may have been rewritten into something else in which
-         --  case the expansion performed by this routine does not apply.
-
-         if Nkind (Expr) /= N_Allocator then
-            return;
-         end if;
+         pragma Assert (Nkind (Expr) = N_Allocator);
 
          Ptr_Typ := Base_Type (Etype (Expr));
          Proc_To_Call := Procedure_To_Call (Expr);

@@ -962,6 +962,524 @@ package body Exp_Ch3 is
       end if;
    end Build_Array_Init_Proc;
 
+   ----------------------------------
+   -- Build_Default_Initialization --
+   ----------------------------------
+
+   function Build_Default_Initialization
+     (N          : Node_Id;
+      Typ        : Entity_Id;
+      Obj_Id     : Entity_Id;
+      For_CW     : Boolean := False;
+      Target_Ref : Node_Id := Empty) return List_Id
+   is
+      Exceptions_OK : constant Boolean :=
+                        not Restriction_Active (No_Exception_Propagation);
+      Loc           : constant Source_Ptr := Sloc (N);
+
+      function New_Object_Reference return Node_Id;
+      --  Return either a reference to Obj_Id or a dereference of Obj_Id
+
+      --------------------------
+      -- New_Object_Reference --
+      --------------------------
+
+      function New_Object_Reference return Node_Id is
+         Obj_Ref : Node_Id := New_Occurrence_Of (Obj_Id, Loc);
+
+      begin
+         if Nkind (N) = N_Object_Declaration then
+            --  The call to the type init proc or [Deep_]Finalize must not
+            --  freeze the object since the call is internally generated.
+            --  This prevents representation clauses from being rejected.
+            --  Note that the initialization call may be removed if pragma
+            --  Import is encountered or moved to the freeze actions of
+            --  the object if an address clause is encountered.
+
+            Set_Assignment_OK   (Obj_Ref);
+            Set_Must_Not_Freeze (Obj_Ref);
+
+         else pragma Assert (Nkind (N) = N_Allocator);
+            Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
+
+            --  If the designated subtype is unconstrained and the allocator
+            --  specifies a constrained subtype, or such a subtype has been
+            --  created, associate that subtype with the dereference of the
+            --  allocator's access value. This is needed by the expander for
+            --  cases where the access type has a Designated_Storage_Model
+            --  in order to support allocation of a host object of the right
+            --  size for passing to the initialization procedure.
+
+            if not Is_Constrained (Designated_Type (Etype (N)))
+              and then Is_Constrained (Typ)
+            then
+               Set_Actual_Designated_Subtype (Obj_Ref, Typ);
+            end if;
+
+            --  The initialization procedure expects a specific type so.
+            --  if the context is access to class-wide, indicate that the
+            --  object being initialized has the right specific type.
+
+            if For_CW then
+               Obj_Ref := Unchecked_Convert_To (Typ, Obj_Ref);
+            end if;
+         end if;
+
+         return Obj_Ref;
+      end New_Object_Reference;
+
+      --  Local variables
+
+      Comp_Init  : List_Id := No_List;
+      Fin_Block  : Node_Id;
+      Fin_Call   : Node_Id;
+      Init_Stmts : List_Id := No_List;
+      Obj_Init   : Node_Id := Empty;
+      Obj_Ref    : Node_Id;
+
+   --  Start of processing for Build_Default_Initialization
+
+   begin
+      --  The expansion performed by this routine is as follows:
+
+      --    begin
+      --       Abort_Defer;
+      --       Type_Init_Proc (Obj);
+
+      --       begin
+      --          [Deep_]Initialize (Obj);
+
+      --       exception
+      --          when others =>
+      --             [Deep_]Finalize (Obj, Self => False);
+      --             raise;
+      --       end;
+      --    at end
+      --       Abort_Undefer_Direct;
+      --    end;
+
+      --  Initialize the components of the object
+
+      if Has_Non_Null_Base_Init_Proc (Typ)
+        and then not Initialization_Suppressed (Typ)
+      then
+         --  Do not initialize the components if No_Default_Initialization
+         --  applies as the actual restriction check will occur later when
+         --  the object is frozen as it is not known yet whether the object
+         --  is imported or not.
+
+         if not Restriction_Active (No_Default_Initialization) then
+
+            --  Invoke the type init proc, generate:
+            --    Type_Init_Proc (Obj);
+
+            Obj_Ref := New_Object_Reference;
+
+            if Comes_From_Source (Obj_Id) then
+               Initialization_Warning (Obj_Ref);
+            end if;
+
+            Comp_Init :=
+              Build_Initialization_Call (Loc,
+                Obj_Ref, Typ, Target_Ref => Target_Ref);
+         end if;
+      end if;
+
+      --  Initialize the object, generate:
+      --    [Deep_]Initialize (Obj);
+
+      if Needs_Finalization (Typ) then
+         Obj_Init :=
+           Make_Init_Call
+             (Obj_Ref => New_Object_Reference,
+              Typ     => Typ);
+      end if;
+
+      --  Build a special finalization block when both the object and its
+      --  controlled components are to be initialized. The block finalizes
+      --  the components if the object initialization fails. Generate:
+
+      --    begin
+      --       <Obj_Init>
+
+      --    exception
+      --       when others =>
+      --          <Fin_Call>
+      --          raise;
+      --    end;
+
+      if Has_Controlled_Component (Typ)
+        and then Present (Comp_Init)
+        and then Present (Obj_Init)
+        and then Exceptions_OK
+      then
+         Init_Stmts := Comp_Init;
+
+         Fin_Call :=
+           Make_Final_Call
+             (Obj_Ref   => New_Object_Reference,
+              Typ       => Typ,
+              Skip_Self => True);
+
+         if Present (Fin_Call) then
+
+            --  Do not emit warnings related to the elaboration order when a
+            --  controlled object is declared before the body of Finalize is
+            --  seen.
+
+            if Legacy_Elaboration_Checks then
+               Set_No_Elaboration_Check (Fin_Call);
+            end if;
+
+            Fin_Block :=
+              Make_Block_Statement (Loc,
+                Declarations               => No_List,
+
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements         => New_List (Obj_Init),
+
+                    Exception_Handlers => New_List (
+                      Make_Exception_Handler (Loc,
+                        Exception_Choices => New_List (
+                          Make_Others_Choice (Loc)),
+
+                        Statements        => New_List (
+                          Fin_Call,
+                          Make_Raise_Statement (Loc))))));
+
+            --  Signal the ABE mechanism that the block carries out
+            --  initialization actions.
+
+            Set_Is_Initialization_Block (Fin_Block);
+
+            Append_To (Init_Stmts, Fin_Block);
+         end if;
+
+      --  Otherwise finalization is not required, the initialization calls
+      --  are passed to the abort block building circuitry, generate:
+
+      --    Type_Init_Proc (Obj);
+      --    [Deep_]Initialize (Obj);
+
+      else
+         if Present (Comp_Init) then
+            Init_Stmts := Comp_Init;
+         end if;
+
+         if Present (Obj_Init) then
+            if No (Init_Stmts) then
+               Init_Stmts := New_List;
+            end if;
+
+            Append_To (Init_Stmts, Obj_Init);
+         end if;
+      end if;
+
+      --  Build an abort block to protect the initialization calls
+
+      if Abort_Allowed
+        and then Present (Comp_Init)
+        and then Present (Obj_Init)
+      then
+         --  Generate:
+         --    Abort_Defer;
+
+         Prepend_To (Init_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
+
+         --  When exceptions are propagated, abort deferral must take place
+         --  in the presence of initialization or finalization exceptions.
+         --  Generate:
+
+         --    begin
+         --       Abort_Defer;
+         --       <Init_Stmts>
+         --    at end
+         --       Abort_Undefer_Direct;
+         --    end;
+
+         if Exceptions_OK then
+            Init_Stmts := New_List (
+              Build_Abort_Undefer_Block (Loc,
+                Stmts   => Init_Stmts,
+                Context => N));
+
+         --  Otherwise exceptions are not propagated. Generate:
+
+         --    Abort_Defer;
+         --    <Init_Stmts>
+         --    Abort_Undefer;
+
+         else
+            Append_To (Init_Stmts,
+              Build_Runtime_Call (Loc, RE_Abort_Undefer));
+         end if;
+      end if;
+
+      return Init_Stmts;
+   end Build_Default_Initialization;
+
+   -----------------------------------------
+   -- Build_Default_Simple_Initialization --
+   -----------------------------------------
+
+   function Build_Default_Simple_Initialization
+     (N      : Node_Id;
+      Typ    : Entity_Id;
+      Obj_Id : Entity_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (N);
+
+      function Build_Equivalent_Aggregate return Node_Id;
+      --  If the object has a constrained discriminated type and no initial
+      --  value, it may be possible to build an equivalent aggregate instead,
+      --  and prevent an actual call to the initialization procedure.
+
+      function Simple_Initialization_OK (Typ : Entity_Id) return Boolean;
+      --  Determine whether object declaration N with entity Obj_Id if set, or
+      --  object allocation N if Obj_Id is empty, needs simple initialization,
+      --  assuming that it is of type Typ.
+
+      --------------------------------
+      -- Build_Equivalent_Aggregate --
+      --------------------------------
+
+      function Build_Equivalent_Aggregate return Node_Id is
+         Aggr     : Node_Id;
+         Comp     : Entity_Id;
+         Discr    : Elmt_Id;
+         Full_Typ : Entity_Id;
+
+      begin
+         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+            Full_Typ := Full_View (Typ);
+         else
+            Full_Typ := Typ;
+         end if;
+
+         --  Only do this transformation for a package entity of a constrained
+         --  record type and if Elaboration_Code is forbidden or undesirable.
+
+         --  If Initialize_Scalars might be active this transformation cannot
+         --  be performed either, because it will lead to different semantics
+         --  or because elaboration code will in fact be created.
+
+         if Ekind (Full_Typ) /= E_Record_Subtype
+           or else not Has_Discriminants (Full_Typ)
+           or else not Is_Constrained (Full_Typ)
+           or else Is_Controlled (Full_Typ)
+           or else Is_Limited_Type (Full_Typ)
+           or else Ekind (Current_Scope) /= E_Package
+           or else not (Is_Preelaborated (Current_Scope)
+                         or else Restriction_Active (No_Elaboration_Code))
+           or else not Restriction_Active (No_Initialize_Scalars)
+         then
+            return Empty;
+         end if;
+
+         --  Building a static aggregate is possible if the discriminants
+         --  have static values and the other components have static
+         --  defaults or none.
+
+         Discr := First_Elmt (Discriminant_Constraint (Full_Typ));
+         while Present (Discr) loop
+            if not Is_OK_Static_Expression (Node (Discr)) then
+               return Empty;
+            end if;
+
+            Next_Elmt (Discr);
+         end loop;
+
+         --  Check that initialized components are OK, and that non-
+         --  initialized components do not require a call to their own
+         --  initialization procedure.
+
+         Comp := First_Component (Full_Typ);
+         while Present (Comp) loop
+            if Present (Expression (Parent (Comp)))
+              and then not Is_OK_Static_Expression (Expression (Parent (Comp)))
+            then
+               return Empty;
+
+            elsif Has_Non_Null_Base_Init_Proc (Etype (Comp)) then
+               return Empty;
+
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+
+         --  Everything is static, assemble the aggregate, discriminant
+         --  values first.
+
+         Aggr :=
+            Make_Aggregate (Loc,
+             Expressions            => New_List,
+              Component_Associations => New_List);
+         Set_Parent (Aggr, N);
+
+         Discr := First_Elmt (Discriminant_Constraint (Full_Typ));
+         while Present (Discr) loop
+            Append_To (Expressions (Aggr), New_Copy (Node (Discr)));
+            Next_Elmt (Discr);
+         end loop;
+
+         --  Now collect values of initialized components
+
+         Comp := First_Component (Full_Typ);
+         while Present (Comp) loop
+            if Present (Expression (Parent (Comp))) then
+               Append_To (Component_Associations (Aggr),
+                 Make_Component_Association (Loc,
+                   Choices    => New_List (New_Occurrence_Of (Comp, Loc)),
+                   Expression => New_Copy_Tree
+                                   (Expression (Parent (Comp)))));
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+
+         --  Finally, box-initialize remaining components
+
+         Append_To (Component_Associations (Aggr),
+           Make_Component_Association (Loc,
+             Choices    => New_List (Make_Others_Choice (Loc)),
+             Expression => Empty));
+         Set_Box_Present (Last (Component_Associations (Aggr)));
+
+         if Typ /= Full_Typ then
+            Analyze_And_Resolve (Aggr, Full_View (Base_Type (Full_Typ)));
+            Rewrite (Aggr, Unchecked_Convert_To (Typ, Aggr));
+         end if;
+
+         return Aggr;
+      end Build_Equivalent_Aggregate;
+
+      ------------------------------
+      -- Simple_Initialization_OK --
+      ------------------------------
+
+      function Simple_Initialization_OK (Typ : Entity_Id) return Boolean is
+      begin
+         --  Skip internal entities as specified in Einfo
+
+         return
+           not (Present (Obj_Id) and then Is_Internal (Obj_Id))
+             and then
+               Needs_Simple_Initialization
+                 (Typ         => Typ,
+                  Consider_IS =>
+                    Initialize_Scalars
+                      and then (No (Obj_Id)
+                                 or else No (Following_Address_Clause (N))));
+      end Simple_Initialization_OK;
+
+      --  Local variables
+
+      Aggr_Init  : Node_Id;
+
+   --  Start of processing for Build_Default_Simple_Initialization
+
+   begin
+      if Has_Non_Null_Base_Init_Proc (Typ)
+        and then not Is_Dispatching_Operation (Base_Init_Proc (Typ))
+        and then not Initialization_Suppressed (Typ)
+      then
+         --  Do not initialize the components if No_Default_Initialization
+         --  applies as the actual restriction check will occur later when
+         --  the object is frozen as it is not known yet whether the object
+         --  is imported or not.
+
+         if not Restriction_Active (No_Default_Initialization) then
+
+            --  If the values of the components are compile-time known, use
+            --  their prebuilt aggregate form directly.
+
+            Aggr_Init := Static_Initialization (Base_Init_Proc (Typ));
+            if Present (Aggr_Init) then
+               return New_Copy_Tree (Aggr_Init, New_Scope => Current_Scope);
+            end if;
+
+            --  If type has discriminants, try to build an equivalent
+            --  aggregate using discriminant values from the declaration.
+            --  This is a useful optimization, in particular if restriction
+            --  No_Elaboration_Code is active.
+
+            Aggr_Init := Build_Equivalent_Aggregate;
+            if Present (Aggr_Init) then
+               return Aggr_Init;
+            end if;
+
+            --  Optimize the default initialization of an array object when
+            --  pragma Initialize_Scalars or Normalize_Scalars is in effect.
+            --  Construct an in-place initialization aggregate which may be
+            --  convert into a fast memset by the backend.
+
+            if Init_Or_Norm_Scalars
+              and then Is_Array_Type (Typ)
+
+              --  The array must lack atomic components because they are
+              --  treated as non-static, and as a result the backend will
+              --  not initialize the memory in one go.
+
+              and then not Has_Atomic_Components (Typ)
+
+              --  The array must not be packed because the invalid values
+              --  in System.Scalar_Values are multiples of Storage_Unit.
+
+              and then not Is_Packed (Typ)
+
+              --  The array must have static non-empty ranges, otherwise
+              --  the backend cannot initialize the memory in one go.
+
+              and then Has_Static_Non_Empty_Array_Bounds (Typ)
+
+              --  The optimization is only relevant for arrays of scalar
+              --  types.
+
+              and then Is_Scalar_Type (Component_Type (Typ))
+
+              --  Similar to regular array initialization using a type
+              --  init proc, predicate checks are not performed because the
+              --  initialization values are intentionally invalid, and may
+              --  violate the predicate.
+
+              and then not Has_Predicates (Component_Type (Typ))
+
+              --  Array default component value takes precedence over
+              --  Init_Or_Norm_Scalars.
+
+              and then No (Find_Aspect (Typ, Aspect_Default_Component_Value))
+
+              --  The component type must have a single initialization value
+
+              and then Simple_Initialization_OK (Component_Type (Typ))
+            then
+               return
+                 Get_Simple_Init_Val
+                   (Typ  => Typ,
+                    N    => N,
+                    Size => (if Known_Esize (Typ)
+                             then Esize (Typ)
+                             else Uint_0));
+            end if;
+         end if;
+
+      --  Provide a default value if the object needs simple initialization
+
+      elsif Simple_Initialization_OK (Typ) then
+         return
+           Get_Simple_Init_Val
+             (Typ  => Typ,
+              N    => N,
+              Size => (if Known_Esize (Typ)
+                       then Esize (Typ)
+                       else Uint_0));
+      end if;
+
+      return Empty;
+   end Build_Default_Simple_Initialization;
+
    --------------------------------
    -- Build_Discr_Checking_Funcs --
    --------------------------------
@@ -1498,11 +2016,12 @@ package body Exp_Ch3 is
      (Loc                 : Source_Ptr;
       Id_Ref              : Node_Id;
       Typ                 : Entity_Id;
-      In_Init_Proc        : Boolean := False;
+      In_Init_Proc        : Boolean   := False;
       Enclos_Type         : Entity_Id := Empty;
-      Discr_Map           : Elist_Id := New_Elmt_List;
-      With_Default_Init   : Boolean := False;
-      Constructor_Ref     : Node_Id := Empty;
+      Target_Ref          : Node_Id   := Empty;
+      Discr_Map           : Elist_Id  := New_Elmt_List;
+      With_Default_Init   : Boolean   := False;
+      Constructor_Ref     : Node_Id   := Empty;
       Init_Control_Actual : Entity_Id := Empty) return List_Id
    is
       Res : constant List_Id := New_List;
@@ -1618,6 +2137,7 @@ package body Exp_Ch3 is
 
       --  Local variables
 
+      A_Type         : Entity_Id;
       Arg            : Node_Id;
       Args           : List_Id;
       Decls          : List_Id;
@@ -1729,6 +2249,10 @@ package body Exp_Ch3 is
       if Has_Task (Full_Type) then
          if Restriction_Active (No_Task_Hierarchy) then
             Append_To (Args, Make_Integer_Literal (Loc, Library_Task_Level));
+         elsif Present (Target_Ref) then
+            Append_To (Args,
+              New_Occurrence_Of
+                (Master_Id (Base_Type (Root_Type (Etype (Target_Ref)))), Loc));
          else
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          end if;
@@ -1745,13 +2269,27 @@ package body Exp_Ch3 is
          --  This is just a workaround that must be improved later???
 
          if With_Default_Init then
-            Append_To (Args,
-              Make_String_Literal (Loc,
-                Strval => ""));
+            Append_To (Args, Make_String_Literal (Loc, Strval => ""));
 
          else
+            if Present (Enclos_Type) then
+               A_Type := Enclos_Type;
+
+            elsif Present (Target_Ref)
+              and then Nkind (Target_Ref) in N_Indexed_Component
+                                           | N_Selected_Component
+            then
+               A_Type := Etype (Prefix (Target_Ref));
+
+            else
+               A_Type := Full_Type;
+            end if;
+
             Decls :=
-              Build_Task_Image_Decls (Loc, Id_Ref, Enclos_Type, In_Init_Proc);
+              Build_Task_Image_Decls (Loc,
+                (if Present (Target_Ref) then Target_Ref else Id_Ref),
+                A_Type,
+                In_Init_Proc);
             Decl  := Last (Decls);
 
             Append_To (Args,
@@ -6208,11 +6746,6 @@ package body Exp_Ch3 is
        (if Special_Ret_Obj then Return_Applies_To (Scope (Def_Id)) else Empty);
       --  The function if this is a special return object, otherwise Empty
 
-      function Build_Equivalent_Aggregate return Boolean;
-      --  If the object has a constrained discriminated type and no initial
-      --  value, it may be possible to build an equivalent aggregate instead,
-      --  and prevent an actual call to the initialization procedure.
-
       function Build_Heap_Or_Pool_Allocator
         (Temp_Id    : Entity_Id;
          Temp_Typ   : Entity_Id;
@@ -6316,132 +6849,6 @@ package body Exp_Ch3 is
 
       function OK_To_Rename_Ref (N : Node_Id) return Boolean;
       --  Return True if N denotes an entity with OK_To_Rename set
-
-      --------------------------------
-      -- Build_Equivalent_Aggregate --
-      --------------------------------
-
-      function Build_Equivalent_Aggregate return Boolean is
-         Aggr      : Node_Id;
-         Comp      : Entity_Id;
-         Discr     : Elmt_Id;
-         Full_Type : Entity_Id;
-
-      begin
-         Full_Type := Typ;
-
-         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
-            Full_Type := Full_View (Typ);
-         end if;
-
-         --  Only perform this transformation if Elaboration_Code is forbidden
-         --  or undesirable, and if this is a global entity of a constrained
-         --  record type.
-
-         --  If Initialize_Scalars might be active this  transformation cannot
-         --  be performed either, because it will lead to different semantics
-         --  or because elaboration code will in fact be created.
-
-         if Ekind (Full_Type) /= E_Record_Subtype
-           or else not Has_Discriminants (Full_Type)
-           or else not Is_Constrained (Full_Type)
-           or else Is_Controlled (Full_Type)
-           or else Is_Limited_Type (Full_Type)
-           or else not Restriction_Active (No_Initialize_Scalars)
-         then
-            return False;
-         end if;
-
-         if Ekind (Current_Scope) = E_Package
-           and then
-             (Restriction_Active (No_Elaboration_Code)
-               or else Is_Preelaborated (Current_Scope))
-         then
-            --  Building a static aggregate is possible if the discriminants
-            --  have static values and the other components have static
-            --  defaults or none.
-
-            Discr := First_Elmt (Discriminant_Constraint (Full_Type));
-            while Present (Discr) loop
-               if not Is_OK_Static_Expression (Node (Discr)) then
-                  return False;
-               end if;
-
-               Next_Elmt (Discr);
-            end loop;
-
-            --  Check that initialized components are OK, and that non-
-            --  initialized components do not require a call to their own
-            --  initialization procedure.
-
-            Comp := First_Component (Full_Type);
-            while Present (Comp) loop
-               if Present (Expression (Parent (Comp)))
-                 and then
-                   not Is_OK_Static_Expression (Expression (Parent (Comp)))
-               then
-                  return False;
-
-               elsif Has_Non_Null_Base_Init_Proc (Etype (Comp)) then
-                  return False;
-
-               end if;
-
-               Next_Component (Comp);
-            end loop;
-
-            --  Everything is static, assemble the aggregate, discriminant
-            --  values first.
-
-            Aggr :=
-               Make_Aggregate (Loc,
-                Expressions            => New_List,
-                Component_Associations => New_List);
-
-            Discr := First_Elmt (Discriminant_Constraint (Full_Type));
-            while Present (Discr) loop
-               Append_To (Expressions (Aggr), New_Copy (Node (Discr)));
-               Next_Elmt (Discr);
-            end loop;
-
-            --  Now collect values of initialized components
-
-            Comp := First_Component (Full_Type);
-            while Present (Comp) loop
-               if Present (Expression (Parent (Comp))) then
-                  Append_To (Component_Associations (Aggr),
-                    Make_Component_Association (Loc,
-                      Choices    => New_List (New_Occurrence_Of (Comp, Loc)),
-                      Expression => New_Copy_Tree
-                                      (Expression (Parent (Comp)))));
-               end if;
-
-               Next_Component (Comp);
-            end loop;
-
-            --  Finally, box-initialize remaining components
-
-            Append_To (Component_Associations (Aggr),
-              Make_Component_Association (Loc,
-                Choices    => New_List (Make_Others_Choice (Loc)),
-                Expression => Empty));
-            Set_Box_Present (Last (Component_Associations (Aggr)));
-            Set_Expression (N, Aggr);
-
-            if Typ /= Full_Type then
-               Analyze_And_Resolve (Aggr, Full_View (Base_Type (Full_Type)));
-               Rewrite (Aggr, Unchecked_Convert_To (Typ, Aggr));
-               Analyze_And_Resolve (Aggr, Typ);
-            else
-               Analyze_And_Resolve (Aggr, Full_Type);
-            end if;
-
-            return True;
-
-         else
-            return False;
-         end if;
-      end Build_Equivalent_Aggregate;
 
       ----------------------------------
       -- Build_Heap_Or_Pool_Allocator --
@@ -6768,69 +7175,8 @@ package body Exp_Ch3 is
       -------------------------------
 
       procedure Default_Initialize_Object (After : Node_Id) is
-         Exceptions_OK : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
-
-         function New_Object_Reference return Node_Id;
-         --  Return a new reference to Def_Id with attributes Assignment_OK and
-         --  Must_Not_Freeze already set.
-
-         function Simple_Initialization_OK
-           (Init_Typ : Entity_Id) return Boolean;
-         --  Determine whether object declaration N with entity Def_Id needs
-         --  simple initialization, assuming that it is of type Init_Typ.
-
-         --------------------------
-         -- New_Object_Reference --
-         --------------------------
-
-         function New_Object_Reference return Node_Id is
-            Obj_Ref : constant Node_Id := New_Occurrence_Of (Def_Id, Loc);
-
-         begin
-            --  The call to the type init proc or [Deep_]Finalize must not
-            --  freeze the related object as the call is internally generated.
-            --  This way legal rep clauses that apply to the object will not be
-            --  flagged. Note that the initialization call may be removed if
-            --  pragma Import is encountered or moved to the freeze actions of
-            --  the object because of an address clause.
-
-            Set_Assignment_OK   (Obj_Ref);
-            Set_Must_Not_Freeze (Obj_Ref);
-
-            return Obj_Ref;
-         end New_Object_Reference;
-
-         ------------------------------
-         -- Simple_Initialization_OK --
-         ------------------------------
-
-         function Simple_Initialization_OK
-           (Init_Typ : Entity_Id) return Boolean
-         is
-         begin
-            --  Skip internal entities as specified in Einfo
-
-            return
-              not Is_Internal (Def_Id)
-                and then Needs_Simple_Initialization
-                           (Typ         => Init_Typ,
-                            Consider_IS =>
-                              Initialize_Scalars
-                                and then No (Following_Address_Clause (N)));
-         end Simple_Initialization_OK;
-
-         --  Local variables
-
-         Aggr_Init  : Node_Id;
-         Comp_Init  : List_Id := No_List;
-         Fin_Block  : Node_Id;
-         Fin_Call   : Node_Id;
-         Init_Stmts : List_Id := No_List;
-         Obj_Init   : Node_Id := Empty;
-         Obj_Ref    : Node_Id;
-
-      --  Start of processing for Default_Initialize_Object
+         Init_Expr  : Node_Id;
+         Init_Stmts : List_Id;
 
       begin
          --  Nothing to do if the object has an initialization expression or
@@ -6861,266 +7207,21 @@ package body Exp_Ch3 is
             return;
          end if;
 
-         --  The expansion performed by this routine is as follows:
+         --  First try a simple initialization; if it succeeds, then we just
+         --  set the value as the expression of the declaration and let the
+         --  code generator do the rest.
 
-         --    begin
-         --       Abort_Defer;
-         --       Type_Init_Proc (Obj);
+         Init_Expr := Build_Default_Simple_Initialization (N, Typ, Def_Id);
 
-         --       begin
-         --          [Deep_]Initialize (Obj);
-
-         --       exception
-         --          when others =>
-         --             [Deep_]Finalize (Obj, Self => False);
-         --             raise;
-         --       end;
-         --    at end
-         --       Abort_Undefer_Direct;
-         --    end;
-
-         --  Initialize the components of the object
-
-         if Has_Non_Null_Base_Init_Proc (Typ)
-           and then not Initialization_Suppressed (Typ)
-         then
-            --  Do not initialize the components if No_Default_Initialization
-            --  applies as the actual restriction check will occur later when
-            --  the object is frozen as it is not known yet whether the object
-            --  is imported or not.
-
-            if not Restriction_Active (No_Default_Initialization) then
-
-               --  If the values of the components are compile-time known, use
-               --  their prebuilt aggregate form directly.
-
-               Aggr_Init := Static_Initialization (Base_Init_Proc (Typ));
-
-               if Present (Aggr_Init) then
-                  Set_Expression (N,
-                    New_Copy_Tree (Aggr_Init, New_Scope => Current_Scope));
-
-               --  If type has discriminants, try to build an equivalent
-               --  aggregate using discriminant values from the declaration.
-               --  This is a useful optimization, in particular if restriction
-               --  No_Elaboration_Code is active.
-
-               elsif Build_Equivalent_Aggregate then
-                  null;
-
-               --  Optimize the default initialization of an array object when
-               --  pragma Initialize_Scalars or Normalize_Scalars is in effect.
-               --  Construct an in-place initialization aggregate which may be
-               --  convert into a fast memset by the backend.
-
-               elsif Init_Or_Norm_Scalars
-                 and then Is_Array_Type (Typ)
-
-                 --  The array must lack atomic components because they are
-                 --  treated as non-static, and as a result the backend will
-                 --  not initialize the memory in one go.
-
-                 and then not Has_Atomic_Components (Typ)
-
-                 --  The array must not be packed because the invalid values
-                 --  in System.Scalar_Values are multiples of Storage_Unit.
-
-                 and then not Is_Packed (Typ)
-
-                 --  The array must have static non-empty ranges, otherwise
-                 --  the backend cannot initialize the memory in one go.
-
-                 and then Has_Static_Non_Empty_Array_Bounds (Typ)
-
-                 --  The optimization is only relevant for arrays of scalar
-                 --  types.
-
-                 and then Is_Scalar_Type (Component_Type (Typ))
-
-                 --  Similar to regular array initialization using a type
-                 --  init proc, predicate checks are not performed because the
-                 --  initialization values are intentionally invalid, and may
-                 --  violate the predicate.
-
-                 and then not Has_Predicates (Component_Type (Typ))
-
-                 --  Array default component value takes precedence over
-                 --  Init_Or_Norm_Scalars.
-
-                 and then No (Find_Aspect (Typ,
-                                           Aspect_Default_Component_Value))
-
-                 --  The component type must have a single initialization value
-
-                 and then Simple_Initialization_OK (Component_Type (Typ))
-               then
-                  Set_Expression (N,
-                    Get_Simple_Init_Val
-                      (Typ  => Typ,
-                       N    => Obj_Def,
-                       Size => (if Known_Esize (Def_Id) then Esize (Def_Id)
-                                else Uint_0)));
-
-                  Analyze_And_Resolve
-                    (Expression (N), Typ, Suppress => All_Checks);
-
-               --  Otherwise invoke the type init proc, generate:
-               --    Type_Init_Proc (Obj);
-
-               else
-                  Obj_Ref := New_Object_Reference;
-
-                  if Comes_From_Source (Def_Id) then
-                     Initialization_Warning (Obj_Ref);
-                  end if;
-
-                  Comp_Init := Build_Initialization_Call (Loc, Obj_Ref, Typ);
-               end if;
-            end if;
-
-         --  Provide a default value if the object needs simple initialization
-
-         elsif Simple_Initialization_OK (Typ) then
-            Set_Expression (N,
-              Get_Simple_Init_Val
-                (Typ  => Typ,
-                 N    => Obj_Def,
-                 Size =>
-                   (if Known_Esize (Def_Id) then Esize (Def_Id) else Uint_0)));
-
-            Analyze_And_Resolve (Expression (N), Typ);
+         if Present (Init_Expr) then
+            Set_Expression (N, Init_Expr);
+            Analyze_And_Resolve (Init_Expr, Typ);
+            return;
          end if;
 
-         --  Initialize the object, generate:
-         --    [Deep_]Initialize (Obj);
+         --  Or else build the fully-fledged initialization if need be
 
-         if Needs_Finalization (Typ) then
-            Obj_Init :=
-              Make_Init_Call
-                (Obj_Ref => New_Object_Reference,
-                 Typ     => Typ);
-         end if;
-
-         --  Build a special finalization block when both the object and its
-         --  controlled components are to be initialized. The block finalizes
-         --  the components if the object initialization fails. Generate:
-
-         --    begin
-         --       <Obj_Init>
-
-         --    exception
-         --       when others =>
-         --          <Fin_Call>
-         --          raise;
-         --    end;
-
-         if Has_Controlled_Component (Typ)
-           and then Present (Comp_Init)
-           and then Present (Obj_Init)
-           and then Exceptions_OK
-         then
-            Init_Stmts := Comp_Init;
-
-            Fin_Call :=
-              Make_Final_Call
-                (Obj_Ref   => New_Object_Reference,
-                 Typ       => Typ,
-                 Skip_Self => True);
-
-            if Present (Fin_Call) then
-
-               --  Do not emit warnings related to the elaboration order when a
-               --  controlled object is declared before the body of Finalize is
-               --  seen.
-
-               if Legacy_Elaboration_Checks then
-                  Set_No_Elaboration_Check (Fin_Call);
-               end if;
-
-               Fin_Block :=
-                 Make_Block_Statement (Loc,
-                   Declarations               => No_List,
-
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements         => New_List (Obj_Init),
-
-                       Exception_Handlers => New_List (
-                         Make_Exception_Handler (Loc,
-                           Exception_Choices => New_List (
-                             Make_Others_Choice (Loc)),
-
-                           Statements        => New_List (
-                             Fin_Call,
-                             Make_Raise_Statement (Loc))))));
-
-               --  Signal the ABE mechanism that the block carries out
-               --  initialization actions.
-
-               Set_Is_Initialization_Block (Fin_Block);
-
-               Append_To (Init_Stmts, Fin_Block);
-            end if;
-
-         --  Otherwise finalization is not required, the initialization calls
-         --  are passed to the abort block building circuitry, generate:
-
-         --    Type_Init_Proc (Obj);
-         --    [Deep_]Initialize (Obj);
-
-         else
-            if Present (Comp_Init) then
-               Init_Stmts := Comp_Init;
-            end if;
-
-            if Present (Obj_Init) then
-               if No (Init_Stmts) then
-                  Init_Stmts := New_List;
-               end if;
-
-               Append_To (Init_Stmts, Obj_Init);
-            end if;
-         end if;
-
-         --  Build an abort block to protect the initialization calls
-
-         if Abort_Allowed
-           and then Present (Comp_Init)
-           and then Present (Obj_Init)
-         then
-            --  Generate:
-            --    Abort_Defer;
-
-            Prepend_To (Init_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
-
-            --  When exceptions are propagated, abort deferral must take place
-            --  in the presence of initialization or finalization exceptions.
-            --  Generate:
-
-            --    begin
-            --       Abort_Defer;
-            --       <Init_Stmts>
-            --    at end
-            --       Abort_Undefer_Direct;
-            --    end;
-
-            if Exceptions_OK then
-               Init_Stmts := New_List (
-                 Build_Abort_Undefer_Block (Loc,
-                   Stmts   => Init_Stmts,
-                   Context => N));
-
-            --  Otherwise exceptions are not propagated. Generate:
-
-            --    Abort_Defer;
-            --    <Init_Stmts>
-            --    Abort_Undefer;
-
-            else
-               Append_To (Init_Stmts,
-                 Build_Runtime_Call (Loc, RE_Abort_Undefer));
-            end if;
-         end if;
+         Init_Stmts := Build_Default_Initialization (N, Typ, Def_Id);
 
          --  Insert the whole initialization sequence into the tree. If the
          --  object has a delayed freeze, as will be the case when it has

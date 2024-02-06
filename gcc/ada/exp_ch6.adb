@@ -8481,7 +8481,7 @@ package body Exp_Ch6 is
       begin
          if Might_Have_Tasks (Result_Subt) then
             Actions := New_List;
-            Build_Task_Allocate_Block_With_Init_Stmts
+            Build_Task_Allocate_Block
               (Actions, Allocator, Init_Stmts => New_List (Assign));
             Chain := Activation_Chain_Entity (Last (Actions));
          else
