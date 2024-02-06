@@ -601,12 +601,17 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
 {
   tree atype = (tree_fits_uhwi_p (idx)
 		? limb_access_type (type, idx) : m_limb_type);
+  tree ltype = m_limb_type;
+  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (var));
+  if (as != TYPE_ADDR_SPACE (ltype))
+    ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
+					 | ENCODE_QUAL_ADDR_SPACE (as));
   tree ret;
   if (DECL_P (var) && tree_fits_uhwi_p (idx))
     {
       tree ptype = build_pointer_type (strip_array_types (TREE_TYPE (var)));
       unsigned HOST_WIDE_INT off = tree_to_uhwi (idx) * m_limb_size;
-      ret = build2 (MEM_REF, m_limb_type,
+      ret = build2 (MEM_REF, ltype,
 		    build_fold_addr_expr (var),
 		    build_int_cst (ptype, off));
       TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (var);
@@ -615,7 +620,7 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
   else if (TREE_CODE (var) == MEM_REF && tree_fits_uhwi_p (idx))
     {
       ret
-	= build2 (MEM_REF, m_limb_type, TREE_OPERAND (var, 0),
+	= build2 (MEM_REF, ltype, TREE_OPERAND (var, 0),
 		  size_binop (PLUS_EXPR, TREE_OPERAND (var, 1),
 			      build_int_cst (TREE_TYPE (TREE_OPERAND (var, 1)),
 					     tree_to_uhwi (idx)
@@ -633,10 +638,10 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
 	{
 	  unsigned HOST_WIDE_INT nelts
 	    = CEIL (tree_to_uhwi (TYPE_SIZE (type)), limb_prec);
-	  tree atype = build_array_type_nelts (m_limb_type, nelts);
+	  tree atype = build_array_type_nelts (ltype, nelts);
 	  var = build1 (VIEW_CONVERT_EXPR, atype, var);
 	}
-      ret = build4 (ARRAY_REF, m_limb_type, var, idx, NULL_TREE, NULL_TREE);
+      ret = build4 (ARRAY_REF, ltype, var, idx, NULL_TREE, NULL_TREE);
     }
   if (!write_p && !useless_type_conversion_p (atype, m_limb_type))
     {
