@@ -236,3 +236,7 @@ GCC_14.0.0 {
   __floatbitintxf
   __floatbitinttf
 }
+
+# Please notify the maintainers of libgcc-{bsd,darwin,sol2}.ver of any
+# additions.  Those version scripts usually need to be kept in sync with
+# libgcc-glibc.ver.
