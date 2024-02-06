@@ -1,3 +1,20 @@
+2024-02-05  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111286
+	* g++.dg/cpp0x/initlist-array22.C: New test.
+
+2024-02-05  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2023-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95226
+	PR c++/109359
+	* g++.dg/ext/frounding-math1.C: New test.
+
 2024-02-02  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2024-02-05  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111286
+	* tree.cc (rvalue): Don't drop cv-quals from an array.
+
 2024-02-02  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

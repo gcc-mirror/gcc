@@ -1,3 +1,32 @@
+2024-02-05  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2023-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95226
+	PR c++/109359
+	* varasm.cc (output_constant) [REAL_TYPE]: Check that sizes match.
+	(initializer_constant_valid_p_1): Compare float precision.
+
+2024-02-05  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2024-02-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/mips/mips-msa.md (neg<mode:MSA>2): Add missing mode for
+	neg.
+
+2024-02-05  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2024-02-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/mips/mips-msa.md (elmsgnbit): New define_mode_attr.
+	(neg<mode>2): Change the mode iterator from MSA to IMSA because
+	in FP arithmetic we cannot use (0 - x) for -x.
+	(neg<mode>2): New define_insn to implement FP vector negation,
+	using a bnegi instruction to negate the sign bit.
+
 2024-02-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (atomic_storedi_1): Fix bug in
