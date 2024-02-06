@@ -128,6 +128,7 @@ if test x$gcc_no_link = xyes; then
 else
   AC_CHECK_FUNCS(memmove mempcpy strncpy strncat)
 fi
+AC_CHECK_DECLS([gets])
 
 AC_MSG_CHECKING([whether vsnprintf is usable])
 AC_RUN_IFELSE([AC_LANG_PROGRAM([
