@@ -4606,7 +4606,8 @@ check_builtin_call (location_t location, vec<location_t>, unsigned int code,
 }
 
 tree
-resolve_overloaded_builtin (unsigned int code, vec<tree, va_gc> *arglist)
+resolve_overloaded_builtin (location_t loc, unsigned int code, tree fndecl,
+			    vec<tree, va_gc> *arglist)
 {
   if (code >= vec_safe_length (registered_functions))
     return NULL_TREE;
@@ -4616,12 +4617,26 @@ resolve_overloaded_builtin (unsigned int code, vec<tree, va_gc> *arglist)
   if (!rfun || !rfun->overloaded_p)
     return NULL_TREE;
 
+  /* According to the rvv intrinisc doc, we have no such overloaded function
+     with empty args.  Unfortunately, we register the empty args function as
+     overloaded for avoiding conflict.  Thus, there will actual one register
+     function after return NULL_TREE back to the middle-end, and finally result
+     in ICE when expanding.  For example:
+
+     1. First we registered void __riscv_vfredmax () as the overloaded function.
+     2. Then resolve_overloaded_builtin (this func) return NULL_TREE.
+     3. The functions register in step 1 bypass the args check as empty args.
+     4. Finally, fall into expand_builtin with empty args and meet ICE.
+
+     Here we report error when overloaded function with empty args.  */
+  if (rfun->overloaded_p && arglist->length () == 0)
+    error_at (loc, "no matching function call to %qE with empty args", fndecl);
+
   hashval_t hash = rfun->overloaded_hash (*arglist);
   registered_function *rfn
     = non_overloaded_function_table->find_with_hash (rfun, hash);
-  if (rfn)
-    return rfn->decl;
-  return NULL_TREE;
+
+  return rfn ? rfn->decl : NULL_TREE;
 }
 
 function_instance
