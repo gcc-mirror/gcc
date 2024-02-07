@@ -1,3 +1,45 @@
+2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113788
+	* g++.dg/parse/pr113788.C: New test.
+
+2024-02-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94231
+	* g++.dg/cpp0x/deleted17.C: New test.
+
+2024-02-06  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* g++.target/aarch64/mv-symbols1.C: New test.
+	* g++.target/aarch64/mv-symbols2.C: Ditto.
+	* g++.target/aarch64/mv-symbols3.C: Ditto.
+	* g++.target/aarch64/mv-symbols4.C: Ditto.
+	* g++.target/aarch64/mv-symbols5.C: Ditto.
+	* g++.target/aarch64/mvc-symbols1.C: Ditto.
+	* g++.target/aarch64/mvc-symbols2.C: Ditto.
+	* g++.target/aarch64/mvc-symbols3.C: Ditto.
+	* g++.target/aarch64/mvc-symbols4.C: Ditto.
+
+2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/110676
+	* gcc.dg/asan/pr110676.c: New test.
+
+2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113736
+	* gcc.dg/bitint-86.c: New test.
+
+2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113759
+	* gcc.c-torture/compile/pr113759.c: New test.
+
+2024-02-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107291
+	* g++.dg/cpp2a/spaceship-eq17.C: New test.
+
 2024-02-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109359

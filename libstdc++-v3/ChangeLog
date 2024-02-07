@@ -1,3 +1,8 @@
+2024-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* testsuite/lib/libstdc++.exp: Use "nul" for Windows, "/dev/null"
+	for other environments.
+
 2024-02-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/format (__format::_Spec::_M_reserved): Define new

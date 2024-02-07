@@ -1,3 +1,57 @@
+2024-02-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113689
+	* config/i386/i386.cc (x86_64_select_profile_regnum): Return
+	R10_REG after sorry.
+
+2024-02-06  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_mangle_decl_assembler_name):
+	Move before new caller, and add ".default" suffix.
+	(get_suffixed_assembler_name): New.
+	(make_resolver_func): Use get_suffixed_assembler_name.
+	(aarch64_generate_version_dispatcher_body): Redo name mangling.
+
+2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/113763
+	* config/aarch64/aarch64.cc (aarch64_output_sme_zero_za): Change tiles
+	element from std::pair<unsigned int, char> to an unnamed struct.
+	Adjust uses of tile range variable.
+
+2024-02-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::emit_vsetvl): Fix inifinite compilation.
+	(pre_vsetvl::remove_vsetvl_pre_insns): Ditto.
+
+2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/110676
+	* gimple-fold.cc (gimple_fold_builtin_strlen): For -fsanitize=address
+	reset maxlen to sizetype maximum.
+
+2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113736
+	* gimple-lower-bitint.cc (bitint_large_huge::limb_access): Use
+	var's address space for MEM_REF or VIEW_CONVERT_EXPRs.
+
+2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113759
+	* tree-ssa-math-opts.cc (convert_mult_to_widen): If actual_precision
+	or from_unsignedN differs from properties of typeN, update typeN
+	to build_nonstandard_integer_type.  If TREE_TYPE (rhsN) is not
+	uselessly convertible to typeN, convert it using fold_convert or
+	build_and_insert_cast depending on if rhsN is INTEGER_CST or not.
+	(convert_plusminus_to_widen): Likewise.
+
+2024-02-06  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR target/112577
+	* config/aarch64/aarch64.cc (aarch64_class_max_nregs): Handle 64-bit
+	vector structure modes correctly.
+
 2024-02-05  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	* config/riscv/thead.cc (th_print_operand_address): Fix compiler

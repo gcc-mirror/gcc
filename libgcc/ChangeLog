@@ -1,3 +1,18 @@
+2024-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/113700
+	* config/i386/libgcc-sol2.ver (GCC_14.0.0): Added all symbols from
+	i386/libgcc-glibc.ver (GCC_12.0.0, GCC_13.0.0, GCC_14.0.0).
+	* config/i386/libgcc-glibc.ver: Request notifications on updates.
+
+2024-02-06  Matteo Italia  <matteo@mitalia.net>
+
+	PR libgcc/113337
+	* unwind-seh.c (_Unwind_Resume_or_Rethrow): forward
+	_Unwind_RaiseException return code back to caller instead of
+	calling abort, allowing __cxa_rethrow to invoke std::terminate
+	in case of uncaught rethrown exception
+
 2024-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/113604
