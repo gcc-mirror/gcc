@@ -17753,4 +17753,66 @@ package body Sem_Ch12 is
             raise Program_Error;
       end case;
    end Validate_Formal_Type_Default;
+
+   package body Instance_Context is
+
+      --------------------
+      -- Save_And_Reset --
+      --------------------
+
+      function Save_And_Reset return Context is
+      begin
+         return Result : Context (0 .. Integer (Generic_Renamings.Last)) do
+            for Index in Result'Range loop
+               declare
+                  Indexed_Assoc : Assoc renames Generic_Renamings.Table
+                                                  (Assoc_Ptr (Index));
+                  Result_Pair : Binding_Pair renames Result (Index);
+               begin
+                  --  If we have called Increment_Last but have not yet
+                  --  initialized the new last element of the table, then
+                  --  that last element might be invalid. Saving and
+                  --  restoring (especially restoring, it turns out) invalid
+                  --  values can result in exceptions if predicate checking
+                  --  is enabled, so replace invalid values with Empty.
+
+                  if Indexed_Assoc.Gen_Id'Valid then
+                     Result_Pair.Formal_Id := Indexed_Assoc.Gen_Id;
+                  else
+                     pragma Assert (Index = Result'Last);
+                     Result_Pair.Formal_Id := Empty;
+                  end if;
+
+                  if Indexed_Assoc.Act_Id'Valid then
+                     Result_Pair.Actual_Id := Indexed_Assoc.Act_Id;
+                  else
+                     pragma Assert (Index = Result'Last);
+                     Result_Pair.Actual_Id := Empty;
+                  end if;
+               end;
+            end loop;
+
+            Generic_Renamings.Init;
+            Generic_Renamings.Set_Last (0);
+            Generic_Renamings_HTable.Reset;
+         end return;
+      end Save_And_Reset;
+
+      -------------
+      -- Restore --
+      -------------
+
+      procedure Restore (Saved : Context) is
+      begin
+         Generic_Renamings.Init;
+         Generic_Renamings.Set_Last (0);
+         Generic_Renamings_HTable.Reset;
+         Generic_Renamings.Increment_Last;
+         for Pair of Saved loop
+            Set_Instance_Of (Pair.Formal_Id, Pair.Actual_Id);
+         end loop;
+         Generic_Renamings.Decrement_Last;
+      end Restore;
+
+   end Instance_Context;
 end Sem_Ch12;

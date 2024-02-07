@@ -47,6 +47,7 @@ with Restrict;       use Restrict;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch12;        use Sem_Ch12;
 with Sem_Dist;       use Sem_Dist;
 with Sem_Util;       use Sem_Util;
 with Sinfo;          use Sinfo;
@@ -1185,7 +1186,13 @@ package body Rtsfind is
 
             else
                Save_Private_Visibility;
-               Semantics (Cunit (U.Unum));
+               declare
+                  Saved_Instance_Context : constant Instance_Context.Context
+                    := Instance_Context.Save_And_Reset;
+               begin
+                  Semantics (Cunit (U.Unum));
+                  Instance_Context.Restore (Saved_Instance_Context);
+               end;
                Restore_Private_Visibility;
 
                if Fatal_Error (U.Unum) = Error_Detected then
