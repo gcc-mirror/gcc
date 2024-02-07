@@ -7429,6 +7429,7 @@ ix86_emit_save_regs (void)
 {
   int regno;
   rtx_insn *insn;
+  bool use_ppx = TARGET_APX_PPX && !crtl->calls_eh_return;
 
   if (!TARGET_APX_PUSH2POP2
       || !ix86_can_use_push2pop2 ()
@@ -7438,7 +7439,7 @@ ix86_emit_save_regs (void)
 	if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true, true))
 	  {
 	    insn = emit_insn (gen_push (gen_rtx_REG (word_mode, regno),
-					TARGET_APX_PPX));
+					use_ppx));
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	  }
     }
@@ -7469,7 +7470,7 @@ ix86_emit_save_regs (void)
 							      regno_list[0]),
 						 gen_rtx_REG (word_mode,
 							      regno_list[1]),
-						 TARGET_APX_PPX));
+						 use_ppx));
 		    RTX_FRAME_RELATED_P (insn) = 1;
 		    rtx dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (3));
 
@@ -7502,7 +7503,7 @@ ix86_emit_save_regs (void)
 	    else
 	      {
 		insn = emit_insn (gen_push (gen_rtx_REG (word_mode, regno),
-					    TARGET_APX_PPX));
+					    use_ppx));
 		RTX_FRAME_RELATED_P (insn) = 1;
 		aligned = true;
 	      }
@@ -7511,7 +7512,7 @@ ix86_emit_save_regs (void)
 	{
 	  insn = emit_insn (gen_push (gen_rtx_REG (word_mode,
 						   regno_list[0]),
-				      TARGET_APX_PPX));
+				      use_ppx));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
@@ -8985,6 +8986,7 @@ ix86_expand_prologue (void)
       if (!frame.save_regs_using_mov)
 	{
 	  ix86_emit_save_regs ();
+	  m->fs.apx_ppx_used = TARGET_APX_PPX && !crtl->calls_eh_return;
 	  int_registers_saved = true;
 	  gcc_assert (m->fs.sp_offset == frame.reg_save_offset);
 	}
@@ -9869,6 +9871,9 @@ ix86_expand_epilogue (int style)
     restore_regs_via_mov = true;
   /* SEH requires the use of pops to identify the epilogue.  */
   else if (TARGET_SEH)
+    restore_regs_via_mov = false;
+  /* If we already save reg with pushp, don't use move at epilogue.  */
+  else if (m->fs.apx_ppx_used)
     restore_regs_via_mov = false;
   /* If we're only restoring one register and sp cannot be used then
      using a move instruction to restore the register since it's
