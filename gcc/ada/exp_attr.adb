@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Accessibility;  use Accessibility;
-with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
 with Debug;          use Debug;
@@ -6058,6 +6057,7 @@ package body Exp_Attr is
 
             begin
                if Nkind (E1) = N_Attribute_Reference then
+                  Accum_Typ := Base_Type (Entity (Prefix (E1)));
                   Stat := Make_Assignment_Statement (Loc,
                             Name => New_Occurrence_Of (Bnn, Loc),
                             Expression => Make_Attribute_Reference (Loc,
@@ -6068,12 +6068,15 @@ package body Exp_Attr is
                                 Comp)));
 
                elsif Ekind (Entity (E1)) = E_Procedure then
+                  Accum_Typ := Etype (First_Formal (Entity (E1)));
                   Stat := Make_Procedure_Call_Statement (Loc,
                             Name => New_Occurrence_Of (Entity (E1), Loc),
                                Parameter_Associations => New_List (
                                  New_Occurrence_Of (Bnn, Loc),
                                  Comp));
+
                else
+                  Accum_Typ := Etype (Entity (E1));
                   Stat := Make_Assignment_Statement (Loc,
                             Name => New_Occurrence_Of (Bnn, Loc),
                             Expression => Make_Function_Call (Loc,
@@ -6081,6 +6084,28 @@ package body Exp_Attr is
                               Parameter_Associations => New_List (
                                 New_Occurrence_Of (Bnn, Loc),
                                 Comp)));
+               end if;
+
+               --  Try to cope if E1 is wrong because it is an overloaded
+               --  subprogram that happens to be the first candidate
+               --  on a homonym chain, but that resolution candidate turns
+               --  out to be the wrong one.
+               --  This workaround usually gets the right type, but it can
+               --  yield the wrong subtype of that type.
+
+               if Base_Type (Accum_Typ) /= Base_Type (Etype (N)) then
+                  Accum_Typ := Etype (N);
+               end if;
+
+               --  Try to cope with wrong E1 when Etype (N) doesn't help
+               if Is_Universal_Numeric_Type (Accum_Typ) then
+                  if Is_Array_Type (Etype (Prefix (N))) then
+                     Accum_Typ := Component_Type (Etype (Prefix (N)));
+                  else
+                     --  Further hackery can be added here when there is a
+                     --  demonstrated need.
+                     null;
+                  end if;
                end if;
 
                return Stat;
@@ -6133,10 +6158,6 @@ package body Exp_Attr is
                       End_Label => Empty,
                       Statements =>
                         New_List (Build_Stat (Relocate_Node (Expr))));
-
-                  --  Look at the context to find the type.
-
-                  Accum_Typ := Etype (N);
                end;
 
             else
@@ -6166,40 +6187,6 @@ package body Exp_Attr is
                       Statements => New_List (
                         Build_Stat (New_Occurrence_Of (Elem, Loc))));
 
-                  --  Look at the prefix to find the type. This is
-                  --  modeled on Analyze_Iterator_Specification in Sem_Ch5.
-
-                  declare
-                     Ptyp : constant Entity_Id :=
-                              Base_Type (Etype (Prefix (N)));
-
-                  begin
-                     if Is_Array_Type (Ptyp) then
-                        Accum_Typ := Component_Type (Ptyp);
-
-                     elsif Has_Aspect (Ptyp, Aspect_Iterable) then
-                        declare
-                           Element : constant Entity_Id :=
-                                       Get_Iterable_Type_Primitive
-                                         (Ptyp, Name_Element);
-                        begin
-                           if Present (Element) then
-                              Accum_Typ := Etype (Element);
-                           end if;
-                        end;
-
-                     else
-                        declare
-                           Element : constant Node_Id :=
-                                       Find_Value_Of_Aspect
-                                         (Ptyp, Aspect_Iterator_Element);
-                        begin
-                           if Present (Element) then
-                              Accum_Typ := Entity (Element);
-                           end if;
-                        end;
-                     end if;
-                  end;
                end;
             end if;
 
