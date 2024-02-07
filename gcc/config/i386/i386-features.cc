@@ -1749,6 +1749,19 @@ timode_scalar_chain::fix_debug_reg_uses (rtx reg)
     }
 }
 
+/* Helper function to convert immediate constant X to V1TImode.  */
+static rtx
+timode_convert_cst (rtx x)
+{
+  /* Prefer all ones vector in case of -1.  */
+  if (constm1_operand (x, TImode))
+    return CONSTM1_RTX (V1TImode);
+
+  rtx *v = XALLOCAVEC (rtx, 1);
+  v[0] = x;
+  return gen_rtx_CONST_VECTOR (V1TImode, gen_rtvec_v (1, v));
+}
+
 /* Convert operand OP in INSN from TImode to V1TImode.  */
 
 void
@@ -1775,18 +1788,8 @@ timode_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     }
   else if (CONST_SCALAR_INT_P (*op))
     {
-      rtx vec_cst;
       rtx tmp = gen_reg_rtx (V1TImode);
-
-      /* Prefer all ones vector in case of -1.  */
-      if (constm1_operand (*op, TImode))
-	vec_cst = CONSTM1_RTX (V1TImode);
-      else
-	{
-	  rtx *v = XALLOCAVEC (rtx, 1);
-	  v[0] = *op;
-	  vec_cst = gen_rtx_CONST_VECTOR (V1TImode, gen_rtvec_v (1, v));
-	}
+      rtx vec_cst = timode_convert_cst (*op);
 
       if (!standard_sse_constant_p (vec_cst, V1TImode))
 	{
@@ -1827,16 +1830,11 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
 	}
       if (GET_MODE (dst) == V1TImode)
 	{
-	  tmp = find_reg_equal_equiv_note (insn);
-	  if (tmp)
-	    {
-	      if (GET_MODE (XEXP (tmp, 0)) == TImode)
-		PUT_MODE (XEXP (tmp, 0), V1TImode);
-	      else if (CONST_SCALAR_INT_P (XEXP (tmp, 0)))
-		XEXP (tmp, 0)
-		  = gen_rtx_CONST_VECTOR (V1TImode,
-					  gen_rtvec (1, XEXP (tmp, 0)));
-	    }
+	  /* It might potentially be helpful to convert REG_EQUAL notes,
+	     but for now we just remove them.  */
+	  rtx note = find_reg_equal_equiv_note (insn);
+	  if (note)
+	    remove_note (insn, note);
 	}
       break;
     case MEM:
@@ -1876,7 +1874,7 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
 	    }
 	  else
 	    {
-	      src = gen_rtx_CONST_VECTOR (V1TImode, gen_rtvec (1, src));
+	      src = timode_convert_cst (src);
 	      src = validize_mem (force_const_mem (V1TImode, src));
 	      use_move = MEM_P (dst);
 	    }
