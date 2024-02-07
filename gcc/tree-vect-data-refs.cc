@@ -819,6 +819,18 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
      trapped already during loop form analysis.  */
   gcc_assert (dest_bb->loop_father == loop);
 
+  /* Check that the destination block we picked has only one pred.  To relax this we
+     have to take special care when moving the statements.  We don't currently support
+     such control flow however this check is there to simplify how we handle
+     labels that may be present anywhere in the IL.  This check is to ensure that the
+     labels aren't significant for the CFG.  */
+  if (!single_pred (dest_bb))
+    return opt_result::failure_at (vect_location,
+			     "chosen loop exit block (BB %d) does not have a "
+			     "single predecessor which is currently not "
+			     "supported for early break vectorization.\n",
+			     dest_bb->index);
+
   LOOP_VINFO_EARLY_BRK_DEST_BB (loop_vinfo) = dest_bb;
 
   if (!LOOP_VINFO_EARLY_BRK_VUSES (loop_vinfo).is_empty ())

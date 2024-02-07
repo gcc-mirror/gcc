@@ -11786,7 +11786,7 @@ move_early_exit_stmts (loop_vec_info loop_vinfo)
 
   /* Move all stmts that need moving.  */
   basic_block dest_bb = LOOP_VINFO_EARLY_BRK_DEST_BB (loop_vinfo);
-  gimple_stmt_iterator dest_gsi = gsi_start_bb (dest_bb);
+  gimple_stmt_iterator dest_gsi = gsi_after_labels (dest_bb);
 
   for (gimple *stmt : LOOP_VINFO_EARLY_BRK_STORES (loop_vinfo))
     {
