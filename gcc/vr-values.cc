@@ -320,9 +320,9 @@ simplify_using_ranges::fold_cond_with_ops (enum tree_code code,
   range_op_handler handler (code);
   if (handler && handler.fold_range (res, type, r0, r1))
     {
-      if (res == range_true (type))
+      if (res == range_true ())
 	return boolean_true_node;
-      if (res == range_false (type))
+      if (res == range_false ())
 	return boolean_false_node;
     }
   return NULL;
