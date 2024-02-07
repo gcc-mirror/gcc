@@ -82,4 +82,20 @@ test ()
 
   __riscv_vfredosum ();         /* { dg-error {no matching function call to '__riscv_vfredosum' with empty args} } */
   __riscv_vfredosum_tu ();      /* { dg-error {no matching function call to '__riscv_vfredosum_tu' with empty args} } */
+
+  __riscv_vaadd ();             /* { dg-error {no matching function call to '__riscv_vaadd' with empty args} } */
+
+  __riscv_vaaddu ();            /* { dg-error {no matching function call to '__riscv_vaaddu' with empty args} } */
+
+  __riscv_vadc ();              /* { dg-error {no matching function call to '__riscv_vadc' with empty args} } */
+
+  __riscv_vnmsac ();            /* { dg-error {no matching function call to '__riscv_vnmsac' with empty args} } */
+
+  __riscv_vnsrl ();             /* { dg-error {no matching function call to '__riscv_vnsrl' with empty args} } */
+
+  __riscv_vfnmadd ();           /* { dg-error {no matching function call to '__riscv_vfnmadd' with empty args} } */
+
+  __riscv_vfwsub_vv ();         /* { dg-error {no matching function call to '__riscv_vfwsub_vv' with empty args} } */
+
+  __riscv_vfwredosum ();        /* { dg-error {no matching function call to '__riscv_vfwredosum' with empty args} } */
 }
