@@ -35,7 +35,7 @@ msgstr ""
 "Project-Id-Version: gcc 13.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2023-07-26 18:38+0000\n"
-"PO-Revision-Date: 2024-02-05 15:48-0500\n"
+"PO-Revision-Date: 2024-02-06 10:59-0500\n"
 "Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -44,7 +44,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.4.2\n"
+"X-Generator: Poedit 2.4.3\n"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
@@ -103,20 +103,16 @@ msgid "call is unlikely and code size would grow"
 msgstr "调用不太可能且会导致代码膨胀"
 
 #: cif-code.def:88
-#, fuzzy
-#| msgid "call is unlikely and code size would grow"
 msgid "call is considered never executed and code size would grow"
-msgstr "调用不太可能且会导致代码膨胀"
+msgstr "调用将被视为永远不会被执行且会导致代码膨胀"
 
 #: cif-code.def:92
 msgid "function not declared inline and code size would grow"
 msgstr "函数未被声明成内联且会导致代码膨胀"
 
 #: cif-code.def:96
-#, fuzzy
-#| msgid "expected iteration declaration or initialization"
 msgid "mismatched declarations during linktime optimization"
-msgstr "需要迭代声明或初始化"
+msgstr "链接时优化中的不匹配的声明"
 
 #: cif-code.def:100
 msgid "variadic thunk call"
@@ -540,10 +536,8 @@ msgid "gfortran does not support -E without -cpp"
 msgstr "gfortran 不支持单独使用 -E 而不带 -cpp"
 
 #: m2/lang-specs.h:48
-#, fuzzy
-#| msgid "to generate dependencies you must specify either -M or -MM"
 msgid "to generate dependencies you must specify '-fcpp' "
-msgstr "要生成依赖项，您必须指定 -M 或 -MM"
+msgstr "要生成依赖项，您必须指定 '-fcpp' "
 
 #: objc/lang-specs.h:30 objc/lang-specs.h:41
 msgid "GNU Objective C no longer supports traditional compilation"
@@ -604,10 +598,9 @@ msgid "Warn if the type of a variable might be not interoperable with C."
 msgstr "对可能不与C语言互通的类型给出警告。"
 
 #: fortran/lang.opt:226
-#, fuzzy, no-c-format
-#| msgid "Warn about truncated character expressions"
+#, no-c-format
 msgid "Warn about truncated character expressions."
-msgstr "对被截断的字符表达式给出警告"
+msgstr "对被截断的字符表达式给出警告。"
 
 #: fortran/lang.opt:230
 #, no-c-format
@@ -708,9 +701,9 @@ msgid "Permit nonconforming uses of the tab character."
 msgstr "允许使用不符合规范的制表符"
 
 #: fortran/lang.opt:334
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about an invalid DO loop."
-msgstr "对长度为 0 的格式字符串给出警告"
+msgstr "对无效的 DO 循环给出警告。"
 
 #: fortran/lang.opt:338
 #, fuzzy, no-c-format
@@ -953,10 +946,9 @@ msgid "Specify that an external BLAS library should be used for matmul calls on 
 msgstr "为大尺寸数组调用 matmul 时应当使用一个外部 BLAS 库"
 
 #: fortran/lang.opt:559
-#, fuzzy, no-c-format
-#| msgid "Use f2c calling convention"
+#, no-c-format
 msgid "Use f2c calling convention."
-msgstr "使用 f2c 调用约定"
+msgstr "使用 f2c 调用约定。"
 
 #: fortran/lang.opt:563
 #, fuzzy, no-c-format
@@ -1381,10 +1373,9 @@ msgid "Do not discard comments."
 msgstr "不丢弃注释。"
 
 #: c-family/c.opt:190
-#, fuzzy, no-c-format
-#| msgid "Do not discard comments in macro expansions"
+#, no-c-format
 msgid "Do not discard comments in macro expansions."
-msgstr "展开宏时不丢弃注释"
+msgstr "展开宏时不丢弃注释。"
 
 #: c-family/c.opt:194
 #, fuzzy, no-c-format
@@ -1991,10 +1982,9 @@ msgid "Warn about strftime formats yielding 2-digit years."
 msgstr "当 strftime 格式给出 2 位记年时给出警告"
 
 #: c-family/c.opt:725
-#, fuzzy, no-c-format
-#| msgid "Warn about zero-length formats"
+#, no-c-format
 msgid "Warn about zero-length formats."
-msgstr "对长度为 0 的格式字符串给出警告"
+msgstr "对长度为 0 的格式字符串给出警告。"
 
 #: c-family/c.opt:733
 #, no-c-format
@@ -2038,7 +2028,7 @@ msgstr "提领指向不完全类型的指针"
 #: c-family/c.opt:762 common.opt:650
 #, no-c-format
 msgid "Warn for infinitely recursive calls."
-msgstr ""
+msgstr "为无限递归调用给出警告。"
 
 #: c-family/c.opt:766
 #, no-c-format
@@ -2074,16 +2064,14 @@ msgid "Warn about implicit conversions from \"float\" to \"double\"."
 msgstr "对从“float”到“double”的隐式转换给出警告"
 
 #: c-family/c.opt:795
-#, fuzzy, no-c-format
-#| msgid "Warn if an undefined macro is used in an #if directive"
+#, no-c-format
 msgid "Warn if \"defined\" is used outside #if."
-msgstr "当 #if 指令中用到未定义的宏时给出警告"
+msgstr "当 \"defined\" 在 #if 之外使用时给出警告。"
 
 #: c-family/c.opt:799
-#, fuzzy, no-c-format
-#| msgid "Warn about implicit function declarations"
+#, no-c-format
 msgid "Warn about implicit function declarations."
-msgstr "对隐式函数声明给出警告"
+msgstr "对隐式函数声明给出警告。"
 
 #: c-family/c.opt:803
 #, fuzzy, no-c-format
@@ -2131,9 +2119,9 @@ msgid "Warn about PCH files that are found but not used."
 msgstr "在找到了 PCH 文件但未使用的情况给出警告"
 
 #: c-family/c.opt:838
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about invalid UTF-8 characters."
-msgstr "当定义在主文件中的宏未被使用时给出警告"
+msgstr "对无效 UTF-8 字符给出警告。"
 
 #: c-family/c.opt:842
 #, fuzzy, no-c-format
@@ -2787,10 +2775,9 @@ msgid "Warn about the most vexing parse syntactic ambiguity."
 msgstr ""
 
 #: c-family/c.opt:1435
-#, fuzzy, no-c-format
-#| msgid "Warn if a variable length array is used"
+#, no-c-format
 msgid "Warn if a variable length array is used."
-msgstr "使用变长数组时警告"
+msgstr "使用变长数组时给出警告。"
 
 #: c-family/c.opt:1439
 #, fuzzy, no-c-format
@@ -3028,7 +3015,7 @@ msgstr ""
 #: c-family/c.opt:1733
 #, no-c-format
 msgid "Enable C++ coroutines (experimental)."
-msgstr ""
+msgstr "启用 C++ 协程（实验性）。"
 
 #: c-family/c.opt:1737
 #, fuzzy, no-c-format
@@ -3130,10 +3117,9 @@ msgid "Generate code for GNU runtime environment."
 msgstr "为 GNU 运行时环境生成代码"
 
 #: c-family/c.opt:1829
-#, fuzzy, no-c-format
-#| msgid "Use traditional GNU semantics for inline functions"
+#, no-c-format
 msgid "Use traditional GNU semantics for inline functions."
-msgstr "为内联函数使用传统的 GNU 语义"
+msgstr "为内联函数使用传统的 GNU 语义。"
 
 #: c-family/c.opt:1842
 #, fuzzy, no-c-format
@@ -3249,10 +3235,9 @@ msgid "fmax-include-depth=<number> Set the maximum depth of the nested #include.
 msgstr ""
 
 #: c-family/c.opt:1947
-#, fuzzy, no-c-format
-#| msgid "Don't warn about uses of Microsoft extensions"
+#, no-c-format
 msgid "Don't warn about uses of Microsoft extensions."
-msgstr "使用微软扩展时不给出警告"
+msgstr "使用微软扩展时不给出警告。"
 
 #: c-family/c.opt:1966
 #, no-c-format
@@ -3260,10 +3245,9 @@ msgid "Implement resolution of DR 150 for matching of template template argument
 msgstr ""
 
 #: c-family/c.opt:1970
-#, fuzzy, no-c-format
-#| msgid "Generate code for NeXT (Apple Mac OS X) runtime environment"
+#, no-c-format
 msgid "Generate code for NeXT (Apple Mac OS X) runtime environment."
-msgstr "为 NeXT (苹果 Mac OS X) 运行时环境生成代码"
+msgstr "为 NeXT (苹果 Mac OS X) 运行时环境生成代码。"
 
 #: c-family/c.opt:1974
 #, fuzzy, no-c-format
@@ -3406,10 +3390,9 @@ msgid "Used in Fix-and-Continue mode to indicate that object files may be swappe
 msgstr "指定对象文件可能在运行时被换入以允许“修复并继续”调试模式"
 
 #: c-family/c.opt:2111
-#, fuzzy, no-c-format
-#| msgid "Deprecated.  This switch has no effect"
+#, no-c-format
 msgid "Removed in GCC 10.  This switch has no effect."
-msgstr "已弃用。此开关不起作用。"
+msgstr "已在 GCC 10 中移除。此开关不起作用。"
 
 #: c-family/c.opt:2115
 #, fuzzy, no-c-format
@@ -3436,10 +3419,9 @@ msgid "When \"signed\" or \"unsigned\" is not given make the bitfield signed."
 msgstr "没有给定“signed”或“unsigned”时将位段视作有符号的"
 
 #: c-family/c.opt:2131 ada/gcc-interface/lang.opt:85
-#, fuzzy, no-c-format
-#| msgid "Make \"char\" signed by default"
+#, no-c-format
 msgid "Make \"char\" signed by default."
-msgstr "使“char”类型默认为有符号"
+msgstr "使“char”类型默认为有符号。"
 
 #: c-family/c.opt:2135
 #, fuzzy, no-c-format
@@ -3548,10 +3530,9 @@ msgid "Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mod
 msgstr "为 Zero-Link 模式生成后期类查找(通过 objc_getClass())"
 
 #: c-family/c.opt:2268
-#, fuzzy, no-c-format
-#| msgid "Dump declarations to a .decl file"
+#, no-c-format
 msgid "Dump declarations to a .decl file."
-msgstr "将声明转储到一个 .decl 文件中"
+msgstr "将声明转储到一个 .decl 文件中。"
 
 #: c-family/c.opt:2272
 #, fuzzy, no-c-format
@@ -3649,22 +3630,19 @@ msgid "Do not search standard system include directories for C++."
 msgstr "不搜索 C++ 标准系统头文件目录"
 
 #: c-family/c.opt:2351
-#, fuzzy, no-c-format
-#| msgid "Generate C header of platform-specific features"
+#, no-c-format
 msgid "Generate C header of platform-specific features."
-msgstr "生成有平台相关特性的 C 头文件"
+msgstr "生成有平台相关特性的 C 头文件。"
 
 #: c-family/c.opt:2355
-#, fuzzy, no-c-format
-#| msgid "Remap file names when including files"
+#, no-c-format
 msgid "Remap file names when including files."
-msgstr "包含文件时映射短文件名"
+msgstr "包含文件时重映射文件名。"
 
 #: c-family/c.opt:2359 c-family/c.opt:2363
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum"
+#, no-c-format
 msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum."
-msgstr "遵循 ISO 1998 C++ 标准于 2003 年的技术勘误版本"
+msgstr "遵循 ISO 1998 C++ 标准于 2003 年的技术勘误版本。"
 
 #: c-family/c.opt:2367
 #, no-c-format
@@ -3672,97 +3650,85 @@ msgid "Conform to the ISO 2011 C++ standard."
 msgstr "遵循 ISO 2011 C++ 标准。"
 
 #: c-family/c.opt:2371
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deprecated in favor of -std=c++11."
-msgstr "已弃用，请改用 -std=gnu99"
+msgstr "已弃用，请改用 -std=c++11。"
 
 #: c-family/c.opt:2375
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deprecated in favor of -std=c++14."
-msgstr "已弃用，请改用 -std=gnu99"
+msgstr "已弃用，请改用 -std=c++14。"
 
 #: c-family/c.opt:2379
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2011 C++ standard"
+#, no-c-format
 msgid "Conform to the ISO 2014 C++ standard."
-msgstr "遵循 ISO 2011 C++ 标准"
+msgstr "遵循 ISO 2014 C++ 标准。"
 
 #: c-family/c.opt:2383
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deprecated in favor of -std=c++17."
-msgstr "已弃用，请改用 -std=gnu99"
+msgstr "已弃用，请改用 -std=c++17。"
 
 #: c-family/c.opt:2387
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2011 C++ standard"
+#, no-c-format
 msgid "Conform to the ISO 2017 C++ standard."
-msgstr "遵循 ISO 2011 C++ 标准"
+msgstr "遵循 ISO 2017 C++ 标准。"
 
 #: c-family/c.opt:2391 c-family/c.opt:2395
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2017(?) C++ draft standard (experimental and incomplete support)"
+#, no-c-format
 msgid "Conform to the ISO 2020 C++ standard (experimental and incomplete support)."
-msgstr "遵循 ISO 2017(?) C++ 标准草案(试验性质的不完全支持)"
+msgstr "遵循 ISO 2020 C++ 标准（试验性质的不完全支持）。"
 
 #: c-family/c.opt:2399 c-family/c.opt:2403
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2017(?) C++ draft standard (experimental and incomplete support)"
+#, no-c-format
 msgid "Conform to the ISO 2023 C++ draft standard (experimental and incomplete support)."
-msgstr "遵循 ISO 2017(?) C++ 标准草案(试验性质的不完全支持)"
+msgstr "遵循 ISO 2023 C++ 标准草案（试验性质的不完全支持）。"
 
 #: c-family/c.opt:2407 c-family/c.opt:2545
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2011 C++ standard"
+#, no-c-format
 msgid "Conform to the ISO 2011 C standard."
-msgstr "遵循 ISO 2011 C++ 标准"
+msgstr "遵循 ISO 2011 C 标准。"
 
 #: c-family/c.opt:2411
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deprecated in favor of -std=c11."
-msgstr "已弃用，请改用 -std=c99"
+msgstr "已弃用，请改用 -std=c11。"
 
 #: c-family/c.opt:2415 c-family/c.opt:2419 c-family/c.opt:2549
 #: c-family/c.opt:2553
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2011 C++ standard"
+#, no-c-format
 msgid "Conform to the ISO 2017 C standard (published in 2018)."
-msgstr "遵循 ISO 2011 C++ 标准"
+msgstr "遵循 ISO 2017 C 标准（于2018年发布）。"
 
 #: c-family/c.opt:2423
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2017(?) C++ draft standard (experimental and incomplete support)"
+#, no-c-format
 msgid "Conform to the ISO 202X C standard draft (experimental and incomplete support)."
-msgstr "遵循 ISO 2017(?) C++ 标准草案(试验性质的不完全支持)"
+msgstr "遵循 ISO 202X C++ 标准草案（试验性质的不完全支持）。"
 
 #: c-family/c.opt:2427 c-family/c.opt:2431 c-family/c.opt:2529
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1990 C standard"
+#, no-c-format
 msgid "Conform to the ISO 1990 C standard."
-msgstr "遵循 ISO 1990 C 标准"
+msgstr "遵循 ISO 1990 C 标准。"
 
 #: c-family/c.opt:2435 c-family/c.opt:2537
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1999 C standard"
+#, no-c-format
 msgid "Conform to the ISO 1999 C standard."
-msgstr "遵循 ISO 1999 C 标准"
+msgstr "遵循 ISO 1999 C 标准。"
 
 #: c-family/c.opt:2439
-#, fuzzy, no-c-format
-#| msgid "Deprecated in favor of -std=c99"
+#, no-c-format
 msgid "Deprecated in favor of -std=c99."
-msgstr "已弃用，请改用 -std=c99"
+msgstr "已弃用，请改用 -std=c99。"
 
 #: c-family/c.opt:2443 c-family/c.opt:2448
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum"
+#, no-c-format
 msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum with GNU extensions."
-msgstr "遵循 ISO 1998 C++ 标准于 2003 年的技术勘误版本"
+msgstr "遵循 ISO 1998 C++ 标准于 2003 年的技术勘误版本，也支持 GNU 扩展。"
 
 #: c-family/c.opt:2453
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1990 C standard with GNU extensions"
+#, no-c-format
 msgid "Conform to the ISO 2011 C++ standard with GNU extensions."
-msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展"
+msgstr "遵循 ISO 2011 C++ 标准，也支持 GNU 扩展。"
 
 #: c-family/c.opt:2457
 #, no-c-format
@@ -3775,10 +3741,9 @@ msgid "Deprecated in favor of -std=gnu++14."
 msgstr "已弃用，请改用 -std=gnu++14。"
 
 #: c-family/c.opt:2465
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1990 C standard with GNU extensions"
+#, no-c-format
 msgid "Conform to the ISO 2014 C++ standard with GNU extensions."
-msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展"
+msgstr "遵循 ISO 2014 C++ 标准，也支持 GNU 扩展。"
 
 #: c-family/c.opt:2469
 #, no-c-format
@@ -3786,10 +3751,9 @@ msgid "Deprecated in favor of -std=gnu++17."
 msgstr "已弃用，请改用 -std=gnu+17。"
 
 #: c-family/c.opt:2473
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1990 C standard with GNU extensions"
+#, no-c-format
 msgid "Conform to the ISO 2017 C++ standard with GNU extensions."
-msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展"
+msgstr "遵循 ISO 2017 C++ 标准，也支持 GNU 扩展。"
 
 #: c-family/c.opt:2477 c-family/c.opt:2481
 #, fuzzy, no-c-format
@@ -3859,7 +3823,7 @@ msgstr "已弃用，为 -std=iso9899:1999 所取代"
 #: c-family/c.opt:2557
 #, no-c-format
 msgid "-stdlib=[libstdc++|libc++]\tThe standard library to be used for C++ headers and runtime."
-msgstr ""
+msgstr "-stdlib=[libstdc++|libc++]\t要为 C++ 头文件和运行时使用的标准库。"
 
 #: c-family/c.opt:2574
 #, no-c-format
@@ -3872,10 +3836,9 @@ msgid "-trigraphs\tSupport ISO C trigraphs."
 msgstr "-trigraphs\t支持 ISO C 三元符。"
 
 #: c-family/c.opt:2582
-#, fuzzy, no-c-format
-#| msgid "Do not predefine system-specific and GCC-specific macros"
+#, no-c-format
 msgid "Do not predefine system-specific and GCC-specific macros."
-msgstr "不预定义系统或 GCC 特定的宏"
+msgstr "不预定义系统或 GCC 特有的宏。"
 
 #: ada/gcc-interface/lang.opt:61
 #, no-c-format
@@ -3893,9 +3856,9 @@ msgid "Do not look for object files in standard path."
 msgstr "不找寻目的文件在中标准路径"
 
 #: ada/gcc-interface/lang.opt:77
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Select the runtime."
-msgstr "运行时名称。"
+msgstr "选择运行时。"
 
 #: ada/gcc-interface/lang.opt:93
 #, fuzzy, no-c-format
@@ -3916,7 +3879,7 @@ msgstr "-gnat<选项>\t指定给 GNAT 的选项"
 #: ada/gcc-interface/lang.opt:105
 #, no-c-format
 msgid "Ignored."
-msgstr ""
+msgstr "已忽略。"
 
 #: d/lang.opt:51
 #, no-c-format
@@ -3947,10 +3910,9 @@ msgid "Warn from speculative compiles such as __traits(compiles)."
 msgstr ""
 
 #: d/lang.opt:163
-#, fuzzy, no-c-format
-#| msgid "Generate H8S code."
+#, no-c-format
 msgid "Generate JSON file."
-msgstr "生成 H8S 代码。"
+msgstr "生成 JSON 文件。"
 
 #: d/lang.opt:167
 #, fuzzy, no-c-format
@@ -4172,10 +4134,9 @@ msgid "Disable access to variables marked `@system' from @safe code."
 msgstr "认为按字节访问内存速度较慢。"
 
 #: d/lang.opt:413
-#, fuzzy, no-c-format
-#| msgid "Display the compiler's version"
+#, no-c-format
 msgid "Compile release version."
-msgstr "显示编译器版本"
+msgstr "编译发布版本。"
 
 #: d/lang.opt:417
 #, no-c-format
@@ -5109,22 +5070,19 @@ msgid "Force functions to be aligned to a 4 byte boundary."
 msgstr "将函数强行对齐到 4 字节边界上"
 
 #: config/mcore/mcore.opt:35 config/moxie/moxie.opt:23 config/csky/csky.opt:44
-#, fuzzy, no-c-format
-#| msgid "Generate big-endian code"
+#, no-c-format
 msgid "Generate big-endian code."
-msgstr "生成大端在前的代码"
+msgstr "生成大端在前的代码。"
 
 #: config/mcore/mcore.opt:39
-#, fuzzy, no-c-format
-#| msgid "Emit call graph information"
+#, no-c-format
 msgid "Emit call graph information."
-msgstr "生成调用图信息"
+msgstr "生成调用图信息。"
 
 #: config/mcore/mcore.opt:43
-#, fuzzy, no-c-format
-#| msgid "Use the divide instruction"
+#, no-c-format
 msgid "Use the divide instruction."
-msgstr "使用除法指令"
+msgstr "使用除法指令。"
 
 #: config/mcore/mcore.opt:47
 #, fuzzy, no-c-format
@@ -5133,10 +5091,9 @@ msgid "Inline constants if it can be done in 2 insns or less."
 msgstr "当常量可以为两个以下的指令生成时内联常量"
 
 #: config/mcore/mcore.opt:51 config/moxie/moxie.opt:27 config/csky/csky.opt:51
-#, fuzzy, no-c-format
-#| msgid "Generate little-endian code"
+#, no-c-format
 msgid "Generate little-endian code."
-msgstr "生成小端在前的代码"
+msgstr "生成小端在前的代码。"
 
 #: config/mcore/mcore.opt:56 config/fr30/fr30.opt:27
 #, fuzzy, no-c-format
@@ -5163,10 +5120,9 @@ msgid "Set the maximum amount for a single stack increment operation."
 msgstr "设定单个堆栈增量操作运算总量的上限"
 
 #: config/mcore/mcore.opt:75
-#, fuzzy, no-c-format
-#| msgid "Always treat bitfields as int-sized"
+#, no-c-format
 msgid "Always treat bitfields as int-sized."
-msgstr "总认为位段长与 int 相同"
+msgstr "总认为位段长与 int 相同。"
 
 #: config/linux-android.opt:23
 #, no-c-format
@@ -5606,10 +5562,9 @@ msgid "(Obsolete, ld_classic only) -seg_addr_table_filename <path>."
 msgstr ""
 
 #: config/darwin.opt:321
-#, fuzzy, no-c-format
-#| msgid "Synonym for -Wcomment."
+#, no-c-format
 msgid "Synonym for \"image_base\"."
-msgstr "-Wcomment 的同义词。"
+msgstr "“image_base”的同义词。"
 
 #: config/darwin.opt:325
 #, no-c-format
@@ -5848,100 +5803,84 @@ msgid "Use IEEE math for fp comparisons."
 msgstr "浮点数间的比较严格遵循 IEEE 标准"
 
 #: config/m68k/m68k.opt:30
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 520X"
+#, no-c-format
 msgid "Generate code for a 520X."
-msgstr "为 520X 生成代码"
+msgstr "为 520X 生成代码。"
 
 #: config/m68k/m68k.opt:34
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 5206e"
+#, no-c-format
 msgid "Generate code for a 5206e."
-msgstr "为 5206e 生成代码"
+msgstr "为 5206e 生成代码。"
 
 #: config/m68k/m68k.opt:38
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 528x"
+#, no-c-format
 msgid "Generate code for a 528x."
-msgstr "为 528x 生成代码"
+msgstr "为 528x 生成代码。"
 
 #: config/m68k/m68k.opt:42
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 5307"
+#, no-c-format
 msgid "Generate code for a 5307."
-msgstr "为 5307 生成代码"
+msgstr "为 5307 生成代码。"
 
 #: config/m68k/m68k.opt:46
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 5407"
+#, no-c-format
 msgid "Generate code for a 5407."
-msgstr "为 5407 生成代码"
+msgstr "为 5407 生成代码。"
 
 #: config/m68k/m68k.opt:50 config/m68k/m68k.opt:111
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68000"
+#, no-c-format
 msgid "Generate code for a 68000."
-msgstr "为 68000 生成代码"
+msgstr "为 68000 生成代码。"
 
 #: config/m68k/m68k.opt:54
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68010"
+#, no-c-format
 msgid "Generate code for a 68010."
-msgstr "为 68010 生成代码"
+msgstr "为 68010 生成代码。"
 
 #: config/m68k/m68k.opt:58 config/m68k/m68k.opt:115
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68020"
+#, no-c-format
 msgid "Generate code for a 68020."
-msgstr "为 68020 生成代码"
+msgstr "为 68020 生成代码。"
 
 #: config/m68k/m68k.opt:62
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68040, without any new instructions"
+#, no-c-format
 msgid "Generate code for a 68040, without any new instructions."
-msgstr "为 68040 生成代码，不使用新指令"
+msgstr "为 68040 生成代码，不使用新指令。"
 
 #: config/m68k/m68k.opt:66
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68060, without any new instructions"
+#, no-c-format
 msgid "Generate code for a 68060, without any new instructions."
-msgstr "为 68060 生成代码，不使用新指令"
+msgstr "为 68060 生成代码，不使用新指令。"
 
 #: config/m68k/m68k.opt:70
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68030"
+#, no-c-format
 msgid "Generate code for a 68030."
-msgstr "为 68030 生成代码"
+msgstr "为 68030 生成代码。"
 
 #: config/m68k/m68k.opt:74
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68040"
+#, no-c-format
 msgid "Generate code for a 68040."
-msgstr "为 68040 生成代码"
+msgstr "为 68040 生成代码。"
 
 #: config/m68k/m68k.opt:78
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68060"
+#, no-c-format
 msgid "Generate code for a 68060."
-msgstr "为 68060 生成代码"
+msgstr "为 68060 生成代码。"
 
 #: config/m68k/m68k.opt:82
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68302"
+#, no-c-format
 msgid "Generate code for a 68302."
-msgstr "为 68302 生成代码"
+msgstr "为 68302 生成代码。"
 
 #: config/m68k/m68k.opt:86
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68332"
+#, no-c-format
 msgid "Generate code for a 68332."
-msgstr "为 68332 生成代码"
+msgstr "为 68332 生成代码。"
 
 #: config/m68k/m68k.opt:91
-#, fuzzy, no-c-format
-#| msgid "Generate code for a 68851"
+#, no-c-format
 msgid "Generate code for a 68851."
-msgstr "为 68851 生成代码"
+msgstr "为 68851 生成代码。"
 
 #: config/m68k/m68k.opt:95
 #, fuzzy, no-c-format
@@ -6387,9 +6326,9 @@ msgid "For shift operations by a constant amount, which require an individual in
 msgstr ""
 
 #: config/aarch64/aarch64.opt:49
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The possible TLS dialects:"
-msgstr "假定大的线程局部存储段"
+msgstr ""
 
 #: config/aarch64/aarch64.opt:61 config/loongarch/loongarch.opt:171
 #, no-c-format
@@ -6581,28 +6520,24 @@ msgid "Limit how much the autovectorizer may unroll a loop."
 msgstr ""
 
 #: config/linux.opt:24
-#, fuzzy, no-c-format
-#| msgid "Use Bionic C library"
+#, no-c-format
 msgid "Use Bionic C library."
-msgstr "使用 Bionic C 标准库"
+msgstr "使用 Bionic C 标准库。"
 
 #: config/linux.opt:28
-#, fuzzy, no-c-format
-#| msgid "Use GNU C library"
+#, no-c-format
 msgid "Use GNU C library."
-msgstr "使用 GNU C 标准库"
+msgstr "使用 GNU C 标准库。"
 
 #: config/linux.opt:32
-#, fuzzy, no-c-format
-#| msgid "Use uClibc C library"
+#, no-c-format
 msgid "Use uClibc C library."
-msgstr "使用 uClibc C 标准库"
+msgstr "使用 uClibc C 标准库。"
 
 #: config/linux.opt:36
-#, fuzzy, no-c-format
-#| msgid "Use uClibc C library"
+#, no-c-format
 msgid "Use musl C library."
-msgstr "使用 uClibc C 标准库"
+msgstr "使用 musl C 标准库。"
 
 #: config/ia64/ilp32.opt:3
 #, fuzzy, no-c-format
@@ -6617,28 +6552,24 @@ msgid "Generate LP64 code."
 msgstr "生成 LP64 代码"
 
 #: config/ia64/ia64.opt:28
-#, fuzzy, no-c-format
-#| msgid "Generate big endian code"
+#, no-c-format
 msgid "Generate big endian code."
-msgstr "生成大端在前的代码"
+msgstr "生成大端在前的代码。"
 
 #: config/ia64/ia64.opt:32
-#, fuzzy, no-c-format
-#| msgid "Generate little endian code"
+#, no-c-format
 msgid "Generate little endian code."
-msgstr "生成小端在前的代码"
+msgstr "生成小端在前的代码。"
 
 #: config/ia64/ia64.opt:36
-#, fuzzy, no-c-format
-#| msgid "Generate code for GNU as"
+#, no-c-format
 msgid "Generate code for GNU as."
-msgstr "为 GNU as 生成代码"
+msgstr "为 GNU as 生成代码。"
 
 #: config/ia64/ia64.opt:40
-#, fuzzy, no-c-format
-#| msgid "Generate code for GNU ld"
+#, no-c-format
 msgid "Generate code for GNU ld."
-msgstr "为 GNU ld 生成代码"
+msgstr "为 GNU ld 生成代码。"
 
 #: config/ia64/ia64.opt:44
 #, fuzzy, no-c-format
@@ -7282,10 +7213,9 @@ msgid "sizeof(long double) is 16."
 msgstr "sizeof(long double) 等于 16"
 
 #: config/i386/i386.opt:202 config/i386/i386.opt:370
-#, fuzzy, no-c-format
-#| msgid "Use hardware fp"
+#, no-c-format
 msgid "Use hardware fp."
-msgstr "使用硬件浮点单元"
+msgstr "使用硬件浮点单元。"
 
 #: config/i386/i386.opt:206
 #, fuzzy, no-c-format
@@ -7294,9 +7224,9 @@ msgid "sizeof(long double) is 12."
 msgstr "sizeof(long double) 等于 12"
 
 #: config/i386/i386.opt:210
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Use 80-bit long double."
-msgstr "使用 64 位 long double"
+msgstr "使用 80 位 long double。"
 
 #: config/i386/i386.opt:214 config/s390/s390.opt:163
 #: config/sparc/long-double-switch.opt:27 config/alpha/alpha.opt:102
@@ -8493,10 +8423,9 @@ msgid "Use software floating point."
 msgstr "使用软件浮点单元。"
 
 #: config/pa/pa.opt:152
-#, fuzzy, no-c-format
-#| msgid "Use software floating point comparisons."
+#, no-c-format
 msgid "Use software integer multiplication."
-msgstr "使用软件浮点比较。"
+msgstr "使用软件整型乘法。"
 
 #: config/pa/pa.opt:160
 #, no-c-format
@@ -8661,10 +8590,9 @@ msgid "-G<number>\tPut global and static data smaller than <number> bytes into a
 msgstr "-G<N>\t将小于 N 字节的全局和静态数据放入一个特殊的节中(在某些目标机上)"
 
 #: config/lynx.opt:23
-#, fuzzy, no-c-format
-#| msgid "Support legacy multi-threading"
+#, no-c-format
 msgid "Support legacy multi-threading."
-msgstr "支持传统多线程"
+msgstr "支持传统多线程。"
 
 #: config/lynx.opt:27
 #, no-c-format
@@ -8741,10 +8669,9 @@ msgid "Specify the PTX ISA version to use."
 msgstr "ELF 文件 ABI 版本无效"
 
 #: config/nvptx/nvptx.opt:139
-#, fuzzy, no-c-format
-#| msgid "Use fp registers"
+#, no-c-format
 msgid "Initialize ptx registers."
-msgstr "使用浮点寄存器"
+msgstr "初始化 ptx 寄存器。"
 
 #: config/vxworks.opt:36
 #, fuzzy, no-c-format
@@ -8797,10 +8724,9 @@ msgid "Use RJMP / RCALL even though CALL / JMP are available."
 msgstr ""
 
 #: config/avr/avr.opt:57
-#, fuzzy, no-c-format
-#| msgid "Use an 8-bit 'int' type"
+#, no-c-format
 msgid "Use an 8-bit 'int' type."
-msgstr "使用 8 位‘int’类型"
+msgstr "使用 8 位‘int’类型。"
 
 #: config/avr/avr.opt:61
 #, fuzzy, no-c-format
@@ -9661,16 +9587,14 @@ msgid "Use UltraSPARC Subtract-Extended-with-Carry instruction."
 msgstr "使用硬件浮点指令"
 
 #: config/sparc/sparc.opt:110
-#, fuzzy, no-c-format
-#| msgid "Pointers are 64-bit"
+#, no-c-format
 msgid "Pointers are 64-bit."
-msgstr "指针是 64 位"
+msgstr "指针是 64 位。"
 
 #: config/sparc/sparc.opt:114
-#, fuzzy, no-c-format
-#| msgid "Pointers are 32-bit"
+#, no-c-format
 msgid "Pointers are 32-bit."
-msgstr "指针是 32 位"
+msgstr "指针是 32 位。"
 
 #: config/sparc/sparc.opt:118
 #, no-c-format
@@ -9755,16 +9679,14 @@ msgid "Specify the memory model in effect for the program."
 msgstr "指定内存式样在中效果用于程序。"
 
 #: config/rs6000/darwin.opt:38 config/rs6000/sysv4.opt:145
-#, fuzzy, no-c-format
-#| msgid "Generate 64-bit code"
+#, no-c-format
 msgid "Generate 64-bit code."
-msgstr "生成 64 位代码"
+msgstr "生成 64 位代码。"
 
 #: config/rs6000/darwin.opt:42 config/rs6000/sysv4.opt:149
-#, fuzzy, no-c-format
-#| msgid "Generate 32-bit code"
+#, no-c-format
 msgid "Generate 32-bit code."
-msgstr "生成 32 位代码"
+msgstr "生成 32 位代码。"
 
 #: config/rs6000/rs6000-tables.opt:24
 #, no-c-format
@@ -11975,10 +11897,9 @@ msgid "Known FR-V CPUs (for use with the -mcpu= option):"
 msgstr "已知 FR-V 处理器 (用于 -mcpu= 选项)："
 
 #: config/frv/frv.opt:122
-#, fuzzy, no-c-format
-#| msgid "Use fp double instructions"
+#, no-c-format
 msgid "Use fp double instructions."
-msgstr "使用浮点双精度指令"
+msgstr "使用浮点双精度指令。"
 
 #: config/frv/frv.opt:126
 #, fuzzy, no-c-format
@@ -12647,16 +12568,14 @@ msgid "Work around bug in multiplication instruction."
 msgstr "为乘法指令中的缺陷提供变通"
 
 #: config/cris/cris.opt:51
-#, fuzzy, no-c-format
-#| msgid "Compile for ETRAX 4 (CRIS v3)"
+#, no-c-format
 msgid "Compile for ETRAX 4 (CRIS v3)."
-msgstr "为 ETRAX 4 (CRIS v3) 编译"
+msgstr "为 ETRAX 4 (CRIS v3) 编译。"
 
 #: config/cris/cris.opt:56
-#, fuzzy, no-c-format
-#| msgid "Compile for ETRAX 100 (CRIS v8)"
+#, no-c-format
 msgid "Compile for ETRAX 100 (CRIS v8)."
-msgstr "为 ETRAX 100 (CRIS v8) 编译"
+msgstr "为 ETRAX 100 (CRIS v8) 编译。"
 
 #: config/cris/cris.opt:64
 #, fuzzy, no-c-format
@@ -12768,16 +12687,14 @@ msgid "Runtime name."
 msgstr "运行时名称。"
 
 #: config/sh/sh.opt:42
-#, fuzzy, no-c-format
-#| msgid "Generate SH1 code"
+#, no-c-format
 msgid "Generate SH1 code."
-msgstr "生成 SH1 代码"
+msgstr "生成 SH1 代码。"
 
 #: config/sh/sh.opt:46
-#, fuzzy, no-c-format
-#| msgid "Generate SH2 code"
+#, no-c-format
 msgid "Generate SH2 code."
-msgstr "生成 SH2 代码"
+msgstr "生成 SH2 代码。"
 
 #: config/sh/sh.opt:50
 #, fuzzy, no-c-format
@@ -12804,46 +12721,39 @@ msgid "Generate only single-precision SH2a-FPU code."
 msgstr "只生成单精度 SH4a-FPU 代码"
 
 #: config/sh/sh.opt:66
-#, fuzzy, no-c-format
-#| msgid "Generate SH2e code"
+#, no-c-format
 msgid "Generate SH2e code."
-msgstr "生成 SH2e 代码"
+msgstr "生成 SH2e 代码。"
 
 #: config/sh/sh.opt:70
-#, fuzzy, no-c-format
-#| msgid "Generate SH3 code"
+#, no-c-format
 msgid "Generate SH3 code."
-msgstr "生成 SH3 代码"
+msgstr "生成 SH3 代码。"
 
 #: config/sh/sh.opt:74
-#, fuzzy, no-c-format
-#| msgid "Generate SH3e code"
+#, no-c-format
 msgid "Generate SH3e code."
-msgstr "生成 SH3e 代码"
+msgstr "生成 SH3e 代码。"
 
 #: config/sh/sh.opt:78
-#, fuzzy, no-c-format
-#| msgid "Generate SH4 code"
+#, no-c-format
 msgid "Generate SH4 code."
-msgstr "生成 SH4 代码"
+msgstr "生成 SH4 代码。"
 
 #: config/sh/sh.opt:82
-#, fuzzy, no-c-format
-#| msgid "Generate SH4-100 code"
+#, no-c-format
 msgid "Generate SH4-100 code."
-msgstr "生成 SH4-100 代码"
+msgstr "生成 SH4-100 代码。"
 
 #: config/sh/sh.opt:86
-#, fuzzy, no-c-format
-#| msgid "Generate SH4-200 code"
+#, no-c-format
 msgid "Generate SH4-200 code."
-msgstr "生成 SH4-200 代码"
+msgstr "生成 SH4-200 代码。"
 
 #: config/sh/sh.opt:92
-#, fuzzy, no-c-format
-#| msgid "Generate SH4-300 code"
+#, no-c-format
 msgid "Generate SH4-300 code."
-msgstr "生成 SH4-300 代码"
+msgstr "生成 SH4-300 代码。"
 
 #: config/sh/sh.opt:96
 #, fuzzy, no-c-format
@@ -12935,10 +12845,9 @@ msgid "Generate only single-precision SH4-300 code."
 msgstr "只生成单精度 SH4-300 代码"
 
 #: config/sh/sh.opt:159
-#, fuzzy, no-c-format
-#| msgid "Generate SH4a code"
+#, no-c-format
 msgid "Generate SH4a code."
-msgstr "生成 SH4a 代码"
+msgstr "生成 SH4a 代码。"
 
 #: config/sh/sh.opt:163
 #, fuzzy, no-c-format
@@ -13480,16 +13389,14 @@ msgid "-mipsN\tGenerate code for ISA level N."
 msgstr "-mipsN\t为级别 N 的 ISA 生成代码"
 
 #: config/mips/mips.opt:268
-#, fuzzy, no-c-format
-#| msgid "Generate MIPS16 code"
+#, no-c-format
 msgid "Generate MIPS16 code."
-msgstr "生成 MIPS16 代码"
+msgstr "生成 MIPS16 代码。"
 
 #: config/mips/mips.opt:272
-#, fuzzy, no-c-format
-#| msgid "Use MIPS-3D instructions"
+#, no-c-format
 msgid "Use MIPS-3D instructions."
-msgstr "使用 MIPS-3D 指令"
+msgstr "使用 MIPS-3D 指令。"
 
 #: config/mips/mips.opt:276
 #, fuzzy, no-c-format
@@ -13616,10 +13523,9 @@ msgid "When generating -mabicalls code, make the code suitable for use in shared
 msgstr "生成 -mabicalls 代码时，使代码可用于共享库"
 
 #: config/mips/mips.opt:373
-#, fuzzy, no-c-format
-#| msgid "Use SmartMIPS instructions"
+#, no-c-format
 msgid "Use SmartMIPS instructions."
-msgstr "使用 SmartMIPS 指令"
+msgstr "使用 SmartMIPS 指令。"
 
 #: config/mips/mips.opt:381
 #, fuzzy, no-c-format
@@ -13655,9 +13561,9 @@ msgid "Generate code with unaligned load store, valid for MIPS R6."
 msgstr ""
 
 #: config/mips/mips.opt:417
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Use Virtualization (VZ) instructions."
-msgstr "使用十进制浮点指令"
+msgstr "使用虚拟化（VZ）指令。"
 
 #: config/mips/mips.opt:421
 #, fuzzy, no-c-format
@@ -13771,10 +13677,9 @@ msgid "Generate ARCompact 32-bit code for ARC600 processor."
 msgstr ""
 
 #: config/arc/arc.opt:42
-#, fuzzy, no-c-format
-#| msgid "Same as -mA6"
+#, no-c-format
 msgid "Same as -mA6."
-msgstr "与 -mA6 相同"
+msgstr "与 -mA6 相同。"
 
 #: config/arc/arc.opt:46
 #, no-c-format
@@ -13787,10 +13692,9 @@ msgid "Generate ARCompact 32-bit code for ARC700 processor."
 msgstr ""
 
 #: config/arc/arc.opt:54
-#, fuzzy, no-c-format
-#| msgid "Same as -mA7"
+#, no-c-format
 msgid "Same as -mA7."
-msgstr "与 -mA7 相同"
+msgstr "与 -mA7 相同。"
 
 #: config/arc/arc.opt:58
 #, no-c-format
@@ -14195,23 +14099,22 @@ msgstr "自动变量未初始化时警告"
 #: lto/lang.opt:94
 #, no-c-format
 msgid "Sort the symbols alphabetically."
-msgstr ""
+msgstr "按字母顺序对符号进行排序。"
 
 #: lto/lang.opt:98
 #, no-c-format
 msgid "Sort the symbols according to size."
-msgstr ""
+msgstr "根据大小对符号进行排序。"
 
 #: lto/lang.opt:102
-#, fuzzy, no-c-format
-#| msgid "Display the compiler's version"
+#, no-c-format
 msgid "Display the symbols in reverse order."
-msgstr "显示编译器版本"
+msgstr "以逆序显示符号。"
 
 #: lto/lang.opt:109
 #, no-c-format
 msgid "Dump the details of LTO objects."
-msgstr ""
+msgstr "转储 LTO 对象的详细信息。"
 
 #: lto/lang.opt:113
 #, no-c-format
@@ -14244,10 +14147,9 @@ msgid "Provide bash completion for options starting with provided string."
 msgstr ""
 
 #: common.opt:295
-#, fuzzy, no-c-format
-#| msgid "Display this information"
+#, no-c-format
 msgid "Display this information."
-msgstr "显示此信息"
+msgstr "显示此信息。"
 
 #: common.opt:299
 #, fuzzy, no-c-format
@@ -17168,28 +17070,24 @@ msgid "Do not display functions compiled or elapsed time."
 msgstr "不显示编译的函数或逝去的时间"
 
 #: common.opt:3594
-#, fuzzy, no-c-format
-#| msgid "Enable verbose output"
+#, no-c-format
 msgid "Enable verbose output."
-msgstr "启用详细输出"
+msgstr "启用详细输出。"
 
 #: common.opt:3598
-#, fuzzy, no-c-format
-#| msgid "Display the compiler's version"
+#, no-c-format
 msgid "Display the compiler's version."
-msgstr "显示编译器版本"
+msgstr "显示编译器版本。"
 
 #: common.opt:3602
-#, fuzzy, no-c-format
-#| msgid "Suppress warnings"
+#, no-c-format
 msgid "Suppress warnings."
-msgstr "不显示警告"
+msgstr "不显示警告。"
 
 #: common.opt:3612
-#, fuzzy, no-c-format
-#| msgid "Create a shared library"
+#, no-c-format
 msgid "Create a shared library."
-msgstr "生成一个共享库"
+msgstr "生成一个共享库。"
 
 #: common.opt:3672
 #, fuzzy, no-c-format
@@ -18771,10 +18669,9 @@ msgstr "无法打开 %s 并写入：%m"
 #. indicating what's gone wrong (also for DejaGnu, for pruning
 #. those messages).
 #: diagnostic-format-sarif.cc:1630
-#, fuzzy, c-format
-#| msgid "internal compiler error: "
+#, c-format
 msgid "Internal compiler error:\n"
-msgstr "编译器内部错误："
+msgstr "编译器内部错误：\n"
 
 #: diagnostic.cc:160
 #, c-format
@@ -19247,7 +19144,7 @@ msgstr "支持的 LTO 压缩算法：zlib"
 #: gcc.cc:7545
 #, c-format
 msgid " zstd"
-msgstr ""
+msgstr " zstd"
 
 #: gcc.cc:7547 gcov.cc:1510 gcov.cc:1568 gcov.cc:1580 gcov.cc:2903
 #, c-format
@@ -19518,10 +19415,9 @@ msgstr ""
 "%s。\n"
 
 #: gcov-tool.cc:595
-#, fuzzy, c-format
-#| msgid "Copyright %s 2019 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2023 Free Software Foundation, Inc.\n"
-msgstr "版权所有 %s 2019 自由软件基金会。\n"
+msgstr "版权所有 %s 2023 自由软件基金会。\n"
 
 #: gcov.cc:925
 #, c-format
@@ -19666,24 +19562,23 @@ msgid "  -x, --hash-filenames            Hash long pathnames\n"
 msgstr "  -m, --demangled-names           输出解码后的函数名\n"
 
 #: gcov.cc:953
-#, fuzzy, c-format
-#| msgid "Options:\n"
+#, c-format
 msgid ""
 "\n"
 "Obsolete options:\n"
-msgstr "选项：\n"
+msgstr ""
+"\n"
+"过时的选项：\n"
 
 #: gcov.cc:954
-#, fuzzy, c-format
-#| msgid "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n"
+#, c-format
 msgid "  -i, --json-format               Replaced with -j, --json-format\n"
-msgstr "  -i, --json-format               以 JSON 中间格式输出至 .gcov.json.gz 文件\n"
+msgstr "  -i, --json-format               被 -j, --json-format 替代\n"
 
 #: gcov.cc:955
-#, fuzzy, c-format
-#| msgid "  -j, --human-readable            Output human readable numbers\n"
+#, c-format
 msgid "  -j, --human-readable            Replaced with -H, --human-readable\n"
-msgstr "  -j, --human-readable            输出人类可读的数字\n"
+msgstr "  -j, --human-readable            被 -H, --human-readable 替代\n"
 
 #: gcov.cc:966
 #, c-format
@@ -20126,10 +20021,9 @@ msgid "during %s pass: %s\n"
 msgstr "演绎 %qT 为 %qT"
 
 #: passes.cc:1844
-#, fuzzy, c-format
-#| msgid "open %s failed: %s"
+#, c-format
 msgid "dump file: %s\n"
-msgstr "打开 %s 失败：%s"
+msgstr "转储文件：%s\n"
 
 #: plugin.cc:965
 msgid "Event"
@@ -22005,10 +21899,8 @@ msgid "illegal operand address (4)"
 msgstr "检测到无效的操作数"
 
 #: config/xtensa/xtensa-dynconfig.cc:63
-#, fuzzy
-#| msgid "Generate code for a DLL"
 msgid "Unable to load DLL."
-msgstr "生成动态链接库的代码"
+msgstr "无法加载 DLL。"
 
 #: config/xtensa/xtensa.cc:831 config/xtensa/xtensa.cc:869
 msgid "bad test"
@@ -22232,10 +22124,8 @@ msgid "expected label"
 msgstr "需要通道"
 
 #: cp/call.cc:4067
-#, fuzzy
-#| msgid "candidate 1:"
 msgid "candidate:"
-msgstr "备选 1："
+msgstr "备选："
 
 #: cp/call.cc:8208
 #, fuzzy
@@ -22757,32 +22647,24 @@ msgid "obsolescent in Fortran 95"
 msgstr ""
 
 #: fortran/intrinsic.cc:4873
-#, fuzzy
 msgid "deleted in Fortran 95"
-msgstr "在%q+D中缺少数组大小"
+msgstr "在 Fortran 95 中删除"
 
 #: fortran/intrinsic.cc:4877
-#, fuzzy
 msgid "new in Fortran 95"
-msgstr "Fortran 2003：%C处的 PAD= 不允许用在 Fortran 95 中"
+msgstr "在 Fortran 95 中新增"
 
 #: fortran/intrinsic.cc:4881
-#, fuzzy
-#| msgid "Fortran 2018:"
 msgid "new in Fortran 2003"
-msgstr "Fortran 2018："
+msgstr "在 Fortran 2003 中新增"
 
 #: fortran/intrinsic.cc:4885
-#, fuzzy
-#| msgid "Fortran 2018:"
 msgid "new in Fortran 2008"
-msgstr "Fortran 2018："
+msgstr "在 Fortran 2008 中新增"
 
 #: fortran/intrinsic.cc:4889
-#, fuzzy
-#| msgid "Fortran 2018:"
 msgid "new in Fortran 2018"
-msgstr "Fortran 2018："
+msgstr "在 Fortran 2018 中新增"
 
 #: fortran/intrinsic.cc:4893
 #, fuzzy
@@ -23293,7 +23175,7 @@ msgstr "无效的影像号码 %d 在中同步影像"
 
 #: fortran/trans-stmt.cc:2488
 msgid "Loop iterates infinitely"
-msgstr ""
+msgstr "循环无限次迭代"
 
 #: fortran/trans-stmt.cc:2508 fortran/trans-stmt.cc:2764
 msgid "Loop variable has been modified"
@@ -23308,10 +23190,9 @@ msgid "Array reference out of bounds"
 msgstr "对数组的引用超出范围"
 
 #: fortran/trans.cc:742 fortran/trans.cc:817
-#, fuzzy, c-format
-#| msgid "Memory allocation failed"
+#, c-format
 msgid "Error allocating %lu bytes"
-msgstr "内存分配失败"
+msgstr "分配 %lu 字节出错"
 
 #: fortran/trans.cc:1026
 #, fuzzy, c-format
@@ -23737,9 +23618,9 @@ msgid "func can only be compared to nil"
 msgstr "重复的类只会被编译一次"
 
 #: go/gofrontend/types.cc:568
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operation (%s)"
-msgstr "操作无效的对象"
+msgstr "无效的操作（%s）"
 
 #: go/gofrontend/types.cc:591
 #, fuzzy
@@ -24159,9 +24040,9 @@ msgid "mismatching parens"
 msgstr "参数不匹配"
 
 #: jit/docs/examples/tut05-bf.c:310
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unable to open file"
-msgstr "无法开启基本文件：%s"
+msgstr "无法打开文件"
 
 #: m2/gm2-gcc/m2assert.h:36 m2/gm2-gcc/m2assert.h:59
 #, gcc-internal-format, gfc-internal-format
@@ -24275,16 +24156,14 @@ msgid "missing mapper"
 msgstr "缺少数字"
 
 #: c-family/c.opt:1930
-#, fuzzy, gcc-internal-format
-#| msgid "missing number"
+#, gcc-internal-format
 msgid "missing header name"
-msgstr "缺少数字"
+msgstr ""
 
 #: c-family/c.opt:1938
-#, fuzzy, gcc-internal-format
-#| msgid "missing open paren"
+#, gcc-internal-format
 msgid "missing module name"
-msgstr "缺少左括号"
+msgstr "缺少模块名称"
 
 #: c-family/c.opt:1985
 #, fuzzy, gcc-internal-format
@@ -24307,10 +24186,9 @@ msgid "unknown checkaction setting %qs"
 msgstr "未知的 TLS 模型%qs"
 
 #: d/lang.opt:303
-#, fuzzy, gcc-internal-format
-#| msgid "unknown TLS model %qs"
+#, gcc-internal-format
 msgid "unknown C++ standard %qs"
-msgstr "未知的 TLS 模型 %qs"
+msgstr "未知的 C++ 标准 %qs"
 
 #: config/vms/vms.opt:42
 #, fuzzy, gcc-internal-format
@@ -26094,9 +25972,9 @@ msgid "nodes with unreleased memory found"
 msgstr "找到未释放内存的节点"
 
 #: collect-utils.cc:106
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot get program status: %m"
-msgstr "无法获取程序状态：%s"
+msgstr "无法获取程序状态：%m"
 
 #: collect-utils.cc:120
 #, gcc-internal-format, gfc-internal-format
@@ -26141,10 +26019,9 @@ msgid "%s: %m"
 msgstr "%s：%m"
 
 #: collect2.cc:613
-#, fuzzy, gcc-internal-format
-#| msgid "environment variable COLLECT_GCC must be set"
+#, gcc-internal-format
 msgid "environment variable %<COLLECT_LTO_WRAPPER%> must be set"
-msgstr "环境变量 COLLECT_GCC 必须被设置"
+msgstr "环境变量 %<COLLECT_LTO_WRAPPER%> 必须被设置"
 
 #: collect2.cc:756
 #, gcc-internal-format, gfc-internal-format
@@ -26169,8 +26046,7 @@ msgstr "LTO 支持在此配置下未被启用"
 
 #: collect2.cc:1324 graph.cc:55 lto-wrapper.cc:1720 lto-wrapper.cc:1776
 #: toplev.cc:1513 objc/objc-act.cc:459
-#, fuzzy, gcc-internal-format
-#| msgid "can't open %s: %m"
+#, gcc-internal-format
 msgid "cannot open %s: %m"
 msgstr "无法打开 %s：%m"
 
@@ -26198,15 +26074,14 @@ msgid "%s: %s"
 msgstr "%s：%s"
 
 #: collect2.cc:2359
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find 'nm'"
+#, gcc-internal-format
 msgid "cannot find %<nm%>"
-msgstr "找不到 ‘nm’"
+msgstr "找不到 %<nm%>"
 
 #: collect2.cc:2407
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot open nm output: %m"
-msgstr "无法打开 %s：%m"
+msgstr "无法打开 nm 输出：%m"
 
 #: collect2.cc:2462
 #, gcc-internal-format, gfc-internal-format
@@ -26219,10 +26094,9 @@ msgid "fini function found in object %s"
 msgstr "在对象 %s 中发现 fini 函数"
 
 #: collect2.cc:2530
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find 'ldd'"
+#, gcc-internal-format
 msgid "cannot find %<ldd%>"
-msgstr "找不到‘ldd’"
+msgstr "找不到 %<ldd%>"
 
 #: collect2.cc:2576
 #, fuzzy, gcc-internal-format
