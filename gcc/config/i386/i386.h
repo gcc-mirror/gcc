@@ -2727,6 +2727,10 @@ struct GTY(()) machine_frame_state
      The flags realigned and sp_realigned are mutually exclusive.  */
   BOOL_BITFIELD sp_realigned : 1;
 
+  /* When APX_PPX used in prologue, force epilogue to emit
+  popp instead of move and leave.  */
+  BOOL_BITFIELD apx_ppx_used : 1;
+
   /* If sp_realigned is set, this is the last valid offset from the CFA
      that can be used for access with the frame pointer.  */
   HOST_WIDE_INT sp_realigned_fp_last;
