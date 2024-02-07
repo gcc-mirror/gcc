@@ -11800,8 +11800,7 @@ move_early_exit_stmts (loop_vec_info loop_vinfo)
 	dump_printf_loc (MSG_NOTE, vect_location, "moving stmt %G", stmt);
 
       gimple_stmt_iterator stmt_gsi = gsi_for_stmt (stmt);
-      gsi_move_before (&stmt_gsi, &dest_gsi);
-      gsi_prev (&dest_gsi);
+      gsi_move_before (&stmt_gsi, &dest_gsi, GSI_NEW_STMT);
     }
 
   /* Update all the stmts with their new reaching VUSES.  */

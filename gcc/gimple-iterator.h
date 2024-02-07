@@ -86,7 +86,8 @@ extern gimple_stmt_iterator gsi_for_stmt (gimple *);
 extern gimple_stmt_iterator gsi_for_stmt (gimple *, gimple_seq *);
 extern gphi_iterator gsi_for_phi (gphi *);
 extern void gsi_move_after (gimple_stmt_iterator *, gimple_stmt_iterator *);
-extern void gsi_move_before (gimple_stmt_iterator *, gimple_stmt_iterator *);
+extern void gsi_move_before (gimple_stmt_iterator *, gimple_stmt_iterator *,
+			     gsi_iterator_update = GSI_SAME_STMT);
 extern void gsi_move_to_bb_end (gimple_stmt_iterator *, basic_block);
 extern void gsi_insert_on_edge (edge, gimple *);
 extern void gsi_insert_seq_on_edge (edge, gimple_seq);
