@@ -16,6 +16,8 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "libproc_macro_internal/tokenstream.h"
+#include "rust-token-converter.h"
 #include "rust-system.h"
 #include "rust-macro-builtins.h"
 #include "rust-ast-fragment.h"
@@ -947,24 +949,26 @@ tl::optional<AST::Fragment>
 MacroBuiltin::format_args_handler (location_t invoc_locus,
 				   AST::MacroInvocData &invoc)
 {
-  auto fmt_expr
-    = parse_single_string_literal (BuiltinMacro::FormatArgs,
-				   invoc.get_delim_tok_tree (), invoc_locus,
-				   invoc.get_expander ());
+  auto tokens = invoc.get_delim_tok_tree ().to_token_stream ();
+  tokens.erase (tokens.begin ());
+  tokens.pop_back ();
 
-  if (!fmt_expr)
-    return AST::Fragment::create_error ();
+  std::stringstream stream;
+  for (const auto &tok : tokens)
+    stream << tok->as_string () << ' ';
 
-  // if it is not a literal, it's an eager macro invocation - return it
-  if (!fmt_expr->is_literal ())
-    {
-      auto token_tree = invoc.get_delim_tok_tree ();
-      return AST::Fragment ({AST::SingleASTNode (std::move (fmt_expr))},
-			    token_tree.to_token_stream ());
-    }
+  rust_debug ("[ARTHU]: `%s`", stream.str ().c_str ());
 
-  auto format_string = fmt_expr->as_string ();
-  auto pieces = Fmt::Pieces::collect (format_string);
+  // FIXME: We need to handle this
+  // // if it is not a literal, it's an eager macro invocation - return it
+  // if (!fmt_expr->is_literal ())
+  //   {
+  //     auto token_tree = invoc.get_delim_tok_tree ();
+  //     return AST::Fragment ({AST::SingleASTNode (std::move (fmt_expr))},
+  // 	    token_tree.to_token_stream ());
+  //   }
+
+  auto pieces = Fmt::Pieces::collect (stream.str ());
 
   return AST::Fragment::create_empty ();
 }
