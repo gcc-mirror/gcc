@@ -88,6 +88,7 @@ private:
   std::unordered_map<NodeId, NodeId> node_forwarding;
 
   void visit (AST::Module &module) override;
+  void visit (AST::Trait &trait) override;
   void visit (AST::MacroRulesDefinition &macro) override;
   void visit (AST::Function &function) override;
   void visit (AST::BlockExpr &expr) override;
