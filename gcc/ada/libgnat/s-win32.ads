@@ -315,8 +315,8 @@ package System.Win32 is
    pragma Import (Stdcall, FileTimeToLocalFileTime, "FileTimeToLocalFileTime");
 
    function LocalFileTimeToFileTime
-     (lpFileTime      : access Long_Long_Integer;
-      lpLocalFileTime : access Long_Long_Integer) return BOOL;
+     (lpLocalFileTime : access Long_Long_Integer;
+      lpFileTime      : access Long_Long_Integer) return BOOL;
    pragma Import (Stdcall, LocalFileTimeToFileTime, "LocalFileTimeToFileTime");
 
    procedure Sleep (dwMilliseconds : DWORD);
