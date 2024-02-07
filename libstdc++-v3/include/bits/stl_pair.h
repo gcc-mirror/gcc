@@ -1153,6 +1153,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct tuple_element<1, pair<_Tp1, _Tp2>>
     { typedef _Tp2 type; };
 
+  // Forward declare the partial specialization for std::tuple
+  // to work around modules bug PR c++/113814.
+  template<size_t __i, typename... _Types>
+    struct tuple_element<__i, tuple<_Types...>>;
+
 #if __cplusplus >= 201703L
   template<typename _Tp1, typename _Tp2>
     inline constexpr size_t tuple_size_v<pair<_Tp1, _Tp2>> = 2;
