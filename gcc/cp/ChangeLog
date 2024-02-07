@@ -1,3 +1,11 @@
+2024-02-06  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107291
+	* method.cc (early_check_defaulted_comparison): Fail if not friend.
+
 2024-02-05  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

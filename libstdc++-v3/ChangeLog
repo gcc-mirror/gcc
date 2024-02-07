@@ -1,3 +1,11 @@
+2024-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* testsuite/lib/libstdc++.exp: Use "nul" for Windows, "/dev/null"
+	for other environments.
+
 2024-01-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

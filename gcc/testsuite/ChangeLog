@@ -1,3 +1,51 @@
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112618
+	* gcc.dg/pr112618.c: New testcase.
+
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112505
+	* gcc.dg/vect/pr112505.c: New testcase.
+
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112495
+	* gcc.target/i386/pr112495.c: New testcase.
+
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110221
+	* gfortran.dg/pr110221.f: New testcase.
+
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110176
+	* gcc.dg/torture/pr110176.c: New testcase.
+
+2024-02-06  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107291
+	* g++.dg/cpp2a/spaceship-eq17.C: New test.
+
 2024-02-05  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

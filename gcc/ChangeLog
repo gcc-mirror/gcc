@@ -1,3 +1,50 @@
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112618
+	* tree-vect-loop.cc (vect_transform_loop_stmt): For not
+	relevant and unused .MASK_CALL make sure we remove the
+	scalar stmt.
+
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112505
+	* tree-vect-loop.cc (vectorizable_induction): Reject
+	bit-precision induction.
+
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112495
+	* tree-data-ref.cc (runtime_alias_check_p): Reject checks
+	between different address spaces.
+
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110221
+	* tree-vect-slp.cc (vect_schedule_slp_node): When loop
+	masking / len is applied make sure to not schedule
+	intenal defs outside of the loop.
+
+2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110176
+	* match.pd (zext (bool) <= (int) 4294967295u): Make sure
+	to match INTEGER_CST only without outstanding conversion.
+
 2024-02-05  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
