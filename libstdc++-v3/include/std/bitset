@@ -205,10 +205,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX14_CONSTEXPR bool
       _M_is_equal(const _Base_bitset<_Nw>& __x) const _GLIBCXX_NOEXCEPT
       {
-	for (size_t __i = 0; __i < _Nw; ++__i)
-	  if (_M_w[__i] != __x._M_w[__i])
-	    return false;
-	return true;
+#if __cplusplus >= 201402L
+	if (__builtin_is_constant_evaluated())
+	  {
+	    for (size_t __i = 0; __i < _Nw; ++__i)
+	      if (_M_w[__i] != __x._M_w[__i])
+		return false;
+	    return true;
+	  }
+#endif
+	return !__builtin_memcmp(_M_w, __x._M_w, _Nw * sizeof(_WordT));
       }
 
       template<size_t _Nb>
