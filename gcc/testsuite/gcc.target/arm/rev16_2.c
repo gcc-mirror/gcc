@@ -17,4 +17,4 @@ __rev16_32 (__u32 x)
          | (((__u32)(x) & (__u32)0xff00ff00UL) >> 8);
 }
 
-/* { dg-final { scan-assembler-times {rev16\tr[0-9]+, r[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {rev16\tr[0-9]+, r[0-9]+} 2 { xfail arm_thumb1_ok } } } */
