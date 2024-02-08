@@ -132,13 +132,21 @@ print_mcu (const avr_mcu_t *mcu)
   bool rcall = (mcu->dev_attribute & AVR_ISA_RCALL);
   bool is_arch = mcu->macro == NULL;
   bool is_device = ! is_arch;
-  int flash_pm_offset = 0;
+  int rodata_pm_offset = 0;
+  int pm_base_address = 0;
 
   if (arch->flash_pm_offset
       && mcu->flash_pm_offset
       && mcu->flash_pm_offset != arch->flash_pm_offset)
     {
-      flash_pm_offset = mcu->flash_pm_offset;
+      rodata_pm_offset = mcu->flash_pm_offset;
+    }
+
+  if (arch->flash_pm_offset)
+    {
+      pm_base_address = mcu->flash_pm_offset
+	? mcu->flash_pm_offset
+	: arch->flash_pm_offset;
     }
 
   if (is_arch
@@ -255,8 +263,8 @@ print_mcu (const avr_mcu_t *mcu)
 
   fprintf (f, "*link_arch:\n\t%s", LINK_ARCH_SPEC);
   if (is_device
-      && flash_pm_offset)
-    fprintf (f, " --defsym=__RODATA_PM_OFFSET__=0x%x", flash_pm_offset);
+      && rodata_pm_offset)
+    fprintf (f, " --defsym=__RODATA_PM_OFFSET__=0x%x", rodata_pm_offset);
   fprintf (f, "\n\n");
 
   if (is_device)
@@ -293,10 +301,10 @@ print_mcu (const avr_mcu_t *mcu)
 
       fprintf (f, "*cpp_mcu:\n");
       fprintf (f, "\t-D%s", mcu->macro);
-      if (flash_pm_offset)
+      if (pm_base_address)
 	{
 	  fprintf (f, " -U__AVR_PM_BASE_ADDRESS__");
-	  fprintf (f, " -D__AVR_PM_BASE_ADDRESS__=0x%x", flash_pm_offset);
+	  fprintf (f, " -D__AVR_PM_BASE_ADDRESS__=0x%x", pm_base_address);
 	}
       fprintf (f, "\n\n");
 
