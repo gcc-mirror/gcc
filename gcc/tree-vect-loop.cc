@@ -10950,7 +10950,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	 did.  For the live values we want the value at the start of the iteration
 	 rather than at the end.  */
       edge main_e = LOOP_VINFO_IV_EXIT (loop_vinfo);
-      bool restart_loop = LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo);
+      bool all_exits_as_early_p = LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo);
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
 	if (!is_gimple_debug (use_stmt)
 	    && !flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
@@ -10966,8 +10966,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	      /* For early exit where the exit is not in the BB that leads
 		 to the latch then we're restarting the iteration in the
 		 scalar loop.  So get the first live value.  */
-	      restart_loop = restart_loop || !main_exit_edge;
-	      if (restart_loop
+	      if ((all_exits_as_early_p || !main_exit_edge)
 		  && STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
 		{
 		  tmp_vec_lhs = vec_lhs0;
