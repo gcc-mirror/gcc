@@ -82,20 +82,23 @@ namespace tr2
   /// Sequence abstraction metafunctions for manipulating a typelist.
 
 
-
+#if __has_builtin(__bases)
   /// Enumerate all the base classes of a class. Form of a typelist.
   template<typename _Tp>
     struct bases
     {
       typedef __reflection_typelist<__bases(_Tp)...>		type;
     };
+#endif
 
+#if __has_builtin(__direct_bases)
   /// Enumerate all the direct base classes of a class. Form of a typelist.
   template<typename _Tp>
     struct direct_bases
     {
       typedef __reflection_typelist<__direct_bases(_Tp)...>	type;
     };
+#endif
 
   /// @} group metaprogramming
 }
