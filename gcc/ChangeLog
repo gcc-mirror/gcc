@@ -1,3 +1,90 @@
+2024-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113796
+	* tree-if-conv.cc (combine_blocks): Wipe range-info before
+	replacing PHIs and inserting predicates.
+
+2024-02-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113690
+	* config/i386/i386-features.cc (timode_convert_cst): New helper
+	function to convert a TImode CONST_SCALAR_INT_P to a V1TImode
+	CONST_VECTOR.
+	(timode_scalar_chain::convert_op): Use timode_convert_cst.
+	(timode_scalar_chain::convert_insn): Delete REG_EQUAL notes.
+	Use timode_convert_cst.
+
+2024-02-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: Copy from Binutils.
+	* config/aarch64/aarch64.h (AARCH64_FL_AIE): New.
+	(AARCH64_FL_DEBUGv8p9): Likewise.
+	(AARCH64_FL_FGT2): Likewise.Likewise.
+	(AARCH64_FL_ITE): Likewise.
+	(AARCH64_FL_PFAR): Likewise.
+	(AARCH64_FL_PMUv3_ICNTR): Likewise.
+	(AARCH64_FL_PMUv3_SS): Likewise.
+	(AARCH64_FL_PMUv3p9): Likewise.
+	(AARCH64_FL_RASv2): Likewise.
+	(AARCH64_FL_S1PIE): Likewise.
+	(AARCH64_FL_S1POE): Likewise.
+	(AARCH64_FL_S2PIE): Likewise.
+	(AARCH64_FL_S2POE): Likewise.
+	(AARCH64_FL_SCTLR2): Likewise.
+	(AARCH64_FL_SEBEP): Likewise.
+	(AARCH64_FL_SPE_FDS): Likewise.
+	(AARCH64_FL_TCR2): Likewise.
+
+2024-02-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Only check whether reads are in-bound in places that are not safe.
+	Fix dependence check.  Add missing newline.  Clarify comments.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113750
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences): Check
+	for single predecessor when doing early break vect.
+	* tree-vect-loop.cc (move_early_exit_stmts): Get gsi at the start but
+	after labels.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113731
+	* gimple-iterator.cc (gsi_move_before): Take new parameter for update
+	method.
+	* gimple-iterator.h (gsi_move_before): Default new param to
+	GSI_SAME_STMT.
+	* tree-vect-loop.cc (move_early_exit_stmts): Call gsi_move_before with
+	GSI_NEW_STMT.
+
+2024-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113756
+	* range-op.cc (update_known_bitmask): For GIMPLE_UNARY_RHS,
+	use TYPE_SIGN (lh.type ()) instead of sign for widest_int::from
+	of lh_bits value and mask.
+
+2024-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113753
+	* wide-int.cc (wi::mul_internal): Unpack op1val and op2val with
+	UNSIGNED rather than SIGNED.  If high or needs_overflow and prec is
+	not a multiple of HOST_BITS_PER_WIDE_INT, shift left bits above prec
+	so that they start with r[half_blocks_needed] lowest bit.  Fix up
+	computation of top mask for SIGNED.
+
+2024-02-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/113766
+	* config/riscv/riscv-protos.h (resolve_overloaded_builtin): Adjust
+	the signature of func.
+	* config/riscv/riscv-c.cc (riscv_resolve_overloaded_builtin): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (resolve_overloaded_builtin): Make
+	overloaded func with empty args error.
+
 2024-02-06  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/113689

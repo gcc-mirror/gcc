@@ -1,3 +1,96 @@
+2024-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113796
+	* gcc.dg/torture/pr113796.c: New testcase.
+
+2024-02-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113690
+	* gcc.target/i386/pr113690.c: New test case.
+
+2024-02-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr-armv8p9.c: New.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/compile/issue-2040.rs:
+	Enclose 'const' in single quotes.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2775.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2782.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1773.rs: Moved to...
+	* rust/compile/issue-1773.rs.bak: ...here.
+	* rust/compile/issue-2723-1.rs: New test.
+	* rust/compile/issue-2723-2.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2747.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2772-1.rs: New test.
+	* rust/compile/issue-2772-2.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1483.rs: New test.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/compile/issue-2812.rs: New test.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113750
+	* gcc.dg/vect/vect-early-break_112-pr113750.c: New test.
+	* gcc.dg/vect/vect-early-break_113-pr113750.c: New test.
+	* gcc.dg/vect/vect-early-break_114-pr113750.c: New test.
+	* gcc.dg/vect/vect-early-break_115-pr113750.c: New test.
+	* gcc.dg/vect/vect-early-break_116-pr113750.c: New test.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113731
+	* gcc.dg/vect/vect-early-break_111-pr113731.c: New test.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113467
+	* gcc.dg/vect/vect-early-break_110-pr113467.c: New test.
+
+2024-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113756
+	* gcc.dg/pr113756.c: New test.
+
+2024-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/debug/dwarf2/inline5.c: Don't xfail scan-assembler-not on
+	{ aix || solaris2 } && !gas.
+
+2024-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113753
+	* gcc.dg/torture/bitint-56.c: New test.
+	* gcc.dg/bitint-87.c: New test.
+
+2024-02-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/113766
+	* gcc.target/riscv/rvv/base/pr113766-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr113766-2.c: New test.
+
 2024-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/113788

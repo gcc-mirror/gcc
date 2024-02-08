@@ -1,3 +1,10 @@
+2024-02-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR testsuite/113710
+	PR c++/113814
+	* include/bits/stl_pair.h (tuple_element): Add forward
+	declaration of the partial specialization for tuple.
+
 2024-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* testsuite/lib/libstdc++.exp: Use "nul" for Windows, "/dev/null"
