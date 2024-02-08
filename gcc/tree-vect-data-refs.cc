@@ -772,11 +772,7 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 		 the store.  */
 
 	      for (auto dr_read : bases)
-		/* Note we're not passing the DRs in stmt order here
-		   since the DR dependence checking routine does not
-		   envision we're moving stores down.  The read-write
-		   order tricks it to avoid applying TBAA.  */
-		if (dr_may_alias_p (dr_read, dr_ref, loop_nest))
+		if (dr_may_alias_p (dr_ref, dr_read, loop_nest))
 		  {
 		    if (dump_enabled_p ())
 		      dump_printf_loc (MSG_MISSED_OPTIMIZATION,
