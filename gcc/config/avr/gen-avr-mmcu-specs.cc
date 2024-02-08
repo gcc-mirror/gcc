@@ -294,7 +294,7 @@ print_mcu (const avr_mcu_t *mcu)
 	   : "\t%{mabsdata}");
 
   // -m[no-]rodata-in-ram basically affects linking, but sanity-check early.
-  fprintf (f, "*cc1_misc:\n\t%%(check_rodata_in_ram)\n\n");
+  fprintf (f, "*cc1_rodata_in_ram:\n\t%%(check_rodata_in_ram)\n\n");
 
   // avr-gcc specific specs for assembling / the assembler.
 
@@ -318,8 +318,6 @@ print_mcu (const avr_mcu_t *mcu)
   fprintf (f, "*asm_errata_skip:\n%s\n\n", errata_skip
 	   ? "\t%{mno-skip-bug}"
 	   : "\t%{!mskip-bug: -mno-skip-bug}");
-
-  fprintf (f, "*asm_misc:\n" /* empty */ "\n\n");
 
   // avr-specific specs for linking / the linker.
 
@@ -361,7 +359,7 @@ print_mcu (const avr_mcu_t *mcu)
     }
 
   // -m[no-]rodata-in-ram affects linking.  Sanity check its usage.
-  fprintf (f, "*link_misc:\n\t%%(check_rodata_in_ram)\n\n");
+  fprintf (f, "*link_rodata_in_ram:\n\t%%(check_rodata_in_ram)\n\n");
 
   // Specs known to GCC.
 
