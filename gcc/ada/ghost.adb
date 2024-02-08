@@ -1734,13 +1734,17 @@ package body Ghost is
       elsif Ghost_Mode = Ignore then
          Policy := Name_Ignore;
 
-      --  Inherit the "ghostness" of the generic unit
+      --  Inherit the "ghostness" of the generic unit, but the current Ghost
+      --  policy is the relevant one for the instantiation.
 
-      elsif Is_Checked_Ghost_Entity (Gen_Id) then
-         Policy := Name_Check;
+      elsif Is_Checked_Ghost_Entity (Gen_Id)
+        or else Is_Ignored_Ghost_Entity (Gen_Id)
+      then
+         Policy := Policy_In_Effect (Name_Ghost);
 
-      elsif Is_Ignored_Ghost_Entity (Gen_Id) then
-         Policy := Name_Ignore;
+         if Policy = No_Name then
+            Policy := Name_Ignore;
+         end if;
       end if;
 
       --  Mark the instantiation as Ghost
