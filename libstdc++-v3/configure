@@ -789,6 +789,8 @@ GLIBCXX_HOSTED_TRUE
 glibcxx_compiler_shared_flag
 glibcxx_compiler_pic_flag
 glibcxx_lt_pic_flag
+OS_IS_DARWIN_FALSE
+OS_IS_DARWIN_TRUE
 ENABLE_DARWIN_AT_RPATH_FALSE
 ENABLE_DARWIN_AT_RPATH_TRUE
 enable_static
@@ -12278,7 +12280,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12281 "configure"
+#line 12283 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12384,7 +12386,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12387 "configure"
+#line 12389 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15744,6 +15746,19 @@ else
   ENABLE_DARWIN_AT_RPATH_FALSE=
 fi
 
+os_is_darwin=no
+case ${host_os} in
+  darwin*) os_is_darwin=yes ;;
+  *) ;;
+esac
+ if test x${os_is_darwin} = xyes; then
+  OS_IS_DARWIN_TRUE=
+  OS_IS_DARWIN_FALSE='#'
+else
+  OS_IS_DARWIN_TRUE='#'
+  OS_IS_DARWIN_FALSE=
+fi
+
 
 if test "$enable_vtable_verify" = yes; then
   predep_objects_CXX="${predep_objects_CXX} ${glibcxx_builddir}/../libgcc/vtv_start.o"
@@ -16167,7 +16182,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16170 "configure"
+#line 16185 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16202,7 +16217,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16205 "configure"
+#line 16220 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16237,7 +16252,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16240 "configure"
+#line 16255 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16273,7 +16288,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16276 "configure"
+#line 16291 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16429,7 +16444,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16432 "configure"
+#line 16447 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16471,7 +16486,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16474 "configure"
+#line 16489 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -55831,6 +55846,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_DARWIN_AT_RPATH_TRUE}" && test -z "${ENABLE_DARWIN_AT_RPATH_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_DARWIN_AT_RPATH\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${OS_IS_DARWIN_TRUE}" && test -z "${OS_IS_DARWIN_FALSE}"; then
+  as_fn_error $? "conditional \"OS_IS_DARWIN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_HOSTED_TRUE}" && test -z "${GLIBCXX_HOSTED_FALSE}"; then
