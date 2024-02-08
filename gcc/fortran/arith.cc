@@ -1323,6 +1323,7 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
   gfc_constructor *c;
   gfc_expr *r;
   arith rc;
+  bool ov = false;
 
   if (op->expr_type == EXPR_CONSTANT)
     return eval (op, result);
@@ -1336,13 +1337,17 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
     {
       rc = reduce_unary (eval, c->expr, &r);
 
-      if (rc != ARITH_OK)
+      /* Remember any overflow encountered during reduction and continue,
+	 but terminate on serious errors.  */
+      if (rc == ARITH_OVERFLOW)
+	ov = true;
+      else if (rc != ARITH_OK)
 	break;
 
       gfc_replace_expr (c->expr, r);
     }
 
-  if (rc != ARITH_OK)
+  if (rc != ARITH_OK && rc != ARITH_OVERFLOW)
     gfc_constructor_free (head);
   else
     {
@@ -1363,7 +1368,7 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
       *result = r;
     }
 
-  return rc;
+  return ov ? ARITH_OVERFLOW : rc;
 }
 
 
