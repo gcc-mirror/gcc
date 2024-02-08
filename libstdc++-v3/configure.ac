@@ -109,6 +109,13 @@ ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
+os_is_darwin=no
+case ${host_os} in
+  darwin*) os_is_darwin=yes ;;
+  *) ;;
+esac
+AM_CONDITIONAL([OS_IS_DARWIN], [test x${os_is_darwin} = xyes])
+
 if test "$enable_vtable_verify" = yes; then
   predep_objects_CXX="${predep_objects_CXX} ${glibcxx_builddir}/../libgcc/vtv_start.o"
   postdep_objects_CXX="${postdep_objects_CXX} ${glibcxx_builddir}/../libgcc/vtv_end.o"
