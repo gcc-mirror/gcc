@@ -9,7 +9,7 @@ program main
   integer :: n, i,k
   n = 11
   do i = 1, n,2
-    !$omp simd lastprivate(k)
+    !$omp simd
     do k = 1, i + 41
       if (k > 11 + 41 .or. k < 1) error stop
     end do
