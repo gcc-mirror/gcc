@@ -1,3 +1,20 @@
+2024-02-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/111677
+	* config/aarch64/aarch64.cc (aarch64_reg_save_mode): Use
+	V16QImode for the full 16-byte FPR saves in the vector PCS case.
+	(aarch64_gen_storewb_pair): Handle V16QImode.
+	(aarch64_gen_loadwb_pair): Likewise.
+	(aarch64_gen_load_pair): Likewise.
+	* config/aarch64/aarch64.md (loadwb_pair<TX:mode>_<P:mode>):
+	Rename to ...
+	(loadwb_pair<TX_V16QI:mode>_<P:mode>): ... this, extending to
+	V16QImode.
+	(storewb_pair<TX:mode>_<P:mode>): Rename to ...
+	(storewb_pair<TX_V16QI:mode>_<P:mode>): ... this, extending to
+	V16QImode.
+	* config/aarch64/iterators.md (TX_V16QI): New.
+
 2024-02-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

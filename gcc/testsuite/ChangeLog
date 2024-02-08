@@ -1,3 +1,17 @@
+2024-02-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2023-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/108321
+	* g++.dg/contracts/contracts-tmpl-spec2.C: Add -fsigned-char
+	to options.
+
+2024-02-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/111677
+	* gcc.target/aarch64/torture/pr111677.c: New test.
+
 2024-02-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
