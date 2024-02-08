@@ -840,7 +840,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 630. arrays of valarray.
       if (_M_size == __e.size())
-	std::__valarray_copy(__e, _M_size, _Array<_Tp>(_M_data));
+	{
+	  // Copy manually instead of using __valarray_copy, because __e might
+	  // alias _M_data and the _Array param type of __valarray_copy uses
+	  // restrict which doesn't allow aliasing.
+	  for (size_t __i = 0; __i < _M_size; ++__i)
+	    _M_data[__i] = __e[__i];
+	}
       else
 	{
 	  if (_M_data)
