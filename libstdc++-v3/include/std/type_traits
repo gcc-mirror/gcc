@@ -1470,16 +1470,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Type relations.
 
   /// is_same
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_same)
   template<typename _Tp, typename _Up>
     struct is_same
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_SAME
     : public __bool_constant<__is_same(_Tp, _Up)>
+    { };
 #else
+  template<typename _Tp, typename _Up>
+    struct is_same
     : public false_type
-#endif
     { };
 
-#ifndef _GLIBCXX_HAVE_BUILTIN_IS_SAME
   template<typename _Tp>
     struct is_same<_Tp, _Tp>
     : public true_type
@@ -3496,7 +3497,7 @@ template <typename _Tp>
 template <typename _Tp, unsigned _Idx>
   inline constexpr size_t extent_v<_Tp[], _Idx> = extent_v<_Tp, _Idx - 1>;
 
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_SAME
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_same)
 template <typename _Tp, typename _Up>
   inline constexpr bool is_same_v = __is_same(_Tp, _Up);
 #else
