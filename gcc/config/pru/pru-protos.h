@@ -73,6 +73,7 @@ extern int pru_get_ctable_base_offset (unsigned HOST_WIDE_INT caddr);
 extern int pru_symref2ioregno (rtx op);
 
 extern rtl_opt_pass *make_pru_tiabi_check (gcc::context *);
+extern rtl_opt_pass *make_pru_minrt_check (gcc::context *);
 
 #endif /* RTX_CODE */
 

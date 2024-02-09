@@ -214,3 +214,73 @@ make_pru_tiabi_check (gcc::context *ctxt)
 {
   return new pass_pru_tiabi_check (ctxt);
 }
+
+namespace {
+
+/* Scan the tree to ensure that the compiled code by GCC
+   conforms to the non-standard minimal runtime.  */
+const pass_data pass_data_pru_minrt_check =
+{
+  GIMPLE_PASS, /* type */
+  "*pru_minrt_check", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  PROP_gimple_any, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+/* Implementation class for the minrt compliance-check pass.  */
+class pass_pru_minrt_check : public gimple_opt_pass
+{
+public:
+  pass_pru_minrt_check (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_pru_minrt_check, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *);
+
+  virtual bool gate (function *)
+  {
+    return TARGET_MINRT;
+  }
+
+}; // class pass_pru_minrt_check
+
+/* Pass implementation.  */
+unsigned
+pass_pru_minrt_check::execute (function *fun)
+{
+  const_tree fntype = TREE_TYPE (fun->decl);
+
+  if (id_equal (DECL_NAME (fun->decl), "main"))
+    {
+      /* Argument list always ends with VOID_TYPE, so subtract one
+	 to get the number of function arguments.  */
+      const unsigned num_args = list_length (TYPE_ARG_TYPES (fntype)) - 1;
+
+      if (num_args != 0)
+	error_at (DECL_SOURCE_LOCATION (fun->decl), "function %<main%> "
+		  "must have no arguments when using the "
+		  "%<-minrt%> option");
+
+      /* The required CFG analysis to detect when a functions would never
+	 return is available only with -O1 and higher.  */
+      if (optimize >= 1 && !TREE_THIS_VOLATILE (fun->decl))
+	error_at (DECL_SOURCE_LOCATION (fun->decl), "function %<main%> "
+		  "must never return when using the "
+		  "%<-minrt%> option");
+    }
+  return 0;
+}
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pru_minrt_check (gcc::context *ctxt)
+{
+  return new pass_pru_minrt_check (ctxt);
+}
