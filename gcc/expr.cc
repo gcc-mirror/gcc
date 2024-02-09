@@ -12445,7 +12445,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    }
 	}
       /* If both types are integral, convert from one mode to the other.  */
-      else if (INTEGRAL_TYPE_P (type) && INTEGRAL_TYPE_P (TREE_TYPE (treeop0)))
+      else if (INTEGRAL_TYPE_P (type)
+	       && INTEGRAL_TYPE_P (TREE_TYPE (treeop0))
+	       && mode != BLKmode
+	       && GET_MODE (op0) != BLKmode)
 	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       /* If the output type is a bit-field type, do an extraction.  */
