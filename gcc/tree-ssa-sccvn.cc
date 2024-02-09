@@ -898,6 +898,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 {
   /* For non-calls, store the information that makes up the address.  */
   tree orig = ref;
+  unsigned start = result->length ();
+  bool seen_variable_array_ref = false;
   while (ref)
     {
       vn_reference_op_s temp;
@@ -984,6 +986,12 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	    tree eltype = TREE_TYPE (TREE_TYPE (TREE_OPERAND (ref, 0)));
 	    /* Record index as operand.  */
 	    temp.op0 = TREE_OPERAND (ref, 1);
+	    /* When the index is not constant we have to apply the same
+	       logic as get_ref_base_and_extent which eventually uses
+	       global ranges to refine the overall ref extent.  Record
+	       we've seen such a case, fixup below.  */
+	    if (TREE_CODE (temp.op0) == SSA_NAME)
+	      seen_variable_array_ref = true;
 	    /* Always record lower bounds and element size.  */
 	    temp.op1 = array_ref_low_bound (ref);
 	    /* But record element size in units of the type alignment.  */
@@ -1075,6 +1083,82 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	ref = TREE_OPERAND (ref, 0);
       else
 	ref = NULL_TREE;
+    }
+  poly_int64 offset, size, max_size;
+  tree base;
+  bool rev;
+  if (seen_variable_array_ref
+      && handled_component_p (orig)
+      && (base = get_ref_base_and_extent (orig,
+					  &offset, &size, &max_size, &rev))
+      && known_size_p (max_size)
+      && known_eq (size, max_size))
+    {
+      poly_int64 orig_offset = offset;
+      poly_int64 tem;
+      if (TREE_CODE (base) == MEM_REF
+	  && mem_ref_offset (base).to_shwi (&tem))
+	offset += tem * BITS_PER_UNIT;
+      HOST_WIDE_INT coffset = offset.to_constant ();
+      /* When get_ref_base_and_extent computes an offset constrained to
+	 a constant position we have to fixup variable array indexes in
+	 the ref to avoid the situation where based on context we'd have
+	 to value-number the same vn_reference ops differently.  Make
+	 the vn_reference ops differ by adjusting those indexes to
+	 appropriate constants.  */
+      poly_int64 off = 0;
+      for (unsigned i = result->length (); i > start; --i)
+	{
+	  auto &op = (*result)[i-1];
+	  if ((op.opcode == ARRAY_REF
+	       || op.opcode == ARRAY_RANGE_REF)
+	      && TREE_CODE (op.op0) == SSA_NAME)
+	    {
+	      /* There's a single constant index that get's 'off' closer
+		 to 'offset'.  */
+	      unsigned HOST_WIDE_INT elsz
+		= tree_to_uhwi (op.op2) * vn_ref_op_align_unit (&op);
+	      unsigned HOST_WIDE_INT idx
+		= (coffset / BITS_PER_UNIT - off.to_constant ()) / elsz;
+	      if (idx == 0)
+		op.op0 = op.op1;
+	      else
+		op.op0 = wide_int_to_tree (TREE_TYPE (op.op0),
+					   wi::to_poly_wide (op.op1) + idx);
+	      op.off = idx * elsz;
+	    }
+	  else
+	    {
+	      if (op.opcode == ERROR_MARK)
+		/* two-ops codes have the offset in the first op.  */
+		;
+	      else if (op.opcode == ADDR_EXPR
+		       || op.opcode == SSA_NAME
+		       || op.opcode == CONSTRUCTOR
+		       || TREE_CODE_CLASS (op.opcode) == tcc_declaration
+		       || TREE_CODE_CLASS (op.opcode) == tcc_constant)
+		/* end-of ref.  */
+		gcc_assert (i == result->length ());
+	      else
+		{
+		  gcc_assert (known_ne (op.off, -1));
+		  off += op.off;
+		}
+	    }
+	}
+      if (flag_checking)
+	{
+	  ao_ref r;
+	  if (start != 0)
+	    ;
+	  else if (ao_ref_init_from_vn_reference (&r, 0, 0, TREE_TYPE (orig),
+						  *result))
+	    gcc_assert (known_eq (r.offset, orig_offset)
+			&& known_eq (r.size, size)
+			&& known_eq (r.max_size, max_size));
+	  else
+	    gcc_unreachable ();
+	}
     }
 }
 
@@ -1203,21 +1287,11 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
-	  /* We recorded the lower bound and the element size.  */
-	  if (!poly_int_tree_p (op->op0)
-	      || !poly_int_tree_p (op->op1)
-	      || TREE_CODE (op->op2) != INTEGER_CST)
+	  /* Use the recored constant offset.  */
+	  if (maybe_eq (op->off, -1))
 	    max_size = -1;
 	  else
-	    {
-	      poly_offset_int woffset
-		= wi::sext (wi::to_poly_offset (op->op0)
-			    - wi::to_poly_offset (op->op1),
-			    TYPE_PRECISION (sizetype));
-	      woffset *= wi::to_offset (op->op2) * vn_ref_op_align_unit (op);
-	      woffset <<= LOG2_BITS_PER_UNIT;
-	      offset += woffset;
-	    }
+	    offset += op->off << LOG2_BITS_PER_UNIT;
 	  break;
 
 	case REALPART_EXPR:
@@ -1724,7 +1798,8 @@ re_valueize:
 	}
       /* If it transforms a non-constant ARRAY_REF into a constant
 	 one, adjust the constant offset.  */
-      else if (vro->opcode == ARRAY_REF
+      else if ((vro->opcode == ARRAY_REF
+		|| vro->opcode == ARRAY_RANGE_REF)
 	       && known_eq (vro->off, -1)
 	       && poly_int_tree_p (vro->op0)
 	       && poly_int_tree_p (vro->op1)
