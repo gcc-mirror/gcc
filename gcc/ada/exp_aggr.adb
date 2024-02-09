@@ -5714,6 +5714,7 @@ package body Exp_Aggr is
          Iter     : Node_Id;
          New_Comp : Node_Id;
          One_Loop : Node_Id;
+         Iter_Id  : Entity_Id;
 
          Size_Expr_Code : List_Id;
          Insertion_Code : List_Id := New_List;
@@ -5730,6 +5731,7 @@ package body Exp_Aggr is
 
          while Present (Assoc) loop
             Iter := Iterator_Specification (Assoc);
+            Iter_Id := Defining_Identifier (Iter);
             Incr := Make_Assignment_Statement (Loc,
                       Name => New_Occurrence_Of (Size_Id, Loc),
                       Expression =>
@@ -5737,10 +5739,16 @@ package body Exp_Aggr is
                          Left_Opnd  => New_Occurrence_Of (Size_Id, Loc),
                          Right_Opnd => Make_Integer_Literal (Loc, 1)));
 
+            --  Avoid using the same iterator definition in both loops by
+            --  creating a new iterator for each loop and mapping it over the
+            --  original iterator references.
+
             One_Loop := Make_Implicit_Loop_Statement (N,
               Iteration_Scheme =>
                 Make_Iteration_Scheme (Loc,
-                  Iterator_Specification => New_Copy_Tree (Iter)),
+                  Iterator_Specification =>
+                     New_Copy_Tree (Iter,
+                        Map => New_Elmt_List (Iter_Id, New_Copy (Iter_Id)))),
                 Statements => New_List (Incr));
 
             Append (One_Loop, Size_Expr_Code);
@@ -5837,6 +5845,7 @@ package body Exp_Aggr is
 
          while Present (Assoc) loop
             Iter := Iterator_Specification (Assoc);
+            Iter_Id := Defining_Identifier (Iter);
             New_Comp := Make_Assignment_Statement (Loc,
                Name =>
                  Make_Indexed_Component (Loc,
@@ -5869,10 +5878,16 @@ package body Exp_Aggr is
                       Attribute_Name => Name_Last)),
                Then_Statements => New_List (Incr));
 
+            --  Avoid using the same iterator definition in both loops by
+            --  creating a new iterator for each loop and mapping it over the
+            --  original iterator references.
+
             One_Loop := Make_Implicit_Loop_Statement (N,
               Iteration_Scheme =>
                 Make_Iteration_Scheme (Loc,
-                  Iterator_Specification => Copy_Separate_Tree (Iter)),
+                  Iterator_Specification =>
+                     New_Copy_Tree (Iter,
+                        Map => New_Elmt_List (Iter_Id, New_Copy (Iter_Id)))),
                 Statements => New_List (New_Comp, Incr));
 
             Append (One_Loop, Insertion_Code);
