@@ -4650,20 +4650,19 @@ finish_type_pack_element (tree idx, tree types, tsubst_flags_t complain)
 	error ("%<__type_pack_element%> index is not an integral constant");
       return error_mark_node;
     }
-  HOST_WIDE_INT val = tree_to_shwi (idx);
-  if (val < 0)
+  if (tree_int_cst_sgn (idx) < 0)
     {
       if (complain & tf_error)
 	error ("%<__type_pack_element%> index is negative");
       return error_mark_node;
     }
-  if (val >= TREE_VEC_LENGTH (types))
+  if (wi::to_widest (idx) >= TREE_VEC_LENGTH (types))
     {
       if (complain & tf_error)
 	error ("%<__type_pack_element%> index is out of range");
       return error_mark_node;
     }
-  return TREE_VEC_ELT (types, val);
+  return TREE_VEC_ELT (types, tree_to_shwi (idx));
 }
 
 /* Implement the __direct_bases keyword: Return the direct base classes
