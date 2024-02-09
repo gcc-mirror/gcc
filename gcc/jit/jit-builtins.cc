@@ -612,6 +612,12 @@ builtins_manager::ensure_optimization_builtins_exist ()
   (void)get_builtin_function_by_id (BUILT_IN_POPCOUNT);
   (void)get_builtin_function_by_id (BUILT_IN_POPCOUNTL);
   (void)get_builtin_function_by_id (BUILT_IN_POPCOUNTLL);
+  (void)get_builtin_function_by_id (BUILT_IN_CLZ);
+  (void)get_builtin_function_by_id (BUILT_IN_CTZ);
+  (void)get_builtin_function_by_id (BUILT_IN_CLZL);
+  (void)get_builtin_function_by_id (BUILT_IN_CTZL);
+  (void)get_builtin_function_by_id (BUILT_IN_CLZLL);
+  (void)get_builtin_function_by_id (BUILT_IN_CTZLL);
 }
 
 /* Playback support.  */
