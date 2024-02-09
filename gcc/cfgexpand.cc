@@ -3671,16 +3671,21 @@ expand_asm_stmt (gasm *stmt)
 	{
 	  edge e;
 	  edge_iterator ei;
-	  
+	  unsigned int cnt = EDGE_COUNT (gimple_bb (stmt)->succs);
+
 	  FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
 	    {
-	      start_sequence ();
-	      for (rtx_insn *curr = after_rtl_seq;
-		   curr != NULL_RTX;
-		   curr = NEXT_INSN (curr))
-		emit_insn (copy_insn (PATTERN (curr)));
-	      rtx_insn *copy = get_insns ();
-	      end_sequence ();
+	      rtx_insn *copy;
+	      if (--cnt == 0)
+		copy = after_rtl_seq;
+	      else
+		{
+		  start_sequence ();
+		  duplicate_insn_chain (after_rtl_seq, after_rtl_end,
+					NULL, NULL);
+		  copy = get_insns ();
+		  end_sequence ();
+		}
 	      insert_insn_on_edge (copy, e);
 	    }
 	}
