@@ -254,6 +254,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       typedef _Tp value_type;
+      allocator() { }
       template<typename _Up> allocator(const allocator<_Up>&) { }
     };
 
@@ -262,6 +263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       typedef _Tp value_type;
+      allocator() { }
       template<typename _Up> allocator(const allocator<_Up>&) { }
     };
 
@@ -270,6 +272,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       typedef _Tp value_type;
+      allocator() { }
       template<typename _Up> allocator(const allocator<_Up>&) { }
     };
   /// @endcond
