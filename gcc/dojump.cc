@@ -1266,6 +1266,7 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
   machine_mode mode;
   int unsignedp;
   enum rtx_code code;
+  unsigned HOST_WIDE_INT nunits;
 
   /* Don't crash if the comparison was erroneous.  */
   op0 = expand_normal (treeop0);
@@ -1307,6 +1308,21 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
 
       emit_insn (targetm.gen_canonicalize_funcptr_for_compare (new_op1, op1));
       op1 = new_op1;
+    }
+  /* For boolean vectors with less than mode precision
+     make sure to fill padding with consistent values.  */
+  else if (VECTOR_BOOLEAN_TYPE_P (type)
+	   && SCALAR_INT_MODE_P (mode)
+	   && TYPE_VECTOR_SUBPARTS (type).is_constant (&nunits)
+	   && maybe_ne (GET_MODE_PRECISION (mode), nunits))
+    {
+      gcc_assert (code == EQ || code == NE);
+      op0 = expand_binop (mode, and_optab, op0,
+			  GEN_INT ((1 << nunits) - 1), NULL_RTX,
+			  true, OPTAB_WIDEN);
+      op1 = expand_binop (mode, and_optab, op1,
+			  GEN_INT ((1 << nunits) - 1), NULL_RTX,
+			  true, OPTAB_WIDEN);
     }
 
   do_compare_rtx_and_jump (op0, op1, code, unsignedp, treeop0, mode,
