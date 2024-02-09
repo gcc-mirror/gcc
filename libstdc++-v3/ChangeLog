@@ -1,3 +1,18 @@
+2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h: Fix typo in comment.
+
+2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100147
+	* include/bits/gslice.h (operator=): Add comment about lack of
+	self-assignment check.
+
+2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr2/type_traits (bases, direct_bases): Use
+	__has_builtin to check if required built-ins are supported.
+
 2024-02-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR testsuite/113710

@@ -1,3 +1,97 @@
+2024-02-08  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.target/riscv/rvv/base/abi-1.c: change selector
+	* gcc.target/riscv/rvv/base/pragma-2.c: ditto
+	* gcc.target/riscv/rvv/base/pragma-3.c: ditto
+
+2024-02-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16_alternative_ok_nocache): Use
+	et_arm_fp16_alternative_flags to cache the result.  Improve test
+	for FP16 availability.
+	(add_options_for_arm_fp16_alternative): Use
+	et_arm_fp16_alternative_flags.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-3.C: Update dg-* flags.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-4.C: Likewise.
+	* gcc.dg/torture/arm-fp16-int-convert-alt.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-3.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-4.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-3.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-4.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-1.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-10.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-11.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-12.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-2.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-3.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-4.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-5.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-6.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-7.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-8.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-9.c: Likewise.
+	* gcc.target/arm/fp16-rounding-alt-1.c: Likewise.
+
+2024-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113649
+	* g++.dg/cpp2a/nontype-class65.C: New test.
+
+2024-02-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/113735
+	* gcc.dg/tree-ssa/pr113735.c: New test.
+
+2024-02-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113711
+	PR target/113733
+	* gcc.target/i386/apx-ndd-2.c: New test.
+	* gcc.target/i386/apx-ndd-base-index-1.c: Likewise.
+	* gcc.target/i386/apx-ndd-no-seg-global-1.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-1.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-2.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-3.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-4.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-5.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-1a.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-2.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-3.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-4.c: Likewise.
+	* gcc.target/i386/apx-ndd-x32-1.c: Likewise.
+
+2024-02-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113808
+	* gfortran.dg/vect/vect-early-break_1-PR113808.f90: Moved to...
+	* gfortran.dg/vect/vect-early-break_1-pr113808.f90: ...here.
+
+2024-02-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113808
+	* gfortran.dg/vect/vect-early-break_1-PR113808.f90: New test.
+
+2024-02-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-early-break_110-pr113467.c: Change unsigned long *
+	to uint64_t *.
+
+2024-02-08  Pan Li  <pan2.li@intel.com>
+
+	PR target/113766
+	* gcc.target/riscv/rvv/base/pr113766-1.c: Add new cases.
+
+2024-02-08  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/113776
+	* gcc.dg/pr113776-1.c, gcc.dg/pr113776-2.c, gcc.dg/pr113776-3.c,
+	gcc.dg/pr113776-4.c: New tests.
+
+2024-02-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/nontype-class64.C: New test.
+
 2024-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/113796

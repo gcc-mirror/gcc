@@ -1,3 +1,80 @@
+2024-02-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/113735
+	* value-relation.cc (equiv_oracle::add_equiv_to_block): Call
+	limit_check().
+
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc (struct McuInfo): New.
+	(main, print_mcu, diagnose_mrodata_in_ram): Pass it down.
+
+2024-02-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113711
+	PR target/113733
+	* config/i386/constraints.md: List all constraints with j prefix.
+	(j>): Change auto-dec to auto-inc in documentation.
+	(je): Changed to a memory constraint with APX NDD TLS operand
+	check.
+	(jM): New memory constraint for APX NDD instructions.
+	(jO): Likewise.
+	* config/i386/i386-protos.h (x86_poff_operand_p): Removed.
+	* config/i386/i386.cc (x86_poff_operand_p): Likewise.
+	* config/i386/i386.md (*add<dwi>3_doubleword): Use rjO.
+	(*add<mode>_1[SWI48]): Use je and jM.
+	(addsi_1_zext): Use jM.
+	(*addv<dwi>4_doubleword_1[DWI]): Likewise.
+	(*sub<mode>_1[SWI]): Use jM.
+	(@add<mode>3_cc_overflow_1[SWI]): Likewise.
+	(*add<dwi>3_doubleword_cc_overflow_1): Use rjO.
+	(*and<dwi>3_doubleword): Likewise.
+	(*anddi_1): Use jM.
+	(*andsi_1_zext): Likewise.
+	(*and<mode>_1[SWI24]): Likewise.
+	(*<code><dwi>3_doubleword[any_or]): Use rjO
+	(*code<mode>_1[any_or SWI248]): Use jM.
+	(*<code>si_1_zext[zero_extend + any_or]): Likewise.
+	* config/i386/predicates.md (apx_ndd_memory_operand): New.
+	(apx_ndd_add_memory_operand): Likewise.
+
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113824
+	* config/avr/avr-mcus.def (ata5797): Move from avr5 to avr4.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2024-02-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113808
+	* tree-vect-loop.cc (vectorizable_live_operation): Don't cache the
+	value cross iterations.
+
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc (print_mcu) <*cpp_mcu>: Spec always
+	defines __AVR_PM_BASE_ADDRESS__ if the core has it.
+
+2024-02-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Revert last change to dr_may_alias_p.
+
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc: Rename spec cc1_misc to
+	cc1_rodata_in_ram.  Rename spec link_misc to link_rodata_in_ram.
+	Remove spec asm_misc.
+	* config/avr/specs.h: Same.
+
+2024-02-08  Pan Li  <pan2.li@intel.com>
+
+	PR target/113766
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct alu_def): Make
+	sure the c.arg_num is >= 2 before checking.
+	(struct build_frm_base): Ditto.
+	(struct narrow_alu_def): Ditto.
+
 2024-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/113796

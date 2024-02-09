@@ -1,3 +1,10 @@
+2024-02-08  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/113776
+	* c-typeck.cc (c_objc_common_truthvalue_conversion): Return an
+	integer constant expression for boolean conversion of floating
+	constant.
+
 2024-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/113740
