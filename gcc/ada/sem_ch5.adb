@@ -1497,6 +1497,15 @@ package body Sem_Ch5 is
          Resolve (Exp, Etype (Exp));
          Exp_Type := Etype (Exp);
          Is_General_Case_Statement := True;
+         if not (Is_Record_Type (Exp_Type) or Is_Array_Type (Exp_Type)) then
+            Error_Msg_N
+              ("selecting expression of general case statement " &
+               "must be a record or an array",
+               Exp);
+
+            --  Avoid cascading errors
+            return;
+         end if;
       else
          Analyze_And_Resolve (Exp, Any_Discrete);
          Exp_Type := Etype (Exp);
