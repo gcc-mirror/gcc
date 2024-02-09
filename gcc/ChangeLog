@@ -1,3 +1,12 @@
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113824
+	* config/avr/avr-mcus.def (ata5797): Move from avr5 to avr4.
+	* doc/avr-mmcu.texi: Rebuild.
+
 2024-02-05  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
