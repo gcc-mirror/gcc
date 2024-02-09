@@ -8234,11 +8234,6 @@ package body Exp_Util is
       Obj_Id  : constant Entity_Id := Defining_Identifier (Decl);
       Obj_Typ : constant Entity_Id := Base_Type (Etype (Obj_Id));
 
-      function Initialized_By_Access (Trans_Id : Entity_Id) return Boolean;
-      --  Determine whether transient object Trans_Id is initialized either
-      --  by a function call which returns an access type or simply renames
-      --  another pointer.
-
       function Initialized_By_Aliased_BIP_Func_Call
         (Trans_Id : Entity_Id) return Boolean;
       --  Determine whether transient object Trans_Id is initialized by a
@@ -8247,15 +8242,17 @@ package body Exp_Util is
       --  This case creates an aliasing between the returned value and the
       --  value denoted by BIPaccess.
 
+      function Initialized_By_Reference (Trans_Id : Entity_Id) return Boolean;
+      --  Determine whether transient object Trans_Id is initialized by a
+      --  reference to another object. This is the only case where we can
+      --  possibly finalize a transient object through an access value.
+
       function Is_Aliased
         (Trans_Id   : Entity_Id;
          First_Stmt : Node_Id) return Boolean;
       --  Determine whether transient object Trans_Id has been renamed or
       --  aliased through 'reference in the statement list starting from
       --  First_Stmt.
-
-      function Is_Allocated (Trans_Id : Entity_Id) return Boolean;
-      --  Determine whether transient object Trans_Id is allocated on the heap
 
       function Is_Indexed_Container
         (Trans_Id   : Entity_Id;
@@ -8274,20 +8271,6 @@ package body Exp_Util is
       function Is_Part_Of_BIP_Return_Statement (N : Node_Id) return Boolean;
       --  Return True if N is directly part of a build-in-place return
       --  statement.
-
-      ---------------------------
-      -- Initialized_By_Access --
-      ---------------------------
-
-      function Initialized_By_Access (Trans_Id : Entity_Id) return Boolean is
-         Expr : constant Node_Id := Expression (Parent (Trans_Id));
-
-      begin
-         return
-           Present (Expr)
-             and then Nkind (Expr) /= N_Reference
-             and then Is_Access_Type (Etype (Expr));
-      end Initialized_By_Access;
 
       ------------------------------------------
       -- Initialized_By_Aliased_BIP_Func_Call --
@@ -8385,6 +8368,18 @@ package body Exp_Util is
 
          return False;
       end Initialized_By_Aliased_BIP_Func_Call;
+
+      ------------------------------
+      -- Initialized_By_Reference --
+      ------------------------------
+
+      function Initialized_By_Reference (Trans_Id : Entity_Id) return Boolean
+      is
+         Expr : constant Node_Id := Expression (Parent (Trans_Id));
+
+      begin
+         return Present (Expr) and then Nkind (Expr) = N_Reference;
+      end Initialized_By_Reference;
 
       ----------------
       -- Is_Aliased --
@@ -8532,19 +8527,6 @@ package body Exp_Util is
             return False;
          end if;
       end Is_Aliased;
-
-      ------------------
-      -- Is_Allocated --
-      ------------------
-
-      function Is_Allocated (Trans_Id : Entity_Id) return Boolean is
-         Expr : constant Node_Id := Expression (Parent (Trans_Id));
-      begin
-         return
-           Is_Access_Type (Etype (Trans_Id))
-             and then Present (Expr)
-             and then Nkind (Expr) = N_Allocator;
-      end Is_Allocated;
 
       --------------------------
       -- Is_Indexed_Container --
@@ -8773,17 +8755,11 @@ package body Exp_Util is
 
           and then not Is_Aliased (Obj_Id, Decl)
 
-          --  Do not consider transient objects allocated on the heap since
-          --  they are attached to a finalization collection.
+          --  If the transient object is of an access type, check that it is
+          --  initialized by a reference to another object.
 
-          and then not Is_Allocated (Obj_Id)
-
-          --  If the transient object is a pointer, check that it is not
-          --  initialized by a function that returns a pointer or acts as a
-          --  renaming of another pointer.
-
-          and then not
-            (Is_Access_Type (Obj_Typ) and then Initialized_By_Access (Obj_Id))
+          and then (not Is_Access_Type (Obj_Typ)
+                     or else Initialized_By_Reference (Obj_Id))
 
           --  Do not consider transient objects which act as indirect aliases
           --  of build-in-place function results.
