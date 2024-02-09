@@ -1350,9 +1350,7 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
       if (!tree_fits_uhwi_p (idx))
 	{
 	  if (m_upwards_2limb
-	      && (m_upwards_2limb * limb_prec
-		  <= ((unsigned) TYPE_PRECISION (rhs_type)
-		      - !TYPE_UNSIGNED (rhs_type))))
+	      && low >= m_upwards_2limb - m_first)
 	    {
 	      rhs1 = handle_operand (rhs1, idx);
 	      if (m_first)
@@ -1363,8 +1361,21 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	    }
 	  bool single_comparison
 	    = low == high || (m_upwards_2limb && (low & 1) == m_first);
+	  tree idxc = idx;
+	  if (!single_comparison
+	      && m_upwards_2limb
+	      && !m_first
+	      && low + 1 == m_upwards_2limb)
+	    /* In this case we know that idx <= low always,
+	       so effectively we just needs a single comparison,
+	       idx < low or idx == low, but we'd need to emit different
+	       code for the 2 branches than single_comparison normally
+	       emits.  So, instead of special-casing that, emit a
+	       low <= low comparison which cfg cleanup will clean up
+	       at the end of the pass.  */
+	    idxc = size_int (low);
 	  g = gimple_build_cond (single_comparison ? LT_EXPR : LE_EXPR,
-				 idx, size_int (low), NULL_TREE, NULL_TREE);
+				 idxc, size_int (low), NULL_TREE, NULL_TREE);
 	  edge edge_true_true, edge_true_false, edge_false;
 	  if_then_if_then_else (g, (single_comparison ? NULL
 				    : gimple_build_cond (EQ_EXPR, idx,
