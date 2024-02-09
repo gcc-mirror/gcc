@@ -115,6 +115,27 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 #define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%" PRIx64 "%016" PRIx64
 #define HOST_WIDE_INT_PRINT_PADDED_HEX "%016" PRIx64
 
+/* Similarly format modifier for printing size_t.  As not all hosts support
+   z modifier in printf, use GCC_PRISZ and cast argument to fmt_size_t.
+   So, instead of doing fprintf ("%zu\n", sizeof (x) * y); use
+   fprintf (HOST_SIZE_T_PRINT_UNSIGNED "\n",
+	    (fmt_size_t) (sizeof (x) * y));  */
+#if SIZE_MAX <= INT_MAX
+# define GCC_PRISZ ""
+# define fmt_size_t unsigned int
+#elif SIZE_MAX <= LONG_MAX
+# define GCC_PRISZ HOST_LONG_FORMAT
+# define fmt_size_t unsigned long int
+#else
+# define GCC_PRISZ HOST_LONG_LONG_FORMAT
+# define fmt_size_t unsigned long long int
+#endif
+
+#define HOST_SIZE_T_PRINT_DEC "%" GCC_PRISZ "d"
+#define HOST_SIZE_T_PRINT_UNSIGNED "%" GCC_PRISZ "u"
+#define HOST_SIZE_T_PRINT_HEX "%#" GCC_PRISZ "x"
+#define HOST_SIZE_T_PRINT_HEX_PURE "%" GCC_PRISZ "x"
+
 /* Define HOST_WIDEST_FAST_INT to the widest integer type supported
    efficiently in hardware.  (That is, the widest integer type that fits
    in a hardware register.)  Normally this is "long" but on some hosts it
