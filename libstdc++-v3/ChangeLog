@@ -1,3 +1,68 @@
+2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113258
+	* libsupc++/new_opa.cc: Prefer to use posix_memalign if
+	available.
+
+2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107466
+	* include/bits/random.tcc (subtract_with_carry_engine::seed):
+	Implement proposed resolution of LWG 4014.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/lwg3809.cc:
+	Check for expected result of 64-bit engine with seed that
+	doesn't fit in 32-bits.
+
+2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (network_v6::network): Define.
+	(network_v6::hosts): Finish implementing.
+	(network_v6::to_string): Do not concatenate std::string to
+	arbitrary std::basic_string specialization.
+	* testsuite/experimental/net/internet/network/v6/cons.cc: New
+	test.
+
+2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90276
+	* testsuite/util/pstl/test_utils.h (reverse_invoker): Do not use
+	perfect forwarding for iterator arguments.
+
+2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/syncstream (basic_osyncstream::operator=): Remove
+	noexcept, as per LWG 3867.
+
+2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view(R&&)): Remove
+	constraint that traits_type must be the same, as per LWG 3857.
+	* testsuite/21_strings/basic_string_view/cons/char/range_c++20.cc:
+	Explicit conversion between different specializations should be
+	allowed.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/range_c++20.cc:
+	Likewise.
+
 2024-02-07  Hans-Peter Nilsson  <hp@axis.com>
 
 	Backported from master:

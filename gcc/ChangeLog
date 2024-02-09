@@ -1,3 +1,20 @@
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113824
+	* config/avr/avr-mcus.def (ata5797): Move from avr5 to avr4.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc (print_mcu) <*cpp_mcu>: Spec always
+	defines __AVR_PM_BASE_ADDRESS__ if the core has it.
+
 2024-02-07  Alex Coplan  <alex.coplan@arm.com>
 
 	PR target/111677
