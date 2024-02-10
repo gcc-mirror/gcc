@@ -1,5 +1,6 @@
 /* { dg-do run { target { lp64 && fpic } } } */
 /* { dg-options "-O2 -fno-pic -fprofile -mcmodel=large" } */
+/* { dg-skip-if "PR90698" { *-*-darwin* } } */
 
 #include <stdarg.h>
 
