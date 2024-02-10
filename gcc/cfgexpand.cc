@@ -1024,7 +1024,8 @@ dump_stack_var_partition (void)
       if (stack_vars[i].representative != i)
 	continue;
 
-      fprintf (dump_file, "Partition %lu: size ", (unsigned long) i);
+      fprintf (dump_file, "Partition " HOST_SIZE_T_PRINT_UNSIGNED ": size ",
+	       (fmt_size_t) i);
       print_dec (stack_vars[i].size, dump_file);
       fprintf (dump_file, " align %u\n", stack_vars[i].alignb);
 

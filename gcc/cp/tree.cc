@@ -2253,9 +2253,10 @@ debug_binfo (tree elem)
   while (virtuals)
     {
       tree fndecl = TREE_VALUE (virtuals);
-      fprintf (stderr, "%s [%ld =? %ld]\n",
+      fprintf (stderr, "%s [" HOST_WIDE_INT_PRINT_DEC " =? "
+		       HOST_WIDE_INT_PRINT_DEC "]\n",
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)),
-	       (long) n, (long) TREE_INT_CST_LOW (DECL_VINDEX (fndecl)));
+	       n, TREE_INT_CST_LOW (DECL_VINDEX (fndecl)));
       ++n;
       virtuals = TREE_CHAIN (virtuals);
     }

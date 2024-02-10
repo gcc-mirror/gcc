@@ -5882,9 +5882,10 @@ decl_fini_priority_insert (tree decl, priority_type priority)
 static void
 print_debug_expr_statistics (void)
 {
-  fprintf (stderr, "DECL_DEBUG_EXPR  hash: size %ld, %ld elements, %f collisions\n",
-	   (long) debug_expr_for_decl->size (),
-	   (long) debug_expr_for_decl->elements (),
+  fprintf (stderr, "DECL_DEBUG_EXPR  hash: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) debug_expr_for_decl->size (),
+	   (fmt_size_t) debug_expr_for_decl->elements (),
 	   debug_expr_for_decl->collisions ());
 }
 
@@ -5893,9 +5894,10 @@ print_debug_expr_statistics (void)
 static void
 print_value_expr_statistics (void)
 {
-  fprintf (stderr, "DECL_VALUE_EXPR  hash: size %ld, %ld elements, %f collisions\n",
-	   (long) value_expr_for_decl->size (),
-	   (long) value_expr_for_decl->elements (),
+  fprintf (stderr, "DECL_VALUE_EXPR  hash: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) value_expr_for_decl->size (),
+	   (fmt_size_t) value_expr_for_decl->elements (),
 	   value_expr_for_decl->collisions ());
 }
 
@@ -6287,9 +6289,10 @@ type_hash_canon (unsigned int hashcode, tree type)
 static void
 print_type_hash_statistics (void)
 {
-  fprintf (stderr, "Type hash: size %ld, %ld elements, %f collisions\n",
-	   (long) type_hash_table->size (),
-	   (long) type_hash_table->elements (),
+  fprintf (stderr, "Type hash: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) type_hash_table->size (),
+	   (fmt_size_t) type_hash_table->elements (),
 	   type_hash_table->collisions ());
 }
 

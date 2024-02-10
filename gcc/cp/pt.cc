@@ -31593,13 +31593,15 @@ init_template_processing (void)
 void
 print_template_statistics (void)
 {
-  fprintf (stderr, "decl_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", (long) decl_specializations->size (),
-	   (long) decl_specializations->elements (),
+  fprintf (stderr, "decl_specializations: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) decl_specializations->size (),
+	   (fmt_size_t) decl_specializations->elements (),
 	   decl_specializations->collisions ());
-  fprintf (stderr, "type_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", (long) type_specializations->size (),
-	   (long) type_specializations->elements (),
+  fprintf (stderr, "type_specializations: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) type_specializations->size (),
+	   (fmt_size_t) type_specializations->elements (),
 	   type_specializations->collisions ());
 }
 

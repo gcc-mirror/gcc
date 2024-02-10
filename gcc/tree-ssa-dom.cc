@@ -1482,9 +1482,10 @@ record_equivalences_from_incoming_edge (basic_block bb,
 static void
 htab_statistics (FILE *file, const hash_table<expr_elt_hasher> &htab)
 {
-  fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
-	   (long) htab.size (),
-	   (long) htab.elements (),
+  fprintf (file, "size " HOST_SIZE_T_PRINT_DEC ", " HOST_SIZE_T_PRINT_DEC
+	   " elements, %f collision/search ratio\n",
+	   (fmt_size_t) htab.size (),
+	   (fmt_size_t) htab.elements (),
 	   htab.collisions ());
 }
 

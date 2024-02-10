@@ -3191,8 +3191,9 @@ sem_item_optimizer::process_cong_reduction (void)
 	worklist_push ((*it)->classes[i]);
 
   if (dump_file)
-    fprintf (dump_file, "Worklist has been filled with: %lu\n",
-	     (unsigned long) worklist.nodes ());
+    fprintf (dump_file, "Worklist has been filled with: "
+			HOST_SIZE_T_PRINT_UNSIGNED "\n",
+	     (fmt_size_t) worklist.nodes ());
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Congruence class reduction\n");
@@ -3239,8 +3240,9 @@ sem_item_optimizer::dump_cong_classes (void)
       }
 
   fprintf (dump_file,
-	   "Congruence classes: %lu with total: %u items (in a non-singular "
-	   "class: %u)\n", (unsigned long) m_classes.elements (),
+	   "Congruence classes: " HOST_SIZE_T_PRINT_UNSIGNED " with total: "
+	   "%u items (in a non-singular class: %u)\n",
+	   (fmt_size_t) m_classes.elements (),
 	   m_items.length (), m_items.length () - single_element_classes);
   fprintf (dump_file,
 	   "Class size histogram [number of members]: number of classes\n");

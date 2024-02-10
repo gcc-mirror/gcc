@@ -4365,7 +4365,7 @@ output_constant_pool_contents (struct rtx_constant_pool *pool)
 	p = label;
 	if (desc->offset)
 	  {
-	    sprintf (buffer, "%s+%ld", p, (long) (desc->offset));
+	    sprintf (buffer, "%s+" HOST_WIDE_INT_PRINT_DEC, p, desc->offset);
 	    p = buffer;
 	  }
 	ASM_OUTPUT_DEF (asm_out_file, name, p);

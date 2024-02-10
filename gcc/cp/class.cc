@@ -9585,14 +9585,14 @@ static void
 dump_class_hierarchy_1 (FILE *stream, dump_flags_t flags, tree t)
 {
   fprintf (stream, "Class %s\n", type_as_string (t, TFF_PLAIN_IDENTIFIER));
-  fprintf (stream, "   size=%lu align=%lu\n",
-	   (unsigned long)(tree_to_shwi (TYPE_SIZE (t)) / BITS_PER_UNIT),
-	   (unsigned long)(TYPE_ALIGN (t) / BITS_PER_UNIT));
+  fprintf (stream, "   size=" HOST_WIDE_INT_PRINT_UNSIGNED " align=%u\n",
+	   tree_to_shwi (TYPE_SIZE (t)) / BITS_PER_UNIT,
+	   TYPE_ALIGN (t) / BITS_PER_UNIT);
   if (tree as_base = CLASSTYPE_AS_BASE (t))
-    fprintf (stream, "   base size=%lu base align=%lu\n",
-	     (unsigned long)(tree_to_shwi (TYPE_SIZE (as_base))
-			     / BITS_PER_UNIT),
-	     (unsigned long)(TYPE_ALIGN (as_base) / BITS_PER_UNIT));
+    fprintf (stream, "   base size=" HOST_WIDE_INT_PRINT_UNSIGNED
+	     " base align=%u\n",
+	     tree_to_shwi (TYPE_SIZE (as_base)) / BITS_PER_UNIT,
+	     TYPE_ALIGN (as_base) / BITS_PER_UNIT);
   dump_class_hierarchy_r (stream, flags, TYPE_BINFO (t), TYPE_BINFO (t), 0);
   fprintf (stream, "\n");
 }

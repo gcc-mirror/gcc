@@ -1310,7 +1310,8 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
 
   if (cp_lexer_debugging_p (lexer))
     fprintf (cp_lexer_debug_stream,
-	     "cp_lexer: peeking ahead %ld at token: ", (long)n);
+	     "cp_lexer: peeking ahead " HOST_SIZE_T_PRINT_DEC " at token: ",
+	     (fmt_size_t) n);
 
   --n;
   token = lexer->next_token;

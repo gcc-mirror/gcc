@@ -1294,8 +1294,9 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		{
 		  error_at_line 
 		    (&lexer_line,
-		     "rtx type `%s' has `0' in position %lu, can't handle",
-		     rtx_name[i], (unsigned long) aindex);
+		     "rtx type `%s' has `0' in position "
+		     HOST_SIZE_T_PRINT_UNSIGNED ", can't handle",
+		     rtx_name[i], (fmt_size_t) aindex);
 		  t = &string_type;
 		  subname = "rt_int";
 		}
@@ -1333,9 +1334,10 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    default:
 	      error_at_line
 		(&lexer_line,
-		 "rtx type `%s' has `%c' in position %lu, can't handle",
+		 "rtx type `%s' has `%c' in position "
+		 HOST_SIZE_T_PRINT_UNSIGNED ", can't handle",
 		 rtx_name[i], rtx_format[i][aindex],
-		 (unsigned long) aindex);
+		 (fmt_size_t) aindex);
 	      t = &string_type;
 	      subname = "rt_int";
 	      break;
