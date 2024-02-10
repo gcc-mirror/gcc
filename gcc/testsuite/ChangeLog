@@ -1,3 +1,26 @@
+2024-02-09  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/warn/Wuse-after-free3.C: xfail on arm_eabi.
+
+2024-02-09  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2023-05-25  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/tsvc/tsvc.h: Test for and conditionally include
+	malloc.h and sys/time.h.
+
+2024-02-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-02-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.misc-tests/options.exp: Allow other options before the
+	-quite option for cc1.
+
 2024-02-07  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
