@@ -4031,7 +4031,7 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
       if (kind != bitint_prec_huge)
 	idx = size_int (i);
       else if (i >= 2)
-	idx = size_int (fin + (i > 2));
+	idx = size_int (fin + i - 2);
       if (!last_ovf || i < cnt - 1)
 	{
 	  if (type0 != TREE_TYPE (arg0))
