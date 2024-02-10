@@ -3,6 +3,7 @@
 
 /* { dg-options "-bind_at_load" } */
 /* { dg-do link { target *-*-darwin* } } */
+/* { dg-prune-output "-bind_at_load is deprecated" } */
 
 int main()
 {
