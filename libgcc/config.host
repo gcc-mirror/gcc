@@ -774,6 +774,7 @@ i[34567]86-*-linux*)
 	tmake_file="${tmake_file} i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
 	tm_file="${tm_file} i386/elf-lib.h"
 	md_unwind_header=i386/linux-unwind.h
+	tmake_file="${tmake_file} i386/t-heap-trampoline"
 	;;
 i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-kopensolaris*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
