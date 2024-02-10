@@ -1,3 +1,10 @@
+2024-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113799
+	* arith.cc (reduce_unary): Remember any overflow encountered during
+	reduction of unary arithmetic operations on array constructors and
+	continue, and return error status, but terminate on serious errors.
+
 2024-01-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/113377

@@ -1,3 +1,9 @@
+2024-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98388
+	* libcp1plugin.cc (plugin_build_unary_expr): Pass tf_error to
+	build_throw.
+
 2024-01-09  waffl3x  <waffl3x@protonmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

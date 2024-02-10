@@ -1,3 +1,49 @@
+2024-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113834
+	* g++.dg/ext/type_pack_element4.C: New test.
+
+2024-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98388
+	* g++.dg/cpp0x/sfinae69.C: New test.
+
+2024-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113799
+	* gfortran.dg/arithmetic_overflow_2.f90: New test.
+
+2024-02-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112580
+	* g++.dg/modules/anon-3_a.H: New test.
+	* g++.dg/modules/anon-3_b.C: New test.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113783
+	* gcc.dg/bitint-88.c: New test.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113415
+	* gcc.target/i386/pr113415.c: New test.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113818
+	* gcc.dg/bitint-89.c: New test.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113774
+	* gcc.dg/torture/bitint-57.c: New test.
+
+2024-02-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.misc-tests/options.exp: Allow other options before the
+	-quite option for cc1.
+
 2024-02-08  Edwin Lu  <ewlu@rivosinc.com>
 
 	* gcc.target/riscv/rvv/base/abi-1.c: change selector

@@ -1,3 +1,50 @@
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113783
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_stmt): Look
+	through VIEW_CONVERT_EXPR for final cast checks.  Handle
+	VIEW_CONVERT_EXPRs from large/huge _BitInt to > MAX_FIXED_MODE_SIZE
+	INTEGER_TYPEs.
+	(gimple_lower_bitint): Don't merge mergeable operations or other
+	casts with VIEW_CONVERT_EXPRs to > MAX_FIXED_MODE_SIZE INTEGER_TYPEs.
+	* expr.cc (expand_expr_real_1): Don't use convert_modes if either
+	mode is BLKmode.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* hwint.h (GCC_PRISZ, fmt_size_t, HOST_SIZE_T_PRINT_DEC,
+	HOST_SIZE_T_PRINT_UNSIGNED, HOST_SIZE_T_PRINT_HEX,
+	HOST_SIZE_T_PRINT_HEX_PURE): Define.
+	* ira-conflicts.cc (build_conflict_bit_table): Use it.  Formatting
+	fixes.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113415
+	* cfgexpand.cc (expand_asm_stmt): For asm goto, use
+	duplicate_insn_chain to duplicate after_rtl_seq sequence instead
+	of hand written loop with emit_insn of copy_insn and emit original
+	after_rtl_seq on the last edge.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113818
+	* gimple-lower-bitint.cc (add_eh_edge): New function.
+	(bitint_large_huge::handle_load,
+	bitint_large_huge::lower_mergeable_stmt,
+	bitint_large_huge::lower_muldiv_stmt): Use it.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113774
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): Don't
+	emit any comparison if m_first and low + 1 is equal to
+	m_upwards_2limb, simplify condition for that.  If not
+	single_comparison, not m_first and we can prove that the idx <= low
+	comparison will be always true, emit instead of idx <= low
+	comparison low <= low such that cfg cleanup will optimize it at
+	the end of the pass.
+
 2024-02-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/113735

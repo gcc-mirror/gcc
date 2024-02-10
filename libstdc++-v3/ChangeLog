@@ -1,3 +1,12 @@
+2024-02-09  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_IS_SAME):
+	Removed.
+	* include/std/type_traits (is_same): Use
+	_GLIBCXX_USE_BUILTIN_TRAIT instead of
+	_GLIBCXX_HAVE_BUILTIN_IS_SAME.
+	(is_same_v): Likewise.
+
 2024-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_atomic.h: Fix typo in comment.
