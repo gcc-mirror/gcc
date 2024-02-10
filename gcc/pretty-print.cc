@@ -769,7 +769,30 @@ output_buffer::~output_buffer ()
         break;                                               \
                                                              \
       case 2:                                                \
-        pp_scalar (PP, "%" HOST_LONG_LONG_FORMAT F, va_arg (ARG, long long T));  \
+        pp_scalar (PP, "%" HOST_LONG_LONG_FORMAT F,          \
+                   va_arg (ARG, long long T));               \
+        break;                                               \
+                                                             \
+      case 3:                                                \
+        if (T (-1) < T (0))                                  \
+          pp_scalar (PP, "%" GCC_PRISZ F,                    \
+                     (fmt_size_t) va_arg (ARG, ssize_t));    \
+        else                                                 \
+          pp_scalar (PP, "%" GCC_PRISZ F,                    \
+                     (fmt_size_t) va_arg (ARG, size_t));     \
+        break;                                               \
+                                                             \
+      case 4:                                                \
+        if (sizeof (ptrdiff_t) <= sizeof (int))              \
+          pp_scalar (PP, "%" F,                              \
+                     (int) va_arg (ARG, ptrdiff_t));         \
+        else if (sizeof (ptrdiff_t) <= sizeof (long))        \
+          pp_scalar (PP, "%l" F,                             \
+                     (long int) va_arg (ARG, ptrdiff_t));    \
+        else                                                 \
+          pp_scalar (PP, "%" HOST_LONG_LONG_FORMAT F,        \
+                     (long long int)                         \
+                     va_arg (ARG, ptrdiff_t));               \
         break;                                               \
                                                              \
       default:                                               \
@@ -1237,6 +1260,8 @@ on_end_quote (pretty_printer *pp,
    %ld, %li, %lo, %lu, %lx: long versions of the above.
    %lld, %lli, %llo, %llu, %llx: long long versions.
    %wd, %wi, %wo, %wu, %wx: HOST_WIDE_INT versions.
+   %zd, %zi, %zo, %zu, %zx: size_t versions.
+   %td, %ti, %to, %tu, %tx: ptrdiff_t versions.
    %f: double
    %c: character.
    %s: string.
@@ -1422,7 +1447,7 @@ pp_format (pretty_printer *pp,
 	  obstack_1grow (&buffer->chunk_obstack, *p);
 	  p++;
 	}
-      while (strchr ("qwl+#", p[-1]));
+      while (strchr ("qwlzt+#", p[-1]));
 
       if (p[-1] == '.')
 	{
@@ -1524,6 +1549,16 @@ pp_format (pretty_printer *pp,
 	      wide = true;
 	      continue;
 
+	    case 'z':
+	      gcc_assert (!precision);
+	      precision = 3;
+	      continue;
+
+	    case 't':
+	      gcc_assert (!precision);
+	      precision = 4;
+	      continue;
+
 	    case 'l':
 	      /* We don't support precision beyond that of "long long".  */
 	      gcc_assert (precision < 2);
@@ -1570,8 +1605,8 @@ pp_format (pretty_printer *pp,
 	  if (wide)
 	    pp_wide_integer (pp, va_arg (*text->m_args_ptr, HOST_WIDE_INT));
 	  else
-	    pp_integer_with_precision
-	      (pp, *text->m_args_ptr, precision, int, "d");
+	    pp_integer_with_precision (pp, *text->m_args_ptr, precision,
+				       int, "d");
 	  break;
 
 	case 'o':
@@ -1579,8 +1614,8 @@ pp_format (pretty_printer *pp,
 	    pp_scalar (pp, "%" HOST_WIDE_INT_PRINT "o",
 		       va_arg (*text->m_args_ptr, unsigned HOST_WIDE_INT));
 	  else
-	    pp_integer_with_precision
-	      (pp, *text->m_args_ptr, precision, unsigned, "o");
+	    pp_integer_with_precision (pp, *text->m_args_ptr, precision,
+				       unsigned, "o");
 	  break;
 
 	case 's':
@@ -1599,8 +1634,8 @@ pp_format (pretty_printer *pp,
 	    pp_scalar (pp, HOST_WIDE_INT_PRINT_UNSIGNED,
 		       va_arg (*text->m_args_ptr, unsigned HOST_WIDE_INT));
 	  else
-	    pp_integer_with_precision
-	      (pp, *text->m_args_ptr, precision, unsigned, "u");
+	    pp_integer_with_precision (pp, *text->m_args_ptr, precision,
+				       unsigned, "u");
 	  break;
 
 	case 'f':
@@ -1629,8 +1664,8 @@ pp_format (pretty_printer *pp,
 	    pp_scalar (pp, HOST_WIDE_INT_PRINT_HEX,
 		       va_arg (*text->m_args_ptr, unsigned HOST_WIDE_INT));
 	  else
-	    pp_integer_with_precision
-	      (pp, *text->m_args_ptr, precision, unsigned, "x");
+	    pp_integer_with_precision (pp, *text->m_args_ptr, precision,
+				       unsigned, "x");
 	  break;
 
 	case '.':
@@ -2773,6 +2808,18 @@ test_pp_format ()
 		      0x12345678);
   ASSERT_PP_FORMAT_2 ("17 12345678", "%wo %x", (HOST_WIDE_INT)15, 0x12345678);
   ASSERT_PP_FORMAT_2 ("0xcafebabe 12345678", "%wx %x", (HOST_WIDE_INT)0xcafebabe,
+		      0x12345678);
+  ASSERT_PP_FORMAT_2 ("-27 12345678", "%zd %x", (ssize_t)-27, 0x12345678);
+  ASSERT_PP_FORMAT_2 ("-5 12345678", "%zi %x", (ssize_t)-5, 0x12345678);
+  ASSERT_PP_FORMAT_2 ("10 12345678", "%zu %x", (size_t)10, 0x12345678);
+  ASSERT_PP_FORMAT_2 ("17 12345678", "%zo %x", (size_t)15, 0x12345678);
+  ASSERT_PP_FORMAT_2 ("cafebabe 12345678", "%zx %x", (size_t)0xcafebabe,
+		      0x12345678);
+  ASSERT_PP_FORMAT_2 ("-27 12345678", "%td %x", (ptrdiff_t)-27, 0x12345678);
+  ASSERT_PP_FORMAT_2 ("-5 12345678", "%ti %x", (ptrdiff_t)-5, 0x12345678);
+  ASSERT_PP_FORMAT_2 ("10 12345678", "%tu %x", (ptrdiff_t)10, 0x12345678);
+  ASSERT_PP_FORMAT_2 ("17 12345678", "%to %x", (ptrdiff_t)15, 0x12345678);
+  ASSERT_PP_FORMAT_2 ("1afebabe 12345678", "%tx %x", (ptrdiff_t)0x1afebabe,
 		      0x12345678);
   ASSERT_PP_FORMAT_2 ("1.000000 12345678", "%f %x", 1.0, 0x12345678);
   ASSERT_PP_FORMAT_2 ("A 12345678", "%c %x", 'A', 0x12345678);
