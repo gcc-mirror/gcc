@@ -39,8 +39,8 @@ static tree do_end_catch (tree);
 static void initialize_handler_parm (tree, tree);
 static tree do_allocate_exception (tree);
 static tree wrap_cleanups_r (tree *, int *, void *);
-static int complete_ptr_ref_or_void_ptr_p (tree, tree);
-static bool is_admissible_throw_operand_or_catch_parameter (tree, bool);
+static bool is_admissible_throw_operand_or_catch_parameter (tree, bool,
+							    tsubst_flags_t);
 
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */
@@ -398,7 +398,8 @@ expand_start_catch_block (tree decl)
 
   if (decl)
     {
-      if (!is_admissible_throw_operand_or_catch_parameter (decl, false))
+      if (!is_admissible_throw_operand_or_catch_parameter (decl, false,
+							   tf_warning_or_error))
 	decl = error_mark_node;
 
       type = prepare_eh_type (TREE_TYPE (decl));
@@ -626,11 +627,10 @@ build_throw (location_t loc, tree exp, tsubst_flags_t complain)
     warning_at (loc, 0,
 		"throwing NULL, which has integral, not pointer type");
 
-  if (exp != NULL_TREE)
-    {
-      if (!is_admissible_throw_operand_or_catch_parameter (exp, true))
-	return error_mark_node;
-    }
+  if (exp && !is_admissible_throw_operand_or_catch_parameter (exp,
+							      /*is_throw=*/true,
+							      complain))
+    return error_mark_node;
 
   if (! doing_eh ())
     return error_mark_node;
@@ -815,28 +815,26 @@ build_throw (location_t loc, tree exp, tsubst_flags_t complain)
    Return the zero on failure and nonzero on success. FROM can be
    the expr or decl from whence TYPE came, if available.  */
 
-static int
-complete_ptr_ref_or_void_ptr_p (tree type, tree from)
+static bool
+complete_ptr_ref_or_void_ptr_p (tree type, tree from, tsubst_flags_t complain)
 {
-  int is_ptr;
-
   /* Check complete.  */
-  type = complete_type_or_else (type, from);
+  type = complete_type_or_maybe_complain (type, from, complain);
   if (!type)
-    return 0;
+    return false;
 
   /* Or a pointer or ref to one, or cv void *.  */
-  is_ptr = TYPE_PTR_P (type);
+  const bool is_ptr = TYPE_PTR_P (type);
   if (is_ptr || TYPE_REF_P (type))
     {
       tree core = TREE_TYPE (type);
 
       if (is_ptr && VOID_TYPE_P (core))
 	/* OK */;
-      else if (!complete_type_or_else (core, from))
-	return 0;
+      else if (!complete_type_or_maybe_complain (core, from, complain))
+	return false;
     }
-  return 1;
+  return true;
 }
 
 /* If IS_THROW is true return truth-value if T is an expression admissible
@@ -846,13 +844,14 @@ complete_ptr_ref_or_void_ptr_p (tree type, tree from)
    for its type plus rvalue reference type is also not admissible.  */
 
 static bool
-is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
+is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw,
+						tsubst_flags_t complain)
 {
   tree expr = is_throw ? t : NULL_TREE;
   tree type = TREE_TYPE (t);
 
   /* C++11 [except.handle] The exception-declaration shall not denote
-     an incomplete type, an abstract class type, or an rvalue reference 
+     an incomplete type, an abstract class type, or an rvalue reference
      type.  */
 
   /* 15.1/4 [...] The type of the throw-expression shall not be an
@@ -862,7 +861,7 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
 	    restrictions on type matching mentioned in 15.3, the operand
 	    of throw is treated exactly as a function argument in a call
 	    (5.2.2) or the operand of a return statement.  */
-  if (!complete_ptr_ref_or_void_ptr_p (type, expr))
+  if (!complete_ptr_ref_or_void_ptr_p (type, expr, complain))
     return false;
 
   tree nonref_type = non_reference (type);
@@ -872,25 +871,30 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
   /* 10.4/3 An abstract class shall not be used as a parameter type,
 	    as a function return type or as type of an explicit
 	    conversion.  */
-  else if (abstract_virtuals_error (is_throw ? ACU_THROW : ACU_CATCH, type))
+  else if (abstract_virtuals_error (is_throw ? ACU_THROW : ACU_CATCH, type,
+				    complain))
     return false;
   else if (!is_throw
 	   && TYPE_REF_P (type)
 	   && TYPE_REF_IS_RVALUE (type))
     {
-      error ("cannot declare %<catch%> parameter to be of rvalue "
-	     "reference type %qT", type);
+      if (complain & tf_error)
+	error ("cannot declare %<catch%> parameter to be of rvalue "
+	       "reference type %qT", type);
       return false;
     }
   else if (variably_modified_type_p (type, NULL_TREE))
     {
-      if (is_throw)
-	error_at (cp_expr_loc_or_input_loc (expr),
-		  "cannot throw expression of type %qT because it involves "
-		  "types of variable size", type);
-      else
-	error ("cannot catch type %qT because it involves types of "
-	       "variable size", type);
+      if (complain & tf_error)
+	{
+	  if (is_throw)
+	    error_at (cp_expr_loc_or_input_loc (expr),
+		      "cannot throw expression of type %qT because it involves "
+		      "types of variable size", type);
+	  else
+	    error ("cannot catch type %qT because it involves types of "
+		   "variable size", type);
+	}
       return false;
     }
 
