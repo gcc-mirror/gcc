@@ -374,15 +374,22 @@ assumption_copy_decl (tree decl, copy_body_data *id)
   gcc_assert (VAR_P (decl)
 	      || TREE_CODE (decl) == PARM_DECL
 	      || TREE_CODE (decl) == RESULT_DECL);
+  if (TREE_THIS_VOLATILE (decl))
+    type = build_pointer_type (type);
   tree copy = build_decl (DECL_SOURCE_LOCATION (decl),
 			  PARM_DECL, DECL_NAME (decl), type);
   if (DECL_PT_UID_SET_P (decl))
     SET_DECL_PT_UID (copy, DECL_PT_UID (decl));
-  TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
-  TREE_READONLY (copy) = TREE_READONLY (decl);
-  TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
-  DECL_NOT_GIMPLE_REG_P (copy) = DECL_NOT_GIMPLE_REG_P (decl);
-  DECL_BY_REFERENCE (copy) = DECL_BY_REFERENCE (decl);
+  TREE_THIS_VOLATILE (copy) = 0;
+  if (TREE_THIS_VOLATILE (decl))
+    TREE_READONLY (copy) = 1;
+  else
+    {
+      TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
+      TREE_READONLY (copy) = TREE_READONLY (decl);
+      DECL_NOT_GIMPLE_REG_P (copy) = DECL_NOT_GIMPLE_REG_P (decl);
+      DECL_BY_REFERENCE (copy) = DECL_BY_REFERENCE (decl);
+    }
   DECL_ARG_TYPE (copy) = type;
   ((lower_assumption_data *) id)->decls.safe_push (decl);
   return copy_decl_for_dup_finish (id, decl, copy);
@@ -466,6 +473,11 @@ adjust_assumption_stmt_op (tree *tp, int *, void *datap)
     case PARM_DECL:
     case RESULT_DECL:
       *tp = remap_decl (t, &data->id);
+      if (TREE_THIS_VOLATILE (t) && *tp != t)
+	{
+	  *tp = build_simple_mem_ref (*tp);
+	  TREE_THIS_NOTRAP (*tp) = 1;
+	}
       break;
     default:
       break;
@@ -600,6 +612,11 @@ lower_assumption (gimple_stmt_iterator *gsi, struct lower_data *data)
       /* Remaining arguments will be the variables/parameters
 	 mentioned in the condition.  */
       vargs[i - sz] = lad.decls[i - 1];
+      if (TREE_THIS_VOLATILE (lad.decls[i - 1]))
+	{
+	  TREE_ADDRESSABLE (lad.decls[i - 1]) = 1;
+	  vargs[i - sz] = build_fold_addr_expr (lad.decls[i - 1]);
+	}
       /* If they have gimple types, we might need to regimplify
 	 them to make the IFN_ASSUME call valid.  */
       if (is_gimple_reg_type (TREE_TYPE (vargs[i - sz]))
