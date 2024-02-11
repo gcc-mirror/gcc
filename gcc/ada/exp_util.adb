@@ -1081,10 +1081,8 @@ package body Exp_Util is
          --  allocations can be performed without getting the alignment from
          --  the type's Type Specific Record.
 
-         if ((Is_Allocate and then No (Alloc_Expr))
-               or else
-             not Is_Class_Wide_Type (Desig_Typ))
-           and then not Use_Secondary_Stack_Pool
+         if (Is_Allocate and then No (Alloc_Expr))
+           or else not Is_Class_Wide_Type (Desig_Typ)
          then
             Append_To (Actuals, New_Occurrence_Of (Alig_Id, Loc));
 
@@ -1102,9 +1100,6 @@ package body Exp_Util is
             --  ... because 'Alignment applied to class-wide types is expanded
             --  into the code that reads the value of alignment from the TSD
             --  (see Expand_N_Attribute_Reference)
-
-            --  In the Use_Secondary_Stack_Pool case, Alig_Id is not
-            --  passed in and therefore must not be referenced.
 
             Append_To (Actuals,
               Unchecked_Convert_To (RTE (RE_Storage_Offset),
@@ -1255,53 +1250,51 @@ package body Exp_Util is
             Proc_To_Call := RTE (RE_Deallocate_Any_Controlled);
          end if;
 
-         --  Create a custom Allocate / Deallocate routine which has identical
-         --  profile to that of System.Storage_Pools.
+         --  Create a custom Allocate/Deallocate routine which has identical
+         --  profile to that of System.Storage_Pools, except for a secondary
+         --  stack allocation where the profile must be identical to that of
+         --  the System.Secondary_Stack.SS_Allocate procedure (deallocation
+         --  is not supported for the secondary stack).
 
          declare
-            --  P : Root_Storage_Pool
             function Pool_Param return Node_Id is (
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => Make_Temporary (Loc, 'P'),
                 Parameter_Type      =>
                   New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc)));
+            --  P : Root_Storage_Pool
 
-            --  A : [out] Address
             function Address_Param return Node_Id is (
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => Addr_Id,
                 Out_Present         => Is_Allocate,
                 Parameter_Type      =>
                   New_Occurrence_Of (RTE (RE_Address), Loc)));
+            --  A : [out] Address
 
-            --  S : Storage_Count
             function Size_Param return Node_Id is (
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => Size_Id,
                 Parameter_Type      =>
                   New_Occurrence_Of (RTE (RE_Storage_Count), Loc)));
+            --  S : Storage_Count
 
-            --  L : Storage_Count
             function Alignment_Param return Node_Id is (
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => Alig_Id,
                 Parameter_Type      =>
                   New_Occurrence_Of (RTE (RE_Storage_Count), Loc)));
+            --  L : Storage_Count
 
-            Formal_Params : List_Id;
+            Formal_Params : constant List_Id :=
+              (if Use_Secondary_Stack_Pool
+                then New_List (Address_Param, Size_Param, Alignment_Param)
+                else
+                  New_List
+                    (Pool_Param, Address_Param, Size_Param, Alignment_Param));
+            --  The list of formal parameters of the routine
 
          begin
-            if Use_Secondary_Stack_Pool then
-               --  Gigi expects a different profile in the Secondary_Stack_Pool
-               --  case. There must be no uses of the two missing formals
-               --  (i.e., Pool_Param and Alignment_Param) in this case.
-               Formal_Params := New_List
-                 (Address_Param, Size_Param, Alignment_Param);
-            else
-               Formal_Params := New_List (
-                 Pool_Param, Address_Param, Size_Param, Alignment_Param);
-            end if;
-
             Insert_Action (N,
               Make_Subprogram_Body (Loc,
                 Specification              =>
