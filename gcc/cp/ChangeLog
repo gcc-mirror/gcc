@@ -1,3 +1,24 @@
+2024-02-10  Marek Polacek  <polacek@redhat.com>
+
+	DR 2237
+	PR c++/107126
+	PR c++/97202
+	* parser.cc (cp_parser_unqualified_id): Downgrade the DR2237 error to
+	a pedwarn.
+	(cp_parser_constructor_declarator_p): Likewise.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (debug_binfo): Use HOST_WIDE_INT_PRINT_DEC instead of "%ld"
+	and casts to long.
+	* pt.cc (print_template_statistics): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	* class.cc (dump_class_hierarchy_1): Use HOST_WIDE_INT_PRINT_UNSIGNED
+	instead of "%lu" and casts to unsigned long.  For TYPE_ALIGN, use
+	%u instead of %lu and drop casts to unsigned long.
+	* parser.cc (cp_lexer_peek_nth_token): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+
 2024-02-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113834

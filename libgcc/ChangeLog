@@ -1,3 +1,19 @@
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* soft-fp/floatbitintdd.c (__bid_floatbitintdd): Or in all remainder
+	limbs into inexact rather than just first two.
+	* soft-fp/floatbitintsd.c (__bid_floatbitintsd): Likewise.
+	* soft-fp/floatbitinttd.c (__bid_floatbitinttd): Likewise.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* soft-fp/fixddbitint.c (__bid_fixddbitint): Fix up
+	BIL_TYPE_SIZE == 32 shifts.
+	* soft-fp/fixsdbitint.c (__bid_fixsdbitint): Likewise.
+	* soft-fp/fixtdbitint.c (__bid_fixtdbitint): Likewise.
+	* soft-fp/floatbitintdd.c (__bid_floatbitintdd): Likewise.
+	* soft-fp/floatbitinttd.c (__bid_floatbitinttd): Likewise.
+
 2024-02-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/libgcc-darwin.ver: Export bf and bitint-related

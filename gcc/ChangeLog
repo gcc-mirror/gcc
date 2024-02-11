@@ -1,3 +1,68 @@
+2024-02-10  Marek Polacek  <polacek@redhat.com>
+
+	DR 2237
+	PR c++/107126
+	PR c++/97202
+	* doc/invoke.texi: Document -Wtemplate-id-cdtor.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (itint_large_huge::lower_addsub_overflow): Fix
+	computation of idx for i == 4 of bitint_prec_huge.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110754
+	* gimple-low.cc (assumption_copy_decl): For TREE_THIS_VOLATILE
+	decls create PARM_DECL with pointer to original type, set
+	TREE_READONLY and keep TREE_THIS_VOLATILE, TREE_ADDRESSABLE,
+	DECL_NOT_GIMPLE_REG_P and DECL_BY_REFERENCE cleared.
+	(adjust_assumption_stmt_op): For remapped TREE_THIS_VOLATILE decls
+	wrap PARM_DECL into a simple TREE_THIS_NO_TRAP MEM_REF.
+	(lower_assumption): For TREE_THIS_VOLATILE vars pass ADDR_EXPR
+	of the var as argument.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* pretty-print.cc (pp_integer_with_precision): Handle precision 3 for
+	size_t and precision 4 for ptrdiff_t.  Formatting fix.
+	(pp_format): Document %{t,z}{d,i,u,o,x}.  Implement t and z modifiers.
+	Formatting fixes.
+	(test_pp_format): Test t and z modifiers.
+	* gcc.cc (read_specs): Use %td instead of %ld and casts to long.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-icf.cc (sem_item_optimizer::process_cong_reduction,
+	sem_item_optimizer::dump_cong_classes): Use HOST_SIZE_T_PRINT_UNSIGNED
+	and casts to fmt_size_t instead of "%lu" and casts to unsigned long.
+	* tree.cc (print_debug_expr_statistics): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	(print_value_expr_statistics, print_type_hash_statistics): Likewise.
+	* dwarf2out.cc (output_macinfo_op): Use HOST_WIDE_INT_PRINT_UNSIGNED
+	instead of "%lu" and casts to unsigned long.
+	* gcov-dump.cc (dump_gcov_file): Use %u instead of %lu and casts to
+	unsigned long.
+	* tree-ssa-dom.cc (htab_statistics): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	* cfgexpand.cc (dump_stack_var_partition): Use
+	HOST_SIZE_T_PRINT_UNSIGNED and casts to fmt_size_t instead of "%lu"
+	and casts to unsigned long.
+	* gengtype.cc (adjust_field_rtx_def): Likewise.
+	* tree-into-ssa.cc (htab_statistics): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	* postreload-gcse.cc (dump_hash_table): Likewise.
+	* ggc-page.cc (alloc_page): Use HOST_SIZE_T_PRINT_UNSIGNED
+	and casts to fmt_size_t instead of "%lu" and casts to unsigned long.
+	(ggc_internal_alloc, ggc_free): Likewise.
+	* genpreds.cc (write_lookup_constraint_1): Likewise.
+	(write_insn_constraint_len): Likewise.
+	* tree-dfa.cc (dump_dfa_stats): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	* varasm.cc (output_constant_pool_contents): Use
+	HOST_WIDE_INT_PRINT_DEC instead of "%ld" and casts to long.
+	* var-tracking.cc (dump_var): Likewise.
+
 2024-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/113783

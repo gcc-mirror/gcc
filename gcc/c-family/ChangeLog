@@ -1,3 +1,23 @@
+2024-02-10  Marek Polacek  <polacek@redhat.com>
+
+	DR 2237
+	PR c++/107126
+	PR c++/97202
+	* c-opts.cc (c_common_post_options): In C++20 or with -Wc++20-compat,
+	turn on -Wtemplate-id-cdtor.
+	* c.opt (Wtemplate-id-cdtor): New.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-format.cc (gcc_diag_length_specs): Add t and z modifiers.
+	(PP_FORMAT_CHAR_TABLE, gcc_gfc_char_table): Add entries for t and
+	z modifiers.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ada-spec.cc (dump_template_types): Use HOST_SIZE_T_PRINT_UNSIGNED
+	and casts to fmt_size_t instead of "%lu" and casts to unsigned long.
+
 2024-02-01  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/105608

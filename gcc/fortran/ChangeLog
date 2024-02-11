@@ -1,3 +1,20 @@
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.cc (error_print): Handle z and t modifiers on d, i and u.
+	* check.cc (gfc_check_transfer): Use %zd instead of %ld and casts to
+	long.
+	* primary.cc (gfc_convert_to_structure_constructor): Use %td instead
+	of %ld and casts to long.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-common.cc (build_common_decl): Use %wu instead of %lu and
+	casts to unsigned long.
+	* resolve.cc (resolve_ordinary_assign): Use %wd instead of %ld and
+	casts to long.
+	* array.cc (gfc_resolve_character_array_constructor): Likewise.
+	* data.cc (create_character_initializer): Likewise.
+
 2024-02-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/113799

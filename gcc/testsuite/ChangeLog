@@ -1,3 +1,49 @@
+2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr113689-1.c: Skip test on darwin.
+	* gcc.target/i386/pr113689-2.c: Likewise.
+	* gcc.target/i386/pr113689-3.c: Likewise.
+
+2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/ssp-2.c: Ignore warning that
+	-multiply_defined is obsolete
+
+2024-02-10  Marek Polacek  <polacek@redhat.com>
+
+	DR 2237
+	PR c++/107126
+	PR c++/97202
+	* g++.dg/DRs/dr2237.C: Adjust dg-error.
+	* g++.dg/parse/constructor2.C: Likewise.
+	* g++.dg/template/error34.C: Likewise.
+	* g++.old-deja/g++.pt/ctor2.C: Likewise.
+	* g++.dg/DRs/dr2237-2.C: New test.
+	* g++.dg/DRs/dr2237-3.C: New test.
+	* g++.dg/DRs/dr2237-4.C: New test.
+	* g++.dg/DRs/dr2237-5.C: New test.
+	* g++.dg/warn/Wtemplate-id-cdtor-1.C: New test.
+	* g++.dg/warn/Wtemplate-id-cdtor-2.C: New test.
+	* g++.dg/warn/Wtemplate-id-cdtor-3.C: New test.
+	* g++.dg/warn/Wtemplate-id-cdtor-4.C: New test.
+
+2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-ld-2.c: Ignore warning
+	that -bind_at_load is deprecated.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110754
+	* gcc.dg/attr-assume-6.c: New test.
+	* g++.dg/cpp23/attr-assume12.C: New test.
+
+2024-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR c++/113545
+	* g++.dg/cpp1y/constexpr-reinterpret3.C,
+	g++.dg/cpp1y/constexpr-reinterpret4.C: New tests.
+
 2024-02-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113834
