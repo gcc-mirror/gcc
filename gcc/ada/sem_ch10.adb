@@ -292,6 +292,18 @@ package body Sem_Ch10 is
       --  Spec_Context_Items to that of the spec. Parent packages are not
       --  examined for documentation purposes.
 
+      function Install_Inherited_Policy_Pragmas
+        (Comp_Unit : Node_Id) return Node_Id;
+      --  Install assertion_policy pragmas placed at the start of the spec of
+      --  the given compilation unit (and the spec of its parent units). Return
+      --  the last pragma found in the check policy list before installing
+      --  these pragmas; used to remove the installed pragmas.
+
+      procedure Remove_Inherited_Policy_Pragmas (Last_Pragma : Node_Id);
+      --  Remove assertion_policy pragmas installed after the given pragma. If
+      --  Last_Pragma is empty then remove all the pragmas installed in the
+      --  check policy list (if any).
+
       ---------------------------
       -- Check_Redundant_Withs --
       ---------------------------
@@ -631,6 +643,186 @@ package body Sem_Ch10 is
          end loop;
       end Check_Redundant_Withs;
 
+      --------------------------------------
+      -- Install_Inherited_Policy_Pragmas --
+      --------------------------------------
+
+      --  Opt.Check_Policy_List is handled as a stack; assertion policy
+      --  pragmas defined at inner scopes are placed at the beginning of
+      --  the list. Therefore, policy pragmas defined at the start of
+      --  parent units must be appended to the end of this list.
+
+      --  When the compilation unit is a package body (or a subprogram body
+      --  that does not act as its spec) we recursively traverse to its spec
+      --  (and from there to its ultimate parent); when the compilation unit
+      --  is a child package (or subprogram) spec we recursively climb until
+      --  its ultimate parent. In both cases policy pragmas defined at the
+      --  beginning of all these traversed units are appended to the check
+      --  policy list in the way back to the current compilation unit (and
+      --  they are left installed in reverse order). For example:
+      --
+      --     pragma Assertion_Policy (...) -- [policy-1]
+      --     package Pkg is ...
+      --
+      --     pragma Assertion_Policy (...) -- [policy-2]
+      --     package Pkg.Child is ...
+      --
+      --     pragma Assertion_Policy (...) -- [policy-3]
+      --     package body Pkg.Child is ...
+      --
+      --  When the compilation unit Pkg.Child is analyzed, and its context
+      --  clauses are analyzed, these are the contents of Check_Policy_List:
+      --
+      --     Opt.Check_Policy_List -> [policy-3]
+      --                                  ^
+      --                               last_policy_pragma
+      --
+      --  After climbing to the ultimate parent spec, these are the contents
+      --  of Check_Policy_List:
+      --
+      --     Opt.Check_Policy_List -> [policy-3] -> [policy-2] -> [policy-1]
+      --                                  ^
+      --                               last_policy_pragma
+      --
+      --  The reference to the last policy pragma in the initial contents of
+      --  the list is used later to remove installed inherited pragmas.
+
+      function Install_Inherited_Policy_Pragmas
+        (Comp_Unit : Node_Id) return Node_Id
+      is
+         Last_Policy_Pragma : Node_Id;
+
+         procedure Install_Parent_Policy_Pragmas (N : Node_Id);
+         --  Recursively climb to the ultimate parent and install their policy
+         --  pragmas after Last_Policy_Pragma.
+
+         -----------------------------------
+         -- Install_Parent_Policy_Pragmas --
+         -----------------------------------
+
+         procedure Install_Parent_Policy_Pragmas (N : Node_Id) is
+            Lib_Unit : constant Node_Id := Unit (N);
+            Item     : Node_Id;
+
+         begin
+            if Is_Child_Spec (Lib_Unit) then
+               Install_Parent_Policy_Pragmas (Parent_Spec (Lib_Unit));
+
+            elsif Nkind (Lib_Unit) = N_Package_Body then
+               Install_Parent_Policy_Pragmas (Library_Unit (N));
+
+            elsif Nkind (Lib_Unit) = N_Subprogram_Body
+               and then not Acts_As_Spec (N)
+            then
+               Install_Parent_Policy_Pragmas (Library_Unit (N));
+            end if;
+
+            --  Search for check policy pragmas defined at the start of the
+            --  context items. They are not part of the context clause, but
+            --  that is where the parser places them.
+
+            Item := First (Context_Items (N));
+            while Present (Item)
+              and then Nkind (Item) = N_Pragma
+              and then Pragma_Name (Item) in Configuration_Pragma_Names
+            loop
+               if Pragma_Name (Item) = Name_Check_Policy then
+                  if No (Last_Policy_Pragma) then
+                     Set_Next_Pragma (Item, Opt.Check_Policy_List);
+                     Opt.Check_Policy_List := Item;
+
+                  else
+                     Set_Next_Pragma (Item, Next_Pragma (Last_Policy_Pragma));
+                     Set_Next_Pragma (Last_Policy_Pragma, Item);
+                  end if;
+               end if;
+
+               Next (Item);
+            end loop;
+         end Install_Parent_Policy_Pragmas;
+
+         --  Local variables
+
+         Lib_Unit : constant Node_Id := Unit (Comp_Unit);
+
+      --  Start of processing for Install_Inherited_Policy_Pragmas
+
+      begin
+         --  Search for the last configuration pragma of the current
+         --  compilation unit in the check policy list. These pragmas were
+         --  added to the ckeck policy list as part of the analysis of the
+         --  context of the current compilation unit (because, although
+         --  configuration pragmas are not part of the context clauses,
+         --  they are placed there by the parser).
+
+         Last_Policy_Pragma := Opt.Check_Policy_List;
+
+         if Present (Last_Policy_Pragma) then
+            while Present (Next_Pragma (Last_Policy_Pragma)) loop
+               Last_Policy_Pragma := Next_Pragma (Last_Policy_Pragma);
+            end loop;
+         end if;
+
+         --  We must not install configuration pragmas of the current unit
+         --  because they have been installed by Analyze_Context (see previous
+         --  comment).
+
+         if Is_Child_Spec (Lib_Unit) then
+            Install_Parent_Policy_Pragmas (Parent_Spec (Lib_Unit));
+
+         elsif Nkind (Lib_Unit) = N_Package_Body then
+            Install_Parent_Policy_Pragmas (Library_Unit (Comp_Unit));
+
+         elsif Nkind (Lib_Unit) = N_Subprogram_Body
+            and then not Acts_As_Spec (Comp_Unit)
+         then
+            Install_Parent_Policy_Pragmas (Library_Unit (Comp_Unit));
+         end if;
+
+         return Last_Policy_Pragma;
+      end Install_Inherited_Policy_Pragmas;
+
+      -------------------------------------
+      -- Remove_Inherited_Policy_Pragmas --
+      -------------------------------------
+
+      procedure Remove_Inherited_Policy_Pragmas (Last_Pragma : Node_Id) is
+         Curr_Prag : Node_Id;
+         Next_Prag : Node_Id;
+
+      begin
+         if No (Opt.Check_Policy_List) then
+            return;
+         end if;
+
+         --  If this unit does not have assertion_policy pragmas, then all the
+         --  pragmas installed in the check policy list were inherited and must
+         --  be removed from the list.
+
+         if No (Last_Pragma) then
+            Curr_Prag := Opt.Check_Policy_List;
+
+         --  Otherwise, pragmas installed after Last_Pragma must be removed.
+
+         else
+            Curr_Prag := Last_Pragma;
+         end if;
+
+         --  Remove pragmas from the list
+
+         Next_Prag := Next_Pragma (Curr_Prag);
+         while Present (Next_Prag) loop
+            Set_Next_Pragma (Curr_Prag, Empty);
+
+            Curr_Prag := Next_Prag;
+            Next_Prag := Next_Pragma (Curr_Prag);
+         end loop;
+
+         if No (Last_Pragma) then
+            Opt.Check_Policy_List := Empty;
+         end if;
+      end Remove_Inherited_Policy_Pragmas;
+
       --  Local variables
 
       Main_Cunit    : constant Node_Id := Cunit (Main_Unit);
@@ -639,6 +831,12 @@ package body Sem_Ch10 is
       Spec_Id       : Entity_Id;
       Unum          : Unit_Number_Type;
       Options       : Style_Check_Options;
+
+      Last_Policy_Pragma : Node_Id;
+      --  Last policy pragma of this compilation unit installed in the check
+      --  policy list when its context is analyzed (see Analyze_Context); this
+      --  node is used as a reference to remove from this list policy pragmas
+      --  inherited from parent units.
 
    --  Start of processing for Analyze_Compilation_Unit
 
@@ -910,11 +1108,16 @@ package body Sem_Ch10 is
          end;
       end if;
 
-      --  With the analysis done, install the context. Note that we can't
-      --  install the context from the with clauses as we analyze them, because
-      --  each with clause must be analyzed in a clean visibility context, so
-      --  we have to wait and install them all at once.
+      --  With the analysis done, install assertion_policy pragmas defined at
+      --  the start of the specification of this unit (and recursively the
+      --  assertion policy pragmas defined at the start of the specification
+      --  of its parent units); install also the context of this compilation
+      --  unit. Note that we can't install the context from the with clauses
+      --  as we analyze them, because each with clause must be analyzed in a
+      --  clean visibility context, so we have to wait and install them all
+      --  at once.
 
+      Last_Policy_Pragma := Install_Inherited_Policy_Pragmas (N);
       Install_Context (N);
 
       if Is_Child_Spec (Unit_Node) then
@@ -1077,6 +1280,7 @@ package body Sem_Ch10 is
       --  the unit just compiled.
 
       Remove_Context (N);
+      Remove_Inherited_Policy_Pragmas (Last_Policy_Pragma);
 
       --  When generating code for a non-generic main unit, check that withed
       --  generic units have a body if they need it, even if the units have not
