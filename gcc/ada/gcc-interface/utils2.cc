@@ -2187,15 +2187,16 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 	= Etype (Next_Formal (First_Formal (gnat_proc)));
       tree gnu_size_type = gnat_to_gnu_type (gnat_size_type);
 
+      /* Deallocation is not supported for return and secondary stacks.  */
+      gcc_assert (!gnu_obj);
+
       gnu_size = convert (gnu_size_type, gnu_size);
       gnu_align = convert (gnu_size_type, gnu_align);
 
       if (DECL_BUILT_IN_CLASS (gnu_proc) == BUILT_IN_FRONTEND
 	  && DECL_FE_FUNCTION_CODE (gnu_proc) == BUILT_IN_RETURN_SLOT)
 	{
-	  /* This must be an allocation of the return stack in a function that
-	     returns by invisible reference.  */
-	  gcc_assert (!gnu_obj);
+	  /* This must be a function that returns by invisible reference.  */
 	  gcc_assert (current_function_decl
 		      && TREE_ADDRESSABLE (TREE_TYPE (current_function_decl)));
 	  tree gnu_ret_size;
@@ -2220,11 +2221,6 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 			   build_call_raise (PE_Explicit_Raise, Empty,
 					     N_Raise_Program_Error));
 	}
-
-      /* The first arg is the address of the object, for a deallocator,
-	 then the size.  */
-      else if (gnu_obj)
-	gnu_call = build_call_n_expr (gnu_proc, 2, gnu_obj, gnu_size);
 
       else
 	gnu_call = build_call_n_expr (gnu_proc, 2, gnu_size, gnu_align);
