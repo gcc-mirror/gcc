@@ -109,15 +109,6 @@ static const struct attribute_spec empty_attribute_table[] =
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
-/* Return base name of the attribute.  Ie '__attr__' is turned into 'attr'.
-   To avoid need for copying, we simply return length of the string.  */
-
-static void
-extract_attribute_substring (struct substring *str)
-{
-  canonicalize_attr_name (str->str, str->length);
-}
-
 /* Insert an array of attributes ATTRIBUTES into a namespace.  This
    array must be NULL terminated.  NS is the name of attribute
    namespace.  IGNORED_P is true iff all unknown attributes in this
@@ -410,7 +401,6 @@ lookup_scoped_attribute_spec (const_tree ns, const_tree name)
 
   attr.str = IDENTIFIER_POINTER (name);
   attr.length = IDENTIFIER_LENGTH (name);
-  extract_attribute_substring (&attr);
   return attrs->attribute_hash->find_with_hash (&attr,
 						substring_hash (attr.str,
 							       	attr.length));
