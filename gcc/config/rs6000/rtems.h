@@ -36,6 +36,10 @@
 #endif
 #endif
 
+/* RTEMS configured for the 32-bit multilibs doesn't support saving and
+   restoring 64-bit regs.  */
+#define OS_MISSING_POWERPC64 !TARGET_64BIT
+
 /* Copy and paste from linux64.h and freebsd64.h */
 #undef	TARGET_AIX
 #define	TARGET_AIX TARGET_64BIT
