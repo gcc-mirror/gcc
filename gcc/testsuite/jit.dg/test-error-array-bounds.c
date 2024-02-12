@@ -64,11 +64,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 void
 verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
 {
-  /* Verify that the diagnostic led to the context failing... */
-  CHECK_VALUE (result, NULL);
-
-  /* ...and that the message was captured by the API.  */
-  CHECK_STRING_VALUE (gcc_jit_context_get_first_error (ctxt),
-		      "array subscript 10 is above array bounds of"
-		      " 'char[10]' [-Warray-bounds=]");
+  /* Verify that the message was captured by the API.  */
+  CHECK_STRING_VALUE (gcc_jit_context_get_last_error (ctxt),
+		      "while referencing 'buffer'");
 }

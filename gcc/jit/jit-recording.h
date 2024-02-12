@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-common.h"
 #include "jit-logging.h"
 #include "jit-target.h"
+#include "diagnostic-core.h"
 #include "libgccjit.h"
 
 #include <string>
@@ -346,12 +347,19 @@ public:
   }
 
   void
+  add_diagnostic (location *loc, enum diagnostics::kind diagnostic_kind,
+		  const char *fmt, ...)
+      GNU_PRINTF (4, 5);
+
+  void
   add_error (location *loc, const char *fmt, ...)
       GNU_PRINTF(3, 4);
 
   void
-  add_error_va (location *loc, const char *fmt, va_list ap)
-      GNU_PRINTF(3, 0);
+  add_error_va (location *loc, enum diagnostics::kind diagnostic_kind,
+		const char *fmt,
+		va_list ap)
+      GNU_PRINTF (4, 0);
 
   const char *
   get_first_error () const;
