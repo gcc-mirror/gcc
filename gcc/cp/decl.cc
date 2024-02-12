@@ -1156,6 +1156,16 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
       tree r2 = fndecl_declared_return_type (olddecl);
       tree r1 = fndecl_declared_return_type (newdecl);
 
+      /* For memchr et al, allow const void* return type (as specified by C++)
+	 when we expect void* (as in C).  */
+      if (DECL_IS_UNDECLARED_BUILTIN (olddecl)
+	  && DECL_EXTERN_C_P (olddecl)
+	  && !same_type_p (r1, r2)
+	  && TREE_CODE (r1) == POINTER_TYPE
+	  && TREE_CODE (r2) == POINTER_TYPE
+	  && comp_ptr_ttypes (TREE_TYPE (r1), TREE_TYPE (r2)))
+	r2 = r1;
+
       tree p1 = TYPE_ARG_TYPES (f1);
       tree p2 = TYPE_ARG_TYPES (f2);
 
