@@ -369,7 +369,10 @@ print_mcu (const avr_mcu_t *mcu, const McuInfo &mi)
     }
 
   // -m[no-]rodata-in-ram affects linking.  Sanity check its usage.
-  fprintf (f, "*link_rodata_in_ram:\n\t%%(check_rodata_in_ram)\n\n");
+  fprintf (f, "*link_rodata_in_ram:\n\t%%(check_rodata_in_ram)");
+  if (mi.is_device && mi.have_flmap)
+    fprintf (f, " %%{!mrodata-in-ram:-u __do_flmap_init}");
+  fprintf (f, "\n\n");
 
   // Specs known to GCC.
 
