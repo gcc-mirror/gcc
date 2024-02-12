@@ -1267,13 +1267,17 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	     the most significant limb is handled in straight
 	     line code.  If m_var_msb (on left shifts) or
 	     if m_upwards_2limb * limb_prec is equal to
-	     lhs precision that is not the case.  */
+	     lhs precision or if not m_upwards_2limb and lhs_type
+	     has precision which is multiple of limb_prec that is
+	     not the case.  */
 	  || (!m_var_msb
 	      && (CEIL (TYPE_PRECISION (lhs_type), limb_prec)
 		  == CEIL (TYPE_PRECISION (rhs_type), limb_prec))
-	      && (!m_upwards_2limb
-		  || (m_upwards_2limb * limb_prec
-		      < TYPE_PRECISION (lhs_type)))))
+	      && ((!m_upwards_2limb
+		   && (TYPE_PRECISION (lhs_type) % limb_prec != 0))
+		  || (m_upwards_2limb
+		      && (m_upwards_2limb * limb_prec
+			  < TYPE_PRECISION (lhs_type))))))
 	{
 	  rhs1 = handle_operand (rhs1, idx);
 	  if (tree_fits_uhwi_p (idx))
