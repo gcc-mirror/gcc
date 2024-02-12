@@ -11789,6 +11789,25 @@ move_early_exit_stmts (loop_vec_info loop_vinfo)
 
   for (gimple *stmt : LOOP_VINFO_EARLY_BRK_STORES (loop_vinfo))
     {
+      /* We have to update crossed degenerate virtual PHIs.  Simply
+	 elide them.  */
+      if (gphi *vphi = dyn_cast <gphi *> (stmt))
+	{
+	  tree vdef = gimple_phi_result (vphi);
+	  tree vuse = gimple_phi_arg_def (vphi, 0);
+	  imm_use_iterator iter;
+	  use_operand_p use_p;
+	  gimple *use_stmt;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, vdef)
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, vuse);
+	    }
+	  auto gsi = gsi_for_stmt (stmt);
+	  remove_phi_node (&gsi, true);
+	  continue;
+	}
+
       /* Check to see if statement is still required for vect or has been
 	 elided.  */
       auto stmt_info = loop_vinfo->lookup_stmt (stmt);

@@ -812,6 +812,10 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 	  break;
 	}
 
+      /* If we possibly sink through a virtual PHI make sure to elide that.  */
+      if (gphi *vphi = get_virtual_phi (bb))
+	LOOP_VINFO_EARLY_BRK_STORES (loop_vinfo).safe_push (vphi);
+
       /* All earlier blocks need dependence checking.  */
       check_deps = true;
       bb = single_pred (bb);
