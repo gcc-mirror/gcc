@@ -678,8 +678,8 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	for (auto &sub : items_lower)
 	  {
 	    TyTy::BaseType *ty_sub = nullptr;
-	    HirId pattern_id = pattern.get_mappings ().get_hirid ();
-	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
+	    HirId sub_id = sub->get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
 	    rust_assert (ok);
 
 	    tree sub_init
@@ -697,8 +697,8 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	for (auto &sub : items_upper)
 	  {
 	    TyTy::BaseType *ty_sub = nullptr;
-	    HirId pattern_id = pattern.get_mappings ().get_hirid ();
-	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
+	    HirId sub_id = sub->get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
 	    rust_assert (ok);
 
 	    tree sub_init
@@ -719,8 +719,8 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	for (auto &sub : items.get_patterns ())
 	  {
 	    TyTy::BaseType *ty_sub = nullptr;
-	    HirId pattern_id = pattern.get_mappings ().get_hirid ();
-	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
+	    HirId sub_id = sub->get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
 	    rust_assert (ok);
 
 	    tree sub_init
