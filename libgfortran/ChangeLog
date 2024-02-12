@@ -1,3 +1,8 @@
+2024-02-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/110651
+	* libgfortran.spec.in: Remove duplicate libraries.
+
 2024-01-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
