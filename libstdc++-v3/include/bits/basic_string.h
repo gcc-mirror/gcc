@@ -904,7 +904,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		__str._M_capacity(__capacity);
 	      }
 	    else
-	      __str._M_data(__str._M_local_buf);
+	      __str._M_data(__str._M_use_local_data());
 	  }
 	else // Need to do a deep copy
 	  assign(__str);
