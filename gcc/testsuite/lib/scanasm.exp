@@ -516,6 +516,70 @@ proc scan-assembler-times { args } {
 
 set_required_options_for scan-assembler-times
 
+# Call pass if pattern is present within a lower or upper bound, 
+# otherwise fail.
+# ex /* { dg-final { scan-assembler-bound {RE} > 3 } }
+proc scan-assembler-bound { args } {
+    if { [llength $args] < 3 } {
+	error "scan-assembler-bound: too few arguments"
+        return
+    }
+    if { [llength $args] > 4 } {
+	error "scan-assembler-bound: too many arguments"
+	return
+    }
+    if { [llength $args] >= 4 } {
+	switch [dg-process-target [lindex $args 3]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
+    set pattern [lindex $args 0]
+    set cmp [lindex $args 1]
+    set bound [lindex $args 2]
+    set pp_pattern [make_pattern_printable $pattern]
+
+    # This must match the rule in gcc-dg.exp.
+    set output_file "[file rootname [file tail $filename]].s"
+
+    set files [glob -nocomplain $output_file]
+    if { $files == "" } {
+	verbose -log "$testcase: output file does not exist"
+	unresolved "$testcase scan-assembler-bound $pp_pattern $min $max"
+	return
+    }
+
+    if { [lsearch { < > <= >= } $cmp] == -1 } {
+        error "scan-assembler-bound: illegal argument: $cmp"
+        return
+    }
+    if ![string is integer $bound ] {
+        error "scan-assembler-bound: illegal argument: $bound"
+        return
+    }
+    
+    set fd [open $output_file r]
+    set text [read $fd]
+    close $fd
+    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+
+    set result_count [regexp -all -- $pattern $text]
+    if [expr $result_count $cmp $bound] {
+	pass "$testcase scan-assembler-bound $pp_pattern $cmp $bound"
+    } else {
+	verbose -log "$testcase: $pp_pattern found $result_count times"
+	fail "$testcase scan-assembler-bound $pp_pattern $cmp $bound"
+    }
+}
+
+set_required_options_for scan-assembler-bound
+
 # Utility for scanning demangled compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
 proc scan-assembler-dem { args } {
