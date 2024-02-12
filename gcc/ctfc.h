@@ -441,6 +441,9 @@ extern int ctf_add_variable (ctf_container_ref, const char *, ctf_id_t,
 extern ctf_id_t ctf_lookup_tree_type (ctf_container_ref, const tree);
 extern ctf_id_t get_btf_id (ctf_id_t);
 
+typedef bool (*funcs_traverse_callback) (ctf_dtdef_ref, void *);
+bool traverse_btf_func_types (funcs_traverse_callback, void *);
+
 /* CTF section does not emit location information; at this time, location
    information is needed for BTF CO-RE use-cases.  */
 
