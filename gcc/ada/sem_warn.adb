@@ -3831,16 +3831,6 @@ package body Sem_Warn is
                   then
                      null;
 
-                  --  We only report warnings on overlapping arrays and record
-                  --  types if switch is set.
-
-                  elsif not Warn_On_Overlap
-                    and then not (Is_Elementary_Type (Etype (Form1))
-                                    and then
-                                  Is_Elementary_Type (Etype (Form2)))
-                  then
-                     null;
-
                   --  Here we may need to issue overlap message
 
                   else
@@ -3858,22 +3848,25 @@ package body Sem_Warn is
 
                        or else not
                         (Is_Elementary_Type (Etype (Form1))
-                         and then Is_Elementary_Type (Etype (Form2)))
+                         and then Is_Elementary_Type (Etype (Form2)));
 
-                       --  debug flag -gnatd.E changes the error to a warning
-                       --  even in Ada 2012 mode.
+                     if not Error_Msg_Warn or else Warn_On_Overlap then
+                        --  debug flag -gnatd.E changes the error to a warning
+                        --  even in Ada 2012 mode.
 
-                       or else Error_To_Warning;
+                        if Error_To_Warning then
+                           Error_Msg_Warn := True;
+                        end if;
 
-                     --  For greater clarity, give name of formal
+                        --  For greater clarity, give name of formal
 
-                     Error_Msg_Node_2 := Form2;
+                        Error_Msg_Node_2 := Form2;
 
-                     --  This is one of the messages
+                        --  This is one of the messages
 
-                     Error_Msg_FE
-                       ("<.i<writable actual for & overlaps with actual for &",
-                        Act1, Form1);
+                        Error_Msg_FE ("<.i<writable actual for & overlaps with"
+                          & "actual for &", Act1, Form1);
+                     end if;
                   end if;
                end if;
             end if;
