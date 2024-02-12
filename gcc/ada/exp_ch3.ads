@@ -92,7 +92,7 @@ package Exp_Ch3 is
    --  derived type; no new subprograms are constructed in this case.
 
    function Build_Initialization_Call
-     (Loc                 : Source_Ptr;
+     (N                   : Node_Id;
       Id_Ref              : Node_Id;
       Typ                 : Entity_Id;
       In_Init_Proc        : Boolean   := False;
@@ -105,7 +105,7 @@ package Exp_Ch3 is
    --  Builds a call to the initialization procedure for the base type of Typ,
    --  passing it the object denoted by Id_Ref, plus additional parameters as
    --  appropriate for the type (the _Master, for task types, for example).
-   --  Loc is the source location for the constructed tree. In_Init_Proc has
+   --  N is the construct for which the call is to be built. In_Init_Proc has
    --  to be set to True when the call is itself in an init proc in order to
    --  enable the use of discriminals.
    --

@@ -699,7 +699,7 @@ package body Exp_Ch3 is
             Clean_Task_Names (Comp_Type, Proc_Id);
             return
               Build_Initialization_Call
-                (Loc          => Loc,
+                (N            => Nod,
                  Id_Ref       => Comp,
                  Typ          => Comp_Type,
                  In_Init_Proc => True,
@@ -1080,7 +1080,7 @@ package body Exp_Ch3 is
             end if;
 
             Comp_Init :=
-              Build_Initialization_Call (Loc,
+              Build_Initialization_Call (N,
                 Obj_Ref, Typ, Target_Ref => Target_Ref);
          end if;
       end if;
@@ -2013,7 +2013,7 @@ package body Exp_Ch3 is
    --  end;
 
    function Build_Initialization_Call
-     (Loc                 : Source_Ptr;
+     (N                   : Node_Id;
       Id_Ref              : Node_Id;
       Typ                 : Entity_Id;
       In_Init_Proc        : Boolean   := False;
@@ -2024,7 +2024,8 @@ package body Exp_Ch3 is
       Constructor_Ref     : Node_Id   := Empty;
       Init_Control_Actual : Entity_Id := Empty) return List_Id
    is
-      Res : constant List_Id := New_List;
+      Loc : constant Source_Ptr := Sloc (N);
+      Res : constant List_Id    := New_List;
 
       Full_Type : Entity_Id;
 
@@ -2322,6 +2323,24 @@ package body Exp_Ch3 is
       --  Add discriminant values if discriminants are present
 
       if Has_Discriminants (Full_Init_Type) then
+         --  If an allocated object will be constrained by the default
+         --  values for discriminants, then build a subtype with those
+         --  defaults, and change the allocated subtype to that. Note
+         --  that this happens in fewer cases in Ada 2005 (AI95-0363).
+
+         if Nkind (N) = N_Allocator
+           and then not Is_Constrained (Full_Type)
+           and then
+             Present
+               (Discriminant_Default_Value (First_Discriminant (Full_Type)))
+           and then (Ada_Version < Ada_2005
+                      or else not Object_Type_Has_Constrained_Partial_View
+                                    (Full_Type, Current_Scope))
+         then
+            Full_Type := Build_Default_Subtype (Full_Type, N);
+            Set_Expression (N, New_Occurrence_Of (Full_Type, Loc));
+         end if;
+
          Discr := First_Discriminant (Full_Init_Type);
          while Present (Discr) loop
 
@@ -3715,7 +3734,7 @@ package body Exp_Ch3 is
                   if Is_CPP_Constructor_Call (Expression (Decl)) then
                      Actions :=
                        Build_Initialization_Call
-                         (Comp_Loc,
+                         (Decl,
                           Id_Ref          =>
                             Make_Selected_Component (Comp_Loc,
                               Prefix        =>
@@ -3857,7 +3876,7 @@ package body Exp_Ch3 is
 
                      Init_Call_Stmts :=
                        Build_Initialization_Call
-                         (Comp_Loc,
+                         (Decl,
                           Make_Selected_Component (Comp_Loc,
                             Prefix        =>
                               Make_Identifier (Comp_Loc, Name_uInit),
@@ -4082,7 +4101,7 @@ package body Exp_Ch3 is
 
                Append_List_To (Late_Stmts,
                  Build_Initialization_Call
-                   (Loc                  => Parent_Loc,
+                   (N                    => Parent (Parent_Id),
                     Id_Ref               =>
                       Make_Selected_Component (Parent_Loc,
                         Prefix        => Make_Identifier
@@ -4113,7 +4132,7 @@ package body Exp_Ch3 is
 
                   elsif Has_Non_Null_Base_Init_Proc (Typ) then
                      Append_List_To (Late_Stmts,
-                       Build_Initialization_Call (Comp_Loc,
+                       Build_Initialization_Call (Decl,
                          Make_Selected_Component (Comp_Loc,
                            Prefix        =>
                              Make_Identifier (Comp_Loc, Name_uInit),
@@ -8099,7 +8118,7 @@ package body Exp_Ch3 is
                   Set_Assignment_OK (Id_Ref);
 
                   Insert_Actions_After (Init_After,
-                    Build_Initialization_Call (Loc, Id_Ref, Typ,
+                    Build_Initialization_Call (N, Id_Ref, Typ,
                       Constructor_Ref => Expr));
 
                   --  We remove here the original call to the constructor

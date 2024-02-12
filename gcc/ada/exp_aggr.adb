@@ -1493,7 +1493,7 @@ package body Exp_Aggr is
               or else Has_Task (Base_Type (Ctype))
             then
                Append_List_To (Stmts,
-                 Build_Initialization_Call (Loc,
+                 Build_Initialization_Call (N,
                    Id_Ref            => Indexed_Comp,
                    Typ               => Ctype,
                    With_Default_Init => True));
@@ -2936,7 +2936,7 @@ package body Exp_Aggr is
 
                if not Is_Interface (Init_Typ) then
                   Append_List_To (L,
-                    Build_Initialization_Call (Loc,
+                    Build_Initialization_Call (N,
                       Id_Ref            => Ref,
                       Typ               => Init_Typ,
                       In_Init_Proc      => Within_Init_Proc,
@@ -2971,7 +2971,7 @@ package body Exp_Aggr is
                Set_Assignment_OK (Ref);
 
                Append_List_To (L,
-                 Build_Initialization_Call (Loc,
+                 Build_Initialization_Call (N,
                    Id_Ref            => Ref,
                    Typ               => Init_Typ,
                    In_Init_Proc      => Within_Init_Proc,
@@ -3148,7 +3148,7 @@ package body Exp_Aggr is
 
          if Is_CPP_Constructor_Call (Expression (Comp)) then
             Append_List_To (L,
-              Build_Initialization_Call (Loc,
+              Build_Initialization_Call (N,
                 Id_Ref            =>
                   Make_Selected_Component (Loc,
                     Prefix        => New_Copy_Tree (Target),
@@ -3217,7 +3217,7 @@ package body Exp_Aggr is
             end;
 
             Append_List_To (L,
-              Build_Initialization_Call (Loc,
+              Build_Initialization_Call (N,
                 Id_Ref            => Make_Selected_Component (Loc,
                                        Prefix        => New_Copy_Tree (Target),
                                        Selector_Name =>
@@ -3747,8 +3747,8 @@ package body Exp_Aggr is
                   Param := First (Parameter_Associations (Stmt));
                   Insert_Actions
                     (Stmt,
-                     Build_Initialization_Call
-                       (Sloc (N), New_Copy_Tree (Param), Etype (Param)));
+                     Build_Initialization_Call (N,
+                       New_Copy_Tree (Param), Etype (Param)));
                end if;
 
                Next (Stmt);
@@ -9279,13 +9279,11 @@ package body Exp_Aggr is
           Present (Variant_Part (Component_List (Type_Definition (Decl))))
         and then Nkind (N) /= N_Extension_Aggregate
       then
-
          --   Call init proc to set discriminants.
          --   There should eventually be a special procedure for this ???
 
          Ref := New_Occurrence_Of (Defining_Identifier (N), Loc);
-         Insert_Actions_After (N,
-           Build_Initialization_Call (Sloc (N), Ref, Typ));
+         Insert_Actions_After (N, Build_Initialization_Call (N, Ref, Typ));
       end if;
    end Initialize_Discriminants;
 
