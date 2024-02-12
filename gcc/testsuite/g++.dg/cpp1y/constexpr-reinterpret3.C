@@ -1,7 +1,5 @@
 // PR c++/113545
-// { dg-do compile { target c++14 } }
-// Please change the above "dg-do compile" to "dg-do run" when the ICE is resolved.
-// { dg-ice "PR112545 - constexpr function with switch called for reinterpret_cast" }
+// { dg-do run { target c++14 } }
 
 char foo;
 
