@@ -1103,6 +1103,11 @@ public:
 	apply_user_attributes (t->sym, t->ctype);
 	finish_aggregate_type (structsize, alignsize, t->ctype);
       }
+    else
+      {
+	build_type_decl (t->ctype, t->sym);
+	apply_user_attributes (t->sym, t->ctype);
+      }
 
     TYPE_CONTEXT (t->ctype) = d_decl_context (t->sym);
     build_type_decl (t->ctype, t->sym);
