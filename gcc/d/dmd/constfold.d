@@ -36,6 +36,7 @@ import dmd.root.utf;
 import dmd.sideeffect;
 import dmd.target;
 import dmd.tokens;
+import dmd.typesem : toDsymbol, equivalent;
 
 private enum LOG = false;
 
@@ -1038,7 +1039,6 @@ UnionExp Cast(const ref Loc loc, Type type, Type to, Expression e1)
     else if (tb.ty == Tstruct && e1.op == EXP.int64)
     {
         // Struct = 0;
-        import dmd.typesem : toDsymbol;
         StructDeclaration sd = tb.toDsymbol(null).isStructDeclaration();
         assert(sd);
         auto elements = new Expressions();

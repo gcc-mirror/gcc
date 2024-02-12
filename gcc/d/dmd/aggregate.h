@@ -42,6 +42,7 @@ enum class Baseok : uint8_t
 };
 
 FuncDeclaration *search_toString(StructDeclaration *sd);
+void semanticTypeInfoMembers(StructDeclaration *sd);
 
 enum class ClassKind : uint8_t
 {

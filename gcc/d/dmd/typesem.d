@@ -520,7 +520,7 @@ int mutabilityOfType(bool isref, Type t)
  * Set 'purity' field of 'typeFunction'.
  * Do this lazily, as the parameter types might be forward referenced.
  */
-extern(C++) void purityLevel(TypeFunction typeFunction)
+void purityLevel(TypeFunction typeFunction)
 {
     TypeFunction tf = typeFunction;
     if (tf.purity != PURE.fwdref)
@@ -6106,6 +6106,11 @@ extern(C++) bool isBaseOf(Type tthis, Type t, int* poffset)
     return false;
 }
 
+extern(C++) bool equivalent(Type src, Type t)
+{
+    return immutableOf(src).equals(t.immutableOf());
+}
+
 /********************************
  * Convert to 'const'.
  */
@@ -6401,6 +6406,111 @@ extern(C++) Type castMod(Type type, MOD mod)
 
     default:
         assert(0);
+    }
+    return t;
+}
+
+/************************************
+ * Add MODxxxx bits to existing type.
+ * We're adding, not replacing, so adding const to
+ * a shared type => "shared const"
+ */
+extern(C++) Type addMod(Type type, MOD mod)
+{
+    /* Add anything to immutable, and it remains immutable
+     */
+    Type t = type;
+    if (!t.isImmutable())
+    {
+        //printf("addMod(%x) %s\n", mod, toChars());
+        switch (mod)
+        {
+        case 0:
+            break;
+
+        case MODFlags.const_:
+            if (type.isShared())
+            {
+                if (type.isWild())
+                    t = type.sharedWildConstOf();
+                else
+                    t = type.sharedConstOf();
+            }
+            else
+            {
+                if (type.isWild())
+                    t = type.wildConstOf();
+                else
+                    t = t.constOf();
+            }
+            break;
+
+        case MODFlags.wild:
+            if (type.isShared())
+            {
+                if (type.isConst())
+                    t = type.sharedWildConstOf();
+                else
+                    t = type.sharedWildOf();
+            }
+            else
+            {
+                if (type.isConst())
+                    t = type.wildConstOf();
+                else
+                    t = type.wildOf();
+            }
+            break;
+
+        case MODFlags.wildconst:
+            if (type.isShared())
+                t = type.sharedWildConstOf();
+            else
+                t = type.wildConstOf();
+            break;
+
+        case MODFlags.shared_:
+            if (type.isWild())
+            {
+                if (type.isConst())
+                    t = type.sharedWildConstOf();
+                else
+                    t = type.sharedWildOf();
+            }
+            else
+            {
+                if (type.isConst())
+                    t = type.sharedConstOf();
+                else
+                    t = type.sharedOf();
+            }
+            break;
+
+        case MODFlags.shared_ | MODFlags.const_:
+            if (type.isWild())
+                t = type.sharedWildConstOf();
+            else
+                t = type.sharedConstOf();
+            break;
+
+        case MODFlags.shared_ | MODFlags.wild:
+            if (type.isConst())
+                t = type.sharedWildConstOf();
+            else
+                t = type.sharedWildOf();
+            break;
+
+        case MODFlags.shared_ | MODFlags.wildconst:
+            t = type.sharedWildConstOf();
+            break;
+
+        case MODFlags.immutable_:
+            t = type.immutableOf();
+            break;
+
+        default:
+            assert(0);
+        }
     }
     return t;
 }

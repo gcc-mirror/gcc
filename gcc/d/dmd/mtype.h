@@ -39,7 +39,6 @@ typedef union tree_node type;
 typedef struct TYPE type;
 #endif
 
-extern const char* toChars(const Type* const t);
 Type *typeSemantic(Type *t, const Loc &loc, Scope *sc);
 Type *merge(Type *type);
 
@@ -218,7 +217,6 @@ public:
     Type *copy() const;
     virtual Type *syntaxCopy();
     bool equals(const RootObject * const o) const override;
-    bool equivalent(Type *t);
     // kludge for template.isType()
     DYNCAST dyncast() const override final { return DYNCAST_TYPE; }
     size_t getUniqueID() const;
@@ -253,7 +251,6 @@ public:
     bool isSharedWild() const  { return (mod & (MODshared | MODwild)) == (MODshared | MODwild); }
     bool isNaked() const       { return mod == 0; }
     Type *nullAttributes() const;
-    Type *addMod(MOD mod);
     virtual Type *addStorageClass(StorageClass stc);
     Type *pointerTo();
     Type *referenceTo();
@@ -889,10 +886,10 @@ AggregateDeclaration *isAggregate(Type *t);
 bool hasPointers(Type *t);
 // return the symbol to which type t resolves
 Dsymbol *toDsymbol(Type *t, Scope *sc);
+bool equivalent(Type *src, Type *t);
 Covariant covariant(Type *, Type *, StorageClass * = NULL, bool = false);
 bool isBaseOf(Type *tthis, Type *t, int *poffset);
 Type *trySemantic(Type *type, const Loc &loc, Scope *sc);
-void purityLevel(TypeFunction *type);
 Type *merge2(Type *type);
 Type *constOf(Type *type);
 Type *immutableOf(Type *type);
@@ -905,3 +902,4 @@ Type *wildConstOf(Type *type);
 Type *sharedWildOf(Type *type);
 Type *sharedWildConstOf(Type *type);
 Type *castMod(Type *type, MOD mod);
+Type *addMod(Type *type, MOD mod);

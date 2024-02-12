@@ -575,6 +575,7 @@ extern(C):
 
     // https://issues.dlang.org/show_bug.cgi?id=13111
     ///
+    version (OnlyLowMemUnittests) {} else // Test needs a lot of RAM
     unittest
     {
         enum size1 = 1 << 11 + 1; // page in large object pool

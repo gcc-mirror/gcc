@@ -37,7 +37,7 @@ import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
 import dmd.tokens;
-import dmd.typesem : defaultInit;
+import dmd.typesem : defaultInit, addMod;
 import dmd.visitor;
 
 /**

@@ -6907,7 +6907,7 @@ extern(C++) class ImportAllVisitor : Visitor
     override void visit(StaticForeachDeclaration _) {}
 }
 
-extern(C++) void setFieldOffset(Dsymbol d, AggregateDeclaration ad, FieldState* fieldState, bool isunion)
+void setFieldOffset(Dsymbol d, AggregateDeclaration ad, FieldState* fieldState, bool isunion)
 {
     scope v = new SetFieldOffsetVisitor(ad, fieldState, isunion);
     d.accept(v);

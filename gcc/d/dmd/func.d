@@ -60,6 +60,7 @@ import dmd.statement;
 import dmd.statementsem;
 import dmd.templatesem;
 import dmd.tokens;
+import dmd.typesem;
 import dmd.visitor;
 
 version (IN_GCC) {}
@@ -518,7 +519,6 @@ extern (C++) class FuncDeclaration : Declaration
         int result = 0;
         if (fd.ident == ident)
         {
-            import dmd.typesem : covariant;
             const cov = type.covariant(fd.type);
             if (cov != Covariant.distinct)
             {
@@ -625,7 +625,6 @@ extern (C++) class FuncDeclaration : Declaration
              */
             if (t.ty == Tfunction)
             {
-                import dmd.typesem : covariant;
                 auto tf = cast(TypeFunction)f.type;
                 if (tf.covariant(t) == Covariant.yes &&
                     tf.nextOf().implicitConvTo(t.nextOf()) >= MATCH.constant)
@@ -840,7 +839,6 @@ extern (C++) class FuncDeclaration : Declaration
             args.push(e);
         }
 
-        import dmd.typesem : callMatch;
         MATCH m = tg.callMatch(null, ArgumentList(&args, names), 1);
         if (m > MATCH.nomatch)
         {
@@ -1151,7 +1149,6 @@ extern (C++) class FuncDeclaration : Declaration
     {
         //printf("FuncDeclaration::isPure() '%s'\n", toChars());
 
-        import dmd.typesem : purityLevel;
 
         TypeFunction tf = type.toTypeFunction();
         if (purityInprocess)
@@ -1464,7 +1461,6 @@ extern (C++) class FuncDeclaration : Declaration
             case Tstruct:
                 /* Drill down and check the struct's fields
                  */
-                import dmd.typesem : toDsymbol;
                 auto sym = t.toDsymbol(null).isStructDeclaration();
                 const tName = t.toChars.toDString;
                 const entry = parentTypes.insert(tName, t);
@@ -1546,7 +1542,6 @@ extern (C++) class FuncDeclaration : Declaration
                     case Tstruct:
                         /* Drill down and check the struct's fields
                          */
-                        import dmd.typesem : toDsymbol;
                         auto sym = tp.toDsymbol(null).isStructDeclaration();
                         foreach (v; sym.fields)
                         {
@@ -2411,7 +2406,6 @@ extern (C++) class FuncDeclaration : Declaration
                 {
                     Type t1 = fdv.type.nextOf().toBasetype();
                     Type t2 = this.type.nextOf().toBasetype();
-                    import dmd.typesem : isBaseOf;
                     if (t1.isBaseOf(t2, null))
                     {
                         /* Making temporary reference variable is necessary
@@ -3325,7 +3319,6 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
  */
 Type getIndirection(Type t)
 {
-    import dmd.typesem : hasPointers;
     t = t.baseElemOf();
     if (t.ty == Tarray || t.ty == Tpointer)
         return t.nextOf().toBasetype();
@@ -3372,7 +3365,6 @@ private bool traverseIndirections(Type ta, Type tb)
 
     static bool traverse(Type ta, Type tb, ref scope AssocArray!(const(char)*, bool) table, bool reversePass)
     {
-        import dmd.typesem : hasPointers;
         //printf("traverse(%s, %s)\n", ta.toChars(), tb.toChars());
         ta = ta.baseElemOf();
         tb = tb.baseElemOf();
@@ -3409,7 +3401,6 @@ private bool traverseIndirections(Type ta, Type tb)
             else
                 *found = true;
 
-            import dmd.typesem : toDsymbol;
             AggregateDeclaration sym = tb.toDsymbol(null).isAggregateDeclaration();
             foreach (v; sym.fields)
             {

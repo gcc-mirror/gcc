@@ -97,12 +97,15 @@ build_frontend_type (tree type)
 	{
 	  /* Check for char * first.  Needs to be done for chars/string.  */
 	  if (TYPE_MAIN_VARIANT (TREE_TYPE (type)) == char_type_node)
-	    return Type::tchar->addMod (dtype->mod)->pointerTo ()->addMod (mod);
+	    {
+	      dtype = addMod (Type::tchar, dtype->mod);
+	      return addMod (dtype->pointerTo (), mod);
+	    }
 
 	  if (dtype->ty == TY::Tfunction)
-	    return (TypePointer::create (dtype))->addMod (mod);
+	    return addMod (TypePointer::create (dtype), mod);
 
-	  return dtype->pointerTo ()->addMod (mod);
+	  return addMod (dtype->pointerTo (), mod);
 	}
       break;
 
@@ -113,7 +116,7 @@ build_frontend_type (tree type)
 	  /* Want to assign ctype directly so that the REFERENCE_TYPE code
 	     can be turned into as an `inout' argument.  Can't use pointerTo(),
 	     because the returned Type is shared.  */
-	  dtype = (TypePointer::create (dtype))->addMod (mod);
+	  dtype = addMod (TypePointer::create (dtype), mod);
 	  dtype->ctype = type;
 	  builtin_converted_decls.safe_push (builtin_data (dtype, type));
 	  return dtype;
@@ -122,7 +125,7 @@ build_frontend_type (tree type)
 
     case BOOLEAN_TYPE:
       /* Should be no need for size checking.  */
-      return Type::tbool->addMod (mod);
+      return addMod (Type::tbool, mod);
 
     case INTEGER_TYPE:
     {
@@ -140,7 +143,7 @@ build_frontend_type (tree type)
 	      || size != dtype->size ())
 	    continue;
 
-	  return dtype->addMod (mod);
+	  return addMod (dtype, mod);
 	}
       break;
     }
@@ -157,7 +160,7 @@ build_frontend_type (tree type)
 	  if (dtype->size () != size)
 	    continue;
 
-	  return dtype->addMod (mod);
+	  return addMod (dtype, mod);
 	}
       break;
     }
@@ -174,13 +177,13 @@ build_frontend_type (tree type)
 	  if (dtype->size () != size)
 	    continue;
 
-	  return dtype->addMod (mod);
+	  return addMod (dtype, mod);
 	}
       break;
     }
 
     case VOID_TYPE:
-      return Type::tvoid->addMod (mod);
+      return addMod (Type::tvoid, mod);
 
     case ARRAY_TYPE:
       dtype = build_frontend_type (TREE_TYPE (type));
@@ -194,7 +197,7 @@ build_frontend_type (tree type)
 	  length = size_binop (PLUS_EXPR, size_one_node,
 			       convert (sizetype, length));
 
-	  dtype = dtype->sarrayOf (TREE_INT_CST_LOW (length))->addMod (mod);
+	  dtype = addMod (dtype->sarrayOf (TREE_INT_CST_LOW (length)), mod);
 	  builtin_converted_decls.safe_push (builtin_data (dtype, type));
 	  return dtype;
 	}
@@ -210,11 +213,11 @@ build_frontend_type (tree type)
       if (!dtype)
 	break;
 
-      dtype = dtype->sarrayOf (nunits)->addMod (mod);
+      dtype = addMod (dtype->sarrayOf (nunits), mod);
       if (target.isVectorTypeSupported (dtype->size (), dtype->nextOf ()))
 	break;
 
-      dtype = (TypeVector::create (dtype))->addMod (mod);
+      dtype = addMod (TypeVector::create (dtype), mod);
       builtin_converted_decls.safe_push (builtin_data (dtype, type));
       return dtype;
     }
@@ -238,7 +241,7 @@ build_frontend_type (tree type)
       sdecl->alignsize = TYPE_ALIGN_UNIT (type);
       sdecl->alignment.setDefault ();
       sdecl->sizeok = Sizeok::done;
-      sdecl->type = (TypeStruct::create (sdecl))->addMod (mod);
+      sdecl->type = addMod (TypeStruct::create (sdecl), mod);
       sdecl->type->ctype = type;
       merge2 (sdecl->type);
 
@@ -331,7 +334,7 @@ build_frontend_type (tree type)
 	  if (args->length != 0 || varargs_p == VARARGnone)
 	    {
 	      dtype = TypeFunction::create (args, dtype, varargs_p, LINK::c);
-	      return dtype->addMod (mod);
+	      return addMod (dtype, mod);
 	    }
 	}
       break;

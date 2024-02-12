@@ -2247,6 +2247,7 @@ unittest
         assert(GC.getAttr(p) == BlkAttr.NO_SCAN);
     }
     test(16);
+    version (OnlyLowMemUnittests) {} else
     test(1024 * 1024);
 }
 
