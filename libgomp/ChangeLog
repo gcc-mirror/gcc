@@ -1,3 +1,8 @@
+2024-02-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgomp/113843
+	* configure.tgt (hppa*-*-linux*): Define config_path.
+
 2024-02-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	* testsuite/libgomp.c++/loop-3.C: Set num_threads to 50
