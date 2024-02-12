@@ -27625,7 +27625,11 @@ package body Sem_Util is
       --  Deal with indexed or selected component where prefix is modified
 
       if Nkind (N) in N_Indexed_Component | N_Selected_Component then
-         Pref := Prefix (N);
+
+         --  Grab the original node to avoid looking at internally generated
+         --  objects.
+
+         Pref := Original_Node (Prefix (N));
 
          --  If prefix is access type, then it is the designated object that is
          --  being modified, which means we have no entity to set the flag on.
