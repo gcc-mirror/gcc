@@ -1230,6 +1230,11 @@ public:
 	apply_user_attributes (t->sym, t->ctype);
 	finish_aggregate_type (structsize, alignsize, t->ctype);
       }
+    else
+      {
+	build_type_decl (t->ctype, t->sym);
+	apply_user_attributes (t->sym, t->ctype);
+      }
 
     /* For structs with a user defined postblit, copy constructor, or a
        destructor, also set TREE_ADDRESSABLE on the type and all variants.
