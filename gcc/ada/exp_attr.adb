@@ -4334,7 +4334,7 @@ package body Exp_Attr is
 
          Fname := Find_Stream_Subprogram (P_Type, TSS_Stream_Input, N);
 
-         if not Present (Fname) then
+         if No (Fname) then
 
             --  If there is a Stream_Convert pragma, use it, we rewrite
 
@@ -5422,7 +5422,7 @@ package body Exp_Attr is
 
          Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Output, N);
 
-         if not Present (Pname) then
+         if No (Pname) then
 
             --  If there is a Stream_Convert pragma, use it, we rewrite
 
@@ -5998,7 +5998,7 @@ package body Exp_Attr is
                Pname := Cached_Attribute_Ops.Put_Image_Map.Get (U_Type);
                Cached_Attribute_Ops.Validate_Cached_Candidate
                  (Pname, Attr_Ref => N);
-               if not Present (Pname) then
+               if No (Pname) then
                   declare
                      procedure Build_And_Insert_Array_Put_Image_Proc is
                        new Build_And_Insert_Type_Attr_Subp
@@ -6052,7 +6052,7 @@ package body Exp_Attr is
                   Pname := Cached_Attribute_Ops.Put_Image_Map.Get (Base_Typ);
                   Cached_Attribute_Ops.Validate_Cached_Candidate
                     (Pname, Attr_Ref => N);
-                  if not Present (Pname) then
+                  if No (Pname) then
                      declare
                         procedure Build_And_Insert_Record_Put_Image_Proc is
                           new Build_And_Insert_Type_Attr_Subp
@@ -6352,7 +6352,7 @@ package body Exp_Attr is
 
          Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Read, N);
 
-         if not Present (Pname) then
+         if No (Pname) then
 
             --  If there is a Stream_Convert pragma, use it, we rewrite
 
@@ -8067,7 +8067,7 @@ package body Exp_Attr is
 
          Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Write, N);
 
-         if not Present (Pname) then
+         if No (Pname) then
 
             --  If there is a Stream_Convert pragma, use it, we rewrite
 
