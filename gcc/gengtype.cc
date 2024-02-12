@@ -1344,8 +1344,10 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    }
 
 	  subfields = create_field (subfields, t,
-				    xasprintf (".fld[%lu].%s",
-					       (unsigned long) aindex,
+				    xasprintf (".fld["
+					       HOST_SIZE_T_PRINT_UNSIGNED
+					       "].%s",
+					       (fmt_size_t) aindex,
 					       subname));
 	  subfields->opt = nodot;
 	  if (t == note_union_tp)
