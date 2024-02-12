@@ -338,6 +338,7 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 	      tree attr_id
 		= get_identifier ((const char *)
 				  cpp_token_as_text (pfile, nxt_token));
+	      attr_id = canonicalize_attr_name (attr_id);
 	      attr_name = build_tree_list (attr_ns, attr_id);
 	    }
 	  else
