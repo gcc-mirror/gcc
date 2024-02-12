@@ -1,4 +1,4 @@
-/* coreout.h - Declarations and definitions related to
+/* btfext-out.h - Declarations and definitions related to
    BPF Compile Once - Run Everywhere (CO-RE) support.
    Copyright (C) 2021-2024 Free Software Foundation, Inc.
 

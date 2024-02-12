@@ -33,7 +33,7 @@
 #include "tree-pretty-print.h"
 #include "cgraph.h"
 
-#include "coreout.h"
+#include "btfext-out.h"
 
 /* This file contains data structures and routines for construction and output
    of BPF Compile Once - Run Everywhere (BPF CO-RE) information.
@@ -614,4 +614,4 @@ btf_ext_output (void)
   dw2_asm_output_data (4, 0, "Required padding by libbpf structs");
 }
 
-#include "gt-coreout.h"
+#include "gt-btfext-out.h"
