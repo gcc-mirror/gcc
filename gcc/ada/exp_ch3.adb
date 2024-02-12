@@ -7604,6 +7604,16 @@ package body Exp_Ch3 is
 
          if not Special_Ret_Obj then
             Default_Initialize_Object (Init_After);
+
+            --  Check whether an access object has been initialized above
+
+            if Is_Access_Type (Typ) and then Present (Expression (N)) then
+               if Known_Non_Null (Expression (N)) then
+                  Set_Is_Known_Non_Null (Def_Id);
+               elsif Known_Null (Expression (N)) then
+                  Set_Is_Known_Null (Def_Id);
+               end if;
+            end if;
          end if;
 
          --  Generate attribute for Persistent_BSS if needed
@@ -7623,12 +7633,6 @@ package body Exp_Ch3 is
                Insert_After (N, Prag);
                Analyze (Prag);
             end;
-         end if;
-
-         --  If access type, then we know it is null if not initialized
-
-         if Is_Access_Type (Typ) then
-            Set_Is_Known_Null (Def_Id);
          end if;
 
       --  Explicit initialization present
