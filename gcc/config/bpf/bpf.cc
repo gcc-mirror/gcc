@@ -385,6 +385,18 @@ bpf_compute_frame_layout (void)
 #undef TARGET_COMPUTE_FRAME_LAYOUT
 #define TARGET_COMPUTE_FRAME_LAYOUT bpf_compute_frame_layout
 
+/* Defined to initialize data for func_info region in .BTF.ext section.  */
+
+static void
+bpf_function_prologue (FILE *f ATTRIBUTE_UNUSED)
+{
+  if (btf_debuginfo_p ())
+    btf_add_func_info_for (cfun->decl, current_function_func_begin_label);
+}
+
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE bpf_function_prologue
+
 /* Expand to the instructions in a function prologue.  This function
    is called when expanding the 'prologue' pattern in bpf.md.  */
 

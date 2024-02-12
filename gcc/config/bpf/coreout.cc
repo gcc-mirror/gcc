@@ -31,6 +31,7 @@
 #include "btf.h"
 #include "rtl.h"
 #include "tree-pretty-print.h"
+#include "cgraph.h"
 
 #include "coreout.h"
 
@@ -95,64 +96,193 @@
    result, a single .BTF.ext section can contain CO-RE relocations for multiple
    programs in distinct sections.  */
 
-/* Internal representation of a BPF CO-RE relocation record.  */
+/* BTF.ext debug info section.  */
+static GTY (()) section * btf_ext_info_section;
 
-typedef struct GTY (()) bpf_core_reloc {
+#ifndef BTF_EXT_INFO_SECTION_NAME
+#define BTF_EXT_INFO_SECTION_NAME ".BTF.ext"
+#endif
+#define BTF_EXT_INFO_SECTION_FLAGS (SECTION_DEBUG)
+
+#ifndef BTF_EXT_INFO_SECTION_LABEL
+#define BTF_EXT_INFO_SECTION_LABEL "Lbtfext"
+#endif
+
+#define MAX_BTF_EXT_LABEL_BYTES 40
+static char btf_ext_info_section_label[MAX_BTF_EXT_LABEL_BYTES];
+
+/* A funcinfo record, in the .BTF.ext funcinfo section.  */
+struct GTY ((chain_next ("%h.next"))) btf_ext_funcinfo
+{
+  uint32_t type;     /* Type ID of a BTF_KIND_FUNC type.  */
+  const char *fnname;
+  const char *label;
+
+  struct btf_ext_funcinfo *next; /* Linked list to collect func_info elems.  */
+};
+
+/* A lineinfo record, in the .BTF.ext lineinfo section.  */
+struct GTY ((chain_next ("%h.next"))) btf_ext_lineinfo
+{
+  uint32_t insn_off;      /* Offset of the instruction.  */
+  uint32_t file_name_off; /* Offset of file name in BTF string table.  */
+  uint32_t line_off;      /* Offset of source line in BTF string table.  */
+  uint32_t line_col;      /* Line number (bits 31-11) and column (11-0).  */
+
+  struct btf_ext_lineinfo *next; /* Linked list to collect line_info elems.  */
+};
+
+/* Internal representation of a BPF CO-RE relocation record.  */
+struct GTY ((chain_next ("%h.next"))) btf_ext_core_reloc {
   unsigned int bpfcr_type;		/* BTF type ID of container.  */
   unsigned int  bpfcr_astr_off;		/* Offset of access string in .BTF
 					   string table.  */
   rtx_code_label * bpfcr_insn_label;	/* RTX label attached to instruction
 					   to patch.  */
   enum btf_core_reloc_kind bpfcr_kind;	/* Kind of relocation to perform.  */
-} bpf_core_reloc_t;
 
-typedef bpf_core_reloc_t * bpf_core_reloc_ref;
+  struct {
+    const char *accessor_str;
+    tree type;
+  } info;
 
-/* Internal representation of a CO-RE relocation (sub)section of the
-   .BTF.ext information. One such section is generated for each ELF section
-   in the output object having relocations that a BPF loader must resolve.  */
-
-typedef struct GTY (()) bpf_core_section {
-  /* Name of ELF section to which these CO-RE relocations apply.  */
-  const char * name;
-
-  /* Offset of section name in .BTF string table.  */
-  uint32_t name_offset;
-
-  /* Relocations in the section.  */
-  vec <bpf_core_reloc_ref, va_gc> * GTY (()) relocs;
-} bpf_core_section_t;
-
-typedef bpf_core_section_t * bpf_core_section_ref;
-
-/* BTF.ext debug info section.  */
-
-static GTY (()) section * btf_ext_info_section;
-
-static int btf_ext_label_num;
-
-#ifndef BTF_EXT_INFO_SECTION_NAME
-#define BTF_EXT_INFO_SECTION_NAME ".BTF.ext"
-#endif
-
-#define BTF_EXT_INFO_SECTION_FLAGS (SECTION_DEBUG)
-
-#define MAX_BTF_EXT_LABEL_BYTES 40
-
-static char btf_ext_info_section_label[MAX_BTF_EXT_LABEL_BYTES];
-
-#ifndef BTF_EXT_INFO_SECTION_LABEL
-#define BTF_EXT_INFO_SECTION_LABEL "Lbtfext"
-#endif
-
-static GTY (()) vec<bpf_core_section_ref, va_gc> *bpf_core_sections;
-
-struct GTY(()) bpf_core_extra {
-  const char *accessor_str;
-  tree type;
+  struct btf_ext_core_reloc *next;
 };
-typedef struct bpf_core_extra *bpf_core_extra_ref;
-static GTY(()) hash_map<bpf_core_reloc_ref, bpf_core_extra_ref> *bpf_comment_info;
+
+/* Main data structure to keep .BTF.ext section data.  */
+struct GTY ((chain_next ("%h.next"))) btf_ext_info_sec {
+  const char *sec_name;
+  uint32_t   sec_name_off; /* offset to section name.  */
+
+  struct {
+    uint32_t num_info;
+    struct btf_ext_funcinfo *head;
+  } func_info;
+  struct {
+    uint32_t num_info;
+    struct btf_ext_lineinfo *head;
+  } line_info;
+  struct {
+    uint32_t num_info;
+    struct btf_ext_core_reloc *head;
+  } core_info;
+
+  struct btf_ext_info_sec *next;
+};
+
+static GTY (()) struct btf_ext_info_sec *btf_ext = NULL;
+
+/* Helper function to add a section structure to the linked list with entry
+   point in info static variable.  */
+
+static struct btf_ext_info_sec *
+btfext_info_sec_find_or_add (const char *sec_name, bool add)
+{
+  struct btf_ext_info_sec **tmp = &btf_ext;
+
+  while (*tmp != NULL)
+    {
+      if (strcmp ((*tmp)->sec_name, sec_name) == 0)
+	return *tmp;
+      tmp = &((*tmp)->next);
+    }
+
+  if (add == false)
+    return NULL;
+
+  struct btf_ext_info_sec *ret = ggc_cleared_alloc<struct btf_ext_info_sec> ();
+  *tmp = ret;
+
+  /* Set data for section info.  */
+  ret->sec_name = sec_name;
+  ret->sec_name_off = btf_ext_add_string (sec_name);
+
+  return ret;
+}
+
+#define SEARCH_NODE_AND_RETURN(TYPE, FIELD, CONDITION) __extension__ ({ \
+  TYPE **head = &(FIELD); \
+  while (*head != NULL) \
+    { \
+      if (CONDITION) \
+	return (*head); \
+      head = &((*head)->next); \
+    } \
+  head; \
+})
+
+/* Function to create or find a funcinfo node in info.  */
+
+static struct btf_ext_funcinfo *
+bpf_create_or_find_funcinfo (const char *fnname, const char *sec_name,
+			     btf_ext_info_sec **in_sec = NULL)
+{
+  struct btf_ext_info_sec *sec_elem =
+    btfext_info_sec_find_or_add (sec_name, true);
+
+  if (in_sec != NULL)
+    *in_sec = sec_elem;
+
+  struct btf_ext_funcinfo **head =
+    SEARCH_NODE_AND_RETURN(struct btf_ext_funcinfo,
+			   sec_elem->func_info.head,
+			   strcmp ((*head)->fnname, fnname) == 0);
+
+  *head = ggc_cleared_alloc<struct btf_ext_funcinfo> ();
+  (*head)->fnname = fnname;
+  (*head)->label = NULL;
+
+  return *head;
+}
+
+/* Function to create a core_reloc node in info.  */
+
+static struct btf_ext_core_reloc *
+bpf_create_core_reloc (const char *sec_name,
+		       struct btf_ext_info_sec **in_sec = NULL)
+{
+  struct btf_ext_info_sec *sec_elem =
+    btfext_info_sec_find_or_add (sec_name, true);
+
+  if (in_sec != NULL)
+    *in_sec = sec_elem;
+
+  struct btf_ext_core_reloc **head =
+    SEARCH_NODE_AND_RETURN(struct btf_ext_core_reloc,
+			   sec_elem->core_info.head,
+			   false);
+
+  *head = ggc_cleared_alloc<struct btf_ext_core_reloc> ();
+
+  return *head;
+}
+
+/* String caching to avoid repeated strings added to BTF string table.  */
+struct GTY((chain_next ("%h.next"))) string_cache {
+  const char *str;
+  unsigned int offset;
+  struct string_cache *next;
+};
+static GTY(()) struct string_cache *btf_ext_strings = NULL;
+
+unsigned int
+btf_ext_add_string (const char *str)
+{
+  ctf_container_ref ctfc = ctf_get_tu_ctfc ();
+  struct string_cache **tmp = &btf_ext_strings;
+  while (*tmp != NULL)
+    {
+      if (strcmp ((*tmp)->str, str) == 0)
+	return (*tmp)->offset;
+      tmp = &((*tmp)->next);
+    }
+
+  *tmp = ggc_cleared_alloc<struct string_cache> ();
+  (*tmp)->str = ggc_strdup (str);
+  ctf_add_string (ctfc, (*tmp)->str, &((*tmp)->offset), CTF_AUX_STRTAB);
+
+  return (*tmp)->offset;
+}
 
 /* Create a new BPF CO-RE relocation record, and add it to the appropriate
    CO-RE section.  */
@@ -162,42 +292,23 @@ bpf_core_reloc_add (const tree type, const char * section_name,
 		    rtx_code_label *label,
 		    enum btf_core_reloc_kind kind)
 {
-  bpf_core_reloc_ref bpfcr = ggc_cleared_alloc<bpf_core_reloc_t> ();
-  bpf_core_extra_ref info = ggc_cleared_alloc<struct bpf_core_extra> ();
+  struct btf_ext_info_sec *sec = NULL;
+  struct btf_ext_core_reloc *bpfcr = bpf_create_core_reloc (section_name, &sec);
+
   ctf_container_ref ctfc = ctf_get_tu_ctfc ();
 
   /* Buffer the access string in the auxiliary strtab.  */
-  ctf_add_string (ctfc, accessor, &(bpfcr->bpfcr_astr_off), CTF_AUX_STRTAB);
+  bpfcr->bpfcr_astr_off = 0;
+  if (accessor != NULL)
+    bpfcr->bpfcr_astr_off = btf_ext_add_string (accessor);
   bpfcr->bpfcr_type = get_btf_id (ctf_lookup_tree_type (ctfc, type));
   bpfcr->bpfcr_insn_label = label;
   bpfcr->bpfcr_kind = kind;
 
-  info->accessor_str = accessor;
-  info->type = type;
-  bpf_comment_info->put (bpfcr, info);
+  bpfcr->info.accessor_str = accessor;
+  bpfcr->info.type = type;
 
-  /* Add the CO-RE reloc to the appropriate section.  */
-  bpf_core_section_ref sec;
-  int i;
-  FOR_EACH_VEC_ELT (*bpf_core_sections, i, sec)
-    if (strcmp (sec->name, section_name) == 0)
-      {
-	vec_safe_push (sec->relocs, bpfcr);
-	return;
-      }
-
-  /* If the CO-RE section does not yet exist, create it.  */
-  sec = ggc_cleared_alloc<bpf_core_section_t> ();
-
-  ctf_add_string (ctfc, section_name, &sec->name_offset, CTF_AUX_STRTAB);
-  if (strcmp (section_name, ""))
-    ctfc->ctfc_aux_strlen += strlen (section_name) + 1;
-
-  sec->name = section_name;
-  vec_alloc (sec->relocs, 1);
-  vec_safe_push (sec->relocs, bpfcr);
-
-  vec_safe_push (bpf_core_sections, sec);
+  sec->core_info.num_info += 1;
 }
 
 /* Return the 0-based index of the field NODE in its containing struct or union
@@ -243,6 +354,111 @@ bpf_core_get_sou_member_index (ctf_container_ref ctfc, const tree node)
   return -1;
 }
 
+/* Helper function to check if a particular named function exists as a
+   BTF_KIND_FUNC type record.  */
+
+static bool
+btf_funcinfo_type_callback (ctf_dtdef_ref func, void *data)
+{
+  struct btf_ext_funcinfo *info = (struct btf_ext_funcinfo *) data;
+  if (strcmp (func->dtd_name, info->fnname) == 0)
+    {
+      uint32_t type = func->dtd_type;
+      info->type = type;
+      return true;
+    }
+  return false;
+}
+
+/* Entry point function to add a func_info  in local data structures
+   represented by info static variable.
+   This function is used in bpf.cc.  */
+
+struct btf_ext_funcinfo *
+btf_add_func_info_for (tree decl, const char *label)
+{
+  const char *fnname = IDENTIFIER_POINTER (DECL_NAME (decl));
+  const char *sec_name = decl_section_name (decl);
+
+  /* Recover the original function name, which may have been mangled by
+     optimizations.  */
+  const char *cp_ptr = strstr (fnname, ".");
+  if (cp_ptr != NULL)
+    {
+      char new_name[100];
+      strcpy (new_name, fnname);
+      int pos = cp_ptr - fnname;
+      new_name[pos] = 0;
+      fnname = ggc_strdup (new_name);
+    }
+
+  if (sec_name == NULL)
+    sec_name = ".text";
+
+  struct btf_ext_info_sec *sec = NULL;
+  struct btf_ext_funcinfo *info =
+    bpf_create_or_find_funcinfo (fnname, sec_name, &sec);
+
+  info->label = label;
+  return info;
+}
+
+/* This function traverses all func_info entries and verified they do have a
+   BTF_KIND_FUNC type record associated.  If they do not it is marked as
+   invalided by clearing the associated label.  */
+
+static void
+btf_validate_funcinfo (btf_ext_info_sec *sec)
+{
+  while (sec != NULL)
+    {
+      struct btf_ext_funcinfo *funcinfo = sec->func_info.head;
+      while (funcinfo != NULL)
+	{
+	  bool found = traverse_btf_func_types (btf_funcinfo_type_callback,
+						funcinfo);
+	  if (found == true)
+	    sec->func_info.num_info += 1;
+	  else
+	    funcinfo->label = NULL;
+
+	  funcinfo = funcinfo->next;
+	}
+      sec = sec->next;
+    }
+}
+
+/* Compute the section size in section for func_info, line_info and core_info
+   regions of .BTF.ext.  */
+
+static void
+btf_ext_info_len (uint32_t *fi_len, uint32_t *li_len, uint32_t *cr_len)
+{
+  *fi_len = *li_len = *cr_len = 0;
+  struct btf_ext_info_sec *tmp = btf_ext;
+  if (tmp != NULL)
+  while (tmp != NULL)
+    {
+      /* Size computation does 8 bytes per section entry plus num_info of the
+       * respective structure size:
+	  - 8 bytes for func_info,
+	  - 16 bytes for both line_info and core_info.  */
+      if (tmp->func_info.num_info > 0)
+	*fi_len +=  8 + (8 * tmp->func_info.num_info);
+      if (tmp->line_info.num_info > 0)
+	*li_len +=  8 + (16 * tmp->line_info.num_info);
+      if (tmp->core_info.num_info > 0)
+	*cr_len +=  8 + (16 * tmp->core_info.num_info);
+      tmp = tmp->next;
+    }
+
+  /* If there are entries within the regions, add 4 bytes to set the header of
+     the respective sections that contains the size for each of the entry.  */
+  *fi_len += *fi_len != 0 ? 4 : 0;
+  *li_len += *li_len != 0 ? 4 : 0;
+  *cr_len += *cr_len != 0 ? 4 : 0;
+}
+
 /* Compute and output the header of a .BTF.ext debug info section.  */
 
 static void
@@ -256,23 +472,19 @@ output_btfext_header (void)
   dw2_asm_output_data (1, 0, "btfext_flags");
   dw2_asm_output_data (4, sizeof (struct btf_ext_header), "btfext_hdr_len");
 
-  uint32_t func_info_off = 0, func_info_len = 0;
-  uint32_t line_info_off = 0, line_info_len = 0;
-  uint32_t core_relo_off = 0, core_relo_len = 0;
+  btf_validate_funcinfo (btf_ext);
 
-  /* Header core_relo_len is the sum total length in bytes of all CO-RE
-     relocation sections, plus the 4 byte record size.  */
-  size_t i;
-  bpf_core_section_ref sec;
-  core_relo_len += vec_safe_length (bpf_core_sections)
-    * sizeof (struct btf_ext_section_header);
+  uint32_t func_info_len = 0;
+  uint32_t line_info_len = 0;
+  uint32_t core_info_len = 0;
+  btf_ext_info_len (&func_info_len, &line_info_len, &core_info_len);
 
-  FOR_EACH_VEC_ELT (*bpf_core_sections, i, sec)
-    core_relo_len +=
-      vec_safe_length (sec->relocs) * sizeof (struct btf_ext_reloc);
+  if (!TARGET_BPF_CORE)
+    core_info_len = 0;
 
-  if (core_relo_len)
-    core_relo_len += sizeof (uint32_t);
+  uint32_t func_info_off = 0;
+  uint32_t line_info_off = func_info_len;
+  uint32_t core_info_off = line_info_off + line_info_len;
 
   dw2_asm_output_data (4, func_info_off, "func_info_offset");
   dw2_asm_output_data (4, func_info_len, "func_info_len");
@@ -280,47 +492,47 @@ output_btfext_header (void)
   dw2_asm_output_data (4, line_info_off, "line_info_offset");
   dw2_asm_output_data (4, line_info_len, "line_info_len");
 
-  dw2_asm_output_data (4, core_relo_off, "core_relo_offset");
-  dw2_asm_output_data (4, core_relo_len, "core_relo_len");
+  dw2_asm_output_data (4, core_info_off, "core_relo_offset");
+  dw2_asm_output_data (4, core_info_len, "core_relo_len");
 }
 
-/* Output a single CO-RE relocation record.  */
+/* Outputs func_info region on .BTF.ext.  */
 
 static void
-output_asm_btfext_core_reloc (bpf_core_reloc_ref bpfcr)
+output_btfext_func_info (struct btf_ext_info_sec *sec)
 {
-  bpf_core_extra_ref *info = bpf_comment_info->get (bpfcr);
-  gcc_assert (info != NULL);
+  unsigned int str_aux_off = ctfc_get_strtab_len (ctf_get_tu_ctfc (),
+						  CTF_STRTAB);
+  bool executed = false;
+  while (sec != NULL)
+    {
+      uint32_t count = 0;
+      if (sec->func_info.num_info > 0)
+	{
+	  if (executed == false && (executed = true))
+	    dw2_asm_output_data (4, 8, "FuncInfo entry size");
+	  dw2_asm_output_data (4, sec->sec_name_off + str_aux_off,
+			       "FuncInfo section string for %s",
+			       sec->sec_name);
+	  dw2_asm_output_data (4, sec->func_info.num_info, "Number of entries");
 
-  bpfcr->bpfcr_astr_off += ctfc_get_strtab_len (ctf_get_tu_ctfc (),
-						CTF_STRTAB);
+	  struct btf_ext_funcinfo *elem = sec->func_info.head;
+	  while (elem != NULL)
+	    {
+	      if (elem->label != NULL)
+		{
+		  count += 1;
+		  dw2_asm_output_offset (4, elem->label,
+		       NULL, "label for function %s", elem->fnname);
+		  dw2_asm_output_data (4, elem->type, "btf_type_id");
+		}
+	      elem = elem->next;
+	    }
+	}
 
-  dw2_assemble_integer (4, gen_rtx_LABEL_REF (Pmode, bpfcr->bpfcr_insn_label));
-  fprintf (asm_out_file, "\t%s%s\n",
-	   flag_debug_asm ? ASM_COMMENT_START : "",
-	   (flag_debug_asm ? " bpfcr_insn" : ""));
-
-  /* Extract the pretty print for the type expression.  */
-  pretty_printer pp;
-  dump_generic_node (&pp, (*info)->type, 0, TDF_VOPS|TDF_MEMSYMS|TDF_SLIM,
-		     false);
-  char *str = xstrdup (pp_formatted_text (&pp));
-
-  dw2_asm_output_data (4, bpfcr->bpfcr_type, "bpfcr_type (%s)", str);
-  dw2_asm_output_data (4, bpfcr->bpfcr_astr_off, "bpfcr_astr_off (\"%s\")",
-			  (*info)->accessor_str);
-  dw2_asm_output_data (4, bpfcr->bpfcr_kind, "bpfcr_kind");
-}
-
-/* Output all CO-RE relocation records for a section.  */
-
-static void
-output_btfext_core_relocs (bpf_core_section_ref sec)
-{
-  size_t i;
-  bpf_core_reloc_ref bpfcr;
-  FOR_EACH_VEC_ELT (*(sec->relocs), i, bpfcr)
-    output_asm_btfext_core_reloc (bpfcr);
+      gcc_assert (count == sec->func_info.num_info);
+      sec = sec->next;
+    }
 }
 
 /* Output all CO-RE relocation sections.  */
@@ -328,28 +540,51 @@ output_btfext_core_relocs (bpf_core_section_ref sec)
 static void
 output_btfext_core_sections (void)
 {
-  size_t i;
-  bpf_core_section_ref sec;
-
-  /* BTF Ext section info. */
-  dw2_asm_output_data (4, sizeof (struct btf_ext_reloc),
-		       "btfext_core_info_rec_size");
-
-  FOR_EACH_VEC_ELT (*bpf_core_sections, i, sec)
+  struct btf_ext_info_sec *sec = btf_ext;
+  unsigned int str_aux_off = ctfc_get_strtab_len (ctf_get_tu_ctfc (),
+						  CTF_STRTAB);
+  bool executed = false;
+  while (sec != NULL)
     {
-      /* Section name offset, refers to the offset of a string with the name of
-	 the section to which these CORE relocations refer, e.g. '.text'.
-	 The string is buffered in the BTF strings table.  */
+      uint32_t count = 0;
+      if (sec->core_info.num_info > 0)
+	{
+	  if (executed == false && (executed = true))
+	    dw2_asm_output_data (4, 16, "CoreInfo entry size");
+	  dw2_asm_output_data (4, sec->sec_name_off + str_aux_off,
+			       "CoreInfo section string for %s",
+			       sec->sec_name);
+	  dw2_asm_output_data (4, sec->core_info.num_info, "Number of entries");
 
-      /* BTF specific strings are in CTF_AUX_STRTAB, which is concatenated
-	 after CTF_STRTAB. Add the length of STRTAB to the final offset.  */
-      sec->name_offset += ctfc_get_strtab_len (ctf_get_tu_ctfc (), CTF_STRTAB);
+	  struct btf_ext_core_reloc *bpfcr = sec->core_info.head;
+	  while (bpfcr != NULL)
+	    {
+	      count += 1;
+	      dw2_assemble_integer (4,
+			gen_rtx_LABEL_REF (Pmode, bpfcr->bpfcr_insn_label));
+	      fprintf (asm_out_file, "\t%s%s\n",
+		       flag_debug_asm ? ASM_COMMENT_START : "",
+		       (flag_debug_asm ? " bpfcr_insn" : ""));
 
-      dw2_asm_output_data (4, sec->name_offset,  "btfext_secinfo_sec_name_off");
-      dw2_asm_output_data (4, vec_safe_length (sec->relocs),
-			   "btfext_secinfo_num_recs");
+	      /* Extract the pretty print for the type expression.  */
+	      pretty_printer pp;
+	      dump_generic_node (&pp, bpfcr->info.type, 0,
+				 TDF_VOPS|TDF_MEMSYMS|TDF_SLIM,
+				 false);
+	      char *str = xstrdup (pp_formatted_text (&pp));
 
-      output_btfext_core_relocs (sec);
+	      dw2_asm_output_data (4, bpfcr->bpfcr_type, "bpfcr_type (%s)",
+				   str);
+	      dw2_asm_output_data (4, bpfcr->bpfcr_astr_off + str_aux_off,
+				   "bpfcr_astr_off (\"%s\")",
+				   bpfcr->info.accessor_str);
+	      dw2_asm_output_data (4, bpfcr->bpfcr_kind, "bpfcr_kind");
+	      bpfcr = bpfcr->next;
+	    }
+	}
+
+      gcc_assert (count == sec->core_info.num_info);
+      sec = sec->next;
     }
 }
 
@@ -362,11 +597,7 @@ btf_ext_init (void)
 				      BTF_EXT_INFO_SECTION_FLAGS, NULL);
 
   ASM_GENERATE_INTERNAL_LABEL (btf_ext_info_section_label,
-			       BTF_EXT_INFO_SECTION_LABEL,
-			       btf_ext_label_num++);
-
-  vec_alloc (bpf_core_sections, 1);
-  bpf_comment_info = hash_map<bpf_core_reloc_ref, bpf_core_extra_ref>::create_ggc ();
+			       "Lbtfext", 0);
 }
 
 /* Output the entire .BTF.ext section.  */
@@ -375,9 +606,12 @@ void
 btf_ext_output (void)
 {
   output_btfext_header ();
-  output_btfext_core_sections ();
+  output_btfext_func_info (btf_ext);
+  if (TARGET_BPF_CORE)
+    output_btfext_core_sections ();
 
-  bpf_core_sections = NULL;
+  /* Extra padding required by BPF code, in case all structures are empty.  */
+  dw2_asm_output_data (4, 0, "Required padding by libbpf structs");
 }
 
 #include "gt-coreout.h"
