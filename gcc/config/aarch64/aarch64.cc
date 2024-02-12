@@ -25574,7 +25574,6 @@ static bool
 aarch64_evpc_reencode (struct expand_vec_perm_d *d)
 {
   expand_vec_perm_d newd;
-  unsigned HOST_WIDE_INT nelt;
 
   if (d->vec_flags != VEC_ADVSIMD)
     return false;
@@ -25589,24 +25588,10 @@ aarch64_evpc_reencode (struct expand_vec_perm_d *d)
   if (new_mode == word_mode)
     return false;
 
-  /* to_constant is safe since this routine is specific to Advanced SIMD
-     vectors.  */
-  nelt = d->perm.length ().to_constant ();
+  vec_perm_indices newpermindices;
 
-  vec_perm_builder newpermconst;
-  newpermconst.new_vector (nelt / 2, nelt / 2, 1);
-
-  /* Convert the perm constant if we can.  Require even, odd as the pairs.  */
-  for (unsigned int i = 0; i < nelt; i += 2)
-    {
-      poly_int64 elt0 = d->perm[i];
-      poly_int64 elt1 = d->perm[i + 1];
-      poly_int64 newelt;
-      if (!multiple_p (elt0, 2, &newelt) || maybe_ne (elt0 + 1, elt1))
-	return false;
-      newpermconst.quick_push (newelt.to_constant ());
-    }
-  newpermconst.finalize ();
+  if (!newpermindices.new_shrunk_vector (d->perm, 2))
+    return false;
 
   newd.vmode = new_mode;
   newd.vec_flags = VEC_ADVSIMD;
@@ -25618,7 +25603,8 @@ aarch64_evpc_reencode (struct expand_vec_perm_d *d)
   newd.testing_p = d->testing_p;
   newd.one_vector_p = d->one_vector_p;
 
-  newd.perm.new_vector (newpermconst, newd.one_vector_p ? 1 : 2, nelt / 2);
+  newd.perm.new_vector (newpermindices.encoding (), newd.one_vector_p ? 1 : 2,
+			newpermindices.nelts_per_input ());
   return aarch64_expand_vec_perm_const_1 (&newd);
 }
 
