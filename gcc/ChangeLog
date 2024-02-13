@@ -1,3 +1,17 @@
+2024-02-12  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	Backported from master:
+	2023-06-19  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	PR target/105523
+	* common/config/avr/avr-common.cc: Remove setting
+	of OPT_fdelete_null_pointer_checks.
+	* config/avr/avr.cc (avr_option_override): Clear
+	flag_delete_null_pointer_checks if zero_address_valid.
+	(avr_addr_space_zero_address_valid): New function.
+	(TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID): Provide target
+	hook.
+
 2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

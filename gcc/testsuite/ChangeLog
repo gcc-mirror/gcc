@@ -1,3 +1,14 @@
+2024-02-12  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	Backported from master:
+	2023-06-19  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	PR target/105523
+	* lib/target-supports.exp
+	(check_effective_target_keeps_null_pointer_checks): Add
+	avr.
+	* gcc.target/avr/pr105523.c: New test.
+
 2024-02-09  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:
