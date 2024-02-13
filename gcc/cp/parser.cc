@@ -27999,7 +27999,7 @@ cp_parser_member_declaration (cp_parser* parser)
       if (!decl_specifiers.any_specifiers_p)
 	{
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-	  if (!in_system_header_at (token->location))
+	  if (cxx_dialect < cxx11 && !in_system_header_at (token->location))
 	    {
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_remove ();

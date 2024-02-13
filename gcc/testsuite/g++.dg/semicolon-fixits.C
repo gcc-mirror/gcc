@@ -1,3 +1,4 @@
+// { dg-do compile { target c++98_only } }
 /* { dg-options "-fdiagnostics-show-caret -Wpedantic" } */
 
 /* Struct with extra semicolon.  */
