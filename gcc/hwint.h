@@ -120,10 +120,10 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
    So, instead of doing fprintf ("%zu\n", sizeof (x) * y); use
    fprintf (HOST_SIZE_T_PRINT_UNSIGNED "\n",
 	    (fmt_size_t) (sizeof (x) * y));  */
-#if SIZE_MAX <= INT_MAX
+#if SIZE_MAX <= UINT_MAX
 # define GCC_PRISZ ""
 # define fmt_size_t unsigned int
-#elif SIZE_MAX <= LONG_MAX
+#elif SIZE_MAX <= ULONG_MAX
 # define GCC_PRISZ HOST_LONG_FORMAT
 # define fmt_size_t unsigned long int
 #else
