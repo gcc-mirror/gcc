@@ -178,7 +178,6 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 bool
 gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range)
 {
-  gcc_checking_assert (gimple_num_ops (m_stmt) < 3);
   // Give up on empty ranges.
   if (lhs_range.undefined_p ())
     return false;
@@ -1213,7 +1212,8 @@ gimple_range_op_handler::maybe_builtin_call ()
   if (func == CFN_LAST)
     return;
   tree type = gimple_range_type (call);
-  gcc_checking_assert (type);
+  if (!type)
+    return;
   if (!Value_Range::supports_type_p (type))
     return;
 
