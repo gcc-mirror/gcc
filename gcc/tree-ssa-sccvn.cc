@@ -1126,6 +1126,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		op.op0 = wide_int_to_tree (TREE_TYPE (op.op0),
 					   wi::to_poly_wide (op.op1) + idx);
 	      op.off = idx * elsz;
+	      off += op.off;
 	    }
 	  else
 	    {
