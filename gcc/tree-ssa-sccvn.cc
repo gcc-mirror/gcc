@@ -1119,14 +1119,14 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	      unsigned HOST_WIDE_INT elsz
 		= tree_to_uhwi (op.op2) * vn_ref_op_align_unit (&op);
 	      unsigned HOST_WIDE_INT idx
-		= (coffset / BITS_PER_UNIT - off.to_constant ()) / elsz;
+		= (coffset - off.to_constant ()) / BITS_PER_UNIT / elsz;
 	      if (idx == 0)
 		op.op0 = op.op1;
 	      else
 		op.op0 = wide_int_to_tree (TREE_TYPE (op.op0),
 					   wi::to_poly_wide (op.op1) + idx);
 	      op.off = idx * elsz;
-	      off += op.off;
+	      off += op.off * BITS_PER_UNIT;
 	    }
 	  else
 	    {
@@ -1140,10 +1140,30 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		       || TREE_CODE_CLASS (op.opcode) == tcc_constant)
 		/* end-of ref.  */
 		gcc_assert (i == result->length ());
+	      else if (op.opcode == COMPONENT_REF)
+		{
+		  /* op.off is tracked in bytes, re-do it manually
+		     because of bitfields.  */
+		  tree field = op.op0;
+		  /* We do not have a complete COMPONENT_REF tree here so we
+		     cannot use component_ref_field_offset.  Do the interesting
+		     parts manually.  */
+		  tree this_offset = DECL_FIELD_OFFSET (field);
+		  if (op.op1 || !poly_int_tree_p (this_offset))
+		    gcc_unreachable ();
+		  else
+		    {
+		      poly_offset_int woffset
+			= (wi::to_poly_offset (this_offset)
+			   << LOG2_BITS_PER_UNIT);
+		      woffset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
+		      off += woffset.force_shwi ();
+		    }
+		}
 	      else
 		{
 		  gcc_assert (known_ne (op.off, -1));
-		  off += op.off;
+		  off += op.off * BITS_PER_UNIT;
 		}
 	    }
 	}
