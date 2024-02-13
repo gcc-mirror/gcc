@@ -13477,3 +13477,15 @@ proc dg-require-python-h { args } {
     eval lappend extra-tool-flags $python_flags
     verbose "After appending, extra-tool-flags: ${extra-tool-flags}" 3
 }
+
+# Return 1 if the target supports heap-trampoline, 0 otherwise.
+proc check_effective_target_heap_trampoline {} {
+    if { [istarget aarch64*-*-linux*]
+	 || [istarget i?86-*-darwin*]
+	 || [istarget x86_64-*-darwin*]
+	 || [istarget i?86-*-linux*]
+	 || [istarget x86_64-*-linux*] } {
+	return 1
+    }
+    return 0
+}

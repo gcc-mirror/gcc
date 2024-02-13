@@ -30,28 +30,64 @@ void __gcc_nested_func_ptr_created (void *chain, void *func, void *dst);
 void __gcc_nested_func_ptr_deleted (void);
 
 #if __x86_64__
+
+#ifdef __LP64__
 static const uint8_t trampoline_insns[] = {
-  /* movabs $<func>,%r11  */
+#if defined __CET__ && (__CET__ & 1) != 0
+  /* endbr64.  */
+  0xf3, 0x0f, 0x1e, 0xfa,
+#endif
+
+  /* movabsq $<func>,%r11  */
   0x49, 0xbb,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-  /* movabs $<chain>,%r10  */
+  /* movabsq $<chain>,%r10  */
   0x49, 0xba,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
   /* rex.WB jmpq *%r11  */
-  0x41, 0xff, 0xe3
+  0x41, 0xff, 0xe3,
+
+  /* Pad to the multiple of 4 bytes.  */
+  0x90
 };
+#else
+static const uint8_t trampoline_insns[] = {
+#if defined __CET__ && (__CET__ & 1) != 0
+  /* endbr64.  */
+  0xf3, 0x0f, 0x1e, 0xfa,
+#endif
+
+  /* movl $<func>,%r11d  */
+  0x41, 0xbb,
+  0x00, 0x00, 0x00, 0x00,
+
+  /* movl $<chain>,%r10d  */
+  0x41, 0xba,
+  0x00, 0x00, 0x00, 0x00,
+
+  /* rex.WB jmpq *%r11  */
+  0x41, 0xff, 0xe3,
+
+  /* Pad to the multiple of 4 bytes.  */
+  0x90
+};
+#endif
 
 union ix86_trampoline {
   uint8_t insns[sizeof(trampoline_insns)];
 
   struct __attribute__((packed)) fields {
+#if defined __CET__ && (__CET__ & 1) != 0
+    uint8_t endbr64[4];
+#endif
     uint8_t insn_0[2];
     void *func_ptr;
     uint8_t insn_1[2];
     void *chain_ptr;
     uint8_t insn_2[3];
+    uint8_t pad;
   } fields;
 };
 
