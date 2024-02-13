@@ -4058,6 +4058,15 @@ vect_optimize_slp (vec_info *vinfo)
 		{
 		  /* Preserve the special VEC_PERM we use to shield existing
 		     vector defs from the rest.  But make it a no-op.  */
+		  auto_vec<stmt_vec_info, 64> saved;
+		  saved.create (SLP_TREE_SCALAR_STMTS (old).length ());
+		  for (unsigned i = 0;
+		       i < SLP_TREE_SCALAR_STMTS (old).length (); ++i)
+		    saved.quick_push (SLP_TREE_SCALAR_STMTS (old)[i]);
+		  for (unsigned i = 0;
+		       i < SLP_TREE_SCALAR_STMTS (old).length (); ++i)
+		    SLP_TREE_SCALAR_STMTS (old)[i]
+		      = saved[SLP_TREE_LANE_PERMUTATION (old)[i].second];
 		  unsigned i = 0;
 		  for (std::pair<unsigned, unsigned> &p
 		       : SLP_TREE_LANE_PERMUTATION (old))
