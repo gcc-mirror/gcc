@@ -175,9 +175,7 @@ lambda_function (tree lambda)
   if (CLASSTYPE_TEMPLATE_INSTANTIATION (type)
       && !COMPLETE_OR_OPEN_TYPE_P (type))
     return NULL_TREE;
-  lambda = lookup_member (type, call_op_identifier,
-			  /*protect=*/0, /*want_type=*/false,
-			  tf_warning_or_error);
+  lambda = get_class_binding_direct (type, call_op_identifier);
   if (lambda)
     lambda = STRIP_TEMPLATE (get_first_fn (lambda));
   return lambda;
