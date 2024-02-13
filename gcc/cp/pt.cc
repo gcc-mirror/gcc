@@ -5417,9 +5417,14 @@ process_partial_specialization (tree decl)
     }
 
   if (VAR_P (decl))
-    /* We didn't register this in check_explicit_specialization so we could
-       wait until the constraints were set.  */
-    decl = register_specialization (decl, maintmpl, specargs, false, 0);
+    {
+      /* We didn't register this in check_explicit_specialization so we could
+	 wait until the constraints were set.  */
+      tree reg = register_specialization (decl, maintmpl, specargs, false, 0);
+      if (reg != decl)
+	/* Redeclaration.  */
+	return reg;
+    }
   else
     associate_classtype_constraints (type);
 
