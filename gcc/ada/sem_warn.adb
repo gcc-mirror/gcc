@@ -3865,7 +3865,7 @@ package body Sem_Warn is
                         --  This is one of the messages
 
                         Error_Msg_FE ("<.i<writable actual for & overlaps with"
-                          & "actual for &", Act1, Form1);
+                          & " actual for &", Act1, Form1);
                      end if;
                   end if;
                end if;
