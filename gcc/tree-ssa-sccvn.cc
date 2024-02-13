@@ -1288,7 +1288,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
-	  /* Use the recored constant offset.  */
+	  /* Use the recorded constant offset.  */
 	  if (maybe_eq (op->off, -1))
 	    max_size = -1;
 	  else
