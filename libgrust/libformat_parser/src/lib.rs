@@ -340,6 +340,7 @@ pub struct PieceSlice {
 pub extern "C" fn collect_pieces(input: *const libc::c_char) -> PieceSlice {
     // FIXME: Add comment
     let str = unsafe { CStr::from_ptr(input) };
+    dbg!(str);
 
     // FIXME: No unwrap
     let pieces: Vec<ffi::Piece<'_>> = rust::collect_pieces(str.to_str().unwrap())
