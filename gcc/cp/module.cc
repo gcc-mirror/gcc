@@ -233,6 +233,7 @@ Classes used:
 /* This TU doesn't need or want to see the networking.  */
 #define CODY_NETWORKING 0
 #include "mapper-client.h"
+#include <zlib.h> // for crc32, crc32_combine
 
 #if 0 // 1 for testing no mmap
 #define MAPPED_READING 0
@@ -487,10 +488,7 @@ protected:
 unsigned
 bytes::calc_crc (unsigned l) const
 {
-  unsigned crc = 0;
-  for (size_t ix = 4; ix < l; ix++)
-    crc = crc32_byte (crc, buffer[ix]);
-  return crc;
+  return crc32 (0, (unsigned char *)buffer + 4, l - 4);
 }
 
 class elf_in;
@@ -717,7 +715,7 @@ bytes_out::set_crc (unsigned *crc_ptr)
       unsigned crc = calc_crc (pos);
       unsigned accum = *crc_ptr;
       /* Only mix the existing *CRC_PTR if it is non-zero.  */
-      accum = accum ? crc32_unsigned (accum, crc) : crc;
+      accum = accum ? crc32_combine (accum, crc, pos - 4) : crc;
       *crc_ptr = accum;
 
       /* Buffer will be sufficiently aligned.  */
