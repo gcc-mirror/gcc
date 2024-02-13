@@ -896,7 +896,7 @@ package Errout is
    --  location from which warnings are to be turned back on.
 
    procedure Set_Specific_Warning_Off
-     (Loc    : Source_Ptr;
+     (Node   : Node_Id;
       Msg    : String;
       Reason : String_Id;
       Config : Boolean;

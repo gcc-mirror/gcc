@@ -213,6 +213,10 @@ package body Errout is
    --  should have 'Class appended to its name (see Add_Class procedure), and
    --  is otherwise unchanged.
 
+   procedure Validate_Specific_Warnings;
+   --  Checks that specific warnings are consistent (for non-configuration
+   --  case, properly closed, and used).
+
    function Warn_Insertion return String;
    --  This is called for warning messages only (so Warning_Msg_Char is set)
    --  and returns a corresponding string to use at the beginning of generated
@@ -1745,7 +1749,7 @@ package body Errout is
       --  do this on the last call, after all possible warnings are posted.
 
       if Last_Call then
-         Validate_Specific_Warnings (Error_Msg'Access);
+         Validate_Specific_Warnings;
       end if;
    end Finalize;
 
@@ -2000,6 +2004,50 @@ package body Errout is
         and then S (S'First .. S'First + Size_For'Length - 1) = Size_For;
       --  True if S starts with Size_For
    end Is_Size_Too_Small_Message;
+
+   --------------------------------
+   -- Validate_Specific_Warnings --
+   --------------------------------
+
+   procedure Validate_Specific_Warnings is
+   begin
+      if not Warnsw.Warn_On_Warnings_Off then
+         return;
+      end if;
+
+      for J in Specific_Warnings.First .. Specific_Warnings.Last loop
+         declare
+            SWE : Specific_Warning_Entry renames Specific_Warnings.Table (J);
+
+         begin
+            if not SWE.Config then
+
+               --  Warn for unmatched Warnings (Off, ...)
+
+               if SWE.Open then
+                  Error_Msg_N
+                    ("?.w?pragma Warnings Off with no matching Warnings On",
+                     SWE.Start);
+
+               --  Warn for ineffective Warnings (Off, ..)
+
+               elsif not SWE.Used
+
+                 --  Do not issue this warning for -Wxxx messages since the
+                 --  back-end doesn't report the information. Note that there
+                 --  is always an asterisk at the start of every message.
+
+                 and then not
+                   (SWE.Msg'Length > 3 and then SWE.Msg (2 .. 3) = "-W")
+               then
+                  Error_Msg_N
+                    ("?.w?no warning suppressed by this pragma",
+                     SWE.Start);
+               end if;
+            end if;
+         end;
+      end loop;
+   end Validate_Specific_Warnings;
 
    ---------------
    -- Last_Node --
