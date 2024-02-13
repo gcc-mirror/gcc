@@ -5790,19 +5790,39 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 		}
 	      while (1);
 	      break;
-	    case OMP_TRAIT_PROPERTY_EXPR:
+	    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
+	    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
 	      if (gfc_match_expr (&otp->expr) != MATCH_YES)
 		{
 		  gfc_error ("expected expression at %C");
 		  return MATCH_ERROR;
 		}
 	      if (!gfc_resolve_expr (otp->expr)
-		  || (otp->expr->ts.type != BT_LOGICAL
+		  || (property_kind == OMP_TRAIT_PROPERTY_BOOL_EXPR
+		      && otp->expr->ts.type != BT_LOGICAL)
+		  || (property_kind == OMP_TRAIT_PROPERTY_DEV_NUM_EXPR
 		      && otp->expr->ts.type != BT_INTEGER)
-		  || otp->expr->rank != 0)
+		  || otp->expr->rank != 0
+		  || otp->expr->expr_type != EXPR_CONSTANT)
 		{
-		  gfc_error ("property must be constant integer or logical "
-			     "expression at %C");
+		  if (property_kind == OMP_TRAIT_PROPERTY_BOOL_EXPR)
+		    gfc_error ("property must be a constant logical expression "
+			       "at %C");
+		  else
+		    gfc_error ("property must be a constant integer expression "
+			       "at %C");
+		  return MATCH_ERROR;
+		}
+	      /* Device number must be conforming, which includes
+		 omp_initial_device (-1) and omp_invalid_device (-4).  */
+	      if (property_kind == OMP_TRAIT_PROPERTY_DEV_NUM_EXPR
+		  && otp->expr->expr_type == EXPR_CONSTANT
+		  && mpz_sgn (otp->expr->value.integer) < 0
+		  && mpz_cmp_si (otp->expr->value.integer, -1) != 0
+		  && mpz_cmp_si (otp->expr->value.integer, -4) != 0)
+		{
+		  gfc_error ("property must be a conforming device number "
+			     "at %C");
 		  return MATCH_ERROR;
 		}
 	      break;

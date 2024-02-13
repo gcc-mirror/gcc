@@ -47984,7 +47984,8 @@ cp_parser_omp_context_selector (cp_parser *parser, enum omp_tss_code set,
 		}
 	      while (1);
 	      break;
-	    case OMP_TRAIT_PROPERTY_EXPR:
+	    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
+	    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
 	      /* FIXME: this is bogus, the expression need
 		 not be constant.  */
 	      t = cp_parser_constant_expression (parser);

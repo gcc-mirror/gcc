@@ -24,7 +24,7 @@ contains
     integer, intent(in) :: x
     integer (kind = 8), intent(in) :: y
     real :: z
-    !$omp declare variant (f1) match (user={condition(0)},construct={parallel})
+    !$omp declare variant (f1) match (user={condition(.false.)},construct={parallel})
     f3 = 0.0
   end function
 
@@ -33,7 +33,7 @@ contains
     integer, intent(in) :: x
     integer (kind = 8), intent(in) :: y
     real :: z
-    !$omp declare variant (f1) match (construct={parallel},user={condition(score(1):1)})
+    !$omp declare variant (f1) match (construct={parallel},user={condition(score(1):.true.)})
     f4 = 0.0
   end function
 
@@ -50,7 +50,7 @@ contains
     integer, intent(in) :: x
     integer (kind = 8), intent(in) :: y
     real :: z
-    !$omp declare variant (f5) match (user={condition(0)})  ! { dg-error "'f5' used as a variant with incompatible 'construct' selector sets" }
+    !$omp declare variant (f5) match (user={condition(.false.)})  ! { dg-error "'f5' used as a variant with incompatible 'construct' selector sets" }
     f6 = 0.0
   end function
 
@@ -59,7 +59,7 @@ contains
     integer, intent(in) :: x
     integer (kind = 8), intent(in) :: y
     real :: z
-    !$omp declare variant (f5) match (construct={parallel},user={condition(score(1):1)})
+    !$omp declare variant (f5) match (construct={parallel},user={condition(score(1):.true.)})
     f7 = 0.0
   end function
 
@@ -76,7 +76,7 @@ contains
     integer, intent(in) :: x
     integer (kind = 8), intent(in) :: y
     real :: z
-    !$omp declare variant (f8) match (user={condition(0)},construct={do})  ! { dg-error "'f8' used as a variant with incompatible 'construct' selector sets" }
+    !$omp declare variant (f8) match (user={condition(.false.)},construct={do})  ! { dg-error "'f8' used as a variant with incompatible 'construct' selector sets" }
     f9 = 0.0
   end function
 
@@ -85,7 +85,7 @@ contains
     integer, intent(in) :: x
     integer (kind = 8), intent(in) :: y
     real :: z
-    !$omp declare variant (f8) match (user={condition(1)})
+    !$omp declare variant (f8) match (user={condition(.true.)})
     f10 = 0.0
   end function
 
@@ -111,7 +111,7 @@ contains
     integer, intent(in) :: x
     integer (kind = 8), intent(in) :: y
     real :: z
-    !$omp declare variant (f11) match (user={condition(score(1):1)},construct={target,teams,parallel,do})  ! { dg-error "'f11' used as a variant with incompatible 'construct' selector sets" }
+    !$omp declare variant (f11) match (user={condition(score(1):.true.)},construct={target,teams,parallel,do})  ! { dg-error "'f11' used as a variant with incompatible 'construct' selector sets" }
     f13 = 0.0
   end function
 

@@ -24656,7 +24656,8 @@ c_parser_omp_context_selector (c_parser *parser, enum omp_tss_code set,
 		}
 	      while (1);
 	      break;
-	    case OMP_TRAIT_PROPERTY_EXPR:
+	    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
+	    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
 	      t = c_parser_expr_no_commas (parser, NULL).value;
 	      if (t != error_mark_node)
 		{

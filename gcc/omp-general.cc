@@ -1163,7 +1163,7 @@ struct omp_ts_info omp_ts_map[] =
    },
    { "device_num",
      (1 << OMP_TRAIT_SET_TARGET_DEVICE),
-     OMP_TRAIT_PROPERTY_EXPR, false,
+     OMP_TRAIT_PROPERTY_DEV_NUM_EXPR, false,
      NULL
    },
    { "vendor",
@@ -1208,7 +1208,7 @@ struct omp_ts_info omp_ts_map[] =
    },
    { "condition",
      (1 << OMP_TRAIT_SET_USER),
-     OMP_TRAIT_PROPERTY_EXPR, true,
+     OMP_TRAIT_PROPERTY_BOOL_EXPR, true,
      NULL
    },
    { "target",
