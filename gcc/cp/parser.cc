@@ -15331,6 +15331,61 @@ cp_parser_module_export (cp_parser *parser)
   module_kind = mk;
 }
 
+/* Used for maybe_warn_extra_semi.  */
+
+enum class extra_semi_kind { decl, member, in_class_fn_def };
+
+/* Warn about an extra semicolon.  KIND says in which context the extra
+   semicolon occurs.  */
+
+static void
+maybe_warn_extra_semi (location_t loc, extra_semi_kind kind)
+{
+  /* -Wno-extra-semi suppresses all.  */
+  if (warn_extra_semi == 0)
+    return;
+
+  gcc_rich_location richloc (loc);
+  richloc.add_fixit_remove ();
+
+  switch (kind)
+    {
+    case extra_semi_kind::decl:
+      /* If -Wextra-semi wasn't specified, warn only when -pedantic is in
+	 effect in C++98.  DR 569 says that spurious semicolons at namespace
+	 scope should be allowed.  */
+      if (pedantic && cxx_dialect < cxx11)
+	pedwarn (&richloc, OPT_Wextra_semi,
+		 "extra %<;%> outside of a function only allowed in C++11");
+      else if (warn_extra_semi > 0)
+	warning_at (&richloc, OPT_Wextra_semi,
+		    "extra %<;%> outside of a function");
+      break;
+
+    case extra_semi_kind::member:
+      /* If -Wextra-semi wasn't specified, warn only when -pedantic is in
+	 effect in C++98.  DR 1693 added "empty-declaration" to the syntax for
+	 "member-declaration".  */
+      if (pedantic && cxx_dialect < cxx11)
+	pedwarn (&richloc, OPT_Wextra_semi,
+		 "extra %<;%> inside a struct only allowed in C++11");
+      else if (warn_extra_semi > 0)
+	warning_at (&richloc, OPT_Wextra_semi, "extra %<;%> inside a struct");
+      break;
+
+    case extra_semi_kind::in_class_fn_def:
+      /* A single semicolon is valid after a member function definition
+	 so this is just a warning.  */
+      if (warn_extra_semi > 0)
+	warning_at (&richloc, OPT_Wextra_semi,
+		    "extra %<;%> after in-class function definition");
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Declarations [gram.dcl.dcl] */
 
 /* Parse an optional declaration-sequence.  TOP_LEVEL is true, if this
@@ -15430,11 +15485,11 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
 
   if (token1->type == CPP_SEMICOLON)
     {
-      cp_lexer_consume_token (parser->lexer);
+      location_t semicolon_loc
+	= cp_lexer_consume_token (parser->lexer)->location;
       /* A declaration consisting of a single semicolon is invalid
-       * before C++11.  Allow it unless we're being pedantic.  */
-      if (cxx_dialect < cxx11)
-	pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
+	 before C++11.  Allow it unless we're being pedantic.  */
+      maybe_warn_extra_semi (semicolon_loc, extra_semi_kind::decl);
       return;
     }
   else if (cp_lexer_nth_token_is (parser->lexer,
@@ -28121,19 +28176,25 @@ cp_parser_member_declaration (cp_parser* parser)
 
 	   struct S { ; };
 
-	 [class.mem]
+	 [class.mem] used to say
 
 	 Each member-declaration shall declare at least one member
-	 name of the class.  */
+	 name of the class.
+
+	 but since DR 1693:
+
+	 A member-declaration does not declare new members of the class
+	 if it is
+	 -- [...]
+	 -- an empty-declaration.
+	 For any other member-declaration, each declared entity that is not
+	 an unnamed bit-field is a member of the class, and each such
+	 member-declaration shall either declare at least one member name of
+	 the class or declare at least one unnamed bit-field.  */
       if (!decl_specifiers.any_specifiers_p)
 	{
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-	  if (cxx_dialect < cxx11 && !in_system_header_at (token->location))
-	    {
-	      gcc_rich_location richloc (token->location);
-	      richloc.add_fixit_remove ();
-	      pedwarn (&richloc, OPT_Wpedantic, "extra %<;%>");
-	    }
+	  maybe_warn_extra_semi (token->location, extra_semi_kind::member);
 	}
       else
 	{
@@ -28564,11 +28625,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		    {
 		      location_t semicolon_loc
 			= cp_lexer_consume_token (parser->lexer)->location;
-		      gcc_rich_location richloc (semicolon_loc);
-		      richloc.add_fixit_remove ();
-		      warning_at (&richloc, OPT_Wextra_semi,
-				  "extra %<;%> after in-class "
-				  "function definition");
+		      maybe_warn_extra_semi (semicolon_loc,
+					     extra_semi_kind::in_class_fn_def);
 		    }
 		  goto out;
 		}

@@ -727,7 +727,7 @@ C ObjC C++ ObjC++ Warning
 ; in common.opt
 
 Wextra-semi
-C++ ObjC++ Var(warn_extra_semi) Warning
+C++ ObjC++ Var(warn_extra_semi) Init(-1) Warning
 Warn about semicolon after in-class function definition.
 
 Wflex-array-member-not-at-end

@@ -4780,7 +4780,34 @@ undefined behavior at runtime.  This warning is enabled by default.
 @opindex Wextra-semi
 @opindex Wno-extra-semi
 @item -Wextra-semi @r{(C++, Objective-C++ only)}
-Warn about redundant semicolons after in-class function definitions.
+Warn about redundant semicolons.  There are various contexts in which an extra
+semicolon can occur.  One is a semicolon after in-class function definitions,
+which is valid in all C++ dialects (and is never a pedwarn):
+
+@smallexample
+struct S @{
+  void foo () @{@};
+@};
+@end smallexample
+
+Another is an extra semicolon at namespace scope, which has been allowed
+since C++11 (therefore is a pedwarn in C++98):
+
+@smallexample
+struct S @{
+@};
+;
+@end smallexample
+
+And yet another is an extra semicolon in class definitions, which has been
+allowed since C++11 (therefore is a pedwarn in C++98):
+
+@smallexample
+struct S @{
+  int a;
+  ;
+@};
+@end smallexample
 
 @opindex Wno-global-module
 @opindex Wglobal-module
