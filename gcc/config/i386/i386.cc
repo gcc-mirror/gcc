@@ -6807,6 +6807,12 @@ get_probe_interval (void)
 static bool
 ix86_pro_and_epilogue_can_use_push2pop2 (int nregs)
 {
+  /* Use push2/pop2 only if the incoming stack is 16-byte aligned.  */
+  unsigned int incoming_stack_boundary
+    = (crtl->parm_stack_boundary > ix86_incoming_stack_boundary
+       ? crtl->parm_stack_boundary : ix86_incoming_stack_boundary);
+  if (incoming_stack_boundary % 128 != 0)
+    return false;
   int aligned = cfun->machine->fs.sp_offset % 16 == 0;
   return TARGET_APX_PUSH2POP2
 	 && !cfun->machine->frame.save_regs_using_mov
