@@ -12174,7 +12174,8 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   /* True if the final iteration might not handle a full vector's
      worth of scalar iterations.  */
   bool final_iter_may_be_partial
-    = LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo);
+    = LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+      || LOOP_VINFO_EARLY_BREAKS (loop_vinfo);
   /* The minimum number of iterations performed by the epilogue.  This
      is 1 when peeling for gaps because we always need a final scalar
      iteration.  */
