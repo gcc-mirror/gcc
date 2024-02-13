@@ -7052,8 +7052,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	 with an interface indicating an optional argument.  When we call
 	 an intrinsic subroutine, however, fsym is NULL, but we might still
 	 have an optional argument, so we proceed to the substitution
-	 just in case.  */
-      if (e && (fsym == NULL || fsym->attr.optional))
+	 just in case.  Arguments passed to bind(c) procedures via CFI
+	 descriptors are handled elsewhere.  */
+      if (e && (fsym == NULL || fsym->attr.optional)
+	  && !(sym->attr.is_bind_c && is_CFI_desc (fsym, NULL)))
 	{
 	  /* If an optional argument is itself an optional dummy argument,
 	     check its presence and substitute a null if absent.  This is
