@@ -8434,7 +8434,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 				(lo_sum:DI (reg:DI rD) (const_int IMM12))) */
 
       if (GET_CODE (SET_SRC (prev_set)) == UNSPEC
-	  && XINT (prev_set, 1) == UNSPEC_AUIPC
+	  && XINT (SET_SRC (prev_set), 1) == UNSPEC_AUIPC
 	  && (GET_CODE (SET_SRC (curr_set)) == LO_SUM
 	      || (GET_CODE (SET_SRC (curr_set)) == PLUS
 		  && SMALL_OPERAND (INTVAL (XEXP (SET_SRC (curr_set), 1))))))
