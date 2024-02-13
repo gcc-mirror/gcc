@@ -23,7 +23,7 @@ namespace Rust {
 namespace Fmt {
 
 Pieces
-Pieces::collect (const std::string &to_parse)
+Pieces::collect (std::string &&to_parse)
 {
   auto piece_slice = collect_pieces (to_parse.c_str ());
 
@@ -34,7 +34,7 @@ Pieces::collect (const std::string &to_parse)
   // auto pieces = std::vector<Piece> (piece_slice.base_ptr,
   // 	     piece_slice.base_ptr + piece_slice.len);
 
-  return Pieces (piece_slice);
+  return Pieces (piece_slice, std::move (to_parse));
 }
 
 Pieces::~Pieces () { destroy_pieces (slice); }

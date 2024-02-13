@@ -251,13 +251,16 @@ void destroy_pieces (PieceSlice);
 
 struct Pieces
 {
-  static Pieces collect (const std::string &to_parse);
+  static Pieces collect (std::string &&to_parse);
   ~Pieces ();
 
 private:
-  Pieces (PieceSlice slice) : slice (slice) {}
+  Pieces (PieceSlice slice, std::string &&to_parse)
+    : slice (slice), to_parse (std::move (to_parse))
+  {}
 
   PieceSlice slice;
+  std::string to_parse;
 };
 
 } // namespace Fmt
