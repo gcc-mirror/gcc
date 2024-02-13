@@ -1,3 +1,13 @@
+2024-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/113855
+	* config.host: Add trampoline support to x?86-linux.
+	* config/i386/heap-trampoline.c (trampoline_insns): Provide
+	a variant for IA32.
+	(union ix86_trampoline): Likewise.
+	(__gcc_nested_func_ptr_created): Implement a basic trampoline
+	for IA32.
+
 2024-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* soft-fp/floatbitintdd.c (__bid_floatbitintdd): Or in all remainder

@@ -1,3 +1,26 @@
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113125
+	* types.cc (TypeVisitor::visit (TypeStruct *)): Generate TYPE_DECL and
+	apply UDAs to opaque struct declarations.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113772
+	* dmd/MERGE: Merge upstream dmd 11240a9663.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	* types.cc (same_type_p): Likewise.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113758
+	* d-codegen.cc (d_build_call): Force a TARGET_EXPR when callee
+	destorys its arguments.
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Set
+	SET_DECL_VALUE_EXPR on the temporary variable to make it a placeholder
+	for the TARGET_EXPR_SLOT.
+
 2024-02-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd a6f1083699.

@@ -1,3 +1,12 @@
+2024-02-12  Paul Keir  <paul.keir@uws.ac.uk>
+
+	PR libstdc++/113294
+	* include/bits/basic_string.h (basic_string::operator=): Use
+	_M_use_local_data() instead of _M_local_buf on the moved-from
+	string.
+	* testsuite/21_strings/basic_string/modifiers/constexpr.cc
+	(test_move): New test.
+
 2024-02-09  Ken Matsui  <kmatsui@gcc.gnu.org>
 
 	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_IS_SAME):

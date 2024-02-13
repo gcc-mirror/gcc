@@ -1,3 +1,16 @@
+2024-02-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR modula2/113888
+	* configure.ac (GM2_CHECK_LIB): Rename gettimeofday guard to
+	HAVE_GETTIMEOFDAY.
+	(GM_CHECK_LIB): Check for settimeofday.
+	(GM2_CHECK_LIB): Check for exp10, exp10f, exp10l in libm.
+	(AC_CHECK_DECLS): Check for getenv.
+	* configure, config.h.in: Regenerate.
+	* libm2pim/dtoa.cc: Rename <strings.h>, <string.h> guards to
+	HAVE_STRINGS_H, HAVE_STRING_H.
+	* libm2pim/ldtoa.cc: Likewise.
+
 2024-01-18  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111956

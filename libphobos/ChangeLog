@@ -1,3 +1,14 @@
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113667
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Update to 5:0:0.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113772
+	* libdruntime/MERGE: Merge upstream druntime 11240a9663.
+
 2024-02-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/MERGE: Merge upstream phobos 37796e783.

@@ -1,3 +1,68 @@
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113849
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): Don't use
+	fast path for widening casts where !m_upwards_2limb and lhs_type
+	has precision which is a multiple of limb_prec.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113674
+	* attribs.cc (extract_attribute_substring): Remove.
+	(lookup_scoped_attribute_spec): Don't call it.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gengtype.cc (adjust_field_rtx_def): Use HOST_SIZE_T_PRINT_UNSIGNED
+	and cast to fmt_size_t instead of %lu and cast to unsigned long.
+
+2024-02-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.in: Add no-info dependency.
+	* configure.ac: Set BUILD_INFO=no-info if makeinfo is not
+	available.
+	* configure: Regenerate.
+
+2024-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/113855
+	* config/i386/darwin.h (DARWIN_HEAP_T_LIB): Moved to be
+	available to all sub-targets.
+	* config/i386/darwin32-biarch.h (DARWIN_HEAP_T_LIB): Delete.
+	* config/i386/darwin64-biarch.h (DARWIN_HEAP_T_LIB): Delete.
+
+2024-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	PR tree-optimization/108355
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): When
+	we see variable array indices and get_ref_base_and_extent
+	can resolve those to constants fix up the ops to constants
+	as well.
+	(ao_ref_init_from_vn_reference): Use 'off' member for
+	ARRAY_REF and ARRAY_RANGE_REF instead of recomputing it.
+	(valueize_refs_1): Also fixup 'off' of ARRAY_RANGE_REF.
+
+2024-02-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins.cc (resolve_overloaded_builtin):
+	Replace args to arguments for misspelled term.
+
+2024-02-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/112944
+	* config/avr/gen-avr-mmcu-specs.cc (print_mcu) [have_flmap]:
+	<*link_rodata_in_ram>: Spec undefs symbol __do_flmap_init
+	when not linked with -mrodata-in-ram.
+
+2024-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113863
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Record crossed virtual PHIs.
+	* tree-vect-loop.cc (move_early_exit_stmts): Elide crossed
+	virtual PHIs.
+
 2024-02-10  Marek Polacek  <polacek@redhat.com>
 
 	DR 2237

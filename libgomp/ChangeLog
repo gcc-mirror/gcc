@@ -1,3 +1,11 @@
+2024-02-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/113448
+	* testsuite/libgomp.c/alloc-pinned-1.c [!__linux__] (CHECK_SIZE):
+	Call abort.
+	* testsuite/libgomp.c/alloc-pinned-2.c [!__linux__] (CHECK_SIZE):
+	Likewise.
+
 2024-02-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libgomp/113843

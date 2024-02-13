@@ -1,3 +1,55 @@
+2024-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/pr109358.f90: New test.
+
+2024-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113545
+	* g++.dg/cpp1y/constexpr-reinterpret3.C: Remove dg-ice.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113849
+	* gcc.dg/torture/bitint-58.c: New test.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113674
+	* c-c++-common/Wattributes-3.c: New test.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr113693.c: Guard _BitInt(837) use with
+	__BITINT_MAXWIDTH__ >= 837.  Use dg-prune-output instead of
+	dg-message for dbgcnt message.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113125
+	* gdc.dg/imports/pr113125.d: New test.
+	* gdc.dg/pr113125.d: New test.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113758
+	* gdc.dg/torture/pr113758.d: New test.
+
+2024-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	PR tree-optimization/108355
+	* gcc.dg/torture/pr113831.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-104.c: Likewise.
+
+2024-02-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr113766-1.c: Adjust the test cases.
+
+2024-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113863
+	* gcc.dg/vect/pr113863.c: New testcase.
+
 2024-02-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.c-torture/execute/ieee/cdivchkf.c: Use ilogb and
