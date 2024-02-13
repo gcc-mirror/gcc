@@ -8809,8 +8809,11 @@ package body Exp_Ch7 is
 
    procedure Unnest_Loop (Loop_Stmt : Node_Id) is
 
-      procedure Fixup_Inner_Scopes (Loop_Stmt : Node_Id);
-      --  The loops created by the compiler for array aggregates can have
+      procedure Fixup_Inner_Scopes (Loop_Or_Block : Node_Id);
+      --  This procedure fixes the scope for 2 identified cases of incorrect
+      --  scope information.
+      --
+      --  1) The loops created by the compiler for array aggregates can have
       --  nested finalization procedure when the type of the array components
       --  needs finalization. It has the following form:
 
@@ -8825,7 +8828,7 @@ package body Exp_Ch7 is
       --        obj (J4b) := ...;
 
       --  When the compiler creates the N_Block_Statement, it sets its scope to
-      --  the upper scope (the one containing the loop).
+      --  the outer scope (the one containing the loop).
 
       --  The Unnest_Loop procedure moves the N_Loop_Statement inside a new
       --  procedure and correctly sets the scopes for both the new procedure
@@ -8833,25 +8836,68 @@ package body Exp_Ch7 is
       --  leaves the Tree in an incoherent state (i.e. the inner procedure must
       --  have its enclosing procedure in its scope ancestries).
 
-      --  This procedure fixes the scope links.
+      --  2) The second case happens when an object declaration is created
+      --  within a loop used to initialize the 'others' components of an
+      --  aggregate that is nested within a transient scope. When the transient
+      --  scope is removed, the object scope is set to the outer scope. For
+      --  example:
+
+      --  package pack
+      --   ...
+      --     L98s : for J90s in 2 .. 19 loop
+      --        B101s : declare
+      --           R92s : aliased some_type;
+      --           ...
+
+      --  The loop L98s was initially wrapped in a transient scope B72s and
+      --  R92s was nested within it. Then the transient scope is removed and
+      --  the scope of R92s is set to 'pack'. And finally, when the unnester
+      --  moves the loop body in a new procedure, R92s's scope is still left
+      --  unchanged.
+
+      --  This procedure finds the two previous patterns and fixes the scope
+      --  information.
 
       --  Another (better) fix would be to have the block scope set to be the
       --  loop entity earlier (when the block is created or when the loop gets
       --  an actual entity set). But unfortunately this proved harder to
       --  implement ???
 
-      procedure Fixup_Inner_Scopes (Loop_Stmt : Node_Id) is
-         Stmt          : Node_Id            := First (Statements (Loop_Stmt));
-         Loop_Stmt_Ent : constant Entity_Id := Entity (Identifier (Loop_Stmt));
-         Ent_To_Fix    : Entity_Id;
+      procedure Fixup_Inner_Scopes (Loop_Or_Block : Node_Id) is
+         Stmt              : Node_Id;
+         Loop_Or_Block_Ent : Entity_Id;
+         Ent_To_Fix        : Entity_Id;
+         Decl              : Node_Id := Empty;
       begin
+         pragma Assert (Nkind (Loop_Or_Block) in
+           N_Loop_Statement | N_Block_Statement);
+
+         Loop_Or_Block_Ent := Entity (Identifier (Loop_Or_Block));
+         if Nkind (Loop_Or_Block) = N_Loop_Statement then
+            Stmt := First (Statements (Loop_Or_Block));
+         else -- N_Block_Statement
+            Stmt := First
+              (Statements (Handled_Statement_Sequence (Loop_Or_Block)));
+            Decl := First (Declarations (Loop_Or_Block));
+         end if;
+
+         --  Fix scopes for any object declaration found in the block
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Object_Declaration then
+               Ent_To_Fix := Defining_Identifier (Decl);
+               Set_Scope (Ent_To_Fix, Loop_Or_Block_Ent);
+            end if;
+            Next (Decl);
+         end loop;
+
          while Present (Stmt) loop
             if Nkind (Stmt) = N_Block_Statement
               and then Is_Abort_Block (Stmt)
             then
                Ent_To_Fix := Entity (Identifier (Stmt));
-               Set_Scope (Ent_To_Fix, Loop_Stmt_Ent);
-            elsif Nkind (Stmt) = N_Loop_Statement then
+               Set_Scope (Ent_To_Fix, Loop_Or_Block_Ent);
+            elsif Nkind (Stmt) in N_Block_Statement | N_Loop_Statement
+            then
                Fixup_Inner_Scopes (Stmt);
             end if;
             Next (Stmt);
