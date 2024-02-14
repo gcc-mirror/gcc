@@ -84,6 +84,11 @@
 (define_mode_iterator V2FI [V2SF V2SI])
 
 (define_mode_iterator V24FI [V2SF V2SI V4HF V4HI])
+
+(define_mode_iterator V248FI [V2SF V2SI V4HF V4HI V8QI])
+
+(define_mode_iterator V24FI_32 [V2HF V2HI V4QI])
+
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr mmxvecsize
   [(V8QI "b") (V4QI "b") (V2QI "b")
@@ -3726,6 +3731,70 @@
 {
   ix86_expand_vecop_qihi_partial (<CODE>, operands[0],
 				  operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "vec_shl_<mode>"
+  [(set (match_operand:V248FI 0 "register_operand")
+	(ashift:V1DI
+	  (match_operand:V248FI 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_MMX_WITH_SSE"
+{
+  rtx op0 = gen_reg_rtx (V1DImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_mmx_ashlv1di3
+	      (op0, gen_lowpart (V1DImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
+  DONE;
+})
+
+(define_expand "vec_shl_<mode>"
+  [(set (match_operand:V24FI_32 0 "register_operand")
+	(ashift:V1SI
+	  (match_operand:V24FI_32 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_SSE2"
+{
+  rtx op0 = gen_reg_rtx (V1SImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_mmx_ashlv1si3
+	      (op0, gen_lowpart (V1SImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
+  DONE;
+})
+
+(define_expand "vec_shr_<mode>"
+  [(set (match_operand:V248FI 0 "register_operand")
+	(lshiftrt:V1DI
+	  (match_operand:V248FI 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_MMX_WITH_SSE"
+{
+  rtx op0 = gen_reg_rtx (V1DImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_mmx_lshrv1di3
+	      (op0, gen_lowpart (V1DImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
+  DONE;
+})
+
+(define_expand "vec_shr_<mode>"
+  [(set (match_operand:V24FI_32 0 "register_operand")
+	(lshiftrt:V1SI
+	  (match_operand:V24FI_32 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_SSE2"
+{
+  rtx op0 = gen_reg_rtx (V1SImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_mmx_lshrv1si3
+	      (op0, gen_lowpart (V1SImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
   DONE;
 })
 
