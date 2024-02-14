@@ -1838,7 +1838,7 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Conv),
                        Make_Pragma_Argument_Association (Loc,
-                         Expression => New_Occurrence_Of (E, Loc))));
+                         Expression => Ent)));
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -3099,7 +3099,7 @@ package body Sem_Ch13 is
                   Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
-                         Expression => New_Occurrence_Of (E, Loc)),
+                         Expression => Ent),
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Linker_Section);
@@ -3120,7 +3120,7 @@ package body Sem_Ch13 is
                   Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
-                         Expression => New_Occurrence_Of (E, Loc)),
+                         Expression => Ent),
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Implemented);
@@ -3439,7 +3439,7 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr)),
                        Make_Pragma_Argument_Association (Sloc (Expr),
-                         Expression => New_Occurrence_Of (E, Loc))),
+                         Expression => Ent)),
                      Pragma_Name                  => Nam);
 
                   Delay_Required := False;
@@ -3452,7 +3452,7 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr)),
                        Make_Pragma_Argument_Association (Loc,
-                         Expression => New_Occurrence_Of (E, Loc))),
+                         Expression => Ent)),
                      Pragma_Name                  => Name_Warnings);
 
                   Decorate (Aspect, Aitem);
