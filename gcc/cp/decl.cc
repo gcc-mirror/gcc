@@ -7954,6 +7954,10 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
       && DECL_IMPLICIT_INSTANTIATION (decl))
     defer_p = 1;
 
+  /* Defer vague-linkage variables.  */
+  if (DECL_INLINE_VAR_P (decl))
+    defer_p = 1;
+
   /* If we're not deferring, go ahead and assemble the variable.  */
   if (!defer_p)
     rest_of_decl_compilation (decl, toplev, at_eof);

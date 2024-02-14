@@ -3360,7 +3360,9 @@ import_export_decl (tree decl)
 
      * implicit instantiations of function templates
 
-     * inline function
+     * inline functions
+
+     * inline variables
 
      * implicit instantiations of static data members of class
        templates
@@ -3383,6 +3385,7 @@ import_export_decl (tree decl)
 		|| DECL_DECLARED_INLINE_P (decl));
   else
     gcc_assert (DECL_IMPLICIT_INSTANTIATION (decl)
+		|| DECL_INLINE_VAR_P (decl)
 		|| DECL_VTABLE_OR_VTT_P (decl)
 		|| DECL_TINFO_P (decl));
   /* Check that a definition of DECL is available in this translation
@@ -3511,7 +3514,7 @@ import_export_decl (tree decl)
 	   this entity as undefined in this translation unit.  */
 	import_p = true;
     }
-  else if (DECL_FUNCTION_MEMBER_P (decl))
+  else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (decl))
     {
       if (!DECL_DECLARED_INLINE_P (decl))
 	{
