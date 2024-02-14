@@ -12438,6 +12438,16 @@ fold_builtin_is_corresponding_member (location_t loc, int nargs,
 				   fold_convert (TREE_TYPE (arg1), arg2)));
 }
 
+/* [basic.types] 8.  True iff TYPE is an object type.  */
+
+static bool
+object_type_p (const_tree type)
+{
+  return (TREE_CODE (type) != FUNCTION_TYPE
+          && !TYPE_REF_P (type)
+          && !VOID_TYPE_P (type));
+}
+
 /* Actually evaluates the trait.  */
 
 static bool
@@ -12580,9 +12590,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       return is_nothrow_convertible (type1, type2);
 
     case CPTK_IS_OBJECT:
-      return (type_code1 != FUNCTION_TYPE
-	      && type_code1 != REFERENCE_TYPE
-	      && type_code1 != VOID_TYPE);
+      return object_type_p (type1);
 
     case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       return pointer_interconvertible_base_of_p (type1, type2);
@@ -12735,6 +12743,18 @@ same_type_ref_bind_p (cp_trait_kind kind, tree type1, tree type2)
   return (TYPE_P (from)
 	  && (same_type_ignoring_top_level_qualifiers_p
 	      (non_reference (to), non_reference (from))));
+}
+
+/* [defns.referenceable] True iff TYPE is a referenceable type.  */
+
+static bool
+referenceable_type_p (const_tree type)
+{
+  return (TYPE_REF_P (type)
+	  || object_type_p (type)
+	  || (FUNC_OR_METHOD_TYPE_P (type)
+	      && (type_memfn_quals (type) == TYPE_UNQUALIFIED
+		  && type_memfn_rqual (type) == REF_QUAL_NONE)));
 }
 
 /* Process a trait expression.  */
@@ -12904,6 +12924,16 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
 
   switch (kind)
     {
+    case CPTK_ADD_POINTER:
+      /* [meta.trans.ptr].  */
+      if (VOID_TYPE_P (type1) || referenceable_type_p (type1))
+	{
+	  if (TYPE_REF_P (type1))
+	    type1 = TREE_TYPE (type1);
+	  return build_pointer_type (type1);
+	}
+      return type1;
+
     case CPTK_REMOVE_CV:
       return cv_unqualified (type1);
 
