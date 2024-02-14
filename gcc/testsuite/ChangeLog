@@ -1,3 +1,37 @@
+2024-02-13  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113612
+	* g++.dg/cpp1y/var-templ85.C: New test.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113896
+	* g++.dg/torture/pr113896.C: New testcase.
+
+2024-02-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2024-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/pr109358.f90: New test.
+
+2024-02-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2024-02-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/111022
+	* gfortran.dg/fmt_error_10.f: Show D+0 exponent.
+	* gfortran.dg/pr96436_4.f90: Show E+0 exponent.
+	* gfortran.dg/pr96436_5.f90: Show E+0 exponent.
+	* gfortran.dg/pr111022.f90: New test.
+
 2024-02-12  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
 
 	Backported from master:
