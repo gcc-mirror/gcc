@@ -2135,6 +2135,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 #endif
 
+  /// add_pointer
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__add_pointer)
+  template<typename _Tp>
+    struct add_pointer
+    { using type = __add_pointer(_Tp); };
+#else
   template<typename _Tp, typename = void>
     struct __add_pointer_helper
     { using type = _Tp; };
@@ -2143,7 +2149,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __add_pointer_helper<_Tp, __void_t<_Tp*>>
     { using type = _Tp*; };
 
-  /// add_pointer
   template<typename _Tp>
     struct add_pointer
     : public __add_pointer_helper<_Tp>
@@ -2156,6 +2161,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct add_pointer<_Tp&&>
     { using type = _Tp*; };
+#endif
 
 #if __cplusplus > 201103L
   /// Alias template for remove_pointer
