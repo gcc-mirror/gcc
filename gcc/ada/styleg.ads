@@ -160,10 +160,6 @@ package Styleg is
    --  Called after scanning an entire expression (N) that does not require an
    --  extra level of parentheses.
 
-   procedure Check_Xtra_Parens_Precedence (N : Node_Id);
-   --  Called after scanning a subexpression (N) that does not require an
-   --  extra level of parentheses according to operator precedence rules.
-
    function Mode_In_Check return Boolean;
    pragma Inline (Mode_In_Check);
    --  Determines whether style checking is active and the Mode_In_Check is

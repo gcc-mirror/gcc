@@ -1054,28 +1054,6 @@ package body Styleg is
       end if;
    end Check_Xtra_Parens;
 
-   ----------------------------------
-   -- Check_Xtra_Parens_Precedence --
-   ----------------------------------
-
-   procedure Check_Xtra_Parens_Precedence (N : Node_Id) is
-   begin
-      if Style_Check_Xtra_Parens_Precedence
-        and then
-          Paren_Count (N) >
-            (if Nkind (N) in N_Case_Expression
-                           | N_Expression_With_Actions
-                           | N_If_Expression
-                           | N_Quantified_Expression
-                           | N_Raise_Expression
-             then 1
-             else 0)
-      then
-         Error_Msg -- CODEFIX
-           ("(style) redundant parentheses?z?", Errout.First_Sloc (N));
-      end if;
-   end Check_Xtra_Parens_Precedence;
-
    ----------------------------
    -- Determine_Token_Casing --
    ----------------------------

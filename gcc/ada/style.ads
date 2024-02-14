@@ -196,8 +196,7 @@ package Style is
    --  Called after scanning an entire expression (N) that does not require an
    --  extra level of parentheses.
 
-   procedure Check_Xtra_Parens_Precedence (N : Node_Id)
-     renames Style_Inst.Check_Xtra_Parens_Precedence;
+   procedure Check_Xtra_Parens_Precedence (N : Node_Id);
    --  Called after scanning a subexpression (N) that does not require an
    --  extra level of parentheses according to operator precedence rules.
 
