@@ -1,7 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O3" } */
-// PR113249
-/* { dg-additional-options "-fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 #include "riscv_vector.h"
 
@@ -122,8 +120,8 @@ void f5 (void * in, void *out, int8_t x)
 ** f6:
 **  ...
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
-**  ...
 **	vle8\.v\tv[0-9]+,0\([a-x0-9]+\)
+**  ...
 **	vle8.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vrsub\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+
 **	vrsub\.vx\tv[1-9][0-9]?,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t
