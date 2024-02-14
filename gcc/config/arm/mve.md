@@ -4605,7 +4605,7 @@
   [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
 	(unspec:V4SI
 	 [(match_operand:V4SF 1 "s_register_operand" "w")
-	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
+	  (match_operand:V4BI 2 "vpr_register_operand" "Up")
 	  (match_dup 0)]
 	 VSTRWQ_F))]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
