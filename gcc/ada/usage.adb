@@ -498,8 +498,8 @@ begin
                                                  "Compile_Time_Warning");
    Write_Line ("        d    turn on warnings for implicit dereference");
    Write_Line ("        D*   turn off warnings for implicit dereference");
-   Write_Line ("        .d   turn on tagging of warnings with -gnatw switch");
-   Write_Line ("        .D*  turn off tagging of warnings with -gnatw switch");
+   Write_Line ("        .d*  turn on tagging of warnings with -gnatw switch");
+   Write_Line ("        .D   turn off tagging of warnings with -gnatw switch");
    Write_Line ("        e    treat all warnings (but not info) as errors");
    Write_Line ("        .e   turn on every optional info/warning " &
                                                   "(no exceptions)");
@@ -517,8 +517,8 @@ begin
    Write_Line ("        .H*  turn off warnings for holes in records");
    Write_Line ("        i*+  turn on warnings for implementation unit");
    Write_Line ("        I    turn off warnings for implementation unit");
-   Write_Line ("        .i*+ turn on warnings for overlapping actuals");
-   Write_Line ("        .I   turn off warnings for overlapping actuals");
+   Write_Line ("        .i+  turn on warnings for overlapping actuals");
+   Write_Line ("        .I*  turn off warnings for overlapping actuals");
    Write_Line ("        j+   turn on warnings for obsolescent " &
                                                   "(annex J) feature");
    Write_Line ("        J*   turn off warnings for obsolescent " &
