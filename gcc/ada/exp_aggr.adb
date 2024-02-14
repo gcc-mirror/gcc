@@ -283,7 +283,7 @@ package body Exp_Aggr is
    --    are writing into.
 
    procedure Convert_Array_Aggr_In_Allocator
-     (Decl   : Node_Id;
+     (N      : Node_Id;
       Aggr   : Node_Id;
       Target : Node_Id);
    --  If the aggregate appears within an allocator and can be expanded in
@@ -3542,13 +3542,12 @@ package body Exp_Aggr is
    -------------------------------
 
    procedure Convert_Aggr_In_Allocator
-     (Alloc :  Node_Id;
-      Decl  :  Node_Id;
-      Aggr  :  Node_Id)
+     (N    : Node_Id;
+      Aggr : Node_Id;
+      Temp : Entity_Id)
    is
       Loc  : constant Source_Ptr := Sloc (Aggr);
       Typ  : constant Entity_Id  := Etype (Aggr);
-      Temp : constant Entity_Id  := Defining_Identifier (Decl);
 
       Occ  : constant Node_Id :=
         Unchecked_Convert_To (Typ,
@@ -3556,26 +3555,29 @@ package body Exp_Aggr is
 
    begin
       if Is_Array_Type (Typ) then
-         Convert_Array_Aggr_In_Allocator (Decl, Aggr, Occ);
+         Convert_Array_Aggr_In_Allocator (N, Aggr, Occ);
 
       elsif Has_Default_Init_Comps (Aggr) then
          declare
-            L          : constant List_Id := New_List;
-            Init_Stmts : List_Id;
+            Init_Stmts : constant List_Id := Late_Expansion (Aggr, Typ, Occ);
 
          begin
-            Init_Stmts := Late_Expansion (Aggr, Typ, Occ);
-
             if Has_Task (Typ) then
-               Build_Task_Allocate_Block (L, Aggr, Init_Stmts);
-               Insert_Actions (Alloc, L);
+               declare
+                  Actions : constant List_Id := New_List;
+
+               begin
+                  Build_Task_Allocate_Block (Actions, Aggr, Init_Stmts);
+                  Insert_Actions (N, Actions);
+               end;
+
             else
-               Insert_Actions (Alloc, Init_Stmts);
+               Insert_Actions (N, Init_Stmts);
             end if;
          end;
 
       else
-         Insert_Actions (Alloc, Late_Expansion (Aggr, Typ, Occ));
+         Insert_Actions (N, Late_Expansion (Aggr, Typ, Occ));
       end if;
    end Convert_Aggr_In_Allocator;
 
@@ -3774,7 +3776,7 @@ package body Exp_Aggr is
    -------------------------------------
 
    procedure Convert_Array_Aggr_In_Allocator
-     (Decl   : Node_Id;
+     (N      : Node_Id;
       Aggr   : Node_Id;
       Target : Node_Id)
    is
@@ -3829,7 +3831,7 @@ package body Exp_Aggr is
              Scalar_Comp => Is_Scalar_Type (Ctyp));
       end if;
 
-      Insert_Actions_After (Decl, Aggr_Code);
+      Insert_Actions (N, Aggr_Code);
    end Convert_Array_Aggr_In_Allocator;
 
    ------------------------

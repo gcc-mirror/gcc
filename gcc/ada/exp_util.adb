@@ -721,10 +721,9 @@ package body Exp_Util is
    -- Build_Allocate_Deallocate_Proc --
    ------------------------------------
 
-   procedure Build_Allocate_Deallocate_Proc
-     (N           : Node_Id;
-      Is_Allocate : Boolean)
-   is
+   procedure Build_Allocate_Deallocate_Proc (N : Node_Id) is
+      Is_Allocate : constant Boolean := Nkind (N) /= N_Free_Statement;
+
       function Find_Object (E : Node_Id) return Node_Id;
       --  Given an arbitrary expression of an allocator, try to find an object
       --  reference in it, otherwise return the original expression.
@@ -827,14 +826,9 @@ package body Exp_Util is
    --  Start of processing for Build_Allocate_Deallocate_Proc
 
    begin
-      --  Obtain the attributes of the allocation / deallocation
+      --  Obtain the attributes of the allocation
 
-      if Nkind (N) = N_Free_Statement then
-         Expr := Expression (N);
-         Ptr_Typ := Base_Type (Etype (Expr));
-         Proc_To_Call := Procedure_To_Call (N);
-
-      else
+      if Is_Allocate then
          if Nkind (N) = N_Object_Declaration then
             Expr := Expression (N);
          else
@@ -862,7 +856,7 @@ package body Exp_Util is
            and then Nkind (Parent (Entity (Expr))) = N_Object_Declaration
            and then Nkind (Expression (Parent (Entity (Expr)))) = N_Allocator
          then
-            Build_Allocate_Deallocate_Proc (Parent (Entity (Expr)), True);
+            Build_Allocate_Deallocate_Proc (Parent (Entity (Expr)));
             return;
          end if;
 
@@ -870,6 +864,13 @@ package body Exp_Util is
 
          Ptr_Typ := Base_Type (Etype (Expr));
          Proc_To_Call := Procedure_To_Call (Expr);
+
+      --  Obtain the attributes of the deallocation
+
+      else
+         Expr := Expression (N);
+         Ptr_Typ := Base_Type (Etype (Expr));
+         Proc_To_Call := Procedure_To_Call (N);
       end if;
 
       Pool_Id := Associated_Storage_Pool (Ptr_Typ);
@@ -968,7 +969,6 @@ package body Exp_Util is
          Size_Id : constant Entity_Id := Make_Temporary (Loc, 'S');
 
          Actuals      : List_Id;
-         Alloc_Nod    : Node_Id := Empty;
          Alloc_Expr   : Node_Id := Empty;
          Fin_Addr_Id  : Entity_Id;
          Fin_Coll_Act : Node_Id;
@@ -981,29 +981,11 @@ package body Exp_Util is
          --  node for later processing and calculation of alignment.
 
          if Is_Allocate then
-
-            if Nkind (Expr) = N_Allocator then
-               Alloc_Nod := Expr;
-
-            --  When Expr is an object declaration we have to examine its
-            --  expression.
-
-            elsif Nkind (Expr) = N_Object_Declaration
-              and then Nkind (Expression (Expr)) = N_Allocator
-            then
-               Alloc_Nod := Expression (Expr);
-
-            --  Otherwise, we raise an error because we should have found one
-
-            else
-               raise Program_Error;
-            end if;
-
             --  Extract the qualified expression if there is one from the
             --  allocator.
 
-            if Nkind (Expression (Alloc_Nod)) = N_Qualified_Expression then
-               Alloc_Expr := Expression (Alloc_Nod);
+            if Nkind (Expression (Expr)) = N_Qualified_Expression then
+               Alloc_Expr := Expression (Expr);
             end if;
          end if;
 

@@ -234,9 +234,7 @@ package Exp_Util is
    --  Return the static value of a statically known attribute reference
    --  Pref'Constrained.
 
-   procedure Build_Allocate_Deallocate_Proc
-     (N           : Node_Id;
-      Is_Allocate : Boolean);
+   procedure Build_Allocate_Deallocate_Proc (N : Node_Id);
    --  Create a custom Allocate/Deallocate to be associated with an allocation
    --  or deallocation:
    --
@@ -246,8 +244,7 @@ package Exp_Util is
    --
    --  N must be an allocator or the declaration of a temporary variable which
    --  represents the expression of the original allocator node, otherwise N
-   --  must be a free statement. If flag Is_Allocate is set, the generated
-   --  routine is allocate, deallocate otherwise.
+   --  must be a free statement.
 
    function Build_Abort_Undefer_Block
      (Loc     : Source_Ptr;

@@ -380,7 +380,7 @@ package body Exp_Ch13 is
       --  ensures that the hidden list header will be deallocated along with
       --  the actual object.
 
-      Build_Allocate_Deallocate_Proc (N, Is_Allocate => False);
+      Build_Allocate_Deallocate_Proc (N);
    end Expand_N_Free_Statement;
 
    ----------------------------

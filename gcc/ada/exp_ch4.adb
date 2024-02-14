@@ -562,6 +562,45 @@ package body Exp_Ch4 is
       DesigT         : constant Entity_Id  := Designated_Type (PtrT);
       Special_Return : constant Boolean    := For_Special_Return_Object (N);
 
+      procedure Build_Aggregate_In_Place (Temp : Entity_Id; Typ : Entity_Id);
+      --  If Exp is an aggregate to build in place, build the declaration of
+      --  Temp with Typ and with expression an uninitialized allocator for
+      --  Etype (Exp), then perform an in-place aggregate assignment of Exp
+      --  into the allocated memory.
+
+      ------------------------------
+      -- Build_Aggregate_In_Place --
+      ------------------------------
+
+      procedure Build_Aggregate_In_Place (Temp : Entity_Id; Typ : Entity_Id) is
+         Temp_Decl : constant Node_Id :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Temp,
+             Object_Definition   => New_Occurrence_Of (Typ, Loc),
+             Expression          =>
+               Make_Allocator (Loc,
+                 Expression => New_Occurrence_Of (Etype (Exp), Loc)));
+
+      begin
+         --  Prevent default initialization of the allocator
+
+         Set_No_Initialization (Expression (Temp_Decl));
+
+         --  Copy the Comes_From_Source flag onto the allocator since logically
+         --  this allocator is a replacement of the original allocator. This is
+         --  for proper handling of restriction No_Implicit_Heap_Allocations.
+
+         Preserve_Comes_From_Source (Expression (Temp_Decl), N);
+
+         --  Insert declaration, assignment and build the allocation procedure
+
+         Insert_Action (N, Temp_Decl);
+         Convert_Aggr_In_Allocator (N, Exp, Temp);
+         Build_Allocate_Deallocate_Proc (Temp_Decl);
+      end Build_Aggregate_In_Place;
+
+      --  Local variables
+
       Adj_Call      : Node_Id;
       Aggr_In_Place : Boolean;
       Node          : Node_Id;
@@ -753,28 +792,7 @@ package body Exp_Ch4 is
 
          if not Is_Interface (DesigT) then
             if Aggr_In_Place then
-               Temp_Decl :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Temp,
-                   Object_Definition   => New_Occurrence_Of (PtrT, Loc),
-                   Expression          =>
-                     Make_Allocator (Loc,
-                       Expression =>
-                         New_Occurrence_Of (Etype (Exp), Loc)));
-
-               --  Copy the Comes_From_Source flag for the allocator we just
-               --  built, since logically this allocator is a replacement of
-               --  the original allocator node. This is for proper handling of
-               --  restriction No_Implicit_Heap_Allocations.
-
-               Preserve_Comes_From_Source
-                 (Expression (Temp_Decl), N);
-
-               Set_No_Initialization (Expression (Temp_Decl));
-               Insert_Action (N, Temp_Decl);
-
-               Build_Allocate_Deallocate_Proc (Temp_Decl, True);
-               Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
+               Build_Aggregate_In_Place (Temp, PtrT);
 
             else
                Node := Relocate_Node (N);
@@ -788,7 +806,7 @@ package body Exp_Ch4 is
                    Expression          => Node);
 
                Insert_Action (N, Temp_Decl);
-               Build_Allocate_Deallocate_Proc (Temp_Decl, True);
+               Build_Allocate_Deallocate_Proc (Temp_Decl);
             end if;
 
          --  Ada 2005 (AI-251): Handle allocators whose designated type is an
@@ -827,27 +845,7 @@ package body Exp_Ch4 is
                --  Declare the object using the previous type declaration
 
                if Aggr_In_Place then
-                  Temp_Decl :=
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Temp,
-                      Object_Definition   => New_Occurrence_Of (Def_Id, Loc),
-                      Expression          =>
-                        Make_Allocator (Loc,
-                          New_Occurrence_Of (Etype (Exp), Loc)));
-
-                  --  Copy the Comes_From_Source flag for the allocator we just
-                  --  built, since logically this allocator is a replacement of
-                  --  the original allocator node. This is for proper handling
-                  --  of restriction No_Implicit_Heap_Allocations.
-
-                  Set_Comes_From_Source
-                    (Expression (Temp_Decl), Comes_From_Source (N));
-
-                  Set_No_Initialization (Expression (Temp_Decl));
-                  Insert_Action (N, Temp_Decl);
-
-                  Build_Allocate_Deallocate_Proc (Temp_Decl, True);
-                  Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
+                  Build_Aggregate_In_Place (Temp, Def_Id);
 
                else
                   Node := Relocate_Node (N);
@@ -861,7 +859,7 @@ package body Exp_Ch4 is
                       Expression          => Node);
 
                   Insert_Action (N, Temp_Decl);
-                  Build_Allocate_Deallocate_Proc (Temp_Decl, True);
+                  Build_Allocate_Deallocate_Proc (Temp_Decl);
                end if;
 
                --  Generate an additional object containing the address of the
@@ -992,28 +990,7 @@ package body Exp_Ch4 is
         or else (Modify_Tree_For_C and then Nkind (Exp) = N_Aggregate)
       then
          Temp := Make_Temporary (Loc, 'P', N);
-         Temp_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Temp,
-             Object_Definition   => New_Occurrence_Of (PtrT, Loc),
-             Expression          =>
-               Make_Allocator (Loc,
-                 Expression => New_Occurrence_Of (Etype (Exp), Loc)));
-
-         --  Copy the Comes_From_Source flag for the allocator we just built,
-         --  since logically this allocator is a replacement of the original
-         --  allocator node. This is for proper handling of restriction
-         --  No_Implicit_Heap_Allocations.
-
-         Set_Comes_From_Source
-           (Expression (Temp_Decl), Comes_From_Source (N));
-
-         Set_No_Initialization (Expression (Temp_Decl));
-         Insert_Action (N, Temp_Decl);
-
-         Build_Allocate_Deallocate_Proc (Temp_Decl, True);
-         Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
-
+         Build_Aggregate_In_Place (Temp, PtrT);
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
 
@@ -1041,7 +1018,7 @@ package body Exp_Ch4 is
          end if;
 
       else
-         Build_Allocate_Deallocate_Proc (N, True);
+         Build_Allocate_Deallocate_Proc (N);
 
          --  For an access-to-unconstrained-packed-array type, build an
          --  expression with a constrained subtype in order for the code
@@ -2589,7 +2566,7 @@ package body Exp_Ch4 is
          end if;
       end To_Ityp;
 
-      --  Local Declarations
+      --  Local variables
 
       Opnd_Typ   : Entity_Id;
       Slice_Rng  : Node_Id;
@@ -4626,7 +4603,7 @@ package body Exp_Ch4 is
       --  the context requires it.
 
       elsif No_Initialization (N) then
-         Build_Allocate_Deallocate_Proc (N, True);
+         Build_Allocate_Deallocate_Proc (N);
 
       --  If the allocator is for a type which requires initialization, and
       --  there is no initial value (i.e. operand is a subtype indication
@@ -4685,7 +4662,7 @@ package body Exp_Ch4 is
                    Expression          => Relocate_Node (N));
 
                Insert_Action (N, Temp_Decl, Suppress => All_Checks);
-               Build_Allocate_Deallocate_Proc (Temp_Decl, True);
+               Build_Allocate_Deallocate_Proc (Temp_Decl);
 
                --  Generate:
                --    Temp.all := ...
@@ -4822,7 +4799,7 @@ package body Exp_Ch4 is
                    Expression          => Relocate_Node (N));
 
                Insert_Action (N, Temp_Decl, Suppress => All_Checks);
-               Build_Allocate_Deallocate_Proc (Temp_Decl, True);
+               Build_Allocate_Deallocate_Proc (Temp_Decl);
 
                --  If the designated type is a task type or contains tasks,
                --  create a specific block to activate the created tasks.
@@ -4875,7 +4852,7 @@ package body Exp_Ch4 is
             --  No initialization required
 
             else
-               Build_Allocate_Deallocate_Proc (N, True);
+               Build_Allocate_Deallocate_Proc (N);
             end if;
          end if;
       end if;
