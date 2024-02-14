@@ -89,7 +89,7 @@
 
 (define_insn_reservation "sifive_p400_branch" 1
   (and (eq_attr "tune" "sifive_p400")
-       (eq_attr "type" "branch,jump,call"))
+       (eq_attr "type" "branch,jump,call,jalr,ret,trap"))
   "sifive_p400_B+sifive_p400_bru")
 
 (define_insn_reservation "sifive_p400_sfb_alu" 1
@@ -114,12 +114,18 @@
 
 (define_insn_reservation "sifive_p400_alu" 1
   (and (eq_attr "tune" "sifive_p400")
-       (eq_attr "type" "unknown,arith,logical,shift,slt,multi,bitmanip,clz,ctz,rotate"))
+       (eq_attr "type" "unknown,arith,logical,shift,slt,multi,bitmanip,\
+			clz,ctz,rotate,min,max,minu,maxu,condmove,mvpair,zicond"))
   "p400_int_pipe+sifive_p400_ialu")
 
 (define_insn_reservation "sifive_p400_cpop" 3
   (and (eq_attr "tune" "sifive_p400")
        (eq_attr "type" "cpop"))
+  "p400_int_pipe,sifive_p400_ialu*2")
+
+(define_insn_reservation "sifive_p400_clmul" 3
+  (and (eq_attr "tune" "sifive_p400")
+       (eq_attr "type" "clmul"))
   "p400_int_pipe,sifive_p400_ialu*2")
 
 (define_insn_reservation "sifive_p400_load_immediate" 1

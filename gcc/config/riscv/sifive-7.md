@@ -34,7 +34,7 @@
 
 (define_insn_reservation "sifive_7_branch" 1
   (and (eq_attr "tune" "sifive_7")
-       (eq_attr "type" "branch"))
+       (eq_attr "type" "branch,ret,trap"))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_sfb_alu" 2
@@ -59,13 +59,20 @@
 
 (define_insn_reservation "sifive_7_alu" 2
   (and (eq_attr "tune" "sifive_7")
-       (eq_attr "type" "unknown,arith,shift,slt,multi,logical,move"))
+       (eq_attr "type" "unknown,arith,shift,slt,multi,logical,move,bitmanip,\
+			rotate,min,max,minu,maxu,clz,ctz,atomic,condmove,mvpair,zicond"))
   "sifive_7_A|sifive_7_B")
 
 (define_insn_reservation "sifive_7_load_immediate" 1
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "nop,const,auipc"))
   "sifive_7_A|sifive_7_B")
+
+(define_insn_reservation "sifive_7_hfma" 5
+  (and (eq_attr "tune" "sifive_7")
+       (and (eq_attr "type" "fadd,fmul,fmadd")
+	    (eq_attr "mode" "HF")))
+  "sifive_7_B")
 
 (define_insn_reservation "sifive_7_sfma" 5
   (and (eq_attr "tune" "sifive_7")
@@ -104,6 +111,12 @@
 (define_insn_reservation "sifive_7_f2i" 3
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "mfc"))
+  "sifive_7_A")
+
+;; Popcount and clmul.
+(define_insn_reservation "sifive_7_popcount" 2
+  (and (eq_attr "tune" "sifive_7")
+       (eq_attr "type" "cpop,clmul"))
   "sifive_7_A")
 
 (define_bypass 1 "sifive_7_load,sifive_7_alu,sifive_7_mul,sifive_7_f2i,sifive_7_sfb_alu"
