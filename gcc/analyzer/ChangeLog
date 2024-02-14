@@ -1,3 +1,10 @@
+2024-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* pending-diagnostic.cc (diagnostic_emission_context::warn):
+	Update for renaming of emit_diagnostic_valist overload to
+	emit_diagnostic_valist_meta.
+	(diagnostic_emission_context::inform): Likewise.
+
 2024-01-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/113253

@@ -1,3 +1,68 @@
+2024-02-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113876
+	* config/i386/i386.cc (ix86_pro_and_epilogue_can_use_push2pop2):
+	Return false if the incoming stack isn't 16-byte aligned.
+
+2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113904
+	* omp-general.cc (struct omp_ts_info): Update for splitting of
+	OMP_TRAIT_PROPERTY_EXPR into OMP_TRAIT_PROPERTY_{DEV_NUM,BOOL}_EXPR.
+	* omp-selectors.h (enum omp_tp_type): Replace
+	OMP_TRAIT_PROPERTY_EXPR by OMP_TRAIT_PROPERTY_{DEV_NUM,BOOL}_EXPR.
+
+2024-02-13  Monk Chiang  <monk.chiang@sifive.com>
+
+	PR target/113742
+	* config/riscv/riscv.cc (riscv_macro_fusion_pair_p): Fix
+	recognizes UNSPEC_AUIPC for RISCV_FUSE_LUI_ADDI.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113895
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): Track
+	offset to discover constant array indices in bits, handle
+	COMPONENT_REF to bitfields.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	* tree-ssa-sccvn.cc (ao_ref_init_from_vn_reference): Fix
+	typo in comment.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113902
+	* tree-vect-loop.cc (move_early_exit_stmts): Track
+	last_seen_vuse for VUSE updating.
+
+2024-02-13  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113734
+	* tree-vect-loop.cc (vect_transform_loop): Treat the final iteration of
+	an early break loop as partial.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113898
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): Add
+	missing accumulated off adjustment.
+
+2024-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* hwint.h (GCC_PRISZ, fmt_size_t): Fix preprocessor conditions,
+	instead of comparing SIZE_MAX against INT_MAX and LONG_MAX compare
+	it against UINT_MAX and ULONG_MAX.
+
+2024-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h (emit_diagnostic_valist): Rename overload
+	to...
+	(emit_diagnostic_valist_meta): ...this.
+	* diagnostic.cc (emit_diagnostic_valist): Likewise, to...
+	(emit_diagnostic_valist_meta): ...this.
+
 2024-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/113849

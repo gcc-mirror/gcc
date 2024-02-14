@@ -1,3 +1,8 @@
+2024-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* soft-fp/bitint.h (FP_FROM_BITINT): If iprec < 0 and msb is all ones,
+	just set n to 1 instead of using __builtin_clzll (~msb).
+
 2024-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/113855

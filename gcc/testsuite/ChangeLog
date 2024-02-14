@@ -1,3 +1,94 @@
+2024-02-13  Marek Polacek  <polacek@redhat.com>
+
+	DR 1693
+	PR c++/113760
+	* g++.dg/semicolon-fixits.C: Run in C++98 only.
+	* g++.dg/warn/pedantic2.C: Adjust dg-warning.
+	* g++.old-deja/g++.jason/parse11.C: Adjust dg-error.
+	* g++.dg/DRs/dr1693-1.C: New test.
+	* g++.dg/DRs/dr1693-2.C: New test.
+
+2024-02-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113876
+	* gcc.target/i386/pr113876.c: New test.
+
+2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113904
+	* gfortran.dg/gomp/declare-variant-1.f90: Change 'condition' trait's
+	argument from integer to a logical expression.
+	* gfortran.dg/gomp/declare-variant-11.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-12.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-13.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-2.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-2a.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-3.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-4.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-6.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-8.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-20.f90: New test.
+
+2024-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/friend-6_a.C: New test.
+	* g++.dg/modules/using-enum-3_a.C: New test.
+	* g++.dg/modules/using-enum-3_b.C: New test.
+
+2024-02-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113866
+	* gfortran.dg/bind_c_optional-2.f90: New test.
+
+2024-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113612
+	* g++.dg/cpp1y/var-templ85.C: New test.
+
+2024-02-13  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/pr113742.c: New test.
+
+2024-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112436
+	* g++.dg/cpp2a/concepts-pr112436.C: New test.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113896
+	* g++.dg/torture/pr113896.C: New testcase.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113895
+	* gcc.dg/torture/pr113895-1.c: New testcase.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113902
+	* gcc.dg/vect/pr113902.c: New testcase.
+
+2024-02-13  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113734
+	* gcc.dg/vect/vect-early-break_117-pr113734.c: New test.
+
+2024-02-13  Alex Coplan  <alex.coplan@arm.com>
+
+	PR c++/113658
+	* g++.dg/ext/has-feature2.C: New test.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113898
+	* gcc.dg/torture/pr113898.c: New testcase.
+
+2024-02-13  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113883
+	* gfortran.dg/allocatable_length.f90: New test.
+
 2024-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/pr109358.f90: New test.

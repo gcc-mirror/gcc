@@ -1,3 +1,10 @@
+2024-02-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* libm2iso/wraptime.cc [HAVE_STRUCT_TIMEZONE && HAVE_GETTIMEOFDAY]
+	(EXPORT(gettimeofday)): Cast tv to struct timeval *.
+	[HAVE_STRUCT_TIMEZONE && HAVE_SETTIMEOFDAY]
+	(EXPORT(settimeofday)): Likewise.
+
 2024-02-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR modula2/113888

@@ -1,3 +1,61 @@
+2024-02-13  Marek Polacek  <polacek@redhat.com>
+
+	DR 1693
+	PR c++/113760
+	* parser.cc (cp_parser_member_declaration): Only pedwarn about an extra
+	semicolon in C++98.
+
+2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113904
+	* parser.cc (cp_parser_omp_context_selector): Handle splitting of
+	OMP_TRAIT_PROPERTY_EXPR into OMP_TRAIT_PROPERTY_{DEV_NUM,BOOL}_EXPR.
+
+2024-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* Make-lang.in (CFLAGS-cp/module.o): Add $(ZLIBINC).
+	* module.cc: Include <zlib.h>.
+	(bytes::calc_crc): Use crc32 from zlib.
+	(bytes_out::set_crc): Use crc32_combine from zlib.
+
+2024-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (depset::hash::add_specializations): Use
+	STRIP_TEMPLATE consistently.
+	(get_originating_module_decl): Handle class-scope CONST_DECL.
+
+2024-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* lambda.cc (lambda_function): Call get_class_binding_direct
+	instead of lookup_member to sidestep lazy loading.
+	* name-lookup.cc (check_local_shadow): Punt if we're in a
+	function context that's not actual parsing.
+
+2024-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113612
+	* pt.cc (process_partial_specialization): Return early
+	on redeclaration.
+
+2024-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112436
+	* except.cc (expand_start_catch_block): Pass tf_warning_or_error to
+	is_admissible_throw_operand_or_catch_parameter.
+	(build_throw): Pass complain to
+	is_admissible_throw_operand_or_catch_parameter.
+	(complete_ptr_ref_or_void_ptr_p): Add a tsubst_flags_t parameter.  Use
+	it.  Return bool.  Call complete_type_or_maybe_complain instead of
+	complete_type_or_else.
+	(is_admissible_throw_operand_or_catch_parameter): Add a tsubst_flags_t
+	parameter.  Use it.  Guard error calls.
+
+2024-02-13  Alex Coplan  <alex.coplan@arm.com>
+
+	PR c++/113658
+	* cp-objcp-common.cc (cp_feature_table): Remove entry for
+	cxx_constexpr_string_builtins.
+
 2024-02-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113545

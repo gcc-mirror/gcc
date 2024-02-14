@@ -1,3 +1,25 @@
+2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113904
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Handle splitting of
+	OMP_TRAIT_PROPERTY_EXPR into OMP_TRAIT_PROPERTY_{DEV_NUM,BOOL}_EXPR.
+	* openmp.cc (gfc_match_omp_context_selector): Likewise; rejects
+	non-const device_num/condition; improve diagnostic.
+
+2024-02-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113866
+	* trans-expr.cc (gfc_conv_procedure_call): When passing an optional
+	dummy argument to an optional dummy argument of a bind(c) procedure
+	and the dummy argument is passed via a CFI descriptor, no special
+	presence check and passing of a default NULL pointer is needed.
+
+2024-02-13  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113883
+	* trans-array.cc (gfc_trans_deferred_array): Set length to zero,
+	avoiding extraneous diagnostics.
+
 2024-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* error.cc (error_print): Handle z and t modifiers on d, i and u.
