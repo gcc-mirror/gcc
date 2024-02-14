@@ -2673,7 +2673,7 @@ bitmap_hash (const_bitmap head)
       for (ix = 0; ix != BITMAP_ELEMENT_WORDS; ix++)
 	hash ^= ptr->bits[ix];
     }
-  return (hashval_t)hash;
+  return iterative_hash (&hash, sizeof (hash), 0);
 }
 
 
