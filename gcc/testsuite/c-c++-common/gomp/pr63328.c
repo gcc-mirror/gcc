@@ -3,5 +3,3 @@
 /* { dg-options "-O2 -fopenmp-simd -fno-strict-aliasing -fcompare-debug" } */
 
 #include "pr60823-3.c"
-/* { dg-excess-errors "partial simd clone support" { target { aarch64*-*-* } } }  */
-
