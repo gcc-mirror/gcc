@@ -244,6 +244,7 @@ proc gdc-copy-file { srcdir filename } {
 #   POST_SCRIPT:	Not handled.
 #   REQUIRED_ARGS:	Arguments to add to the compiler command line.
 #   DISABLED:		Not handled.
+#   UNICODE_NAMES:	Requires ucn support.
 #
 
 proc gdc-convert-test { base test } {
@@ -365,6 +366,10 @@ proc gdc-convert-test { base test } {
 	    # COMPILABLE_MATH_TEST annotates tests that import the std.math
 	    # module.  Which will need skipping if not available on the target.
 	    set needs_phobos 1
+	} elseif [regexp -- {UNICODE_NAMES} $copy_line] {
+	    # Require ucn support.
+	    puts $fdout "// { dg-require-effective-target ucn }"
+
 	}
     }
 
