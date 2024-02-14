@@ -982,7 +982,8 @@
    (match_operand:V_MOV 1 "register_operand")
    (match_operand 2 "immediate_operand")]
   "MODE_VF (<V_MOV_ALT:MODE>mode) < MODE_VF (<V_MOV:MODE>mode)
-   && <V_MOV_ALT:SCALAR_MODE>mode == <V_MOV:SCALAR_MODE>mode"
+   && <V_MOV_ALT:SCALAR_MODE>mode == <V_MOV:SCALAR_MODE>mode
+   && (!TARGET_RDNA2_PLUS || MODE_VF (<V_MOV:MODE>mode) <= 32)"
   {
     int numlanes = GET_MODE_NUNITS (<V_MOV_ALT:MODE>mode);
     int firstlane = INTVAL (operands[2]) * numlanes;
