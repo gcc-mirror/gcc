@@ -5971,6 +5971,10 @@ handle_optimize_attribute (tree *node, tree name, tree args,
       if (prev_target_node != target_node)
 	DECL_FUNCTION_SPECIFIC_TARGET (*node) = target_node;
 
+      /* Also update the cgraph_node, if it's already built.  */
+      if (cgraph_node *cn = cgraph_node::get (*node))
+	cn->semantic_interposition = flag_semantic_interposition;
+
       /* Restore current options.  */
       cl_optimization_restore (&global_options, &global_options_set,
 			       &cur_opts);
