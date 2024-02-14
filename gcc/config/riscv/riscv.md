@@ -3851,6 +3851,7 @@
 (include "sifive-p400.md")
 (include "sifive-p600.md")
 (include "thead.md")
+(include "generic-vector-ooo.md")
 (include "generic-ooo.md")
 (include "vector.md")
 (include "vector-crypto.md")
