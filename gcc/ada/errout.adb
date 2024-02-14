@@ -325,12 +325,13 @@ package body Errout is
    procedure Error_Msg
       (Msg : String;
        Flag_Location : Source_Ptr;
+       N : Node_Id;
        Is_Compile_Time_Pragma : Boolean)
    is
       Save_Is_Compile_Time_Msg : constant Boolean := Is_Compile_Time_Msg;
    begin
       Is_Compile_Time_Msg := Is_Compile_Time_Pragma;
-      Error_Msg (Msg, To_Span (Flag_Location), Current_Node);
+      Error_Msg (Msg, To_Span (Flag_Location), N);
       Is_Compile_Time_Msg := Save_Is_Compile_Time_Msg;
    end Error_Msg;
 
