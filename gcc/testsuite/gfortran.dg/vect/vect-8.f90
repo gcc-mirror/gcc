@@ -1,6 +1,8 @@
 ! { dg-do compile }
 ! { dg-require-effective-target vect_double }
 ! { dg-additional-options "-fno-tree-loop-distribute-patterns -finline-matmul-limit=0" }
+! PR113249
+! { dg-options "-fno-schedule-insns -fno-schedule-insns2" { target { riscv*-*-* } } }
 
 module lfk_prec
  integer, parameter :: dp=kind(1.d0)
