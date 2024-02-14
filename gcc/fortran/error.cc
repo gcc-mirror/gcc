@@ -886,13 +886,14 @@ error_print (const char *type, const char *format0, va_list argp)
 	  format++;
 	  if (*format == 'u')
 	    {
-	      ptrdiff_t ptrdiffval = spec[n++].u.ptrdiffval;
-	      if (sizeof (ptrdiff_t) == sizeof (int))
-		error_uinteger ((unsigned) ptrdiffval);
-	      else if (sizeof (ptrdiff_t) == sizeof (long))
-		error_uinteger ((unsigned long) ptrdiffval);
-	      else
-		error_uinteger (ptrdiffval);
+	      unsigned long long a = spec[n++].u.ptrdiffval, m;
+#ifdef PTRDIFF_MAX
+	      m = PTRDIFF_MAX;
+#else
+	      m = INTTYPE_MAXIMUM (ptrdiff_t);
+#endif
+	      m = 2 * m + 1;  
+	      error_uinteger (a & m);
 	    }
 	  else
 	    error_integer (spec[n++].u.ptrdiffval);

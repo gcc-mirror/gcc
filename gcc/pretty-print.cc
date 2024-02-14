@@ -752,6 +752,9 @@ output_buffer::~output_buffer ()
   obstack_free (&formatted_obstack, NULL);
 }
 
+#ifndef PTRDIFF_MAX
+#define PTRDIFF_MAX INTTYPE_MAXIMUM (ptrdiff_t)
+#endif
 
 /* Format an integer given by va_arg (ARG, type-specifier T) where
    type-specifier is a precision modifier as indicated by PREC.  F is
@@ -783,7 +786,15 @@ output_buffer::~output_buffer ()
         break;                                               \
                                                              \
       case 4:                                                \
-        if (sizeof (ptrdiff_t) <= sizeof (int))              \
+        if (T (-1) >= T (0))                                 \
+          {                                                  \
+            unsigned long long a = va_arg (ARG, ptrdiff_t);  \
+            unsigned long long m = PTRDIFF_MAX;              \
+            m = 2 * m + 1;                                   \
+            pp_scalar (PP, "%" HOST_LONG_LONG_FORMAT F,      \
+		       a & m);                               \
+          }                                                  \
+        else if (sizeof (ptrdiff_t) <= sizeof (int))         \
           pp_scalar (PP, "%" F,                              \
                      (int) va_arg (ARG, ptrdiff_t));         \
         else if (sizeof (ptrdiff_t) <= sizeof (long))        \
