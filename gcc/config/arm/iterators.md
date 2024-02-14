@@ -869,6 +869,14 @@
 		 (plus "vadd")
 		 ])
 
+(define_int_attr mve_vmaxmin_safe_imp [
+		 (VMAXVQ_U "yes")
+		 (VMAXVQ_S "no")
+		 (VMAXAVQ_S "yes")
+		 (VMINVQ_U "no")
+		 (VMINVQ_S "no")
+		 (VMINAVQ_S "no")])
+
 (define_int_attr mve_cmp_op1 [
 		 (VCMPCSQ_M_U "cs")
 		 (VCMPEQQ_M_S "eq") (VCMPEQQ_M_U "eq")

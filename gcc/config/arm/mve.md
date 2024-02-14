@@ -393,6 +393,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>%#<V_sz_elem>\t%0, %q1"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf><mode>"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -529,6 +530,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>32\t%Q0, %R0, %q1"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf>v4si"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -802,6 +804,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>%#<V_sz_elem>\t%0, %q2"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf><mode>"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -1014,6 +1017,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>%#<V_sz_elem>\t%0, %q2"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf><mode>"))
+  (set_attr "mve_safe_imp_xlane_pred" "<mve_vmaxmin_safe_imp>")
   (set_attr "type" "mve_move")
 ])
 
@@ -1033,6 +1037,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>%#<V_sz_elem>\t%0, %q1, %q2"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf><mode>"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -1219,6 +1224,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>32\t%Q0, %R0, %q2"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf>v4si"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -1450,6 +1456,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>%#<V_sz_elem>\t%Q0, %R0, %q1, %q2"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf><mode>"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -1588,6 +1595,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>32\t%Q0, %R0, %q1, %q2"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf>v4si"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -1725,6 +1733,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>32\t%Q0, %R0, %q2, %q3"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf>v4si"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -1742,6 +1751,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>%#<V_sz_elem>\t%0, %q2, %q3"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf><mode>"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -1952,6 +1962,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>%#<V_sz_elem>\t%0, %q2, %q3"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf><mode>"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
@@ -2401,6 +2412,7 @@
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf><mode>"))
+  (set_attr "mve_safe_imp_xlane_pred" "yes")
   (set_attr "type" "mve_move")
 ])
 
