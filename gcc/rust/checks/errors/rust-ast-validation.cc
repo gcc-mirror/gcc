@@ -132,10 +132,14 @@ ASTValidation::visit (AST::Function &function)
 	rust_error_at (function.get_locus (), "free function without a body");
     }
 
-  if (function.is_variadic ())
-    rust_error_at (
-      function.get_function_params ().back ()->get_locus (),
-      "only foreign or %<unsafe extern \"C\"%> functions may be C-variadic");
+  auto &function_params = function.get_function_params ();
+  for (auto it = function_params.begin (); it != function_params.end (); it++)
+    {
+      if (it->get ()->is_variadic ())
+	rust_error_at (it->get ()->get_locus (),
+		       "only foreign or %<unsafe extern \"C\"%> functions may "
+		       "be C-variadic");
+    }
 
   AST::ContextualASTVisitor::visit (function);
 }
