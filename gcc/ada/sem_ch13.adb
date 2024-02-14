@@ -2417,7 +2417,7 @@ package body Sem_Ch13 is
 
             begin
                if Ada_Version < Ada_2022 then
-                  Error_Msg_Ada_2022_Feature ("aspect %", Sloc (Aspect));
+                  Error_Msg_Ada_2022_Feature ("aspect %", Loc);
                   return;
                end if;
 
@@ -2442,7 +2442,7 @@ package body Sem_Ch13 is
 
                   elsif Is_Imported_Intrinsic then
                      Error_Msg_GNAT_Extension
-                       ("aspect % on intrinsic function", Sloc (Aspect),
+                       ("aspect % on intrinsic function", Loc,
                         Is_Core_Extension => True);
 
                   else
@@ -4133,7 +4133,7 @@ package body Sem_Ch13 is
 
                when Aspect_Designated_Storage_Model =>
                   if not All_Extensions_Allowed then
-                     Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
+                     Error_Msg_GNAT_Extension ("aspect %", Loc);
 
                   elsif not Is_Type (E)
                     or else Ekind (E) /= E_Access_Type
@@ -4148,7 +4148,7 @@ package body Sem_Ch13 is
 
                when Aspect_Storage_Model_Type =>
                   if not All_Extensions_Allowed then
-                     Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
+                     Error_Msg_GNAT_Extension ("aspect %", Loc);
 
                   elsif not Is_Type (E)
                     or else not Is_Immutably_Limited_Type (E)
@@ -4479,7 +4479,7 @@ package body Sem_Ch13 is
                   --  Ada 2022 (AI12-0363): Full_Access_Only
 
                   elsif A_Id = Aspect_Full_Access_Only then
-                     Error_Msg_Ada_2022_Feature ("aspect %", Sloc (Aspect));
+                     Error_Msg_Ada_2022_Feature ("aspect %", Loc);
 
                   --  Ada 2022 (AI12-0075): static expression functions
 
