@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O3" } */
-/* { dg-additional-options "-march=skylake-avx512" { target { x86_64-*-* i?86-*-* } } } */
+/* { dg-additional-options "-march=skylake-avx512" { target avx512f } } */
 
 #include "tree-vect.h"
 
