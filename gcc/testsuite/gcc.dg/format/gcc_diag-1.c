@@ -33,7 +33,8 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
      ullong ull, unsigned int *un, const int *cn, signed char *ss,
      unsigned char *us, const signed char *css, unsigned int u1,
      unsigned int u2, location_t *loc, tree t1, union tree_node *t2,
-     tree *t3, tree t4[], int *v, unsigned v_len)
+     tree *t3, tree t4[], int *v, unsigned v_len, size_t sz, ptrdiff_t pd,
+     ssize_t ssz, unsigned_ptrdiff_t upd)
 {
   /* Acceptable C90 specifiers, flags and modifiers.  */
   diag ("%%");
@@ -66,6 +67,16 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   cdiag ("%wd%wi%wo%wu%wx", ll, ll, ull, ull, ull);
   cxxdiag ("%wd%wi%wo%wu%wx", ll, ll, ull, ull, ull);
   dump ("%wd%wi%wo%wu%wx", ll, ll, ull, ull, ull);
+  diag ("%zd%zi%zo%zu%zx", ssz, ssz, sz, sz, sz);
+  tdiag ("%zd%zi%zo%zu%zx", ssz, ssz, sz, sz, sz);
+  cdiag ("%zd%zi%zo%zu%zx", ssz, ssz, sz, sz, sz);
+  cxxdiag ("%zd%zi%zo%zu%zx", ssz, ssz, sz, sz, sz);
+  dump ("%zd%zi%zo%zu%zx", ssz, ssz, sz, sz, sz);
+  diag ("%td%ti%to%tu%tx", pd, pd, upd, upd, upd);
+  tdiag ("%td%ti%to%tu%tx", pd, pd, upd, upd, upd);
+  cdiag ("%td%ti%to%tu%tx", pd, pd, upd, upd, upd);
+  cxxdiag ("%td%ti%to%tu%tx", pd, pd, upd, upd, upd);
+  dump ("%td%ti%to%tu%tx", pd, pd, upd, upd, upd);
   diag ("%.*s", i, s);
   tdiag ("%.*s", i, s);
   cdiag ("%.*s", i, s);
