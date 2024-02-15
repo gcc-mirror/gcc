@@ -14,12 +14,10 @@
 // WARNING: We want to be able to build this crate with a stable compiler,
 //          so no `#![feature]` attributes should be added!
 
-#[deprecated(note = "Use a proper lexer function for this")]
 fn is_id_start(c: char) -> bool {
     c == '_' || unicode_xid::UnicodeXID::is_xid_start(c)
 }
 
-#[deprecated(note = "Use a proper lexer function for this")]
 fn is_id_continue(c: char) -> bool {
     unicode_xid::UnicodeXID::is_xid_continue(c)
 }
