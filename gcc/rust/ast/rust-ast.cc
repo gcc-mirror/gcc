@@ -5048,6 +5048,12 @@ MetaWord::accept_vis (ASTVisitor &vis)
   vis.visit (*this);
 }
 
+void
+FormatArgs::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
 } // namespace AST
 
 std::ostream &

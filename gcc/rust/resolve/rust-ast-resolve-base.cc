@@ -650,5 +650,11 @@ void
 ResolverBase::visit (AST::FunctionParam &)
 {}
 
+void
+ResolverBase::visit (AST::FormatArgs &fmt)
+{
+  rust_sorry_at (0, "unimplemented format_args!() visitor");
+}
+
 } // namespace Resolver
 } // namespace Rust

@@ -22,6 +22,8 @@
 #include "rust-ast-lower-struct-field-expr.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-type.h"
+#include "rust-ast.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace HIR {
@@ -826,6 +828,12 @@ ASTLoweringExpr::visit (AST::ClosureExprInnerTyped &expr)
 			    std::unique_ptr<HIR::Expr> (closure_expr),
 			    expr.get_has_move (), expr.get_outer_attrs (),
 			    expr.get_locus ());
+}
+
+void
+ASTLoweringExpr::visit (AST::FormatArgs &fmt)
+{
+  rust_sorry_at (0, "unimplemented format_args!() visitor");
 }
 
 } // namespace HIR

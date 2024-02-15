@@ -398,6 +398,8 @@ public:
   void visit (SliceType &type);
   void visit (InferredType &type);
   void visit (BareFunctionType &type);
+
+  void visit (FormatArgs &fmt);
 };
 } // namespace AST
 

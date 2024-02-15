@@ -19,6 +19,7 @@
 #ifndef RUST_AST_LOWER_BASE
 #define RUST_AST_LOWER_BASE
 
+#include "rust-ast.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
@@ -252,6 +253,8 @@ public:
   virtual void visit (AST::FunctionParam &param);
   virtual void visit (AST::VariadicParam &param);
   virtual void visit (AST::SelfParam &param);
+
+  virtual void visit (AST::FormatArgs &fmt);
 
 protected:
   ASTLoweringBase ()

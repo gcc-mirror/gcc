@@ -2029,6 +2029,7 @@ public:
 class PathExpr : public ExprWithoutBlock
 {
 };
+
 } // namespace AST
 } // namespace Rust
 
