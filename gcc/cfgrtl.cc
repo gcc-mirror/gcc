@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
      - CFG-aware instruction chain manipulation
 	 delete_insn, delete_insn_chain
      - Edge splitting and committing to edges
-	 insert_insn_on_edge, commit_edge_insertions
+	 insert_insn_on_edge, prepend_insn_to_edge, commit_edge_insertions
      - CFG updating after insn simplification
 	 purge_dead_edges, purge_all_dead_edges
      - CFG fixing after coarse manipulation
@@ -1966,7 +1966,8 @@ rtl_split_edge (edge edge_in)
 
 /* Queue instructions for insertion on an edge between two basic blocks.
    The new instructions and basic blocks (if any) will not appear in the
-   CFG until commit_edge_insertions is called.  */
+   CFG until commit_edge_insertions is called.  If there are already
+   queued instructions on the edge, PATTERN is appended to them.  */
 
 void
 insert_insn_on_edge (rtx pattern, edge e)
@@ -1981,6 +1982,25 @@ insert_insn_on_edge (rtx pattern, edge e)
     push_to_sequence (e->insns.r);
 
   emit_insn (pattern);
+
+  e->insns.r = get_insns ();
+  end_sequence ();
+}
+
+/* Like insert_insn_on_edge, but if there are already queued instructions
+   on the edge, PATTERN is prepended to them.  */
+
+void
+prepend_insn_to_edge (rtx pattern, edge e)
+{
+  /* We cannot insert instructions on an abnormal critical edge.
+     It will be easier to find the culprit if we die now.  */
+  gcc_assert (!((e->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (e)));
+
+  start_sequence ();
+
+  emit_insn (pattern);
+  emit_insn (e->insns.r);
 
   e->insns.r = get_insns ();
   end_sequence ();
