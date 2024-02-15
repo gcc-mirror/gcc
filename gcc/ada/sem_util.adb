@@ -53,6 +53,7 @@ with Sem_Cat;        use Sem_Cat;
 with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
 with Sem_Disp;       use Sem_Disp;
 with Sem_Elab;       use Sem_Elab;
 with Sem_Eval;       use Sem_Eval;
@@ -23447,6 +23448,8 @@ package body Sem_Util is
                   Set_Chars (Result, Chars (Entity (Result)));
                end if;
             end if;
+
+            Copy_Dimensions (From => N, To => Result);
          end if;
 
          return Result;
