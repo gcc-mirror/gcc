@@ -1953,7 +1953,8 @@ package body Exp_Attr is
 
             while Present (Ancestor) loop
                if Is_List_Member (Ancestor) then
-                  Insertion_Point := Ancestor;
+                  Insertion_Point := First (List_Containing (Ancestor));
+                  pragma Assert (Present (Insertion_Point));
                end if;
                Ancestor := Parent (Ancestor);
             end loop;
