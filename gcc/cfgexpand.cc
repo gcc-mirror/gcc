@@ -3635,7 +3635,7 @@ expand_asm_stmt (gasm *stmt)
 		emit_insn (copy_insn (PATTERN (curr)));
 	      rtx_insn *copy = get_insns ();
 	      end_sequence ();
-	      insert_insn_on_edge (copy, e);
+	      prepend_insn_to_edge (copy, e);
 	    }
 	}
     }
