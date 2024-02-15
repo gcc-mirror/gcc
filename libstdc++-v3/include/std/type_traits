@@ -2278,6 +2278,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__decay)
+  template<typename _Tp>
+    struct decay
+    { using type = __decay(_Tp); };
+#else
   // Decay trait for arrays and functions, used for perfect forwarding
   // in make_pair, make_tuple, etc.
   template<typename _Up>
@@ -2309,6 +2314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct decay<_Tp&&>
     { using type = typename __decay_selector<_Tp>::type; };
+#endif
 
   /// @cond undocumented
 
