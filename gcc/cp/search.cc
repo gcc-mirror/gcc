@@ -1975,6 +1975,17 @@ maybe_check_overriding_exception_spec (tree overrider, tree basefn)
       || UNPARSED_NOEXCEPT_SPEC_P (over_throw))
     return true;
 
+  /* We also have to defer checking when we're in a template and couldn't
+     instantiate & evaluate the noexcept to true/false.  */
+  if (processing_template_decl)
+    if ((base_throw
+	 && base_throw != noexcept_true_spec
+	 && base_throw != noexcept_false_spec)
+	|| (over_throw
+	    && over_throw != noexcept_true_spec
+	    && over_throw != noexcept_false_spec))
+      return true;
+
   if (!comp_except_specs (base_throw, over_throw, ce_derived))
     {
       auto_diagnostic_group d;
