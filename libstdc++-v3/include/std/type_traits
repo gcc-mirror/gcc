@@ -1157,6 +1157,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// @cond undocumented
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__add_lvalue_reference)
+  template<typename _Tp>
+    using __add_lval_ref_t = __add_lvalue_reference(_Tp);
+#else
   template<typename _Tp, typename = void>
     struct __add_lvalue_reference_helper
     { using type = _Tp; };
@@ -1167,6 +1171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     using __add_lval_ref_t = typename __add_lvalue_reference_helper<_Tp>::type;
+#endif
   /// @endcond
 
   /// is_copy_constructible
