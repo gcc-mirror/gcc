@@ -1660,9 +1660,10 @@ package body Erroutc is
       Loc : constant Source_Ptr := Sinfo.Nodes.Sloc (Node);
    begin
       Specific_Warnings.Append
-        ((Start      => Node,
+        ((Start      => Loc,
           Msg        => new String'(Msg),
           Stop       => Source_Last (Get_Source_File_Index (Loc)),
+          Node       => Node,
           Reason     => Reason,
           Open       => True,
           Used       => Used,
@@ -1682,13 +1683,12 @@ package body Erroutc is
       for J in 1 .. Specific_Warnings.Last loop
          declare
             SWE : Specific_Warning_Entry renames Specific_Warnings.Table (J);
-            Start_Loc : constant Source_Ptr := Sinfo.Nodes.Sloc (SWE.Start);
 
          begin
             if Msg = SWE.Msg.all
-              and then Loc > Start_Loc
+              and then Loc > SWE.Start
               and then SWE.Open
-              and then Get_Source_File_Index (Start_Loc) =
+              and then Get_Source_File_Index (SWE.Start) =
                        Get_Source_File_Index (Loc)
             then
                SWE.Stop := Loc;
@@ -1819,13 +1819,12 @@ package body Erroutc is
       for J in Specific_Warnings.First .. Specific_Warnings.Last loop
          declare
             SWE : Specific_Warning_Entry renames Specific_Warnings.Table (J);
-            Start_Loc : constant Source_Ptr := Sinfo.Nodes.Sloc (SWE.Start);
          begin
             --  Pragma applies if it is a configuration pragma, or if the
             --  location is in range of a specific non-configuration pragma.
 
             if SWE.Config
-              or else Sloc_In_Range (Loc, Start_Loc, SWE.Stop)
+              or else Sloc_In_Range (Loc, SWE.Start, SWE.Stop)
             then
                if Matches (Msg.all, SWE.Msg.all)
                  or else Matches (Tag, SWE.Msg.all)

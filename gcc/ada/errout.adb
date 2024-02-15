@@ -2028,7 +2028,7 @@ package body Errout is
                if SWE.Open then
                   Error_Msg_N
                     ("?.w?pragma Warnings Off with no matching Warnings On",
-                     SWE.Start);
+                     SWE.Node);
 
                --  Warn for ineffective Warnings (Off, ..)
 
@@ -2043,7 +2043,7 @@ package body Errout is
                then
                   Error_Msg_N
                     ("?.w?no warning suppressed by this pragma",
-                     SWE.Start);
+                     SWE.Node);
                end if;
             end if;
          end;

@@ -347,10 +347,18 @@ package Erroutc is
    --  which is the pattern to match for suppressing a warning.
 
    type Specific_Warning_Entry is record
-      Start : Node_Id;
+      Start : Source_Ptr;
       Stop  : Source_Ptr;
       --  Starting and ending source pointers for the range. These are always
       --  from the same source file.
+
+      Node : Node_Id;
+      --  Node for the pragma Warnings occurrence. We store it to compute the
+      --  enclosing subprogram if -gnatdJ is enabled and a message about this
+      --  clause needs to be emitted. Note that we cannot remove the Start
+      --  component above and use Sloc (Node) on message display instead
+      --  because -gnatD output can already have messed with slocs at the point
+      --  when warnings about ineffective clauses are emitted.
 
       Reason : String_Id;
       --  Reason string from pragma Warnings, or null string if none
