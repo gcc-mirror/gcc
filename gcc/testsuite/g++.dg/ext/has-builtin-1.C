@@ -32,6 +32,9 @@
 #if !__has_builtin (__builtin_source_location)
 # error "__has_builtin (__builtin_source_location) failed"
 #endif
+#if !__has_builtin (__decay)
+# error "__has_builtin (__decay) failed"
+#endif
 #if !__has_builtin (__has_nothrow_assign)
 # error "__has_builtin (__has_nothrow_assign) failed"
 #endif

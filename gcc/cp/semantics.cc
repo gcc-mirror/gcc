@@ -12946,6 +12946,18 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
 	return cp_build_reference_type (type1, /*rval=*/true);
       return type1;
 
+    case CPTK_DECAY:
+      if (TYPE_REF_P (type1))
+	type1 = TREE_TYPE (type1);
+
+      if (TREE_CODE (type1) == ARRAY_TYPE)
+	return finish_trait_type (CPTK_ADD_POINTER, TREE_TYPE (type1), type2,
+				  complain);
+      else if (TREE_CODE (type1) == FUNCTION_TYPE)
+	return finish_trait_type (CPTK_ADD_POINTER, type1, type2, complain);
+      else
+	return cv_unqualified (type1);
+
     case CPTK_REMOVE_ALL_EXTENTS:
       return strip_array_types (type1);
 
