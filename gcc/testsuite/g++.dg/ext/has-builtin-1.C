@@ -8,6 +8,9 @@
 #if !__has_builtin (__add_pointer)
 # error "__has_builtin (__add_pointer) failed"
 #endif
+#if !__has_builtin (__add_rvalue_reference)
+# error "__has_builtin (__add_rvalue_reference) failed"
+#endif
 #if !__has_builtin (__builtin_addressof)
 # error "__has_builtin (__builtin_addressof) failed"
 #endif

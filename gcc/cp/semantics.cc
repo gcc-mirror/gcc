@@ -12940,6 +12940,12 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
 	}
       return type1;
 
+    case CPTK_ADD_RVALUE_REFERENCE:
+      /* [meta.trans.ref].  */
+      if (referenceable_type_p (type1))
+	return cp_build_reference_type (type1, /*rval=*/true);
+      return type1;
+
     case CPTK_REMOVE_ALL_EXTENTS:
       return strip_array_types (type1);
 
