@@ -1,3 +1,16 @@
+2024-02-14  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2024-02-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/111677
+	* gcc.target/aarch64/torture/pr111677.c: New test.
+
+2024-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113896
+	* g++.dg/torture/pr113896.C: New testcase.
+
 2024-02-09  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
