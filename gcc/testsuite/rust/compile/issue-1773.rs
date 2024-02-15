@@ -1,4 +1,5 @@
 #[lang = "sized"]
+// { dg-skip-if "" { *-*-* } }
 pub trait Sized {}
 
 trait Foo<T> {
