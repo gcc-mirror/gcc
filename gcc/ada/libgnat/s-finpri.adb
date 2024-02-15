@@ -29,13 +29,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions; use Ada.Exceptions;
+with Ada.Exceptions;           use Ada.Exceptions;
+with Ada.Unchecked_Conversion;
 
 with System.Soft_Links; use System.Soft_Links;
 
 package body System.Finalization_Primitives is
 
    use type System.Storage_Elements.Storage_Offset;
+
+   function To_Collection_Node_Ptr is
+     new Ada.Unchecked_Conversion (Address, Collection_Node_Ptr);
+
+   procedure Detach_Node_From_Collection (Node : not null Collection_Node_Ptr);
+   --  Removes a collection node from its associated finalization collection
 
    ---------------------------
    -- Add_Offset_To_Address --
@@ -49,23 +56,57 @@ package body System.Finalization_Primitives is
       return System.Storage_Elements."+" (Addr, Offset);
    end Add_Offset_To_Address;
 
-   -------------------------------
-   -- Attach_Node_To_Collection --
-   -------------------------------
+   ---------------------------------
+   -- Attach_Object_To_Collection --
+   ---------------------------------
 
-   procedure Attach_Node_To_Collection
-     (Node             : not null Collection_Node_Ptr;
+   procedure Attach_Object_To_Collection
+     (Object_Address   : System.Address;
       Finalize_Address : not null Finalize_Address_Ptr;
       Collection       : in out Finalization_Collection)
    is
+      Node : constant Collection_Node_Ptr :=
+               To_Collection_Node_Ptr (Object_Address - Header_Size);
+
    begin
+      Lock_Task.all;
+
+      --  Do not allow the attachment of controlled objects while the
+      --  associated collection is being finalized.
+
+      --  Synchronization:
+      --    Read  - attachment, finalization
+      --    Write - finalization
+
+      if Collection.Finalization_Started then
+         raise Program_Error with "attachment after finalization started";
+      end if;
+
+      --  Check whether primitive Finalize_Address is available. If it is
+      --  not, then either the expansion of the designated type failed or
+      --  the expansion of the allocator failed. This is a compiler bug.
+
+      pragma Assert
+        (Finalize_Address /= null, "primitive Finalize_Address not available");
+
       Node.Finalize_Address := Finalize_Address;
       Node.Prev             := Collection.Head'Unchecked_Access;
       Node.Next             := Collection.Head.Next;
 
       Collection.Head.Next.Prev := Node;
       Collection.Head.Next      := Node;
-   end Attach_Node_To_Collection;
+
+      Unlock_Task.all;
+
+   exception
+      when others =>
+
+         --  Unlock the task in case the attachment failed and reraise the
+         --  exception.
+
+         Unlock_Task.all;
+         raise;
+   end Attach_Object_To_Collection;
 
    -----------------------------
    -- Attach_Object_To_Master --
@@ -128,16 +169,23 @@ package body System.Finalization_Primitives is
       end if;
    end Detach_Node_From_Collection;
 
-   --------------------------
-   -- Finalization_Started --
-   --------------------------
+   -----------------------------------
+   -- Detach_Object_From_Collection --
+   -----------------------------------
 
-   function Finalization_Started
-     (Master : Finalization_Collection) return Boolean
+   procedure Detach_Object_From_Collection
+     (Object_Address : System.Address)
    is
+      Node : constant Collection_Node_Ptr :=
+               To_Collection_Node_Ptr (Object_Address - Header_Size);
+
    begin
-      return Master.Finalization_Started;
-   end Finalization_Started;
+      Lock_Task.all;
+
+      Detach_Node_From_Collection (Node);
+
+      Unlock_Task.all;
+   end Detach_Object_From_Collection;
 
    --------------
    -- Finalize --
@@ -168,7 +216,7 @@ package body System.Finalization_Primitives is
       Lock_Task.all;
 
       --  Synchronization:
-      --    Read  - allocation, finalization
+      --    Read  - attachment, finalization
       --    Write - finalization
 
       if Collection.Finalization_Started then
@@ -180,13 +228,13 @@ package body System.Finalization_Primitives is
          return;
       end if;
 
-      --  Lock the collection to prevent any allocation while the objects are
+      --  Lock the collection to prevent any attachment while the objects are
       --  being finalized. The collection remains locked because either it is
       --  explicitly deallocated or the associated access type is about to go
       --  out of scope.
 
       --  Synchronization:
-      --    Read  - allocation, finalization
+      --    Read  - attachment, finalization
       --    Write - finalization
 
       Collection.Finalization_Started := True;
@@ -201,7 +249,7 @@ package body System.Finalization_Primitives is
          Curr_Ptr := Collection.Head.Next;
 
          --  Synchronization:
-         --    Write - allocation, deallocation, finalization
+         --    Write - attachment, detachment, finalization
 
          Detach_Node_From_Collection (Curr_Ptr);
 

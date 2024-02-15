@@ -1176,11 +1176,13 @@ package body Exp_Ch3 is
          end if;
       end if;
 
-      --  Build an abort block to protect the initialization calls
+      --  Build an abort block to protect the initialization calls, except for
+      --  a finalization collection, which does not need any protection.
 
       if Abort_Allowed
         and then Present (Comp_Init)
         and then Present (Obj_Init)
+        and then not Is_RTE (Typ, RE_Finalization_Collection)
       then
          --  Generate:
          --    Abort_Defer;
@@ -6955,6 +6957,7 @@ package body Exp_Ch3 is
                    Defining_Identifier => Local_Id,
                    Object_Definition   =>
                      New_Occurrence_Of (Ptr_Typ, Loc)));
+               Set_No_Initialization (Last (Decls));
 
                --  Allocate the object, generate:
                --    Local_Id := <Alloc_Expr>;

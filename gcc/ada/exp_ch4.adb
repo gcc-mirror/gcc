@@ -592,11 +592,10 @@ package body Exp_Ch4 is
 
          Preserve_Comes_From_Source (Expression (Temp_Decl), N);
 
-         --  Insert declaration, assignment and build the allocation procedure
+         --  Insert the declaration and generate the in-place assignment
 
          Insert_Action (N, Temp_Decl);
          Convert_Aggr_In_Allocator (N, Exp, Temp);
-         Build_Allocate_Deallocate_Proc (Temp_Decl);
       end Build_Aggregate_In_Place;
 
       --  Local variables
@@ -806,7 +805,6 @@ package body Exp_Ch4 is
                    Expression          => Node);
 
                Insert_Action (N, Temp_Decl);
-               Build_Allocate_Deallocate_Proc (Temp_Decl);
             end if;
 
          --  Ada 2005 (AI-251): Handle allocators whose designated type is an
@@ -859,7 +857,6 @@ package body Exp_Ch4 is
                       Expression          => Node);
 
                   Insert_Action (N, Temp_Decl);
-                  Build_Allocate_Deallocate_Proc (Temp_Decl);
                end if;
 
                --  Generate an additional object containing the address of the
@@ -968,6 +965,7 @@ package body Exp_Ch4 is
 
          Apply_Accessibility_Check_For_Allocator (N, Exp, Temp);
 
+         Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
 
@@ -991,6 +989,7 @@ package body Exp_Ch4 is
       then
          Temp := Make_Temporary (Loc, 'P', N);
          Build_Aggregate_In_Place (Temp, PtrT);
+         Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
 
@@ -4600,10 +4599,15 @@ package body Exp_Ch4 is
          Expand_Allocator_Expression (N);
 
       --  If no initialization is necessary, just create a custom Allocate if
-      --  the context requires it.
+      --  the context requires it; that is the case only for allocators built
+      --  for the special return objects because, in other cases, the custom
+      --  Allocate will be created later during the expansion of the original
+      --  allocator without the No_Initialization flag.
 
       elsif No_Initialization (N) then
-         Build_Allocate_Deallocate_Proc (N);
+         if For_Special_Return_Object (N) then
+            Build_Allocate_Deallocate_Proc (Parent (N));
+         end if;
 
       --  If the allocator is for a type which requires initialization, and
       --  there is no initial value (i.e. operand is a subtype indication
@@ -4662,7 +4666,6 @@ package body Exp_Ch4 is
                    Expression          => Relocate_Node (N));
 
                Insert_Action (N, Temp_Decl, Suppress => All_Checks);
-               Build_Allocate_Deallocate_Proc (Temp_Decl);
 
                --  Generate:
                --    Temp.all := ...
@@ -4682,6 +4685,7 @@ package body Exp_Ch4 is
                Set_Assignment_OK (Name (Stmt));
 
                Insert_Action (N, Stmt, Suppress => All_Checks);
+               Build_Allocate_Deallocate_Proc (Temp_Decl);
                Rewrite (N, New_Occurrence_Of (Temp, Loc));
                Analyze_And_Resolve (N, PtrT);
             end;
@@ -4799,7 +4803,6 @@ package body Exp_Ch4 is
                    Expression          => Relocate_Node (N));
 
                Insert_Action (N, Temp_Decl, Suppress => All_Checks);
-               Build_Allocate_Deallocate_Proc (Temp_Decl);
 
                --  If the designated type is a task type or contains tasks,
                --  create a specific block to activate the created tasks.
@@ -4818,6 +4821,7 @@ package body Exp_Ch4 is
                   Insert_Actions (N, Init_Stmts, Suppress => All_Checks);
                end if;
 
+               Build_Allocate_Deallocate_Proc (Temp_Decl);
                Rewrite (N, New_Occurrence_Of (Temp, Loc));
                Analyze_And_Resolve (N, PtrT);
 

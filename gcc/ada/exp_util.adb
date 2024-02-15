@@ -721,7 +721,10 @@ package body Exp_Util is
    -- Build_Allocate_Deallocate_Proc --
    ------------------------------------
 
-   procedure Build_Allocate_Deallocate_Proc (N : Node_Id) is
+   procedure Build_Allocate_Deallocate_Proc
+     (N    : Node_Id;
+      Mark : Node_Id := Empty)
+   is
       Is_Allocate : constant Boolean := Nkind (N) /= N_Free_Statement;
 
       function Find_Object (E : Node_Id) return Node_Id;
@@ -829,10 +832,16 @@ package body Exp_Util is
       --  Obtain the attributes of the allocation
 
       if Is_Allocate then
-         if Nkind (N) = N_Object_Declaration then
+         if Nkind (N) in N_Assignment_Statement | N_Object_Declaration then
             Expr := Expression (N);
          else
             Expr := N;
+         end if;
+
+         --  Deal with type conversions created for interface types
+
+         if Nkind (Expr) = N_Unchecked_Type_Conversion then
+            Expr := Expression (Expr);
          end if;
 
          --  In certain cases, an allocator with a qualified expression may be
@@ -856,7 +865,7 @@ package body Exp_Util is
            and then Nkind (Parent (Entity (Expr))) = N_Object_Declaration
            and then Nkind (Expression (Parent (Entity (Expr)))) = N_Allocator
          then
-            Build_Allocate_Deallocate_Proc (Parent (Entity (Expr)));
+            Build_Allocate_Deallocate_Proc (Parent (Entity (Expr)), Mark);
             return;
          end if;
 
@@ -970,10 +979,9 @@ package body Exp_Util is
 
          Actuals      : List_Id;
          Alloc_Expr   : Node_Id := Empty;
-         Fin_Addr_Id  : Entity_Id;
-         Fin_Coll_Act : Node_Id;
          Fin_Coll_Id  : Entity_Id;
          Proc_To_Call : Entity_Id;
+         Ptr_Coll_Id  : Entity_Id;
          Subpool      : Node_Id := Empty;
 
       begin
@@ -1015,46 +1023,41 @@ package body Exp_Util is
 
             --  c) Finalization collection
 
-            if Needs_Fin then
-               Fin_Coll_Id  := Finalization_Collection (Ptr_Typ);
-               Fin_Coll_Act := New_Occurrence_Of (Fin_Coll_Id, Loc);
+            Fin_Coll_Id := Make_Temporary (Loc, 'C');
+            Ptr_Coll_Id := Finalization_Collection (Ptr_Typ);
 
-               --  Handle the case where the collection is actually a pointer
-               --  to a collection. This arises in build-in-place functions.
+            --  Create the temporary which represents the collection of
+            --  the expression. Generate:
+            --
+            --    C : Finalization_Collection_Ptr :=
+            --          Finalization_Collection (Ptr_Typ)'Access
+            --
+            --  Handle the case where a collection is actually a pointer
+            --  to a collection. This arises in build-in-place functions.
 
-               if Is_Access_Type (Etype (Fin_Coll_Id)) then
-                  Append_To (Actuals, Fin_Coll_Act);
-               else
-                  Append_To (Actuals,
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => Fin_Coll_Act,
-                      Attribute_Name => Name_Unrestricted_Access));
-               end if;
-            else
-               Append_To (Actuals, Make_Null (Loc));
-            end if;
+            Insert_Action (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Fin_Coll_Id,
+                Object_Definition   =>
+                  New_Occurrence_Of
+                    (RTE (RE_Finalization_Collection_Ptr), Loc),
+                  Expression        =>
+                    (if not Needs_Fin
+                      then Make_Null (Loc)
+                      elsif Is_Access_Type (Etype (Ptr_Coll_Id))
+                      then New_Occurrence_Of (Ptr_Coll_Id, Loc)
+                      else
+                        Make_Attribute_Reference (Loc,
+                          Prefix         =>
+                            New_Occurrence_Of (Ptr_Coll_Id, Loc),
+                          Attribute_Name => Name_Unrestricted_Access))));
 
-            --  d) Finalize_Address
-
-            --  Primitive Finalize_Address is never generated in CodePeer mode
-            --  since it contains an Unchecked_Conversion.
-
-            if Needs_Fin and then not CodePeer_Mode then
-               Fin_Addr_Id := Finalize_Address (Desig_Typ);
-               pragma Assert (Present (Fin_Addr_Id));
-
-               Append_To (Actuals,
-                 Make_Attribute_Reference (Loc,
-                   Prefix         => New_Occurrence_Of (Fin_Addr_Id, Loc),
-                   Attribute_Name => Name_Unrestricted_Access));
-            else
-               Append_To (Actuals, Make_Null (Loc));
-            end if;
+            Append_To (Actuals, New_Occurrence_Of (Fin_Coll_Id, Loc));
          end if;
 
-         --  e) Address
-         --  f) Storage_Size
-         --  g) Alignment
+         --  d) Address
+         --  e) Storage_Size
+         --  f) Alignment
 
          Append_To (Actuals, New_Occurrence_Of (Addr_Id, Loc));
          Append_To (Actuals, New_Occurrence_Of (Size_Id, Loc));
@@ -1094,11 +1097,12 @@ package body Exp_Util is
                   Attribute_Name => Name_Alignment)));
          end if;
 
-         --  h) Is_Controlled
+         --  g) Is_Controlled
 
          if Needs_Fin then
             Is_Controlled : declare
                Flag_Id   : constant Entity_Id := Make_Temporary (Loc, 'F');
+
                Flag_Expr : Node_Id;
                Param     : Node_Id;
                Pref      : Node_Id;
@@ -1206,6 +1210,112 @@ package body Exp_Util is
                     Expression          => Flag_Expr));
 
                Append_To (Actuals, New_Occurrence_Of (Flag_Id, Loc));
+
+               --  Finalize_Address is not generated in CodePeer mode because
+               --  the body contains address arithmetic. So we don't want to
+               --  generate the attach or detach in this case.
+
+               if CodePeer_Mode then
+                  null;
+
+               --  Nothing to generate if the flag is statically false
+
+               elsif Is_Entity_Name (Flag_Expr)
+                 and then Entity (Flag_Expr) = Standard_False
+               then
+                  null;
+
+               --  Generate:
+               --    if F then
+               --       Attach_Object_To_Collection
+               --         (Temp.all'Address,
+               --          Desig_Typ_FD'Access,
+               --          Fin_Coll_Id.all);
+               --    end if;
+
+               elsif Is_Allocate then
+                  declare
+                     Stmt : Node_Id;
+                     Temp : Entity_Id;
+
+                  begin
+                     --  The original allocator must have been rewritten by
+                     --  the caller at this point and a temporary introduced.
+
+                     case Nkind (N) is
+                        when N_Assignment_Statement =>
+                           Temp := New_Copy_Tree (Name (N));
+
+                        when N_Object_Declaration =>
+                           Temp :=
+                             New_Occurrence_Of (Defining_Identifier (N), Loc);
+
+                        when others =>
+                           raise Program_Error;
+                     end case;
+
+                     Stmt :=
+                       Make_If_Statement (Loc,
+                         Condition       =>
+                           New_Occurrence_Of (Flag_Id, Loc),
+                         Then_Statements => New_List (
+                           Make_Procedure_Call_Statement (Loc,
+                             Name =>
+                               New_Occurrence_Of
+                                 (RTE (RE_Attach_Object_To_Collection), Loc),
+                             Parameter_Associations => New_List (
+                               Make_Address_For_Finalize (Loc,
+                                 Make_Explicit_Dereference (Loc, Temp),
+                                 Desig_Typ),
+                               Make_Attribute_Reference (Loc,
+                                 Prefix =>
+                                   New_Occurrence_Of
+                                    (Finalize_Address (Desig_Typ), Loc),
+                                 Attribute_Name => Name_Unrestricted_Access),
+                               Make_Explicit_Dereference (Loc,
+                                 New_Occurrence_Of (Fin_Coll_Id, Loc))))));
+
+                     --  If we have a mark past the initialization, then insert
+                     --  the statement there, otherwise insert after either the
+                     --  assignment or the last initialization statement of the
+                     --  declaration of the temporary.
+
+                     if Present (Mark) then
+                        Insert_Action (Mark, Stmt, Suppress => All_Checks);
+
+                     elsif Nkind (N) = N_Assignment_Statement then
+                        Insert_After_And_Analyze
+                          (N, Stmt, Suppress => All_Checks);
+
+                     else
+                        Insert_After_And_Analyze
+                          (Find_Last_Init (N), Stmt, Suppress => All_Checks);
+                     end if;
+                  end;
+
+               --  Generate:
+               --    if F then
+               --       Detach_Object_From_Collection (Temp.all'Address);
+               --    end if;
+
+               else
+                  Insert_Action (N,
+                    Make_If_Statement (Loc,
+                      Condition       => New_Occurrence_Of (Flag_Id, Loc),
+                      Then_Statements => New_List (
+                        Make_Procedure_Call_Statement (Loc,
+                          Name =>
+                            New_Occurrence_Of
+                              (RTE (RE_Detach_Object_From_Collection), Loc),
+                          Parameter_Associations => New_List (
+                            Make_Address_For_Finalize (Loc,
+                              Make_Explicit_Dereference (Loc,
+                                New_Occurrence_Of
+                                  (Entity (Expression (N)), Loc)),
+                                Desig_Typ))))),
+                    Suppress => All_Checks);
+               end if;
+
             end Is_Controlled;
 
          --  The object is not controlled
@@ -1214,7 +1324,7 @@ package body Exp_Util is
             Append_To (Actuals, New_Occurrence_Of (Standard_False, Loc));
          end if;
 
-         --  i) On_Subpool
+         --  h) On_Subpool
 
          if Is_Allocate then
             Append_To (Actuals,
@@ -6129,6 +6239,332 @@ package body Exp_Util is
          return AI_Tag;
       end if;
    end Find_Interface_Tag;
+
+   --------------------
+   -- Find_Last_Init --
+   --------------------
+
+   function Find_Last_Init (Decl : Node_Id) return Node_Id is
+      Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
+
+      Init_Typ : Entity_Id;
+      --  The initialization type of the related object declaration. Note
+      --  that this is not necessarily the same type as Obj_Typ because of
+      --  possible type derivations.
+
+      Obj_Typ : Entity_Id;
+      --  The (designated) type of the object declaration
+
+      function Find_Last_Init_In_Block (Blk : Node_Id) return Node_Id;
+      --  Find the last initialization call within the statements of block Blk
+
+      function Is_Init_Call (N : Node_Id) return Boolean;
+      --  Determine whether node N denotes one of the initialization procedures
+      --  of types Init_Typ or Typ.
+
+      function Next_Suitable_Statement (Stmt : Node_Id) return Node_Id;
+      --  Obtain the next statement which follows list member Stmt while
+      --  ignoring artifacts related to access-before-elaboration checks.
+
+      -----------------------------
+      -- Find_Last_Init_In_Block --
+      -----------------------------
+
+      function Find_Last_Init_In_Block (Blk : Node_Id) return Node_Id is
+         HSS  : constant Node_Id := Handled_Statement_Sequence (Blk);
+
+         Stmt : Node_Id;
+
+      begin
+         --  Examine the individual statements of the block in reverse to
+         --  locate the last initialization call.
+
+         if Present (HSS) and then Present (Statements (HSS)) then
+            Stmt := Last (Statements (HSS));
+
+            while Present (Stmt) loop
+               --  Peek inside nested blocks in case aborts are allowed
+
+               if Nkind (Stmt) = N_Block_Statement then
+                  return Find_Last_Init_In_Block (Stmt);
+
+               elsif Is_Init_Call (Stmt) then
+                  return Stmt;
+               end if;
+
+               Prev (Stmt);
+            end loop;
+         end if;
+
+         return Empty;
+      end Find_Last_Init_In_Block;
+
+      ------------------
+      -- Is_Init_Call --
+      ------------------
+
+      function Is_Init_Call (N : Node_Id) return Boolean is
+         function Is_Init_Proc_Of
+           (Subp : Entity_Id;
+            Typ  : Entity_Id) return Boolean;
+         --  Determine whether subprogram Subp_Id is a valid init proc of
+         --  type Typ.
+
+         ---------------------
+         -- Is_Init_Proc_Of --
+         ---------------------
+
+         function Is_Init_Proc_Of
+           (Subp : Entity_Id;
+            Typ  : Entity_Id) return Boolean
+         is
+            Deep_Init : Entity_Id := Empty;
+            Prim_Init : Entity_Id := Empty;
+            Type_Init : Entity_Id := Empty;
+
+         begin
+            --  Obtain all possible initialization routines of the
+            --  related type and try to match the subprogram entity
+            --  against one of them.
+
+            --  Deep_Initialize
+
+            Deep_Init := TSS (Typ, TSS_Deep_Initialize);
+
+            --  Primitive Initialize
+
+            if Is_Controlled (Typ) then
+               Prim_Init := Find_Optional_Prim_Op (Typ, Name_Initialize);
+
+               if Present (Prim_Init) then
+                  Prim_Init := Ultimate_Alias (Prim_Init);
+               end if;
+            end if;
+
+            --  Type initialization routine
+
+            if Has_Non_Null_Base_Init_Proc (Typ) then
+               Type_Init := Base_Init_Proc (Typ);
+            end if;
+
+            return
+              (Present (Deep_Init) and then Subp = Deep_Init)
+                or else
+              (Present (Prim_Init) and then Subp = Prim_Init)
+                or else
+              (Present (Type_Init) and then Subp = Type_Init);
+         end Is_Init_Proc_Of;
+
+         --  Local variables
+
+         Call_Id : Entity_Id;
+
+      --  Start of processing for Is_Init_Call
+
+      begin
+         if Nkind (N) = N_Procedure_Call_Statement
+           and then Is_Entity_Name (Name (N))
+         then
+            Call_Id := Entity (Name (N));
+
+            --  Consider both the type of the object declaration and its
+            --  related initialization type.
+
+            return
+              Is_Init_Proc_Of (Call_Id, Init_Typ)
+                or else
+              Is_Init_Proc_Of (Call_Id, Obj_Typ);
+         end if;
+
+         return False;
+      end Is_Init_Call;
+
+      -----------------------------
+      -- Next_Suitable_Statement --
+      -----------------------------
+
+      function Next_Suitable_Statement (Stmt : Node_Id) return Node_Id is
+         Result : Node_Id;
+
+      begin
+         --  Skip call markers and Program_Error raises installed by the
+         --  ABE mechanism.
+
+         Result := Next (Stmt);
+         while Present (Result) loop
+            exit when Nkind (Result) not in
+                        N_Call_Marker | N_Raise_Program_Error;
+
+            Next (Result);
+         end loop;
+
+         return Result;
+      end Next_Suitable_Statement;
+
+      --  Local variables
+
+      Call      : Node_Id;
+      Last_Init : Node_Id;
+      Stmt      : Node_Id;
+      Stmt_2    : Node_Id;
+
+      Deep_Init_Found : Boolean := False;
+      --  A flag set when a call to [Deep_]Initialize has been found
+
+   --  Start of processing for Find_Last_Init
+
+   begin
+      Last_Init := Decl;
+
+      --  Objects that capture controlled function results do not require
+      --  initialization.
+
+      if Nkind (Decl) = N_Object_Declaration
+        and then Nkind (Expression (Decl)) = N_Reference
+      then
+         return Last_Init;
+      end if;
+
+      Obj_Typ := Base_Type (Etype (Obj_Id));
+
+      if Is_Access_Type (Obj_Typ) then
+         Obj_Typ := Available_View (Designated_Type (Obj_Typ));
+      end if;
+
+      --  Handle the initialization type of the object declaration
+
+      if Is_Class_Wide_Type (Obj_Typ)
+        and then Nkind (Decl) = N_Object_Declaration
+        and then Nkind (Expression (Decl)) = N_Allocator
+      then
+         Init_Typ := Base_Type (Etype (Expression (Expression (Decl))));
+      else
+         Init_Typ := Obj_Typ;
+      end if;
+
+      loop
+         if Is_Private_Type (Init_Typ)
+           and then Present (Full_View (Init_Typ))
+         then
+            Init_Typ := Base_Type (Full_View (Init_Typ));
+
+         elsif Is_Concurrent_Type (Init_Typ)
+           and then Present (Corresponding_Record_Type (Init_Typ))
+         then
+            Init_Typ := Corresponding_Record_Type (Init_Typ);
+
+         elsif Is_Untagged_Derivation (Init_Typ) then
+            Init_Typ := Root_Type (Init_Typ);
+
+         else
+            exit;
+         end if;
+      end loop;
+
+      if Present (Freeze_Node (Obj_Id)) then
+         Stmt := First (Actions (Freeze_Node (Obj_Id)));
+      else
+         Stmt := Next_Suitable_Statement (Decl);
+      end if;
+
+      --  For an object with suppressed initialization, we check whether
+      --  there is in fact no initialization expression. If there is not,
+      --  then this is an object declaration that has been turned into a
+      --  different object declaration that calls the build-in-place
+      --  function in a 'Reference attribute, as in "F(...)'Reference".
+      --  We search for that later object declaration, so that the
+      --  attachment will be inserted after the call. Otherwise, if the
+      --  call raises an exception, we will finalize the (uninitialized)
+      --  object, which is wrong.
+
+      if Nkind (Decl) = N_Object_Declaration
+        and then No_Initialization (Decl)
+      then
+         if No (Expression (Last_Init)) then
+            loop
+               Next (Last_Init);
+
+               exit when No (Last_Init);
+               exit when Nkind (Last_Init) = N_Object_Declaration
+                 and then Nkind (Expression (Last_Init)) = N_Reference
+                 and then Nkind (Prefix (Expression (Last_Init))) =
+                            N_Function_Call
+                 and then Is_Expanded_Build_In_Place_Call
+                            (Prefix (Expression (Last_Init)));
+            end loop;
+         end if;
+
+         return Last_Init;
+
+      --  If the initialization is in the declaration, we're done, so
+      --  early return if we have no more statements or they have been
+      --  rewritten, which means that they were in the source code.
+
+      elsif No (Stmt) or else Original_Node (Stmt) /= Stmt then
+         return Last_Init;
+
+      --  In all other cases the initialization calls follow the related
+      --  object. The general structure of object initialization built by
+      --  routine Default_Initialize_Object is as follows:
+
+      --   [begin                                --  aborts allowed
+      --       Abort_Defer;]
+      --       Type_Init_Proc (Obj);
+      --      [begin]                            --  exceptions allowed
+      --          Deep_Initialize (Obj);
+      --      [exception                         --  exceptions allowed
+      --          when others =>
+      --             Deep_Finalize (Obj, Self => False);
+      --             raise;
+      --       end;]
+      --   [at end                               --  aborts allowed
+      --       Abort_Undefer;
+      --    end;]
+
+      --  When aborts are allowed, the initialization calls are housed
+      --  within a block.
+
+      elsif Nkind (Stmt) = N_Block_Statement then
+         Call := Find_Last_Init_In_Block (Stmt);
+
+         if Present (Call) then
+            Last_Init := Call;
+         end if;
+
+      --  Otherwise the initialization calls follow the related object
+
+      else
+         Stmt_2 := Next_Suitable_Statement (Stmt);
+
+         --  Check for an optional call to Deep_Initialize which may
+         --  appear within a block depending on whether the object has
+         --  controlled components.
+
+         if Present (Stmt_2) then
+            if Nkind (Stmt_2) = N_Block_Statement then
+               Call := Find_Last_Init_In_Block (Stmt_2);
+
+               if Present (Call) then
+                  Deep_Init_Found := True;
+                  Last_Init       := Call;
+               end if;
+
+            elsif Is_Init_Call (Stmt_2) then
+               Deep_Init_Found := True;
+               Last_Init       := Stmt_2;
+            end if;
+         end if;
+
+         --  If the object lacks a call to Deep_Initialize, then it must
+         --  have a call to its related type init proc.
+
+         if not Deep_Init_Found and then Is_Init_Call (Stmt) then
+            Last_Init := Stmt;
+         end if;
+      end if;
+
+      return Last_Init;
+   end Find_Last_Init;
 
    ---------------------------
    -- Find_Optional_Prim_Op --

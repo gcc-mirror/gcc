@@ -918,9 +918,11 @@ package Rtsfind is
      RE_Attr_Long_Long_Float,            -- System.Fat_LLF
 
      RE_Add_Offset_To_Address,           -- System.Finalization_Primitives
+     RE_Attach_Object_To_Collection,     -- System.Finalization_Primitives
      RE_Attach_Object_To_Master,         -- System.Finalization_Primitives
      RE_Attach_Object_To_Node,           -- System.Finalization_Primitives
      RE_Chain_Node_To_Master,            -- System.Finalization_Primitives
+     RE_Detach_Object_From_Collection,   -- System.Finalization_Primitives
      RE_Finalization_Collection,         -- System.Finalization_Primitives
      RE_Finalization_Collection_Ptr,     -- System.Finalization_Primitives
      RE_Finalization_Master,             -- System.Finalization_Primitives
@@ -2567,9 +2569,11 @@ package Rtsfind is
      RE_Attr_Long_Long_Float             => System_Fat_LLF,
 
      RE_Add_Offset_To_Address            => System_Finalization_Primitives,
+     RE_Attach_Object_To_Collection      => System_Finalization_Primitives,
      RE_Attach_Object_To_Master          => System_Finalization_Primitives,
      RE_Attach_Object_To_Node            => System_Finalization_Primitives,
      RE_Chain_Node_To_Master             => System_Finalization_Primitives,
+     RE_Detach_Object_From_Collection    => System_Finalization_Primitives,
      RE_Finalization_Collection          => System_Finalization_Primitives,
      RE_Finalization_Collection_Ptr      => System_Finalization_Primitives,
      RE_Finalization_Master              => System_Finalization_Primitives,

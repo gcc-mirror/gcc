@@ -234,17 +234,27 @@ package Exp_Util is
    --  Return the static value of a statically known attribute reference
    --  Pref'Constrained.
 
-   procedure Build_Allocate_Deallocate_Proc (N : Node_Id);
+   procedure Build_Allocate_Deallocate_Proc
+     (N    : Node_Id;
+      Mark : Node_Id := Empty);
    --  Create a custom Allocate/Deallocate to be associated with an allocation
-   --  or deallocation:
+   --  or deallocation for:
    --
    --    1) controlled objects
    --    2) class-wide objects
-   --    3) any kind of object on a subpool
+   --    3) any kind of objects on a subpool
    --
-   --  N must be an allocator or the declaration of a temporary variable which
-   --  represents the expression of the original allocator node, otherwise N
-   --  must be a free statement.
+   --  Moreover, for objects that need finalization, generate the attachment
+   --  actions to resp. detachment actions from the appropriate collection.
+   --
+   --  N must be an allocator or the declaration of a temporary initialized by
+   --  an allocator or an assignment of an allocator to a temporary, otherwise
+   --  N must be a free statement of a temporary.
+   --
+   --  Mark must be set to a mark past the initialization of the allocator if
+   --  it is initialized (the allocator itself is OK) or left empty otherwise.
+   --  It is used to determine the place where objects that need finalization
+   --  can be attached to the appropriate collection.
 
    function Build_Abort_Undefer_Block
      (Loc     : Source_Ptr;
@@ -563,6 +573,9 @@ package Exp_Util is
    --  Empty if it does not.
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
+   function Find_Last_Init (Decl : Node_Id) return Node_Id;
+   --  Find the last initialization call related to object declaration Decl
 
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.

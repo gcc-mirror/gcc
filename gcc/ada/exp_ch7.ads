@@ -189,6 +189,13 @@ package Exp_Ch7 is
    --  one of N_Block_Statement, N_Subprogram_Body, N_Task_Body, N_Entry_Body,
    --  or N_Extended_Return_Statement.
 
+   function Make_Address_For_Finalize
+     (Loc     : Source_Ptr;
+      Obj_Ref : Node_Id;
+      Obj_Typ : Entity_Id) return Node_Id;
+   --  Build the address of an object denoted by Obj_Ref and Obj_Typ for use as
+   --  the actual parameter in a call to a Finalize_Address procedure.
+
    function Make_Adjust_Call
      (Obj_Ref   : Node_Id;
       Typ       : Entity_Id;

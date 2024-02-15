@@ -242,15 +242,15 @@ private
    --  to Allocate_Any.
 
    procedure Allocate_Any_Controlled
-     (Pool               : in out Root_Storage_Pool'Class;
-      Context_Subpool    : Subpool_Handle;
-      Context_Collection : Finalization_Primitives.Finalization_Collection_Ptr;
-      Fin_Address        : Finalization_Primitives.Finalize_Address_Ptr;
-      Addr               : out System.Address;
-      Storage_Size       : System.Storage_Elements.Storage_Count;
-      Alignment          : System.Storage_Elements.Storage_Count;
-      Is_Controlled      : Boolean;
-      On_Subpool         : Boolean);
+     (Pool          : in out Root_Storage_Pool'Class;
+      Named_Subpool : Subpool_Handle;
+      Collection    : in out
+                        Finalization_Primitives.Finalization_Collection_Ptr;
+      Addr          : out System.Address;
+      Storage_Size  : System.Storage_Elements.Storage_Count;
+      Alignment     : System.Storage_Elements.Storage_Count;
+      Is_Controlled : Boolean;
+      On_Subpool    : Boolean);
    --  Compiler interface. This version of Allocate handles all possible cases,
    --  either on a pool or a pool_with_subpools, regardless of the controlled
    --  status of the allocated object. Parameter usage:
@@ -258,16 +258,13 @@ private
    --    * Pool - The pool associated with the access type. Pool can be any
    --    derivation from Root_Storage_Pool, including a pool_with_subpools.
    --
-   --    * Context_Subpool - The subpool handle name of an allocator. If no
-   --    subpool handle is present at the point of allocation, the actual
-   --    would be null.
+   --    * Named_Subpool - The subpool identified by the handle name of an
+   --    allocator. If no handle name is present, the actual would be null.
    --
-   --    * Context_Collection - The finalization collection associated with the
-   --    access type. If the access type's designated type is not controlled,
-   --    the actual would be null.
-   --
-   --    * Fin_Address - TSS routine Finalize_Address of the designated type.
-   --    If the designated type is not controlled, the actual would be null.
+   --    * Collection - The finalization collection associated with the access
+   --    type if its designated type is controlled. If it is not, the actual
+   --    would be null. If the object is allocated on a subpool, the parameter
+   --    is updated to the collection of the subpool.
    --
    --    * Addr - The address of the allocated object.
    --
@@ -276,8 +273,8 @@ private
    --    * Alignment - The alignment of the allocated object.
    --
    --    * Is_Controlled - A flag which determines whether the allocated object
-   --    is controlled. When set to True, the machinery generates additional
-   --    data.
+   --    is controlled. When set to True, the machinery allocates more space
+   --    and returns a displaced address.
    --
    --    * On_Subpool - A flag which determines whether the a subpool handle
    --    name is present at the point of allocation. This is used for error
@@ -303,8 +300,7 @@ private
    --    * Alignment - The alignment of the allocated object.
    --
    --    * Is_Controlled - A flag which determines whether the allocated object
-   --    is controlled. When set to True, the machinery generates additional
-   --    data.
+   --    is controlled. When set to True, the address must be displaced.
 
    procedure Detach (N : not null SP_Node_Ptr);
    --  Unhook a subpool node from an arbitrary subpool list
