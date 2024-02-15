@@ -3,7 +3,7 @@
 // what's the plan? Have a function return something that can be constructed into a vector?
 // or an iterator?
 
-use std::{ffi::CStr, mem};
+use std::ffi::CStr;
 
 trait IntoFFI<T> {
     fn into_ffi(self) -> T;
