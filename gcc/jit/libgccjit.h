@@ -177,6 +177,9 @@ enum gcc_jit_str_option
      messages to stderr.  If NULL, or default, "libgccjit.so" is used.  */
   GCC_JIT_STR_OPTION_PROGNAME,
 
+  /* Special characters to allow in function names.  */
+  GCC_JIT_STR_OPTION_SPECIAL_CHARS_IN_FUNC_NAMES,
+
   GCC_JIT_NUM_STR_OPTIONS
 };
 

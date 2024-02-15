@@ -317,12 +317,17 @@ String Options
    copy of the underlying string, so it is valid to pass in a pointer to
    an on-stack buffer.
 
-   There is just one string option specified this way:
-
    .. macro:: GCC_JIT_STR_OPTION_PROGNAME
 
       The name of the program, for use as a prefix when printing error
       messages to stderr.  If `NULL`, or default, "libgccjit.so" is used.
+
+  .. macro:: GCC_JIT_STR_OPTION_SPECIAL_CHARS_IN_FUNC_NAMES
+
+      Alphabetic ASCII characters and underscores are always valid. Numeric
+      ASCII characters are always valid after the initial character of the
+      string. Use this entrypoint to specify additional ASCII characters that
+      are valid throughout function names (ex.: ".$").
 
 Boolean options
 ***************

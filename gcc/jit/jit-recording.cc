@@ -1424,6 +1424,18 @@ recording::context::set_str_option (enum gcc_jit_str_option opt,
   log_str_option (opt);
 }
 
+const char*
+recording::context::get_str_option (enum gcc_jit_str_option opt)
+{
+  if (opt < 0 || opt >= GCC_JIT_NUM_STR_OPTIONS)
+    {
+      add_error (NULL,
+		 "unrecognized (enum gcc_jit_str_option) value: %i", opt);
+      return NULL;
+    }
+  return m_str_options[opt];
+}
+
 /* Set the given integer option for this context, or add an error if
    it's not recognized.
 
@@ -1765,7 +1777,8 @@ recording::context::dump_to_file (const char *path, bool update_locations)
 
 static const char * const
  str_option_reproducer_strings[GCC_JIT_NUM_STR_OPTIONS] = {
-  "GCC_JIT_STR_OPTION_PROGNAME"
+  "GCC_JIT_STR_OPTION_PROGNAME",
+  "GCC_JIT_STR_OPTION_SPECIAL_CHARS_IN_FUNC_NAMES",
 };
 
 static const char * const
@@ -1782,7 +1795,7 @@ static const char * const
   "GCC_JIT_BOOL_OPTION_DUMP_SUMMARY",
   "GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING",
   "GCC_JIT_BOOL_OPTION_SELFCHECK_GC",
-  "GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES"
+  "GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES",
 };
 
 static const char * const
