@@ -1096,6 +1096,7 @@ enum omp_mask2
   OMP_CLAUSE_DOACROSS, /* OpenMP 5.2 */
   OMP_CLAUSE_ASSUMPTIONS, /* OpenMP 5.1. */
   OMP_CLAUSE_USES_ALLOCATORS, /* OpenMP 5.0  */
+  OMP_CLAUSE_INDIRECT, /* OpenMP 5.1  */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -2798,6 +2799,32 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_INDIRECT)
+	      && (m = gfc_match_dupl_check (!c->indirect, "indirect"))
+		  != MATCH_NO)
+	    {
+	      if (m == MATCH_ERROR)
+		goto error;
+	      gfc_expr *indirect_expr = NULL;
+	      m = gfc_match (" ( %e )", &indirect_expr);
+	      if (m == MATCH_YES)
+		{
+		  if (!gfc_resolve_expr (indirect_expr)
+		      || indirect_expr->ts.type != BT_LOGICAL
+		      || indirect_expr->expr_type != EXPR_CONSTANT)
+		    {
+		      gfc_error ("INDIRECT clause at %C requires a constant "
+				 "logical expression");
+		      gfc_free_expr (indirect_expr);
+		      goto error;
+		    }
+		  c->indirect = indirect_expr->value.logical;
+		  gfc_free_expr (indirect_expr);
+		}
+	      else
+		c->indirect = 1;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_IS_DEVICE_PTR)
 	      && gfc_match_omp_variable_list
 		   ("is_device_ptr (",
@@ -4460,7 +4487,7 @@ cleanup:
   (omp_mask (OMP_CLAUSE_THREADS) | OMP_CLAUSE_SIMD)
 #define OMP_DECLARE_TARGET_CLAUSES \
   (omp_mask (OMP_CLAUSE_ENTER) | OMP_CLAUSE_LINK | OMP_CLAUSE_DEVICE_TYPE \
-   | OMP_CLAUSE_TO)
+   | OMP_CLAUSE_TO | OMP_CLAUSE_INDIRECT)
 #define OMP_ATOMIC_CLAUSES \
   (omp_mask (OMP_CLAUSE_ATOMIC) | OMP_CLAUSE_CAPTURE | OMP_CLAUSE_HINT	\
    | OMP_CLAUSE_MEMORDER | OMP_CLAUSE_COMPARE | OMP_CLAUSE_FAIL 	\
@@ -5513,6 +5540,15 @@ gfc_match_omp_declare_target (void)
 			       n->sym->name, &n->where);
 	      n->sym->attr.omp_device_type = c->device_type;
 	    }
+	  if (c->indirect)
+	    {
+	      if (n->sym->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
+		  && n->sym->attr.omp_device_type != OMP_DEVICE_TYPE_ANY)
+		gfc_error_now ("DEVICE_TYPE must be ANY when used with "
+			       "INDIRECT at %L", &n->where);
+	      n->sym->attr.omp_declare_target_indirect = c->indirect;
+	    }
+
 	  n->sym->mark = 1;
 	}
       else if (n->u.common->omp_declare_target
@@ -5558,15 +5594,23 @@ gfc_match_omp_declare_target (void)
 			       " TARGET directive to a different DEVICE_TYPE",
 			       s->name, &n->where);
 	      s->attr.omp_device_type = c->device_type;
+
+	      if (c->indirect
+		  && s->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
+		  && s->attr.omp_device_type != OMP_DEVICE_TYPE_ANY)
+		gfc_error_now ("DEVICE_TYPE must be ANY when used with "
+			       "INDIRECT at %L", &n->where);
+	      s->attr.omp_declare_target_indirect = c->indirect;
 	    }
 	}
-  if (c->device_type
+  if ((c->device_type || c->indirect)
       && !c->lists[OMP_LIST_ENTER]
       && !c->lists[OMP_LIST_TO]
       && !c->lists[OMP_LIST_LINK])
     gfc_warning_now (OPT_Wopenmp,
 		     "OMP DECLARE TARGET directive at %L with only "
-		     "DEVICE_TYPE clause is ignored", &old_loc);
+		     "DEVICE_TYPE or INDIRECT clauses is ignored",
+		     &old_loc);
 
   gfc_buffer_error (true);
 
