@@ -65,6 +65,7 @@ enum
 #define AVR_HAVE_JMP_CALL (avr_arch->have_jmp_call && ! AVR_SHORT_CALLS)
 #define AVR_HAVE_MUL (avr_arch->have_mul)
 #define AVR_HAVE_MOVW (avr_arch->have_movw_lpmx)
+#define AVR_HAVE_ADIW (!AVR_TINY)
 #define AVR_HAVE_LPM (!AVR_TINY)
 #define AVR_HAVE_LPMX (avr_arch->have_movw_lpmx)
 #define AVR_HAVE_ELPM (avr_arch->have_elpm)

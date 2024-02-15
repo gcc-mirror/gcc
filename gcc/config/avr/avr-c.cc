@@ -307,6 +307,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   if (AVR_HAVE_ELPMX)    cpp_define (pfile, "__AVR_HAVE_ELPMX__");
   if (AVR_HAVE_MOVW)     cpp_define (pfile, "__AVR_HAVE_MOVW__");
   if (AVR_HAVE_LPMX)     cpp_define (pfile, "__AVR_HAVE_LPMX__");
+  if (AVR_HAVE_ADIW)     cpp_define (pfile, "__AVR_HAVE_ADIW__");
 
   if (avr_arch->asm_only)
     cpp_define (pfile, "__AVR_ASM_ONLY__");
