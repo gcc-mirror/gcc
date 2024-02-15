@@ -1,3 +1,16 @@
+2024-02-14  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105847
+	* trans-io.cc (transfer_namelist_element): When building the
+	namelist object name, if the use rename attribute is set, use
+	the local name specified in the use statement.
+
+2024-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.cc (error_print): For u printing of ptrdiff_t,
+	print ptrdiff_t argument converted to unsigned long long and
+	masked with 2ULL * PTRDIFF_MAX + 1.
+
 2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/113904

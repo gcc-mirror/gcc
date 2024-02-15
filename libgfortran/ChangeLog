@@ -1,3 +1,9 @@
+2024-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/99210
+	* io/read.c (read_x): If UTF-8 encoding is enabled, use
+	read_utf8 to move one character over in the read buffer.
+
 2024-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/transfer.c (formatted_transfer_scalar_write): Adjust

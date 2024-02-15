@@ -1,3 +1,11 @@
+2024-02-14  Jakub Jelinek  <jakub@redhat.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113855
+	* config/i386/heap-trampoline.c (trampoline_insns): Add IBT
+	support and pad to the multiple of 4 bytes.  Use movabsq
+	instead of movabs in comments.  Add -mx32 variant.
+
 2024-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* soft-fp/bitint.h (FP_FROM_BITINT): If iprec < 0 and msb is all ones,

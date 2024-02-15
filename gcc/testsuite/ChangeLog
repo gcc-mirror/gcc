@@ -1,3 +1,122 @@
+2024-02-14  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105847
+	* gfortran.dg/pr105847.f90: New test.
+
+2024-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/pr113576.c (dg-additional-options):
+	Use -march=skylake-avx512 for avx512f effective target.
+	* gcc.dg/vect/pr98308.c (dg-additional-options):
+	Use -march=skylake-avx512 for all x86 targets.
+	* gcc.dg/vect/tree-vect.h (check_vect): Handle __AVX512F__
+	and __AVX512VL__.
+
+2024-02-14  Jakub Jelinek  <jakub@redhat.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113855
+	* gcc.dg/heap-trampoline-1.c: New test.
+	* lib/target-supports.exp (check_effective_target_heap_trampoline):
+	New.
+
+2024-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113871
+	* gcc.target/i386/pr113871-1a.c: New test.
+	* gcc.target/i386/pr113871-1b.c: New test.
+	* gcc.target/i386/pr113871-2a.c: New test.
+	* gcc.target/i386/pr113871-2b.c: New test.
+	* gcc.target/i386/pr113871-3a.c: New test.
+	* gcc.target/i386/pr113871-3b.c: New test.
+	* gcc.target/i386/pr113871-4a.c: New test.
+
+2024-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113708
+	* g++.dg/debug/dwarf2/inline-var-1.C: Reference 'a' to ensure it
+	is emitted.
+	* g++.dg/debug/dwarf2/inline-var-3.C: Likewise.
+	* g++.dg/modules/init-7_a.H: New test.
+	* g++.dg/modules/init-7_b.C: New test.
+
+2024-02-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/113861
+	* c-c++-common/gomp/pr63328.c: Remove dg-excess-errors.
+	* gcc.dg/gomp/pr87895-2.c: Likewise.
+
+2024-02-14  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/111054
+	* gcc.c-torture/compile/pr111054.c: New test.
+
+2024-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-novect_gcond.c: New test.
+
+2024-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/99210
+	* gfortran.dg/pr99210.f90: New test.
+
+2024-02-14  Jonathan Yong  <10walls@gmail.com>
+
+	* c-c++-common/analyzer/coreutils-sum-pr108666.c: Use
+	__SIZE_TYPE__ instead of long unsigned int for size_t
+	definition.
+
+2024-02-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113908
+	PR c++/113332
+	* g++.dg/cpp0x/lambda/lambda-nsdmi11.C: New test.
+	* g++.dg/template/non-dependent31.C: New test.
+
+2024-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/104739
+	* lib/gdc-utils.exp (gdc-convert-test) <UNICODE_NAMES>: Require
+	ucn support.
+
+2024-02-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/113899
+	* gcc.dg/vect/vect-simd-clone-10.c: Add `dg-do run`
+	* gcc.dg/vect/vect-simd-clone-12.c: Likewise.
+
+2024-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/format/gcc_diag-1.c (foo): Add tests for z and t modifiers.
+	* gcc.dg/format/gcc_gfc-1.c (foo): Add tests for ll, z and t modifiers.
+
+2024-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99573
+	* g++.dg/modules/enum-12.C: New test.
+
+2024-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/113909
+	* gcc.target/i386/pr113689-1.c: Skip on Solaris.
+	* gcc.target/i386/pr113689-2.c: Likewise.
+	* gcc.target/i386/pr113689-3.c: Likewise.
+
+2024-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gfortran.dg/fmt_en.f90 (dg-output): Don't xfail on
+	?86-*-solaris2.9*.
+	* gfortran.dg/fmt_en_rd.f90: Likewise.
+	* gfortran.dg/fmt_en_rn.f90: Likewise.
+	* gfortran.dg/fmt_en_ru.f90: Likewise.
+	* gfortran.dg/fmt_en_rz.f90: Likewise.
+
+2024-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/113706
+	* c-c++-common/pr103798-2.c (scan-assembler-not): xfail for C++ on
+	Solaris.
+
 2024-02-13  Marek Polacek  <polacek@redhat.com>
 
 	DR 1693

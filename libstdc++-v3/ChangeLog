@@ -1,3 +1,9 @@
+2024-02-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/status_cxx2023.xml: Fix C++ item p2442 to be
+	version 1.
+	* doc/html/manual/status.html: Regenerate.
+
 2024-02-12  Paul Keir  <paul.keir@uws.ac.uk>
 
 	PR libstdc++/113294

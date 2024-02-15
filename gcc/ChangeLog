@@ -1,3 +1,48 @@
+2024-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113871
+	* config/i386/mmx.md (V248FI): New mode iterator.
+	(V24FI_32): DItto.
+	(vec_shl_<V248FI:mode>): New expander.
+	(vec_shl_<V24FI_32:mode>): Ditto.
+	(vec_shr_<V248FI:mode>): Ditto.
+	(vec_shr_<V24FI_32:mode>): Ditto.
+	* config/i386/sse.md (vec_shl_<V_128:mode>): Simplify expander.
+	(vec_shr_<V248FI:mode>): Ditto.
+
+2024-02-14  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/111054
+	* tree-ssa-loop-split.cc (split_loop): Check for profile being present.
+
+2024-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-cfg.cc (replace_loop_annotate): Inspect loop edges for annotations.
+
+2024-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113910
+	* bitmap.cc (bitmap_hash): Mix the full element "hash" to
+	the hashval_t hash.
+
+2024-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* pretty-print.cc (PTRDIFF_MAX): Define if not yet defined.
+	(pp_integer_with_precision): For unsigned ptrdiff_t printing
+	with u, o or x print ptrdiff_t argument converted to
+	unsigned long long and masked with 2ULL * PTRDIFF_MAX + 1.
+
+2024-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113576
+	* expr.cc (do_store_flag): For vector bool compares of vectors
+	with padding zero that.
+	* dojump.cc (do_compare_and_jump): Likewise.
+
+2024-02-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Prerequisites): Update gettext link.
+
 2024-02-13  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/113876

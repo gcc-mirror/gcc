@@ -1,3 +1,21 @@
+2024-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113708
+	* decl.cc (make_rtl_for_nonlocal_decl): Defer inline variables.
+	* decl2.cc (import_export_decl): Support inline variables.
+
+2024-02-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113908
+	PR c++/113332
+	* method.cc (synthesized_method_walk): Use maybe_push_to_top_level.
+
+2024-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99573
+	* decl.cc (start_enum): Reorder check for redeclaring in module.
+	Add missing auto_diagnostic_groups.
+
 2024-02-13  Marek Polacek  <polacek@redhat.com>
 
 	DR 1693

@@ -1,3 +1,10 @@
+2024-02-14  Roger Sayle  <roger@nextmovesoftware.com>
+	    Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR other/113336
+	* Makefile.am: Build tas_1_2_.o on ARCH_ARM_LINUX
+	* Makefile.in: Regenerate.
+
 2024-02-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/59778
