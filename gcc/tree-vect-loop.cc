@@ -2551,7 +2551,8 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       gcc_assert (DR_REF (dr));
-      stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (DR_STMT (dr));
+      stmt_vec_info stmt_info
+	= vect_stmt_to_vectorize (loop_vinfo->lookup_stmt (DR_STMT (dr)));
 
       /* Check if the load is a part of an interleaving chain.  */
       if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
