@@ -2097,6 +2097,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   /// remove_all_extents
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__remove_all_extents)
+  template<typename _Tp>
+    struct remove_all_extents
+    { using type = __remove_all_extents(_Tp); };
+#else
   template<typename _Tp>
     struct remove_all_extents
     { using type = _Tp; };
@@ -2108,6 +2113,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct remove_all_extents<_Tp[]>
     { using type = typename remove_all_extents<_Tp>::type; };
+#endif
 
 #if __cplusplus > 201103L
   /// Alias template for remove_extent
