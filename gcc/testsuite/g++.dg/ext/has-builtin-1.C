@@ -11,6 +11,9 @@
 #if !__has_builtin (__add_rvalue_reference)
 # error "__has_builtin (__add_rvalue_reference) failed"
 #endif
+#if !__has_builtin (__array_rank)
+# error "__has_builtin (__array_rank) failed"
+#endif
 #if !__has_builtin (__builtin_addressof)
 # error "__has_builtin (__builtin_addressof) failed"
 #endif

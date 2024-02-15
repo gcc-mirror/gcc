@@ -3871,6 +3871,9 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_VOLATILE:
       inform (loc, "  %qT is not a volatile type", t1);
       break;
+    case CPTK_RANK:
+      inform (loc, "  %qT cannot yield a rank", t1);
+      break;
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
       inform (loc, "  %qT is not a reference that binds to a temporary "
 	      "object of type %qT (direct-initialization)", t1, t2);
