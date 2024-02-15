@@ -1447,6 +1447,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// rank
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__array_rank)
+  template<typename _Tp>
+    struct rank
+    : public integral_constant<std::size_t, __array_rank(_Tp)> { };
+#else
   template<typename>
     struct rank
     : public integral_constant<std::size_t, 0> { };
@@ -1458,6 +1463,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct rank<_Tp[]>
     : public integral_constant<std::size_t, 1 + rank<_Tp>::value> { };
+#endif
 
   /// extent
   template<typename, unsigned _Uint = 0>
@@ -3531,12 +3537,17 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr size_t alignment_of_v = alignment_of<_Tp>::value;
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__array_rank)
+template <typename _Tp>
+  inline constexpr size_t rank_v = __array_rank(_Tp);
+#else
 template <typename _Tp>
   inline constexpr size_t rank_v = 0;
 template <typename _Tp, size_t _Size>
   inline constexpr size_t rank_v<_Tp[_Size]> = 1 + rank_v<_Tp>;
 template <typename _Tp>
   inline constexpr size_t rank_v<_Tp[]> = 1 + rank_v<_Tp>;
+#endif
 
 template <typename _Tp, unsigned _Idx = 0>
   inline constexpr size_t extent_v = 0;
