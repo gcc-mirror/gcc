@@ -176,6 +176,9 @@
 #if !__has_builtin (__reference_converts_from_temporary)
 # error "__has_builtin (__reference_converts_from_temporary) failed"
 #endif
+#if !__has_builtin (__remove_all_extents)
+# error "__has_builtin (__remove_all_extents) failed"
+#endif
 #if !__has_builtin (__remove_cv)
 # error "__has_builtin (__remove_cv) failed"
 #endif

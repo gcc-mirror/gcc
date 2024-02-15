@@ -12934,6 +12934,9 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
 	}
       return type1;
 
+    case CPTK_REMOVE_ALL_EXTENTS:
+      return strip_array_types (type1);
+
     case CPTK_REMOVE_CV:
       return cv_unqualified (type1);
 
