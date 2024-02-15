@@ -48,6 +48,7 @@
 #define DEFTRAIT_TYPE_DEFAULTED
 #endif
 
+DEFTRAIT_TYPE (ADD_LVALUE_REFERENCE, "__add_lvalue_reference", 1)
 DEFTRAIT_TYPE (ADD_POINTER, "__add_pointer", 1)
 DEFTRAIT_EXPR (HAS_NOTHROW_ASSIGN, "__has_nothrow_assign", 1)
 DEFTRAIT_EXPR (HAS_NOTHROW_CONSTRUCTOR, "__has_nothrow_constructor", 1)

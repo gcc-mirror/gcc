@@ -12924,6 +12924,12 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
 
   switch (kind)
     {
+    case CPTK_ADD_LVALUE_REFERENCE:
+      /* [meta.trans.ref].  */
+      if (referenceable_type_p (type1))
+	return cp_build_reference_type (type1, /*rval=*/false);
+      return type1;
+
     case CPTK_ADD_POINTER:
       /* [meta.trans.ptr].  */
       if (VOID_TYPE_P (type1) || referenceable_type_p (type1))

@@ -2,6 +2,9 @@
 // { dg-do compile }
 // Verify that __has_builtin gives the correct answer for C++ built-ins.
 
+#if !__has_builtin (__add_lvalue_reference)
+# error "__has_builtin (__add_lvalue_reference) failed"
+#endif
 #if !__has_builtin (__add_pointer)
 # error "__has_builtin (__add_pointer) failed"
 #endif
