@@ -267,6 +267,9 @@ class SliceType;
 class InferredType;
 struct MaybeNamedParam;
 class BareFunctionType;
+
+// rust-builtin-ast-nodes.h
+class FormatArgs;
 } // namespace AST
 } // namespace Rust
 

@@ -1396,6 +1396,12 @@ DefaultASTVisitor::visit (AST::BareFunctionType &type)
 }
 
 void
+DefaultASTVisitor::visit (AST::FormatArgs &)
+{
+  // FIXME: Do we have anything to do? any subnodes to visit? Probably, right?
+}
+
+void
 DefaultASTVisitor::visit (AST::VariadicParam &param)
 {
   if (param.has_pattern ())

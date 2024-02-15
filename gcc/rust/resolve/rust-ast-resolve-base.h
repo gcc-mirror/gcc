@@ -20,6 +20,7 @@
 #define RUST_AST_RESOLVE_BASE_H
 
 #include "rust-ast-visitor.h"
+#include "rust-ast.h"
 #include "rust-name-resolver.h"
 #include "rust-diagnostics.h"
 #include "rust-location.h"
@@ -197,6 +198,8 @@ public:
   void visit (AST::FunctionParam &param);
   void visit (AST::VariadicParam &param);
   void visit (AST::SelfParam &param);
+
+  void visit (AST::FormatArgs &fmt);
 
 protected:
   ResolverBase ()

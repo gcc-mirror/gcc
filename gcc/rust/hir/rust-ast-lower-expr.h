@@ -20,6 +20,7 @@
 #define RUST_AST_LOWER_EXPR
 
 #include "rust-ast-lower-base.h"
+#include "rust-ast.h"
 
 namespace Rust {
 namespace HIR {
@@ -120,6 +121,9 @@ public:
   void visit (AST::RangeFromToInclExpr &expr) override;
   void visit (AST::ClosureExprInner &expr) override;
   void visit (AST::ClosureExprInnerTyped &expr) override;
+
+  // Extra visitor for FormatArgs nodes
+  void visit (AST::FormatArgs &fmt) override;
 
 private:
   ASTLoweringExpr ();

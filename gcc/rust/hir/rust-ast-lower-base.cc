@@ -20,6 +20,7 @@
 #include "rust-ast-lower-type.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-extern.h"
+#include "rust-ast.h"
 #include "rust-attribute-values.h"
 #include "rust-item.h"
 #include "rust-system.h"
@@ -521,6 +522,10 @@ ASTLoweringBase::visit (AST::VariadicParam &param)
 
 void
 ASTLoweringBase::visit (AST::SelfParam &param)
+{}
+
+void
+ASTLoweringBase::visit (AST::FormatArgs &fmt)
 {}
 
 HIR::Lifetime

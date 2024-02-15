@@ -16,6 +16,8 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 #include "rust-ast-collector.h"
+#include "rust-ast.h"
+#include "rust-diagnostics.h"
 #include "rust-item.h"
 #include "rust-keyword-values.h"
 
@@ -2803,6 +2805,12 @@ TokenCollector::visit (BareFunctionType &type)
       push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
       visit (type.get_return_type ());
     }
+}
+
+void
+TokenCollector::visit (AST::FormatArgs &fmt)
+{
+  rust_sorry_at (0, "unimplemented format_args!() visitor");
 }
 
 } // namespace AST
