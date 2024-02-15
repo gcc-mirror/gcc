@@ -5973,6 +5973,47 @@ gimple_lower_bitint (void)
 	      {
 	      default:
 		break;
+	      case MULT_EXPR:
+	      case TRUNC_DIV_EXPR:
+	      case TRUNC_MOD_EXPR:
+		if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (s))
+		  {
+		    location_t loc = gimple_location (stmt);
+		    gsi = gsi_for_stmt (stmt);
+		    tree rhs1 = gimple_assign_rhs1 (stmt);
+		    tree rhs2 = gimple_assign_rhs2 (stmt);
+		    /* For multiplication and division with (ab)
+		       lhs and one or both operands force the operands
+		       into new SSA_NAMEs to avoid coalescing failures.  */
+		    if (TREE_CODE (rhs1) == SSA_NAME
+			&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
+		      {
+			first_large_huge = 0;
+			tree t = make_ssa_name (TREE_TYPE (rhs1));
+			g = gimple_build_assign (t, SSA_NAME, rhs1);
+			gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+			gimple_set_location (g, loc);
+			gimple_assign_set_rhs1 (stmt, t);
+			if (rhs1 == rhs2)
+			  {
+			    gimple_assign_set_rhs2 (stmt, t);
+			    rhs2 = t;
+			  }
+			update_stmt (stmt);
+		      }
+		    if (TREE_CODE (rhs2) == SSA_NAME
+			&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs2))
+		      {
+			first_large_huge = 0;
+			tree t = make_ssa_name (TREE_TYPE (rhs2));
+			g = gimple_build_assign (t, SSA_NAME, rhs2);
+			gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+			gimple_set_location (g, loc);
+			gimple_assign_set_rhs2 (stmt, t);
+			update_stmt (stmt);
+		      }
+		  }
+		break;
 	      case LROTATE_EXPR:
 	      case RROTATE_EXPR:
 		{
