@@ -292,6 +292,17 @@ avr_to_int_mode (rtx x)
     : simplify_gen_subreg (int_mode_for_mode (mode).require (), x, mode, 0);
 }
 
+
+/* Return true if hard register REG supports the ADIW and SBIW instructions.  */
+
+bool
+avr_adiw_reg_p (rtx reg)
+{
+  return (AVR_HAVE_ADIW
+	  && test_hard_reg_class (ADDW_REGS, reg));
+}
+
+
 namespace {
 
 static const pass_data avr_pass_data_recompute_notes =
@@ -6272,7 +6283,7 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
       /* Word registers >= R24 can use SBIW/ADIW with 0..63.  */
 
       if (i == 0
-	  && test_hard_reg_class (ADDW_REGS, reg8))
+	  && avr_adiw_reg_p (reg8))
 	{
 	  int val16 = trunc_int_for_mode (INTVAL (xval), HImode);
 
@@ -8186,7 +8197,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
       if (!started
 	  && i % 2 == 0
 	  && i + 2 <= n_bytes
-	  && test_hard_reg_class (ADDW_REGS, reg8))
+	  && avr_adiw_reg_p (reg8))
 	{
 	  rtx xval16 = simplify_gen_subreg (HImode, xval, imode, i);
 	  unsigned int val16 = UINTVAL (xval16) & GET_MODE_MASK (HImode);
@@ -8678,7 +8689,7 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
     }
 
   if (n_bytes == 2
-      && test_hard_reg_class (ADDW_REGS, xreg)
+      && avr_adiw_reg_p (xreg)
       && IN_RANGE (INTVAL (xval), 1, 63))
     {
       // Add 16-bit value in [1..63] to a w register.
@@ -8705,7 +8716,7 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
 
       if (i == 0
 	  && n_bytes >= 2
-	  && test_hard_reg_class (ADDW_REGS, op[0]))
+	  && avr_adiw_reg_p (op[0]))
 	{
 	  op[1] = simplify_gen_subreg (HImode, xval, mode, 0);
 	  if (IN_RANGE (INTVAL (op[1]), 0, 63))
@@ -13312,7 +13323,6 @@ avr_conditional_register_usage (void)
 	  reg_alloc_order[i] = tiny_reg_alloc_order[i];
 	}
 
-      CLEAR_HARD_REG_SET (reg_class_contents[(int) ADDW_REGS]);
       CLEAR_HARD_REG_SET (reg_class_contents[(int) NO_LD_REGS]);
     }
 }
@@ -14043,7 +14053,7 @@ avr_out_cpymem (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
 {
   addr_space_t as = (addr_space_t) INTVAL (op[0]);
   machine_mode loop_mode = GET_MODE (op[1]);
-  bool sbiw_p = test_hard_reg_class (ADDW_REGS, op[1]);
+  bool sbiw_p = avr_adiw_reg_p (op[1]);
   rtx xop[3];
 
   if (plen)

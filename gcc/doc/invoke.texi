@@ -24146,6 +24146,9 @@ If @var{device} is not a device but only a core architecture like
 @item __AVR_XMEGA__
 The device / architecture belongs to the XMEGA family of devices.
 
+@item __AVR_HAVE_ADIW__
+The device has the @code{ADIW} and @code{SBIW} instructions.
+
 @item __AVR_HAVE_ELPM__
 The device has the @code{ELPM} instruction.
 
@@ -24153,13 +24156,13 @@ The device has the @code{ELPM} instruction.
 The device has the @code{ELPM R@var{n},Z} and @code{ELPM
 R@var{n},Z+} instructions.
 
-@item __AVR_HAVE_MOVW__
-The device has the @code{MOVW} instruction to perform 16-bit
-register-register moves.
-
 @item __AVR_HAVE_LPMX__
 The device has the @code{LPM R@var{n},Z} and
 @code{LPM R@var{n},Z+} instructions.
+
+@item __AVR_HAVE_MOVW__
+The device has the @code{MOVW} instruction to perform 16-bit
+register-register moves.
 
 @item __AVR_HAVE_MUL__
 The device has a hardware multiplier. 

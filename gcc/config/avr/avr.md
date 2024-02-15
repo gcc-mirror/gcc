@@ -176,10 +176,11 @@
 ;; lpm  : ISA has no LPMX                lpmx  : ISA has LPMX
 ;; elpm : ISA has ELPM but no ELPMX      elpmx : ISA has ELPMX
 ;; no_xmega: non-XMEGA core              xmega : XMEGA core
-;; no_tiny:  non-TINY core               tiny  : TINY core
+;; no_adiw:  ISA has no ADIW, SBIW       adiw  : ISA has ADIW, SBIW
 
 (define_attr "isa"
-  "mov,movw, rjmp,jmp, ijmp,eijmp, lpm,lpmx, elpm,elpmx, no_xmega,xmega, no_tiny,tiny,
+  "mov,movw, rjmp,jmp, ijmp,eijmp, lpm,lpmx, elpm,elpmx, no_xmega,xmega,
+   no_adiw,adiw,
    standard"
   (const_string "standard"))
 
@@ -231,16 +232,16 @@
               (match_test "AVR_XMEGA"))
          (const_int 1)
 
-         (and (eq_attr "isa" "tiny")
-              (match_test "AVR_TINY"))
-         (const_int 1)
-
          (and (eq_attr "isa" "no_xmega")
               (match_test "!AVR_XMEGA"))
          (const_int 1)
 
-         (and (eq_attr "isa" "no_tiny")
-              (match_test "!AVR_TINY"))
+         (and (eq_attr "isa" "adiw")
+              (match_test "AVR_HAVE_ADIW"))
+         (const_int 1)
+
+         (and (eq_attr "isa" "no_adiw")
+              (match_test "!AVR_HAVE_ADIW"))
          (const_int 1)
 
          ] (const_int 0)))
@@ -1325,7 +1326,9 @@
               (use (match_dup 2))
               (clobber (match_dup 3))
               (clobber (match_dup 4))
-              (clobber (reg:CC REG_CC))])])
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "isa" "adiw,*")])
 
 
 (define_insn "*clrmemhi"
@@ -1340,7 +1343,8 @@
   "@
 	0:\;st %a0+,__zero_reg__\;sbiw %A1,1\;brne 0b
 	0:\;st %a0+,__zero_reg__\;subi %A1,1\;sbci %B1,0\;brne 0b"
-  [(set_attr "length" "3,4")])
+  [(set_attr "length" "3,4")
+   (set_attr "isa" "adiw,*")])
 
 (define_expand "strlenhi"
   [(set (match_dup 4)
@@ -1627,7 +1631,9 @@
   [(parallel [(set (match_dup 0)
                    (plus:ALL2 (match_dup 1)
                               (match_dup 2)))
-              (clobber (reg:CC REG_CC))])])
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "isa" "*,*,adiw,*")])
 
 (define_insn "*add<mode>3"
   [(set (match_operand:ALL2 0 "register_operand"                   "=??r,d,!w    ,d")
@@ -1639,6 +1645,7 @@
     return avr_out_plus (insn, operands);
   }
   [(set_attr "length" "2")
+   (set_attr "isa" "*,*,adiw,*")
    (set_attr "adjust_len" "plus")])
 
 ;; Adding a constant to NO_LD_REGS might have lead to a reload of
@@ -2306,7 +2313,9 @@
                                    (const_int 0))
                             (match_dup 2)))
               (clobber (match_dup 3))
-              (clobber (reg:CC REG_CC))])])
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "isa" "adiw,*")])
 
 (define_insn "*addhi3.lt0"
   [(set (match_operand:HI 0 "register_operand"                   "=w,r")
@@ -2319,7 +2328,8 @@
   "@
 	sbrc %1,7\;adiw %0,1
 	lsl %1\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__"
-  [(set_attr "length" "2,3")])
+  [(set_attr "length" "2,3")
+   (set_attr "isa" "adiw,*")])
 
 (define_insn_and_split "*addpsi3.lt0_split"
   [(set (match_operand:PSI 0 "register_operand"                         "=r")
@@ -6634,6 +6644,7 @@
     return avr_out_compare (insn, operands, NULL);
   }
   [(set_attr "length" "2,2,2,3,4,2,4")
+   (set_attr "isa" "adiw,*,*,*,*,*,*")
    (set_attr "adjust_len" "tsthi,tsthi,*,*,*,compare,compare")])
 
 (define_insn "*cmppsi"
@@ -7607,7 +7618,7 @@
   {
     const char *op;
     int jump_mode;
-    if (test_hard_reg_class (ADDW_REGS, operands[0]))
+    if (avr_adiw_reg_p (operands[0]))
       output_asm_insn ("sbiw %0,1" CR_TAB
                        "sbc %C0,__zero_reg__" CR_TAB
                        "sbc %D0,__zero_reg__", operands);
@@ -7650,7 +7661,7 @@
   {
     const char *op;
     int jump_mode;
-    if (test_hard_reg_class (ADDW_REGS, operands[0]))
+    if (avr_adiw_reg_p (operands[0]))
       output_asm_insn ("sbiw %0,1", operands);
     else
       output_asm_insn ("subi %A0,1" CR_TAB
@@ -7691,7 +7702,7 @@
   {
     const char *op;
     int jump_mode;
-    if (test_hard_reg_class (ADDW_REGS, operands[0]))
+    if (avr_adiw_reg_p (operands[0]))
       output_asm_insn ("sbiw %0,1", operands);
     else
       output_asm_insn ("subi %A0,1" CR_TAB
@@ -8065,7 +8076,7 @@
               (clobber (match_dup 2))
               (clobber (reg:CC REG_CC))])]
   ""
-  [(set_attr "isa" "no_tiny,tiny")])
+  [(set_attr "isa" "adiw,no_adiw")])
 
 (define_insn "*delay_cycles_2"
   [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "n,n")
@@ -8080,7 +8091,7 @@
 	ldi %A2,lo8(%0)\;ldi %B2,hi8(%0)\n1:	sbiw %A2,1\;brne 1b
 	ldi %A2,lo8(%0)\;ldi %B2,hi8(%0)\n1:	subi %A2,1\;sbci %B2,0\;brne 1b"
   [(set_attr "length" "4,5")
-   (set_attr "isa" "no_tiny,tiny")])
+   (set_attr "isa" "adiw,no_adiw")])
 
 (define_insn_and_split "delay_cycles_3"
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
