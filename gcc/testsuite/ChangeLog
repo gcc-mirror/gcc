@@ -1,3 +1,27 @@
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107385
+	* gcc.dg/pr107385.c: Require lra effective target.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107385
+	* gcc.dg/pr107385.c: New test.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113921
+	* gcc.target/i386/pr113921.c: New test.
+
 2024-02-13  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

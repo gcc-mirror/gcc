@@ -1,3 +1,36 @@
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113921
+	* cfgrtl.h (prepend_insn_to_edge): New declaration.
+	* cfgrtl.cc (insert_insn_on_edge): Clarify behavior in function
+	comment.
+	(prepend_insn_to_edge): New function.
+	* cfgexpand.cc (expand_asm_stmt): Use prepend_insn_to_edge instead of
+	insert_insn_on_edge.
+
+2024-02-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-02-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113927
+	* config/avr/avr.h (AVR_HAVE_ADIW): New macro.
+	* config/avr/avr-protos.h (avr_adiw_reg_p): New proto.
+	* config/avr/avr.cc (avr_adiw_reg_p): New function.
+	(avr_conditional_register_usage) [AVR_TINY]: Don't clear ADDW_REGS.
+	Replace test_hard_reg_class (ADDW_REGS, ...) with calls to
+	* config/avr/avr.md: Same.
+	(attr "isa") <tiny, no_tiny>: Remove.
+	<adiw, no_adiw>: Add.
+	(define_insn, define_insn_and_split): When an alternative has
+	constraint "w", then set attribute "isa" to "adiw".
+	* config/avr/avr-c.cc (avr_cpu_cpp_builtins) [AVR_HAVE_ADIW]:
+	Built-in define __AVR_HAVE_ADIW__.
+	* doc/invoke.texi (AVR Options): Document it.
+
 2024-02-12  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
 
 	Backported from master:
