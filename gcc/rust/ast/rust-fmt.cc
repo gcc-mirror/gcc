@@ -23,9 +23,9 @@ namespace Rust {
 namespace Fmt {
 
 Pieces
-Pieces::collect (std::string &&to_parse)
+Pieces::collect (std::string &&to_parse, bool append_newline)
 {
-  auto piece_slice = collect_pieces (to_parse.c_str ());
+  auto piece_slice = collect_pieces (to_parse.c_str (), append_newline);
 
   rust_debug ("[ARTHUR] %p, %lu", (const void *) piece_slice.base_ptr,
 	      piece_slice.len);
@@ -37,7 +37,39 @@ Pieces::collect (std::string &&to_parse)
   return Pieces (piece_slice, std::move (to_parse));
 }
 
-Pieces::~Pieces () { destroy_pieces (slice); }
+Pieces::~Pieces ()
+{
+  std::cerr << "Arthur: destoying pieces. this: " << (void *) this
+	    << " slice: " << slice.base_ptr << std::endl;
+  destroy_pieces (slice);
+}
+
+Pieces::Pieces (const Pieces &other) : to_parse (other.to_parse)
+{
+  slice = clone_pieces (other.slice.base_ptr, other.slice.len, other.slice.cap);
+  std::cerr << "Arthur: copying pieces: other.to_parse: "
+	    << (void *) other.to_parse.c_str ()
+	    << " ours to_parse: " << (void *) to_parse.c_str () << std::endl;
+  // auto pieces = std::vector (slice.base_ptr, slice.base_ptr + slice.len);
+}
+
+Pieces &
+Pieces::operator= (const Pieces &other)
+{
+  slice = clone_pieces (other.slice.base_ptr, other.slice.len, other.slice.cap);
+  to_parse = other.to_parse;
+
+  return *this;
+}
+
+Pieces::Pieces (Pieces &&other)
+  : slice (
+    clone_pieces (other.slice.base_ptr, other.slice.len, other.slice.cap)),
+    to_parse (std::move (other.to_parse))
+{
+  std::cerr << "Arthur: moving pieces. to_parse: " << (void *) to_parse.c_str ()
+	    << " base_ptr/slice: " << (void *) slice.base_ptr << std::endl;
+}
 
 } // namespace Fmt
 } // namespace Rust
