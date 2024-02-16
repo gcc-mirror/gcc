@@ -5448,6 +5448,8 @@ char *
 gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 			 int unspec, int shift)
 {
+  gcc_checking_assert (!TARGET_RDNA2_PLUS);
+
   static char buf[128];
   const char *dpp;
   const char *vcc_in = "";
@@ -5509,6 +5511,8 @@ gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 rtx
 gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 {
+  gcc_checking_assert (!TARGET_RDNA2_PLUS);
+
   machine_mode orig_mode = mode;
   machine_mode scalar_mode = GET_MODE_INNER (mode);
   int vf = GET_MODE_NUNITS (mode);

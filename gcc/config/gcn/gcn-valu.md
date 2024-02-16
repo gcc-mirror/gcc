@@ -4261,7 +4261,7 @@
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
    (fminmaxop:V_FP
      (match_operand:V_FP 1 "register_operand"))]
-  ""
+  "!TARGET_RDNA2_PLUS"
   {
     /* fmin/fmax are identical to smin/smax.  */
     emit_insn (gen_reduc_<expander>_scal_<mode> (operands[0], operands[1]));
