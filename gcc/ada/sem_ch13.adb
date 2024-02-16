@@ -8754,7 +8754,7 @@ package body Sem_Ch13 is
          Arg : Node_Id;
       begin
          if No (UAD_Pragma) then
-            Error_Msg_N ("No definition for user-defined aspect", Id);
+            Error_Msg_N ("no definition for user-defined aspect", Id);
             return;
          end if;
 
