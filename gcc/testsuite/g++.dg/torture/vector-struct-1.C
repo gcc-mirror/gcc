@@ -1,3 +1,4 @@
+/* { dg-options "-Wstrict-aliasing" } */
 /* PR c++/97990 */
 /* This used to crash with lto and strict aliasing enabled as the
    vector type variant still had TYPE_ALIAS_SET set on it. */
