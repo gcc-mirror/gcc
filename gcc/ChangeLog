@@ -1,3 +1,16 @@
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113921
+	* cfgrtl.h (prepend_insn_to_edge): New declaration.
+	* cfgrtl.c (insert_insn_on_edge): Clarify behavior in function
+	comment.
+	(prepend_insn_to_edge): New function.
+	* cfgexpand.c (expand_asm_stmt): Use prepend_insn_to_edge instead of
+	insert_insn_on_edge.
+
 2024-02-09  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
