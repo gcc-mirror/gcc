@@ -3009,6 +3009,9 @@ Target supports @option{-mpe-aligned-commons}.
 @item pie
 Target supports @option{-pie}, @option{-fpie} and @option{-fPIE}.
 
+@item linker_plugin
+Target supports the linker plugin.
+
 @item rdynamic
 Target supports @option{-rdynamic}.
 
@@ -3336,6 +3339,10 @@ Skip the test if the host is remote, rather than the same as the build
 system.  Some tests are incompatible with DejaGnu's handling of remote
 hosts, which involves copying the source file to the host and compiling
 it with a relative path and "@code{-o a.out}".
+
+@item dg-require-linker-plugin ""
+Skip the test is the target does not support the linker plugin.
+This is equivalent to @code{dg-require-effective-target linker_plugin}.
 
 @item dg-require-mkfifo ""
 Skip the test if the target does not support @code{mkfifo}.

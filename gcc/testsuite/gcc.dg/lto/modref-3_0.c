@@ -1,5 +1,6 @@
 /* { dg-lto-do run } */
 /* { dg-lto-options { {-O2 -flto-partition=max -fdump-ipa-modref -fno-ipa-sra -fno-ipa-cp -flto} } } */
+/* { dg-require-effective-target linker_plugin } */
 extern void copy (int *a, int *b);
 extern void barrier ();
 extern int *ptr;
