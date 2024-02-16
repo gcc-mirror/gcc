@@ -960,12 +960,18 @@ package body Exp_Ch4 is
             end if;
          end if;
 
+         --  This needs to done before generating the accessibility check below
+         --  because the check comes with cleanup code that invokes Free on the
+         --  temporary and, therefore, expects the object to be attached to its
+         --  finalization collection if it is controlled.
+
+         Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
+
          --  Note: the accessibility check must be inserted after the call to
          --  [Deep_]Adjust to ensure proper completion of the assignment.
 
          Apply_Accessibility_Check_For_Allocator (N, Exp, Temp);
 
-         Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
 
