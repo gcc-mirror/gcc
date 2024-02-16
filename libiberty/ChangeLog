@@ -1,3 +1,9 @@
+2024-02-15  Richard Biener  <rguenther@suse.de>
+
+	* hashtab.c (iterative_hash): Remove TBAA violating handling
+	of aligned little-endian case in favor of just keeping the
+	aligned case special-cased.  Use | for composing a larger word.
+
 2024-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* vprintf-support.c (libiberty_vprintf_buffer_size): Handle

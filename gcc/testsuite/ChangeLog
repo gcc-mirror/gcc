@@ -1,3 +1,66 @@
+2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* gfortran.dg/gomp/declare-target-4.f90 (f1): Update expected warning.
+	* gfortran.dg/gomp/declare-target-indirect-1.f90: New.
+	* gfortran.dg/gomp/declare-target-indirect-2.f90: New.
+
+2024-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111266
+	* c-c++-common/analyzer/out-of-bounds-pr111266.c: New test.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107385
+	* gcc.dg/pr107385.c: Require lra effective target.
+
+2024-02-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.target/aarch64/vect_ctz_1.c (TEST): Use g form of the builtin and pass 32
+	as the value expected at 0.
+
+2024-02-15  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/113278
+	* c-c++-common/analyzer/fileno-1.c: Define _POSIX_SOURCE.
+	* c-c++-common/analyzer/flex-with-call-summaries.c: Same.
+	* c-c++-common/analyzer/flex-without-call-summaries.c: Same.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107385
+	* gcc.dg/pr107385.c: New test.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113921
+	* gcc.target/i386/pr113921.c: New test.
+
+2024-02-15  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* gcc.target/arm/rev16_2.c: XFAIL when compiled with Thumb1.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* rust/compile/issue-1773.rs.bak: Rename to ...
+	* rust/compile/issue-1773.rs: ... this.  Add dg-skip-if directive.
+
+2024-02-15  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/guality/ipa-sra-1.c (get_val1): Move up in the file.
+	(get_val2): Likewise.
+	(bar): Do not return a constant.  Extend xfail exception for all
+	targets.
+
+2024-02-15  Andreas Schwab  <schwab@suse.de>
+
+	* gnat.dg/div_zero.adb: Skip on RISC-V.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113567
+	* gcc.dg/bitint-90.c: New test.
+
 2024-02-14  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/105847

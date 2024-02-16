@@ -1,3 +1,75 @@
+2024-02-15  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md (zero_extendqidi2): Correct asm template to
+	use ldxb instead of ldxh.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113921
+	* cfgrtl.h (prepend_insn_to_edge): New declaration.
+	* cfgrtl.cc (insert_insn_on_edge): Clarify behavior in function
+	comment.
+	(prepend_insn_to_edge): New function.
+	* cfgexpand.cc (expand_asm_stmt): Use prepend_insn_to_edge instead of
+	insert_insn_on_edge.
+
+2024-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111156
+	* tree-vect-loop.cc (vect_dissolve_slp_only_groups): Look
+	at the pattern stmt if any.
+
+2024-02-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113927
+	* config/avr/avr.h (AVR_HAVE_ADIW): New macro.
+	* config/avr/avr-protos.h (avr_adiw_reg_p): New proto.
+	* config/avr/avr.cc (avr_adiw_reg_p): New function.
+	(avr_conditional_register_usage) [AVR_TINY]: Don't clear ADDW_REGS.
+	Replace test_hard_reg_class (ADDW_REGS, ...) with calls to
+	* config/avr/avr.md: Same.
+	(attr "isa") <tiny, no_tiny>: Remove.
+	<adiw, no_adiw>: Add.
+	(define_insn, define_insn_and_split): When an alternative has
+	constraint "w", then set attribute "isa" to "adiw".
+	* config/avr/avr-c.cc (avr_cpu_cpp_builtins) [AVR_HAVE_ADIW]:
+	Built-in define __AVR_HAVE_ADIW__.
+	* doc/invoke.texi (AVR Options): Document it.
+
+2024-02-15  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md
+	(vec_extract<V_MOV:mode><V_MOV_ALT:mode>): Add conditions for RDNA.
+	* config/gcn/gcn.cc (gcn_vectorize_vec_perm_const): Check permutation
+	details are supported on RDNA devices.
+
+2024-02-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/113508
+	* doc/md.texi (sdot_prod@var{m}, udot_prod@var{m},
+	usdot_prod@var{m}, ssad@var{m}, usad@var{m}, widen_usum@var{m}3,
+	smulhs@var{m}3, umulhs@var{m}3, smulhrs@var{m}3, umulhrs@var{m}3):
+	Add sentence about what the mode m is.
+
+2024-02-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* doc/md.texi (widen_ssum, widen_usum, smulhs, umulhs,
+	smulhrs, umulhrs, sdiv_pow2): Move the 3 outside of the
+	var.
+
+2024-02-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-tail-merge.cc (same_succ_hash): Skip debug
+	stmts.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113567
+	* gimple-lower-bitint.cc (gimple_lower_bitint): For large/huge
+	_BitInt multiplication, division or modulo with
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI lhs and at least one of rhs1 and rhs2
+	force the affected inputs into a new SSA_NAME.
+
 2024-02-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/113871

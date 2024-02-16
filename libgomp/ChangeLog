@@ -1,3 +1,14 @@
+2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* libgomp.texi (OpenMP 5.1): Mark indirect call support as fully
+	implemented.
+
+2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* testsuite/libgomp.fortran/declare-target-indirect-1.f90: New.
+	* testsuite/libgomp.fortran/declare-target-indirect-2.f90: New.
+	* testsuite/libgomp.fortran/declare-target-indirect-3.f90: New.
+
 2024-02-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/113448

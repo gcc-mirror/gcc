@@ -1,3 +1,22 @@
+2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* dump-parse-tree.cc (show_attr): Handle omp_declare_target_indirect
+	attribute.
+	* f95-lang.cc (gfc_gnu_attributes): Add entry for 'omp declare
+	target indirect'.
+	* gfortran.h (symbol_attribute): Add omp_declare_target_indirect
+	field.
+	(struct gfc_omp_clauses): Add indirect field.
+	* openmp.cc (omp_mask2): Add OMP_CLAUSE_INDIRECT.
+	(gfc_match_omp_clauses): Match indirect clause.
+	(OMP_DECLARE_TARGET_CLAUSES): Add OMP_CLAUSE_INDIRECT.
+	(gfc_match_omp_declare_target): Check omp_device_type and apply
+	omp_declare_target_indirect attribute to symbol if indirect clause
+	active.  Show warning if there are only device_type and/or indirect
+	clauses on the directive.
+	* trans-decl.cc (add_attributes_to_decl): Add 'omp declare target
+	indirect' attribute if symbol has indirect attribute set.
+
 2024-02-14  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/105847

@@ -1,3 +1,46 @@
+2024-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113806
+	* include/std/bitset (bitset::operator>>=): Remove redundant
+	call to _M_do_sanitize.
+
+2024-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113807
+	* include/std/bitset (bitset::set()): Use memset instead of a
+	loop over the individual words.
+
+2024-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113811
+	* include/bits/stl_algo.h (__rotate): Use unsigned values for
+	division.
+
+2024-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99117
+	* include/std/valarray (valarray::operator=(const _Expr&)):
+	Use loop to copy instead of __valarray_copy with _Array.
+	* testsuite/26_numerics/valarray/99117.cc: New test.
+
+2024-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdata.zi: Import new file from 2024a release.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds)
+	Update expiry date for leap seconds list.
+
+2024-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87744
+	* include/bits/random.h [!__SIZEOF_INT128__] (_Select_uint_least_t):
+	Define specialization for 64-bit generators with
+	non-power-of-two modulus and large constants.
+	(__mod): Use if constexpr unconditionally.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+	* testsuite/26_numerics/random/linear_congruential_engine/87744.cc:
+	New test.
+
 2024-02-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/status_cxx2023.xml: Fix C++ item p2442 to be
