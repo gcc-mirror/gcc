@@ -97,8 +97,7 @@ program p
   call bindc_optional (d, e)
   call not_bindc_optional2 (d, e)
   call bindc_optional2 (d, e)
-  ! following test disabled due to pr113911
-! call not_bindc_optional_deferred (d, e)
+  call not_bindc_optional_deferred (d, e)
   deallocate (d, e)
   call non_bindc_optional_missing ()
   call bindc_optional_missing ()
