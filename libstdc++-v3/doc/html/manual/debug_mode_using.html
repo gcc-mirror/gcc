@@ -10,11 +10,10 @@
   78 characters.  The environment variable
   <code class="code">GLIBCXX_DEBUG_MESSAGE_LENGTH</code> can be used to request a
   different length.</p><p>Note that libstdc++ is able to produce backtraces on error.
-  It requires that you configure libstdc++ build with
-  <code class="option">--enable-libstdcxx-backtrace=yes</code>.
-  Use <code class="code">-D_GLIBCXX_DEBUG_BACKTRACE</code> to activate it.
-  You'll then have to link with libstdc++_libbacktrace static library
-  (<code class="option">-lstdc++_libbacktrace</code>) to build your application.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.using.specific"></a>Using a Specific Debug Container</h3></div></div></div><p>When it is not feasible to recompile your entire application, or
+  To enable these, compile with <code class="code">-D_GLIBCXX_DEBUG_BACKTRACE</code>
+  and then link with <code class="option">-lstdc++exp</code>.
+  These backtraces are not supported on all platforms.
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.using.specific"></a>Using a Specific Debug Container</h3></div></div></div><p>When it is not feasible to recompile your entire application, or
   only specific containers need checking, debugging containers are
   available as GNU extensions. These debugging containers are
   functionally equivalent to the standard drop-in containers used in
