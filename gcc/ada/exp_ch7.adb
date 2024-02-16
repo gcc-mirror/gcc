@@ -100,6 +100,35 @@ package body Exp_Ch7 is
    --  have to be detached from the finalization chain, in case (2) they must
    --  not and in case (1) this is optional as we are exiting the scope anyway.
 
+   --  There are two kinds of finalization chain to which objects are attached,
+   --  depending on the way they are created. For objects (statically) declared
+   --  in a scope, the finalization chain is that of the master of the scope,
+   --  which is embodied in a Finalization_Master object. As per RM 7.6.1(11/3)
+   --  the finalization of the master (on scope exit) performs the finalization
+   --  of objects attached to its chain in the reverse order of their creation.
+
+   --  For dynamically allocated objects, the finalization chain is that of the
+   --  finalization collection of the access type through which the objects are
+   --  allocated, which is embodied in a Finalization_Collection object. As per
+   --  RM 7.6.1(11.1/3), the finalization of the collection performs the
+   --  finalization of objects attached to its chain in an arbitrary order.
+
+   --  A Finalization_Collection object is implemented as a controlled object
+   --  and its finalization is therefore driven by the finalization master of
+   --  the scope where it is declared. As per RM 7.6.1(11.2/3), for a named
+   --  access type, the Finalization_Collection object is declared in the list
+   --  of actions of its freeze node.
+
+   --  ??? For an anonymous access type, the implementation deviates from the
+   --  RM 7.6.1 clause as follows: all the anonymous access types with the same
+   --  designated type that are (implicitly) declared in a library unit share a
+   --  single Finalization_Collection object declared in the outermost scope of
+   --  the library unit, except if the designated type is declared in a dynamic
+   --  scope nested in the unit; in this case no Finalization_Collection object
+   --  is created. As a result, in the first case, objects allocated through
+   --  the anonymous access types are finalized when the library unit goes out
+   --  of scope, while in the second case, they are not finalized at all.
+
    --  Here is a simple example of the expansion of a controlled block:
 
    --    declare
