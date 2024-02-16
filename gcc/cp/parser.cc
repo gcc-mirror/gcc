@@ -27678,10 +27678,16 @@ cp_parser_class_head (cp_parser* parser,
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
     {
       if (type)
-	pushclass (type);
+	{
+	  pushclass (type);
+	  start_lambda_scope (TYPE_NAME (type));
+	}
       bases = cp_parser_base_clause (parser);
       if (type)
-	popclass ();
+	{
+	  finish_lambda_scope ();
+	  popclass ();
+	}
     }
   else
     bases = NULL_TREE;
