@@ -214,12 +214,18 @@ private
    --  Collection node type structure
 
    type Collection_Node is record
+      Enclosing_Collection : Finalization_Collection_Ptr := null;
+      --  A pointer to the collection to which the node is attached
+
       Finalize_Address : Finalize_Address_Ptr := null;
+      --  A pointer to the Finalize_Address procedure of the object
 
       Prev : Collection_Node_Ptr := null;
       Next : Collection_Node_Ptr := null;
-      --  Finalization_Collections are managed as a circular doubly-linked list
+      --  Collection nodes are managed as a circular doubly-linked list
    end record;
+
+   type Lock_Type is mod 2**8 with Size => 8;
 
    --  Finalization collection type structure
 
@@ -233,6 +239,10 @@ private
       --  A flag used to detect allocations which occur during the finalization
       --  of a collection. The allocations must raise Program_Error. This may
       --  arise in a multitask environment.
+
+      Lock : Lock_Type;
+      pragma Atomic (Lock);
+      --  A spinlock to synchronize concurrent accesses to the collection
    end record;
 
    --  This operation is very simple and thus can be performed in line
