@@ -222,7 +222,7 @@ struct Piece
 
   struct NextArgument_Body
   {
-    const Argument *_0;
+    Argument _0;
   };
 
   Tag tag;
@@ -243,7 +243,10 @@ struct PieceSlice
 extern "C" {
 
 PieceSlice
-collect_pieces (const char *input);
+collect_pieces (const char *input, bool append_newline);
+
+PieceSlice
+clone_pieces (const Piece *base_ptr, size_t len, size_t cap);
 
 void destroy_pieces (PieceSlice);
 
@@ -251,8 +254,20 @@ void destroy_pieces (PieceSlice);
 
 struct Pieces
 {
-  static Pieces collect (std::string &&to_parse);
+  static Pieces collect (std::string &&to_parse, bool append_newline);
   ~Pieces ();
+
+  Pieces (const Pieces &other);
+  Pieces &operator= (const Pieces &other);
+
+  Pieces (Pieces &&other);
+
+  // {
+  //   slice = clone_pieces (&other.slice);
+  //   to_parse = other.to_parse;
+
+  //   return *this;
+  // }
 
 private:
   Pieces (PieceSlice slice, std::string &&to_parse)

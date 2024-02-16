@@ -59,17 +59,10 @@ namespace AST {
 //                      └─┘  └─┘
 //                      positions (could be names, numbers, empty, or `*`)
 
+// FIXME: Merge with the class below this one?
 class FormatArgumentKind
 {
 public:
-  Identifier &get_ident ()
-  {
-    rust_assert (kind == Kind::Captured || kind == Kind::Named);
-
-    return ident.value ();
-  }
-
-private:
   enum class Kind
   {
     Normal,
@@ -77,17 +70,97 @@ private:
     Captured,
   } kind;
 
+  Identifier &get_ident ()
+  {
+    rust_assert (kind == Kind::Captured || kind == Kind::Named);
+
+    return ident.value ();
+  }
+
+  FormatArgumentKind (Kind kind, tl::optional<Identifier> ident)
+    : kind (kind), ident (ident)
+  {}
+
+  FormatArgumentKind (const FormatArgumentKind &other)
+  {
+    kind = other.kind;
+    ident = other.ident;
+  }
+
+  FormatArgumentKind operator= (const FormatArgumentKind &other)
+  {
+    kind = other.kind;
+    ident = other.ident;
+
+    return *this;
+  }
+
+private:
   tl::optional<Identifier> ident;
 };
 
 class FormatArgument
 {
+public:
+  static FormatArgument normal (std::unique_ptr<Expr> expr)
+  {
+    return FormatArgument (FormatArgumentKind::Kind::Normal, tl::nullopt,
+			   std::move (expr));
+  }
+
+  static FormatArgument named (Identifier ident, std::unique_ptr<Expr> expr)
+  {
+    return FormatArgument (FormatArgumentKind::Kind::Named, ident,
+			   std::move (expr));
+  }
+
+  static FormatArgument captured (Identifier ident, std::unique_ptr<Expr> expr)
+  {
+    return FormatArgument (FormatArgumentKind::Kind::Captured, ident,
+			   std::move (expr));
+  }
+
+  FormatArgument (const FormatArgument &other)
+    : kind (other.kind), expr (other.expr->clone_expr ())
+  {}
+
+  FormatArgument operator= (const FormatArgument &other)
+  {
+    kind = other.kind;
+    expr = other.expr->clone_expr ();
+
+    return *this;
+  }
+
+private:
+  FormatArgument (FormatArgumentKind::Kind kind, tl::optional<Identifier> ident,
+		  std::unique_ptr<Expr> expr)
+    : kind (FormatArgumentKind (kind, ident)), expr (std::move (expr))
+  {}
+
   FormatArgumentKind kind;
   std::unique_ptr<Expr> expr;
 };
 
 class FormatArguments
 {
+public:
+  FormatArguments () {}
+  FormatArguments (FormatArguments &&) = default;
+  FormatArguments (const FormatArguments &other)
+  {
+    args = std::vector<FormatArgument> ();
+    args.reserve (other.args.size ());
+
+    for (const auto &arg : other.args)
+      args.emplace_back (arg);
+  };
+
+  FormatArguments &operator= (const FormatArguments &other) = default;
+
+  void push (FormatArgument &&elt) { args.emplace_back (std::move (elt)); }
+
+private:
   std::vector<FormatArgument> args;
 };
 
@@ -100,7 +173,7 @@ class FormatArguments
 // format_args!("result: {}", some_result))` -> `format_args!("heyo result: {}",
 // some_result)`
 // FIXME: Move to rust-macro.h
-class FormatArgs : public Visitable
+class FormatArgs : public Expr
 {
 public:
   enum class Newline
@@ -109,18 +182,56 @@ public:
     No
   };
 
-  FormatArgs (location_t loc, Fmt::PieceSlice template_str,
-	      FormatArguments arguments)
+  FormatArgs (location_t loc, Fmt::Pieces &&template_str,
+	      FormatArguments &&arguments)
     : loc (loc), template_str (std::move (template_str)),
       arguments (std::move (arguments))
   {}
 
-  void accept_vis (AST::ASTVisitor &vis);
+  FormatArgs (FormatArgs &&other)
+    : loc (std::move (other.loc)),
+      template_str (std::move (other.template_str)),
+      arguments (std::move (other.arguments))
+  {
+    std::cerr << "[ARTHUR] moving FormatArgs" << std::endl;
+  }
+
+  // FIXME: This might be invalid - we are reusing the same memory allocated
+  // on the Rust side for `other`. This is probably valid as long as we only
+  // ever read that memory and never write to it.
+  FormatArgs (const FormatArgs &other)
+    : loc (other.loc), template_str (other.template_str),
+      arguments (other.arguments)
+  {
+    std::cerr << "[ARTHUR] copying FormatArgs" << std::endl;
+  }
+
+  // FormatArgs &operator= (const FormatArgs &other) = default;
+  //   : template_str (other.template_str), arguments (other.arguments)
+  // {}
+
+  void accept_vis (AST::ASTVisitor &vis) override;
 
 private:
   location_t loc;
-  Fmt::PieceSlice template_str;
+  // FIXME: This probably needs to be a separate type - it is one in rustc's
+  // expansion of format_args!(). There is extra handling associated with it.
+  // we can maybe do that in rust-fmt.cc? in collect_pieces()? like do the
+  // transformation into something we can handle better
+  Fmt::Pieces template_str;
   FormatArguments arguments;
+
+  bool marked_for_strip = false;
+
+protected:
+  virtual std::string as_string () const override;
+  virtual location_t get_locus () const override;
+  virtual bool is_expr_without_block () const override;
+  virtual void mark_for_strip () override;
+  virtual bool is_marked_for_strip () const override;
+  virtual std::vector<Attribute> &get_outer_attrs () override;
+  virtual void set_outer_attrs (std::vector<Attribute>) override;
+  virtual Expr *clone_expr_impl () const override;
 };
 
 } // namespace AST

@@ -22,6 +22,7 @@
 #include "rust-ast-lower-extern.h"
 #include "rust-ast.h"
 #include "rust-attribute-values.h"
+#include "rust-diagnostics.h"
 #include "rust-item.h"
 #include "rust-system.h"
 

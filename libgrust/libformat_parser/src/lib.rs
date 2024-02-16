@@ -77,20 +77,15 @@ mod ffi {
 
     /// A piece is a portion of the format string which represents the next part
     /// to emit. These are emitted as a stream by the `Parser` class.
-    #[derive(Clone, Debug, PartialEq)]
+    #[derive(Debug, Clone, PartialEq)]
     #[repr(C)]
     pub enum Piece<'a> {
         /// A literal string which should directly be emitted
         String(&'a str),
         /// This describes that formatting should process the next argument (as
         /// specified inside) for emission.
-        NextArgument(*const Argument<'a>),
-    }
-
-    impl<'a> Drop for Piece<'a> {
-        fn drop(&mut self) {
-            println!("dropping Piece: {:?}", self)
-        }
+        // do we need a pointer here? we're doing big cloning anyway
+        NextArgument(Argument<'a>),
     }
 
     /// Representation of an argument specification.
@@ -216,7 +211,7 @@ mod ffi {
                     let ptr = Box::leak(x);
                     let dst = Into::<Argument>::into(*ptr);
 
-                    Piece::NextArgument(&dst as *const Argument)
+                    Piece::NextArgument(dst)
                 }
             }
         }
@@ -321,8 +316,13 @@ mod ffi {
 pub mod rust {
     use generic_format_parser::{ParseMode, Parser, Piece};
 
-    pub fn collect_pieces(input: &str) -> Vec<Piece<'_>> {
-        let parser = Parser::new(input, None, None, true, ParseMode::Format);
+    pub fn collect_pieces(
+        input: &str,
+        style: Option<usize>,
+        snippet: Option<String>,
+        append_newline: bool,
+    ) -> Vec<Piece<'_>> {
+        let parser = Parser::new(input, style, snippet, append_newline, ParseMode::Format);
 
         parser.into_iter().collect()
     }
@@ -337,16 +337,18 @@ pub struct PieceSlice {
 }
 
 #[no_mangle]
-pub extern "C" fn collect_pieces(input: *const libc::c_char) -> PieceSlice {
+pub extern "C" fn collect_pieces(input: *const libc::c_char, append_newline: bool) -> PieceSlice {
+    dbg!(input);
+
     // FIXME: Add comment
     let str = unsafe { CStr::from_ptr(input) };
-    dbg!(str);
 
     // FIXME: No unwrap
-    let pieces: Vec<ffi::Piece<'_>> = rust::collect_pieces(str.to_str().unwrap())
-        .into_iter()
-        .map(Into::into)
-        .collect();
+    let pieces: Vec<ffi::Piece<'_>> =
+        rust::collect_pieces(str.to_str().unwrap(), None, None, append_newline)
+            .into_iter()
+            .map(Into::into)
+            .collect();
 
     println!("[ARTHUR]: debug: {:?}, {:?}", pieces.as_ptr(), pieces.len());
 
@@ -358,6 +360,29 @@ pub extern "C" fn collect_pieces(input: *const libc::c_char) -> PieceSlice {
 }
 
 #[no_mangle]
-pub extern "C" fn destroy_pieces(PieceSlice { base_ptr, len, cap }: PieceSlice) {
-    let _ = unsafe { Vec::from_raw_parts(base_ptr, len, cap) };
+pub unsafe extern "C" fn destroy_pieces(PieceSlice { base_ptr, len, cap }: PieceSlice) {
+    eprintln!("[ARTHUR] destroying pieces: {base_ptr:?} {len} {cap}");
+    drop(Vec::from_raw_parts(base_ptr, len, cap));
+}
+
+#[no_mangle]
+pub extern "C" fn clone_pieces(
+    base_ptr: *mut ffi::Piece<'static>,
+    len: usize,
+    cap: usize,
+) -> PieceSlice {
+    eprintln!("[ARTHUR] cloning pieces: {base_ptr:?} {len} {cap}");
+
+    let v = unsafe { Vec::from_raw_parts(base_ptr, len, cap) };
+
+    let cloned_v = v.clone();
+
+    // FIXME: Add documentation
+    v.leak();
+
+    PieceSlice {
+        len: cloned_v.len(),
+        cap: cloned_v.capacity(),
+        base_ptr: dbg!(cloned_v.leak().as_mut_ptr()),
+    }
 }

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rust-ast.h"
 #include "optional.h"
+#include "rust-builtin-ast-nodes.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
@@ -5052,6 +5053,56 @@ void
 FormatArgs::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
+}
+
+std::string
+FormatArgs::as_string () const
+{
+  // FIXME(Arthur): Improve
+  return "FormatArgs";
+}
+
+location_t
+FormatArgs::get_locus () const
+{
+  rust_unreachable ();
+}
+
+bool
+FormatArgs::is_expr_without_block () const
+{
+  return false;
+}
+
+void
+FormatArgs::mark_for_strip ()
+{
+  marked_for_strip = true;
+}
+
+bool
+FormatArgs::is_marked_for_strip () const
+{
+  return marked_for_strip;
+}
+
+std::vector<Attribute> &
+FormatArgs::get_outer_attrs ()
+{
+  rust_unreachable ();
+}
+
+void FormatArgs::set_outer_attrs (std::vector<Attribute>)
+{
+  rust_unreachable ();
+}
+
+Expr *
+FormatArgs::clone_expr_impl () const
+{
+  std::cerr << "[ARTHUR] cloning FormatArgs! " << std::endl;
+
+  return new FormatArgs (*this);
 }
 
 } // namespace AST
