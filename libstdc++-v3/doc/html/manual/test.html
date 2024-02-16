@@ -356,7 +356,7 @@ cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code c
       <code class="envar">DEJAGNU</code> environment variable will cause every test to
       be run three times, using a different <code class="option">-std</code> each time.
       Alternatively, a list of standard versions to test with can be specified
-      as a comma-separated list in the <span style="color: red">&lt;envvar&gt;GLIBCXX_TESTSUITE_STDS&lt;/envvar&gt;</span>
+      as a comma-separated list in the <code class="envar">GLIBCXX_TESTSUITE_STDS</code>
       environment variable.
     </p><p>
       To run the libstdc++ test suite under the
@@ -478,7 +478,7 @@ cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code c
     the test will be skipped by default unless <code class="option">-std=gnu++11</code>
     or <code class="option">-std=c++11</code> is explicitly specified, either via a
     target board, the <code class="varname">v3_std_list</code> dejagnu variable,
-    or the <span style="color: red">&lt;envvar&gt;GLIBCXX_TESTSUITE_STDS&lt;/envvar&gt;</span> environment variable.
+    or the <code class="envar">GLIBCXX_TESTSUITE_STDS</code> environment variable.
     For tests that require a specific standard it is useful to also add a
     <code class="literal">dg-options</code> directive:
 </p><pre class="programlisting">    // { dg-options "-std=gnu++11" }</pre><p>
