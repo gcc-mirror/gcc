@@ -1,3 +1,27 @@
+2024-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87744
+	PR libstdc++/113961
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2024-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87744
+	PR libstdc++/113931
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2024-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/debug_mode.xml: Update docs for backtraces.
+	* doc/html/manual/debug_mode_using.html: Regenerate.
+
+2024-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Fix spelling of <envar> elements.
+	* doc/html/manual/test.html: Regenerate.
+
 2024-02-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/113806

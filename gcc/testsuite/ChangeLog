@@ -1,3 +1,62 @@
+2024-02-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* g++.dg/torture/vector-struct-1.C: Add -Wstrict-aliasing.
+
+2024-02-16  Marek Polacek  <polacek@redhat.com>
+
+	DR 1351
+	* g++.dg/cpp0x/noexcept82.C: New test.
+
+2024-02-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/97990
+	* g++.dg/torture/vector-struct-1.C: New test.
+
+2024-02-16  Edwin Lu  <ewlu@rivosinc.com>
+
+	* lib/scanasm.exp: add scan-assembler-bound
+
+2024-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111682
+	* g++.dg/cpp1y/var-templ86.C: New test.
+
+2024-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113789
+	PR c++/113853
+	* g++.dg/cpp0x/sfinae69.C: Remove dg-bogus.
+	* g++.dg/cpp0x/sfinae70.C: New test.
+	* g++.dg/cpp0x/sfinae71.C: New test.
+	* g++.dg/cpp0x/sfinae72.C: New test.
+	* g++.dg/cpp2a/implicit-move4.C: New test.
+
+2024-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113929
+	* g++.dg/parse/pr113929.C: New test.
+
+2024-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113895
+	* gcc.dg/torture/pr113895-2.c: New testcase.
+	* gcc.dg/torture/pr113895-3.c: Likewise.
+	* gcc.dg/torture/pr113895-4.c: Likewise.
+
+2024-02-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ipa/98237
+	* lib/target-supports.exp (is-effective-target): Handle
+	linker_plugin.
+	* gcc.dg/lto/modref-3_0.c: Require linker_plugin support.
+	* gcc.dg/lto/modref-4_0.c: Likewise.
+
+2024-02-16  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR target/113780
+	* lib/target-supports.exp (v8_1m_main_pacbti): Add __ARM_FEATURE_PAUTH.
+	* gcc.target/arm/pac-sibcall.c: New.
+
 2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* gfortran.dg/gomp/declare-target-4.f90 (f1): Update expected warning.

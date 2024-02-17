@@ -1,3 +1,29 @@
+2024-02-16  Marek Polacek  <polacek@redhat.com>
+
+	DR 1351
+	* search.cc (maybe_check_overriding_exception_spec): Don't error about
+	a looser exception specification if the overrider is deleted.
+
+2024-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113789
+	PR c++/113853
+	* typeck.cc (treat_lvalue_as_rvalue_p): Update code to better
+	reflect [expr.prim.id.unqual]#4.2.
+
+2024-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113929
+	* parser.cc (cp_parser_parameter_declaration): Diagnose this specifier
+	on template parameter declaration.
+
+2024-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (trees_out::core_bools): Stream TREE_UNAVAILABLE.
+	(trees_in::core_bools): Likewise.
+	(trees_out::core_vals): Stream LAMBDA_EXPR_REGEN_INFO.
+	(trees_in::core_vals): Likewise.
+
 2024-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/113708

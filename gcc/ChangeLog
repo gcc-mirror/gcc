@@ -1,3 +1,55 @@
+2024-02-16  Edwin Lu  <ewlu@rivosinc.com>
+
+	* doc/sourcebuild.texi: add scan-assembler-bound
+
+2024-02-16  Jason Merrill  <jason@redhat.com>
+
+	* gdbhooks.py: Fix regex syntax.
+
+2024-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113895
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): Disable
+	consistency checking when there are out-of-bound array
+	accesses.  Allow -1 off when from an array reference with
+	constant index.
+
+2024-02-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/106543
+	* config/riscv/riscv.md (*sge<u>_<X:mode><GPR:mode>): Fix asm
+	pattern.
+
+2024-02-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords, Other
+	attribugs): Document linker_plugin.
+	(Require Support): Document dg-require-linker-plugin.
+
+2024-02-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/109349
+	* common/config/riscv/riscv-common.cc (riscv_arch_help): New.
+	* config/riscv/riscv-protos.h (RISCV_MAJOR_VERSION_BASE): New.
+	(RISCV_MINOR_VERSION_BASE): Ditto.
+	(RISCV_REVISION_VERSION_BASE): Ditto.
+	* config/riscv/riscv-c.cc (riscv_ext_version_value): Use enum
+	rather than magic number.
+	* config/riscv/riscv.h (riscv_arch_help): New.
+	(EXTRA_SPEC_FUNCTIONS): Add riscv_arch_help.
+	(DRIVER_SELF_SPECS): Handle -march=help, -print-supported-extensions and
+	--print-supported-extensions.
+	* config/riscv/riscv.opt (march=help): New.
+	(print-supported-extensions): New.
+	(-print-supported-extensions): New.
+	* doc/invoke.texi (RISC-V Options): Document -march=help.
+
+2024-02-16  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR target/113780
+	* config/arm/arm.cc (arm_function_ok_for_sibcall): Don't allow tailcalls
+	for indirect calls with 4 or more arguments in pac-enabled functions.
+
 2024-02-15  David Faust  <david.faust@oracle.com>
 
 	* config/bpf/bpf.md (zero_extendqidi2): Correct asm template to
