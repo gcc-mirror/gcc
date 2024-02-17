@@ -219,6 +219,7 @@ Classes used:
 #include "dumpfile.h"
 #include "bitmap.h"
 #include "cgraph.h"
+#include "varasm.h"
 #include "tree-iterator.h"
 #include "cpplib.h"
 #include "mkdeps.h"
@@ -8414,6 +8415,14 @@ trees_in::decl_value ()
       if (state->is_header ()
 	  && decl_tls_wrapper_p (decl))
 	note_vague_linkage_fn (decl);
+
+      /* Setup aliases for the declaration.  */
+      if (tree alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
+	{
+	  alias = TREE_VALUE (TREE_VALUE (alias));
+	  alias = get_identifier (TREE_STRING_POINTER (alias));
+	  assemble_alias (decl, alias);
+	}
     }
   else
     {
