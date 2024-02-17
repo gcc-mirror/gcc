@@ -1954,6 +1954,44 @@ package body Exp_Attr is
             while Present (Ancestor) loop
                if Is_List_Member (Ancestor) then
                   Insertion_Point := First (List_Containing (Ancestor));
+
+                  --  A hazard to avoid here is use-before-definition
+                  --  errors that can result when we have two of these
+                  --  subprograms where one calls the other (e.g., given
+                  --  Put_Image procedures for a composite type and
+                  --  for a component type, the former will often call
+                  --  the latter). At the time a subprogram is inserted,
+                  --  we know that the one and only call to it is
+                  --  somewhere in the subtree rooted at Ancestor.
+                  --  So that placement constraint is easy to satisfy.
+                  --  But if we construct another subprogram later and
+                  --  if that second subprogram calls the first one,
+                  --  then we need to be careful not to place the
+                  --  second one ahead of the first one. That is the goal
+                  --  of this loop. This may need to be revised if it turns
+                  --  out that other stuff is being inserted on the list,
+                  --  so that the loop terminates too early.
+
+                  --  On the other hand, it seems like inserting things
+                  --  earlier offers more opportunities for sharing.
+                  --  If Ancestor occurs in the statement list of a
+                  --  subprogram body (ignore the HSS node for now),
+                  --  then perhaps we should look for an insertion site
+                  --  in the decl list of the subprogram body and only
+                  --  look in the statement list if the decl list is empty.
+                  --  Similarly if Ancestor occors in the private decls list
+                  --  for a package spec that has a non-empty visible
+                  --  decls list. No examples where this would result in more
+                  --  sharing and less duplication have been observed, so this
+                  --  is just speculation.
+
+                  while Insertion_Point /= Ancestor
+                    and then Nkind (Insertion_Point) = N_Subprogram_Body
+                    and then not Comes_From_Source (Insertion_Point)
+                  loop
+                     Next (Insertion_Point);
+                  end loop;
+
                   pragma Assert (Present (Insertion_Point));
                end if;
                Ancestor := Parent (Ancestor);
