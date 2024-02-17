@@ -103,7 +103,7 @@ Expression toAssocArrayLiteral(ArrayInitializer ai)
  *      `Initializer` with completed semantic analysis, `ErrorInitializer` if errors
  *      were encountered
  */
-extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedInterpret needInterpret)
+Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedInterpret needInterpret)
 {
     //printf("initializerSemantic() tx: %p %s\n", tx, tx.toChars());
     Type t = tx;
@@ -1224,7 +1224,7 @@ Initializer inferType(Initializer init, Scope* sc)
  * Returns:
  *      `Expression` created, `null` if cannot, `ErrorExp` for other errors
  */
-extern (C++) Expression initializerToExpression(Initializer init, Type itype = null, const bool isCfile = false)
+Expression initializerToExpression(Initializer init, Type itype = null, const bool isCfile = false)
 {
     //printf("initializerToExpression() isCfile: %d\n", isCfile);
 

@@ -69,11 +69,11 @@ const char *
 d_mangle_decl (Dsymbol *decl)
 {
   if (decl->isFuncDeclaration ())
-    return mangleExact ((FuncDeclaration *) decl);
+    return dmd::mangleExact ((FuncDeclaration *) decl);
   else
     {
       OutBuffer buf;
-      mangleToBuffer (decl, buf);
+      dmd::mangleToBuffer (decl, buf);
       return buf.extractChars ();
     }
 }
@@ -332,6 +332,14 @@ public:
     d->semanticRun = PASS::obj;
   }
 
+  /* Finish a top-level `asm` definition.  */
+
+  void visit (CAsmDeclaration *d) final override
+  {
+    tree asm_str = build_expr (d->code);
+    symtab->finalize_toplevel_asm (asm_str);
+  }
+
   /* Expand any local variables found in tuples.  */
 
   void visit (TupleDeclaration *d) final override
@@ -402,7 +410,7 @@ public:
 
   void visit (Nspace *d) final override
   {
-    if (isError (d) || !d->members)
+    if (dmd::isError (d) || !d->members)
       return;
 
     for (size_t i = 0; i < d->members->length; i++)
@@ -447,7 +455,7 @@ public:
 
   void visit (TemplateInstance *d) final override
   {
-    if (isError (d)|| !d->members)
+    if (dmd::isError (d)|| !d->members)
       return;
 
     if (!d->needsCodegen ())
@@ -461,7 +469,7 @@ public:
 
   void visit (TemplateMixin *d) final override
   {
-    if (isError (d)|| !d->members)
+    if (dmd::isError (d)|| !d->members)
       return;
 
     for (size_t i = 0; i < d->members->length; i++)
@@ -539,7 +547,7 @@ public:
 	  continue;
 
 	/* Ensure function has a return value.  */
-	if (!functionSemantic (fd))
+	if (!dmd::functionSemantic (fd))
 	  has_errors = true;
 
 	/* No name hiding to check for.  */
@@ -765,7 +773,7 @@ public:
 	    && d->_init && !d->_init->isVoidInitializer ())
 	  {
 	    /* Evaluate RHS for side effects first.  */
-	    Expression *ie = initializerToExpression (d->_init);
+	    Expression *ie = dmd::initializerToExpression (d->_init);
 	    add_stmt (build_expr (ie));
 
 	    Expression *e = d->type->defaultInitLiteral (d->loc);
@@ -785,7 +793,7 @@ public:
       {
 	/* Do not store variables we cannot take the address of,
 	   but keep the values for purposes of debugging.  */
-	if (d->type->isscalar () && !hasPointers (d->type))
+	if (d->type->isscalar () && !dmd::hasPointers (d->type))
 	  {
 	    tree decl = get_symbol_decl (d);
 	    d_pushdecl (decl);
@@ -820,7 +828,8 @@ public:
 	    /* Use the explicit initializer, this includes `void`.  */
 	    if (!d->_init->isVoidInitializer ())
 	      {
-		Expression *e = initializerToExpression (d->_init, d->type);
+		Expression *e =
+		  dmd::initializerToExpression (d->_init, d->type);
 		DECL_INITIAL (decl) = build_expr (e, true);
 	      }
 	  }
@@ -857,7 +866,7 @@ public:
 	    tree decl = get_symbol_decl (d);
 
 	    ExpInitializer *vinit = d->_init->isExpInitializer ();
-	    Expression *ie = initializerToExpression (vinit);
+	    Expression *ie = dmd::initializerToExpression (vinit);
 	    tree exp = build_expr (ie);
 
 	    /* Maybe put variable on list of things needing destruction.  */
@@ -964,7 +973,7 @@ public:
 	gcc_assert (!doing_semantic_analysis_p);
 
 	doing_semantic_analysis_p = true;
-	functionSemantic3 (d);
+	dmd::functionSemantic3 (d);
 	Module::runDeferredSemantic3 ();
 	doing_semantic_analysis_p = false;
       }
@@ -1241,7 +1250,7 @@ get_symbol_decl (Declaration *decl)
       if (!vd->canTakeAddressOf () && !vd->type->isscalar ())
 	{
 	  gcc_assert (vd->_init && !vd->_init->isVoidInitializer ());
-	  Expression *ie = initializerToExpression (vd->_init);
+	  Expression *ie = dmd::initializerToExpression (vd->_init);
 	  decl->csym = build_expr (ie, false);
 	  return decl->csym;
 	}
@@ -1252,7 +1261,7 @@ get_symbol_decl (Declaration *decl)
   if (fd)
     {
       /* Run full semantic on functions we need to know about.  */
-      if (!functionSemantic (fd))
+      if (!dmd::functionSemantic (fd))
 	{
 	  decl->csym = error_mark_node;
 	  return decl->csym;
@@ -1301,7 +1310,7 @@ get_symbol_decl (Declaration *decl)
 	  /* Non-scalar manifest constants have already been dealt with.  */
 	  gcc_assert (vd->type->isscalar ());
 
-	  Expression *ie = initializerToExpression (vd->_init);
+	  Expression *ie = dmd::initializerToExpression (vd->_init);
 	  DECL_INITIAL (decl->csym) = build_expr (ie, true);
 	}
 
@@ -2398,7 +2407,7 @@ layout_class_initializer (ClassDeclaration *cd)
   NewExp *ne = NewExp::create (cd->loc, NULL, cd->type, NULL);
   ne->type = cd->type;
 
-  Expression *e = ctfeInterpret (ne);
+  Expression *e = dmd::ctfeInterpret (ne);
   gcc_assert (e->op == EXP::classReference);
 
   return build_class_instance (e->isClassReferenceExp ());

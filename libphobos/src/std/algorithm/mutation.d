@@ -1813,22 +1813,28 @@ range.
 
 For example, here is how to remove a single element from an array:
 
+$(RUNNABLE_EXAMPLE
 ----
+import std.algorithm.mutation;
 string[] a = [ "a", "b", "c", "d" ];
 a = a.remove(1); // remove element at offset 1
 assert(a == [ "a", "c", "d"]);
 ----
+)
 
 Note that `remove` does not change the length of the original range directly;
 instead, it returns the shortened range. If its return value is not assigned to
 the original range, the original range will retain its original length, though
 its contents will have changed:
 
+$(RUNNABLE_EXAMPLE
 ----
+import std.algorithm.mutation;
 int[] a = [ 3, 5, 7, 8 ];
 assert(remove(a, 1) == [ 3, 7, 8 ]);
 assert(a == [ 3, 7, 8, 8 ]);
 ----
+)
 
 The element at offset `1` has been removed and the rest of the elements have
 shifted up to fill its place, however, the original array remains of the same
@@ -1838,25 +1844,34 @@ invoked to rearrange elements, and on integers `move` simply copies the source
 to the destination.  To replace `a` with the effect of the removal, simply
 assign the slice returned by `remove` to it, as shown in the first example.
 
+$(H3 $(LNAME2 remove-multiple, Removing multiple elements))
+
 Multiple indices can be passed into `remove`. In that case,
 elements at the respective indices are all removed. The indices must
 be passed in increasing order, otherwise an exception occurs.
 
+$(RUNNABLE_EXAMPLE
 ----
+import std.algorithm.mutation;
 int[] a = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
 assert(remove(a, 1, 3, 5) ==
     [ 0, 2, 4, 6, 7, 8, 9, 10 ]);
 ----
+)
 
-(Note that all indices refer to slots in the $(I original) array, not
-in the array as it is being progressively shortened.)
+Note that all indices refer to slots in the $(I original) array, not
+in the array as it is being progressively shortened.
 
-Tuples of two integral offsets can be used to remove an indices range:
+Tuples of two integral offsets can be supplied to remove a range of indices:
 
+$(RUNNABLE_EXAMPLE
 ----
+import std.algorithm.mutation, std.typecons;
 int[] a = [ 3, 4, 5, 6, 7];
-assert(remove(a, 1, tuple(1, 3), 9) == [ 3, 6, 7 ]);
+// remove elements at indices 1 and 2
+assert(remove(a, tuple(1, 3)) == [ 3, 6, 7 ]);
 ----
+)
 
 The tuple passes in a range closed to the left and open to
 the right (consistent with built-in slices), e.g. `tuple(1, 3)`
@@ -1865,22 +1880,31 @@ means indices `1` and `2` but not `3`.
 Finally, any combination of integral offsets and tuples composed of two integral
 offsets can be passed in:
 
+$(RUNNABLE_EXAMPLE
 ----
+import std.algorithm.mutation, std.typecons;
 int[] a = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
-assert(remove(a, 1, tuple(3, 5), 9) == [ 0, 2, 5, 6, 7, 8, 10 ]);
+a = remove(a, 1, tuple(3, 5), 9);
+assert(a == [ 0, 2, 5, 6, 7, 8, 10 ]);
 ----
+)
 
 In this case, the slots at positions 1, 3, 4, and 9 are removed from
 the array.
+
+$(H3 $(LNAME2 remove-moving, Moving strategy))
 
 If the need is to remove some elements in the range but the order of
 the remaining elements does not have to be preserved, you may want to
 pass `SwapStrategy.unstable` to `remove`.
 
+$(RUNNABLE_EXAMPLE
 ----
+import std.algorithm.mutation;
 int[] a = [ 0, 1, 2, 3 ];
 assert(remove!(SwapStrategy.unstable)(a, 1) == [ 0, 3, 2 ]);
 ----
+)
 
 In the case above, the element at slot `1` is removed, but replaced
 with the last element of the range. Taking advantage of the relaxation
@@ -1888,7 +1912,7 @@ of the stability requirement, `remove` moved elements from the end
 of the array over the slots to be removed. This way there is less data
 movement to be done which improves the execution time of the function.
 
-The function `remove` works on bidirectional ranges that have assignable
+`remove` works on bidirectional ranges that have assignable
 lvalue elements. The moving strategy is (listed from fastest to slowest):
 
 $(UL
@@ -1914,7 +1938,7 @@ Params:
     offset = which element(s) to remove
 
 Returns:
-    A range containing all of the elements of range with offset removed.
+    A range containing elements of `range` with 1 or more elements removed.
 */
 Range remove
 (SwapStrategy s = SwapStrategy.stable, Range, Offset ...)

@@ -1105,6 +1105,7 @@ extern (C++) class Dsymbol : ASTNode
     inout(MixinDeclaration)            isMixinDeclaration()            inout { return null; }
     inout(StaticAssert)                isStaticAssert()                inout { return null; }
     inout(StaticIfDeclaration)         isStaticIfDeclaration()         inout { return null; }
+    inout(CAsmDeclaration)             isCAsmDeclaration()             inout { return null; }
 }
 
 /***********************************************************
@@ -1700,275 +1701,25 @@ extern (C++) final class DsymbolTable : RootObject
     }
 }
 
-/**********************************************
- * ImportC tag symbols sit in a parallel symbol table,
- * so that this C code works:
- * ---
- * struct S { a; };
- * int S;
- * struct S s;
- * ---
- * But there are relatively few such tag symbols, so that would be
- * a waste of memory and complexity. An additional problem is we'd like the D side
- * to find the tag symbols with ordinary lookup, not lookup in both
- * tables, if the tag symbol is not conflicting with an ordinary symbol.
- * The solution is to put the tag symbols that conflict into an associative
- * array, indexed by the address of the ordinary symbol that conflicts with it.
- * C has no modules, so this associative array is tagSymTab[] in ModuleDeclaration.
- * A side effect of our approach is that D code cannot access a tag symbol that is
- * hidden by an ordinary symbol. This is more of a theoretical problem, as nobody
- * has mentioned it when importing C headers. If someone wants to do it,
- * too bad so sad. Change the C code.
- * This function fixes up the symbol table when faced with adding a new symbol
- * `s` when there is an existing symbol `s2` with the same name.
- * C also allows forward and prototype declarations of tag symbols,
- * this function merges those.
- * Params:
- *      sc = context
- *      s = symbol to add to symbol table
- *      s2 = existing declaration
- *      sds = symbol table
- * Returns:
- *      if s and s2 are successfully put in symbol table then return the merged symbol,
- *      null if they conflict
+/**
+ * ImportC global `asm` definition.
  */
-Dsymbol handleTagSymbols(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
+extern (C++) final class CAsmDeclaration : Dsymbol
 {
-    enum log = false;
-    if (log) printf("handleTagSymbols('%s') add %p existing %p\n", s.toChars(), s, s2);
-    if (log) printf("  add %s %s, existing %s %s\n", s.kind(), s.toChars(), s2.kind(), s2.toChars());
-    auto sd = s.isScopeDsymbol(); // new declaration
-    auto sd2 = s2.isScopeDsymbol(); // existing declaration
-
-    static if (log) void print(EnumDeclaration sd)
+    Expression code;
+    extern (D) this(Expression e) nothrow @safe
     {
-        printf("members: %p\n", sd.members);
-        printf("symtab: %p\n", sd.symtab);
-        printf("endlinnum: %d\n", sd.endlinnum);
-        printf("type: %s\n", sd.type.toChars());
-        printf("memtype: %s\n", sd.memtype.toChars());
+        super();
+        this.code = e;
     }
 
-    if (!sd2)
+    override inout(CAsmDeclaration) isCAsmDeclaration() inout nothrow
     {
-        /* Look in tag table
-         */
-        if (log) printf(" look in tag table\n");
-        if (auto p = cast(void*)s2 in sc._module.tagSymTab)
-        {
-            Dsymbol s2tag = *p;
-            sd2 = s2tag.isScopeDsymbol();
-            assert(sd2);        // only tags allowed in tag symbol table
-        }
+        return this;
     }
 
-    if (sd && sd2) // `s` is a tag, `sd2` is the same tag
+    override void accept(Visitor v)
     {
-        if (log) printf(" tag is already defined\n");
-
-        if (sd.kind() != sd2.kind())  // being enum/struct/union must match
-            return null;              // conflict
-
-        /* Not a redeclaration if one is a forward declaration.
-         * Move members to the first declared type, which is sd2.
-         */
-        if (sd2.members)
-        {
-            if (!sd.members)
-                return sd2;  // ignore the sd redeclaration
-        }
-        else if (sd.members)
-        {
-            sd2.members = sd.members; // transfer definition to sd2
-            sd.members = null;
-            if (auto ed2 = sd2.isEnumDeclaration())
-            {
-                auto ed = sd.isEnumDeclaration();
-                if (ed.memtype != ed2.memtype)
-                    return null;        // conflict
-
-                // transfer ed's members to sd2
-                ed2.members.foreachDsymbol( (s)
-                {
-                    if (auto em = s.isEnumMember())
-                        em.ed = ed2;
-                });
-
-                ed2.type = ed.type;
-                ed2.memtype = ed.memtype;
-                ed2.added = false;
-            }
-            return sd2;
-        }
-        else
-            return sd2; // ignore redeclaration
+        v.visit(this);
     }
-    else if (sd) // `s` is a tag, `s2` is not
-    {
-        if (log) printf(" s is tag, s2 is not\n");
-        /* add `s` as tag indexed by s2
-         */
-        sc._module.tagSymTab[cast(void*)s2] = s;
-        return s;
-    }
-    else if (s2 is sd2) // `s2` is a tag, `s` is not
-    {
-        if (log) printf(" s2 is tag, s is not\n");
-        /* replace `s2` in symbol table with `s`,
-         * then add `s2` as tag indexed by `s`
-         */
-        sds.symtab.update(s);
-        sc._module.tagSymTab[cast(void*)s] = s2;
-        return s;
-    }
-    // neither s2 nor s is a tag
-    if (log) printf(" collision\n");
-    return null;
-}
-
-
-/**********************************************
- * ImportC allows redeclarations of C variables, functions and typedefs.
- *    extern int x;
- *    int x = 3;
- * and:
- *    extern void f();
- *    void f() { }
- * Attempt to merge them.
- * Params:
- *      sc = context
- *      s = symbol to add to symbol table
- *      s2 = existing declaration
- *      sds = symbol table
- * Returns:
- *      if s and s2 are successfully put in symbol table then return the merged symbol,
- *      null if they conflict
- */
-Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
-{
-    enum log = false;
-    if (log) printf("handleSymbolRedeclarations('%s')\n", s.toChars());
-    if (log) printf("  add %s %s, existing %s %s\n", s.kind(), s.toChars(), s2.kind(), s2.toChars());
-
-    static Dsymbol collision()
-    {
-        if (log) printf(" collision\n");
-        return null;
-    }
-    /*
-    Handle merging declarations with asm("foo") and their definitions
-    */
-    static void mangleWrangle(Declaration oldDecl, Declaration newDecl)
-    {
-        if (oldDecl && newDecl)
-        {
-            newDecl.mangleOverride = oldDecl.mangleOverride ? oldDecl.mangleOverride : null;
-        }
-    }
-
-    auto vd = s.isVarDeclaration(); // new declaration
-    auto vd2 = s2.isVarDeclaration(); // existing declaration
-
-    if (vd && vd.isCmacro())
-        return vd2;
-
-    assert(!(vd2 && vd2.isCmacro()));
-
-    if (vd && vd2)
-    {
-        /* if one is `static` and the other isn't, the result is undefined
-         * behavior, C11 6.2.2.7
-         */
-        if ((vd.storage_class ^ vd2.storage_class) & STC.static_)
-            return collision();
-
-        const i1 =  vd._init && ! vd._init.isVoidInitializer();
-        const i2 = vd2._init && !vd2._init.isVoidInitializer();
-
-        if (i1 && i2)
-            return collision();         // can't both have initializers
-
-        mangleWrangle(vd2, vd);
-
-        if (i1)                         // vd is the definition
-        {
-            vd2.storage_class |= STC.extern_;  // so toObjFile() won't emit it
-            sds.symtab.update(vd);      // replace vd2 with the definition
-            return vd;
-        }
-
-        /* BUG: the types should match, which needs semantic() to be run on it
-         *    extern int x;
-         *    int x;  // match
-         *    typedef int INT;
-         *    INT x;  // match
-         *    long x; // collision
-         * We incorrectly ignore these collisions
-         */
-        return vd2;
-    }
-
-    auto fd = s.isFuncDeclaration(); // new declaration
-    auto fd2 = s2.isFuncDeclaration(); // existing declaration
-    if (fd && fd2)
-    {
-        /* if one is `static` and the other isn't, the result is undefined
-         * behavior, C11 6.2.2.7
-         * However, match what gcc allows:
-         *    static int sun1(); int sun1() { return 0; }
-         * and:
-         *    static int sun2() { return 0; } int sun2();
-         * Both produce a static function.
-         *
-         * Both of these should fail:
-         *    int sun3(); static int sun3() { return 0; }
-         * and:
-         *    int sun4() { return 0; } static int sun4();
-         */
-        // if adding `static`
-        if (   fd.storage_class & STC.static_ &&
-            !(fd2.storage_class & STC.static_))
-        {
-            return collision();
-        }
-
-        if (fd.fbody && fd2.fbody)
-            return collision();         // can't both have bodies
-
-        mangleWrangle(fd2, fd);
-
-        if (fd.fbody)                   // fd is the definition
-        {
-            if (log) printf(" replace existing with new\n");
-            sds.symtab.update(fd);      // replace fd2 in symbol table with fd
-            fd.overnext = fd2;
-
-            /* If fd2 is covering a tag symbol, then fd has to cover the same one
-             */
-            auto ps = cast(void*)fd2 in sc._module.tagSymTab;
-            if (ps)
-                sc._module.tagSymTab[cast(void*)fd] = *ps;
-
-            return fd;
-        }
-
-        /* Just like with VarDeclaration, the types should match, which needs semantic() to be run on it.
-         * FuncDeclaration::semantic() detects this, but it relies on .overnext being set.
-         */
-        fd2.overloadInsert(fd);
-
-        return fd2;
-    }
-
-    auto td  = s.isAliasDeclaration();  // new declaration
-    auto td2 = s2.isAliasDeclaration(); // existing declaration
-    if (td && td2)
-    {
-        /* BUG: just like with variables and functions, the types should match, which needs semantic() to be run on it.
-         * FuncDeclaration::semantic2() can detect this, but it relies overnext being set.
-         */
-        return td2;
-    }
-
-    return collision();
 }

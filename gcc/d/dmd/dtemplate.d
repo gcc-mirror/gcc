@@ -96,7 +96,7 @@ pure nothrow @nogc @safe
  * These functions substitute for dynamic_cast. dynamic_cast does not work
  * on earlier versions of gcc.
  */
-extern (C++) inout(Expression) isExpression(inout RootObject o)
+inout(Expression) isExpression(inout RootObject o)
 {
     //return dynamic_cast<Expression *>(o);
     if (!o || o.dyncast() != DYNCAST.expression)
@@ -104,7 +104,7 @@ extern (C++) inout(Expression) isExpression(inout RootObject o)
     return cast(inout(Expression))o;
 }
 
-extern (C++) inout(Dsymbol) isDsymbol(inout RootObject o)
+inout(Dsymbol) isDsymbol(inout RootObject o)
 {
     //return dynamic_cast<Dsymbol *>(o);
     if (!o || o.dyncast() != DYNCAST.dsymbol)
@@ -112,7 +112,7 @@ extern (C++) inout(Dsymbol) isDsymbol(inout RootObject o)
     return cast(inout(Dsymbol))o;
 }
 
-extern (C++) inout(Type) isType(inout RootObject o)
+inout(Type) isType(inout RootObject o)
 {
     //return dynamic_cast<Type *>(o);
     if (!o || o.dyncast() != DYNCAST.type)
@@ -120,7 +120,7 @@ extern (C++) inout(Type) isType(inout RootObject o)
     return cast(inout(Type))o;
 }
 
-extern (C++) inout(Tuple) isTuple(inout RootObject o)
+inout(Tuple) isTuple(inout RootObject o)
 {
     //return dynamic_cast<Tuple *>(o);
     if (!o || o.dyncast() != DYNCAST.tuple)
@@ -128,7 +128,7 @@ extern (C++) inout(Tuple) isTuple(inout RootObject o)
     return cast(inout(Tuple))o;
 }
 
-extern (C++) inout(Parameter) isParameter(inout RootObject o)
+inout(Parameter) isParameter(inout RootObject o)
 {
     //return dynamic_cast<Parameter *>(o);
     if (!o || o.dyncast() != DYNCAST.parameter)
@@ -136,7 +136,7 @@ extern (C++) inout(Parameter) isParameter(inout RootObject o)
     return cast(inout(Parameter))o;
 }
 
-extern (C++) inout(TemplateParameter) isTemplateParameter(inout RootObject o)
+inout(TemplateParameter) isTemplateParameter(inout RootObject o)
 {
     if (!o || o.dyncast() != DYNCAST.templateparameter)
         return null;
@@ -146,7 +146,7 @@ extern (C++) inout(TemplateParameter) isTemplateParameter(inout RootObject o)
 /**************************************
  * Is this Object an error?
  */
-extern (C++) bool isError(const RootObject o)
+bool isError(const RootObject o)
 {
     if (const t = isType(o))
         return (t.ty == Terror);
@@ -6311,7 +6311,7 @@ struct TemplateStats
  *      listInstances = list instances of templates
  *      eSink = where the print is sent
  */
-extern (C++) void printTemplateStats(bool listInstances, ErrorSink eSink)
+void printTemplateStats(bool listInstances, ErrorSink eSink)
 {
     static struct TemplateDeclarationStats
     {

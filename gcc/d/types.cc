@@ -144,7 +144,7 @@ same_type_p (Type *t1, Type *t2)
     return true;
 
   /* Types are mutably the same type.  */
-  if (tb1->ty == tb2->ty && equivalent (tb1, tb2))
+  if (tb1->ty == tb2->ty && dmd::equivalent (tb1, tb2))
     return true;
 
   return false;
@@ -1334,7 +1334,7 @@ build_ctype (Type *t)
 	t->accept (&v);
       else
 	{
-	  Type *tb = castMod (t, 0);
+	  Type *tb = dmd::castMod (t, 0);
 	  if (!tb->ctype)
 	    tb->accept (&v);
 	  t->ctype = insert_type_modifiers (tb->ctype, t->mod);

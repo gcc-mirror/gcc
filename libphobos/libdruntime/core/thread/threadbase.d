@@ -84,7 +84,10 @@ private
     enum mutexClassInstanceSize = __traits(classInstanceSize, Mutex);
 
     alias swapContext = externDFunc!("core.thread.osthread.swapContext", void* function(void*) nothrow @nogc);
+}
 
+package
+{
     alias getStackBottom = externDFunc!("core.thread.osthread.getStackBottom", void* function() nothrow @nogc);
     alias getStackTop = externDFunc!("core.thread.osthread.getStackTop", void* function() nothrow @nogc);
 }

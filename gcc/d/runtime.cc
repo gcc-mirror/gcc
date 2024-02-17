@@ -150,11 +150,11 @@ get_libcall_type (d_libcall_type type)
       break;
 
     case LCT_CONST_TYPEINFO:
-      libcall_types[type] = constOf (Type::dtypeinfo->type);
+      libcall_types[type] = dmd::constOf (Type::dtypeinfo->type);
       break;
 
     case LCT_CONST_CLASSINFO:
-      libcall_types[type] = constOf (Type::typeinfoclass->type);
+      libcall_types[type] = dmd::constOf (Type::typeinfoclass->type);
       break;
 
     case LCT_ARRAY_VOID:
@@ -186,7 +186,7 @@ get_libcall_type (d_libcall_type type)
       break;
 
     case LCT_POINTER_ASSOCARRAY:
-      libcall_types[type] = get_libcall_type (LCT_ASSOCARRAY)->pointerTo ();
+      libcall_types[type] = dmd::pointerTo (get_libcall_type (LCT_ASSOCARRAY));
       break;
 
     case LCT_POINTER_VOIDPTR:
@@ -194,15 +194,15 @@ get_libcall_type (d_libcall_type type)
       break;
 
     case LCT_ARRAYPTR_VOID:
-      libcall_types[type] = Type::tvoid->arrayOf ()->pointerTo ();
+      libcall_types[type] = dmd::pointerTo (Type::tvoid->arrayOf ());
       break;
 
     case LCT_ARRAYPTR_BYTE:
-      libcall_types[type] = Type::tint8->arrayOf ()->pointerTo ();
+      libcall_types[type] = dmd::pointerTo (Type::tint8->arrayOf ());
       break;
 
     case LCT_IMMUTABLE_CHARPTR:
-      libcall_types[type] = immutableOf (Type::tchar->pointerTo ());
+      libcall_types[type] = dmd::immutableOf (dmd::pointerTo (Type::tchar));
       break;
 
     default:

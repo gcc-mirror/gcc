@@ -92,6 +92,14 @@
 module core.interpolation;
 
 /++
+    Common implementation for returning an empty string, to avoid storing
+    multiple versions of the same function based on templated types below.
++/
+public string __getEmptyString() @nogc pure nothrow @safe {
+    return "";
+}
+
+/++
     Sentinel values to indicate the beginning and end of an
     interpolated expression sequence.
 
@@ -104,9 +112,7 @@ struct InterpolationHeader {
         Returns `null` for easy compatibility with existing functions
         like `std.stdio.writeln` and `std.conv.text`.
     +/
-    string toString() const @nogc pure nothrow @safe {
-        return null;
-    }
+    alias toString = __getEmptyString;
 }
 
 /// ditto
@@ -115,9 +121,7 @@ struct InterpolationFooter {
         Returns `null` for easy compatibility with existing functions
         like `std.stdio.writeln` and `std.conv.text`.
     +/
-    string toString() const @nogc pure nothrow @safe {
-        return null;
-    }
+    alias toString = __getEmptyString;
 }
 
 /++
@@ -130,7 +134,7 @@ struct InterpolatedLiteral(string text) {
         segment of the tuple, for easy access and compatibility with
         existing functions like `std.stdio.writeln` and `std.conv.text`.
     +/
-    string toString() const @nogc pure nothrow @safe {
+    static string toString() @nogc pure nothrow @safe {
         return text;
     }
 }
@@ -150,7 +154,5 @@ struct InterpolatedExpression(string text) {
         Returns `null` for easy compatibility with existing functions
         like `std.stdio.writeln` and `std.conv.text`.
     +/
-    string toString() const @nogc pure nothrow @safe {
-        return null;
-    }
+    alias toString = __getEmptyString;
 }

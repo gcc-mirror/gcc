@@ -335,7 +335,7 @@ Target::isVectorOpSupported (Type *type, EXP op, Type *)
 const char *
 TargetCPP::toMangle (Dsymbol *s)
 {
-  return toCppMangleItanium (s);
+  return dmd::toCppMangleItanium (s);
 }
 
 /* Return the symbol mangling of CD for C++ linkage.  */
@@ -343,7 +343,7 @@ TargetCPP::toMangle (Dsymbol *s)
 const char *
 TargetCPP::typeInfoMangle (ClassDeclaration *cd)
 {
-  return cppTypeInfoMangleItanium (cd);
+  return dmd::cppTypeInfoMangleItanium (cd);
 }
 
 /* Get mangle name of a this-adjusting thunk to the function declaration FD
@@ -352,7 +352,7 @@ TargetCPP::typeInfoMangle (ClassDeclaration *cd)
 const char *
 TargetCPP::thunkMangle (FuncDeclaration *fd, int offset)
 {
-  return cppThunkMangleItanium (fd, offset);
+  return dmd::cppThunkMangleItanium (fd, offset);
 }
 
 /* For a vendor-specific type, return a string containing the C++ mangling.
@@ -381,11 +381,11 @@ TargetCPP::parameterType (Type *type)
   Type *tvalist = target.va_listType (Loc (), NULL);
   if (type->ty == TY::Tsarray && tvalist->ty == TY::Tsarray)
     {
-      Type *tb = mutableOf (type->toBasetype ());
+      Type *tb = dmd::mutableOf (type->toBasetype ());
       if (tb == tvalist)
 	{
-	  tb = type->nextOf ()->pointerTo ();
-	  type = castMod (tb, type->mod);
+	  tb = dmd::pointerTo (type->nextOf ());
+	  type = dmd::castMod (tb, type->mod);
 	}
     }
 

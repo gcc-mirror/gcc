@@ -317,14 +317,17 @@ public:
     void accept(Visitor *v) override { v->visit(this); }
 };
 
-// in templateparamsem.d
-bool tpsemantic(TemplateParameter *tp, Scope *sc, TemplateParameters *parameters);
+namespace dmd
+{
+    // in templateparamsem.d
+    bool tpsemantic(TemplateParameter *tp, Scope *sc, TemplateParameters *parameters);
 
-Expression *isExpression(RootObject *o);
-Dsymbol *isDsymbol(RootObject *o);
-Type *isType(RootObject *o);
-Tuple *isTuple(RootObject *o);
-Parameter *isParameter(RootObject *o);
-TemplateParameter *isTemplateParameter(RootObject *o);
-bool isError(const RootObject *const o);
-void printTemplateStats(bool listInstances, ErrorSink* eSink);
+    Expression *isExpression(RootObject *o);
+    Dsymbol *isDsymbol(RootObject *o);
+    Type *isType(RootObject *o);
+    Tuple *isTuple(RootObject *o);
+    Parameter *isParameter(RootObject *o);
+    TemplateParameter *isTemplateParameter(RootObject *o);
+    bool isError(const RootObject *const o);
+    void printTemplateStats(bool listInstances, ErrorSink* eSink);
+}

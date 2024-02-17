@@ -978,7 +978,7 @@ public:
  *      modules = array of Modules
  *      buf = write json output to buf
  */
-extern (C++) void json_generate(ref Modules modules, ref OutBuffer buf)
+void json_generate(ref Modules modules, ref OutBuffer buf)
 {
     scope ToJsonVisitor json = new ToJsonVisitor(&buf);
     // write trailing newline
@@ -1047,7 +1047,7 @@ Params:
 Returns: JsonFieldFlags.none on error, otherwise the JsonFieldFlags value
          corresponding to the given fieldName.
 */
-extern (C++) JsonFieldFlags tryParseJsonField(const(char)* fieldName)
+JsonFieldFlags tryParseJsonField(const(char)* fieldName)
 {
     auto fieldNameString = fieldName.toDString();
     foreach (idx, enumName; __traits(allMembers, JsonFieldFlags))

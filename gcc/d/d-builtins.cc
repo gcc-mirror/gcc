@@ -98,14 +98,14 @@ build_frontend_type (tree type)
 	  /* Check for char * first.  Needs to be done for chars/string.  */
 	  if (TYPE_MAIN_VARIANT (TREE_TYPE (type)) == char_type_node)
 	    {
-	      dtype = addMod (Type::tchar, dtype->mod);
-	      return addMod (dtype->pointerTo (), mod);
+	      dtype = dmd::addMod (Type::tchar, dtype->mod);
+	      return dmd::addMod (dmd::pointerTo (dtype), mod);
 	    }
 
 	  if (dtype->ty == TY::Tfunction)
-	    return addMod (TypePointer::create (dtype), mod);
+	    return dmd::addMod (TypePointer::create (dtype), mod);
 
-	  return addMod (dtype->pointerTo (), mod);
+	  return dmd::addMod (dmd::pointerTo (dtype), mod);
 	}
       break;
 
@@ -116,7 +116,7 @@ build_frontend_type (tree type)
 	  /* Want to assign ctype directly so that the REFERENCE_TYPE code
 	     can be turned into as an `inout' argument.  Can't use pointerTo(),
 	     because the returned Type is shared.  */
-	  dtype = addMod (TypePointer::create (dtype), mod);
+	  dtype = dmd::addMod (TypePointer::create (dtype), mod);
 	  dtype->ctype = type;
 	  builtin_converted_decls.safe_push (builtin_data (dtype, type));
 	  return dtype;
@@ -125,7 +125,7 @@ build_frontend_type (tree type)
 
     case BOOLEAN_TYPE:
       /* Should be no need for size checking.  */
-      return addMod (Type::tbool, mod);
+      return dmd::addMod (Type::tbool, mod);
 
     case INTEGER_TYPE:
     {
@@ -143,7 +143,7 @@ build_frontend_type (tree type)
 	      || size != dtype->size ())
 	    continue;
 
-	  return addMod (dtype, mod);
+	  return dmd::addMod (dtype, mod);
 	}
       break;
     }
@@ -160,7 +160,7 @@ build_frontend_type (tree type)
 	  if (dtype->size () != size)
 	    continue;
 
-	  return addMod (dtype, mod);
+	  return dmd::addMod (dtype, mod);
 	}
       break;
     }
@@ -177,13 +177,13 @@ build_frontend_type (tree type)
 	  if (dtype->size () != size)
 	    continue;
 
-	  return addMod (dtype, mod);
+	  return dmd::addMod (dtype, mod);
 	}
       break;
     }
 
     case VOID_TYPE:
-      return addMod (Type::tvoid, mod);
+      return dmd::addMod (Type::tvoid, mod);
 
     case ARRAY_TYPE:
       dtype = build_frontend_type (TREE_TYPE (type));
@@ -197,7 +197,8 @@ build_frontend_type (tree type)
 	  length = size_binop (PLUS_EXPR, size_one_node,
 			       convert (sizetype, length));
 
-	  dtype = addMod (dtype->sarrayOf (TREE_INT_CST_LOW (length)), mod);
+	  dtype =
+	    dmd::addMod (dtype->sarrayOf (TREE_INT_CST_LOW (length)), mod);
 	  builtin_converted_decls.safe_push (builtin_data (dtype, type));
 	  return dtype;
 	}
@@ -213,11 +214,11 @@ build_frontend_type (tree type)
       if (!dtype)
 	break;
 
-      dtype = addMod (dtype->sarrayOf (nunits), mod);
+      dtype = dmd::addMod (dtype->sarrayOf (nunits), mod);
       if (target.isVectorTypeSupported (dtype->size (), dtype->nextOf ()))
 	break;
 
-      dtype = addMod (TypeVector::create (dtype), mod);
+      dtype = dmd::addMod (TypeVector::create (dtype), mod);
       builtin_converted_decls.safe_push (builtin_data (dtype, type));
       return dtype;
     }
@@ -241,9 +242,9 @@ build_frontend_type (tree type)
       sdecl->alignsize = TYPE_ALIGN_UNIT (type);
       sdecl->alignment.setDefault ();
       sdecl->sizeok = Sizeok::done;
-      sdecl->type = addMod (TypeStruct::create (sdecl), mod);
+      sdecl->type = dmd::addMod (TypeStruct::create (sdecl), mod);
       sdecl->type->ctype = type;
-      merge2 (sdecl->type);
+      dmd::merge2 (sdecl->type);
 
       /* Add both named and anonymous fields as members of the struct.
 	 Anonymous fields still need a name in D, so call them "__pad%u".  */
@@ -334,7 +335,7 @@ build_frontend_type (tree type)
 	  if (args->length != 0 || varargs_p == VARARGnone)
 	    {
 	      dtype = TypeFunction::create (args, dtype, varargs_p, LINK::c);
-	      return addMod (dtype, mod);
+	      return dmd::addMod (dtype, mod);
 	    }
 	}
       break;
@@ -690,10 +691,10 @@ strip_type_modifiers (Type *type)
   if (type->ty == TY::Tpointer)
     {
       Type *tnext = strip_type_modifiers (type->nextOf ());
-      return tnext->pointerTo ();
+      return dmd::pointerTo (tnext);
     }
 
-  return castMod (type, 0);
+  return dmd::castMod (type, 0);
 }
 
 /* Returns true if types T1 and T2 representing return types or types of
@@ -727,7 +728,7 @@ static bool
 covariant_with_builtin_type_p (Type *t1, Type *t2)
 {
   /* Check whether the declared function matches the built-in.  */
-  if (same_type_p (t1, t2) || covariant (t1, t2) == Covariant::yes)
+  if (same_type_p (t1, t2) || dmd::covariant (t1, t2) == Covariant::yes)
     return true;
 
   /* May not be covariant because of D attributes applied on t1.

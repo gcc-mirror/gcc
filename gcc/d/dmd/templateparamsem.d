@@ -35,7 +35,7 @@ import dmd.visitor;
  * Returns:
  *      `true` if no errors
  */
-extern(C++) bool tpsemantic(TemplateParameter tp, Scope* sc, TemplateParameters* parameters)
+bool tpsemantic(TemplateParameter tp, Scope* sc, TemplateParameters* parameters)
 {
     scope v = new TemplateParameterSemanticVisitor(sc, parameters);
     tp.accept(v);

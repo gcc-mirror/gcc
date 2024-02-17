@@ -126,6 +126,7 @@ class WithScopeSymbol;
 class ArrayScopeSymbol;
 class Nspace;
 class AliasAssign;
+class CAsmDeclaration;
 
 class AggregateDeclaration;
 class StructDeclaration;
@@ -339,6 +340,7 @@ public:
     virtual void visit(DebugSymbol *s) { visit((Dsymbol *)s); }
     virtual void visit(VersionSymbol *s) { visit((Dsymbol *)s); }
     virtual void visit(AliasAssign *s) { visit((Dsymbol *)s); }
+    virtual void visit(CAsmDeclaration *s) { visit((Dsymbol *)s); }
 
     // ScopeDsymbols
     virtual void visit(Package *s) { visit((ScopeDsymbol *)s); }

@@ -54,7 +54,7 @@ import dmd.utils;
  *  - ignored declarations are mentioned in a comment if `global.params.doCxxHdrGeneration`
  *    is set to `CxxHeaderMode.verbose`
  */
-extern(C++) void genCppHdrFiles(ref Modules ms)
+void genCppHdrFiles(ref Modules ms)
 {
     initialize();
 

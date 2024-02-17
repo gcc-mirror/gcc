@@ -470,7 +470,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
 	  dinteger_t esize = ebtype->nextOf ()->size ();
 	  dinteger_t tsize = tbtype->nextOf ()->size ();
 
-	  tree ptrtype = build_ctype (tbtype->nextOf ()->pointerTo ());
+	  tree ptrtype = build_ctype (dmd::pointerTo (tbtype->nextOf ()));
 
 	  if (esize != tsize)
 	    {
@@ -727,12 +727,12 @@ check_valist_conversion (Expression *expr, Type *totype, bool in_assignment)
   if (VarExp *ve = expr->isVarExp ())
     {
       decl = ve->var;
-      type = ve->var->type->nextOf ()->pointerTo ();
+      type = dmd::pointerTo (ve->var->type->nextOf ());
     }
   else if (SymOffExp *se = expr->isSymOffExp ())
     {
       decl = se->var;
-      type = se->var->type->nextOf ()->pointerTo ()->pointerTo ();
+      type = dmd::pointerTo (dmd::pointerTo (se->var->type->nextOf ()));
     }
 
   /* Should not be called unless is_valist_parameter_type also matched.  */

@@ -2027,7 +2027,7 @@ private struct ChunkByGroup(alias eq, Range, bool eqEquivalenceAssured)
     }
 
     // Cannot be a copy constructor due to https://issues.dlang.org/show_bug.cgi?id=22239
-    this(this) @trusted
+    this(this) scope @trusted
     {
         import core.lifetime : emplace;
         // since mothership has to be in a union, we have to manually trigger
@@ -2129,7 +2129,7 @@ if (isForwardRange!Range)
     }
 
     // Cannot be a copy constructor due to https://issues.dlang.org/show_bug.cgi?id=22239
-    this(this) @trusted
+    this(this) scope @trusted
     {
         import core.lifetime : emplace;
         // since _impl has to be in a union, we have to manually trigger

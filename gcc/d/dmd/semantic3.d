@@ -79,7 +79,7 @@ enum LOG = false;
 /*************************************
  * Does semantic analysis on function bodies.
  */
-extern(C++) void semantic3(Dsymbol dsym, Scope* sc)
+void semantic3(Dsymbol dsym, Scope* sc)
 {
     scope v = new Semantic3Visitor(sc);
     dsym.accept(v);
@@ -1636,7 +1636,7 @@ private struct FuncDeclSem3
     }
 }
 
-extern (C++) void semanticTypeInfoMembers(StructDeclaration sd)
+void semanticTypeInfoMembers(StructDeclaration sd)
 {
     if (sd.xeq &&
         sd.xeq._scope &&

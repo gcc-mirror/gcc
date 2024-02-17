@@ -165,6 +165,22 @@ void testEnumInit()
 
 /////////////////////////////////////////////
 
+// https://issues.dlang.org/show_bug.cgi?id=24370
+immutable uint[3][string] test = [
+	"oneTwoThree": [1,2,3],
+	"fourFiveSix": [4,5,6],
+	"sevenEightNine": [7,8,9],
+];
+
+void testStaticArray()
+{
+	assert(test["oneTwoThree"] == [1, 2, 3]);
+	assert(test["fourFiveSix"] == [4, 5, 6]);
+	assert(test["sevenEightNine"] == [7, 8, 9]);
+}
+
+/////////////////////////////////////////////
+
 void main()
 {
     testSimple();
@@ -175,4 +191,5 @@ void main()
     testImmutable();
     testLocalStatic();
     testEnumInit();
+    testStaticArray();
 }

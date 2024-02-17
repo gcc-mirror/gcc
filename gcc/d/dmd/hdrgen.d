@@ -83,7 +83,7 @@ enum TEST_EMIT_ALL = 0;
  *      doFuncBodies = generate function definitions rather than just declarations
  *      buf = buffer to write the data to
  */
-extern (C++) void genhdrfile(Module m, bool doFuncBodies, ref OutBuffer buf)
+void genhdrfile(Module m, bool doFuncBodies, ref OutBuffer buf)
 {
     buf.doindent = 1;
     buf.printf("// D import file generated from '%s'", m.srcfile.toChars());
@@ -103,7 +103,7 @@ extern (C++) void genhdrfile(Module m, bool doFuncBodies, ref OutBuffer buf)
  * Returns:
  *      0-terminated string
  */
-public extern (C++) const(char)* toChars(const Statement s)
+public const(char)* toChars(const Statement s)
 {
     HdrGenState hgs;
     OutBuffer buf;
@@ -112,7 +112,7 @@ public extern (C++) const(char)* toChars(const Statement s)
     return buf.extractSlice().ptr;
 }
 
-public extern (C++) const(char)* toChars(const Expression e)
+public const(char)* toChars(const Expression e)
 {
     HdrGenState hgs;
     OutBuffer buf;
@@ -120,7 +120,7 @@ public extern (C++) const(char)* toChars(const Expression e)
     return buf.extractChars();
 }
 
-public extern (C++) const(char)* toChars(const Initializer i)
+public const(char)* toChars(const Initializer i)
 {
     OutBuffer buf;
     HdrGenState hgs;
@@ -128,7 +128,7 @@ public extern (C++) const(char)* toChars(const Initializer i)
     return buf.extractChars();
 }
 
-public extern (C++) const(char)* toChars(const Type t)
+public const(char)* toChars(const Type t)
 {
     OutBuffer buf;
     buf.reserve(16);
@@ -154,7 +154,7 @@ public const(char)[] toString(const Initializer i)
  *   vcg_ast = write out codegen ast
  *   m = module to visit all members of.
  */
-extern (C++) void moduleToBuffer(ref OutBuffer buf, bool vcg_ast, Module m)
+void moduleToBuffer(ref OutBuffer buf, bool vcg_ast, Module m)
 {
     HdrGenState hgs;
     hgs.fullDump = true;
@@ -3418,7 +3418,7 @@ void arrayObjectsToBuffer(ref OutBuffer buf, Objects* objects)
  *  pl = parameter list to print
  * Returns: Null-terminated string representing parameters.
  */
-extern (C++) const(char)* parametersTypeToChars(ParameterList pl)
+const(char)* parametersTypeToChars(ParameterList pl)
 {
     OutBuffer buf;
     HdrGenState hgs;

@@ -701,12 +701,15 @@ public:
     void accept(Visitor *v) override { v->visit(this); }
 };
 
-// in statementsem.d
-Statement* statementSemantic(Statement *s, Scope *sc);
-// in iasm.d
-Statement* asmSemantic(AsmStatement *s, Scope *sc);
-// in iasmgcc.d
-Statement *gccAsmSemantic(GccAsmStatement *s, Scope *sc);
+namespace dmd
+{
+    // in statementsem.d
+    Statement* statementSemantic(Statement *s, Scope *sc);
+    // in iasm.d
+    Statement* asmSemantic(AsmStatement *s, Scope *sc);
+    // in iasmgcc.d
+    Statement *gccAsmSemantic(GccAsmStatement *s, Scope *sc);
+}
 
 class AsmStatement : public Statement
 {

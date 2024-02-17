@@ -41,8 +41,8 @@ import dmd.expressionsem;
 import dmd.func;
 import dmd.funcsem;
 import dmd.globals;
-import dmd.gluelayer;
 import dmd.hdrgen;
+import dmd.iasm;
 import dmd.id;
 import dmd.identifier;
 import dmd.importc;
@@ -135,7 +135,7 @@ private Expression checkAssignmentAsCondition(Expression e, Scope* sc)
 }
 
 // Performs semantic analysis in Statement AST nodes
-extern(C++) Statement statementSemantic(Statement s, Scope* sc)
+Statement statementSemantic(Statement s, Scope* sc)
 {
     import dmd.compiler;
 
