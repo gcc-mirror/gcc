@@ -9059,13 +9059,10 @@ alloc_scalar_allocatable_subcomponent (stmtblock_t *block, tree comp,
   if (cm->ts.type == BT_CHARACTER && cm->ts.deferred)
     {
       gcc_assert (expr2->ts.type == BT_CHARACTER);
-      if (!expr2->ts.u.cl->backend_decl
-	  || !VAR_P (expr2->ts.u.cl->backend_decl))
-	expr2->ts.u.cl->backend_decl = gfc_create_var (TREE_TYPE (slen),
-						       "slen");
-      gfc_add_modify (block, expr2->ts.u.cl->backend_decl, slen);
-
       size = expr2->ts.u.cl->backend_decl;
+      if (!size || !VAR_P (size))
+	size = gfc_create_var (TREE_TYPE (slen), "slen");
+      gfc_add_modify (block, size, slen);
 
       gfc_deferred_strlen (cm, &tmp);
       lhs_cl_size = fold_build3_loc (input_location, COMPONENT_REF,
@@ -9253,19 +9250,20 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
 	   || (cm->ts.type == BT_CLASS && CLASS_DATA (cm)->attr.allocatable
 	       && expr->ts.type != BT_CLASS)))
     {
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, expr);
       tree size;
 
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, expr);
+
+      /* The remainder of these instructions follow the if (cm->attr.pointer)
+	 if (!cm->attr.dimension) part above.  */
+      gfc_add_block_to_block (&block, &se.pre);
       /* Take care about non-array allocatable components here.  The alloc_*
 	 routine below is motivated by the alloc_scalar_allocatable_for_
 	 assignment() routine, but with the realloc portions removed and
 	 different input.  */
       alloc_scalar_allocatable_subcomponent (&block, dest, cm, expr,
 					     se.string_length);
-      /* The remainder of these instructions follow the if (cm->attr.pointer)
-	 if (!cm->attr.dimension) part above.  */
-      gfc_add_block_to_block (&block, &se.pre);
 
       if (expr->symtree && expr->symtree->n.sym->attr.proc_pointer
 	  && expr->symtree->n.sym->attr.dummy)
