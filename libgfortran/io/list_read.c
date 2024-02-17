@@ -475,11 +475,23 @@ eat_separator (st_parameter_dt *dtp)
     case ',':
       if (dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
 	{
+	  generate_error (&dtp->common, LIBERROR_READ_VALUE,
+	   "Comma not allowed as separator with DECIMAL='comma'");
 	  unget_char (dtp, c);
 	  break;
 	}
-      /* Fall through.  */
+      dtp->u.p.comma_flag = 1;
+      eat_spaces (dtp);
+      break;
+
     case ';':
+      if (dtp->u.p.current_unit->decimal_status == DECIMAL_POINT)
+	{
+	  generate_error (&dtp->common, LIBERROR_READ_VALUE,
+	   "Semicolon not allowed as separator with DECIMAL='point'");
+	  unget_char (dtp, c);
+	  break;
+	}
       dtp->u.p.comma_flag = 1;
       eat_spaces (dtp);
       break;
@@ -1326,8 +1338,13 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
     {
       if ((c = next_char (dtp)) == EOF)
 	goto bad;
-      if (c == ',' && dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
-	c = '.';
+      if (dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
+	{
+	  if (c == '.')
+	    goto bad;
+	  if (c == ',')
+	    c = '.';
+	}
       switch (c)
 	{
 	CASE_DIGITS:
@@ -1636,8 +1653,18 @@ read_real (st_parameter_dt *dtp, void *dest, int length)
   seen_dp = 0;
 
   c = next_char (dtp);
-  if (c == ',' && dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
-    c = '.';
+  if (dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
+    {
+      if (c == '.')
+	goto bad_real;
+      if (c == ',')
+	c = '.';
+    }
+  if (dtp->u.p.current_unit->decimal_status == DECIMAL_POINT)
+    {
+      if (c == ';')
+	goto bad_real;
+    }
   switch (c)
     {
     CASE_DIGITS:
@@ -1677,8 +1704,13 @@ read_real (st_parameter_dt *dtp, void *dest, int length)
   for (;;)
     {
       c = next_char (dtp);
-      if (c == ',' && dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
-	c = '.';
+      if (dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
+	{
+	  if (c == '.')
+	    goto bad_real;
+	  if (c == ',')
+	    c = '.';
+	}
       switch (c)
 	{
 	CASE_DIGITS:
@@ -1718,7 +1750,7 @@ read_real (st_parameter_dt *dtp, void *dest, int length)
 
 	CASE_SEPARATORS:
 	case EOF:
-          if (c != '\n' && c != ',' && c != '\r' && c != ';')
+	  if (c != '\n' && c != ',' && c != ';' && c != '\r')
 	    unget_char (dtp, c);
 	  goto done;
 
