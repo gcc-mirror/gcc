@@ -1,3 +1,12 @@
+2024-02-16  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113545
+	* constexpr.cc (cxx_eval_switch_expr): If the condition doesn't reduce
+	to an INTEGER_CST, consider it non-constant.
+
 2024-02-13  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

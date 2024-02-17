@@ -1,3 +1,12 @@
+2024-02-16  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113545
+	* g++.dg/cpp1y/constexpr-reinterpret3.C: New test.
+	* g++.dg/cpp1y/constexpr-reinterpret4.C: New test.
+
 2024-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

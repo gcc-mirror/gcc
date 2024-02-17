@@ -1,3 +1,15 @@
+2024-02-16  Matteo Italia  <matteo@mitalia.net>
+
+	Backported from master:
+	2024-02-16  Matteo Italia  <matteo@mitalia.net>
+
+	PR libgcc/113850
+	* config/i386/gthr-win32-cond.c (__gthr_win32_abs_to_rel_time):
+	fix absolute timespec to relative milliseconds count
+	conversion (it incorrectly returned seconds instead of
+	milliseconds); this avoids spurious wakeups in
+	__gthr_win32_cond_timedwait
+
 2024-01-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
