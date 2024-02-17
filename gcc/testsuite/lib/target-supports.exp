@@ -13216,10 +13216,17 @@ proc check_effective_target_powerpc_as_p10_htm { } {
 # return 1 if LRA is supported.
 
 proc check_effective_target_lra { } {
-    if { [istarget hppa*-*-*] || [istarget avr-*-*] } {
-	return 0
+    # Start with heavily used targets which are known to always use LRA.
+    if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+	 || [istarget aarch64*-*-*] || [istarget arm*-*-*]
+	 || [istarget powerpc*-*-*] || [istarget riscv*-*-*] } {
+	return 1
     }
-    return 1
+
+    # Otherwise check the reload dump for messages emitted solely by LRA.
+    return [check_no_messages_and_pattern lra "\\\*{9} Local #1: \\\*{9}" rtl-reload {
+        void foo (void) {}
+    } {-O2 -fdump-rtl-reload-details}] ;# LRA notes requires a detailed dump.
 }
 
 # Test whether optimizations are enabled ('__OPTIMIZE__') per the
