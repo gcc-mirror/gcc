@@ -888,6 +888,14 @@ read_logical (st_parameter_dt *dtp, int length)
   for(i = 0; i < 63; i++)
     {
       c = next_char (dtp);
+      if (c == '(')
+	{
+	  l_push_char (dtp, c);
+	  dtp->u.p.nml_read_error = 1;
+	  dtp->u.p.line_buffer_enabled = 1;
+	  dtp->u.p.line_buffer_pos = 0;
+	  return;
+	}
       if (is_separator(c))
 	{
 	  /* All done if this is not a namelist read.  */
