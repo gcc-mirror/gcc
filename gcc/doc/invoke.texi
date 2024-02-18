@@ -23732,12 +23732,22 @@ These options are defined for AVR implementations:
 @table @gcctabopt
 @opindex mmcu
 @item -mmcu=@var{mcu}
-Specify Atmel AVR instruction set architectures (ISA) or MCU type.
+Specify the AVR instruction set architecture (ISA) or device type.
+The default for this option is@tie{}@code{avr2}.
 
-The default for this option is@tie{}@samp{avr2}.
+The following AVR devices and ISAs are supported.
+@emph{Note:} A complete device support consists of
+startup code @code{crt@var{mcu}.o}, a device header @code{avr/io*.h},
+a device library @code{lib@var{mcu}.a} and a
+@uref{https://gcc.gnu.org/wiki/avr-gcc#spec-files,device-specs} file
+@code{specs-@var{mcu}}. Only the latter is provided by the compiler
+according the supported @code{@var{mcu}}s below.  The rest is supported
+by @w{@uref{https://www.nongnu.org/avr-libc/,AVR-LibC}}, or by means of
+@uref{https://gcc.gnu.org/wiki/avr-gcc#atpack,@code{atpack}} files
+from the hardware manufacturer.
 
-GCC supports the following AVR devices and ISAs:
-
+@c Auto-generated.  Re-build when new devices are added to avr-mcus.def
+@c by running "make avr-mcus" in $builddir/gcc.
 @include avr-mmcu.texi
 
 @opindex mabsdata
