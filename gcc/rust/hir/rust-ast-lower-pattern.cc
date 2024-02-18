@@ -276,6 +276,7 @@ ASTLoweringPattern::visit (AST::RangePattern &pattern)
 void
 ASTLoweringPattern::visit (AST::GroupedPattern &pattern)
 {
+  is_let_top_level = false;
   pattern.get_pattern_in_parens ()->accept_vis (*this);
 }
 
