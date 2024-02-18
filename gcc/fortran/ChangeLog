@@ -1,3 +1,20 @@
+2024-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/113503
+	* trans-expr.cc (alloc_scalar_allocatable_subcomponent): Don't
+	overwrite expr2->ts.u.cl->backend_decl, instead set size to
+	expr2->ts.u.cl->backend_decl first and use size instead of
+	expr2->ts.u.cl->backend_decl.
+	(gfc_trans_subcomponent_assign): Emit se.pre into block
+	before calling alloc_scalar_allocatable_subcomponent instead of
+	after it.
+
+2024-02-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113911
+	* trans-array.cc (gfc_trans_deferred_array): Do not clobber
+	deferred length for a character variable passed as dummy argument.
+
 2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* dump-parse-tree.cc (show_attr): Handle omp_declare_target_indirect

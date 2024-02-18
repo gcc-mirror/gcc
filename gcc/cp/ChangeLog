@@ -1,3 +1,9 @@
+2024-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113158
+	* search.cc (maybe_check_overriding_exception_spec): Defer checking
+	when a noexcept couldn't be instantiated & evaluated to false/true.
+
 2024-02-16  Marek Polacek  <polacek@redhat.com>
 
 	DR 1351

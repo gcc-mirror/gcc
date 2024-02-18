@@ -1,3 +1,9 @@
+2024-02-17  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algobase.h (std::__niter_base): Redefine the overload
+	definitions for __gnu_debug::_Safe_iterator.
+	* include/debug/safe_iterator.tcc (std::__niter_base): Adapt declarations.
+
 2024-02-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87744

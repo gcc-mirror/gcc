@@ -1,3 +1,41 @@
+2024-02-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 9471b25db9.
+	* dmd/VERSION: Bump version to v2.107.1-rc.1.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/cxxfrontend.o.
+	* d-attribs.cc (build_attributes): Update for new front-end interface.
+	* d-builtins.cc (build_frontend_type): Likewise.
+	(strip_type_modifiers): Likewise.
+	(covariant_with_builtin_type_p): Likewise.
+	* d-codegen.cc (declaration_type): Likewise.
+	(parameter_type): Likewise.
+	(build_array_struct_comparison): Likewise.
+	(void_okay_p): Likewise.
+	* d-convert.cc (convert_expr): Likewise.
+	(check_valist_conversion): Likewise.
+	* d-lang.cc (d_generate_ddoc_file): Likewise.
+	(d_parse_file): Likewise.
+	* d-target.cc (TargetCPP::toMangle): Likewise.
+	(TargetCPP::typeInfoMangle): Likewise.
+	(TargetCPP::thunkMangle): Likewise.
+	(TargetCPP::parameterType): Likewise.
+	* decl.cc (d_mangle_decl): Likewise.
+	(DeclVisitor::visit): Likewise.
+	(DeclVisitor::visit (CAsmDeclaration *)): New method.
+	(get_symbol_decl): Update for new front-end interface.
+	(layout_class_initializer): Likewise.
+	* expr.cc (ExprVisitor::visit): Likewise.
+	* intrinsics.cc (maybe_set_intrinsic): Likewise.
+	(expand_intrinsic_rotate): Likewise.
+	* modules.cc (layout_moduleinfo_fields): Likewise.
+	(layout_moduleinfo): Likewise.
+	* runtime.cc (get_libcall_type): Likewise.
+	* typeinfo.cc (make_frontend_typeinfo): Likewise.
+	(TypeInfoVisitor::visit): Likewise.
+	(create_typeinfo): Likewise.
+	* types.cc (same_type_p): Likewise.
+	(build_ctype): Likewise.
+
 2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/113125
