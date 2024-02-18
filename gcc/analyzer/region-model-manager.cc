@@ -602,6 +602,9 @@ maybe_undo_optimize_bit_field_compare (tree type,
 				       tree cst,
 				       const svalue *arg1)
 {
+  if (!INTEGRAL_TYPE_P (type))
+    return NULL;
+
   const binding_map &map = compound_sval->get_map ();
   unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (cst);
   /* If "mask" is a contiguous range of set bits, see if the
