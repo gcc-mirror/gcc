@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 10.1-b20200209\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2023-02-10 22:39+0000\n"
+"POT-Creation-Date: 2024-02-16 21:34+0000\n"
 "PO-Revision-Date: 2020-02-11 17:27+0200\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -20,244 +20,268 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.3\n"
 
-#: charset.cc:683
+#: charset.cc:759
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "iconv ei tue muunnosta %s -> %s"
 
-#: charset.cc:686
+#: charset.cc:762
 msgid "iconv_open"
 msgstr "iconv_open"
 
-#: charset.cc:696
+#: charset.cc:772
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "ei iconv-toteutusta, muunnosta %s -> %s ei voida suorittaa"
 
-#: charset.cc:794
+#: charset.cc:870
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "merkki 0x%lx ei ole peruslähdemerkistössä\n"
 
-#: charset.cc:811 charset.cc:2420
+#: charset.cc:887 charset.cc:2574
 msgid "converting to execution character set"
 msgstr "muunnetaan suoritusmerkistöön"
 
-#: charset.cc:817
+#: charset.cc:893
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr "merkki 0x%lx ei ole yksitavuinen suoritusmerkistössä"
 
-#: charset.cc:1437
+#: charset.cc:1549
 msgid "universal character names are only valid in C++ and C99"
 msgstr "universaalit merkkinimet ovat kelvollisia vai C++:ssa ja C99:ssä"
 
-#: charset.cc:1441
+#: charset.cc:1553
 msgid "C99's universal character names are incompatible with C90"
 msgstr "C99:n universaalit merkkinimet ovat epäyhteensopivia C90:n kanssa"
 
-#: charset.cc:1444
+#: charset.cc:1556
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "’\\%c’:lla on eri merkitys perinteisessä C:ssä"
 
-#: charset.cc:1483
+#: charset.cc:1595
 #, fuzzy
 #| msgid "'?' without following ':'"
 msgid "'\\N' not followed by '{'"
 msgstr "’?’ ilman sitä seuraavaa ’:’-merkkiä"
 
-#: charset.cc:1513
+#: charset.cc:1625
 msgid "empty named universal character escape sequence; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1520
+#: charset.cc:1632
 #, fuzzy
 #| msgid "incomplete universal character name %.*s"
 msgid "empty named universal character escape sequence"
 msgstr "vaillinainen universaali merkkinimi %.*s"
 
-#: charset.cc:1525
+#: charset.cc:1637
 #, fuzzy
 #| msgid "universal character names are only valid in C++ and C99"
 msgid "named universal character escapes are only valid in C++23"
 msgstr "universaalit merkkinimet ovat kelvollisia vai C++:ssa ja C99:ssä"
 
-#: charset.cc:1545
+#: charset.cc:1657
 #, fuzzy, c-format
 #| msgid "%.*s is not a valid universal character"
 msgid "\\N{%.*s} is not a valid universal character; treating it as separate tokens"
 msgstr "%.*s ei ole kelvollinen universaali merkki"
 
-#: charset.cc:1551
+#: charset.cc:1663
 #, fuzzy, c-format
 #| msgid "%.*s is not a valid universal character"
 msgid "\\N{%.*s} is not a valid universal character"
 msgstr "%.*s ei ole kelvollinen universaali merkki"
 
-#: charset.cc:1561
+#: charset.cc:1673
 #, c-format
 msgid "did you mean \\N{%s}?"
 msgstr ""
 
-#: charset.cc:1579
+#: charset.cc:1691
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1588
+#: charset.cc:1700
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s"
 msgstr ""
 
 #  UCN tarkoittaa Universal Character Names ja se sallii minkä tahansa kirjaimen käyttämisen C-lähdekielessä, ei vain englanninkielen kirjainten käytön. Merkki voidaan ilmaista joko kenoviivalla, sitä seuraavalla pienellä u-kirjaimella ja nelinumeroisella heksadesimaaliluvulla tai kenoviivaa seuraavalla suurella U-kirjaimella ja kahdeksannumeroisella heksadesimaaliluvulla.
-#: charset.cc:1596
+#: charset.cc:1708
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr "Funktiossa _cpp_valid_ucn mutta ei ole UCN"
 
-#: charset.cc:1638
+#: charset.cc:1750
 msgid "empty delimited escape sequence; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1645 charset.cc:1978 charset.cc:2081
+#: charset.cc:1757 charset.cc:2124 charset.cc:2227
 msgid "empty delimited escape sequence"
 msgstr ""
 
-#: charset.cc:1649 charset.cc:1984 charset.cc:2087
+#: charset.cc:1761 charset.cc:2130 charset.cc:2233
 #, fuzzy
 #| msgid "universal character names are only valid in C++ and C99"
 msgid "delimited escape sequences are only valid in C++23"
 msgstr "universaalit merkkinimet ovat kelvollisia vai C++:ssa ja C99:ssä"
 
-#: charset.cc:1663
+#: charset.cc:1775
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1675
+#: charset.cc:1787
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "vaillinainen universaali merkkinimi %.*s"
 
-#: charset.cc:1679
+#: charset.cc:1791
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:1694
+#: charset.cc:1806
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s ei ole kelvollinen universaali merkki"
 
-#: charset.cc:1704 lex.cc:2079
+#: charset.cc:1816 lex.cc:2082
 msgid "'$' in identifier or number"
 msgstr "’$’ tunnisteessa tai lukuarvossa"
 
-#: charset.cc:1714
+#: charset.cc:1826
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "universaali merkki %.*s ei ole kelvollinen tunniste"
 
-#: charset.cc:1718
+#: charset.cc:1830
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "universaali merkki %.*s ei ole kelvollinen tunnisteen alussa"
 
-#: charset.cc:1725
+#: charset.cc:1837
 #, c-format
 msgid "%.*s is outside the UCS codespace"
 msgstr "%.*s on UCS-koodiston ulkopuolella"
 
-#: charset.cc:1769 charset.cc:2797
+#: charset.cc:1881 charset.cc:3037
 msgid "converting UCN to source character set"
 msgstr "muunnetaan UCN lähdemerkistöön"
 
-#: charset.cc:1776
+#: charset.cc:1888
 msgid "converting UCN to execution character set"
 msgstr "muunnetaan UCN suoritusmerkistöön"
 
-#: charset.cc:1840
+#: charset.cc:1952
 #, c-format
 msgid "extended character %.*s is not valid in an identifier"
 msgstr "laajennettu merkki %.*s ei ole kelvollinen tunniste"
 
-#: charset.cc:1857
+#: charset.cc:1969
 #, c-format
 msgid "extended character %.*s is not valid at the start of an identifier"
 msgstr "laajennettu merkki %.*s ei ole kelvollinen tunnisteen alussa"
 
-#: charset.cc:1945
+#: charset.cc:2091
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr "’\\%x’:lla on eri merkitys perinteisessä C:ssä"
 
-#: charset.cc:1992
+#: charset.cc:2138
 msgid "\\x used with no following hex digits"
 msgstr "\\x:ää käytetty ilman seuraavia heksanumeroita"
 
-#: charset.cc:1998
+#: charset.cc:2144
 #, c-format
 msgid "'\\x{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:2006
+#: charset.cc:2152
 msgid "hex escape sequence out of range"
 msgstr "heksadesimaalinen ohjaussarja sallitun välin ulkopuolella"
 
-#: charset.cc:2049
+#: charset.cc:2195
 #, fuzzy
 #| msgid "'?' without following ':'"
 msgid "'\\o' not followed by '{'"
 msgstr "’?’ ilman sitä seuraavaa ’:’-merkkiä"
 
-#: charset.cc:2093
+#: charset.cc:2239
 #, c-format
 msgid "'\\o{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:2102
+#: charset.cc:2248
 msgid "octal escape sequence out of range"
 msgstr "oktaalinen ohjaussarja sallitun välin ulkopuolella"
 
-#: charset.cc:2184
+#: charset.cc:2300 charset.cc:2310
+#, c-format
+msgid "numeric escape sequence in unevaluated string: '\\%c'"
+msgstr ""
+
+#: charset.cc:2338
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr "’\\a’:lla on eri merkitys perinteisessä C:ssä"
 
-#: charset.cc:2191
+#: charset.cc:2345
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "ISO-standardiin kuulumaton ohjaussarja ’\\%c’"
 
-#: charset.cc:2199
+#: charset.cc:2353
 #, c-format
 msgid "unknown escape sequence: '\\%c'"
 msgstr "tuntematon ohjaussarja ’\\%c’"
 
-#: charset.cc:2209
+#: charset.cc:2363
 #, c-format
 msgid "unknown escape sequence: '\\%s'"
 msgstr "tuntematon ohjaussarja ’\\%s’"
 
-#: charset.cc:2217
+#: charset.cc:2371
 msgid "converting escape sequence to execution character set"
 msgstr "muunnetaan ohjaussarja suoritusmerkistöön"
 
-#: charset.cc:2357
+#: charset.cc:2511
 msgid "missing open quote"
 msgstr "avautuva sulje puuttuu"
 
-#: charset.cc:2575 charset.cc:2658
-msgid "character constant too long for its type"
-msgstr "merkkivakio on liian pitkä tyypilleen"
+#: charset.cc:2772
+#, fuzzy
+#| msgid "character 0x%lx is not unibyte in execution character set"
+msgid "character not encodable in a single execution character code unit"
+msgstr "merkki 0x%lx ei ole yksitavuinen suoritusmerkistössä"
 
-#: charset.cc:2578
+#: charset.cc:2777
+msgid "at least one character in a multi-character literal not encodable in a single execution character code unit"
+msgstr ""
+
+#: charset.cc:2795
+#, c-format
+msgid "multi-character literal with %ld characters exceeds 'int' size of %ld bytes"
+msgstr ""
+
+#: charset.cc:2799 charset.cc:2894
+msgid "multi-character literal cannot have an encoding prefix"
+msgstr ""
+
+#: charset.cc:2802 charset.cc:2897
+msgid "character not encodable in a single code unit"
+msgstr ""
+
+#: charset.cc:2806
 msgid "multi-character character constant"
 msgstr "monimerkkinen merkkivakio"
 
-#: charset.cc:2698
+#: charset.cc:2938
 msgid "empty character constant"
 msgstr "tyhjä merkkivakio"
 
-#: charset.cc:2882
+#: charset.cc:3122
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "muunnos %s -> %s epäonnistui"
@@ -272,16 +296,16 @@ msgstr "ylimääräisiä merkkejä #%s-direktiivin lopussa"
 msgid "#%s is a GCC extension"
 msgstr "#%s on GCC-laajennos"
 
-#: directives.cc:394 directives.cc:2152 directives.cc:2191
+#: directives.cc:394 directives.cc:2163 directives.cc:2202
 #, fuzzy, c-format
 #| msgid "#%s is a GCC extension"
 msgid "#%s before C++23 is a GCC extension"
 msgstr "#%s on GCC-laajennos"
 
-#: directives.cc:397 directives.cc:401 directives.cc:2156 directives.cc:2195
+#: directives.cc:397 directives.cc:401 directives.cc:2167 directives.cc:2206
 #, fuzzy, c-format
 #| msgid "#%s is a GCC extension"
-msgid "#%s before C2X is a GCC extension"
+msgid "#%s before C23 is a GCC extension"
 msgstr "#%s on GCC-laajennos"
 
 #: directives.cc:407
@@ -341,205 +365,205 @@ msgstr "makron nimeä ei ole annettu #%s-direktiivissä"
 msgid "macro names must be identifiers"
 msgstr "makrojen nimien on oltava tunnisteita"
 
-#: directives.cc:694 directives.cc:699
+#: directives.cc:698 directives.cc:702
 #, c-format
 msgid "undefining \"%s\""
 msgstr "kumotaan määrittely ”%s”"
 
-#: directives.cc:756
+#: directives.cc:759
 msgid "missing terminating > character"
 msgstr "päättävä >-merkki puuttuu"
 
-#: directives.cc:815
+#: directives.cc:818
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s odottaa argumenttia \"TIEDOSTONIMI\" tai <TIEDOSTONIMI>"
 
-#: directives.cc:861
+#: directives.cc:864
 #, c-format
 msgid "empty filename in #%s"
 msgstr "tyhjä tiedostonimi direktiivissä #%s"
 
-#: directives.cc:870
+#: directives.cc:873
 #, c-format
 msgid "#include nested depth %u exceeds maximum of %u (use -fmax-include-depth=DEPTH to increase the maximum)"
 msgstr "#include-sisäkkäisyyssyvyys %u ylittää maksimin %u (valitsin -fmax-include-depth=SYVYYS suurentaa maksimia)"
 
-#: directives.cc:915
+#: directives.cc:918
 msgid "#include_next in primary source file"
 msgstr "#include_next ensisijaisessa lähdetiedostossa"
 
-#: directives.cc:941
+#: directives.cc:944
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "virheellinen lippu ”%s” rividirektiivissä"
 
-#: directives.cc:1008
+#: directives.cc:1011
 msgid "unexpected end of file after #line"
 msgstr "odottamaton tiedoston loppu #line-direktiivin jälkeen"
 
-#: directives.cc:1011
+#: directives.cc:1014
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "#line:n jälkeinen ”%s”  ei ole positiivinen kokonaisluku"
 
-#: directives.cc:1017 directives.cc:1019
+#: directives.cc:1020 directives.cc:1022
 msgid "line number out of range"
 msgstr "rivinumero sallitun välin ulkopuolella"
 
-#: directives.cc:1032 directives.cc:1113
+#: directives.cc:1035 directives.cc:1116
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "”%s” ei ole kelvollinen tiedostonimi"
 
-#: directives.cc:1073
+#: directives.cc:1076
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "#:n jälkeinen ”%s” ei ole positiivinen kokonaisluku"
 
-#: directives.cc:1140
+#: directives.cc:1143
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgstr "tiedoston ”%s” rivinmerkitsin jätetään huomiotta virheellisen sisäkkäisyyden vuoksi"
 
-#: directives.cc:1218 directives.cc:1220 directives.cc:1222 directives.cc:1810
+#: directives.cc:1221 directives.cc:1223 directives.cc:1225 directives.cc:1816
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.cc:1246
+#: directives.cc:1249
 #, c-format
 msgid "invalid #%s directive"
 msgstr "virheellinen #%s-direktiivi"
 
-#: directives.cc:1309
+#: directives.cc:1312
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "rekisteröidään pragmat nimiavaruudessa ”%s” epäsopivalla nimenlavennuksella"
 
-#: directives.cc:1318
+#: directives.cc:1321
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "rekisteröidään pragma ”%s” nimenlavennuksella ja ilman nimiavaruutta"
 
-#: directives.cc:1336
+#: directives.cc:1339
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "rekisteröidään ”%s” sekä pragmana että pragma-nimiavaruutena"
 
-#: directives.cc:1339
+#: directives.cc:1342
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s on jo rekisteröity"
 
-#: directives.cc:1342
+#: directives.cc:1345
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s on jo rekisteröity"
 
-#: directives.cc:1372
+#: directives.cc:1375
 msgid "registering pragma with NULL handler"
 msgstr "rekisteröidään pragma NULL-käsittelijällä"
 
-#: directives.cc:1589
+#: directives.cc:1592
 msgid "#pragma once in main file"
 msgstr "#pragma once päätiedostossa"
 
-#: directives.cc:1612
+#: directives.cc:1615
 msgid "invalid #pragma push_macro directive"
 msgstr "virheellinen #pragma push_macro -direktiivi"
 
-#: directives.cc:1669
+#: directives.cc:1672
 msgid "invalid #pragma pop_macro directive"
 msgstr "virheellinen #pragma pop_macro -direktiivi"
 
 #  poison tarkoittaa, että makroa tai direktiiviä ei koskaan määritellä tai käytetä
-#: directives.cc:1724
+#: directives.cc:1727
 msgid "invalid #pragma GCC poison directive"
 msgstr "virheellinen #pragma GCC poison -direktiivi"
 
-#: directives.cc:1733
+#: directives.cc:1736
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "myrkytetään olemassa oleva makro ”%s”"
 
-#: directives.cc:1752
+#: directives.cc:1758
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header ohitetaan otsaketiedoston ulkopuolella"
 
-#: directives.cc:1777
+#: directives.cc:1783
 #, c-format
 msgid "cannot find source file %s"
 msgstr "lähdetiedostoa %s ei löydy"
 
-#: directives.cc:1781
+#: directives.cc:1787
 #, c-format
 msgid "current file is older than %s"
 msgstr "nykyinen tiedosto on vanhempi kuin %s"
 
-#: directives.cc:1805
+#: directives.cc:1811
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "virheellinen ”#pragma GCC %s” -direktiivi"
 
-#: directives.cc:2008
+#: directives.cc:2019
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma ottaa sulkeilla ympäröidyn merkkijonoliteraalin"
 
-#: directives.cc:2091
+#: directives.cc:2102
 msgid "#else without #if"
 msgstr "#else ilman #if:iä"
 
-#: directives.cc:2096
+#: directives.cc:2107
 msgid "#else after #else"
 msgstr "#else #else:n jälkeen"
 
-#: directives.cc:2098 directives.cc:2132
+#: directives.cc:2109 directives.cc:2143
 msgid "the conditional began here"
 msgstr "ehtolause alkoi tästä"
 
-#: directives.cc:2124
+#: directives.cc:2135
 #, fuzzy, c-format
 #| msgid "#else without #if"
 msgid "#%s without #if"
 msgstr "#else ilman #if:iä"
 
-#: directives.cc:2129
+#: directives.cc:2140
 #, fuzzy, c-format
 #| msgid "#else after #else"
 msgid "#%s after #else"
 msgstr "#else #else:n jälkeen"
 
-#: directives.cc:2231
+#: directives.cc:2242
 msgid "#endif without #if"
 msgstr "#endif ilman #if:iä"
 
-#: directives.cc:2307
+#: directives.cc:2318
 msgid "missing '(' after predicate"
 msgstr "’(’ puuttuu predikaatin jäljestä"
 
-#: directives.cc:2325
+#: directives.cc:2336
 msgid "missing ')' to complete answer"
 msgstr "’)’ puuttuu vastauksen täydentämisestä"
 
-#: directives.cc:2337
+#: directives.cc:2348
 msgid "predicate's answer is empty"
 msgstr "predikaatin vastaus on tyhjä"
 
-#: directives.cc:2367
+#: directives.cc:2378
 msgid "assertion without predicate"
 msgstr "väite ilman predikaattia"
 
-#: directives.cc:2370
+#: directives.cc:2381
 msgid "predicate must be an identifier"
 msgstr "predikaatin on oltava tunniste"
 
-#: directives.cc:2452
+#: directives.cc:2463
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "”%s” väitetty uudelleen"
 
-#: directives.cc:2770
+#: directives.cc:2781
 #, c-format
 msgid "unterminated #%s"
 msgstr "päättämätön #%s"
@@ -553,255 +577,261 @@ msgstr "%s: %s"
 msgid "stdout"
 msgstr "vakiotuloste"
 
-#: expr.cc:646 expr.cc:763
+#: expr.cc:667 expr.cc:784
 msgid "fixed-point constants are a GCC extension"
 msgstr "kiintopistevakiot ovat GCC-laajennos"
 
-#: expr.cc:671
+#: expr.cc:692
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "virheellinen etuliite ”0b” liukulukuvakiolle"
 
-#: expr.cc:684
+#: expr.cc:705
 msgid "use of C++17 hexadecimal floating constant"
 msgstr "C++17:n heksadesimaaliliukulukuvakion käyttö"
 
-#: expr.cc:687
+#: expr.cc:708
 msgid "use of C99 hexadecimal floating constant"
 msgstr "C99:n heksadesimaaliliukulukuvakion käyttö"
 
-#: expr.cc:731
+#: expr.cc:752
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "virheellinen loppuliite ”%.*s” liukulukuvakiolla"
 
-#: expr.cc:742 expr.cc:809
+#: expr.cc:763 expr.cc:830
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "perinteinen C ei salli ”%.*s”-loppuliitettä"
 
-#: expr.cc:750
+#: expr.cc:771
 msgid "suffix for double constant is a GCC extension"
 msgstr "loppuliite double-vakiolle on GCC-laajennos"
 
-#: expr.cc:756
+#: expr.cc:777
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "virheellinen loppuliite ”%.*s” heksadesimaalisella liukulukuvakiolla"
 
-#: expr.cc:769 expr.cc:773
-msgid "decimal float constants are a C2X feature"
+#: expr.cc:790 expr.cc:794
+#, fuzzy
+#| msgid "decimal float constants are a C2X feature"
+msgid "decimal float constants are a C23 feature"
 msgstr "desimaali-float-vakiot ovat C2X-ominaisuus"
 
-#: expr.cc:792
+#: expr.cc:813
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "virheellinen loppuliite ”%.*s” kokonaislukuvakiolla"
 
-#: expr.cc:817
+#: expr.cc:838
 msgid "use of C++11 long long integer constant"
 msgstr "C++11:n long long -kokonaislukuvakion käyttö"
 
-#: expr.cc:818
+#: expr.cc:839
 msgid "use of C99 long long integer constant"
 msgstr "C99:n long long -kokonaislukuvakion käyttö"
 
-#: expr.cc:832
+#: expr.cc:853
 #, fuzzy
 #| msgid "use of C++11 long long integer constant"
 msgid "use of C++23 %<size_t%> integer constant"
 msgstr "C++11:n long long -kokonaislukuvakion käyttö"
 
-#: expr.cc:833
+#: expr.cc:854
 #, fuzzy
 #| msgid "use of C++11 long long integer constant"
 msgid "use of C++23 %<make_signed_t<size_t>%> integer constant"
 msgstr "C++11:n long long -kokonaislukuvakion käyttö"
 
-#: expr.cc:844
+#: expr.cc:864 expr.cc:875
+msgid "ISO C does not support literal %<wb%> suffixes before C23"
+msgstr ""
+
+#: expr.cc:888
 msgid "imaginary constants are a GCC extension"
 msgstr "imaginäärivakiot ovat GCC-laajennos"
 
-#: expr.cc:851
+#: expr.cc:895
 msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "binäärivakiot ovat C++14:n ominaisuus tai GCC-laajennos"
 
-#: expr.cc:853
+#: expr.cc:897
 #, fuzzy
 #| msgid "binary constants are a C++14 feature or GCC extension"
-msgid "binary constants are a C2X feature or GCC extension"
+msgid "binary constants are a C23 feature or GCC extension"
 msgstr "binäärivakiot ovat C++14:n ominaisuus tai GCC-laajennos"
 
-#: expr.cc:858
+#: expr.cc:902
 #, fuzzy
-#| msgid "decimal float constants are a C2X feature"
-msgid "binary constants are a C2X feature"
-msgstr "desimaali-float-vakiot ovat C2X-ominaisuus"
+#| msgid "binary constants are a GCC extension"
+msgid "binary constants are a C23 feature"
+msgstr "binäärivakiot ovat GCC-laajennos"
 
-#: expr.cc:954
+#: expr.cc:998
 msgid "integer constant is too large for its type"
 msgstr "kokonaislukuvakio on liian suuri tyypilleen"
 
-#: expr.cc:985
+#: expr.cc:1029
 msgid "integer constant is so large that it is unsigned"
 msgstr "kokonaislukuvakio on niin suuri, että se on etumerkitön"
 
-#: expr.cc:1080
+#: expr.cc:1124
 msgid "missing ')' after \"defined\""
 msgstr "’)’ puuttuu ”defined”-sanan jäljestä"
 
-#: expr.cc:1087
+#: expr.cc:1131
 msgid "operator \"defined\" requires an identifier"
 msgstr "operaattori ”defined” vaatii tunnisteen"
 
-#: expr.cc:1095
+#: expr.cc:1139
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(”%s” on vaihtoehtoinen symboli ”%s”:lle C++:ssa)"
 
-#: expr.cc:1108
+#: expr.cc:1152
 msgid "this use of \"defined\" may not be portable"
 msgstr "tämä ”defined”-sanan käyttö ei ehkä ole siirrettävää"
 
-#: expr.cc:1153
+#: expr.cc:1197
 msgid "user-defined literal in preprocessor expression"
 msgstr "käyttäjän määrittelemä literaali esikääntäjän lausekkeessa"
 
-#: expr.cc:1158
+#: expr.cc:1202
 msgid "floating constant in preprocessor expression"
 msgstr "liukulukuvakio esikääntäjän lausekkeessa"
 
-#: expr.cc:1164
+#: expr.cc:1208
 msgid "imaginary number in preprocessor expression"
 msgstr "imaginääriluku esikääntäjän lausekkeessa"
 
-#: expr.cc:1213
+#: expr.cc:1257
 #, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
 msgstr "”%s” on määrittelemättä, evaluoituu 0:ksi"
 
-#: expr.cc:1226
+#: expr.cc:1270
 msgid "assertions are a GCC extension"
 msgstr "väitteet ovat GCC-laajennos"
 
-#: expr.cc:1229
+#: expr.cc:1273
 msgid "assertions are a deprecated extension"
 msgstr "väitteet ovat vanhentunut laajennos"
 
 # %s on #if tai #elif
-#: expr.cc:1479
+#: expr.cc:1523
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "tasapainoton pino %s:ssä"
 
-#: expr.cc:1499
+#: expr.cc:1543
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "mahdoton operaattori ’%u’"
 
-#: expr.cc:1600
+#: expr.cc:1644
 msgid "missing ')' in expression"
 msgstr "’)’ puuttuu lausekkeesta"
 
-#: expr.cc:1629
+#: expr.cc:1673
 msgid "'?' without following ':'"
 msgstr "’?’ ilman sitä seuraavaa ’:’-merkkiä"
 
-#: expr.cc:1639
+#: expr.cc:1683
 msgid "integer overflow in preprocessor expression"
 msgstr "kokonaislukuylivuoto esikääntäjän lausekkeessa"
 
-#: expr.cc:1644
+#: expr.cc:1688
 msgid "missing '(' in expression"
 msgstr "’(’ puuttuu lausekkeesta"
 
-#: expr.cc:1676
+#: expr.cc:1720
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "”%s”:n vasen operandi vaihtaa ylennettäessä etumerkkiään"
 
-#: expr.cc:1681
+#: expr.cc:1725
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "”%s”:n oikea operandi vaihtaa ylennettäessä etumerkkiään"
 
-#: expr.cc:1940
+#: expr.cc:1984
 msgid "traditional C rejects the unary plus operator"
 msgstr "perinteinen C ei salli unaarista plus-operaattoria"
 
-#: expr.cc:2038
+#: expr.cc:2082
 msgid "comma operator in operand of #if"
 msgstr "pilkkuoperaattori #if:in operandissa"
 
-#: expr.cc:2174
+#: expr.cc:2218
 msgid "division by zero in #if"
 msgstr "jako nollalla #if-ehdossa"
 
-#: files.cc:516
+#: files.cc:520
 msgid "NULL directory in find_file"
 msgstr "NULL-hakemisto funktiossa find_file"
 
-#: files.cc:570
+#: files.cc:583
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "yksi tai useampia PCH-tiedostoja löytyi, mutta ne olivat virheellisiä"
 
-#: files.cc:574
+#: files.cc:587
 msgid "use -Winvalid-pch for more information"
 msgstr "käytä valitsinta -Winvalid-pch lisätietojen saamiseksi"
 
-#: files.cc:688
+#: files.cc:703
 #, c-format
 msgid "%s is a block device"
 msgstr "%s on lohkolaite"
 
-#: files.cc:707
+#: files.cc:722
 #, c-format
 msgid "%s is too large"
 msgstr "%s on liian suuri"
 
-#: files.cc:748
+#: files.cc:763
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s on odotettua lyhyempi"
 
-#: files.cc:1060
+#: files.cc:1075
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "ei include-polkua, josta etsiä tiedostoa %s"
 
-#: files.cc:1578
+#: files.cc:1598
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Monen includen estimet voivat olla hyödyllisiä tiedostoille:\n"
 
-#: init.cc:631
+#: init.cc:638
 msgid "cppchar_t must be an unsigned type"
 msgstr "cppchar_t:n on oltava etumerkitön tyyppi"
 
-#: init.cc:635
+#: init.cc:642
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "esikääntäjäaritmetiikan enimmäistarkkuus on %lu bittiä; kohde vaatii %lu bittiä"
 
-#: init.cc:642
+#: init.cc:649
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "CPP-aritmetiikan on oltava vähintään yhtä tarkka kuin kohteen int-tyypin"
 
-#: init.cc:645
+#: init.cc:652
 msgid "target char is less than 8 bits wide"
 msgstr "kohteen char-tyyppi on alle 8 bittiä leveä"
 
-#: init.cc:649
+#: init.cc:656
 msgid "target wchar_t is narrower than target char"
 msgstr "kohteen wchar_t-tyyppi on kapeampi kuin kohteen char-tyyppi"
 
-#: init.cc:653
+#: init.cc:660
 msgid "target int is narrower than target char"
 msgstr "kohteen int-tyyppi on kapeampi kuin kohteen char-tyyppi"
 
-#: init.cc:658
+#: init.cc:665
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP-puolikokonaisluku on kapeampi kuin CPP-merkki"
 
-#: init.cc:662
+#: init.cc:669
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "tämän koneen CPP ei pysty käsittelemään yli %lu-bittisiä leveämerkkivakioita, mutta kohde vaatii %lu bittiä"
@@ -897,125 +927,129 @@ msgstr "”%.*s” ei ole NFKC-muodossa"
 msgid "`%.*s' is not in NFC"
 msgstr "”%.*s” ei ole NFC-muodossa"
 
-#: lex.cc:2141
+#: lex.cc:2144
 #, fuzzy
 #| msgid "__VA_OPT__ is not available until C++2a"
 msgid "__VA_OPT__ is not available until C++20"
 msgstr "__VA_OPT__ ei ole saatavilla ennen C++2a:ta"
 
-#: lex.cc:2144
+#: lex.cc:2147
 #, fuzzy
 #| msgid "__VA_OPT__ is not available until C++2a"
-msgid "__VA_OPT__ is not available until C2X"
+msgid "__VA_OPT__ is not available until C23"
 msgstr "__VA_OPT__ ei ole saatavilla ennen C++2a:ta"
 
 #  Variadic-makro on sellainen makro, jonka argumenttien lukumäärä voi vaihdella.
-#: lex.cc:2152
+#: lex.cc:2155
 #, fuzzy
 #| msgid "__VA_OPT__ can only appear in the expansion of a C++2a variadic macro"
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
 msgstr "__VA_OPT__ voi esiintyä vain C++2a:n variadisen makron lavennoksessa"
 
 #  poison tarkoittaa, että makroa tai direktiiviä ei koskaan määritellä tai käytetä
-#: lex.cc:2183 lex.cc:2279
+#: lex.cc:2172
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "myrkytetyn makron ”%s” käyttöyritys"
 
+#: lex.cc:2177
+msgid "poisoned here"
+msgstr ""
+
 #  Variadic-makro on sellainen makro, jonka argumenttien lukumäärä voi vaihdella.
-#: lex.cc:2193 lex.cc:2289
+#: lex.cc:2187
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr "__VA_ARGS__ voi esiintyä vain C++11:n variadisen makron lavennoksessa"
 
 #  Variadic-makro on sellainen makro, jonka argumenttien lukumäärä voi vaihdella.
-#: lex.cc:2197 lex.cc:2293
+#: lex.cc:2191
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ voi esiintyä vain C99:n variadisen makron lavennoksessa"
 
-#: lex.cc:2207 lex.cc:2305
+#: lex.cc:2203
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "tunniste ”%s” on operaattorin nimi C++:ssa"
 
-#: lex.cc:2345
+#: lex.cc:2372
 msgid "adjacent digit separators"
 msgstr ""
 
-#: lex.cc:2665
+#: lex.cc:2521
+msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
+msgstr "literaalissa virheellinen jälkiliite; C++11 vaatii välilyönnin literaalin ja merkkijonomakron väliin"
+
+#: lex.cc:2729
 msgid "raw string delimiter longer than 16 characters"
 msgstr "raa’an merkkijonon erotin pitempi kuin 16 merkkiä"
 
-#: lex.cc:2669
+#: lex.cc:2733
 msgid "invalid new-line in raw string delimiter"
 msgstr "virheellinen rivinvaihto raa’an merkkijonon erottimessa"
 
-#: lex.cc:2673 lex.cc:5519
+#: lex.cc:2737 lex.cc:5576
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "virheellinen merkki ’%c’ raa’an merkkijonon erottimessa"
 
-#: lex.cc:2711 lex.cc:2734
+#: lex.cc:2775 lex.cc:2798
 msgid "unterminated raw string"
 msgstr "päättämätön raaka merkkijono"
 
-#: lex.cc:2770 lex.cc:2922
-msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
-msgstr "literaalissa virheellinen jälkiliite; C++11 vaatii välilyönnin literaalin ja merkkijonomakron väliin"
-
-#: lex.cc:2905
+#: lex.cc:2955
 msgid "null character(s) preserved in literal"
 msgstr "null-merkit säilytetään literaalissa"
 
-#: lex.cc:2908
+#: lex.cc:2958
 #, c-format
 msgid "missing terminating %c character"
 msgstr "päättävä merkki %c puuttuu"
 
-#: lex.cc:2940
+#: lex.cc:2991
 msgid "C++11 requires a space between string literal and macro"
 msgstr "C++11 vaatii välilyönnin literaalin ja merkkijonomakron väliin"
 
-#: lex.cc:3533
+#: lex.cc:3584
 msgid "module control-line cannot be in included file"
 msgstr ""
 
-#: lex.cc:3547
+#: lex.cc:3598
 #, c-format
 msgid "module control-line \"%s\" cannot be an object-like macro"
 msgstr ""
 
-#: lex.cc:3949 lex.cc:5352 traditional.cc:174
+#: lex.cc:4004 lex.cc:5409 traditional.cc:174
 msgid "unterminated comment"
 msgstr "päättämätön kommentti"
 
-#: lex.cc:3963 lex.cc:3997
+#: lex.cc:4018 lex.cc:4052
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++-tyyliset kommentit eivät ole sallittuja ISO C90:ssä"
 
-#: lex.cc:3965 lex.cc:3976 lex.cc:4000
+#: lex.cc:4020 lex.cc:4031 lex.cc:4055
 msgid "(this will be reported only once per input file)"
 msgstr "(tästä ilmoitetaan vain kerran syötetiedostoa kohden)"
 
-#: lex.cc:3974
+#: lex.cc:4029
 msgid "C++ style comments are incompatible with C90"
 msgstr "C++-tyyliset kommentit ovat epäyhteensopivia C90:n kanssa"
 
-#: lex.cc:4006
+#: lex.cc:4061
 msgid "multi-line comment"
 msgstr "monirivinen kommentti"
 
-#: lex.cc:4427
+#: lex.cc:4484
 #, c-format
 msgid "unspellable token %s"
 msgstr "kirjoitusasuton symboli %s"
 
-#: lex.cc:5507
+#: lex.cc:5564
 #, fuzzy, c-format
 #| msgid "raw string delimiter longer than 16 characters"
 msgid "raw string delimiter longer than %d characters"
 msgstr "raa’an merkkijonon erotin pitempi kuin 16 merkkiä"
 
-#: lex.cc:5577
+#: lex.cc:5634
 #, fuzzy
 #| msgid "unterminated #%s"
 msgid "unterminated literal"
@@ -1067,7 +1101,7 @@ msgstr "’)’ puuttuu ”%s”-operandin jäljestä"
 msgid "macro \"%s\" is not used"
 msgstr "makroa ”%s” ei käytetä"
 
-#: macro.cc:498 macro.cc:797
+#: macro.cc:498 macro.cc:803
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "virheellinen sisäinen makro ”%s”"
@@ -1089,135 +1123,135 @@ msgstr "ei voitu selvittää päivämäärää ja aikaa"
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ lavennettu direktiivin sisällä valitsimella -fdirectives-only"
 
-#: macro.cc:916
+#: macro.cc:922
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "virheellinen merkijonoliteraali, ohitetaan viimeinen ’\\’"
 
-#: macro.cc:980
+#: macro.cc:986
 #, fuzzy, c-format
 #| msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
 msgstr "liittämällä ”%s” ja ”%s” ei saada kelvollista esikääntäjän symbolia"
 
 #  Variadic-makro on sellainen makro, jonka argumenttien lukumäärä voi vaihdella.
-#: macro.cc:1112
+#: macro.cc:1118
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C++11 vaatii vähintään yhden argumentin variadisen makron ”...”:lle"
 
 #  Variadic-makro on sellainen makro, jonka argumenttien lukumäärä voi vaihdella.
-#: macro.cc:1116
+#: macro.cc:1122
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C99 vaatii vähintään yhden argumentin variadisen makron ”...”:lle"
 
-#: macro.cc:1123
+#: macro.cc:1129
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "makro ”%s” vaatii %u argumenttia, mutta vain %u on annettu"
 
-#: macro.cc:1128
+#: macro.cc:1134
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "makrolle ”%s” annettu %u argumenttia, mutta se ottaa vain %u"
 
-#: macro.cc:1132
+#: macro.cc:1138
 #, fuzzy, c-format
 #| msgid "macro \"%s\" is not used"
 msgid "macro \"%s\" defined here"
 msgstr "makroa ”%s” ei käytetä"
 
-#: macro.cc:1326 traditional.cc:822
+#: macro.cc:1332 traditional.cc:822
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "päättämätön argumenttiluettelo ”%s”-makron kutsussa"
 
-#: macro.cc:1472
+#: macro.cc:1478
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "funktion kaltaista makroa ”%s” on käytettävä argumenttien kanssa perinteisessä C:ssä"
 
-#: macro.cc:2307
+#: macro.cc:2313
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "%s-makron argumentin %d kutsu: tyhjät makroargumentit ovat määrittelemättömiä ISO C++98:ssa"
 
-#: macro.cc:2315 macro.cc:2324
+#: macro.cc:2321 macro.cc:2330
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "%s-makron argumentin %d kutsu: tyhjät makroargumentit ovat määrittelemättömiä ISO C90:ssä"
 
-#: macro.cc:3375
+#: macro.cc:3381
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "kahdenkertainen makroparametri ”%s”"
 
-#: macro.cc:3457
+#: macro.cc:3463
 #, c-format
 msgid "expected parameter name, found \"%s\""
 msgstr "odotettiin parametrin nimeä, löytyi ”%s”"
 
-#: macro.cc:3458
+#: macro.cc:3464
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
 msgstr "odotettiin ”,” tai ”)”, löytyi ”%s”"
 
-#: macro.cc:3459
+#: macro.cc:3465
 msgid "expected parameter name before end of line"
 msgstr "odotettiin parametrin nimeä ennen rivin loppua"
 
-#: macro.cc:3460
+#: macro.cc:3466
 msgid "expected ')' before end of line"
 msgstr "odotettiin tulevan ”)” ennen rivin loppua"
 
-#: macro.cc:3461
+#: macro.cc:3467
 msgid "expected ')' after \"...\""
 msgstr "odotettiin ”...”:n jälkeen tulevan ”)”"
 
-#: macro.cc:3518
+#: macro.cc:3524
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "anonyymit variadiset makrot esiteltiin C++11:ssä"
 
-#: macro.cc:3519 macro.cc:3523
+#: macro.cc:3525 macro.cc:3529
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "anonyymit variadiset makrot esiteltiin C99:ssä"
 
-#: macro.cc:3529
+#: macro.cc:3535
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ ei salli nimettyjä variadisia makroja"
 
-#: macro.cc:3530
+#: macro.cc:3536
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C ei salli nimettyjä variadisia makroja"
 
-#: macro.cc:3576
+#: macro.cc:3582
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "”##” ei voi esiintyä makrolavennuksen kummassakaan päässä"
 
-#: macro.cc:3614
+#: macro.cc:3620
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C++11 vaatii tyhjemerkin makron nimen jälkeen"
 
-#: macro.cc:3615
+#: macro.cc:3621
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 vaatii tyhjemerkin makron nimen jälkeen"
 
-#: macro.cc:3639
+#: macro.cc:3645
 msgid "missing whitespace after the macro name"
 msgstr "tyhjemerkki puuttuu makron nimen jäljestä"
 
-#: macro.cc:3692
+#: macro.cc:3698
 msgid "'#' is not followed by a macro parameter"
 msgstr "”#” ilman sitä seuraavaa makroparametria"
 
-#: macro.cc:3848
+#: macro.cc:3862
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "”%s” määritelty uudelleen"
 
-#: macro.cc:3853
+#: macro.cc:3867
 msgid "this is the location of the previous definition"
 msgstr "tämä on edellisen määrittelyn sijainti"
 
-#: macro.cc:3990
+#: macro.cc:4004
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "makron argumentti ”%s” merkkijonostettaisiin perinteisessä C:ssä"
@@ -1251,7 +1285,7 @@ msgstr "%s: ei käytetä, koska ”%s” on määritelty"
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: ei käytetä, koska ”__COUNTER__” on virheellinen"
 
-#: pch.cc:720 pch.cc:876
+#: pch.cc:720 pch.cc:883
 msgid "while reading precompiled header"
 msgstr "luettaessa esikäännettyä otsaketta"
 
@@ -1264,14 +1298,14 @@ msgstr "havaittiin rekursio lavennettaessa makroa ”%s”"
 msgid "syntax error in macro parameter list"
 msgstr "syntaksivirhe makron parameteriluettelossa"
 
+#~ msgid "character constant too long for its type"
+#~ msgstr "merkkivakio on liian pitkä tyypilleen"
+
 #~ msgid "#elif without #if"
 #~ msgstr "#elif ilman #if:iä"
 
 #~ msgid "#elif after #else"
 #~ msgstr "#elif #else:n jälkeen"
-
-#~ msgid "binary constants are a GCC extension"
-#~ msgstr "binäärivakiot ovat GCC-laajennos"
 
 #~ msgid "\"__has_include__\" cannot be used as a macro name"
 #~ msgstr "”__has_include__” ei ole kelvollinen makron nimi"
