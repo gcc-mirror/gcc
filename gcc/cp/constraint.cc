@@ -2142,7 +2142,8 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
 
   /* Check the noexcept condition.  */
   bool noexcept_p = COMPOUND_REQ_NOEXCEPT_P (t);
-  if (noexcept_p && !expr_noexcept_p (expr, quiet.complain))
+  if (noexcept_p && !processing_template_decl
+      && !expr_noexcept_p (expr, quiet.complain))
     {
       if (info.diagnose_unsatisfaction_p ())
 	inform (loc, "%qE is not %<noexcept%>", expr);
@@ -2156,7 +2157,7 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
     return error_mark_node;
 
   /* Check expression against the result type.  */
-  if (type)
+  if (type && !processing_template_decl)
     {
       if (tree placeholder = type_uses_auto (type))
 	{
