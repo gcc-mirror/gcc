@@ -15,7 +15,7 @@ extern "rust-intrinsic" {
     pub fn powf64(a: f64, x: f64) -> f64;
 
     pub fn powif32(a: f32, x: i32) -> f32;
-    pub fn powif64(a: f64, x: i64) -> f64;
+    pub fn powif64(a: f64, x: i32) -> f64;
 
     pub fn expf32(x: f32) -> f32;
     pub fn expf64(x: f64) -> f64;
@@ -93,7 +93,7 @@ fn main() {
 
         f32 = powif32(7f32, 8i32);
         // { dg-final { scan-tree-dump-times {(?n)f32 .* __builtin_powi. \(.*7\.0e\+0, .*8\);$} 1 original } }
-        f64 = powif64(9f64, 10i64);
+        f64 = powif64(9f64, 10i32);
         // { dg-final { scan-tree-dump-times {(?n)f64 .* __builtin_powi.? \(.*9\.0e\+0, .*10\);$} 1 original } }
 
         f32 = expf32(11f32);
