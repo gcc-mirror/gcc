@@ -1,3 +1,65 @@
+2024-02-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113912
+	* config/i386/i386.cc (ix86_can_use_push2pop2): New.
+	(ix86_pro_and_epilogue_can_use_push2pop2): Use it.
+	(ix86_emit_save_regs): Don't generate push2 if
+	ix86_can_use_push2pop2 return false.
+	(ix86_expand_epilogue): Don't generate pop2 if
+	ix86_can_use_push2pop2 return false.
+
+2024-02-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options) <-mmcu>: Remove "Atmel".
+	Note on complete device support.
+
+2024-02-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Function Attributes): Fuse description
+	of "signal" and "interrupt" attribute.  Link pseudo instruction.
+
+2024-02-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/larchintrin.h (__movgr2fcsr): Remove redundant
+	symbol type conversions.
+	(__cacop_d): Likewise.
+	(__cpucfg): Likewise.
+	(__asrtle_d): Likewise.
+	(__asrtgt_d): Likewise.
+	(__lddir_d): Likewise.
+	(__ldpte_d): Likewise.
+	(__crc_w_b_w): Likewise.
+	(__crc_w_h_w): Likewise.
+	(__crc_w_w_w): Likewise.
+	(__crc_w_d_w): Likewise.
+	(__crcc_w_b_w): Likewise.
+	(__crcc_w_h_w): Likewise.
+	(__crcc_w_w_w): Likewise.
+	(__crcc_w_d_w): Likewise.
+	(__csrrd_w): Likewise.
+	(__csrwr_w): Likewise.
+	(__csrxchg_w): Likewise.
+	(__csrrd_d): Likewise.
+	(__csrwr_d): Likewise.
+	(__csrxchg_d): Likewise.
+	(__iocsrrd_b): Likewise.
+	(__iocsrrd_h): Likewise.
+	(__iocsrrd_w): Likewise.
+	(__iocsrrd_d): Likewise.
+	(__iocsrwr_b): Likewise.
+	(__iocsrwr_h): Likewise.
+	(__iocsrwr_w): Likewise.
+	(__iocsrwr_d): Likewise.
+	(__frecipe_s): Likewise.
+	(__frecipe_d): Likewise.
+	(__frsqrte_s): Likewise.
+	(__frsqrte_d): Likewise.
+
+2024-02-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/larchintrin.h (__iocsrrd_h): Modify the
+	function return value type to unsigned short.
+
 2024-02-16  Edwin Lu  <ewlu@rivosinc.com>
 
 	* doc/sourcebuild.texi: add scan-assembler-bound

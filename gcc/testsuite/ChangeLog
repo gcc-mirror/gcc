@@ -1,3 +1,14 @@
+2024-02-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113912
+	* gcc.target/i386/apx-push2pop2-2.c: New test.
+
+2024-02-18  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR middle-end/112344
+	* gcc.dg/torture/pr112344.c: Run non-optimized variants only
+	if expensive tests are allowed.
+
 2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/105473
