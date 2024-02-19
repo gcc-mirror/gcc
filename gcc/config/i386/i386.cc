@@ -22194,7 +22194,23 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       /* An insn that accesses memory is slightly more expensive
          than one that does not.  */
       if (speed)
-        *total += 1;
+	{
+	  *total += 1;
+	  rtx addr = XEXP (x, 0);
+	  /* For MEM, rtx_cost iterates each subrtx, and adds up the costs,
+	     so for MEM (reg) and MEM (reg + 4), the former costs 5,
+	     the latter costs 9, it is not accurate for x86. Ideally
+	     address_cost should be used, but it reduce cost too much.
+	     So current solution is make constant disp as cheap as possible.  */
+	  if (GET_CODE (addr) == PLUS
+	      && x86_64_immediate_operand (XEXP (addr, 1), Pmode))
+	    {
+	      *total += 1;
+	      *total += rtx_cost (XEXP (addr, 0), Pmode, PLUS, 0, speed);
+	      return true;
+	    }
+	}
+
       return false;
 
     case ZERO_EXTRACT:
