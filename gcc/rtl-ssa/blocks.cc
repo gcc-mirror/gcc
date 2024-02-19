@@ -639,7 +639,12 @@ function_info::place_phis (build_info &bi)
       if (bitmap_empty_p (&frontiers[b1]))
 	continue;
 
-      bitmap b1_def = &DF_LR_BB_INFO (BASIC_BLOCK_FOR_FN (m_fn, b1))->def;
+      // Defs in B1 that are possibly in LR_IN in the dominance frontier
+      // blocks.
+      auto_bitmap b1_def;
+      bitmap_and (b1_def, &DF_LR_BB_INFO (BASIC_BLOCK_FOR_FN (m_fn, b1))->def,
+		  DF_LR_OUT (BASIC_BLOCK_FOR_FN (m_fn, b1)));
+
       bitmap_iterator bmi;
       unsigned int b2;
       EXECUTE_IF_SET_IN_BITMAP (&frontiers[b1], 0, b2, bmi)
