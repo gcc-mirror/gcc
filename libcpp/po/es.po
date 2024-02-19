@@ -1,15 +1,15 @@
 # Spanish localization for cpplib
-# Copyright (C) 2001 - 2023 Free Software Foundation, Inc.
+# Copyright (C) 2001 - 2024 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Francisco Javier Serrador <fserrador@gmail.com>, 2018.
 # Antonio Ceballos Roa <aceballos@gmail.com>, 2021.
-# Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001 - 2012, 2022, 2023.
+# Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001 - 2012, 2022, 2023, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 13.1-b20230212\n"
+"Project-Id-Version: cpplib 14.1-b20240218\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2024-02-16 21:34+0000\n"
-"PO-Revision-Date: 2023-02-22 09:59-0600\n"
+"PO-Revision-Date: 2024-02-19 11:47-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@cfuga.mx>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -206,7 +206,7 @@ msgstr "secuencia de escape octal fuera de rango"
 #: charset.cc:2300 charset.cc:2310
 #, c-format
 msgid "numeric escape sequence in unevaluated string: '\\%c'"
-msgstr ""
+msgstr "secuencia de escape numérica en cadena sin evaluar: '\\%c'"
 
 #: charset.cc:2338
 msgid "the meaning of '\\a' is different in traditional C"
@@ -236,27 +236,25 @@ msgid "missing open quote"
 msgstr "falta comilla abierta"
 
 #: charset.cc:2772
-#, fuzzy
-#| msgid "character 0x%lx is not unibyte in execution character set"
 msgid "character not encodable in a single execution character code unit"
-msgstr "el carácter 0x%lx no es unibyte en el conjunto de caracteres de ejecución"
+msgstr "el carácter no es codificable en una sola ejecución de unidad de código de carácter"
 
 #: charset.cc:2777
 msgid "at least one character in a multi-character literal not encodable in a single execution character code unit"
-msgstr ""
+msgstr "por lo menos un carácter no es codificable en una literal multi-carácter en una sola ejecución de unidad de código de carácter"
 
 #: charset.cc:2795
 #, c-format
 msgid "multi-character literal with %ld characters exceeds 'int' size of %ld bytes"
-msgstr ""
+msgstr "la literal multi-carácter con %ld caracteres excede el tamaño de 'int' de %ld bytes"
 
 #: charset.cc:2799 charset.cc:2894
 msgid "multi-character literal cannot have an encoding prefix"
-msgstr ""
+msgstr "una literal multi-carácter no puede tener un prefijo de codificación"
 
 #: charset.cc:2802 charset.cc:2897
 msgid "character not encodable in a single code unit"
-msgstr ""
+msgstr "carácter no codificable en una sola unidad de código"
 
 #: charset.cc:2806
 msgid "multi-character character constant"
@@ -287,10 +285,9 @@ msgid "#%s before C++23 is a GCC extension"
 msgstr "#%s antes de C++23 es una extensión de GCC"
 
 #: directives.cc:397 directives.cc:401 directives.cc:2167 directives.cc:2206
-#, fuzzy, c-format
-#| msgid "#%s before C++23 is a GCC extension"
+#, c-format
 msgid "#%s before C23 is a GCC extension"
-msgstr "#%s antes de C++23 es una extensión de GCC"
+msgstr "#%s antes de C23 es una extensión de GCC"
 
 #: directives.cc:407
 #, c-format
@@ -593,10 +590,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "sufijo «%.*s» inválido en la constante de coma flotante hexadecimal"
 
 #: expr.cc:790 expr.cc:794
-#, fuzzy
-#| msgid "decimal float constants are a C2X feature"
 msgid "decimal float constants are a C23 feature"
-msgstr "las constantes de coma flotante decimal son una característica de C2X"
+msgstr "las constantes de coma flotante decimal son una característica de C23"
 
 #: expr.cc:813
 #, c-format
@@ -621,7 +616,7 @@ msgstr "uso de constante entera %<make_signed_t<size_t>%> de C++23"
 
 #: expr.cc:864 expr.cc:875
 msgid "ISO C does not support literal %<wb%> suffixes before C23"
-msgstr ""
+msgstr "ISO C no admite sufijos literales %<wb%> antes de C23"
 
 #: expr.cc:888
 msgid "imaginary constants are a GCC extension"
@@ -632,16 +627,12 @@ msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "las constantes binarias son una característica C++14 o una extensión de GCC"
 
 #: expr.cc:897
-#, fuzzy
-#| msgid "binary constants are a C2X feature or GCC extension"
 msgid "binary constants are a C23 feature or GCC extension"
-msgstr "las constantes binarias son una característica de C2X o una extensión de GCC"
+msgstr "las constantes binarias son una característica de C23 o una extensión de GCC"
 
 #: expr.cc:902
-#, fuzzy
-#| msgid "binary constants are a C2X feature"
 msgid "binary constants are a C23 feature"
-msgstr "las constantes binarias son una característica de C2X"
+msgstr "las constantes binarias son una característica de C23"
 
 #: expr.cc:998
 msgid "integer constant is too large for its type"
@@ -904,10 +895,8 @@ msgid "__VA_OPT__ is not available until C++20"
 msgstr "__VA_OPT__ no está disponible hasta C++20"
 
 #: lex.cc:2147
-#, fuzzy
-#| msgid "__VA_OPT__ is not available until C2X"
 msgid "__VA_OPT__ is not available until C23"
-msgstr "__VA_OPT__ no está disponible hasta C2X"
+msgstr "__VA_OPT__ no está disponible hasta C23"
 
 #: lex.cc:2155
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
@@ -920,7 +909,7 @@ msgstr "intento de utilizar «%s» envenenado"
 
 #: lex.cc:2177
 msgid "poisoned here"
-msgstr ""
+msgstr "envenenado aquí"
 
 #: lex.cc:2187
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
