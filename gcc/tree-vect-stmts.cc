@@ -6756,7 +6756,8 @@ vectorizable_operation (vec_info *vinfo,
 	 those through even when the mode isn't word_mode.  For
 	 ops we have to lower the lowering code assumes we are
 	 dealing with word_mode.  */
-      if ((((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype))
+	  || (((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
 	    || !target_support_p)
 	   && maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD))
 	  /* Check only during analysis.  */
