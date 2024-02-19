@@ -2340,12 +2340,12 @@ package body Exp_Ch4 is
                pragma Assert
                  (Is_First_Subtype (Outer_Type)
                    or else Is_Generic_Actual_Type (Outer_Type));
-               Error_Msg_Node_1 := Outer_Type;
                Error_Msg_Node_2 := Comp_Type;
-               Error_Msg
-                 ("?_q?""="" for type & uses predefined ""="" for }", Loc);
+               Error_Msg_N
+                 ("?_q?""="" for type & uses predefined ""="" for }",
+                  Outer_Type);
                Error_Msg_Sloc := Sloc (Op);
-               Error_Msg ("\?_q?""="" # is ignored here", Loc);
+               Error_Msg_N ("\?_q?""="" # is ignored here", Outer_Type);
             end if;
          end;
 
