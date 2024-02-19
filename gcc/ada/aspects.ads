@@ -72,14 +72,10 @@ package Aspects is
       Aspect_Address,
       Aspect_Aggregate,
       Aspect_Alignment,
-      Aspect_Always_Terminates,             -- GNAT
       Aspect_Annotate,                      -- GNAT
-      Aspect_Async_Readers,                 -- GNAT
-      Aspect_Async_Writers,                 -- GNAT
       Aspect_Attach_Handler,
       Aspect_Bit_Order,
       Aspect_Component_Size,
-      Aspect_Constant_After_Elaboration,    -- GNAT
       Aspect_Constant_Indexing,
       Aspect_Contract_Cases,                -- GNAT
       Aspect_Convention,
@@ -95,13 +91,9 @@ package Aspects is
       Aspect_Dimension_System,              -- GNAT
       Aspect_Dispatching_Domain,
       Aspect_Dynamic_Predicate,
-      Aspect_Effective_Reads,               -- GNAT
-      Aspect_Effective_Writes,              -- GNAT
       Aspect_Exceptional_Cases,             -- GNAT
-      Aspect_Extensions_Visible,            -- GNAT
       Aspect_External_Name,
       Aspect_External_Tag,
-      Aspect_Ghost,                         -- GNAT
       Aspect_Ghost_Predicate,               -- GNAT
       Aspect_Global,                        -- GNAT
       Aspect_GNAT_Annotate,                 -- GNAT
@@ -121,7 +113,6 @@ package Aspects is
       Aspect_Max_Entry_Queue_Depth,         -- GNAT
       Aspect_Max_Entry_Queue_Length,
       Aspect_Max_Queue_Length,              -- GNAT
-      Aspect_No_Caching,                    -- GNAT
       Aspect_No_Controlled_Parts,
       Aspect_No_Task_Parts,                 -- GNAT
       Aspect_Object_Size,                   -- GNAT
@@ -146,7 +137,6 @@ package Aspects is
       Aspect_Relaxed_Initialization,        -- GNAT
       Aspect_Scalar_Storage_Order,          -- GNAT
       Aspect_Secondary_Stack_Size,          -- GNAT
-      Aspect_Side_Effects,                  -- GNAT
       Aspect_Simple_Storage_Pool,           -- GNAT
       Aspect_Size,
       Aspect_Small,
@@ -168,7 +158,6 @@ package Aspects is
       Aspect_User_Aspect,                   -- GNAT
       Aspect_Value_Size,                    -- GNAT
       Aspect_Variable_Indexing,
-      Aspect_Volatile_Function,             -- GNAT
       Aspect_Warnings,                      -- GNAT
       Aspect_Write,
 
@@ -190,17 +179,25 @@ package Aspects is
       --  the aspect value is inherited from the parent, in which case, we do
       --  not allow False if we inherit a True value from the parent.
 
+      Aspect_Always_Terminates,             -- GNAT
       Aspect_Asynchronous,
+      Aspect_Async_Readers,                 -- GNAT
+      Aspect_Async_Writers,                 -- GNAT
       Aspect_Atomic,
       Aspect_Atomic_Components,
+      Aspect_Constant_After_Elaboration,    -- GNAT
       Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
       Aspect_CUDA_Device,                   -- GNAT
       Aspect_CUDA_Global,                   -- GNAT
+      Aspect_Effective_Reads,               -- GNAT
+      Aspect_Effective_Writes,              -- GNAT
       Aspect_Exclusive_Functions,
       Aspect_Export,
+      Aspect_Extensions_Visible,            -- GNAT
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Full_Access_Only,
+      Aspect_Ghost,                         -- GNAT
       Aspect_Independent,
       Aspect_Independent_Components,
       Aspect_Import,
@@ -208,6 +205,7 @@ package Aspects is
       Aspect_Inline_Always,                 -- GNAT
       Aspect_Interrupt_Handler,
       Aspect_Lock_Free,                     -- GNAT
+      Aspect_No_Caching,                    -- GNAT
       Aspect_No_Inline,                     -- GNAT
       Aspect_No_Return,
       Aspect_No_Tagged_Streams,             -- GNAT
@@ -217,6 +215,7 @@ package Aspects is
       Aspect_Pure_Function,                 -- GNAT
       Aspect_Remote_Access_Type,            -- GNAT
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
+      Aspect_Side_Effects,                  -- GNAT
       Aspect_Simple_Storage_Pool_Type,      -- GNAT
       Aspect_Static,
       Aspect_Suppress_Debug_Info,           -- GNAT
@@ -230,6 +229,7 @@ package Aspects is
       Aspect_Volatile,
       Aspect_Volatile_Components,
       Aspect_Volatile_Full_Access,          -- GNAT
+      Aspect_Volatile_Function,             -- GNAT
       Aspect_Yield);
 
    subtype Aspect_Id_Exclude_No_Aspect is
@@ -353,9 +353,13 @@ package Aspects is
    --  enabling the aspect. If the parameter is present it must be a static
    --  expression of type Standard.Boolean. If the value is True, then the
    --  aspect is enabled. If it is False, the aspect is disabled.
+   --
+   --  The Always_Terminates fits in this category even though it accepts an
+   --  optional boolean parameter which is non-static, because we want it to
+   --  be usable with pragma User_Defined_Aspect.
 
    subtype Boolean_Aspects is
-     Aspect_Id range Aspect_Asynchronous .. Aspect_Id'Last;
+     Aspect_Id range Aspect_Always_Terminates .. Aspect_Id'Last;
 
    subtype Pre_Post_Aspects is
      Aspect_Id range Aspect_Post .. Aspect_Precondition;
@@ -376,14 +380,10 @@ package Aspects is
       Aspect_Address                    => Expression,
       Aspect_Aggregate                  => Expression,
       Aspect_Alignment                  => Expression,
-      Aspect_Always_Terminates          => Optional_Expression,
       Aspect_Annotate                   => Expression,
-      Aspect_Async_Readers              => Optional_Expression,
-      Aspect_Async_Writers              => Optional_Expression,
       Aspect_Attach_Handler             => Expression,
       Aspect_Bit_Order                  => Expression,
       Aspect_Component_Size             => Expression,
-      Aspect_Constant_After_Elaboration => Optional_Expression,
       Aspect_Constant_Indexing          => Name,
       Aspect_Contract_Cases             => Expression,
       Aspect_Convention                 => Name,
@@ -399,13 +399,9 @@ package Aspects is
       Aspect_Dimension_System           => Expression,
       Aspect_Dispatching_Domain         => Expression,
       Aspect_Dynamic_Predicate          => Expression,
-      Aspect_Effective_Reads            => Optional_Expression,
-      Aspect_Effective_Writes           => Optional_Expression,
       Aspect_Exceptional_Cases          => Expression,
-      Aspect_Extensions_Visible         => Optional_Expression,
       Aspect_External_Name              => Expression,
       Aspect_External_Tag               => Expression,
-      Aspect_Ghost                      => Optional_Expression,
       Aspect_Ghost_Predicate            => Expression,
       Aspect_Global                     => Expression,
       Aspect_GNAT_Annotate              => Expression,
@@ -425,7 +421,6 @@ package Aspects is
       Aspect_Max_Entry_Queue_Depth      => Expression,
       Aspect_Max_Entry_Queue_Length     => Expression,
       Aspect_Max_Queue_Length           => Expression,
-      Aspect_No_Caching                 => Optional_Expression,
       Aspect_No_Controlled_Parts        => Optional_Expression,
       Aspect_No_Task_Parts              => Optional_Expression,
       Aspect_Object_Size                => Expression,
@@ -450,7 +445,6 @@ package Aspects is
       Aspect_Relaxed_Initialization     => Optional_Expression,
       Aspect_Scalar_Storage_Order       => Expression,
       Aspect_Secondary_Stack_Size       => Expression,
-      Aspect_Side_Effects               => Optional_Expression,
       Aspect_Simple_Storage_Pool        => Name,
       Aspect_Size                       => Expression,
       Aspect_Small                      => Expression,
@@ -472,7 +466,6 @@ package Aspects is
       Aspect_User_Aspect                => Expression,
       Aspect_Value_Size                 => Expression,
       Aspect_Variable_Indexing          => Name,
-      Aspect_Volatile_Function          => Optional_Expression,
       Aspect_Warnings                   => Name,
       Aspect_Write                      => Name,
 
