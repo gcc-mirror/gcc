@@ -37,335 +37,6 @@ FROM DynamicStrings IMPORT String ;
 FROM M2Error IMPORT ErrorScope ;
 FROM Lists IMPORT List ;
 
-EXPORT QUALIFIED NulSym,
-                 FinalSymbol,
-
-                 ModeOfAddr,
-                 GetMode, PutMode,
-
-                 AppendModuleOnImportStatement,
-                 AppendModuleImportStatement,
-
-                 StartScope, EndScope, PseudoScope,
-                 GetCurrentScope,
-                 IsDeclaredIn,
-                 CheckAnonymous, IsNameAnonymous,
-
-                 SetCurrentModule,
-                 SetMainModule,
-                 SetFileModule,
-                 MakeModule, MakeDefImp,
-                 MakeInnerModule, MakeModuleCtor, PutModuleCtorExtern,
-                 MakeProcedure,
-                 MakeProcedureCtorExtern,
-                 MakeConstant,
-                 MakeConstLit,
-                 MakeConstVar,
-                 MakeConstLitString,
-                 MakeConstString,
-                 MakeConstStringC, MakeConstStringCnul, MakeConstStringM2nul,
-                 MakeType,
-                 MakeHiddenType,
-                 MakeVar,
-                 MakeRecord,
-                 MakeVarient,
-                 MakeFieldVarient,
-                 MakeEnumeration,
-                 MakeSubrange,
-      	       	 MakeSet,
-                 MakeArray,
-                 MakeTemporary,
-                 MakeComponentRecord,
-                 MakeComponentRef,
-                 IsComponent,
-                 MakePointer,
-                 MakeSubscript,
-                 MakeUnbounded,
-                 MakeOAFamily,
-                 MakeProcType,
-                 MakeImport, MakeImportStatement,
-                 Make2Tuple,
-                 MakeGnuAsm,
-                 MakeRegInterface,
-                 MakeError, MakeErrorS,
-
-                 ForeachModuleDo,
-                 ForeachInnerModuleDo,
-                 ForeachLocalSymDo,
-                 ForeachParamSymDo,
-
-                 ForeachFieldEnumerationDo,
-                 GetModule,
-                 GetCurrentModule,
-                 GetFileModule,
-                 GetMainModule,
-                 GetBaseModule,
-                 GetCurrentModuleScope,
-                 GetLastModuleScope,
-                 AddSymToModuleScope,
-                 GetType, GetLType, GetSType, GetDType,
-                 SkipType, SkipTypeAndSubrange,
-                 GetLowestType, GetTypeMode,
-                 GetSym, GetLocalSym, GetDeclareSym, GetRecord,
-                 FromModuleGetSym,
-                 GetOAFamily,
-                 GetDimension,
-                 GetNth,
-                 GetVarScope,
-                 GetSubrange,
-                 GetParam,
-                 GetString,
-                 GetStringLength,
-                 GetProcedureBuiltin,
-                 GetNthParam,
-                 GetNthProcedure,
-                 GetParameterShadowVar,
-                 GetUnbounded,
-                 GetUnboundedRecordType,
-                 GetUnboundedAddressOffset,
-                 GetUnboundedHighOffset,
-                 GetModuleQuads,
-                 PutModuleFinallyFunction, GetModuleFinallyFunction,
-                 PutExceptionBlock, HasExceptionBlock,
-                 PutExceptionFinally, HasExceptionFinally,
-                 GetProcedureQuads,
-                 GetQuads,
-                 GetReadQuads, GetWriteQuads,
-                 GetReadLimitQuads, GetWriteLimitQuads,
-                 GetDeclaredDef, GetDeclaredMod, PutDeclared,
-                 GetDeclaredDefinition, GetDeclaredModule,
-                 GetFirstUsed,
-                 PutProcedureBegin, PutProcedureEnd, GetProcedureBeginEnd,
-                 GetGnuAsmInput, GetGnuAsmOutput, GetGnuAsmTrash, GetGnuAsm,
-                 GetRegInterface,
-                 GetVariableAtAddress,
-                 GetAlignment, GetDefaultRecordFieldAlignment,
-                 PutDeclaredPacked, IsDeclaredPacked, IsDeclaredPackedResolved,
-                 GetPackedEquivalent, GetNonPackedEquivalent,
-                 GetConstStringM2, GetConstStringC, GetConstStringM2nul, GetConstStringCnul,
-                 GetModuleCtors,
-                 GetImportModule, GetImportDeclared,
-                 GetImportStatementList, GetModuleDefImportStatementList, GetModuleModImportStatementList,
-
-                 PutVar,
-                 PutVarConst,
-                 PutLeftValueFrontBackType,
-                 GetVarBackEndType,
-                 PutVarPointerCheck,
-                 GetVarPointerCheck,
-                 PutVarWritten,
-                 GetVarWritten,
-                 PutConst,
-                 PutConstString,
-                 PutDefLink,
-                 PutModLink,
-                 PutModuleBuiltin,
-                 PutVarArrayRef, IsVarArrayRef,
-
-                 PutConstSet,
-                 PutConstructor,
-                 PutConstructorFrom,
-                 PutFieldRecord,
-                 PutFieldVarient,
-                 GetVarient,
-                 GetVarientTag,
-
-                 PutVarientTag,
-                 IsRecordFieldAVarientTag,
-                 IsEmptyFieldVarient,
-                 PutFieldEnumeration,
-                 PutSubrange,
-      	       	 PutSet, IsSetPacked,
-                 PutArraySubscript, GetArraySubscript,
-                 PutArray,
-		 PutArrayLarge, IsArrayLarge,
-                 PutType,
-                 PutFunction, PutOptFunction,
-                 PutParam, PutVarParam, PutParamName,
-                 PutProcTypeParam, PutProcTypeVarParam,
-                 PutPointer,
-                 PutSubscript,
-                 PutProcedureBuiltin, PutProcedureInline,
-                 PutModuleStartQuad,
-                 PutModuleEndQuad,
-                 PutModuleFinallyStartQuad,
-                 PutModuleFinallyEndQuad,
-                 PutProcedureStartQuad,
-                 PutProcedureEndQuad,
-                 PutProcedureScopeQuad,
-                 PutProcedureReachable,
-                 PutProcedureNoReturn, IsProcedureNoReturn,
-                 PutReadQuad, RemoveReadQuad,
-                 PutWriteQuad, RemoveWriteQuad,
-                 PutGnuAsm, PutGnuAsmOutput, PutGnuAsmInput, PutGnuAsmTrash,
-                 PutGnuAsmVolatile, PutGnuAsmSimple,
-                 PutRegInterface,
-                 PutVariableAtAddress,
-                 PutAlignment, PutDefaultRecordFieldAlignment,
-                 PutUnused, IsUnused,
-                 PutVariableSSA, IsVariableSSA,
-                 PutPublic, IsPublic, PutCtor, IsCtor, PutExtern, IsExtern,
-                 PutMonoName, IsMonoName,
-                 PutVarHeap, IsVarHeap,
-
-                 IsDefImp,
-                 IsModule,
-                 IsInnerModule,
-                 IsUnknown,
-                 IsPartialUnbounded,
-                 IsType,
-                 IsProcedure,
-                 IsParameter,
-                 IsParameterUnbounded,
-                 IsParameterVar,
-                 IsVarParam,
-                 IsUnboundedParam,
-                 IsPointer,
-                 IsRecord,
-                 IsVarient,
-                 IsFieldVarient,
-                 IsEnumeration,
-                 IsFieldEnumeration,
-                 IsUnbounded,
-                 IsArray,
-                 IsRecordField,
-                 IsProcType,
-                 IsImport,
-                 IsImportStatement,
-                 IsVar,
-                 IsVarConst,
-                 IsConst,
-                 IsConstString,
-                 IsConstStringM2, IsConstStringC, IsConstStringM2nul, IsConstStringCnul,
-                 IsConstLit,
-                 IsConstSet,
-                 IsConstructor,
-                 IsDummy,
-                 IsTemporary, IsVarAParam,
-                 IsSubscript,
-                 IsSubrange,
-      	       	 IsSet,
-                 IsHiddenType,
-                 IsAModula2Type,
-                 IsGnuAsmVolatile, IsGnuAsmSimple, IsGnuAsm, IsRegInterface,
-                 IsError,
-                 IsObject,
-                 IsTuple,
-                 IsComposite,
-
-                 IsReallyPointer,
-                 IsLegal,
-
-                 IsProcedureReachable,
-                 IsProcedureVariable,
-                 IsProcedureNested,
-                 IsProcedureBuiltin, IsProcedureInline,
-                 IsModuleWithinProcedure,
-                 IsVariableAtAddress,
-                 IsReturnOptional,
-                 IsDefLink,
-                 IsModLink,
-                 IsModuleBuiltin,
-                 IsProcedureBuiltinAvailable,
-
-                 ForeachProcedureDo,
-                 ProcedureParametersDefined,
-                 AreProcedureParametersDefined,
-                 ParametersDefinedInDefinition,
-                 AreParametersDefinedInDefinition,
-                 ParametersDefinedInImplementation,
-                 AreParametersDefinedInImplementation,
-
-                 PutUseVarArgs,
-                 UsesVarArgs,
-                 PutUseOptArg,
-                 UsesOptArg,
-                 PutOptArgInit,
-                 GetOptArgInit,
-                 PutPriority,
-                 GetPriority,
-                 PutNeedSavePriority,
-                 GetNeedSavePriority,
-
-                 NoOfVariables,
-                 NoOfElements,
-                 NoOfParam,
-                 AddNameToImportList,
-                 AddNameToScope, ResolveImports,
-                 GetScope, GetModuleScope, GetProcedureScope,
-                 GetParent,
-
-                 GetSymName,
-                 RenameSym,
-
-                 RequestSym,
-
-                 GetExported,
-                 PutImported,
-                 PutIncluded,
-                 PutExported,
-                 PutExportQualified,
-                 PutExportUnQualified,
-                 PutExportUnImplemented,
-                 GetFromOuterModule,
-                 IsExportQualified,
-                 IsExportUnQualified,
-                 IsExported,
-                 IsImplicityExported,
-                 IsImported,
-                 PutIncludedByDefinition, IsIncludedByDefinition,
-                 TryMoveUndeclaredSymToInnerModule,
-                 ForeachImportedDo,
-                 ForeachExportedDo,
-                 ForeachOAFamily,
-
-                 CheckForExportedImplementation,
-                 CheckForUnImplementedExports,
-                 CheckForUndeclaredExports,
-                 CheckForUnknownInModule, UnknownReported,
-                 CheckHiddenTypeAreAddress,
-
-                 CheckForEnumerationInCurrentModule,
-                 PutHiddenTypeDeclared,
-                 IsHiddenTypeDeclared,
-
-                 PutDefinitionForC,
-                 IsDefinitionForC,
-
-                 PutDoesNeedExportList, PutDoesNotNeedExportList,
-                 DoesNotNeedExportList,
-                 ResolveConstructorTypes,
-                 MakeTemporaryFromExpression, MakeTemporaryFromExpressions,
-                 SanityCheckConstants,
-
-                 PutModuleContainsBuiltin, IsBuiltinInModule,
-		 HasVarParameters,
-                 GetErrorScope,
-                 GetLibName, PutLibName,
-
-                 IsSizeSolved,
-                 IsOffsetSolved,
-                 IsValueSolved,
-                 IsConstructorConstant,
-                 IsSumOfParamSizeSolved,
-                 PushSize,
-                 PushOffset,
-                 PushValue,
-                 PushParamSize,
-                 PushVarSize,
-                 PushSumOfLocalVarSize,
-                 PushSumOfParamSize,
-                 PopValue,
-                 PopSize,
-                 PopOffset,
-                 PopSumOfParamSize,
-                 DisplayTrees,
-		 DebugLineNumbers,
-                 VarCheckReadInit, VarInitState, PutVarInitialized,
-                 PutVarFieldInitialized, GetVarFieldInitialized,
-                 PrintInitialized,
-                 GetParameterHeapVar, PutProcedureParameterHeapVars ;
-
 
 (*
    Throughout this module any SymKey value of 0 is deemed to be a
@@ -787,35 +458,95 @@ PROCEDURE MakeConstLit (tok: CARDINAL; constName: Name; constType: CARDINAL) : C
 
 
 (*
-   MakeConstVar - makes a ConstVar type with
-                  name ConstVarName.
+   MakeConstVar - makes a ConstVar type with name ConstVarName.
 *)
 
 PROCEDURE MakeConstVar (tok: CARDINAL; ConstVarName: Name) : CARDINAL ;
 
 
 (*
-   MakeConstLitString - put a constant which has the string described by
-                        ConstName into the ConstantTree and return a symbol.
-                        This symbol is known as a String Constant rather than a
-                        ConstLit which indicates a number.
-                        If the constant already exits
-                        then a duplicate constant is not entered in the tree.
-                        All values of constant strings
-                        are ignored in Pass 1 and evaluated in Pass 2 via
-                        character manipulation.
-*)
-
-PROCEDURE MakeConstLitString (tok: CARDINAL; ConstName: Name) : CARDINAL ;
-
-
-(*
-   MakeConstString - puts a constant into the symboltable which is a string.
-                     The string value is unknown at this time and will be
-                     filled in later by PutString.
+   MakeConstString - create a string constant in the symboltable.
 *)
 
 PROCEDURE MakeConstString (tok: CARDINAL; ConstName: Name) : CARDINAL ;
+
+
+(*
+   MakeConstStringCnul - creates a constant string nul terminated string suitable for C.
+                         If known is TRUE then name is assigned to the contents
+                         and the escape sequences will be converted into characters.
+*)
+
+PROCEDURE MakeConstStringCnul (tok: CARDINAL; name: Name; known: BOOLEAN) : CARDINAL ;
+
+
+(*
+   MakeConstStringM2nul - creates a constant string nul terminated string suitable for M2.
+                          If known is TRUE then name is assigned to the contents
+                          however the escape sequences are not converted into characters.
+*)
+
+PROCEDURE MakeConstStringM2nul (tok: CARDINAL; name: Name; known: BOOLEAN) : CARDINAL ;
+
+
+(*
+   PutConstStringKnown - if sym is a constvar then convert it into a conststring.
+                         If known is FALSE then contents is ignored and NulName is
+                         stored.  If escape is TRUE then the contents will have
+                         any escape sequences converted into single characters.
+*)
+
+PROCEDURE PutConstStringKnown (tok: CARDINAL; sym: CARDINAL;
+                               contents: Name; escape, known: BOOLEAN) ;
+
+
+(*
+   CopyConstString - copies string contents from expr to des
+                     and retain the kind of string.
+*)
+
+PROCEDURE CopyConstString (tok: CARDINAL; des, expr: CARDINAL) ;
+
+
+(*
+   IsConstStringKnown - returns TRUE if sym is a const string
+                        and the contents are known.
+*)
+
+PROCEDURE IsConstStringKnown (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstStringM2 - returns whether this conststring is a
+                     Modula-2 string.
+*)
+
+PROCEDURE IsConstStringM2 (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstStringC - returns whether this conststring is a C style string
+                    which will have any escape translated.
+*)
+
+PROCEDURE IsConstStringC (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstStringM2nul - returns whether this conststring is a Modula-2 string which
+                        contains a nul terminator.
+*)
+
+PROCEDURE IsConstStringM2nul (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstStringCnul - returns whether this conststring is a C style string
+                       which will have any escape translated and also contains
+                       a nul terminator.
+*)
+
+PROCEDURE IsConstStringCnul (sym: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -1292,10 +1023,10 @@ PROCEDURE GetString (Sym: CARDINAL) : Name ;
 
 (*
    GetStringLength - returns the actual string length for ConstString
-                     symbol Sym.
+                     symbol sym.
 *)
 
-PROCEDURE GetStringLength (Sym: CARDINAL) : CARDINAL ;
+PROCEDURE GetStringLength (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -1429,47 +1160,6 @@ PROCEDURE GetVarWritten (sym: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE PutConst (Sym: CARDINAL; ConstType: CARDINAL) ;
-
-
-(*
-   PutConstString - places contents into a constant symbol, sym.
-                    sym maybe a ConstString or a ConstVar.  If the later is
-                    true then the ConstVar is converted to a ConstString.
-*)
-
-PROCEDURE PutConstString (tok: CARDINAL; sym: CARDINAL; contents: Name) ;
-
-
-(*
-   GetConstStringM2 - returns the Modula-2 variant of a string
-                      (with no added nul terminator).
-*)
-
-PROCEDURE GetConstStringM2 (sym: CARDINAL) : CARDINAL ;
-
-
-(*
-   GetConstStringC - returns the C variant of a string
-                     (with no added nul terminator).
-*)
-
-PROCEDURE GetConstStringC (sym: CARDINAL) : CARDINAL ;
-
-
-(*
-   GetConstStringM2nul - returns the Modula-2 variant of a string
-                         (with added nul terminator).
-*)
-
-PROCEDURE GetConstStringM2nul (sym: CARDINAL) : CARDINAL ;
-
-
-(*
-   GetConstStringCnul - returns the C variant of a string
-                        (with no added nul terminator).
-*)
-
-PROCEDURE GetConstStringCnul (sym: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -2911,70 +2601,11 @@ PROCEDURE IsConstString (sym: CARDINAL) : BOOLEAN ;
 
 
 (*
-   IsConstStringM2 - returns whether this conststring is an unaltered Modula-2 string.
-*)
-
-PROCEDURE IsConstStringM2 (sym: CARDINAL) : BOOLEAN ;
-
-
-(*
-   IsConstStringC - returns whether this conststring is a C style string
-                    which will have any escape translated.
-*)
-
-PROCEDURE IsConstStringC (sym: CARDINAL) : BOOLEAN ;
-
-
-(*
-   IsConstStringM2nul - returns whether this conststring is a Modula-2 string which
-                        contains a nul terminator.
-*)
-
-PROCEDURE IsConstStringM2nul (sym: CARDINAL) : BOOLEAN ;
-
-
-(*
-   IsConstStringCnul - returns whether this conststring is a C style string
-                       which will have any escape translated and also contains
-                       a nul terminator.
-*)
-
-PROCEDURE IsConstStringCnul (sym: CARDINAL) : BOOLEAN ;
-
-
-(*
    IsConstStringNulTerminated - returns TRUE if the constant string, sym,
                                 should be created with a nul terminator.
 *)
 
 PROCEDURE IsConstStringNulTerminated (sym: CARDINAL) : BOOLEAN ;
-
-
-(*
-   MakeConstStringCnul - creates a constant string nul terminated string suitable for C.
-                         sym is a ConstString and a new symbol is returned
-                         with the escape sequences converted into characters.
-*)
-
-PROCEDURE MakeConstStringCnul (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
-
-
-(*
-   MakeConstStringM2nul - creates a constant string nul terminated string.
-                          sym is a ConstString and a new symbol is returned.
-*)
-
-PROCEDURE MakeConstStringM2nul (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
-
-
-(*
-   MakeConstStringC - creates a constant string suitable for C.
-                      sym is a Modula-2 ConstString and a new symbol is returned
-                      with the escape sequences converted into characters.
-                      It is not nul terminated.
-*)
-
-PROCEDURE MakeConstStringC (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
 
 
 (*

@@ -251,13 +251,16 @@ VAR
    i: CARDINAL ;
    p: PtrToChar ;
 BEGIN
-   p := KeyToCharStar(Key) ;
    i := 0 ;
-   WHILE p^#nul DO
-      INC(i) ;
-      INC(p)
+   IF Key # NulName
+   THEN
+      p := KeyToCharStar (Key) ;
+      WHILE p^ # nul DO
+         INC (i) ;
+         INC (p)
+      END
    END ;
-   RETURN( i )
+   RETURN i
 END LengthKey ;
 
 
