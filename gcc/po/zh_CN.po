@@ -35,7 +35,7 @@ msgstr ""
 "Project-Id-Version: gcc 13.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2023-07-26 18:38+0000\n"
-"PO-Revision-Date: 2024-02-06 10:59-0500\n"
+"PO-Revision-Date: 2024-02-17 18:57-0500\n"
 "Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -392,18 +392,16 @@ msgstr "-Xbind-now 与 -Xbind-lazy 不兼容"
 
 #: config/aarch64/aarch64-freebsd.h:37 config/arm/freebsd.h:49
 #: config/riscv/freebsd.h:44
-#, fuzzy
 msgid "consider using `-pg' instead of `-p' with gprof (1)"
-msgstr "与 gprof(1) 一起使用时请考虑使用‘-pg’以代替‘-p’"
+msgstr "与 gprof (1) 一起使用时请考虑使用‘-pg’以代替‘-p’"
 
 #: config/arc/arc.h:68 config/mips/mips.h:1477
 msgid "may not use both -EB and -EL"
 msgstr "不能同时使用 -EB 和 -EL"
 
 #: config/avr/specs.h:71 config/pru/pru.h:58
-#, fuzzy
 msgid "shared is not supported"
-msgstr "%P%F：不支持 -shared\n"
+msgstr "不支持 shared"
 
 #: config/bfin/elf.h:55
 msgid "no processor type specified for linking"
@@ -544,20 +542,17 @@ msgid "GNU Objective C no longer supports traditional compilation"
 msgstr "GNU Objective C 不再支持传统编译"
 
 #: objc/lang-specs.h:55
-#, fuzzy
 msgid "objc-cpp-output is deprecated; please use objective-c-cpp-output instead"
-msgstr "objc-cpp-output 被不宜用；请使用 objective-c-cpp-output 作为替代"
+msgstr "objc-cpp-output 已被弃用；请使用 objective-c-cpp-output 作为替代"
 
 #: objcp/lang-specs.h:58
-#, fuzzy
 msgid "objc++-cpp-output is deprecated; please use objective-c++-cpp-output instead"
-msgstr "objc ++-cpp-output 被不宜用；请使用 objective-c++-cpp-output 作为替代"
+msgstr "objc++-cpp-output 已被弃用；请使用 objective-c++-cpp-output 作为替代"
 
 #: fortran/lang.opt:146
-#, fuzzy, no-c-format
-#| msgid "-J<directory>\tPut MODULE files in 'directory'"
+#, no-c-format
 msgid "-J<directory>\tPut MODULE files in 'directory'."
-msgstr "-J<目录>\t将 MODULE 文件放入目录"
+msgstr "-J<目录>\t将 MODULE 文件放入指定目录。"
 
 #: fortran/lang.opt:198
 #, fuzzy, no-c-format
@@ -912,10 +907,9 @@ msgid "Set the default real kind to an 16 byte wide type."
 msgstr "将默认实型种别设为 8 字节宽"
 
 #: fortran/lang.opt:531
-#, fuzzy, no-c-format
-#| msgid "Allow dollar signs in entity names"
+#, no-c-format
 msgid "Allow dollar signs in entity names."
-msgstr "允许在实体名中使用美元符号"
+msgstr "允许在实体名中使用美元符号。"
 
 #: fortran/lang.opt:539
 #, fuzzy, no-c-format
@@ -1599,85 +1593,82 @@ msgstr "对被截断的字符表达式给出警告"
 #: c-family/c.opt:410
 #, no-c-format
 msgid "Warn when __builtin_frame_address or __builtin_return_address is used unsafely."
-msgstr ""
+msgstr "当 __builtin_frame_address 或 __builtin_return_address 被不安全地使用时给出警告。"
 
 #: c-family/c.opt:414
-#, fuzzy, no-c-format
-#| msgid "Warn when an inlined function cannot be inlined"
+#, no-c-format
 msgid "Warn when a built-in function is declared with the wrong signature."
-msgstr "当内联函数无法被内联时给出警告"
+msgstr "当内奸函数使用了错误的签名被声明时给出警告。"
 
 #: c-family/c.opt:418
-#, fuzzy, no-c-format
-#| msgid "Warn when a built-in preprocessor macro is undefined or redefined"
+#, no-c-format
 msgid "Warn when a built-in preprocessor macro is undefined or redefined."
-msgstr "当内建预处理宏未定义或重定义时给出警告"
+msgstr "当内建预处理宏未定义或重定义时给出警告。"
 
 #: c-family/c.opt:422
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about features not present in ISO C11, but present in ISO C2X."
-msgstr "使用了传统 C 不支持的特性时给出警告"
+msgstr "对 ISO C11 中不存在但 ISO C2X 中存在的特性给出警告。"
 
 #: c-family/c.opt:426
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about features not present in ISO C90, but present in ISO C99."
-msgstr "使用了传统 C 不支持的特性时给出警告"
+msgstr "对 ISO C90 中不存在但 ISO C99 中存在的特性给出警告。"
 
 #: c-family/c.opt:430
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about features not present in ISO C99, but present in ISO C11."
-msgstr "使用了传统 C 不支持的特性时给出警告"
+msgstr "对 ISO C99 中不存在但 ISO C11 中存在的特性给出警告。"
 
 #: c-family/c.opt:434
-#, fuzzy, no-c-format
-#| msgid "Warn about C constructs that are not in the common subset of C and C++"
+#, no-c-format
 msgid "Warn about C constructs that are not in the common subset of C and C++."
-msgstr "当在 C 语言中使用了 C 与 C++ 交集以外的构造时给出警告"
+msgstr "对在 C 语言中使用了 C 与 C++ 交集以外的构造时给出警告。"
 
 #: c-family/c.opt:441
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 2011."
-msgstr "当 C++ 构造的意义在 ISO C++ 1998 和 ISO C++ 200x 中不同时给出警告"
+msgstr "当 C++ 构造的意义在 ISO C++ 1998 和 ISO C++ 2011 中不同时给出警告。"
 
 #: c-family/c.opt:445
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2011 and ISO C++ 2014."
-msgstr "当 C++ 构造的意义在 ISO C++ 1998 和 ISO C++ 200x 中不同时给出警告"
+msgstr "当 C++ 构造的意义在 ISO C++ 2011 和 ISO C++ 2014 中不同时给出警告。"
 
 #: c-family/c.opt:452
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2014 and ISO C++ 2017."
-msgstr "当 C++ 构造的意义在 ISO C++ 1998 和 ISO C++ 200x 中不同时给出警告"
+msgstr "当 C++ 构造的意义在 ISO C++ 2014 和 ISO C++ 2017 中不同时给出警告。"
 
 #: c-family/c.opt:459
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020."
-msgstr "当 C++ 构造的意义在 ISO C++ 1998 和 ISO C++ 200x 中不同时给出警告"
+msgstr "当 C++ 构造的意义在 ISO C++ 2017 和 ISO C++ 2020 中不同时给出警告。"
 
 #: c-family/c.opt:463
 #, no-c-format
 msgid "Warn about C++11 constructs in code compiled with an older standard."
-msgstr ""
+msgstr "对使用较旧标准编译的代码给出 C++11 构造的警告。"
 
 #: c-family/c.opt:467
 #, no-c-format
 msgid "Warn about C++14 constructs in code compiled with an older standard."
-msgstr ""
+msgstr "对使用较旧标准编译的代码给出 C++14 构造的警告。"
 
 #: c-family/c.opt:471
 #, no-c-format
 msgid "Warn about C++17 constructs in code compiled with an older standard."
-msgstr ""
+msgstr "对使用较旧标准编译的代码给出 C++17 构造的警告。"
 
 #: c-family/c.opt:475
 #, no-c-format
 msgid "Warn about C++20 constructs in code compiled with an older standard."
-msgstr ""
+msgstr "对使用较旧标准编译的代码给出 C++20 构造的警告。"
 
 #: c-family/c.opt:479
 #, no-c-format
 msgid "Warn about C++23 constructs in code compiled with an older standard."
-msgstr ""
+msgstr "对使用较旧标准编译的代码给出 C++23 构造的警告。"
 
 #: c-family/c.opt:483
 #, no-c-format
@@ -1896,10 +1887,9 @@ msgid "Warn about enum/integer type mismatches."
 msgstr "当下标类型为“char”时给出警告"
 
 #: c-family/c.opt:659
-#, fuzzy, no-c-format
-#| msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead"
+#, no-c-format
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead."
-msgstr "已弃用此开关；请改用 -Werror=implicit-function-declaration"
+msgstr "已弃用此开关；请改用 -Werror=implicit-function-declaration。"
 
 #: c-family/c.opt:663
 #, fuzzy, no-c-format
@@ -2036,8 +2026,7 @@ msgid "Warn when the address of packed member of struct or union is taken."
 msgstr ""
 
 #: c-family/c.opt:770
-#, fuzzy, no-c-format
-#| msgid "Warn about variables which are initialized to themselves"
+#, no-c-format
 msgid "Warn about variables which are initialized to themselves."
 msgstr "对初始化为自身的变量给出警告。"
 
@@ -2052,16 +2041,14 @@ msgid "Warn about nonsensical values of --param destructive-interference-size or
 msgstr ""
 
 #: c-family/c.opt:783
-#, fuzzy, no-c-format
-#| msgid "Warn about implicit declarations"
+#, no-c-format
 msgid "Warn about implicit declarations."
-msgstr "对隐式函数声明给出警告"
+msgstr "对隐式函数声明给出警告。"
 
 #: c-family/c.opt:791
-#, fuzzy, no-c-format
-#| msgid "Warn about implicit conversions from \"float\" to \"double\""
+#, no-c-format
 msgid "Warn about implicit conversions from \"float\" to \"double\"."
-msgstr "对从“float”到“double”的隐式转换给出警告"
+msgstr "对从“float”到“double”的隐式转换给出警告。"
 
 #: c-family/c.opt:795
 #, no-c-format
@@ -2152,10 +2139,9 @@ msgid "Do not warn about using \"long long\" when -pedantic."
 msgstr "当使用 -pedantic 时不对“long long”给出警告"
 
 #: c-family/c.opt:862
-#, fuzzy, no-c-format
-#| msgid "Warn about suspicious declarations of \"main\""
+#, no-c-format
 msgid "Warn about suspicious declarations of \"main\"."
-msgstr "对可疑的“main”声明给出警告"
+msgstr "对可疑的“main”声明给出警告。"
 
 #: c-family/c.opt:870
 #, no-c-format
@@ -2685,8 +2671,7 @@ msgid "Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functi
 msgstr "当 __sync_fetch_and_nand 和 __sync_nand_and_fetch 内建函数被使用时给出警告"
 
 #: c-family/c.opt:1331
-#, fuzzy, no-c-format
-#| msgid "Deprecated.  This switch has no effect"
+#, no-c-format
 msgid "Deprecated.  This switch has no effect."
 msgstr "已弃用。此开关不起作用。"
 
@@ -2702,10 +2687,9 @@ msgid "Warn if a throw expression will always result in a call to terminate()."
 msgstr ""
 
 #: c-family/c.opt:1347
-#, fuzzy, no-c-format
-#| msgid "Warn about features not present in traditional C"
+#, no-c-format
 msgid "Warn about features not present in traditional C."
-msgstr "使用了传统 C 不支持的特性时给出警告"
+msgstr "使用了传统 C 不支持的特性时给出警告。"
 
 #: c-family/c.opt:1351
 #, fuzzy, no-c-format
@@ -3100,10 +3084,9 @@ msgid "Fold calls to simple inline functions."
 msgstr "内部函数"
 
 #: c-family/c.opt:1817
-#, fuzzy, no-c-format
-#| msgid "Do not assume that standard C libraries and \"main\" exist"
+#, no-c-format
 msgid "Do not assume that standard C libraries and \"main\" exist."
-msgstr "不假定标准 C 库和“main”存在"
+msgstr "不假定标准 C 库和“main”存在。"
 
 #: c-family/c.opt:1821
 #, no-c-format
@@ -3111,10 +3094,9 @@ msgid "Recognize GNU-defined keywords."
 msgstr "识别 GNU 定义的关键字。"
 
 #: c-family/c.opt:1825
-#, fuzzy, no-c-format
-#| msgid "Generate code for GNU runtime environment"
+#, no-c-format
 msgid "Generate code for GNU runtime environment."
-msgstr "为 GNU 运行时环境生成代码"
+msgstr "为 GNU 运行时环境生成代码。"
 
 #: c-family/c.opt:1829
 #, no-c-format
@@ -3311,15 +3293,14 @@ msgid "Enable Objective-C setjmp exception handling runtime."
 msgstr "启用 Objective-C setjmp 异常处理运行时"
 
 #: c-family/c.opt:2044
-#, fuzzy, no-c-format
-#| msgid "Conform to the Objective-C 1.0 language as implemented in GCC 4.0"
+#, no-c-format
 msgid "Conform to the Objective-C 1.0 language as implemented in GCC 4.0."
-msgstr "遵循于 GCC 4.0 实现的 Ojbective-C 1.0 语言"
+msgstr "遵循于 GCC 4.0 实现的 Ojbective-C 1.0 语言。"
 
 #: c-family/c.opt:2048
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Enable OpenACC."
-msgstr "对齐 COMMON 块"
+msgstr "启用 OpenACC。"
 
 #: c-family/c.opt:2052
 #, no-c-format
@@ -3618,16 +3599,14 @@ msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path."
 msgstr "-iwithprefixbefore <目录>\t将目录添加至主包含路径末尾"
 
 #: c-family/c.opt:2335
-#, fuzzy, no-c-format
-#| msgid "Do not search standard system include directories (those specified with -isystem will still be used)"
+#, no-c-format
 msgid "Do not search standard system include directories (those specified with -isystem will still be used)."
-msgstr "不搜索标准系统头文件目录(但仍将使用由 -isystem 指定的目录)"
+msgstr "不搜索标准系统头文件目录（但仍将使用由 -isystem 指定的目录）。"
 
 #: c-family/c.opt:2339
-#, fuzzy, no-c-format
-#| msgid "Do not search standard system include directories for C++"
+#, no-c-format
 msgid "Do not search standard system include directories for C++."
-msgstr "不搜索 C++ 标准系统头文件目录"
+msgstr "不搜索 C++ 标准系统头文件目录。"
 
 #: c-family/c.opt:2351
 #, no-c-format
@@ -3768,10 +3747,9 @@ msgid "Conform to the ISO 2023 C++ draft standard with GNU extensions (experimen
 msgstr "遵循 ISO 201z(7?) C++ 标准草案和 GNU 扩展(试验性质的不完全支持)"
 
 #: c-family/c.opt:2493
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1990 C standard with GNU extensions"
+#, no-c-format
 msgid "Conform to the ISO 2011 C standard with GNU extensions."
-msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展"
+msgstr "遵循 ISO 2011 C 标准，也支持 GNU 扩展。"
 
 #: c-family/c.opt:2497
 #, no-c-format
@@ -3791,34 +3769,29 @@ msgid "Conform to the ISO 202X C standard draft with GNU extensions (experimenta
 msgstr "遵循 ISO 201z(7?) C++ 标准草案和 GNU 扩展(试验性质的不完全支持)"
 
 #: c-family/c.opt:2513 c-family/c.opt:2517
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1990 C standard with GNU extensions"
+#, no-c-format
 msgid "Conform to the ISO 1990 C standard with GNU extensions."
-msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展"
+msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展。"
 
 #: c-family/c.opt:2521
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1999 C standard with GNU extensions"
+#, no-c-format
 msgid "Conform to the ISO 1999 C standard with GNU extensions."
-msgstr "遵循 ISO 1999 C 标准，也支持 GNU 扩展"
+msgstr "遵循 ISO 1999 C 标准，也支持 GNU 扩展。"
 
 #: c-family/c.opt:2525
-#, fuzzy, no-c-format
-#| msgid "Deprecated in favor of -std=gnu99"
+#, no-c-format
 msgid "Deprecated in favor of -std=gnu99."
-msgstr "已弃用，请改用 -std=gnu99"
+msgstr "已弃用，请改用 -std=gnu99。"
 
 #: c-family/c.opt:2533
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1990 C standard as amended in 1994"
+#, no-c-format
 msgid "Conform to the ISO 1990 C standard as amended in 1994."
-msgstr "遵循 ISO 1990 C 标准于 1994 年修订的版本"
+msgstr "遵循 ISO 1990 C 标准于 1994 年修订的版本。"
 
 #: c-family/c.opt:2541
-#, fuzzy, no-c-format
-#| msgid "Deprecated in favor of -std=iso9899:1999"
+#, no-c-format
 msgid "Deprecated in favor of -std=iso9899:1999."
-msgstr "已弃用，为 -std=iso9899:1999 所取代"
+msgstr "已弃用，请改用 -std=iso9899:1999。"
 
 #: c-family/c.opt:2557
 #, no-c-format
@@ -3958,8 +3931,7 @@ msgid "-fcheckaction=[throw,halt,context]\tBehavior on contract failure."
 msgstr ""
 
 #: d/lang.opt:256
-#, fuzzy, no-c-format
-#| msgid "Compile code for big endian mode"
+#, no-c-format
 msgid "Compile in debug code."
 msgstr "生成大端序模式的代码"
 
@@ -4461,10 +4433,9 @@ msgid "generate a C++ source scaffold for the current module being compiled"
 msgstr ""
 
 #: m2/lang.opt:227
-#, fuzzy, no-c-format
-#| msgid "Generate bit instructions"
+#, no-c-format
 msgid "generate the main function"
-msgstr "生成位指令"
+msgstr "生成 main 函数"
 
 #: m2/lang.opt:231
 #, no-c-format
@@ -4520,10 +4491,9 @@ msgid "Link the standard Modula-2 libraries statically in the compilation."
 msgstr "不假定标准 C 库和“main”存在"
 
 #: m2/lang.opt:412 m2/lang.opt:416
-#, fuzzy, no-c-format
-#| msgid "could not close temporary response file %s"
+#, no-c-format
 msgid "save temporary preprocessed files"
-msgstr "无法关闭临时响应文件 %s"
+msgstr "保存临时预处理过的文件"
 
 #: go/lang.opt:42
 #, fuzzy, no-c-format
@@ -4654,18 +4624,17 @@ msgstr "对不同枚举类型之间的比较给出警告"
 #: analyzer/analyzer.opt:67
 #, no-c-format
 msgid "Warn about code paths in which a stdio FILE can be closed more than once."
-msgstr ""
+msgstr "对标准输入输出文件（stdio FILE）可以被多次关闭的代码路径进行警告。"
 
 #: analyzer/analyzer.opt:71
 #, no-c-format
 msgid "Warn about code paths in which a pointer can be freed more than once."
-msgstr ""
+msgstr "对指针可以被释放多次的代码路径给出警告。"
 
 #: analyzer/analyzer.opt:75
-#, fuzzy, no-c-format
-#| msgid "Warn about code which might break strict aliasing rules"
+#, no-c-format
 msgid "Warn about code paths in which sensitive data is written to a file."
-msgstr "当代码可能破坏强重叠规则时给出警告"
+msgstr "对将敏感数据写入文件的代码路径给出警告。"
 
 #: analyzer/analyzer.opt:79
 #, fuzzy, no-c-format
@@ -5285,10 +5254,9 @@ msgid "The earliest macOS version on which this program will run."
 msgstr "这个程序可能在其上运行的最早的 MacOS X 版本"
 
 #: config/darwin.opt:80
-#, fuzzy, no-c-format
-#| msgid "Set sizeof(bool) to 1"
+#, no-c-format
 msgid "Set sizeof(bool) to 1."
-msgstr "设定 sizeof(bool) 为 1"
+msgstr "设定 sizeof(bool) 为 1。"
 
 #: config/darwin.opt:84
 #, fuzzy, no-c-format
@@ -5495,16 +5463,14 @@ msgid "(Obsolete after 10.4)\tSet MH_NOMULTIDEFS in an umbrella framework."
 msgstr ""
 
 #: config/darwin.opt:254 config/darwin.opt:269 config/darwin.opt:273
-#, fuzzy, no-c-format
-#| msgid "switch %qs is no longer supported"
+#, no-c-format
 msgid "(Obsolete) LD_PREBIND is no longer supported."
-msgstr "开关%qs不再被支持"
+msgstr "（已过时）LD_PREBIND 不再受支持。"
 
 #: config/darwin.opt:258
-#, fuzzy, no-c-format
-#| msgid "Stores doubles in 32 bits.  This is the default."
+#, no-c-format
 msgid "(Obsolete) This is the default."
-msgstr "以 32 位双精度数存储。这是默认值。"
+msgstr "（已过时）这是默认情况。"
 
 #: config/darwin.opt:265
 #, no-c-format
@@ -5597,10 +5563,9 @@ msgid "-segs_read_write_addr <address>\tSpecify that <address> is the base addre
 msgstr ""
 
 #: config/darwin.opt:350
-#, fuzzy, no-c-format
-#| msgid "Stores doubles in 32 bits.  This is the default."
+#, no-c-format
 msgid "(Obsolete)\tThis is the default."
-msgstr "以 32 位双精度数存储。这是默认值。"
+msgstr "（已过时）这是默认情况。"
 
 #: config/darwin.opt:354
 #, no-c-format
@@ -5613,10 +5578,9 @@ msgid "-sub_umbrella <name>\tFramework named <name> will be re-exported (only us
 msgstr ""
 
 #: config/darwin.opt:362
-#, fuzzy, no-c-format
-#| msgid "this is the first default label"
+#, no-c-format
 msgid "This is the default."
-msgstr "这是第一个默认标号"
+msgstr "这是默认情况。"
 
 #: config/darwin.opt:366
 #, no-c-format
@@ -5729,10 +5693,9 @@ msgid "Avoid generating pc-relative calls; use indirection."
 msgstr "避免生成相对 PC 的调用；使用间接调用"
 
 #: config/bfin/bfin.opt:86
-#, fuzzy, no-c-format
-#| msgid "Link with the fast floating-point library"
+#, no-c-format
 msgid "Link with the fast floating-point library."
-msgstr "与快速浮点库链接"
+msgstr "与快速浮点库链接。"
 
 #: config/bfin/bfin.opt:90 config/arm/arm.opt:339 config/frv/frv.opt:130
 #, fuzzy, no-c-format
@@ -5753,10 +5716,9 @@ msgid "Do stack checking using bounds in L1 scratch memory."
 msgstr "使用 L1 草稿内存中的边界做堆栈检查"
 
 #: config/bfin/bfin.opt:102
-#, fuzzy, no-c-format
-#| msgid "Enable multicore support"
+#, no-c-format
 msgid "Enable multicore support."
-msgstr "启用多核支持"
+msgstr "启用多核支持。"
 
 #: config/bfin/bfin.opt:106
 #, fuzzy, no-c-format
@@ -5965,10 +5927,9 @@ msgid "Use normal calling convention."
 msgstr "使用一般的调用约定"
 
 #: config/m68k/m68k.opt:159
-#, fuzzy, no-c-format
-#| msgid "Consider type 'int' to be 32 bits wide"
+#, no-c-format
 msgid "Consider type 'int' to be 32 bits wide."
-msgstr "认为‘int’类有 32 位宽"
+msgstr "认为‘int’类型有 32 位宽。"
 
 #: config/m68k/m68k.opt:163
 #, fuzzy, no-c-format
@@ -6368,9 +6329,9 @@ msgid "Omit the frame pointer in leaf functions."
 msgstr "为叶函数(不调用其他函数的函数)忽略框架指针"
 
 #: config/aarch64/aarch64.opt:110
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Specify TLS dialect."
-msgstr "假定大的线程局部存储段"
+msgstr "指定 TLS 方言。"
 
 #: config/aarch64/aarch64.opt:114
 #, fuzzy, no-c-format
@@ -6391,10 +6352,9 @@ msgid "Use features of and optimize for CPU."
 msgstr "-mcpu=CPU\t使用指定 CPU 的特性并为之优化"
 
 #: config/aarch64/aarch64.opt:141
-#, fuzzy, no-c-format
-#| msgid "-mtune=CPU\tOptimize for CPU"
+#, no-c-format
 msgid "Optimize for CPU."
-msgstr "-mtune=CPU\t为指定的处理器优化"
+msgstr "为 CPU 优化。"
 
 #: config/aarch64/aarch64.opt:145
 #, fuzzy, no-c-format
@@ -6540,16 +6500,14 @@ msgid "Use musl C library."
 msgstr "使用 musl C 标准库。"
 
 #: config/ia64/ilp32.opt:3
-#, fuzzy, no-c-format
-#| msgid "Generate ILP32 code"
+#, no-c-format
 msgid "Generate ILP32 code."
-msgstr "生成 ILP32 代码"
+msgstr "生成 ILP32 代码。"
 
 #: config/ia64/ilp32.opt:7
-#, fuzzy, no-c-format
-#| msgid "Generate LP64 code"
+#, no-c-format
 msgid "Generate LP64 code."
-msgstr "生成 LP64 代码"
+msgstr "生成 LP64 代码。"
 
 #: config/ia64/ia64.opt:28
 #, no-c-format
@@ -6632,10 +6590,9 @@ msgid "Generate inline integer division, optimize for throughput."
 msgstr "生成内联的整数除法，为最大吞吐量优化"
 
 #: config/ia64/ia64.opt:90
-#, fuzzy, no-c-format
-#| msgid "Do not inline integer division"
+#, no-c-format
 msgid "Do not inline integer division."
-msgstr "不内联整数除法"
+msgstr "不内联整数除法。"
 
 #: config/ia64/ia64.opt:94
 #, fuzzy, no-c-format
@@ -6650,10 +6607,9 @@ msgid "Generate inline square root, optimize for throughput."
 msgstr "生成内联的平方根，为最大吞吐量优化"
 
 #: config/ia64/ia64.opt:102
-#, fuzzy, no-c-format
-#| msgid "Do not inline square root"
+#, no-c-format
 msgid "Do not inline square root."
-msgstr "不内联平方根函数"
+msgstr "不内联平方根函数。"
 
 #: config/ia64/ia64.opt:106
 #, fuzzy, no-c-format
@@ -7040,16 +6996,14 @@ msgid "Use hardware floating point."
 msgstr "使用硬件浮点单元"
 
 #: config/pdp11/pdp11.opt:51
-#, fuzzy, no-c-format
-#| msgid "Use 16 bit int"
+#, no-c-format
 msgid "Use 16 bit int."
-msgstr "使用 16 位整数"
+msgstr "使用 16 位整型。"
 
 #: config/pdp11/pdp11.opt:55
-#, fuzzy, no-c-format
-#| msgid "Use 32 bit int"
+#, no-c-format
 msgid "Use 32 bit int."
-msgstr "使用 32 位整数"
+msgstr "使用 32 位整型。"
 
 #: config/pdp11/pdp11.opt:59 config/rs6000/rs6000.opt:179
 #, fuzzy, no-c-format
@@ -7207,10 +7161,9 @@ msgid "Use unicode startup and define UNICODE macro."
 msgstr "使用 unicode 启动并且定义 UNICODE 宏"
 
 #: config/i386/i386.opt:198
-#, fuzzy, no-c-format
-#| msgid "sizeof(long double) is 16"
+#, no-c-format
 msgid "sizeof(long double) is 16."
-msgstr "sizeof(long double) 等于 16"
+msgstr "sizeof(long double) 等于 16。"
 
 #: config/i386/i386.opt:202 config/i386/i386.opt:370
 #, no-c-format
@@ -7218,10 +7171,9 @@ msgid "Use hardware fp."
 msgstr "使用硬件浮点单元。"
 
 #: config/i386/i386.opt:206
-#, fuzzy, no-c-format
-#| msgid "sizeof(long double) is 12"
+#, no-c-format
 msgid "sizeof(long double) is 12."
-msgstr "sizeof(long double) 等于 12"
+msgstr "sizeof(long double) 等于 12。"
 
 #: config/i386/i386.opt:210
 #, no-c-format
@@ -7230,17 +7182,15 @@ msgstr "使用 80 位 long double。"
 
 #: config/i386/i386.opt:214 config/s390/s390.opt:163
 #: config/sparc/long-double-switch.opt:27 config/alpha/alpha.opt:102
-#, fuzzy, no-c-format
-#| msgid "Use 64-bit long double"
+#, no-c-format
 msgid "Use 64-bit long double."
-msgstr "使用 64 位 long double"
+msgstr "使用 64 位 long double。"
 
 #: config/i386/i386.opt:218 config/s390/s390.opt:159
 #: config/sparc/long-double-switch.opt:23 config/alpha/alpha.opt:98
-#, fuzzy, no-c-format
-#| msgid "Use 128-bit long double"
+#, no-c-format
 msgid "Use 128-bit long double."
-msgstr "使用 128 位 long double"
+msgstr "使用 128 位 long double。"
 
 #: config/i386/i386.opt:222 config/sh/sh.opt:179
 #, fuzzy, no-c-format
@@ -7376,19 +7326,19 @@ msgid "Relax cmpxchg loop for atomic_fetch_{or,xor,and,nand} by adding load and 
 msgstr ""
 
 #: config/i386/i386.opt:413
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Set 80387 floating-point precision to 32-bit."
-msgstr "设定 80387 浮点精度(-mpc32、-mpc64、-mpc80)"
+msgstr "设定 80387 浮点精度为32位。"
 
 #: config/i386/i386.opt:417
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Set 80387 floating-point precision to 64-bit."
-msgstr "设定 80387 浮点精度(-mpc32、-mpc64、-mpc80)"
+msgstr "设定 80387 浮点精度为64位。"
 
 #: config/i386/i386.opt:421
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Set 80387 floating-point precision to 80-bit."
-msgstr "设定 80387 浮点精度(-mpc32、-mpc64、-mpc80)"
+msgstr "设定 80387 浮点精度为80位。"
 
 #: config/i386/i386.opt:425
 #, no-c-format
@@ -8161,58 +8111,49 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F a
 msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1167
-#, fuzzy, no-c-format
-#| msgid "Support RDRND built-in functions and code generation."
+#, no-c-format
 msgid "Support ENQCMD built-in functions and code generation."
-msgstr "支持 RDRND 内建函数及代码生成。"
+msgstr "支持 ENQCMD 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1171
-#, fuzzy, no-c-format
-#| msgid "Support AES built-in functions and code generation."
+#, no-c-format
 msgid "Support SERIALIZE built-in functions and code generation."
-msgstr "支持 AES 内建函数及代码生成。"
+msgstr "支持 SERIALIZE 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1175
-#, fuzzy, no-c-format
-#| msgid "Support XOP built-in functions and code generation."
+#, no-c-format
 msgid "Support TSXLDTRK built-in functions and code generation."
-msgstr "支持 XOP 内建函数及代码生成。"
+msgstr "支持 TSXLDTRK 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1179
-#, fuzzy, no-c-format
-#| msgid "Support AES built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-TILE built-in functions and code generation."
-msgstr "支持 AES 内建函数及代码生成。"
+msgstr "支持 AMX-TILE 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1183
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-INT8 built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 AMX-INT8 内建函数及代码生成"
 
 #: config/i386/i386.opt:1187
-#, fuzzy, no-c-format
-#| msgid "Support F16C built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-BF16 built-in functions and code generation."
-msgstr "支持 F16C 内建函数及代码生成。"
+msgstr "支持 AMX-BF16 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1191
-#, fuzzy, no-c-format
-#| msgid "Support AES built-in functions and code generation."
+#, no-c-format
 msgid "Support HRESET built-in functions and code generation."
-msgstr "支持 AES 内建函数及代码生成。"
+msgstr "支持 HRESET 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1195
-#, fuzzy, no-c-format
-#| msgid "Support LWP built-in functions and code generation."
+#, no-c-format
 msgid "Support KL built-in functions and code generation."
-msgstr "支持 LWP 内建函数及代码生成。"
+msgstr "支持 KL 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1199
-#, fuzzy, no-c-format
-#| msgid "Support LWP built-in functions and code generation."
+#, no-c-format
 msgid "Support WIDEKL built-in functions and code generation."
-msgstr "支持 LWP 内建函数及代码生成。"
+msgstr "支持 WIDEKL 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1203
 #, fuzzy, no-c-format
@@ -8480,10 +8421,9 @@ msgid "Enable the use of the short load instructions."
 msgstr "启用对短加载指令的使用"
 
 #: config/v850/v850.opt:71
-#, fuzzy, no-c-format
-#| msgid "Same as: -mep -mprolog-function"
+#, no-c-format
 msgid "Same as: -mep -mprolog-function."
-msgstr "与 -mep -mprolog-function 相同"
+msgstr "等同于：-mep -mprolog-function。"
 
 #: config/v850/v850.opt:75
 #, fuzzy, no-c-format
@@ -8979,10 +8919,9 @@ msgid "Enable decimal floating point hardware support."
 msgstr "启用硬件十进制浮点支持"
 
 #: config/s390/s390.opt:145
-#, fuzzy, no-c-format
-#| msgid "Enable hardware floating point"
+#, no-c-format
 msgid "Enable hardware floating point."
-msgstr "启用硬件浮点单元"
+msgstr "启用硬件浮点单元。"
 
 #: config/s390/s390.opt:149
 #, no-c-format
@@ -9209,15 +9148,14 @@ msgid "Known ARM FPUs (for use with the -mfpu= option):"
 msgstr "已知 ARM 浮点处理器 (用于 -mfpu= 选项)："
 
 #: config/arm/arm.opt:38
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "TLS dialect to use:"
-msgstr "使用给定的汇编风格"
+msgstr "要使用的 TLS 方言："
 
 #: config/arm/arm.opt:48
-#, fuzzy, no-c-format
-#| msgid "Specify an ABI"
+#, no-c-format
 msgid "Specify an ABI."
-msgstr "指定一个 ABI"
+msgstr "指定一个 ABI。"
 
 #: config/arm/arm.opt:52
 #, no-c-format
@@ -9643,10 +9581,9 @@ msgid "Use given SPARC-V9 code model."
 msgstr "使用给定的 SPARC-V9 代码模型"
 
 #: config/sparc/sparc.opt:250
-#, fuzzy, no-c-format
-#| msgid "Enable debug output"
+#, no-c-format
 msgid "Enable debug output."
-msgstr "开启调试输出"
+msgstr "开启调试输出。"
 
 #: config/sparc/sparc.opt:254
 #, no-c-format
@@ -9699,16 +9636,14 @@ msgid "Preserve the PowerPC 476's link stack by matching up a blr with the bcl/b
 msgstr "保留 PowerPC 476 's 链结堆叠由匹配向上 blr 与 bcl/bl insns 用于得到访问"
 
 #: config/rs6000/aix64.opt:24
-#, fuzzy, no-c-format
-#| msgid "Compile for 64-bit pointers"
+#, no-c-format
 msgid "Compile for 64-bit pointers."
-msgstr "为 64 位指针编译"
+msgstr "为 64 位指针编译。"
 
 #: config/rs6000/aix64.opt:28
-#, fuzzy, no-c-format
-#| msgid "Compile for 32-bit pointers"
+#, no-c-format
 msgid "Compile for 32-bit pointers."
-msgstr "为 32 位指针编译"
+msgstr "为 32 位指针编译。"
 
 #: config/rs6000/aix64.opt:32 config/rs6000/linux64.opt:28
 #, no-c-format
@@ -9728,10 +9663,9 @@ msgid "Call mcount for profiling before a function prologue."
 msgstr "为取样在函数前言中调用 mcount"
 
 #: config/rs6000/rs6000.opt:117
-#, fuzzy, no-c-format
-#| msgid "Use PowerPC-64 instruction set"
+#, no-c-format
 msgid "Use PowerPC-64 instruction set."
-msgstr "使用 PowerPC-64 指令集"
+msgstr "使用 PowerPC-64 指令集。"
 
 #: config/rs6000/rs6000.opt:121
 #, fuzzy, no-c-format
@@ -9956,21 +9890,19 @@ msgid "Max number of bytes to compare."
 msgstr "一个静态控制部分(ScoP)中参数的最大数量"
 
 #: config/rs6000/rs6000.opt:341
-#, fuzzy, no-c-format
-#| msgid "Generate isel instructions"
+#, no-c-format
 msgid "Generate isel instructions."
-msgstr "生成 isel 指令"
+msgstr "生成 isel 指令。"
 
 #: config/rs6000/rs6000.opt:345
-#, fuzzy, no-c-format
-#| msgid "-mdebug=\tEnable debug output"
+#, no-c-format
 msgid "-mdebug=\tEnable debug output."
-msgstr "-mdebug=\t启用调试输出"
+msgstr "-mdebug=\t启用调试输出。"
 
 #: config/rs6000/rs6000.opt:350
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Use the AltiVec ABI extensions."
-msgstr "使用 AltiVec 指令"
+msgstr "使用 AltiVec ABI 扩展。"
 
 #: config/rs6000/rs6000.opt:354
 #, fuzzy, no-c-format
@@ -10306,10 +10238,9 @@ msgstr "生成大端在前的代码"
 #: config/rs6000/sysv4.opt:86 config/rs6000/sysv4.opt:90
 #: config/rs6000/sysv4.opt:99 config/rs6000/sysv4.opt:141
 #: config/rs6000/sysv4.opt:153
-#, fuzzy, no-c-format
-#| msgid "no description yet"
+#, no-c-format
 msgid "No description yet."
-msgstr "尚未描述"
+msgstr "尚无描述。"
 
 #: config/rs6000/sysv4.opt:94
 #, fuzzy, no-c-format
@@ -10562,7 +10493,7 @@ msgstr ""
 #: config/loongarch/loongarch.opt:56
 #, no-c-format
 msgid "FPU types of LoongArch:"
-msgstr ""
+msgstr "LoongArch 的 FPU 类型。"
 
 #: config/loongarch/loongarch.opt:69
 #, fuzzy, no-c-format
@@ -10591,7 +10522,7 @@ msgstr "允许 32 位和 64 位硬件浮点指令"
 #: config/loongarch/loongarch.opt:90
 #, no-c-format
 msgid "LoongArch CPU types:"
-msgstr ""
+msgstr "LoongArch CPU 类型："
 
 #: config/loongarch/loongarch.opt:103
 #, fuzzy, no-c-format
@@ -10758,7 +10689,7 @@ msgstr "与快速浮点库链接"
 #: config/nios2/elf.opt:30
 #, no-c-format
 msgid "Name of system library to link against."
-msgstr ""
+msgstr "要链接的系统库的名称。"
 
 #: config/nios2/elf.opt:34
 #, fuzzy, no-c-format
@@ -10776,9 +10707,9 @@ msgid "Enable DIV, DIVU."
 msgstr "启用预处理"
 
 #: config/nios2/nios2.opt:39
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Enable MUL instructions."
-msgstr "启用 clip 指令"
+msgstr "启用 MUL 指令。"
 
 #: config/nios2/nios2.opt:43
 #, fuzzy, no-c-format
@@ -12614,16 +12545,14 @@ msgid "Do not tune code and read-only data alignment."
 msgstr "不调整代码和只读数据对齐"
 
 #: config/cris/cris.opt:116
-#, fuzzy, no-c-format
-#| msgid "Align code and data to 32 bits"
+#, no-c-format
 msgid "Align code and data to 32 bits."
-msgstr "将代码和数据对齐到 32 位边界上"
+msgstr "将代码和数据对齐到 32 位边界上。"
 
 #: config/cris/cris.opt:133
-#, fuzzy, no-c-format
-#| msgid "Don't align items in code or data"
+#, no-c-format
 msgid "Don't align items in code or data."
-msgstr "不在代码或数据中对齐条目"
+msgstr "不在代码或数据中对齐条目。"
 
 #: config/cris/cris.opt:142
 #, fuzzy, no-c-format
@@ -14192,10 +14121,9 @@ msgid "Optimize for space aggressively rather than speed."
 msgstr "为最小空间而不是最大速度优化"
 
 #: common.opt:522
-#, fuzzy, no-c-format
-#| msgid "This switch is deprecated; use -Wextra instead"
+#, no-c-format
 msgid "This switch is deprecated; use -Wextra instead."
-msgstr "已弃用此开关；请改用 -Wextra"
+msgstr "已弃用此开关；请改用 -Wextra。"
 
 #: common.opt:535
 #, fuzzy, no-c-format
@@ -20770,10 +20698,8 @@ msgid "unsupported fixed-point conversion"
 msgstr "整点转换中类型无效"
 
 #: config/avr/avr.cc:10506
-#, fuzzy
-#| msgid "Loop variable"
 msgid "variable"
-msgstr "循环变量"
+msgstr "变量"
 
 #: config/avr/avr.cc:10511
 #, fuzzy
@@ -20794,10 +20720,8 @@ msgid "return type of function"
 msgstr "创建函数的数组"
 
 #: config/avr/avr.cc:10527
-#, fuzzy
-#| msgid "null pointer"
 msgid "pointer"
-msgstr "空指针"
+msgstr "指针"
 
 #: config/avr/driver-avr.cc:50
 #, fuzzy, c-format
@@ -23258,14 +23182,12 @@ msgid "expected numeric type"
 msgstr "需要数字类型"
 
 #: go/gofrontend/expressions.cc:5152
-#, fuzzy
 msgid "expected boolean type"
-msgstr "需要整数或布尔类型"
+msgstr "需要布尔类型"
 
 #: go/gofrontend/expressions.cc:5157 c/c-parser.cc:16673 c/c-parser.cc:16680
 #: cp/parser.cc:39986 cp/parser.cc:39993
-#, fuzzy, gcc-internal-format
-#| msgid "Expected integer"
+#, gcc-internal-format
 msgid "expected integer"
 msgstr "需要整数"
 
@@ -23545,9 +23467,8 @@ msgid "invalid left hand side of assignment"
 msgstr "%L处赋值右手边出现 NULL"
 
 #: go/gofrontend/statements.cc:1082 go/gofrontend/statements.cc:1437
-#, fuzzy
 msgid "use of untyped nil"
-msgstr "在未定类型文法中给定明确的类型"
+msgstr ""
 
 #: go/gofrontend/statements.cc:1559
 #, fuzzy
@@ -24824,10 +24745,9 @@ msgid "last argument of %qD is not integer constant between 0 and 3"
 msgstr "%K%D 的最后一个实参不是一个 0 到 3 之间的整常量"
 
 #: calls.cc:1245
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot tail-call: %s"
-msgstr "[找不到 %s]"
+msgstr "无法尾调用：%s"
 
 #: calls.cc:2761
 #, gcc-internal-format
@@ -43889,7 +43809,7 @@ msgstr "尽可能生成与位置无关的代码(大模式)"
 #: config/nios2/nios2.cc:1361
 #, gcc-internal-format
 msgid "PIC support for %<-fstack-limit-symbol%>"
-msgstr ""
+msgstr "%<-fstack-limit-symbol%> 的 PIC 支持"
 
 #: config/nios2/nios2.cc:1383
 #, fuzzy, gcc-internal-format
@@ -44020,9 +43940,9 @@ msgid "invalid custom instruction option %qs"
 msgstr "向函数类型%qT的转换无效"
 
 #: config/nvptx/mkoffload.cc:117
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed ptx file"
-msgstr "异常的 URL"
+msgstr "格式错误的 ptx 文件"
 
 #: config/nvptx/mkoffload.cc:329
 #, gcc-internal-format
@@ -44857,10 +44777,9 @@ msgid "Using IBM extended precision %<long double%>"
 msgstr "使用 IBM 扩展精度 long double"
 
 #: config/rs6000/rs6000.cc:4185
-#, fuzzy, gcc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format
 msgid "%qs requires VSX support"
-msgstr "%s 不支持 %s"
+msgstr "%qs 需要 VSX 支持"
 
 #: config/rs6000/rs6000.cc:4194
 #, gcc-internal-format
@@ -44972,9 +44891,9 @@ msgid "%s%qs%s is not allowed"
 msgstr "%s：不允许空权字符串"
 
 #: config/rs6000/rs6000.cc:24395
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%qs%s is invalid"
-msgstr "无效的 %s 字组：%s\n"
+msgstr "%s%qs%s 无效"
 
 #: config/rs6000/rs6000.cc:24924
 #, fuzzy, gcc-internal-format
@@ -45063,26 +44982,24 @@ msgid "builtin %qF is for GCC internal use only"
 msgstr ""
 
 #: config/s390/s390-c.cc:917
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "builtin %qF is deprecated"
-msgstr "已弃用%qE"
+msgstr "内建的 %qF 已被弃用"
 
 #: config/s390/s390-c.cc:921
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mfpxx%> requires %<-mlra%>"
+#, gcc-internal-format
 msgid "%qF requires %<-mvx%>"
-msgstr "%<-mfpxx%> 需要 %<-mlra%>"
+msgstr "%qF 需要 %<-mvx%>"
 
 #: config/s390/s390-c.cc:927
 #, gcc-internal-format
 msgid "%qF requires z14 or higher"
-msgstr ""
+msgstr "%qF 需要 z14 或更高"
 
 #: config/s390/s390-c.cc:933
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is predetermined %qs for %qs"
+#, gcc-internal-format
 msgid "%qF requires z15 or higher"
-msgstr "%qE可被预先确定为%qs，为%qs"
+msgstr "%qF 需要 z15 或更高"
 
 #: config/s390/s390-c.cc:947
 #, gcc-internal-format
@@ -45952,10 +45869,9 @@ msgid "conflicting types for built-in function %q+D; expected %qT"
 msgstr "与内建函数%q+D类型冲突"
 
 #: c/c-decl.cc:2115 c/c-decl.cc:2140
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not declared in %qD"
+#, gcc-internal-format
 msgid "%qD is declared in header %qs"
-msgstr "%qD未在%qD中声明"
+msgstr "%qD 在 %qs 头文件中声明"
 
 #: c/c-decl.cc:2126
 #, fuzzy, gcc-internal-format
@@ -46615,9 +46531,9 @@ msgid "duplicate %<volatile%>"
 msgstr "重复的%<volatile%>"
 
 #: c/c-decl.cc:6762
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate %<_Atomic%>"
-msgstr "重复键值"
+msgstr "重复的%<_Atomic%>"
 
 #: c/c-decl.cc:6765
 #, gcc-internal-format, gfc-internal-format
@@ -47239,9 +47155,9 @@ msgid "flexible array member in a struct with no named members"
 msgstr "联合和可变数组成员"
 
 #: c/c-decl.cc:9288
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type %qT is too large"
-msgstr "对已定义的数据类型来说值过大"
+msgstr "类型 %qT 过大"
 
 #: c/c-decl.cc:9342
 #, fuzzy, gcc-internal-format
@@ -75350,12 +75266,12 @@ msgstr "错误的运算符"
 #: fortran/misc.cc:113
 #, gcc-internal-format
 msgid "gfc_basic_typename(): Undefined type"
-msgstr ""
+msgstr "gfc_basic_typename()：未定义的类型"
 
 #: fortran/misc.cc:207
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "gfc_typename(): Undefined type"
-msgstr "如果您想指定类型，请使用%<typename %E%>"
+msgstr "gfc_typename()：未定义的类型"
 
 #: fortran/misc.cc:311
 #, fuzzy, gcc-internal-format
@@ -78325,16 +78241,14 @@ msgid "gfc_variable_attr(): Expression isn't a variable"
 msgstr "gfc_variable_attr()︰表达式不是一个变量"
 
 #: fortran/primary.cc:2821
-#, fuzzy, gcc-internal-format
-#| msgid "gfc_variable_attr(): Expression isn't a variable"
+#, gcc-internal-format
 msgid "gfc_caf_attr(): Expression isn't a variable"
-msgstr "gfc_variable_attr()︰表达式不是一个变量"
+msgstr "gfc_caf_attr()︰表达式不是一个变量"
 
 #: fortran/primary.cc:2878
-#, fuzzy, gcc-internal-format
-#| msgid "gfc_variable_attr(): Bad array reference"
+#, gcc-internal-format
 msgid "gfc_caf_attr(): Bad array reference"
-msgstr "gfc_variable_attr()︰不当的数组引用"
+msgstr "gfc_caf_attr()︰不当的数组引用"
 
 #: fortran/primary.cc:3057
 #, fuzzy, gcc-internal-format
@@ -79212,9 +79126,9 @@ msgid "Upper array reference at %L is out of bounds (%ld > %ld) in dimension %d"
 msgstr "%1$L处数组上限引用在第 %4$d 维中越界(%2$ld > %3$ld)"
 
 #: fortran/resolve.cc:4870
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "check_dimension(): Bad array reference"
-msgstr "%L处数组引用错误"
+msgstr "check_dimension()：不当的数组引用"
 
 #: fortran/resolve.cc:4893
 #, gcc-internal-format, gfc-internal-format
@@ -82569,28 +82483,25 @@ msgid "expected %<,%> or %<]%>"
 msgstr "需要 %<,%> 或 %<)%>"
 
 #: go/gofrontend/embed.cc:506
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid JSON syntax"
-msgstr "%<#pragma pack%>中有无效常量 - 已忽略"
+msgstr "无效的 JSON 语法"
 
 #: go/gofrontend/embed.cc:538 go/gofrontend/embed.cc:581
 #: go/gofrontend/embed.cc:615
-#, fuzzy, gcc-internal-format
-#| msgid "unterminated format string"
+#, gcc-internal-format
 msgid "unterminated string"
-msgstr "未终止的格式字符串"
+msgstr "未终止的字符串"
 
 #: go/gofrontend/embed.cc:595
-#, fuzzy, gcc-internal-format
-#| msgid "invalid %%xn code"
+#, gcc-internal-format
 msgid "invalid hex digit"
-msgstr "无效的 %%xn 代码"
+msgstr "无效的16进制数"
 
 #: go/gofrontend/embed.cc:604
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized address"
+#, gcc-internal-format
 msgid "unrecognized string escape"
-msgstr "无法识别的地址"
+msgstr "无法识别的字符串转义"
 
 #: go/gofrontend/embed.cc:625
 #, fuzzy, gcc-internal-format
