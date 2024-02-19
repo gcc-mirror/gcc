@@ -3,7 +3,7 @@
 /* { dg-require-effective-target maybe_x32 } */
 /* { dg-options "-mapxf -O2 -mx32" } */
 
-#include <stdint.h>
+typedef long long int64_t;
 
 #define FOO(TYPE, OP_NAME, OP, IMM)			\
 TYPE							\
