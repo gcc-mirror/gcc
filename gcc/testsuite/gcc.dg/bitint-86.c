@@ -15,14 +15,14 @@ struct T { struct S b[4]; };
 #endif
 
 void
-foo (__seg_gs struct T *p)
+foo (SEG struct T *p)
 {
   struct S s;
   p->b[0] = s;
 }
 
 void
-bar (__seg_gs struct T *p, _BitInt(710) x, int y, double z)
+bar (SEG struct T *p, _BitInt(710) x, int y, double z)
 {
   p->b[0].a = x + 42;
   p->b[1].a = x << y;
@@ -31,7 +31,7 @@ bar (__seg_gs struct T *p, _BitInt(710) x, int y, double z)
 }
 
 int
-baz (__seg_gs struct T *p, _BitInt(710) x, _BitInt(710) y)
+baz (SEG struct T *p, _BitInt(710) x, _BitInt(710) y)
 {
   return __builtin_add_overflow (x, y, &p->b[1].a);
 }
