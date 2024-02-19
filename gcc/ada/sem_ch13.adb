@@ -18401,7 +18401,8 @@ package body Sem_Ch13 is
                      Error_Msg_Uint_1 := Source_Siz;
                      Error_Msg_Name_2 := Chars (Target);
                      Error_Msg_Uint_2 := Target_Siz;
-                     Error_Msg ("\size of % is ^, size of % is ^?z?", Eloc);
+                     Error_Msg
+                       ("\size of % is ^, size of % is ^?z?", Eloc, Act_Unit);
 
                      Error_Msg_Uint_1 := UI_Abs (Source_Siz - Target_Siz);
 
@@ -18412,17 +18413,17 @@ package body Sem_Ch13 is
                         if Source_Siz > Target_Siz then
                            Error_Msg
                              ("\?z?^ high order bits of source will "
-                              & "be ignored!", Eloc);
+                              & "be ignored!", Eloc, Act_Unit);
 
                         elsif Is_Unsigned_Type (Source) then
                            Error_Msg
                              ("\?z?source will be extended with ^ high order "
-                              & "zero bits!", Eloc);
+                              & "zero bits!", Eloc, Act_Unit);
 
                         else
                            Error_Msg
                              ("\?z?source will be extended with ^ high order "
-                              & "sign bits!", Eloc);
+                              & "sign bits!", Eloc, Act_Unit);
                         end if;
 
                      elsif Source_Siz < Target_Siz then
