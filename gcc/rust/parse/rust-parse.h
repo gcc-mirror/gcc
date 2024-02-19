@@ -725,6 +725,7 @@ public:
   const ManagedTokenSource &get_token_source () const { return lexer; }
 
   const_TokenPtr peek_current_token () { return lexer.peek_token (0); }
+  const_TokenPtr peek (int n) { return lexer.peek_token (n); }
 
 private:
   // The token source (usually lexer) associated with the parser.
