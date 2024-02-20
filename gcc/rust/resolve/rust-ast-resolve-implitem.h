@@ -228,6 +228,25 @@ public:
     mappings->insert_module_child_item (current_module, decl);
   }
 
+  void visit (AST::ExternalTypeItem &type) override
+  {
+    auto decl = CanonicalPath::new_seg (type.get_node_id (),
+					type.get_identifier ().as_string ());
+    auto path = prefix.append (decl);
+
+    resolver->get_type_scope ().insert (
+      path, type.get_node_id (), type.get_locus (), false, Rib::ItemType::Type,
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
+	rich_location r (line_table, type.get_locus ());
+	r.add_range (locus);
+
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    NodeId current_module = resolver->peek_current_module_scope ();
+    mappings->insert_module_child_item (current_module, decl);
+  }
+
 private:
   ResolveToplevelExternItem (const CanonicalPath &prefix)
     : ResolverBase (), prefix (prefix)
