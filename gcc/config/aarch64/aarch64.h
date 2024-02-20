@@ -1046,6 +1046,9 @@ struct GTY (()) aarch64_frame
   bool is_scs_enabled;
 };
 
+/* Private to winnt.cc.  */
+struct seh_frame_state;
+
 #ifdef hash_set_h
 typedef struct GTY (()) machine_function
 {
@@ -1086,6 +1089,9 @@ typedef struct GTY (()) machine_function
      still exists and still fulfils its original purpose. the same register
      can be reused by other code.  */
   rtx_insn *advsimd_zero_insn;
+
+  /* During SEH output, this is non-null.  */
+  struct seh_frame_state * GTY ((skip (""))) seh;
 } machine_function;
 #endif
 #endif
