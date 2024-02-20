@@ -114,6 +114,7 @@ public:
   virtual void visit (ImplBlock &impl) = 0;
   virtual void visit (ExternalStaticItem &item) = 0;
   virtual void visit (ExternalFunctionItem &item) = 0;
+  virtual void visit (ExternalTypeItem &item) = 0;
   virtual void visit (ExternBlock &block) = 0;
   virtual void visit (LiteralPattern &pattern) = 0;
   virtual void visit (IdentifierPattern &pattern) = 0;
@@ -255,6 +256,7 @@ public:
 
   virtual void visit (ExternalStaticItem &) override {}
   virtual void visit (ExternalFunctionItem &) override {}
+  virtual void visit (ExternalTypeItem &) override {}
   virtual void visit (ExternBlock &) override {}
 
   virtual void visit (LiteralPattern &) override {}
@@ -306,6 +308,7 @@ class HIRExternalItemVisitor
 public:
   virtual void visit (ExternalStaticItem &item) = 0;
   virtual void visit (ExternalFunctionItem &item) = 0;
+  virtual void visit (ExternalTypeItem &item) = 0;
 };
 
 class HIRTraitItemVisitor

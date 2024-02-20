@@ -201,6 +201,7 @@ private:
 
   virtual void visit (ExternalStaticItem &) override;
   virtual void visit (ExternalFunctionItem &) override;
+  virtual void visit (ExternalTypeItem &) override;
   virtual void visit (ExternBlock &) override;
 
   virtual void visit (LiteralPattern &) override;

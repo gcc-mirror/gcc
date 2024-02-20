@@ -177,6 +177,7 @@ class ExternalItem;
 class ExternalStaticItem;
 struct NamedFunctionParam;
 class ExternalFunctionItem;
+class ExternalTypeItem;
 class ExternBlock;
 
 // rust-pattern.h

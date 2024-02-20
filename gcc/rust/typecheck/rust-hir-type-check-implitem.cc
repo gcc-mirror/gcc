@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-implitem.h"
+#include "rust-diagnostics.h"
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
@@ -181,6 +182,134 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 
   context->insert_type (function.get_mappings (), fnType);
   resolved = fnType;
+}
+
+void
+TypeCheckTopLevelExternItem::visit (HIR::ExternalTypeItem &type)
+{
+  rust_sorry_at (type.get_locus (), "extern types are not supported yet");
+  //  auto binder_pin = context->push_clean_lifetime_resolver ();
+
+  //  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  //  if (function.has_generics ())
+  //    {
+  //      for (auto &generic_param : function.get_generic_params ())
+  // {
+  //   switch (generic_param.get ()->get_kind ())
+  //     {
+  //     case HIR::GenericParam::GenericKind::LIFETIME:
+  //       context->intern_and_insert_lifetime (
+  // 	static_cast<HIR::LifetimeParam &> (*generic_param)
+  // 	  .get_lifetime ());
+  //       // TODO: handle bounds
+  //       break;
+  //     case HIR::GenericParam::GenericKind::CONST:
+  //       // FIXME: Skipping Lifetime and Const completely until better
+  //       // handling.
+  //       break;
+
+  //       case HIR::GenericParam::GenericKind::TYPE: {
+  // 	auto param_type
+  // 	  = TypeResolveGenericParam::Resolve (generic_param.get ());
+  // 	context->insert_type (generic_param->get_mappings (),
+  // 			      param_type);
+
+  // 	substitutions.push_back (TyTy::SubstitutionParamMapping (
+  // 	  static_cast<HIR::TypeParam &> (*generic_param), param_type));
+  //       }
+  //       break;
+  //     }
+  // }
+  //    }
+
+  //  TyTy::RegionConstraints region_constraints;
+  //  if (function.has_where_clause ())
+  //    {
+  //      for (auto &where_clause_item : function.get_where_clause ().get_items
+  //      ())
+  // {
+  //   ResolveWhereClauseItem::Resolve (*where_clause_item.get (),
+  // 				   region_constraints);
+  // }
+  //    }
+
+  //  TyTy::BaseType *ret_type = nullptr;
+  //  if (!function.has_return_type ())
+  //    ret_type
+  //      = TyTy::TupleType::get_unit_type (function.get_mappings ().get_hirid
+  //      ());
+  //  else
+  //    {
+  //      auto resolved
+  // = TypeCheckType::Resolve (function.get_return_type ().get ());
+  //      if (resolved == nullptr)
+  // {
+  //   rust_error_at (function.get_locus (),
+  // 		 "failed to resolve return type");
+  //   return;
+  // }
+
+  //      ret_type = resolved->clone ();
+  //      ret_type->set_ref (
+  // function.get_return_type ()->get_mappings ().get_hirid ());
+  //    }
+
+  //  std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
+  //  for (auto &param : function.get_function_params ())
+  //    {
+  //      // get the name as well required for later on
+  //      auto param_tyty = TypeCheckType::Resolve (param.get_type ().get ());
+
+  //      // these are implicit mappings and not used
+  //      auto crate_num = mappings->get_current_crate ();
+  //      Analysis::NodeMapping mapping (crate_num, mappings->get_next_node_id
+  //      (),
+  // 			     mappings->get_next_hir_id (crate_num),
+  // 			     UNKNOWN_LOCAL_DEFID);
+
+  //      HIR::IdentifierPattern *param_pattern
+  // = new HIR::IdentifierPattern (mapping, param.get_param_name (),
+  // 			      UNDEF_LOCATION, false, Mutability::Imm,
+  // 			      std::unique_ptr<HIR::Pattern> (nullptr));
+
+  //      params.push_back (
+  // std::pair<HIR::Pattern *, TyTy::BaseType *> (param_pattern,
+  // 					     param_tyty));
+
+  //      context->insert_type (param.get_mappings (), param_tyty);
+
+  //      // FIXME do we need error checking for patterns here?
+  //      // see https://github.com/Rust-GCC/gccrs/issues/995
+  //    }
+
+  //  uint8_t flags = TyTy::FnType::FNTYPE_IS_EXTERN_FLAG;
+  //  if (function.is_variadic ())
+  //    {
+  //      flags |= TyTy::FnType::FNTYPE_IS_VARADIC_FLAG;
+  //      if (parent.get_abi () != Rust::ABI::C)
+  // {
+  //   rust_error_at (
+  //     function.get_locus (), ErrorCode::E0045,
+  //     "C-variadic function must have C or cdecl calling convention");
+  // }
+  //    }
+
+  //  RustIdent ident{
+  //    CanonicalPath::new_seg (function.get_mappings ().get_nodeid (),
+  // 		    function.get_item_name ().as_string ()),
+  //    function.get_locus ()};
+
+  //  auto fnType = new TyTy::FnType (
+  //    function.get_mappings ().get_hirid (),
+  //    function.get_mappings ().get_defid (),
+  //    function.get_item_name ().as_string (), ident, flags, parent.get_abi (),
+  //    std::move (params), ret_type, std::move (substitutions),
+  //    TyTy::SubstitutionArgumentMappings::empty (
+  //      context->get_lifetime_resolver ().get_num_bound_regions ()),
+  //    region_constraints);
+
+  //  context->insert_type (function.get_mappings (), fnType);
+  //  resolved = fnType;
 }
 
 TypeCheckImplItem::TypeCheckImplItem (
