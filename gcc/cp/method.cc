@@ -1928,6 +1928,141 @@ build_trait_object (tree type)
   return build_stub_object (type);
 }
 
+/* [func.require] Build an expression of INVOKE(FN_TYPE, ARG_TYPES...).  If the
+   given is not invocable, returns error_mark_node.  */
+
+tree
+build_invoke (tree fn_type, const_tree arg_types, tsubst_flags_t complain)
+{
+  if (error_operand_p (fn_type) || error_operand_p (arg_types))
+    return error_mark_node;
+
+  gcc_assert (TYPE_P (fn_type));
+  gcc_assert (TREE_CODE (arg_types) == TREE_VEC);
+
+  /* Access check is required to determine if the given is invocable.  */
+  deferring_access_check_sentinel acs (dk_no_deferred);
+
+  /* INVOKE is an unevaluated context.  */
+  cp_unevaluated cp_uneval_guard;
+
+  bool is_ptrdatamem;
+  bool is_ptrmemfunc;
+  if (TREE_CODE (fn_type) == REFERENCE_TYPE)
+    {
+      tree non_ref_fn_type = TREE_TYPE (fn_type);
+      is_ptrdatamem = TYPE_PTRDATAMEM_P (non_ref_fn_type);
+      is_ptrmemfunc = TYPE_PTRMEMFUNC_P (non_ref_fn_type);
+
+      /* Dereference fn_type if it is a pointer to member.  */
+      if (is_ptrdatamem || is_ptrmemfunc)
+	fn_type = non_ref_fn_type;
+    }
+  else
+    {
+      is_ptrdatamem = TYPE_PTRDATAMEM_P (fn_type);
+      is_ptrmemfunc = TYPE_PTRMEMFUNC_P (fn_type);
+    }
+
+  if (is_ptrdatamem && TREE_VEC_LENGTH (arg_types) != 1)
+    {
+      if (complain & tf_error)
+	error ("pointer to data member type %qT can only be invoked with "
+	       "one argument", fn_type);
+      return error_mark_node;
+    }
+  if (is_ptrmemfunc && TREE_VEC_LENGTH (arg_types) == 0)
+    {
+      if (complain & tf_error)
+	error ("pointer to member function type %qT must be invoked with "
+	       "at least one argument", fn_type);
+      return error_mark_node;
+    }
+
+  /* Construct an expression of a pointer to member.  */
+  tree ptrmem_expr;
+  if (is_ptrdatamem || is_ptrmemfunc)
+    {
+      tree datum_type = TREE_VEC_ELT (arg_types, 0);
+      tree non_ref_datum_type = datum_type;
+      if (TYPE_REF_P (datum_type))
+	non_ref_datum_type = TREE_TYPE (datum_type);
+
+      /* datum must be a class type or a pointer to a class type.  */
+      if (!CLASS_TYPE_P (non_ref_datum_type)
+	  && !(POINTER_TYPE_P (non_ref_datum_type)
+	       && CLASS_TYPE_P (TREE_TYPE (non_ref_datum_type))))
+	{
+	  if (complain & tf_error)
+	    error ("first argument type %qT of a pointer to member must be a "
+		   "class type or a pointer to a class type", datum_type);
+	  return error_mark_node;
+	}
+
+      /* 1.1 & 1.4.  */
+      tree ptrmem_class_type = TYPE_PTRMEM_CLASS_TYPE (fn_type);
+      const bool ptrmem_is_same_or_base_of_datum =
+	(same_type_ignoring_top_level_qualifiers_p (ptrmem_class_type,
+						    non_ref_datum_type)
+	 || (NON_UNION_CLASS_TYPE_P (ptrmem_class_type)
+	     && NON_UNION_CLASS_TYPE_P (non_ref_datum_type)
+	     && DERIVED_FROM_P (ptrmem_class_type, non_ref_datum_type)));
+
+      bool datum_is_refwrap = false;
+      if (!ptrmem_is_same_or_base_of_datum && CLASS_TYPE_P (non_ref_datum_type))
+	{
+	  tree datum_decl = TYPE_NAME (TYPE_MAIN_VARIANT (non_ref_datum_type));
+	  if (decl_in_std_namespace_p (datum_decl))
+	    {
+	      const_tree name = DECL_NAME (datum_decl);
+	      if (name && (id_equal (name, "reference_wrapper")))
+		{
+		  /* 1.2 & 1.5: Retrieve T from std::reference_wrapper<T>,
+		     i.e., decltype(datum.get()).  */
+		  datum_type =
+		    TREE_VEC_ELT (TYPE_TI_ARGS (non_ref_datum_type), 0);
+		  datum_is_refwrap = true;
+		}
+	    }
+	}
+
+      tree datum_expr = build_trait_object (datum_type);
+      if (!ptrmem_is_same_or_base_of_datum && !datum_is_refwrap)
+	/* 1.3 & 1.6: Try to dereference datum_expr.  */
+	datum_expr = build_x_indirect_ref (UNKNOWN_LOCATION, datum_expr,
+					   RO_UNARY_STAR, NULL_TREE, complain);
+
+      tree fn_expr = build_trait_object (fn_type);
+      ptrmem_expr = build_m_component_ref (datum_expr, fn_expr, complain);
+
+      if (error_operand_p (ptrmem_expr))
+	return error_mark_node;
+
+      if (is_ptrdatamem)
+	return ptrmem_expr;
+    }
+
+  /* Construct expressions for arguments to INVOKE.  For a pointer to member
+     function, the first argument, which is the object, is not arguments to
+     the function.  */
+  releasing_vec args;
+  for (int i = is_ptrmemfunc ? 1 : 0; i < TREE_VEC_LENGTH (arg_types); ++i)
+    {
+      tree arg_type = TREE_VEC_ELT (arg_types, i);
+      tree arg = build_trait_object (arg_type);
+      vec_safe_push (args, arg);
+    }
+
+  tree invoke_expr;
+  if (is_ptrmemfunc)
+    invoke_expr = build_offset_ref_call_from_tree (ptrmem_expr, &args,
+						   complain);
+  else  /* 1.7.  */
+    invoke_expr = finish_call_expr (build_trait_object (fn_type), &args, false,
+				    false, complain);
+  return invoke_expr;
+}
+
 /* Determine which function will be called when looking up NAME in TYPE,
    called with a single ARGTYPE argument, or no argument if ARGTYPE is
    null.  FLAGS and COMPLAIN are as for build_new_method_call.

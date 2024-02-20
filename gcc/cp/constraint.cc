@@ -3792,6 +3792,12 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_FUNCTION:
       inform (loc, "  %qT is not a function", t1);
       break;
+    case CPTK_IS_INVOCABLE:
+      if (!t2)
+    inform (loc, "  %qT is not invocable", t1);
+      else
+    inform (loc, "  %qT is not invocable by %qE", t1, t2);
+      break;
     case CPTK_IS_LAYOUT_COMPATIBLE:
       inform (loc, "  %qT is not layout compatible with %qT", t1, t2);
       break;
