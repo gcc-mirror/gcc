@@ -77,9 +77,11 @@ Enable signed move and memory load instructions.
 
 mcpu=
 Target RejectNegative Joined Var(bpf_isa) Enum(bpf_isa) Init(ISA_V4)
+Select the eBPF ISA version to target in code generation.
 
 Enum
 Name(bpf_isa) Type(enum bpf_isa_version)
+Valid ISA versions (for use with the -mcpu= option)
 
 EnumValue
 Enum(bpf_isa) String(v1) Value(ISA_V1)
