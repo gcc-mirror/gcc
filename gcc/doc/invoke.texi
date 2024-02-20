@@ -30750,6 +30750,8 @@ Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
 @samp{sifive-u54}, @samp{sifive-u74}, @samp{sifive-x280}, @samp{sifive-xp450},
 @samp{sifive-x670}.
 
+Note that @option{-mcpu} does not override @option{-march} or @option{-mtune}.
+
 @opindex mtune
 @item -mtune=@var{processor-string}
 Optimize the output for the given processor, specified by microarchitecture or
