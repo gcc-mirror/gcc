@@ -7,6 +7,6 @@ int
 main (int argc, short *argv[])
 {
   int i = argc;
-  y[i] = 7 - i; /* { dg-warning "read-only" } */
+  y[i] = 7 - i; /* { dg-error "read-only" } */
   return 0;
 }
