@@ -3201,7 +3201,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// std::is_invocable
   template<typename _Fn, typename... _ArgTypes>
     struct is_invocable
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_invocable)
+    : public __bool_constant<__is_invocable(_Fn, _ArgTypes...)>
+#else
     : __is_invocable_impl<__invoke_result<_Fn, _ArgTypes...>, void>::type
+#endif
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Fn>{}),
 	"_Fn must be a complete class or an unbounded array");
