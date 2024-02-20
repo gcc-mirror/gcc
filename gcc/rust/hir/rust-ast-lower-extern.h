@@ -114,6 +114,11 @@ public:
       function.get_outer_attrs (), function.get_locus ());
   }
 
+  void visit (AST::ExternalTypeItem &type) override
+  {
+    rust_sorry_at (type.get_locus (), "extern types are not implemented yet");
+  }
+
 private:
   ASTLoweringExternItem () : translated (nullptr) {}
 

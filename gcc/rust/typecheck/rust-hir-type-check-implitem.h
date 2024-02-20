@@ -34,6 +34,7 @@ public:
 
   void visit (HIR::ExternalStaticItem &item) override;
   void visit (HIR::ExternalFunctionItem &function) override;
+  void visit (HIR::ExternalTypeItem &type) override;
 
 private:
   TypeCheckTopLevelExternItem (const HIR::ExternBlock &parent);

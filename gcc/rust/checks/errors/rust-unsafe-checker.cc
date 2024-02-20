@@ -784,6 +784,10 @@ UnsafeChecker::visit (ExternalFunctionItem &)
 {}
 
 void
+UnsafeChecker::visit (ExternalTypeItem &)
+{}
+
+void
 UnsafeChecker::visit (ExternBlock &block)
 {
   // FIXME: Do we need to do this?

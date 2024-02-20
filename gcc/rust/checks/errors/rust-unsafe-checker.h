@@ -144,6 +144,7 @@ private:
   virtual void visit (ImplBlock &impl) override;
   virtual void visit (ExternalStaticItem &item) override;
   virtual void visit (ExternalFunctionItem &item) override;
+  virtual void visit (ExternalTypeItem &item) override;
   virtual void visit (ExternBlock &block) override;
   virtual void visit (LiteralPattern &pattern) override;
   virtual void visit (IdentifierPattern &pattern) override;

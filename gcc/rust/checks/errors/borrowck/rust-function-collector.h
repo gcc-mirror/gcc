@@ -155,6 +155,7 @@ public:
   void visit (HIR::ImplBlock &impl) override {}
   void visit (HIR::ExternalStaticItem &item) override {}
   void visit (HIR::ExternalFunctionItem &item) override {}
+  void visit (HIR::ExternalTypeItem &item) override {}
   void visit (HIR::ExternBlock &block) override {}
   void visit (HIR::LiteralPattern &pattern) override {}
   void visit (HIR::IdentifierPattern &pattern) override {}

@@ -2000,6 +2000,16 @@ Dump::visit (ExternalFunctionItem &e)
 }
 
 void
+Dump::visit (ExternalTypeItem &e)
+{
+  begin ("ExternalTypeItem");
+
+  do_externalitem (e);
+
+  end ("ExternalTypeItem");
+}
+
+void
 Dump::visit (ExternBlock &e)
 {
   begin ("ExternBlock");
