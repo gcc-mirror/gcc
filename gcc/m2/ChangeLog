@@ -1,3 +1,130 @@
+2024-02-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113889
+	* gm2-compiler/M2ALU.mod (StringFitsArray): Add tokeno parameter
+	to GetStringLength.
+	(InitialiseArrayOfCharWithString): Add tokeno parameter to
+	GetStringLength.
+	(CheckGetCharFromString): Add tokeno parameter to GetStringLength.
+	* gm2-compiler/M2Const.mod (constResolveViaMeta): Replace
+	PutConstString with PutConstStringKnown.
+	* gm2-compiler/M2GCCDeclare.mod (DeclareCharConstant): Add tokenno
+	parameter and add assert.  Use tokenno to generate location.
+	(DeclareStringConstant): Add tokenno and add asserts.
+	Add tokenno parameter to calls to GetStringLength.
+	(PromoteToString): Add assert and add tokenno parameter to
+	GetStringLength.
+	(PromoteToCString): Add assert and add tokenno parameter to
+	GetStringLength.
+	(DeclareConstString): New procedure function.
+	(TryDeclareConst): Remove size local variable.
+	Check IsConstStringKnown.
+	Call DeclareConstString.
+	(PrintString): New procedure.
+	(PrintVerboseFromList): Call PrintString.
+	(CheckResolveSubrange): Check IsConstStringKnown before creating
+	subrange for char or issuing an error.
+	* gm2-compiler/M2GenGCC.mod (ResolveConstantExpressions): Add
+	StringLengthOp, StringConvertM2nulOp, StringConvertCnulOp case
+	clauses.
+	(FindSize): Add assert IsConstStringKnown.
+	(StringToChar): New variable tokenno.
+	Add tokenno parameter to GetStringLength.
+	(FoldStringLength): New procedure.
+	(FoldStringConvertM2nul): New procedure.
+	(FoldStringConvertCnul): New procedure.
+	(CodeAddr): Add tokenno parameter.
+	Replace CurrentQuadToken with tokenno.
+	Add tokenno parameter to GetStringLength.
+	(PrepareCopyString): Rewrite.
+	(IsConstStrKnown): New procedure function.
+	(FoldAdd): Detect conststring op2 and op3 which are known and
+	concat.  Place result into op1.
+	(FoldStandardFunction): Pass tokenno as a parameter to
+	GetStringLength.
+	(CodeXIndr): Rewrite comment.
+	Rename op1 to left, op3 to right.
+	Pass rightpos to GetStringLength.
+	* gm2-compiler/M2Quads.def (QuadrupleOp): Add
+	StringConvertCnulOp, StringConvertM2nulOp and StringLengthOp.
+	* gm2-compiler/M2Quads.mod (import): Remove MakeConstLitString.
+	Add CopyConstString and PutConstStringKnown.
+	(IsInitialisingConst): Add StringConvertCnulOp,
+	StringConvertM2nulOp and StringLengthOp.
+	(callRequestDependant): Replace MakeConstLitString with
+	MakeConstString.
+	(DeferMakeConstStringCnul): New procedure function.
+	(DeferMakeConstStringM2nul): New procedure function.
+	(CheckParameter): Add early return if the string const is unknown.
+	(DescribeType): Add token parameter to GetStringLength.
+	Check for IsConstStringKnown.
+	(ManipulateParameters): Use DeferMakeConstStringCnul and
+	DeferMakeConstStringM2nul.
+	(MakeLengthConst): Remove and replace with...
+	(DeferMakeLengthConst): ... this.
+	(doBuildBinaryOp): Create ConstString and set it to contents
+	unknown.
+	Check IsConstStringKnown before generating error message.
+	(WriteQuad): Add StringConvertCnulOp, StringConvertM2nulOp and
+	StringLengthOp.
+	(WriteOperator): Add StringConvertCnulOp, StringConvertM2nulOp and
+	StringLengthOp.
+	* gm2-compiler/M2SymInit.mod (CheckReadBeforeInitQuad): Add
+	StringConvertCnulOp, StringConvertM2nulOp and StringLengthOp.
+	* gm2-compiler/NameKey.mod (LengthKey): Allow NulName to return 0.
+	* gm2-compiler/P2SymBuild.mod (BuildString): Replace
+	MakeConstLitString with MakeConstString.
+	(DetermineType): Replace PutConstString with PutConstStringKnown.
+	* gm2-compiler/SymbolTable.def (MakeConstVar): Tidy up comment.
+	(MakeConstLitString): Remove.
+	(MakeConstString): New procedure function.
+	(MakeConstStringCnul): New procedure function.
+	(MakeConstStringM2nul): New procedure function.
+	(PutConstStringKnown): New procedure.
+	(CopyConstString): New procedure.
+	(IsConstStringKnown): New procedure function.
+	(IsConstStringM2): New procedure function.
+	(IsConstStringC): New procedure function.
+	(IsConstStringM2nul): New procedure function.
+	(IsConstStringCnul): New procedure function.
+	(GetStringLength): Add token parameter.
+	(PutConstString): Remove.
+	(GetConstStringM2): Remove.
+	(GetConstStringC): Remove.
+	(GetConstStringM2nul): Remove.
+	(GetConstStringCnul): Remove.
+	(MakeConstStringC): Remove.
+	* gm2-compiler/SymbolTable.mod (SymConstString): Remove
+	M2Variant, NulM2Variant, CVariant, NulCVariant.
+	Add Known.
+	(CheckAnonymous): Replace $$ with __anon.
+	(IsNameAnonymous): Replace $$ with __anon.
+	(MakeConstVar): Detect whether the name is nul and treat as
+	a temporary constant.
+	(MakeConstLitString): Remove.
+	(BackFillString): Remove.
+	(InitConstString): Rewrite.
+	(GetConstStringM2): Remove.
+	(GetConstStringC): Remove.
+	(GetConstStringContent): New procedure function.
+	(GetConstStringM2nul): Remove.
+	(GetConstStringCnul): Remove.
+	(MakeConstStringCnul): Rewrite.
+	(MakeConstStringM2nul): Rewrite.
+	(MakeConstStringC): Remove.
+	(MakeConstString): Rewrite.
+	(PutConstStringKnown): New procedure.
+	(CopyConstString): New procedure.
+	(PutConstString): Remove.
+	(IsConstStringKnown): New procedure function.
+	(IsConstStringM2): New procedure function.
+	(IsConstStringC): Rewrite.
+	(IsConstStringM2nul): Rewrite.
+	(IsConstStringCnul): Rewrite.
+	(GetConstStringKind): New procedure function.
+	(GetString): Check Known.
+	(GetStringLength): Add token parameter and check Known.
+
 2024-02-10  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/113848

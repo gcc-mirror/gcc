@@ -1,3 +1,13 @@
+2024-02-19  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR target/112397
+	* configure: Regenerate.
+	* configure.ac: Detect if we are building for Darwin.
+	* libsupc++/Makefile.am: If we are building for Darwin, then
+	suppress hot/cold partitioning for the array allocators.
+	* libsupc++/Makefile.in: Regenerated.
+
 2024-02-17  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algobase.h (std::__niter_base): Redefine the overload

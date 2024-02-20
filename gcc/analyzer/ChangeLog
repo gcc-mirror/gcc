@@ -1,3 +1,18 @@
+2024-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111289
+	* varargs.cc (representable_in_integral_type_p): New.
+	(va_arg_compatible_types_p): Add "arg_sval" param.  Handle integer
+	types.
+	(kf_va_arg::impl_call_pre): Pass arg_sval to
+	va_arg_compatible_types_p.
+
+2024-02-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR analyzer/113983
+	* region-model-manager.cc (maybe_undo_optimize_bit_field_compare): Reject
+	non integral types.
+
 2024-02-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/111266

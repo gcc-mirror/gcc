@@ -1,3 +1,71 @@
+2024-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111289
+	* c-c++-common/analyzer/stdarg-pr111289-int.c: New test.
+	* c-c++-common/analyzer/stdarg-pr111289-ptr.c: New test.
+
+2024-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110520
+	* c-c++-common/analyzer/null-deref-pr110520.c: New test.
+
+2024-02-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR analyzer/113983
+	* gcc.dg/analyzer/torture/vector-extract-1.c: New test.
+
+2024-02-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113966
+	* g++.dg/cpp2a/concepts-friend17.C: New test.
+
+2024-02-19  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/bitint-86.c (__seg_gs): Replace with SEG MACRO.
+
+2024-02-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113889
+	* gm2/pim/run/pass/pim-run-pass.exp: Add filter for
+	constdef.mod.
+	* gm2/extensions/run/pass/callingc2.mod: New test.
+	* gm2/extensions/run/pass/callingc3.mod: New test.
+	* gm2/extensions/run/pass/callingc4.mod: New test.
+	* gm2/extensions/run/pass/callingc5.mod: New test.
+	* gm2/extensions/run/pass/callingc6.mod: New test.
+	* gm2/extensions/run/pass/callingc7.mod: New test.
+	* gm2/extensions/run/pass/callingc8.mod: New test.
+	* gm2/extensions/run/pass/fixedarray.mod: New test.
+	* gm2/extensions/run/pass/fixedarray2.mod: New test.
+	* gm2/pim/run/pass/constdef.def: New test.
+	* gm2/pim/run/pass/constdef.mod: New test.
+	* gm2/pim/run/pass/testimportconst.mod: New test.
+
+2024-02-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/bom_UTF16BE.d: New test.
+	* gdc.dg/bom_UTF16LE.d: New test.
+	* gdc.dg/bom_UTF32BE.d: New test.
+	* gdc.dg/bom_UTF32LE.d: New test.
+	* gdc.dg/bom_UTF8.d: New test.
+	* gdc.dg/bom_characters.d: New test.
+	* gdc.dg/bom_error_UTF8.d: New test.
+	* gdc.dg/bom_infer_UTF16BE.d: New test.
+	* gdc.dg/bom_infer_UTF16LE.d: New test.
+	* gdc.dg/bom_infer_UTF32BE.d: New test.
+	* gdc.dg/bom_infer_UTF32LE.d: New test.
+	* gdc.dg/bom_infer_UTF8.d: New test.
+
+2024-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113967
+	* gcc.dg/pr113967.c: New test.
+
+2024-02-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113696
+	* gcc.target/riscv/rvv/vsetvl/pr113696.c: New test.
+
 2024-02-18  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/113912

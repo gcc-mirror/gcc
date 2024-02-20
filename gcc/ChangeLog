@@ -1,3 +1,41 @@
+2024-02-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_rng_builtins):
+	Register these builtins with a pointer to uint64_t rather than unsigned
+	DI mode.
+
+2024-02-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/113615
+	* config/gcn/gcn-valu.md (define_expand "reduc_<fexpander>_scal_<mode>"):
+	Conditionalize on '!TARGET_RDNA2_PLUS'.
+	* config/gcn/gcn.cc (gcn_expand_dpp_shr_insn)
+	(gcn_expand_reduc_scalar):
+	'gcc_checking_assert (!TARGET_RDNA2_PLUS);'.
+
+2024-02-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.h (TARGET_CPU_CPP_BUILTINS): Restore lost
+	'__gfx90a__' target CPU definition.  Add some safeguards for the future.
+
+2024-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/54052
+	* rtl-ssa/blocks.cc (function_info::place_phis): Filter
+	local defs by LR_OUT.
+
+2024-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113967
+	* match.pd (bit_insert @0 (BIT_FIELD_REF @1 ..) ..): Require
+	in condition that @rpos is multiple of vector element size.
+
+2024-02-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113696
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::earliest_fuse_vsetvl_info):
+	Suppress vsetvl fusion.
+
 2024-02-18  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/113912

@@ -1,3 +1,10 @@
+2024-02-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113966
+	* constraint.cc (tsubst_compound_requirement): Don't check
+	the noexcept condition or the return-type-requirement when
+	partially substituting.
+
 2024-02-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113158

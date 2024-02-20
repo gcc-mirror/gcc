@@ -1,3 +1,10 @@
+2024-02-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR other/113957
+	* pex-unix.c (pex_unix_exec_child): Set pid = -1 in the error
+	paths, since that is used to signal an erroneous outcome for
+	the routine.
+
 2024-02-15  Richard Biener  <rguenther@suse.de>
 
 	* hashtab.c (iterative_hash): Remove TBAA violating handling
