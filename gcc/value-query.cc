@@ -280,11 +280,15 @@ get_ssa_name_ptr_info_nonnull (const_tree name)
 // Update the global range for NAME into the SSA_RANGE_NAME_INFO and
 // Return the legacy global range for NAME if it has one, otherwise
 // return VARYING.
+// See discussion here regarding why there use to be a wrapper function:
+// https://gcc.gnu.org/pipermail/gcc-patches/2021-June/571709.html
+// Legacy EVRP has been removed, leaving just this function.
 
-static void
-get_range_global (vrange &r, tree name, struct function *fun = cfun)
+void
+gimple_range_global (vrange &r, tree name, struct function *fun)
 {
   tree type = TREE_TYPE (name);
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
 
   if (SSA_NAME_IS_DEFAULT_DEF (name))
     {
@@ -332,36 +336,6 @@ get_range_global (vrange &r, tree name, struct function *fun = cfun)
     r.set_varying (type);
 }
 
-// This is where the ranger picks up global info to seed initial
-// requests.  It is a slightly restricted version of
-// get_range_global() above.
-//
-// The reason for the difference is that we can always pick the
-// default definition of an SSA with no adverse effects, but for other
-// SSAs, if we pick things up to early, we may prematurely eliminate
-// builtin_unreachables.
-//
-// Without this restriction, the test in g++.dg/tree-ssa/pr61034.C has
-// all of its unreachable calls removed too early.
-//
-// See discussion here:
-// https://gcc.gnu.org/pipermail/gcc-patches/2021-June/571709.html
-
-void
-gimple_range_global (vrange &r, tree name, struct function *fun)
-{
-  tree type = TREE_TYPE (name);
-  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-
-  if (SSA_NAME_IS_DEFAULT_DEF (name) || (fun && fun->after_inlining)
-      || is_a<gphi *> (SSA_NAME_DEF_STMT (name)))
-    {
-      get_range_global (r, name, fun);
-      return;
-    }
-  r.set_varying (type);
-}
-
 // ----------------------------------------------
 // global_range_query implementation.
 
@@ -373,7 +347,7 @@ global_range_query::range_of_expr (vrange &r, tree expr, gimple *stmt)
   if (!gimple_range_ssa_p (expr))
     return get_tree_range (r, expr, stmt);
 
-  get_range_global (r, expr);
+  gimple_range_global (r, expr);
 
   return true;
 }
