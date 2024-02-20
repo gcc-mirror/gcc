@@ -219,7 +219,7 @@ do {									\
    section and we need to set DECL_SECTION_NAME so we do that here.
    Note that we can be called twice on the same decl.  */
 
-#define SUBTARGET_ENCODE_SECTION_INFO  i386_pe_encode_section_info
+#define SUBTARGET_ENCODE_SECTION_INFO  mingw_pe_encode_section_info
 
 /* Local and global relocs can be placed always into readonly memory
    for PE-COFF targets.  */
@@ -235,7 +235,7 @@ do {									\
 #undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)	\
 do {							\
-  i386_pe_maybe_record_exported_symbol (DECL, NAME, 1);	\
+  mingw_pe_maybe_record_exported_symbol (DECL, NAME, 1);	\
   ASM_OUTPUT_LABEL ((STREAM), (NAME));			\
 } while (0)
 
@@ -283,16 +283,16 @@ do {						\
 /* Windows uses explicit import from shared libraries.  */
 #define MULTIPLE_SYMBOL_SPACES 1
 
-#define TARGET_ASM_UNIQUE_SECTION i386_pe_unique_section
+#define TARGET_ASM_UNIQUE_SECTION mingw_pe_unique_section
 #define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
 
 #define SUPPORTS_ONE_ONLY 1
 
 /* Switch into a generic section.  */
-#define TARGET_ASM_NAMED_SECTION  i386_pe_asm_named_section
+#define TARGET_ASM_NAMED_SECTION  mingw_pe_asm_named_section
 
 /* Select attributes for named sections.  */
-#define TARGET_SECTION_TYPE_FLAGS  i386_pe_section_type_flags
+#define TARGET_SECTION_TYPE_FLAGS  mingw_pe_section_type_flags
 
 /* Write the extra assembler code needed to declare a function
    properly.  */
@@ -307,7 +307,7 @@ do {						\
 #define ASM_DECLARE_COLD_FUNCTION_NAME(FILE, NAME, DECL)	\
   do								\
     {								\
-      i386_pe_declare_function_type (FILE, NAME, 0);		\
+      mingw_pe_declare_function_type (FILE, NAME, 0);		\
       i386_pe_seh_cold_init (FILE, NAME);			\
       ASM_OUTPUT_LABEL (FILE, NAME);				\
     }								\
@@ -333,7 +333,7 @@ do {						\
 
 /* Declare the type properly for any external libcall.  */
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
-  i386_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
+  mingw_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
 
 /* This says out to put a global symbol in the BSS section.  */
 #undef ASM_OUTPUT_ALIGNED_BSS
@@ -416,9 +416,9 @@ do {						\
     {									\
       const char *alias							\
 	= IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		\
-      i386_pe_maybe_record_exported_symbol (DECL, alias, 0);		\
+      mingw_pe_maybe_record_exported_symbol (DECL, alias, 0);		\
       if (TREE_CODE (DECL) == FUNCTION_DECL)				\
-	i386_pe_declare_function_type (STREAM, alias,			\
+	mingw_pe_declare_function_type (STREAM, alias,			\
 				       TREE_PUBLIC (DECL));		\
       ASM_OUTPUT_DEF (STREAM, alias, IDENTIFIER_POINTER (TARGET));	\
     } while (0)

@@ -293,7 +293,7 @@ i386_pe_mangle_assembler_name (const char *name)
 }
 
 void
-i386_pe_encode_section_info (tree decl, rtx rtl, int first)
+mingw_pe_encode_section_info (tree decl, rtx rtl, int first)
 {
   rtx symbol;
   int flags;
@@ -384,7 +384,7 @@ i386_pe_strip_name_encoding_full (const char *str)
 }
 
 void
-i386_pe_unique_section (tree decl, int reloc)
+mingw_pe_unique_section (tree decl, int reloc)
 {
   int len;
   const char *name, *prefix;
@@ -442,7 +442,7 @@ i386_pe_reloc_rw_mask (void)
 #define SECTION_PE_SHARED	SECTION_MACH_DEP
 
 unsigned int
-i386_pe_section_type_flags (tree decl, const char *, int reloc)
+mingw_pe_section_type_flags (tree decl, const char *, int reloc)
 {
   unsigned int flags;
 
@@ -471,7 +471,7 @@ i386_pe_section_type_flags (tree decl, const char *, int reloc)
 }
 
 void
-i386_pe_asm_named_section (const char *name, unsigned int flags, 
+mingw_pe_asm_named_section (const char *name, unsigned int flags,
 			   tree decl)
 {
   char flagchars[8], *f = flagchars;
@@ -548,7 +548,7 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
   rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
 	     * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
   
-  i386_pe_maybe_record_exported_symbol (decl, name, 1);
+  mingw_pe_maybe_record_exported_symbol (decl, name, 1);
 
   fprintf (stream, "\t.comm\t");
   assemble_name (stream, name);
@@ -574,7 +574,7 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
    visible.  */
 
 void
-i386_pe_declare_function_type (FILE *file, const char *name, int pub)
+mingw_pe_declare_function_type (FILE *file, const char *name, int pub)
 {
   fprintf (file, "\t.def\t");
   assemble_name (file, name);
@@ -641,7 +641,7 @@ static GTY(()) struct stub_list *stub_head;
    the LTO marker.  */
 
 void
-i386_pe_maybe_record_exported_symbol (tree decl, const char *name, int is_data)
+mingw_pe_maybe_record_exported_symbol (tree decl, const char *name, int is_data)
 {
   rtx symbol;
   struct export_list *p;
@@ -761,11 +761,11 @@ i386_pe_file_end (void)
 	     the real function so that an (unused) import is created.  */
 	  const char *realsym = i386_find_on_wrapper_list (p->name);
 	  if (realsym)
-	    i386_pe_declare_function_type (asm_out_file,
+	    mingw_pe_declare_function_type (asm_out_file,
 		concat ("__real_", realsym, NULL), TREE_PUBLIC (decl));
 #endif /* CXX_WRAP_SPEC_LIST */
 	  TREE_ASM_WRITTEN (decl) = 1;
-	  i386_pe_declare_function_type (asm_out_file, p->name,
+	  mingw_pe_declare_function_type (asm_out_file, p->name,
 					 TREE_PUBLIC (decl));
 	}
     }
@@ -1354,8 +1354,8 @@ i386_pe_seh_init_sections (void)
 void
 i386_pe_start_function (FILE *f, const char *name, tree decl)
 {
-  i386_pe_maybe_record_exported_symbol (decl, name, 0);
-  i386_pe_declare_function_type (f, name, TREE_PUBLIC (decl));
+  mingw_pe_maybe_record_exported_symbol (decl, name, 0);
+  mingw_pe_declare_function_type (f, name, TREE_PUBLIC (decl));
   /* In case section was altered by debugging output.  */
   if (decl != NULL_TREE)
     switch_to_section (function_section (decl));

@@ -8668,7 +8668,7 @@ switch_to_comdat_section (section *sect, tree decl)
      everything in .vtable_map_vars at the end.
 
      A fix could be made in
-     gcc/config/i386/winnt.cc: i386_pe_unique_section.  */
+     gcc/config/i386/winnt.cc: mingw_pe_unique_section.  */
   if (TARGET_PECOFF)
     {
       char *name;
