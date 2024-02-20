@@ -3152,16 +3152,20 @@ protected:
 
 class ExternalTypeItem : public ExternalItem
 {
+public:
   ExternalTypeItem (Analysis::NodeMapping mappings, Identifier item_name,
-		    Visibility vis, AST::AttrVec outer_attrs, location_t locus)
+		    location_t locus)
     : ExternalItem (std::move (mappings), std::move (item_name),
-		    std::move (vis), std::move (outer_attrs), locus)
+		    Visibility (Visibility::PRIVATE),
+		    /* FIXME: Is that correct? */
+		    {}, locus)
   {}
 
   ExternalTypeItem (ExternalTypeItem const &other) : ExternalItem (other) {}
 
   ExternalTypeItem (ExternalTypeItem &&other) = default;
   ExternalTypeItem &operator= (ExternalTypeItem &&other) = default;
+  ExternalTypeItem &operator= (ExternalTypeItem const &other) = default;
 
   std::string as_string () const override;
 
@@ -3171,6 +3175,8 @@ class ExternalTypeItem : public ExternalItem
   ExternKind get_extern_kind () override { return ExternKind::Type; }
 
 protected:
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   ExternalTypeItem *clone_external_item_impl () const override
   {
     return new ExternalTypeItem (*this);
