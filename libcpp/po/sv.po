@@ -1,17 +1,16 @@
 # Swedish messages for cpplib.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024.
 #
-# Remember: GCC team does not want RCS keywords in the header!
-#
+# Remember: The GCC team does not want RCS keywords in the header!
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 13.1-b20230212\n"
+"Project-Id-Version: cpplib 14.1-b20240218\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2024-02-16 21:34+0000\n"
-"PO-Revision-Date: 2023-02-26 17:10+0100\n"
+"PO-Revision-Date: 2024-02-20 09:31+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -208,7 +207,7 @@ msgstr "oktal specialsekvens utanför intervallet"
 #: charset.cc:2300 charset.cc:2310
 #, c-format
 msgid "numeric escape sequence in unevaluated string: '\\%c'"
-msgstr ""
+msgstr "numerisk specialsekvens i oevaluerad sträng: ”\\%c”"
 
 #: charset.cc:2338
 msgid "the meaning of '\\a' is different in traditional C"
@@ -238,27 +237,25 @@ msgid "missing open quote"
 msgstr "inledande citationstecken saknas"
 
 #: charset.cc:2772
-#, fuzzy
-#| msgid "character 0x%lx is not unibyte in execution character set"
 msgid "character not encodable in a single execution character code unit"
-msgstr "tecken 0x%lx är inte en byte i teckenuppsättning för körning"
+msgstr "tecknet är inte kodbart i en ensam körtidsteckenskodenhet"
 
 #: charset.cc:2777
 msgid "at least one character in a multi-character literal not encodable in a single execution character code unit"
-msgstr ""
+msgstr "åtminstone ett tecken i en flerteckensliteral är inte kodbart i en ensam körtidsteckenskodenhet"
 
 #: charset.cc:2795
 #, c-format
 msgid "multi-character literal with %ld characters exceeds 'int' size of %ld bytes"
-msgstr ""
+msgstr "flerteckensliteral med %ld tecken överskrider storleken på ”int” på %ld byte"
 
 #: charset.cc:2799 charset.cc:2894
 msgid "multi-character literal cannot have an encoding prefix"
-msgstr ""
+msgstr "flerteckensliteraler kan inte ha ett kodningsprefix"
 
 #: charset.cc:2802 charset.cc:2897
 msgid "character not encodable in a single code unit"
-msgstr ""
+msgstr "tecknet är inte kodbart i en ensam kodenhet"
 
 #: charset.cc:2806
 msgid "multi-character character constant"
@@ -289,10 +286,9 @@ msgid "#%s before C++23 is a GCC extension"
 msgstr "#%s före C++23 är en GCC-utvidgning"
 
 #: directives.cc:397 directives.cc:401 directives.cc:2167 directives.cc:2206
-#, fuzzy, c-format
-#| msgid "#%s before C++23 is a GCC extension"
+#, c-format
 msgid "#%s before C23 is a GCC extension"
-msgstr "#%s före C++23 är en GCC-utvidgning"
+msgstr "#%s före C23 är en GCC-utvidgning"
 
 #: directives.cc:407
 #, c-format
@@ -595,10 +591,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "ogiltigt suffix ”%.*s” på hexadecimal flyttalskonstant"
 
 #: expr.cc:790 expr.cc:794
-#, fuzzy
-#| msgid "decimal float constants are a C2X feature"
 msgid "decimal float constants are a C23 feature"
-msgstr "decimala flyttalskonstanter är en C2X-funktion"
+msgstr "decimala flyttalskonstanter är en C23-funktion"
 
 #: expr.cc:813
 #, c-format
@@ -623,7 +617,7 @@ msgstr "användning av %<make_signed_t<size_t>%> heltalskonstant enligt C++23"
 
 #: expr.cc:864 expr.cc:875
 msgid "ISO C does not support literal %<wb%> suffixes before C23"
-msgstr ""
+msgstr "ISO C stödjer inte literala suffix %<wb%> före C23"
 
 #: expr.cc:888
 msgid "imaginary constants are a GCC extension"
@@ -634,16 +628,12 @@ msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "binära konstanter är C++14-funktion eller GCC-utvidgning"
 
 #: expr.cc:897
-#, fuzzy
-#| msgid "binary constants are a C2X feature or GCC extension"
 msgid "binary constants are a C23 feature or GCC extension"
-msgstr "binära konstanter är C2X-funktion eller GCC-utvidgning"
+msgstr "binära konstanter är C23-funktion eller GCC-utvidgning"
 
 #: expr.cc:902
-#, fuzzy
-#| msgid "binary constants are a C2X feature"
 msgid "binary constants are a C23 feature"
-msgstr "binära konstanter är en C2X-funktion"
+msgstr "binära konstanter är en C23-funktion"
 
 #: expr.cc:998
 msgid "integer constant is too large for its type"
@@ -906,10 +896,8 @@ msgid "__VA_OPT__ is not available until C++20"
 msgstr "__VA_OPT__ är inte tillgängligt förrän C++20"
 
 #: lex.cc:2147
-#, fuzzy
-#| msgid "__VA_OPT__ is not available until C2X"
 msgid "__VA_OPT__ is not available until C23"
-msgstr "__VA_OPT__ är inte tillgängligt förrän C2X"
+msgstr "__VA_OPT__ är inte tillgängligt förrän C23"
 
 #: lex.cc:2155
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
@@ -922,7 +910,7 @@ msgstr "försök att använda förgiftad ”%s”"
 
 #: lex.cc:2177
 msgid "poisoned here"
-msgstr ""
+msgstr "förgiftad här"
 
 #: lex.cc:2187
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
@@ -1251,10 +1239,3 @@ msgstr "upptäckte rekursion vid under expansion av makrot ”%s”"
 #: traditional.cc:1114
 msgid "syntax error in macro parameter list"
 msgstr "syntaxfel i makroparameterlista"
-
-#~ msgid "character constant too long for its type"
-#~ msgstr "teckenkonstant för lång för sin typ"
-
-#, c-format
-#~ msgid "#%s before C2X is a GCC extension"
-#~ msgstr "#%s före C2X är en GCC-utvidgning"
