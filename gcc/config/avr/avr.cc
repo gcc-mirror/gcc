@@ -14605,35 +14605,35 @@ avr_init_builtins (void)
 {
   tree void_ftype_void
     = build_function_type_list (void_type_node, NULL_TREE);
-  tree uchar_ftype_uchar
-    = build_function_type_list (unsigned_char_type_node,
-				unsigned_char_type_node,
+  tree uintQI_ftype_uintQI
+    = build_function_type_list (unsigned_intQI_type_node,
+				unsigned_intQI_type_node,
 				NULL_TREE);
-  tree uint_ftype_uchar_uchar
-    = build_function_type_list (unsigned_type_node,
-				unsigned_char_type_node,
-				unsigned_char_type_node,
+  tree uintHI_ftype_uintQI_uintQI
+    = build_function_type_list (unsigned_intHI_type_node,
+				unsigned_intQI_type_node,
+				unsigned_intQI_type_node,
 				NULL_TREE);
-  tree int_ftype_char_char
-    = build_function_type_list (integer_type_node,
-				char_type_node,
-				char_type_node,
+  tree intHI_ftype_intQI_intQI
+    = build_function_type_list (intHI_type_node,
+				intQI_type_node,
+				intQI_type_node,
 				NULL_TREE);
-  tree int_ftype_char_uchar
-    = build_function_type_list (integer_type_node,
-				char_type_node,
-				unsigned_char_type_node,
+  tree intHI_ftype_intQI_uintQI
+    = build_function_type_list (intHI_type_node,
+				intQI_type_node,
+				unsigned_intQI_type_node,
 				NULL_TREE);
-  tree void_ftype_ulong
+  tree void_ftype_uintSI
     = build_function_type_list (void_type_node,
-				long_unsigned_type_node,
+				unsigned_intSI_type_node,
 				NULL_TREE);
 
-  tree uchar_ftype_ulong_uchar_uchar
-    = build_function_type_list (unsigned_char_type_node,
-				long_unsigned_type_node,
-				unsigned_char_type_node,
-				unsigned_char_type_node,
+  tree uintQI_ftype_uintSI_uintQI_uintQI
+    = build_function_type_list (unsigned_intQI_type_node,
+				unsigned_intSI_type_node,
+				unsigned_intQI_type_node,
+				unsigned_intQI_type_node,
 				NULL_TREE);
 
   tree const_memx_void_node
@@ -14644,8 +14644,8 @@ avr_init_builtins (void)
   tree const_memx_ptr_type_node
     = build_pointer_type_for_mode (const_memx_void_node, PSImode, false);
 
-  tree char_ftype_const_memx_ptr
-    = build_function_type_list (char_type_node,
+  tree intQI_ftype_const_memx_ptr
+    = build_function_type_list (intQI_type_node,
 				const_memx_ptr_type_node,
 				NULL);
 

@@ -16783,32 +16783,30 @@ or if not a specific built-in is implemented or not. For example, if
 @code{__BUILTIN_AVR_NOP} is defined to @code{1} and undefined otherwise.
 
 @defbuiltin{void __builtin_avr_nop (void)}
-@defbuiltinx{void __builtin_avr_nop (void)}
 @defbuiltinx{void __builtin_avr_sei (void)}
 @defbuiltinx{void __builtin_avr_cli (void)}
 @defbuiltinx{void __builtin_avr_sleep (void)}
 @defbuiltinx{void __builtin_avr_wdr (void)}
-@defbuiltinx{{unsigned char} __builtin_avr_swap (unsigned char)}
-@defbuiltinx{{unsigned int} __builtin_avr_fmul (unsigned char, unsigned char)}
-@defbuiltinx{int __builtin_avr_fmuls (char, char)}
-@defbuiltinx{int __builtin_avr_fmulsu (char, unsigned char)}
+@defbuiltinx{uint8_t __builtin_avr_swap (uint8_t)}
+@defbuiltinx{uint16_t __builtin_avr_fmul (uint8_t, uint8_t)}
+@defbuiltinx{int16_t __builtin_avr_fmuls (int8_t, int8_t)}
+@defbuiltinx{int16_t __builtin_avr_fmulsu (int8_t, uint8_t)}
 
 These built-in functions map to the respective machine
 instruction, i.e.@: @code{nop}, @code{sei}, @code{cli}, @code{sleep},
 @code{wdr}, @code{swap}, @code{fmul}, @code{fmuls}
 resp. @code{fmulsu}. The three @code{fmul*} built-ins are implemented
 as library call if no hardware multiplier is available.
-
 @enddefbuiltin
 
-@defbuiltin{void __builtin_avr_delay_cycles (unsigned long @var{ticks})}
+@defbuiltin{void __builtin_avr_delay_cycles (uint32_t @var{ticks})}
 Delay execution for @var{ticks} cycles. Note that this
 built-in does not take into account the effect of interrupts that
 might increase delay time. @var{ticks} must be a compile-time
 integer constant; delays with a variable number of cycles are not supported.
 @enddefbuiltin
 
-@defbuiltin{char __builtin_avr_flash_segment (const __memx void*)}
+@defbuiltin{int8_t __builtin_avr_flash_segment (const __memx void*)}
 This built-in takes a byte address to the 24-bit
 @ref{AVR Named Address Spaces,address space} @code{__memx} and returns
 the number of the flash segment (the 64 KiB chunk) where the address
@@ -16862,7 +16860,7 @@ __builtin_avr_insert_bits (0x01234567, bits, 0);
 @end smallexample
 @enddefbuiltin
 
-@defbuiltin{void __builtin_avr_nops (unsigned @var{count})}
+@defbuiltin{void __builtin_avr_nops (uint16_t @var{count})}
 Insert @var{count} @code{NOP} instructions.
 The number of instructions must be a compile-time integer constant.
 @enddefbuiltin
