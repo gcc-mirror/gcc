@@ -2659,6 +2659,27 @@ aarch64_gen_compare_zero_and_branch (rtx_code code, rtx x,
   return gen_rtx_SET (pc_rtx, x);
 }
 
+/* Return an rtx that branches to LABEL based on the value of bit BITNUM of X.
+   If CODE is NE, it branches to LABEL when the bit is set; if CODE is EQ,
+   it branches to LABEL when the bit is clear.  */
+
+static rtx
+aarch64_gen_test_and_branch (rtx_code code, rtx x, int bitnum,
+			     rtx_code_label *label)
+{
+  auto mode = GET_MODE (x);
+  if (aarch64_track_speculation)
+    {
+      auto mask = gen_int_mode (HOST_WIDE_INT_1U << bitnum, mode);
+      emit_insn (gen_aarch64_and3nr_compare0 (mode, x, mask));
+      rtx cc_reg = gen_rtx_REG (CC_NZVmode, CC_REGNUM);
+      rtx x = gen_rtx_fmt_ee (code, CC_NZVmode, cc_reg, const0_rtx);
+      return gen_condjump (x, cc_reg, label);
+    }
+  return gen_aarch64_tb (code, mode, mode,
+			 x, gen_int_mode (bitnum, mode), label);
+}
+
 /* Consider the operation:
 
      OPERANDS[0] = CODE (OPERANDS[1], OPERANDS[2]) + OPERANDS[3]
@@ -4881,8 +4902,9 @@ aarch64_guard_switch_pstate_sm (rtx old_svcr, aarch64_feature_flags local_mode)
   gcc_assert (local_mode != 0);
   auto already_ok_cond = (local_mode & AARCH64_FL_SM_ON ? NE : EQ);
   auto *label = gen_label_rtx ();
-  auto *jump = emit_jump_insn (gen_aarch64_tb (already_ok_cond, DImode, DImode,
-					       old_svcr, const0_rtx, label));
+  auto branch = aarch64_gen_test_and_branch (already_ok_cond, old_svcr, 0,
+					     label);
+  auto *jump = emit_jump_insn (branch);
   JUMP_LABEL (jump) = label;
   return label;
 }

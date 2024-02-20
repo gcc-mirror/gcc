@@ -105,6 +105,7 @@
    (clobber (reg:CC CC_REGNUM))]
   ""
   "bl\t__arm_sme_state"
+  [(set_attr "is_call" "yes")]
 )
 
 (define_insn "aarch64_read_svcr"
@@ -242,6 +243,7 @@
    (clobber (reg:CC CC_REGNUM))]
   ""
   "bl\t__arm_tpidr2_save"
+  [(set_attr "is_call" "yes")]
 )
 
 ;; Set PSTATE.ZA to 1.  If ZA was previously dormant or active,
@@ -358,6 +360,7 @@
    (clobber (reg:CC CC_REGNUM))]
   ""
   "bl\t__arm_tpidr2_restore"
+  [(set_attr "is_call" "yes")]
 )
 
 ;; Check whether a lazy save set up by aarch64_save_za was committed
