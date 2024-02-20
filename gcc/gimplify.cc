@@ -6078,8 +6078,11 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	  /* If we're assigning to a non-register type, push the assignment
 	     down into the branches.  This is mandatory for ADDRESSABLE types,
 	     since we cannot generate temporaries for such, but it saves a
-	     copy in other cases as well.  */
-	  if (!is_gimple_reg_type (TREE_TYPE (*from_p)))
+	     copy in other cases as well.
+	     Also avoid an extra temporary and copy when assigning to
+	     a register.  */
+	  if (!is_gimple_reg_type (TREE_TYPE (*from_p))
+	      || (is_gimple_reg (*to_p) && !gimplify_ctxp->allow_rhs_cond_expr))
 	    {
 	      /* This code should mirror the code in gimplify_cond_expr. */
 	      enum tree_code code = TREE_CODE (*expr_p);
