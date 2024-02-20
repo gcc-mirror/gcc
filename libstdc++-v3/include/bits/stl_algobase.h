@@ -344,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX20_CONSTEXPR
     inline _From
     __niter_wrap(_From __from, _To __res)
-    { return __from + (__res - std::__niter_base(__from)); }
+    { return __from + (std::__niter_base(__res) - std::__niter_base(__from)); }
 
   // No need to wrap, iterator already has the right type.
   template<typename _Iterator>
