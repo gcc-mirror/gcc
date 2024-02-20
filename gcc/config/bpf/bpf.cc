@@ -1184,6 +1184,121 @@ bpf_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
   bpf_use_by_pieces_infrastructure_p
 
+/* Helper for bpf_expand_cpymem.  Emit an unrolled loop moving the bytes
+   from SRC to DST.  */
+
+static void
+emit_move_loop (rtx src, rtx dst, machine_mode mode, int offset, int inc,
+		unsigned iters, unsigned remainder)
+{
+  rtx reg = gen_reg_rtx (mode);
+
+  /* First copy in chunks as large as alignment permits.  */
+  for (unsigned int i = 0; i < iters; i++)
+    {
+      emit_move_insn (reg, adjust_address (src, mode, offset));
+      emit_move_insn (adjust_address (dst, mode, offset), reg);
+      offset += inc;
+    }
+
+  /* Handle remaining bytes which might be smaller than the chunks
+     used above.  */
+  if (remainder & 4)
+    {
+      emit_move_insn (reg, adjust_address (src, SImode, offset));
+      emit_move_insn (adjust_address (dst, SImode, offset), reg);
+      offset += (inc < 0 ? -4 : 4);
+      remainder -= 4;
+    }
+  if (remainder & 2)
+    {
+      emit_move_insn (reg, adjust_address (src, HImode, offset));
+      emit_move_insn (adjust_address (dst, HImode, offset), reg);
+      offset += (inc < 0 ? -2 : 2);
+      remainder -= 2;
+    }
+  if (remainder & 1)
+    {
+      emit_move_insn (reg, adjust_address (src, QImode, offset));
+      emit_move_insn (adjust_address (dst, QImode, offset), reg);
+    }
+}
+
+/* Expand cpymem/movmem, as from __builtin_memcpy/memmove.
+   OPERANDS are the same as the cpymem/movmem patterns.
+   IS_MOVE is true if this is a memmove, false for memcpy.
+   Return true if we successfully expanded, or false if we cannot
+   and must punt to a libcall.  */
+
+bool
+bpf_expand_cpymem (rtx *operands, bool is_move)
+{
+  /* Size must be constant for this expansion to work.  */
+  if (!CONST_INT_P (operands[2]))
+    {
+      const char *name = is_move ? "memmove" : "memcpy";
+      if (flag_building_libgcc)
+	warning (0, "could not inline call to %<__builtin_%s%>: "
+		 "size must be constant", name);
+      else
+	error ("could not inline call to %<__builtin_%s%>: "
+	       "size must be constant", name);
+      return false;
+    }
+
+  /* Alignment is a CONST_INT.  */
+  gcc_assert (CONST_INT_P (operands[3]));
+
+  rtx dst = operands[0];
+  rtx src = operands[1];
+  rtx size = operands[2];
+  unsigned HOST_WIDE_INT size_bytes = UINTVAL (size);
+  unsigned align = UINTVAL (operands[3]);
+  enum machine_mode mode;
+  switch (align)
+    {
+    case 1: mode = QImode; break;
+    case 2: mode = HImode; break;
+    case 4: mode = SImode; break;
+    case 8: mode = DImode; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  unsigned iters = size_bytes >> ceil_log2 (align);
+  unsigned remainder = size_bytes & (align - 1);
+
+  int inc = GET_MODE_SIZE (mode);
+  rtx_code_label *fwd_label, *done_label;
+  if (is_move)
+    {
+      /* For memmove, be careful of overlap.  It is not a concern for memcpy.
+	 To handle overlap, we check (at runtime) if SRC < DST, and if so do
+	 the move "backwards" starting from SRC + SIZE.  */
+      fwd_label = gen_label_rtx ();
+      done_label = gen_label_rtx ();
+
+      rtx dst_addr = copy_to_mode_reg (Pmode, XEXP (dst, 0));
+      rtx src_addr = copy_to_mode_reg (Pmode, XEXP (src, 0));
+      emit_cmp_and_jump_insns (src_addr, dst_addr, GEU, NULL_RTX, Pmode,
+			       true, fwd_label, profile_probability::even ());
+
+      /* Emit the "backwards" unrolled loop.  */
+      emit_move_loop (src, dst, mode, size_bytes, -inc, iters, remainder);
+      emit_jump_insn (gen_jump (done_label));
+      emit_barrier ();
+
+      emit_label (fwd_label);
+    }
+
+  emit_move_loop (src, dst, mode, 0, inc, iters, remainder);
+
+  if (is_move)
+    emit_label (done_label);
+
+  return true;
+}
+
 /* Finally, build the GCC target.  */
 
 struct gcc_target targetm = TARGET_INITIALIZER;
