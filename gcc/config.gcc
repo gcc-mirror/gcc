@@ -1278,6 +1278,11 @@ aarch64-*-mingw*)
 	tm_file="${tm_file} mingw/mingw-stdint.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/mingw/winnt.cc"
+	extra_options="${extra_options} mingw/cygming.opt mingw/mingw.opt"
+	extra_objs="${extra_objs} winnt.o"
+	c_target_objs="${c_target_objs} msformat-c.o"
+	d_target_objs="${d_target_objs} winnt-d.o"
+	tmake_file="${tmake_file} mingw/t-cygming"
 	case ${enable_threads} in
 	  "" | yes | win32)
 	    thread_file='win32'
