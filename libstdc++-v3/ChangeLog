@@ -1,3 +1,8 @@
+2024-02-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algobase.h (std::__niter_wrap): Add a call to
+	std::__niter_base on res iterator.
+
 2024-02-19  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

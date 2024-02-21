@@ -1,3 +1,8 @@
+2024-02-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/113971
+	* config/aarch64/heap-trampoline.c: Allow all linux variants.
+
 2024-02-16  Matteo Italia  <matteo@mitalia.net>
 
 	PR libgcc/113850

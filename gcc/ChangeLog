@@ -1,3 +1,44 @@
+2024-02-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/builtins.def: Use function prototypes of given size
+	and signedness.
+	* config/avr/avr.cc (avr_init_builtins): Adjust types required
+	by builtins.def.
+	* doc/extend.texi (AVR Built-in Functions): Adjust accordingly.
+
+2024-02-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Built-in Functions): Use @defbuiltin
+	instead of @table.
+
+2024-02-20  Will Hawkins  <hawkinsw@obs.cr>
+
+	* config/bpf/bpf.opt: Add help information for -mcpu.
+
+2024-02-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113805
+	* config/aarch64/aarch64-passes.def (pass_late_track_speculation):
+	New pass.
+	* config/aarch64/aarch64-protos.h (make_pass_late_track_speculation):
+	Declare.
+	* config/aarch64/aarch64.md (is_call): New attribute.
+	(*and<mode>3nr_compare0): Rename to...
+	(@aarch64_and<mode>3nr_compare0): ...this.
+	* config/aarch64/aarch64-sme.md (aarch64_get_sme_state)
+	(aarch64_tpidr2_save, aarch64_tpidr2_restore): Add is_call attributes.
+	* config/aarch64/aarch64-speculation.cc: Update file comment to
+	describe the new late pass.
+	(aarch64_do_track_speculation): Handle is_call insns like other calls.
+	(pass_track_speculation): Add an is_late member variable.
+	(pass_track_speculation::gate): Run the late pass for streaming-
+	compatible functions and the early pass for other functions.
+	(make_pass_track_speculation): Update accordingly.
+	(make_pass_late_track_speculation): New function.
+	* config/aarch64/aarch64.cc (aarch64_gen_test_and_branch): New
+	function.
+	(aarch64_guard_switch_pstate_sm): Use it.
+
 2024-02-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/aarch64/aarch64-builtins.cc (aarch64_init_rng_builtins):

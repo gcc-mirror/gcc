@@ -1,3 +1,11 @@
+2024-02-20  Peter Hill  <peter.hill@york.ac.uk>
+
+	PR fortran/105658
+	* trans-expr.cc (gfc_conv_intrinsic_to_class): When passing an
+	array component reference of intrinsic type to a procedure
+	with an unlimited polymorphic dummy argument, a temporary
+	should be created.
+
 2024-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/113503
