@@ -3825,6 +3825,12 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_NOTHROW_CONVERTIBLE:
 	  inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
       break;
+    case CPTK_IS_NOTHROW_INVOCABLE:
+	if (!t2)
+	  inform (loc, "  %qT is not nothrow invocable", t1);
+	else
+	  inform (loc, "  %qT is not nothrow invocable by %qE", t1, t2);
+	break;
     case CPTK_IS_OBJECT:
       inform (loc, "  %qT is not an object type", t1);
       break;

@@ -12592,6 +12592,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_NOTHROW_CONVERTIBLE:
       return is_nothrow_convertible (type1, type2);
 
+    case CPTK_IS_NOTHROW_INVOCABLE:
+      return expr_noexcept_p (build_invoke (type1, type2, tf_none), tf_none);
+
     case CPTK_IS_OBJECT:
       return object_type_p (type1);
 
@@ -12727,6 +12730,7 @@ same_type_ref_bind_p (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
     case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
     case CPTK_IS_INVOCABLE:
+    case CPTK_IS_NOTHROW_INVOCABLE:
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
     case CPTK_REF_CONVERTS_FROM_TEMPORARY:
       to = type1;
@@ -12832,6 +12836,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_INVOCABLE:
     case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
     case CPTK_IS_NOTHROW_CONVERTIBLE:
+    case CPTK_IS_NOTHROW_INVOCABLE:
     case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
     case CPTK_REF_CONVERTS_FROM_TEMPORARY:
