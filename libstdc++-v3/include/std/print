@@ -53,8 +53,213 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace __format
+{
+#if _GLIBCXX_USE_STDIO_LOCKING && _GLIBCXX_USE_GLIBC_STDIO_EXT
+  // These are defined in <stdio_ext.h> but we don't want to include that.
+  extern "C" int __fwritable(FILE*) noexcept;
+  extern "C" int __flbf(FILE*) noexcept;
+  extern "C" size_t __fbufsize(FILE*) noexcept;
+
+  // A format sink that writes directly to a Glibc FILE.
+  // The file is locked on construction and its buffer is accessed directly.
+  class _File_sink final : _Buf_sink<char>
+  {
+    struct _File
+    {
+      explicit
+      _File(FILE* __f) : _M_file(__f)
+      {
+	::flockfile(__f);
+	// Ensure stream is in write mode
+        if (!__fwritable(__f))
+	  {
+	    ::funlockfile(__f);
+	    __throw_system_error(EACCES);
+	  }
+	// Allocate buffer if needed:
+        if (_M_write_buf().empty())
+	  if (::__overflow(__f, EOF) == EOF)
+	    {
+	      const int __err = errno;
+	      ::funlockfile(__f);
+	      __throw_system_error(__err);
+	    }
+      }
+
+      ~_File() { ::funlockfile(_M_file); }
+
+      _File(_File&&) = delete;
+
+      // A span viewing the unused portion of the stream's output buffer.
+      std::span<char>
+      _M_write_buf() noexcept
+      {
+	return {_M_file->_IO_write_ptr,
+		size_t(_M_file->_IO_buf_end - _M_file->_IO_write_ptr)};
+      }
+
+      // Flush the output buffer to the file so we can write to it again.
+      void
+      _M_flush()
+      {
+	if (::fflush_unlocked(_M_file))
+	  __throw_system_error(errno);
+      }
+
+      // Update the current position in the output buffer.
+      void
+      _M_bump(size_t __n) noexcept
+      { _M_file->_IO_write_ptr += __n; }
+
+      bool
+      _M_line_buffered() const noexcept
+      { return __flbf(_M_file); } // Or: _M_file->_flags & 0x200
+
+      bool
+      _M_unbuffered() const noexcept
+      { return __fbufsize(_M_file) == 1; } // Or: _M_file->_flags & 0x2
+
+      FILE* _M_file;
+    } _M_file;
+
+    bool _M_add_newline; // True for std::println, false for std::print.
+
+    // Flush the stream's put area so it can be refilled.
+    void
+    _M_overflow() override
+    {
+      auto __s = this->_M_used();
+      if (__s.data() == this->_M_buf)
+	{
+	  // Characters in internal buffer need to be transferred to the FILE.
+	  auto __n = ::fwrite_unlocked(__s.data(), 1, __s.size(),
+				       _M_file._M_file);
+	  if (__n != __s.size())
+	    __throw_system_error(errno);
+	  this->_M_reset(this->_M_buf);
+	}
+      else
+	{
+	  // Characters were written directly to the FILE's output buffer.
+	  _M_file._M_bump(__s.size());
+	  _M_file._M_flush();
+	  this->_M_reset(_M_file._M_write_buf());
+	}
+    }
+
+  public:
+    _File_sink(FILE* __f, bool __add_newline)
+    : _M_file(__f), _M_add_newline(__add_newline)
+    {
+      if (!_M_file._M_unbuffered())
+	// Write directly to the FILE's output buffer.
+	this->_M_reset(_M_file._M_write_buf());
+    }
+
+    ~_File_sink() noexcept(false)
+    {
+      auto __s = this->_M_used();
+      if (__s.data() == this->_M_buf) // Unbuffered stream
+	{
+	  _File_sink::_M_overflow();
+	  if (_M_add_newline)
+	    ::putc_unlocked('\n', _M_file._M_file);
+	}
+      else
+	{
+	  _M_file._M_bump(__s.size());
+	  if (_M_add_newline)
+	    ::putc_unlocked('\n', _M_file._M_file);
+	  else if (_M_file._M_line_buffered() && __s.size()
+		     && (__s.back() == '\n'
+			   || __builtin_memchr(__s.data(), '\n', __s.size())))
+	    _M_file._M_flush();
+	}
+    }
+
+    using _Sink<char>::out;
+  };
+#elif _GLIBCXX_USE_STDIO_LOCKING
+  // A format sink that buffers output and then copies it to a stdio FILE.
+  // The file is locked on construction and written to using fwrite_unlocked.
+  class _File_sink final : _Buf_sink<char>
+  {
+    FILE* _M_file;
+    bool _M_add_newline;
+
+    // Transfer buffer contents to the FILE, so buffer can be refilled.
+    void
+    _M_overflow() override
+    {
+      auto __s = this->_M_used();
+#if _GLIBCXX_HAVE_FWRITE_UNLOCKED
+      auto __n = ::fwrite_unlocked(__s.data(), 1, __s.size(), _M_file);
+      if (__n != __s.size())
+	__throw_system_error(errno);
+#else
+      for (char __c : __s)
+	::putc_unlocked(__c, _M_file);
+      if (::ferror(_M_file))
+	__throw_system_error(errno);
+#endif
+      this->_M_reset(this->_M_buf);
+    }
+
+  public:
+    _File_sink(FILE* __f, bool __add_newline) noexcept
+    : _Buf_sink<char>(), _M_file(__f), _M_add_newline(__add_newline)
+    { ::flockfile(__f); }
+
+    ~_File_sink() noexcept(false)
+    {
+      _File_sink::_M_overflow();
+      if (_M_add_newline)
+	::putc_unlocked('\n', _M_file);
+      ::funlockfile(_M_file);
+    }
+
+    using _Sink<char>::out;
+  };
+#else
+  // A wrapper around a format sink that copies the output to a stdio FILE.
+  // This is not actually a _Sink itself, but it creates one to hold the
+  // formatted characters and then copies them to the file when finished.
+  class _File_sink final
+  {
+    FILE* _M_file;
+    _Str_sink<char> _M_sink;
+    bool _M_add_newline;
+
+  public:
+    _File_sink(FILE* __f, bool __add_newline) noexcept
+    : _M_file(__f), _M_add_newline(__add_newline)
+    { }
+
+    ~_File_sink() noexcept(false)
+    {
+      string __s = std::move(_M_sink).get();
+      if (_M_add_newline)
+	__s += '\n';
+      auto __n = std::fwrite(__s.data(), 1, __s.size(), _M_file);
+      if (__n < __s.size())
+	__throw_system_error(EIO);
+    }
+
+    auto out() { return _M_sink.out(); }
+  };
+#endif
+} // namespace __format
+
   inline void
   vprint_nonunicode(FILE* __stream, string_view __fmt, format_args __args)
+  {
+    std::vformat_to(__format::_File_sink(__stream, false).out(), __fmt, __args);
+  }
+
+  inline void
+  vprint_nonunicode_buffered(FILE* __stream, string_view __fmt,
+			     format_args __args)
   {
     __format::_Str_sink<char> __buf;
     std::vformat_to(__buf.out(), __fmt, __args);
@@ -80,7 +285,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // If stream refers to a terminal, write a native Unicode string to it.
     if (auto __term = __open_terminal(__stream))
       {
-	string __out = std::vformat(__fmt, __args);
 	error_code __e;
 	if (!std::fflush(__stream))
 	  {
@@ -95,9 +299,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_THROW_OR_ABORT(system_error(__e, "std::vprint_unicode"));
       }
 
-    // Otherwise just write the string to the file as vprint_nonunicode does.
+    // Otherwise just write the string to the file.
     if (std::fwrite(__out.data(), 1, __out.size(), __stream) != __out.size())
       __throw_system_error(EIO);
+#endif
+  }
+
+  inline void
+  vprint_unicode_buffered(FILE* __stream, string_view __fmt, format_args __args)
+  {
+#if !defined(_WIN32) || defined(__CYGWIN__)
+    // For most targets we don't need to do anything special to write
+    // Unicode to a terminal. Just use the nonunicode function.
+    std::vprint_nonunicode_buffered(__stream, __fmt, __args);
+#else
+    // For Windows the locking function formats everything first anyway,
+    // so no formatting happens while a lock is taken. Just use that.
+    std::vprint_unicode(__stream, __fmt, __args);
 #endif
   }
 
@@ -105,11 +323,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     print(FILE* __stream, format_string<_Args...> __fmt, _Args&&... __args)
     {
+      constexpr bool __locksafe =
+	(enable_nonlocking_formatter_optimization<remove_cvref_t<_Args>> && ...);
+
       auto __fmtargs = std::make_format_args(__args...);
+#if defined(_WIN32) && !defined(__CYGWIN__)
       if constexpr (__unicode::__literal_encoding_is_utf8())
-	std::vprint_unicode(__stream, __fmt.get(), __fmtargs);
+	std::vprint_unicode_buffered(__stream, __fmt.get(), __fmtargs);
       else
+#endif
+
+      if constexpr (__locksafe)
 	std::vprint_nonunicode(__stream, __fmt.get(), __fmtargs);
+      else
+	std::vprint_nonunicode_buffered(__stream, __fmt.get(), __fmtargs);
     }
 
   template<typename... _Args>
@@ -121,8 +348,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     println(FILE* __stream, format_string<_Args...> __fmt, _Args&&... __args)
     {
-      std::print(__stream, "{}\n",
-		 std::format(__fmt, std::forward<_Args>(__args)...));
+      constexpr bool __locksafe =
+	(enable_nonlocking_formatter_optimization<remove_cvref_t<_Args>> && ...);
+
+      // The standard wants us to call
+      // print(stream, runtime_format(string(fmt.get()) + '\n'), args...)
+      // here, but we can avoid that string concatenation in most cases,
+      // and we know what that would call, so we can call that directly.
+
+      auto __fmtargs = std::make_format_args(__args...);
+#if defined(_WIN32) && !defined(__CYGWIN__)
+      if constexpr (__unicode::__literal_encoding_is_utf8())
+	{
+	  // We can't avoid the string concatenation here, but we can call
+	  // vprint_unicode_buffered directly, since that's what print would do.
+	  string __fmtn;
+	  __fmtn.reserve(__fmt.get().size() + 1);
+	  __fmtn = __fmt.get();
+	  __fmtn += '\n';
+	  std::vprint_unicode_buffered(__stream, __fmtn, __fmtargs);
+	}
+      else
+#endif
+
+      // For non-Windows and for non-Unicode on Windows, we know that print
+      // would call vprint_nonunicode or vprint_nonunicode_buffered with a
+      // newline appended to the format-string. Use a _File_sink that adds
+      // the newline automatically and write to it directly.
+      if constexpr (__locksafe)
+	std::vformat_to(__format::_File_sink(__stream, true).out(),
+			__fmt.get(), __fmtargs);
+      else
+	{
+	  // Format to a string buffer first, then write the result to a
+	  // _File_sink that adds a newline.
+	  __format::_Str_sink<char> __buf;
+	  std::vformat_to(__buf.out(), __fmt.get(), __fmtargs);
+	  string_view __s(__buf.view());
+	  __format::_File_sink(__stream, true).out() = __s;
+	}
     }
 
   template<typename... _Args>
@@ -131,19 +395,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { std::println(stdout, __fmt, std::forward<_Args>(__args)...); }
 
   inline void
-  vprint_unicode(string_view __fmt, format_args __args)
-  { std::vprint_unicode(stdout, __fmt, __args); }
+  vprint_unicode_buffered(string_view __fmt, format_args __args)
+  { std::vprint_unicode_buffered(stdout, __fmt, __args); }
 
   inline void
-  vprint_nonunicode(string_view __fmt, format_args __args)
-  { std::vprint_nonunicode(stdout, __fmt, __args); }
+  vprint_nonunicode_buffered(string_view __fmt, format_args __args)
+  { std::vprint_nonunicode_buffered(stdout, __fmt, __args); }
 
   // Defined for C++26, supported as an extension to C++23.
   inline void println(FILE* __stream)
   {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     if constexpr (__unicode::__literal_encoding_is_utf8())
-      std::vprint_unicode(__stream, "\n", std::make_format_args());
+      std::vprint_unicode_buffered(__stream, "\n", std::make_format_args());
     else
 #endif
       if (std::putc('\n', __stream) == EOF)

@@ -68,15 +68,22 @@ test_print_raw()
 void
 test_vprint_nonunicode()
 {
-  std::vprint_nonunicode("{0} in \xc0 {0} out\n",
+  std::vprint_nonunicode_buffered("{0} in \xc0 {0} out\n",
       std::make_format_args("garbage"));
-  // { dg-output "garbage in . garbage out" }
+  // { dg-output "garbage in . garbage out\r?\n" }
+  std::vprint_nonunicode_buffered(stdout, "{0} in \xc3 {0} out\n",
+      std::make_format_args("junk"));
+  // { dg-output "junk in . junk out\r?\n" }
+  std::vprint_nonunicode(stdout, "{0} in \xc2 {0} out\n",
+      std::make_format_args("trash"));
+  // { dg-output "trash in . trash out\r?\n" }
+
 }
 
+#ifdef __cpp_exceptions
 void
 test_errors()
 {
-#ifdef __cpp_exceptions
   try
   {
     std::print(stdin, "{}", "nope");
@@ -85,8 +92,46 @@ test_errors()
   catch (const std::system_error&)
   {
   }
-#endif
 }
+
+struct ThrowOnFormat
+{};
+
+template<typename CharT>
+struct std::formatter<ThrowOnFormat, CharT>
+{
+  constexpr typename std::basic_format_parse_context<CharT>::iterator
+  parse(const std::basic_format_parse_context<CharT>& pc) const
+  { return pc.begin(); }
+
+  template<typename Out>
+  typename std::basic_format_context<Out, CharT>::iterator
+  format(ThrowOnFormat, const std::basic_format_context<Out, CharT>&) const
+  { throw ThrowOnFormat{}; }
+};
+
+void
+test_buffered()
+{
+  __gnu_test::scoped_file f;
+  FILE* strm = std::fopen(f.path.string().c_str(), "w");
+  VERIFY( strm );
+  try
+  {
+    std::string s = "Test";
+    ThrowOnFormat tf;
+    std::vprint_unicode_buffered(strm, "{} {} {} {}", std::make_format_args(s, s, s, tf));
+    VERIFY(false);
+  }
+  catch (ThrowOnFormat)
+  { }
+  std::fclose(strm);
+
+  std::ifstream in(f.path);
+  std::string txt(std::istreambuf_iterator<char>(in), {});
+  VERIFY( txt.empty() );
+}
+#endif
 
 int main()
 {
@@ -96,5 +141,8 @@ int main()
   test_println_file();
   test_print_raw();
   test_vprint_nonunicode();
+#ifdef __cpp_exceptions
   test_errors();
+  test_buffered();
+#endif
 }

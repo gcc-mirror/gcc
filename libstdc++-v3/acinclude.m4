@@ -5804,6 +5804,89 @@ AC_DEFUN([GLIBCXX_CHECK_DEBUGGING], [
   AC_LANG_RESTORE
 ])
 
+dnl
+dnl Check whether the dependencies for optimized std::print are available.
+dnl
+dnl Defines:
+dnl   _GLIBCXX_USE_STDIO_LOCKING if flockfile, putc_unlocked etc. are present.
+dnl   _GLIBCXX_USE_GLIBC_STDIO_EXT if FILE::_IO_write_ptr etc. are also present.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_STDIO_LOCKING], [
+AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_MSG_CHECKING([whether flockfile and putc_unlocked are defined in <stdio.h>])
+  AC_TRY_COMPILE([
+  #include <stdio.h>
+  ],[
+    FILE* f = ::fopen("", "");
+    ::flockfile(f);
+    ::putc_unlocked(' ', f);
+    ::funlockfile(f);
+    ::fclose(f);
+  ], [ac_stdio_locking=yes], [ac_stdio_locking=no])
+  AC_MSG_RESULT($ac_stdio_locking)
+
+  if test "$ac_stdio_locking" = yes; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_USE_STDIO_LOCKING, 1,
+      [Define if flockfile and putc_unlocked should be used for std::print.])
+
+    # This is not defined in POSIX, but is present in glibc, musl, and Solaris.
+    AC_MSG_CHECKING([whether fwrite_unlocked is defined in <stdio.h>])
+    AC_TRY_COMPILE([
+    #include <stdio.h>
+    ],[
+      FILE* f = ::fopen("", "");
+      ::flockfile(f);
+      ::fwrite_unlocked("", 1, 1, f);
+      ::funlockfile(f);
+      ::fclose(f);
+    ], [ac_fwrite_unlocked=yes], [ac_fwrite_unlocked=no])
+    AC_MSG_RESULT($ac_fwrite_unlocked)
+    if test "$ac_fwrite_unlocked" = yes; then
+      AC_DEFINE(HAVE_FWRITE_UNLOCKED, 1,
+	[Define if fwrite_unlocked can be used for std::print.])
+
+      # Check for Glibc-specific FILE members and <stdio_ext.h> extensions.
+      case "${target_os}" in
+	gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+	  AC_MSG_CHECKING([for FILE::_IO_write_ptr and <stdio_ext.h>])
+	  AC_TRY_COMPILE([
+	  #include <stdio.h>
+	  #include <stdio_ext.h>
+	  extern "C" {
+	   using f1_type = int (*)(FILE*) noexcept;
+	   using f2_type = size_t (*)(FILE*) noexcept;
+	  }
+	  ],[
+	  f1_type twritable = &::__fwritable;
+	  f1_type tblk = &::__flbf; 
+	  f2_type pbufsize = &::__fbufsize;
+	  FILE* f = ::fopen("", "");
+	  int i = ::__overflow(f, EOF);
+	  bool writeable = ::__fwritable(f);
+	  bool line_buffered = ::__flbf(f);
+	  size_t bufsz = ::__fbufsize(f);
+	  char*& pptr = f->_IO_write_ptr;
+	  char*& epptr = f->_IO_buf_end;
+	  ::fflush_unlocked(f);
+	  ::fclose(f);
+	  ], [ac_glibc_stdio=yes], [ac_glibc_stdio=no])
+	  AC_MSG_RESULT($ac_glibc_stdio)
+	  if test "$ac_glibc_stdio" = yes; then
+	    AC_DEFINE_UNQUOTED(_GLIBCXX_USE_GLIBC_STDIO_EXT, 1,
+	      [Define if Glibc FILE internals should be used for std::print.])
+	  fi
+	  ;;
+	*)
+	  ;;
+      esac
+    fi
+  fi
+
+  AC_LANG_RESTORE
+])
+
 
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])

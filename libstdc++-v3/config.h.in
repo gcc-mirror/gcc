@@ -152,6 +152,9 @@
 /* Define to 1 if you have the `frexpl' function. */
 #undef HAVE_FREXPL
 
+/* Define if fwrite_unlocked can be used for std::print. */
+#undef HAVE_FWRITE_UNLOCKED
+
 /* Define if getentropy is available in <unistd.h>. */
 #undef HAVE_GETENTROPY
 
@@ -828,6 +831,9 @@
 /* Define if get_nprocs is available in <sys/sysinfo.h>. */
 #undef _GLIBCXX_USE_GET_NPROCS
 
+/* Define if Glibc FILE internals should be used for std::print. */
+#undef _GLIBCXX_USE_GLIBC_STDIO_EXT
+
 /* Define if init_priority should be used for iostream initialization. */
 #undef _GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE
 
@@ -892,6 +898,9 @@
 
 /* Define if sendfile is available in <sys/sendfile.h>. */
 #undef _GLIBCXX_USE_SENDFILE
+
+/* Define if flockfile and putc_unlocked should be used for std::print. */
+#undef _GLIBCXX_USE_STDIO_LOCKING
 
 /* Define to restrict std::__basic_file<> to stdio APIs. */
 #undef _GLIBCXX_USE_STDIO_PURE

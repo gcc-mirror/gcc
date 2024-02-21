@@ -2083,9 +2083,9 @@
 
 #if !defined(__cpp_lib_print)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
-#  define __glibcxx_print 202211L
+#  define __glibcxx_print 202403L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_print)
-#   define __cpp_lib_print 202211L
+#   define __cpp_lib_print 202403L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_print) */

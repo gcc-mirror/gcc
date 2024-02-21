@@ -590,6 +590,9 @@ GLIBCXX_CHECK_TEXT_ENCODING
 # For std::is_debugger_present
 GLIBCXX_CHECK_DEBUGGING
 
+# For std::print
+GLIBCXX_CHECK_STDIO_LOCKING
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough

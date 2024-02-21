@@ -190,6 +190,11 @@ namespace __format
     }();
 #endif // format_ranges
 
+#if __glibcxx_print >= 202403L
+  template<typename>
+    constexpr bool enable_nonlocking_formatter_optimization = false;
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __glibcxx_format
