@@ -489,32 +489,31 @@ ResolveItem::visit (AST::Function &function)
   if (function.has_self_param ())
     {
       // self turns into (self: Self) as a function param
-      std::unique_ptr<AST::Param> &s_param = function.get_self_param ();
-      auto self_param = static_cast<AST::SelfParam *> (s_param.get ());
+      AST::Param &s_param = function.get_self_param ();
+      auto &self_param = static_cast<AST::SelfParam &> (s_param);
 
       // FIXME: which location should be used for Rust::Identifier `self`?
       AST::IdentifierPattern self_pattern (
-	self_param->get_node_id (), {"self"}, self_param->get_locus (),
-	self_param->get_has_ref (), self_param->get_is_mut (),
+	self_param.get_node_id (), {"self"}, self_param.get_locus (),
+	self_param.get_has_ref (), self_param.get_is_mut (),
 	std::unique_ptr<AST::Pattern> (nullptr));
       PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
 
-      if (self_param->has_type ())
+      if (self_param.has_type ())
 	{
 	  // This shouldn't happen the parser should already error for this
-	  rust_assert (!self_param->get_has_ref ());
-	  ResolveType::go (self_param->get_type ().get ());
+	  rust_assert (!self_param.get_has_ref ());
+	  ResolveType::go (self_param.get_type ().get ());
 	}
       else
 	{
 	  // here we implicitly make self have a type path of Self
 	  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
 	  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-	    new AST::TypePathSegment ("Self", false,
-				      self_param->get_locus ())));
+	    new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
 
 	  AST::TypePath self_type_path (std::move (segments),
-					self_param->get_locus ());
+					self_param.get_locus ());
 	  ResolveType::go (&self_type_path);
 	}
     }

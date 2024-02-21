@@ -278,7 +278,7 @@ protected:
 
   HIR::GenericArgsBinding lower_binding (AST::GenericArgsBinding &binding);
 
-  HIR::SelfParam lower_self (std::unique_ptr<AST::Param> &self);
+  HIR::SelfParam lower_self (AST::Param &self);
 
   HIR::Type *lower_type_no_bounds (AST::TypeNoBounds *type);
 

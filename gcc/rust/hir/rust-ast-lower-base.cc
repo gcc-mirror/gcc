@@ -648,31 +648,31 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
 }
 
 HIR::SelfParam
-ASTLoweringBase::lower_self (std::unique_ptr<AST::Param> &param)
+ASTLoweringBase::lower_self (AST::Param &param)
 {
-  rust_assert (param->is_self ());
+  rust_assert (param.is_self ());
 
-  auto self = static_cast<AST::SelfParam *> (param.get ());
+  auto self = static_cast<AST::SelfParam &> (param);
   auto crate_num = mappings->get_current_crate ();
-  Analysis::NodeMapping mapping (crate_num, self->get_node_id (),
+  Analysis::NodeMapping mapping (crate_num, self.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),
 				 mappings->get_next_localdef_id (crate_num));
 
-  if (self->has_type ())
+  if (self.has_type ())
     {
-      HIR::Type *type = ASTLoweringType::translate (self->get_type ().get ());
+      HIR::Type *type = ASTLoweringType::translate (self.get_type ().get ());
       return HIR::SelfParam (mapping, std::unique_ptr<HIR::Type> (type),
-			     self->get_is_mut (), self->get_locus ());
+			     self.get_is_mut (), self.get_locus ());
     }
-  else if (!self->get_has_ref ())
+  else if (!self.get_has_ref ())
     {
       return HIR::SelfParam (mapping, std::unique_ptr<HIR::Type> (nullptr),
-			     self->get_is_mut (), self->get_locus ());
+			     self.get_is_mut (), self.get_locus ());
     }
 
-  AST::Lifetime l = self->get_lifetime ();
-  return HIR::SelfParam (mapping, lower_lifetime (l), self->get_is_mut (),
-			 self->get_locus ());
+  AST::Lifetime l = self.get_lifetime ();
+  return HIR::SelfParam (mapping, lower_lifetime (l), self.get_is_mut (),
+			 self.get_locus ());
 }
 
 HIR::Type *
