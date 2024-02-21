@@ -7262,7 +7262,7 @@ when non-existent profile data is justified.
 @item -Wmismatched-dealloc
 
 Warn for calls to deallocation functions with pointer arguments returned
-from from allocations functions for which the former isn't a suitable
+from allocation functions for which the former isn't a suitable
 deallocator.  A pair of functions can be associated as matching allocators
 and deallocators by use of attribute @code{malloc}.  Unless disabled by
 the @option{-fno-builtin} option the standard functions @code{calloc},
