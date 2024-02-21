@@ -5,14 +5,14 @@
 # Roland Stigge <stigge@antcom.de>, 2003-2008, 2010, 2012-2013.
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2014-2016.
 # Philipp Thomas <pth@suse.de>, 2016.
-# Roland Illig <roland.illig@gmx.de>, 2017-2023.
+# Roland Illig <roland.illig@gmx.de>, 2017-2024.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 13.1-b20230212\n"
+"Project-Id-Version: cpplib 14.1-b20240218\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2024-02-16 21:34+0000\n"
-"PO-Revision-Date: 2023-02-22 18:34+0100\n"
+"PO-Revision-Date: 2024-02-21 23:55+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.4.2\n"
 
 #: charset.cc:759
 #, c-format
@@ -212,7 +212,7 @@ msgstr "Oktal-Escape-Sequenz außerhalb des Wertebereiches"
 #: charset.cc:2300 charset.cc:2310
 #, c-format
 msgid "numeric escape sequence in unevaluated string: '\\%c'"
-msgstr ""
+msgstr "Numerische Escapesequenz in nicht ausgewertetem String: »\\%c«"
 
 #: charset.cc:2338
 msgid "the meaning of '\\a' is different in traditional C"
@@ -242,27 +242,25 @@ msgid "missing open quote"
 msgstr "Fehlendes öffnendes Anführungszeichen"
 
 #: charset.cc:2772
-#, fuzzy
-#| msgid "character 0x%lx is not unibyte in execution character set"
 msgid "character not encodable in a single execution character code unit"
-msgstr "Zeichen 0x%lx ist kein Unibyte im Ausführungs-Zeichensatz"
+msgstr "Zeichen ist nicht in einer einzelnen Kodierungseinheit des Ausführungszeichensatzes kodierbar"
 
 #: charset.cc:2777
 msgid "at least one character in a multi-character literal not encodable in a single execution character code unit"
-msgstr ""
+msgstr "Mindestens ein Zeichen in einem Mehrzeichenliteral kann nicht in einer Kodierungseinheit des Ausführungszeichensatzes kodiert werden"
 
 #: charset.cc:2795
 #, c-format
 msgid "multi-character literal with %ld characters exceeds 'int' size of %ld bytes"
-msgstr ""
+msgstr "Mehrzeichenliteral mit %ld Zeichen überschreitet die Größe von »int« mit %ld Bytes"
 
 #: charset.cc:2799 charset.cc:2894
 msgid "multi-character literal cannot have an encoding prefix"
-msgstr ""
+msgstr "Mehrzeichenliteral kann kein Kodierungspräfix haben"
 
 #: charset.cc:2802 charset.cc:2897
 msgid "character not encodable in a single code unit"
-msgstr ""
+msgstr "Zeichen ist nicht in einer einzelnen Kodierungseinheit kodierbar"
 
 #: charset.cc:2806
 msgid "multi-character character constant"
@@ -293,10 +291,9 @@ msgid "#%s before C++23 is a GCC extension"
 msgstr "#%s vor C++23 ist eine GCC-Erweiterung"
 
 #: directives.cc:397 directives.cc:401 directives.cc:2167 directives.cc:2206
-#, fuzzy, c-format
-#| msgid "#%s before C++23 is a GCC extension"
+#, c-format
 msgid "#%s before C23 is a GCC extension"
-msgstr "#%s vor C++23 ist eine GCC-Erweiterung"
+msgstr "#%s vor C23 ist eine GCC-Erweiterung"
 
 #: directives.cc:407
 #, c-format
@@ -599,10 +596,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "ungültiges Suffix »%.*s« mit hexadezimaler Gleitkommakonstante"
 
 #: expr.cc:790 expr.cc:794
-#, fuzzy
-#| msgid "decimal float constants are a C2X feature"
 msgid "decimal float constants are a C23 feature"
-msgstr "dezimale Gleitkommakonstanten sind ein C2X-Feature"
+msgstr "dezimale Gleitkommakonstanten sind ein C23-Feature"
 
 #: expr.cc:813
 #, c-format
@@ -627,7 +622,7 @@ msgstr "Verwendung von %<make_signed_t<size_t>%>-Ganzzahlkonstante aus C++23"
 
 #: expr.cc:864 expr.cc:875
 msgid "ISO C does not support literal %<wb%> suffixes before C23"
-msgstr ""
+msgstr "ISO C unterstützt das Literalsuffix %<wb%> erst ab C23"
 
 #: expr.cc:888
 msgid "imaginary constants are a GCC extension"
@@ -638,16 +633,12 @@ msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "binäre Konstanten sind ein C++14-Funktionsmerkmal oder eine GCC-Erweiterung"
 
 #: expr.cc:897
-#, fuzzy
-#| msgid "binary constants are a C2X feature or GCC extension"
 msgid "binary constants are a C23 feature or GCC extension"
-msgstr "binäre Konstanten sind ein C2X-Funktionsmerkmal oder eine GCC-Erweiterung"
+msgstr "binäre Konstanten sind ein C23-Feature oder eine GCC-Erweiterung"
 
 #: expr.cc:902
-#, fuzzy
-#| msgid "binary constants are a C2X feature"
 msgid "binary constants are a C23 feature"
-msgstr "binäre Konstanten sind ein C2X-Funktionsmerkmal"
+msgstr "binäre Konstanten sind ein C23-Feature"
 
 #: expr.cc:998
 msgid "integer constant is too large for its type"
@@ -865,22 +856,22 @@ msgstr "problematisches Unicode-Zeichen »%s« gefunden"
 #: lex.cc:1736 lex.cc:1742
 #, c-format
 msgid "invalid UTF-8 character <%x>"
-msgstr "ungültiges UTF-8-Zeichen <%02x>"
+msgstr "ungültiges UTF-8-Zeichen <%x>"
 
 #: lex.cc:1752 lex.cc:1758
 #, c-format
 msgid "invalid UTF-8 character <%x><%x>"
-msgstr "ungültiges UTF-8-Zeichen <%02x><%02x>"
+msgstr "ungültiges UTF-8-Zeichen <%x><%x>"
 
 #: lex.cc:1768 lex.cc:1774
 #, c-format
 msgid "invalid UTF-8 character <%x><%x><%x>"
-msgstr "ungültiges UTF-8-Zeichen <%02x><%02x><%02x>"
+msgstr "ungültiges UTF-8-Zeichen <%x><%x><%x>"
 
 #: lex.cc:1784 lex.cc:1790
 #, c-format
 msgid "invalid UTF-8 character <%x><%x><%x><%x>"
-msgstr "ungültiges UTF-8-Zeichen <%02x><%02x><%02x><%02x>"
+msgstr "ungültiges UTF-8-Zeichen <%x><%x><%x><%x>"
 
 #: lex.cc:1872
 msgid "\"/*\" within comment"
@@ -910,10 +901,8 @@ msgid "__VA_OPT__ is not available until C++20"
 msgstr "__VA_OPT__ ist erst ab C++20 verfügbar"
 
 #: lex.cc:2147
-#, fuzzy
-#| msgid "__VA_OPT__ is not available until C2X"
 msgid "__VA_OPT__ is not available until C23"
-msgstr "__VA_OPT__ ist erst ab C2X verfügbar"
+msgstr "__VA_OPT__ ist erst ab C23 verfügbar"
 
 #: lex.cc:2155
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
@@ -926,7 +915,7 @@ msgstr "Versuch, schlechtes »%s« zu verwenden"
 
 #: lex.cc:2177
 msgid "poisoned here"
-msgstr ""
+msgstr "hier vergiftet"
 
 #: lex.cc:2187
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
