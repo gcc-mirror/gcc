@@ -6334,8 +6334,10 @@ aarch64_function_ok_for_sibcall (tree, tree exp)
   tree fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
   if (aarch64_fntype_pstate_sm (fntype) & ~aarch64_cfun_incoming_pstate_sm ())
     return false;
-  if (aarch64_fntype_pstate_za (fntype) != aarch64_cfun_incoming_pstate_za ())
-    return false;
+  for (auto state : { "za", "zt0" })
+    if (bool (aarch64_cfun_shared_flags (state))
+	!= bool (aarch64_fntype_shared_flags (fntype, state)))
+      return false;
   return true;
 }
 
