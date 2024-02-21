@@ -29339,12 +29339,17 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
 	     msr tpidr2_el0, xzr
 	     zero { za }       // Only if ZA is live
 	 no_save:  */
-      bool is_active = (mode == aarch64_local_sme_state::ACTIVE_LIVE
-			|| mode == aarch64_local_sme_state::ACTIVE_DEAD);
       auto tmp_reg = gen_reg_rtx (DImode);
-      auto active_flag = gen_int_mode (is_active, DImode);
       emit_insn (gen_aarch64_read_tpidr2 (tmp_reg));
-      emit_insn (gen_aarch64_commit_lazy_save (tmp_reg, active_flag));
+      auto label = gen_label_rtx ();
+      auto jump = emit_jump_insn (gen_aarch64_cbeqdi1 (tmp_reg, label));
+      JUMP_LABEL (jump) = label;
+      emit_insn (gen_aarch64_tpidr2_save ());
+      emit_insn (gen_aarch64_clear_tpidr2 ());
+      if (mode == aarch64_local_sme_state::ACTIVE_LIVE
+	  || mode == aarch64_local_sme_state::ACTIVE_DEAD)
+	emit_insn (gen_aarch64_initial_zero_za ());
+      emit_label (label);
     }
 
   if (mode == aarch64_local_sme_state::ACTIVE_LIVE
