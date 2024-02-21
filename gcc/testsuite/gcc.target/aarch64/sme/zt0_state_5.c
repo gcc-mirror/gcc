@@ -54,7 +54,7 @@ __arm_new("zt0") int test3()
 **	cbz	x0, [^\n]+
 **	bl	__arm_tpidr2_save
 **	msr	tpidr2_el0, xzr
-**	zero	{ za }
+**	zero	{ zt0 }
 **	smstart	za
 **	bl	in_zt0
 **	smstop	za
@@ -102,7 +102,6 @@ __arm_new("zt0") void test5()
 **	cbz	x0, [^\n]+
 **	bl	__arm_tpidr2_save
 **	msr	tpidr2_el0, xzr
-**	zero	{ za }
 **	smstart	za
 **	bl	out_zt0
 **	...

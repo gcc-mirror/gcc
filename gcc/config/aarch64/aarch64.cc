@@ -29338,6 +29338,7 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
 	     bl __arm_tpidr2_save
 	     msr tpidr2_el0, xzr
 	     zero { za }       // Only if ZA is live
+	     zero { zt0 }      // Only if ZT0 is live
 	 no_save:  */
       auto tmp_reg = gen_reg_rtx (DImode);
       emit_insn (gen_aarch64_read_tpidr2 (tmp_reg));
@@ -29348,7 +29349,12 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
       emit_insn (gen_aarch64_clear_tpidr2 ());
       if (mode == aarch64_local_sme_state::ACTIVE_LIVE
 	  || mode == aarch64_local_sme_state::ACTIVE_DEAD)
-	emit_insn (gen_aarch64_initial_zero_za ());
+	{
+	  if (aarch64_cfun_has_state ("za"))
+	    emit_insn (gen_aarch64_initial_zero_za ());
+	  if (aarch64_cfun_has_state ("zt0"))
+	    emit_insn (gen_aarch64_sme_zero_zt0 ());
+	}
       emit_label (label);
     }
 
