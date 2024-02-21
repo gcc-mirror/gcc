@@ -193,6 +193,12 @@ tristate
 symbolic_byte_range::intersection (const symbolic_byte_range &other,
 				   const region_model &model) const
 {
+  /* If either is empty, then there is no intersection.  */
+  if (empty_p ())
+    return tristate::TS_FALSE;
+  if (other.empty_p ())
+    return tristate::TS_FALSE;
+
   /* For brevity, consider THIS to be "range A", and OTHER to be "range B".  */
 
   region_model_manager *mgr = model.get_manager ();
@@ -262,12 +268,17 @@ static void test_intersects (void)
   ASSERT_EQ (r0_9.get_next_byte_offset (mgr), ten);
   ASSERT_EQ (r0_9.get_last_byte_offset (mgr), nine);
 
+  symbolic_byte_range concrete_empty (zero, zero);
+  ASSERT_TRUE (concrete_empty.empty_p ());
+
   ASSERT_EQ (r0_9.intersection (r0, m), tristate::TS_TRUE);
   ASSERT_EQ (r0.intersection (r0_9, m), tristate::TS_TRUE);
   ASSERT_EQ (r0_9.intersection (r9, m), tristate::TS_TRUE);
   ASSERT_EQ (r9.intersection (r0_9, m), tristate::TS_TRUE);
   ASSERT_EQ (r0_9.intersection (r10, m), tristate::TS_FALSE);
   ASSERT_EQ (r10.intersection (r0_9, m), tristate::TS_FALSE);
+  ASSERT_EQ (concrete_empty.intersection (r0_9, m), tristate::TS_FALSE);
+  ASSERT_EQ (r0_9.intersection (concrete_empty, m), tristate::TS_FALSE);
 
   ASSERT_EQ (r5_9.intersection (r0, m), tristate::TS_FALSE);
   ASSERT_EQ (r0.intersection (r5_9, m), tristate::TS_FALSE);
@@ -286,6 +297,9 @@ static void test_intersects (void)
   symbolic_byte_range ry (y_init_sval, one);
   symbolic_byte_range rx_x_plus_y_minus_1 (x_init_sval, y_init_sval);
 
+  symbolic_byte_range symbolic_empty (x_init_sval, zero);
+  ASSERT_TRUE (symbolic_empty.empty_p ());
+
   ASSERT_EQ (rx_x_plus_y_minus_1.get_start_byte_offset (), x_init_sval);
   ASSERT_EQ (rx_x_plus_y_minus_1.get_size_in_bytes (), y_init_sval);
   ASSERT_EQ
@@ -296,6 +310,10 @@ static void test_intersects (void)
      SK_BINOP);
 
   ASSERT_EQ (rx.intersection (ry, m), tristate::TS_UNKNOWN);
+  ASSERT_EQ (rx.intersection (concrete_empty, m), tristate::TS_FALSE);
+  ASSERT_EQ (concrete_empty.intersection (rx, m), tristate::TS_FALSE);
+  ASSERT_EQ (rx.intersection (symbolic_empty, m), tristate::TS_FALSE);
+  ASSERT_EQ (symbolic_empty.intersection (rx, m), tristate::TS_FALSE);
   ASSERT_EQ (r0_x_minus_1.intersection (r0, m), tristate::TS_TRUE);
 #if 0
   ASSERT_EQ (r0_x_minus_1.intersection (rx, m), tristate::TS_FALSE);
