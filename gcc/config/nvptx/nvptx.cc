@@ -6403,7 +6403,8 @@ nvptx_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_kind:
       return strcmp (name, "gpu") == 0;
     case omp_device_arch:
-      return strcmp (name, "nvptx") == 0;
+      return (strcmp (name, "nvptx") == 0
+	      || (TARGET_ABI64 && strcmp (name, "nvptx64") == 0));
     case omp_device_isa:
 #define NVPTX_SM(XX, SEP)				\
       {							\

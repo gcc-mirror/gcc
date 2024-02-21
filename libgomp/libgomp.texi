@@ -6098,7 +6098,7 @@ on more architectures, GCC currently does not match any @code{arch} or
 @item @code{amdgcn}, @code{gcn}
       @tab See @code{-march=} in ``AMD GCN Options''@footnote{Additionally,
       @code{gfx803} is supported as an alias for @code{fiji}.}
-@item @code{nvptx}
+@item @code{nvptx}, @code{nvptx64}
       @tab See @code{-march=} in ``Nvidia PTX Options''
 @end multitable
 
