@@ -1,4 +1,4 @@
-// { dg-options "-O -fomit-frame-pointer" }
+// { dg-options "-O -fomit-frame-pointer -fno-stack-clash-protection" }
 // { dg-final { check-function-bodies "**" "" } }
 
 void consume_za () [[arm::streaming, arm::inout("za")]];

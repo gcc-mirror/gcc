@@ -9523,7 +9523,9 @@ aarch64_expand_prologue (void)
   if (aarch64_cfun_enables_pstate_sm ())
     force_isa_mode = AARCH64_FL_SM_ON;
 
-  if (flag_stack_clash_protection && known_eq (callee_adjust, 0))
+  if (flag_stack_clash_protection
+      && known_eq (callee_adjust, 0)
+      && known_lt (frame.reg_offset[VG_REGNUM], 0))
     {
       /* Fold the SVE allocation into the initial allocation.
 	 We don't do this in aarch64_layout_arg to avoid pessimizing
@@ -9651,7 +9653,10 @@ aarch64_expand_prologue (void)
   if (maybe_ne (sve_callee_adjust, 0))
     {
       gcc_assert (!flag_stack_clash_protection
-		  || known_eq (initial_adjust, 0));
+		  || known_eq (initial_adjust, 0)
+		  /* The VG save isn't shrink-wrapped and so serves as
+		     a probe of the initial allocation.  */
+		  || known_eq (frame.reg_offset[VG_REGNUM], bytes_below_sp));
       aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx,
 					      sve_callee_adjust,
 					      force_isa_mode,
