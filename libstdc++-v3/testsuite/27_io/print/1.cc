@@ -1,4 +1,4 @@
-// { dg-options "-lstdc++exp" }
+// { dg-additional-options "-lstdc++exp" { target { *-*-mingw* } } }
 // { dg-do run { target c++23 } }
 // { dg-require-fileio "" }
 
