@@ -42,7 +42,8 @@ EXPORT QUALIFIED OpenSource, CloseSource, ReInitialize, GetToken, InsertToken,
                  FindFileNameFromToken, GetFileName,
                  ResetForNewPass,
                  currenttoken, currentstring, currentinteger,
-                 AddTok, AddTokCharStar, AddTokInteger, MakeVirtualTok,
+                 AddTok, AddTokCharStar, AddTokInteger,
+                 MakeVirtualTok, MakeVirtual2Tok,
                  SetFile, PushFile, PopFile,
                  PrintTokenNo, DisplayToken, DumpTokens,
                  BuiltinTokenNo, UnknownTokenNo ;
@@ -197,10 +198,18 @@ PROCEDURE GetFileName () : String ;
 
 (*
    MakeVirtualTok - creates and return a new tokenno which is created from
-                    tokenno range1 and range2.
+                    tokenno caret, left and right.
 *)
 
 PROCEDURE MakeVirtualTok (caret, left, right: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeVirtual2Tok - creates and return a new tokenno which is created from
+                     two tokens left and right.
+*)
+
+PROCEDURE MakeVirtual2Tok (left, right: CARDINAL) : CARDINAL ;
 
 
 (* ***********************************************************************

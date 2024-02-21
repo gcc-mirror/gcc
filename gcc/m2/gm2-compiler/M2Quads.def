@@ -132,6 +132,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  SubQuad, EraseQuad, GetRealQuad,
                  GetQuadtok, GetQuadOtok, PutQuadOtok,
                  GetQuadOp, GetM2OperatorDesc,
+                 GetQuadOTypetok,
                  CountQuads,
                  GetLastFileQuad,
                  GetLastQuadNo,
@@ -547,6 +548,17 @@ PROCEDURE GetQuadOtok (QuadNo: CARDINAL;
                        VAR overflowChecking: BOOLEAN ;
                        VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 
+
+(*
+   GetQuadOTypetok - returns the fields associated with quadruple QuadNo.
+*)
+
+PROCEDURE GetQuadOTypetok (QuadNo: CARDINAL;
+                           VAR tok: CARDINAL;
+                           VAR Op: QuadOperator;
+                           VAR Oper1, Oper2, Oper3: CARDINAL;
+                           VAR overflowChecking, typeChecking: BOOLEAN ;
+                           VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 
 (*
    PutQuadOtok - alters a quadruple QuadNo with Op, Oper1, Oper2, Oper3, and

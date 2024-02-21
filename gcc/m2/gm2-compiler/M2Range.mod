@@ -69,7 +69,9 @@ FROM M2MetaError IMPORT MetaError1, MetaError2, MetaError3,
                         MetaErrorStringT1, MetaErrorStringT2, MetaErrorStringT3,
                         MetaString3 ;
 
-FROM M2LexBuf IMPORT UnknownTokenNo, GetTokenNo, FindFileNameFromToken, TokenToLineNo, TokenToColumnNo, TokenToLocation ;
+FROM M2LexBuf IMPORT UnknownTokenNo, GetTokenNo, FindFileNameFromToken,
+                     TokenToLineNo, TokenToColumnNo, TokenToLocation, MakeVirtual2Tok ;
+
 FROM StrIO IMPORT WriteString, WriteLn ;
 FROM M2GCCDeclare IMPORT TryDeclareConstant, DeclareConstructor ;
 FROM M2Quads IMPORT QuadOperator, PutQuad, SubQuad, WriteOperand ;
@@ -122,7 +124,8 @@ TYPE
    Range = POINTER TO RECORD
                          type          : TypeOfRange ;
                          des,
-                         expr,
+                         expr, expr2,
+                         byconst,
                          desLowestType,
                          exprLowestType: CARDINAL ;
                          procedure     : CARDINAL ;
@@ -131,7 +134,12 @@ TYPE
                                                         only used in pointernil *)
                          dimension     : CARDINAL ;
                          caseList      : CARDINAL ;
+                         destok,
+                         exprtok,
+                         expr2tok,
+                         byconsttok,
                          tokenNo       : CARDINAL ;
+                         incrementquad : CARDINAL ; (* Increment quad used in FOR the loop.  *)
                          errorReported : BOOLEAN ;  (* error message reported yet? *)
                          strict        : BOOLEAN ;  (* is it a comparison expression?  *)
                          isin          : BOOLEAN ;  (* expression created by IN operator?  *)
@@ -293,12 +301,19 @@ BEGIN
          type           := none ;
          des            := NulSym ;
          expr           := NulSym ;
+         expr2          := NulSym ;
+         byconst        := NulSym ;
          desLowestType  := NulSym ;
          exprLowestType := NulSym ;
          isLeftValue    := FALSE ;   (* ignored in all cases other *)
          dimension      := 0 ;
          caseList       := 0 ;
-         tokenNo        := 0 ;       (* than pointernil            *)
+         tokenNo        := UnknownTokenNo ;    (* than pointernil            *)
+         destok         := UnknownTokenNo ;
+         exprtok        := UnknownTokenNo ;
+         expr2tok       := UnknownTokenNo ;
+         byconsttok     := UnknownTokenNo ;
+         incrementquad  := 0 ;
          errorReported  := FALSE
       END ;
       PutIndice(RangeIndex, r, p)
@@ -335,6 +350,19 @@ END setReported ;
 
 
 (*
+   PutRangeForIncrement - places incrementquad into the range record.
+*)
+
+PROCEDURE PutRangeForIncrement (range: CARDINAL; incrementquad: CARDINAL) ;
+VAR
+   p: Range ;
+BEGIN
+   p := GetIndice (RangeIndex, range) ;
+   p^.incrementquad := incrementquad
+END PutRangeForIncrement ;
+
+
+(*
    PutRange - initializes contents of, p, to
               d, e and their lowest types.
               It also fills in the current token no
@@ -355,6 +383,38 @@ BEGIN
    END ;
    RETURN p
 END PutRange ;
+
+
+(*
+   PutRangeDesExpr2 - initializes contents of, p, to
+                      des, expr1 and their lowest types.
+                      It also fills in the token numbers for
+                      des, expr, expr2 and returns, p.
+*)
+
+PROCEDURE PutRangeDesExpr2 (p: Range; t: TypeOfRange;
+                            des, destok,
+                            expr1, expr1tok,
+                            expr2, expr2tok,
+                            byconst, byconsttok: CARDINAL) : Range ;
+BEGIN
+   p^.des := des ;
+   p^.destok := destok ;
+   p^.expr := expr1 ;
+   p^.exprtok := expr1tok ;
+   p^.expr2 := expr2 ;
+   p^.expr2tok := expr2tok ;
+   p^.byconst := byconst ;
+   p^.byconsttok := byconsttok ;
+   WITH p^ DO
+      type           := t ;
+      desLowestType  := GetLowestType (des) ;
+      exprLowestType := GetLowestType (expr1) ;
+      strict         := FALSE ;
+      isin           := FALSE
+   END ;
+   RETURN p
+END PutRangeDesExpr2 ;
 
 
 (*
@@ -808,16 +868,25 @@ END InitTypesExpressionCheck ;
 (*
    InitForLoopBeginRangeCheck - returns a range check node which
                                 remembers the information necessary
-                                so that a range check for FOR d := e TO .. DO
-                                can be generated later on.
+                                so that a range check for
+                                FOR des := expr1 TO expr2 DO
+                                can be generated later on.  expr2 is
+                                only used to type check with des.
 *)
 
-PROCEDURE InitForLoopBeginRangeCheck (d, e: CARDINAL) : CARDINAL ;
+PROCEDURE InitForLoopBeginRangeCheck (des, destok,
+                                      expr1, expr1tok,
+                                      expr2, expr2tok,
+                                      byconst, byconsttok: CARDINAL) : CARDINAL ;
 VAR
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   Assert (PutRange (GetTokenNo (), GetIndice (RangeIndex, r), forloopbegin, d, e) # NIL) ;
+   Assert (PutRangeDesExpr2 (GetIndice (RangeIndex, r), forloopbegin,
+                             des, destok,
+                             expr1, expr1tok,
+                             expr2, expr2tok,
+                             byconst, byconsttok) # NIL) ;
    RETURN r
 END InitForLoopBeginRangeCheck ;
 
@@ -1786,6 +1855,58 @@ END CodeTypeCheck ;
 
 
 (*
+   ForLoopBeginTypeCompatible - check for designator assignment compatibility with
+                                expr1 and designator expression compatibility with expr2.
+                                FOR des := expr1 TO expr2 BY byconst DO
+                                END
+                                It generates composite tokens if the tokens are on
+                                the same source line.
+*)
+
+PROCEDURE ForLoopBeginTypeCompatible (p: Range) : BOOLEAN ;
+VAR
+   combinedtok: CARDINAL ;
+   success    : BOOLEAN ;
+BEGIN
+   success := TRUE ;
+   WITH p^ DO
+      combinedtok := MakeVirtual2Tok (destok, exprtok) ;
+      IF NOT AssignmentTypeCompatible (combinedtok, "", des, expr)
+      THEN
+         MetaErrorT2 (combinedtok,
+                      'type incompatibility between {%1Et} and {%2t} detected during the assignment of the designator {%1a} to the first expression {%2a} in the {%kFOR} loop',
+                      des, expr) ;
+         success := FALSE
+      END ;
+      combinedtok := MakeVirtual2Tok (destok, expr2tok) ;
+      IF NOT ExpressionTypeCompatible (combinedtok, "", des, expr2, TRUE, FALSE)
+      THEN
+         MetaErrorT2 (combinedtok,
+                      'type expression incompatibility between {%1Et} and {%2t} detected when comparing the designator {%1a} against the second expression {%2a} in the {%kFOR} loop',
+                      des, expr2) ;
+         success := FALSE
+      END ;
+(*
+      combinedtok := MakeVirtual2Tok (destok, byconsttok) ;
+      IF NOT ExpressionTypeCompatible (combinedtok, "", des, byconst, TRUE, FALSE)
+      THEN
+         MetaErrorT2 (combinedtok,
+                      'type expression incompatibility between {%1Et} and {%2t} detected between the the designator {%1a} and the {%kBY} constant expression {%2a} in the {%kFOR} loop',
+                      des, byconst) ;
+         success := FALSE
+      END ;
+*)
+      IF (NOT success) AND (incrementquad # 0)
+      THEN
+         (* Avoid a subsequent generic type check error.  *)
+         SubQuad (incrementquad)
+      END
+   END ;
+   RETURN success
+END ForLoopBeginTypeCompatible ;
+
+
+(*
    FoldForLoopBegin -
 *)
 
@@ -1802,14 +1923,17 @@ BEGIN
          IF GccKnowsAbout(expr) AND IsConst(expr) AND
             GetMinMax(tokenno, desLowestType, min, max)
          THEN
-            IF OutOfRange(tokenno, min, expr, max, desLowestType)
+            IF NOT ForLoopBeginTypeCompatible (p)
             THEN
-               MetaErrorT2(tokenNo,
+               SubQuad (q)
+            ELSIF OutOfRange (tokenno, min, expr, max, desLowestType)
+            THEN
+               MetaErrorT2 (tokenNo,
                            'attempting to assign a value {%2Wa} to a FOR loop designator {%1a} which will exceed the range of type {%1tad}',
-                           des, expr) ;
-               PutQuad(q, ErrorOp, NulSym, NulSym, r)
+                            des, expr) ;
+               PutQuad (q, ErrorOp, NulSym, NulSym, r)
             ELSE
-               SubQuad(q)
+               SubQuad (q)
             END
          END
       END
@@ -2872,7 +2996,10 @@ END CodeDynamicArraySubscript ;
 PROCEDURE CodeForLoopBegin (tokenno: CARDINAL;
                             r: CARDINAL; function, message: String) ;
 BEGIN
-   DoCodeAssignment(tokenno, r, function, message)
+   IF ForLoopBeginTypeCompatible (GetIndice (RangeIndex, r))
+   THEN
+      DoCodeAssignment(tokenno, r, function, message)
+   END
 END CodeForLoopBegin ;
 
 
