@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "cfgexpand.h"
 #include "attribs.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 
 /* Actual prefixes of different newly synthetized parameters.  Keep in sync

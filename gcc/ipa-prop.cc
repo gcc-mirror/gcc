@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "gimple-walk.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "tree-cfg.h"
 #include "tree-dfa.h"
@@ -4561,7 +4563,7 @@ ipa_node_params_t::duplicate(cgraph_node *, cgraph_node *,
 			     ipa_node_params *new_info)
 {
   new_info->descriptors = vec_safe_copy (old_info->descriptors);
-  new_info->lattices = NULL;
+  gcc_assert (new_info->lattices.is_empty ());
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
   new_info->known_csts = old_info->known_csts.copy ();
   new_info->known_contexts = old_info->known_contexts.copy ();

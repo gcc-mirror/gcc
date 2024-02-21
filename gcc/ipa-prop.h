@@ -627,7 +627,7 @@ public:
   vec<ipa_param_descriptor, va_gc> *descriptors;
   /* Pointer to an array of structures describing individual formal
      parameters.  */
-  class ipcp_param_lattices * GTY((skip)) lattices;
+  vec<ipcp_param_lattices> GTY((skip)) lattices;
   /* Only for versioned nodes this field would not be NULL,
      it points to the node that IPA cp cloned from.  */
   struct cgraph_node * GTY((skip)) ipcp_orig_node;
@@ -662,7 +662,7 @@ public:
 
 inline
 ipa_node_params::ipa_node_params ()
-: descriptors (NULL), lattices (NULL), ipcp_orig_node (NULL),
+: descriptors (NULL), lattices (vNULL), ipcp_orig_node (NULL),
   known_csts (vNULL), known_contexts (vNULL), analysis_done (0),
   node_enqueued (0), do_clone_for_all_contexts (0), is_all_contexts_clone (0),
   node_dead (0), node_within_scc (0), node_is_self_scc (0),
@@ -673,8 +673,8 @@ ipa_node_params::ipa_node_params ()
 inline
 ipa_node_params::~ipa_node_params ()
 {
-  free (lattices);
   vec_free (descriptors);
+  lattices.release ();
   known_csts.release ();
   known_contexts.release ();
 }

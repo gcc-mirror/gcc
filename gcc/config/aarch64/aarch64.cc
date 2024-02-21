@@ -91,6 +91,8 @@
 #include "tree-pass.h"
 #include "cfgbuild.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "hash-map.h"
