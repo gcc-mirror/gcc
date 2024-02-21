@@ -100,7 +100,7 @@ ASTValidation::visit (AST::Function &function)
       && context.back () != Context::INHERENT_IMPL
       && function.has_self_param ())
     rust_error_at (
-      function.get_self_param ()->get_locus (),
+      function.get_self_param ().get_locus (),
       "%<self%> parameter is only allowed in associated functions");
 
   if (function.is_external ())

@@ -1415,15 +1415,15 @@ public:
     return return_type;
   }
 
-  std::unique_ptr<Param> &get_self_param ()
+  Param &get_self_param ()
   {
     rust_assert (has_self_param ());
-    return function_params[0];
+    return *function_params[0];
   }
-  const std::unique_ptr<Param> &get_self_param () const
+  const Param &get_self_param () const
   {
     rust_assert (has_self_param ());
-    return function_params[0];
+    return *function_params[0];
   }
 
   // ExternalItem::node_id is same as Stmt::node_id
