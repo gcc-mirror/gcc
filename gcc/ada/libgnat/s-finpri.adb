@@ -389,13 +389,22 @@ package body System.Finalization_Primitives is
       end if;
    end Finalize_Object;
 
+   ----------------------
+   -- Header_Alignment --
+   ----------------------
+
+   function Header_Alignment return System.Storage_Elements.Storage_Count is
+   begin
+      return Collection_Node'Alignment;
+   end Header_Alignment;
+
    -----------------
    -- Header_Size --
    -----------------
 
    function Header_Size return System.Storage_Elements.Storage_Count is
    begin
-      return Collection_Node'Size / Storage_Unit;
+      return Collection_Node'Object_Size / Storage_Unit;
    end Header_Size;
 
    ----------------

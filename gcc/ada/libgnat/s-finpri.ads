@@ -168,8 +168,11 @@ package System.Finalization_Primitives with Preelaborate is
    --  Calls to the procedure with an object that has already been detached
    --  have no effects.
 
+   function Header_Alignment return System.Storage_Elements.Storage_Count;
+   --  Return the alignment of type Collection_Node as Storage_Count
+
    function Header_Size return System.Storage_Elements.Storage_Count;
-   --  Return the size of type Collection_Node as Storage_Count
+   --  Return the object size of type Collection_Node as Storage_Count
 
 private
 
@@ -182,11 +185,13 @@ private
 
    --  Finalization masters:
 
-   --  Master node type structure
+   --  Master node type structure. Finalize_Address comes first because it is
+   --  an access-to-subprogram and, therefore, might be twice as large and as
+   --  aligned as an access-to-object on some platforms.
 
    type Master_Node is record
-      Object_Address   : System.Address       := System.Null_Address;
       Finalize_Address : Finalize_Address_Ptr := null;
+      Object_Address   : System.Address       := System.Null_Address;
       Next             : Master_Node_Ptr      := null;
    end record;
 
@@ -211,14 +216,16 @@ private
 
    --  Finalization collections:
 
-   --  Collection node type structure
+   --  Collection node type structure. Finalize_Address comes first because it
+   --  is an access-to-subprogram and, therefore, might be twice as large and
+   --  as aligned as an access-to-object on some platforms.
 
    type Collection_Node is record
-      Enclosing_Collection : Finalization_Collection_Ptr := null;
-      --  A pointer to the collection to which the node is attached
-
       Finalize_Address : Finalize_Address_Ptr := null;
       --  A pointer to the Finalize_Address procedure of the object
+
+      Enclosing_Collection : Finalization_Collection_Ptr := null;
+      --  A pointer to the collection to which the node is attached
 
       Prev : Collection_Node_Ptr := null;
       Next : Collection_Node_Ptr := null;

@@ -56,12 +56,12 @@ package body System.Storage_Pools.Subpools is
       Header_And_Padding : constant Storage_Offset :=
                              Header_Size_With_Padding (Alignment);
    begin
-      --  Expose the collection node and its padding by shifting the address
-      --  from the start of the object to the beginning pf the padding.
+      --  Expose the header and its padding by shifting the address from the
+      --  start of the object to the beginning of the padding.
 
       Addr := Addr - Header_And_Padding;
 
-      --  Update the size to include the collection node and its padding
+      --  Update the size to include the header and its padding
 
       Storage_Size := Storage_Size + Header_And_Padding;
    end Adjust_Controlled_Dereference;
@@ -109,13 +109,14 @@ package body System.Storage_Pools.Subpools is
       Is_Subpool_Allocation : constant Boolean :=
                                 Pool in Root_Storage_Pool_With_Subpools'Class;
 
-      N_Addr  : Address;
-      N_Size  : Storage_Count;
-      Subpool : Subpool_Handle;
+      N_Addr      : Address;
+      N_Alignment : Storage_Count;
+      N_Size      : Storage_Count;
+      Subpool     : Subpool_Handle;
 
       Header_And_Padding : Storage_Offset;
-      --  This offset includes the size of a collection node plus an additional
-      --  padding due to a larger alignment.
+      --  This offset includes the size of a header plus an additional padding
+      --  due to a larger alignment of the object.
 
    begin
       --  Step 1: Pool-related runtime checks
@@ -181,24 +182,31 @@ package body System.Storage_Pools.Subpools is
          end if;
       end if;
 
-      --  Step 2: Size calculation
+      --  Step 2: Size and alignment calculations
 
       --  Allocation of a descendant from [Limited_]Controlled, a class-wide
       --  object or a record with controlled components.
 
       if Is_Controlled then
-         --  The size must account for the hidden header preceding the object.
+         --  The size must account for the hidden header before the object.
          --  Account for possible padding space before the header due to a
-         --  larger alignment.
+         --  larger alignment of the object.
 
          Header_And_Padding := Header_Size_With_Padding (Alignment);
 
          N_Size := Storage_Size + Header_And_Padding;
 
+         --  The alignment must account for the hidden header before the object
+
+         N_Alignment :=
+           System.Storage_Elements.Storage_Count'Max
+             (Alignment, System.Finalization_Primitives.Header_Alignment);
+
       --  Non-controlled allocation
 
       else
-         N_Size := Storage_Size;
+         N_Size      := Storage_Size;
+         N_Alignment := Alignment;
       end if;
 
       --  Step 3: Allocation of object
@@ -209,22 +217,22 @@ package body System.Storage_Pools.Subpools is
       if Is_Subpool_Allocation then
          Allocate_From_Subpool
            (Root_Storage_Pool_With_Subpools'Class (Pool),
-            N_Addr, N_Size, Alignment, Subpool);
+            N_Addr, N_Size, N_Alignment, Subpool);
 
       --  For descendants of Root_Storage_Pool, dispatch to the implementation
       --  of Allocate.
 
       else
-         Allocate (Pool, N_Addr, N_Size, Alignment);
+         Allocate (Pool, N_Addr, N_Size, N_Alignment);
       end if;
 
       --  Step 4: Displacement of address
 
       if Is_Controlled then
-
-         --  Map the allocated memory into a collection node. This converts the
-         --  top of the allocated bits into a list header. If there is padding
-         --  due to larger alignment, the padding is placed at the beginning:
+         --  Move the address from the hidden list header to the start of the
+         --  object. If there is padding due to larger alignment of the object,
+         --  the padding is placed at the beginning. This effectively hides the
+         --  list header:
 
          --    N_Addr                  Addr
          --    |                       |
@@ -236,9 +244,6 @@ package body System.Storage_Pools.Subpools is
          --    |       +- Header_Size -+
          --    |                       |
          --    +- Header_And_Padding --+
-
-         --  Move the address from the hidden list header to the start of the
-         --  object. This operation effectively hides the list header.
 
          Addr := N_Addr + Header_And_Padding;
 
@@ -283,12 +288,13 @@ package body System.Storage_Pools.Subpools is
       Alignment     : System.Storage_Elements.Storage_Count;
       Is_Controlled : Boolean)
    is
-      N_Addr : Address;
-      N_Size : Storage_Count;
+      N_Addr      : Address;
+      N_Alignment : Storage_Count;
+      N_Size      : Storage_Count;
 
       Header_And_Padding : Storage_Offset;
-      --  This offset includes the size of a collection node plus an additional
-      --  padding due to a larger alignment.
+      --  This offset includes the size of a header plus an additional padding
+      --  due to a larger alignment of the object.
 
    begin
       --  Step 1: Displacement of address
@@ -318,9 +324,16 @@ package body System.Storage_Pools.Subpools is
 
          N_Size := Storage_Size + Header_And_Padding;
 
+         --  The alignment must account for the hidden header before the object
+
+         N_Alignment :=
+           System.Storage_Elements.Storage_Count'Max
+             (Alignment, System.Finalization_Primitives.Header_Alignment);
+
       else
-         N_Addr := Addr;
-         N_Size := Storage_Size;
+         N_Addr      := Addr;
+         N_Size      := Storage_Size;
+         N_Alignment := Alignment;
       end if;
 
       --  Step 2: Deallocation of object
@@ -329,7 +342,7 @@ package body System.Storage_Pools.Subpools is
       --  covers both Root_Storage_Pool and Root_Storage_Pool_With_Subpools
       --  implementations.
 
-      Deallocate (Pool, N_Addr, N_Size, Alignment);
+      Deallocate (Pool, N_Addr, N_Size, N_Alignment);
    end Deallocate_Any_Controlled;
 
    ------------------------------

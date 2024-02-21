@@ -236,7 +236,7 @@ private
       Alignment    : System.Storage_Elements.Storage_Count);
    --  Given the memory attributes of a heap-allocated object that is known to
    --  be controlled, adjust the address and size of the object to include the
-   --  collection node inserted by the finalization machinery and its padding.
+   --  hidden header inserted by the finalization machinery and its padding.
 
    --  ??? Once Storage_Pools.Allocate_Any is removed, this should be renamed
    --  to Allocate_Any.
