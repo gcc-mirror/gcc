@@ -95,6 +95,7 @@ public:
   virtual void set_zero (tree type) = 0;
   virtual void set_nonnegative (tree type) = 0;
   virtual bool fits_p (const vrange &r) const = 0;
+  virtual ~vrange () { }
 
   bool varying_p () const;
   bool undefined_p () const;
@@ -382,7 +383,7 @@ public:
   int_range (tree type);
   int_range (const int_range &);
   int_range (const irange &);
-  virtual ~int_range ();
+  ~int_range () final override;
   int_range& operator= (const int_range &);
 protected:
   int_range (tree, tree, value_range_kind = VR_RANGE);
