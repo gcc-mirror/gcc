@@ -75,10 +75,6 @@ private:
   static size_t size (const irange &r);
   const unsigned short *lengths_address () const;
   unsigned short *write_lengths_address ();
-  friend void gt_ggc_mx_irange_storage (void *);
-  friend void gt_pch_p_14irange_storage (void *, void *,
-					      gt_pointer_operator, void *);
-  friend void gt_pch_nx_irange_storage (void *);
 
   // The shared precision of each number.
   unsigned short m_precision;

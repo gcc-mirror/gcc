@@ -72,7 +72,7 @@ enum value_range_discriminator
 //	if (f.supports_type_p (type)) ...
 //    }
 
-class GTY((user)) vrange
+class vrange
 {
   template <typename T> friend bool is_a (vrange &);
   friend class Value_Range;
@@ -279,7 +279,7 @@ irange_bitmask::intersect (const irange_bitmask &orig_src)
 
 // An integer range without any storage.
 
-class GTY((user)) irange : public vrange
+class irange : public vrange
 {
   friend value_range_kind get_legacy_range (const irange &, tree &, tree &);
   friend class irange_storage;
@@ -350,10 +350,6 @@ protected:
   // Hard limit on max ranges allowed.
   static const int HARD_MAX_RANGES = 255;
 private:
-  friend void gt_ggc_mx (irange *);
-  friend void gt_pch_nx (irange *);
-  friend void gt_pch_nx (irange *, gt_pointer_operator, void *);
-
   bool varying_compatible_p () const;
   bool intersect_bitmask (const irange &r);
   bool union_bitmask (const irange &r);
@@ -379,7 +375,7 @@ protected:
 // HARD_MAX_RANGES.  This new storage is freed upon destruction.
 
 template<unsigned N, bool RESIZABLE = false>
-class GTY((user)) int_range : public irange
+class int_range : public irange
 {
 public:
   int_range ();
@@ -484,13 +480,10 @@ nan_state::neg_p () const
 // The representation is a type with a couple of endpoints, unioned
 // with the set of { -NAN, +Nan }.
 
-class GTY((user)) frange : public vrange
+class frange : public vrange
 {
   friend class frange_storage;
   friend class vrange_printer;
-  friend void gt_ggc_mx (frange *);
-  friend void gt_pch_nx (frange *);
-  friend void gt_pch_nx (frange *, gt_pointer_operator, void *);
 public:
   frange ();
   frange (const frange &);
@@ -989,37 +982,6 @@ range_includes_zero_p (const irange *vr)
 
   wide_int zero = wi::zero (TYPE_PRECISION (vr->type ()));
   return vr->contains_p (zero);
-}
-
-extern void gt_ggc_mx (vrange *);
-extern void gt_pch_nx (vrange *);
-extern void gt_pch_nx (vrange *, gt_pointer_operator, void *);
-extern void gt_ggc_mx (irange *);
-extern void gt_pch_nx (irange *);
-extern void gt_pch_nx (irange *, gt_pointer_operator, void *);
-extern void gt_ggc_mx (frange *);
-extern void gt_pch_nx (frange *);
-extern void gt_pch_nx (frange *, gt_pointer_operator, void *);
-
-template<unsigned N>
-inline void
-gt_ggc_mx (int_range<N> *x)
-{
-  gt_ggc_mx ((irange *) x);
-}
-
-template<unsigned N>
-inline void
-gt_pch_nx (int_range<N> *x)
-{
-  gt_pch_nx ((irange *) x);
-}
-
-template<unsigned N>
-inline void
-gt_pch_nx (int_range<N> *x, gt_pointer_operator op, void *cookie)
-{
-  gt_pch_nx ((irange *) x, op, cookie);
 }
 
 // Constructors for irange
