@@ -29513,6 +29513,8 @@ aarch64_mode_emit (int entity, int mode, int prev_mode, HARD_REG_SET live)
   HARD_REG_SET clobbers = {};
   for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
     {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
       vec_rtx_properties properties;
       properties.add_insn (insn, false);
       for (rtx_obj_reference ref : properties.refs ())

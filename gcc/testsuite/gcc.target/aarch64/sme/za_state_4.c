@@ -1,4 +1,4 @@
-// { dg-options "-O -fno-optimize-sibling-calls" }
+// { dg-options "-O -fno-optimize-sibling-calls -fno-stack-clash-protection" }
 // { dg-final { check-function-bodies "**" "" } }
 
 void private_za();

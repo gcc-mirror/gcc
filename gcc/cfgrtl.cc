@@ -2018,6 +2018,21 @@ commit_one_edge_insertion (edge e)
   insns = e->insns.r;
   e->insns.r = NULL;
 
+  /* Allow the sequence to contain internal jumps, such as a memcpy loop
+     or an allocation loop.  If such a sequence is emitted during RTL
+     expansion, we'll create the appropriate basic blocks later,
+     at the end of the pass.  But if such a sequence is emitted after
+     initial expansion, we'll need to find the subblocks ourselves.  */
+  bool contains_jump = false;
+  if (!currently_expanding_to_rtl)
+    for (rtx_insn *insn = insns; insn; insn = NEXT_INSN (insn))
+      if (JUMP_P (insn))
+	{
+	  rebuild_jump_labels_chain (insns);
+	  contains_jump = true;
+	  break;
+	}
+
   /* Figure out where to put these insns.  If the destination has
      one predecessor, insert there.  Except for the exit block.  */
   if (single_pred_p (e->dest) && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
@@ -2112,13 +2127,13 @@ commit_one_edge_insertion (edge e)
 	delete_insn (before);
     }
   else
-    /* Some builtin expanders, such as those for memset and memcpy,
-       may generate loops and conditionals, and those may get emitted
-       into edges.  That's ok while expanding to rtl, basic block
-       boundaries will be identified and split afterwards.  ???  Need
-       we check whether the destination labels of any inserted jumps
-       are also part of the inserted sequence?  */
+    /* Sequences inserted after RTL expansion are expected to be SESE,
+       with only internal branches allowed.  If the sequence jumps outside
+       itself then we do not know how to add the associated edges here.  */
     gcc_assert (!JUMP_P (last) || currently_expanding_to_rtl);
+
+  if (contains_jump)
+    find_sub_basic_blocks (bb);
 }
 
 /* Update the CFG for all queued instructions.  */
