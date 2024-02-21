@@ -1,3 +1,27 @@
+2024-02-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-02-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options) <-mmcu>: Remove "Atmel".
+	Note on complete device support.
+
+2024-02-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-01-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options) [-mskip-bug]: Add documentation.
+
+2024-02-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-01-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options): Move -mrmw, -mn-flash, -mshort-calls
+	and -msp8 to...
+	(AVR Internal Options): ...this new @subsubsection.
+
 2024-02-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:
