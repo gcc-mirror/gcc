@@ -80,21 +80,21 @@ class GTY((user)) vrange
   friend class range_op_handler;
 public:
   virtual void accept (const class vrange_visitor &v) const = 0;
-  virtual void set (tree, tree, value_range_kind = VR_RANGE);
-  virtual tree type () const;
-  virtual bool supports_type_p (const_tree type) const;
-  virtual void set_varying (tree type);
-  virtual void set_undefined ();
-  virtual bool union_ (const vrange &);
-  virtual bool intersect (const vrange &);
-  virtual bool singleton_p (tree *result = NULL) const;
-  virtual bool contains_p (tree cst) const;
-  virtual bool zero_p () const;
-  virtual bool nonzero_p () const;
-  virtual void set_nonzero (tree type);
-  virtual void set_zero (tree type);
-  virtual void set_nonnegative (tree type);
-  virtual bool fits_p (const vrange &r) const;
+  virtual void set (tree, tree, value_range_kind = VR_RANGE) = 0;
+  virtual tree type () const = 0;
+  virtual bool supports_type_p (const_tree type) const = 0;
+  virtual void set_varying (tree type) = 0;
+  virtual void set_undefined () = 0;
+  virtual bool union_ (const vrange &) = 0;
+  virtual bool intersect (const vrange &) = 0;
+  virtual bool singleton_p (tree *result = NULL) const = 0;
+  virtual bool contains_p (tree cst) const = 0;
+  virtual bool zero_p () const = 0;
+  virtual bool nonzero_p () const = 0;
+  virtual void set_nonzero (tree type) = 0;
+  virtual void set_zero (tree type) = 0;
+  virtual void set_nonnegative (tree type) = 0;
+  virtual bool fits_p (const vrange &r) const = 0;
 
   bool varying_p () const;
   bool undefined_p () const;
@@ -401,11 +401,23 @@ public:
   {
     set_undefined ();
   }
-  virtual void set_undefined () final override
-  {
-    m_kind = VR_UNDEFINED;
-  }
-  virtual void accept (const vrange_visitor &v) const override;
+  void set (tree min, tree, value_range_kind = VR_RANGE) final override;
+  tree type () const final override;
+  bool supports_type_p (const_tree) const final override;
+  void set_varying (tree) final override;
+  void set_undefined () final override;
+  void accept (const vrange_visitor &v) const final override;
+  bool union_ (const vrange &r) final override;
+  bool intersect (const vrange &r) final override;
+  bool singleton_p (tree * = NULL) const final override;
+  bool contains_p (tree) const final override;
+  bool zero_p () const final override;
+  bool nonzero_p () const final override;
+  void set_nonzero (tree type) final override;
+  void set_zero (tree type) final override;
+  void set_nonnegative (tree type) final override;
+  bool fits_p (const vrange &) const final override;
+  unsupported_range& operator= (const vrange &r);
 };
 
 // The NAN state as an opaque object.
@@ -507,6 +519,7 @@ public:
   virtual void set_nonzero (tree type) override;
   virtual void set_zero (tree type) override;
   virtual void set_nonnegative (tree type) override;
+  virtual bool fits_p (const vrange &) const override;
   frange& operator= (const frange &);
   bool operator== (const frange &) const;
   bool operator!= (const frange &r) const { return !(*this == r); }

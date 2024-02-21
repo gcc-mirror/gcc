@@ -37,12 +37,6 @@ irange::accept (const vrange_visitor &v) const
   v.visit (*this);
 }
 
-void
-unsupported_range::accept (const vrange_visitor &v) const
-{
-  v.visit (*this);
-}
-
 // Convenience function only available for integers and pointers.
 
 wide_int
@@ -86,52 +80,58 @@ debug (const irange_bitmask &bm)
   fprintf (stderr, "\n");
 }
 
-// Default vrange definitions.
+// Definitions for unsupported_range.
+
+void
+unsupported_range::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
 
 bool
-vrange::contains_p (tree) const
+unsupported_range::contains_p (tree) const
 {
   return varying_p ();
 }
 
 bool
-vrange::singleton_p (tree *) const
+unsupported_range::singleton_p (tree *) const
 {
   return false;
 }
 
 void
-vrange::set (tree min, tree, value_range_kind)
+unsupported_range::set (tree min, tree, value_range_kind)
 {
   set_varying (TREE_TYPE (min));
 }
 
 tree
-vrange::type () const
+unsupported_range::type () const
 {
   return void_type_node;
 }
 
 bool
-vrange::supports_type_p (const_tree) const
+unsupported_range::supports_type_p (const_tree) const
 {
   return false;
 }
 
 void
-vrange::set_undefined ()
+unsupported_range::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
 }
 
 void
-vrange::set_varying (tree)
+unsupported_range::set_varying (tree)
 {
   m_kind = VR_VARYING;
 }
 
 bool
-vrange::union_ (const vrange &r)
+unsupported_range::union_ (const vrange &r)
 {
   if (r.undefined_p () || varying_p ())
     return false;
@@ -145,7 +145,7 @@ vrange::union_ (const vrange &r)
 }
 
 bool
-vrange::intersect (const vrange &r)
+unsupported_range::intersect (const vrange &r)
 {
   if (undefined_p () || r.varying_p ())
     return false;
@@ -164,39 +164,51 @@ vrange::intersect (const vrange &r)
 }
 
 bool
-vrange::zero_p () const
+unsupported_range::zero_p () const
 {
   return false;
 }
 
 bool
-vrange::nonzero_p () const
+unsupported_range::nonzero_p () const
 {
   return false;
 }
 
 void
-vrange::set_nonzero (tree type)
+unsupported_range::set_nonzero (tree type)
 {
   set_varying (type);
 }
 
 void
-vrange::set_zero (tree type)
+unsupported_range::set_zero (tree type)
 {
   set_varying (type);
 }
 
 void
-vrange::set_nonnegative (tree type)
+unsupported_range::set_nonnegative (tree type)
 {
   set_varying (type);
 }
 
 bool
-vrange::fits_p (const vrange &) const
+unsupported_range::fits_p (const vrange &) const
 {
   return true;
+}
+
+unsupported_range &
+unsupported_range::operator= (const vrange &r)
+{
+  if (r.undefined_p ())
+    set_undefined ();
+  else if (r.varying_p ())
+    set_varying (void_type_node);
+  else
+    gcc_unreachable ();
+  return *this;
 }
 
 // Assignment operator for generic ranges.  Copying incompatible types
@@ -357,6 +369,12 @@ void
 frange::accept (const vrange_visitor &v) const
 {
   v.visit (*this);
+}
+
+bool
+frange::fits_p (const vrange &) const
+{
+  return true;
 }
 
 // Flush denormal endpoints to the appropriate 0.0.
