@@ -5486,7 +5486,7 @@ x:
 		[Define if your assembler supports -mrelax option.])])
     gcc_GAS_CHECK_FEATURE([conditional branch relaxation support],
       gcc_cv_as_loongarch_cond_branch_relax,
-      [],
+      [--fatal-warnings],
       [a:
        .rept 32769
        nop
