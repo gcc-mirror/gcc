@@ -1,3 +1,11 @@
+2024-02-20  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2024-02-14  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/111677
+	* gcc.target/aarch64/torture/pr111677.c: New test.
+
 2024-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
