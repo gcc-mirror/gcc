@@ -1407,6 +1407,20 @@ get_or_create_const_fn_result_svalue (tree type,
   return const_fn_result_sval;
 }
 
+/* Get a tree for the size of STRING_CST, or NULL_TREE.
+   Note that this may be larger than TREE_STRING_LENGTH (implying
+   a run of trailing zero bytes from TREE_STRING_LENGTH up to this
+   higher limit).  */
+
+tree
+get_string_cst_size (const_tree string_cst)
+{
+  gcc_assert (TREE_CODE (string_cst) == STRING_CST);
+  gcc_assert (TREE_CODE (TREE_TYPE (string_cst)) == ARRAY_TYPE);
+
+  return TYPE_SIZE_UNIT (TREE_TYPE (string_cst));
+}
+
 /* Given STRING_CST, a STRING_CST and BYTE_OFFSET_CST a constant,
    attempt to get the character at that offset, returning either
    the svalue for the character constant, or NULL if unsuccessful.  */
@@ -1420,16 +1434,27 @@ region_model_manager::maybe_get_char_from_string_cst (tree string_cst,
   /* Adapted from fold_read_from_constant_string.  */
   scalar_int_mode char_mode;
   if (TREE_CODE (byte_offset_cst) == INTEGER_CST
-      && compare_tree_int (byte_offset_cst,
-			   TREE_STRING_LENGTH (string_cst)) < 0
       && is_int_mode (TYPE_MODE (TREE_TYPE (TREE_TYPE (string_cst))),
 		      &char_mode)
       && GET_MODE_SIZE (char_mode) == 1)
     {
+      /* If we're beyond the string_cst, the read is unsuccessful.  */
+      if (compare_constants (byte_offset_cst,
+			     GE_EXPR,
+			     get_string_cst_size (string_cst)).is_true ())
+	return NULL;
+
+      int char_val;
+      if (compare_tree_int (byte_offset_cst,
+			    TREE_STRING_LENGTH (string_cst)) < 0)
+	/* We're within the area defined by TREE_STRING_POINTER.  */
+	char_val = (TREE_STRING_POINTER (string_cst)
+		    [TREE_INT_CST_LOW (byte_offset_cst)]);
+      else
+	/* We're in the padding area of trailing zeroes.  */
+	char_val = 0;
       tree char_cst
-	= build_int_cst_type (TREE_TYPE (TREE_TYPE (string_cst)),
-			      (TREE_STRING_POINTER (string_cst)
-			       [TREE_INT_CST_LOW (byte_offset_cst)]));
+	= build_int_cst_type (TREE_TYPE (TREE_TYPE (string_cst)), char_val);
       return get_or_create_constant_svalue (char_cst);
     }
   return NULL;
