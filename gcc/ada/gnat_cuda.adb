@@ -270,7 +270,7 @@ package body GNAT_CUDA is
                  and then Present (Corresponding_Stub (Parent (Bod)))
                then
                   Error_Msg_N
-                    ("CUDA_Device not suported on separate subprograms",
+                    ("CUDA_Device not supported on separate subprograms",
                      Corresponding_Stub (Parent (Bod)));
                else
                   Remove (Bod);
