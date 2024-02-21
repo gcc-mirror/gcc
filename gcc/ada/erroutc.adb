@@ -1475,12 +1475,17 @@ package body Erroutc is
       if Name_Len = 2 and then Name_Buffer (1 .. 2) = "RM" then
          Set_Msg_Name_Buffer;
 
+      --  We make a similar exception for CUDA
+
+      elsif Name_Len = 4 and then Name_Buffer (1 .. 4) = "CUDA" then
+         Set_Msg_Name_Buffer;
+
       --  We make a similar exception for SPARK
 
       elsif Name_Len = 5 and then Name_Buffer (1 .. 5) = "SPARK" then
          Set_Msg_Name_Buffer;
 
-      --  Neither RM nor SPARK: case appropriately and add surrounding quotes
+      --  Otherwise, case appropriately and add surrounding quotes
 
       else
          Set_Casing (Keyword_Casing (Flag_Source), All_Lower_Case);
@@ -1607,6 +1612,12 @@ package body Erroutc is
 
       elsif Text = "Cpp_Vtable" then
          Set_Msg_Str ("CPP_Vtable");
+
+      elsif Text = "Cuda_Device" then
+         Set_Msg_Str ("CUDA_Device");
+
+      elsif Text = "Cuda_Global" then
+         Set_Msg_Str ("CUDA_Global");
 
       elsif Text = "Persistent_Bss" then
          Set_Msg_Str ("Persistent_BSS");
