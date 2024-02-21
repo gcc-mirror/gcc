@@ -29344,7 +29344,8 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
       auto tmp_reg = gen_reg_rtx (DImode);
       emit_insn (gen_aarch64_read_tpidr2 (tmp_reg));
       auto label = gen_label_rtx ();
-      auto jump = emit_jump_insn (gen_aarch64_cbeqdi1 (tmp_reg, label));
+      rtx branch = aarch64_gen_compare_zero_and_branch (EQ, tmp_reg, label);
+      auto jump = emit_jump_insn (branch);
       JUMP_LABEL (jump) = label;
       emit_insn (gen_aarch64_tpidr2_save ());
       emit_insn (gen_aarch64_clear_tpidr2 ());
