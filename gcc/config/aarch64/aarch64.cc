@@ -19543,7 +19543,6 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 			      TREE_TARGET_OPTION (target_option_current_node));
 
   ret = aarch64_process_target_attr (args);
-  ret = aarch64_process_target_attr (args);
   if (ret)
     {
       tree version_attr = lookup_attribute ("target_version",
