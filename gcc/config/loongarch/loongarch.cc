@@ -6222,6 +6222,10 @@ loongarch_option_override_internal (struct gcc_options *opts)
 	gcc_unreachable ();
     }
 
+  if (TARGET_EXPLICIT_RELOCS == M_OPTION_NOT_SEEN)
+    TARGET_EXPLICIT_RELOCS = (HAVE_AS_EXPLICIT_RELOCS
+			      && !loongarch_mrelax);
+
   /* Validate the guard size.  */
   int guard_size = param_stack_clash_protection_guard_size;
 
