@@ -29,7 +29,7 @@ class ASTLoweringItem : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::Item *translate (AST::Item *item);
+  static HIR::Item *translate (AST::Item &item);
 
   void visit (AST::Module &module) override;
   void visit (AST::TypeAlias &alias) override;

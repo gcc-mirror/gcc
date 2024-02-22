@@ -280,9 +280,9 @@ protected:
 
   HIR::SelfParam lower_self (AST::Param &self);
 
-  HIR::Type *lower_type_no_bounds (AST::TypeNoBounds *type);
+  HIR::Type *lower_type_no_bounds (AST::TypeNoBounds &type);
 
-  HIR::TypeParamBound *lower_bound (AST::TypeParamBound *bound);
+  HIR::TypeParamBound *lower_bound (AST::TypeParamBound &bound);
 
   HIR::QualifiedPathType
   lower_qual_path_type (AST::QualifiedPathType &qual_path_type);
@@ -310,7 +310,7 @@ protected:
   lower_tuple_pattern_ranged (AST::TuplePatternItemsRanged &pattern);
 
   std::unique_ptr<HIR::RangePatternBound>
-  lower_range_pattern_bound (AST::RangePatternBound *bound);
+  lower_range_pattern_bound (AST::RangePatternBound &bound);
 
   HIR::Literal lower_literal (const AST::Literal &literal);
 

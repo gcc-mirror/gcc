@@ -138,10 +138,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Pattern> &get_pattern_to_bind ()
+  Pattern &get_pattern_to_bind ()
   {
     rust_assert (has_pattern_to_bind ());
-    return to_bind;
+    return *to_bind;
   }
 
   Identifier get_ident () const { return variable_ident; }
@@ -428,16 +428,16 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? or is a "vis_bound" better?
-  std::unique_ptr<RangePatternBound> &get_lower_bound ()
+  RangePatternBound &get_lower_bound ()
   {
     rust_assert (lower != nullptr);
-    return lower;
+    return *lower;
   }
 
-  std::unique_ptr<RangePatternBound> &get_upper_bound ()
+  RangePatternBound &get_upper_bound ()
   {
     rust_assert (upper != nullptr);
-    return upper;
+    return *upper;
   }
 
   NodeId get_node_id () const override { return node_id; }
@@ -500,10 +500,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Pattern> &get_referenced_pattern ()
+  Pattern &get_referenced_pattern ()
   {
     rust_assert (pattern != nullptr);
-    return pattern;
+    return *pattern;
   }
 
   bool is_double_reference () const { return has_two_amps; }
@@ -663,10 +663,10 @@ public:
   TupleIndex get_index () { return index; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Pattern> &get_index_pattern ()
+  Pattern &get_index_pattern ()
   {
     rust_assert (tuple_pattern != nullptr);
-    return tuple_pattern;
+    return *tuple_pattern;
   }
 
   ItemType get_item_type () const override final { return ItemType::TUPLE_PAT; }
@@ -743,10 +743,10 @@ public:
   const Identifier &get_identifier () const { return ident; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Pattern> &get_ident_pattern ()
+  Pattern &get_ident_pattern ()
   {
     rust_assert (ident_pattern != nullptr);
-    return ident_pattern;
+    return *ident_pattern;
   }
 
   ItemType get_item_type () const override final { return ItemType::IDENT_PAT; }
@@ -1183,10 +1183,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  std::unique_ptr<TupleStructItems> &get_items ()
+  TupleStructItems &get_items ()
   {
     rust_assert (items != nullptr);
-    return items;
+    return *items;
   }
 
   PathInExpression &get_path () { return path; }
@@ -1428,10 +1428,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::unique_ptr<TuplePatternItems> &get_items ()
+  TuplePatternItems &get_items ()
   {
     rust_assert (items != nullptr);
-    return items;
+    return *items;
   }
 
   NodeId get_node_id () const override { return node_id; }
@@ -1490,10 +1490,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::unique_ptr<Pattern> &get_pattern_in_parens ()
+  Pattern &get_pattern_in_parens ()
   {
     rust_assert (pattern_in_parens != nullptr);
-    return pattern_in_parens;
+    return *pattern_in_parens;
   }
 
   NodeId get_node_id () const override { return node_id; }

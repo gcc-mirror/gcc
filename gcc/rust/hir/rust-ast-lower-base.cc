@@ -568,7 +568,7 @@ ASTLoweringBase::lower_generic_params (
   std::vector<std::unique_ptr<HIR::GenericParam>> lowered;
   for (auto &ast_param : params)
     {
-      auto hir_param = ASTLowerGenericParam::translate (ast_param.get ());
+      auto hir_param = ASTLowerGenericParam::translate (*ast_param);
       lowered.push_back (std::unique_ptr<HIR::GenericParam> (hir_param));
     }
 
@@ -593,8 +593,7 @@ ASTLoweringBase::lower_path_expr_seg (AST::PathExprSegment &s)
 HIR::GenericArgsBinding
 ASTLoweringBase::lower_binding (AST::GenericArgsBinding &binding)
 {
-  HIR::Type *lowered_type
-    = ASTLoweringType::translate (binding.get_type ().get ());
+  HIR::Type *lowered_type = ASTLoweringType::translate (binding.get_type ());
   return HIR::GenericArgsBinding (binding.get_identifier (),
 				  std::unique_ptr<HIR::Type> (lowered_type),
 				  binding.get_locus ());
@@ -625,13 +624,12 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
       switch (arg.get_kind ())
 	{
 	  case AST::GenericArg::Kind::Type: {
-	    auto type = ASTLoweringType::translate (arg.get_type ().get ());
+	    auto type = ASTLoweringType::translate (arg.get_type ());
 	    type_args.emplace_back (std::unique_ptr<HIR::Type> (type));
 	    break;
 	  }
 	  case AST::GenericArg::Kind::Const: {
-	    auto expr
-	      = ASTLoweringExpr::translate (arg.get_expression ().get ());
+	    auto expr = ASTLoweringExpr::translate (arg.get_expression ());
 	    const_args.emplace_back (
 	      HIR::ConstGenericArg (std::unique_ptr<HIR::Expr> (expr),
 				    expr->get_locus ()));
@@ -660,7 +658,7 @@ ASTLoweringBase::lower_self (AST::Param &param)
 
   if (self.has_type ())
     {
-      HIR::Type *type = ASTLoweringType::translate (self.get_type ().get ());
+      HIR::Type *type = ASTLoweringType::translate (self.get_type ());
       return HIR::SelfParam (mapping, std::unique_ptr<HIR::Type> (type),
 			     self.get_is_mut (), self.get_locus ());
     }
@@ -676,13 +674,13 @@ ASTLoweringBase::lower_self (AST::Param &param)
 }
 
 HIR::Type *
-ASTLoweringBase::lower_type_no_bounds (AST::TypeNoBounds *type)
+ASTLoweringBase::lower_type_no_bounds (AST::TypeNoBounds &type)
 {
   return ASTLoweringType::translate (type);
 }
 
 HIR::TypeParamBound *
-ASTLoweringBase::lower_bound (AST::TypeParamBound *bound)
+ASTLoweringBase::lower_bound (AST::TypeParamBound &bound)
 {
   return ASTLoweringTypeBounds::translate (bound);
 }
@@ -828,7 +826,7 @@ ASTLoweringBase::lower_tuple_pattern_multiple (
   std::vector<std::unique_ptr<HIR::Pattern>> patterns;
   for (auto &p : pattern.get_patterns ())
     {
-      HIR::Pattern *translated = ASTLoweringPattern::translate (p.get ());
+      HIR::Pattern *translated = ASTLoweringPattern::translate (*p);
       patterns.push_back (std::unique_ptr<HIR::Pattern> (translated));
     }
 
@@ -845,13 +843,13 @@ ASTLoweringBase::lower_tuple_pattern_ranged (
 
   for (auto &p : pattern.get_lower_patterns ())
     {
-      HIR::Pattern *translated = ASTLoweringPattern::translate (p.get ());
+      HIR::Pattern *translated = ASTLoweringPattern::translate (*p);
       lower_patterns.push_back (std::unique_ptr<HIR::Pattern> (translated));
     }
 
   for (auto &p : pattern.get_upper_patterns ())
     {
-      HIR::Pattern *translated = ASTLoweringPattern::translate (p.get ());
+      HIR::Pattern *translated = ASTLoweringPattern::translate (*p);
       upper_patterns.push_back (std::unique_ptr<HIR::Pattern> (translated));
     }
 
@@ -861,14 +859,14 @@ ASTLoweringBase::lower_tuple_pattern_ranged (
 }
 
 std::unique_ptr<HIR::RangePatternBound>
-ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound *bound)
+ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound &bound)
 {
   std::unique_ptr<HIR::RangePatternBound> hir_bound = nullptr;
-  switch (bound->get_bound_type ())
+  switch (bound.get_bound_type ())
     {
       case AST::RangePatternBound::RangePatternBoundType::LITERAL: {
 	AST::RangePatternBoundLiteral &ref
-	  = *static_cast<AST::RangePatternBoundLiteral *> (bound);
+	  = static_cast<AST::RangePatternBoundLiteral &> (bound);
 
 	HIR::Literal literal = lower_literal (ref.get_literal ());
 
@@ -878,23 +876,20 @@ ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound *bound)
       }
       break;
       case AST::RangePatternBound::RangePatternBoundType::PATH: {
-	AST::RangePatternBoundPath &ref
-	  = *static_cast<AST::RangePatternBoundPath *> (bound);
+	auto &ref = static_cast<AST::RangePatternBoundPath &> (bound);
 
 	HIR::PathInExpression *path
-	  = ASTLowerPathInExpression::translate (&ref.get_path ());
+	  = ASTLowerPathInExpression::translate (ref.get_path ());
 
 	hir_bound = std::unique_ptr<HIR::RangePatternBound> (
 	  new HIR::RangePatternBoundPath (*path));
       }
       break;
       case AST::RangePatternBound::RangePatternBoundType::QUALPATH: {
-	AST::RangePatternBoundQualPath &ref
-	  = *static_cast<AST::RangePatternBoundQualPath *> (bound);
+	auto &ref = static_cast<AST::RangePatternBoundQualPath &> (bound);
 
 	HIR::QualifiedPathInExpression *qualpath
-	  = ASTLowerQualPathInExpression::translate (
-	    &ref.get_qualified_path ());
+	  = ASTLowerQualPathInExpression::translate (ref.get_qualified_path ());
 
 	hir_bound = std::unique_ptr<HIR::RangePatternBound> (
 	  new HIR::RangePatternBoundQualPath (*qualpath));

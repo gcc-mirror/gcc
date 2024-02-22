@@ -27,15 +27,15 @@ namespace Resolver {
 void
 ResolveType::visit (AST::ArrayType &type)
 {
-  type.get_elem_type ()->accept_vis (*this);
-  ResolveExpr::go (type.get_size_expr ().get (), CanonicalPath::create_empty (),
+  type.get_elem_type ().accept_vis (*this);
+  ResolveExpr::go (type.get_size_expr (), CanonicalPath::create_empty (),
 		   CanonicalPath::create_empty ());
 }
 
 void
 ResolveType::visit (AST::TraitObjectTypeOneBound &type)
 {
-  ResolveTypeBound::go (&type.get_trait_bound ());
+  ResolveTypeBound::go (type.get_trait_bound ());
 }
 
 void
@@ -44,20 +44,20 @@ ResolveType::visit (AST::TraitObjectType &type)
   for (auto &bound : type.get_type_param_bounds ())
     {
       /* NodeId bound_resolved_id = */
-      ResolveTypeBound::go (bound.get ());
+      ResolveTypeBound::go (*bound);
     }
 }
 
 void
 ResolveType::visit (AST::ReferenceType &type)
 {
-  resolved_node = ResolveType::go (type.get_type_referenced ().get ());
+  resolved_node = ResolveType::go (type.get_type_referenced ());
 }
 
 void
 ResolveType::visit (AST::RawPointerType &type)
 {
-  resolved_node = ResolveType::go (type.get_type_pointed_to ().get ());
+  resolved_node = ResolveType::go (type.get_type_pointed_to ());
 }
 
 void
@@ -75,7 +75,7 @@ ResolveType::visit (AST::NeverType &)
 void
 ResolveType::visit (AST::SliceType &type)
 {
-  resolved_node = ResolveType::go (type.get_elem_type ().get ());
+  resolved_node = ResolveType::go (type.get_elem_type ());
 }
 
 // resolve relative type-paths
@@ -153,12 +153,12 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	  AST::TypePathFunction &fn = fnseg->get_type_path_function ();
 	  for (auto &param : fn.get_params ())
 	    {
-	      ResolveType::go (param.get ());
+	      ResolveType::go (*param);
 	    }
 
 	  if (fn.has_return_type ())
 	    {
-	      ResolveType::go (fn.get_return_type ().get ());
+	      ResolveType::go (fn.get_return_type ());
 	    }
 
 	  break;
@@ -318,11 +318,11 @@ ResolveRelativeQualTypePath::resolve_qual_seg (AST::QualifiedPathType &seg)
       return false;
     }
 
-  auto type = seg.get_type ().get ();
+  auto &type = seg.get_type ();
   ResolveType::go (type);
 
   if (seg.has_as_clause ())
-    ResolveType::go (&seg.get_as_type_path ());
+    ResolveType::go (seg.get_as_type_path ());
 
   return true;
 }
@@ -356,10 +356,10 @@ ResolveRelativeQualTypePath::visit (AST::TypePathSegment &seg)
 // resolve to canonical path
 
 bool
-ResolveTypeToCanonicalPath::go (AST::Type *type, CanonicalPath &result)
+ResolveTypeToCanonicalPath::go (AST::Type &type, CanonicalPath &result)
 {
   ResolveTypeToCanonicalPath resolver;
-  type->accept_vis (resolver);
+  type.accept_vis (resolver);
   result = resolver.result;
   return !resolver.result.is_empty ();
 }
@@ -402,8 +402,9 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
 		    if (generic.get_kind () == AST::GenericArg::Kind::Type)
 		      {
 			CanonicalPath arg = CanonicalPath::create_empty ();
-			bool ok = ResolveTypeToCanonicalPath::go (
-			  generic.get_type ().get (), arg);
+			bool ok
+			  = ResolveTypeToCanonicalPath::go (generic.get_type (),
+							    arg);
 			if (ok)
 			  args.push_back (std::move (arg));
 		      }
@@ -444,8 +445,7 @@ void
 ResolveTypeToCanonicalPath::visit (AST::ReferenceType &type)
 {
   CanonicalPath path = CanonicalPath::create_empty ();
-  bool ok
-    = ResolveTypeToCanonicalPath::go (type.get_type_referenced ().get (), path);
+  bool ok = ResolveTypeToCanonicalPath::go (type.get_type_referenced (), path);
   if (ok)
     {
       std::string ref_type_str = type.is_mut () ? "mut" : "";
@@ -458,8 +458,7 @@ void
 ResolveTypeToCanonicalPath::visit (AST::RawPointerType &type)
 {
   CanonicalPath path = CanonicalPath::create_empty ();
-  bool ok
-    = ResolveTypeToCanonicalPath::go (type.get_type_pointed_to ().get (), path);
+  bool ok = ResolveTypeToCanonicalPath::go (type.get_type_pointed_to (), path);
   if (ok)
     {
       std::string ptr_type_str
@@ -474,7 +473,7 @@ void
 ResolveTypeToCanonicalPath::visit (AST::SliceType &type)
 {
   CanonicalPath path = CanonicalPath::create_empty ();
-  bool ok = ResolveTypeToCanonicalPath::go (type.get_elem_type ().get (), path);
+  bool ok = ResolveTypeToCanonicalPath::go (type.get_elem_type (), path);
   if (ok)
     {
       std::string slice_path = "[" + path.get () + "]";
@@ -487,7 +486,7 @@ ResolveTypeToCanonicalPath::visit (AST::TraitObjectTypeOneBound &type)
 {
   CanonicalPath path = CanonicalPath::create_empty ();
   bool ok
-    = ResolveTypeToCanonicalPath::go (&type.get_trait_bound ().get_type_path (),
+    = ResolveTypeToCanonicalPath::go (type.get_trait_bound ().get_type_path (),
 				      path);
   if (ok)
     {
@@ -550,10 +549,10 @@ ResolveGenericArgs::resolve_disambiguated_generic (AST::GenericArg &arg)
   switch (arg.get_kind ())
     {
     case AST::GenericArg::Kind::Const:
-      ResolveExpr::go (arg.get_expression ().get (), prefix, canonical_prefix);
+      ResolveExpr::go (arg.get_expression (), prefix, canonical_prefix);
       break;
     case AST::GenericArg::Kind::Type:
-      ResolveType::go (arg.get_type ().get ());
+      ResolveType::go (arg.get_type ());
       break;
     default:
       rust_unreachable ();
@@ -584,7 +583,7 @@ ResolveGenericArgs::go (AST::GenericArgs &generic_args,
 
   for (auto &binding : generic_args.get_binding_args ())
     {
-      ResolveType::go (binding.get_type ().get ());
+      ResolveType::go (binding.get_type ());
     }
 }
 

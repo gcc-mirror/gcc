@@ -63,7 +63,7 @@ class ASTLoweringType : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::Type *translate (AST::Type *type,
+  static HIR::Type *translate (AST::Type &type,
 			       bool default_to_static_lifetime = false);
 
   void visit (AST::BareFunctionType &fntype) override;
@@ -97,7 +97,7 @@ class ASTLowerGenericParam : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::GenericParam *translate (AST::GenericParam *param);
+  static HIR::GenericParam *translate (AST::GenericParam &param);
 
   void visit (AST::LifetimeParam &param) override;
   void visit (AST::ConstGenericParam &param) override;
@@ -114,7 +114,7 @@ class ASTLoweringTypeBounds : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::TypeParamBound *translate (AST::TypeParamBound *type);
+  static HIR::TypeParamBound *translate (AST::TypeParamBound &type);
 
   void visit (AST::TraitBound &bound) override;
   void visit (AST::Lifetime &bound) override;

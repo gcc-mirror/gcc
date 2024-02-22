@@ -2546,8 +2546,7 @@ TokenCollector::visit (LetStmt &stmt)
 {
   push (Rust::Token::make (LET, stmt.get_locus ()));
   auto &pattern = stmt.get_pattern ();
-  if (pattern)
-    visit (pattern);
+  visit (pattern);
 
   if (stmt.has_type ())
     {

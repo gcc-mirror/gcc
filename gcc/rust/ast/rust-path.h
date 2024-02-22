@@ -120,7 +120,13 @@ public:
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (type != nullptr);
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (type != nullptr);
     return type;
@@ -216,10 +222,10 @@ public:
     switch (get_kind ())
       {
       case Kind::Const:
-	get_expression ()->accept_vis (visitor);
+	get_expression ().accept_vis (visitor);
 	break;
       case Kind::Type:
-	get_type ()->accept_vis (visitor);
+	get_type ().accept_vis (visitor);
 	break;
       case Kind::Either:
 	break;
@@ -228,14 +234,28 @@ public:
       }
   }
 
-  std::unique_ptr<Expr> &get_expression ()
+  Expr &get_expression ()
+  {
+    rust_assert (kind == Kind::Const);
+
+    return *expression;
+  }
+
+  std::unique_ptr<Expr> &get_expression_ptr ()
   {
     rust_assert (kind == Kind::Const);
 
     return expression;
   }
 
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (kind == Kind::Type);
+
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (kind == Kind::Type);
 
@@ -352,11 +372,11 @@ public:
 
   Attribute &get_outer_attribute () { return outer_attr; }
 
-  std::unique_ptr<AST::Type> &get_type ()
+  AST::Type &get_type ()
   {
     rust_assert (has_type ());
 
-    return type;
+    return *type;
   }
 
   GenericArg &get_default_value ()
@@ -957,7 +977,13 @@ public:
   std::vector<std::unique_ptr<Type> > &get_params () { return inputs; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Type> &get_return_type ()
+  Type &get_return_type ()
+  {
+    rust_assert (has_return_type ());
+    return *return_type;
+  }
+
+  std::unique_ptr<Type> &get_return_type_ptr ()
   {
     rust_assert (has_return_type ());
     return return_type;
@@ -1176,7 +1202,13 @@ public:
   location_t get_locus () const { return locus; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (type_to_invoke_on != nullptr);
+    return *type_to_invoke_on;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (type_to_invoke_on != nullptr);
     return type_to_invoke_on;

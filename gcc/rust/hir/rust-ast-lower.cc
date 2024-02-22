@@ -74,9 +74,9 @@ ASTLowering::go ()
 {
   std::vector<std::unique_ptr<HIR::Item>> items;
 
-  for (auto it = astCrate.items.begin (); it != astCrate.items.end (); it++)
+  for (auto &item : astCrate.items)
     {
-      auto translated = ASTLoweringItem::translate (it->get ());
+      auto translated = ASTLoweringItem::translate (*item);
       if (translated != nullptr)
 	items.push_back (std::unique_ptr<HIR::Item> (translated));
     }
@@ -123,7 +123,7 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
   if (expr.has_tail_expr () && block_did_terminate)
     {
       // warning unreachable tail expressions
-      rust_warning_at (expr.get_tail_expr ()->get_locus (), 0,
+      rust_warning_at (expr.get_tail_expr ().get_locus (), 0,
 		       "unreachable expression");
     }
 
@@ -132,7 +132,7 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
     {
       bool terminated = false;
       tail_expr = (HIR::ExprWithoutBlock *)
-	ASTLoweringExpr::translate (expr.get_tail_expr ().get (), &terminated);
+	ASTLoweringExpr::translate (expr.get_tail_expr (), &terminated);
       block_did_terminate |= terminated;
     }
 
@@ -155,12 +155,10 @@ void
 ASTLoweringIfBlock::visit (AST::IfExpr &expr)
 {
   bool ignored_terminated = false;
-  HIR::Expr *condition
-    = ASTLoweringExpr::translate (expr.get_condition_expr ().get (),
-				  &ignored_terminated);
+  HIR::Expr *condition = ASTLoweringExpr::translate (expr.get_condition_expr (),
+						     &ignored_terminated);
   HIR::BlockExpr *block
-    = ASTLoweringBlock::translate (expr.get_if_block ().get (),
-				   &ignored_terminated);
+    = ASTLoweringBlock::translate (expr.get_if_block (), &ignored_terminated);
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -176,16 +174,15 @@ void
 ASTLoweringIfBlock::visit (AST::IfExprConseqElse &expr)
 {
   HIR::Expr *condition
-    = ASTLoweringExpr::translate (expr.get_condition_expr ().get ());
+    = ASTLoweringExpr::translate (expr.get_condition_expr ());
 
   bool if_block_terminated = false;
   bool else_block_termianted = false;
 
   HIR::BlockExpr *if_block
-    = ASTLoweringBlock::translate (expr.get_if_block ().get (),
-				   &if_block_terminated);
+    = ASTLoweringBlock::translate (expr.get_if_block (), &if_block_terminated);
   HIR::ExprWithBlock *else_block
-    = ASTLoweringExprWithBlock::translate (expr.get_else_block ().get (),
+    = ASTLoweringExprWithBlock::translate (expr.get_else_block (),
 					   &else_block_termianted);
 
   terminated = if_block_terminated && else_block_termianted;
@@ -207,16 +204,14 @@ ASTLoweringIfLetBlock::visit (AST::IfLetExpr &expr)
   std::vector<std::unique_ptr<HIR::Pattern>> patterns;
   for (auto &pattern : expr.get_patterns ())
     {
-      HIR::Pattern *ptrn = ASTLoweringPattern::translate (pattern.get ());
+      HIR::Pattern *ptrn = ASTLoweringPattern::translate (*pattern);
       patterns.push_back (std::unique_ptr<HIR::Pattern> (ptrn));
     }
-  HIR::Expr *value_ptr
-    = ASTLoweringExpr::translate (expr.get_value_expr ().get ());
+  HIR::Expr *value_ptr = ASTLoweringExpr::translate (expr.get_value_expr ());
 
   bool ignored_terminated = false;
   HIR::BlockExpr *block
-    = ASTLoweringBlock::translate (expr.get_if_block ().get (),
-				   &ignored_terminated);
+    = ASTLoweringBlock::translate (expr.get_if_block (), &ignored_terminated);
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -235,19 +230,17 @@ ASTLoweringIfLetBlock::visit (AST::IfLetExprConseqElse &expr)
   std::vector<std::unique_ptr<HIR::Pattern>> patterns;
   for (auto &pattern : expr.get_patterns ())
     {
-      HIR::Pattern *ptrn = ASTLoweringPattern::translate (pattern.get ());
+      HIR::Pattern *ptrn = ASTLoweringPattern::translate (*pattern);
       patterns.push_back (std::unique_ptr<HIR::Pattern> (ptrn));
     }
-  HIR::Expr *value_ptr
-    = ASTLoweringExpr::translate (expr.get_value_expr ().get ());
+  HIR::Expr *value_ptr = ASTLoweringExpr::translate (expr.get_value_expr ());
 
   bool ignored_terminated = false;
   HIR::BlockExpr *block
-    = ASTLoweringBlock::translate (expr.get_if_block ().get (),
-				   &ignored_terminated);
+    = ASTLoweringBlock::translate (expr.get_if_block (), &ignored_terminated);
 
   HIR::ExprWithBlock *else_block
-    = ASTLoweringExprWithBlock::translate (expr.get_else_block ().get (),
+    = ASTLoweringExprWithBlock::translate (expr.get_else_block (),
 					   &ignored_terminated);
 
   rust_assert (else_block);
@@ -268,7 +261,7 @@ ASTLoweringIfLetBlock::visit (AST::IfLetExprConseqElse &expr)
 void
 ASTLowerStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
 {
-  HIR::Expr *value = ASTLoweringExpr::translate (field.get_value ().get ());
+  HIR::Expr *value = ASTLoweringExpr::translate (field.get_value ());
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
@@ -283,7 +276,7 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
 void
 ASTLowerStructExprField::visit (AST::StructExprFieldIndexValue &field)
 {
-  HIR::Expr *value = ASTLoweringExpr::translate (field.get_value ().get ());
+  HIR::Expr *value = ASTLoweringExpr::translate (field.get_value ());
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
@@ -315,12 +308,11 @@ void
 ASTLoweringExprWithBlock::visit (AST::WhileLoopExpr &expr)
 {
   HIR::BlockExpr *loop_block
-    = ASTLoweringBlock::translate (expr.get_loop_block ().get (), &terminated);
+    = ASTLoweringBlock::translate (expr.get_loop_block (), &terminated);
 
   HIR::LoopLabel loop_label = lower_loop_label (expr.get_loop_label ());
   HIR::Expr *loop_condition
-    = ASTLoweringExpr::translate (expr.get_predicate_expr ().get (),
-				  &terminated);
+    = ASTLoweringExpr::translate (expr.get_predicate_expr (), &terminated);
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -362,25 +354,25 @@ void
 ASTLoweringExprWithBlock::visit (AST::MatchExpr &expr)
 {
   HIR::Expr *branch_value
-    = ASTLoweringExpr::translate (expr.get_scrutinee_expr ().get ());
+    = ASTLoweringExpr::translate (expr.get_scrutinee_expr ());
 
   std::vector<HIR::MatchCase> match_arms;
   for (auto &match_case : expr.get_match_cases ())
     {
       HIR::Expr *kase_expr
-	= ASTLoweringExpr::translate (match_case.get_expr ().get ());
+	= ASTLoweringExpr::translate (match_case.get_expr ());
 
       HIR::Expr *kase_guard_expr = nullptr;
       if (match_case.get_arm ().has_match_arm_guard ())
 	{
 	  kase_guard_expr = ASTLoweringExpr::translate (
-	    match_case.get_arm ().get_guard_expr ().get ());
+	    match_case.get_arm ().get_guard_expr ());
 	}
 
       std::vector<std::unique_ptr<HIR::Pattern>> match_arm_patterns;
       for (auto &pattern : match_case.get_arm ().get_patterns ())
 	{
-	  HIR::Pattern *ptrn = ASTLoweringPattern::translate (pattern.get ());
+	  HIR::Pattern *ptrn = ASTLoweringPattern::translate (*pattern);
 	  match_arm_patterns.push_back (std::unique_ptr<HIR::Pattern> (ptrn));
 	}
 
@@ -437,8 +429,7 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
 HIR::QualifiedPathType
 ASTLoweringBase::lower_qual_path_type (AST::QualifiedPathType &qualified_type)
 {
-  HIR::Type *type
-    = ASTLoweringType::translate (qualified_type.get_type ().get ());
+  HIR::Type *type = ASTLoweringType::translate (qualified_type.get_type ());
   HIR::TypePath *trait
     = qualified_type.has_as_clause ()
 	? ASTLowerTypePath::translate (qualified_type.get_as_type_path ())
@@ -486,12 +477,11 @@ ClosureParam
 ASTLoweringBase::lower_closure_param (AST::ClosureParam &param)
 {
   HIR::Pattern *param_pattern
-    = ASTLoweringPattern::translate (param.get_pattern ().get ());
+    = ASTLoweringPattern::translate (param.get_pattern ());
 
-  HIR::Type *param_type
-    = param.has_type_given ()
-	? ASTLoweringType::translate (param.get_type ().get ())
-	: nullptr;
+  HIR::Type *param_type = param.has_type_given ()
+			    ? ASTLoweringType::translate (param.get_type ())
+			    : nullptr;
 
   return HIR::ClosureParam (std::unique_ptr<HIR::Pattern> (param_pattern),
 			    param.get_locus (),

@@ -2291,7 +2291,7 @@ std::string
 VariadicParam::as_string () const
 {
   if (has_pattern ())
-    return get_pattern ()->as_string () + " : ...";
+    return get_pattern ().as_string () + " : ...";
   else
     return "...";
 }
@@ -4258,7 +4258,7 @@ BlockExpr::normalize_tail_expr ()
 
 	  if (!stmt.is_semicolon_followed ())
 	    {
-	      expr = std::move (stmt.get_expr ());
+	      expr = std::move (stmt.take_expr ());
 	      statements.pop_back ();
 	    }
 	}

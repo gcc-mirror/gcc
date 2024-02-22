@@ -125,8 +125,8 @@ ASTValidation::visit (AST::Function &function)
 	  // if functional parameter
 	  if (!it->get ()->is_self () && !it->get ()->is_variadic ())
 	    {
-	      auto param = static_cast<AST::FunctionParam *> (it->get ());
-	      auto kind = param->get_pattern ()->get_pattern_kind ();
+	      auto &param = static_cast<AST::FunctionParam &> (**it);
+	      auto kind = param.get_pattern ().get_pattern_kind ();
 
 	      if (kind != AST::Pattern::Kind::Identifier
 		  && kind != AST::Pattern::Kind::Wildcard)

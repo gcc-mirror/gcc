@@ -23,12 +23,12 @@ namespace Rust {
 namespace Resolver {
 
 void
-ResolveStructExprField::go (AST::StructExprField *field,
+ResolveStructExprField::go (AST::StructExprField &field,
 			    const CanonicalPath &prefix,
 			    const CanonicalPath &canonical_prefix)
 {
   ResolveStructExprField resolver (prefix, canonical_prefix);
-  field->accept_vis (resolver);
+  field.accept_vis (resolver);
 }
 
 ResolveStructExprField::ResolveStructExprField (
@@ -39,13 +39,13 @@ ResolveStructExprField::ResolveStructExprField (
 void
 ResolveStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
 {
-  ResolveExpr::go (field.get_value ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (field.get_value (), prefix, canonical_prefix);
 }
 
 void
 ResolveStructExprField::visit (AST::StructExprFieldIndexValue &field)
 {
-  ResolveExpr::go (field.get_value ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (field.get_value (), prefix, canonical_prefix);
 }
 
 void
@@ -54,7 +54,7 @@ ResolveStructExprField::visit (AST::StructExprFieldIdentifier &field)
   AST::IdentifierExpr expr (field.get_field_name (), {}, field.get_locus ());
   expr.set_node_id (field.get_node_id ());
 
-  ResolveExpr::go (&expr, prefix, canonical_prefix);
+  ResolveExpr::go (expr, prefix, canonical_prefix);
 }
 
 } // namespace Resolver

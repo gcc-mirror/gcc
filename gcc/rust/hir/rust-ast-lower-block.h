@@ -30,11 +30,11 @@ class ASTLoweringBlock : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::BlockExpr *translate (AST::BlockExpr *expr, bool *terminated)
+  static HIR::BlockExpr *translate (AST::BlockExpr &expr, bool *terminated)
   {
     ASTLoweringBlock resolver;
-    expr->normalize_tail_expr ();
-    expr->accept_vis (resolver);
+    expr.normalize_tail_expr ();
+    expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
 	resolver.mappings->insert_hir_expr (resolver.translated);
@@ -44,16 +44,15 @@ public:
     return resolver.translated;
   }
 
-  static HIR::UnsafeBlockExpr *translate (AST::UnsafeBlockExpr *expr,
+  static HIR::UnsafeBlockExpr *translate (AST::UnsafeBlockExpr &expr,
 					  bool *terminated)
   {
     ASTLoweringBlock resolver;
 
     HIR::BlockExpr *block
-      = ASTLoweringBlock::translate (expr->get_block_expr ().get (),
-				     terminated);
+      = ASTLoweringBlock::translate (expr.get_block_expr (), terminated);
     auto crate_num = resolver.mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, expr->get_node_id (),
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
 				   resolver.mappings->get_next_hir_id (
 				     crate_num),
 				   UNKNOWN_LOCAL_DEFID);
@@ -61,7 +60,7 @@ public:
     HIR::UnsafeBlockExpr *translated
       = new HIR::UnsafeBlockExpr (mapping,
 				  std::unique_ptr<HIR::BlockExpr> (block),
-				  expr->get_outer_attrs (), expr->get_locus ());
+				  expr.get_outer_attrs (), expr.get_locus ());
 
     resolver.mappings->insert_hir_expr (translated);
 
@@ -84,10 +83,10 @@ class ASTLoweringIfBlock : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::IfExpr *translate (AST::IfExpr *expr, bool *terminated)
+  static HIR::IfExpr *translate (AST::IfExpr &expr, bool *terminated)
   {
     ASTLoweringIfBlock resolver;
-    expr->accept_vis (resolver);
+    expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
 	resolver.mappings->insert_hir_expr (resolver.translated);
@@ -116,10 +115,10 @@ class ASTLoweringIfLetBlock : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::IfLetExpr *translate (AST::IfLetExpr *expr)
+  static HIR::IfLetExpr *translate (AST::IfLetExpr &expr)
   {
     ASTLoweringIfLetBlock resolver;
-    expr->accept_vis (resolver);
+    expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
 	resolver.mappings->insert_hir_expr (resolver.translated);
@@ -144,11 +143,11 @@ class ASTLoweringExprWithBlock : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::ExprWithBlock *translate (AST::ExprWithBlock *expr,
+  static HIR::ExprWithBlock *translate (AST::ExprWithBlock &expr,
 					bool *terminated)
   {
     ASTLoweringExprWithBlock resolver;
-    expr->accept_vis (resolver);
+    expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
 	resolver.mappings->insert_hir_expr (resolver.translated);
@@ -162,39 +161,38 @@ public:
 
   void visit (AST::IfExpr &expr) override
   {
-    translated = ASTLoweringIfBlock::translate (&expr, &terminated);
+    translated = ASTLoweringIfBlock::translate (expr, &terminated);
   }
 
   void visit (AST::IfExprConseqElse &expr) override
   {
-    translated = ASTLoweringIfBlock::translate (&expr, &terminated);
+    translated = ASTLoweringIfBlock::translate (expr, &terminated);
   }
 
   void visit (AST::IfLetExpr &expr) override
   {
-    translated = ASTLoweringIfLetBlock::translate (&expr);
+    translated = ASTLoweringIfLetBlock::translate (expr);
   }
 
   void visit (AST::IfLetExprConseqElse &expr) override
   {
-    translated = ASTLoweringIfLetBlock::translate (&expr);
+    translated = ASTLoweringIfLetBlock::translate (expr);
   }
 
   void visit (AST::BlockExpr &expr) override
   {
-    translated = ASTLoweringBlock::translate (&expr, &terminated);
+    translated = ASTLoweringBlock::translate (expr, &terminated);
   }
 
   void visit (AST::UnsafeBlockExpr &expr) override
   {
-    translated = ASTLoweringBlock::translate (&expr, &terminated);
+    translated = ASTLoweringBlock::translate (expr, &terminated);
   }
 
   void visit (AST::LoopExpr &expr) override
   {
     HIR::BlockExpr *loop_block
-      = ASTLoweringBlock::translate (expr.get_loop_block ().get (),
-				     &terminated);
+      = ASTLoweringBlock::translate (expr.get_loop_block (), &terminated);
 
     HIR::LoopLabel loop_label = lower_loop_label (expr.get_loop_label ());
 

@@ -44,14 +44,13 @@ ASTLowerTypePath::visit (AST::TypePathSegmentFunction &segment)
   std::vector<std::unique_ptr<HIR::Type>> inputs;
   for (auto &param : fn.get_params ())
     {
-      HIR::Type *hir_type = ASTLoweringType::translate (param.get ());
+      HIR::Type *hir_type = ASTLoweringType::translate (*param);
       inputs.push_back (std::unique_ptr<HIR::Type> (hir_type));
     }
 
   HIR::Type *result_type
-    = fn.has_return_type ()
-	? ASTLoweringType::translate (fn.get_return_type ().get ())
-	: nullptr;
+    = fn.has_return_type () ? ASTLoweringType::translate (fn.get_return_type ())
+			    : nullptr;
 
   HIR::TypePathFunction function_path (std::move (inputs),
 				       std::unique_ptr<HIR::Type> (
@@ -143,8 +142,8 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
     crate_num, path.get_qualified_path_type ().get_node_id (), hirid,
     UNKNOWN_LOCAL_DEFID);
 
-  HIR::Type *qual_type = ASTLoweringType::translate (
-    path.get_qualified_path_type ().get_type ().get ());
+  HIR::Type *qual_type
+    = ASTLoweringType::translate (path.get_qualified_path_type ().get_type ());
   HIR::TypePath *qual_trait = ASTLowerTypePath::translate (
     path.get_qualified_path_type ().get_as_type_path ());
 
@@ -180,10 +179,10 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
 }
 
 HIR::Type *
-ASTLoweringType::translate (AST::Type *type, bool default_to_static_lifetime)
+ASTLoweringType::translate (AST::Type &type, bool default_to_static_lifetime)
 {
   ASTLoweringType resolver (default_to_static_lifetime);
-  type->accept_vis (resolver);
+  type.accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
   resolver.mappings->insert_hir_type (resolver.translated);
@@ -201,7 +200,7 @@ ASTLoweringType::visit (AST::BareFunctionType &fntype)
   std::vector<HIR::LifetimeParam> lifetime_params;
   for (auto &lifetime_param : fntype.get_for_lifetimes ())
     {
-      auto generic_param = ASTLowerGenericParam::translate (&lifetime_param);
+      auto generic_param = ASTLowerGenericParam::translate (lifetime_param);
       lifetime_params.push_back (
 	*static_cast<HIR::LifetimeParam *> (generic_param));
     }
@@ -229,7 +228,7 @@ ASTLoweringType::visit (AST::BareFunctionType &fntype)
 	}
 
       HIR::Type *param_type
-	= ASTLoweringType::translate (param.get_type ().get (),
+	= ASTLoweringType::translate (param.get_type (),
 				      default_to_static_lifetime);
 
       HIR::MaybeNamedParam p (param.get_name (), kind,
@@ -241,9 +240,8 @@ ASTLoweringType::visit (AST::BareFunctionType &fntype)
   HIR::Type *return_type = nullptr;
   if (fntype.has_return_type ())
     {
-      return_type
-	= ASTLoweringType::translate (fntype.get_return_type ().get (),
-				      default_to_static_lifetime);
+      return_type = ASTLoweringType::translate (fntype.get_return_type (),
+						default_to_static_lifetime);
     }
 
   auto crate_num = mappings->get_current_crate ();
@@ -264,7 +262,7 @@ ASTLoweringType::visit (AST::TupleType &tuple)
   for (auto &e : tuple.get_elems ())
     {
       HIR::Type *t
-	= ASTLoweringType::translate (e.get (), default_to_static_lifetime);
+	= ASTLoweringType::translate (*e, default_to_static_lifetime);
       elems.push_back (std::unique_ptr<HIR::Type> (t));
     }
 
@@ -293,10 +291,9 @@ void
 ASTLoweringType::visit (AST::ArrayType &type)
 {
   HIR::Type *translated_type
-    = ASTLoweringType::translate (type.get_elem_type ().get (),
+    = ASTLoweringType::translate (type.get_elem_type (),
 				  default_to_static_lifetime);
-  HIR::Expr *array_size
-    = ASTLoweringExpr::translate (type.get_size_expr ().get ());
+  HIR::Expr *array_size = ASTLoweringExpr::translate (type.get_size_expr ());
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
@@ -316,7 +313,7 @@ ASTLoweringType::visit (AST::ReferenceType &type)
     = lower_lifetime (type.get_lifetime (), default_to_static_lifetime);
 
   HIR::Type *base_type
-    = ASTLoweringType::translate (type.get_base_type ().get (),
+    = ASTLoweringType::translate (type.get_base_type (),
 				  default_to_static_lifetime);
 
   auto crate_num = mappings->get_current_crate ();
@@ -335,7 +332,7 @@ void
 ASTLoweringType::visit (AST::RawPointerType &type)
 {
   HIR::Type *base_type
-    = ASTLoweringType::translate (type.get_type_pointed_to ().get (),
+    = ASTLoweringType::translate (type.get_type_pointed_to (),
 				  default_to_static_lifetime);
 
   auto crate_num = mappings->get_current_crate ();
@@ -357,7 +354,7 @@ void
 ASTLoweringType::visit (AST::SliceType &type)
 {
   HIR::Type *base_type
-    = ASTLoweringType::translate (type.get_elem_type ().get (),
+    = ASTLoweringType::translate (type.get_elem_type (),
 				  default_to_static_lifetime);
 
   auto crate_num = mappings->get_current_crate ();
@@ -397,7 +394,7 @@ ASTLoweringType::visit (AST::TraitObjectTypeOneBound &type)
 {
   std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
   HIR::TypeParamBound *translated_bound
-    = ASTLoweringTypeBounds::translate (&type.get_trait_bound ());
+    = ASTLoweringTypeBounds::translate (type.get_trait_bound ());
   bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (translated_bound));
 
   auto crate_num = mappings->get_current_crate ();
@@ -417,7 +414,7 @@ ASTLoweringType::visit (AST::TraitObjectType &type)
   for (auto &bound : type.get_type_param_bounds ())
     {
       HIR::TypeParamBound *translated_bound
-	= ASTLoweringTypeBounds::translate (bound.get ());
+	= ASTLoweringTypeBounds::translate (*bound);
       bounds.push_back (
 	std::unique_ptr<HIR::TypeParamBound> (translated_bound));
     }
@@ -432,14 +429,14 @@ ASTLoweringType::visit (AST::TraitObjectType &type)
 }
 
 HIR::GenericParam *
-ASTLowerGenericParam::translate (AST::GenericParam *param)
+ASTLowerGenericParam::translate (AST::GenericParam &param)
 {
   ASTLowerGenericParam resolver;
-  param->accept_vis (resolver);
+  param.accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
   resolver.mappings->insert_location (
-    resolver.translated->get_mappings ().get_hirid (), param->get_locus ());
+    resolver.translated->get_mappings ().get_hirid (), param.get_locus ());
   resolver.mappings->insert_hir_generic_param (resolver.translated);
 
   return resolver.translated;
@@ -469,12 +466,12 @@ ASTLowerGenericParam::visit (AST::ConstGenericParam &param)
 				 mappings->get_next_hir_id (crate_num),
 				 mappings->get_next_localdef_id (crate_num));
 
-  auto type = ASTLoweringType::translate (param.get_type ().get ());
+  auto type = ASTLoweringType::translate (param.get_type ());
 
   HIR::Expr *default_expr = nullptr;
   if (param.has_default_value ())
     default_expr = ASTLoweringExpr::translate (
-      param.get_default_value ().get_expression ().get ());
+      param.get_default_value ().get_expression ());
 
   translated = new HIR::ConstGenericParam (param.get_name ().as_string (),
 					   std::unique_ptr<Type> (type),
@@ -491,14 +488,14 @@ ASTLowerGenericParam::visit (AST::TypeParam &param)
     {
       for (auto &bound : param.get_type_param_bounds ())
 	{
-	  HIR::TypeParamBound *lowered_bound = lower_bound (bound.get ());
+	  HIR::TypeParamBound *lowered_bound = lower_bound (*bound);
 	  type_param_bounds.push_back (
 	    std::unique_ptr<HIR::TypeParamBound> (lowered_bound));
 	}
     }
 
   HIR::Type *type = param.has_type ()
-		      ? ASTLoweringType::translate (param.get_type ().get ())
+		      ? ASTLoweringType::translate (param.get_type ())
 		      : nullptr;
 
   auto crate_num = mappings->get_current_crate ();
@@ -513,10 +510,10 @@ ASTLowerGenericParam::visit (AST::TypeParam &param)
 }
 
 HIR::TypeParamBound *
-ASTLoweringTypeBounds::translate (AST::TypeParamBound *type)
+ASTLoweringTypeBounds::translate (AST::TypeParamBound &type)
 {
   ASTLoweringTypeBounds resolver;
-  type->accept_vis (resolver);
+  type.accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
   resolver.mappings->insert_location (
@@ -532,7 +529,7 @@ ASTLoweringTypeBounds::visit (AST::TraitBound &bound)
   std::vector<HIR::LifetimeParam> for_lifetimes;
   for (auto &lifetime_param : bound.get_for_lifetimes ())
     {
-      auto generic_param = ASTLowerGenericParam::translate (&lifetime_param);
+      auto generic_param = ASTLowerGenericParam::translate (lifetime_param);
       for_lifetimes.push_back (
 	*static_cast<HIR::LifetimeParam *> (generic_param));
     }
@@ -604,18 +601,18 @@ ASTLowerWhereClauseItem::visit (AST::TypeBoundWhereClauseItem &item)
 
   for (auto &lifetime_param : item.get_for_lifetimes ())
     {
-      auto generic_param = ASTLowerGenericParam::translate (&lifetime_param);
+      auto generic_param = ASTLowerGenericParam::translate (lifetime_param);
       for_lifetimes.push_back (
 	*static_cast<HIR::LifetimeParam *> (generic_param));
     }
 
   std::unique_ptr<HIR::Type> bound_type = std::unique_ptr<HIR::Type> (
-    ASTLoweringType::translate (item.get_type ().get ()));
+    ASTLoweringType::translate (item.get_type ()));
 
   std::vector<std::unique_ptr<HIR::TypeParamBound>> type_param_bounds;
   for (auto &bound : item.get_type_param_bounds ())
     {
-      HIR::TypeParamBound *b = ASTLoweringTypeBounds::translate (bound.get ());
+      HIR::TypeParamBound *b = ASTLoweringTypeBounds::translate (*bound);
       type_param_bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (b));
     }
 

@@ -31,13 +31,13 @@ class ResolveToplevelImplItem : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::AssociatedItem *item, const CanonicalPath &prefix)
+  static void go (AST::AssociatedItem &item, const CanonicalPath &prefix)
   {
-    if (item->is_marked_for_strip ())
+    if (item.is_marked_for_strip ())
       return;
 
     ResolveToplevelImplItem resolver (prefix);
-    item->accept_vis (resolver);
+    item.accept_vis (resolver);
   }
 
   void visit (AST::TypeAlias &type) override
@@ -183,10 +183,10 @@ class ResolveToplevelExternItem : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::ExternalItem *item, const CanonicalPath &prefix)
+  static void go (AST::ExternalItem &item, const CanonicalPath &prefix)
   {
     ResolveToplevelExternItem resolver (prefix);
-    item->accept_vis (resolver);
+    item.accept_vis (resolver);
   };
 
   void visit (AST::Function &function) override
