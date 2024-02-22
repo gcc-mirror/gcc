@@ -27,30 +27,23 @@ Pieces::collect (std::string &&to_parse, bool append_newline)
 {
   auto piece_slice = collect_pieces (to_parse.c_str (), append_newline);
 
-  rust_debug ("[ARTHUR] %p, %lu", (const void *) piece_slice.base_ptr,
-	      piece_slice.len);
-
   // this performs multiple copies, can we avoid them maybe?
-  // auto pieces = std::vector<Piece> (piece_slice.base_ptr,
-  // 	     piece_slice.base_ptr + piece_slice.len);
+  // TODO: Instead of just creating a vec of, basically, `ffi::Piece`s, we
+  // should transform them into the proper C++ type which we can work with. so
+  // transform all the strings into C++ strings? all the Option<T> into
+  // tl::optional<T>?
+  auto pieces = std::vector<Piece> (piece_slice.base_ptr,
+				    piece_slice.base_ptr + piece_slice.len);
 
-  return Pieces (piece_slice, std::move (to_parse));
+  return Pieces (std::move (pieces), piece_slice, std::move (to_parse));
 }
 
-Pieces::~Pieces ()
-{
-  std::cerr << "Arthur: destoying pieces. this: " << (void *) this
-	    << " slice: " << slice.base_ptr << std::endl;
-  destroy_pieces (slice);
-}
+Pieces::~Pieces () { destroy_pieces (slice); }
 
-Pieces::Pieces (const Pieces &other) : to_parse (other.to_parse)
+Pieces::Pieces (const Pieces &other)
+  : pieces_vector (other.pieces_vector), to_parse (other.to_parse)
 {
   slice = clone_pieces (other.slice.base_ptr, other.slice.len, other.slice.cap);
-  std::cerr << "Arthur: copying pieces: other.to_parse: "
-	    << (void *) other.to_parse.c_str ()
-	    << " ours to_parse: " << (void *) to_parse.c_str () << std::endl;
-  // auto pieces = std::vector (slice.base_ptr, slice.base_ptr + slice.len);
 }
 
 Pieces &
@@ -63,13 +56,11 @@ Pieces::operator= (const Pieces &other)
 }
 
 Pieces::Pieces (Pieces &&other)
-  : slice (
-    clone_pieces (other.slice.base_ptr, other.slice.len, other.slice.cap)),
+  : pieces_vector (std::move (other.pieces_vector)),
+    slice (
+      clone_pieces (other.slice.base_ptr, other.slice.len, other.slice.cap)),
     to_parse (std::move (other.to_parse))
-{
-  std::cerr << "Arthur: moving pieces. to_parse: " << (void *) to_parse.c_str ()
-	    << " base_ptr/slice: " << (void *) slice.base_ptr << std::endl;
-}
+{}
 
 } // namespace Fmt
 } // namespace Rust

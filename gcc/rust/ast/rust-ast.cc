@@ -5065,7 +5065,7 @@ FormatArgs::as_string () const
 location_t
 FormatArgs::get_locus () const
 {
-  rust_unreachable ();
+  return loc;
 }
 
 bool
