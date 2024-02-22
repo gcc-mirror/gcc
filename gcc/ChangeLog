@@ -1,3 +1,187 @@
+2024-02-21  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_sched_variable_issue): Enable assert
+
+2024-02-21  Edwin Lu  <ewlu@rivosinc.com>
+	    Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/generic-ooo.md (generic_ooo): Move reservation
+	(generic_ooo_vec_load): Ditto
+	(generic_ooo_vec_store): Ditto
+	(generic_ooo_vec_loadstore_seg): Ditto
+	(generic_ooo_vec_alu): Ditto
+	(generic_ooo_vec_fcmp): Ditto
+	(generic_ooo_vec_imul): Ditto
+	(generic_ooo_vec_fadd): Ditto
+	(generic_ooo_vec_fmul): Ditto
+	(generic_ooo_crypto): Ditto
+	(generic_ooo_perm): Ditto
+	(generic_ooo_vec_reduction): Ditto
+	(generic_ooo_vec_ordered_reduction): Ditto
+	(generic_ooo_vec_idiv): Ditto
+	(generic_ooo_vec_float_divsqrt): Ditto
+	(generic_ooo_vec_mask): Ditto
+	(generic_ooo_vec_vesetvl): Ditto
+	(generic_ooo_vec_setrm): Ditto
+	(generic_ooo_vec_readlen): Ditto
+	* config/riscv/riscv.md: Include generic-vector-ooo
+	* config/riscv/generic-vector-ooo.md: New file. To here
+
+2024-02-21  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/generic-ooo.md (generic_ooo_sfb_alu): Add reservation
+	(generic_ooo_branch): Ditto
+	* config/riscv/generic.md (generic_sfb_alu): Ditto
+	(generic_fmul_half): Ditto
+	* config/riscv/riscv.md: Remove cbo, pushpop, and rdfrm types
+	* config/riscv/sifive-7.md (sifive_7_hfma): Add reservation
+	(sifive_7_popcount): Ditto
+	* config/riscv/sifive-p400.md (sifive_p400_clmul): Ditto
+	* config/riscv/sifive-p600.md (sifive_p600_clmul): Ditto
+	* config/riscv/vector.md: Change rdfrm to fmove
+	* config/riscv/zc.md: Change pushpop to load/store
+
+2024-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Fix typos.
+
+2024-02-21  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf-protos.h (bpf_expand_cpymem): New.
+	* config/bpf/bpf.cc: (emit_move_loop, bpf_expand_cpymem): New.
+	* config/bpf/bpf.md: (cpymemdi, movmemdi): New define_expands.
+
+2024-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113476
+	* ipa-prop.h (ipa_node_params): Convert lattices to a vector, adjust
+	initializers in the contructor.
+	(ipa_node_params::~ipa_node_params): Release lattices as a vector.
+	* ipa-cp.h: New file.
+	* ipa-cp.cc: Include sreal.h and ipa-cp.h.
+	(ipcp_value_source): Move to ipa-cp.h.
+	(ipcp_value_base): Likewise.
+	(ipcp_value): Likewise.
+	(ipcp_lattice): Likewise.
+	(ipcp_agg_lattice): Likewise.
+	(ipcp_bits_lattice): Likewise.
+	(ipcp_vr_lattice): Likewise.
+	(ipcp_param_lattices): Likewise.
+	(ipa_get_parm_lattices): Remove assert latticess is non-NULL.
+	(ipa_value_from_jfunc): Adjust a check for empty lattices.
+	(ipa_context_from_jfunc): Likewise.
+	(ipa_agg_value_from_jfunc): Likewise.
+	(merge_agg_lats_step): Do not memset new aggregate lattices to zero.
+	(ipcp_propagate_stage): Allocate lattices in a vector as opposed to
+	just in contiguous memory.
+	(ipcp_store_vr_results): Adjust a check for empty lattices.
+	* auto-profile.cc: Include sreal.h and ipa-cp.h.
+	* cgraph.cc: Likewise.
+	* cgraphclones.cc: Likewise.
+	* cgraphunit.cc: Likewise.
+	* config/aarch64/aarch64.cc: Likewise.
+	* config/i386/i386-builtins.cc: Likewise.
+	* config/i386/i386-expand.cc: Likewise.
+	* config/i386/i386-features.cc: Likewise.
+	* config/i386/i386-options.cc: Likewise.
+	* config/i386/i386.cc: Likewise.
+	* config/rs6000/rs6000.cc: Likewise.
+	* config/s390/s390.cc: Likewise.
+	* gengtype.cc (open_base_files): Added sreal.h and ipa-cp.h to the
+	files to be included in gtype-desc.cc.
+	* gimple-range-fold.cc: Include sreal.h and ipa-cp.h.
+	* ipa-devirt.cc: Likewise.
+	* ipa-fnsummary.cc: Likewise.
+	* ipa-icf.cc: Likewise.
+	* ipa-inline-analysis.cc: Likewise.
+	* ipa-inline-transform.cc: Likewise.
+	* ipa-inline.cc: Include ipa-cp.h, move inclusion of sreal.h higher.
+	* ipa-modref.cc: Include sreal.h and ipa-cp.h.
+	* ipa-param-manipulation.cc: Likewise.
+	* ipa-predicate.cc: Likewise.
+	* ipa-profile.cc: Likewise.
+	* ipa-prop.cc: Likewise.
+	(ipa_node_params_t::duplicate): Assert new lattices remain empty
+	instead of setting them to NULL.
+	* ipa-pure-const.cc: Include sreal.h and ipa-cp.h.
+	* ipa-split.cc: Likewise.
+	* ipa-sra.cc: Likewise.
+	* ipa-strub.cc: Likewise.
+	* ipa-utils.cc: Likewise.
+	* ipa.cc: Likewise.
+	* toplev.cc: Likewise.
+	* tree-ssa-ccp.cc: Likewise.
+	* tree-ssa-sccvn.cc: Likewise.
+	* tree-vrp.cc: Likewise.
+
+2024-02-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-arches.def (AARCH64_ARCH): Remove LS64 from
+	Armv8.7-a.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_mode_emit_local_sme_state):
+	Use aarch64_gen_compare_zero_and_branch rather than emitting
+	a CBZ directly.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_option_valid_attribute_p):
+	Remove duplicated call.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_function_ok_for_sibcall):
+	Check that each individual piece of state is shared in the same
+	way, rather than using an aggregate check for PSTATE.ZA.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_mode_emit_local_sme_state):
+	In the code that commits a lazy save, only zero ZA if the function
+	has ZA state.  Similarly zero ZT0 if the function has ZT0 state.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sme.md (aarch64_commit_lazy_save): Remove,
+	directly inserting the associated sequence
+	* config/aarch64/aarch64.cc (aarch64_mode_emit_local_sme_state):
+	...here instead.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113995
+	* config/aarch64/aarch64.cc (aarch64_expand_prologue): Don't
+	fold the SVE allocation into the initial allocation if the
+	initial allocation includes a VG save.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113220
+	* cfgrtl.cc (commit_one_edge_insertion): Handle sequences that
+	contain jumps even if called after initial RTL expansion.
+	* mode-switching.cc: Include cfgbuild.h.
+	(optimize_mode_switching): Allow the sequence returned by the
+	emit hook to contain internal jumps.  Record which blocks
+	contain such jumps and split the blocks at the end.
+	* config/aarch64/aarch64.cc (aarch64_mode_emit): Check for
+	non-debug insns when scanning the sequence.
+
+2024-02-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/nvptx/gen-omp-device-properties.sh: Add 'nvptx64' to arch.
+	* config/nvptx/nvptx.cc (nvptx_omp_device_kind_arch_isa): Likewise.
+
+2024-02-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* doc/invoke.texi (-mmcu): Add information about MCU specs.
+
+2024-02-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* doc/invoke.texi (-minrt): Clarify that main
+	must take no arguments.
+
 2024-02-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/builtins.def: Use function prototypes of given size

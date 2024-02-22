@@ -1,3 +1,52 @@
+2024-02-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114026
+	* gm2-compiler/M2GenGCC.mod (Import): Remove DisplayQuadruples.
+	Remove DisplayQuadList.
+	(MixTypesBinary): Replace check with overflowCheck.
+	New variable typeChecking.
+	Use GenQuadOTypetok to retrieve typeChecking.
+	Use typeChecking to suppress error message.
+	* gm2-compiler/M2LexBuf.def (MakeVirtual2Tok): New procedure
+	function.
+	* gm2-compiler/M2LexBuf.mod (MakeVirtualTok): Improve comment.
+	(MakeVirtual2Tok): New procedure function.
+	* gm2-compiler/M2Quads.def (GetQuadOTypetok): New procedure.
+	* gm2-compiler/M2Quads.mod (QuadFrame): New field CheckType.
+	(PutQuadO): Rewrite using PutQuadOType.
+	(PutQuadOType): New procedure.
+	(GetQuadOTypetok): New procedure.
+	(BuildPseudoBy): Rewrite.
+	(BuildForToByDo): Remove type checking.
+	Add parameters e2, e2tok, BySym, bytok to
+	InitForLoopBeginRange.
+	Push the RangeId.
+	(BuildEndFor): Pop the RangeId.
+	Use GenQuadOTypetok to generate AddOp without type checking.
+	Call PutRangeForIncrement with the RangeId and IncQuad.
+	(GenQuadOtok): Rewrite using GenQuadOTypetok.
+	(GenQuadOTypetok): New procedure.
+	* gm2-compiler/M2Range.def (InitForLoopBeginRangeCheck):
+	Rename d as des, e as expr.
+	Add expr1, expr1tok, expr2, expr2tok, byconst, byconsttok
+	parameters.
+	(PutRangeForIncrement): New procedure.
+	* gm2-compiler/M2Range.mod (Import): MakeVirtual2Tok.
+	(Range): Add expr2, byconst, destok, exprtok, expr2tok,
+	incrementquad.
+	(InitRange): Initialize expr2 to NulSym.
+	Initialize byconst to NulSym.
+	Initialize tokenNo, destok, exprtok, expr2tok, byconst to
+	UnknownTokenNo.
+	Initialize incrementquad to 0.
+	(PutRangeForIncrement): New procedure.
+	(PutRangeDesExpr2): New procedure.
+	(InitForLoopBeginRangeCheck): Rewrite.
+	(ForLoopBeginTypeCompatible): New procedure function.
+	(CodeForLoopBegin): Call ForLoopBeginTypeCompatible and
+	only code the for loop assignment if all the type checks
+	succeed.
+
 2024-02-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/113889

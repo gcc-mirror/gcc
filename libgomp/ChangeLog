@@ -1,3 +1,8 @@
+2024-02-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Context Selectors): Add 'nvptx64' as additional
+	'arch' value for nvptx.
+
 2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* libgomp.texi (OpenMP 5.1): Mark indirect call support as fully

@@ -1,3 +1,50 @@
+2024-02-21  0xn4utilus  <gyanendrabanjare8@gmail.com>
+
+	* checks/errors/rust-ast-validation.cc (ASTValidation::visit):
+	Add variadic check on all parameters.
+
+2024-02-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* backend/rust-compile-pattern.cc
+	(CompilePatternLet::visit):
+	Lookup type of sub-pattern, not tuple pattern itself.
+
+2024-02-21  Marc Poulhiès  <dkm@kataplop.net>
+
+	* backend/rust-builtins.cc
+	(BuiltinsContext::register_rust_mappings): Add powi and reformat.
+	* backend/rust-builtins.h: Add missing copyright header.
+
+2024-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-expand.h (struct MacroExpander): Nitpick: fix
+	formatting of emitted error.
+
+2024-02-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-ast-resolve-item.cc
+	(flatten_glob): Use Import class.
+	(flatten_rebind): Likewise.
+	(flatten_list): Likewise.
+	(flatten): Likewise.
+	(flatten_use_dec_to_paths): Likewise.
+	(flatten_use_dec_to_imports): Likewise.
+	(ResolveItem::visit): Likewise.
+	(Import::add_prefix): New.
+	(rust_flatten_nested_glob): Adjust test.
+	(rust_flatten_glob): Likewise.
+	(rust_flatten_rebind_none): Likewise.
+	(rust_flatten_rebind): Likewise.
+	(rust_flatten_rebind_nested): Likewise.
+	(rust_flatten_list): Likewise.
+	* resolve/rust-ast-resolve-item.h
+	(class Import): New.
+
+2024-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* typecheck/rust-hir-type-check-implitem.h: Fix typo in field
+	(region_costraints -> region_constraints).
+
 2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
 
 	* parse/rust-parse-impl.h (Parser::parse_trait_item):

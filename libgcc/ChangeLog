@@ -1,3 +1,10 @@
+2024-02-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/aarch64/heap-trampoline.c
+	(aarch64_trampoline_insns): Arrange to encode instructions as a
+	byte array so that the order is independent of memory byte order.
+	(struct aarch64_trampoline): Likewise.
+
 2024-02-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/113971

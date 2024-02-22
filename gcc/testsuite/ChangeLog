@@ -1,3 +1,216 @@
+2024-02-21  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/113249
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-1.c:
+	Rearrange and adjust asm-checker times
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-2.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-3.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-4.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-5.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-6.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-7.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-12.c:
+	Rearrange assembly
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-16.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-17.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-19.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-21.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-23.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-25.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-27.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-29.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-31.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-33.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-35.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-4.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-40.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-44.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-8.c: Ditto
+	* gcc.target/riscv/rvv/base/shift_vx_constraint-1.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/avl_single-107.c: Change expected vsetvl
+
+2024-02-21  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/113249
+	* g++.target/riscv/rvv/base/bug-1.C: Use default scheduling
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-2.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-102.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-108.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-114.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-119.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-12.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-16.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-17.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-19.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-21.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-23.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-25.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-27.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-29.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-31.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-33.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-35.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-4.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-40.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-44.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-50.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-56.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-62.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-68.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-74.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-79.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-8.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-84.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-90.c: Ditto
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-96.c: Ditto
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-30.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-1.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-2.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-3.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-4.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-5.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-6.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-7.c: Ditto
+	* gcc.target/riscv/rvv/base/shift_vx_constraint-1.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/pr111037-3.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-28.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-29.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-32.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-33.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-17.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-18.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-19.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-10.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-11.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-12.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-4.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-5.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-6.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-7.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-8.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-9.c: Ditto
+	* gfortran.dg/vect/vect-8.f90: Ditto
+
+2024-02-21  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/113742
+	* gcc.target/riscv/pr113742.c: change mcpu to mtune and add march
+
+2024-02-21  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/memcpy-1.c: New test.
+	* gcc.target/bpf/memmove-1.c: New test.
+	* gcc.target/bpf/memmove-2.c: New test.
+
+2024-02-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114026
+	* gm2/extensions/run/pass/callingc10.mod: New test.
+	* gm2/extensions/run/pass/callingc11.mod: New test.
+	* gm2/extensions/run/pass/callingc9.mod: New test.
+	* gm2/extensions/run/pass/strconst.def: New test.
+	* gm2/pim/fail/forloop.mod: New test.
+	* gm2/pim/pass/forloop2.mod: New test.
+
+2024-02-21  0xn4utilus  <gyanendrabanjare8@gmail.com>
+
+	* rust/compile/issue-2850.rs: New test.
+
+2024-02-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-2847-b.rs: New test.
+
+2024-02-21  Marc Poulhiès  <dkm@kataplop.net>
+
+	* rust/compile/torture/intrinsics-math.rs: Adjust pow test, add
+	test for powi.
+
+2024-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/rustc_const_stable.rs: New test.
+
+2024-02-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/use_2.rs: New test.
+
+2024-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/execute/torture/matches_macro.rs: New test.
+
+2024-02-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.target/aarch64/acle/ls64.C: Add +ls64.
+	* g++.target/aarch64/acle/ls64_lto.C: Likewise.
+	* gcc.target/aarch64/acle/ls64_lto.c: Likewise.
+	* gcc.target/aarch64/acle/pr110100.c: Likewise.
+	* gcc.target/aarch64/acle/pr110132.c: Likewise.
+	* gcc.target/aarch64/options_set_28.c: Drop check for nols64.
+	* gcc.target/aarch64/pragma_cpp_predefs_2.c: Correct header checks.
+
+2024-02-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR fortran/107071
+	* gfortran.dg/ieee/modes_1.f90: skip aarch64, arm.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/locally_streaming_1_ts.c: New test.
+	* gcc.target/aarch64/sme/sibcall_7_ts.c: Likewise.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/sibcall_9.c: New test.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/zt0_state_5.c (test3): Expect ZT0 rather
+	than ZA to be zeroed.
+	(test5): Remove zeroing of ZA.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/zt0_state_5.c (test3, test5): Expect
+	zero { za }s.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113995
+	* gcc.target/aarch64/sme/locally_streaming_1.c: Require
+	-fno-stack-clash-protection.
+	* gcc.target/aarch64/sme/locally_streaming_1_scp.c: New test.
+
+2024-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113220
+	* gcc.target/aarch64/sme/call_sm_switch_5.c: Add
+	-fno-stack-clash-protection.
+	* gcc.target/aarch64/sme/call_sm_switch_5_scp.c: New test.
+	* gcc.target/aarch64/sme/sibcall_6_scp.c: New test.
+	* gcc.target/aarch64/sme/za_state_4.c: Add
+	-fno-stack-clash-protection.
+	* gcc.target/aarch64/sme/za_state_4_scp.c: New test.
+	* gcc.target/aarch64/sme/za_state_5.c: Add
+	-fno-stack-clash-protection.
+	* gcc.target/aarch64/sme/za_state_5_scp.c: New test.
+
+2024-02-21  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/zvector/autovec-double-signaling-eq.c:
+	Preserve exceptions.
+	* gcc.target/s390/zvector/autovec-float-signaling-eq.c:
+	Likewise.
+
+2024-02-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113999
+	* c-c++-common/analyzer/strlen-pr113999.c: New test.
+	* gcc.dg/analyzer/strlen-1.c: More test coverage.
+
+2024-02-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113998
+	* c-c++-common/analyzer/overlapping-buffers-pr113998.c: New test.
+
 2024-02-20  Peter Hill  <peter.hill@york.ac.uk>
 
 	PR fortran/105658

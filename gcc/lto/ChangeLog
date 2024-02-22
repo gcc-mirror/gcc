@@ -1,3 +1,10 @@
+2024-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113476
+	* lto-common.cc: Include sreal.h and ipa-cp.h.
+	* lto-partition.cc: Include ipa-cp.h, move inclusion of sreal higher.
+	* lto.cc: Include sreal.h and ipa-cp.h.
+
 2024-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto-common.cc (print_lto_report_1): Use HOST_SIZE_T_PRINT_DEC
