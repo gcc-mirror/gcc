@@ -1318,10 +1318,10 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
     {
       gcc_assert (code == EQ || code == NE);
       op0 = expand_binop (mode, and_optab, op0,
-			  GEN_INT ((1 << nunits) - 1), NULL_RTX,
+			  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1), NULL_RTX,
 			  true, OPTAB_WIDEN);
       op1 = expand_binop (mode, and_optab, op1,
-			  GEN_INT ((1 << nunits) - 1), NULL_RTX,
+			  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1), NULL_RTX,
 			  true, OPTAB_WIDEN);
     }
 
