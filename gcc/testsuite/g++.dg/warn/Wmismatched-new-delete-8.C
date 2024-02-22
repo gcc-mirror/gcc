@@ -11,7 +11,7 @@ static inline T * construct_at(void *at, ARGS && args)
  struct Placeable : T
  {
   Placeable(ARGS && args) : T(args) { }
-  void * operator new (long unsigned int, void *ptr) { return ptr; }
+  void * operator new (__SIZE_TYPE__, void *ptr) { return ptr; }
   void operator delete (void *, void *) { }
  };
  return new (at) Placeable(static_cast<ARGS &&>(args));
