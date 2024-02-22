@@ -98,6 +98,10 @@ public:
   virtual ~vrange () { }
   virtual tree lbound () const = 0;
   virtual tree ubound () const = 0;
+  virtual void update_bitmask (const class irange_bitmask &);
+  virtual irange_bitmask get_bitmask () const;
+  wide_int get_nonzero_bits () const;
+  void set_nonzero_bits (const wide_int &bits);
 
   bool varying_p () const;
   bool undefined_p () const;
@@ -326,11 +330,8 @@ public:
   virtual bool fits_p (const vrange &r) const override;
   virtual void accept (const vrange_visitor &v) const override;
 
-  void update_bitmask (const irange_bitmask &);
-  irange_bitmask get_bitmask () const;
-  // Nonzero masks.
-  wide_int get_nonzero_bits () const;
-  void set_nonzero_bits (const wide_int &bits);
+  virtual void update_bitmask (const class irange_bitmask &) override;
+  virtual irange_bitmask get_bitmask () const override;
 
 protected:
   void maybe_resize (int needed);
@@ -735,6 +736,9 @@ public:
   bool zero_p () const { return m_vrange->zero_p (); }
   tree lbound () const { return m_vrange->lbound (); }
   tree ubound () const { return m_vrange->ubound (); }
+  irange_bitmask get_bitmask () const { return m_vrange->get_bitmask (); }
+  void update_bitmask (const class irange_bitmask &bm)
+  { return m_vrange->update_bitmask (bm); }
   void accept (const vrange_visitor &v) const { m_vrange->accept (v); }
 private:
   void init (tree type);

@@ -68,6 +68,18 @@ unsupported_range::accept (const vrange_visitor &v) const
   v.visit (*this);
 }
 
+void
+vrange::update_bitmask (const class irange_bitmask &)
+{
+}
+
+irange_bitmask
+vrange::get_bitmask () const
+{
+  // Return all unknown bits for the given precision.
+  return irange_bitmask (TYPE_PRECISION (type ()));
+}
+
 bool
 unsupported_range::contains_p (tree) const
 {
@@ -2010,7 +2022,7 @@ irange::get_bitmask () const
 // normalize the range if anything changed.
 
 void
-irange::set_nonzero_bits (const wide_int &bits)
+vrange::set_nonzero_bits (const wide_int &bits)
 {
   gcc_checking_assert (!undefined_p ());
   irange_bitmask bm (wi::zero (TYPE_PRECISION (type ())), bits);
@@ -2020,7 +2032,7 @@ irange::set_nonzero_bits (const wide_int &bits)
 // Return the nonzero bits in R.
 
 wide_int
-irange::get_nonzero_bits () const
+vrange::get_nonzero_bits () const
 {
   gcc_checking_assert (!undefined_p ());
   irange_bitmask bm = get_bitmask ();

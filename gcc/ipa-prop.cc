@@ -2381,8 +2381,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      irange_bitmask bm (value, mask);
 	      if (!addr_nonzero)
 		vr.set_varying (TREE_TYPE (arg));
-	      irange &r = as_a <irange> (vr);
-	      r.update_bitmask (bm);
+	      vr.update_bitmask (bm);
 	      ipa_set_jfunc_vr (jfunc, vr);
 	    }
 	  else if (addr_nonzero)
@@ -5785,8 +5784,8 @@ ipcp_get_parm_bits (tree parm, tree *value, widest_int *mask)
   vr[i].get_vrange (tmp);
   if (tmp.undefined_p () || tmp.varying_p ())
     return false;
-  irange &r = as_a <irange> (tmp);
-  irange_bitmask bm = r.get_bitmask ();
+  irange_bitmask bm;
+  bm = tmp.get_bitmask ();
   *mask = widest_int::from (bm.mask (), TYPE_SIGN (TREE_TYPE (parm)));
   *value = wide_int_to_tree (TREE_TYPE (parm), bm.value ());
   return true;
@@ -5857,8 +5856,7 @@ ipcp_update_vr (struct cgraph_node *node, ipcp_transformation *ts)
 	      if (POINTER_TYPE_P (TREE_TYPE (parm))
 		  && opt_for_fn (node->decl, flag_ipa_bit_cp))
 		{
-		  irange &r = as_a<irange> (tmp);
-		  irange_bitmask bm = r.get_bitmask ();
+		  irange_bitmask bm = tmp.get_bitmask ();
 		  unsigned tem = bm.mask ().to_uhwi ();
 		  unsigned HOST_WIDE_INT bitpos = bm.value ().to_uhwi ();
 		  unsigned align = tem & -tem;

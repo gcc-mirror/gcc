@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_OP_MIXED_H
 #define GCC_RANGE_OP_MIXED_H
 
-void update_known_bitmask (irange &, tree_code, const irange &, const irange &);
+void update_known_bitmask (vrange &, tree_code, const vrange &, const vrange &);
 bool minus_op1_op2_relation_effect (irange &lhs_range, tree type,
 				    const irange &, const irange &,
 				    relation_kind rel);

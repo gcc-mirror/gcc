@@ -2485,8 +2485,7 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
       jfunc->m_vr->get_vrange (vr);
       if (!vr.undefined_p () && !vr.varying_p ())
 	{
-	  irange &r = as_a <irange> (vr);
-	  irange_bitmask bm = r.get_bitmask ();
+	  irange_bitmask bm = vr.get_bitmask ();
 	  widest_int mask
 	    = widest_int::from (bm.mask (), TYPE_SIGN (parm_type));
 	  widest_int value
@@ -6346,14 +6345,13 @@ ipcp_store_vr_results (void)
 		{
 		  Value_Range tmp = plats->m_value_range.m_vr;
 		  tree type = ipa_get_type (info, i);
-		  irange &r = as_a<irange> (tmp);
 		  irange_bitmask bm (wide_int::from (bits->get_value (),
 						     TYPE_PRECISION (type),
 						     TYPE_SIGN (type)),
 				     wide_int::from (bits->get_mask (),
 						     TYPE_PRECISION (type),
 						     TYPE_SIGN (type)));
-		  r.update_bitmask (bm);
+		  tmp.update_bitmask (bm);
 		  ipa_vr vr (tmp);
 		  ts->m_vr->quick_push (vr);
 		}
@@ -6368,14 +6366,13 @@ ipcp_store_vr_results (void)
 	      tree type = ipa_get_type (info, i);
 	      Value_Range tmp;
 	      tmp.set_varying (type);
-	      irange &r = as_a<irange> (tmp);
 	      irange_bitmask bm (wide_int::from (bits->get_value (),
 						 TYPE_PRECISION (type),
 						 TYPE_SIGN (type)),
 				 wide_int::from (bits->get_mask (),
 						 TYPE_PRECISION (type),
 						 TYPE_SIGN (type)));
-	      r.update_bitmask (bm);
+	      tmp.update_bitmask (bm);
 	      ipa_vr vr (tmp);
 	      ts->m_vr->quick_push (vr);
 	    }

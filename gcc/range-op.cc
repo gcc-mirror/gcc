@@ -415,8 +415,8 @@ range_op_handler::operand_check_p (tree t1, tree t2, tree t3) const
 // LH and RH.
 
 void
-update_known_bitmask (irange &r, tree_code code,
-		      const irange &lh, const irange &rh)
+update_known_bitmask (vrange &r, tree_code code,
+		      const vrange &lh, const vrange &rh)
 {
   if (r.undefined_p () || lh.undefined_p () || rh.undefined_p ()
       || r.singleton_p ())
