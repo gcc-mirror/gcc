@@ -648,10 +648,7 @@ ResolverBase::visit (AST::FunctionParam &)
 
 void
 ResolverBase::visit (AST::FormatArgs &fmt)
-{
-  rust_sorry_at (fmt.get_locus (), "%s:%u: unimplemented FormatArgs visitor",
-		 __FILE__, __LINE__);
-}
+{}
 
 } // namespace Resolver
 } // namespace Rust

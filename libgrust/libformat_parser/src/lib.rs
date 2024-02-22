@@ -27,6 +27,23 @@ where
 mod ffi {
     use super::IntoFFI;
 
+    // FIXME: We need to ensure we deal with memory properly - whether it's owned by the C++ side or the Rust side
+    #[derive(Copy, Clone, PartialEq, Eq, Debug)]
+    #[repr(C)]
+    pub struct RustHamster {
+        ptr: *const u8,
+        len: usize,
+    }
+
+    impl<'a> From<&'a str> for RustHamster {
+        fn from(s: &'a str) -> RustHamster {
+            RustHamster {
+                ptr: s.as_ptr(),
+                len: s.len(),
+            }
+        }
+    }
+
     // Note: copied from rustc_span
     /// Range inside of a `Span` used for diagnostics when we only have access to relative positions.
     #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -81,7 +98,7 @@ mod ffi {
     #[repr(C)]
     pub enum Piece<'a> {
         /// A literal string which should directly be emitted
-        String(&'a str),
+        String(RustHamster),
         /// This describes that formatting should process the next argument (as
         /// specified inside) for emission.
         // do we need a pointer here? we're doing big cloning anyway
@@ -201,7 +218,7 @@ mod ffi {
     impl<'a> From<generic_format_parser::Piece<'a>> for Piece<'a> {
         fn from(old: generic_format_parser::Piece<'a>) -> Self {
             match old {
-                generic_format_parser::Piece::String(x) => Piece::String(x),
+                generic_format_parser::Piece::String(x) => Piece::String(x.into()),
                 generic_format_parser::Piece::NextArgument(x) => {
                     // FIXME: This is problematic - if we do this, then we probably run into the issue that the Box
                     // is freed at the end of the call to collect_pieces. if we just .leak() it, then we have
@@ -336,53 +353,91 @@ pub struct PieceSlice {
     cap: usize,
 }
 
-#[no_mangle]
-pub extern "C" fn collect_pieces(input: *const libc::c_char, append_newline: bool) -> PieceSlice {
-    dbg!(input);
+#[repr(C)]
+// FIXME: we should probably use FFIString here
+pub struct RustString {
+    ptr: *const u8,
+    len: usize,
+    cap: usize,
+}
 
+#[repr(C)]
+pub struct FormatArgsHandle(PieceSlice, RustString);
+
+#[no_mangle]
+pub extern "C" fn collect_pieces(
+    input: *const libc::c_char,
+    append_newline: bool,
+) -> FormatArgsHandle {
     // FIXME: Add comment
     let str = unsafe { CStr::from_ptr(input) };
+    let str = str.to_str().unwrap().to_owned();
+
+    // we are never going to free this string here (we leak it later on), so we can extend its lifetime
+    // to send it across an FFI boundary.
+    // FIXME: Is that correct?
+    let s = &str;
+    let s = unsafe { std::mem::transmute::<&'_ str, &'static str>(s) };
 
     // FIXME: No unwrap
-    let pieces: Vec<ffi::Piece<'_>> =
-        rust::collect_pieces(str.to_str().unwrap(), None, None, append_newline)
-            .into_iter()
-            .map(Into::into)
-            .collect();
+    let pieces: Vec<ffi::Piece<'_>> = rust::collect_pieces(s, None, None, append_newline)
+        .into_iter()
+        .map(Into::into)
+        .collect();
 
-    println!("[ARTHUR]: debug: {:?}, {:?}", pieces.as_ptr(), pieces.len());
-
-    PieceSlice {
+    let piece_slice = PieceSlice {
         len: pieces.len(),
         cap: pieces.capacity(),
         base_ptr: pieces.leak().as_mut_ptr(),
-    }
+    };
+    let rust_string = RustString {
+        len: str.len(),
+        cap: str.capacity(),
+        ptr: str.leak().as_ptr(),
+    };
+
+    FormatArgsHandle(piece_slice, rust_string)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn destroy_pieces(PieceSlice { base_ptr, len, cap }: PieceSlice) {
-    eprintln!("[ARTHUR] destroying pieces: {base_ptr:?} {len} {cap}");
+pub unsafe extern "C" fn destroy_pieces(FormatArgsHandle(piece_slice, s): FormatArgsHandle) {
+    let PieceSlice { base_ptr, len, cap } = piece_slice;
     drop(Vec::from_raw_parts(base_ptr, len, cap));
+
+    let RustString { ptr, len, cap } = s;
+    drop(String::from_raw_parts(ptr as *mut u8, len, cap));
 }
 
 #[no_mangle]
 pub extern "C" fn clone_pieces(
-    base_ptr: *mut ffi::Piece<'static>,
-    len: usize,
-    cap: usize,
-) -> PieceSlice {
-    eprintln!("[ARTHUR] cloning pieces: {base_ptr:?} {len} {cap}");
+    FormatArgsHandle(piece_slice, s): &FormatArgsHandle,
+) -> FormatArgsHandle {
+    let PieceSlice { base_ptr, len, cap } = *piece_slice;
 
     let v = unsafe { Vec::from_raw_parts(base_ptr, len, cap) };
-
     let cloned_v = v.clone();
 
     // FIXME: Add documentation
     v.leak();
 
-    PieceSlice {
+    let piece_slice = PieceSlice {
         len: cloned_v.len(),
         cap: cloned_v.capacity(),
-        base_ptr: dbg!(cloned_v.leak().as_mut_ptr()),
-    }
+        base_ptr: cloned_v.leak().as_mut_ptr(),
+    };
+
+    let RustString { ptr, len, cap } = *s;
+    let s = unsafe { String::from_raw_parts(ptr as *mut u8, len, cap) };
+    let cloned_s = s.clone();
+
+    // FIXME: Documentation
+    s.leak();
+
+    let rust_string = RustString {
+        len: cloned_s.len(),
+        cap: cloned_s.capacity(),
+        ptr: cloned_s.leak().as_ptr(),
+    };
+
+    FormatArgsHandle(piece_slice, rust_string)
 }

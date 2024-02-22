@@ -22,44 +22,48 @@
 namespace Rust {
 namespace Fmt {
 
-Pieces
-Pieces::collect (std::string &&to_parse, bool append_newline)
+std::string
+ffi::RustHamster::to_string () const
 {
-  auto piece_slice = collect_pieces (to_parse.c_str (), append_newline);
+  return std::string (ptr, len);
+}
+
+Pieces
+Pieces::collect (const std::string &to_parse, bool append_newline)
+{
+  auto handle = ffi::collect_pieces (to_parse.c_str (), append_newline);
 
   // this performs multiple copies, can we avoid them maybe?
   // TODO: Instead of just creating a vec of, basically, `ffi::Piece`s, we
   // should transform them into the proper C++ type which we can work with. so
   // transform all the strings into C++ strings? all the Option<T> into
   // tl::optional<T>?
-  auto pieces = std::vector<Piece> (piece_slice.base_ptr,
-				    piece_slice.base_ptr + piece_slice.len);
+  auto pieces_vector = std::vector<ffi::Piece> (handle.piece_slice.base_ptr,
+						handle.piece_slice.base_ptr
+						  + handle.piece_slice.len);
 
-  return Pieces (std::move (pieces), piece_slice, std::move (to_parse));
+  return Pieces (handle, std::move (pieces_vector));
 }
 
-Pieces::~Pieces () { destroy_pieces (slice); }
+Pieces::~Pieces () { ffi::destroy_pieces (handle); }
 
-Pieces::Pieces (const Pieces &other)
-  : pieces_vector (other.pieces_vector), to_parse (other.to_parse)
+Pieces::Pieces (const Pieces &other) : pieces_vector (other.pieces_vector)
 {
-  slice = clone_pieces (other.slice.base_ptr, other.slice.len, other.slice.cap);
+  handle = ffi::clone_pieces (other.handle);
 }
 
 Pieces &
 Pieces::operator= (const Pieces &other)
 {
-  slice = clone_pieces (other.slice.base_ptr, other.slice.len, other.slice.cap);
-  to_parse = other.to_parse;
+  handle = ffi::clone_pieces (other.handle);
+  pieces_vector = other.pieces_vector;
 
   return *this;
 }
 
 Pieces::Pieces (Pieces &&other)
   : pieces_vector (std::move (other.pieces_vector)),
-    slice (
-      clone_pieces (other.slice.base_ptr, other.slice.len, other.slice.cap)),
-    to_parse (std::move (other.to_parse))
+    handle (clone_pieces (other.handle))
 {}
 
 } // namespace Fmt

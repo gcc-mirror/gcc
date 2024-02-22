@@ -28,10 +28,10 @@ expand_format_args (AST::FormatArgs &fmt)
     {
       switch (node.tag)
 	{
-	case Fmt::Piece::Tag::String:
+	case Fmt::ffi::Piece::Tag::String:
 	  // rust_debug ("[ARTHUR]: %s", node.string._0.c_str ());
 
-	case Fmt::Piece::Tag::NextArgument:
+	case Fmt::ffi::Piece::Tag::NextArgument:
 	  rust_debug ("[ARTHUR]: NextArgument");
 	  break;
 	}

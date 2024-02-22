@@ -20,15 +20,21 @@
 #define RUST_FMT_H
 
 #include "rust-system.h"
+#include <cstddef>
 
 // FIXME: How to encode Option?
 
 namespace Rust {
 namespace Fmt {
 
+namespace ffi {
+
 struct RustHamster
 {
-  // hehe
+  const char *ptr;
+  size_t len;
+
+  std::string to_string () const;
 };
 
 /// Enum of alignments which are supported.
@@ -240,21 +246,36 @@ struct PieceSlice
   size_t cap;
 };
 
+struct RustString
+{
+  const unsigned char *ptr;
+  size_t len;
+  size_t cap;
+};
+
+struct FormatArgsHandle
+{
+  PieceSlice piece_slice;
+  RustString rust_string;
+};
+
 extern "C" {
 
-PieceSlice
+FormatArgsHandle
 collect_pieces (const char *input, bool append_newline);
 
-PieceSlice
-clone_pieces (const Piece *base_ptr, size_t len, size_t cap);
+FormatArgsHandle
+clone_pieces (const FormatArgsHandle &);
 
-void destroy_pieces (PieceSlice);
+void destroy_pieces (FormatArgsHandle);
 
 } // extern "C"
 
+} // namespace ffi
+
 struct Pieces
 {
-  static Pieces collect (std::string &&to_parse, bool append_newline);
+  static Pieces collect (const std::string &to_parse, bool append_newline);
   ~Pieces ();
 
   Pieces (const Pieces &other);
@@ -262,7 +283,7 @@ struct Pieces
 
   Pieces (Pieces &&other);
 
-  const std::vector<Piece> &get_pieces () const { return pieces_vector; }
+  const std::vector<ffi::Piece> &get_pieces () const { return pieces_vector; }
 
   // {
   //   slice = clone_pieces (&other.slice);
@@ -272,19 +293,16 @@ struct Pieces
   // }
 
 private:
-  Pieces (std::vector<Piece> &&pieces_vector, PieceSlice slice,
-	  std::string &&to_parse)
-    : pieces_vector (std::move (pieces_vector)), slice (slice),
-      to_parse (std::move (to_parse))
+  Pieces (ffi::FormatArgsHandle handle, std::vector<ffi::Piece> &&pieces_vector)
+    : pieces_vector (std::move (pieces_vector)), handle (handle)
   {}
 
-  std::vector<Piece> pieces_vector;
+  std::vector<ffi::Piece> pieces_vector;
 
   // this memory is held for FFI reasons - it needs to be released and cloned
   // precisely, so try to not access it/modify it if possible. you should
   // instead work with `pieces_vector`
-  PieceSlice slice;
-  std::string to_parse;
+  ffi::FormatArgsHandle handle;
 };
 
 } // namespace Fmt
