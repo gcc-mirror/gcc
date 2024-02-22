@@ -2,8 +2,8 @@
  with int inputs produce the right codegen.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mpower8-vector -mdejagnu-cpu=power8" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power8 -mvsx" } */
 
 #include <altivec.h>
 

@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { *-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
-/* { dg-additional-options "-O3 -mcpu=power6 -mno-power9-vector -mno-power8-vector -mno-vsx" } */
+/* { dg-additional-options "-O3 -mdejagnu-cpu=power6 -mno-vsx" } */
 
 enum reg_class
 {

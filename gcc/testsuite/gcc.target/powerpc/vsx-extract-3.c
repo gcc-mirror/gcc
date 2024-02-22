@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-O3 -mdejagnu-cpu=power8" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-O3 -mdejagnu-cpu=power8 -mvsx" } */
 /* { dg-final { scan-assembler     "mfvsrd"  } } */
 /* { dg-final { scan-assembler-not "stfd"    } } */
 /* { dg-final { scan-assembler-not "stxvd2x" } } */

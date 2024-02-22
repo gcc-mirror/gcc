@@ -3866,8 +3866,8 @@ rs6000_option_override_internal (bool global_init_p)
     dwarf_offset_size = POINTER_SIZE_UNITS;
 #endif
 
-  /* Handle explicit -mno-{altivec,vsx,power8-vector,power9-vector} and turn
-     off all of the options that depend on those flags.  */
+  /* Handle explicit -mno-{altivec,vsx} and turn off all of
+     the options that depend on those flags.  */
   ignore_masks = rs6000_disable_incompatible_switches ();
 
   /* For the newer switches (vsx, dfp, etc.) set some of the older options,
@@ -3947,31 +3947,10 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   if (TARGET_P8_VECTOR && !TARGET_ALTIVEC)
-    {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
-	error ("%qs requires %qs", "-mpower8-vector", "-maltivec");
-      rs6000_isa_flags &= ~OPTION_MASK_P8_VECTOR;
-    }
+    rs6000_isa_flags &= ~OPTION_MASK_P8_VECTOR;
 
   if (TARGET_P8_VECTOR && !TARGET_VSX)
-    {
-      if ((rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
-	  && (rs6000_isa_flags_explicit & OPTION_MASK_VSX))
-	error ("%qs requires %qs", "-mpower8-vector", "-mvsx");
-      else if ((rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR) == 0)
-	{
-	  rs6000_isa_flags &= ~OPTION_MASK_P8_VECTOR;
-	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
-	    rs6000_isa_flags_explicit |= OPTION_MASK_P8_VECTOR;
-	}
-      else
-	{
-	  /* OPTION_MASK_P8_VECTOR is explicit, and OPTION_MASK_VSX is
-	     not explicit.  */
-	  rs6000_isa_flags |= OPTION_MASK_VSX;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
-	}
-    }
+    rs6000_isa_flags &= ~OPTION_MASK_P8_VECTOR;
 
   if (TARGET_DFP && !TARGET_HARD_FLOAT)
     {
@@ -4058,28 +4037,7 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* ISA 3.0 vector instructions include ISA 2.07.  */
   if (TARGET_P9_VECTOR && !TARGET_P8_VECTOR)
-    {
-      /* We prefer to not mention undocumented options in
-	 error messages.  However, if users have managed to select
-	 power9-vector without selecting power8-vector, they
-	 already know about undocumented flags.  */
-      if ((rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) &&
-	  (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR))
-	error ("%qs requires %qs", "-mpower9-vector", "-mpower8-vector");
-      else if ((rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) == 0)
-	{
-	  rs6000_isa_flags &= ~OPTION_MASK_P9_VECTOR;
-	  if (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
-	    rs6000_isa_flags_explicit |= OPTION_MASK_P9_VECTOR;
-	}
-      else
-	{
-	  /* OPTION_MASK_P9_VECTOR is explicit and
-	     OPTION_MASK_P8_VECTOR is not explicit.  */
-	  rs6000_isa_flags |= OPTION_MASK_P8_VECTOR;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_P8_VECTOR;
-	}
-    }
+    rs6000_isa_flags &= ~OPTION_MASK_P9_VECTOR;
 
   /* Set -mallow-movmisalign to explicitly on if we have full ISA 2.07
      support. If we only have ISA 2.06 support, and the user did not specify
@@ -25190,12 +25148,6 @@ rs6000_print_isa_options (FILE *file, int indent, const char *string,
    2.07, and 3.0 options that relate to the vector unit (-mdirect-move,
    -mupper-regs-df, etc.).
 
-   If the user used -mno-power8-vector, we need to turn off all of the implicit
-   ISA 2.07 and 3.0 options that relate to the vector unit.
-
-   If the user used -mno-power9-vector, we need to turn off all of the implicit
-   ISA 3.0 options that relate to the vector unit.
-
    This function does not handle explicit options such as the user specifying
    -mdirect-move.  These are handled in rs6000_option_override_internal, and
    the appropriate error is given if needed.
@@ -25214,8 +25166,6 @@ rs6000_disable_incompatible_switches (void)
     const HOST_WIDE_INT dep_flags;	/* flags that depend on this option.  */
     const char *const name;		/* name of the switch.  */
   } flags[] = {
-    { OPTION_MASK_P9_VECTOR,	OTHER_P9_VECTOR_MASKS,	"power9-vector"	},
-    { OPTION_MASK_P8_VECTOR,	OTHER_P8_VECTOR_MASKS,	"power8-vector"	},
     { OPTION_MASK_VSX,		OTHER_VSX_VECTOR_MASKS,	"vsx"		},
     { OPTION_MASK_ALTIVEC,	OTHER_ALTIVEC_MASKS,	"altivec"	},
   };

@@ -479,7 +479,7 @@ Target Undocumented Mask(P8_FUSION_SIGN) Var(rs6000_isa_flags)
 Allow sign extension in fusion operations.
 
 mpower8-vector
-Target Mask(P8_VECTOR) Var(rs6000_isa_flags)
+Target Undocumented Mask(P8_VECTOR) Var(rs6000_isa_flags) WarnRemoved
 Use vector and scalar instructions added in ISA 2.07.
 
 mpower10-fusion
@@ -522,7 +522,7 @@ Target Undocumented Mask(P9_MISC) Var(rs6000_isa_flags)
 Use certain scalar instructions added in ISA 3.0.
 
 mpower9-vector
-Target Undocumented Mask(P9_VECTOR) Var(rs6000_isa_flags)
+Target Undocumented Mask(P9_VECTOR) Var(rs6000_isa_flags) WarnRemoved
 Use vector instructions added in ISA 3.0.
 
 mpower9-minmax

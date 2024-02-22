@@ -21381,8 +21381,8 @@ available on the PowerPC family of processors starting with ISA 2.07
 or later.  Unless specific options are explicitly disabled on the
 command line, specifying option @option{-mcpu=power8} has the effect of
 enabling all the same options as for @option{-mcpu=power7} in
-addition to the @option{-mpower8-fusion}, @option{-mpower8-vector},
-@option{-mcrypto}, @option{-mhtm}, @option{-mquad-memory}, and
+addition to the @option{-mpower8-fusion}, @option{-mcrypto},
+@option{-mhtm}, @option{-mquad-memory}, and
 @option{-mquad-memory-atomic} options.
 
 This section intentionally empty.

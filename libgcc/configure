@@ -5238,7 +5238,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_powerpc_float128" >&5
 $as_echo "$libgcc_cv_powerpc_float128" >&6; }
 
-  CFLAGS="$CFLAGS -mpower9-vector -mfloat128-hardware"
+  CFLAGS="$CFLAGS -mcpu=power9 -mfloat128-hardware"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PowerPC ISA 3.0 to build hardware __float128 libraries" >&5
 $as_echo_n "checking for PowerPC ISA 3.0 to build hardware __float128 libraries... " >&6; }
 if ${libgcc_cv_powerpc_float128_hw+:} false; then :

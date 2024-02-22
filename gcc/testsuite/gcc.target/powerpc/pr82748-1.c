@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mpower9-vector -O2 -mabi=ieeelongdouble -Wno-psabi" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mvsx -O2 -mabi=ieeelongdouble -Wno-psabi" } */
+/* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
 
 /* Make sure the old 'q' builtin functions work correctly when the long double
    default has been changed to be IEEE 128-bit floating point.  */

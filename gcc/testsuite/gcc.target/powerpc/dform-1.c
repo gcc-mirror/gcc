@@ -1,8 +1,9 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
 /* Now O2 enables vectorization by default, which makes expected scalar
    loads gone, so simply disable it.  */
-/* { dg-options "-mpower9-vector -O2 -fno-tree-vectorize" } */
+/* { dg-options "-mvsx -O2 -fno-tree-vectorize" } */
+/* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
 
 #ifndef TYPE
 #define TYPE double

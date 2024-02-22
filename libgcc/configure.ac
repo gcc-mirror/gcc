@@ -442,7 +442,7 @@ powerpc*-*-linux*)
     [libgcc_cv_powerpc_float128=yes],
     [libgcc_cv_powerpc_float128=no])])
 
-  CFLAGS="$CFLAGS -mpower9-vector -mfloat128-hardware"
+  CFLAGS="$CFLAGS -mcpu=power9 -mfloat128-hardware"
   AC_CACHE_CHECK([for PowerPC ISA 3.0 to build hardware __float128 libraries],
 		 [libgcc_cv_powerpc_float128_hw],
 		 [AC_COMPILE_IFELSE(

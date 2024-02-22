@@ -2,8 +2,8 @@
    inputs produce the right codegen.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-O2 -mdejagnu-cpu=power8" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8 -mvsx" } */
 
 /* The below contains vec_insert () calls with both variable and constant
  values.  Only the constant value calls are early-gimple folded, but all

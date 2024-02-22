@@ -1,5 +1,5 @@
 /* { dg-do compile { target { has_arch_pwr8 } } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2" } */
 
 /* Ensure 16-byte by pieces move is enabled.  */

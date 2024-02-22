@@ -1,7 +1,8 @@
 /* { dg-do compile { target powerpc64*-*-* } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-maltivec -O2 -mvsx -mpower8-vector" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-maltivec -O2 -mvsx" } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
 /* { dg-final { scan-assembler "vcmpgtsd" } } */
 /* { dg-final { scan-assembler-not "xxlnor" } } */
 

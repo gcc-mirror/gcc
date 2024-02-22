@@ -1,7 +1,7 @@
-/* { dg-do compile { target { lp64 && powerpc_p9vector_ok } } } */
+/* { dg-do compile { target { lp64 && powerpc_vsx_ok } } } */
 /* Pass cunroll isn't disabled by -fno-unroll-loops, so use explicit
    disabling option for it.  */
-/* { dg-options "-mdejagnu-cpu=power9 -O2 -ftree-vectorize -fno-vect-cost-model -fno-unroll-loops -ffast-math -fdisable-tree-cunroll" } */
+/* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2 -ftree-vectorize -fno-vect-cost-model -fno-unroll-loops -ffast-math -fdisable-tree-cunroll" } */
 
 /* { dg-additional-options "--param=vect-partial-vector-usage=2" } */
 

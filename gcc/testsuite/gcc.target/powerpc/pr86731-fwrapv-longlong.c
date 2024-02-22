@@ -3,12 +3,13 @@
    explicitly specifies -fwrapv, which is a condition for the
    gimple folding of the vec_sl() intrinsic.  */
 
-/* specify -mpower8-vector, which provides vec_sl(long long,...) support. */
+/* specify -mcpu=power8 -mvsx, which provides vec_sl(long long,...) support. */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-maltivec -O3 -fwrapv -mpower8-vector " } */
+/* { dg-options "-maltivec -O3 -fwrapv -mvsx " } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
 
 #include <altivec.h>
 

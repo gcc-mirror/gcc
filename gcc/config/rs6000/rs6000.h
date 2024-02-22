@@ -103,13 +103,12 @@
 /* Common ASM definitions used by ASM_SPEC among the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.cc to
    provide the default assembler options if the user uses -mcpu=native, so if
-   you make changes here, make them also there.  PR63177: Do not pass -mpower8
-   to the assembler if -mpower9-vector was also used.  */
+   you make changes here, make them also there.  */
 #define ASM_CPU_SPEC \
 "%{mcpu=native: %(asm_cpu_native); \
   mcpu=power10: -mpower10; \
   mcpu=power9: -mpower9; \
-  mcpu=power8|mcpu=powerpc64le: %{mpower9-vector: -mpower9;: -mpower8}; \
+  mcpu=power8|mcpu=powerpc64le: -mpower8; \
   mcpu=power7: -mpower7; \
   mcpu=power6x: -mpower6 %{!mvsx:%{!maltivec:-maltivec}}; \
   mcpu=power6: -mpower6 %{!mvsx:%{!maltivec:-maltivec}}; \
@@ -163,8 +162,7 @@
   mcpu=e5500: -me5500; \
   mcpu=e6500: -me6500; \
   mcpu=titan: -mtitan; \
-  !mcpu*: %{mpower9-vector: -mpower9; \
-	    mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \
+  !mcpu*: %{mcrypto|mdirect-move|mhtm: -mpower8; \
 	    mvsx: -mpower7; \
 	    mpowerpc64: -mppc64;: %(asm_default)}; \
   :%eMissing -mcpu option in ASM_CPU_SPEC?\n} \

@@ -2443,9 +2443,6 @@ PowerPC target supports hardware double-precision floating-point.
 @item powerpc_htm_ok
 PowerPC target supports @code{-mhtm}
 
-@item powerpc_p8vector_ok
-PowerPC target supports @code{-mpower8-vector}
-
 @item powerpc_popcntb_ok
 PowerPC target supports the @code{popcntb} instruction, indicating
 that this target supports @code{-mcpu=power5}.
