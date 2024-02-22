@@ -30784,9 +30784,7 @@ package body Sem_Util is
                   return Is_Known_On_Entry (Expression (Expr));
 
                when N_If_Expression =>
-                  if not All_Exps_Known_On_Entry (Expressions (Expr)) then
-                     return False;
-                  end if;
+                  return All_Exps_Known_On_Entry (Expressions (Expr));
 
                when N_Case_Expression =>
                   if not Is_Known_On_Entry (Expression (Expr)) then
