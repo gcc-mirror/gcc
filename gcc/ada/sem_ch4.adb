@@ -2645,7 +2645,7 @@ package body Sem_Ch4 is
                  ("\ELSE expression has}!", Else_Expr, Etype (Else_Expr));
             end if;
 
-         else
+         elsif Present (Else_Expr) then
             if Is_Overloaded (Else_Expr) then
                Error_Msg_N
                  ("no interpretation compatible with type of THEN expression",
