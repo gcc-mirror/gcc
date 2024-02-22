@@ -4971,8 +4971,11 @@ package body Sem_Ch6 is
          --  Skip the check for subprograms generated for protected subprograms
          --  because it is also done for the protected subprograms themselves.
 
-         elsif Present (Spec_Id)
-           and then Present (Protected_Subprogram (Spec_Id))
+         elsif (Present (Spec_Id)
+                 and then Present (Protected_Subprogram (Spec_Id)))
+           or else
+             (Acts_As_Spec (N)
+               and then Present (Protected_Subprogram (Body_Id)))
          then
             null;
 
