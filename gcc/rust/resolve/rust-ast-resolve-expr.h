@@ -30,7 +30,7 @@ class ResolveExpr : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Expr *expr, const CanonicalPath &prefix,
+  static void go (AST::Expr &expr, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix,
 		  bool funny_error = false);
 

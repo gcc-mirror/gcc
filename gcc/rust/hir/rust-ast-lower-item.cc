@@ -32,10 +32,10 @@ namespace Rust {
 namespace HIR {
 
 HIR::Item *
-ASTLoweringItem::translate (AST::Item *item)
+ASTLoweringItem::translate (AST::Item &item)
 {
   ASTLoweringItem resolver;
-  item->accept_vis (resolver);
+  item.accept_vis (resolver);
 
   if (resolver.translated != nullptr)
     {
@@ -44,7 +44,7 @@ ASTLoweringItem::translate (AST::Item *item)
       auto locus = resolver.translated->get_locus ();
 
       resolver.handle_outer_attributes (*resolver.translated);
-      resolver.mappings->insert_ast_item (item);
+      resolver.mappings->insert_ast_item (&item);
       resolver.mappings->insert_hir_item (resolver.translated);
       resolver.mappings->insert_location (id, locus);
       resolver.mappings->insert_defid_mapping (defid, resolver.translated);
@@ -68,7 +68,7 @@ ASTLoweringItem::visit (AST::Module &module)
 
   for (auto &item : module.get_items ())
     {
-      auto transitem = translate (item.get ());
+      auto transitem = translate (*item);
       // The item may be null if it doesn't need to live in the HIR - for
       // example, macro rules definitions
       if (transitem)
@@ -105,7 +105,7 @@ ASTLoweringItem::visit (AST::TypeAlias &alias)
     generic_params = lower_generic_params (alias.get_generic_params ());
 
   HIR::Type *existing_type
-    = ASTLoweringType::translate (alias.get_type_aliased ().get ());
+    = ASTLoweringType::translate (alias.get_type_aliased ());
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, alias.get_node_id (),
@@ -143,13 +143,12 @@ ASTLoweringItem::visit (AST::TupleStruct &struct_decl)
   std::vector<HIR::TupleField> fields;
   for (AST::TupleField &field : struct_decl.get_fields ())
     {
-      if (field.get_field_type ()->is_marked_for_strip ())
+      if (field.get_field_type ().is_marked_for_strip ())
 	continue;
 
       // FIXME: How do we get the visibility from here?
       HIR::Visibility vis = translate_visibility (field.get_visibility ());
-      HIR::Type *type
-	= ASTLoweringType::translate (field.get_field_type ().get ());
+      HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
       auto crate_num = mappings->get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
@@ -202,12 +201,11 @@ ASTLoweringItem::visit (AST::StructStruct &struct_decl)
   std::vector<HIR::StructField> fields;
   for (AST::StructField &field : struct_decl.get_fields ())
     {
-      if (field.get_field_type ()->is_marked_for_strip ())
+      if (field.get_field_type ().is_marked_for_strip ())
 	continue;
 
       HIR::Visibility vis = translate_visibility (field.get_visibility ());
-      HIR::Type *type
-	= ASTLoweringType::translate (field.get_field_type ().get ());
+      HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
       auto crate_num = mappings->get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
@@ -309,13 +307,12 @@ ASTLoweringItem::visit (AST::Union &union_decl)
   std::vector<HIR::StructField> variants;
   for (AST::StructField &variant : union_decl.get_variants ())
     {
-      if (variant.get_field_type ()->is_marked_for_strip ())
+      if (variant.get_field_type ().is_marked_for_strip ())
 	continue;
 
       // FIXME: Does visibility apply here?
       HIR::Visibility vis = translate_visibility (variant.get_visibility ());
-      HIR::Type *type
-	= ASTLoweringType::translate (variant.get_field_type ().get ());
+      HIR::Type *type = ASTLoweringType::translate (variant.get_field_type ());
 
       auto crate_num = mappings->get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, variant.get_node_id (),
@@ -351,8 +348,8 @@ ASTLoweringItem::visit (AST::StaticItem &var)
 {
   HIR::Visibility vis = translate_visibility (var.get_visibility ());
 
-  HIR::Type *type = ASTLoweringType::translate (var.get_type ().get (), true);
-  HIR::Expr *expr = ASTLoweringExpr::translate (var.get_expr ().get ());
+  HIR::Type *type = ASTLoweringType::translate (var.get_type (), true);
+  HIR::Expr *expr = ASTLoweringExpr::translate (var.get_expr ());
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, var.get_node_id (),
@@ -372,9 +369,8 @@ ASTLoweringItem::visit (AST::ConstantItem &constant)
 {
   HIR::Visibility vis = translate_visibility (constant.get_visibility ());
 
-  HIR::Type *type
-    = ASTLoweringType::translate (constant.get_type ().get (), true);
-  HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ().get ());
+  HIR::Type *type = ASTLoweringType::translate (constant.get_type (), true);
+  HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ());
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),
@@ -418,7 +414,7 @@ ASTLoweringItem::visit (AST::Function &function)
 
   std::unique_ptr<HIR::Type> return_type
     = function.has_return_type () ? std::unique_ptr<HIR::Type> (
-	ASTLoweringType::translate (function.get_return_type ().get ()))
+	ASTLoweringType::translate (function.get_return_type ()))
 				  : nullptr;
 
   std::vector<HIR::FunctionParam> function_params;
@@ -426,28 +422,28 @@ ASTLoweringItem::visit (AST::Function &function)
     {
       if (p->is_variadic () || p->is_self ())
 	continue;
-      auto param = static_cast<AST::FunctionParam *> (p.get ());
+      auto param = static_cast<AST::FunctionParam &> (*p);
 
       auto translated_pattern = std::unique_ptr<HIR::Pattern> (
-	ASTLoweringPattern::translate (param->get_pattern ().get ()));
+	ASTLoweringPattern::translate (param.get_pattern ()));
       auto translated_type = std::unique_ptr<HIR::Type> (
-	ASTLoweringType::translate (param->get_type ().get ()));
+	ASTLoweringType::translate (param.get_type ()));
 
       auto crate_num = mappings->get_current_crate ();
-      Analysis::NodeMapping mapping (crate_num, param->get_node_id (),
+      Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
 				     mappings->get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       auto hir_param
 	= HIR::FunctionParam (mapping, std::move (translated_pattern),
-			      std::move (translated_type), param->get_locus ());
+			      std::move (translated_type), param.get_locus ());
       function_params.push_back (std::move (hir_param));
     }
 
   bool terminated = false;
   std::unique_ptr<HIR::BlockExpr> function_body
     = std::unique_ptr<HIR::BlockExpr> (
-      ASTLoweringBlock::translate (function.get_definition ()->get (),
+      ASTLoweringBlock::translate (*function.get_definition ().value (),
 				   &terminated));
 
   auto crate_num = mappings->get_current_crate ();
@@ -482,8 +478,7 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
   std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
   for (auto &item : impl_block.get_where_clause ().get_items ())
     {
-      HIR::WhereClauseItem *i
-	= ASTLowerWhereClauseItem::translate (*item.get ());
+      HIR::WhereClauseItem *i = ASTLowerWhereClauseItem::translate (*item);
       where_clause_items.push_back (std::unique_ptr<HIR::WhereClauseItem> (i));
     }
 
@@ -524,8 +519,7 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
 	}
     }
 
-  HIR::Type *impl_type
-    = ASTLoweringType::translate (impl_block.get_type ().get ());
+  HIR::Type *impl_type = ASTLoweringType::translate (impl_block.get_type ());
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, impl_block.get_node_id (),
@@ -540,7 +534,7 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
 	continue;
 
       HIR::ImplItem *lowered
-	= ASTLowerImplItem::translate (impl_item.get (), mapping.get_hirid ());
+	= ASTLowerImplItem::translate (*impl_item, mapping.get_hirid ());
       rust_assert (lowered != nullptr);
       impl_items.push_back (std::unique_ptr<HIR::ImplItem> (lowered));
       impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
@@ -586,7 +580,7 @@ ASTLoweringItem::visit (AST::Trait &trait)
     {
       for (auto &bound : trait.get_type_param_bounds ())
 	{
-	  HIR::TypeParamBound *b = lower_bound (bound.get ());
+	  HIR::TypeParamBound *b = lower_bound (*bound);
 	  type_param_bounds.push_back (
 	    std::unique_ptr<HIR::TypeParamBound> (b));
 	}
@@ -599,7 +593,7 @@ ASTLoweringItem::visit (AST::Trait &trait)
       if (item->is_marked_for_strip ())
 	continue;
 
-      HIR::TraitItem *lowered = ASTLowerTraitItem::translate (item.get ());
+      HIR::TraitItem *lowered = ASTLowerTraitItem::translate (*item);
       trait_items.push_back (std::unique_ptr<HIR::TraitItem> (lowered));
       trait_item_ids.push_back (lowered->get_mappings ().get_hirid ());
     }
@@ -634,8 +628,7 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
   std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
   for (auto &item : impl_block.get_where_clause ().get_items ())
     {
-      HIR::WhereClauseItem *i
-	= ASTLowerWhereClauseItem::translate (*item.get ());
+      HIR::WhereClauseItem *i = ASTLowerWhereClauseItem::translate (*item);
       where_clause_items.push_back (std::unique_ptr<HIR::WhereClauseItem> (i));
     }
   HIR::WhereClause where_clause (std::move (where_clause_items));
@@ -675,8 +668,7 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
 	}
     }
 
-  HIR::Type *impl_type
-    = ASTLoweringType::translate (impl_block.get_type ().get ());
+  HIR::Type *impl_type = ASTLoweringType::translate (impl_block.get_type ());
   HIR::TypePath *trait_ref
     = ASTLowerTypePath::translate (impl_block.get_trait_path ());
 
@@ -693,7 +685,7 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
 	continue;
 
       HIR::ImplItem *lowered
-	= ASTLowerImplItem::translate (impl_item.get (), mapping.get_hirid ());
+	= ASTLowerImplItem::translate (*impl_item, mapping.get_hirid ());
       rust_assert (lowered != nullptr);
       impl_items.push_back (std::unique_ptr<HIR::ImplItem> (lowered));
       impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());

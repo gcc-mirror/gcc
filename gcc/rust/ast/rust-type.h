@@ -513,10 +513,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<TypeNoBounds> &get_type_pointed_to ()
+  TypeNoBounds &get_type_pointed_to ()
   {
     rust_assert (type != nullptr);
-    return type;
+    return *type;
   }
 
 protected:
@@ -580,17 +580,17 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<TypeNoBounds> &get_type_referenced ()
+  TypeNoBounds &get_type_referenced ()
   {
     rust_assert (type != nullptr);
-    return type;
+    return *type;
   }
 
   bool get_has_mut () const { return has_mut; }
 
   Lifetime &get_lifetime () { return lifetime; }
 
-  std::unique_ptr<TypeNoBounds> &get_base_type () { return type; }
+  TypeNoBounds &get_base_type () { return *type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -641,17 +641,17 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_elem_type ()
+  Type &get_elem_type ()
   {
     rust_assert (elem_type != nullptr);
-    return elem_type;
+    return *elem_type;
   }
 
   // TODO: would a "vis_expr" be better?
-  std::unique_ptr<Expr> &get_size_expr ()
+  Expr &get_size_expr ()
   {
     rust_assert (size != nullptr);
-    return size;
+    return *size;
   }
 
 protected:
@@ -701,10 +701,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_elem_type ()
+  Type &get_elem_type ()
   {
     rust_assert (elem_type != nullptr);
-    return elem_type;
+    return *elem_type;
   }
 
 protected:
@@ -824,7 +824,13 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (param_type != nullptr);
+    return *param_type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (param_type != nullptr);
     return param_type;
@@ -935,10 +941,10 @@ public:
   }
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<TypeNoBounds> &get_return_type ()
+  TypeNoBounds &get_return_type ()
   {
     rust_assert (has_return_type ());
-    return return_type;
+    return *return_type;
   }
 
   FunctionQualifiers &get_function_qualifiers () { return function_qualifiers; }

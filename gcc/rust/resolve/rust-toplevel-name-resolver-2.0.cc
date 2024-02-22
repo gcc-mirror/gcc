@@ -213,7 +213,7 @@ TopLevel::visit (AST::BlockExpr &expr)
       stmt->accept_vis (*this);
 
     if (expr.has_tail_expr ())
-      expr.get_tail_expr ()->accept_vis (*this);
+      expr.get_tail_expr ().accept_vis (*this);
   };
 
   ctx.scoped (Rib::Kind::Normal, expr.get_node_id (), sub_vis);
@@ -223,7 +223,7 @@ void
 TopLevel::visit (AST::StaticItem &static_item)
 {
   auto sub_vis
-    = [this, &static_item] () { static_item.get_expr ()->accept_vis (*this); };
+    = [this, &static_item] () { static_item.get_expr ().accept_vis (*this); };
 
   ctx.scoped (Rib::Kind::Item, static_item.get_node_id (), sub_vis);
 }
@@ -299,7 +299,7 @@ void
 TopLevel::visit (AST::ConstantItem &const_item)
 {
   auto expr_vis
-    = [this, &const_item] () { const_item.get_expr ()->accept_vis (*this); };
+    = [this, &const_item] () { const_item.get_expr ().accept_vis (*this); };
 
   ctx.scoped (Rib::Kind::ConstantItem, const_item.get_node_id (), expr_vis);
 }

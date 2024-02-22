@@ -35,7 +35,7 @@ DefaultResolver::visit (AST::BlockExpr &expr)
       stmt->accept_vis (*this);
 
     if (expr.has_tail_expr ())
-      expr.get_tail_expr ()->accept_vis (*this);
+      expr.get_tail_expr ().accept_vis (*this);
   };
 
   ctx.scoped (Rib::Kind::Normal, expr.get_node_id (), inner_fn);
@@ -61,21 +61,21 @@ DefaultResolver::visit (AST::Function &function)
       {
 	if (p->is_variadic ())
 	  {
-	    auto param = static_cast<AST::VariadicParam *> (p.get ());
-	    if (param->has_pattern ())
-	      param->get_pattern ()->accept_vis (*this);
+	    auto &param = static_cast<AST::VariadicParam &> (*p);
+	    if (param.has_pattern ())
+	      param.get_pattern ().accept_vis (*this);
 	  }
 	else if (p->is_self ())
 	  {
-	    auto param = static_cast<AST::SelfParam *> (p.get ());
-	    param->get_type ()->accept_vis (*this);
-	    param->get_lifetime ().accept_vis (*this);
+	    auto &param = static_cast<AST::SelfParam &> (*p);
+	    param.get_type ().accept_vis (*this);
+	    param.get_lifetime ().accept_vis (*this);
 	  }
 	else
 	  {
-	    auto param = static_cast<AST::FunctionParam *> (p.get ());
-	    param->get_pattern ()->accept_vis (*this);
-	    param->get_type ()->accept_vis (*this);
+	    auto &param = static_cast<AST::FunctionParam &> (*p);
+	    param.get_pattern ().accept_vis (*this);
+	    param.get_type ().accept_vis (*this);
 	  }
       }
 
@@ -90,9 +90,9 @@ void
 DefaultResolver::visit (AST::ForLoopExpr &expr)
 {
   ctx.scoped (Rib::Kind::Normal, expr.get_node_id (), [this, &expr] () {
-    expr.get_pattern ()->accept_vis (*this);
-    expr.get_iterator_expr ()->accept_vis (*this);
-    expr.get_loop_block ()->accept_vis (*this);
+    expr.get_pattern ().accept_vis (*this);
+    expr.get_iterator_expr ().accept_vis (*this);
+    expr.get_loop_block ().accept_vis (*this);
   });
 }
 
@@ -188,12 +188,12 @@ DefaultResolver::visit (AST::ClosureExprInner &expr)
       if (param.is_error ())
 	continue;
 
-      param.get_pattern ()->accept_vis (*this);
+      param.get_pattern ().accept_vis (*this);
       if (param.has_type_given ())
-	param.get_type ()->accept_vis (*this);
+	param.get_type ().accept_vis (*this);
     }
 
-  expr.get_definition_expr ()->accept_vis (*this);
+  expr.get_definition_expr ().accept_vis (*this);
 }
 
 void
@@ -207,13 +207,13 @@ DefaultResolver::visit (AST::ClosureExprInnerTyped &expr)
       if (param.is_error ())
 	continue;
 
-      param.get_pattern ()->accept_vis (*this);
+      param.get_pattern ().accept_vis (*this);
       if (param.has_type_given ())
-	param.get_type ()->accept_vis (*this);
+	param.get_type ().accept_vis (*this);
     }
 
-  expr.get_definition_block ()->accept_vis (*this);
-  expr.get_return_type ()->accept_vis (*this);
+  expr.get_definition_block ().accept_vis (*this);
+  expr.get_return_type ().accept_vis (*this);
 }
 
 void
@@ -263,16 +263,16 @@ DefaultResolver::visit (AST::WhileLetLoopExpr &expr)
 void
 DefaultResolver::visit (AST::IfExpr &expr)
 {
-  expr.get_condition_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
+  expr.get_condition_expr ().accept_vis (*this);
+  expr.get_if_block ().accept_vis (*this);
 }
 
 void
 DefaultResolver::visit (AST::IfExprConseqElse &expr)
 {
-  expr.get_condition_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-  expr.get_else_block ()->accept_vis (*this);
+  expr.get_condition_expr ().accept_vis (*this);
+  expr.get_if_block ().accept_vis (*this);
+  expr.get_else_block ().accept_vis (*this);
 }
 
 void
@@ -289,14 +289,14 @@ DefaultResolver::visit (AST::MatchExpr &expr)
   if (expr.is_marked_for_strip ())
     return;
 
-  expr.get_scrutinee_expr ()->accept_vis (*this);
+  expr.get_scrutinee_expr ().accept_vis (*this);
   for (auto &arm : expr.get_match_cases ())
     {
-      arm.get_expr ()->accept_vis (*this);
+      arm.get_expr ().accept_vis (*this);
       for (auto &pat : arm.get_arm ().get_patterns ())
 	pat->accept_vis (*this);
       if (arm.get_arm ().has_match_arm_guard ())
-	arm.get_arm ().get_guard_expr ()->accept_vis (*this);
+	arm.get_arm ().get_guard_expr ().accept_vis (*this);
     }
 }
 
@@ -339,7 +339,7 @@ DefaultResolver::visit (AST::PathInExpression &expr)
 	  arg.accept_vis (*this);
 	for (auto &arg : args.get_binding_args ())
 	  if (!arg.is_error ())
-	    arg.get_type ()->accept_vis (*this);
+	    arg.get_type ().accept_vis (*this);
 	for (auto &arg : args.get_lifetime_args ())
 	  arg.accept_vis (*this);
       }
@@ -441,27 +441,27 @@ void
 DefaultResolver::visit (AST::EnumItemTuple &item)
 {
   for (auto &field : item.get_tuple_fields ())
-    field.get_field_type ()->accept_vis (*this);
+    field.get_field_type ().accept_vis (*this);
 }
 
 void
 DefaultResolver::visit (AST::EnumItemStruct &item)
 {
   for (auto &field : item.get_struct_fields ())
-    field.get_field_type ()->accept_vis (*this);
+    field.get_field_type ().accept_vis (*this);
 }
 
 void
 DefaultResolver::visit (AST::EnumItemDiscriminant &item)
 {
   if (item.has_expr ())
-    item.get_expr ()->accept_vis (*this);
+    item.get_expr ().accept_vis (*this);
 }
 
 void
 DefaultResolver::visit (AST::ConstantItem &item)
 {
-  auto expr_vis = [this, &item] () { item.get_expr ()->accept_vis (*this); };
+  auto expr_vis = [this, &item] () { item.get_expr ().accept_vis (*this); };
 
   // FIXME: Why do we need a Rib here?
   ctx.scoped (Rib::Kind::Item, item.get_node_id (), expr_vis);
@@ -470,7 +470,7 @@ DefaultResolver::visit (AST::ConstantItem &item)
 void
 DefaultResolver::visit (AST::StaticItem &item)
 {
-  auto expr_vis = [this, &item] () { item.get_expr ()->accept_vis (*this); };
+  auto expr_vis = [this, &item] () { item.get_expr ().accept_vis (*this); };
 
   // FIXME: Why do we need a Rib here?
   ctx.scoped (Rib::Kind::ConstantItem, item.get_node_id (), expr_vis);

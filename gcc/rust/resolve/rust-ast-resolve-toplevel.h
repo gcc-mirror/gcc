@@ -31,18 +31,18 @@ class ResolveTopLevel : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Item *item, const CanonicalPath &prefix,
+  static void go (AST::Item &item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix)
   {
-    if (item->is_marked_for_strip ())
+    if (item.is_marked_for_strip ())
       return;
 
     ResolveTopLevel resolver (prefix, canonical_prefix);
-    item->accept_vis (resolver);
+    item.accept_vis (resolver);
 
     NodeId current_module = resolver.resolver->peek_current_module_scope ();
     resolver.mappings->insert_child_item_to_parent_module_mapping (
-      item->get_node_id (), current_module);
+      item.get_node_id (), current_module);
   }
 
   void visit (AST::Module &module) override
@@ -67,7 +67,7 @@ public:
 
     resolver->push_new_module_scope (module.get_node_id ());
     for (auto &item : module.get_items ())
-      ResolveTopLevel::go (item.get (), path, cpath);
+      ResolveTopLevel::go (*item, path, cpath);
 
     resolver->pop_module_scope ();
 
@@ -137,7 +137,7 @@ public:
 
     resolver->push_new_module_scope (enum_decl.get_node_id ());
     for (auto &variant : enum_decl.get_variants ())
-      ResolveTopLevel::go (variant.get (), path, cpath);
+      ResolveTopLevel::go (*variant, path, cpath);
 
     resolver->pop_module_scope ();
 
@@ -343,9 +343,9 @@ public:
 
   void visit (AST::InherentImpl &impl_block) override
   {
-    std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
+    std::string raw_impl_type_path = impl_block.get_type ().as_string ();
     CanonicalPath impl_type_seg
-      = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
+      = CanonicalPath::new_seg (impl_block.get_type ().get_node_id (),
 				raw_impl_type_path);
 
     CanonicalPath impl_type
@@ -354,14 +354,14 @@ public:
     CanonicalPath impl_prefix = prefix.append (impl_type_seg);
 
     for (auto &impl_item : impl_block.get_impl_items ())
-      ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
+      ResolveToplevelImplItem::go (*impl_item, impl_prefix);
   }
 
   void visit (AST::TraitImpl &impl_block) override
   {
-    std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
+    std::string raw_impl_type_path = impl_block.get_type ().as_string ();
     CanonicalPath impl_type_seg
-      = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
+      = CanonicalPath::new_seg (impl_block.get_type ().get_node_id (),
 				raw_impl_type_path);
 
     std::string raw_trait_type_path = impl_block.get_trait_path ().as_string ();
@@ -385,7 +385,7 @@ public:
       });
 
     for (auto &impl_item : impl_block.get_impl_items ())
-      ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
+      ResolveToplevelImplItem::go (*impl_item, impl_prefix);
   }
 
   void visit (AST::Trait &trait) override
@@ -416,7 +416,7 @@ public:
   {
     for (auto &item : extern_block.get_extern_items ())
       {
-	ResolveToplevelExternItem::go (item.get (), prefix);
+	ResolveToplevelExternItem::go (*item, prefix);
       }
   }
 

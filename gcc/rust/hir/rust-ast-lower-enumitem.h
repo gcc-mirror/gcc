@@ -83,8 +83,7 @@ public:
     for (auto &field : item.get_tuple_fields ())
       {
 	HIR::Visibility vis = translate_visibility (field.get_visibility ());
-	HIR::Type *type
-	  = ASTLoweringType::translate (field.get_field_type ().get ());
+	HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
 	auto crate_num = mappings->get_current_crate ();
 	Analysis::NodeMapping field_mapping (
@@ -121,8 +120,7 @@ public:
     for (auto &field : item.get_struct_fields ())
       {
 	HIR::Visibility vis = translate_visibility (field.get_visibility ());
-	HIR::Type *type
-	  = ASTLoweringType::translate (field.get_field_type ().get ());
+	HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
 	auto crate_num = mappings->get_current_crate ();
 	Analysis::NodeMapping field_mapping (
@@ -160,7 +158,7 @@ public:
 		     "visibility qualifier %qs not allowed on enum item",
 		     item.get_visibility ().as_string ().c_str ());
 
-    HIR::Expr *expr = ASTLoweringExpr::translate (item.get_expr ().get ());
+    HIR::Expr *expr = ASTLoweringExpr::translate (item.get_expr ());
     translated
       = new HIR::EnumItemDiscriminant (mapping, item.get_identifier (),
 				       std::unique_ptr<HIR::Expr> (expr),

@@ -31,7 +31,7 @@ class ResolveStructExprField : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::StructExprField *field, const CanonicalPath &prefix,
+  static void go (AST::StructExprField &field, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
   void visit (AST::StructExprFieldIdentifierValue &field) override;

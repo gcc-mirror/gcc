@@ -29,7 +29,7 @@ class ASTLoweringPattern : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::Pattern *translate (AST::Pattern *pattern,
+  static HIR::Pattern *translate (AST::Pattern &pattern,
 				  bool is_let_top_level = false);
 
   void visit (AST::IdentifierPattern &pattern) override;
