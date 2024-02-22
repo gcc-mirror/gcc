@@ -85,6 +85,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         PutPriority, GetPriority,
                         PutProcedureBegin, PutProcedureEnd,
                         PutVarConst, IsVarConst,
+                        PutConstLitInternal,
                         PutVarHeap,
                         IsVarParam, IsProcedure, IsPointer, IsParameter,
                         IsUnboundedParam, IsEnumeration, IsDefinitionForC,
@@ -4347,11 +4348,16 @@ END BuildElsif2 ;
                                             |------------|
 *)
 
-PROCEDURE PushOne (tok: CARDINAL; type: CARDINAL; message: ARRAY OF CHAR) ;
+PROCEDURE PushOne (tok: CARDINAL; type: CARDINAL;
+                   message: ARRAY OF CHAR; internal: BOOLEAN) ;
+VAR
+   const: CARDINAL ;
 BEGIN
    IF type = NulSym
    THEN
-      PushTF (MakeConstLit (tok, MakeKey('1'), NulSym), NulSym)
+      const := MakeConstLit (tok, MakeKey('1'), NulSym) ;
+      PutConstLitInternal (const, TRUE) ;
+      PushTFtok (const, NulSym, tok)
    ELSIF IsEnumeration (type)
    THEN
       IF NoOfElements (type) = 0
@@ -4361,14 +4367,16 @@ BEGIN
                            type) ;
          PushZero (tok, type)
       ELSE
-         PushTF (Convert, NulSym) ;
+         PushTFtok (Convert, NulSym, tok) ;
          PushT (type) ;
-         PushT (MakeConstLit (tok, MakeKey ('1'), ZType)) ;
+         PushTFtok (MakeConstLit (tok, MakeKey ('1'), ZType), ZType, tok) ;
          PushT (2) ;          (* Two parameters *)
          BuildConvertFunction
       END
    ELSE
-      PushTF (MakeConstLit (tok, MakeKey ('1'), type), type)
+      const := MakeConstLit (tok, MakeKey ('1'), type) ;
+      PutConstLitInternal (const, TRUE) ;
+      PushTFtok (const, type, tok)
    END
 END PushOne ;
 
@@ -4440,7 +4448,8 @@ BEGIN
    THEN
       type := ZType
    END ;
-   PushOne (dotok, type, 'the implied {%kFOR} loop increment will cause an overflow {%1ad}')
+   PushOne (dotok, type,
+            'the implied {%kFOR} loop increment will cause an overflow {%1ad}', TRUE)
 END BuildPseudoBy ;
 
 
@@ -4648,6 +4657,8 @@ END BuildForToByDo ;
 
          Ptr ->
                  +----------------+
+                 | RangeId        |
+                 |----------------|
                  | ForQuad        |
                  |----------------|
                  | LastValue      |
@@ -7294,7 +7305,8 @@ BEGIN
          THEN
             OperandSym := DereferenceLValue (OperandTok (1), OperandT (1))
          ELSE
-            PushOne (proctok, dtype, 'the {%EkINC} will cause an overflow {%1ad}') ;
+            PushOne (proctok, dtype,
+                     'the {%EkINC} will cause an overflow {%1ad}', FALSE) ;
 	    PopT (OperandSym)
          END ;
 
@@ -7366,7 +7378,8 @@ BEGIN
          THEN
             OperandSym := DereferenceLValue (OperandTok (1), OperandT (1))
          ELSE
-            PushOne (proctok, dtype, 'the {%EkDEC} will cause an overflow {%1ad}') ;
+            PushOne (proctok, dtype,
+                     'the {%EkDEC} will cause an overflow {%1ad}', FALSE) ;
 	    PopT (OperandSym)
          END ;
 

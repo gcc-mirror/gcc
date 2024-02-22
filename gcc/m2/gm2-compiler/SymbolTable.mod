@@ -487,7 +487,8 @@ TYPE
                     Value        : PtrToValue ;   (* Value of the constant.      *)
                     Type         : CARDINAL ;     (* TYPE of constant, char etc  *)
                     IsSet        : BOOLEAN ;      (* is the constant a set?      *)
-                    IsConstructor: BOOLEAN ;      (* is the constant a set?      *)
+                    IsConstructor: BOOLEAN ;      (* is it a constructor?        *)
+                    IsInternal   : BOOLEAN ;      (* Generated internally?       *)
                     FromType     : CARDINAL ;     (* type is determined FromType *)
                     RangeError   : BOOLEAN ;      (* Have we reported an error?  *)
                     UnresFromType: BOOLEAN ;      (* is Type unresolved?         *)
@@ -4865,6 +4866,8 @@ BEGIN
                     PopInto (ConstLit.Value) ;
                     ConstLit.Type := constType ;
                     ConstLit.IsSet := FALSE ;
+                    ConstLit.IsInternal := FALSE ;   (* Is it a default BY constant
+                                                        expression?  *)
                     ConstLit.IsConstructor := FALSE ;
                     ConstLit.FromType := NulSym ;     (* type is determined FromType *)
                     ConstLit.RangeError := overflow ;
@@ -6788,6 +6791,53 @@ BEGIN
       END
    END
 END PutConst ;
+
+
+(*
+   PutConstLitInternal - marks the sym as being an internal constant.
+                         Currently this is used when generating a default
+                         BY constant expression during a FOR loop.
+                         A constant marked as internal will always pass
+                         an expression type check.
+*)
+
+PROCEDURE PutConstLitInternal (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ConstLitSym: ConstLit.IsInternal := value
+
+      ELSE
+         InternalError ('expecting ConstLitSym')
+      END
+   END
+END PutConstLitInternal ;
+
+
+(*
+   IsConstLitInternal - returns the value of the IsInternal field within
+                        a constant expression.
+*)
+
+PROCEDURE IsConstLitInternal (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ConstLitSym: RETURN ConstLit.IsInternal
+
+      ELSE
+         InternalError ('expecting ConstLitSym')
+      END
+   END
+END IsConstLitInternal ;
 
 
 (*

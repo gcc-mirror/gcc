@@ -1886,16 +1886,14 @@ BEGIN
                       des, expr2) ;
          success := FALSE
       END ;
-(*
       combinedtok := MakeVirtual2Tok (destok, byconsttok) ;
       IF NOT ExpressionTypeCompatible (combinedtok, "", des, byconst, TRUE, FALSE)
       THEN
          MetaErrorT2 (combinedtok,
-                      'type expression incompatibility between {%1Et} and {%2t} detected between the the designator {%1a} and the {%kBY} constant expression {%2a} in the {%kFOR} loop',
+                      'type expression incompatibility between {%1Et} and {%2t} detected between the designator {%1a} and the {%kBY} constant expression {%2a} in the {%kFOR} loop',
                       des, byconst) ;
          success := FALSE
       END ;
-*)
       IF (NOT success) AND (incrementquad # 0)
       THEN
          (* Avoid a subsequent generic type check error.  *)

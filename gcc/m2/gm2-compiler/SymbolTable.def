@@ -3315,4 +3315,23 @@ PROCEDURE PutProcedureParameterHeapVars (sym: CARDINAL) ;
 PROCEDURE IsProcedureBuiltinAvailable (procedure: CARDINAL) : BOOLEAN ;
 
 
+(*
+   PutConstLitInternal - marks the sym as being an internal constant.
+                         Currently this is used when generating a default
+                         BY constant expression during a FOR loop.
+                         A constant marked as internal will always pass
+                         an expression type check.
+*)
+
+PROCEDURE PutConstLitInternal (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsConstLitInternal - returns the value of the IsInternal field within
+                        a constant expression.
+*)
+
+PROCEDURE IsConstLitInternal (sym: CARDINAL) : BOOLEAN ;
+
+
 END SymbolTable.
