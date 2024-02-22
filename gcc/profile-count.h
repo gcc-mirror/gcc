@@ -1299,9 +1299,6 @@ public:
   /* Output THIS to F.  */
   void dump (FILE *f, struct function *fun = NULL) const;
 
-  /* Output THIS to BUFFER.  */
-  void dump (char *buffer, struct function *fun = NULL) const;
-
   /* Print THIS to stderr.  */
   void debug () const;
 
