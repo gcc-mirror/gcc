@@ -184,33 +184,18 @@ public:
 
   FormatArgs (location_t loc, Fmt::Pieces &&template_str,
 	      FormatArguments &&arguments)
-    : loc (loc), template_str (std::move (template_str)),
+    : loc (loc), template_pieces (std::move (template_str)),
       arguments (std::move (arguments))
   {}
 
-  FormatArgs (FormatArgs &&other)
-    : loc (std::move (other.loc)),
-      template_str (std::move (other.template_str)),
-      arguments (std::move (other.arguments))
-  {
-    std::cerr << "[ARTHUR] moving FormatArgs" << std::endl;
-  }
-
-  // FIXME: This might be invalid - we are reusing the same memory allocated
-  // on the Rust side for `other`. This is probably valid as long as we only
-  // ever read that memory and never write to it.
-  FormatArgs (const FormatArgs &other)
-    : loc (other.loc), template_str (other.template_str),
-      arguments (other.arguments)
-  {
-    std::cerr << "[ARTHUR] copying FormatArgs" << std::endl;
-  }
-
-  // FormatArgs &operator= (const FormatArgs &other) = default;
-  //   : template_str (other.template_str), arguments (other.arguments)
-  // {}
+  FormatArgs (FormatArgs &&other) = default;
+  FormatArgs (const FormatArgs &other) = default;
+  FormatArgs &operator= (const FormatArgs &other) = default;
 
   void accept_vis (AST::ASTVisitor &vis) override;
+
+  const Fmt::Pieces &get_template () const { return template_pieces; }
+  virtual location_t get_locus () const override;
 
 private:
   location_t loc;
@@ -218,14 +203,13 @@ private:
   // expansion of format_args!(). There is extra handling associated with it.
   // we can maybe do that in rust-fmt.cc? in collect_pieces()? like do the
   // transformation into something we can handle better
-  Fmt::Pieces template_str;
+  Fmt::Pieces template_pieces;
   FormatArguments arguments;
 
   bool marked_for_strip = false;
 
 protected:
   virtual std::string as_string () const override;
-  virtual location_t get_locus () const override;
   virtual bool is_expr_without_block () const override;
   virtual void mark_for_strip () override;
   virtual bool is_marked_for_strip () const override;

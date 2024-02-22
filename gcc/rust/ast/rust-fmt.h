@@ -262,6 +262,8 @@ struct Pieces
 
   Pieces (Pieces &&other);
 
+  const std::vector<Piece> &get_pieces () const { return pieces_vector; }
+
   // {
   //   slice = clone_pieces (&other.slice);
   //   to_parse = other.to_parse;
@@ -270,10 +272,17 @@ struct Pieces
   // }
 
 private:
-  Pieces (PieceSlice slice, std::string &&to_parse)
-    : slice (slice), to_parse (std::move (to_parse))
+  Pieces (std::vector<Piece> &&pieces_vector, PieceSlice slice,
+	  std::string &&to_parse)
+    : pieces_vector (std::move (pieces_vector)), slice (slice),
+      to_parse (std::move (to_parse))
   {}
 
+  std::vector<Piece> pieces_vector;
+
+  // this memory is held for FFI reasons - it needs to be released and cloned
+  // precisely, so try to not access it/modify it if possible. you should
+  // instead work with `pieces_vector`
   PieceSlice slice;
   std::string to_parse;
 };
