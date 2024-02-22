@@ -193,6 +193,7 @@ struct GTY(()) cpp_string {
 #define BOL		(1 << 6) /* Token at beginning of line.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.cc.  */
+#define COLON_SCOPE	PURE_ZERO /* Adjacent colons in C < 23.  */
 #define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
 #define SP_PREV_WHITE	(1 << 9) /* If whitespace before a ##
 				    operator, or before this token
