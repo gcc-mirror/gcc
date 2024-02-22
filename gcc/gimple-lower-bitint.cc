@@ -4497,7 +4497,7 @@ bitint_large_huge::lower_mul_overflow (tree obj, gimple *stmt)
 					   size_one_node);
 		  insert_before (g);
 		  g = gimple_build_cond (NE_EXPR, idx_next,
-					 size_int (endlimb + (cnt == 1)),
+					 size_int (endlimb + (cnt == 2)),
 					 NULL_TREE, NULL_TREE);
 		  insert_before (g);
 		  edge true_edge, false_edge;
