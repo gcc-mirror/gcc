@@ -553,11 +553,11 @@
    Enabled with -funsafe-math-optimizations -freciprocal-math
    and disabled for -Os since it increases code size .  */
 
-(define_expand "div<mode>3"
+(define_expand "div<VCVTF:mode>3"
   [(set (match_operand:VCVTF 0 "s_register_operand")
         (div:VCVTF (match_operand:VCVTF 1 "s_register_operand")
 		  (match_operand:VCVTF 2 "s_register_operand")))]
-  "TARGET_NEON && !optimize_size
+  "ARM_HAVE_NEON_<MODE>_ARITH && !optimize_size
    && flag_reciprocal_math"
   {
     rtx rec = gen_reg_rtx (<MODE>mode);
