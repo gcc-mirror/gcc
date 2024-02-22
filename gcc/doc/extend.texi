@@ -12626,10 +12626,7 @@ In C, writing:
 @end smallexample
 
 suppresses warnings about using @samp{[[]]} attributes in C versions
-that predate C23@.  Since the scope token @samp{::} is not a single
-lexing token in earlier versions of C, this construct also allows two colons
-to be used in place of @code{::}.  GCC does not check whether the two
-colons are immediately adjacent.
+that predate C23@.
 @end itemize
 
 @code{__extension__} has no effect aside from this.

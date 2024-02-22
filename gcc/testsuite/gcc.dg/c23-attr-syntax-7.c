@@ -9,19 +9,14 @@
 
 typedef int [[__extension__ gnu::vector_size (4)]] g1;
 typedef int [[__extension__ gnu :: vector_size (4)]] g2;
-typedef int [[__extension__ gnu : : vector_size (4)]] g3;
-typedef int [[__extension__ gnu: :vector_size (4)]] g4;
-typedef int [[__extension__ gnu FOO vector_size (4)]] g5;
-typedef int [[__extension__ gnu BAR BAR vector_size (4)]] g6;
-typedef int [[__extension__ gnu :/**/: vector_size (4)]] g7;
-typedef int [[__extension__ gnu JOIN(:,:) vector_size (4)]] g8;
-typedef int [[__extension__ gnu :: vector_size (sizeof (void (*)(...)))]] g10;
-typedef int [[__extension__]] g11;
-typedef int [[__extension__,]] g12;
-typedef int [[__extension__, ,,,, ,, ,]] g13;
-[[__extension__ deprecated]] int g14 ();
-[[__extension__ nodiscard]] int g15 ();
-[[__extension__ noreturn]] void g16 ();
+typedef int [[__extension__ gnu FOO vector_size (4)]] g3;
+typedef int [[__extension__ gnu :: vector_size (sizeof (void (*)(...)))]] g4;
+typedef int [[__extension__]] g5;
+typedef int [[__extension__,]] g6;
+typedef int [[__extension__, ,,,, ,, ,]] g7;
+[[__extension__ deprecated]] int g8 ();
+[[__extension__ nodiscard]] int g9 ();
+[[__extension__ noreturn]] void g10 ();
 
 int
 cases (int x)
@@ -51,10 +46,37 @@ typedef int [[__extension__ unknown_attribute]] b3; /* { dg-error {'unknown_attr
 typedef int [[__extension__ gnu:vector_size(4)]] b4; /* { dg-error {expected '\]' before ':'} } */
 /* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
 typedef int [[__extension__ gnu JOIN2(:,:) vector_size (4)]] b5;
-typedef int [[gnu::vector_size(4)]] b6; /* { dg-warning {attributes before C23} } */
-typedef int [[gnu : : vector_size(4)]] b7; /* { dg-error {expected '\]' before ':'} } */
+typedef int [[__extension__ gnu : : vector_size (4)]] b6; /* { dg-error {expected '\]' before ':'} } */
+/* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
+typedef int [[__extension__ gnu: :vector_size (4)]] b7; /* { dg-error {expected '\]' before ':'} } */
+/* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
+typedef int [[__extension__ gnu BAR BAR vector_size (4)]] b8; /* { dg-error {expected '\]' before ':'} } */
+/* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
+typedef int [[__extension__ gnu :/**/: vector_size (4)]] b9; /* { dg-error {expected '\]' before ':'} } */
+/* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
+typedef int [[__extension__ gnu JOIN(:,:) vector_size (4)]] b10; /* { dg-error {expected '\]' before ':'} } */
+/* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
+typedef int [[gnu::vector_size(4)]] b11; /* { dg-warning {attributes before C23} } */
+typedef int [[gnu : : vector_size(4)]] b12; /* { dg-error {expected '\]' before ':'} } */
 /* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
 /* { dg-warning {attributes before C23} "" { target *-*-* } .-2 } */
-typedef int [[gnu : vector_size(4)]] b8; /* { dg-error {expected '\]' before ':'} } */
+typedef int [[gnu : vector_size(4)]] b13; /* { dg-error {expected '\]' before ':'} } */
 /* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
 /* { dg-warning {attributes before C23} "" { target *-*-* } .-2 } */
+typedef int [[gnu: :vector_size (4)]] b14; /* { dg-error {expected '\]' before ':'} } */
+/* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
+/* { dg-warning {attributes before C23} "" { target *-*-* } .-2 } */
+typedef int [[gnu BAR BAR vector_size (4)]] b15; /* { dg-error {expected '\]' before ':'} } */
+/* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
+/* { dg-warning {attributes before C23} "" { target *-*-* } .-2 } */
+typedef int [[gnu :/**/: vector_size (4)]] b16; /* { dg-error {expected '\]' before ':'} } */
+/* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
+/* { dg-warning {attributes before C23} "" { target *-*-* } .-2 } */
+typedef int [[gnu JOIN(:,:) vector_size (4)]] b17; /* { dg-error {expected '\]' before ':'} } */
+/* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
+/* { dg-warning {attributes before C23} "" { target *-*-* } .-2 } */
+typedef int [[gnu :: vector_size (4)]] b18; /* { dg-warning {attributes before C23} } */
+typedef int [[gnu FOO vector_size (4)]] b19; /* { dg-warning {attributes before C23} } */
+typedef int [[gnu :: vector_size (sizeof (void (*)(...)))]] b20; /* { dg-warning {attributes before C23} } */
+/* { dg-warning {requires a named argument before} "" { target *-*-* } .-1 } */
+typedef int [[gnu JOIN2(:,:) vector_size (4)]] b21; /* { dg-warning {attributes before C23} } */
