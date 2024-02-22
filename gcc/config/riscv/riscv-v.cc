@@ -443,6 +443,7 @@ public:
   }
 
   bool can_duplicate_repeating_sequence_p ();
+  bool is_repeating_sequence ();
   rtx get_merged_repeating_sequence ();
 
   bool repeating_sequence_use_merge_profitable_p ();
@@ -483,12 +484,25 @@ rvv_builder::can_duplicate_repeating_sequence_p ()
 {
   poly_uint64 new_size = exact_div (full_nelts (), npatterns ());
   unsigned int new_inner_size = m_inner_bits_size * npatterns ();
-  if (!int_mode_for_size (new_inner_size, 0).exists (&m_new_inner_mode)
+  if (m_inner_mode == Pmode
+      || !int_mode_for_size (new_inner_size, 0).exists (&m_new_inner_mode)
       || GET_MODE_SIZE (m_new_inner_mode) > UNITS_PER_WORD
       || !get_vector_mode (m_new_inner_mode, new_size).exists (&m_new_mode))
     return false;
   if (full_nelts ().is_constant ())
     return repeating_sequence_p (0, full_nelts ().to_constant (), npatterns ());
+  return nelts_per_pattern () == 1;
+}
+
+/* Return true if the vector is a simple sequence with one pattern and all
+   elements the same.  */
+bool
+rvv_builder::is_repeating_sequence ()
+{
+  if (npatterns () > 1)
+    return false;
+  if (full_nelts ().is_constant ())
+    return repeating_sequence_p (0, full_nelts ().to_constant (), 1);
   return nelts_per_pattern () == 1;
 }
 
@@ -2543,6 +2557,15 @@ expand_vec_init (rtx target, rtx vals)
   for (int i = 0; i < nelts; i++)
     v.quick_push (XVECEXP (vals, 0, i));
   v.finalize ();
+
+  /* If the sequence is v = { a, a, a, a } just broadcast an element.  */
+  if (v.is_repeating_sequence ())
+    {
+      machine_mode mode = GET_MODE (target);
+      rtx dup = expand_vector_broadcast (mode, v.elt (0));
+      emit_move_insn (target, dup);
+      return;
+    }
 
   if (nelts > 3)
     {
