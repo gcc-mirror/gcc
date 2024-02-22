@@ -1185,6 +1185,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	      else
 		{
 		  gcc_assert (known_ne (op.off, -1)
+			      /* The constant offset can be -1.  */
+			      || op.opcode == MEM_REF
 			      /* Out-of-bound indices can compute to
 				 a known -1 offset.  */
 			      || ((op.opcode == ARRAY_REF
