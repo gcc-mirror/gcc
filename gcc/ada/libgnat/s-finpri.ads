@@ -39,6 +39,8 @@ with System.Storage_Elements;
 
 package System.Finalization_Primitives with Preelaborate is
 
+   use type System.Storage_Elements.Storage_Offset;
+
    type Finalize_Address_Ptr is access procedure (Obj : System.Address);
    --  Values of this type denote finalization procedures associated with
    --  objects that have controlled parts. For convenience, such objects
@@ -168,10 +170,12 @@ package System.Finalization_Primitives with Preelaborate is
    --  Calls to the procedure with an object that has already been detached
    --  have no effects.
 
-   function Header_Alignment return System.Storage_Elements.Storage_Count;
+   function Header_Alignment return System.Storage_Elements.Storage_Count is
+     (Collection_Node'Alignment);
    --  Return the alignment of type Collection_Node as Storage_Count
 
-   function Header_Size return System.Storage_Elements.Storage_Count;
+   function Header_Size return System.Storage_Elements.Storage_Count is
+     (Collection_Node'Object_Size / Storage_Unit);
    --  Return the object size of type Collection_Node as Storage_Count
 
 private

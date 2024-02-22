@@ -37,8 +37,6 @@ with System.Soft_Links;        use System.Soft_Links;
 
 package body System.Finalization_Primitives is
 
-   use type System.Storage_Elements.Storage_Offset;
-
    function To_Collection_Node_Ptr is
      new Ada.Unchecked_Conversion (Address, Collection_Node_Ptr);
 
@@ -388,24 +386,6 @@ package body System.Finalization_Primitives is
          FA (Node.Object_Address);
       end if;
    end Finalize_Object;
-
-   ----------------------
-   -- Header_Alignment --
-   ----------------------
-
-   function Header_Alignment return System.Storage_Elements.Storage_Count is
-   begin
-      return Collection_Node'Alignment;
-   end Header_Alignment;
-
-   -----------------
-   -- Header_Size --
-   -----------------
-
-   function Header_Size return System.Storage_Elements.Storage_Count is
-   begin
-      return Collection_Node'Object_Size / Storage_Unit;
-   end Header_Size;
 
    ----------------
    -- Initialize --
