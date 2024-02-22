@@ -346,7 +346,7 @@ package body Checks is
       Warn_Node  : Node_Id) return Check_Result;
    --  Like Apply_Selected_Length_Checks, except it doesn't modify
    --  anything, just returns a list of nodes as described in the spec of
-   --  this package for the Range_Check function.
+   --  this package for the Get_Range_Checks function.
    --  ??? In fact it does construct the test and insert it into the tree,
    --  and insert actions in various ways (calling Insert_Action directly
    --  in particular) so we do not call it in GNATprove mode, contrary to
@@ -359,7 +359,7 @@ package body Checks is
       Warn_Node  : Node_Id) return Check_Result;
    --  Like Apply_Range_Check, except it does not modify anything, just
    --  returns a list of nodes as described in the spec of this package
-   --  for the Range_Check function.
+   --  for the Get_Range_Checks function.
 
    ------------------------------
    -- Access_Checks_Suppressed --

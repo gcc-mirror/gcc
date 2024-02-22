@@ -980,7 +980,7 @@ package Checks is
 private
 
    type Check_Result is array (Positive range 1 .. 2) of Node_Id;
-   --  There are two cases for the result returned by Range_Check:
+   --  There are two cases for the result returned by Get_Range_Checks:
    --
    --    For the static case the result is one or two nodes that should cause
    --    a Constraint_Error. Typically these will include Expr itself or the
