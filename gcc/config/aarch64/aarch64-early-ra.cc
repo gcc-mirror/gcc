@@ -532,6 +532,12 @@ private:
   // The set of FPRs that are currently live.
   unsigned int m_live_fprs;
 
+  // A unique one-based identifier for the current region.
+  unsigned int m_current_region;
+
+  // The region in which each FPR was last used, or 0 if none.
+  unsigned int m_fpr_recency[32];
+
   // ----------------------------------------------------------------------
 
   // A mask of the FPRs that have already been allocated.
@@ -1305,6 +1311,7 @@ early_ra::start_new_region ()
   m_allocated_fprs = 0;
   m_call_preserved_fprs = 0;
   m_allocation_successful = true;
+  m_current_region += 1;
 }
 
 // Create and return an allocno group of size SIZE for register REGNO.
@@ -2819,19 +2826,30 @@ early_ra::allocate_colors ()
 	candidates &= ~(m_allocated_fprs >> i);
       unsigned int best = INVALID_REGNUM;
       int best_weight = 0;
+      unsigned int best_recency = 0;
       for (unsigned int fpr = 0; fpr <= 32U - color->group->size; ++fpr)
 	{
 	  if ((candidates & (1U << fpr)) == 0)
 	    continue;
 	  int weight = color->fpr_preferences[fpr];
+	  unsigned int recency = 0;
 	  // Account for registers that the current function must preserve.
 	  for (unsigned int i = 0; i < color->group->size; ++i)
-	    if (m_call_preserved_fprs & (1U << (fpr + i)))
-	      weight -= 1;
-	  if (best == INVALID_REGNUM || best_weight <= weight)
+	    {
+	      if (m_call_preserved_fprs & (1U << (fpr + i)))
+		weight -= 1;
+	      recency = MAX (recency, m_fpr_recency[fpr + i]);
+	    }
+	  // Prefer higher-numbered registers in the event of a tie.
+	  // This should tend to keep lower-numbered registers free
+	  // for allocnos that require V0-V7 or V0-V15.
+	  if (best == INVALID_REGNUM
+	      || best_weight < weight
+	      || (best_weight == weight && recency <= best_recency))
 	    {
 	      best = fpr;
 	      best_weight = weight;
+	      best_recency = recency;
 	    }
 	}
 
@@ -2888,19 +2906,27 @@ early_ra::find_oldest_color (unsigned int first_color,
 {
   color_info *best = nullptr;
   unsigned int best_start_point = ~0U;
+  unsigned int best_recency = 0;
   for (unsigned int ci = first_color; ci < m_colors.length (); ++ci)
     {
       auto *color = m_colors[ci];
-      if (fpr_conflicts & (1U << (color->hard_regno - V0_REGNUM)))
+      unsigned int fpr = color->hard_regno - V0_REGNUM;
+      if (fpr_conflicts & (1U << fpr))
 	continue;
-      if (!color->group)
-	return color;
-      auto chain_head = color->group->chain_heads ()[0];
-      auto start_point = m_allocnos[chain_head]->start_point;
-      if (!best || best_start_point > start_point)
+      unsigned int start_point = 0;
+      if (color->group)
+	{
+	  auto chain_head = color->group->chain_heads ()[0];
+	  start_point = m_allocnos[chain_head]->start_point;
+	}
+      unsigned int recency = m_fpr_recency[fpr];
+      if (!best
+	  || best_start_point > start_point
+	  || (best_start_point == start_point && recency < best_recency))
 	{
 	  best = color;
 	  best_start_point = start_point;
+	  best_recency = recency;
 	}
     }
   return best;
@@ -3004,6 +3030,13 @@ early_ra::broaden_colors ()
 void
 early_ra::finalize_allocation ()
 {
+  for (auto *color : m_colors)
+    if (color->group)
+      {
+	unsigned int fpr = color->hard_regno - V0_REGNUM;
+	for (unsigned int i = 0; i < color->group->size; ++i)
+	  m_fpr_recency[fpr + i] = m_current_region;
+      }
   for (auto *allocno : m_allocnos)
     {
       if (allocno->is_shared ())
@@ -3520,6 +3553,10 @@ early_ra::process_blocks ()
       if (bitmap_intersect_p (df_get_live_in (bb), m_fpr_pseudos))
 	bitmap_set_bit (fpr_pseudos_live_in, bb->index);
     }
+
+  // This is incremented by 1 at the start of each region.
+  m_current_region = 0;
+  memset (m_fpr_recency, 0, sizeof (m_fpr_recency));
 
   struct stack_node { edge_iterator ei; basic_block bb; };
 
