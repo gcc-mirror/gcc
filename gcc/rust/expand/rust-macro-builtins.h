@@ -75,7 +75,7 @@ enum class BuiltinMacro
   Hash,
 };
 
-BuiltinMacro
+tl::optional<BuiltinMacro>
 builtin_macro_from_string (const std::string &identifier);
 
 /**

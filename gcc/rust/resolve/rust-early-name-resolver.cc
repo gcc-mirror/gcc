@@ -497,7 +497,7 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
     {
       auto builtin_kind
 	= builtin_macro_from_string (rules_def->get_rule_name ().as_string ());
-      invoc.map_to_builtin (builtin_kind);
+      invoc.map_to_builtin (builtin_kind.value ());
     }
 
   auto attributes = rules_def->get_outer_attrs ();

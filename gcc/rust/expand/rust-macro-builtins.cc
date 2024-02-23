@@ -126,8 +126,7 @@ std::unordered_map<std::string, AST::MacroTranscriberFunc>
     {"Hash", MacroBuiltin::proc_macro_builtin},
 };
 
-// FIXME: This should return an tl::optional
-BuiltinMacro
+tl::optional<BuiltinMacro>
 builtin_macro_from_string (const std::string &identifier)
 {
   auto macro = MacroBuiltin::builtins.lookup (identifier);
