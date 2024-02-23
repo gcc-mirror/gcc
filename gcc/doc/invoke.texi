@@ -17017,6 +17017,14 @@ loop.  The default value is four.
 
 @end table
 
+The following choices of @var{name} are available on GCN targets:
+
+@table @gcctabopt
+@item gcn-preferred-vectorization-factor
+Preferred vectorization factor: @samp{default}, @samp{32}, @samp{64}.
+
+@end table
+
 The following choices of @var{name} are available on i386 and x86_64 targets:
 
 @table @gcctabopt

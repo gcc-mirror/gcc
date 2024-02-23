@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize -dp" } */
+/* The 'scan-assembler' directives are specific to 64-lane vectors.
+   { dg-additional-options --param=gcn-preferred-vectorization-factor=64 } */
 
 #include "cond_fmaxnm_2.c"
 

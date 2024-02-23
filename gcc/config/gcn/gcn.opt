@@ -116,3 +116,19 @@ Compile for devices requiring XNACK enabled. Default \"any\" if USM is supported
 msram-ecc=
 Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_sram_ecc) Init(HSACO_ATTR_ANY)
 Compile for devices with the SRAM ECC feature enabled, or not. Default \"any\".
+
+-param=gcn-preferred-vectorization-factor=
+Target Joined Enum(gcn_preferred_vectorization_factor) Var(gcn_preferred_vectorization_factor) Init(-1) Param
+--param=gcn-preferred-vectorization-factor=[default,32,64]	Preferred vectorization factor.
+
+Enum
+Name(gcn_preferred_vectorization_factor) Type(int)
+
+EnumValue
+Enum(gcn_preferred_vectorization_factor) String(default) Value(-1)
+
+EnumValue
+Enum(gcn_preferred_vectorization_factor) String(32) Value(32)
+
+EnumValue
+Enum(gcn_preferred_vectorization_factor) String(64) Value(64)

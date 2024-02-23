@@ -5231,6 +5231,14 @@ gcn_vector_mode_supported_p (machine_mode mode)
 static machine_mode
 gcn_vectorize_preferred_simd_mode (scalar_mode mode)
 {
+  bool v32;
+  if (gcn_preferred_vectorization_factor == 32)
+    v32 = true;
+  else if (gcn_preferred_vectorization_factor == 64)
+    v32 = false;
+  else if (gcn_preferred_vectorization_factor != -1)
+    gcc_unreachable ();
+  else if (TARGET_RDNA2_PLUS)
   /* RDNA devices have 32-lane vectors with limited support for 64-bit vectors
      (in particular, permute operations are only available for cases that don't
      span the 32-lane boundary).
@@ -5238,7 +5246,11 @@ gcn_vectorize_preferred_simd_mode (scalar_mode mode)
      From the RDNA3 manual: "Hardware may choose to skip either half if the
      EXEC mask for that half is all zeros...". This means that preferring
      32-lanes is a good stop-gap until we have proper wave32 support.  */
-  if (TARGET_RDNA2_PLUS)
+    v32 = true;
+  else
+    v32 = false;
+
+  if (v32)
     switch (mode)
       {
       case E_QImode:
