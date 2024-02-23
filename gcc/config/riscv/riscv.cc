@@ -8801,10 +8801,10 @@ riscv_init_machine_status (void)
   return ggc_cleared_alloc<machine_function> ();
 }
 
-/* Return the VLEN value associated with -march.
+/* Return the VLEN value associated with -march and -mwrvv-vector-bits.
    TODO: So far we only support length-agnostic value. */
 static poly_uint16
-riscv_convert_vector_bits (struct gcc_options *opts)
+riscv_convert_vector_chunks (struct gcc_options *opts)
 {
   int chunk_num;
   int min_vlen = TARGET_MIN_VLEN_OPTS (opts);
@@ -8847,10 +8847,15 @@ riscv_convert_vector_bits (struct gcc_options *opts)
      compile-time constant if TARGET_VECTOR is disabled.  */
   if (TARGET_VECTOR_OPTS_P (opts))
     {
-      if (opts->x_riscv_autovec_preference == RVV_FIXED_VLMAX)
-	return (int) min_vlen / (riscv_bytes_per_vector_chunk * 8);
-      else
-	return poly_uint16 (chunk_num, chunk_num);
+      switch (opts->x_rvv_vector_bits)
+	{
+	case RVV_VECTOR_BITS_SCALABLE:
+	  return poly_uint16 (chunk_num, chunk_num);
+	case RVV_VECTOR_BITS_ZVL:
+	  return (int) min_vlen / (riscv_bytes_per_vector_chunk * 8);
+	default:
+	  gcc_unreachable ();
+	}
     }
   else
     return 1;
@@ -8920,8 +8925,8 @@ riscv_override_options_internal (struct gcc_options *opts)
   if (TARGET_VECTOR && TARGET_BIG_ENDIAN)
     sorry ("Current RISC-V GCC does not support RVV in big-endian mode");
 
-  /* Convert -march to a chunks count.  */
-  riscv_vector_chunks = riscv_convert_vector_bits (opts);
+  /* Convert -march and -mrvv-vector-bits to a chunks count.  */
+  riscv_vector_chunks = riscv_convert_vector_chunks (opts);
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv64gcv -mabi=lp64d -O2 -Wno-implicit-int" } */
+/* { dg-options "-mrvv-vector-bits=scalable -march=rv64gcv -mabi=lp64d -O2 -Wno-implicit-int" } */
 
 char *a;
 b() {

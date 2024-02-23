@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zve32x -mabi=ilp32d -fno-vect-cost-model --param riscv-autovec-preference=fixed-vlmax -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv32gc_zve32x -mabi=ilp32d -fno-vect-cost-model -mrvv-vector-bits=zvl -fdump-tree-vect-details" } */
 
 #include "template-1.h"
 

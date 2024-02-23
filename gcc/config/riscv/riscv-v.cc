@@ -912,14 +912,14 @@ calculate_ratio (unsigned int sew, enum vlmul_type vlmul)
 }
 
 /* SCALABLE means that the vector-length is agnostic (run-time invariant and
-   compile-time unknown). FIXED meands that the vector-length is specific
-   (compile-time known). Both RVV_SCALABLE and RVV_FIXED_VLMAX are doing
+   compile-time unknown). ZVL meands that the vector-length is specific
+   (compile-time known by march like zvl*b). Both SCALABLE and ZVL are doing
    auto-vectorization using VLMAX vsetvl configuration.  */
 static bool
 autovec_use_vlmax_p (void)
 {
-  return (riscv_autovec_preference == RVV_SCALABLE
-	  || riscv_autovec_preference == RVV_FIXED_VLMAX);
+  return rvv_vector_bits == RVV_VECTOR_BITS_SCALABLE
+	  || rvv_vector_bits == RVV_VECTOR_BITS_ZVL;
 }
 
 /* This function emits VLMAX vrgather instruction. Emit vrgather.vx/vi when sel
@@ -4431,7 +4431,7 @@ vls_mode_valid_p (machine_mode vls_mode)
   if (!TARGET_VECTOR || TARGET_XTHEADVECTOR)
     return false;
 
-  if (riscv_autovec_preference == RVV_SCALABLE)
+  if (rvv_vector_bits == RVV_VECTOR_BITS_SCALABLE)
     {
       if (GET_MODE_CLASS (vls_mode) != MODE_VECTOR_BOOL
 	  && !ordered_p (TARGET_MAX_LMUL * BITS_PER_RISCV_VECTOR,
@@ -4448,7 +4448,7 @@ vls_mode_valid_p (machine_mode vls_mode)
       return true;
     }
 
-  if (riscv_autovec_preference == RVV_FIXED_VLMAX)
+  if (rvv_vector_bits == RVV_VECTOR_BITS_ZVL)
     {
       machine_mode inner_mode = GET_MODE_INNER (vls_mode);
       int precision = GET_MODE_PRECISION (inner_mode).to_constant ();
@@ -5123,13 +5123,13 @@ estimated_poly_value (poly_int64 val, unsigned int kind)
   unsigned int width_source
     = BITS_PER_RISCV_VECTOR.is_constant ()
 	? (unsigned int) BITS_PER_RISCV_VECTOR.to_constant ()
-	: (unsigned int) RVV_SCALABLE;
+	: (unsigned int) RVV_VECTOR_BITS_SCALABLE;
 
   /* If there is no core-specific information then the minimum and likely
      values are based on TARGET_MIN_VLEN vectors and the maximum is based on
      the architectural maximum of 65536 bits.  */
   unsigned int min_vlen_bytes = TARGET_MIN_VLEN / 8 - 1;
-  if (width_source == RVV_SCALABLE)
+  if (width_source == RVV_VECTOR_BITS_SCALABLE)
     switch (kind)
       {
       case POLY_VALUE_MIN:

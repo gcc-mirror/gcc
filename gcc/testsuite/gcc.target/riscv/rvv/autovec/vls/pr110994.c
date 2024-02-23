@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc -mabi=lp64d --param=riscv-autovec-preference=scalable -O2" } */
+/* { dg-options "-march=rv64gc -mabi=lp64d -mrvv-vector-bits=scalable -O2" } */
 
 #include "def.h"
 

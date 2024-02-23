@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv_zvl1024b -mabi=ilp32d --param=riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-march=rv32gcv_zvl1024b -mabi=ilp32d -mrvv-vector-bits=zvl" } */
 
 short a, b;
 void c(int d) {

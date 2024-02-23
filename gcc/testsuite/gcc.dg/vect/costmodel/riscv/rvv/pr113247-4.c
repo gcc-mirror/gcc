@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize --param=riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize -mrvv-vector-bits=zvl" } */
 
 #include "pr113247-1.c"
 

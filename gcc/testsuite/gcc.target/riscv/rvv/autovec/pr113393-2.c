@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 --param=riscv-autovec-preference=fixed-vlmax --param=riscv-autovec-lmul=m2" } */
+/* { dg-options "-O3 -mrvv-vector-bits=zvl --param=riscv-autovec-lmul=m2" } */
 /* { dg-require-effective-target riscv_v } */
 
 __attribute__((noinline, noclone)) static int

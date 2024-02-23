@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv_zvl256b -mabi=ilp32d -O3 --param riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-march=rv32gcv_zvl256b -mabi=ilp32d -O3 -mrvv-vector-bits=zvl" } */
 
 #include <stdint-gcc.h>
 

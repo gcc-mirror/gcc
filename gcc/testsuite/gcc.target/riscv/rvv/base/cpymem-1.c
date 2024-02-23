@@ -50,7 +50,7 @@ void f2 (__INT32_TYPE__* a, __INT32_TYPE__* b, int l)
    Use extern here so that we get a known alignment, lest
    DATA_ALIGNMENT force us to make the scan pattern accomodate
    code for different alignments depending on word size.
-** f3: { target { { any-opts "-mcmodel=medlow" } && { no-opts "-march=rv64gcv_zvl512b" "-march=rv64gcv_zvl1024b" "--param=riscv-autovec-lmul=dynamic" "--param=riscv-autovec-lmul=m2" "--param=riscv-autovec-lmul=m4" "--param=riscv-autovec-lmul=m8" "--param=riscv-autovec-preference=fixed-vlmax" } } }
+** f3: { target { { any-opts "-mcmodel=medlow" } && { no-opts "-march=rv64gcv_zvl512b" "-march=rv64gcv_zvl1024b" "--param=riscv-autovec-lmul=dynamic" "--param=riscv-autovec-lmul=m2" "--param=riscv-autovec-lmul=m4" "--param=riscv-autovec-lmul=m8" "-mrvv-vector-bits=zvl" } } }
 **        lui\s+[ta][0-7],%hi\(a_a\)
 **        addi\s+[ta][0-7],[ta][0-7],%lo\(a_a\)
 **        lui\s+[ta][0-7],%hi\(a_b\)
@@ -62,7 +62,7 @@ void f2 (__INT32_TYPE__* a, __INT32_TYPE__* b, int l)
 */
 
 /*
-** f3: { target { { any-opts "-mcmodel=medlow --param=riscv-autovec-preference=fixed-vlmax" "-mcmodel=medlow -march=rv64gcv_zvl512b --param=riscv-autovec-preference=fixed-vlmax" } && { no-opts "-march=rv64gcv_zvl1024b" } } }
+** f3: { target { { any-opts "-mcmodel=medlow -mrvv-vector-bits=zvl" "-mcmodel=medlow -march=rv64gcv_zvl512b -mrvv-vector-bits=zvl" } && { no-opts "-march=rv64gcv_zvl1024b" } } }
 **        lui\s+[ta][0-7],%hi\(a_a\)
 **        lui\s+[ta][0-7],%hi\(a_b\)
 **        addi\s+[ta][0-7],[ta][0-7],%lo\(a_a\)
@@ -73,7 +73,7 @@ void f2 (__INT32_TYPE__* a, __INT32_TYPE__* b, int l)
 */
 
 /*
-** f3: { target { { any-opts "-mcmodel=medlow -march=rv64gcv_zvl1024b" "-mcmodel=medlow -march=rv64gcv_zvl512b" } && { no-opts "--param=riscv-autovec-preference=fixed-vlmax" } } }
+** f3: { target { { any-opts "-mcmodel=medlow -march=rv64gcv_zvl1024b" "-mcmodel=medlow -march=rv64gcv_zvl512b" } && { no-opts "-mrvv-vector-bits=zvl" } } }
 **        lui\s+[ta][0-7],%hi\(a_a\)
 **        lui\s+[ta][0-7],%hi\(a_b\)
 **        addi\s+a4,[ta][0-7],%lo\(a_b\)
@@ -85,7 +85,7 @@ void f2 (__INT32_TYPE__* a, __INT32_TYPE__* b, int l)
 */
 
 /*
-** f3: { target { { any-opts "-mcmodel=medany" } && { no-opts "-march=rv64gcv_zvl512b" "-march=rv64gcv_zvl256b" "-march=rv64gcv_zvl1024b" "--param=riscv-autovec-lmul=dynamic" "--param=riscv-autovec-lmul=m8" "--param=riscv-autovec-lmul=m4" "--param=riscv-autovec-preference=fixed-vlmax" } } }
+** f3: { target { { any-opts "-mcmodel=medany" } && { no-opts "-march=rv64gcv_zvl512b" "-march=rv64gcv_zvl256b" "-march=rv64gcv_zvl1024b" "--param=riscv-autovec-lmul=dynamic" "--param=riscv-autovec-lmul=m8" "--param=riscv-autovec-lmul=m4" "-mrvv-vector-bits=zvl" } } }
 **        lla\s+[ta][0-7],a_a
 **        lla\s+[ta][0-7],a_b
 **        vsetivli\s+zero,16,e32,m8,ta,ma
@@ -105,7 +105,7 @@ void f2 (__INT32_TYPE__* a, __INT32_TYPE__* b, int l)
 */
 
 /*
-** f3: { target { { any-opts "-mcmodel=medany --param=riscv-autovec-preference=fixed-vlmax" } && { no-opts "-march=rv64gcv_zvl1024b" } } }
+** f3: { target { { any-opts "-mcmodel=medany -mrvv-vector-bits=zvl" } && { no-opts "-march=rv64gcv_zvl1024b" } } }
 **        lla\s+[ta][0-7],a_a
 **        lla\s+[ta][0-7],a_b
 **        vl(1|2|4)re32\.v\s+v\d+,0\([ta][0-7]\)

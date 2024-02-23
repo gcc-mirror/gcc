@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=scalable -Ofast -fno-vect-cost-model" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -mrvv-vector-bits=scalable -Ofast -fno-vect-cost-model" } */
 
 int a;
 void b() {

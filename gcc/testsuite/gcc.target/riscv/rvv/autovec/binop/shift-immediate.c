@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-std=c99 -march=rv32gcv -mabi=ilp32d -O2 --param=riscv-autovec-preference=scalable" } */
+/* { dg-additional-options "-std=c99 -march=rv32gcv -mabi=ilp32d -O2 -mrvv-vector-bits=scalable" } */
 
 #define uint8_t unsigned char
 

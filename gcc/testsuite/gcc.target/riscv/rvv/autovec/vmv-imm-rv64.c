@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-std=c99 -march=rv64gcv -mabi=lp64d -fno-vect-cost-model --param=riscv-autovec-preference=scalable -fno-builtin" } */
+/* { dg-additional-options "-std=c99 -march=rv64gcv -mabi=lp64d -fno-vect-cost-model -mrvv-vector-bits=scalable -fno-builtin" } */
 
 #include "vmv-imm-template.h"
 
