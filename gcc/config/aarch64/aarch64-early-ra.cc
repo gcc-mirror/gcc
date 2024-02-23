@@ -95,6 +95,10 @@ public:
   void execute ();
 
 private:
+  // Whether to test only things that are required for correctness,
+  // or whether to take optimization heuristics into account as well.
+  enum test_strictness { CORRECTNESS_ONLY, ALL_REASONS };
+
   static_assert (MAX_RECOG_OPERANDS <= 32, "Operand mask is 32 bits");
   using operand_mask = uint32_t;
 
@@ -452,7 +456,7 @@ private:
 
   template<unsigned int allocno_info::*field>
   static int cmp_increasing (const void *, const void *);
-  bool is_chain_candidate (allocno_info *, allocno_info *);
+  bool is_chain_candidate (allocno_info *, allocno_info *, test_strictness);
   int rate_chain (allocno_info *, allocno_info *);
   static int cmp_chain_candidates (const void *, const void *);
   void chain_allocnos (unsigned int &, unsigned int &);
@@ -1588,7 +1592,7 @@ early_ra::find_related_start (allocno_info *dest_allocno,
 	return res;
 
       auto *next_allocno = m_allocnos[dest_allocno->copy_dest];
-      if (!is_chain_candidate (dest_allocno, next_allocno))
+      if (!is_chain_candidate (dest_allocno, next_allocno, ALL_REASONS))
 	return res;
 
       dest_allocno = next_allocno;
@@ -2011,7 +2015,7 @@ early_ra::strided_polarity_pref (allocno_info *allocno1,
   if (allocno1->offset + 1 < allocno1->group_size
       && allocno2->offset + 1 < allocno2->group_size)
     {
-      if (is_chain_candidate (allocno1 + 1, allocno2 + 1))
+      if (is_chain_candidate (allocno1 + 1, allocno2 + 1, ALL_REASONS))
 	return 1;
       else
 	return -1;
@@ -2019,7 +2023,7 @@ early_ra::strided_polarity_pref (allocno_info *allocno1,
 
   if (allocno1->offset > 0 && allocno2->offset > 0)
     {
-      if (is_chain_candidate (allocno1 - 1, allocno2 - 1))
+      if (is_chain_candidate (allocno1 - 1, allocno2 - 1, ALL_REASONS))
 	return 1;
       else
 	return -1;
@@ -2215,38 +2219,37 @@ early_ra::cmp_increasing (const void *allocno1_ptr, const void *allocno2_ptr)
 }
 
 // Return true if we should consider chaining ALLOCNO1 onto the head
-// of ALLOCNO2.  This is just a local test of the two allocnos; it doesn't
-// guarantee that chaining them would give a self-consistent system.
+// of ALLOCNO2.  STRICTNESS says whether we should take copy-elision
+// heuristics into account, or whether we should just consider things
+// that matter for correctness.
+//
+// This is just a local test of the two allocnos; it doesn't guarantee
+// that chaining them would give a self-consistent system.
 bool
-early_ra::is_chain_candidate (allocno_info *allocno1, allocno_info *allocno2)
+early_ra::is_chain_candidate (allocno_info *allocno1, allocno_info *allocno2,
+			      test_strictness strictness)
 {
   if (allocno2->is_shared ())
     return false;
 
-  if (allocno1->is_equiv)
+  while (allocno1->is_equiv)
     allocno1 = m_allocnos[allocno1->related_allocno];
 
   if (allocno2->start_point >= allocno1->end_point
       && !allocno2->is_equiv_to (allocno1->id))
     return false;
 
-  if (allocno2->is_strong_copy_dest)
-    {
-      if (!allocno1->is_strong_copy_src
-	  || allocno1->copy_dest != allocno2->id)
-	return false;
-    }
-  else if (allocno2->is_copy_dest)
+  if (allocno1->is_earlyclobbered
+      && allocno1->end_point == allocno2->start_point + 1)
+    return false;
+
+  if (strictness == ALL_REASONS && allocno2->is_copy_dest)
     {
       if (allocno1->copy_dest != allocno2->id)
 	return false;
-    }
-  else if (allocno1->is_earlyclobbered)
-    {
-      if (allocno1->end_point == allocno2->start_point + 1)
+      if (allocno2->is_strong_copy_dest && !allocno1->is_strong_copy_src)
 	return false;
     }
-
   return true;
 }
 
@@ -2470,8 +2473,7 @@ early_ra::try_to_chain_allocnos (allocno_info *allocno1,
 	  auto *head2 = m_allocnos[headi2];
 	  if (head1->chain_next != INVALID_ALLOCNO)
 	    return false;
-	  if (!head2->is_equiv_to (head1->id)
-	      && head1->end_point <= head2->start_point)
+	  if (!is_chain_candidate (head1, head2, CORRECTNESS_ONLY))
 	    return false;
 	}
     }
@@ -2620,7 +2622,7 @@ early_ra::form_chains ()
 	  auto *allocno2 = m_sorted_allocnos[sci];
 	  if (allocno2->chain_prev == INVALID_ALLOCNO)
 	    {
-	      if (!is_chain_candidate (allocno1, allocno2))
+	      if (!is_chain_candidate (allocno1, allocno2, ALL_REASONS))
 		continue;
 	      chain_candidate_info candidate;
 	      candidate.allocno = allocno2;
