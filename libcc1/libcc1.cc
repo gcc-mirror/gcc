@@ -54,7 +54,7 @@ struct libcc1 : public cc1_plugin::base_gdb_plugin<gcc_c_context>
 libcc1::libcc1 (const gcc_c_fe_vtable *cv)
   : cc1_plugin::base_gdb_plugin<gcc_c_context> ("libcc1plugin",
 						C_COMPILER_NAME,
-						GCC_C_FE_VERSION_1)
+						cv->c_version)
 {
   c_ops = cv;
 }
@@ -108,7 +108,7 @@ set_callbacks (struct gcc_c_context *s,
 
 static const struct gcc_c_fe_vtable c_vtable =
 {
-  GCC_C_FE_VERSION_0,
+  GCC_C_FE_VERSION_1,
   set_callbacks,
 
 #define GCC_METHOD0(R, N) \
