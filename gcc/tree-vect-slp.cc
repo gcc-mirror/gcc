@@ -1911,7 +1911,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	    /* Reduction chain backedge defs are filled manually.
 	       ???  Need a better way to identify a SLP reduction chain PHI.
 	       Or a better overall way to SLP match those.  */
-	    if (all_same && def_type == vect_reduction_def)
+	    if (stmts.length () > 1
+		&& all_same && def_type == vect_reduction_def)
 	      skip_args[loop_latch_edge (loop)->dest_idx] = true;
 	  }
 	else if (def_type != vect_internal_def)
@@ -3909,9 +3910,10 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 	  }
 
       /* Find SLP sequences starting from groups of reductions.  */
-      if (loop_vinfo->reductions.length () > 1)
+      if (loop_vinfo->reductions.length () > 0)
 	{
-	  /* Collect reduction statements.  */
+	  /* Collect reduction statements we can combine into
+	     a SLP reduction.  */
 	  vec<stmt_vec_info> scalar_stmts;
 	  scalar_stmts.create (loop_vinfo->reductions.length ());
 	  for (auto next_info : loop_vinfo->reductions)
@@ -3924,23 +3926,58 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 		     reduction path.  In that case we'd have to reverse
 		     engineer that conversion stmt following the chain using
 		     reduc_idx and from the PHI using reduc_def.  */
-		  && STMT_VINFO_DEF_TYPE (next_info) == vect_reduction_def
-		  /* Do not discover SLP reductions for lane-reducing ops, that
-		     will fail later.  */
-		  && (!(g = dyn_cast <gassign *> (STMT_VINFO_STMT (next_info)))
-		      || !lane_reducing_op_p (gimple_assign_rhs_code (g))))
-		scalar_stmts.quick_push (next_info);
+		  && STMT_VINFO_DEF_TYPE (next_info) == vect_reduction_def)
+		{
+		  /* Do not discover SLP reductions combining lane-reducing
+		     ops, that will fail later.  */
+		  if (!(g = dyn_cast <gassign *> (STMT_VINFO_STMT (next_info)))
+		      || !lane_reducing_op_p (gimple_assign_rhs_code (g)))
+		    scalar_stmts.quick_push (next_info);
+		  else
+		    {
+		      /* Do SLP discovery for single-lane reductions.  */
+		      vec<stmt_vec_info> stmts;
+		      vec<stmt_vec_info> roots = vNULL;
+		      vec<tree> remain = vNULL;
+		      stmts.create (1);
+		      stmts.quick_push (next_info);
+		      vect_build_slp_instance (vinfo,
+					       slp_inst_kind_reduc_group,
+					       stmts, roots, remain,
+					       max_tree_size, &limit,
+					       bst_map, NULL);
+		    }
+		}
 	    }
-	  if (scalar_stmts.length () > 1)
+	  /* Save for re-processing on failure.  */
+	  vec<stmt_vec_info> saved_stmts = scalar_stmts.copy ();
+	  vec<stmt_vec_info> roots = vNULL;
+	  vec<tree> remain = vNULL;
+	  if (scalar_stmts.length () <= 1
+	      || !vect_build_slp_instance (loop_vinfo,
+					   slp_inst_kind_reduc_group,
+					   scalar_stmts, roots, remain,
+					   max_tree_size, &limit, bst_map,
+					   NULL))
 	    {
-	      vec<stmt_vec_info> roots = vNULL;
-	      vec<tree> remain = vNULL;
-	      vect_build_slp_instance (loop_vinfo, slp_inst_kind_reduc_group,
-				       scalar_stmts, roots, remain,
-				       max_tree_size, &limit, bst_map, NULL);
+	      if (scalar_stmts.length () <= 1)
+		scalar_stmts.release ();
+	      /* Do SLP discovery for single-lane reductions.  */
+	      for (auto stmt_info : saved_stmts)
+		{
+		  vec<stmt_vec_info> stmts;
+		  vec<stmt_vec_info> roots = vNULL;
+		  vec<tree> remain = vNULL;
+		  stmts.create (1);
+		  stmts.quick_push (vect_stmt_to_vectorize (stmt_info));
+		  vect_build_slp_instance (vinfo,
+					   slp_inst_kind_reduc_group,
+					   stmts, roots, remain,
+					   max_tree_size, &limit,
+					   bst_map, NULL);
+		}
+	      saved_stmts.release ();
 	    }
-	  else
-	    scalar_stmts.release ();
 	}
     }
 
