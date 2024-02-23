@@ -3412,9 +3412,15 @@ cp_fold (tree x, fold_flags_t flags)
 	    if (DECL_CONSTRUCTOR_P (callee))
 	      {
 		loc = EXPR_LOCATION (x);
-		tree s = build_fold_indirect_ref_loc (loc,
-						      CALL_EXPR_ARG (x, 0));
+		tree a = CALL_EXPR_ARG (x, 0);
+		bool return_this = targetm.cxx.cdtor_returns_this ();
+		if (return_this)
+		  a = cp_save_expr (a);
+		tree s = build_fold_indirect_ref_loc (loc, a);
 		r = cp_build_init_expr (s, r);
+		if (return_this)
+		  r = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (x), r,
+				  fold_convert_loc (loc, TREE_TYPE (x), a));
 	      }
 	    x = r;
 	    break;
