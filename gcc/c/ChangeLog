@@ -1,3 +1,14 @@
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114007
+	* c-parser.cc (c_parser_std_attribute): Remove loose_scope_p argument.
+	Instead of checking it, parse 2 CPP_COLONs with the first one with
+	COLON_SCOPE flag the same as CPP_SCOPE.
+	(c_parser_std_attribute_list): Remove loose_scope_p argument, don't
+	pass it to c_parser_std_attribute.
+	(c_parser_std_attribute_specifier): Adjust c_parser_std_attribute_list
+	caller.
+
 2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/113904

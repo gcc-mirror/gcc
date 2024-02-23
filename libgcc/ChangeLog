@@ -1,3 +1,12 @@
+2024-02-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109987
+	* config/rs6000/t-float128-hw: Replace options -mpower{8,9}-vector
+	with -mcpu=power9.
+	* configure.ac: Update use of option -mpower9-vector with
+	-mcpu=power9.
+	* configure: Regenerate.
+
 2024-02-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/aarch64/heap-trampoline.c

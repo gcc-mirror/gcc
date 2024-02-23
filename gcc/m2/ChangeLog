@@ -1,3 +1,27 @@
+2024-02-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114055
+	* gm2-compiler/M2Check.mod (Import): IsConstLitInternal and
+	IsConstLit.
+	(isInternal): New procedure function.
+	(doCheck): Test for isInternal in either operand and early
+	return true.
+	* gm2-compiler/M2Quads.mod (PushOne): Rewrite with extra
+	parameter internal.
+	(BuildPseudoBy): Add TRUE parameter to PushOne call.
+	(BuildIncProcedure): Add FALSE parameter to PushOne call.
+	(BuildDecProcedure): Add FALSE parameter to PushOne call.
+	* gm2-compiler/M2Range.mod (ForLoopBeginTypeCompatible):
+	Uncomment code and tidy up error string.
+	* gm2-compiler/SymbolTable.def (PutConstLitInternal):
+	New procedure.
+	(IsConstLitInternal): New procedure function.
+	* gm2-compiler/SymbolTable.mod (PutConstLitInternal):
+	New procedure.
+	(IsConstLitInternal): New procedure function.
+	(SymConstLit): New field IsInternal.
+	(CreateConstLit): Initialize IsInternal to FALSE.
+
 2024-02-21  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114026

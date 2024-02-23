@@ -1,3 +1,9 @@
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114007
+	* c-lex.cc (c_common_has_attribute): Parse 2 CPP_COLONs with
+	the first one with COLON_SCOPE flag the same as CPP_SCOPE.
+
 2024-02-10  Marek Polacek  <polacek@redhat.com>
 
 	DR 2237

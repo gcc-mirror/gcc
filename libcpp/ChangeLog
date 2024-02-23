@@ -1,3 +1,11 @@
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114007
+	* include/cpplib.h (COLON_SCOPE): Define to PURE_ZERO.
+	* lex.cc (_cpp_lex_direct): When lexing CPP_COLON with another
+	colon after it, if !CPP_OPTION (pfile, scope) set COLON_SCOPE
+	flag on the first CPP_COLON token.
+
 2024-02-01  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/105608

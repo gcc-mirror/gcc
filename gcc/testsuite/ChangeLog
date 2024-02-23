@@ -1,3 +1,1104 @@
+2024-02-22  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Wmismatched-new-delete-8.C: Use __SIZE_TYPE__.
+
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114007
+	* gcc.dg/c23-attr-syntax-6.c: Adjust testcase for :: being valid
+	even in -std=c11 even without __extension__ and : : etc. not being
+	valid anymore even with __extension__.
+	* gcc.dg/c23-attr-syntax-7.c: Likewise.
+	* gcc.dg/c23-attr-syntax-8.c: New test.
+
+2024-02-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/109804
+	* g++.dg/warn/Wmismatched-new-delete-8.C: New test.
+
+2024-02-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/112375
+	* gcc.target/aarch64/vget_set_lane_1.c: Update test output.
+
+2024-02-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114055
+	* gm2/pim/fail/forloopby.mod: New test.
+	* gm2/pim/pass/forloopby2.mod: New test.
+
+2024-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114048
+	* gcc.dg/torture/pr114048.c: New testcase.
+
+2024-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114027
+	* gcc.dg/vect/pr114027.c: New testcase.
+
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113993
+	* gcc.dg/tree-ssa/pr113993.c: New test.
+
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114038
+	* gcc.dg/torture/bitint-59.c: New test.
+
+2024-02-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109987
+	* lib/target-supports.exp
+	(check_effective_target_powerpc_p8vector_ok): Remove.
+	(check_effective_target_powerpc_p9vector_ok): Remove.
+	(check_p8vector_hw_available): Replace -mpower8-vector with
+	-mcpu=power8.
+	(check_p9vector_hw_available): Replace -mpower9-vector with
+	-mcpu=power9.
+	(check_ppc_float128_hw_available): Likewise.
+	(check_vect_support_and_set_flags): Replace -mpower8-vector with
+	-mcpu=power8, replace -mpower9-vector with -mcpu=power9 or
+	nothing if check_power10_hw_available and place -mcpu=970 first
+	if needed to avoid possible overriding.
+	* g++.target/powerpc/altivec-19.C: Replace powerpc_p9vector_ok with
+	powerpc_vsx_ok and append -mvsx to dg-options.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-eq-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-eq-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-eq-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-gt-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-gt-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-gt-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-lt-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-lt-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-lt-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-unordered-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-unordered-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-unordered-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-3.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-4.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-3.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-4.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-10.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-11.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-3.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-4.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-6.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-7.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-8.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-9.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-10.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-11.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-3.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-4.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-6.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-7.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-8.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-9.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-3.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-4.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-5.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-exp-0.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-exp-1.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-exp-2.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-exp-3.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-sig-0.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-sig-1.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-sig-2.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-sig-3.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-insert-exp-0.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-insert-exp-1.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-insert-exp-2.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-insert-exp-3.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-insert-exp-4.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-insert-exp-5.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-insert-exp-6.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-insert-exp-7.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-0.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-1.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-2.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-3.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-4.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-5.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-6.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-7.c: Likewise.
+	* gcc.target/powerpc/builtins-3-p9.c: Likewise.
+	* gcc.target/powerpc/byte-in-either-range-0.c: Likewise.
+	* gcc.target/powerpc/byte-in-either-range-1.c: Likewise.
+	* gcc.target/powerpc/byte-in-range-0.c: Likewise.
+	* gcc.target/powerpc/byte-in-range-1.c: Likewise.
+	* gcc.target/powerpc/byte-in-set-0.c: Likewise.
+	* gcc.target/powerpc/byte-in-set-1.c: Likewise.
+	* gcc.target/powerpc/byte-in-set-2.c: Likewise.
+	* gcc.target/powerpc/clone1.c: Likewise.
+	* gcc.target/powerpc/ctz-3.c: Likewise.
+	* gcc.target/powerpc/ctz-4.c: Likewise.
+	* gcc.target/powerpc/darn-0.c: Likewise.
+	* gcc.target/powerpc/darn-1.c: Likewise.
+	* gcc.target/powerpc/darn-2.c: Likewise.
+	* gcc.target/powerpc/dform-3.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-0.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-1.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-10.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-11.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-12.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-13.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-14.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-15.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-16.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-17.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-18.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-19.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-2.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-20.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-21.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-22.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-23.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-24.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-25.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-26.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-27.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-28.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-29.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-3.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-30.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-31.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-32.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-33.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-34.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-35.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-36.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-37.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-38.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-39.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-4.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-40.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-41.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-42.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-43.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-44.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-45.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-46.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-47.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-48.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-49.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-5.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-50.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-51.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-52.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-53.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-54.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-55.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-56.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-57.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-58.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-59.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-6.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-60.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-61.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-62.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-63.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-64.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-65.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-66.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-67.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-68.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-69.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-7.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-70.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-71.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-72.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-73.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-74.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-75.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-76.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-77.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-78.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-79.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-8.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-9.c: Likewise.
+	* gcc.target/powerpc/direct-move-vector.c: Likewise.
+	* gcc.target/powerpc/float128-type-2.c: Likewise.
+	* gcc.target/powerpc/fold-vec-abs-int-fwrapv.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-abs-int.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-abs-longlong-fwrapv.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-abs-longlong.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cmp-char.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cmp-short.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-char.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-float.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-int.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-short.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-mult-int128-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-neg-int.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-neg-longlong.p9.c: Likewise.
+	* gcc.target/powerpc/p9-dimode1.c: Likewise.
+	* gcc.target/powerpc/p9-dimode2.c: Likewise.
+	* gcc.target/powerpc/p9-extract-1.c: Likewise.
+	* gcc.target/powerpc/p9-extract-2.c: Likewise.
+	* gcc.target/powerpc/p9-extract-3.c: Likewise.
+	* gcc.target/powerpc/p9-extract-4.c: Likewise.
+	* gcc.target/powerpc/p9-fpcvt-1.c: Likewise.
+	* gcc.target/powerpc/p9-fpcvt-2.c: Likewise.
+	* gcc.target/powerpc/p9-fpcvt-3.c: Likewise.
+	* gcc.target/powerpc/p9-lxvx-stxvx-1.c: Likewise.
+	* gcc.target/powerpc/p9-lxvx-stxvx-2.c: Likewise.
+	* gcc.target/powerpc/p9-lxvx-stxvx-3.c: Likewise.
+	* gcc.target/powerpc/p9-minmax-1.c: Likewise.
+	* gcc.target/powerpc/p9-minmax-2.c: Likewise.
+	* gcc.target/powerpc/p9-minmax-3.c: Likewise.
+	* gcc.target/powerpc/p9-novsx.c: Likewise.
+	* gcc.target/powerpc/p9-permute.c: Likewise.
+	* gcc.target/powerpc/p9-sign_extend-runnable.c: Likewise.
+	* gcc.target/powerpc/p9-splat-1.c: Likewise.
+	* gcc.target/powerpc/p9-splat-2.c: Likewise.
+	* gcc.target/powerpc/p9-splat-3.c: Likewise.
+	* gcc.target/powerpc/p9-splat-4.c: Likewise.
+	* gcc.target/powerpc/p9-splat-5.c: Likewise.
+	* gcc.target/powerpc/p9-vbpermd.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-8.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-8.c: Likewise.
+	* gcc.target/powerpc/p9-vneg.c: Likewise.
+	* gcc.target/powerpc/p9-vparity.c: Likewise.
+	* gcc.target/powerpc/p9-vpermr.c: Likewise.
+	* gcc.target/powerpc/p9-xxbr-1.c: Likewise.
+	* gcc.target/powerpc/p9-xxbr-2.c: Likewise.
+	* gcc.target/powerpc/p9-xxbr-3.c: Likewise.
+	* gcc.target/powerpc/ppc-fortran/pr80108-1.f90: Likewise.
+	* gcc.target/powerpc/ppc-round3.c: Likewise.
+	* gcc.target/powerpc/pr103124.c: Likewise.
+	* gcc.target/powerpc/pr104015-1.c: Likewise.
+	* gcc.target/powerpc/pr106769-p9.c: Likewise.
+	* gcc.target/powerpc/pr107412.c: Likewise.
+	* gcc.target/powerpc/pr110429.c: Likewise.
+	* gcc.target/powerpc/pr66144-1.c: Likewise.
+	* gcc.target/powerpc/pr71186.c: Likewise.
+	* gcc.target/powerpc/pr71309.c: Likewise.
+	* gcc.target/powerpc/pr71670.c: Likewise.
+	* gcc.target/powerpc/pr71698.c: Likewise.
+	* gcc.target/powerpc/pr71720.c: Likewise.
+	* gcc.target/powerpc/pr72853.c: Likewise.
+	* gcc.target/powerpc/pr78056-1.c: Likewise.
+	* gcc.target/powerpc/pr78658.c: Likewise.
+	* gcc.target/powerpc/pr78953.c: Likewise.
+	* gcc.target/powerpc/pr79004.c: Likewise.
+	* gcc.target/powerpc/pr79038-1.c: Likewise.
+	* gcc.target/powerpc/pr79179.c: Likewise.
+	* gcc.target/powerpc/pr79251.p9.c: Likewise.
+	* gcc.target/powerpc/pr79799-1.c: Likewise.
+	* gcc.target/powerpc/pr79799-2.c: Likewise.
+	* gcc.target/powerpc/pr79799-3.c: Likewise.
+	* gcc.target/powerpc/pr79799-5.c: Likewise.
+	* gcc.target/powerpc/pr80695-p9.c: Likewise.
+	* gcc.target/powerpc/pr81348.c: Likewise.
+	* gcc.target/powerpc/pr81622.c: Likewise.
+	* gcc.target/powerpc/pr84154-3.c: Likewise.
+	* gcc.target/powerpc/pr90763.c: Likewise.
+	* gcc.target/powerpc/pr96933-1.c: Likewise.
+	* gcc.target/powerpc/sad-vectorize-1.c: Likewise.
+	* gcc.target/powerpc/sad-vectorize-2.c: Likewise.
+	* gcc.target/powerpc/signbit-2.c: Likewise.
+	* gcc.target/powerpc/vadsdu-0.c: Likewise.
+	* gcc.target/powerpc/vadsdu-1.c: Likewise.
+	* gcc.target/powerpc/vadsdu-2.c: Likewise.
+	* gcc.target/powerpc/vadsdu-3.c: Likewise.
+	* gcc.target/powerpc/vadsdu-4.c: Likewise.
+	* gcc.target/powerpc/vadsdu-5.c: Likewise.
+	* gcc.target/powerpc/vadsdub-1.c: Likewise.
+	* gcc.target/powerpc/vadsdub-2.c: Likewise.
+	* gcc.target/powerpc/vadsduh-1.c: Likewise.
+	* gcc.target/powerpc/vadsduh-2.c: Likewise.
+	* gcc.target/powerpc/vadsduw-1.c: Likewise.
+	* gcc.target/powerpc/vadsduw-2.c: Likewise.
+	* gcc.target/powerpc/vec-extract-4.c: Likewise.
+	* gcc.target/powerpc/vec-init-3.c: Likewise.
+	* gcc.target/powerpc/vec-minmax-1.c: Likewise.
+	* gcc.target/powerpc/vec-minmax-2.c: Likewise.
+	* gcc.target/powerpc/vec-set-char.c: Likewise.
+	* gcc.target/powerpc/vec-set-int.c: Likewise.
+	* gcc.target/powerpc/vec-set-short.c: Likewise.
+	* gcc.target/powerpc/vec_reve_2.c: Likewise.
+	* gcc.target/powerpc/vector_float.c: Likewise.
+	* gcc.target/powerpc/vslv-0.c: Likewise.
+	* gcc.target/powerpc/vslv-1.c: Likewise.
+	* gcc.target/powerpc/vsrv-0.c: Likewise.
+	* gcc.target/powerpc/vsrv-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-0.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-10.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-11.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-12.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-13.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-14.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-8.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-9.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-nez-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-nez-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-nez-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-nez-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-nez-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-nez-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-nez-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-0.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-10.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-11.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-12.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-13.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-14.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-8.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-9.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eqz-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eqz-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eqz-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eqz-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eqz-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eqz-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eqz-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpne-0.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpne-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpne-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpne-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpne-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpne-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpne-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpne-8.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpne-9.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpnez-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpnez-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpnez-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpnez-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpnez-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpnez-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpnez-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-0.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-0.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-0.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-10.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-11.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-12.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-13.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-8.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-9.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xlx-0.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xlx-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xlx-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xlx-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xlx-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xlx-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xlx-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xlx-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xrx-0.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xrx-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xrx-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xrx-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xrx-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xrx-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xrx-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xrx-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-0.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-1.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-10.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-11.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-12.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-13.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-4.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-5.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-6.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-8.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-9.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-msum.c: Likewise.
+	* gcc.target/powerpc/vsx-himode.c: Likewise.
+	* gcc.target/powerpc/vsx-himode2.c: Likewise.
+	* gcc.target/powerpc/vsx-himode3.c: Likewise.
+	* gcc.target/powerpc/vsx-qimode.c: Likewise.
+	* gcc.target/powerpc/vsx-qimode2.c: Likewise.
+	* gcc.target/powerpc/vsx-qimode3.c: Likewise.
+	* g++.target/powerpc/pr65240-1.C: Replace powerpc_p8vector_ok with
+	powerpc_vsx_ok and append -mvsx to dg-options.
+	* g++.target/powerpc/pr65240-2.C: Likewise.
+	* g++.target/powerpc/pr65240-3.C: Likewise.
+	* g++.target/powerpc/pr65242.C: Likewise.
+	* g++.target/powerpc/pr67211.C: Likewise.
+	* g++.target/powerpc/pr71294.C: Likewise.
+	* g++.target/powerpc/pr84279.C: Likewise.
+	* g++.target/powerpc/pr93974.C: Likewise.
+	* gcc.target/powerpc/atomic-p8.c: Likewise.
+	* gcc.target/powerpc/atomic_load_store-p8.c: Likewise.
+	* gcc.target/powerpc/bcd-2.c: Likewise.
+	* gcc.target/powerpc/bcd-3.c: Likewise.
+	* gcc.target/powerpc/bool2-p8.c: Likewise.
+	* gcc.target/powerpc/bool3-p8.c: Likewise.
+	* gcc.target/powerpc/builtins-1.c: Likewise.
+	* gcc.target/powerpc/builtins-3-p8.c: Likewise.
+	* gcc.target/powerpc/builtins-5.c: Likewise.
+	* gcc.target/powerpc/builtins-9.c: Likewise.
+	* gcc.target/powerpc/crypto-builtin-1.c: Likewise.
+	* gcc.target/powerpc/crypto-builtin-2.c: Likewise.
+	* gcc.target/powerpc/direct-move-double1.c: Likewise.
+	* gcc.target/powerpc/direct-move-float1.c: Likewise.
+	* gcc.target/powerpc/direct-move-long1.c: Likewise.
+	* gcc.target/powerpc/direct-move-vint1.c: Likewise.
+	* gcc.target/powerpc/float128-type-1.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-char.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-double.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-float.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-short.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-char-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-float-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-int-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-short-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-neg-char.c: Likewise.
+	* gcc.target/powerpc/fold-vec-neg-floatdouble.c: Likewise.
+	* gcc.target/powerpc/fold-vec-neg-int.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-neg-short.c: Likewise.
+	* gcc.target/powerpc/fold-vec-select-double.c: Likewise.
+	* gcc.target/powerpc/fold-vec-store-builtin_vec_xst-longlong.c: Likewise.
+	* gcc.target/powerpc/fusion.c: Likewise.
+	* gcc.target/powerpc/fusion2.c: Likewise.
+	* gcc.target/powerpc/mul-vectorize-1.c: Likewise.
+	* gcc.target/powerpc/p8-vec-xl-xst-v2.c: Likewise.
+	* gcc.target/powerpc/p8-vec-xl-xst.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-1.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-2.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-3.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-4.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-5.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-6.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-7.c: Likewise.
+	* gcc.target/powerpc/p8vector-fp.c: Likewise.
+	* gcc.target/powerpc/p8vector-int128-1.c: Likewise.
+	* gcc.target/powerpc/p8vector-ldst.c: Likewise.
+	* gcc.target/powerpc/p8vector-vbpermq.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-1.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-2.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-3.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-4.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-5.c: Likewise.
+	* gcc.target/powerpc/ppc-round2.c: Likewise.
+	* gcc.target/powerpc/pr100866-1.c: Likewise.
+	* gcc.target/powerpc/pr100866-2.c: Likewise.
+	* gcc.target/powerpc/pr104239-1.c: Likewise.
+	* gcc.target/powerpc/pr104239-2.c: Likewise.
+	* gcc.target/powerpc/pr104239-3.c: Likewise.
+	* gcc.target/powerpc/pr106769-p8.c: Likewise.
+	* gcc.target/powerpc/pr108396.c: Likewise.
+	* gcc.target/powerpc/pr111449-1.c: Likewise.
+	* gcc.target/powerpc/pr57744.c: Likewise.
+	* gcc.target/powerpc/pr58673-1.c: Likewise.
+	* gcc.target/powerpc/pr58673-2.c: Likewise.
+	* gcc.target/powerpc/pr60137.c: Likewise.
+	* gcc.target/powerpc/pr60203.c: Likewise.
+	* gcc.target/powerpc/pr66144-2.c: Likewise.
+	* gcc.target/powerpc/pr66144-3.c: Likewise.
+	* gcc.target/powerpc/pr68163.c: Likewise.
+	* gcc.target/powerpc/pr69548.c: Likewise.
+	* gcc.target/powerpc/pr70669.c: Likewise.
+	* gcc.target/powerpc/pr71977-1.c: Likewise.
+	* gcc.target/powerpc/pr71977-2.c: Likewise.
+	* gcc.target/powerpc/pr72717.c: Likewise.
+	* gcc.target/powerpc/pr78056-3.c: Likewise.
+	* gcc.target/powerpc/pr78056-4.c: Likewise.
+	* gcc.target/powerpc/pr78102.c: Likewise.
+	* gcc.target/powerpc/pr78543.c: Likewise.
+	* gcc.target/powerpc/pr78604.c: Likewise.
+	* gcc.target/powerpc/pr79251.p8.c: Likewise.
+	* gcc.target/powerpc/pr79354.c: Likewise.
+	* gcc.target/powerpc/pr79544.c: Likewise.
+	* gcc.target/powerpc/pr79907.c: Likewise.
+	* gcc.target/powerpc/pr79951.c: Likewise.
+	* gcc.target/powerpc/pr80315-1.c: Likewise.
+	* gcc.target/powerpc/pr80315-2.c: Likewise.
+	* gcc.target/powerpc/pr80315-3.c: Likewise.
+	* gcc.target/powerpc/pr80315-4.c: Likewise.
+	* gcc.target/powerpc/pr80510-2.c: Likewise.
+	* gcc.target/powerpc/pr80695-p8.c: Likewise.
+	* gcc.target/powerpc/pr80718.c: Likewise.
+	* gcc.target/powerpc/pr84154-2.c: Likewise.
+	* gcc.target/powerpc/pr88558-p8.c: Likewise.
+	* gcc.target/powerpc/pr88845.c: Likewise.
+	* gcc.target/powerpc/pr91903.c: Likewise.
+	* gcc.target/powerpc/pr92923-2.c: Likewise.
+	* gcc.target/powerpc/pr96933-2.c: Likewise.
+	* gcc.target/powerpc/pr97019.c: Likewise.
+	* gcc.target/powerpc/pragma_power8.c: Likewise.
+	* gcc.target/powerpc/signbit-1.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-1.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-12.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-14.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-15.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-16.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-17.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-18.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-19.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-2.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-22.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-23.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-24.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-25.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-26.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-27.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-3.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-30.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-33.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-36.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-39.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-4.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-42.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-45.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-46.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-5.c: Likewise.
+	* gcc.target/powerpc/unpack-vectorize-3.c: Likewise.
+	* gcc.target/powerpc/upper-regs-sf.c: Likewise.
+	* gcc.target/powerpc/vec-cmp.c: Likewise.
+	* gcc.target/powerpc/vec-extract-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-3.c: Likewise.
+	* gcc.target/powerpc/vec-extract-5.c: Likewise.
+	* gcc.target/powerpc/vec-extract-6.c: Likewise.
+	* gcc.target/powerpc/vec-extract-7.c: Likewise.
+	* gcc.target/powerpc/vec-extract-8.c: Likewise.
+	* gcc.target/powerpc/vec-extract-9.c: Likewise.
+	* gcc.target/powerpc/vec-init-10.c: Likewise.
+	* gcc.target/powerpc/vec-init-6.c: Likewise.
+	* gcc.target/powerpc/vec-init-7.c: Likewise.
+	* gcc.target/powerpc/vsx-extract-3.c: Likewise.
+	* gcc.target/powerpc/vsx-extract-4.c: Likewise.
+	* gcc.target/powerpc/vsx-extract-5.c: Likewise.
+	* gcc.target/powerpc/vsx-simode.c: Likewise.
+	* gcc.target/powerpc/vsx-simode2.c: Likewise.
+	* gcc.target/powerpc/vsx-simode3.c: Likewise.
+	* gcc.target/powerpc/builtins-4-int128-runnable.c: Replace
+	powerpc_p8vector_ok with powerpc_vsx_ok, replace -mpower8-vector
+	with -mvsx, and add dg-additional-options -mdejagnu-cpu=power8
+	if !has_arch_pwr8.
+	* gcc.target/powerpc/builtins-mergew-mergow.c: Likewise.
+	* gcc.target/powerpc/direct-move-float3.c: Likewise.
+	* gcc.target/powerpc/divkc3-2.c: Likewise.
+	* gcc.target/powerpc/divkc3-3.c: Likewise.
+	* gcc.target/powerpc/fold-vec-abs-longlong-fwrapv.c: Likewise.
+	* gcc.target/powerpc/fold-vec-abs-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-add-4.c: Likewise.
+	* gcc.target/powerpc/fold-vec-add-7.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cmp-int.h: Likewise.
+	* gcc.target/powerpc/fold-vec-cmp-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cmp-short.h: Likewise.
+	* gcc.target/powerpc/fold-vec-cntlz-char.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cntlz-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cntlz-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cntlz-short.c: Likewise.
+	* gcc.target/powerpc/fold-vec-ld-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-eqv-char.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-eqv-float.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-eqv-floatdouble.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-eqv-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-eqv-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-eqv-short.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-ors-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-other-char.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-other-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-other-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-other-short.c: Likewise.
+	* gcc.target/powerpc/fold-vec-mergehl-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-minmax-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-mult-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-mult-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-neg-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-neg-longlong.h: Likewise.
+	* gcc.target/powerpc/fold-vec-pack-double.c: Likewise.
+	* gcc.target/powerpc/fold-vec-pack-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-shift-left-longlong-fwrapv.c: Likewise.
+	* gcc.target/powerpc/fold-vec-shift-left-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-shift-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-st-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-sub-int128.c: Likewise.
+	* gcc.target/powerpc/fold-vec-sub-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-unpack-float.c: Likewise.
+	* gcc.target/powerpc/fold-vec-unpack-int.c: Likewise.
+	* gcc.target/powerpc/mmx-packs.c: Likewise.
+	* gcc.target/powerpc/mmx-packssdw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-packsswb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-packuswb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-paddb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-paddd-1.c: Likewise.
+	* gcc.target/powerpc/mmx-paddsb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-paddsw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-paddusb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-paddusw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-paddw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pcmpeqb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pcmpeqd-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pcmpeqw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pcmpgtb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pcmpgtd-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pcmpgtw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pmaddwd-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pmulhw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pmullw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pslld-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psllw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psrad-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psraw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psrld-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psrlw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psubb-2.c: Likewise.
+	* gcc.target/powerpc/mmx-psubd-2.c: Likewise.
+	* gcc.target/powerpc/mmx-psubsb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psubsw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psubusb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psubusw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-psubw-2.c: Likewise.
+	* gcc.target/powerpc/mmx-punpckhbw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-punpckhdq-1.c: Likewise.
+	* gcc.target/powerpc/mmx-punpckhwd-1.c: Likewise.
+	* gcc.target/powerpc/mmx-punpcklbw-1.c: Likewise.
+	* gcc.target/powerpc/mmx-punpckldq-1.c: Likewise.
+	* gcc.target/powerpc/mmx-punpcklwd-1.c: Likewise.
+	* gcc.target/powerpc/mulkc3-2.c: Likewise.
+	* gcc.target/powerpc/mulkc3-3.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-8.c: Likewise.
+	* gcc.target/powerpc/pr37191.c: Likewise.
+	* gcc.target/powerpc/pr83862.c: Likewise.
+	* gcc.target/powerpc/pr84154-1.c: Likewise.
+	* gcc.target/powerpc/pr84220-sld2.c: Likewise.
+	* gcc.target/powerpc/pr85456.c: Likewise.
+	* gcc.target/powerpc/pr86731-longlong.c: Likewise.
+	* gcc.target/powerpc/sse-addps-1.c: Likewise.
+	* gcc.target/powerpc/sse-addss-1.c: Likewise.
+	* gcc.target/powerpc/sse-andnps-1.c: Likewise.
+	* gcc.target/powerpc/sse-andps-1.c: Likewise.
+	* gcc.target/powerpc/sse-cmpss-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpi16ps-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpi32ps-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpi32x2ps-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpi8ps-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpspi16-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpspi8-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpu16ps-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpu8ps-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtsi2ss-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtsi2ss-2.c: Likewise.
+	* gcc.target/powerpc/sse-cvtss2si-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtss2si-2.c: Likewise.
+	* gcc.target/powerpc/sse-cvttss2si-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvttss2si-2.c: Likewise.
+	* gcc.target/powerpc/sse-divps-1.c: Likewise.
+	* gcc.target/powerpc/sse-divss-1.c: Likewise.
+	* gcc.target/powerpc/sse-maxps-1.c: Likewise.
+	* gcc.target/powerpc/sse-maxps-2.c: Likewise.
+	* gcc.target/powerpc/sse-maxss-1.c: Likewise.
+	* gcc.target/powerpc/sse-minps-1.c: Likewise.
+	* gcc.target/powerpc/sse-minps-2.c: Likewise.
+	* gcc.target/powerpc/sse-minss-1.c: Likewise.
+	* gcc.target/powerpc/sse-movaps-1.c: Likewise.
+	* gcc.target/powerpc/sse-movaps-2.c: Likewise.
+	* gcc.target/powerpc/sse-movhlps-1.c: Likewise.
+	* gcc.target/powerpc/sse-movhps-1.c: Likewise.
+	* gcc.target/powerpc/sse-movhps-2.c: Likewise.
+	* gcc.target/powerpc/sse-movlhps-1.c: Likewise.
+	* gcc.target/powerpc/sse-movlps-1.c: Likewise.
+	* gcc.target/powerpc/sse-movlps-2.c: Likewise.
+	* gcc.target/powerpc/sse-movmskb-1.c: Likewise.
+	* gcc.target/powerpc/sse-movmskps-1.c: Likewise.
+	* gcc.target/powerpc/sse-movss-1.c: Likewise.
+	* gcc.target/powerpc/sse-movss-2.c: Likewise.
+	* gcc.target/powerpc/sse-movss-3.c: Likewise.
+	* gcc.target/powerpc/sse-mulps-1.c: Likewise.
+	* gcc.target/powerpc/sse-mulss-1.c: Likewise.
+	* gcc.target/powerpc/sse-orps-1.c: Likewise.
+	* gcc.target/powerpc/sse-pavgw-1.c: Likewise.
+	* gcc.target/powerpc/sse-pmaxsw-1.c: Likewise.
+	* gcc.target/powerpc/sse-pmaxub-1.c: Likewise.
+	* gcc.target/powerpc/sse-pminsw-1.c: Likewise.
+	* gcc.target/powerpc/sse-pminub-1.c: Likewise.
+	* gcc.target/powerpc/sse-pmulhuw-1.c: Likewise.
+	* gcc.target/powerpc/sse-psadbw-1.c: Likewise.
+	* gcc.target/powerpc/sse-rcpps-1.c: Likewise.
+	* gcc.target/powerpc/sse-rsqrtps-1.c: Likewise.
+	* gcc.target/powerpc/sse-shufps-1.c: Likewise.
+	* gcc.target/powerpc/sse-sqrtps-1.c: Likewise.
+	* gcc.target/powerpc/sse-subps-1.c: Likewise.
+	* gcc.target/powerpc/sse-subss-1.c: Likewise.
+	* gcc.target/powerpc/sse-ucomiss-1.c: Likewise.
+	* gcc.target/powerpc/sse-ucomiss-2.c: Likewise.
+	* gcc.target/powerpc/sse-ucomiss-3.c: Likewise.
+	* gcc.target/powerpc/sse-ucomiss-4.c: Likewise.
+	* gcc.target/powerpc/sse-ucomiss-5.c: Likewise.
+	* gcc.target/powerpc/sse-ucomiss-6.c: Likewise.
+	* gcc.target/powerpc/sse-unpckhps-1.c: Likewise.
+	* gcc.target/powerpc/sse-unpcklps-1.c: Likewise.
+	* gcc.target/powerpc/sse-xorps-1.c: Likewise.
+	* gcc.target/powerpc/sse2-addpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-addsd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-andnpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-andpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cmppd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cmpsd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-comisd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-comisd-2.c: Likewise.
+	* gcc.target/powerpc/sse2-comisd-3.c: Likewise.
+	* gcc.target/powerpc/sse2-comisd-4.c: Likewise.
+	* gcc.target/powerpc/sse2-comisd-5.c: Likewise.
+	* gcc.target/powerpc/sse2-comisd-6.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtdq2pd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtdq2ps-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtpd2dq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtpd2ps-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtps2dq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtps2pd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtsd2si-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtsd2si-2.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtsd2ss-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtsi2sd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtsi2sd-2.c: Likewise.
+	* gcc.target/powerpc/sse2-cvtss2sd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvttpd2dq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvttps2dq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvttsd2si-1.c: Likewise.
+	* gcc.target/powerpc/sse2-cvttsd2si-2.c: Likewise.
+	* gcc.target/powerpc/sse2-divpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-divsd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-maxpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-maxsd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-minpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-minsd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-mmx.c: Likewise.
+	* gcc.target/powerpc/sse2-movhpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-movhpd-2.c: Likewise.
+	* gcc.target/powerpc/sse2-movlpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-movlpd-2.c: Likewise.
+	* gcc.target/powerpc/sse2-movmskpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-movq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-movq-2.c: Likewise.
+	* gcc.target/powerpc/sse2-movq-3.c: Likewise.
+	* gcc.target/powerpc/sse2-movsd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-movsd-2.c: Likewise.
+	* gcc.target/powerpc/sse2-movsd-3.c: Likewise.
+	* gcc.target/powerpc/sse2-mulpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-mulsd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-orpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-packssdw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-packsswb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-packuswb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-paddb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-paddd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-paddq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-paddsb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-paddsw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-paddusb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-paddusw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-paddw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pand-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pandn-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pavgb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pavgw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pcmpeqb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pcmpeqd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pcmpeqw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pcmpgtb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pcmpgtd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pcmpgtw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pextrw.c: Likewise.
+	* gcc.target/powerpc/sse2-pinsrw.c: Likewise.
+	* gcc.target/powerpc/sse2-pmaddwd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pmaxsw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pmaxub-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pminsw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pminub-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pmovmskb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pmulhuw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pmulhw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pmullw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pmuludq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-por-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psadbw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pshufd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pshufhw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pshuflw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pslld-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pslld-2.c: Likewise.
+	* gcc.target/powerpc/sse2-pslldq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psllq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psllq-2.c: Likewise.
+	* gcc.target/powerpc/sse2-psllw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psllw-2.c: Likewise.
+	* gcc.target/powerpc/sse2-psrad-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psrad-2.c: Likewise.
+	* gcc.target/powerpc/sse2-psraw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psraw-2.c: Likewise.
+	* gcc.target/powerpc/sse2-psrld-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psrld-2.c: Likewise.
+	* gcc.target/powerpc/sse2-psrldq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psrlq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psrlq-2.c: Likewise.
+	* gcc.target/powerpc/sse2-psrlw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psrlw-2.c: Likewise.
+	* gcc.target/powerpc/sse2-psubb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psubd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psubq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psubsb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psubsw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psubusb-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psubusw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-psubw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-punpckhbw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-punpckhdq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-punpckhqdq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-punpckhwd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-punpcklbw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-punpckldq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-punpcklqdq-1.c: Likewise.
+	* gcc.target/powerpc/sse2-punpcklwd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pxor-1.c: Likewise.
+	* gcc.target/powerpc/sse2-shufpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-sqrtpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-subpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-subsd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-ucomisd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-ucomisd-2.c: Likewise.
+	* gcc.target/powerpc/sse2-ucomisd-3.c: Likewise.
+	* gcc.target/powerpc/sse2-ucomisd-4.c: Likewise.
+	* gcc.target/powerpc/sse2-ucomisd-5.c: Likewise.
+	* gcc.target/powerpc/sse2-ucomisd-6.c: Likewise.
+	* gcc.target/powerpc/sse2-unpckhpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-unpcklpd-1.c: Likewise.
+	* gcc.target/powerpc/sse2-xorpd-1.c: Likewise.
+	* gcc.target/powerpc/sse3-addsubpd.c: Likewise.
+	* gcc.target/powerpc/sse3-addsubps.c: Likewise.
+	* gcc.target/powerpc/sse3-haddpd.c: Likewise.
+	* gcc.target/powerpc/sse3-haddps.c: Likewise.
+	* gcc.target/powerpc/sse3-hsubpd.c: Likewise.
+	* gcc.target/powerpc/sse3-hsubps.c: Likewise.
+	* gcc.target/powerpc/sse3-lddqu.c: Likewise.
+	* gcc.target/powerpc/sse3-movddup.c: Likewise.
+	* gcc.target/powerpc/sse3-movshdup.c: Likewise.
+	* gcc.target/powerpc/sse3-movsldup.c: Likewise.
+	* gcc.target/powerpc/sse4_1-blendpd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-blendps-2.c: Likewise.
+	* gcc.target/powerpc/sse4_1-blendps.c: Likewise.
+	* gcc.target/powerpc/sse4_1-blendvpd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-blendvps.c: Likewise.
+	* gcc.target/powerpc/sse4_1-ceilpd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-ceilps.c: Likewise.
+	* gcc.target/powerpc/sse4_1-ceilsd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-ceilss.c: Likewise.
+	* gcc.target/powerpc/sse4_1-floorpd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-floorps.c: Likewise.
+	* gcc.target/powerpc/sse4_1-floorsd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-floorss.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pblendvb.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pblendw-2.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pblendw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pcmpeqq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pinsrb.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pinsrd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pinsrq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovsxbq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovsxdq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovsxwq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmuldq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-ptest-1.c: Likewise.
+	* gcc.target/powerpc/sse4_1-roundpd-2.c: Likewise.
+	* gcc.target/powerpc/sse4_1-roundpd-3.c: Likewise.
+	* gcc.target/powerpc/sse4_2-pcmpgtq.c: Likewise.
+	* gcc.target/powerpc/ssse3-pabsb.c: Likewise.
+	* gcc.target/powerpc/ssse3-pabsd.c: Likewise.
+	* gcc.target/powerpc/ssse3-pabsw.c: Likewise.
+	* gcc.target/powerpc/ssse3-palignr.c: Likewise.
+	* gcc.target/powerpc/ssse3-phaddd.c: Likewise.
+	* gcc.target/powerpc/ssse3-phaddsw.c: Likewise.
+	* gcc.target/powerpc/ssse3-phaddw.c: Likewise.
+	* gcc.target/powerpc/ssse3-phsubd.c: Likewise.
+	* gcc.target/powerpc/ssse3-phsubsw.c: Likewise.
+	* gcc.target/powerpc/ssse3-phsubw.c: Likewise.
+	* gcc.target/powerpc/ssse3-pmaddubsw.c: Likewise.
+	* gcc.target/powerpc/ssse3-pmulhrsw.c: Likewise.
+	* gcc.target/powerpc/ssse3-pshufb.c: Likewise.
+	* gcc.target/powerpc/ssse3-psignb.c: Likewise.
+	* gcc.target/powerpc/ssse3-psignd.c: Likewise.
+	* gcc.target/powerpc/ssse3-psignw.c: Likewise.
+	* gcc.target/powerpc/vec-cmp-sel.c: Likewise.
+	* gcc.target/powerpc/vec-sld-modulo.c: Likewise.
+	* gcc.target/powerpc/vec-srad-modulo.c: Likewise.
+	* gcc.target/powerpc/vec-srd-modulo.c: Likewise.
+	* gcc.target/powerpc/amo1.c: Replace powerpc_p9vector_ok with
+	powerpc_vsx_ok, replace -mpower9-vector with -mvsx, and add
+	dg-additional-options -mdejagnu-cpu=power9 if !has_arch_pwr9.
+	* gcc.target/powerpc/amo2.c: Likewise.
+	* gcc.target/powerpc/dform-1.c: Likewise.
+	* gcc.target/powerpc/dform-2.c: Likewise.
+	* gcc.target/powerpc/float128-5.c: Likewise.
+	* gcc.target/powerpc/float128-complex-2.c: Likewise.
+	* gcc.target/powerpc/float128-fma1.c: Likewise.
+	* gcc.target/powerpc/float128-hw.c: Likewise.
+	* gcc.target/powerpc/float128-hw10.c: Likewise.
+	* gcc.target/powerpc/float128-hw11.c: Likewise.
+	* gcc.target/powerpc/float128-hw2.c: Likewise.
+	* gcc.target/powerpc/float128-hw3.c: Likewise.
+	* gcc.target/powerpc/float128-hw4.c: Likewise.
+	* gcc.target/powerpc/float128-hw5.c: Likewise.
+	* gcc.target/powerpc/float128-hw6.c: Likewise.
+	* gcc.target/powerpc/float128-hw7.c: Likewise.
+	* gcc.target/powerpc/float128-hw8.c: Likewise.
+	* gcc.target/powerpc/float128-hw9.c: Likewise.
+	* gcc.target/powerpc/float128-minmax.c: Likewise.
+	* gcc.target/powerpc/float128-odd.c: Likewise.
+	* gcc.target/powerpc/float128-sqrt1.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cmp-int.p9.c: Likewise.
+	* gcc.target/powerpc/gnuattr2.c: Likewise.
+	* gcc.target/powerpc/pr71656-1.c: Likewise.
+	* gcc.target/powerpc/pr71656-2.c: Likewise.
+	* gcc.target/powerpc/pr81959.c: Likewise.
+	* gcc.target/powerpc/pr82748-1.c: Likewise.
+	* gcc.target/powerpc/pr82748-2.c: Likewise.
+	* gcc.target/powerpc/pr111449-2.c: Replace powerpc_p8vector_ok
+	with powerpc_vsx_ok.
+	* gcc.target/powerpc/pr98914.c: Likewise.
+	* gcc.target/powerpc/versioned-copy-loop.c: Replace
+	powerpc_p8vector_ok with powerpc_vsx_ok and append -mvsx to
+	dg-options.
+	* gcc.target/powerpc/clone2.c: Replace powerpc_p9vector_ok with
+	powerpc_vsx_ok.
+	* gcc.target/powerpc/p9-options-1.c: Replace powerpc_p9vector_ok
+	with powerpc_vsx_ok, replace -mno-power9-vector with -mno-vsx.
+	* gcc.target/powerpc/pr84226.c: Replace powerpc_p9vector_ok with
+	powerpc_vsx_ok and append -mvsx to dg-options.
+	* g++.dg/pr69667.C: Replace powerpc_p8vector_ok with
+	powerpc_vsx_ok and append -mvsx to dg-options.
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-perm.c: Replace
+	powerpc_p9vector_ok with powerpc_vsx_ok and replace
+	-mpower9-vector with -mvsx.
+	* gcc.dg/vect/pr109011-1.c: Replace powerpc_p8vector_ok with
+	powerpc_vsx_ok, and replace -mpower8-vector with
+	-mdejagnu-cpu=power8 -mvsx or -mvsx under different conditions.
+	* gcc.dg/vect/pr109011-2.c: Replace powerpc_p9vector_ok
+	with powerpc_vsx_ok, and replace -mpower9-vector with
+	-mdejagnu-cpu=power9 -mvsx or -mvsx under different conditions.
+	* gcc.dg/vect/pr109011-4.c: Likewise.
+	* gcc.dg/vect/pr109011-3.c: Replace powerpc_p8vector_ok with
+	powerpc_vsx_ok, and replace -mpower8-vector -mno-power9-vector
+	with -mdejagnu-cpu=power8 -mvsx.
+	* gcc.dg/vect/pr109011-5.c: Likewise.
+	* gcc.target/powerpc/altivec-35.c: Remove -mno-power8-vector.
+	* gcc.target/powerpc/vsx-vector-7.c: Replace -mno-power8-vector
+	with -mdejagnu-cpu=power7.
+	* gcc.dg/vect/O3-pr70130.c: Replace -mcpu=power7 with options
+	-mdejagnu-cpu=power7 -mvsx and remove option -mno-power9-vector
+	-mno-power8-vector.
+	* gfortran.dg/vect/pr45714-b.f: Likewise.
+	* gcc.dg/vect/pr48765.c: Remove dg-skip-if and replace -mcpu=power7
+	with option -mdejagnu-cpu=power6.
+	* gcc.target/powerpc/pr78056-2.c: Likewise.
+	* gcc.target/powerpc/altivec-2-runnable.c: Replace
+	powerpc_p8vector_ok with powerpc_vsx_ok, remove -mpower8-vector
+	and add dg-additional-options -mdejagnu-cpu=power8 if !has_arch_pwr8.
+	* gcc.target/powerpc/altivec-37.c: Likewise.
+	* gcc.target/powerpc/fold-vec-abs-longlong-fwrapv.p8.c: Replace
+	powerpc_p8vector_ok with powerpc_vsx_ok and replace -mpower8-vector
+	with -mvsx.
+	* gcc.target/powerpc/fold-vec-abs-longlong.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cmp-char.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cmp-int.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-cmp-short.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-mergeeo-floatdouble.c: Likewise.
+	* gcc.target/powerpc/fold-vec-mergeeo-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-mergeeo-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-mult-int128-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-neg-longlong.p8.c: Likewise.
+	* gcc.target/powerpc/pr104124.c: Likewise.
+	* gcc.target/powerpc/vec-cmpne-long.c: Likewise.
+	* gcc.target/powerpc/pr86731-fwrapv-longlong.c: Replace
+	powerpc_p8vector_ok with powerpc_vsx_ok, replace -mpower8-vector with
+	-mvsx and add dg-additional-options -mdejagnu-cpu=power8 if
+	!has_arch_pwr8.
+	* gcc.target/powerpc/pr80098-1.c: Replace powerpc_p9vector_ok with
+	powerpc_vsx_ok and replace -mno-power9-vector with -mno-vsx.
+	* gcc.target/powerpc/pr80098-2.c: Replace powerpc_p8vector_ok with
+	powerpc_vsx_ok and replace -mno-power8-vector with -mno-vsx.
+	* gcc.target/powerpc/pragma_misc9.c: Replace powerpc_p9vector_ok
+	with powerpc_vsx_ok.
+
+2024-02-22  Pan Li  <pan2.li@intel.com>
+
+	PR target/114017
+	* gcc.target/riscv/predef-__riscv_v_intrinsic.c: Update the
+	version to 0.12.
+	* gcc.target/riscv/rvv/base/pr114017-1.c: New test.
+
+2024-02-22  Fangrui Song  <maskray@gcc.gnu.org>
+
+	* gcc.target/riscv/asm-raw-symbol.c: New test.
+
 2024-02-21  Edwin Lu  <ewlu@rivosinc.com>
 
 	PR target/113249

@@ -1,3 +1,96 @@
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114007
+	* doc/extend.texi: (__extension__): Remove comments about scope
+	tokens vs. two colons.
+
+2024-02-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/109804
+	* gimple-ssa-warn-access.cc (new_delete_mismatch_p): Handle
+	DEMANGLE_COMPONENT_UNNAMED_TYPE.
+
+2024-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114048
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): MEM_REF
+	can also produce -1 off.
+
+2024-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114027
+	* tree-vect-loop.cc (vecctorizable_reduction): Use optimized
+	condition reduction classification only for single-element
+	chains.
+
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/111960
+	* profile-count.h (profile_count::dump): Remove overload with
+	char * first argument.
+	* profile-count.cc (profile_count::dump): Change overload with char *
+	first argument which uses sprintf into the overfload with FILE *
+	first argument and use fprintf instead.  Remove overload which wrapped
+	it.
+
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113993
+	* tree-call-cdce.cc (get_no_error_domain): Handle
+	BUILT_IN_{COSH,SINH,EXP{,M1,2}}{F32X,F64X}.  Handle
+	BUILT_IN_{COSH,SINH,EXP{,M1,2}}L for
+	REAL_MODE_FORMAT (TYPE_MODE (long_double_type_node))->emax == 16384
+	the as the F128 suffixed cases, otherwise as non-suffixed ones.
+	Handle BUILT_IN_{EXP,POW}10L for
+	REAL_MODE_FORMAT (TYPE_MODE (long_double_type_node))->emax == 16384
+	as (-inf, 4932).
+
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114038
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_mul_overflow): Fix
+	loop exit condition if end is divisible by limb_prec.
+
+2024-02-22  YunQiang Su  <syq@gcc.gnu.org>
+
+	* doc/invoke.texi(MIPS Options): Fix skipping UrlSuffix
+	problem of mabi=, mno-flush-func, mexplicit-relocs;
+	add missing leading - of mbranch-cost option.
+	* config/mips/mips.opt.urls: Regenerate.
+
+2024-02-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109987
+	* config/rs6000/constraints.md (we): Update internal doc without
+	referring to option -mpower9-vector.
+	* config/rs6000/driver-rs6000.cc (asm_names): Remove mpower9-vector
+	special handlings.
+	* config/rs6000/rs6000-cpus.def (OTHER_P9_VECTOR_MASKS,
+	OTHER_P8_VECTOR_MASKS): Merge to ...
+	(OTHER_VSX_VECTOR_MASKS): ... here.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Remove
+	some error message handlings and explicit option mask adjustments on
+	explicit option power{8,9}-vector conflicting with other options.
+	(rs6000_print_isa_options): Update comments.
+	(rs6000_disable_incompatible_switches): Remove power{8,9}-vector
+	related array items and handlings.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Remove mpower9-vector
+	special handlings.
+	* config/rs6000/rs6000.opt: Make option power{8,9}-vector as
+	WarnRemoved.
+	* doc/extend.texi: Remove documentation referring to option
+	-mpower8-vector.
+	* doc/invoke.texi: Remove documentation for option
+	-mpower{8,9}-vector and adjust some documentation referring to them.
+	* doc/md.texi: Update documentation for constraint we.
+	* doc/sourcebuild.texi: Remove documentation for powerpc_p8vector_ok.
+
+2024-02-22  Pan Li  <pan2.li@intel.com>
+
+	PR target/114017
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Upgrade
+	the version to 0.12.
+
 2024-02-21  Edwin Lu  <ewlu@rivosinc.com>
 
 	* config/riscv/riscv.cc (riscv_sched_variable_issue): Enable assert
