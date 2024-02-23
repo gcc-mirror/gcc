@@ -3,6 +3,6 @@ struct S1 {
     y: f64,
 }
 
-struct S1(i32, bool); // { dg-error "redefined multiple times" }
+struct S1(i32, bool); // { dg-error "defined multiple times" }
 
 fn main() {}
