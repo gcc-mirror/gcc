@@ -322,7 +322,8 @@ package body Checks is
    --  that the access value is non-null, since the checks do not
    --  not apply to null access values.
 
-   procedure Install_Static_Check (R_Cno : Node_Id; Loc : Source_Ptr);
+   procedure Install_Static_Check
+     (R_Cno : Node_Id; Loc : Source_Ptr; Reason : RT_Exception_Code);
    --  Called by Apply_{Length,Range}_Checks to rewrite the tree with the
    --  Constraint_Error node.
 
@@ -3001,7 +3002,7 @@ package body Checks is
             Insert_Action (Insert_Node, R_Cno);
 
          else
-            Install_Static_Check (R_Cno, Loc);
+            Install_Static_Check (R_Cno, Loc, CE_Range_Check_Failed);
          end if;
       end loop;
    end Apply_Range_Check;
@@ -3469,7 +3470,7 @@ package body Checks is
             end if;
 
          else
-            Install_Static_Check (R_Cno, Loc);
+            Install_Static_Check (R_Cno, Loc, CE_Length_Check_Failed);
          end if;
       end loop;
    end Apply_Selected_Length_Checks;
@@ -8692,14 +8693,16 @@ package body Checks is
    -- Install_Static_Check --
    --------------------------
 
-   procedure Install_Static_Check (R_Cno : Node_Id; Loc : Source_Ptr) is
+   procedure Install_Static_Check
+     (R_Cno : Node_Id; Loc : Source_Ptr; Reason : RT_Exception_Code)
+   is
       Stat : constant Boolean   := Is_OK_Static_Expression (R_Cno);
       Typ  : constant Entity_Id := Etype (R_Cno);
 
    begin
       Rewrite (R_Cno,
         Make_Raise_Constraint_Error (Loc,
-          Reason => CE_Range_Check_Failed));
+          Reason => Reason));
       Set_Analyzed (R_Cno);
       Set_Etype (R_Cno, Typ);
       Set_Raises_Constraint_Error (R_Cno);
