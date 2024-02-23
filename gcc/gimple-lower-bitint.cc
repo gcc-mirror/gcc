@@ -4255,12 +4255,12 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 				     NULL_TREE, NULL_TREE);
 	      gimple *g2 = NULL;
 	      if (!single_comparison)
-		g2 = gimple_build_cond (LT_EXPR, idx,
+		g2 = gimple_build_cond (EQ_EXPR, idx,
 					size_int (prec_limbs - 1),
 					NULL_TREE, NULL_TREE);
 	      edge edge_true_true, edge_true_false, edge_false;
 	      if_then_if_then_else (g, g2, profile_probability::likely (),
-				    profile_probability::likely (),
+				    profile_probability::unlikely (),
 				    edge_true_true, edge_true_false,
 				    edge_false);
 	      tree l = limb_access (type, var ? var : obj, idx, true);
@@ -4269,8 +4269,11 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 	      if (!single_comparison)
 		{
 		  m_gsi = gsi_after_labels (edge_true_true->src);
-		  l = limb_access (type, var ? var : obj,
-				   size_int (prec_limbs - 1), true);
+		  tree plm1idx = size_int (prec_limbs - 1);
+		  tree plm1type = limb_access_type (type, plm1idx);
+		  l = limb_access (type, var ? var : obj, plm1idx, true);
+		  if (!useless_type_conversion_p (plm1type, TREE_TYPE (rhs)))
+		    rhs = add_cast (plm1type, rhs);
 		  if (!useless_type_conversion_p (TREE_TYPE (l),
 						  TREE_TYPE (rhs)))
 		    rhs = add_cast (TREE_TYPE (l), rhs);
