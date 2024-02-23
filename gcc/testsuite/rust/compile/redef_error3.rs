@@ -2,7 +2,7 @@ fn test() -> bool {
     true
 }
 
-fn test() -> i32 { // { dg-error "redefined multiple times" }
+fn test() -> i32 { // { dg-error "defined multiple times" }
     123
 }
 
