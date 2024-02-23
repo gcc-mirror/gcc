@@ -10259,12 +10259,12 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 					  &algorithm, &variant, cost)
 		  : cost < mul_cost (speed, mode))
 		{
-		  target = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
-						op1, target)
-				  : expand_and (mode, op0,
-						negate_rtx (mode, op1),
-						target);
-		  return REDUCE_BIT_FIELD (target);
+		  temp = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
+					      op1, target)
+				: expand_and (mode, op0,
+					      negate_rtx (mode, op1),
+					      target);
+		  return REDUCE_BIT_FIELD (temp);
 		}
 	    }
 	}
