@@ -5618,7 +5618,14 @@ get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
       if (i >= initial_values.length () || (j > i && neutral_op))
 	op = neutral_op;
       else
-	op = initial_values[i];
+	{
+	  if (!useless_type_conversion_p (TREE_TYPE (vector_type),
+					  TREE_TYPE (initial_values[i])))
+	    initial_values[i] = gimple_convert (&ctor_seq,
+						TREE_TYPE (vector_type),
+						initial_values[i]);
+	  op = initial_values[i];
+	}
 
       /* Create 'vect_ = {op0,op1,...,opn}'.  */
       number_of_places_left_in_vector--;
