@@ -37,6 +37,10 @@ with System.Soft_Links;        use System.Soft_Links;
 
 package body System.Finalization_Primitives is
 
+   procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
+   pragma Import (Ada, Raise_From_Controlled_Operation,
+                              "__gnat_raise_from_controlled_operation");
+
    function To_Collection_Node_Ptr is
      new Ada.Unchecked_Conversion (Address, Collection_Node_Ptr);
 
@@ -297,7 +301,7 @@ package body System.Finalization_Primitives is
       --  If one of the finalization actions raised an exception, reraise it
 
       if Finalization_Exception_Raised then
-         Reraise_Occurrence (Exc_Occur);
+         Raise_From_Controlled_Operation (Exc_Occur);
       end if;
    end Finalize;
 
@@ -306,12 +310,8 @@ package body System.Finalization_Primitives is
    ---------------------
 
    procedure Finalize_Master (Master : in out Finalization_Master) is
-      procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
-      pragma Import (Ada, Raise_From_Controlled_Operation,
-                                 "__gnat_raise_from_controlled_operation");
-
-      Finalization_Exception_Raised : Boolean := False;
       Exc_Occur                     : Exception_Occurrence;
+      Finalization_Exception_Raised : Boolean := False;
       Node                          : Master_Node_Ptr;
 
    begin
