@@ -358,21 +358,16 @@ package body Exp_Ch13 is
          declare
             Expr_Typ : constant Entity_Id  := Etype (Expr);
             Loc      : constant Source_Ptr := Sloc (N);
-            New_Expr : Node_Id;
-            Temp_Id  : Entity_Id;
+            Temp_Id  : constant Entity_Id  := Make_Temporary (Loc, 'T');
 
          begin
-            Temp_Id := Make_Temporary (Loc, 'T');
             Insert_Action (N,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp_Id,
                 Object_Definition   => New_Occurrence_Of (Expr_Typ, Loc),
                 Expression          => Relocate_Node (Expr)));
 
-            New_Expr := New_Occurrence_Of (Temp_Id, Loc);
-            Set_Etype (New_Expr, Expr_Typ);
-
-            Set_Expression (N, New_Expr);
+            Set_Expression (N, New_Occurrence_Of (Temp_Id, Loc));
          end;
       end if;
 

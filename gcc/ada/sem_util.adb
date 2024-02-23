@@ -31081,8 +31081,7 @@ package body Sem_Util is
          begin
             if Is_Anonymous_Access_Type (Typ) then
                --  No indirection in this case; just evaluate the temp.
-               Result := New_Occurrence_Of (Temp, Loc);
-               Set_Etype (Result, Etype (Temp));
+               return New_Occurrence_Of (Temp, Loc);
 
             else
                Result := Make_Explicit_Dereference (Loc,
@@ -31101,10 +31100,14 @@ package body Sem_Util is
 
                   Set_Etype (Result, Typ);
                end if;
-            end if;
 
-            return Result;
+               return Result;
+            end if;
          end Indirect_Temp_Value;
+
+         --------------------------------------
+         -- Is_Access_Type_For_Indirect_Temp --
+         --------------------------------------
 
          function Is_Access_Type_For_Indirect_Temp
            (T : Entity_Id) return Boolean is
