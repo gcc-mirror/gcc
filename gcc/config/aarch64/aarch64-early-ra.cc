@@ -440,6 +440,7 @@ private:
   void record_allocno_use (allocno_info *);
   void record_allocno_def (allocno_info *);
   allocno_info *find_related_start (allocno_info *, allocno_info *, bool);
+  void accumulate_defs (allocno_info *, allocno_info *);
   void record_copy (rtx, rtx, bool = false);
   void record_constraints (rtx_insn *);
   void record_artificial_refs (unsigned int);
@@ -1569,6 +1570,8 @@ early_ra::find_related_start (allocno_info *dest_allocno,
 	}
 
       if (dest_allocno->group_size != 1
+	  // Account for definitions by shared registers.
+	  || dest_allocno->num_defs > 1
 	  || DF_REG_DEF_COUNT (dest_allocno->group ()->regno) != 1)
 	// Currently only single allocnos that are defined once can
 	// share registers with non-equivalent allocnos.  This could be
@@ -1590,6 +1593,20 @@ early_ra::find_related_start (allocno_info *dest_allocno,
 
       dest_allocno = next_allocno;
       is_equiv = false;
+    }
+}
+
+// Add FROM_ALLOCNO's definition information to TO_ALLOCNO's.
+void
+early_ra::accumulate_defs (allocno_info *to_allocno,
+			   allocno_info *from_allocno)
+{
+  if (from_allocno->num_defs > 0)
+    {
+      to_allocno->num_defs = MIN (from_allocno->num_defs
+				  + to_allocno->num_defs, 2);
+      to_allocno->last_def_point = MAX (to_allocno->last_def_point,
+					from_allocno->last_def_point);
     }
 }
 
@@ -1687,6 +1704,16 @@ early_ra::record_copy (rtx dest, rtx src, bool from_move_p)
 		  next_allocno->related_allocno = src_allocno->id;
 		  next_allocno->is_equiv = (start_allocno == dest_allocno
 					    && from_move_p);
+		  // If we're sharing two allocnos that are not equivalent,
+		  // carry across the definition information.  This is needed
+		  // to prevent multiple incompatible attempts to share with
+		  // the same register.
+		  if (next_allocno->is_shared ())
+		    accumulate_defs (src_allocno, next_allocno);
+		  src_allocno->last_use_point
+		    = MAX (src_allocno->last_use_point,
+			   next_allocno->last_use_point);
+
 		  if (next_allocno == start_allocno)
 		    break;
 		  next_allocno = m_allocnos[next_allocno->copy_dest];
