@@ -4462,15 +4462,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (c ? a : b) op (c ? d : e)  -->  c ? (a op d) : (b op e) */
  (simplify
   (op (vec_cond:s @0 @1 @2) (vec_cond:s @0 @3 @4))
-  (vec_cond @0 (op! @1 @3) (op! @2 @4)))
+  (if (TREE_CODE_CLASS (op) != tcc_comparison
+       || types_match (type, TREE_TYPE (@1))
+       || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK))
+   (vec_cond @0 (op! @1 @3) (op! @2 @4))))
 
 /* (c ? a : b) op d  -->  c ? (a op d) : (b op d) */
  (simplify
   (op (vec_cond:s @0 @1 @2) @3)
-  (vec_cond @0 (op! @1 @3) (op! @2 @3)))
+  (if (TREE_CODE_CLASS (op) != tcc_comparison
+       || types_match (type, TREE_TYPE (@1))
+       || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK))
+   (vec_cond @0 (op! @1 @3) (op! @2 @3))))
  (simplify
   (op @3 (vec_cond:s @0 @1 @2))
-  (vec_cond @0 (op! @3 @1) (op! @3 @2))))
+  (if (TREE_CODE_CLASS (op) != tcc_comparison
+       || types_match (type, TREE_TYPE (@1))
+       || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK))
+   (vec_cond @0 (op! @3 @1) (op! @3 @2)))))
 
 #if GIMPLE
 (match (nop_atomic_bit_test_and_p @0 @1 @4)
