@@ -1,3 +1,24 @@
+2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/108120
+	* config/arm/neon.md (div<VCVTF:mode>3): Rename from div<mode>3.
+	Gate with ARM_HAVE_NEON_<MODE>_ARITH.
+
+2024-02-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/loongarch.opt.in
+	(TARGET_EXPLICIT_RELOCS): Init to M_OPTION_NOT_SEEN.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.cc
+	(loongarch_option_override_internal): Set the default of
+	TARGET_EXPLICIT_RELOCS to HAVE_AS_EXPLICIT_RELOCS
+	&& !loongarch_mrelax.
+	* doc/invoke.texi (-m[no-]explicit-relocs): Update for
+	LoongArch.
+
 2024-02-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

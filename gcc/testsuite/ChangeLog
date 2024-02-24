@@ -1,3 +1,18 @@
+2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/108120
+	* gcc.target/arm/neon-recip-div-1.c: New file.
+
+2024-02-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2023-04-20  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-19.c: Add -misa-spec.
+
 2024-02-23  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
