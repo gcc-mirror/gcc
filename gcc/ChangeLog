@@ -1,3 +1,12 @@
+2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/108120
+	* config/arm/neon.md (div<VCVTF:mode>3): Rename from div<mode>3.
+	Gate with ARM_HAVE_NEON_<MODE>_ARITH.
+
 2024-02-22  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
