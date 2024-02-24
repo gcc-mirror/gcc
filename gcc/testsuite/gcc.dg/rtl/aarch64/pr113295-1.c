@@ -1,5 +1,5 @@
+// { dg-do run { target aarch64*-*-* } }
 // { dg-options "-O2" }
-// { dg-do run }
 
 struct data {
   double x;
