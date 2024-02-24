@@ -9745,7 +9745,7 @@ make_field_assignment (rtx x)
       if (width >= HOST_BITS_PER_WIDE_INT)
 	ze_mask = -1;
       else
-	ze_mask = ((unsigned HOST_WIDE_INT)1 << width) - 1;
+	ze_mask = (HOST_WIDE_INT_1U << width) - 1;
 
       /* Complete overlap.  We can remove the source AND.  */
       if ((and_mask & ze_mask) == ze_mask)

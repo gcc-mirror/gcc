@@ -9326,7 +9326,7 @@ fold_builtin_isascii (location_t loc, tree arg)
       /* Transform isascii(c) -> ((c & ~0x7f) == 0).  */
       arg = fold_build2 (BIT_AND_EXPR, integer_type_node, arg,
 			 build_int_cst (integer_type_node,
-					~ (unsigned HOST_WIDE_INT) 0x7f));
+					~ HOST_WIDE_INT_UC (0x7f)));
       return fold_build2_loc (loc, EQ_EXPR, integer_type_node,
 			      arg, integer_zero_node);
     }

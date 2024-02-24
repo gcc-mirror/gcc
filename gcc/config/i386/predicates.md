@@ -309,7 +309,7 @@
   switch (GET_CODE (op))
     {
     case CONST_INT:
-      return !(INTVAL (op) & ~(HOST_WIDE_INT) 0xffffffff);
+      return !(INTVAL (op) & ~HOST_WIDE_INT_C (0xffffffff));
 
     case SYMBOL_REF:
       /* TLS symbols are not constant.  */
@@ -839,7 +839,7 @@
 (define_predicate "const_32bit_mask"
   (and (match_code "const_int")
        (match_test "trunc_int_for_mode (INTVAL (op), DImode)
-		    == (HOST_WIDE_INT) 0xffffffff")))
+		    == HOST_WIDE_INT_C (0xffffffff)")))
 
 ;; Match 2, 4, or 8.  Used for leal multiplicands.
 (define_predicate "const248_operand"

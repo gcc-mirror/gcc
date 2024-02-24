@@ -280,7 +280,7 @@
   (and (match_code "const_int")
        (ior (match_test "ival == 0xff")
 	    (match_test "ival == 0xffff")
-	    (match_test "ival == (HOST_WIDE_INT) 0xffffffff"))))
+	    (match_test "ival == HOST_WIDE_INT_C (0xffffffff)"))))
 
 (define_constraint "M"
   "0, 1, 2, or 3 (shifts for the @code{lea} instruction)."

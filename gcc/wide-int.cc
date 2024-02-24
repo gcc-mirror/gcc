@@ -1713,8 +1713,7 @@ divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
      HOST_WIDE_INT and stored in the lower bits of each word.  This
      algorithm should work properly on both 32 and 64 bit
      machines.  */
-  unsigned HOST_WIDE_INT b
-    = (unsigned HOST_WIDE_INT)1 << HOST_BITS_PER_HALF_WIDE_INT;
+  unsigned HOST_WIDE_INT b = HOST_WIDE_INT_1U << HOST_BITS_PER_HALF_WIDE_INT;
   unsigned HOST_WIDE_INT qhat;   /* Estimate of quotient digit.  */
   unsigned HOST_WIDE_INT rhat;   /* A remainder.  */
   unsigned HOST_WIDE_INT p;      /* Product of two digits.  */

@@ -391,10 +391,10 @@ encode_array (tree type, int curtype, int format)
 
       /* Else, we are in a struct, and we encode it as a zero-length
 	 array.  */
-      sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)0);
+      sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC, HOST_WIDE_INT_0);
     }
   else if (TREE_INT_CST_LOW (TYPE_SIZE (array_of)) == 0)
-   sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)0);
+   sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC, HOST_WIDE_INT_0);
   else
     sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC,
 	     TREE_INT_CST_LOW (an_int_cst)

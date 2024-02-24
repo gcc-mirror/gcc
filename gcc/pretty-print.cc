@@ -2813,13 +2813,16 @@ test_pp_format ()
   ASSERT_PP_FORMAT_2 ("17 12345678", "%llo %x", (long long)15, 0x12345678);
   ASSERT_PP_FORMAT_2 ("cafebabe 12345678", "%llx %x", (long long)0xcafebabe,
 		      0x12345678);
-  ASSERT_PP_FORMAT_2 ("-27 12345678", "%wd %x", (HOST_WIDE_INT)-27, 0x12345678);
-  ASSERT_PP_FORMAT_2 ("-5 12345678", "%wi %x", (HOST_WIDE_INT)-5, 0x12345678);
-  ASSERT_PP_FORMAT_2 ("10 12345678", "%wu %x", (unsigned HOST_WIDE_INT)10,
+  ASSERT_PP_FORMAT_2 ("-27 12345678", "%wd %x", HOST_WIDE_INT_C (-27),
 		      0x12345678);
-  ASSERT_PP_FORMAT_2 ("17 12345678", "%wo %x", (HOST_WIDE_INT)15, 0x12345678);
-  ASSERT_PP_FORMAT_2 ("0xcafebabe 12345678", "%wx %x", (HOST_WIDE_INT)0xcafebabe,
+  ASSERT_PP_FORMAT_2 ("-5 12345678", "%wi %x", HOST_WIDE_INT_C (-5),
 		      0x12345678);
+  ASSERT_PP_FORMAT_2 ("10 12345678", "%wu %x", HOST_WIDE_INT_UC (10),
+		      0x12345678);
+  ASSERT_PP_FORMAT_2 ("17 12345678", "%wo %x", HOST_WIDE_INT_C (15),
+		      0x12345678);
+  ASSERT_PP_FORMAT_2 ("0xcafebabe 12345678", "%wx %x",
+		      HOST_WIDE_INT_C (0xcafebabe), 0x12345678);
   ASSERT_PP_FORMAT_2 ("-27 12345678", "%zd %x", (ssize_t)-27, 0x12345678);
   ASSERT_PP_FORMAT_2 ("-5 12345678", "%zi %x", (ssize_t)-5, 0x12345678);
   ASSERT_PP_FORMAT_2 ("10 12345678", "%zu %x", (size_t)10, 0x12345678);
