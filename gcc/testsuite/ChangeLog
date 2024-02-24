@@ -1,3 +1,11 @@
+2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/108120
+	* gcc.target/arm/neon-recip-div-1.c: New file.
+
 2024-02-20  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
