@@ -107,28 +107,30 @@ unittest
 }
 
 /**
-(Windows only) Converts a narrow string to a wide string using `buffer` as strorage. Returns a slice managed by
-`buffer` containing the converted string. The terminating zero is not part of the returned slice,
-but is guaranteed to follow it.
+ * (Windows only) Converts a narrow string to a wide string using `buffer` as strorage.
+ * Params:
+ *    narrow = string to be converted
+ *    buffer = where to place the converted string
+ * Returns: a slice of `buffer` containing the converted string. A zero follows the slice.
 */
 version(Windows) wchar[] toWStringz(scope const(char)[] narrow, ref SmallBuffer!wchar buffer) nothrow
 {
-    import core.sys.windows.winnls : MultiByteToWideChar;
-    import dmd.common.file : CodePage;
-
     if (narrow is null)
         return null;
 
-    size_t length;
-    int i;
-    while (1)
+    size_t charsToWchars(scope const(char)[] narrow, scope wchar[] buffer)
     {
         // https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
-        length = MultiByteToWideChar(CodePage, 0, narrow.ptr, cast(int) narrow.length, buffer.ptr, cast(int) buffer.length);
-        if (length < buffer.length)
-            break;
-        buffer.create(length + 1);
-        assert(++i == 1);   // ensure loop should only execute once or twice
+        import core.sys.windows.winnls : MultiByteToWideChar, CP_ACP;
+        return MultiByteToWideChar(CP_ACP, 0, narrow.ptr, cast(int) narrow.length, buffer.ptr, cast(int) buffer.length);
+    }
+
+    size_t length = charsToWchars(narrow, buffer[]);
+    if (length >= buffer.length) // not enough room in buffer[]
+    {
+        buffer.create(length + 1); // extend buffer length
+        length = charsToWchars(narrow, buffer[]);  // try again
+        assert(length < buffer.length);
     }
     buffer[length] = 0;
     return buffer[0 .. length];

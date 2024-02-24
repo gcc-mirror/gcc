@@ -16628,3 +16628,100 @@ Expression toBoolean(Expression exp, Scope* sc)
             return e;
     }
 }
+
+/********************************************
+ * Semantically analyze and then evaluate a static condition at compile time.
+ * This is special because short circuit operators &&, || and ?: at the top
+ * level are not semantically analyzed if the result of the expression is not
+ * necessary.
+ * Params:
+ *      sc  = instantiating scope
+ *      original = original expression, for error messages
+ *      e =  resulting expression
+ *      errors = set to `true` if errors occurred
+ *      negatives = array to store negative clauses
+ * Returns:
+ *      true if evaluates to true
+ */
+bool evalStaticCondition(Scope* sc, Expression original, Expression e, out bool errors, Expressions* negatives = null)
+{
+    if (negatives)
+        negatives.setDim(0);
+
+    bool impl(Expression e)
+    {
+        if (e.isNotExp())
+        {
+            NotExp ne = cast(NotExp)e;
+            return !impl(ne.e1);
+        }
+
+        if (e.op == EXP.andAnd || e.op == EXP.orOr)
+        {
+            LogicalExp aae = cast(LogicalExp)e;
+            bool result = impl(aae.e1);
+            if (errors)
+                return false;
+            if (e.op == EXP.andAnd)
+            {
+                if (!result)
+                    return false;
+            }
+            else
+            {
+                if (result)
+                    return true;
+            }
+            result = impl(aae.e2);
+            return !errors && result;
+        }
+
+        if (e.op == EXP.question)
+        {
+            CondExp ce = cast(CondExp)e;
+            bool result = impl(ce.econd);
+            if (errors)
+                return false;
+            Expression leg = result ? ce.e1 : ce.e2;
+            result = impl(leg);
+            return !errors && result;
+        }
+
+        Expression before = e;
+        const uint nerrors = global.errors;
+
+        sc = sc.startCTFE();
+        sc.flags |= SCOPE.condition;
+
+        e = e.expressionSemantic(sc);
+        e = resolveProperties(sc, e);
+        e = e.toBoolean(sc);
+
+        sc = sc.endCTFE();
+        e = e.optimize(WANTvalue);
+
+        if (nerrors != global.errors ||
+            e.isErrorExp() ||
+            e.type.toBasetype() == Type.terror)
+        {
+            errors = true;
+            return false;
+        }
+
+        e = e.ctfeInterpret();
+
+        const opt = e.toBool();
+        if (opt.isEmpty())
+        {
+            if (!e.type.isTypeError())
+                error(e.loc, "expression `%s` is not constant", e.toChars());
+            errors = true;
+            return false;
+        }
+
+        if (negatives && !opt.get())
+            negatives.push(before);
+        return opt.get();
+    }
+    return impl(e);
+}

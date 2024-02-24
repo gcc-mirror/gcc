@@ -36,7 +36,7 @@ public:
     // kludge for template.isType()
     DYNCAST dyncast() const override { return DYNCAST_TUPLE; }
 
-    const char *toChars() const override { return objects.toChars(); }
+    const char *toChars() const override;
 };
 
 struct TemplatePrevious

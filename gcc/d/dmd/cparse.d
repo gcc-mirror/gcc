@@ -1682,9 +1682,12 @@ final class CParser(AST) : Parser!AST
         AST.ParameterList parameterList;
         StorageClass stc = 0;
         const loc = token.loc;
+        auto symbolsSave = symbols;
+        symbols = new AST.Dsymbols();
         typedefTab.push(null);
         auto fbody = cparseStatement(ParseStatementFlags.scope_);
         typedefTab.pop();                                        // end of function scope
+        symbols = symbolsSave;
 
         // Rewrite last ExpStatement (if there is one) as a ReturnStatement
         auto ss = fbody.isScopeStatement();
@@ -1693,8 +1696,11 @@ final class CParser(AST) : Parser!AST
         if (const len = (*cs.statements).length)
         {
             auto s = (*cs.statements)[len - 1];
-            if (auto es = s.isExpStatement())
-                (*cs.statements)[len - 1] = new AST.ReturnStatement(es.loc, es.exp);
+            if (s)   // error recovery should be with ErrorStatement, not null
+            {
+                if (auto es = s.isExpStatement())
+                    (*cs.statements)[len - 1] = new AST.ReturnStatement(es.loc, es.exp);
+            }
         }
 
         auto tf = new AST.TypeFunction(parameterList, null, LINK.d, stc);
@@ -5520,7 +5526,7 @@ final class CParser(AST) : Parser!AST
                 defines.writeByte('#');
                 defines.writestring(n.ident.toString());
                 skipToNextLine(defines);
-                defines.writeByte('\n');
+                defines.writeByte(0);           // each #define line is 0 terminated
                 return true;
             }
             else if (n.ident == Id.__pragma)
@@ -5840,7 +5846,8 @@ final class CParser(AST) : Parser!AST
         const length = buf.length;
         buf.writeByte(0);
         auto slice = buf.peekChars()[0 .. length];
-        resetDefineLines(slice);                // reset lexer
+        auto scanlocSave = scanloc;
+        resetDefineLines(slice);        // reset lexer
         auto save = eSink;
         auto eLatch = new ErrorSinkLatch();
         eSink = eLatch;
@@ -5865,12 +5872,14 @@ final class CParser(AST) : Parser!AST
                 (*symbols)[*pd] = s;
                 return;
             }
+            assert(symbols, "symbols is null");
             defineTab[cast(void*)s.ident] = symbols.length;
             symbols.push(s);
         }
 
         while (p < endp)
         {
+            //printf("|%s|\n", p);
             if (p[0 .. 7] == "#define")
             {
                 p += 7;
@@ -5884,10 +5893,11 @@ final class CParser(AST) : Parser!AST
 
                     AST.Type t;
 
+                Lswitch:
                     switch (token.value)
                     {
-                        case TOK.endOfLine:     // #define identifier
-                            nextDefineLine();
+                        case TOK.endOfFile:     // #define identifier
+                            ++p;
                             continue;
 
                         case TOK.int32Literal:
@@ -5901,7 +5911,7 @@ final class CParser(AST) : Parser!AST
                         Linteger:
                             const intvalue = token.intvalue;
                             nextToken();
-                            if (token.value == TOK.endOfLine)
+                            if (token.value == TOK.endOfFile)
                             {
                                 /* Declare manifest constant:
                                  *  enum id = intvalue;
@@ -5909,7 +5919,7 @@ final class CParser(AST) : Parser!AST
                                 AST.Expression e = new AST.IntegerExp(scanloc, intvalue, t);
                                 auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
                                 addVar(v);
-                                nextDefineLine();
+                                ++p;
                                 continue;
                             }
                             break;
@@ -5924,7 +5934,7 @@ final class CParser(AST) : Parser!AST
                         Lfloat:
                             const floatvalue = token.floatvalue;
                             nextToken();
-                            if (token.value == TOK.endOfLine)
+                            if (token.value == TOK.endOfFile)
                             {
                                 /* Declare manifest constant:
                                  *  enum id = floatvalue;
@@ -5932,7 +5942,7 @@ final class CParser(AST) : Parser!AST
                                 AST.Expression e = new AST.RealExp(scanloc, floatvalue, t);
                                 auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
                                 addVar(v);
-                                nextDefineLine();
+                                ++p;
                                 continue;
                             }
                             break;
@@ -5942,7 +5952,7 @@ final class CParser(AST) : Parser!AST
                             const len = token.len;
                             const postfix = token.postfix;
                             nextToken();
-                            if (token.value == TOK.endOfLine)
+                            if (token.value == TOK.endOfFile)
                             {
                                 /* Declare manifest constant:
                                  *  enum id = "string";
@@ -5950,19 +5960,20 @@ final class CParser(AST) : Parser!AST
                                 AST.Expression e = new AST.StringExp(scanloc, str[0 .. len], len, 1, postfix);
                                 auto v = new AST.VarDeclaration(scanloc, null, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
                                 addVar(v);
-                                nextDefineLine();
+                                ++p;
                                 continue;
                             }
                             break;
 
                         case TOK.leftParenthesis:
+                        {
                             /* Look for:
                              *  #define ID ( expression )
                              * and rewrite it to a template function:
                              *  auto ID()() { return expression; }
                              */
                             if (params)
-                                break;                  // no parameters
+                                goto caseFunctionLike;        // version with parameters
                             nextToken();
                             eLatch.sawErrors = false;
                             auto exp = cparseExpression();
@@ -5971,7 +5982,7 @@ final class CParser(AST) : Parser!AST
                             if (token.value != TOK.rightParenthesis)
                                 break;
                             nextToken();
-                            if (token.value != TOK.endOfLine)
+                            if (token.value != TOK.endOfFile)
                                 break;
                             auto ret = new AST.ReturnStatement(exp.loc, exp);
                             auto parameterList = AST.ParameterList(new AST.Parameters(), VarArg.none, 0);
@@ -5985,26 +5996,115 @@ final class CParser(AST) : Parser!AST
                             AST.Expression constraint = null;
                             auto tempdecl = new AST.TemplateDeclaration(exp.loc, id, tpl, constraint, decldefs, false);
                             addVar(tempdecl);
-                            nextDefineLine();
+                            ++p;
                             continue;
+                        }
+
+                        caseFunctionLike:
+                        {
+                            /* Parse `( a, b ) expression`
+                             * Create template function:
+                             *    auto id(__MP1, __MP2)(__MP1 a, __MP1 b) { return expression; }
+                             */
+                            //printf("functionlike %s\n", id.toChars());
+
+                            // Capture the parameter list
+                            VarArg varargs = VarArg.none;
+                            auto parameters = new AST.Parameters();
+                            nextToken();        // skip past `(`
+                        Lwhile:
+                            while (1)
+                            {
+                                if (token.value == TOK.rightParenthesis)
+                                    break;
+                                if (token.value == TOK.dotDotDot)
+                                {
+                                    static if (0)       // variadic macros not supported yet
+                                    {
+                                        varargs = AST.VarArg.variadic;  // C-style variadics
+                                        nextToken();
+                                        if (token.value == TOK.rightParenthesis)
+                                            break Lwhile;
+                                    }
+                                    break Lswitch;
+                                }
+
+                                if (token.value != TOK.identifier)
+                                    break Lswitch;
+                                auto param = new AST.Parameter(token.loc, 0, null, token.ident, null, null);
+                                parameters.push(param);
+                                nextToken();
+                                if (token.value == TOK.comma)
+                                {
+                                    nextToken();
+                                    continue;
+                                }
+                                break;
+                            }
+                            if (token.value != TOK.rightParenthesis)
+                                break;
+
+                            //auto pstart = p;
+                            nextToken();
+                            auto parameterList = AST.ParameterList(parameters, varargs, 0);
+                            /* Create a type for each parameter. Add it to the template parameter list,
+                             * and the parameter list.
+                             */
+                            auto tpl = new AST.TemplateParameters();
+                            foreach (param; (*parameters)[])
+                            {
+                                auto idtype = Identifier.generateId("__MP");
+                                auto loc = param.loc;
+                                auto tp = new AST.TemplateTypeParameter(loc, idtype, null, null);
+                                tpl.push(tp);
+
+                                auto at = new AST.TypeIdentifier(loc, idtype);
+                                param.type = at;
+                            }
+
+                            eLatch.sawErrors = false;
+                            auto exp = cparseExpression();
+
+                            //printf("exp: %s tok: %s\n", exp.toChars(), Token.toChars(token.value));
+                            //printf("parsed: '%.*s'\n", cast(int)(p - pstart), pstart);
+                            assert(symbols);
+
+                            if (eLatch.sawErrors)   // parsing errors
+                                break;              // abandon this #define
+
+                            if (token.value != TOK.endOfFile)   // did not consume the entire line
+                                break;
+
+                            // Generate function
+                            auto ret = new AST.ReturnStatement(exp.loc, exp);
+                            StorageClass stc = STC.auto_;
+                            auto tf = new AST.TypeFunction(parameterList, null, LINK.d, stc);
+                            auto fd = new AST.FuncDeclaration(exp.loc, exp.loc, id, stc, tf, 0);
+                            fd.fbody = ret;
+
+                            // Wrap it in an eponymous template
+                            AST.Dsymbols* decldefs = new AST.Dsymbols();
+                            decldefs.push(fd);
+                            auto tempdecl = new AST.TemplateDeclaration(exp.loc, id, tpl, null, decldefs, false);
+                            addVar(tempdecl);
+
+                            ++p;
+                            continue;
+                        }
 
                         default:
                             break;
                     }
                 }
-                skipToNextLine();
             }
-            else
-            {
-                scan(&token);
-                if (token.value != TOK.endOfLine)
-                {
-                    skipToNextLine();
-                }
-            }
-            nextDefineLine();
+            // scan to end of line
+            while (*p)
+                ++p;
+            ++p; // advance to start of next line
+            scanloc.linnum = scanloc.linnum + 1;
         }
 
+        scanloc = scanlocSave;
         eSink = save;
         defines = buf;
     }

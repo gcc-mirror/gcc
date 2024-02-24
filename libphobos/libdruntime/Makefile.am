@@ -266,17 +266,17 @@ DRUNTIME_DSOURCES_ELF = core/sys/elf/package.d
 DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 	core/sys/freebsd/dlfcn.d core/sys/freebsd/err.d \
 	core/sys/freebsd/execinfo.d core/sys/freebsd/ifaddrs.d \
-	core/sys/freebsd/net/if_dl.d core/sys/freebsd/netinet/in_.d \
-	core/sys/freebsd/pthread_np.d core/sys/freebsd/stdlib.d \
-	core/sys/freebsd/string.d core/sys/freebsd/sys/_bitset.d \
-	core/sys/freebsd/sys/_cpuset.d core/sys/freebsd/sys/cdefs.d \
-	core/sys/freebsd/sys/elf.d core/sys/freebsd/sys/elf32.d \
-	core/sys/freebsd/sys/elf64.d core/sys/freebsd/sys/elf_common.d \
-	core/sys/freebsd/sys/event.d core/sys/freebsd/sys/link_elf.d \
-	core/sys/freebsd/sys/mman.d core/sys/freebsd/sys/mount.d \
-	core/sys/freebsd/sys/socket.d core/sys/freebsd/sys/sysctl.d \
-	core/sys/freebsd/sys/types.d core/sys/freebsd/time.d \
-	core/sys/freebsd/unistd.d
+	core/sys/freebsd/net/if_.d core/sys/freebsd/net/if_dl.d \
+	core/sys/freebsd/netinet/in_.d core/sys/freebsd/pthread_np.d \
+	core/sys/freebsd/stdlib.d core/sys/freebsd/string.d \
+	core/sys/freebsd/sys/_bitset.d core/sys/freebsd/sys/_cpuset.d \
+	core/sys/freebsd/sys/cdefs.d core/sys/freebsd/sys/elf.d \
+	core/sys/freebsd/sys/elf32.d core/sys/freebsd/sys/elf64.d \
+	core/sys/freebsd/sys/elf_common.d core/sys/freebsd/sys/event.d \
+	core/sys/freebsd/sys/link_elf.d core/sys/freebsd/sys/mman.d \
+	core/sys/freebsd/sys/mount.d core/sys/freebsd/sys/socket.d \
+	core/sys/freebsd/sys/sysctl.d core/sys/freebsd/sys/types.d \
+	core/sys/freebsd/time.d core/sys/freebsd/unistd.d
 
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/dlfcn.d core/sys/linux/elf.d core/sys/linux/epoll.d \

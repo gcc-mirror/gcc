@@ -3276,7 +3276,9 @@ struct Nullable(T)
         {
             if (!_isNull)
             {
-                destroy(_value.payload);
+                import std.traits : Unqual;
+                auto ptr = () @trusted { return cast(Unqual!T*) &_value.payload; }();
+                destroy!false(*ptr);
             }
         }
     }
@@ -4317,6 +4319,37 @@ auto nullable(T)(T t)
     b.popFront();
     assert(!a.empty);
     assert(b.empty);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24403
+@safe unittest
+{
+    static bool destroyed;
+    static struct S { ~this() { destroyed = true; } }
+
+    {
+        Nullable!S s = S.init;
+        destroyed = false;
+    }
+    assert(destroyed);
+
+    {
+        Nullable!(const S) s = S.init;
+        destroyed = false;
+    }
+    assert(destroyed);
+
+    {
+        Nullable!(immutable S) s = S.init;
+        destroyed = false;
+    }
+    assert(destroyed);
+
+    {
+        Nullable!(shared S) s = S.init;
+        destroyed = false;
+    }
+    assert(destroyed);
 }
 
 /**

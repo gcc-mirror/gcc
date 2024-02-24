@@ -1196,7 +1196,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             }
         case Taarray:
             if (fs.op == TOK.foreach_reverse_)
-                warning(fs.loc, "cannot use `foreach_reverse` with an associative array");
+                error(fs.loc, "cannot use `foreach_reverse` with an associative array");
             if (checkForArgTypes(fs))
                 return retError();
 

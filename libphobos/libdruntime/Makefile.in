@@ -329,10 +329,10 @@ am__objects_11 = core/sys/bionic/err.lo core/sys/bionic/fcntl.lo \
 @DRUNTIME_OS_ANDROID_TRUE@am__objects_12 = $(am__objects_11)
 am__objects_13 = core/sys/freebsd/config.lo core/sys/freebsd/dlfcn.lo \
 	core/sys/freebsd/err.lo core/sys/freebsd/execinfo.lo \
-	core/sys/freebsd/ifaddrs.lo core/sys/freebsd/net/if_dl.lo \
-	core/sys/freebsd/netinet/in_.lo core/sys/freebsd/pthread_np.lo \
-	core/sys/freebsd/stdlib.lo core/sys/freebsd/string.lo \
-	core/sys/freebsd/sys/_bitset.lo \
+	core/sys/freebsd/ifaddrs.lo core/sys/freebsd/net/if_.lo \
+	core/sys/freebsd/net/if_dl.lo core/sys/freebsd/netinet/in_.lo \
+	core/sys/freebsd/pthread_np.lo core/sys/freebsd/stdlib.lo \
+	core/sys/freebsd/string.lo core/sys/freebsd/sys/_bitset.lo \
 	core/sys/freebsd/sys/_cpuset.lo core/sys/freebsd/sys/cdefs.lo \
 	core/sys/freebsd/sys/elf.lo core/sys/freebsd/sys/elf32.lo \
 	core/sys/freebsd/sys/elf64.lo \
@@ -943,17 +943,17 @@ DRUNTIME_DSOURCES_ELF = core/sys/elf/package.d
 DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 	core/sys/freebsd/dlfcn.d core/sys/freebsd/err.d \
 	core/sys/freebsd/execinfo.d core/sys/freebsd/ifaddrs.d \
-	core/sys/freebsd/net/if_dl.d core/sys/freebsd/netinet/in_.d \
-	core/sys/freebsd/pthread_np.d core/sys/freebsd/stdlib.d \
-	core/sys/freebsd/string.d core/sys/freebsd/sys/_bitset.d \
-	core/sys/freebsd/sys/_cpuset.d core/sys/freebsd/sys/cdefs.d \
-	core/sys/freebsd/sys/elf.d core/sys/freebsd/sys/elf32.d \
-	core/sys/freebsd/sys/elf64.d core/sys/freebsd/sys/elf_common.d \
-	core/sys/freebsd/sys/event.d core/sys/freebsd/sys/link_elf.d \
-	core/sys/freebsd/sys/mman.d core/sys/freebsd/sys/mount.d \
-	core/sys/freebsd/sys/socket.d core/sys/freebsd/sys/sysctl.d \
-	core/sys/freebsd/sys/types.d core/sys/freebsd/time.d \
-	core/sys/freebsd/unistd.d
+	core/sys/freebsd/net/if_.d core/sys/freebsd/net/if_dl.d \
+	core/sys/freebsd/netinet/in_.d core/sys/freebsd/pthread_np.d \
+	core/sys/freebsd/stdlib.d core/sys/freebsd/string.d \
+	core/sys/freebsd/sys/_bitset.d core/sys/freebsd/sys/_cpuset.d \
+	core/sys/freebsd/sys/cdefs.d core/sys/freebsd/sys/elf.d \
+	core/sys/freebsd/sys/elf32.d core/sys/freebsd/sys/elf64.d \
+	core/sys/freebsd/sys/elf_common.d core/sys/freebsd/sys/event.d \
+	core/sys/freebsd/sys/link_elf.d core/sys/freebsd/sys/mman.d \
+	core/sys/freebsd/sys/mount.d core/sys/freebsd/sys/socket.d \
+	core/sys/freebsd/sys/sysctl.d core/sys/freebsd/sys/types.d \
+	core/sys/freebsd/time.d core/sys/freebsd/unistd.d
 
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/dlfcn.d core/sys/linux/elf.d core/sys/linux/epoll.d \
@@ -1613,6 +1613,7 @@ core/sys/freebsd/ifaddrs.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/net/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/freebsd/net
 	@: > core/sys/freebsd/net/$(am__dirstamp)
+core/sys/freebsd/net/if_.lo: core/sys/freebsd/net/$(am__dirstamp)
 core/sys/freebsd/net/if_dl.lo: core/sys/freebsd/net/$(am__dirstamp)
 core/sys/freebsd/netinet/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/freebsd/netinet
