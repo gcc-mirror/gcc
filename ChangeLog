@@ -1,3 +1,13 @@
+2024-02-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.ac (ENABLE_GOLD): Remove loongarch*-*-* from target
+	list.
+	* configure: Regenerate.
+
+2024-02-23  Monk Chiang  <monk.chiang@sifive.com>
+
+	* MAINTAINERS: Add myself.
+
 2024-02-10  Alexander Westbrooks  <alexanderw@gcc.gnu.org>
 
 	* MAINTAINERS: Add myself to write after approval and DCO.

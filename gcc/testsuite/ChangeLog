@@ -1,3 +1,66 @@
+2024-02-23  Steve Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114024
+	* gfortran.dg/allocate_with_source_27.f90: New test.
+	* gfortran.dg/allocate_with_source_28.f90: New test.
+
+2024-02-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr114028.c: New test.
+
+2024-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113083
+	* g++.dg/cpp0x/constexpr-113083.C: New test.
+
+2024-02-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113613
+	* gcc.target/aarch64/pr113613.c: New test.
+
+2024-02-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113295
+	* gcc.target/aarch64/pr113295-2.c: New test.
+
+2024-02-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113295
+	* gcc.dg/rtl/aarch64/pr113295-1.c: New test.
+
+2024-02-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/apx-ndd-tls-1b.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_code_6_gottpoff_reloc): New.
+
+2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/108120
+	* gcc.target/arm/neon-recip-div-1.c: New file.
+
+2024-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114054
+	* gcc.dg/bitint-92.c: New test.
+
+2024-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114040
+	* gcc.dg/torture/bitint-60.c: New test.
+	* gcc.dg/torture/bitint-61.c: New test.
+
+2024-02-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/vect/vect-bic-bitmask-12.c: Move dg-skip-if down.
+	* gcc.dg/vect/vect-bic-bitmask-23.c: Likewise.
+
+2024-02-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/plugin/crash-test-write-though-null-sarif.c
+	(scan-sarif-file): Allow for "Segmentation Fault", too.
+
 2024-02-22  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/warn/Wmismatched-new-delete-8.C: Use __SIZE_TYPE__.

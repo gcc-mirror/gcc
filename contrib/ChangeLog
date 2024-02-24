@@ -1,3 +1,8 @@
+2024-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR target/90785
+	* config-list.mk (LIST): --enable-obsolete for ia64*-*-*.
+
 2024-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* test_installed: Fill in HOSTCC, HOSTCXX, HOSTCFLAGS and

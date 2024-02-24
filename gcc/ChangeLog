@@ -1,3 +1,103 @@
+2024-02-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/114028
+	* config/riscv/riscv-v.cc (rvv_builder::can_duplicate_repeating_sequence_p):
+	Return false if inner mode is already Pmode.
+	(rvv_builder::is_all_same_sequence): New function.
+	(expand_vec_init): Emit broadcast if sequence is all same.
+
+2024-02-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113613
+	* config/aarch64/aarch64-early-ra.cc
+	(early_ra::m_current_region): New member variable.
+	(early_ra::m_fpr_recency): Likewise.
+	(early_ra::start_new_region): Bump m_current_region.
+	(early_ra::allocate_colors): Prefer less recently used registers
+	in the event of a tie.  Add a comment to explain why we prefer(ed)
+	higher-numbered registers.
+	(early_ra::find_oldest_color): Prefer less recently used registers
+	here too.
+	(early_ra::finalize_allocation): Update recency information for
+	allocated registers.
+	(early_ra::process_blocks): Initialize m_current_region and
+	m_fpr_recency.
+
+2024-02-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113295
+	* config/aarch64/aarch64-early-ra.cc
+	(early_ra::test_strictness): New enum.
+	(early_ra::is_chain_candidate): Add a strictness parameter to
+	control whether only correctness matters, or whether both correctness
+	and heuristics should be used.  Handle multiple levels of equivalence.
+	(early_ra::find_related_start): Update call accordingly.
+	(early_ra::strided_polarity_pref): Likewise.
+	(early_ra::form_chains): Likewise.
+	(early_ra::try_to_chain_allocnos): Use is_chain_candidate in
+	correctness mode rather than trying to inline the test.
+
+2024-02-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113295
+	* config/aarch64/aarch64-early-ra.cc
+	(early_ra::find_related_start): Account for definitions by shared
+	registers when testing for a single register definition.
+	(early_ra::accumulate_defs): New function.
+	(early_ra::record_copy): If A shares B's register, fold A's
+	definition information into B's.  Fold A's use information into B's.
+
+2024-02-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure.ac (HAVE_AS_R_X86_64_CODE_6_GOTTPOFF): Defined as 1
+	if R_X86_64_CODE_6_GOTTPOFF is supported.
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* config/i386/predicates.md (apx_ndd_add_memory_operand): Allow
+	UNSPEC_GOTNTPOFF if R_X86_64_CODE_6_GOTTPOFF is supported.
+
+2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/108120
+	* config/arm/neon.md (div<VCVTF:mode>3): Rename from div<mode>3.
+	Gate with ARM_HAVE_NEON_<MODE>_ARITH.
+
+2024-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114054
+	* expr.cc (expand_expr_real_2) <case MULT_EXPR>: Use
+	temp variable instead of target parameter for result.
+
+2024-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114040
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_addsub_overflow):
+	Use EQ_EXPR rather than LT_EXPR for g2 condition and change its
+	probability from likely to unlikely.  When handling the true true
+	store, first cast to limb_access_type and then to l's type.
+
+2024-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR target/90785
+	* config.gcc: Add ia64*-*-* to the list of obsoleted targets.
+
+2024-02-23  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	PR other/109668
+	* config/riscv/arch-canonicalize: Move to python3
+	* config/riscv/multilib-generator: Likewise
+
+2024-02-23  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* doc/invoke.texi: Document -mcpu.
+
+2024-02-23  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure: Regenerate.
+	* configure.ac: Add parameter "--fatal-warnings" to assemble
+	when checking whether the assemble support conditional branch
+	relaxation.
+
 2024-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/114007
