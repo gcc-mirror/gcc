@@ -3391,11 +3391,13 @@ ix86_set_func_type (tree fndecl)
      into a noreturn function by setting TREE_THIS_VOLATILE.  Normally
      the local-pure-const pass is run after ix86_set_func_type is called.
      When the local-pure-const pass is enabled for LTO, the interrupt
-     function is marked as noreturn in the IR output, which leads the
-     incompatible attribute error in LTO1.  */
+     function is marked with TREE_THIS_VOLATILE in the IR output, which
+     leads to the incompatible attribute error in LTO1.  Ignore the
+     interrupt function in this case.  */
   bool has_no_callee_saved_registers
     = ((TREE_THIS_VOLATILE (fndecl)
-	&& lookup_attribute ("noreturn", DECL_ATTRIBUTES (fndecl))
+	&& !lookup_attribute ("interrupt",
+			      TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))
 	&& optimize
 	&& !optimize_debug
 	&& (TREE_NOTHROW (fndecl) || !flag_exceptions))
