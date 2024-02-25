@@ -181,10 +181,19 @@ static void copy (mcStream_ptrToFile p)
       s = DynamicStrings_InitStringCharStar (FIO_getFileName (f));
       FIO_Close (f);
       f = SFIO_OpenToRead (s);
-      while (! (FIO_EOF (f)))
+      while ((! (FIO_EOF (f))) && (FIO_IsNoError (f)))
         {
           b = FIO_ReadNBytes (f, maxBuffer, &buffer);
-          b = FIO_WriteNBytes (destFile, b, &buffer);
+          if (FIO_IsNoError (f))
+            {
+              b = FIO_WriteNBytes (destFile, b, &buffer);
+            }
+          else if (! (FIO_EOF (f)))
+            {
+              /* avoid dangling else.  */
+              libc_printf ((const char *) "mcStream.mod:copy: error seen when reading file fragment: %s\\n", 62, DynamicStrings_string (s));
+              libc_exit (1);
+            }
         }
       FIO_Close (f);
     }

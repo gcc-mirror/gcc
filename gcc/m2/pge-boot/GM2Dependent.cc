@@ -138,6 +138,12 @@ extern "C" void M2Dependent_RegisterModule (void * modulename, void * libname, M
 extern "C" void M2Dependent_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname);
 
 /*
+   InitDependencyList - initialize all fields of DependencyList.
+*/
+
+static void InitDependencyList (M2Dependent_DependencyList *depList, PROC proc, M2Dependent_DependencyState state);
+
+/*
    CreateModule - creates a new module entry and returns the
                   ModuleChain.
 */
@@ -358,6 +364,20 @@ static void CheckInitialized (void);
 
 
 /*
+   InitDependencyList - initialize all fields of DependencyList.
+*/
+
+static void InitDependencyList (M2Dependent_DependencyList *depList, PROC proc, M2Dependent_DependencyState state)
+{
+  (*depList).proc = proc;
+  (*depList).forced = false;
+  (*depList).forc = false;
+  (*depList).appl = false;
+  (*depList).state = state;
+}
+
+
+/*
    CreateModule - creates a new module entry and returns the
                   ModuleChain.
 */
@@ -371,8 +391,7 @@ static M2Dependent_ModuleChain CreateModule (void * name, void * libname, M2Depe
   mptr->libname = libname;
   mptr->init = init;
   mptr->fini = fini;
-  mptr->dependency.proc = dependencies;
-  mptr->dependency.state = M2Dependent_unregistered;
+  InitDependencyList (&mptr->dependency, dependencies, M2Dependent_unregistered);
   mptr->prev = NULL;
   mptr->next = NULL;
   if (HexTrace)

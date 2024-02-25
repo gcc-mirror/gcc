@@ -324,7 +324,7 @@ extern "C" nameKey_Name nameKey_makeKey (const char *a_, unsigned int _a_high)
       (*p) = ASCII_nul;
       return doMakeKey (n, higha);
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/nameKey.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/nameKey.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -374,7 +374,7 @@ extern "C" nameKey_Name nameKey_makekey (void * a)
           return doMakeKey (n, higha);
         }
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/nameKey.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/nameKey.def", 20, 1);
   __builtin_unreachable ();
 }
 

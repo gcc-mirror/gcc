@@ -213,7 +213,8 @@ extern "C" varargs_vararg varargs_copy (varargs_vararg v)
   for (j=0; j<=c->nArgs; j++)
     {
       offset = (unsigned int ) (((varargs_ptrToByte) (v->contents))-((varargs_ptrToByte) (v->arg.array[j].ptr)));
-      c->arg.array[j].ptr = reinterpret_cast<void *> ((varargs_ptrToByte) (((varargs_ptrToByte) (c->contents))+offset));
+      c->arg.array[j].ptr = reinterpret_cast<void *> ((varargs_ptrToByte) (c->contents));
+      c->arg.array[j].ptr = reinterpret_cast<void *> (reinterpret_cast<char *> (c->arg.array[j].ptr)+offset);
       c->arg.array[j].len = v->arg.array[j].len;
     }
   return c;

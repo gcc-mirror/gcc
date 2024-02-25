@@ -22,8 +22,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 IMPLEMENTATION MODULE mcStream ;
 
 
-FROM FIO IMPORT File, OpenToWrite, OpenToRead, EOF, ReadNBytes, WriteNBytes, Close, getFileName ;
-FROM libc IMPORT unlink, printf, getpid ;
+FROM FIO IMPORT File, OpenToWrite, OpenToRead, EOF, ReadNBytes, WriteNBytes, Close, getFileName, IsNoError ;
+FROM libc IMPORT unlink, printf, getpid, exit ;
 FROM Indexing IMPORT InitIndex, InBounds, HighIndice, LowIndice, PutIndice, GetIndice, Index, ForeachIndiceInIndexDo ;
 FROM DynamicStrings IMPORT String, InitString, InitStringCharStar, string ;
 FROM FormatStrings IMPORT Sprintf2 ;
@@ -134,9 +134,17 @@ BEGIN
       s := InitStringCharStar(getFileName (f)) ;
       Close (f) ;
       f := SFIO.OpenToRead (s) ;
-      WHILE NOT EOF (f) DO
+      WHILE (NOT EOF (f)) AND IsNoError (f) DO
          b := ReadNBytes (f, HIGH (buffer), ADR (buffer)) ;
-         b := WriteNBytes (destFile, b, ADR (buffer))
+         IF IsNoError (f)
+         THEN
+            b := WriteNBytes (destFile, b, ADR (buffer))
+         ELSIF NOT EOF (f)
+         THEN
+            printf ("mcStream.mod:copy: error seen when reading file fragment: %s\n",
+                    string (s)) ;
+            exit (1)
+         END
       END ;
       Close (f)
    END

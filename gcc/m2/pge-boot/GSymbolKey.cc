@@ -184,7 +184,7 @@ static void FindNodeParentInTree (SymbolKey_SymbolTree t, NameKey_Name n, Symbol
   (*parent) = t;
   if (t == NULL)
     {
-      Debug_Halt ((const char *) "parameter t should never be NIL", 31, (const char *) "../../gcc-read-write/gcc/m2/gm2-compiler/SymbolKey.mod", 54, (const char *) "FindNodeParentInTree", 20, 241);
+      Debug_Halt ((const char *) "parameter t should never be NIL", 31, (const char *) "../../gcc/m2/gm2-compiler/SymbolKey.mod", 39, (const char *) "FindNodeParentInTree", 20, 241);
     }
   Assertion_Assert (t->Right == NULL);
   (*child) = t->Left;
@@ -393,7 +393,7 @@ extern "C" void SymbolKey_PutSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
     }
   else
     {
-      Debug_Halt ((const char *) "symbol already stored", 21, (const char *) "../../gcc-read-write/gcc/m2/gm2-compiler/SymbolKey.mod", 54, (const char *) "PutSymKey", 9, 156);
+      Debug_Halt ((const char *) "symbol already stored", 21, (const char *) "../../gcc/m2/gm2-compiler/SymbolKey.mod", 39, (const char *) "PutSymKey", 9, 156);
     }
 }
 
@@ -460,7 +460,7 @@ extern "C" void SymbolKey_DelSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
     }
   else
     {
-      Debug_Halt ((const char *) "trying to delete a symbol that is not in the tree - the compiler never expects this to occur", 92, (const char *) "../../gcc-read-write/gcc/m2/gm2-compiler/SymbolKey.mod", 54, (const char *) "DelSymKey", 9, 223);
+      Debug_Halt ((const char *) "trying to delete a symbol that is not in the tree - the compiler never expects this to occur", 92, (const char *) "../../gcc/m2/gm2-compiler/SymbolKey.mod", 39, (const char *) "DelSymKey", 9, 223);
     }
 }
 

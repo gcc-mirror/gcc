@@ -85,13 +85,15 @@ extern "C" unsigned int SArgs_Narg (void);
 extern "C" bool SArgs_GetArg (DynamicStrings_String *s, unsigned int n)
 {
   int i;
+  void * a;
   SArgs_PtrToPtrToChar ppc;
 
   i = (int ) (n);
   if (i < (UnixArgs_GetArgC ()))
     {
-      /* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ;  */
-      ppc = static_cast<SArgs_PtrToPtrToChar> ((void *) (((SArgs_PtrToChar) (UnixArgs_GetArgV ()))+(n*sizeof (SArgs_PtrToChar))));
+      a = (void *) (UnixArgs_GetArgV ());
+      a = reinterpret_cast<void *> (reinterpret_cast<char *> (a)+n*sizeof (SArgs_PtrToChar));
+      ppc = static_cast<SArgs_PtrToPtrToChar> (a);
       (*s) = DynamicStrings_InitStringCharStar (reinterpret_cast<void *> ((*ppc)));
       return true;
     }

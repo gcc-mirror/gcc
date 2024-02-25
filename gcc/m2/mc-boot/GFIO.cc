@@ -56,22 +56,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "GStrLib.h"
 #   include "GStorage.h"
 #   include "GNumberIO.h"
-#   include "Glibc.h"
 #   include "GIndexing.h"
 #   include "GM2RTS.h"
+#   include "Glibc.h"
+#   include "Gwrapc.h"
 
 typedef unsigned int FIO_File;
 
 FIO_File FIO_StdErr;
 FIO_File FIO_StdOut;
 FIO_File FIO_StdIn;
-#   define SEEK_SET 0
-#   define SEEK_END 2
-#   define UNIXREADONLY 0
-#   define UNIXWRITEONLY 1
-#   define CreatePermissions 0666
 #   define MaxBufferLength (1024*16)
 #   define MaxErrorString (1024*8)
+#   define CreatePermissions 0666
 typedef struct FIO_NameInfo_r FIO_NameInfo;
 
 typedef struct FIO_buf_r FIO_buf;
@@ -556,7 +553,7 @@ static FIO_File GetNextFreeDescriptor (void)
         return f;  /* create new slot  */
       }
   }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  ReturnException ("../../gcc/m2/gm2-libs/FIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -673,12 +670,12 @@ static void ConnectToUnix (FIO_File f, bool towrite, bool newfile)
                 }
               else
                 {
-                  fd->unixfd = libc_open (fd->name.address, UNIXWRITEONLY, 0);
+                  fd->unixfd = libc_open (fd->name.address, (int ) (wrapc_WriteOnly ()), 0);
                 }
             }
           else
             {
-              fd->unixfd = libc_open (fd->name.address, UNIXREADONLY, 0);
+              fd->unixfd = libc_open (fd->name.address, (int ) (wrapc_ReadOnly ()), 0);
             }
           if (fd->unixfd < 0)
             {
@@ -2093,7 +2090,7 @@ extern "C" void FIO_SetPositionFromBeginning (FIO_File f, long int pos)
                   fd->buffer->position = 0;
                   fd->buffer->filled = 0;
                 }
-              offset = libc_lseek (fd->unixfd, pos, SEEK_SET);
+              offset = static_cast<long int> (libc_lseek (fd->unixfd, (ssize_t ) (pos), wrapc_SeekSet ()));
               if ((offset >= 0) && (pos == offset))
                 {
                   fd->abspos = pos;
@@ -2142,7 +2139,7 @@ extern "C" void FIO_SetPositionFromEnd (FIO_File f, long int pos)
               fd->buffer->position = 0;
               fd->buffer->filled = 0;
             }
-          offset = libc_lseek (fd->unixfd, pos, SEEK_END);
+          offset = static_cast<long int> (libc_lseek (fd->unixfd, (ssize_t ) (pos), wrapc_SeekEnd ()));
           if (offset >= 0)
             {
               fd->abspos = offset;
