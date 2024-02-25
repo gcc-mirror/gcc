@@ -14152,6 +14152,25 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	emit_insn (pat);
       return 0;
 
+    case IX86_BUILTIN_LDTILECFG:
+    case IX86_BUILTIN_STTILECFG:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+
+      if (!address_operand (op0, VOIDmode))
+	{
+	  op0 = convert_memory_address (Pmode, op0);
+	  op0 = copy_addr_to_reg (op0);
+	}
+      op0 = gen_rtx_MEM (XImode, op0);
+      if (fcode == IX86_BUILTIN_LDTILECFG)
+	icode = CODE_FOR_ldtilecfg;
+      else
+	icode = CODE_FOR_sttilecfg;
+      pat = GEN_FCN (icode) (op0);
+      emit_insn (pat);
+      return 0;
+
     case IX86_BUILTIN_LLWPCB:
       arg0 = CALL_EXPR_ARG (exp, 0);
       op0 = expand_normal (arg0);
