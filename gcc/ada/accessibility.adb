@@ -465,7 +465,7 @@ package body Accessibility is
             --  so handle these cases explicitly.
 
             elsif Attribute_Name (E)
-                    in Name_Old | Name_Loop_Entry | Name_Result
+                    in Name_Old | Name_Loop_Entry | Name_Result | Name_Super
             then
                --  Named access types
 

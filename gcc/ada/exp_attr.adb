@@ -8326,6 +8326,7 @@ package body Exp_Attr is
          | Attribute_Small_Numerator
          | Attribute_Storage_Unit
          | Attribute_Stub_Type
+         | Attribute_Super
          | Attribute_System_Allocator_Alignment
          | Attribute_Target_Name
          | Attribute_Type_Class

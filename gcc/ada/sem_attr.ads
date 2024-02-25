@@ -447,6 +447,14 @@ package Sem_Attr is
       --  System.Partition_Interface.RACW_Stub_Type (see implementation notes
       --  in body of Exp_Dist).
 
+      -----------
+      -- Super --
+      -----------
+
+      Attribute_Super => True,
+      --  Applied to objects of tagged types in order to obtain a view
+      --  conversion to their statically detected (nonabstract) parent type.
+
       -----------------
       -- Target_Name --
       -----------------
