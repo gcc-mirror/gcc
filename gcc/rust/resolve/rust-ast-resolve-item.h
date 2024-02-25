@@ -111,7 +111,7 @@ public:
   static void go (AST::ExternalItem *item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
-  void visit (AST::ExternalFunctionItem &function) override;
+  void visit (AST::Function &function) override;
   void visit (AST::ExternalStaticItem &item) override;
 
 private:

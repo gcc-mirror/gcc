@@ -131,7 +131,8 @@ FeatureGate::visit (AST::MacroRulesDefinition &rules_def)
 void
 FeatureGate::visit (AST::Function &function)
 {
-  check_rustc_attri (function.get_outer_attrs ());
+  if (!function.is_external ())
+    check_rustc_attri (function.get_outer_attrs ());
 }
 
 void

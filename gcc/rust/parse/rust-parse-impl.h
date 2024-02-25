@@ -6165,8 +6165,7 @@ Parser<ManagedTokenSource>::parse_external_item ()
 				       std::move (outer_attrs), locus));
       }
     case FN_KW:
-      return parse_external_function_item (std::move (vis),
-					   std::move (outer_attrs));
+      return parse_function (std::move (vis), std::move (outer_attrs), true);
 
     case TYPE:
       return parse_external_type_item (std::move (vis),
@@ -10476,7 +10475,9 @@ Parser<ManagedTokenSource>::parse_pattern ()
     {
       lexer.skip_token ();
       alts.push_back (parse_pattern_no_alt ());
-  } while (lexer.peek_token ()->get_id () == PIPE);
+    }
+
+  while (lexer.peek_token ()->get_id () == PIPE);
 
   /* alternates */
   return std::unique_ptr<AST::Pattern> (
