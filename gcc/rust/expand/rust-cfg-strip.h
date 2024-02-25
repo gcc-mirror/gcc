@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+#ifndef RUST_CFG_STRIP_H
+#define RUST_CFG_STRIP_H
 
 #include "rust-ast-visitor.h"
 #include "rust-ast.h"
@@ -190,3 +192,5 @@ public:
   }
 };
 } // namespace Rust
+
+#endif // RUST_CFG_STRIP_Hs
