@@ -4251,24 +4251,16 @@
 
 
 (define_mode_iterator QHSD [QI HI SI DI])
+(define_int_iterator CRC [UNSPEC_CRC UNSPEC_CRCC])
+(define_int_attr crc [(UNSPEC_CRC "crc") (UNSPEC_CRCC "crcc")])
 
-(define_insn "loongarch_crc_w_<size>_w"
+(define_insn "loongarch_<crc>_w_<size>_w"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI [(match_operand:QHSD 1 "register_operand" "r")
 		   (match_operand:SI 2 "register_operand" "r")]
-		     UNSPEC_CRC))]
+		     CRC))]
   ""
-  "crc.w.<size>.w\t%0,%1,%2"
-  [(set_attr "type" "unknown")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "loongarch_crcc_w_<size>_w"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(match_operand:QHSD 1 "register_operand" "r")
-		   (match_operand:SI 2 "register_operand" "r")]
-		     UNSPEC_CRCC))]
-  ""
-  "crcc.w.<size>.w\t%0,%1,%2"
+  "<crc>.w.<size>.w\t%0,%1,%2"
   [(set_attr "type" "unknown")
    (set_attr "mode" "<MODE>")])
 
