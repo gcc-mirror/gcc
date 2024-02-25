@@ -1009,11 +1009,12 @@ ResolveExternItem::go (AST::ExternalItem *item, const CanonicalPath &prefix,
 }
 
 void
-ResolveExternItem::visit (AST::ExternalFunctionItem &function)
+ResolveExternItem::visit (AST::Function &function)
 {
   NodeId scope_node_id = function.get_node_id ();
-  auto decl = CanonicalPath::new_seg (function.get_node_id (),
-				      function.get_identifier ().as_string ());
+  auto decl
+    = CanonicalPath::new_seg (function.get_node_id (),
+			      function.get_function_name ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
@@ -1038,9 +1039,12 @@ ResolveExternItem::visit (AST::ExternalFunctionItem &function)
 
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
-  for (auto &param : function.get_function_params ())
-    if (!param.is_variadic ())
-      ResolveType::go (param.get_type ().get ());
+  for (auto &it : function.get_function_params ())
+    if (!it->is_variadic ())
+      {
+	auto param = static_cast<AST::FunctionParam *> (it.get ());
+	ResolveType::go (param->get_type ().get ());
+      }
 
   // done
   resolver->get_name_scope ().pop ();

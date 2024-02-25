@@ -189,11 +189,11 @@ public:
     item->accept_vis (resolver);
   };
 
-  void visit (AST::ExternalFunctionItem &function) override
+  void visit (AST::Function &function) override
   {
     auto decl
       = CanonicalPath::new_seg (function.get_node_id (),
-				function.get_identifier ().as_string ());
+				function.get_function_name ().as_string ());
     auto path = prefix.append (decl);
 
     resolver->get_name_scope ().insert (

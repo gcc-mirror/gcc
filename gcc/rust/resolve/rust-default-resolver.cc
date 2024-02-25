@@ -62,7 +62,8 @@ DefaultResolver::visit (AST::Function &function)
 	if (p->is_variadic ())
 	  {
 	    auto param = static_cast<AST::VariadicParam *> (p.get ());
-	    param->get_pattern ()->accept_vis (*this);
+	    if (param->has_pattern ())
+	      param->get_pattern ()->accept_vis (*this);
 	  }
 	else if (p->is_self ())
 	  {
