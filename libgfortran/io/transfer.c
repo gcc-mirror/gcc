@@ -4556,7 +4556,7 @@ st_read_done (st_parameter_dt *dtp)
       if (dtp->u.p.current_unit->au)
 	{
 	  if (dtp->common.flags & IOPARM_DT_HAS_ID)
-	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au, AIO_READ_DONE);  
+	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au, AIO_READ_DONE);
 	  else
 	    {
 	      if (dtp->u.p.async)

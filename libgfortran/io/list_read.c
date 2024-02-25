@@ -2138,6 +2138,7 @@ static int
 list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 			    int kind, size_t size)
 {
+  char message[MSGLEN];
   gfc_char4_t *q, *r;
   size_t m;
   int c;
@@ -2247,7 +2248,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	  child_iostat = ((dtp->common.flags & IOPARM_HAS_IOSTAT)
 			  ? dtp->common.iostat : &noiostat);
 
-	  /* Set iomsge, intent(inout).  */
+	  /* Set iomsg, intent(inout).  */
 	  if (dtp->common.flags & IOPARM_HAS_IOMSG)
 	    {
 	      child_iomsg = dtp->common.iomsg;
@@ -2266,6 +2267,25 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 			      iotype_len, child_iomsg_len);
 	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+	  
+	  
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      /* Trim trailing spaces from the message.  */
+	      for(int i = IOMSG_LEN - 1; i > 0; i--)
+		if (!isspace(child_iomsg[i]))
+		  {
+		    /* Add two to get back to the end of child_iomsg.  */
+		    child_iomsg_len = i+2;
+		    break;
+		  }
+	      free_line (dtp);
+	      snprintf (message, child_iomsg_len, child_iomsg);
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
       }
       break;
     default:
