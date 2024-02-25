@@ -1695,6 +1695,8 @@ class ExternalItem : public Visitable
 public:
   ExternalItem () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
 
+  ExternalItem (NodeId node_id) : node_id (node_id) {}
+
   virtual ~ExternalItem () {}
 
   // Unique pointer custom clone function
@@ -1708,7 +1710,7 @@ public:
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
 
-  NodeId get_node_id () const { return node_id; }
+  virtual NodeId get_node_id () const { return node_id; }
 
 protected:
   // Clone function implementation as pure virtual method
