@@ -2908,7 +2908,8 @@ Parser<ManagedTokenSource>::parse_use_tree ()
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Function>
 Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
-					    AST::AttrVec outer_attrs)
+					    AST::AttrVec outer_attrs,
+					    bool is_external)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
   // Get qualifiers for function if they exist
@@ -2992,7 +2993,7 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
 		       std::move (generic_params), std::move (function_params),
 		       std::move (return_type), std::move (where_clause),
 		       std::move (body), std::move (vis),
-		       std::move (outer_attrs), locus));
+		       std::move (outer_attrs), locus, false, is_external));
 }
 
 // Parses function or method qualifiers (i.e. const, unsafe, and extern).
@@ -6166,6 +6167,7 @@ Parser<ManagedTokenSource>::parse_external_item ()
     case FN_KW:
       return parse_external_function_item (std::move (vis),
 					   std::move (outer_attrs));
+
     case TYPE:
       return parse_external_type_item (std::move (vis),
 				       std::move (outer_attrs));
@@ -10474,8 +10476,7 @@ Parser<ManagedTokenSource>::parse_pattern ()
     {
       lexer.skip_token ();
       alts.push_back (parse_pattern_no_alt ());
-    }
-  while (lexer.peek_token ()->get_id () == PIPE);
+  } while (lexer.peek_token ()->get_id () == PIPE);
 
   /* alternates */
   return std::unique_ptr<AST::Pattern> (

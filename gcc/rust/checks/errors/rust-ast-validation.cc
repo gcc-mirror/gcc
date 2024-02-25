@@ -122,23 +122,61 @@ ASTValidation::visit (AST::Function &function)
       function.get_self_param ()->get_locus (),
       "%<self%> parameter is only allowed in associated functions");
 
-  if (!function.has_body ())
+  if (function.is_external ())
     {
-      if (context.back () == Context::INHERENT_IMPL
-	  || context.back () == Context::TRAIT_IMPL)
+      if (function.has_body ())
+	rust_error_at (function.get_locus (), "cannot have a body");
+
+      auto &params = function.get_function_params ();
+
+      if (params.size () == 1 && function.is_variadic ())
 	rust_error_at (function.get_locus (),
-		       "associated function in %<impl%> without body");
-      else if (context.back () != Context::TRAIT)
-	rust_error_at (function.get_locus (), "free function without a body");
+		       "C-variadic function must be declared with at least one "
+		       "named argument");
+
+      for (auto it = params.begin (); it != params.end (); it++)
+	{
+	  if (it->get ()->is_variadic () && it + 1 != params.end ())
+	    rust_error_at (
+	      it->get ()->get_locus (),
+	      "%<...%> must be the last argument of a C-variadic function");
+
+	  // if functional parameter
+	  if (!it->get ()->is_self () && !it->get ()->is_variadic ())
+	    {
+	      auto param = static_cast<AST::FunctionParam *> (it->get ());
+	      auto kind = param->get_pattern ()->get_pattern_kind ();
+
+	      if (kind != AST::Pattern::Kind::Identifier
+		  && kind != AST::Pattern::Kind::Wildcard)
+		rust_error_at (it->get ()->get_locus (), ErrorCode::E0130,
+			       "pattern not allowed in foreign function");
+	    }
+	}
     }
 
-  auto &function_params = function.get_function_params ();
-  for (auto it = function_params.begin (); it != function_params.end (); it++)
+  else
     {
-      if (it->get ()->is_variadic ())
-	rust_error_at (it->get ()->get_locus (),
-		       "only foreign or %<unsafe extern \"C\"%> functions may "
-		       "be C-variadic");
+      if (!function.has_body ())
+	{
+	  if (context.back () == Context::INHERENT_IMPL
+	      || context.back () == Context::TRAIT_IMPL)
+	    rust_error_at (function.get_locus (),
+			   "associated function in %<impl%> without body");
+	  else if (context.back () != Context::TRAIT)
+	    rust_error_at (function.get_locus (),
+			   "free function without a body");
+	}
+      auto &function_params = function.get_function_params ();
+      for (auto it = function_params.begin (); it != function_params.end ();
+	   it++)
+	{
+	  if (it->get ()->is_variadic ())
+	    rust_error_at (
+	      it->get ()->get_locus (),
+	      "only foreign or %<unsafe extern \"C\"%> functions may "
+	      "be C-variadic");
+	}
     }
 
   AST::ContextualASTVisitor::visit (function);
