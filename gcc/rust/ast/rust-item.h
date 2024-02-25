@@ -1289,7 +1289,7 @@ protected:
 class LetStmt;
 
 // Rust function declaration AST node
-class Function : public VisItem, public AssociatedItem
+class Function : public VisItem, public AssociatedItem, public ExternalItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
@@ -1300,6 +1300,7 @@ class Function : public VisItem, public AssociatedItem
   tl::optional<std::unique_ptr<BlockExpr>> function_body;
   location_t locus;
   bool is_default;
+  bool is_external_function;
 
 public:
   std::string as_string () const override;
@@ -1330,16 +1331,17 @@ public:
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    tl::optional<std::unique_ptr<BlockExpr>> function_body,
 	    Visibility vis, std::vector<Attribute> outer_attrs,
-	    location_t locus, bool is_default = false)
+	    location_t locus, bool is_default = false,
+	    bool is_external_function = false)
     : VisItem (std::move (vis), std::move (outer_attrs)),
-      qualifiers (std::move (qualifiers)),
+      ExternalItem (Stmt::node_id), qualifiers (std::move (qualifiers)),
       function_name (std::move (function_name)),
       generic_params (std::move (generic_params)),
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
       function_body (std::move (function_body)), locus (locus),
-      is_default (is_default)
+      is_default (is_default), is_external_function (is_external_function)
   {}
 
   // TODO: add constructor with less fields
@@ -1363,6 +1365,8 @@ public:
     return function_params.size () != 0
 	   && function_params.back ()->is_variadic ();
   }
+
+  bool is_external () const { return is_external_function; }
 
   // Invalid if block is null, so base stripping on that.
   void mark_for_strip () override { function_body = nullptr; }
@@ -1422,6 +1426,9 @@ public:
     return function_params[0];
   }
 
+  // ExternalItem::node_id is same as Stmt::node_id
+  NodeId get_node_id () const override { return Stmt::node_id; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1430,6 +1437,13 @@ protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   Function *clone_associated_item_impl () const override
+  {
+    return new Function (*this);
+  }
+
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
+  Function *clone_external_item_impl () const override
   {
     return new Function (*this);
   }
@@ -3257,10 +3271,11 @@ public:
       item_name (std::move (item_name)), locus (locus), marked_for_strip (false)
   {}
 
+  // copy constructor
   ExternalTypeItem (ExternalTypeItem const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      item_name (other.item_name), locus (other.locus),
-      marked_for_strip (other.marked_for_strip)
+    : ExternalItem (other.get_node_id ()), outer_attrs (other.outer_attrs),
+      visibility (other.visibility), item_name (other.item_name),
+      locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     node_id = other.node_id;
   }
@@ -3340,8 +3355,9 @@ public:
 
   // Copy constructor
   ExternalStaticItem (ExternalStaticItem const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      item_name (other.item_name), locus (other.locus), has_mut (other.has_mut)
+    : ExternalItem (other.get_node_id ()), outer_attrs (other.outer_attrs),
+      visibility (other.visibility), item_name (other.item_name),
+      locus (other.locus), has_mut (other.has_mut)
   {
     node_id = other.node_id;
     // guard to prevent null dereference (only required if error state)
@@ -3607,9 +3623,10 @@ public:
 
   // Copy constructor with clone
   ExternalFunctionItem (ExternalFunctionItem const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      item_name (other.item_name), locus (other.locus),
-      where_clause (other.where_clause), function_params (other.function_params)
+    : ExternalItem (other.get_node_id ()), outer_attrs (other.outer_attrs),
+      visibility (other.visibility), item_name (other.item_name),
+      locus (other.locus), where_clause (other.where_clause),
+      function_params (other.function_params)
   {
     node_id = other.node_id;
     // guard to prevent null pointer dereference

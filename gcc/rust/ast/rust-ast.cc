@@ -1061,9 +1061,11 @@ Union::as_string () const
 }
 
 Function::Function (Function const &other)
-  : VisItem (other), qualifiers (other.qualifiers),
-    function_name (other.function_name), where_clause (other.where_clause),
-    locus (other.locus), is_default (other.is_default)
+  : VisItem (other), ExternalItem (other.get_node_id ()),
+    qualifiers (other.qualifiers), function_name (other.function_name),
+    where_clause (other.where_clause), locus (other.locus),
+    is_default (other.is_default),
+    is_external_function (other.is_external_function)
 {
   // guard to prevent null dereference (always required)
   if (other.return_type != nullptr)
@@ -1095,6 +1097,7 @@ Function::operator= (Function const &other)
   // outer_attrs = other.outer_attrs;
   locus = other.locus;
   is_default = other.is_default;
+  is_external_function = other.is_external_function;
 
   // guard to prevent null dereference (always required)
   if (other.return_type != nullptr)
