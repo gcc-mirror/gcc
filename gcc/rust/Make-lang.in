@@ -102,6 +102,15 @@ GRS_OBJS = \
     rust/rust-proc-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \
     rust/rust-macro-builtins.o \
+    rust/rust-macro-builtins-helpers.o \
+    rust/rust-macro-builtins-asm.o \
+    rust/rust-macro-builtins-trait.o \
+    rust/rust-macro-builtins-utility.o \
+    rust/rust-macro-builtins-log-debug.o \
+    rust/rust-macro-builtins-test-bench.o \
+    rust/rust-macro-builtins-format-args.o \
+    rust/rust-macro-builtins-location.o \
+    rust/rust-macro-builtins-include.o \
 	rust/rust-fmt.o \
     rust/rust-hir.o \
     rust/rust-hir-map.o \
@@ -408,7 +417,7 @@ rust/%.o: rust/lex/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
-%.toml: 
+%.toml:
 	echo $@
 
 rust/libformat_parser.a: $(srcdir)/../libgrust/libformat_parser/Cargo.toml $(wildcard $(srcdir)/../libgrust/libformat_parser/src/*.rs)
