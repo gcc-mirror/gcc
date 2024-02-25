@@ -6518,6 +6518,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			    {
 			      tree efield;
 
+			      /* Evaluate arguments just once.  */
+			      if (e->expr_type != EXPR_VARIABLE)
+				parmse.expr = save_expr (parmse.expr);
+
 			      /* Set the _data field.  */
 			      tmp = gfc_class_data_get (var);
 			      efield = fold_convert (TREE_TYPE (tmp),
