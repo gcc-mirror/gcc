@@ -4264,6 +4264,17 @@
   [(set_attr "type" "unknown")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "loongarch_<crc>_w_<size>_w_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (unspec:SI [(match_operand:QHSD 1 "register_operand" "r")
+		      (match_operand:SI 2 "register_operand" "r")]
+		     CRC)))]
+  "TARGET_64BIT"
+  "<crc>.w.<size>.w\t%0,%1,%2"
+  [(set_attr "type" "unknown")
+   (set_attr "mode" "<MODE>")])
+
 ;; With normal or medium code models, if the only use of a pc-relative
 ;; address is for loading or storing a value, then relying on linker
 ;; relaxation is not better than emitting the machine instruction directly.
