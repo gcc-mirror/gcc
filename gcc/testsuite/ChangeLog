@@ -1,3 +1,17 @@
+2024-02-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/113205
+	* gcc.dg/torture/pr113205.c: New test.
+
+2024-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114073
+	* gcc.dg/bitint-93.c: New test.
+
+2024-02-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/rtl/aarch64/pr113295-1.c: Restrict to aarc64*-*-*.
+
 2024-02-23  Steve Kargl  <kargl@gcc.gnu.org>
 	    Harald Anlauf  <anlauf@gmx.de>
 

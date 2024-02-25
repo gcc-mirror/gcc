@@ -1,3 +1,47 @@
+2024-02-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/113205
+	* tree-vect-slp.cc (vect_optimize_slp_pass::forward_cost): Reject
+	the proposed layout if it does not allow a source partition with
+	layout 2 to keep that layout.
+
+2024-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.cc (fold_builtin_isascii): Use HOST_WIDE_INT_UC macro.
+	* combine.cc (make_field_assignment): Use HOST_WIDE_INT_1U macro.
+	* double-int.cc (double_int::mask): Use HOST_WIDE_INT_UC macros.
+	* genattrtab.cc (attr_alt_complement): Use HOST_WIDE_INT_1 macro.
+	(mk_attr_alt): Use HOST_WIDE_INT_0 macro.
+	* genautomata.cc (bitmap_set_bit, CLEAR_BIT): Use HOST_WIDE_INT_1
+	macros.
+	* ipa-strub.cc (can_strub_internally_p): Use HOST_WIDE_INT_1 macro.
+	* loop-iv.cc (implies_p): Use HOST_WIDE_INT_1U macro.
+	* pretty-print.cc (test_pp_format): Use HOST_WIDE_INT_C and
+	HOST_WIDE_INT_UC macros.
+	* rtlanal.cc (nonzero_bits1): Use HOST_WIDE_INT_UC macro.
+	* tree.cc (build_replicated_int_cst): Use HOST_WIDE_INT_1U macro.
+	* tree.h (DECL_OFFSET_ALIGN): Use HOST_WIDE_INT_1U macro.
+	* tree-ssa-structalias.cc (dump_varinfo): Use ~HOST_WIDE_INT_0U
+	macros.
+	* wide-int.cc (divmod_internal_2): Use HOST_WIDE_INT_1U macro.
+	* config/i386/constraints.md (define_constraint "L"): Use
+	HOST_WIDE_INT_C macro.
+	* config/i386/i386.md (movabsq split peephole2): Use HOST_WIDE_INT_C
+	macro.
+	(movl + movb peephole2): Likewise.
+	* config/i386/predicates.md (x86_64_zext_immediate_operand): Likewise.
+	(const_32bit_mask): Likewise.
+
+2024-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114073
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_stmt): Handle
+	VIEW_CONVERT_EXPRs between large/huge _BitInt and non-integer/pointer
+	types like vector or complex types.
+	(gimple_lower_bitint): Don't merge VIEW_CONVERT_EXPRs to non-integral
+	types.  Fix up VIEW_CONVERT_EXPR handling.  Allow merging
+	VIEW_CONVERT_EXPR from non-integral/pointer types with a store.
+
 2024-02-23  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR target/114028
