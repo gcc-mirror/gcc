@@ -578,6 +578,8 @@ public:
   // TODO: this seems kinda dodgy
   std::vector<PathExprSegment> &get_segments () { return segments; }
   const std::vector<PathExprSegment> &get_segments () const { return segments; }
+
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Path; }
 };
 
 /* AST node representing a path-in-expression pattern (path that allows
