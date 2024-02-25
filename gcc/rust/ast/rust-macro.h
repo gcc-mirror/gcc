@@ -610,6 +610,11 @@ public:
 
   std::string as_string () const override;
 
+  Pattern::Kind get_pattern_kind () override
+  {
+    return Pattern::Kind::MacroInvocation;
+  }
+
   /**
    * The default constructor you should use. Whenever we parse a macro call, we
    * cannot possibly know whether or not this call refers to a builtin macro or

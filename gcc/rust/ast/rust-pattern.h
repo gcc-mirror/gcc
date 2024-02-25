@@ -55,6 +55,8 @@ public:
 
   const Literal &get_literal () const { return lit; }
 
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Literal; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -149,6 +151,11 @@ public:
 
   NodeId get_node_id () const override { return node_id; }
 
+  Pattern::Kind get_pattern_kind () override
+  {
+    return Pattern::Kind::Identifier;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -177,6 +184,8 @@ public:
 
   NodeId get_node_id () const override { return node_id; }
 
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Wildcard; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -203,6 +212,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   NodeId get_node_id () const override final { return node_id; }
+
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Rest; }
 
 protected:
   RestPattern *clone_pattern_impl () const override
@@ -431,6 +442,8 @@ public:
 
   NodeId get_node_id () const override { return node_id; }
 
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Range; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -498,6 +511,11 @@ public:
   bool get_is_mut () const { return is_mut; }
 
   NodeId get_node_id () const override { return node_id; }
+
+  Pattern::Kind get_pattern_kind () override
+  {
+    return Pattern::Kind::Reference;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -934,6 +952,8 @@ public:
 
   NodeId get_node_id () const override { return node_id; }
 
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Struct; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1174,6 +1194,11 @@ public:
 
   NodeId get_node_id () const override { return node_id; }
 
+  Pattern::Kind get_pattern_kind () override
+  {
+    return Pattern::Kind::TupleStruct;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1411,6 +1436,8 @@ public:
 
   NodeId get_node_id () const override { return node_id; }
 
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Tuple; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1470,6 +1497,8 @@ public:
   }
 
   NodeId get_node_id () const override { return node_id; }
+
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Grouped; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1535,6 +1564,8 @@ public:
 
   NodeId get_node_id () const override { return node_id; }
 
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Slice; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1599,6 +1630,8 @@ public:
   }
 
   NodeId get_node_id () const override { return node_id; }
+
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Alt; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

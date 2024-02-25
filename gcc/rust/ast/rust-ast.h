@@ -1360,11 +1360,31 @@ protected:
 class Pattern : public Visitable
 {
 public:
+  enum class Kind
+  {
+    Literal,
+    Identifier,
+    Wildcard,
+    Rest,
+    Range,
+    Reference,
+    Struct,
+    TupleStruct,
+    Tuple,
+    Grouped,
+    Slice,
+    Alt,
+    Path,
+    MacroInvocation,
+  };
+
   // Unique pointer custom clone function
   std::unique_ptr<Pattern> clone_pattern () const
   {
     return std::unique_ptr<Pattern> (clone_pattern_impl ());
   }
+
+  virtual Kind get_pattern_kind () = 0;
 
   // possible virtual methods: is_refutable()
 
