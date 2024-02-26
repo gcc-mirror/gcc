@@ -2775,7 +2775,8 @@ vectorize_related_mode (machine_mode vector_mode, scalar_mode element_mode,
 /* Expand an RVV comparison.  */
 
 void
-expand_vec_cmp (rtx target, rtx_code code, rtx op0, rtx op1)
+expand_vec_cmp (rtx target, rtx_code code, rtx op0, rtx op1, rtx mask,
+		rtx maskoff)
 {
   machine_mode mask_mode = GET_MODE (target);
   machine_mode data_mode = GET_MODE (op0);
@@ -2785,8 +2786,8 @@ expand_vec_cmp (rtx target, rtx_code code, rtx op0, rtx op1)
     {
       rtx lt = gen_reg_rtx (mask_mode);
       rtx gt = gen_reg_rtx (mask_mode);
-      expand_vec_cmp (lt, LT, op0, op1);
-      expand_vec_cmp (gt, GT, op0, op1);
+      expand_vec_cmp (lt, LT, op0, op1, mask, maskoff);
+      expand_vec_cmp (gt, GT, op0, op1, mask, maskoff);
       icode = code_for_pred (IOR, mask_mode);
       rtx ops[] = {target, lt, gt};
       emit_vlmax_insn (icode, BINARY_MASK_OP, ops);
@@ -2794,33 +2795,16 @@ expand_vec_cmp (rtx target, rtx_code code, rtx op0, rtx op1)
     }
 
   rtx cmp = gen_rtx_fmt_ee (code, mask_mode, op0, op1);
-  rtx ops[] = {target, cmp, op0, op1};
-  emit_vlmax_insn (icode, COMPARE_OP, ops);
-}
-
-void
-expand_vec_cmp (rtx target, rtx_code code, rtx mask, rtx maskoff, rtx op0,
-		rtx op1)
-{
-  machine_mode mask_mode = GET_MODE (target);
-  machine_mode data_mode = GET_MODE (op0);
-  insn_code icode = get_cmp_insn_code (code, data_mode);
-
-  if (code == LTGT)
+  if (!mask && !maskoff)
     {
-      rtx lt = gen_reg_rtx (mask_mode);
-      rtx gt = gen_reg_rtx (mask_mode);
-      expand_vec_cmp (lt, LT, mask, maskoff, op0, op1);
-      expand_vec_cmp (gt, GT, mask, maskoff, op0, op1);
-      icode = code_for_pred (IOR, mask_mode);
-      rtx ops[] = {target, lt, gt};
-      emit_vlmax_insn (icode, BINARY_MASK_OP, ops);
-      return;
+      rtx ops[] = {target, cmp, op0, op1};
+      emit_vlmax_insn (icode, COMPARE_OP, ops);
     }
-
-  rtx cmp = gen_rtx_fmt_ee (code, mask_mode, op0, op1);
-  rtx ops[] = {target, mask, maskoff, cmp, op0, op1};
-  emit_vlmax_insn (icode, COMPARE_OP_MU, ops);
+  else
+    {
+      rtx ops[] = {target, mask, maskoff, cmp, op0, op1};
+      emit_vlmax_insn (icode, COMPARE_OP_MU, ops);
+    }
 }
 
 /* Expand an RVV floating-point comparison:
@@ -2898,7 +2882,7 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
       else
 	{
 	  /* vmfeq.vv    v0, vb, vb, v0.t  */
-	  expand_vec_cmp (eq0, EQ, eq0, eq0, op1, op1);
+	  expand_vec_cmp (eq0, EQ, op1, op1, eq0, eq0);
 	}
       break;
     default:
@@ -2916,7 +2900,7 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
   if (code == ORDERED)
     emit_move_insn (target, eq0);
   else
-    expand_vec_cmp (eq0, code, eq0, eq0, op0, op1);
+    expand_vec_cmp (eq0, code, op0, op1, eq0, eq0);
 
   if (can_invert_p)
     {
