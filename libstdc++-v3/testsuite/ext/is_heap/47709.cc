@@ -25,4 +25,5 @@ void foo()
 {
   std::vector<int> v;
   is_heap(v.begin(), v.end());
+  // { dg-warning "ignoring return value" "" { target c++17 } 27 }
 }

@@ -228,7 +228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  preprocessor macro.
   */
   template<typename _Tp>
-    _GLIBCXX14_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX14_CONSTEXPR
     inline const _Tp&
     min(const _Tp& __a, const _Tp& __b)
     {
@@ -252,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  preprocessor macro.
   */
   template<typename _Tp>
-    _GLIBCXX14_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX14_CONSTEXPR
     inline const _Tp&
     max(const _Tp& __a, const _Tp& __b)
     {
@@ -276,7 +276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  once, unlike a preprocessor macro.
   */
   template<typename _Tp, typename _Compare>
-    _GLIBCXX14_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX14_CONSTEXPR
     inline const _Tp&
     min(const _Tp& __a, const _Tp& __b, _Compare __comp)
     {
@@ -298,7 +298,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  once, unlike a preprocessor macro.
   */
   template<typename _Tp, typename _Compare>
-    _GLIBCXX14_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX14_CONSTEXPR
     inline const _Tp&
     max(const _Tp& __a, const _Tp& __b, _Compare __comp)
     {
@@ -1522,7 +1522,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  @ingroup binary_search_algorithms
   */
   template<typename _ForwardIterator, typename _Tp>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val)
@@ -1571,7 +1571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  ranges are equal.
   */
   template<typename _II1, typename _II2>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_II1 __first1, _II1 __last1, _II2 __first2)
     {
@@ -1602,7 +1602,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  ranges are equal.
   */
   template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_IIter1 __first1, _IIter1 __last1,
 	  _IIter2 __first2, _BinaryPredicate __binary_pred)
@@ -1689,7 +1689,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  ranges are equal.
   */
   template<typename _II1, typename _II2>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
     {
@@ -1722,7 +1722,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  ranges are equal.
   */
   template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_IIter1 __first1, _IIter1 __last1,
 	  _IIter2 __first2, _IIter2 __last2, _BinaryPredicate __binary_pred)
@@ -1754,7 +1754,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  then this is an inline call to @c memcmp.
   */
   template<typename _II1, typename _II2>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     lexicographical_compare(_II1 __first1, _II1 __last1,
 			    _II2 __first2, _II2 __last2)
@@ -1789,7 +1789,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  comp parameter instead of @c <.
   */
   template<typename _II1, typename _II2, typename _Compare>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     lexicographical_compare(_II1 __first1, _II1 __last1,
 			    _II2 __first2, _II2 __last2, _Compare __comp)
@@ -1843,7 +1843,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *		returns.
   */
   template<typename _InputIter1, typename _InputIter2, typename _Comp>
-    constexpr auto
+    [[nodiscard]] constexpr auto
     lexicographical_compare_three_way(_InputIter1 __first1,
 				      _InputIter1 __last1,
 				      _InputIter2 __first2,
@@ -1932,7 +1932,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  to by the iterators are not equal.
   */
   template<typename _InputIterator1, typename _InputIterator2>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2)
@@ -1967,7 +1967,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _BinaryPredicate>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _BinaryPredicate __binary_pred)
@@ -2014,7 +2014,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  to by the iterators are not equal.
   */
   template<typename _InputIterator1, typename _InputIterator2>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _InputIterator2 __last2)
@@ -2051,7 +2051,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _BinaryPredicate>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _InputIterator2 __last2,

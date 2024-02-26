@@ -33,4 +33,5 @@ bool ba(B, A);
 void test01(A* a, B b)
 {
   std::upper_bound(a, a, b, ba);
+  // { dg-warning "ignoring return value" "" { target c++17 } 35 }
 }

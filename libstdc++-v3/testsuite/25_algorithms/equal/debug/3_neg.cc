@@ -33,6 +33,7 @@ test01()
   l2.push_back(2);
 
   std::equal(++l1.begin(), l1.end(), ++l2.begin());
+  // { dg-warning "ignoring return value" "" { target c++17 } 35 }
 }
 
 int

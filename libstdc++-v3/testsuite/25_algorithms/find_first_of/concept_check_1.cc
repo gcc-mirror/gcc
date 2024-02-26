@@ -37,6 +37,7 @@ class2 b;
 void test01()
 {
   std::find_first_of(&a, &a, &b, &b, comp);
+  // { dg-warning "ignoring return value" "" { target c++17 } 39 }
 }
 
 int main()
