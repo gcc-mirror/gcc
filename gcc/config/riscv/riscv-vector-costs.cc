@@ -1052,6 +1052,25 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
   return vector_costs::better_main_loop_than_p (other);
 }
 
+/* Returns the group size i.e. the number of vectors to be loaded by a
+   segmented load/store instruction.  Return 0 if it is no segmented
+   load/store.  */
+static int
+segment_loadstore_group_size (enum vect_cost_for_stmt kind,
+			      stmt_vec_info stmt_info)
+{
+  if (stmt_info
+      && (kind == vector_load || kind == vector_store)
+      && STMT_VINFO_DATA_REF (stmt_info))
+    {
+      stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      if (stmt_info
+	  && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_LOAD_STORE_LANES)
+	return DR_GROUP_SIZE (stmt_info);
+    }
+  return 0;
+}
+
 /* Adjust vectorization cost after calling riscv_builtin_vectorization_cost.
    For some statement, we would like to further fine-grain tweak the cost on
    top of riscv_builtin_vectorization_cost handling which doesn't have any
@@ -1076,55 +1095,115 @@ costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
     case vector_load:
     case vector_store:
 	{
-	  /* Unit-stride vector loads and stores do not have offset addressing
-	     as opposed to scalar loads and stores.
-	     If the address depends on a variable we need an additional
-	     add/sub for each load/store in the worst case.  */
-	  if (stmt_info && stmt_info->stmt)
+	  if (stmt_info && stmt_info->stmt && STMT_VINFO_DATA_REF (stmt_info))
 	    {
-	      data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-	      class loop *father = stmt_info->stmt->bb->loop_father;
-	      if (!loop && father && !father->inner && father->superloops)
+	      /* Segment loads and stores.  When the group size is > 1
+		 the vectorizer will add a vector load/store statement for
+		 each vector in the group.  Here we additionally add permute
+		 costs for each.  */
+	      /* TODO: Indexed and ordered/unordered cost.  */
+	      int group_size = segment_loadstore_group_size (kind, stmt_info);
+	      if (group_size > 1)
 		{
-		  tree ref;
-		  if (TREE_CODE (dr->ref) != MEM_REF
-		      || !(ref = TREE_OPERAND (dr->ref, 0))
-		      || TREE_CODE (ref) != SSA_NAME)
-		    break;
-
-		  if (SSA_NAME_IS_DEFAULT_DEF (ref))
-		    break;
-
-		  if (memrefs.contains ({ref, cst0}))
-		    break;
-
-		  memrefs.add ({ref, cst0});
-
-		  /* In case we have not seen REF before and the base address
-		     is a pointer operation try a bit harder.  */
-		  tree base = DR_BASE_ADDRESS (dr);
-		  if (TREE_CODE (base) == POINTER_PLUS_EXPR
-		      || TREE_CODE (base) == POINTER_DIFF_EXPR)
+		  switch (group_size)
 		    {
-		      /* Deconstruct BASE's first operand.  If it is a binary
-			 operation, i.e. a base and an "offset" store this
-			 pair.  Only increase the stmt_cost if we haven't seen
-			 it before.  */
-		      tree argp = TREE_OPERAND (base, 1);
-		      typedef std::pair<tree, tree> addr_pair;
-		      addr_pair pair;
-		      if (TREE_CODE_CLASS (TREE_CODE (argp)) == tcc_binary)
-			{
-			  tree argp0 = tree_strip_nop_conversions
-			    (TREE_OPERAND (argp, 0));
-			  tree argp1 = TREE_OPERAND (argp, 1);
-			  pair = addr_pair (argp0, argp1);
-			  if (memrefs.contains (pair))
-			    break;
+		    case 2:
+		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+			stmt_cost += costs->vla->segment_permute_2;
+		      else
+			stmt_cost += costs->vls->segment_permute_2;
+		      break;
+		    case 3:
+		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+			stmt_cost += costs->vla->segment_permute_3;
+		      else
+			stmt_cost += costs->vls->segment_permute_3;
+		      break;
+		    case 4:
+		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+			stmt_cost += costs->vla->segment_permute_4;
+		      else
+			stmt_cost += costs->vls->segment_permute_4;
+		      break;
+		    case 5:
+		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+			stmt_cost += costs->vla->segment_permute_5;
+		      else
+			stmt_cost += costs->vls->segment_permute_5;
+		      break;
+		    case 6:
+		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+			stmt_cost += costs->vla->segment_permute_6;
+		      else
+			stmt_cost += costs->vls->segment_permute_6;
+		      break;
+		    case 7:
+		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+			stmt_cost += costs->vla->segment_permute_7;
+		      else
+			stmt_cost += costs->vls->segment_permute_7;
+		      break;
+		    case 8:
+		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+			stmt_cost += costs->vla->segment_permute_8;
+		      else
+			stmt_cost += costs->vls->segment_permute_8;
+		      break;
+		    default:
+		      break;
+		    }
+		}
+	      else
+		{
+		  /* Unit-stride vector loads and stores do not have offset
+		     addressing as opposed to scalar loads and stores.
+		     If the address depends on a variable we need an additional
+		     add/sub for each load/store in the worst case.  */
+		  data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+		  class loop *father = stmt_info->stmt->bb->loop_father;
+		  if (!loop && father && !father->inner && father->superloops)
+		    {
+		      tree ref;
+		      if (TREE_CODE (dr->ref) != MEM_REF
+			  || !(ref = TREE_OPERAND (dr->ref, 0))
+			  || TREE_CODE (ref) != SSA_NAME)
+			break;
 
-			  memrefs.add (pair);
-			  stmt_cost += builtin_vectorization_cost (scalar_stmt,
-								   NULL_TREE, 0);
+		      if (SSA_NAME_IS_DEFAULT_DEF (ref))
+			break;
+
+		      if (memrefs.contains ({ref, cst0}))
+			break;
+
+		      memrefs.add ({ref, cst0});
+
+		      /* In case we have not seen REF before and the base
+			 address is a pointer operation try a bit harder.  */
+		      tree base = DR_BASE_ADDRESS (dr);
+		      if (TREE_CODE (base) == POINTER_PLUS_EXPR
+			  || TREE_CODE (base) == POINTER_DIFF_EXPR)
+			{
+			  /* Deconstruct BASE's first operand.  If it is a
+			     binary operation, i.e. a base and an "offset"
+			     store this pair.  Only increase the stmt_cost if
+			     we haven't seen it before.  */
+			  tree argp = TREE_OPERAND (base, 1);
+			  typedef std::pair<tree, tree> addr_pair;
+			  addr_pair pair;
+			  if (TREE_CODE_CLASS (TREE_CODE (argp)) == tcc_binary)
+			    {
+			      tree argp0 = tree_strip_nop_conversions
+				(TREE_OPERAND (argp, 0));
+			      tree argp1 = TREE_OPERAND (argp, 1);
+			      pair = addr_pair (argp0, argp1);
+			      if (memrefs.contains (pair))
+				break;
+
+			      memrefs.add (pair);
+			      stmt_cost
+				+= builtin_vectorization_cost (scalar_stmt,
+							       NULL_TREE, 0);
+			    }
 			}
 		    }
 		}

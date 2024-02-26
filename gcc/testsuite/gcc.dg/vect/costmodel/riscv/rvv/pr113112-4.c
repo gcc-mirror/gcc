@@ -21,8 +21,8 @@ void move_replacements (rtx *x, rtx *y, int n_replacements)
       }
 }
 
-/* { dg-final { scan-assembler {e64,m2} } } */
-/* { dg-final { scan-assembler-not {e64,m4} } } */
+/* { dg-final { scan-assembler-not {e64,m2} } } */
+/* { dg-final { scan-assembler {e64,m4} } } */
 /* { dg-final { scan-assembler-not {jr} } } */
 /* { dg-final { scan-assembler {ret} } } */
 /* { dg-final { scan-assembler-not {sp} } } */

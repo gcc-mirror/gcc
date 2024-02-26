@@ -222,6 +222,15 @@ struct common_vector_cost
   const int gather_load_cost;
   const int scatter_store_cost;
 
+  /* Segment load/store permute cost.  */
+  const int segment_permute_2;
+  const int segment_permute_3;
+  const int segment_permute_4;
+  const int segment_permute_5;
+  const int segment_permute_6;
+  const int segment_permute_7;
+  const int segment_permute_8;
+
   /* Cost of a vector-to-scalar operation.  */
   const int vec_to_scalar_cost;
 
