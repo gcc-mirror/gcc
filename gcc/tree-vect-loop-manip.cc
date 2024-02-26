@@ -1594,7 +1594,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
   auto loop_exits = get_loop_exit_edges (loop);
   bool multiple_exits_p = loop_exits.length () > 1;
   auto_vec<basic_block> doms;
-  class loop *update_loop = NULL;
 
   if (at_exit) /* Add the loop copy at exit.  */
     {
@@ -1856,11 +1855,33 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	 correct.  */
       if (multiple_exits_p)
 	{
-	  update_loop = new_loop;
+	  class loop *update_loop = new_loop;
 	  doms = get_all_dominated_blocks (CDI_DOMINATORS, loop->header);
 	  for (unsigned i = 0; i < doms.length (); ++i)
 	    if (flow_bb_inside_loop_p (loop, doms[i]))
 	      doms.unordered_remove (i);
+
+	  for (edge e : get_loop_exit_edges (update_loop))
+	    {
+	      edge ex;
+	      edge_iterator ei;
+	      FOR_EACH_EDGE (ex, ei, e->dest->succs)
+		{
+		  /* Find the first non-fallthrough block as fall-throughs can't
+		     dominate other blocks.  */
+		  if (single_succ_p (ex->dest))
+		    {
+		      doms.safe_push (ex->dest);
+		      ex = single_succ_edge (ex->dest);
+		    }
+		  doms.safe_push (ex->dest);
+		}
+	      doms.safe_push (e->dest);
+	    }
+
+	  iterate_fix_dominators (CDI_DOMINATORS, doms, false);
+	  if (updated_doms)
+	    updated_doms->safe_splice (doms);
 	}
     }
   else /* Add the copy at entry.  */
@@ -1910,33 +1931,28 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       set_immediate_dominator (CDI_DOMINATORS, new_loop->header,
 			       loop_preheader_edge (new_loop)->src);
 
+      /* Update dominators for multiple exits.  */
       if (multiple_exits_p)
-	update_loop = loop;
-    }
-
-  if (multiple_exits_p)
-    {
-      for (edge e : get_loop_exit_edges (update_loop))
 	{
-	  edge ex;
-	  edge_iterator ei;
-	  FOR_EACH_EDGE (ex, ei, e->dest->succs)
+	  for (edge alt_e : loop_exits)
 	    {
-	      /* Find the first non-fallthrough block as fall-throughs can't
-		 dominate other blocks.  */
-	      if (single_succ_p (ex->dest))
+	      if (alt_e == loop_exit)
+		continue;
+	      basic_block old_dom
+		= get_immediate_dominator (CDI_DOMINATORS, alt_e->dest);
+	      if (flow_bb_inside_loop_p (loop, old_dom))
 		{
-		  doms.safe_push (ex->dest);
-		  ex = single_succ_edge (ex->dest);
+		  auto_vec<basic_block, 8> queue;
+		  for (auto son = first_dom_son (CDI_DOMINATORS, old_dom);
+		       son; son = next_dom_son (CDI_DOMINATORS, son))
+		    if (!flow_bb_inside_loop_p (loop, son))
+		      queue.safe_push (son);
+		  for (auto son : queue)
+		    set_immediate_dominator (CDI_DOMINATORS,
+					     son, get_bb_copy (old_dom));
 		}
-	      doms.safe_push (ex->dest);
 	    }
-	  doms.safe_push (e->dest);
 	}
-
-      iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-      if (updated_doms)
-	updated_doms->safe_splice (doms);
     }
 
   free (new_bbs);
@@ -3368,6 +3384,24 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 					   guard_to, guard_bb,
 					   prob_prolog.invert (),
 					   irred_flag);
+	  for (edge alt_e : get_loop_exit_edges (prolog))
+	    {
+	      if (alt_e == prolog_e)
+		continue;
+	      basic_block old_dom
+		= get_immediate_dominator (CDI_DOMINATORS, alt_e->dest);
+	      if (flow_bb_inside_loop_p (prolog, old_dom))
+		{
+		  auto_vec<basic_block, 8> queue;
+		  for (auto son = first_dom_son (CDI_DOMINATORS, old_dom);
+		       son; son = next_dom_son (CDI_DOMINATORS, son))
+		    if (!flow_bb_inside_loop_p (prolog, son))
+		      queue.safe_push (son);
+		  for (auto son : queue)
+		    set_immediate_dominator (CDI_DOMINATORS, son, guard_bb);
+		}
+	    }
+
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
 	  slpeel_update_phi_nodes_for_guard1 (prolog, loop, guard_e, e);
