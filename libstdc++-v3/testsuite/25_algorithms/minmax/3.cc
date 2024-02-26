@@ -43,7 +43,7 @@ int compare_counter::count = 0;
 void test01()
 {
   std::minmax({1, 2, 3, 4, 5, 6, 7, 8}, compare_counter());
-  // { dg-warning "ignoring return value" "" { target c++17 } 45 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 45 }
 
   // If N is the number of arguments in the minmax function call, 
   // 25.3.7 specifies that at most 3N/2 comparisons are allowed.

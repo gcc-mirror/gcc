@@ -109,7 +109,7 @@ test01()
 {
   value s[] = { 0, 1, 2, 3, 4, 5 };
   std::search(s, s+6, stashing_iterator(s), stashing_iterator(s+4));
-  // { dg-warning "ignoring return value" "" { target c++17 } 111 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 111 }
 }
 
 int

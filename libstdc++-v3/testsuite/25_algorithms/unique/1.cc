@@ -27,6 +27,6 @@ int main()
   using namespace std;
   list<int> menge;
   unique (menge.begin(), menge.end());
-  // { dg-warning "ignoring return value" "" { target c++17 } 29 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 29 }
   return 0;
 }

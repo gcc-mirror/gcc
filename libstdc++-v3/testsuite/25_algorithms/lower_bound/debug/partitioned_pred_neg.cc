@@ -24,7 +24,7 @@ void test01()
 {
   int as[] = { 0, 1, 0, 2, 3 };
   std::lower_bound(as, as + 5, 1, std::less<int>());
-  // { dg-warning "ignoring return value" "" { target c++17 } 26 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 26 }
 }
 
 

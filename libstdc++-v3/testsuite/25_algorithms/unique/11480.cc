@@ -31,7 +31,7 @@ bool compare(int a, int b)
 // libstdc++/11480
 void test01()
 {
-  std::unique(a, a+10, compare); // { dg-warning "ignoring return value" "" { target c++17 } }
+  std::unique(a, a+10, compare); // { dg-warning "ignoring return value" "" { target c++11 } }
   VERIFY( compare_count == 9 );
 }
 

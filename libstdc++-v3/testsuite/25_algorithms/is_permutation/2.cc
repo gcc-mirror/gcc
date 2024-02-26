@@ -103,7 +103,7 @@ void test02()
   int arr[] = { 11, 22, 33 };
   using namespace std;
   is_permutation(begin(arr0), end(arr0), begin(arr), end(arr), thrower);
-  // { dg-warning "ignoring return value" "" { target c++17 } 105 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 105 }
 }
 
 int main()

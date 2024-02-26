@@ -23,6 +23,5 @@
 void foo()
 {
   std::vector<int> v;
-  is_sorted(v.begin(), v.end());
-  // { dg-warning "ignoring return value" "" { target c++17 } 26 }
+  is_sorted(v.begin(), v.end()); // { dg-warning "ignoring return value" }
 }

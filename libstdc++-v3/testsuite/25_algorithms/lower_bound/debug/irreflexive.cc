@@ -44,5 +44,5 @@ void test01()
 {
   A as[] = { 0, 1, 2, 3 };
   std::lower_bound(as, as + 4, 1, A_int_comparer());
-  // { dg-warning "ignoring return value" "" { target c++17 } 46 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 46 }
 }

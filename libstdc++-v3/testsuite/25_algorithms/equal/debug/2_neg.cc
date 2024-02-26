@@ -27,7 +27,7 @@ test01()
   std::vector<int> v1, v2;
   v1.push_back(1);
   std::equal(v1.begin(), v1.end(), v2.begin());
-  // { dg-warning "ignoring return value" "" { target c++17 } 29 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 29 }
 }
 
 int

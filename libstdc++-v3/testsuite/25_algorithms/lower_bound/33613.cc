@@ -33,5 +33,5 @@ bool ab(A, B);
 void test01(A* a, B b)
 {
   std::lower_bound(a, a, b, ab);
-  // { dg-warning "ignoring return value" "" { target c++17 } 35 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 35 }
 }

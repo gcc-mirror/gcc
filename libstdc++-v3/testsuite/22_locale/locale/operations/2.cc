@@ -48,7 +48,7 @@ void test02()
   // Derivation, MF check.
   locale loc_gnu(loc_c, new gnu_collate);
   gnu_count = 0;
-  loc_gnu(s01, s02); // { dg-warning "nodiscard" "" { target c++17 } }
+  loc_gnu(s01, s02); // { dg-warning "nodiscard" "" { target c++11 } }
   VERIFY( gnu_count == 1 );
 }
 

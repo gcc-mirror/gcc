@@ -29,7 +29,7 @@ void test01()
   int count = 0;
   std::search_n(a.begin(), a.end(), 10, 1,
 		[&count](int t, int u) { ++count; return t == u; });
-  // { dg-warning "ignoring return value" "" { target c++17 } 30 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 30 }
   VERIFY( count <= 11 );
 }
 

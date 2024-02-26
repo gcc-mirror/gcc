@@ -33,5 +33,5 @@ int main()
   X x[1];
   int i[1];
   std::lexicographical_compare(x, x+1, i, i+1);
-  // { dg-warning "ignoring return value" "" { target c++17 } 35 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 35 }
 }

@@ -45,7 +45,7 @@ void test01(int iters)
 	  locale loc2 = locale("");
 	  VERIFY( !has_facet<MyFacet>(loc2) );
 	  
-	  loc1.combine<MyFacet>(loc2); // { dg-warning "nodiscard" "" { target c++17 } }
+	  loc1.combine<MyFacet>(loc2); // { dg-warning "nodiscard" "" { target c++11 } }
 	  VERIFY( false );
 	}
       catch (std::runtime_error&)

@@ -36,7 +36,7 @@ void test01()
 {
   A as[] = { 0, 1, 2, 0, 2, 3 };
   std::lower_bound(as, as + 6, A(1));
-  // { dg-warning "ignoring return value" "" { target c++17 } 38 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 38 }
 }
 
 int

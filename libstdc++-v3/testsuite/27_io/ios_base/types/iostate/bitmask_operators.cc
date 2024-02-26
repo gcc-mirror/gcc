@@ -27,7 +27,7 @@ int main()
 {
   __gnu_test::bitmask_operators<std::ios_base::iostate>();
 }
-// { dg-warning "ignoring return value.*operator\\|" "" { target c++17 } 0 }
-// { dg-warning "ignoring return value.*operator&" "" { target c++17 } 0 }
-// { dg-warning "ignoring return value.*operator\\^" "" { target c++17 } 0 }
-// { dg-warning "ignoring return value.*operator~" "" { target c++17 } 0 }
+// { dg-warning "ignoring return value.*operator\\|" "" { target c++11 } 0 }
+// { dg-warning "ignoring return value.*operator&" "" { target c++11 } 0 }
+// { dg-warning "ignoring return value.*operator\\^" "" { target c++11 } 0 }
+// { dg-warning "ignoring return value.*operator~" "" { target c++11 } 0 }

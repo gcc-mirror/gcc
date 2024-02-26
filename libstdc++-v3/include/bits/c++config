@@ -169,7 +169,7 @@
 #endif
 
 // Macro to warn about unused results.
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201103L
 # define _GLIBCXX_NODISCARD [[__nodiscard__]]
 #else
 # define _GLIBCXX_NODISCARD

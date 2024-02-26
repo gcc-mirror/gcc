@@ -73,10 +73,10 @@ test2054( )
   upper_bound(Index.begin(), Index.end(), SearchTerm, aComparison);
   equal_range(Index.begin(), Index.end(), SearchTerm, aComparison);
   binary_search(Index.begin(), Index.end(), SearchTerm, aComparison);
-  // { dg-warning "ignoring return value" "" { target c++17 } 72 }
-  // { dg-warning "ignoring return value" "" { target c++17 } 73 }
-  // { dg-warning "ignoring return value" "" { target c++17 } 74 }
-  // { dg-warning "ignoring return value" "" { target c++17 } 75 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 72 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 73 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 74 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 75 }
 }
 
 int main()
