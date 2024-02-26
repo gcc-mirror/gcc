@@ -1101,7 +1101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
     public:
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       at(size_type __n)
       {
@@ -1109,7 +1109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return (*this)[__n];
       }
 
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       at(size_type __n) const
       {
