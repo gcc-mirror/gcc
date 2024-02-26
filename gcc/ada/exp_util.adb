@@ -936,6 +936,16 @@ package body Exp_Util is
         Needs_Finalization (Desig_Typ)
           and then not No_Heap_Finalization (Ptr_Typ);
 
+      --  The allocation/deallocation of a controlled object must be associated
+      --  with an attachment to/detachment from a finalization master, but the
+      --  implementation cannot guarantee this property for every anonymous
+      --  access tyoe, see Build_Anonymous_Collection.
+
+      if Needs_Fin and then No (Finalization_Master (Ptr_Typ)) then
+         pragma Assert (Ekind (Ptr_Typ) = E_Anonymous_Access_Type);
+         Needs_Fin := False;
+      end if;
+
       if Needs_Fin then
 
          --  Do nothing if the access type may never allocate / deallocate
@@ -944,11 +954,6 @@ package body Exp_Util is
          if No_Pool_Assigned (Ptr_Typ) then
             return;
          end if;
-
-         --  The allocation / deallocation of a controlled object must be
-         --  chained on / detached from a finalization master.
-
-         pragma Assert (Present (Finalization_Master (Ptr_Typ)));
 
       --  The only other kind of allocation / deallocation supported by this
       --  routine is on / from a subpool.

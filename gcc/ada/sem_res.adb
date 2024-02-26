@@ -5679,19 +5679,19 @@ package body Sem_Res is
                Set_Is_Dynamic_Coextension (N, False);
                Set_Is_Static_Coextension  (N, False);
 
-               --  Anonymous access-to-controlled objects are not finalized on
-               --  time because this involves run-time ownership and currently
-               --  this property is not available. In rare cases the object may
-               --  not be finalized at all. Warn on potential issues involving
-               --  anonymous access-to-controlled objects.
+               --  Objects allocated through anonymous access types are not
+               --  finalized on time because this involves run-time ownership
+               --  and currently this property is not available. In rare cases
+               --  the object might not be finalized at all. Warn on potential
+               --  issues involving anonymous access-to-controlled types.
 
                if Ekind (Typ) = E_Anonymous_Access_Type
                  and then Is_Controlled_Active (Desig_T)
                then
                   Error_Msg_N
-                    ("??object designated by anonymous access object might "
+                    ("??object designated by anonymous access value might "
                      & "not be finalized until its enclosing library unit "
-                     & "goes out of scope", N);
+                     & "goes out of scope, or not be finalized at all", N);
                   Error_Msg_N ("\use named access type instead", N);
                end if;
             end if;
