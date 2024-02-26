@@ -1,3 +1,8 @@
+2024-02-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* gfortran.dg/pr105456.f90: New test.
+
 2024-02-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/113205

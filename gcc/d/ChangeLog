@@ -1,3 +1,7 @@
+2024-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd ceff48bf7d.
+
 2024-02-17  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 9471b25db9.

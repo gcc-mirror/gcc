@@ -1,3 +1,87 @@
+2024-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113749
+	* Make-lang.in (BUILD-PGE-O): Add m2/pge-boot/Gwrapc.o.
+	* gm2-libs-ch/wrapc.c (wrapc_SeekSet): New function.
+	(wrapc_SeekEnd): Ditto.
+	(wrapc_ReadOnly): Ditto.
+	(wrapc_WriteOnly): Ditto.
+	* gm2-libs/FIO.mod (SEEK_SET): Remove.
+	(SEEK_END): Remove.
+	(UNIXREADONLY): Remove.
+	(UNIXWRITEONLY): Remove.
+	(ConnectToUnix): Replace UNIXWRITEONLY with a call to WriteOnly.
+	Replace UNIXREADONLY with a call to ReadOnly.
+	(SetPositionFromBeginning): Replace SEEK_SET with a call to
+	SeekSet.
+	(SetPositionFromEnd): Replace SEEK_END with a call to
+	SeekEnd.
+	* gm2-libs/wrapc.def (SeekSet): New procedure function.
+	(SeekEnd): New procedure function.
+	(ReadOnly): New procedure function.
+	(WriteOnly): New procedure function.
+	* mc-boot-ch/Glibc.c (BUILD_MC_LIBC_TRACE): Undef.
+	(check_init): New function.
+	(tracedb): Ditto.
+	(tracedb_open): Ditto.
+	(tracedb_result): Ditto.
+	(libc_read): Ditto.
+	(libc_write): Ditto.
+	(libc_close): Ditto.
+	(libc_creat): Ditto.
+	(libc_open): Ditto.
+	(libc_lseek): Ditto.
+	* mc-boot-ch/Gwrapc.c (wrapc_SeekSet): New function.
+	(wrapc_SeekEnd): Ditto.
+	(wrapc_ReadOnly): Ditto.
+	(wrapc_WriteOnly): Ditto.
+	* mc-boot/GDynamicStrings.cc: Rebuilt.
+	* mc-boot/GFIO.cc: Ditto.
+	* mc-boot/GIndexing.cc: Ditto.
+	* mc-boot/GM2Dependent.cc: Ditto.
+	* mc-boot/GM2EXCEPTION.cc: Ditto.
+	* mc-boot/GPushBackInput.cc: Ditto.
+	* mc-boot/GRTExceptions.cc: Ditto.
+	* mc-boot/GRTint.cc: Ditto.
+	* mc-boot/GSArgs.cc: Ditto.
+	* mc-boot/GStdIO.cc: Ditto.
+	* mc-boot/GStringConvert.cc: Ditto.
+	* mc-boot/GSysStorage.cc: Ditto.
+	* mc-boot/Gdecl.cc: Ditto.
+	* mc-boot/Gkeyc.cc: Ditto.
+	* mc-boot/Glibc.h: Ditto.
+	* mc-boot/GmcComment.cc: Ditto.
+	* mc-boot/GmcComp.cc: Ditto.
+	* mc-boot/GmcDebug.cc: Ditto.
+	* mc-boot/GmcMetaError.cc: Ditto.
+	* mc-boot/GmcStack.cc: Ditto.
+	* mc-boot/GmcStream.cc: Ditto.
+	* mc-boot/GnameKey.cc: Ditto.
+	* mc-boot/GsymbolKey.cc: Ditto.
+	* mc-boot/Gvarargs.cc: Ditto.
+	* mc-boot/Gwrapc.h: Ditto.
+	* mc/decl.mod (getSymName): Add pointerref clause.
+	* mc/mcStream.mod (copy): Check for an error after every read.
+	* mc/varargs.mod (copy): Rewrite pointer arithmetic using INC to
+	avoid type incompatibility.
+	* pge-boot/GDynamicStrings.cc: Rebuilt.
+	* pge-boot/GDynamicStrings.h: Ditto.
+	* pge-boot/GFIO.cc: Ditto.
+	* pge-boot/GFIO.h: Ditto.
+	* pge-boot/GIO.cc: Ditto.
+	* pge-boot/GIndexing.cc: Ditto.
+	* pge-boot/GM2Dependent.cc: Ditto.
+	* pge-boot/GM2EXCEPTION.cc: Ditto.
+	* pge-boot/GNameKey.cc: Ditto.
+	* pge-boot/GPushBackInput.cc: Ditto.
+	* pge-boot/GRTExceptions.cc: Ditto.
+	* pge-boot/GStdIO.cc: Ditto.
+	* pge-boot/GSymbolKey.cc: Ditto.
+	* pge-boot/GSysStorage.cc: Ditto.
+	* pge-boot/Glibc.h: Ditto.
+	* pge-boot/Gwrapc.cc: Ditto.
+	* pge-boot/Gwrapc.h: Ditto.
+
 2024-02-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114055

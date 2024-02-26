@@ -1,3 +1,12 @@
+2024-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113749
+	* libm2pim/wrapc.cc: Include fcntl.h.
+	(SeekSet): New function.
+	(SeekEnd): Ditto.
+	(ReadOnly): Ditto.
+	(WriteOnly): Ditto.
+
 2024-02-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* libm2iso/wraptime.cc [HAVE_STRUCT_TIMEZONE && HAVE_GETTIMEOFDAY]

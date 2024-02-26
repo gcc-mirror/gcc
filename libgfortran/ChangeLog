@@ -1,3 +1,11 @@
+2024-02-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/list_read.c (list_formatted_read_scalar): Add checks
+	for the case where a user defines their own error codes
+	and error messages and generate the runtime error.
+	* io/transfer.c (st_read_done): Whitespace.
+
 2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/105473
