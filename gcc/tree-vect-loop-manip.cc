@@ -1667,17 +1667,18 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		  alt_loop_exit_block = split_edge (exit);
 		if (!need_virtual_phi)
 		  continue;
-		if (vphi_def)
-		  {
-		    if (!vphi)
-		      vphi = create_phi_node (copy_ssa_name (vphi_def),
-					      alt_loop_exit_block);
-		    else
-		      /* Edge redirection might re-allocate the PHI node
-			 so we have to rediscover it.  */
-		      vphi = get_virtual_phi (alt_loop_exit_block);
-		    add_phi_arg (vphi, vphi_def, exit, UNKNOWN_LOCATION);
-		  }
+		/* When the edge has no virtual LC PHI get at the live
+		   virtual operand by other means.  */
+		if (!vphi_def)
+		  vphi_def = get_live_virtual_operand_on_edge (exit);
+		if (!vphi)
+		  vphi = create_phi_node (copy_ssa_name (vphi_def),
+					  alt_loop_exit_block);
+		else
+		  /* Edge redirection might re-allocate the PHI node
+		     so we have to rediscover it.  */
+		  vphi = get_virtual_phi (alt_loop_exit_block);
+		add_phi_arg (vphi, vphi_def, exit, UNKNOWN_LOCATION);
 	      }
 
 	  set_immediate_dominator (CDI_DOMINATORS, new_preheader,
@@ -1789,17 +1790,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		  if (virtual_operand_p (alt_arg))
 		    {
 		      gphi *vphi = get_virtual_phi (alt_loop_exit_block);
-		      /* ???  When the exit yields to a path without
-			 any virtual use we can miss a LC PHI for the
-			 live virtual operand.  Simply choosing the
-			 one live at the start of the loop header isn't
-			 correct, but we should get here only with
-			 early-exit vectorization which will move all
-			 defs after the main exit, so leave a temporarily
-			 wrong virtual operand in place.  This happens
-			 for gcc.c-torture/execute/20150611-1.c  */
-		      if (vphi)
-			alt_arg = gimple_phi_result (vphi);
+		      alt_arg = gimple_phi_result (vphi);
 		    }
 		  /* For other live args we didn't create LC PHI nodes.
 		     Do so here.  */
