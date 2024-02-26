@@ -11859,6 +11859,27 @@ c_parser_postfix_expression (c_parser *parser)
 		expr.set_error ();
 		break;
 	      }
+	    if (TREE_CODE (TREE_TYPE (arg_p->value)) == ENUMERAL_TYPE)
+	      {
+		error_at (loc, "argument %u in call to function "
+			  "%qs has enumerated type", 1, name);
+		expr.set_error ();
+		break;
+	      }
+	    if (TREE_CODE (TREE_TYPE (arg_p->value)) == BOOLEAN_TYPE)
+	      {
+		error_at (loc, "argument %u in call to function "
+			  "%qs has boolean type", 1, name);
+		expr.set_error ();
+		break;
+	      }
+	    if (!TYPE_UNSIGNED (TREE_TYPE (arg_p->value)))
+	      {
+		error_at (loc, "argument 1 in call to function "
+			  "%qs has signed type", name);
+		expr.set_error ();
+		break;
+	      }
 	    tree arg = arg_p->value;
 	    tree type = TYPE_MAIN_VARIANT (TREE_TYPE (arg));
 	    /* Expand:
