@@ -32,10 +32,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 13.2.0\n"
+"Project-Id-Version: gcc 14.1-b20240218\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2024-02-16 21:35+0000\n"
-"PO-Revision-Date: 2024-02-17 18:57-0500\n"
+"PO-Revision-Date: 2024-02-24 14:20-0500\n"
 "Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -44,7 +44,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 2.4.3\n"
+"X-Generator: Poedit 3.4.2\n"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
@@ -1737,10 +1737,9 @@ msgid "Warn about C++23 constructs in code compiled with an older standard."
 msgstr "对使用较旧标准编译的代码给出 C++23 构造的警告。"
 
 #: c-family/c.opt:503
-#, fuzzy, no-c-format
-#| msgid "Warn about C++20 constructs in code compiled with an older standard."
+#, no-c-format
 msgid "Warn about C++26 constructs in code compiled with an older standard."
-msgstr "对使用较旧标准编译的代码给出 C++20 构造的警告。"
+msgstr "对使用较旧标准编译的代码给出 C++26 构造的警告。"
 
 #: c-family/c.opt:507
 #, no-c-format
@@ -1850,10 +1849,9 @@ msgid "Warn when all constructors and destructors are private."
 msgstr "当所有构造函数和析构函数都是私有时给出警告"
 
 #: c-family/c.opt:588
-#, fuzzy, no-c-format
-#| msgid "Warn about implicit declarations"
+#, no-c-format
 msgid "Warn about dangling else."
-msgstr "对隐式函数声明给出警告"
+msgstr "对悬空的 else 给出警告。"
 
 #: c-family/c.opt:592 c-family/c.opt:596
 #, no-c-format
@@ -1868,24 +1866,22 @@ msgstr ""
 #: c-family/c.opt:604
 #, no-c-format
 msgid "Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage."
-msgstr ""
+msgstr "当 __TIME__、__DATE__ 和 __TIMESTAMP__ 被使用时给出警告。"
 
 #: c-family/c.opt:608
-#, fuzzy, no-c-format
-#| msgid "Warn when a declaration is found after a statement"
+#, no-c-format
 msgid "Warn when a declaration is found after a statement."
-msgstr "当声明出现在语句后时给出警告"
+msgstr "当声明出现在语句后时给出警告。"
 
 #: c-family/c.opt:612
-#, fuzzy, no-c-format
-#| msgid "Warn about unprototyped function declarations"
+#, no-c-format
 msgid "Warn for missing parameter types in function declarations."
-msgstr "使用了非原型的函数声明时给出警告"
+msgstr "当函数生命中缺失参数类型时给出警告。"
 
 #: c-family/c.opt:616
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn when deleting a pointer to incomplete type."
-msgstr "提领指向不完全类型的指针"
+msgstr "在删除不兼容类型的指针时给出警告。"
 
 #: c-family/c.opt:620
 #, fuzzy, no-c-format
@@ -2013,10 +2009,9 @@ msgid "Warn if \"defined\" is used outside #if."
 msgstr "当 \"defined\" 在 #if 之外使用时给出警告。"
 
 #: c-family/c.opt:727
-#, fuzzy, no-c-format
-#| msgid "Warn about implicit function declarations"
+#, no-c-format
 msgid "Warn about semicolon after in-class function definition."
-msgstr "对隐式函数声明给出警告"
+msgstr ""
 
 #: c-family/c.opt:731
 #, no-c-format
@@ -2059,10 +2054,9 @@ msgid "Warn if passing too many arguments to a function for its format string."
 msgstr "当传递给格式字符串的参数太多时给出警告"
 
 #: c-family/c.opt:760
-#, fuzzy, no-c-format
-#| msgid "Warn about format strings that are not literals"
+#, no-c-format
 msgid "Warn about format strings that are not literals."
-msgstr "当格式字符串不是字面量时给出警告"
+msgstr "当格式字符串不是字面量时给出警告。"
 
 #: c-family/c.opt:764
 #, no-c-format
@@ -2430,10 +2424,9 @@ msgid "Warn about potentially suboptimal choices related to OpenACC parallelism.
 msgstr ""
 
 #: c-family/c.opt:1101
-#, fuzzy, no-c-format
-#| msgid "Warn about \"suspicious\" constructs"
+#, no-c-format
 msgid "Warn about suspicious OpenMP code."
-msgstr "对“可疑”的构造给出警告"
+msgstr "对可疑的 OpenMP 代码给出警告。"
 
 #: c-family/c.opt:1105
 #, no-c-format
@@ -2503,10 +2496,9 @@ msgid "Warn when converting the type of pointers to member functions."
 msgstr "当改变成员函数指针的类型时给出警告"
 
 #: c-family/c.opt:1165
-#, fuzzy, no-c-format
-#| msgid "Warn about function pointer arithmetic"
+#, no-c-format
 msgid "Warn about function pointer arithmetic."
-msgstr "当在算术表达式中使用函数指针时给出警告"
+msgstr "当在算术表达式中使用函数指针时给出警告。"
 
 #: c-family/c.opt:1169
 #, fuzzy, no-c-format
@@ -2521,16 +2513,14 @@ msgid "Warn when a pointer is compared with a zero character constant."
 msgstr "使用多字节字符集的字符常量时给出警告"
 
 #: c-family/c.opt:1177
-#, fuzzy, no-c-format
-#| msgid "Warn when a pointer is cast to an integer of a different size"
+#, no-c-format
 msgid "Warn when a pointer is cast to an integer of a different size."
-msgstr "将一个指针转换为大小不同的整数时给出警告"
+msgstr "将一个指针转换为大小不同的整数时给出警告。"
 
 #: c-family/c.opt:1181
-#, fuzzy, no-c-format
-#| msgid "Warn about misuses of pragmas"
+#, no-c-format
 msgid "Warn about misuses of pragmas."
-msgstr "对错误使用的 pragma 加以警告"
+msgstr "对错误使用的 pragma 给出警告。"
 
 #: c-family/c.opt:1185
 #, no-c-format
@@ -2554,15 +2544,14 @@ msgid "Warn when a range-based for-loop is creating unnecessary copies."
 msgstr ""
 
 #: c-family/c.opt:1201
-#, fuzzy, no-c-format
-#| msgid "Warn about multiple declarations of the same object"
+#, no-c-format
 msgid "Warn about multiple declarations of the same object."
-msgstr "对同一个对象多次声明时给出警告"
+msgstr "对同一个对象多次声明时给出警告。"
 
 #: c-family/c.opt:1205
 #, no-c-format
 msgid "Warn about redundant calls to std::move."
-msgstr ""
+msgstr "对多余的 std::move 调用给出警告。"
 
 #: c-family/c.opt:1209
 #, no-c-format
@@ -2852,10 +2841,9 @@ msgid "Warn about invalid forms of delimited or named escape sequences."
 msgstr ""
 
 #: c-family/c.opt:1449
-#, fuzzy, no-c-format
-#| msgid "Warn about unrecognized pragmas"
+#, no-c-format
 msgid "Warn about unrecognized pragmas."
-msgstr "对无法识别的 pragma 加以警告"
+msgstr "对无法识别的 pragma 加以警告。"
 
 #: c-family/c.opt:1453
 #, fuzzy, no-c-format
@@ -3231,10 +3219,9 @@ msgid "Use traditional GNU semantics for inline functions."
 msgstr "为内联函数使用传统的 GNU 语义。"
 
 #: c-family/c.opt:1907
-#, fuzzy, no-c-format
-#| msgid "Assume normal C execution environment"
+#, no-c-format
 msgid "Assume normal C execution environment."
-msgstr "假定一般的 C 执行环境"
+msgstr "假定一般的 C 执行环境。"
 
 #: c-family/c.opt:1915
 #, no-c-format
@@ -3803,10 +3790,9 @@ msgid "Conform to the ISO 2023 C++ draft standard (experimental and incomplete s
 msgstr "遵循 ISO 2023 C++ 标准草案（试验性质的不完全支持）。"
 
 #: c-family/c.opt:2480 c-family/c.opt:2484
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2023 C++ draft standard (experimental and incomplete support)."
+#, no-c-format
 msgid "Conform to the ISO 2026 C++ draft standard (experimental and incomplete support)."
-msgstr "遵循 ISO 2023 C++ 标准草案（试验性质的不完全支持）。"
+msgstr "遵循 ISO 2026 C++ 标准草案（试验性质的不完全支持）。"
 
 #: c-family/c.opt:2488 c-family/c.opt:2642
 #, no-c-format
@@ -3825,16 +3811,14 @@ msgid "Conform to the ISO 2017 C standard (published in 2018)."
 msgstr "遵循 ISO 2017 C 标准（于2018年发布）。"
 
 #: c-family/c.opt:2504 c-family/c.opt:2654
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 202X C standard draft (experimental and incomplete support)."
+#, no-c-format
 msgid "Conform to the ISO 2023 C standard draft (expected to be published in 2024) (experimental and incomplete support)."
-msgstr "遵循 ISO 202X C++ 标准草案（试验性质的不完全支持）。"
+msgstr "遵循 ISO 2023 C++ 标准草案（预计于2024年发布）（试验性质的不完全支持）。"
 
 #: c-family/c.opt:2508
-#, fuzzy, no-c-format
-#| msgid "Deprecated in favor of -std=c11."
+#, no-c-format
 msgid "Deprecated in favor of -std=c23."
-msgstr "已弃用，请改用 -std=c11。"
+msgstr "已弃用，请改用 -std=c23。"
 
 #: c-family/c.opt:2512 c-family/c.opt:2516 c-family/c.opt:2626
 #, no-c-format
@@ -3887,10 +3871,9 @@ msgid "Conform to the ISO 2017 C++ standard with GNU extensions."
 msgstr "遵循 ISO 2017 C++ 标准，也支持 GNU 扩展。"
 
 #: c-family/c.opt:2562 c-family/c.opt:2566
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 201z(7?) C++ draft standard with GNU extensions (experimental and incomplete support)"
+#, no-c-format
 msgid "Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support)."
-msgstr "遵循 ISO 201z(7?) C++ 标准草案和 GNU 扩展(试验性质的不完全支持)"
+msgstr "遵循 ISO 2020 C++ 标准和 GNU 扩展（试验性质的不完全支持）"
 
 #: c-family/c.opt:2570 c-family/c.opt:2574
 #, fuzzy, no-c-format
@@ -3915,10 +3898,9 @@ msgid "Deprecated in favor of -std=gnu11."
 msgstr "已弃用，请改用 -std=gnu11。"
 
 #: c-family/c.opt:2594 c-family/c.opt:2598
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 1990 C standard with GNU extensions"
+#, no-c-format
 msgid "Conform to the ISO 2017 C standard (published in 2018) with GNU extensions."
-msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展"
+msgstr "遵循 ISO 2017 C 标准（发布于2018年），也支持 GNU 扩展"
 
 #: c-family/c.opt:2602
 #, fuzzy, no-c-format
@@ -3927,10 +3909,9 @@ msgid "Conform to the ISO 2023 C standard draft (expected to be published in 202
 msgstr "遵循 ISO 201z(7?) C++ 标准草案和 GNU 扩展(试验性质的不完全支持)"
 
 #: c-family/c.opt:2606
-#, fuzzy, no-c-format
-#| msgid "Deprecated in favor of -std=gnu11."
+#, no-c-format
 msgid "Deprecated in favor of -std=gnu23."
-msgstr "已弃用，请改用 -std=gnu11。"
+msgstr "已弃用，请改用 -std=gnu23。"
 
 #: c-family/c.opt:2610 c-family/c.opt:2614
 #, no-c-format
@@ -4112,13 +4093,12 @@ msgstr "生成文档。"
 #: d/lang.opt:268
 #, no-c-format
 msgid "-fdoc-dir=<dir>\tWrite documentation file to directory <dir>."
-msgstr ""
+msgstr "-fdoc-dir=<dir>\t将文档写入指定目录 <dir> 中。"
 
 #: d/lang.opt:272
-#, fuzzy, no-c-format
-#| msgid "-o <file>\tPlace output into <file>"
+#, no-c-format
 msgid "-fdoc-file=<file>\tWrite documentation to <file>."
-msgstr "-o <文件>\t将输出写入文件"
+msgstr "-o <文件>\t将文档写入指定 <文件>。"
 
 #: d/lang.opt:276
 #, no-c-format
@@ -5432,16 +5412,14 @@ msgid "Do not generate a single exit point for each function."
 msgstr "不为每个函数生成单一的退出点"
 
 #: config/mmix/mmix.opt:95
-#, fuzzy, no-c-format
-#| msgid "Set start-address of the program"
+#, no-c-format
 msgid "Set start-address of the program."
-msgstr "设定程序的起始地址"
+msgstr "设定程序的起始地址。"
 
 #: config/mmix/mmix.opt:99
-#, fuzzy, no-c-format
-#| msgid "Set start-address of data"
+#, no-c-format
 msgid "Set start-address of data."
-msgstr "设定数据的起始地址"
+msgstr "设定数据的起始地址。"
 
 #: config/darwin.opt:34
 #, fuzzy, no-c-format
@@ -5491,10 +5469,9 @@ msgid "Generate code for the kernel or loadable kernel extensions."
 msgstr "为内核或可加载内核扩展生成代码"
 
 #: config/darwin.opt:75
-#, fuzzy, no-c-format
-#| msgid "The earliest MacOS X version on which this program will run"
+#, no-c-format
 msgid "The earliest macOS version on which this program will run."
-msgstr "这个程序可能在其上运行的最早的 MacOS X 版本"
+msgstr "这个程序可能在其上运行的最早的 macOS 版本。"
 
 #: config/darwin.opt:80
 #, no-c-format
@@ -5638,12 +5615,12 @@ msgstr ""
 #: config/darwin.opt:198
 #, no-c-format
 msgid "Abbreviation for \"-g -fno-eliminate-unused-debug-symbols\"."
-msgstr ""
+msgstr "\"-g -fno-eliminate-unused-debug-symbols\" 的缩写。"
 
 #: config/darwin.opt:202
 #, no-c-format
 msgid "Abbreviation for \"-g -feliminate-unused-debug-symbols\"."
-msgstr ""
+msgstr "\"-g -feliminate-unused-debug-symbols\" 的缩写。"
 
 #: config/darwin.opt:206
 #, no-c-format
@@ -5876,16 +5853,14 @@ msgid "(Obsolete and unhandled by ld64, ignored)\tld should produce an executabl
 msgstr ""
 
 #: config/bfin/bfin.opt:40 config/msp430/msp430.opt:3 config/c6x/c6x.opt:38
-#, fuzzy, no-c-format
-#| msgid "Use simulator runtime"
+#, no-c-format
 msgid "Use simulator runtime."
-msgstr "使用仿真器运行时"
+msgstr "使用仿真器运行时。"
 
 #: config/bfin/bfin.opt:44 config/arm/arm.opt:120
-#, fuzzy, no-c-format
-#| msgid "Specify the name of the target CPU"
+#, no-c-format
 msgid "Specify the name of the target CPU."
-msgstr "指定目标 CPU 的名称"
+msgstr "指定目标 CPU 的名称。"
 
 #: config/bfin/bfin.opt:48
 #, fuzzy, no-c-format
@@ -5894,10 +5869,9 @@ msgid "Omit frame pointer for leaf functions."
 msgstr "为叶函数(不调用其他函数的函数)忽略框架指针"
 
 #: config/bfin/bfin.opt:52
-#, fuzzy, no-c-format
-#| msgid "Program is entirely located in low 64k of memory"
+#, no-c-format
 msgid "Program is entirely located in low 64k of memory."
-msgstr "程序完全位于内存的低 64K"
+msgstr "程序完全位于内存的低 64K。"
 
 #: config/bfin/bfin.opt:56
 #, fuzzy, no-c-format
@@ -6007,10 +5981,9 @@ msgid "Known M68K ISAs (for use with the -march= option):"
 msgstr "已知 M68K ISA (用于 -march= 选项)："
 
 #: config/m68k/ieee.opt:24 config/i386/i386.opt:389
-#, fuzzy, no-c-format
-#| msgid "Use IEEE math for fp comparisons"
+#, no-c-format
 msgid "Use IEEE math for fp comparisons."
-msgstr "浮点数间的比较严格遵循 IEEE 标准"
+msgstr "浮点数间的比较严格遵循 IEEE 标准。"
 
 #: config/m68k/m68k.opt:30
 #, no-c-format
@@ -6488,10 +6461,9 @@ msgid "Specify stringop expansion strategy."
 msgstr ""
 
 #: config/m32c/m32c.opt:23
-#, fuzzy, no-c-format
-#| msgid "-msim\tUse simulator runtime"
+#, no-c-format
 msgid "-msim\tUse simulator runtime."
-msgstr "-msim\t使用仿真器运行时"
+msgstr "-msim\t使用仿真器运行时。"
 
 #: config/m32c/m32c.opt:27
 #, fuzzy, no-c-format
@@ -6963,16 +6935,14 @@ msgid "Do not inline integer division."
 msgstr "不内联整数除法。"
 
 #: config/ia64/ia64.opt:94
-#, fuzzy, no-c-format
-#| msgid "Generate inline square root, optimize for latency"
+#, no-c-format
 msgid "Generate inline square root, optimize for latency."
-msgstr "生成内联的平方根，为最小延迟优化"
+msgstr "生成内联的平方根，为最小延迟优化。"
 
 #: config/ia64/ia64.opt:98
-#, fuzzy, no-c-format
-#| msgid "Generate inline square root, optimize for throughput"
+#, no-c-format
 msgid "Generate inline square root, optimize for throughput."
-msgstr "生成内联的平方根，为最大吞吐量优化"
+msgstr "生成内联的平方根，为最大吞吐量优化。"
 
 #: config/ia64/ia64.opt:102
 #, no-c-format
@@ -7221,10 +7191,9 @@ msgid "Target the FT32B architecture."
 msgstr "目标为 AM33 处理器"
 
 #: config/ft32/ft32.opt:39
-#, fuzzy, no-c-format
-#| msgid "Enable MeP Coprocessor"
+#, no-c-format
 msgid "Enable FT32B code compression."
-msgstr "启用 MeP 协处理器"
+msgstr "启用 FT32B 代码压缩。"
 
 #: config/ft32/ft32.opt:43
 #, no-c-format
@@ -7454,40 +7423,34 @@ msgid "Use windowed registers ABI."
 msgstr "使用浮点寄存器"
 
 #: config/i386/cygming.opt:23
-#, fuzzy, no-c-format
-#| msgid "Create console application"
+#, no-c-format
 msgid "Create console application."
-msgstr "创建命令行程序"
+msgstr "创建控制台程序。"
 
 #: config/i386/cygming.opt:27
-#, fuzzy, no-c-format
-#| msgid "Generate code for a DLL"
+#, no-c-format
 msgid "Generate code for a DLL."
-msgstr "生成动态链接库的代码"
+msgstr "生成动态链接库的代码。"
 
 #: config/i386/cygming.opt:31
-#, fuzzy, no-c-format
-#| msgid "Ignore dllimport for functions"
+#, no-c-format
 msgid "Ignore dllimport for functions."
-msgstr "忽略函数的 dllimport 属性"
+msgstr "忽略函数的 dllimport 属性。"
 
 #: config/i386/cygming.opt:35
-#, fuzzy, no-c-format
-#| msgid "Use Mingw-specific thread support"
+#, no-c-format
 msgid "Use Mingw-specific thread support."
-msgstr "使用 Mingw 特定的线程支持"
+msgstr "使用 Mingw 特定的线程支持。"
 
 #: config/i386/cygming.opt:39
-#, fuzzy, no-c-format
-#| msgid "Set Windows defines"
+#, no-c-format
 msgid "Set Windows defines."
-msgstr "设定 Windows 定义"
+msgstr "设定 Windows 定义。"
 
 #: config/i386/cygming.opt:43
-#, fuzzy, no-c-format
-#| msgid "Create GUI application"
+#, no-c-format
 msgid "Create GUI application."
-msgstr "创建图形界面程序"
+msgstr "创建图形界面应用程序。"
 
 #: config/i386/cygming.opt:47
 #, fuzzy, no-c-format
@@ -7602,10 +7565,9 @@ msgid "Generate code for given CPU."
 msgstr "为给定的 CPU 生成代码。"
 
 #: config/i386/i386.opt:282 config/bpf/bpf.opt:98
-#, fuzzy, no-c-format
-#| msgid "Use given assembler dialect"
+#, no-c-format
 msgid "Use given assembler dialect."
-msgstr "使用给定的汇编风格"
+msgstr "使用给定的汇编风格。"
 
 #: config/i386/i386.opt:286
 #, fuzzy, no-c-format
@@ -7626,15 +7588,14 @@ msgid "-mlarge-data-threshold=<number>\tData greater than given threshold will g
 msgstr "在 x86-64 中等模式下大于指定阈值的数据将被存放在 .ldata 节中"
 
 #: config/i386/i386.opt:304
-#, fuzzy, no-c-format
-#| msgid "Use given x86-64 code model"
+#, no-c-format
 msgid "Use given x86-64 code model."
-msgstr "使用给定的 x86-64 代码模式"
+msgstr "使用给定的 x86-64 代码模式。"
 
 #: config/i386/i386.opt:327
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Use given address mode."
-msgstr "使用 UTF-8 模式"
+msgstr "使用给定的地址模式。"
 
 #: config/i386/i386.opt:331
 #, no-c-format
@@ -7642,10 +7603,9 @@ msgid "Known address mode (for use with the -maddress-mode= option):"
 msgstr "已知寻址模式 (用于 -mcmodel= 选项)："
 
 #: config/i386/i386.opt:344
-#, fuzzy, no-c-format
-#| msgid "Generate sin, cos, sqrt for FPU"
+#, no-c-format
 msgid "Generate sin, cos, sqrt for FPU."
-msgstr "为 FPU 生成 sin、cos 和 sqrt 指令"
+msgstr "为 FPU 生成 sin、cos 和 sqrt 指令。"
 
 #: config/i386/i386.opt:348
 #, fuzzy, no-c-format
