@@ -242,6 +242,13 @@ UINT __gnat_current_ccs_encoding;
 #undef DIR_SEPARATOR
 #define DIR_SEPARATOR '\\'
 
+#ifdef STANDALONE
+#undef PATH_SEPARATOR
+#define PATH_SEPARATOR ';'
+#undef HOST_EXECUTABLE_SUFFIX
+#define HOST_EXECUTABLE_SUFFIX ".exe"
+#endif
+
 #else
 #include <signal.h>
 #include <utime.h>
