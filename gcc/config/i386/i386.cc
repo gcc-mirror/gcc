@@ -22909,7 +22909,7 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	      if (!ix86_direct_extern_access)
 		{
 		  if (ASSEMBLER_DIALECT == ASM_INTEL)
-		    fprintf (file, "1:\tcall\t[QWORD PTR %s@GOTPCREL[rip]]",
+		    fprintf (file, "1:\tcall\t[QWORD PTR %s@GOTPCREL[rip]]\n",
 			     mcount_name);
 		  else
 		    fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n",
