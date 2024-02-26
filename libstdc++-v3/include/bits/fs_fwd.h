@@ -91,6 +91,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   /// @{
   /// @relates copy_options
+  [[nodiscard]]
   constexpr copy_options
   operator&(copy_options __x, copy_options __y) noexcept
   {
@@ -99,6 +100,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) & static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr copy_options
   operator|(copy_options __x, copy_options __y) noexcept
   {
@@ -107,6 +109,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) | static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr copy_options
   operator^(copy_options __x, copy_options __y) noexcept
   {
@@ -115,6 +118,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) ^ static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr copy_options
   operator~(copy_options __x) noexcept
   {
@@ -161,6 +165,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   /// @{
   /// @relates perms
+  [[nodiscard]]
   constexpr perms
   operator&(perms __x, perms __y) noexcept
   {
@@ -169,6 +174,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) & static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr perms
   operator|(perms __x, perms __y) noexcept
   {
@@ -177,6 +183,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) | static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr perms
   operator^(perms __x, perms __y) noexcept
   {
@@ -185,6 +192,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) ^ static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr perms
   operator~(perms __x) noexcept
   {
@@ -215,6 +223,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   /// @{
   /// @relates perm_options
+  [[nodiscard]]
   constexpr perm_options
   operator&(perm_options __x, perm_options __y) noexcept
   {
@@ -223,6 +232,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) & static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr perm_options
   operator|(perm_options __x, perm_options __y) noexcept
   {
@@ -231,6 +241,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) | static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr perm_options
   operator^(perm_options __x, perm_options __y) noexcept
   {
@@ -239,6 +250,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) ^ static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr perm_options
   operator~(perm_options __x) noexcept
   {
@@ -266,6 +278,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   /// @{
   /// @relates directory_options
+  [[nodiscard]]
   constexpr directory_options
   operator&(directory_options __x, directory_options __y) noexcept
   {
@@ -274,6 +287,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) & static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr directory_options
   operator|(directory_options __x, directory_options __y) noexcept
   {
@@ -282,6 +296,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) | static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr directory_options
   operator^(directory_options __x, directory_options __y) noexcept
   {
@@ -290,6 +305,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) ^ static_cast<__utype>(__y));
   }
 
+  [[nodiscard]]
   constexpr directory_options
   operator~(directory_options __x) noexcept
   {

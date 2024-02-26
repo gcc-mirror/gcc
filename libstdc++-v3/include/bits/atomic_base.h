@@ -100,13 +100,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @endcond
 
   constexpr memory_order
-  operator|(memory_order __m, __memory_order_modifier __mod)
+  operator|(memory_order __m, __memory_order_modifier __mod) noexcept
   {
     return memory_order(int(__m) | int(__mod));
   }
 
   constexpr memory_order
-  operator&(memory_order __m, __memory_order_modifier __mod)
+  operator&(memory_order __m, __memory_order_modifier __mod) noexcept
   {
     return memory_order(int(__m) & int(__mod));
   }
