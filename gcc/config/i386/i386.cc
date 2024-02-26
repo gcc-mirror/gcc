@@ -25777,13 +25777,11 @@ ix86_get_excess_precision (enum excess_precision_type type)
 bool
 ix86_bitint_type_info (int n, struct bitint_info *info)
 {
-  if (!TARGET_64BIT)
-    return false;
   if (n <= 8)
     info->limb_mode = QImode;
   else if (n <= 16)
     info->limb_mode = HImode;
-  else if (n <= 32)
+  else if (n <= 32 || (!TARGET_64BIT && n > 64))
     info->limb_mode = SImode;
   else
     info->limb_mode = DImode;
