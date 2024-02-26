@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 mcall-prologues
-Target Mask(CALL_PROLOGUES)
+Target Mask(CALL_PROLOGUES) Optimization
 Use subroutines for function prologues and epilogues.
 
 mmcu=
@@ -79,7 +79,7 @@ Target Mask(TINY_STACK)
 Change only the low 8 bits of the stack pointer.
 
 mrelax
-Target
+Target Optimization
 Relax branches.
 
 mpmem-wrap-around
@@ -87,11 +87,11 @@ Target
 Make the linker relaxation machine assume that a program counter wrap-around occurs.
 
 maccumulate-args
-Target Mask(ACCUMULATE_OUTGOING_ARGS)
+Target Mask(ACCUMULATE_OUTGOING_ARGS) Optimization
 Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf.
 
 mstrict-X
-Target Var(avr_strict_X) Init(0)
+Target Var(avr_strict_X) Init(0) Optimization
 When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.
 
 mflmap
