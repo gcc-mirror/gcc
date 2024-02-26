@@ -1,5 +1,6 @@
 // { dg-do compile { target c++20 } }
 // { dg-add-options no_pch }
+// { dg-require-atomic-cmpxchg-word "PR libstdc++/114103" }
 
 #include <atomic>
 
