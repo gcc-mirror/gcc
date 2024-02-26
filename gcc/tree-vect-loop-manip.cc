@@ -1429,6 +1429,32 @@ vect_set_loop_condition (class loop *loop, edge loop_e, loop_vec_info loop_vinfo
 		     (gimple *) cond_stmt);
 }
 
+/* Get the virtual operand live on E.  The precondition on this is valid
+   immediate dominators and an actual virtual definition dominating E.  */
+/* ???  Costly band-aid.  For the use in question we can populate a
+   live-on-exit/end-of-BB virtual operand when copying stmts.  */
+
+static tree
+get_live_virtual_operand_on_edge (edge e)
+{
+  basic_block bb = e->src;
+  do
+    {
+      for (auto gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (gimple_vdef (stmt))
+	    return gimple_vdef (stmt);
+	  if (gimple_vuse (stmt))
+	    return gimple_vuse (stmt);
+	}
+      if (gphi *vphi = get_virtual_phi (bb))
+	return gimple_phi_result (vphi);
+      bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+    }
+  while (1);
+}
+
 /* Given LOOP this function generates a new copy of it and puts it
    on E which is either the entry or exit of LOOP.  If SCALAR_LOOP is
    non-NULL, assume LOOP and SCALAR_LOOP are equivalent and copy the
@@ -1595,6 +1621,18 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       flush_pending_stmts (loop_exit);
       set_immediate_dominator (CDI_DOMINATORS, new_preheader, loop_exit->src);
 
+      /* If we ended up choosing an exit leading to a path not using memory
+	 we can end up without a virtual LC PHI.  Create it when it is
+	 needed because of the epilog loop continuation.  */
+      if (need_virtual_phi && !get_virtual_phi (loop_exit->dest))
+	{
+	  tree header_def = gimple_phi_result (get_virtual_phi (loop->header));
+	  gphi *vphi = create_phi_node (copy_ssa_name (header_def),
+					new_preheader);
+	  add_phi_arg (vphi, get_live_virtual_operand_on_edge (loop_exit),
+		       loop_exit, UNKNOWN_LOCATION);
+	}
+
       bool multiple_exits_p = loop_exits.length () > 1;
       basic_block main_loop_exit_block = new_preheader;
       basic_block alt_loop_exit_block = NULL;
@@ -1711,19 +1749,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		    {
 		      /* Use the existing virtual LC SSA from exit block.  */
 		      gphi *vphi = get_virtual_phi (main_loop_exit_block);
-		      /* ???  When the exit yields to a path without
-			 any virtual use we can miss a LC PHI for the
-			 live virtual operand.  Simply choosing the
-			 one live at the start of the loop header isn't
-			 correct, but we should get here only with
-			 early-exit vectorization which will move all
-			 defs after the main exit, so leave a temporarily
-			 wrong virtual operand in place.  This happens
-			 for gcc.dg/pr113659.c.  */
-		      if (vphi)
-			new_arg = gimple_phi_result (vphi);
-		      else
-			new_arg = gimple_phi_result (from_phi);
+		      new_arg = gimple_phi_result (vphi);
 		    }
 		  else if ((res = new_phi_args.get (new_arg)))
 		    new_arg = *res;
