@@ -6291,10 +6291,7 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 	      && (val8 == 0
 		  || reg_unused_after (insn, xreg)))
 	    {
-	      if (AVR_TINY)
-		avr_asm_len (TINY_SBIW (%A0, %B0, %1), xop, plen, 2);
-	      else
-		avr_asm_len ("sbiw %0,%1", xop, plen, 1);
+	      avr_asm_len ("sbiw %0,%1", xop, plen, 1);
 
 	      i++;
 	      continue;
@@ -6305,9 +6302,7 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 	      && compare_eq_p (insn)
 	      && reg_unused_after (insn, xreg))
 	    {
-	      return AVR_TINY
-		? avr_asm_len (TINY_ADIW (%A0, %B0, %n1), xop, plen, 2)
-		: avr_asm_len ("adiw %0,%n1", xop, plen, 1);
+	      return avr_asm_len ("adiw %0,%n1", xop, plen, 1);
 	    }
 	}
 
