@@ -418,7 +418,13 @@ gimple_gen_ic_func_profiler (void)
   gcall *stmt1;
   tree tree_uid, cur_func, void0;
 
-  if (c_node->only_called_directly_p ())
+  /* Disable indirect call profiling for an IFUNC resolver and its
+     callees since it requires TLS which hasn't been set up yet when
+     the dynamic linker is resolving IFUNC symbols.  See
+     https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114115
+   */
+  if (c_node->only_called_directly_p ()
+      || c_node->called_by_ifunc_resolver)
     return;
 
   gimple_init_gcov_profiler ();
