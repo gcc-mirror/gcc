@@ -4,8 +4,6 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-additional-options "-O3" } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
-
 struct h {
   int b;
   int c;

@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-ssa-loop.h"
 #include "dumpfile.h"
+#include "value-range.h"
+#include "value-query.h"
 #include "tree-scalar-evolution.h"
 
 /* Extended folder for chrecs.  */
@@ -404,6 +406,10 @@ chrec_fold_multiply (tree type,
       || automatically_generated_chrec_p (op1))
     return chrec_fold_automatically_generated_operands (op0, op1);
 
+  if (TREE_CODE (op0) != POLYNOMIAL_CHREC
+      && TREE_CODE (op1) == POLYNOMIAL_CHREC)
+    std::swap (op0, op1);
+
   switch (TREE_CODE (op0))
     {
     case POLYNOMIAL_CHREC:
@@ -428,10 +434,43 @@ chrec_fold_multiply (tree type,
 	  if (integer_zerop (op1))
 	    return build_int_cst (type, 0);
 
-	  return build_polynomial_chrec
-	    (CHREC_VARIABLE (op0),
-	     chrec_fold_multiply (type, CHREC_LEFT (op0), op1),
-	     chrec_fold_multiply (type, CHREC_RIGHT (op0), op1));
+	  /* When overflow is undefined and CHREC_LEFT/RIGHT do not have the
+	     same sign or CHREC_LEFT is zero then folding the multiply into
+	     the addition does not have the same behavior on overflow.  Use
+	     unsigned arithmetic in that case.  */
+	  value_range rl, rr;
+	  if (!ANY_INTEGRAL_TYPE_P (type)
+	      || TYPE_OVERFLOW_WRAPS (type)
+	      || integer_zerop (CHREC_LEFT (op0))
+	      || (TREE_CODE (CHREC_LEFT (op0)) == INTEGER_CST
+		  && TREE_CODE (CHREC_RIGHT (op0)) == INTEGER_CST
+		  && (tree_int_cst_sgn (CHREC_LEFT (op0))
+		      == tree_int_cst_sgn (CHREC_RIGHT (op0))))
+	      || (get_range_query (cfun)->range_of_expr (rl, CHREC_LEFT (op0))
+		  && !rl.undefined_p ()
+		  && (rl.nonpositive_p () || rl.nonnegative_p ())
+		  && get_range_query (cfun)->range_of_expr (rr,
+							    CHREC_RIGHT (op0))
+		  && !rr.undefined_p ()
+		  && ((rl.nonpositive_p () && rr.nonpositive_p ())
+		      || (rl.nonnegative_p () && rr.nonnegative_p ()))))
+	    {
+	      tree left = chrec_fold_multiply (type, CHREC_LEFT (op0), op1);
+	      tree right = chrec_fold_multiply (type, CHREC_RIGHT (op0), op1);
+	      return build_polynomial_chrec (CHREC_VARIABLE (op0), left, right);
+	    }
+	  else
+	    {
+	      tree utype = unsigned_type_for (type);
+	      tree uop1 = chrec_convert_rhs (utype, op1);
+	      tree uleft0 = chrec_convert_rhs (utype, CHREC_LEFT (op0));
+	      tree uright0 = chrec_convert_rhs (utype, CHREC_RIGHT (op0));
+	      tree left = chrec_fold_multiply (utype, uleft0, uop1);
+	      tree right = chrec_fold_multiply (utype, uright0, uop1);
+	      tree tem = build_polynomial_chrec (CHREC_VARIABLE (op0),
+						 left, right);
+	      return chrec_convert_rhs (type, tem);
+	    }
 	}
 
     CASE_CONVERT:
@@ -449,13 +488,7 @@ chrec_fold_multiply (tree type,
       switch (TREE_CODE (op1))
 	{
 	case POLYNOMIAL_CHREC:
-	  gcc_checking_assert
-	    (!chrec_contains_symbols_defined_in_loop (op1,
-						      CHREC_VARIABLE (op1)));
-	  return build_polynomial_chrec
-	    (CHREC_VARIABLE (op1),
-	     chrec_fold_multiply (type, CHREC_LEFT (op1), op0),
-	     chrec_fold_multiply (type, CHREC_RIGHT (op1), op0));
+	  gcc_unreachable ();
 
 	CASE_CONVERT:
 	  if (tree_contains_chrecs (op1, NULL))
