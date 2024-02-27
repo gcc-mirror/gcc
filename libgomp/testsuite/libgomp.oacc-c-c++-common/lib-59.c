@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } } */
 
+/* Fortran testcase is at libgomp.oacc-fortran/acc_host_device_ptr.f90.  */
+
 #include <stdlib.h>
 #include <openacc.h>
 #include <stdint.h>
