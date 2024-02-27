@@ -93,8 +93,8 @@ ExprStmtBuilder::visit (HIR::ClosureExpr &expr)
 void
 ExprStmtBuilder::visit (HIR::StructExprStructFields &fields)
 {
-  auto struct_ty
-    = lookup_type (fields)->as<TyTy::ADTType> ()->get_variants ().at (0);
+  auto *p_adt_type = lookup_type (fields)->as<TyTy::ADTType> ();
+  auto struct_ty = p_adt_type->get_variants ().at (0);
   auto init_values = StructBuilder (ctx, struct_ty).build (fields);
   move_all (init_values);
   return_expr (new InitializerExpr (std::move (init_values)),
@@ -119,7 +119,15 @@ void
 ExprStmtBuilder::visit (HIR::BorrowExpr &expr)
 {
   auto operand = visit_expr (*expr.get_expr ());
-  return_expr (new BorrowExpr (operand), lookup_type (expr));
+  if (ctx.place_db[operand].is_constant ())
+    {
+      // Cannot borrow a constant, must create a temporary copy.
+      push_tmp_assignment (operand);
+      operand = translated;
+    }
+
+  // BorrowExpr cannot be annotated with lifetime.
+  return_borrowed (operand, lookup_type (expr));
 }
 
 void
@@ -183,6 +191,7 @@ ExprStmtBuilder::visit (HIR::AssignmentExpr &expr)
   auto lhs = visit_expr (*expr.get_lhs ());
   auto rhs = visit_expr (*expr.get_rhs ());
   push_assignment (lhs, rhs);
+  translated = INVALID_PLACE;
 }
 
 void
@@ -265,6 +274,7 @@ ExprStmtBuilder::visit (HIR::CallExpr &expr)
     }
 
   move_all (arguments);
+
   return_expr (new CallExpr (fn, std::move (arguments)), lookup_type (expr),
 	       true);
 }
@@ -346,7 +356,10 @@ ExprStmtBuilder::visit (HIR::BlockExpr &block)
 				  lookup_type (*block.get_final_expr ()))));
     }
 
-  pop_scope ();
+  if (!unreachable)
+    pop_scope ();
+  else
+    ctx.place_db.pop_scope ();
 }
 
 void
@@ -422,10 +435,12 @@ ExprStmtBuilder::visit (HIR::ReturnExpr &ret)
 {
   if (ret.has_return_expr ())
     {
-      push_assignment (RETURN_VALUE_PLACE, visit_expr (*ret.get_expr ()));
+      push_assignment (RETURN_VALUE_PLACE,
+		       move_place (visit_expr (*ret.get_expr ())));
     }
   unwind_until (ROOT_SCOPE);
   ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
+  translated = INVALID_PLACE;
 }
 
 void
@@ -538,16 +553,19 @@ ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
   if (else_bb.is_goto_terminated () && else_bb.successors.empty ())
     add_jump (else_end_bb, final_start_bb);
 }
+
 void
 ExprStmtBuilder::visit (HIR::IfLetExpr &expr)
 {
   rust_sorry_at (expr.get_locus (), "if let expressions are not supported");
 }
+
 void
 ExprStmtBuilder::visit (HIR::IfLetExprConseqElse &expr)
 {
   rust_sorry_at (expr.get_locus (), "if let expressions are not supported");
 }
+
 void
 ExprStmtBuilder::visit (HIR::MatchExpr &expr)
 {
@@ -608,8 +626,7 @@ void
 ExprStmtBuilder::visit (HIR::QualifiedPathInExpression &expr)
 {
   // Note: Type is only stored for the expr, not the segment.
-  PlaceId result
-    = resolve_variable_or_fn (expr.get_final_segment (), lookup_type (expr));
+  PlaceId result = resolve_variable_or_fn (expr, lookup_type (expr));
   return_place (result);
 }
 
@@ -617,14 +634,19 @@ void
 ExprStmtBuilder::visit (HIR::PathInExpression &expr)
 {
   // Note: Type is only stored for the expr, not the segment.
-  PlaceId result
-    = resolve_variable_or_fn (expr.get_final_segment (), lookup_type (expr));
+  PlaceId result = resolve_variable_or_fn (expr, lookup_type (expr));
   return_place (result);
 }
 
 void
 ExprStmtBuilder::visit (HIR::LetStmt &stmt)
 {
+  tl::optional<PlaceId> init;
+  tl::optional<TyTy::BaseType *> type_annotation;
+
+  if (stmt.has_type ())
+    type_annotation = lookup_type (*stmt.get_type ());
+
   if (stmt.get_pattern ()->get_pattern_type () == HIR::Pattern::IDENTIFIER)
     {
       // Only if a pattern is just an identifier, no destructuring is needed.
@@ -632,35 +654,30 @@ ExprStmtBuilder::visit (HIR::LetStmt &stmt)
       // (init expr is evaluated before pattern binding) into a
       // variable, so it would emit extra assignment.
       auto var = declare_variable (stmt.get_pattern ()->get_mappings ());
-      auto &var_place = ctx.place_db[var];
-      if (var_place.tyty->get_kind () == TyTy::REF)
-	{
-	  var_place.lifetime = ctx.lookup_lifetime (
-	    optional_from_ptr (
-	      static_cast<HIR::ReferenceType *> (stmt.get_type ().get ()))
-	      .map (&HIR::ReferenceType::get_lifetime));
-	}
+      if (stmt.has_type ())
+	push_user_type_ascription (var, lookup_type (*stmt.get_type ()));
+
       if (stmt.has_init_expr ())
 	(void) visit_expr (*stmt.get_init_expr (), var);
     }
-  else if (stmt.has_init_expr ())
-    {
-      auto init = visit_expr (*stmt.get_init_expr ());
-      PatternBindingBuilder (ctx, init, stmt.get_type ().get ())
-	.go (*stmt.get_pattern ());
-    }
   else
     {
-      rust_sorry_at (stmt.get_locus (), "pattern matching in let statements "
-					"without initializer is not supported");
+      if (stmt.has_init_expr ())
+	init = visit_expr (*stmt.get_init_expr ());
+
+      PatternBindingBuilder (ctx, init, type_annotation)
+	.go (*stmt.get_pattern ());
     }
 }
 
 void
 ExprStmtBuilder::visit (HIR::ExprStmt &stmt)
 {
-  (void) visit_expr (*stmt.get_expr ());
+  PlaceId result = visit_expr (*stmt.get_expr ());
+  // We must read the value for current liveness and we must not store it into
+  // the same place.
+  if (result != INVALID_PLACE)
+    push_tmp_assignment (result);
 }
-
 } // namespace BIR
 } // namespace Rust
