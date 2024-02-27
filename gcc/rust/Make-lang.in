@@ -264,6 +264,7 @@ rust.srcman:
 # Clean hooks.
 
 rust.mostlyclean:
+	rm -rf rust/ffi-polonius/release libffi_polonius.a
 #	cd $(srcdir)/rust; rm -f *.o y.tab.h y.tab.c lex.yy.c
 
 rust.clean: rust.mostlyclean
@@ -487,3 +488,9 @@ rust/%.o: rust/checks/errors/borrowck/%.cc
 rust/%.o: rust/metadata/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
+
+rust/libffi_polonius.a: \
+	rust/checks/errors/borrowck/ffi-polonius/Cargo.toml \
+	$(wildcard $(srcdir)/rust/checks/errors/borrowck/ffi-polonius/src/*)
+	cargo build --manifest-path $(srcdir)/rust/checks/errors/borrowck/ffi-polonius/Cargo.toml --release --target-dir rust/ffi-polonius
+	cp rust/ffi-polonius/release/libffi_polonius.a rust/libffi_polonius.a
