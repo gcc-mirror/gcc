@@ -3646,9 +3646,10 @@ package body Exp_Ch7 is
       --  unnesting actions, which depend on proper setting of the Scope links
       --  to determine the nesting level of each subprogram.
 
-      -----------------------
-      --  Find_Local_Scope --
-      -----------------------
+      --------------------------------------
+      --  Reset_Scopes_To_Block_Elab_Proc --
+      --------------------------------------
+      Maybe_Reset_Scopes_For_Decl : constant Elist_Id := New_Elmt_List;
 
       procedure Reset_Scopes_To_Block_Elab_Proc (L : List_Id) is
          Id   : Entity_Id;
@@ -3707,7 +3708,8 @@ package body Exp_Ch7 is
                      Next (Node);
                   end loop;
 
-               --  Reset the Scope of a subprogram occurring at the top level
+               --  Reset the Scope of a subprogram and object declaration
+               --  occurring at the top level
 
                when N_Subprogram_Body =>
                   Id := Defining_Entity (Stat);
@@ -3715,12 +3717,33 @@ package body Exp_Ch7 is
                   Set_Block_Elab_Proc;
                   Set_Scope (Id, Block_Elab_Proc);
 
+               when N_Object_Declaration
+                 | N_Object_Renaming_Declaration =>
+                  Id := Defining_Entity (Stat);
+                  if No (Block_Elab_Proc) then
+                     Append_Elmt (Id, Maybe_Reset_Scopes_For_Decl);
+                  else
+                     Set_Scope (Id, Block_Elab_Proc);
+                  end if;
+
                when others =>
                   null;
             end case;
 
             Next (Stat);
          end loop;
+
+         --  If we are creating an Elab procedure, move all the gathered
+         --  declarations in its scope.
+
+         if Present (Block_Elab_Proc) then
+            while not Is_Empty_Elmt_List (Maybe_Reset_Scopes_For_Decl) loop
+               Set_Scope
+                 (Elists.Node
+                   (Last_Elmt (Maybe_Reset_Scopes_For_Decl)), Block_Elab_Proc);
+               Remove_Last_Elmt (Maybe_Reset_Scopes_For_Decl);
+            end loop;
+         end if;
       end Reset_Scopes_To_Block_Elab_Proc;
 
       --  Local variables
