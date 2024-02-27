@@ -437,11 +437,7 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
    It is (NUNROLL + 1) * size of loop body with taking into account
    the fact that in last copy everything after exit conditional
    is dead and that some instructions will be eliminated after
-   peeling.
-
-   Loop body is likely going to simplify further, this is difficult
-   to guess, we just decrease the result by 1/3.  */
-
+   peeling.  */
 static unsigned HOST_WIDE_INT
 estimated_unrolled_size (struct loop_size *size,
 			 unsigned HOST_WIDE_INT nunroll)
@@ -452,10 +448,6 @@ estimated_unrolled_size (struct loop_size *size,
   if (!nunroll)
     unr_insns = 0;
   unr_insns += size->last_iteration - size->last_iteration_eliminated_by_peeling;
-
-  unr_insns = unr_insns * 2 / 3;
-  if (unr_insns <= 0)
-    unr_insns = 1;
 
   return unr_insns;
 }
@@ -734,7 +726,8 @@ try_unroll_loop_completely (class loop *loop,
 			    edge exit, tree niter, bool may_be_zero,
 			    enum unroll_level ul,
 			    HOST_WIDE_INT maxiter,
-			    dump_user_location_t locus, bool allow_peel)
+			    dump_user_location_t locus, bool allow_peel,
+			    bool cunrolli)
 {
   unsigned HOST_WIDE_INT n_unroll = 0;
   bool n_unroll_found = false;
@@ -847,8 +840,9 @@ try_unroll_loop_completely (class loop *loop,
 
 	  /* If the code is going to shrink, we don't need to be extra
 	     cautious on guessing if the unrolling is going to be
-	     profitable.  */
-	  if (unr_insns
+	     profitable.
+	     Move from estimated_unrolled_size to unroll small loops.  */
+	  if (unr_insns * 2 / 3
 	      /* If there is IV variable that will become constant, we
 		 save one instruction in the loop prologue we do not
 		 account otherwise.  */
@@ -919,7 +913,13 @@ try_unroll_loop_completely (class loop *loop,
 			 loop->num);
 	      return false;
 	    }
-	  else if (unr_insns
+	  /* Move 2 / 3 reduction from estimated_unrolled_size, but don't reduce
+	     unrolled size for innermost loop.
+	     1) It could increase register pressure.
+	     2) Big loop after completely unroll may not be vectorized
+	     by BB vectorizer.  */
+	  else if ((cunrolli && !loop->inner
+		    ? unr_insns : unr_insns * 2 / 3)
 		   > (unsigned) param_max_completely_peeled_insns)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1227,7 +1227,7 @@ try_peel_loop (class loop *loop,
 static bool
 canonicalize_loop_induction_variables (class loop *loop,
 				       bool create_iv, enum unroll_level ul,
-				       bool try_eval, bool allow_peel)
+				       bool try_eval, bool allow_peel, bool cunrolli)
 {
   edge exit = NULL;
   tree niter;
@@ -1314,7 +1314,7 @@ canonicalize_loop_induction_variables (class loop *loop,
 
   dump_user_location_t locus = find_loop_location (loop);
   if (try_unroll_loop_completely (loop, exit, niter, may_be_zero, ul,
-				  maxiter, locus, allow_peel))
+				  maxiter, locus, allow_peel, cunrolli))
     return true;
 
   if (create_iv
@@ -1358,7 +1358,7 @@ canonicalize_induction_variables (void)
     {
       changed |= canonicalize_loop_induction_variables (loop,
 							true, UL_SINGLE_ITER,
-							true, false);
+							true, false, false);
     }
   gcc_assert (!need_ssa_update_p (cfun));
 
@@ -1392,7 +1392,7 @@ canonicalize_induction_variables (void)
 
 static bool
 tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
-				bitmap father_bbs, class loop *loop)
+				bitmap father_bbs, class loop *loop, bool cunrolli)
 {
   class loop *loop_father;
   bool changed = false;
@@ -1410,7 +1410,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 	if (!child_father_bbs)
 	  child_father_bbs = BITMAP_ALLOC (NULL);
 	if (tree_unroll_loops_completely_1 (may_increase_size, unroll_outer,
-					    child_father_bbs, inner))
+					    child_father_bbs, inner, cunrolli))
 	  {
 	    bitmap_ior_into (father_bbs, child_father_bbs);
 	    bitmap_clear (child_father_bbs);
@@ -1456,7 +1456,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
     ul = UL_NO_GROWTH;
 
   if (canonicalize_loop_induction_variables
-        (loop, false, ul, !flag_tree_loop_ivcanon, unroll_outer))
+      (loop, false, ul, !flag_tree_loop_ivcanon, unroll_outer, cunrolli))
     {
       /* If we'll continue unrolling, we need to propagate constants
 	 within the new basic blocks to fold away induction variable
@@ -1491,6 +1491,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
   bool changed;
   int iteration = 0;
   bool irred_invalidated = false;
+  bool cunrolli = true;
 
   estimate_numbers_of_iterations (cfun);
 
@@ -1507,10 +1508,15 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 
       changed = tree_unroll_loops_completely_1 (may_increase_size,
 						unroll_outer, father_bbs,
-						current_loops->tree_root);
+						current_loops->tree_root,
+						cunrolli);
       if (changed)
 	{
 	  unsigned i;
+	  /* For the outer loop, considering that the inner loop is completely
+	     unrolled, it would expose more optimization opportunities, so it's
+	     better to keep 2/3 reduction of estimated unrolled size.  */
+	  cunrolli = false;
 
 	  unloop_loops (loops_to_unloop, loops_to_unloop_nunroll,
 			edges_to_remove, loop_closed_ssa_invalidated,
@@ -1670,8 +1676,7 @@ pass_complete_unroll::execute (function *fun)
      re-peeling the same loop multiple times.  */
   if (flag_peel_loops)
     peeled_loops = BITMAP_ALLOC (NULL);
-  unsigned int val = tree_unroll_loops_completely (flag_cunroll_grow_size, 
-						   true);
+  unsigned int val = tree_unroll_loops_completely (flag_cunroll_grow_size, true);
   if (peeled_loops)
     {
       BITMAP_FREE (peeled_loops);
