@@ -43,44 +43,44 @@ public:
 
   void visit (HIR::BorrowExpr &expr) override
   {
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
   }
 
   void visit (HIR::DereferenceExpr &expr) override
   {
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
   }
 
   void visit (HIR::NegationExpr &expr) override
   {
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
   }
 
   void visit (HIR::LazyBooleanExpr &expr) override
   {
-    expr.get_lhs ()->accept_vis (*this);
-    expr.get_rhs ()->accept_vis (*this);
+    expr.get_lhs ().accept_vis (*this);
+    expr.get_rhs ().accept_vis (*this);
   }
 
   void visit (HIR::TypeCastExpr &expr) override
   {
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
   }
 
   void visit (HIR::GroupedExpr &expr) override
   {
-    expr.get_expr_in_parens ()->accept_vis (*this);
+    expr.get_expr_in_parens ().accept_vis (*this);
   }
 
   void visit (HIR::ArrayExpr &expr) override
   {
-    expr.get_internal_elements ()->accept_vis (*this);
+    expr.get_internal_elements ().accept_vis (*this);
   }
 
   void visit (HIR::ArrayIndexExpr &expr) override
   {
-    expr.get_array_expr ()->accept_vis (*this);
-    expr.get_index_expr ()->accept_vis (*this);
+    expr.get_array_expr ().accept_vis (*this);
+    expr.get_index_expr ().accept_vis (*this);
   }
 
   void visit (HIR::ArrayElemsValues &expr) override
@@ -107,57 +107,57 @@ public:
       }
     if (expr.has_expr ())
       {
-	expr.get_final_expr ()->accept_vis (*this);
+	expr.get_final_expr ().accept_vis (*this);
       }
   }
 
   void visit (HIR::UnsafeBlockExpr &expr) override
   {
-    expr.get_block_expr ()->accept_vis (*this);
+    expr.get_block_expr ().accept_vis (*this);
   }
 
   void visit (HIR::LoopExpr &expr) override
   {
-    expr.get_loop_block ()->accept_vis (*this);
+    expr.get_loop_block ().accept_vis (*this);
   }
 
   void visit (HIR::BreakExpr &expr) override
   {
     if (expr.has_break_expr ())
-      expr.get_expr ()->accept_vis (*this);
+      expr.get_expr ().accept_vis (*this);
   }
 
   void visit (HIR::WhileLoopExpr &expr) override
   {
-    expr.get_loop_block ()->accept_vis (*this);
-    expr.get_predicate_expr ()->accept_vis (*this);
+    expr.get_loop_block ().accept_vis (*this);
+    expr.get_predicate_expr ().accept_vis (*this);
   }
 
   void visit (HIR::Function &function) override
   {
-    function.get_definition ()->accept_vis (*this);
+    function.get_definition ().accept_vis (*this);
   }
 
   void visit (HIR::ReturnExpr &expr) override
   {
     if (expr.has_return_expr ())
-      expr.get_expr ()->accept_vis (*this);
+      expr.get_expr ().accept_vis (*this);
   }
 
   void visit (HIR::WhileLetLoopExpr &expr) override
   {
-    expr.get_loop_block ()->accept_vis (*this);
-    expr.get_cond ()->accept_vis (*this);
+    expr.get_loop_block ().accept_vis (*this);
+    expr.get_cond ().accept_vis (*this);
   }
 
   void visit (HIR::ExprStmt &stmt) override
   {
-    stmt.get_expr ()->accept_vis (*this);
+    stmt.get_expr ().accept_vis (*this);
   }
 
   void visit (HIR::CallExpr &expr) override
   {
-    expr.get_fnexpr ()->accept_vis (*this);
+    expr.get_fnexpr ().accept_vis (*this);
     for (auto &argument : expr.get_arguments ())
       argument->accept_vis (*this);
   }
@@ -169,8 +169,8 @@ public:
   }
   void visit (HIR::ComparisonExpr &expr) override
   {
-    expr.get_lhs ()->accept_vis (*this);
-    expr.get_rhs ()->accept_vis (*this);
+    expr.get_lhs ().accept_vis (*this);
+    expr.get_rhs ().accept_vis (*this);
   }
 
   void visit (HIR::AssignmentExpr &expr) override
@@ -187,33 +187,33 @@ public:
 
   void visit (HIR::IfExpr &expr) override
   {
-    expr.get_if_condition ()->accept_vis (*this);
-    expr.get_if_block ()->accept_vis (*this);
+    expr.get_if_condition ().accept_vis (*this);
+    expr.get_if_block ().accept_vis (*this);
   }
 
   void visit (HIR::IfExprConseqElse &expr) override
   {
-    expr.get_if_condition ()->accept_vis (*this);
-    expr.get_if_block ()->accept_vis (*this);
-    expr.get_else_block ()->accept_vis (*this);
+    expr.get_if_condition ().accept_vis (*this);
+    expr.get_if_block ().accept_vis (*this);
+    expr.get_else_block ().accept_vis (*this);
   }
 
   void visit (HIR::MatchExpr &expr) override
   {
-    expr.get_scrutinee_expr ()->accept_vis (*this);
+    expr.get_scrutinee_expr ().accept_vis (*this);
     std::vector<HIR::MatchCase> &cases = expr.get_match_cases ();
     for (auto &&caz : cases)
       {
 	auto case_arm = caz.get_arm ();
 	if (case_arm.has_match_arm_guard ())
-	  case_arm.get_guard_expr ()->accept_vis (*this);
-	caz.get_expr ()->accept_vis (*this);
+	  case_arm.get_guard_expr ().accept_vis (*this);
+	caz.get_expr ().accept_vis (*this);
       }
   }
 
   void visit (HIR::TraitItemFunc &item) override
   {
-    item.get_block_expr ()->accept_vis (*this);
+    item.get_block_expr ().accept_vis (*this);
   }
 
   void visit (HIR::ImplBlock &impl) override
@@ -228,7 +228,7 @@ public:
   {
     if (stmt.has_init_expr ())
       {
-	stmt.get_init_expr ()->accept_vis (*this);
+	stmt.get_init_expr ().accept_vis (*this);
       }
   }
 
@@ -253,7 +253,7 @@ public:
 
   virtual void visit (HIR::StructExprFieldIdentifierValue &field) override
   {
-    field.get_value ()->accept_vis (*this);
+    field.get_value ().accept_vis (*this);
   }
 
   void visit (HIR::StructExprStructBase &stct) override
@@ -269,7 +269,7 @@ public:
 
   void visit (HIR::ClosureExpr &expr) override
   {
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
   }
 
 private:

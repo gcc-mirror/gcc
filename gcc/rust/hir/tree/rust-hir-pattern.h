@@ -132,7 +132,7 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
   bool get_is_ref () const { return is_ref; }
-  std::unique_ptr<Pattern> &get_to_bind () { return to_bind; }
+  Pattern &get_to_bind () { return *to_bind; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -405,9 +405,9 @@ public:
     return PatternType::RANGE;
   }
 
-  std::unique_ptr<RangePatternBound> &get_lower_bound () { return lower; }
+  RangePatternBound &get_lower_bound () { return *lower; }
 
-  std::unique_ptr<RangePatternBound> &get_upper_bound () { return upper; }
+  RangePatternBound &get_upper_bound () { return *upper; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -476,7 +476,7 @@ public:
     return PatternType::REFERENCE;
   }
 
-  std::unique_ptr<Pattern> &get_referenced_pattern () { return pattern; }
+  Pattern &get_referenced_pattern () { return *pattern; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -572,7 +572,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
 
   TupleIndex get_index () { return index; }
-  std::unique_ptr<Pattern> &get_tuple_pattern () { return tuple_pattern; }
+  Pattern &get_tuple_pattern () { return *tuple_pattern; }
 
   ItemType get_item_type () const override final { return ItemType::TUPLE_PAT; }
 
@@ -630,7 +630,7 @@ public:
 
   Identifier get_identifier () const { return ident; }
 
-  std::unique_ptr<Pattern> &get_pattern () { return ident_pattern; }
+  Pattern &get_pattern () { return *ident_pattern; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1002,7 +1002,7 @@ public:
 
   PathInExpression &get_path () { return path; }
 
-  std::unique_ptr<TupleStructItems> &get_items () { return items; }
+  TupleStructItems &get_items () { return *items; }
 
   const Analysis::NodeMapping &get_mappings () const override final
   {
@@ -1221,8 +1221,8 @@ public:
     return PatternType::TUPLE;
   }
 
-  std::unique_ptr<TuplePatternItems> &get_items () { return items; }
-  const std::unique_ptr<TuplePatternItems> &get_items () const { return items; }
+  TuplePatternItems &get_items () { return *items; }
+  const TuplePatternItems &get_items () const { return *items; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

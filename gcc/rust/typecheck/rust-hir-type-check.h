@@ -42,7 +42,7 @@ public:
   };
 
   TypeCheckContextItem (HIR::Function *item);
-  TypeCheckContextItem (HIR::ImplBlock *impl_block, HIR::Function *item);
+  TypeCheckContextItem (HIR::ImplBlock &impl_block, HIR::Function *item);
   TypeCheckContextItem (HIR::TraitItemFunc *trait_item);
   TypeCheckContextItem (const TypeCheckContextItem &other);
 

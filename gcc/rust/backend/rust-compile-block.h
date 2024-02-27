@@ -28,7 +28,7 @@ namespace Compile {
 class CompileBlock : private HIRCompileBase
 {
 public:
-  static tree compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result);
+  static tree compile (HIR::BlockExpr &expr, Context *ctx, Bvariable *result);
 
 protected:
   void visit (HIR::BlockExpr &expr);
@@ -134,7 +134,7 @@ public:
 
   void visit (HIR::BlockExpr &expr) override
   {
-    translated = CompileBlock::compile (&expr, ctx, result);
+    translated = CompileBlock::compile (expr, ctx, result);
   }
 
   // Empty visit for unused Expression HIR nodes.

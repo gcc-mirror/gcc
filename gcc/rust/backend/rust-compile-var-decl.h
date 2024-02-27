@@ -68,12 +68,12 @@ public:
 
   void visit (HIR::TuplePattern &pattern) override
   {
-    switch (pattern.get_items ()->get_item_type ())
+    switch (pattern.get_items ().get_item_type ())
       {
 	case HIR::TuplePatternItems::ItemType::MULTIPLE: {
 	  rust_assert (TREE_CODE (translated_type) == RECORD_TYPE);
 	  auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
-	    *pattern.get_items ());
+	    pattern.get_items ());
 
 	  size_t offs = 0;
 	  for (auto &sub : items.get_patterns ())

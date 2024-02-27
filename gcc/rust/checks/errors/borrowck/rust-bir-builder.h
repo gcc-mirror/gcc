@@ -49,7 +49,7 @@ public:
     for (auto &param : function.get_function_params ())
       handle_param (param);
 
-    handle_body (*function.get_definition ());
+    handle_body (function.get_definition ());
     auto region_hir_map
       = map_region_to_hir (function.get_generic_params (), ctx.fn_free_regions);
 
@@ -118,14 +118,14 @@ private:
 
   void handle_param (HIR::FunctionParam &param)
   {
-    auto param_type = lookup_type (*param.get_param_name ());
+    auto param_type = lookup_type (param.get_param_name ());
 
     auto &pattern = param.get_param_name ();
-    if (pattern->get_pattern_type () == HIR::Pattern::IDENTIFIER
-	&& !static_cast<HIR::IdentifierPattern &> (*pattern).get_is_ref ())
+    if (pattern.get_pattern_type () == HIR::Pattern::IDENTIFIER
+	&& !static_cast<HIR::IdentifierPattern &> (pattern).get_is_ref ())
       {
 	// Avoid useless temporary variable for parameter to look like MIR.
-	translated = declare_variable (pattern->get_mappings ());
+	translated = declare_variable (pattern.get_mappings ());
 	ctx.arguments.push_back (translated);
       }
     else
@@ -133,10 +133,8 @@ private:
 	translated = ctx.place_db.add_temporary (param_type);
 	ctx.arguments.push_back (translated);
 	PatternBindingBuilder (ctx, translated, tl::nullopt)
-	  .go (*param.get_param_name ());
+	  .go (param.get_param_name ());
       }
-
-    rust_assert (param.get_type () != nullptr);
 
     // Set parameter place to use functions regions, not the fresh ones.
     ctx.place_db[translated].regions
@@ -159,7 +157,7 @@ private:
 			     body.get_end_locus ());
 	  }
 	auto return_location = body.has_expr ()
-				 ? body.get_final_expr ()->get_locus ()
+				 ? body.get_final_expr ().get_locus ()
 				 : body.get_end_locus ();
 	push_return (return_location);
       }

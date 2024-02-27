@@ -92,7 +92,7 @@ protected:
 
   tree compile_constant_item (TyTy::BaseType *resolved_type,
 			      const Resolver::CanonicalPath &canonical_path,
-			      HIR::Expr *const_value_expr, location_t locus);
+			      HIR::Expr &const_value_expr, location_t locus);
 
   tree compile_function (const std::string &fn_name, HIR::SelfParam &self_param,
 			 std::vector<HIR::FunctionParam> &function_params,

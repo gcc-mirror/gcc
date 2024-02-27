@@ -28,7 +28,7 @@ namespace Compile {
 class CompileExpr : private HIRCompileBase, protected HIR::HIRExpressionVisitor
 {
 public:
-  static tree Compile (HIR::Expr *expr, Context *ctx);
+  static tree Compile (HIR::Expr &expr, Context *ctx);
 
   void visit (HIR::TupleIndexExpr &expr) override;
   void visit (HIR::TupleExpr &expr) override;
@@ -98,8 +98,8 @@ protected:
 
   tree resolve_operator_overload (LangItem::Kind lang_item_type,
 				  HIR::OperatorExprMeta expr, tree lhs,
-				  tree rhs, HIR::Expr *lhs_expr,
-				  HIR::Expr *rhs_expr);
+				  tree rhs, HIR::Expr &lhs_expr,
+				  tl::optional<HIR::Expr &> rhs_expr);
 
   tree compile_bool_literal (const HIR::LiteralExpr &expr,
 			     const TyTy::BaseType *tyty);

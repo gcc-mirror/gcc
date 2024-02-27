@@ -80,7 +80,7 @@ TypeCheckCallExpr::visit (ADTType &type)
       BaseType *field_tyty = field->get_field_type ();
       location_t arg_locus = argument->get_locus ();
 
-      BaseType *arg = Resolver::TypeCheckExpr::Resolve (argument.get ());
+      BaseType *arg = Resolver::TypeCheckExpr::Resolve (*argument);
       if (arg->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (argument->get_locus (),
@@ -139,8 +139,7 @@ TypeCheckCallExpr::visit (FnType &type)
   for (auto &argument : call.get_arguments ())
     {
       location_t arg_locus = argument->get_locus ();
-      auto argument_expr_tyty
-	= Resolver::TypeCheckExpr::Resolve (argument.get ());
+      auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (*argument);
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (
@@ -152,8 +151,8 @@ TypeCheckCallExpr::visit (FnType &type)
       // it might be a variadic function
       if (i < type.num_params ())
 	{
-	  auto fnparam = type.param_at (i);
-	  HIR::Pattern *fn_param_pattern = fnparam.first;
+	  auto &fnparam = type.param_at (i);
+	  auto &fn_param_pattern = fnparam.first;
 	  BaseType *param_ty = fnparam.second;
 	  location_t param_locus
 	    = fn_param_pattern == nullptr
@@ -272,8 +271,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
     {
       location_t arg_locus = argument->get_locus ();
       BaseType *fnparam = type.get_param_type_at (i);
-      auto argument_expr_tyty
-	= Resolver::TypeCheckExpr::Resolve (argument.get ());
+      auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (*argument);
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (
@@ -322,8 +320,7 @@ TypeCheckMethodCallExpr::go (FnType *ref, HIR::MethodCallExpr &call,
   std::vector<Argument> args;
   for (auto &arg : call.get_arguments ())
     {
-      BaseType *argument_expr_tyty
-	= Resolver::TypeCheckExpr::Resolve (arg.get ());
+      BaseType *argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (*arg);
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (arg->get_locus (),
@@ -337,7 +334,7 @@ TypeCheckMethodCallExpr::go (FnType *ref, HIR::MethodCallExpr &call,
 
   TypeCheckMethodCallExpr checker (call.get_mappings (), args,
 				   call.get_locus (),
-				   call.get_receiver ()->get_locus (),
+				   call.get_receiver ().get_locus (),
 				   adjusted_self, context);
   return checker.check (*ref);
 }
@@ -377,7 +374,7 @@ TypeCheckMethodCallExpr::check (FnType &type)
     {
       location_t arg_locus = argument.get_locus ();
 
-      auto fnparam = type.param_at (i);
+      auto &fnparam = type.param_at (i);
       HIR::Pattern *fn_param_pattern = fnparam.first;
       BaseType *param_ty = fnparam.second;
       location_t param_locus

@@ -328,7 +328,7 @@ v0_inherent_or_trait_impl_path (Rust::Compile::Context *ctx,
   // lookup impl type
   TyTy::BaseType *impl_ty = nullptr;
   ok = ctx->get_tyctx ()->lookup_type (
-    impl_block->get_type ()->get_mappings ().get_hirid (), &impl_ty);
+    impl_block->get_type ().get_mappings ().get_hirid (), &impl_ty);
   rust_assert (ok);
 
   // FIXME: dummy value for now
@@ -342,7 +342,7 @@ v0_inherent_or_trait_impl_path (Rust::Compile::Context *ctx,
 
       TyTy::BaseType *trait_ty = nullptr;
       ok = ctx->get_tyctx ()->lookup_type (
-	impl_block->get_trait_ref ()->get_mappings ().get_hirid (), &trait_ty);
+	impl_block->get_trait_ref ().get_mappings ().get_hirid (), &trait_ty);
       rust_assert (ok);
 
       v0path.trait_type = v0_type_prefix (ctx, trait_ty);

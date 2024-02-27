@@ -26,11 +26,11 @@ class CompilePatternCheckExpr : public HIRCompileBase,
 				public HIR::HIRPatternVisitor
 {
 public:
-  static tree Compile (HIR::Pattern *pattern, tree match_scrutinee_expr,
+  static tree Compile (HIR::Pattern &pattern, tree match_scrutinee_expr,
 		       Context *ctx)
   {
     CompilePatternCheckExpr compiler (ctx, match_scrutinee_expr);
-    pattern->accept_vis (compiler);
+    pattern.accept_vis (compiler);
     rust_assert (compiler.check_expr);
     return compiler.check_expr;
   }
@@ -71,11 +71,11 @@ class CompilePatternBindings : public HIRCompileBase,
 			       public HIR::HIRPatternVisitor
 {
 public:
-  static void Compile (HIR::Pattern *pattern, tree match_scrutinee_expr,
+  static void Compile (HIR::Pattern &pattern, tree match_scrutinee_expr,
 		       Context *ctx)
   {
     CompilePatternBindings compiler (ctx, match_scrutinee_expr);
-    pattern->accept_vis (compiler);
+    pattern.accept_vis (compiler);
   }
 
   void visit (HIR::StructPattern &pattern) override;

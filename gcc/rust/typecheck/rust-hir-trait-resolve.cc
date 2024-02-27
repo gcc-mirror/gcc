@@ -216,8 +216,7 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 	    // The one exception is the implicit Self type of a trait
 	    bool apply_sized = !is_self;
 	    auto param_type
-	      = TypeResolveGenericParam::Resolve (generic_param.get (),
-						  apply_sized);
+	      = TypeResolveGenericParam::Resolve (*generic_param, apply_sized);
 	    context->insert_type (generic_param->get_mappings (), param_type);
 	    substitutions.push_back (
 	      TyTy::SubstitutionParamMapping (typaram, param_type));
@@ -268,7 +267,7 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 
 	      auto predicate = get_predicate_from_bound (
 		b->get_path (),
-		nullptr /*this will setup a PLACEHOLDER for self*/);
+		tl::nullopt /*this will setup a PLACEHOLDER for self*/);
 	      if (predicate.is_error ())
 		return &TraitReference::error_node ();
 
@@ -384,11 +383,11 @@ TraitItemReference::resolve_item (HIR::TraitItemFunc &func)
   auto expected_ret_tyty = resolved_fn_type->get_return_type ();
   context->push_return_type (TypeCheckContextItem (&func), expected_ret_tyty);
 
-  auto block_expr_ty = TypeCheckExpr::Resolve (func.get_block_expr ().get ());
+  auto block_expr_ty = TypeCheckExpr::Resolve (func.get_block_expr ());
 
   location_t fn_return_locus
     = func.get_decl ().has_return_type ()
-	? func.get_decl ().get_return_type ()->get_locus ()
+	? func.get_decl ().get_return_type ().get_locus ()
 	: func.get_locus ();
 
   coercion_site (func.get_mappings ().get_hirid (),

@@ -91,6 +91,7 @@ public:
   void visit (HIR::QualifiedPathInExpression &expression) override {}
   void visit (HIR::RangePattern &pattern) override {}
 };
+
 } // namespace BIR
 } // namespace Rust
 

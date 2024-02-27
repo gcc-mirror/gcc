@@ -28,17 +28,17 @@ namespace Rust {
 namespace Resolver {
 
 TyTy::BaseType *
-TypeCheckStmt::Resolve (HIR::Stmt *stmt)
+TypeCheckStmt::Resolve (HIR::Stmt &stmt)
 {
   TypeCheckStmt resolver;
-  stmt->accept_vis (resolver);
+  stmt.accept_vis (resolver);
   return resolver.infered;
 }
 
 void
 TypeCheckStmt::visit (HIR::ExprStmt &stmt)
 {
-  infered = TypeCheckExpr::Resolve (stmt.get_expr ().get ());
+  infered = TypeCheckExpr::Resolve (stmt.get_expr ());
 }
 
 void
@@ -52,21 +52,20 @@ TypeCheckStmt::visit (HIR::ExternBlock &extern_block)
 {
   for (auto &item : extern_block.get_extern_items ())
     {
-      TypeCheckTopLevelExternItem::Resolve (item.get (), extern_block);
+      TypeCheckTopLevelExternItem::Resolve (*item, extern_block);
     }
 }
 
 void
 TypeCheckStmt::visit (HIR::ConstantItem &constant)
 {
-  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ().get ());
-  TyTy::BaseType *expr_type
-    = TypeCheckExpr::Resolve (constant.get_expr ().get ());
+  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
+  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
 
   infered = coercion_site (
     constant.get_mappings ().get_hirid (),
-    TyTy::TyWithLocation (type, constant.get_type ()->get_locus ()),
-    TyTy::TyWithLocation (expr_type, constant.get_expr ()->get_locus ()),
+    TyTy::TyWithLocation (type, constant.get_type ().get_locus ()),
+    TyTy::TyWithLocation (expr_type, constant.get_expr ().get_locus ()),
     constant.get_locus ());
   context->insert_type (constant.get_mappings (), infered);
 }
@@ -76,13 +75,13 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 {
   infered = TyTy::TupleType::get_unit_type ();
 
-  HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
+  auto &stmt_pattern = stmt.get_pattern ();
   TyTy::BaseType *init_expr_ty = nullptr;
   location_t init_expr_locus = UNKNOWN_LOCATION;
   if (stmt.has_init_expr ())
     {
-      init_expr_locus = stmt.get_init_expr ()->get_locus ();
-      init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ().get ());
+      init_expr_locus = stmt.get_init_expr ().get_locus ();
+      init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ());
       if (init_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
 	return;
 
@@ -94,8 +93,8 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
   location_t specified_ty_locus;
   if (stmt.has_type ())
     {
-      specified_ty = TypeCheckType::Resolve (stmt.get_type ().get ());
-      specified_ty_locus = stmt.get_type ()->get_locus ();
+      specified_ty = TypeCheckType::Resolve (stmt.get_type ());
+      specified_ty_locus = stmt.get_type ().get_locus ();
     }
 
   // let x:i32 = 123;
@@ -105,19 +104,19 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 		     TyTy::TyWithLocation (specified_ty, specified_ty_locus),
 		     TyTy::TyWithLocation (init_expr_ty, init_expr_locus),
 		     stmt.get_locus ());
-      TypeCheckPattern::Resolve (&stmt_pattern, specified_ty);
+      TypeCheckPattern::Resolve (stmt_pattern, specified_ty);
     }
   else
     {
       // let x:i32;
       if (specified_ty != nullptr)
 	{
-	  TypeCheckPattern::Resolve (&stmt_pattern, specified_ty);
+	  TypeCheckPattern::Resolve (stmt_pattern, specified_ty);
 	}
       // let x = 123;
       else if (init_expr_ty != nullptr)
 	{
-	  TypeCheckPattern::Resolve (&stmt_pattern, init_expr_ty);
+	  TypeCheckPattern::Resolve (stmt_pattern, init_expr_ty);
 	}
       // let x;
       else
@@ -127,7 +126,7 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 				   TyTy::InferType::InferTypeKind::GENERAL,
 				   TyTy::InferType::TypeHint::Default (),
 				   stmt.get_locus ());
-	  TypeCheckPattern::Resolve (&stmt_pattern, infer);
+	  TypeCheckPattern::Resolve (stmt_pattern, infer);
 	}
     }
 }
@@ -135,12 +134,12 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 void
 TypeCheckStmt::visit (HIR::TypePath &path)
 {
-  infered = TypeCheckType::Resolve (&path);
+  infered = TypeCheckType::Resolve (path);
 }
 void
 TypeCheckStmt::visit (HIR::QualifiedPathInType &path)
 {
-  infered = TypeCheckType::Resolve (&path);
+  infered = TypeCheckType::Resolve (path);
 }
 
 void

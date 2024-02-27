@@ -630,7 +630,7 @@ SubstitutionRef::get_mappings_from_generic_args (
 	  for (auto &binding : args.get_binding_args ())
 	    {
 	      BaseType *resolved
-		= Resolver::TypeCheckType::Resolve (binding.get_type ().get ());
+		= Resolver::TypeCheckType::Resolve (binding.get_type ());
 	      if (resolved == nullptr
 		  || resolved->get_kind () == TyTy::TypeKind::ERROR)
 		{
@@ -696,7 +696,7 @@ SubstitutionRef::get_mappings_from_generic_args (
   std::vector<SubstitutionArg> mappings = used_arguments.get_mappings ();
   for (auto &arg : args.get_type_args ())
     {
-      BaseType *resolved = Resolver::TypeCheckType::Resolve (arg.get ());
+      BaseType *resolved = Resolver::TypeCheckType::Resolve (*arg);
       if (resolved == nullptr || resolved->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  return SubstitutionArgumentMappings::error ();

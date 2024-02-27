@@ -646,9 +646,9 @@ TypeCheckContextItem::TypeCheckContextItem (HIR::Function *item)
   : type (ItemType::ITEM), item (item)
 {}
 
-TypeCheckContextItem::TypeCheckContextItem (HIR::ImplBlock *impl_block,
+TypeCheckContextItem::TypeCheckContextItem (HIR::ImplBlock &impl_block,
 					    HIR::Function *item)
-  : type (ItemType::IMPL_ITEM), item (impl_block, item)
+  : type (ItemType::IMPL_ITEM), item (&impl_block, item)
 {}
 
 TypeCheckContextItem::TypeCheckContextItem (HIR::TraitItemFunc *trait_item)

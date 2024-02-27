@@ -279,14 +279,14 @@ UnsafeChecker::visit (LiteralExpr &)
 void
 UnsafeChecker::visit (BorrowExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (DereferenceExpr &expr)
 {
   TyTy::BaseType *to_deref_type;
-  auto to_deref = expr.get_expr ()->get_mappings ().get_hirid ();
+  auto to_deref = expr.get_expr ().get_mappings ().get_hirid ();
 
   rust_assert (context.lookup_type (to_deref, &to_deref_type));
 
@@ -299,60 +299,60 @@ UnsafeChecker::visit (DereferenceExpr &expr)
 void
 UnsafeChecker::visit (ErrorPropagationExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (NegationExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (ArithmeticOrLogicalExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (ComparisonExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (LazyBooleanExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (TypeCastExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (AssignmentExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (CompoundAssignmentExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (GroupedExpr &expr)
 {
-  expr.get_expr_in_parens ()->accept_vis (*this);
+  expr.get_expr_in_parens ().accept_vis (*this);
 }
 
 void
@@ -365,20 +365,20 @@ UnsafeChecker::visit (ArrayElemsValues &elems)
 void
 UnsafeChecker::visit (ArrayElemsCopied &elems)
 {
-  elems.get_elem_to_copy ()->accept_vis (*this);
+  elems.get_elem_to_copy ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (ArrayExpr &expr)
 {
-  expr.get_internal_elements ()->accept_vis (*this);
+  expr.get_internal_elements ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (ArrayIndexExpr &expr)
 {
-  expr.get_array_expr ()->accept_vis (*this);
-  expr.get_index_expr ()->accept_vis (*this);
+  expr.get_array_expr ().accept_vis (*this);
+  expr.get_index_expr ().accept_vis (*this);
 }
 
 void
@@ -391,7 +391,7 @@ UnsafeChecker::visit (TupleExpr &expr)
 void
 UnsafeChecker::visit (TupleIndexExpr &expr)
 {
-  expr.get_tuple_expr ()->accept_vis (*this);
+  expr.get_tuple_expr ().accept_vis (*this);
 }
 
 void
@@ -405,13 +405,13 @@ UnsafeChecker::visit (StructExprFieldIdentifier &)
 void
 UnsafeChecker::visit (StructExprFieldIdentifierValue &field)
 {
-  field.get_value ()->accept_vis (*this);
+  field.get_value ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (StructExprFieldIndexValue &field)
 {
-  field.get_value ()->accept_vis (*this);
+  field.get_value ().accept_vis (*this);
 }
 
 void
@@ -428,10 +428,10 @@ UnsafeChecker::visit (StructExprStructBase &)
 void
 UnsafeChecker::visit (CallExpr &expr)
 {
-  if (!expr.get_fnexpr ())
+  if (!expr.has_fnexpr ())
     return;
 
-  NodeId ast_node_id = expr.get_fnexpr ()->get_mappings ().get_nodeid ();
+  NodeId ast_node_id = expr.get_fnexpr ().get_mappings ().get_nodeid ();
   NodeId ref_node_id;
 
   // There are no unsafe types, and functions are defined in the name resolver.
@@ -489,7 +489,7 @@ UnsafeChecker::visit (MethodCallExpr &expr)
     check_unsafe_call (static_cast<Function *> (method->first),
 		       expr.get_locus (), "method");
 
-  expr.get_receiver ()->accept_vis (*this);
+  expr.get_receiver ().accept_vis (*this);
 
   for (auto &arg : expr.get_arguments ())
     arg->accept_vis (*this);
@@ -498,14 +498,14 @@ UnsafeChecker::visit (MethodCallExpr &expr)
 void
 UnsafeChecker::visit (FieldAccessExpr &expr)
 {
-  expr.get_receiver_expr ()->accept_vis (*this);
+  expr.get_receiver_expr ().accept_vis (*this);
 
   if (unsafe_context.is_in_context ())
     return;
 
   TyTy::BaseType *receiver_ty;
   auto ok = context.lookup_type (
-    expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver_ty);
+    expr.get_receiver_expr ().get_mappings ().get_hirid (), &receiver_ty);
   rust_assert (ok);
 
   if (receiver_ty->get_kind () == TyTy::TypeKind::ADT)
@@ -521,7 +521,7 @@ UnsafeChecker::visit (FieldAccessExpr &expr)
 void
 UnsafeChecker::visit (ClosureExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
@@ -531,7 +531,7 @@ UnsafeChecker::visit (BlockExpr &expr)
     stmt->accept_vis (*this);
 
   if (expr.has_expr ())
-    expr.get_final_expr ()->accept_vis (*this);
+    expr.get_final_expr ().accept_vis (*this);
 }
 
 void
@@ -542,26 +542,26 @@ void
 UnsafeChecker::visit (BreakExpr &expr)
 {
   if (expr.has_break_expr ())
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (RangeFromToExpr &expr)
 {
-  expr.get_from_expr ()->accept_vis (*this);
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_from_expr ().accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (RangeFromExpr &expr)
 {
-  expr.get_from_expr ()->accept_vis (*this);
+  expr.get_from_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (RangeToExpr &expr)
 {
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
@@ -571,21 +571,21 @@ UnsafeChecker::visit (RangeFullExpr &)
 void
 UnsafeChecker::visit (RangeFromToInclExpr &expr)
 {
-  expr.get_from_expr ()->accept_vis (*this);
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_from_expr ().accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (RangeToInclExpr &expr)
 {
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (ReturnExpr &expr)
 {
   if (expr.has_return_expr ())
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
 }
 
 void
@@ -593,7 +593,7 @@ UnsafeChecker::visit (UnsafeBlockExpr &expr)
 {
   unsafe_context.enter (expr.get_mappings ().get_hirid ());
 
-  expr.get_block_expr ()->accept_vis (*this);
+  expr.get_block_expr ().accept_vis (*this);
 
   unsafe_context.exit ();
 }
@@ -601,45 +601,45 @@ UnsafeChecker::visit (UnsafeBlockExpr &expr)
 void
 UnsafeChecker::visit (LoopExpr &expr)
 {
-  expr.get_loop_block ()->accept_vis (*this);
+  expr.get_loop_block ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (WhileLoopExpr &expr)
 {
-  expr.get_predicate_expr ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
+  expr.get_predicate_expr ().accept_vis (*this);
+  expr.get_loop_block ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (WhileLetLoopExpr &expr)
 {
-  expr.get_cond ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
+  expr.get_cond ().accept_vis (*this);
+  expr.get_loop_block ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (IfExpr &expr)
 {
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
+  expr.get_if_condition ().accept_vis (*this);
+  expr.get_if_block ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (IfExprConseqElse &expr)
 {
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-  expr.get_else_block ()->accept_vis (*this);
+  expr.get_if_condition ().accept_vis (*this);
+  expr.get_if_block ().accept_vis (*this);
+  expr.get_else_block ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (MatchExpr &expr)
 {
-  expr.get_scrutinee_expr ()->accept_vis (*this);
+  expr.get_scrutinee_expr ().accept_vis (*this);
 
   for (auto &match_arm : expr.get_match_cases ())
-    match_arm.get_expr ()->accept_vis (*this);
+    match_arm.get_expr ().accept_vis (*this);
 }
 
 void
@@ -716,7 +716,7 @@ UnsafeChecker::visit (Function &function)
   if (is_unsafe_fn)
     unsafe_context.enter (function.get_mappings ().get_hirid ());
 
-  function.get_definition ()->accept_vis (*this);
+  function.get_definition ().accept_vis (*this);
 
   if (is_unsafe_fn)
     unsafe_context.exit ();
@@ -764,27 +764,27 @@ UnsafeChecker::visit (Union &)
 void
 UnsafeChecker::visit (ConstantItem &const_item)
 {
-  const_item.get_expr ()->accept_vis (*this);
+  const_item.get_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (StaticItem &static_item)
 {
-  static_item.get_expr ()->accept_vis (*this);
+  static_item.get_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (TraitItemFunc &item)
 {
   if (item.has_block_defined ())
-    item.get_block_expr ()->accept_vis (*this);
+    item.get_block_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (TraitItemConst &item)
 {
   if (item.has_expr ())
-    item.get_expr ()->accept_vis (*this);
+    item.get_expr ().accept_vis (*this);
 }
 
 void
@@ -931,13 +931,13 @@ void
 UnsafeChecker::visit (LetStmt &stmt)
 {
   if (stmt.has_init_expr ())
-    stmt.get_init_expr ()->accept_vis (*this);
+    stmt.get_init_expr ().accept_vis (*this);
 }
 
 void
 UnsafeChecker::visit (ExprStmt &stmt)
 {
-  stmt.get_expr ()->accept_vis (*this);
+  stmt.get_expr ().accept_vis (*this);
 }
 
 void

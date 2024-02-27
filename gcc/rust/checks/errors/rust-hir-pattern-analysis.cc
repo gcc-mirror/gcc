@@ -92,72 +92,72 @@ PatternChecker::visit (LiteralExpr &)
 void
 PatternChecker::visit (BorrowExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (DereferenceExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (ErrorPropagationExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (NegationExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (ArithmeticOrLogicalExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (ComparisonExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (LazyBooleanExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (TypeCastExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (AssignmentExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (CompoundAssignmentExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (GroupedExpr &expr)
 {
-  expr.get_expr_in_parens ()->accept_vis (*this);
+  expr.get_expr_in_parens ().accept_vis (*this);
 }
 
 void
@@ -170,20 +170,20 @@ PatternChecker::visit (ArrayElemsValues &elems)
 void
 PatternChecker::visit (ArrayElemsCopied &elems)
 {
-  elems.get_elem_to_copy ()->accept_vis (*this);
+  elems.get_elem_to_copy ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (ArrayExpr &expr)
 {
-  expr.get_internal_elements ()->accept_vis (*this);
+  expr.get_internal_elements ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (ArrayIndexExpr &expr)
 {
-  expr.get_array_expr ()->accept_vis (*this);
-  expr.get_index_expr ()->accept_vis (*this);
+  expr.get_array_expr ().accept_vis (*this);
+  expr.get_index_expr ().accept_vis (*this);
 }
 
 void
@@ -196,7 +196,7 @@ PatternChecker::visit (TupleExpr &expr)
 void
 PatternChecker::visit (TupleIndexExpr &expr)
 {
-  expr.get_tuple_expr ()->accept_vis (*this);
+  expr.get_tuple_expr ().accept_vis (*this);
 }
 
 void
@@ -210,13 +210,13 @@ PatternChecker::visit (StructExprFieldIdentifier &)
 void
 PatternChecker::visit (StructExprFieldIdentifierValue &field)
 {
-  field.get_value ()->accept_vis (*this);
+  field.get_value ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (StructExprFieldIndexValue &field)
 {
-  field.get_value ()->accept_vis (*this);
+  field.get_value ().accept_vis (*this);
 }
 
 void
@@ -233,10 +233,10 @@ PatternChecker::visit (StructExprStructBase &)
 void
 PatternChecker::visit (CallExpr &expr)
 {
-  if (!expr.get_fnexpr ())
+  if (!expr.has_fnexpr ())
     return;
 
-  NodeId ast_node_id = expr.get_fnexpr ()->get_mappings ().get_nodeid ();
+  NodeId ast_node_id = expr.get_fnexpr ().get_mappings ().get_nodeid ();
   NodeId ref_node_id;
   if (flag_name_resolution_2_0)
     {
@@ -266,7 +266,7 @@ PatternChecker::visit (CallExpr &expr)
 void
 PatternChecker::visit (MethodCallExpr &expr)
 {
-  expr.get_receiver ()->accept_vis (*this);
+  expr.get_receiver ().accept_vis (*this);
 
   for (auto &arg : expr.get_arguments ())
     arg->accept_vis (*this);
@@ -275,13 +275,13 @@ PatternChecker::visit (MethodCallExpr &expr)
 void
 PatternChecker::visit (FieldAccessExpr &expr)
 {
-  expr.get_receiver_expr ()->accept_vis (*this);
+  expr.get_receiver_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (ClosureExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
@@ -291,7 +291,7 @@ PatternChecker::visit (BlockExpr &expr)
     stmt->accept_vis (*this);
 
   if (expr.has_expr ())
-    expr.get_final_expr ()->accept_vis (*this);
+    expr.get_final_expr ().accept_vis (*this);
 }
 
 void
@@ -302,26 +302,26 @@ void
 PatternChecker::visit (BreakExpr &expr)
 {
   if (expr.has_break_expr ())
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (RangeFromToExpr &expr)
 {
-  expr.get_from_expr ()->accept_vis (*this);
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_from_expr ().accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (RangeFromExpr &expr)
 {
-  expr.get_from_expr ()->accept_vis (*this);
+  expr.get_from_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (RangeToExpr &expr)
 {
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
@@ -331,76 +331,76 @@ PatternChecker::visit (RangeFullExpr &)
 void
 PatternChecker::visit (RangeFromToInclExpr &expr)
 {
-  expr.get_from_expr ()->accept_vis (*this);
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_from_expr ().accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (RangeToInclExpr &expr)
 {
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (ReturnExpr &expr)
 {
   if (expr.has_return_expr ())
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (UnsafeBlockExpr &expr)
 {
-  expr.get_block_expr ()->accept_vis (*this);
+  expr.get_block_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (LoopExpr &expr)
 {
-  expr.get_loop_block ()->accept_vis (*this);
+  expr.get_loop_block ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (WhileLoopExpr &expr)
 {
-  expr.get_predicate_expr ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
+  expr.get_predicate_expr ().accept_vis (*this);
+  expr.get_loop_block ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (WhileLetLoopExpr &expr)
 {
-  expr.get_cond ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
+  expr.get_cond ().accept_vis (*this);
+  expr.get_loop_block ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (IfExpr &expr)
 {
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
+  expr.get_if_condition ().accept_vis (*this);
+  expr.get_if_block ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (IfExprConseqElse &expr)
 {
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-  expr.get_else_block ()->accept_vis (*this);
+  expr.get_if_condition ().accept_vis (*this);
+  expr.get_if_block ().accept_vis (*this);
+  expr.get_else_block ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (MatchExpr &expr)
 {
-  expr.get_scrutinee_expr ()->accept_vis (*this);
+  expr.get_scrutinee_expr ().accept_vis (*this);
 
   for (auto &match_arm : expr.get_match_cases ())
-    match_arm.get_expr ()->accept_vis (*this);
+    match_arm.get_expr ().accept_vis (*this);
 
   // match expressions are only an entrypoint
   TyTy::BaseType *scrutinee_ty;
   bool ok = tyctx.lookup_type (
-    expr.get_scrutinee_expr ()->get_mappings ().get_hirid (), &scrutinee_ty);
+    expr.get_scrutinee_expr ().get_mappings ().get_hirid (), &scrutinee_ty);
   rust_assert (ok);
 
   check_match_usefulness (&tyctx, scrutinee_ty, expr);
@@ -468,7 +468,7 @@ PatternChecker::visit (UseDeclaration &)
 void
 PatternChecker::visit (Function &function)
 {
-  function.get_definition ()->accept_vis (*this);
+  function.get_definition ().accept_vis (*this);
 }
 
 void
@@ -510,27 +510,27 @@ PatternChecker::visit (Union &)
 void
 PatternChecker::visit (ConstantItem &const_item)
 {
-  const_item.get_expr ()->accept_vis (*this);
+  const_item.get_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (StaticItem &static_item)
 {
-  static_item.get_expr ()->accept_vis (*this);
+  static_item.get_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (TraitItemFunc &item)
 {
   if (item.has_block_defined ())
-    item.get_block_expr ()->accept_vis (*this);
+    item.get_block_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (TraitItemConst &item)
 {
   if (item.has_expr ())
-    item.get_expr ()->accept_vis (*this);
+    item.get_expr ().accept_vis (*this);
 }
 
 void
@@ -659,13 +659,13 @@ void
 PatternChecker::visit (LetStmt &stmt)
 {
   if (stmt.has_init_expr ())
-    stmt.get_init_expr ()->accept_vis (*this);
+    stmt.get_init_expr ().accept_vis (*this);
 }
 
 void
 PatternChecker::visit (ExprStmt &stmt)
 {
-  stmt.get_expr ()->accept_vis (*this);
+  stmt.get_expr ().accept_vis (*this);
 }
 
 void
@@ -1161,33 +1161,34 @@ WitnessMatrix::extend (const WitnessMatrix &other)
 
 // forward declarations
 static DeconstructedPat
-lower_pattern (Resolver::TypeCheckContext *ctx, HIR::Pattern *pattern,
+lower_pattern (Resolver::TypeCheckContext *ctx, HIR::Pattern &pattern,
 	       TyTy::BaseType *scrutinee_ty);
 
 static DeconstructedPat
 lower_tuple_pattern (Resolver::TypeCheckContext *ctx,
-		     HIR::TupleStructPattern *pattern,
+		     HIR::TupleStructPattern &pattern,
 		     TyTy::VariantDef *variant, Constructor &ctor)
 {
   int arity = variant->get_fields ().size ();
-  HIR::TupleStructItems *elems = pattern->get_items ().get ();
+  HIR::TupleStructItems &elems = pattern.get_items ();
 
   std::vector<DeconstructedPat> fields;
-  switch (elems->get_item_type ())
+  switch (elems.get_item_type ())
     {
       case HIR::TupleStructItems::ItemType::MULTIPLE: {
-	HIR::TupleStructItemsNoRange *multiple
-	  = static_cast<HIR::TupleStructItemsNoRange *> (elems);
+	HIR::TupleStructItemsNoRange &multiple
+	  = static_cast<HIR::TupleStructItemsNoRange &> (elems);
 
 	rust_assert (variant->get_fields ().size ()
-		     == multiple->get_patterns ().size ());
-	for (size_t i = 0; i < multiple->get_patterns ().size (); i++)
+		     == multiple.get_patterns ().size ());
+
+	for (size_t i = 0; i < multiple.get_patterns ().size (); i++)
 	  {
 	    fields.push_back (
-	      lower_pattern (ctx, multiple->get_patterns ().at (i).get (),
+	      lower_pattern (ctx, *multiple.get_patterns ().at (i),
 			     variant->get_fields ().at (i)->get_field_type ()));
 	  }
-	return DeconstructedPat (ctor, arity, fields, pattern->get_locus ());
+	return DeconstructedPat (ctor, arity, fields, pattern.get_locus ());
       }
       break;
       case HIR::TupleStructItems::ItemType::RANGED: {
@@ -1203,7 +1204,7 @@ lower_tuple_pattern (Resolver::TypeCheckContext *ctx,
 
 static DeconstructedPat
 lower_struct_pattern (Resolver::TypeCheckContext *ctx,
-		      HIR::StructPattern *pattern, TyTy::VariantDef *variant,
+		      HIR::StructPattern &pattern, TyTy::VariantDef *variant,
 		      Constructor ctor)
 {
   int arity = variant->get_fields ().size ();
@@ -1211,7 +1212,7 @@ lower_struct_pattern (Resolver::TypeCheckContext *ctx,
   // Initialize all field patterns to wildcard.
   std::vector<DeconstructedPat> fields
     = std::vector<DeconstructedPat> (arity, DeconstructedPat::make_wildcard (
-					      pattern->get_locus ()));
+					      pattern.get_locus ()));
 
   std::map<std::string, int> field_map;
   for (int i = 0; i < arity; i++)
@@ -1221,7 +1222,7 @@ lower_struct_pattern (Resolver::TypeCheckContext *ctx,
     }
 
   // Fill in the fields with the present patterns.
-  HIR::StructPatternElements elems = pattern->get_struct_pattern_elems ();
+  HIR::StructPatternElements elems = pattern.get_struct_pattern_elems ();
   for (auto &elem : elems.get_struct_pattern_fields ())
     {
       switch (elem->get_item_type ())
@@ -1232,7 +1233,7 @@ lower_struct_pattern (Resolver::TypeCheckContext *ctx,
 	    int field_idx
 	      = field_map.at (ident->get_identifier ().as_string ());
 	    fields.at (field_idx)
-	      = DeconstructedPat::make_wildcard (pattern->get_locus ());
+	      = DeconstructedPat::make_wildcard (pattern.get_locus ());
 	  }
 	  break;
 	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
@@ -1241,7 +1242,7 @@ lower_struct_pattern (Resolver::TypeCheckContext *ctx,
 	    int field_idx
 	      = field_map.at (ident_pat->get_identifier ().as_string ());
 	    fields.at (field_idx) = lower_pattern (
-	      ctx, ident_pat->get_pattern ().get (),
+	      ctx, ident_pat->get_pattern (),
 	      variant->get_fields ().at (field_idx)->get_field_type ());
 	  }
 	  break;
@@ -1256,19 +1257,19 @@ lower_struct_pattern (Resolver::TypeCheckContext *ctx,
 	}
     }
 
-  return DeconstructedPat{ctor, arity, fields, pattern->get_locus ()};
+  return DeconstructedPat{ctor, arity, fields, pattern.get_locus ()};
 };
 
 static DeconstructedPat
-lower_pattern (Resolver::TypeCheckContext *ctx, HIR::Pattern *pattern,
+lower_pattern (Resolver::TypeCheckContext *ctx, HIR::Pattern &pattern,
 	       TyTy::BaseType *scrutinee_ty)
 {
-  HIR::Pattern::PatternType pat_type = pattern->get_pattern_type ();
+  HIR::Pattern::PatternType pat_type = pattern.get_pattern_type ();
   switch (pat_type)
     {
     case HIR::Pattern::PatternType::WILDCARD:
       case HIR::Pattern::PatternType::IDENTIFIER: {
-	return DeconstructedPat::make_wildcard (pattern->get_locus ());
+	return DeconstructedPat::make_wildcard (pattern.get_locus ());
       }
       break;
       case HIR::Pattern::PatternType::PATH: {
@@ -1276,12 +1277,12 @@ lower_pattern (Resolver::TypeCheckContext *ctx, HIR::Pattern *pattern,
 	// structs
 	// https://doc.rust-lang.org/reference/patterns.html#path-patterns
 	// unimplemented. Treat this pattern as wildcard for now.
-	return DeconstructedPat::make_wildcard (pattern->get_locus ());
+	return DeconstructedPat::make_wildcard (pattern.get_locus ());
       }
       break;
       case HIR::Pattern::PatternType::REFERENCE: {
 	// TODO: unimplemented. Treat this pattern as wildcard for now.
-	return DeconstructedPat::make_wildcard (pattern->get_locus ());
+	return DeconstructedPat::make_wildcard (pattern.get_locus ());
       }
       break;
     case HIR::Pattern::PatternType::STRUCT:
@@ -1289,15 +1290,15 @@ lower_pattern (Resolver::TypeCheckContext *ctx, HIR::Pattern *pattern,
 	HirId path_id = UNKNOWN_HIRID;
 	if (pat_type == HIR::Pattern::PatternType::STRUCT)
 	  {
-	    HIR::StructPattern *struct_pattern
-	      = static_cast<HIR::StructPattern *> (pattern);
-	    path_id = struct_pattern->get_path ().get_mappings ().get_hirid ();
+	    HIR::StructPattern &struct_pattern
+	      = static_cast<HIR::StructPattern &> (pattern);
+	    path_id = struct_pattern.get_path ().get_mappings ().get_hirid ();
 	  }
 	else
 	  {
-	    HIR::TupleStructPattern *tuple_pattern
-	      = static_cast<HIR::TupleStructPattern *> (pattern);
-	    path_id = tuple_pattern->get_path ().get_mappings ().get_hirid ();
+	    HIR::TupleStructPattern &tuple_pattern
+	      = static_cast<HIR::TupleStructPattern &> (pattern);
+	    path_id = tuple_pattern.get_path ().get_mappings ().get_hirid ();
 	  }
 
 	rust_assert (scrutinee_ty->get_kind () == TyTy::TypeKind::ADT);
@@ -1330,46 +1331,46 @@ lower_pattern (Resolver::TypeCheckContext *ctx, HIR::Pattern *pattern,
 
 	if (pat_type == HIR::Pattern::PatternType::STRUCT)
 	  {
-	    HIR::StructPattern *struct_pattern
-	      = static_cast<HIR::StructPattern *> (pattern);
+	    HIR::StructPattern &struct_pattern
+	      = static_cast<HIR::StructPattern &> (pattern);
 	    return lower_struct_pattern (ctx, struct_pattern, variant, ctor);
 	  }
 	else
 	  {
-	    HIR::TupleStructPattern *tuple_pattern
-	      = static_cast<HIR::TupleStructPattern *> (pattern);
+	    HIR::TupleStructPattern &tuple_pattern
+	      = static_cast<HIR::TupleStructPattern &> (pattern);
 	    return lower_tuple_pattern (ctx, tuple_pattern, variant, ctor);
 	  }
       }
       break;
       case HIR::Pattern::PatternType::TUPLE: {
 	// TODO: unimplemented. Treat this pattern as wildcard for now.
-	return DeconstructedPat::make_wildcard (pattern->get_locus ());
+	return DeconstructedPat::make_wildcard (pattern.get_locus ());
       }
       break;
       case HIR::Pattern::PatternType::SLICE: {
 	// TODO: unimplemented. Treat this pattern as wildcard for now.
-	return DeconstructedPat::make_wildcard (pattern->get_locus ());
+	return DeconstructedPat::make_wildcard (pattern.get_locus ());
       }
       break;
       case HIR::Pattern::PatternType::ALT: {
 	// TODO: unimplemented. Treat this pattern as wildcard for now.
-	return DeconstructedPat::make_wildcard (pattern->get_locus ());
+	return DeconstructedPat::make_wildcard (pattern.get_locus ());
       }
       break;
       case HIR::Pattern::PatternType::LITERAL: {
 	// TODO: unimplemented. Treat this pattern as wildcard for now.
-	return DeconstructedPat::make_wildcard (pattern->get_locus ());
+	return DeconstructedPat::make_wildcard (pattern.get_locus ());
       }
       break;
       case HIR::Pattern::PatternType::RANGE: {
 	// TODO: unimplemented. Treat this pattern as wildcard for now.
-	return DeconstructedPat::make_wildcard (pattern->get_locus ());
+	return DeconstructedPat::make_wildcard (pattern.get_locus ());
       }
       break;
       case HIR::Pattern::PatternType::GROUPED: {
 	// TODO: unimplemented. Treat this pattern as wildcard for now.
-	return DeconstructedPat::make_wildcard (pattern->get_locus ());
+	return DeconstructedPat::make_wildcard (pattern.get_locus ());
       }
       break;
       default: {
@@ -1385,8 +1386,7 @@ lower_arm (Resolver::TypeCheckContext *ctx, HIR::MatchCase &arm,
   rust_assert (arm.get_arm ().get_patterns ().size () > 0);
 
   DeconstructedPat pat
-    = lower_pattern (ctx, arm.get_arm ().get_patterns ().at (0).get (),
-		     scrutinee_ty);
+    = lower_pattern (ctx, *arm.get_arm ().get_patterns ().at (0), scrutinee_ty);
   return MatchArm (pat, arm.get_arm ().has_match_arm_guard ());
 }
 
@@ -1495,8 +1495,9 @@ emit_exhaustiveness_error (Resolver::TypeCheckContext *ctx,
 			   HIR::MatchExpr &expr, WitnessMatrix &witness)
 {
   TyTy::BaseType *scrutinee_ty;
-  bool ok = ctx->lookup_type (
-    expr.get_scrutinee_expr ()->get_mappings ().get_hirid (), &scrutinee_ty);
+  bool ok
+    = ctx->lookup_type (expr.get_scrutinee_expr ().get_mappings ().get_hirid (),
+			&scrutinee_ty);
   rust_assert (ok);
 
   if (!witness.empty ())
@@ -1514,7 +1515,7 @@ emit_exhaustiveness_error (Resolver::TypeCheckContext *ctx,
 	  if (i != witness.get_stacks ().size () - 1)
 	    buf << " and ";
 	}
-      rust_error_at (expr.get_scrutinee_expr ()->get_locus (),
+      rust_error_at (expr.get_scrutinee_expr ().get_locus (),
 		     "non-exhaustive patterns: %s not covered",
 		     buf.str ().c_str ());
     }

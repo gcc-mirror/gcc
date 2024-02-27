@@ -31,20 +31,20 @@ CompileFnParam::CompileFnParam (Context *ctx, tree fndecl, tree decl_type,
 {}
 
 Bvariable *
-CompileFnParam::compile (Context *ctx, tree fndecl, HIR::FunctionParam *param,
+CompileFnParam::compile (Context *ctx, tree fndecl, HIR::FunctionParam &param,
 			 tree decl_type, location_t locus)
 {
   CompileFnParam compiler (ctx, fndecl, decl_type, locus);
-  param->get_param_name ()->accept_vis (compiler);
+  param.get_param_name ().accept_vis (compiler);
   return compiler.compiled_param;
 }
 
 Bvariable *
-CompileFnParam::compile (Context *ctx, tree fndecl, HIR::Pattern *param,
+CompileFnParam::compile (Context *ctx, tree fndecl, HIR::Pattern &param,
 			 tree decl_type, location_t locus)
 {
   CompileFnParam compiler (ctx, fndecl, decl_type, locus);
-  param->accept_vis (compiler);
+  param.accept_vis (compiler);
   return compiler.compiled_param;
 }
 
@@ -72,21 +72,21 @@ void
 CompileFnParam::visit (HIR::StructPattern &pattern)
 {
   tree tmp_param_var = create_tmp_param_var (decl_type);
-  CompilePatternBindings::Compile (&pattern, tmp_param_var, ctx);
+  CompilePatternBindings::Compile (pattern, tmp_param_var, ctx);
 }
 
 void
 CompileFnParam::visit (HIR::TupleStructPattern &pattern)
 {
   tree tmp_param_var = create_tmp_param_var (decl_type);
-  CompilePatternBindings::Compile (&pattern, tmp_param_var, ctx);
+  CompilePatternBindings::Compile (pattern, tmp_param_var, ctx);
 }
 
 void
 CompileFnParam::visit (HIR::ReferencePattern &pattern)
 {
   tree tmp_param_var = create_tmp_param_var (decl_type);
-  CompilePatternBindings::Compile (&pattern, tmp_param_var, ctx);
+  CompilePatternBindings::Compile (pattern, tmp_param_var, ctx);
 }
 
 Bvariable *

@@ -44,7 +44,7 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
 
   rust_assert (canonical_path);
 
-  HIR::Expr *const_value_expr = constant.get_expr ().get ();
+  HIR::Expr &const_value_expr = constant.get_expr ();
   tree const_expr
     = compile_constant_item (resolved_type, *canonical_path, const_value_expr,
 			     constant.get_locus ());
@@ -114,7 +114,7 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
 			function.get_self (), function.get_function_params (),
 			function.get_qualifiers (), vis,
 			func.get_outer_attrs (), func.get_locus (),
-			func.get_block_expr ().get (), *canonical_path, fntype);
+			&func.get_block_expr (), *canonical_path, fntype);
   reference = address_expression (fndecl, ref_locus);
 }
 

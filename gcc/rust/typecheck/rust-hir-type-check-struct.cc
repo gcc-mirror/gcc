@@ -24,18 +24,18 @@
 namespace Rust {
 namespace Resolver {
 
-TypeCheckStructExpr::TypeCheckStructExpr (HIR::Expr *e)
+TypeCheckStructExpr::TypeCheckStructExpr (HIR::Expr &e)
   : TypeCheckBase (),
-    resolved (new TyTy::ErrorType (e->get_mappings ().get_hirid ())),
+    resolved (new TyTy::ErrorType (e.get_mappings ().get_hirid ())),
     struct_path_resolved (nullptr),
     variant (&TyTy::VariantDef::get_error_node ())
 {}
 
 TyTy::BaseType *
-TypeCheckStructExpr::Resolve (HIR::StructExprStructFields *expr)
+TypeCheckStructExpr::Resolve (HIR::StructExprStructFields &expr)
 {
   TypeCheckStructExpr resolver (expr);
-  resolver.resolve (*expr);
+  resolver.resolve (expr);
   return resolver.resolved;
 }
 
@@ -43,7 +43,7 @@ void
 TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 {
   TyTy::BaseType *struct_path_ty
-    = TypeCheckExpr::Resolve (&struct_expr.get_struct_name ());
+    = TypeCheckExpr::Resolve (struct_expr.get_struct_name ());
   if (struct_path_ty->get_kind () != TyTy::TypeKind::ADT)
     {
       rust_error_at (struct_expr.get_struct_name ().get_locus (),
@@ -56,7 +56,7 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
   if (struct_expr.has_struct_base ())
     {
       TyTy::BaseType *base_resolved
-	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get ());
+	= TypeCheckExpr::Resolve (*struct_expr.struct_base->base_struct);
       TyTy::BaseType *base_unify = unify_site (
 	struct_expr.struct_base->base_struct->get_mappings ().get_hirid (),
 	TyTy::TyWithLocation (struct_path_resolved),
@@ -284,8 +284,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       return false;
     }
 
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ().get ());
-  location_t value_locus = field.get_value ()->get_locus ();
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
+  location_t value_locus = field.get_value ().get_locus ();
 
   HirId coercion_site_id = field.get_mappings ().get_hirid ();
   resolved_field_value_expr
@@ -330,8 +330,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       return false;
     }
 
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ().get ());
-  location_t value_locus = field.get_value ()->get_locus ();
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
+  location_t value_locus = field.get_value ().get_locus ();
 
   HirId coercion_site_id = field.get_mappings ().get_hirid ();
   resolved_field_value_expr
@@ -385,7 +385,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
 			    HIR::GenericArgs::create_empty ());
   HIR::PathInExpression expr (mappings_copy2, {seg}, field.get_locus (), false,
 			      {});
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr);
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (expr);
   location_t value_locus = expr.get_locus ();
 
   HirId coercion_site_id = field.get_mappings ().get_hirid ();

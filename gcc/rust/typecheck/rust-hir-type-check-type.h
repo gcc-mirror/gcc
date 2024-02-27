@@ -31,7 +31,7 @@ namespace Resolver {
 class TypeCheckResolveGenericArguments : public TypeCheckBase
 {
 public:
-  static HIR::GenericArgs resolve (HIR::TypePathSegment *segment);
+  static HIR::GenericArgs resolve (HIR::TypePathSegment &segment);
 
   void visit (HIR::TypePathSegmentGeneric &generic);
 
@@ -46,7 +46,7 @@ private:
 class TypeCheckType : public TypeCheckBase, public HIR::HIRTypeVisitor
 {
 public:
-  static TyTy::BaseType *Resolve (HIR::Type *type);
+  static TyTy::BaseType *Resolve (HIR::Type &type);
 
   void visit (HIR::BareFunctionType &fntype) override;
   void visit (HIR::TupleType &tuple) override;
@@ -96,7 +96,7 @@ private:
 class TypeResolveGenericParam : public TypeCheckBase
 {
 public:
-  static TyTy::ParamType *Resolve (HIR::GenericParam *param,
+  static TyTy::ParamType *Resolve (HIR::GenericParam &param,
 				   bool apply_sized = true);
 
 protected:
