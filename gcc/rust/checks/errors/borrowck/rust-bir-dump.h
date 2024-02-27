@@ -49,16 +49,16 @@ public:
   void go (bool enable_simplify_cfg = false);
 
 protected:
-  void visit (Statement &stmt) override;
+  void visit (const Statement &stmt) override;
   void visit_place (PlaceId place_id);
   void visit_move_place (PlaceId place_id);
-  void visit (BorrowExpr &expr) override;
+  void visit (const BorrowExpr &expr) override;
   void visit_lifetime (PlaceId place_id);
-  void visit (InitializerExpr &expr) override;
-  void visit (CallExpr &expr) override;
-  void visit (Operator<1> &expr) override;
-  void visit (Operator<2> &expr) override;
-  void visit (Assignment &expr) override;
+  void visit (const InitializerExpr &expr) override;
+  void visit (const CallExpr &expr) override;
+  void visit (const Operator<1> &expr) override;
+  void visit (const Operator<2> &expr) override;
+  void visit (const Assignment &expr) override;
   void visit_scope (ScopeId id, size_t depth = 1);
 
   std::ostream &indent (size_t depth);

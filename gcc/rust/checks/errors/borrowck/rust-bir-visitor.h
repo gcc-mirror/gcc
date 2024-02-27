@@ -32,13 +32,13 @@ class CallExpr;
 class Visitor
 {
 public:
-  virtual void visit (Statement &stmt) = 0;
-  virtual void visit (InitializerExpr &expr) = 0;
-  virtual void visit (Operator<1> &expr) = 0;
-  virtual void visit (Operator<2> &expr) = 0;
-  virtual void visit (BorrowExpr &expr) = 0;
-  virtual void visit (Assignment &expr) = 0;
-  virtual void visit (CallExpr &expr) = 0;
+  virtual void visit (const Statement &stmt) = 0;
+  virtual void visit (const InitializerExpr &expr) = 0;
+  virtual void visit (const Operator<1> &expr) = 0;
+  virtual void visit (const Operator<2> &expr) = 0;
+  virtual void visit (const BorrowExpr &expr) = 0;
+  virtual void visit (const Assignment &expr) = 0;
+  virtual void visit (const CallExpr &expr) = 0;
 };
 
 class Visitable
