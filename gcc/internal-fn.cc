@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "rtl-iter.h"
 #include "gimple-range.h"
+#include "fold-const-call.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -5107,9 +5108,63 @@ expand_BITINTTOFLOAT (internal_fn, gcall *stmt)
     emit_move_insn (target, val);
 }
 
+static bool
+expand_bitquery (internal_fn fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs == NULL_TREE)
+    return false;
+  tree arg = gimple_call_arg (stmt, 0);
+  if (TREE_CODE (arg) == INTEGER_CST)
+    {
+      tree ret = fold_const_call (as_combined_fn (fn), TREE_TYPE (arg), arg);
+      gcc_checking_assert (ret && TREE_CODE (ret) == INTEGER_CST);
+      expand_assignment (lhs, ret, false);
+      return false;
+    }
+  return true;
+}
+
+void
+expand_CLRSB (internal_fn fn, gcall *stmt)
+{
+  if (expand_bitquery (fn, stmt))
+    expand_unary_optab_fn (fn, stmt, clrsb_optab);
+}
+
+void
+expand_CLZ (internal_fn fn, gcall *stmt)
+{
+  if (expand_bitquery (fn, stmt))
+    expand_unary_optab_fn (fn, stmt, clz_optab);
+}
+
+void
+expand_CTZ (internal_fn fn, gcall *stmt)
+{
+  if (expand_bitquery (fn, stmt))
+    expand_unary_optab_fn (fn, stmt, ctz_optab);
+}
+
+void
+expand_FFS (internal_fn fn, gcall *stmt)
+{
+  if (expand_bitquery (fn, stmt))
+    expand_unary_optab_fn (fn, stmt, ffs_optab);
+}
+
+void
+expand_PARITY (internal_fn fn, gcall *stmt)
+{
+  if (expand_bitquery (fn, stmt))
+    expand_unary_optab_fn (fn, stmt, parity_optab);
+}
+
 void
 expand_POPCOUNT (internal_fn fn, gcall *stmt)
 {
+  if (!expand_bitquery (fn, stmt))
+    return;
   if (gimple_call_num_args (stmt) == 1)
     {
       expand_unary_optab_fn (fn, stmt, popcount_optab);
