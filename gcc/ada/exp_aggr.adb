@@ -7119,10 +7119,12 @@ package body Exp_Aggr is
          Append (Init_Stat, Aggr_Code);
 
       --  The container will grow dynamically. Create a declaration for
-      --  the object, and initialize it either from a call to the Empty
-      --  function, or from the Empty constant.
+      --  the object, and initialize it from a call to the parameterless
+      --  Empty function.
 
       else
+         pragma Assert (Ekind (Entity (Empty_Subp)) = E_Function);
+
          Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
@@ -7130,20 +7132,12 @@ package body Exp_Aggr is
 
          Insert_Action (N, Decl);
 
-         --  The Empty entity is either a parameterless function, or
-         --  a constant.
+         --  The Empty entity is a parameterless function
 
-         if Ekind (Entity (Empty_Subp)) = E_Function then
-            Init_Stat := Make_Assignment_Statement (Loc,
-              Name => New_Occurrence_Of (Temp, Loc),
-              Expression => Make_Function_Call (Loc,
-                Name => New_Occurrence_Of (Entity (Empty_Subp), Loc)));
-
-         else
-            Init_Stat := Make_Assignment_Statement (Loc,
-              Name => New_Occurrence_Of (Temp, Loc),
-              Expression => New_Occurrence_Of (Entity (Empty_Subp), Loc));
-         end if;
+         Init_Stat := Make_Assignment_Statement (Loc,
+           Name => New_Occurrence_Of (Temp, Loc),
+           Expression => Make_Function_Call (Loc,
+             Name => New_Occurrence_Of (Entity (Empty_Subp), Loc)));
 
          Append (Init_Stat, Aggr_Code);
       end if;

@@ -16527,13 +16527,10 @@ package body Sem_Ch13 is
          if Etype (E) /= Typ or else Scope (E) /= Scope (Typ) then
             return False;
 
-         elsif Ekind (E) = E_Constant then
-            return True;
-
          elsif Ekind (E) = E_Function then
             return No (First_Formal (E))
               or else
-                (Is_Integer_Type (Etype (First_Formal (E)))
+                (Is_Signed_Integer_Type (Etype (First_Formal (E)))
                   and then No (Next_Formal (First_Formal (E))));
          else
             return False;

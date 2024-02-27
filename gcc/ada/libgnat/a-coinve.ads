@@ -63,7 +63,7 @@ is
      Variable_Indexing => Reference,
      Default_Iterator  => Iterate,
      Iterator_Element  => Element_Type,
-     Aggregate         => (Empty          => Empty_Vector,
+     Aggregate         => (Empty          => Empty,
                            Add_Unnamed    => Append,
                            New_Indexed    => New_Vector,
                            Assign_Indexed => Replace_Element);
