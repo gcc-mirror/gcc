@@ -6839,6 +6839,9 @@ package body Checks is
       then
          return True;
 
+      elsif Is_Static_Expression (Expr) then
+         return True;
+
       --  If the expression is the value of an object that is known to be
       --  valid, then clearly the expression value itself is valid.
 

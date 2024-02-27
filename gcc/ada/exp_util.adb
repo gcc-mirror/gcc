@@ -416,6 +416,11 @@ package body Exp_Util is
          if Validity_Checks_On
            and then
              (Validity_Check_Tests or else Is_Hardbool_Type (T))
+
+           --  no check needed here if validity has already been checked
+           and then not
+             (Validity_Check_Operands and then
+               (Nkind (N) in N_Op or else Nkind (Parent (N)) in N_Op))
          then
             Ensure_Valid (N);
          end if;
