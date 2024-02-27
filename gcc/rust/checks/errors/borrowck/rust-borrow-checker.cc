@@ -155,7 +155,26 @@ BorrowChecker::go (HIR::Crate &crate)
 			      &Polonius::Facts::dump_placeholder);
 	}
 
-      Polonius::polonius_run (facts.freeze (), rust_be_debug_p ());
+      auto result
+	= Polonius::polonius_run (facts.freeze (), rust_be_debug_p ());
+
+      if (result.loan_errors)
+	{
+	  rust_error_at (func->get_locus (), "Found loan errors in function %s",
+			 func->get_function_name ().as_string ().c_str ());
+	}
+      if (result.subset_errors)
+	{
+	  rust_error_at (func->get_locus (),
+			 "Found subset errors in function %s. Some lifetime "
+			 "constraints need to be added.",
+			 func->get_function_name ().as_string ().c_str ());
+	}
+      if (result.move_errors)
+	{
+	  rust_error_at (func->get_locus (), "Found move errors in function %s",
+			 func->get_function_name ().as_string ().c_str ());
+	}
     }
 
   for (auto closure ATTRIBUTE_UNUSED : collector.get_closures ())

@@ -48,3 +48,11 @@ pub struct FactsView {
     pub known_placeholder_subset: Slice<Pair<Origin, Origin>>,
     pub placeholder: Slice<Pair<Origin, Loan>>,
 }
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Output {
+    pub loan_errors: bool,
+    pub subset_errors: bool,
+    pub move_errors: bool,
+}

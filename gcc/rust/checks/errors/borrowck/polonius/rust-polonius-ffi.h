@@ -102,6 +102,13 @@ struct FactsView
   Slice<Pair<Origin, Loan>> placeholder;
 };
 
+struct Output
+{
+  bool loan_errors;
+  bool subset_errors;
+  bool move_errors;
+};
+
 } // namespace FFI
 } // namespace Polonius
 } // namespace Rust
