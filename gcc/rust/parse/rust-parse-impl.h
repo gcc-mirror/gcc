@@ -10631,14 +10631,6 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
 	      // tuple struct
 	      lexer.skip_token ();
 
-	      // check if empty tuple
-	      if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
-		{
-		  lexer.skip_token ();
-		  return std::unique_ptr<AST::TupleStructPattern> (
-		    new AST::TupleStructPattern (std::move (path), nullptr));
-		}
-
 	      // parse items
 	      std::unique_ptr<AST::TupleStructItems> items
 		= parse_tuple_struct_items ();
@@ -11093,14 +11085,6 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 
 	// DEBUG
 	rust_debug ("parsing tuple struct pattern");
-
-	// check if empty tuple
-	if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
-	  {
-	    lexer.skip_token ();
-	    return std::unique_ptr<AST::TupleStructPattern> (
-	      new AST::TupleStructPattern (std::move (path), nullptr));
-	  }
 
 	// parse items
 	std::unique_ptr<AST::TupleStructItems> items
