@@ -58,9 +58,8 @@ protected:
     const std::vector<std::unique_ptr<HIR::GenericParam> > &generic_params,
     std::vector<TyTy::SubstitutionParamMapping> &substitutions);
 
-  TyTy::TypeBoundPredicate
-  get_marker_predicate (Analysis::RustLangItem::ItemType item_type,
-			location_t locus);
+  TyTy::TypeBoundPredicate get_marker_predicate (LangItem::Kind item_type,
+						 location_t locus);
 
   Analysis::Mappings *mappings;
   Resolver *resolver;

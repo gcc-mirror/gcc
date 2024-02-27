@@ -2215,9 +2215,8 @@ void
 ClosureType::setup_fn_once_output () const
 {
   // lookup the lang items
-  auto fn_once_lang_item = Analysis::RustLangItem::ItemType::FN_ONCE;
-  auto fn_once_output_lang_item
-    = Analysis::RustLangItem::ItemType::FN_ONCE_OUTPUT;
+  auto fn_once_lang_item = LangItem::Kind::FN_ONCE;
+  auto fn_once_output_lang_item = LangItem::Kind::FN_ONCE_OUTPUT;
 
   DefId trait_id = UNKNOWN_DEFID;
   bool trait_lang_item_defined

@@ -22,13 +22,12 @@
 #include "bi-map.h"
 
 namespace Rust {
-namespace Analysis {
 
 // https://github.com/rust-lang/rust/blob/master/library/core/src/ops/arith.rs
-class RustLangItem
+class LangItem
 {
 public:
-  enum ItemType
+  enum class Kind
   {
     ADD,
     SUBTRACT,
@@ -119,15 +118,27 @@ public:
     F64_RUNTIME,
   };
 
-  static const BiMap<std::string, ItemType> lang_items;
+  static const BiMap<std::string, Kind> lang_items;
 
-  static tl::optional<ItemType> Parse (const std::string &item);
-  static std::string ToString (ItemType type);
-  static ItemType OperatorToLangItem (ArithmeticOrLogicalOperator op);
-  static ItemType
+  static tl::optional<Kind> Parse (const std::string &item);
+  static std::string ToString (Kind type);
+  static Kind OperatorToLangItem (ArithmeticOrLogicalOperator op);
+  static Kind
   CompoundAssignmentOperatorToLangItem (ArithmeticOrLogicalOperator op);
-  static ItemType NegationOperatorToLangItem (NegationOperator op);
+  static Kind NegationOperatorToLangItem (NegationOperator op);
 };
 
-} // namespace Analysis
 } // namespace Rust
+
+// GCC 4.8 needs us to manually implement hashing for enum classes
+namespace std {
+template <> struct hash<Rust::LangItem::Kind>
+{
+  size_t operator() (const Rust::LangItem::Kind &lang_item) const noexcept
+  {
+    return hash<std::underlying_type<Rust::LangItem::Kind>::type> () (
+      static_cast<std::underlying_type<Rust::LangItem::Kind>::type> (
+	lang_item));
+  }
+};
+} // namespace std
