@@ -788,7 +788,7 @@ ASTLoweringBase::handle_lang_item_attribute (const ItemWrapper &item,
 {
   auto &literal = static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
   const auto &lang_item_type_str = literal.get_literal ().as_string ();
-  auto lang_item_type = Analysis::RustLangItem::Parse (lang_item_type_str);
+  auto lang_item_type = LangItem::Parse (lang_item_type_str);
 
   if (lang_item_type)
     mappings->insert_lang_item (*lang_item_type,

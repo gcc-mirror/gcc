@@ -260,8 +260,7 @@ TypeCheckExpr::visit (HIR::CompoundAssignmentExpr &expr)
 		 expr.get_locus ());
 
   auto lang_item_type
-    = Analysis::RustLangItem::CompoundAssignmentOperatorToLangItem (
-      expr.get_expr_type ());
+    = LangItem::CompoundAssignmentOperatorToLangItem (expr.get_expr_type ());
   bool operator_overloaded
     = resolve_operator_overload (lang_item_type, expr, lhs, rhs);
   if (operator_overloaded)
@@ -292,8 +291,7 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ().get ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ().get ());
 
-  auto lang_item_type
-    = Analysis::RustLangItem::OperatorToLangItem (expr.get_expr_type ());
+  auto lang_item_type = LangItem::OperatorToLangItem (expr.get_expr_type ());
   bool operator_overloaded
     = resolve_operator_overload (lang_item_type, expr, lhs, rhs);
   if (operator_overloaded)
@@ -384,8 +382,8 @@ TypeCheckExpr::visit (HIR::NegationExpr &expr)
   auto negated_expr_ty = TypeCheckExpr::Resolve (expr.get_expr ().get ());
 
   // check for operator overload
-  auto lang_item_type = Analysis::RustLangItem::NegationOperatorToLangItem (
-    expr.get_expr_type ());
+  auto lang_item_type
+    = LangItem::NegationOperatorToLangItem (expr.get_expr_type ());
   bool operator_overloaded
     = resolve_operator_overload (lang_item_type, expr, negated_expr_ty,
 				 nullptr);
@@ -628,7 +626,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 void
 TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
 {
-  auto lang_item_type = Analysis::RustLangItem::ItemType::RANGE;
+  auto lang_item_type = LangItem::Kind::RANGE;
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
@@ -637,9 +635,9 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
   // we need to have it maybe
   if (!lang_item_defined)
     {
-      rust_internal_error_at (
-	expr.get_locus (), "unable to find relevant lang item: %s",
-	Analysis::RustLangItem::ToString (lang_item_type).c_str ());
+      rust_internal_error_at (expr.get_locus (),
+			      "unable to find relevant lang item: %s",
+			      LangItem::ToString (lang_item_type).c_str ());
       return;
     }
 
@@ -683,7 +681,7 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
 void
 TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
 {
-  auto lang_item_type = Analysis::RustLangItem::ItemType::RANGE_FROM;
+  auto lang_item_type = LangItem::Kind::RANGE_FROM;
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
@@ -692,9 +690,9 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
   // we need to have it maybe
   if (!lang_item_defined)
     {
-      rust_internal_error_at (
-	expr.get_locus (), "unable to find relevant lang item: %s",
-	Analysis::RustLangItem::ToString (lang_item_type).c_str ());
+      rust_internal_error_at (expr.get_locus (),
+			      "unable to find relevant lang item: %s",
+			      LangItem::ToString (lang_item_type).c_str ());
       return;
     }
 
@@ -731,7 +729,7 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
 void
 TypeCheckExpr::visit (HIR::RangeToExpr &expr)
 {
-  auto lang_item_type = Analysis::RustLangItem::ItemType::RANGE_TO;
+  auto lang_item_type = LangItem::Kind::RANGE_TO;
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
@@ -740,9 +738,9 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
   // we need to have it maybe
   if (!lang_item_defined)
     {
-      rust_internal_error_at (
-	expr.get_locus (), "unable to find relevant lang item: %s",
-	Analysis::RustLangItem::ToString (lang_item_type).c_str ());
+      rust_internal_error_at (expr.get_locus (),
+			      "unable to find relevant lang item: %s",
+			      LangItem::ToString (lang_item_type).c_str ());
       return;
     }
 
@@ -778,7 +776,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
 void
 TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
 {
-  auto lang_item_type = Analysis::RustLangItem::ItemType::RANGE_FULL;
+  auto lang_item_type = LangItem::Kind::RANGE_FULL;
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
@@ -787,9 +785,9 @@ TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
   // we need to have it maybe
   if (!lang_item_defined)
     {
-      rust_internal_error_at (
-	expr.get_locus (), "unable to find relevant lang item: %s",
-	Analysis::RustLangItem::ToString (lang_item_type).c_str ());
+      rust_internal_error_at (expr.get_locus (),
+			      "unable to find relevant lang item: %s",
+			      LangItem::ToString (lang_item_type).c_str ());
       return;
     }
 
@@ -809,7 +807,7 @@ TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
 void
 TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
 {
-  auto lang_item_type = Analysis::RustLangItem::ItemType::RANGE_INCLUSIVE;
+  auto lang_item_type = LangItem::Kind::RANGE_INCLUSIVE;
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
@@ -818,9 +816,9 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
   // we need to have it maybe
   if (!lang_item_defined)
     {
-      rust_internal_error_at (
-	expr.get_locus (), "unable to find relevant lang item: %s",
-	Analysis::RustLangItem::ToString (lang_item_type).c_str ());
+      rust_internal_error_at (expr.get_locus (),
+			      "unable to find relevant lang item: %s",
+			      LangItem::ToString (lang_item_type).c_str ());
       return;
     }
 
@@ -903,7 +901,7 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
     }
 
   // is this a case of core::ops::index?
-  auto lang_item_type = Analysis::RustLangItem::ItemType::INDEX;
+  auto lang_item_type = LangItem::Kind::INDEX;
   bool operator_overloaded
     = resolve_operator_overload (lang_item_type, expr, array_expr_ty,
 				 index_expr_ty);
@@ -1412,7 +1410,7 @@ TypeCheckExpr::visit (HIR::DereferenceExpr &expr)
     = TypeCheckExpr::Resolve (expr.get_expr ().get ());
 
   rust_debug_loc (expr.get_locus (), "attempting deref operator overload");
-  auto lang_item_type = Analysis::RustLangItem::ItemType::DEREF;
+  auto lang_item_type = LangItem::Kind::DEREF;
   bool operator_overloaded
     = resolve_operator_overload (lang_item_type, expr, resolved_base, nullptr);
   if (operator_overloaded)
@@ -1586,8 +1584,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   // assume FnOnce for now. I think this is based on the return type of the
   // closure
 
-  Analysis::RustLangItem::ItemType lang_item_type
-    = Analysis::RustLangItem::ItemType::FN_ONCE;
+  LangItem::Kind lang_item_type = LangItem::Kind::FN_ONCE;
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
     = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
@@ -1596,9 +1593,8 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
       // FIXME
       // we need to have a unified way or error'ing when we are missing lang
       // items that is useful
-      rust_fatal_error (
-	expr.get_locus (), "unable to find lang item: %<%s%>",
-	Analysis::RustLangItem::ToString (lang_item_type).c_str ());
+      rust_fatal_error (expr.get_locus (), "unable to find lang item: %<%s%>",
+			LangItem::ToString (lang_item_type).c_str ());
     }
   rust_assert (lang_item_defined);
 
@@ -1637,13 +1633,13 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 }
 
 bool
-TypeCheckExpr::resolve_operator_overload (
-  Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExprMeta expr,
-  TyTy::BaseType *lhs, TyTy::BaseType *rhs)
+TypeCheckExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
+					  HIR::OperatorExprMeta expr,
+					  TyTy::BaseType *lhs,
+					  TyTy::BaseType *rhs)
 {
   // look up lang item for arithmetic type
-  std::string associated_item_name
-    = Analysis::RustLangItem::ToString (lang_item_type);
+  std::string associated_item_name = LangItem::ToString (lang_item_type);
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
     = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);

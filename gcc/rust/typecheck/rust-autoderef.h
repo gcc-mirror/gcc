@@ -132,9 +132,8 @@ public:
 
   TyTy::BaseType *adjust_type (const std::vector<Adjustment> &adjustments);
 
-  static Adjustment
-  try_deref_type (TyTy::BaseType *ty,
-		  Analysis::RustLangItem::ItemType deref_lang_item);
+  static Adjustment try_deref_type (TyTy::BaseType *ty,
+				    LangItem::Kind deref_lang_item);
 
   static Adjustment try_raw_deref_type (TyTy::BaseType *ty);
 

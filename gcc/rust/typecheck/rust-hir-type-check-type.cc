@@ -794,8 +794,7 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
   if (apply_sized)
     {
       TyTy::TypeBoundPredicate sized_predicate
-	= get_marker_predicate (Analysis::RustLangItem::ItemType::SIZED,
-				param.get_locus ());
+	= get_marker_predicate (LangItem::Kind::SIZED, param.get_locus ());
 
       predicates[sized_predicate.get_id ()] = {sized_predicate};
     }

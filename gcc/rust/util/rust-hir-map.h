@@ -255,7 +255,7 @@ public:
     return true;
   }
 
-  void insert_lang_item (RustLangItem::ItemType item_type, DefId id)
+  void insert_lang_item (LangItem::Kind item_type, DefId id)
   {
     auto it = lang_item_mappings.find (item_type);
     rust_assert (it == lang_item_mappings.end ());
@@ -263,7 +263,7 @@ public:
     lang_item_mappings[item_type] = id;
   }
 
-  bool lookup_lang_item (RustLangItem::ItemType item_type, DefId *id)
+  bool lookup_lang_item (LangItem::Kind item_type, DefId *id)
   {
     auto it = lang_item_mappings.find (item_type);
     if (it == lang_item_mappings.end ())
@@ -274,7 +274,7 @@ public:
   }
 
   // This will fatal_error when this lang item does not exist
-  DefId get_lang_item (RustLangItem::ItemType item_type, location_t locus);
+  DefId get_lang_item (LangItem::Kind item_type, location_t locus);
 
   void insert_macro_def (AST::MacroRulesDefinition *macro);
 
@@ -347,9 +347,8 @@ public:
 
   HIR::ImplBlock *lookup_builtin_marker ();
 
-  HIR::TraitItem *
-  lookup_trait_item_lang_item (Analysis::RustLangItem::ItemType item,
-			       location_t locus);
+  HIR::TraitItem *lookup_trait_item_lang_item (LangItem::Kind item,
+					       location_t locus);
 
 private:
   Mappings ();
@@ -388,7 +387,7 @@ private:
   std::map<HirId, HIR::GenericParam *> hirGenericParamMappings;
   std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;
   std::map<HirId, HIR::Pattern *> hirPatternMappings;
-  std::map<RustLangItem::ItemType, DefId> lang_item_mappings;
+  std::map<LangItem::Kind, DefId> lang_item_mappings;
   std::map<NodeId, const Resolver::CanonicalPath> paths;
   std::map<NodeId, location_t> locations;
   std::map<NodeId, HirId> nodeIdToHirMappings;
