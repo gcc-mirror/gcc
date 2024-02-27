@@ -124,10 +124,12 @@ bound::ensure_closed (enum bound_kind bound_kind)
 	 For example, convert 3 < x into 4 <= x,
 	 and convert x < 5 into x <= 4.  */
       gcc_assert (CONSTANT_CLASS_P (m_constant));
+      gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (m_constant)));
       m_constant = fold_build2 (bound_kind == BK_UPPER ? MINUS_EXPR : PLUS_EXPR,
 				TREE_TYPE (m_constant),
 				m_constant, integer_one_node);
       gcc_assert (CONSTANT_CLASS_P (m_constant));
+      gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (m_constant)));
       m_closed = true;
     }
 }
@@ -306,6 +308,10 @@ range::above_upper_bound (tree rhs_const) const
 bool
 range::add_bound (bound b, enum bound_kind bound_kind)
 {
+  /* Bail out on floating point constants.  */
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (b.m_constant)))
+    return true;
+
   b.ensure_closed (bound_kind);
 
   switch (bound_kind)
