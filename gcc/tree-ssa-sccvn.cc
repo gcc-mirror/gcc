@@ -1148,8 +1148,29 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
     {
       switch (op->opcode)
 	{
-	/* These may be in the reference ops, but we cannot do anything
-	   sensible with them here.  */
+	case CALL_EXPR:
+	  return false;
+
+	/* Record the base objects.  */
+	case MEM_REF:
+	  *op0_p = build2 (MEM_REF, op->type,
+			   NULL_TREE, op->op0);
+	  MR_DEPENDENCE_CLIQUE (*op0_p) = op->clique;
+	  MR_DEPENDENCE_BASE (*op0_p) = op->base;
+	  op0_p = &TREE_OPERAND (*op0_p, 0);
+	  break;
+
+	case TARGET_MEM_REF:
+	  *op0_p = build5 (TARGET_MEM_REF, op->type,
+			   NULL_TREE, op->op2, op->op0,
+			   op->op1, ops[i+1].op0);
+	  MR_DEPENDENCE_CLIQUE (*op0_p) = op->clique;
+	  MR_DEPENDENCE_BASE (*op0_p) = op->base;
+	  op0_p = &TREE_OPERAND (*op0_p, 0);
+	  ++i;
+	  break;
+
+	/* Unwrap some of the wrapped decls.  */
 	case ADDR_EXPR:
 	  /* Apart from ADDR_EXPR arguments to MEM_REF.  */
 	  if (base != NULL_TREE
@@ -1170,21 +1191,16 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      break;
 	    }
 	  /* Fallthru.  */
-	case CALL_EXPR:
-	  return false;
-
-	/* Record the base objects.  */
-	case MEM_REF:
-	  *op0_p = build2 (MEM_REF, op->type,
-			   NULL_TREE, op->op0);
-	  MR_DEPENDENCE_CLIQUE (*op0_p) = op->clique;
-	  MR_DEPENDENCE_BASE (*op0_p) = op->base;
-	  op0_p = &TREE_OPERAND (*op0_p, 0);
-	  break;
-
-	case VAR_DECL:
 	case PARM_DECL:
+	case CONST_DECL:
 	case RESULT_DECL:
+	  /* ???  We shouldn't see these, but un-canonicalize what
+	     copy_reference_ops_from_ref does when visiting MEM_REF.  */
+	case VAR_DECL:
+	  /* ???  And for this only have DECL_HARD_REGISTER.  */
+	case STRING_CST:
+	  /* This can show up in ARRAY_REF bases.  */
+	case INTEGER_CST:
 	case SSA_NAME:
 	  *op0_p = op->op0;
 	  op0_p = NULL;
@@ -1234,13 +1250,12 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	case VIEW_CONVERT_EXPR:
 	  break;
 
-	case STRING_CST:
-	case INTEGER_CST:
+	case POLY_INT_CST:
 	case COMPLEX_CST:
 	case VECTOR_CST:
 	case REAL_CST:
+	case FIXED_CST:
 	case CONSTRUCTOR:
-	case CONST_DECL:
 	  return false;
 
 	default:
