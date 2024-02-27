@@ -201,6 +201,13 @@ public: // Module internal API
 
   std::vector<Variance> query_generic_variance (const ADTType &type);
 
+  std::vector<size_t> query_field_regions (const ADTType *parent,
+					   size_t variant_index,
+					   size_t field_index,
+					   const FreeRegions &parent_regions);
+
+  std::vector<Region> query_type_regions (BaseType *base);
+
 public: // Data used by visitors.
   // This whole class is private, therfore members can be public.
 
@@ -294,6 +301,40 @@ private:
   GenericTyPerCrateCtx &ctx;
   std::vector<Variance> variances;
   std::vector<Region> regions;
+};
+
+/** Extracts regions of a field from regions of parent ADT. */
+class FieldVisitorCtx : public VarianceVisitorCtx<Variance>
+{
+public:
+  using Visitor = VisitorBase<Variance>;
+
+  std::vector<size_t> collect_regions (BaseType &ty);
+
+  FieldVisitorCtx (GenericTyPerCrateCtx &ctx, const SubstitutionRef &subst,
+		   const FreeRegions &parent_regions)
+    : ctx (ctx), subst (subst), parent_regions (parent_regions)
+  {}
+
+  void add_constraints_from_ty (BaseType *ty, Variance variance) override;
+  void add_constraints_from_region (const Region &region,
+				    Variance variance) override;
+  void add_constraints_from_generic_args (HirId ref, SubstitutionRef &subst,
+					  Variance variance,
+					  bool invariant_args) override{};
+  void add_constrints_from_param (ParamType &param, Variance variance) override;
+
+  Variance contra (Variance variance) override
+  {
+    return Variance::transform (variance, Variance::contravariant ());
+  }
+
+private:
+  GenericTyPerCrateCtx &ctx;
+  const SubstitutionRef &subst;
+  std::vector<size_t> regions;
+  FreeRegions parent_regions;
+  std::vector<size_t> type_param_ranges;
 };
 
 } // namespace VarianceAnalysis
