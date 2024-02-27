@@ -85,9 +85,9 @@
 
 (define_mode_iterator V24FI [V2SF V2SI V4HF V4HI])
 
-(define_mode_iterator V248FI [V2SF V2SI V4HF V4HI V8QI])
+(define_mode_iterator V248FI [V2SF V2SI V4HF V4BF V4HI V8QI])
 
-(define_mode_iterator V24FI_32 [V2HF V2HI V4QI])
+(define_mode_iterator V24FI_32 [V2HF V2BF V2HI V4QI])
 
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr mmxvecsize
