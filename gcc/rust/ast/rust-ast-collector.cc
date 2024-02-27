@@ -2503,8 +2503,7 @@ TokenCollector::visit (TupleStructPattern &pattern)
 {
   visit (pattern.get_path ());
   push (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
-  if (pattern.has_items ())
-    visit (pattern.get_items ());
+  visit (pattern.get_items ());
   push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 

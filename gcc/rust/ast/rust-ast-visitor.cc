@@ -1225,8 +1225,7 @@ void
 DefaultASTVisitor::visit (AST::TupleStructPattern &pattern)
 {
   visit (pattern.get_path ());
-  if (pattern.has_items ())
-    visit (pattern.get_items ());
+  visit (pattern.get_items ());
 }
 
 void
