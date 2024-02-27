@@ -28,7 +28,6 @@
 namespace Rust {
 namespace Polonius {
 
-/** A point in the control flow graph. */
 struct FullPoint
 {
   uint32_t bb;
@@ -223,7 +222,7 @@ struct Facts
  *
  * Output is not yet implemented and is only dumped to stdout.
  */
-extern "C" void
+extern "C" FFI::Output
 polonius_run (FFI::FactsView input, bool dump_enabled);
 
 } // namespace Polonius
