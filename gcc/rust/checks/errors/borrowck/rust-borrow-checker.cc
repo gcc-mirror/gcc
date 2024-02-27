@@ -154,6 +154,8 @@ BorrowChecker::go (HIR::Crate &crate)
 	  dump_facts_to_file ("placeholder",
 			      &Polonius::Facts::dump_placeholder);
 	}
+
+      Polonius::polonius_run (facts.freeze (), rust_be_debug_p ());
     }
 
   for (auto closure ATTRIBUTE_UNUSED : collector.get_closures ())
