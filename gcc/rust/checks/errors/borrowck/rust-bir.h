@@ -137,6 +137,10 @@ public:
 
 public:
   std::vector<PlaceId> &get_values () { return values; }
+  WARN_UNUSED_RESULT const std::vector<PlaceId> &get_values () const
+  {
+    return values;
+  }
 };
 
 template <unsigned ARITY>
@@ -199,7 +203,7 @@ public:
   {}
 
 public:
-  const std::vector<PlaceId> &get_arguments () { return arguments; }
+  const std::vector<PlaceId> &get_arguments () const { return arguments; }
   WARN_UNUSED_RESULT PlaceId get_callable () const { return callable; }
 };
 

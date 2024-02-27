@@ -155,7 +155,7 @@ Dump::go (bool enable_simplify_cfg)
   stream << "}\n";
 }
 void
-Dump::visit (Statement &stmt)
+Dump::visit (const Statement &stmt)
 {
   statement_place = stmt.get_place ();
   switch (stmt.get_kind ())
@@ -247,7 +247,7 @@ Dump::visit_move_place (PlaceId place_id)
 }
 
 void
-Dump::visit (BorrowExpr &expr)
+Dump::visit (const BorrowExpr &expr)
 {
   stream << "&";
   visit_lifetime (statement_place);
@@ -268,7 +268,7 @@ Dump::visit_lifetime (PlaceId place_id)
 }
 
 void
-Dump::visit (InitializerExpr &expr)
+Dump::visit (const InitializerExpr &expr)
 {
   stream << "{";
   print_comma_separated (stream, expr.get_values (), [this] (PlaceId place_id) {
@@ -278,7 +278,7 @@ Dump::visit (InitializerExpr &expr)
 }
 
 void
-Dump::visit (CallExpr &expr)
+Dump::visit (const CallExpr &expr)
 {
   stream << "Call(";
   if (auto fn_type
@@ -305,7 +305,7 @@ Dump::visit (CallExpr &expr)
 }
 
 void
-Dump::visit (Operator<1> &expr)
+Dump::visit (const Operator<1> &expr)
 {
   stream << "Operator(";
   visit_move_place (expr.get_operand<0> ());
@@ -313,7 +313,7 @@ Dump::visit (Operator<1> &expr)
 }
 
 void
-Dump::visit (Operator<2> &expr)
+Dump::visit (const Operator<2> &expr)
 {
   stream << "Operator(";
   visit_move_place (expr.get_operand<0> ());
@@ -323,7 +323,7 @@ Dump::visit (Operator<2> &expr)
 }
 
 void
-Dump::visit (Assignment &expr)
+Dump::visit (const Assignment &expr)
 {
   if (func.place_db[expr.get_rhs ()].is_rvalue ())
     {
