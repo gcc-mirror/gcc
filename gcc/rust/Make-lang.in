@@ -225,12 +225,15 @@ rust_OBJS = $(RUST_ALL_OBJS) rust/rustspec.o
 
 LIBPROC_MACRO_INTERNAL = ../libgrust/libproc_macro_internal/libproc_macro_internal.a
 LIBFORMAT_PARSER = ../libgrust/libformat_parser/debug/liblibformat_parser.a
+LIBFFI_POLONIUS = rust/libffi_polonius.a
 
 # The compiler itself is called crab1
-crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(rust.prev)
+crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(LIBFFI_POLONIUS) $(rust.prev)
 	@$(call LINK_PROGRESS,$(INDEX.rust),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(CRAB1_LIBS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(BACKENDLIBS)
+	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) \
+	      $(LIBS) $(CRAB1_LIBS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(LIBFFI_POLONIUS) \
+ 		  $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.rust),end)
 
 # Build hooks.
