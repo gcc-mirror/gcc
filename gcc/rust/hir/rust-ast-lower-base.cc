@@ -789,13 +789,12 @@ ASTLoweringBase::handle_lang_item_attribute (const ItemWrapper &item,
   auto &literal = static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
   const auto &lang_item_type_str = literal.get_literal ().as_string ();
   auto lang_item_type = Analysis::RustLangItem::Parse (lang_item_type_str);
-  if (lang_item_type == Analysis::RustLangItem::ItemType::UNKNOWN)
-    {
-      rust_error_at (attr.get_locus (), "unknown lang item");
-      return;
-    }
-  mappings->insert_lang_item (lang_item_type,
-			      item.get_mappings ().get_defid ());
+
+  if (lang_item_type)
+    mappings->insert_lang_item (*lang_item_type,
+				item.get_mappings ().get_defid ());
+  else
+    rust_error_at (attr.get_locus (), "unknown lang item");
 }
 
 bool
