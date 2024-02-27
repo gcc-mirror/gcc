@@ -85,7 +85,7 @@ CompileAsm::asm_construct_outputs (HIR::InlineAsm &expr)
 	{
 	  auto out = output.get_out ();
 
-	  tree out_tree = CompileExpr::Compile (out.expr.get (), this->ctx);
+	  tree out_tree = CompileExpr::Compile (*out.expr, this->ctx);
 	  // expects a tree list
 	  // TODO: This assumes that the output is a register
 	  std::string expr_name = "=r";
@@ -112,7 +112,7 @@ CompileAsm::asm_construct_inputs (HIR::InlineAsm &expr)
 	{
 	  auto in = input.get_in ();
 
-	  tree in_tree = CompileExpr::Compile (in.expr.get (), this->ctx);
+	  tree in_tree = CompileExpr::Compile (*in.expr, this->ctx);
 	  // expects a tree list
 	  // TODO: This assumes that the input is a register
 	  std::string expr_name = "r";

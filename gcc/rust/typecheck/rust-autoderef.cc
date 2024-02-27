@@ -209,7 +209,7 @@ resolve_operator_overload_fn (
 	       == 0)
 	{
 	  TraitReference *trait_reference
-	    = TraitResolver::Lookup (*parent->get_trait_ref ().get ());
+	    = TraitResolver::Lookup (parent->get_trait_ref ());
 	  if (!trait_reference->is_error ())
 	    {
 	      TyTy::BaseType *lookup = nullptr;

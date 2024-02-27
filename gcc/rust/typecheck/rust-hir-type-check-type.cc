@@ -18,6 +18,7 @@
 
 #include "rust-hir-type-check-type.h"
 #include "options.h"
+#include "optional.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-path-probe.h"
@@ -26,18 +27,19 @@
 #include "rust-mapping-common.h"
 #include "rust-substitution-mapper.h"
 #include "rust-type-util.h"
+#include <functional>
 
 namespace Rust {
 namespace Resolver {
 
 HIR::GenericArgs
-TypeCheckResolveGenericArguments::resolve (HIR::TypePathSegment *segment)
+TypeCheckResolveGenericArguments::resolve (HIR::TypePathSegment &segment)
 {
-  TypeCheckResolveGenericArguments resolver (segment->get_locus ());
-  switch (segment->get_type ())
+  TypeCheckResolveGenericArguments resolver (segment.get_locus ());
+  switch (segment.get_type ())
     {
     case HIR::TypePathSegment::SegmentType::GENERIC:
-      resolver.visit (static_cast<HIR::TypePathSegmentGeneric &> (*segment));
+      resolver.visit (static_cast<HIR::TypePathSegmentGeneric &> (segment));
       break;
 
     default:
@@ -53,20 +55,20 @@ TypeCheckResolveGenericArguments::visit (HIR::TypePathSegmentGeneric &generic)
 }
 
 TyTy::BaseType *
-TypeCheckType::Resolve (HIR::Type *type)
+TypeCheckType::Resolve (HIR::Type &type)
 {
   // is it already resolved?
   auto context = TypeCheckContext::get ();
   TyTy::BaseType *resolved = nullptr;
   bool already_resolved
-    = context->lookup_type (type->get_mappings ().get_hirid (), &resolved);
+    = context->lookup_type (type.get_mappings ().get_hirid (), &resolved);
   if (already_resolved)
     return resolved;
 
-  TypeCheckType resolver (type->get_mappings ().get_hirid ());
-  type->accept_vis (resolver);
+  TypeCheckType resolver (type.get_mappings ().get_hirid ());
+  type.accept_vis (resolver);
   rust_assert (resolver.translated != nullptr);
-  resolver.context->insert_type (type->get_mappings (), resolver.translated);
+  resolver.context->insert_type (type.get_mappings (), resolver.translated);
   return resolver.translated;
 }
 
@@ -82,7 +84,7 @@ TypeCheckType::visit (HIR::BareFunctionType &fntype)
   TyTy::BaseType *return_type;
   if (fntype.has_return_type ())
     {
-      return_type = TypeCheckType::Resolve (fntype.get_return_type ().get ());
+      return_type = TypeCheckType::Resolve (fntype.get_return_type ());
     }
   else
     {
@@ -95,7 +97,7 @@ TypeCheckType::visit (HIR::BareFunctionType &fntype)
   std::vector<TyTy::TyVar> params;
   for (auto &param : fntype.get_function_params ())
     {
-      TyTy::BaseType *ptype = TypeCheckType::Resolve (param.get_type ().get ());
+      TyTy::BaseType *ptype = TypeCheckType::Resolve (param.get_type ());
       params.push_back (TyTy::TyVar (ptype->get_ref ()));
     }
 
@@ -121,7 +123,7 @@ TypeCheckType::visit (HIR::TupleType &tuple)
   std::vector<TyTy::TyVar> fields;
   for (auto &elem : tuple.get_elems ())
     {
-      auto field_ty = TypeCheckType::Resolve (elem.get ());
+      auto field_ty = TypeCheckType::Resolve (*elem);
       fields.push_back (TyTy::TyVar (field_ty->get_ref ()));
     }
 
@@ -163,8 +165,7 @@ void
 TypeCheckType::visit (HIR::QualifiedPathInType &path)
 {
   HIR::QualifiedPathType qual_path_type = path.get_path_type ();
-  TyTy::BaseType *root
-    = TypeCheckType::Resolve (qual_path_type.get_type ().get ());
+  TyTy::BaseType *root = TypeCheckType::Resolve (qual_path_type.get_type ());
   if (root->get_kind () == TyTy::TypeKind::ERROR)
     {
       rust_debug_loc (path.get_locus (), "failed to resolve the root");
@@ -176,7 +177,7 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
       // then this is just a normal path-in-expression
       NodeId root_resolved_node_id = UNKNOWN_NODEID;
       bool ok = resolver->lookup_resolved_type (
-	qual_path_type.get_type ()->get_mappings ().get_nodeid (),
+	qual_path_type.get_type ().get_mappings ().get_nodeid (),
 	&root_resolved_node_id);
       rust_assert (ok);
 
@@ -189,8 +190,8 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     }
 
   // Resolve the trait now
-  std::unique_ptr<HIR::TypePath> &trait_path_ref = qual_path_type.get_trait ();
-  TraitReference *trait_ref = TraitResolver::Resolve (*trait_path_ref.get ());
+  auto &trait_path_ref = qual_path_type.get_trait ();
+  TraitReference *trait_ref = TraitResolver::Resolve (trait_path_ref);
   if (trait_ref->is_error ())
     return;
 
@@ -203,9 +204,8 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     }
 
   // get the predicate for the bound
-  auto specified_bound
-    = get_predicate_from_bound (*qual_path_type.get_trait ().get (),
-				qual_path_type.get_type ().get ());
+  auto specified_bound = get_predicate_from_bound (qual_path_type.get_trait (),
+						   qual_path_type.get_type ());
   if (specified_bound.is_error ())
     return;
 
@@ -213,18 +213,17 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   root->inherit_bounds ({specified_bound});
 
   // lookup the associated item from the specified bound
-  std::unique_ptr<HIR::TypePathSegment> &item_seg
-    = path.get_associated_segment ();
-  HIR::PathIdentSegment item_seg_identifier = item_seg->get_ident_segment ();
+  HIR::TypePathSegment &item_seg = path.get_associated_segment ();
+  HIR::PathIdentSegment item_seg_identifier = item_seg.get_ident_segment ();
   TyTy::TypeBoundPredicateItem item
     = specified_bound.lookup_associated_item (item_seg_identifier.as_string ());
   if (item.is_error ())
     {
       std::string item_seg_ident_name, rich_msg;
-      item_seg_ident_name = qual_path_type.get_trait ()->as_string ();
+      item_seg_ident_name = qual_path_type.get_trait ().as_string ();
       rich_msg = "not found in `" + item_seg_ident_name + "`";
 
-      rich_location richloc (line_table, item_seg->get_locus ());
+      rich_location richloc (line_table, item_seg.get_locus ());
       richloc.add_fixit_replace (rich_msg.c_str ());
 
       rust_error_at (richloc, ErrorCode::E0576,
@@ -296,17 +295,16 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     }
 
   // turbo-fish segment path::<ty>
-  if (item_seg->get_type () == HIR::TypePathSegment::SegmentType::GENERIC)
+  if (item_seg.get_type () == HIR::TypePathSegment::SegmentType::GENERIC)
     {
-      HIR::TypePathSegmentGeneric &generic_seg
-	= static_cast<HIR::TypePathSegmentGeneric &> (*item_seg.get ());
+      auto &generic_seg = static_cast<HIR::TypePathSegmentGeneric &> (item_seg);
 
       // turbo-fish segment path::<ty>
       if (generic_seg.has_generic_args ())
 	{
 	  if (!translated->has_substitutions_defined ())
 	    {
-	      rust_error_at (item_seg->get_locus (),
+	      rust_error_at (item_seg.get_locus (),
 			     "substitutions not supported for %s",
 			     translated->as_string ().c_str ());
 	      translated
@@ -454,13 +452,13 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
       // turbo-fish segment path::<ty>
       if (seg->is_generic_segment ())
 	{
-	  HIR::TypePathSegmentGeneric *generic_segment
-	    = static_cast<HIR::TypePathSegmentGeneric *> (seg.get ());
+	  auto &generic_segment
+	    = static_cast<HIR::TypePathSegmentGeneric &> (*seg);
 
 	  auto regions = context->regions_from_generic_args (
-	    generic_segment->get_generic_args ());
+	    generic_segment.get_generic_args ());
 	  lookup = SubstMapper::Resolve (lookup, path.get_locus (),
-					 &generic_segment->get_generic_args (),
+					 &generic_segment.get_generic_args (),
 					 regions);
 	  if (lookup->get_kind () == TyTy::TypeKind::ERROR)
 	    return new TyTy::ErrorType (seg->get_mappings ().get_hirid ());
@@ -569,12 +567,12 @@ TypeCheckType::resolve_segments (
 
       if (seg->is_generic_segment ())
 	{
-	  auto *generic_segment
-	    = static_cast<HIR::TypePathSegmentGeneric *> (seg.get ());
+	  auto &generic_segment
+	    = static_cast<HIR::TypePathSegmentGeneric &> (*seg);
 
 	  std::vector<TyTy::Region> regions;
 	  for (auto &lifetime :
-	       generic_segment->get_generic_args ().get_lifetime_args ())
+	       generic_segment.get_generic_args ().get_lifetime_args ())
 	    {
 	      auto region = context->lookup_and_resolve_lifetime (lifetime);
 	      if (!region.has_value ())
@@ -587,7 +585,7 @@ TypeCheckType::resolve_segments (
 	    }
 
 	  tyseg = SubstMapper::Resolve (tyseg, expr_locus,
-					&generic_segment->get_generic_args (),
+					&generic_segment.get_generic_args (),
 					regions);
 	  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	    return new TyTy::ErrorType (expr_id);
@@ -651,7 +649,7 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 
       TyTy::TypeBoundPredicate predicate = get_predicate_from_bound (
 	trait_bound.get_path (),
-	nullptr /*this will setup a PLACEHOLDER for self*/);
+	tl::nullopt /*this will setup a PLACEHOLDER for self*/);
 
       if (!predicate.is_error ()
 	  && predicate.is_object_safe (true, type.get_locus ()))
@@ -667,33 +665,31 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 void
 TypeCheckType::visit (HIR::ArrayType &type)
 {
-  auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr ().get ());
+  auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr ());
   if (capacity_type->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
   TyTy::BaseType *expected_ty = nullptr;
   bool ok = context->lookup_builtin ("usize", &expected_ty);
   rust_assert (ok);
-  context->insert_type (type.get_size_expr ()->get_mappings (), expected_ty);
+  context->insert_type (type.get_size_expr ().get_mappings (), expected_ty);
 
-  unify_site (type.get_size_expr ()->get_mappings ().get_hirid (),
+  unify_site (type.get_size_expr ().get_mappings ().get_hirid (),
 	      TyTy::TyWithLocation (expected_ty),
 	      TyTy::TyWithLocation (capacity_type,
-				    type.get_size_expr ()->get_locus ()),
-	      type.get_size_expr ()->get_locus ());
+				    type.get_size_expr ().get_locus ()),
+	      type.get_size_expr ().get_locus ());
 
-  TyTy::BaseType *base
-    = TypeCheckType::Resolve (type.get_element_type ().get ());
+  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
   translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
-				    type.get_locus (), *type.get_size_expr (),
+				    type.get_locus (), type.get_size_expr (),
 				    TyTy::TyVar (base->get_ref ()));
 }
 
 void
 TypeCheckType::visit (HIR::SliceType &type)
 {
-  TyTy::BaseType *base
-    = TypeCheckType::Resolve (type.get_element_type ().get ());
+  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
   translated
     = new TyTy::SliceType (type.get_mappings ().get_hirid (), type.get_locus (),
 			   TyTy::TyVar (base->get_ref ()));
@@ -701,7 +697,7 @@ TypeCheckType::visit (HIR::SliceType &type)
 void
 TypeCheckType::visit (HIR::ReferenceType &type)
 {
-  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_base_type ().get ());
+  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_base_type ());
   rust_assert (type.has_lifetime ());
   auto region = context->lookup_and_resolve_lifetime (type.get_lifetime ());
   if (!region.has_value ())
@@ -718,7 +714,7 @@ TypeCheckType::visit (HIR::ReferenceType &type)
 void
 TypeCheckType::visit (HIR::RawPointerType &type)
 {
-  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_base_type ().get ());
+  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_base_type ());
   translated
     = new TyTy::PointerType (type.get_mappings ().get_hirid (),
 			     TyTy::TyVar (base->get_ref ()), type.get_mut ());
@@ -744,21 +740,21 @@ TypeCheckType::visit (HIR::NeverType &type)
 }
 
 TyTy::ParamType *
-TypeResolveGenericParam::Resolve (HIR::GenericParam *param, bool apply_sized)
+TypeResolveGenericParam::Resolve (HIR::GenericParam &param, bool apply_sized)
 {
   TypeResolveGenericParam resolver (apply_sized);
-  switch (param->get_kind ())
+  switch (param.get_kind ())
     {
     case HIR::GenericParam::GenericKind::TYPE:
-      resolver.visit (static_cast<HIR::TypeParam &> (*param));
+      resolver.visit (static_cast<HIR::TypeParam &> (param));
       break;
 
     case HIR::GenericParam::GenericKind::CONST:
-      resolver.visit (static_cast<HIR::ConstGenericParam &> (*param));
+      resolver.visit (static_cast<HIR::ConstGenericParam &> (param));
       break;
 
     case HIR::GenericParam::GenericKind::LIFETIME:
-      resolver.visit (static_cast<HIR::LifetimeParam &> (*param));
+      resolver.visit (static_cast<HIR::LifetimeParam &> (param));
       break;
     }
   return resolver.resolved;
@@ -780,9 +776,9 @@ void
 TypeResolveGenericParam::visit (HIR::TypeParam &param)
 {
   if (param.has_type ())
-    TypeCheckType::Resolve (param.get_type ().get ());
+    TypeCheckType::Resolve (param.get_type ());
 
-  HIR::Type *implicit_self_bound = nullptr;
+  std::unique_ptr<HIR::Type> implicit_self_bound = nullptr;
   if (param.has_type_param_bounds ())
     {
       // We need two possible parameter types. One with no Bounds and one with
@@ -800,8 +796,8 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 				      param.get_mappings ().get_nodeid (),
 				      implicit_id,
 				      param.get_mappings ().get_local_defid ());
-      implicit_self_bound
-	= new HIR::TypePath (mappings, {}, BUILTINS_LOCATION, false);
+      implicit_self_bound = Rust::make_unique<HIR::TypePath> (
+	HIR::TypePath (mappings, {}, BUILTINS_LOCATION, false));
     }
 
   std::map<DefId, std::vector<TyTy::TypeBoundPredicate>> predicates;
@@ -830,13 +826,11 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 	  switch (bound->get_bound_type ())
 	    {
 	      case HIR::TypeParamBound::BoundType::TRAITBOUND: {
-		HIR::TraitBound *b
-		  = static_cast<HIR::TraitBound *> (bound.get ());
+		HIR::TraitBound &b = static_cast<HIR::TraitBound &> (*bound);
 
-		TyTy::TypeBoundPredicate predicate
-		  = get_predicate_from_bound (b->get_path (),
-					      implicit_self_bound,
-					      b->get_polarity ());
+		TyTy::TypeBoundPredicate predicate = get_predicate_from_bound (
+		  b.get_path (), tl::optional (std::ref (*implicit_self_bound)),
+		  b.get_polarity ());
 		if (!predicate.is_error ())
 		  {
 		    switch (predicate.get_polarity ())
@@ -849,7 +843,7 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 			  else
 			    {
 			      // emit error message
-			      rich_location r (line_table, b->get_locus ());
+			      rich_location r (line_table, b.get_locus ());
 			      r.add_range (predicate.get ()->get_locus ());
 			      rust_error_at (
 				r, "antibound for %s is not applied here",
@@ -947,7 +941,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
     }
 
   auto &binding_type_path = item.get_bound_type ();
-  TyTy::BaseType *binding = TypeCheckType::Resolve (binding_type_path.get ());
+  TyTy::BaseType *binding = TypeCheckType::Resolve (binding_type_path);
 
   // FIXME double check there might be a trait cycle here see TypeParam handling
 
@@ -960,8 +954,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 	    auto *b = static_cast<HIR::TraitBound *> (bound.get ());
 
 	    TyTy::TypeBoundPredicate predicate
-	      = get_predicate_from_bound (b->get_path (),
-					  binding_type_path.get ());
+	      = get_predicate_from_bound (b->get_path (), binding_type_path);
 	    if (!predicate.is_error ())
 	      specified_bounds.push_back (std::move (predicate));
 	  }
@@ -991,7 +984,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
   // When we apply these bounds we must lookup which type this binding
   // resolves to, as this is the type which will be used during resolution
   // of the block.
-  NodeId ast_node_id = binding_type_path->get_mappings ().get_nodeid ();
+  NodeId ast_node_id = binding_type_path.get_mappings ().get_nodeid ();
 
   // then lookup the reference_node_id
   NodeId ref_node_id = UNKNOWN_NODEID;
@@ -1000,7 +993,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
       // FIXME
       rust_error_at (UNDEF_LOCATION,
 		     "Failed to lookup type reference for node: %s",
-		     binding_type_path->as_string ().c_str ());
+		     binding_type_path.as_string ().c_str ());
       return;
     }
 
@@ -1013,7 +1006,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 	{
 	  rust_error_at (mappings.lookup_location (*hid),
 			 "Failed to resolve where-clause binding type: %s",
-			 binding_type_path->as_string ().c_str ());
+			 binding_type_path.as_string ().c_str ());
 	  return;
 	}
 

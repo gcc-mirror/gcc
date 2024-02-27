@@ -144,11 +144,11 @@ public:
   }
   std::vector<AST::Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  std::unique_ptr<HIR::Type> &get_type () { return type; }
+  HIR::Type &get_type () { return *type; }
 
-  std::unique_ptr<HIR::Expr> &get_init_expr () { return init_expr; }
+  HIR::Expr &get_init_expr () { return *init_expr; }
 
-  std::unique_ptr<HIR::Pattern> &get_pattern () { return variables_pattern; }
+  HIR::Pattern &get_pattern () { return *variables_pattern; }
 
   bool is_item () const override final { return false; }
 
@@ -186,7 +186,7 @@ public:
 
   bool is_item () const override final { return false; }
 
-  std::unique_ptr<Expr> &get_expr () { return expr; }
+  Expr &get_expr () { return *expr; }
 
   // Copy constructor with clone
   ExprStmt (ExprStmt const &other)

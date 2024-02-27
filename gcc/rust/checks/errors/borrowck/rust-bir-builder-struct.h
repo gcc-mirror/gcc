@@ -52,12 +52,12 @@ public:
   }
   void visit (HIR::StructExprFieldIdentifierValue &field) override
   {
-    auto value = ExprStmtBuilder (ctx).build (*field.get_value ());
+    auto value = ExprStmtBuilder (ctx).build (field.get_value ());
     handle_named_field (field, value);
   }
   void visit (HIR::StructExprFieldIndexValue &field) override
   {
-    auto value = ExprStmtBuilder (ctx).build (*field.get_value ());
+    auto value = ExprStmtBuilder (ctx).build (field.get_value ());
     coercion_site (value,
 		   struct_ty->get_field_at_index (field.get_tuple_index ())
 		     ->get_field_type ());

@@ -118,7 +118,7 @@ public:
 
   Identifier get_type_representation () const { return type_representation; }
 
-  std::unique_ptr<Type> &get_type () { return type; }
+  Type &get_type () { return *type; }
 
   Analysis::NodeMapping get_type_mappings () const
   {
@@ -277,7 +277,7 @@ public:
 
   std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
 
-  std::unique_ptr<Type> &get_bound_type () { return bound_type; }
+  Type &get_bound_type () { return *bound_type; }
 
   std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
@@ -452,7 +452,7 @@ public:
 
   ImplicitSelfKind get_self_kind () const { return self_kind; }
 
-  std::unique_ptr<Type> &get_type () { return type; }
+  Type &get_type () { return *type; }
 
   Analysis::NodeMapping get_mappings () { return mappings; }
 
@@ -547,9 +547,11 @@ public:
 
   location_t get_locus () const { return locus; }
 
-  std::unique_ptr<Pattern> &get_param_name () { return param_name; }
+  Pattern &get_param_name () { return *param_name; }
 
-  std::unique_ptr<Type> &get_type () { return type; }
+  std::unique_ptr<Pattern> take_param_name () { return std::move (param_name); }
+
+  Type &get_type () { return *type; }
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
@@ -1056,7 +1058,7 @@ public:
   location_t get_locus () const override final { return locus; }
   ItemKind get_item_kind () const override { return ItemKind::UseDeclaration; }
 
-  std::unique_ptr<UseTree> &get_use_tree () { return use_tree; }
+  UseTree &get_use_tree () { return *use_tree; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
   void accept_vis (HIRVisItemVisitor &vis) override;
@@ -1210,7 +1212,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition () { return function_body; }
+  BlockExpr &get_definition () { return *function_body; }
 
   const FunctionQualifiers &get_qualifiers () const { return qualifiers; }
 
@@ -1222,7 +1224,7 @@ public:
   bool has_return_type () const { return return_type != nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type () { return return_type; }
+  Type &get_return_type () { return *return_type; }
 
   bool is_method () const { return !self.is_error (); }
 
@@ -1337,7 +1339,7 @@ public:
 
   WhereClause &get_where_clause () { return where_clause; }
 
-  std::unique_ptr<Type> &get_type_aliased () { return existing_type; }
+  Type &get_type_aliased () { return *existing_type; }
 
   Identifier get_new_type_name () const { return new_type_name; }
 
@@ -1503,7 +1505,7 @@ public:
 
   Identifier get_field_name () const { return field_name; }
 
-  std::unique_ptr<Type> &get_field_type () { return field_type; }
+  Type &get_field_type () { return *field_type; }
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
@@ -1640,7 +1642,7 @@ public:
   location_t get_locus () const { return locus; }
 
   AST::AttrVec &get_outer_attrs () { return outer_attrs; }
-  std::unique_ptr<HIR::Type> &get_field_type () { return field_type; }
+  HIR::Type &get_field_type () { return *field_type; }
 };
 
 // Rust tuple declared using struct keyword HIR node
@@ -1855,7 +1857,12 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
 
-  std::unique_ptr<Expr> &get_discriminant_expression () { return expression; }
+  Expr &get_discriminant_expression () { return *expression; }
+
+  std::unique_ptr<Expr> take_discriminant_expression ()
+  {
+    return std::move (expression);
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2126,9 +2133,9 @@ public:
   void accept_vis (HIRImplVisitor &vis) override;
   void accept_vis (HIRVisItemVisitor &vis) override;
 
-  std::unique_ptr<Type> &get_type () { return type; }
+  Type &get_type () { return *type; }
 
-  std::unique_ptr<Expr> &get_expr () { return const_expr; }
+  Expr &get_expr () { return *const_expr; }
 
   Identifier get_identifier () const { return identifier; }
 
@@ -2222,9 +2229,9 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
-  std::unique_ptr<Expr> &get_expr () { return expr; }
+  Expr &get_expr () { return *expr; }
 
-  std::unique_ptr<Type> &get_type () { return type; }
+  Type &get_type () { return *type; }
 
   ItemKind get_item_kind () const override { return ItemKind::Static; }
 
@@ -2324,7 +2331,7 @@ public:
     return generic_params;
   }
 
-  std::unique_ptr<Type> &get_return_type () { return return_type; }
+  Type &get_return_type () { return *return_type; }
 
   std::vector<FunctionParam> &get_function_params () { return function_params; }
 
@@ -2391,7 +2398,7 @@ public:
 
   bool has_block_defined () const { return block_expr != nullptr; }
 
-  std::unique_ptr<BlockExpr> &get_block_expr () { return block_expr; }
+  BlockExpr &get_block_expr () { return *block_expr; }
 
   const std::string trait_identifier () const override final
   {
@@ -2476,9 +2483,9 @@ public:
 
   bool has_expr () const { return expr != nullptr; }
 
-  std::unique_ptr<Type> &get_type () { return type; }
+  Type &get_type () { return *type; }
 
-  std::unique_ptr<Expr> &get_expr () { return expr; }
+  Expr &get_expr () { return *expr; }
 
   const std::string trait_identifier () const override final
   {
@@ -2828,7 +2835,9 @@ public:
 
   location_t get_locus () const override final { return locus; }
 
-  std::unique_ptr<Type> &get_type () { return impl_type; };
+  Type &get_type () { return *impl_type; };
+
+  bool has_type () { return impl_type == nullptr; }
 
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
@@ -2837,7 +2846,7 @@ public:
 
   bool has_trait_ref () const { return trait_ref != nullptr; }
 
-  std::unique_ptr<TypePath> &get_trait_ref () { return trait_ref; }
+  TypePath &get_trait_ref () { return *trait_ref; }
 
   WhereClause &get_where_clause () { return where_clause; }
 
@@ -2976,7 +2985,7 @@ public:
 
   Mutability get_mut () { return mut; }
 
-  std::unique_ptr<Type> &get_item_type () { return item_type; }
+  Type &get_item_type () { return *item_type; }
 
   ExternKind get_extern_kind () override { return ExternKind::Static; }
 
@@ -3033,7 +3042,7 @@ public:
 
   Identifier get_param_name () const { return name; }
 
-  std::unique_ptr<Type> &get_type () { return param_type; }
+  Type &get_type () { return *param_type; }
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 };
@@ -3132,7 +3141,7 @@ public:
     return generic_params;
   }
 
-  std::unique_ptr<Type> &get_return_type () { return return_type; }
+  Type &get_return_type () { return *return_type; }
 
   std::vector<NamedFunctionParam> &get_function_params ()
   {

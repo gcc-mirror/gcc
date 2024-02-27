@@ -297,7 +297,7 @@ PathProbeType::process_impl_item_candidate (HirId id, HIR::ImplItem *item,
 					    HIR::ImplBlock *impl)
 {
   current_impl = impl;
-  HirId impl_ty_id = impl->get_type ()->get_mappings ().get_hirid ();
+  HirId impl_ty_id = impl->get_type ().get_mappings ().get_hirid ();
   TyTy::BaseType *impl_block_ty = nullptr;
   if (!query_type (impl_ty_id, &impl_block_ty))
     return;
@@ -472,8 +472,7 @@ PathProbeImplTrait::process_trait_impl_items_for_candidates ()
       if (!impl->has_trait_ref ())
 	return true;
 
-      TraitReference *resolved
-	= TraitResolver::Lookup (*(impl->get_trait_ref ().get ()));
+      TraitReference *resolved = TraitResolver::Lookup (impl->get_trait_ref ());
       if (!trait_reference->is_equal (*resolved))
 	return true;
 

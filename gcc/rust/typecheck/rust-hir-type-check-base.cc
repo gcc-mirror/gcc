@@ -374,22 +374,21 @@ TypeCheckBase::resolve_generic_params (
 	  break;
 
 	  case HIR::GenericParam::GenericKind::CONST: {
-	    auto param
-	      = static_cast<HIR::ConstGenericParam *> (generic_param.get ());
-	    auto specified_type
-	      = TypeCheckType::Resolve (param->get_type ().get ());
+	    auto &param
+	      = static_cast<HIR::ConstGenericParam &> (*generic_param);
+	    auto specified_type = TypeCheckType::Resolve (param.get_type ());
 
-	    if (param->has_default_expression ())
+	    if (param.has_default_expression ())
 	      {
-		auto expr_type = TypeCheckExpr::Resolve (
-		  param->get_default_expression ().get ());
+		auto expr_type
+		  = TypeCheckExpr::Resolve (param.get_default_expression ());
 
-		coercion_site (
-		  param->get_mappings ().get_hirid (),
-		  TyTy::TyWithLocation (specified_type),
-		  TyTy::TyWithLocation (
-		    expr_type, param->get_default_expression ()->get_locus ()),
-		  param->get_locus ());
+		coercion_site (param.get_mappings ().get_hirid (),
+			       TyTy::TyWithLocation (specified_type),
+			       TyTy::TyWithLocation (
+				 expr_type,
+				 param.get_default_expression ().get_locus ()),
+			       param.get_locus ());
 	      }
 
 	    context->insert_type (generic_param->get_mappings (),
@@ -398,8 +397,7 @@ TypeCheckBase::resolve_generic_params (
 	  break;
 
 	  case HIR::GenericParam::GenericKind::TYPE: {
-	    auto param_type
-	      = TypeResolveGenericParam::Resolve (generic_param.get ());
+	    auto param_type = TypeResolveGenericParam::Resolve (*generic_param);
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
 	    substitutions.push_back (TyTy::SubstitutionParamMapping (

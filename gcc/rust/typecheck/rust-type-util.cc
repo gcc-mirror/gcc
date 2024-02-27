@@ -99,8 +99,9 @@ query_type (HirId reference, TyTy::BaseType **result)
       auto block = mappings.lookup_hir_extern_block (extern_item->second);
       rust_assert (block.has_value ());
 
-      *result = TypeCheckTopLevelExternItem::Resolve (extern_item->first,
-						      *block.value ());
+      *result
+	= TypeCheckTopLevelExternItem::Resolve (*extern_item.value ().first,
+						*block.value ());
       context->query_completed (reference);
       return true;
     }

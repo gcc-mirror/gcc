@@ -40,13 +40,13 @@ CompileStmt::Compile (HIR::Stmt *stmt, Context *ctx)
 void
 CompileStmt::visit (HIR::ExprStmt &stmt)
 {
-  translated = CompileExpr::Compile (stmt.get_expr ().get (), ctx);
+  translated = CompileExpr::Compile (stmt.get_expr (), ctx);
 }
 
 void
 CompileStmt::visit (HIR::LetStmt &stmt)
 {
-  HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
+  HIR::Pattern &stmt_pattern = stmt.get_pattern ();
   HirId stmt_id = stmt_pattern.get_mappings ().get_hirid ();
 
   TyTy::BaseType *ty = nullptr;
@@ -68,7 +68,7 @@ CompileStmt::visit (HIR::LetStmt &stmt)
   if (!stmt.has_init_expr ())
     return;
 
-  tree init = CompileExpr::Compile (stmt.get_init_expr ().get (), ctx);
+  tree init = CompileExpr::Compile (stmt.get_init_expr (), ctx);
   // FIXME use error_mark_node, check that CompileExpr returns error_mark_node
   // on failure and make this an assertion
   if (init == nullptr)
@@ -76,11 +76,11 @@ CompileStmt::visit (HIR::LetStmt &stmt)
 
   TyTy::BaseType *actual = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (
-    stmt.get_init_expr ()->get_mappings ().get_hirid (), &actual);
+    stmt.get_init_expr ().get_mappings ().get_hirid (), &actual);
   rust_assert (ok);
 
-  location_t lvalue_locus = stmt.get_pattern ()->get_locus ();
-  location_t rvalue_locus = stmt.get_init_expr ()->get_locus ();
+  location_t lvalue_locus = stmt.get_pattern ().get_locus ();
+  location_t rvalue_locus = stmt.get_init_expr ().get_locus ();
   TyTy::BaseType *expected = ty;
   init = coercion_site (stmt.get_mappings ().get_hirid (), init, actual,
 			expected, lvalue_locus, rvalue_locus);

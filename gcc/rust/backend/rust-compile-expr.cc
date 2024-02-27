@@ -40,24 +40,24 @@ CompileExpr::CompileExpr (Context *ctx)
 {}
 
 tree
-CompileExpr::Compile (HIR::Expr *expr, Context *ctx)
+CompileExpr::Compile (HIR::Expr &expr, Context *ctx)
 {
   CompileExpr compiler (ctx);
-  expr->accept_vis (compiler);
+  expr.accept_vis (compiler);
   return compiler.translated;
 }
 
 void
 CompileExpr::visit (HIR::TupleIndexExpr &expr)
 {
-  HIR::Expr *tuple_expr = expr.get_tuple_expr ().get ();
+  HIR::Expr &tuple_expr = expr.get_tuple_expr ();
   TupleIndex index = expr.get_tuple_index ();
 
   tree receiver_ref = CompileExpr::Compile (tuple_expr, ctx);
 
   TyTy::BaseType *tuple_expr_ty = nullptr;
   bool ok
-    = ctx->get_tyctx ()->lookup_type (tuple_expr->get_mappings ().get_hirid (),
+    = ctx->get_tyctx ()->lookup_type (tuple_expr.get_mappings ().get_hirid (),
 				      &tuple_expr_ty);
   rust_assert (ok);
 
@@ -97,7 +97,7 @@ CompileExpr::visit (HIR::TupleExpr &expr)
   std::vector<tree> vals;
   for (auto &elem : expr.get_tuple_elems ())
     {
-      auto e = CompileExpr::Compile (elem.get (), ctx);
+      auto e = CompileExpr::Compile (*elem, ctx);
       vals.push_back (e);
     }
 
@@ -111,7 +111,7 @@ CompileExpr::visit (HIR::ReturnExpr &expr)
   auto fncontext = ctx->peek_fn ();
 
   tree return_value = expr.has_return_expr ()
-			? CompileExpr::Compile (expr.return_expr.get (), ctx)
+			? CompileExpr::Compile (expr.get_expr (), ctx)
 			: unit_expression (expr.get_locus ());
 
   if (expr.has_return_expr ())
@@ -141,8 +141,8 @@ void
 CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
 {
   auto op = expr.get_expr_type ();
-  auto lhs = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
-  auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
+  auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
+  auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
 
   // this might be an operator overload situation lets check
   TyTy::FnType *fntype;
@@ -153,8 +153,7 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
       auto lang_item_type
 	= LangItem::OperatorToLangItem (expr.get_expr_type ());
       translated = resolve_operator_overload (lang_item_type, expr, lhs, rhs,
-					      expr.get_lhs ().get (),
-					      expr.get_rhs ().get ());
+					      expr.get_lhs (), expr.get_rhs ());
       return;
     }
 
@@ -185,8 +184,8 @@ void
 CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
 {
   auto op = expr.get_expr_type ();
-  auto lhs = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
-  auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
+  auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
+  auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
 
   // this might be an operator overload situation lets check
   TyTy::FnType *fntype;
@@ -198,8 +197,7 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
 	expr.get_expr_type ());
       auto compound_assignment
 	= resolve_operator_overload (lang_item_type, expr, lhs, rhs,
-				     expr.get_lhs ().get (),
-				     expr.get_rhs ().get ());
+				     expr.get_lhs (), expr.get_rhs ());
       ctx->add_statement (compound_assignment);
 
       return;
@@ -236,18 +234,18 @@ CompileExpr::visit (HIR::NegationExpr &expr)
 {
   auto op = expr.get_expr_type ();
 
-  const auto literal_expr = expr.get_expr ().get ();
+  auto &literal_expr = expr.get_expr ();
 
   // If it's a negated integer/float literal, we can return early
   if (op == NegationOperator::NEGATE
-      && literal_expr->get_expression_type () == HIR::Expr::ExprType::Lit)
+      && literal_expr.get_expression_type () == HIR::Expr::ExprType::Lit)
     {
-      auto new_literal_expr = static_cast<HIR::LiteralExpr *> (literal_expr);
-      auto lit_type = new_literal_expr->get_lit_type ();
+      auto &new_literal_expr = static_cast<HIR::LiteralExpr &> (literal_expr);
+      auto lit_type = new_literal_expr.get_lit_type ();
       if (lit_type == HIR::Literal::LitType::INT
 	  || lit_type == HIR::Literal::LitType::FLOAT)
 	{
-	  new_literal_expr->set_negative ();
+	  new_literal_expr.set_negative ();
 	  translated = CompileExpr::Compile (literal_expr, ctx);
 	  return;
 	}
@@ -265,7 +263,7 @@ CompileExpr::visit (HIR::NegationExpr &expr)
       auto lang_item_type = LangItem::NegationOperatorToLangItem (op);
       translated
 	= resolve_operator_overload (lang_item_type, expr, negated_expr,
-				     nullptr, expr.get_expr ().get (), nullptr);
+				     nullptr, expr.get_expr (), tl::nullopt);
       return;
     }
 
@@ -276,8 +274,8 @@ void
 CompileExpr::visit (HIR::ComparisonExpr &expr)
 {
   auto op = expr.get_expr_type ();
-  auto lhs = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
-  auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
+  auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
+  auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
   auto location = expr.get_locus ();
 
   translated = Backend::comparison_expression (op, lhs, rhs, location);
@@ -287,8 +285,8 @@ void
 CompileExpr::visit (HIR::LazyBooleanExpr &expr)
 {
   auto op = expr.get_expr_type ();
-  auto lhs = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
-  auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
+  auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
+  auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
   auto location = expr.get_locus ();
 
   translated = Backend::lazy_boolean_expression (op, lhs, rhs, location);
@@ -307,14 +305,14 @@ CompileExpr::visit (HIR::TypeCastExpr &expr)
 
   TyTy::BaseType *casted_tyty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (
-	expr.get_casted_expr ()->get_mappings ().get_hirid (), &casted_tyty))
+	expr.get_casted_expr ().get_mappings ().get_hirid (), &casted_tyty))
     {
       translated = error_mark_node;
       return;
     }
 
   auto type_to_cast_to = TyTyResolveCompile::compile (ctx, type_to_cast_to_ty);
-  auto casted_expr = CompileExpr::Compile (expr.get_casted_expr ().get (), ctx);
+  auto casted_expr = CompileExpr::Compile (expr.get_casted_expr (), ctx);
 
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_cast_autoderef_mappings (
@@ -405,7 +403,7 @@ CompileExpr::visit (HIR::BlockExpr &expr)
 				     &ret_var_stmt);
   ctx->add_statement (ret_var_stmt);
 
-  auto block_stmt = CompileBlock::compile (&expr, ctx, tmp);
+  auto block_stmt = CompileBlock::compile (expr, ctx, tmp);
   rust_assert (TREE_CODE (block_stmt) == BIND_EXPR);
   ctx->add_statement (block_stmt);
 
@@ -415,7 +413,7 @@ CompileExpr::visit (HIR::BlockExpr &expr)
 void
 CompileExpr::visit (HIR::UnsafeBlockExpr &expr)
 {
-  expr.get_block_expr ()->accept_vis (*this);
+  expr.get_block_expr ().accept_vis (*this);
 }
 
 void
@@ -487,7 +485,7 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
       auto lvalue_locus
 	= ctx->get_mappings ().lookup_location (expected->get_ty_ref ());
       auto rvalue_locus = argument->get_locus ();
-      auto rvalue = CompileStructExprField::Compile (argument.get (), ctx);
+      auto rvalue = CompileStructExprField::Compile (*argument, ctx);
 
       TyTy::BaseType *actual = nullptr;
       bool ok = ctx->get_tyctx ()->lookup_type (
@@ -519,7 +517,7 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
 	  auto lvalue_locus
 	    = ctx->get_mappings ().lookup_location (expected->get_ty_ref ());
 	  auto rvalue_locus = argument->get_locus ();
-	  auto rvalue = CompileStructExprField::Compile (argument.get (), ctx);
+	  auto rvalue = CompileStructExprField::Compile (*argument, ctx);
 
 	  TyTy::BaseType *actual = nullptr;
 	  bool ok = ctx->get_tyctx ()->lookup_type (
@@ -544,7 +542,7 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
   std::vector<tree> ctor_arguments;
   if (adt->is_enum ())
     {
-      HIR::Expr *discrim_expr = variant->get_discriminant ();
+      HIR::Expr &discrim_expr = variant->get_discriminant ();
       tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
       tree folded_discrim_expr = fold_expr (discrim_expr_node);
       tree qualifier = folded_discrim_expr;
@@ -563,21 +561,21 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
 void
 CompileExpr::visit (HIR::GroupedExpr &expr)
 {
-  translated = CompileExpr::Compile (expr.get_expr_in_parens ().get (), ctx);
+  translated = CompileExpr::Compile (expr.get_expr_in_parens (), ctx);
 }
 
 void
 CompileExpr::visit (HIR::FieldAccessExpr &expr)
 {
-  HIR::Expr *receiver_expr = expr.get_receiver_expr ().get ();
+  HIR::Expr &receiver_expr = expr.get_receiver_expr ();
   tree receiver_ref = CompileExpr::Compile (receiver_expr, ctx);
 
   // resolve the receiver back to ADT type
   TyTy::BaseType *receiver = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (
-	expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver))
+	expr.get_receiver_expr ().get_mappings ().get_hirid (), &receiver))
     {
-      rust_error_at (expr.get_receiver_expr ()->get_locus (),
+      rust_error_at (expr.get_receiver_expr ().get_locus (),
 		     "unresolved type for receiver");
       return;
     }
@@ -672,7 +670,7 @@ CompileExpr::visit (HIR::LoopExpr &expr)
   ctx->push_loop_begin_label (loop_begin_label);
 
   tree code_block
-    = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
+    = CompileBlock::compile (expr.get_loop_block (), ctx, nullptr);
   tree loop_expr = Backend::loop_expression (code_block, expr.get_locus ());
   ctx->add_statement (loop_expr);
 
@@ -699,8 +697,8 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
     }
 
   std::vector<Bvariable *> locals;
-  location_t start_location = expr.get_loop_block ()->get_locus ();
-  location_t end_location = expr.get_loop_block ()->get_locus (); // FIXME
+  location_t start_location = expr.get_loop_block ().get_locus ();
+  location_t end_location = expr.get_loop_block ().get_locus (); // FIXME
 
   tree enclosing_scope = ctx->peek_enclosing_scope ();
   tree loop_block = Backend::block (fnctx.fndecl, enclosing_scope, locals,
@@ -713,15 +711,14 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
   ctx->add_statement (loop_begin_label_decl);
   ctx->push_loop_begin_label (loop_begin_label);
 
-  tree condition
-    = CompileExpr::Compile (expr.get_predicate_expr ().get (), ctx);
+  tree condition = CompileExpr::Compile (expr.get_predicate_expr (), ctx);
   tree exit_condition = fold_build1_loc (expr.get_locus (), TRUTH_NOT_EXPR,
 					 boolean_type_node, condition);
   tree exit_expr = Backend::exit_expression (exit_condition, expr.get_locus ());
   ctx->add_statement (exit_expr);
 
   tree code_block_stmt
-    = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
+    = CompileBlock::compile (expr.get_loop_block (), ctx, nullptr);
   rust_assert (TREE_CODE (code_block_stmt) == BIND_EXPR);
   ctx->add_statement (code_block_stmt);
 
@@ -737,12 +734,12 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 {
   if (expr.has_break_expr ())
     {
-      tree compiled_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+      tree compiled_expr = CompileExpr::Compile (expr.get_expr (), ctx);
 
       Bvariable *loop_result_holder = ctx->peek_loop_context ();
       tree result_reference
 	= Backend::var_expression (loop_result_holder,
-				   expr.get_expr ()->get_locus ());
+				   expr.get_expr ().get_locus ());
 
       tree assignment
 	= Backend::assignment_statement (result_reference, compiled_expr,
@@ -865,7 +862,7 @@ CompileExpr::visit (HIR::ContinueExpr &expr)
 void
 CompileExpr::visit (HIR::BorrowExpr &expr)
 {
-  tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+  tree main_expr = CompileExpr::Compile (expr.get_expr (), ctx);
   if (RS_DST_FLAG_P (TREE_TYPE (main_expr)))
     {
       translated = main_expr;
@@ -892,7 +889,7 @@ CompileExpr::visit (HIR::DereferenceExpr &expr)
       return;
     }
 
-  tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+  tree main_expr = CompileExpr::Compile (expr.get_expr (), ctx);
 
   // this might be an operator overload situation lets check
   TyTy::FnType *fntype;
@@ -903,7 +900,7 @@ CompileExpr::visit (HIR::DereferenceExpr &expr)
       auto lang_item_type = LangItem::Kind::DEREF;
       tree operator_overload_call
 	= resolve_operator_overload (lang_item_type, expr, main_expr, nullptr,
-				     expr.get_expr ().get (), nullptr);
+				     expr.get_expr (), tl::nullopt);
 
       // rust deref always returns a reference from this overload then we can
       // actually do the indirection
@@ -963,8 +960,8 @@ CompileExpr::visit (HIR::LiteralExpr &expr)
 void
 CompileExpr::visit (HIR::AssignmentExpr &expr)
 {
-  auto lvalue = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
-  auto rvalue = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
+  auto lvalue = CompileExpr::Compile (expr.get_lhs (), ctx);
+  auto rvalue = CompileExpr::Compile (expr.get_rhs (), ctx);
 
   // assignments are coercion sites so lets convert the rvalue if necessary
   TyTy::BaseType *expected = nullptr;
@@ -972,16 +969,16 @@ CompileExpr::visit (HIR::AssignmentExpr &expr)
 
   bool ok;
   ok = ctx->get_tyctx ()->lookup_type (
-    expr.get_lhs ()->get_mappings ().get_hirid (), &expected);
+    expr.get_lhs ().get_mappings ().get_hirid (), &expected);
   rust_assert (ok);
 
   ok = ctx->get_tyctx ()->lookup_type (
-    expr.get_rhs ()->get_mappings ().get_hirid (), &actual);
+    expr.get_rhs ().get_mappings ().get_hirid (), &actual);
   rust_assert (ok);
 
   rvalue = coercion_site (expr.get_mappings ().get_hirid (), rvalue, actual,
-			  expected, expr.get_lhs ()->get_locus (),
-			  expr.get_rhs ()->get_locus ());
+			  expected, expr.get_lhs ().get_locus (),
+			  expr.get_rhs ().get_locus ());
 
   // rust_debug_loc (expr.get_locus (), "XXXXXX assignment");
   // debug_tree (rvalue);
@@ -1002,7 +999,7 @@ check_match_scrutinee (HIR::MatchExpr &expr, Context *ctx)
 {
   TyTy::BaseType *scrutinee_expr_tyty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (
-	expr.get_scrutinee_expr ()->get_mappings ().get_hirid (),
+	expr.get_scrutinee_expr ().get_mappings ().get_hirid (),
 	&scrutinee_expr_tyty))
     {
       return TyTy::TypeKind::ERROR;
@@ -1080,7 +1077,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 
   // lets compile the scrutinee expression
   tree match_scrutinee_rval
-    = CompileExpr::Compile (expr.get_scrutinee_expr ().get (), ctx);
+    = CompileExpr::Compile (expr.get_scrutinee_expr (), ctx);
 
   Bvariable *match_scrutinee_tmp_var
     = Backend::temporary_variable (fnctx.fndecl, enclosing_scope,
@@ -1090,7 +1087,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   ctx->add_statement (ret_var_stmt);
 
   tree match_scrutinee_expr = match_scrutinee_tmp_var->get_tree (
-    expr.get_scrutinee_expr ()->get_locus ());
+    expr.get_scrutinee_expr ().get_locus ());
 
   tree assignment
     = Backend::assignment_statement (match_scrutinee_expr, match_scrutinee_rval,
@@ -1123,14 +1120,13 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 	  ctx->push_block (arm_body_block);
 
 	  // setup the bindings for the block
-	  CompilePatternBindings::Compile (kase_pattern.get (),
-					   match_scrutinee_expr, ctx);
+	  CompilePatternBindings::Compile (*kase_pattern, match_scrutinee_expr,
+					   ctx);
 
 	  // compile the expr and setup the assignment if required when tmp !=
 	  // NULL
 	  location_t arm_locus = kase_arm.get_locus ();
-	  tree kase_expr_tree
-	    = CompileExpr::Compile (kase.get_expr ().get (), ctx);
+	  tree kase_expr_tree = CompileExpr::Compile (kase.get_expr (), ctx);
 	  tree result_reference = Backend::var_expression (tmp, arm_locus);
 	  tree assignment
 	    = Backend::assignment_statement (result_reference, kase_expr_tree,
@@ -1145,7 +1141,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 	  ctx->pop_block ();
 
 	  tree check_expr
-	    = CompilePatternCheckExpr::Compile (kase_pattern.get (),
+	    = CompilePatternCheckExpr::Compile (*kase_pattern,
 						match_scrutinee_expr, ctx);
 
 	  tree check_stmt
@@ -1167,7 +1163,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
 {
   TyTy::BaseType *tyty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (
-	expr.get_fnexpr ()->get_mappings ().get_hirid (), &tyty))
+	expr.get_fnexpr ().get_mappings ().get_hirid (), &tyty))
     {
       rust_error_at (expr.get_locus (), "unknown type");
       return;
@@ -1193,7 +1189,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
 	{
 	  HirId variant_id;
 	  bool ok = ctx->get_tyctx ()->lookup_variant_definition (
-	    expr.get_fnexpr ()->get_mappings ().get_hirid (), &variant_id);
+	    expr.get_fnexpr ().get_mappings ().get_hirid (), &variant_id);
 	  rust_assert (ok);
 
 	  ok = adt->lookup_variant_by_id (variant_id, &variant,
@@ -1207,7 +1203,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
       for (size_t i = 0; i < expr.get_arguments ().size (); i++)
 	{
 	  auto &argument = expr.get_arguments ().at (i);
-	  auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+	  auto rvalue = CompileExpr::Compile (*argument, ctx);
 
 	  // assignments are coercion sites so lets convert the rvalue if
 	  // necessary
@@ -1236,7 +1232,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
       std::vector<tree> ctor_arguments;
       if (adt->is_enum ())
 	{
-	  HIR::Expr *discrim_expr = variant->get_discriminant ();
+	  HIR::Expr &discrim_expr = variant->get_discriminant ();
 	  tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
 	  tree folded_discrim_expr = fold_expr (discrim_expr_node);
 	  tree qualifier = folded_discrim_expr;
@@ -1270,13 +1266,13 @@ CompileExpr::visit (HIR::CallExpr &expr)
       }
 
     const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (base);
-    auto param = fn->param_at (index);
+    auto &param = fn->param_at (index);
     *result = param.second;
 
     return true;
   };
 
-  auto fn_address = CompileExpr::Compile (expr.get_fnexpr ().get (), ctx);
+  auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
 
   // is this a closure call?
   bool possible_trait_call
@@ -1303,7 +1299,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
   for (size_t i = 0; i < expr.get_arguments ().size (); i++)
     {
       auto &argument = expr.get_arguments ().at (i);
-      auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+      auto rvalue = CompileExpr::Compile (*argument, ctx);
 
       if (is_variadic && i >= required_num_args)
 	{
@@ -1343,7 +1339,7 @@ void
 CompileExpr::visit (HIR::MethodCallExpr &expr)
 {
   // method receiver
-  tree self = CompileExpr::Compile (expr.get_receiver ().get (), ctx);
+  tree self = CompileExpr::Compile (expr.get_receiver (), ctx);
 
   // lookup the expected function type
   TyTy::BaseType *lookup_fntype = nullptr;
@@ -1383,7 +1379,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
   // lookup the autoderef mappings
   HirId autoderef_mappings_id
-    = expr.get_receiver ()->get_mappings ().get_hirid ();
+    = expr.get_receiver ().get_mappings ().get_hirid ();
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   ok = ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
 						     &adjustments);
@@ -1391,7 +1387,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
   // apply adjustments for the fn call
   self = resolve_adjustements (*adjustments, self,
-			       expr.get_receiver ()->get_locus ());
+			       expr.get_receiver ().get_locus ());
 
   std::vector<tree> args;
   args.push_back (self); // adjusted self
@@ -1400,7 +1396,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   for (size_t i = 0; i < expr.get_arguments ().size (); i++)
     {
       auto &argument = expr.get_arguments ().at (i);
-      auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+      auto rvalue = CompileExpr::Compile (*argument, ctx);
 
       // assignments are coercion sites so lets convert the rvalue if
       // necessary, offset from the already adjusted implicit self
@@ -1482,8 +1478,8 @@ CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
 tree
 CompileExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
 					HIR::OperatorExprMeta expr, tree lhs,
-					tree rhs, HIR::Expr *lhs_expr,
-					HIR::Expr *rhs_expr)
+					tree rhs, HIR::Expr &lhs_expr,
+					tl::optional<HIR::Expr &> rhs_expr)
 {
   TyTy::FnType *fntype;
   bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
@@ -1514,7 +1510,7 @@ CompileExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
   rust_assert (ok);
 
   // apply adjustments for the fn call
-  tree self = resolve_adjustements (*adjustments, lhs, lhs_expr->get_locus ());
+  tree self = resolve_adjustements (*adjustments, lhs, lhs_expr.get_locus ());
 
   std::vector<tree> args;
   args.push_back (self); // adjusted self
@@ -1829,7 +1825,7 @@ CompileExpr::visit (HIR::ArrayExpr &expr)
   const TyTy::ArrayType &array_tyty
     = static_cast<const TyTy::ArrayType &> (*tyty);
 
-  HIR::ArrayElems &elements = *expr.get_internal_elements ();
+  HIR::ArrayElems &elements = expr.get_internal_elements ();
   switch (elements.get_array_expr_type ())
     {
       case HIR::ArrayElems::ArrayExprType::VALUES: {
@@ -1858,7 +1854,7 @@ CompileExpr::array_value_expr (location_t expr_locus,
   size_t i = 0;
   for (auto &elem : elems.get_values ())
     {
-      tree translated_expr = CompileExpr::Compile (elem.get (), ctx);
+      tree translated_expr = CompileExpr::Compile (*elem, ctx);
       constructor.push_back (translated_expr);
       indexes.push_back (i++);
     }
@@ -1885,8 +1881,7 @@ CompileExpr::array_copied_expr (location_t expr_locus,
     }
 
   ctx->push_const_context ();
-  tree capacity_expr
-    = CompileExpr::Compile (elems.get_num_copies_expr ().get (), ctx);
+  tree capacity_expr = CompileExpr::Compile (elems.get_num_copies_expr (), ctx);
   ctx->pop_const_context ();
 
   if (!TREE_CONSTANT (capacity_expr))
@@ -1896,8 +1891,7 @@ CompileExpr::array_copied_expr (location_t expr_locus,
     }
 
   // get the compiled value
-  tree translated_expr
-    = CompileExpr::Compile (elems.get_elem_to_copy ().get (), ctx);
+  tree translated_expr = CompileExpr::Compile (elems.get_elem_to_copy (), ctx);
 
   tree max_domain = TYPE_MAX_VALUE (domain);
   tree min_domain = TYPE_MIN_VALUE (domain);
@@ -2102,8 +2096,8 @@ HIRCompileBase::resolve_unsized_dyn_adjustment (
 void
 CompileExpr::visit (HIR::RangeFromToExpr &expr)
 {
-  tree from = CompileExpr::Compile (expr.get_from_expr ().get (), ctx);
-  tree to = CompileExpr::Compile (expr.get_to_expr ().get (), ctx);
+  tree from = CompileExpr::Compile (expr.get_from_expr (), ctx);
+  tree to = CompileExpr::Compile (expr.get_to_expr (), ctx);
   if (from == error_mark_node || to == error_mark_node)
     {
       translated = error_mark_node;
@@ -2125,7 +2119,7 @@ CompileExpr::visit (HIR::RangeFromToExpr &expr)
 void
 CompileExpr::visit (HIR::RangeFromExpr &expr)
 {
-  tree from = CompileExpr::Compile (expr.get_from_expr ().get (), ctx);
+  tree from = CompileExpr::Compile (expr.get_from_expr (), ctx);
   if (from == error_mark_node)
     {
       translated = error_mark_node;
@@ -2147,7 +2141,7 @@ CompileExpr::visit (HIR::RangeFromExpr &expr)
 void
 CompileExpr::visit (HIR::RangeToExpr &expr)
 {
-  tree to = CompileExpr::Compile (expr.get_to_expr ().get (), ctx);
+  tree to = CompileExpr::Compile (expr.get_to_expr (), ctx);
   if (to == error_mark_node)
     {
       translated = error_mark_node;
@@ -2182,8 +2176,8 @@ CompileExpr::visit (HIR::RangeFullExpr &expr)
 void
 CompileExpr::visit (HIR::RangeFromToInclExpr &expr)
 {
-  tree from = CompileExpr::Compile (expr.get_from_expr ().get (), ctx);
-  tree to = CompileExpr::Compile (expr.get_to_expr ().get (), ctx);
+  tree from = CompileExpr::Compile (expr.get_from_expr (), ctx);
+  tree to = CompileExpr::Compile (expr.get_to_expr (), ctx);
   if (from == error_mark_node || to == error_mark_node)
     {
       translated = error_mark_node;
@@ -2205,9 +2199,8 @@ CompileExpr::visit (HIR::RangeFromToInclExpr &expr)
 void
 CompileExpr::visit (HIR::ArrayIndexExpr &expr)
 {
-  tree array_reference
-    = CompileExpr::Compile (expr.get_array_expr ().get (), ctx);
-  tree index = CompileExpr::Compile (expr.get_index_expr ().get (), ctx);
+  tree array_reference = CompileExpr::Compile (expr.get_array_expr (), ctx);
+  tree index = CompileExpr::Compile (expr.get_index_expr (), ctx);
 
   // this might be an core::ops::index lang item situation
   TyTy::FnType *fntype;
@@ -2218,8 +2211,8 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
       auto lang_item_type = LangItem::Kind::INDEX;
       tree operator_overload_call
 	= resolve_operator_overload (lang_item_type, expr, array_reference,
-				     index, expr.get_array_expr ().get (),
-				     expr.get_index_expr ().get ());
+				     index, expr.get_array_expr (),
+				     expr.get_index_expr ());
 
       tree actual_type = TREE_TYPE (operator_overload_call);
       bool can_indirect = TYPE_PTR_P (actual_type) || TYPE_REF_P (actual_type);
@@ -2241,7 +2234,7 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
   // indirection if required
   TyTy::BaseType *array_expr_ty = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (
-    expr.get_array_expr ()->get_mappings ().get_hirid (), &array_expr_ty);
+    expr.get_array_expr ().get_mappings ().get_hirid (), &array_expr_ty);
   rust_assert (ok);
 
   // do we need to add an indirect reference
@@ -2392,7 +2385,7 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
 	= Backend::struct_field_expression (args_param_expr, i,
 					    closure_param.get_locus ());
 
-      CompilePatternBindings::Compile (closure_param.get_pattern ().get (),
+      CompilePatternBindings::Compile (closure_param.get_pattern (),
 				       compiled_param_var, ctx);
       i++;
     }
@@ -2404,13 +2397,13 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
     }
 
   // lookup locals
-  HIR::Expr *function_body = expr.get_expr ().get ();
+  HIR::Expr &function_body = expr.get_expr ();
   bool is_block_expr
-    = function_body->get_expression_type () == HIR::Expr::ExprType::Block;
+    = function_body.get_expression_type () == HIR::Expr::ExprType::Block;
 
   if (is_block_expr)
     {
-      auto body_mappings = function_body->get_mappings ();
+      auto body_mappings = function_body.get_mappings ();
       if (flag_name_resolution_2_0)
 	{
 	  auto nr_ctx
@@ -2431,13 +2424,13 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
     }
 
   tree enclosing_scope = NULL_TREE;
-  location_t start_location = function_body->get_locus ();
-  location_t end_location = function_body->get_locus ();
+  location_t start_location = function_body.get_locus ();
+  location_t end_location = function_body.get_locus ();
   if (is_block_expr)
     {
-      HIR::BlockExpr *body = static_cast<HIR::BlockExpr *> (function_body);
-      start_location = body->get_locus ();
-      end_location = body->get_end_locus ();
+      auto &body = static_cast<HIR::BlockExpr &> (function_body);
+      start_location = body.get_locus ();
+      end_location = body.get_end_locus ();
     }
 
   tree code_block = Backend::block (fndecl, enclosing_scope, {} /*locals*/,
@@ -2462,15 +2455,14 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
 
   if (is_block_expr)
     {
-      HIR::BlockExpr *body = static_cast<HIR::BlockExpr *> (function_body);
-      compile_function_body (fndecl, *body, tyret);
+      auto &body = static_cast<HIR::BlockExpr &> (function_body);
+      compile_function_body (fndecl, body, tyret);
     }
   else
     {
       tree value = CompileExpr::Compile (function_body, ctx);
       tree return_expr
-	= Backend::return_statement (fndecl, value,
-				     function_body->get_locus ());
+	= Backend::return_statement (fndecl, value, function_body.get_locus ());
       ctx->add_statement (return_expr);
     }
 
@@ -2557,8 +2549,8 @@ CompileExpr::generate_possible_fn_trait_call (HIR::CallExpr &expr,
     }
 
   // need to apply any autoderef's to the self argument
-  HIR::Expr *fnexpr = expr.get_fnexpr ().get ();
-  HirId autoderef_mappings_id = fnexpr->get_mappings ().get_hirid ();
+  HIR::Expr &fnexpr = expr.get_fnexpr ();
+  HirId autoderef_mappings_id = fnexpr.get_mappings ().get_hirid ();
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
 							  &adjustments);
@@ -2571,7 +2563,7 @@ CompileExpr::generate_possible_fn_trait_call (HIR::CallExpr &expr,
   std::vector<tree> tuple_arg_vals;
   for (auto &argument : expr.get_arguments ())
     {
-      auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+      auto rvalue = CompileExpr::Compile (*argument, ctx);
       tuple_arg_vals.push_back (rvalue);
     }
 

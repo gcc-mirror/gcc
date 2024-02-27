@@ -34,8 +34,7 @@ void
 TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 {
   HIR::QualifiedPathType qual_path_type = expr.get_path_type ();
-  TyTy::BaseType *root
-    = TypeCheckType::Resolve (qual_path_type.get_type ().get ());
+  TyTy::BaseType *root = TypeCheckType::Resolve (qual_path_type.get_type ());
   if (root->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
@@ -48,8 +47,8 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
     }
 
   // Resolve the trait now
-  std::unique_ptr<HIR::TypePath> &trait_path_ref = qual_path_type.get_trait ();
-  TraitReference *trait_ref = TraitResolver::Resolve (*trait_path_ref.get ());
+  HIR::TypePath &trait_path_ref = qual_path_type.get_trait ();
+  TraitReference *trait_ref = TraitResolver::Resolve (trait_path_ref);
   if (trait_ref->is_error ())
     return;
 
@@ -64,8 +63,7 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 
   // get the predicate for the bound
   auto specified_bound
-    = get_predicate_from_bound (*trait_path_ref.get (),
-				qual_path_type.get_type ().get ());
+    = get_predicate_from_bound (trait_path_ref, qual_path_type.get_type ());
   if (specified_bound.is_error ())
     return;
 
@@ -457,7 +455,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	    {
 	      // we need to setup with apropriate bounds
 	      HIR::TypePath &bound_path
-		= *associated->get_impl_block ()->get_trait_ref ().get ();
+		= associated->get_impl_block ()->get_trait_ref ();
 	      const auto &trait_ref = *TraitResolver::Resolve (bound_path);
 	      rust_assert (!trait_ref.is_error ());
 

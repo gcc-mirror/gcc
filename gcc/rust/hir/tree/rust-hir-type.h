@@ -271,7 +271,7 @@ public:
      * parenthesised type, it must be in parentheses. */
     return type_in_parens->to_trait_bound (true);
   }
-  std::unique_ptr<Type> &get_type_in_parens () { return type_in_parens; }
+  Type &get_type_in_parens () { return *type_in_parens; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 };
@@ -439,7 +439,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
-  std::unique_ptr<Type> &get_type () { return type; }
+  Type &get_type () { return *type; }
 
   Mutability get_mut () const { return mut; }
 
@@ -447,7 +447,7 @@ public:
 
   bool is_const () const { return mut == Mutability::Imm; }
 
-  std::unique_ptr<Type> &get_base_type () { return type; }
+  Type &get_base_type () { return *type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -520,7 +520,7 @@ public:
 
   Mutability get_mut () const { return mut; }
 
-  std::unique_ptr<Type> &get_base_type () { return type; }
+  Type &get_base_type () { return *type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -578,9 +578,9 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
-  std::unique_ptr<Type> &get_element_type () { return elem_type; }
+  Type &get_element_type () { return *elem_type; }
 
-  std::unique_ptr<Expr> &get_size_expr () { return size; }
+  Expr &get_size_expr () { return *size; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -633,7 +633,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
-  std::unique_ptr<Type> &get_element_type () { return elem_type; }
+  Type &get_element_type () { return *elem_type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -743,7 +743,7 @@ public:
 
   location_t get_locus () const { return locus; }
 
-  std::unique_ptr<Type> &get_type () { return param_type; }
+  Type &get_type () { return *param_type; }
 
   ParamKind get_param_kind () const { return param_kind; }
 
@@ -828,7 +828,7 @@ public:
   }
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_return_type () { return return_type; }
+  Type &get_return_type () { return *return_type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -67,7 +67,7 @@ CompilePatternCheckExpr::visit (HIR::PathInExpression &pattern)
   // must be enum
   match_scrutinee_expr = scrutinee_expr_qualifier_expr;
 
-  HIR::Expr *discrim_expr = variant->get_discriminant ();
+  HIR::Expr &discrim_expr = variant->get_discriminant ();
   tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
 
   check_expr
@@ -80,10 +80,9 @@ void
 CompilePatternCheckExpr::visit (HIR::LiteralPattern &pattern)
 {
   // Compile the literal
-  HIR::LiteralExpr *litexpr
-    = new HIR::LiteralExpr (pattern.get_mappings (), pattern.get_literal (),
-			    pattern.get_locus (),
-			    std::vector<AST::Attribute> ());
+  auto litexpr = Rust::make_unique<HIR::LiteralExpr> (
+    HIR::LiteralExpr (pattern.get_mappings (), pattern.get_literal (),
+		      pattern.get_locus (), std::vector<AST::Attribute> ()));
 
   // Note: Floating point literals are currently accepted but will likely be
   // forbidden in LiteralPatterns in a future version of Rust.
@@ -95,7 +94,7 @@ CompilePatternCheckExpr::visit (HIR::LiteralPattern &pattern)
       rust_sorry_at (pattern.get_locus (), "floating-point literal in pattern");
     }
 
-  tree lit = CompileExpr::Compile (litexpr, ctx);
+  tree lit = CompileExpr::Compile (*litexpr, ctx);
 
   check_expr = Backend::comparison_expression (ComparisonOperator::EQUAL,
 					       match_scrutinee_expr, lit,
@@ -103,19 +102,17 @@ CompilePatternCheckExpr::visit (HIR::LiteralPattern &pattern)
 }
 
 static tree
-compile_range_pattern_bound (HIR::RangePatternBound *bound,
+compile_range_pattern_bound (HIR::RangePatternBound &bound,
 			     Analysis::NodeMapping mappings, location_t locus,
 			     Context *ctx)
 {
   tree result = NULL_TREE;
-  switch (bound->get_bound_type ())
+  switch (bound.get_bound_type ())
     {
       case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
-	HIR::RangePatternBoundLiteral &ref
-	  = *static_cast<HIR::RangePatternBoundLiteral *> (bound);
+	auto &ref = static_cast<HIR::RangePatternBoundLiteral &> (bound);
 
-	HIR::LiteralExpr *litexpr
-	  = new HIR::LiteralExpr (mappings, ref.get_literal (), locus,
+	HIR::LiteralExpr litexpr (mappings, ref.get_literal (), locus,
 				  std::vector<AST::Attribute> ());
 
 	result = CompileExpr::Compile (litexpr, ctx);
@@ -123,8 +120,7 @@ compile_range_pattern_bound (HIR::RangePatternBound *bound,
       break;
 
       case HIR::RangePatternBound::RangePatternBoundType::PATH: {
-	HIR::RangePatternBoundPath &ref
-	  = *static_cast<HIR::RangePatternBoundPath *> (bound);
+	auto &ref = static_cast<HIR::RangePatternBoundPath &> (bound);
 
 	result = ResolvePathRef::Compile (ref.get_path (), ctx);
 
@@ -134,8 +130,7 @@ compile_range_pattern_bound (HIR::RangePatternBound *bound,
       break;
 
       case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
-	HIR::RangePatternBoundQualPath &ref
-	  = *static_cast<HIR::RangePatternBoundQualPath *> (bound);
+	auto &ref = static_cast<HIR::RangePatternBoundQualPath &> (bound);
 
 	result = ResolvePathRef::Compile (ref.get_qualified_path (), ctx);
 
@@ -150,10 +145,10 @@ compile_range_pattern_bound (HIR::RangePatternBound *bound,
 void
 CompilePatternCheckExpr::visit (HIR::RangePattern &pattern)
 {
-  tree upper = compile_range_pattern_bound (pattern.get_upper_bound ().get (),
+  tree upper = compile_range_pattern_bound (pattern.get_upper_bound (),
 					    pattern.get_mappings (),
 					    pattern.get_locus (), ctx);
-  tree lower = compile_range_pattern_bound (pattern.get_lower_bound ().get (),
+  tree lower = compile_range_pattern_bound (pattern.get_lower_bound (),
 					    pattern.get_mappings (),
 					    pattern.get_locus (), ctx);
 
@@ -175,7 +170,7 @@ CompilePatternCheckExpr::visit (HIR::ReferencePattern &pattern)
 {
   match_scrutinee_expr
     = indirect_expression (match_scrutinee_expr, pattern.get_locus ());
-  pattern.get_referenced_pattern ()->accept_vis (*this);
+  pattern.get_referenced_pattern ().accept_vis (*this);
 }
 
 void
@@ -183,14 +178,13 @@ CompilePatternCheckExpr::visit (HIR::AltPattern &pattern)
 {
   auto &alts = pattern.get_alts ();
 
-  check_expr = CompilePatternCheckExpr::Compile (alts.at (0).get (),
+  check_expr = CompilePatternCheckExpr::Compile (*alts.at (0),
 						 match_scrutinee_expr, ctx);
   auto end = alts.end ();
   for (auto i = alts.begin () + 1; i != end; i++)
     {
       tree next_expr
-	= CompilePatternCheckExpr::Compile (i->get (), match_scrutinee_expr,
-					    ctx);
+	= CompilePatternCheckExpr::Compile (**i, match_scrutinee_expr, ctx);
       check_expr = Backend::arithmetic_or_logical_expression (
 	ArithmeticOrLogicalOperator::BITWISE_OR, check_expr, next_expr,
 	(*i)->get_locus ());
@@ -229,7 +223,7 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
       // // would be DECL_QUALIFIER i think. For now this will just access the
       // // first record field and its respective qualifier because it will
       // // always be set because this is all a big special union
-      HIR::Expr *discrim_expr = variant->get_discriminant ();
+      HIR::Expr &discrim_expr = variant->get_discriminant ();
       tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
 
       // find discriminant field of scrutinee
@@ -282,11 +276,11 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 						  ident.get_locus ());
 
 	    tree check_expr_sub
-	      = CompilePatternCheckExpr::Compile (ident.get_pattern ().get (),
+	      = CompilePatternCheckExpr::Compile (ident.get_pattern (),
 						  field_expr, ctx);
 	    check_expr = Backend::arithmetic_or_logical_expression (
 	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
-	      check_expr_sub, ident.get_pattern ()->get_locus ());
+	      check_expr_sub, ident.get_pattern ().get_locus ());
 	  }
 	  break;
 
@@ -328,7 +322,7 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
       rust_assert (ok);
 
       // find expected discriminant
-      HIR::Expr *discrim_expr = variant->get_discriminant ();
+      HIR::Expr &discrim_expr = variant->get_discriminant ();
       tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
 
       // find discriminant field of scrutinee
@@ -357,8 +351,8 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
       tuple_field_index = 0;
     }
 
-  std::unique_ptr<HIR::TupleStructItems> &items = pattern.get_items ();
-  switch (items->get_item_type ())
+  HIR::TupleStructItems &items = pattern.get_items ();
+  switch (items.get_item_type ())
     {
       case HIR::TupleStructItems::RANGED: {
 	// TODO
@@ -368,7 +362,7 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
 
       case HIR::TupleStructItems::MULTIPLE: {
 	HIR::TupleStructItemsNoRange &items_no_range
-	  = static_cast<HIR::TupleStructItemsNoRange &> (*items.get ());
+	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
 
 	rust_assert (items_no_range.get_patterns ().size ()
 		     == variant->num_fields ());
@@ -381,8 +375,7 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
 						  pattern->get_locus ());
 
 	    tree check_expr_sub
-	      = CompilePatternCheckExpr::Compile (pattern.get (), field_expr,
-						  ctx);
+	      = CompilePatternCheckExpr::Compile (*pattern, field_expr, ctx);
 	    check_expr = Backend::arithmetic_or_logical_expression (
 	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
 	      check_expr_sub, pattern->get_locus ());
@@ -397,7 +390,7 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
 {
   check_expr = boolean_true_node;
 
-  switch (pattern.get_items ()->get_item_type ())
+  switch (pattern.get_items ().get_item_type ())
     {
       case HIR::TuplePatternItems::RANGED: {
 	// TODO
@@ -407,7 +400,7 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
 
       case HIR::TuplePatternItems::MULTIPLE: {
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
-	  *pattern.get_items ());
+	  pattern.get_items ());
 	size_t tuple_field_index = 0;
 
 	for (auto &pat : items.get_patterns ())
@@ -418,7 +411,7 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
 						  pat->get_locus ());
 
 	    tree check_expr_sub
-	      = CompilePatternCheckExpr::Compile (pat.get (), field_expr, ctx);
+	      = CompilePatternCheckExpr::Compile (*pat, field_expr, ctx);
 	    check_expr = Backend::arithmetic_or_logical_expression (
 	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
 	      check_expr_sub, pat->get_locus ());
@@ -459,8 +452,8 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
   rust_assert (variant->get_variant_type ()
 	       == TyTy::VariantDef::VariantType::TUPLE);
 
-  std::unique_ptr<HIR::TupleStructItems> &items = pattern.get_items ();
-  switch (items->get_item_type ())
+  HIR::TupleStructItems &items = pattern.get_items ();
+  switch (items.get_item_type ())
     {
       case HIR::TupleStructItems::RANGED: {
 	// TODO
@@ -470,7 +463,7 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 
       case HIR::TupleStructItems::MULTIPLE: {
 	HIR::TupleStructItemsNoRange &items_no_range
-	  = static_cast<HIR::TupleStructItemsNoRange &> (*items.get ());
+	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
 
 	rust_assert (items_no_range.get_patterns ().size ()
 		     == variant->num_fields ());
@@ -609,8 +602,8 @@ CompilePatternBindings::visit (HIR::ReferencePattern &pattern)
   tree derefed
     = indirect_expression (match_scrutinee_expr, pattern.get_locus ());
 
-  CompilePatternBindings::Compile (pattern.get_referenced_pattern ().get (),
-				   derefed, ctx);
+  CompilePatternBindings::Compile (pattern.get_referenced_pattern (), derefed,
+				   ctx);
 }
 
 void
@@ -670,12 +663,12 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
   tree access_expr = Backend::var_expression (tmp_var, pattern.get_locus ());
   ctx->add_statement (init_stmt);
 
-  switch (pattern.get_items ()->get_item_type ())
+  switch (pattern.get_items ().get_item_type ())
     {
       case HIR::TuplePatternItems::ItemType::RANGED: {
 	size_t tuple_idx = 0;
 	auto &items
-	  = static_cast<HIR::TuplePatternItemsRanged &> (*pattern.get_items ());
+	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
 
 	auto &items_lower = items.get_lower_patterns ();
 	auto &items_upper = items.get_upper_patterns ();
@@ -719,7 +712,7 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
       case HIR::TuplePatternItems::ItemType::MULTIPLE: {
 	size_t tuple_idx = 0;
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
-	  *pattern.get_items ());
+	  pattern.get_items ());
 
 	for (auto &sub : items.get_patterns ())
 	  {

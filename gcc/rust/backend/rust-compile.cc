@@ -259,17 +259,17 @@ HIRCompileBase::compute_address_for_trait_item (
       HIR::ImplBlock *impl_block = item.second;
       rust_assert (impl_block != nullptr);
 
-      // Lookup type for potentially associated impl.
-      std::unique_ptr<HIR::Type> &self_type_path = impl_block->get_type ();
-
       // Checks for empty impl blocks, triggered by Sized trait.
-      if (self_type_path == nullptr)
+      if (!impl_block->has_type ())
 	continue;
+
+      // Lookup type for potentially associated impl.
+      HIR::Type &self_type_path = impl_block->get_type ();
 
       // Convert HIR::Type to TyTy::BaseType
       TyTy::BaseType *self = nullptr;
       bool ok = ctx->get_tyctx ()->lookup_type (
-	self_type_path->get_mappings ().get_hirid (), &self);
+	self_type_path.get_mappings ().get_hirid (), &self);
 
       rust_assert (ok);
 

@@ -81,7 +81,7 @@ ResolvePathRef::attempt_constructor_expression_lookup (
   tree compiled_adt_type = TyTyResolveCompile::compile (ctx, adt);
 
   // make the ctor for the union
-  HIR::Expr *discrim_expr = variant->get_discriminant ();
+  HIR::Expr &discrim_expr = variant->get_discriminant ();
   tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
   tree folded_discrim_expr = fold_expr (discrim_expr_node);
   tree qualifier = folded_discrim_expr;
@@ -301,7 +301,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 
 	      TyTy::BaseType *self = nullptr;
 	      bool ok = ctx->get_tyctx ()->lookup_type (
-		impl->get_type ()->get_mappings ().get_hirid (), &self);
+		impl->get_type ().get_mappings ().get_hirid (), &self);
 	      rust_assert (ok);
 
 	      if (!lookup->has_substitutions_defined ())

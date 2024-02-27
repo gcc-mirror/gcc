@@ -54,7 +54,7 @@ public:
     //   impl-type -> [ (item, name), ... ]
     // }
 
-    HirId impl_type_id = impl->get_type ()->get_mappings ().get_hirid ();
+    HirId impl_type_id = impl->get_type ().get_mappings ().get_hirid ();
     TyTy::BaseType *impl_type = nullptr;
     bool ok = query_type (impl_type_id, &impl_type);
     if (!ok)

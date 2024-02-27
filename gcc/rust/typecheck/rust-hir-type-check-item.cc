@@ -150,7 +150,7 @@ void
 TypeCheckItem::visit (HIR::TypeAlias &alias)
 {
   TyTy::BaseType *actual_type
-    = TypeCheckType::Resolve (alias.get_type_aliased ().get ());
+    = TypeCheckType::Resolve (alias.get_type_aliased ());
 
   context->insert_type (alias.get_mappings (), actual_type);
 
@@ -182,7 +182,7 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
   for (auto &field : struct_decl.get_fields ())
     {
       TyTy::BaseType *field_type
-	= TypeCheckType::Resolve (field.get_field_type ().get ());
+	= TypeCheckType::Resolve (field.get_field_type ());
       auto *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
 				     std::to_string (idx), field_type,
@@ -265,7 +265,7 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
   for (auto &field : struct_decl.get_fields ())
     {
       TyTy::BaseType *field_type
-	= TypeCheckType::Resolve (field.get_field_type ().get ());
+	= TypeCheckType::Resolve (field.get_field_type ());
       auto *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
 				     field.get_field_name ().as_string (),
@@ -341,7 +341,7 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
   for (auto &variant : enum_decl.get_variants ())
     {
       TyTy::VariantDef *field_type
-	= TypeCheckEnumItem::Resolve (variant.get (), discriminant_value);
+	= TypeCheckEnumItem::Resolve (*variant, discriminant_value);
 
       discriminant_value++;
       variants.push_back (field_type);
@@ -400,7 +400,7 @@ TypeCheckItem::visit (HIR::Union &union_decl)
   for (auto &variant : union_decl.get_variants ())
     {
       TyTy::BaseType *variant_type
-	= TypeCheckType::Resolve (variant.get_field_type ().get ());
+	= TypeCheckType::Resolve (variant.get_field_type ());
       auto *ty_variant
 	= new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
 				     variant.get_field_name ().as_string (),
@@ -456,14 +456,14 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 void
 TypeCheckItem::visit (HIR::StaticItem &var)
 {
-  TyTy::BaseType *type = TypeCheckType::Resolve (var.get_type ().get ());
-  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr ().get ());
+  TyTy::BaseType *type = TypeCheckType::Resolve (var.get_type ());
+  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
 
   TyTy::BaseType *unified
     = coercion_site (var.get_mappings ().get_hirid (),
-		     TyTy::TyWithLocation (type, var.get_type ()->get_locus ()),
+		     TyTy::TyWithLocation (type, var.get_type ().get_locus ()),
 		     TyTy::TyWithLocation (expr_type,
-					   var.get_expr ()->get_locus ()),
+					   var.get_expr ().get_locus ()),
 		     var.get_locus ());
   context->insert_type (var.get_mappings (), unified);
   infered = unified;
@@ -472,14 +472,13 @@ TypeCheckItem::visit (HIR::StaticItem &var)
 void
 TypeCheckItem::visit (HIR::ConstantItem &constant)
 {
-  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ().get ());
-  TyTy::BaseType *expr_type
-    = TypeCheckExpr::Resolve (constant.get_expr ().get ());
+  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
+  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
 
   TyTy::BaseType *unified = unify_site (
     constant.get_mappings ().get_hirid (),
-    TyTy::TyWithLocation (type, constant.get_type ()->get_locus ()),
-    TyTy::TyWithLocation (expr_type, constant.get_expr ()->get_locus ()),
+    TyTy::TyWithLocation (type, constant.get_type ().get_locus ()),
+    TyTy::TyWithLocation (expr_type, constant.get_expr ().get_locus ()),
     constant.get_locus ());
   context->insert_type (constant.get_mappings (), unified);
   infered = unified;
@@ -493,8 +492,8 @@ TypeCheckItem::visit (HIR::ImplBlock &impl_block)
   TraitReference *trait_reference = &TraitReference::error_node ();
   if (impl_block.has_trait_ref ())
     {
-      std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();
-      trait_reference = TraitResolver::Resolve (*ref);
+      HIR::TypePath &ref = impl_block.get_trait_ref ();
+      trait_reference = TraitResolver::Resolve (ref);
       if (trait_reference->is_error ())
 	return;
     }
@@ -515,8 +514,7 @@ TypeCheckItem::visit (HIR::ImplBlock &impl_block)
   // resolve each impl_item
   for (auto &impl_item : impl_block.get_impl_items ())
     {
-      TypeCheckImplItem::Resolve (&impl_block, impl_item.get (), self,
-				  substitutions);
+      TypeCheckImplItem::Resolve (impl_block, *impl_item, self, substitutions);
     }
 
   // validate the impl items
@@ -540,7 +538,7 @@ TypeCheckItem::resolve_impl_item (HIR::ImplBlock &impl_block,
 
   TyTy::BaseType *self = resolve_impl_block_self (impl_block);
 
-  return TypeCheckImplItem::Resolve (&impl_block, &item, self, substitutions);
+  return TypeCheckImplItem::Resolve (impl_block, item, self, substitutions);
 }
 
 void
@@ -563,8 +561,7 @@ TypeCheckItem::visit (HIR::Function &function)
     ret_type = TyTy::TupleType::get_unit_type ();
   else
     {
-      auto resolved
-	= TypeCheckType::Resolve (function.get_return_type ().get ());
+      auto resolved = TypeCheckType::Resolve (function.get_return_type ());
       if (resolved->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (function.get_locus (),
@@ -574,18 +571,18 @@ TypeCheckItem::visit (HIR::Function &function)
 
       ret_type = resolved->clone ();
       ret_type->set_ref (
-	function.get_return_type ()->get_mappings ().get_hirid ());
+	function.get_return_type ().get_mappings ().get_hirid ());
     }
 
   std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *>> params;
   for (auto &param : function.get_function_params ())
     {
       // get the name as well required for later on
-      auto param_tyty = TypeCheckType::Resolve (param.get_type ().get ());
-      params.emplace_back (param.get_param_name ().get (), param_tyty);
+      auto param_tyty = TypeCheckType::Resolve (param.get_type ());
+      params.emplace_back (&param.get_param_name (), param_tyty);
 
       context->insert_type (param.get_mappings (), param_tyty);
-      TypeCheckPattern::Resolve (param.get_param_name ().get (), param_tyty);
+      TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
     }
 
   auto path = CanonicalPath::create_empty ();
@@ -628,16 +625,15 @@ TypeCheckItem::visit (HIR::Function &function)
 			     expected_ret_tyty);
 
   context->switch_to_fn_body ();
-  auto block_expr_ty
-    = TypeCheckExpr::Resolve (function.get_definition ().get ());
+  auto block_expr_ty = TypeCheckExpr::Resolve (function.get_definition ());
 
   location_t fn_return_locus = function.has_function_return_type ()
-				 ? function.get_return_type ()->get_locus ()
+				 ? function.get_return_type ().get_locus ()
 				 : function.get_locus ();
-  coercion_site (function.get_definition ()->get_mappings ().get_hirid (),
+  coercion_site (function.get_definition ().get_mappings ().get_hirid (),
 		 TyTy::TyWithLocation (expected_ret_tyty, fn_return_locus),
 		 TyTy::TyWithLocation (block_expr_ty),
-		 function.get_definition ()->get_locus ());
+		 function.get_definition ().get_locus ());
 
   context->pop_return_type ();
 
@@ -691,7 +687,7 @@ TypeCheckItem::visit (HIR::ExternBlock &extern_block)
 {
   for (auto &item : extern_block.get_extern_items ())
     {
-      TypeCheckTopLevelExternItem::Resolve (item.get (), extern_block);
+      TypeCheckTopLevelExternItem::Resolve (*item, extern_block);
     }
 }
 
@@ -713,17 +709,17 @@ TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
   TraitReference *trait_reference = &TraitReference::error_node ();
   if (impl_block.has_trait_ref ())
     {
-      std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();
-      trait_reference = TraitResolver::Resolve (*ref);
+      auto &ref = impl_block.get_trait_ref ();
+      trait_reference = TraitResolver::Resolve (ref);
       rust_assert (!trait_reference->is_error ());
 
       // we don't error out here see: gcc/testsuite/rust/compile/traits2.rs
       // for example
-      specified_bound
-	= get_predicate_from_bound (*ref, impl_block.get_type ().get ());
+      specified_bound = get_predicate_from_bound (ref, impl_block.get_type ());
     }
 
-  TyTy::BaseType *self = TypeCheckType::Resolve (impl_block.get_type ().get ());
+  TyTy::BaseType *self = TypeCheckType::Resolve (impl_block.get_type ());
+
   if (self->is<TyTy::ErrorType> ())
     {
       // we cannot check for unconstrained type arguments when the Self type is
@@ -758,14 +754,14 @@ TypeCheckItem::validate_trait_impl_block (
   auto specified_bound = TyTy::TypeBoundPredicate::error ();
   if (impl_block.has_trait_ref ())
     {
-      std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();
+      auto &ref = impl_block.get_trait_ref ();
+      trait_reference = TraitResolver::Resolve (ref);
       if (trait_reference->is_error ())
 	return;
 
       // we don't error out here see: gcc/testsuite/rust/compile/traits2.rs
       // for example
-      specified_bound
-	= get_predicate_from_bound (*ref, impl_block.get_type ().get ());
+      specified_bound = get_predicate_from_bound (ref, impl_block.get_type ());
     }
 
   bool is_trait_impl_block = !trait_reference->is_error ();
@@ -775,8 +771,7 @@ TypeCheckItem::validate_trait_impl_block (
       if (!specified_bound.is_error ())
 	{
 	  auto trait_item_ref
-	    = TypeCheckImplItemWithTrait::Resolve (&impl_block,
-						   impl_item.get (), self,
+	    = TypeCheckImplItemWithTrait::Resolve (impl_block, *impl_item, self,
 						   specified_bound,
 						   substitutions);
 	  if (!trait_item_ref.is_error ())
@@ -849,7 +844,7 @@ TypeCheckItem::validate_trait_impl_block (
 TyTy::BaseType *
 TypeCheckItem::resolve_impl_block_self (HIR::ImplBlock &impl_block)
 {
-  return TypeCheckType::Resolve (impl_block.get_type ().get ());
+  return TypeCheckType::Resolve (impl_block.get_type ());
 }
 
 } // namespace Resolver

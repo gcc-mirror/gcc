@@ -56,13 +56,13 @@ protected:
   void visit (HIR::Function &function) override
   {
     functions.push_back (&function);
-    function.get_definition ()->accept_vis (*this);
+    function.get_definition ().accept_vis (*this);
   }
 
   void visit (HIR::ClosureExpr &closure) override
   {
     closures.push_back (&closure);
-    closure.get_expr ()->accept_vis (*this);
+    closure.get_expr ().accept_vis (*this);
   }
 
   // TODO: recurse for nested closures and functions.

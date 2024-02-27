@@ -60,7 +60,7 @@ CompileItem::visit (HIR::StaticItem &var)
 
   rust_assert (canonical_path.has_value ());
 
-  HIR::Expr *const_value_expr = var.get_expr ().get ();
+  HIR::Expr &const_value_expr = var.get_expr ();
   ctx->push_const_context ();
   tree value = compile_constant_item (resolved_type, *canonical_path,
 				      const_value_expr, var.get_locus ());
@@ -120,7 +120,7 @@ CompileItem::visit (HIR::ConstantItem &constant)
 			 .value ();
     }
 
-  HIR::Expr *const_value_expr = constant.get_expr ().get ();
+  HIR::Expr &const_value_expr = constant.get_expr ();
   ctx->push_const_context ();
   tree const_expr
     = compile_constant_item (resolved_type, canonical_path, const_value_expr,
@@ -222,8 +222,7 @@ CompileItem::visit (HIR::Function &function)
 			function.get_function_params (),
 			function.get_qualifiers (), function.get_visibility (),
 			function.get_outer_attrs (), function.get_locus (),
-			function.get_definition ().get (), canonical_path,
-			fntype);
+			&function.get_definition (), canonical_path, fntype);
   reference = address_expression (fndecl, ref_locus);
 
   if (function.get_qualifiers ().is_const ())
@@ -235,7 +234,7 @@ CompileItem::visit (HIR::ImplBlock &impl_block)
 {
   TyTy::BaseType *self_lookup = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (
-	impl_block.get_type ()->get_mappings ().get_hirid (), &self_lookup))
+	impl_block.get_type ().get_mappings ().get_hirid (), &self_lookup))
     {
       rust_error_at (impl_block.get_locus (), "failed to resolve type of impl");
       return;

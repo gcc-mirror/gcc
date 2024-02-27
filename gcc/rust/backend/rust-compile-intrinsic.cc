@@ -321,7 +321,7 @@ compile_fn_params (Context *ctx, TyTy::FnType *fntype, tree fndecl,
 
       location_t param_locus = referenced_param->get_locus ();
       Bvariable *compiled_param_var
-	= CompileFnParam::compile (ctx, fndecl, referenced_param,
+	= CompileFnParam::compile (ctx, fndecl, *referenced_param,
 				   compiled_param_type, param_locus);
 
       compiled_param_variables->push_back (compiled_param_var);
