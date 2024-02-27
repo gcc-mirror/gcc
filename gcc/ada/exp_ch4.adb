@@ -5098,10 +5098,20 @@ package body Exp_Ch4 is
 
             else
                if not Is_Copy_Type (Typ) then
-                  Alt_Expr :=
-                    Make_Attribute_Reference (Alt_Loc,
-                      Prefix         => Relocate_Node (Alt_Expr),
-                      Attribute_Name => Name_Unrestricted_Access);
+                  --  It's possible that a call to Apply_Length_Check in
+                  --  Resolve_Case_Expression rewrote the dependent expression
+                  --  into a N_Raise_Constraint_Error. If that's the case, we
+                  --  don't create a reference to Unrestricted_Access, but we
+                  --  update the type of the N_Raise_Constraint_Error node.
+
+                  if Nkind (Alt_Expr) in N_Raise_Constraint_Error then
+                     Set_Etype (Alt_Expr, Target_Typ);
+                  else
+                     Alt_Expr :=
+                       Make_Attribute_Reference (Alt_Loc,
+                         Prefix         => Relocate_Node (Alt_Expr),
+                         Attribute_Name => Name_Unrestricted_Access);
+                  end if;
                end if;
 
                LHS := New_Occurrence_Of (Target, Loc);

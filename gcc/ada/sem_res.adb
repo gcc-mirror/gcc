@@ -7438,6 +7438,9 @@ package body Sem_Res is
          if Is_Scalar_Type (Alt_Typ) and then Alt_Typ /= Typ then
             Rewrite (Alt_Expr, Convert_To (Typ, Alt_Expr));
             Analyze_And_Resolve (Alt_Expr, Typ);
+
+         elsif Is_Array_Type (Typ) then
+            Apply_Length_Check (Alt_Expr, Typ);
          end if;
 
          Next (Alt);
