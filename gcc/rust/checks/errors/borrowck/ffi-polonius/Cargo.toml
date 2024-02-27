@@ -1,0 +1,11 @@
+[package]
+name = "ffi-polonius"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+polonius-engine = "0.13.0"
