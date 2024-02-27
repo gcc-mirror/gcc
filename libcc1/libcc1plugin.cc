@@ -387,9 +387,10 @@ plugin_build_add_field (cc1_plugin::connection *,
 }
 
 int
-plugin_finish_record_or_union (cc1_plugin::connection *,
-			       gcc_type record_or_union_type_in,
-			       unsigned long size_in_bytes)
+plugin_finish_record_with_alignment (cc1_plugin::connection *,
+				     gcc_type record_or_union_type_in,
+				     unsigned long size_in_bytes,
+				     unsigned long align)
 {
   tree record_or_union_type = convert_in (record_or_union_type_in);
 
@@ -407,10 +408,10 @@ plugin_finish_record_or_union (cc1_plugin::connection *,
     }
   else
     {
-      // FIXME there's no way to get this from DWARF,
-      // or even, it seems, a particularly good way to deduce it.
-      SET_TYPE_ALIGN (record_or_union_type,
-		      TYPE_PRECISION (pointer_sized_int_node));
+      if (align == 0)
+	align = TYPE_PRECISION (pointer_sized_int_node);
+
+      SET_TYPE_ALIGN (record_or_union_type, align);
 
       TYPE_SIZE (record_or_union_type) = bitsize_int (size_in_bytes
 						      * BITS_PER_UNIT);
@@ -439,6 +440,15 @@ plugin_finish_record_or_union (cc1_plugin::connection *,
     }
 
   return 1;
+}
+
+int
+plugin_finish_record_or_union (cc1_plugin::connection *conn,
+			       gcc_type record_or_union_type_in,
+			       unsigned long size_in_bytes)
+{
+  return plugin_finish_record_with_alignment (conn, record_or_union_type_in,
+					      size_in_bytes, 0);
 }
 
 gcc_type
@@ -755,7 +765,7 @@ int
 plugin_init (struct plugin_name_args *plugin_info,
 	     struct plugin_gcc_version *)
 {
-  generic_plugin_init (plugin_info, GCC_C_FE_VERSION_1);
+  generic_plugin_init (plugin_info, GCC_C_FE_VERSION_2);
 
   register_callback (plugin_info->base_name, PLUGIN_PRAGMAS,
 		     plugin_init_extra_pragmas, NULL);

@@ -483,7 +483,11 @@ struct gcc_cp_context
 /* The type of the initialization function.  The caller passes in the
    desired base version and desired C-specific version.  If the
    request can be satisfied, a compatible gcc_context object will be
-   returned.  Otherwise, the function returns NULL.  */
+   returned.  In particular, this may return a context object with a higher
+   actual version number than was requested, provided the higher version is
+   fully compatible.
+
+   Otherwise, the function returns NULL.  */
 
 typedef struct gcc_cp_context *gcc_cp_fe_context_function
     (enum gcc_base_api_version,

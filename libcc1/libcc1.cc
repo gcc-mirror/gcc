@@ -108,7 +108,7 @@ set_callbacks (struct gcc_c_context *s,
 
 static const struct gcc_c_fe_vtable c_vtable =
 {
-  GCC_C_FE_VERSION_1,
+  GCC_C_FE_VERSION_2,
   set_callbacks,
 
 #define GCC_METHOD0(R, N) \
@@ -165,7 +165,8 @@ gcc_c_fe_context (enum gcc_base_api_version base_version,
 		  enum gcc_c_api_version c_version)
 {
   if ((base_version != GCC_FE_VERSION_0 && base_version != GCC_FE_VERSION_1)
-      || (c_version != GCC_C_FE_VERSION_0 && c_version != GCC_C_FE_VERSION_1))
+      || (c_version != GCC_C_FE_VERSION_0 && c_version != GCC_C_FE_VERSION_1
+	  && c_version != GCC_C_FE_VERSION_2))
     return NULL;
 
   return new libcc1 (&c_vtable);
