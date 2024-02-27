@@ -1,3 +1,7 @@
+2024-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/access10.adb: New test.
+
 2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
