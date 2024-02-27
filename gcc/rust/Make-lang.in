@@ -203,6 +203,7 @@ GRS_OBJS = \
     rust/rust-dir-owner.o \
     rust/rust-unicode.o \
     rust/rust-punycode.o \
+	rust/rust-lang-item.o \
     $(END)
 # removed object files from here
 
