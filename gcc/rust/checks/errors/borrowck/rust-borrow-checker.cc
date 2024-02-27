@@ -18,9 +18,10 @@
 
 #include "rust-borrow-checker.h"
 #include "rust-function-collector.h"
+#include "rust-bir-fact-collector.h"
 #include "rust-bir-builder.h"
 #include "rust-bir-dump.h"
-#include "rust-bir-fact-collector.h"
+#include "polonius/rust-polonius.h"
 
 namespace Rust {
 namespace HIR {
@@ -36,7 +37,7 @@ mkdir_wrapped (const std::string &dirname)
 #elif __APPLE__
   ret = mkdir (dirname.c_str (), 0775);
 #endif
-  (void) ret;
+  rust_assert (ret == 0 || errno == EEXIST);
 }
 
 void
@@ -68,6 +69,8 @@ BorrowChecker::go (HIR::Crate &crate)
 	= mappings->get_crate_name (crate.get_mappings ().get_crate_num (),
 				    crate_name);
       rust_assert (ok);
+
+      mkdir_wrapped ("nll_facts_gccrs");
     }
 
   FunctionCollector collector;
@@ -75,6 +78,9 @@ BorrowChecker::go (HIR::Crate &crate)
 
   for (auto func : collector.get_functions ())
     {
+      rust_debug_loc (func->get_locus (), "\nChecking function %s\n",
+		      func->get_function_name ().as_string ().c_str ());
+
       BIR::BuilderContext ctx;
       BIR::Builder builder (ctx);
       auto bir = builder.build (*func);
@@ -89,6 +95,65 @@ BorrowChecker::go (HIR::Crate &crate)
 	}
 
       auto facts = BIR::FactCollector::collect (bir);
+
+      if (enable_dump_bir)
+	{
+	  mkdir_wrapped ("nll_facts_gccrs/"
+			 + func->get_function_name ().as_string ());
+	  auto dump_facts_to_file
+	    = [&] (const std::string &suffix,
+		   void (Polonius::Facts::*fn) (std::ostream &) const) {
+		std::string filename = "nll_facts_gccrs/"
+				       + func->get_function_name ().as_string ()
+				       + "/" + suffix + ".facts";
+		std::ofstream file;
+		file.open (filename);
+		if (file.fail ())
+		  {
+		    abort ();
+		  }
+
+		// Run dump
+		// BEWARE: this callback charade is a workaround because gcc48
+		// won't let me return a file from a function
+		(facts.*fn) (file);
+	      };
+
+	  dump_facts_to_file ("loan_issued_at",
+			      &Polonius::Facts::dump_loan_issued_at);
+	  dump_facts_to_file ("loan_killed_at",
+			      &Polonius::Facts::dump_loan_killed_at);
+	  dump_facts_to_file ("loan_invalidated_at",
+			      &Polonius::Facts::dump_loan_invalidated_at);
+	  dump_facts_to_file ("subset_base",
+			      &Polonius::Facts::dump_subset_base);
+	  dump_facts_to_file ("universal_region",
+			      &Polonius::Facts::dump_universal_region);
+	  dump_facts_to_file ("cfg_edge", &Polonius::Facts::dump_cfg_edge);
+	  dump_facts_to_file ("var_used_at",
+			      &Polonius::Facts::dump_var_used_at);
+	  dump_facts_to_file ("var_defined_at",
+			      &Polonius::Facts::dump_var_defined_at);
+	  dump_facts_to_file ("var_dropped_at",
+			      &Polonius::Facts::dump_var_dropped_at);
+	  dump_facts_to_file ("use_of_var_derefs_origin",
+			      &Polonius::Facts::dump_use_of_var_derefs_origin);
+	  dump_facts_to_file ("drop_of_var_derefs_origin",
+			      &Polonius::Facts::dump_drop_of_var_derefs_origin);
+	  dump_facts_to_file ("child_path", &Polonius::Facts::dump_child_path);
+	  dump_facts_to_file ("path_is_var",
+			      &Polonius::Facts::dump_path_is_var);
+	  dump_facts_to_file ("known_placeholder_subset",
+			      &Polonius::Facts::dump_known_placeholder_subset);
+	  dump_facts_to_file ("path_moved_at_base",
+			      &Polonius::Facts::dump_path_moved_at_base);
+	  dump_facts_to_file ("path_accessed_at_base",
+			      &Polonius::Facts::dump_path_accessed_at_base);
+	  dump_facts_to_file ("path_assigned_at_base",
+			      &Polonius::Facts::dump_path_assigned_at_base);
+	  dump_facts_to_file ("placeholder",
+			      &Polonius::Facts::dump_placeholder);
+	}
     }
 
   for (auto closure ATTRIBUTE_UNUSED : collector.get_closures ())

@@ -148,7 +148,7 @@ struct Facts
   void dump_var_used_at (std::ostream &os) const
   {
     for (auto &e : var_used_at)
-      os << e.first - 1 << " " << FullPoint (e.second) << "\n";
+      os << e.first << " " << FullPoint (e.second) << "\n";
   }
 
   void dump_var_defined_at (std::ostream &os) const
