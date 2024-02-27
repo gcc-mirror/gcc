@@ -1,3 +1,10 @@
+2024-02-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114012
+	* trans-expr.cc (gfc_conv_procedure_call): Evaluate non-trivial
+	arguments just once before assigning to an unlimited polymorphic
+	dummy variable.
+
 2024-02-23  Steve Kargl  <kargl@gcc.gnu.org>
 	    Harald Anlauf  <anlauf@gmx.de>
 

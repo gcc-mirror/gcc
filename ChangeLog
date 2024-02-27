@@ -1,3 +1,7 @@
+2024-02-26  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* MAINTAINERS: Add myself to write after approval and DCO.
+
 2024-02-23  Xi Ruoyao  <xry111@xry111.site>
 
 	* configure.ac (ENABLE_GOLD): Remove loongarch*-*-* from target

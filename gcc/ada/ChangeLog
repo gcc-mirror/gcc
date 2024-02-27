@@ -1,3 +1,15 @@
+2024-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113893
+	* exp_ch7.adb (Build_Anonymous_Master): Do not build the master
+	for a local designated type.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Force Needs_Fin
+	to false if no finalization master is attached to an access type
+	and assert that it is anonymous in this case.
+	* sem_res.adb (Resolve_Allocator): Mention that the object might
+	not be finalized at all in the warning given when the type is an
+	anonymous access-to-controlled type.
+
 2024-01-23  Ronan Desplanques  <desplanques@adacore.com>
 
 	* gnatvsn.ads: Update year.

@@ -1,3 +1,93 @@
+2024-02-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt (mcall-prologues, mrelax, maccumulate-args)
+	(mstrict-X): Tag as "Optimization".
+
+2024-02-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_out_compare) [AVR_TINY]: Remove code in
+	an "if avr_adiw_reg_p()" block that's dead for AVR_TINY.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/113617
+	* varasm.cc (default_elf_select_rtx_section): For
+	references to private symbols in comdat sections
+	use .data.relro.local.pool.<comdat>, .data.relro.pool.<comdat>
+	or .rodata.<comdat> comdat sections.
+
+2024-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114099
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Create and fill in a needed virtual LC PHI for the alternate
+	exits.  Remove code dealing with that missing.
+
+2024-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114068
+	* tree-vect-loop-manip.cc (get_live_virtual_operand_on_edge):
+	New function.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Add a virtual LC PHI
+	on the main exit if needed.  Remove band-aid for the case
+	it was missing.
+
+2024-02-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114097
+	* config/i386/i386-options.cc (ix86_set_func_type): Check
+	interrupt instead of noreturn attribute.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.cc (ix86_bitint_type_info): Add support for
+	!TARGET_64BIT.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114090
+	* match.pd ((x >= 0 ? x : 0) + (x <= 0 ? -x : 0) -> abs x):
+	Restrict pattern to ANY_INTEGRAL_TYPE_P and TYPE_OVERFLOW_UNDEFINED
+	types.
+	((x <= 0 ? -x : 0) -> max(-x, 0)): Likewise.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114084
+	* fold-const.cc (fold_binary_loc): Avoid the final associate_trees
+	if all subtrees of var0 come from one of the op0 or op1 operands
+	and all subtrees of con0 come from the other one.  Don't clear
+	variables which are never used afterwards.
+
+2024-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114070
+	* genmatch.cc (parser::parse_c_expr): Do not record operand
+	lists but only mark operators used.
+	* match.pd ((c ? a : b) op (c ? d : e)  -->  c ? (a op d) : (b op e)):
+	Properly guard the case of tcc_comparison changing the VEC_COND
+	value operand type.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114094
+	* config/i386/i386.cc (x86_function_profiler): Add missing new-line
+	to printed instruction.
+
+2024-02-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114098
+	* config/i386/amxtileintrin.h (_tile_loadconfig): Use
+	__builtin_ia32_ldtilecfg.
+	(_tile_storeconfig): Use __builtin_ia32_sttilecfg.
+	* config/i386/i386-builtin.def (BDESC): Add
+	__builtin_ia32_ldtilecfg and __builtin_ia32_sttilecfg.
+	* config/i386/i386-expand.cc (ix86_expand_builtin): Handle
+	IX86_BUILTIN_LDTILECFG and IX86_BUILTIN_STTILECFG.
+	* config/i386/i386.md (ldtilecfg): New pattern.
+	(sttilecfg): Likewise.
+
 2024-02-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/113205

@@ -1,3 +1,72 @@
+2024-02-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114012
+	* gfortran.dg/pr114012.f90: New test.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/113617
+	* g++.dg/other/pr113617.C: New test.
+	* g++.dg/other/pr113617.h: New test.
+	* g++.dg/other/pr113617-aux.cc: New test.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114042
+	* gcc.dg/builtin-stdc-bit-2.c: Adjust testcase for actual builtin
+	names rather than names of builtin replacements.
+
+2024-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114099
+	* gcc.dg/vect/vect-early-break_120-pr114099.c: New testcase.
+
+2024-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114068
+	* gcc.dg/vect/vect-early-break_118-pr114068.c: New testcase.
+	* gcc.dg/vect/vect-early-break_119-pr114068.c: Likewise.
+
+2024-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/access10.adb: New test.
+
+2024-02-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114097
+	* gcc.target/i386/pr114097-1.c: New test.
+
+2024-02-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ipa/61159
+	* gcc.c-torture/compile/pr61159.c: xfail on Solaris/x86 with as.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114090
+	* gcc.dg/pr114090.c: New test.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114084
+	* gcc.dg/bitint-94.c: New test.
+
+2024-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114070
+	* gcc.dg/torture/pr114070.c: New testcase.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114094
+	* gcc.target/i386/pr114094.c: New test.
+
+2024-02-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114098
+	* gcc.target/i386/amxtile-4.c: New test.
+
 2024-02-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/105456

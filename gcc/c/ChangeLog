@@ -1,3 +1,11 @@
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114042
+	* c-parser.cc (c_parser_postfix_expression): Diagnose
+	__builtin_stdc_bit_* argument with ENUMERAL_TYPE or BOOLEAN_TYPE
+	type or if signed here rather than on the replacement builtins
+	in check_builtin_function_arguments.
+
 2024-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/114007
