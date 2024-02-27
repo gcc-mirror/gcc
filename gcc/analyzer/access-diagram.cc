@@ -1905,7 +1905,7 @@ private:
 	const table::rect_t idx_table_rect
 	  = btm.get_table_rect (&m_string_reg, bytes, byte_idx_table_y, 1);
 	t.set_cell_span (idx_table_rect,
-			 fmt_styled_string (sm, "[%li]",
+			 fmt_styled_string (sm, "[%wu]",
 					    byte_idx_within_string.ulow ()));
       }
 
