@@ -20,6 +20,7 @@
 #include "rust-function-collector.h"
 #include "rust-bir-builder.h"
 #include "rust-bir-dump.h"
+#include "rust-bir-fact-collector.h"
 
 namespace Rust {
 namespace HIR {
@@ -86,6 +87,8 @@ BorrowChecker::go (HIR::Crate &crate)
 	  dump_function_bir (filename, bir,
 			     func->get_function_name ().as_string ());
 	}
+
+      auto facts = BIR::FactCollector::collect (bir);
     }
 
   for (auto closure ATTRIBUTE_UNUSED : collector.get_closures ())
