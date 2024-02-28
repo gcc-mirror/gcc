@@ -383,6 +383,15 @@
    (match_operand:SI 7 "const_int_operand" "")] ;; mod_f
   "TARGET_ATOMIC"
 {
+  if (word_mode != <MODE>mode && operands[3] != const0_rtx)
+    {
+      /* We don't have SI mode compare on RV64, so we need to make sure expected
+	 value is sign-extended.  */
+      rtx tmp0 = gen_reg_rtx (word_mode);
+      emit_insn (gen_extend_insn (tmp0, operands[3], word_mode, <MODE>mode, 0));
+      operands[3] = simplify_gen_subreg (<MODE>mode, tmp0, word_mode, 0);
+    }
+
   emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
 						operands[3], operands[4],
 						operands[6], operands[7]));
