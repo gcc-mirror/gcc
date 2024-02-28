@@ -151,12 +151,12 @@
 
       <listitem>
 	<para>
-	  A ChangeLog entry as plain text; see the various
-	  ChangeLog files for format and content. If you are
-	  using emacs as your editor, simply position the insertion
-	  point at the beginning of your change and hit CX-4a to bring
-	  up the appropriate ChangeLog entry. See--magic! Similar
-	  functionality also exists for vi.
+	  A ChangeLog entry as part of the Git commit message. Check
+	  some recent commits for format and content. The
+	  <filename>contrib/mklog.py</filename> script can be used to
+	  generate a ChangeLog template for commit messages. See
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/gitwrite.html">Read-write Git access</link>
+	  for scripts and aliases that are useful here.
 	</para>
       </listitem>
 
@@ -171,7 +171,7 @@
       <listitem>
 	<para>
 	  The patch itself. If you are using the Git repository use
-	  <command>git diff</command> or <command>git format-patch</command>
+	  <command>git show</command> or <command>git format-patch</command>
 	  to produce a patch;
 	  otherwise, use <command>diff -cp OLD NEW</command>. If your
 	  version of diff does not support these options, then get the
@@ -186,6 +186,8 @@
 	  patches and related discussion should be sent to the
 	  libstdc++ mailing list. In common with the rest of GCC,
 	  patches should also be sent to the gcc-patches mailing list.
+	  So you could send your email To:libstdc++@gcc.gnu.org and
+	  Cc:gcc-patches@gcc.gnu.org for example.
 	</para>
       </listitem>
     </itemizedlist>
