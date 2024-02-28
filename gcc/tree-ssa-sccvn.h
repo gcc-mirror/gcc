@@ -145,6 +145,8 @@ typedef struct vn_reference_s
   tree vuse;
   alias_set_type set;
   alias_set_type base_set;
+  poly_int64 offset;
+  poly_int64 max_size;
   tree type;
   unsigned punned : 1;
   vec<vn_reference_op_s> operands;
@@ -268,6 +270,7 @@ tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *, bool,
 			  tree * = NULL, tree = NULL_TREE, bool = false);
 void vn_reference_lookup_call (gcall *, vn_reference_t *, vn_reference_t);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, alias_set_type,
+					   poly_int64, poly_int64,
 					   tree, vec<vn_reference_op_s>,
 					   tree, unsigned int);
 void print_vn_reference_ops (FILE *, const vec<vn_reference_op_s>);

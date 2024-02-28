@@ -1666,8 +1666,9 @@ phi_translate_1 (bitmap_set_t dest,
 		if (!newoperands.exists ())
 		  newoperands = operands.copy ();
 		newref = vn_reference_insert_pieces (newvuse, ref->set,
-						     ref->base_set, ref->type,
-						     newoperands,
+						     ref->base_set,
+						     ref->offset, ref->max_size,
+						     ref->type, newoperands,
 						     result, new_val_id);
 		newoperands = vNULL;
 	      }
