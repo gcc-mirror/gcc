@@ -4807,6 +4807,26 @@
   DONE;
 })
 
+(define_expand "vcond_mask_<mode><mode>"
+  [(match_operand:SWI1248_AVX512BW 0 "register_operand")
+   (match_operand:SWI1248_AVX512BW 1 "register_operand")
+   (match_operand:SWI1248_AVX512BW 2 "register_operand")
+   (match_operand:SWI1248_AVX512BW 3 "register_operand")]
+  "TARGET_AVX512F"
+{
+  /* (operand[1] & operand[3]) | (operand[2] & ~operand[3])  */
+  rtx op1 = gen_reg_rtx (<MODE>mode);
+  rtx op2 = gen_reg_rtx (<MODE>mode);
+  rtx op3 = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_and<mode>3 (op1, operands[1], operands[3]));
+  emit_insn (gen_one_cmpl<mode>2 (op3, operands[3]));
+  emit_insn (gen_and<mode>3 (op2, operands[2], op3));
+  emit_insn (gen_ior<mode>3 (operands[0], op1, op2));
+
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel floating point logical operations
