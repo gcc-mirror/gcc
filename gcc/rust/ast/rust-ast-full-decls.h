@@ -203,7 +203,6 @@ class ExternalItem;
 class ExternalTypeItem;
 class ExternalStaticItem;
 class NamedFunctionParam;
-class ExternalFunctionItem;
 class ExternBlock;
 
 // rust-macro.h

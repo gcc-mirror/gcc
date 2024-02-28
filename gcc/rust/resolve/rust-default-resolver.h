@@ -118,7 +118,6 @@ public:
   void visit (AST::TraitItemType &);
   void visit (AST::ExternalTypeItem &);
   void visit (AST::ExternalStaticItem &);
-  void visit (AST::ExternalFunctionItem &);
   void visit (AST::MacroMatchRepetition &);
   void visit (AST::MacroMatcher &);
   void visit (AST::MacroRulesDefinition &);

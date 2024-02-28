@@ -2196,62 +2196,6 @@ CfgStrip::visit (AST::ExternalStaticItem &item)
 }
 
 void
-CfgStrip::visit (AST::ExternalFunctionItem &item)
-{
-  // strip test based on outer attrs
-  expand_cfg_attrs (item.get_outer_attrs ());
-  if (fails_cfg_with_expand (item.get_outer_attrs ()))
-    {
-      item.mark_for_strip ();
-      return;
-    }
-
-  AST::DefaultASTVisitor::visit (item);
-
-  /* strip function parameters if required - this is specifically
-   * allowed by spec */
-  auto &params = item.get_function_params ();
-  for (auto it = params.begin (); it != params.end ();)
-    {
-      auto &param = *it;
-
-      auto &param_attrs = param.get_outer_attrs ();
-      expand_cfg_attrs (param_attrs);
-      if (fails_cfg_with_expand (param_attrs))
-	{
-	  it = params.erase (it);
-	  continue;
-	}
-
-      if (!param.is_variadic ())
-	{
-	  auto &type = param.get_type ();
-	  if (type->is_marked_for_strip ())
-	    rust_error_at (type->get_locus (),
-			   "cannot strip type in this position");
-	}
-
-      // increment if nothing else happens
-      ++it;
-    }
-  /* NOTE: these are extern function params, which may have different
-   * rules and restrictions to "normal" function params. So expansion
-   * handled separately. */
-
-  /* TODO: assuming that variadic nature cannot be stripped. If this
-   * is not true, then have code here to do so. */
-
-  if (item.has_return_type ())
-    {
-      auto &return_type = item.get_return_type ();
-
-      if (return_type->is_marked_for_strip ())
-	rust_error_at (return_type->get_locus (),
-		       "cannot strip type in this position");
-    }
-}
-
-void
 CfgStrip::visit (AST::ExternBlock &block)
 {
   // initial strip test based on outer attrs

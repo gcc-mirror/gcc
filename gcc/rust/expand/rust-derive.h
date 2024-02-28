@@ -166,7 +166,6 @@ private:
   virtual void visit (TraitImpl &impl) override final{};
   virtual void visit (ExternalTypeItem &type) override final{};
   virtual void visit (ExternalStaticItem &item) override final{};
-  virtual void visit (ExternalFunctionItem &item) override final{};
   virtual void visit (ExternBlock &block) override final{};
   virtual void visit (MacroMatchFragment &match) override final{};
   virtual void visit (MacroMatchRepetition &match) override final{};

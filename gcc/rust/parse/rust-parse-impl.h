@@ -6034,68 +6034,6 @@ Parser<ManagedTokenSource>::parse_named_function_params (
   return params;
 }
 
-template <typename ManagedTokenSource>
-std::unique_ptr<AST::ExternalFunctionItem>
-Parser<ManagedTokenSource>::parse_external_function_item (
-  AST::Visibility vis, AST::AttrVec outer_attrs)
-{
-  location_t locus = lexer.peek_token ()->get_locus ();
-
-  // parse extern function declaration item
-  // skip function token
-  lexer.skip_token ();
-
-  // parse identifier
-  const_TokenPtr ident_tok = expect_token (IDENTIFIER);
-  if (ident_tok == nullptr)
-    {
-      skip_after_semicolon ();
-      return nullptr;
-    }
-  Identifier ident{ident_tok};
-
-  // parse (optional) generic params
-  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
-    = parse_generic_params_in_angles ();
-
-  if (!skip_token (LEFT_PAREN))
-    {
-      skip_after_semicolon ();
-      return nullptr;
-    }
-
-  // parse parameters
-  std::vector<AST::NamedFunctionParam> function_params
-    = parse_named_function_params (
-      [] (TokenId id) { return id == RIGHT_PAREN; });
-
-  if (!skip_token (RIGHT_PAREN))
-    {
-      skip_after_semicolon ();
-      return nullptr;
-    }
-
-  // parse (optional) return type
-  std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
-
-  // parse (optional) where clause
-  AST::WhereClause where_clause = parse_where_clause ();
-
-  if (!skip_token (SEMICOLON))
-    {
-      // skip somewhere?
-      return nullptr;
-    }
-
-  function_params.shrink_to_fit ();
-
-  return std::unique_ptr<AST::ExternalFunctionItem> (
-    new AST::ExternalFunctionItem (
-      std::move (ident), std::move (generic_params), std::move (return_type),
-      std::move (where_clause), std::move (function_params), std::move (vis),
-      std::move (outer_attrs), locus));
-}
-
 // Parses a single extern block item (static or function declaration).
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ExternalItem>
