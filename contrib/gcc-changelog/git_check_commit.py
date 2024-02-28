@@ -22,6 +22,12 @@ import argparse
 
 from git_repository import parse_git_revisions
 
+def nonzero_uint(value):
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError('%s is not a non-zero positive integer' % value)
+    return ivalue
+
 parser = argparse.ArgumentParser(description='Check git ChangeLog format '
                                  'of a commit')
 parser.add_argument('revisions', default='HEAD', nargs='?',
@@ -33,7 +39,16 @@ parser.add_argument('-p', '--print-changelog', action='store_true',
                     help='Print final changelog entires')
 parser.add_argument('-v', '--verbose', action='store_true',
                     help='Print verbose information')
+parser.add_argument('-n', '--num-commits', type=nonzero_uint, default=1,
+                    help='Number of commits to check (i.e. shorthand for '
+                    'hash~N..hash)')
 args = parser.parse_args()
+
+if args.num_commits > 1:
+    if '..' in args.revisions:
+        print('ERR: --num-commits and range of revisions are mutually exclusive')
+        exit(1)
+    args.revisions = '{0}~{1}..{0}'.format(args.revisions, args.num_commits)
 
 retval = 0
 for git_commit in parse_git_revisions(args.git_path, args.revisions):
