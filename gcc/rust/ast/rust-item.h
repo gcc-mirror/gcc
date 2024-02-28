@@ -2081,6 +2081,8 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  bool has_expr () { return expression != nullptr; }
+
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Expr> &get_expr ()
   {
