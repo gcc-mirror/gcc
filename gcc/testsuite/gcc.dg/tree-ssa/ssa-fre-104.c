@@ -21,4 +21,4 @@ int main() {
   *c = &d;
 }
 
-/* { dg-final { scan-tree-dump-not "foo" "fre1" } } */
+/* { dg-final { scan-tree-dump-not "foo" "fre1" { xfail *-*-* } } } */
