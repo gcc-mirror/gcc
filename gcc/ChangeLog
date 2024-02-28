@@ -1,3 +1,28 @@
+2024-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-dse.cc (compute_trims): Fix description.  Return early
+	if either ref->offset is not byte aligned or ref->size is not known
+	to be equal to ref->max_size.
+	(maybe_trim_complex_store): Fix description.
+	(maybe_trim_constructor_store): Likewise.
+	(maybe_trim_partially_dead_store): Likewise.
+
+2024-02-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-02-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114098
+	* config/i386/amxtileintrin.h (_tile_loadconfig): Use
+	__builtin_ia32_ldtilecfg.
+	(_tile_storeconfig): Use __builtin_ia32_sttilecfg.
+	* config/i386/i386-builtin.def (BDESC): Add
+	__builtin_ia32_ldtilecfg and __builtin_ia32_sttilecfg.
+	* config/i386/i386-expand.cc (ix86_expand_builtin): Handle
+	IX86_BUILTIN_LDTILECFG and IX86_BUILTIN_STTILECFG.
+	* config/i386/i386.md (ldtilecfg): New pattern.
+	(sttilecfg): Likewise.
+
 2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
