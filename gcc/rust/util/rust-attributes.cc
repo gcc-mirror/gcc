@@ -767,10 +767,6 @@ AttributeChecker::visit (AST::ExternalStaticItem &)
 {}
 
 void
-AttributeChecker::visit (AST::ExternalFunctionItem &)
-{}
-
-void
 AttributeChecker::visit (AST::ExternBlock &block)
 {
   check_proc_macro_non_function (block.get_outer_attrs ());

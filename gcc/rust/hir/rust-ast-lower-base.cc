@@ -345,9 +345,6 @@ void
 ASTLoweringBase::visit (AST::ExternalStaticItem &)
 {}
 void
-ASTLoweringBase::visit (AST::ExternalFunctionItem &)
-{}
-void
 ASTLoweringBase::visit (AST::ExternBlock &)
 {}
 

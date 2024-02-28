@@ -164,7 +164,6 @@ public:
   // virtual void visit(ExternalItem& item) = 0;
   virtual void visit (ExternalTypeItem &type) = 0;
   virtual void visit (ExternalStaticItem &item) = 0;
-  virtual void visit (ExternalFunctionItem &item) = 0;
   virtual void visit (ExternBlock &block) = 0;
 
   // rust-macro.h
@@ -338,7 +337,6 @@ protected:
   virtual void visit (AST::TraitImpl &impl) override;
   virtual void visit (AST::ExternalTypeItem &item) override;
   virtual void visit (AST::ExternalStaticItem &item) override;
-  virtual void visit (AST::ExternalFunctionItem &item) override;
   virtual void visit (AST::ExternBlock &block) override;
   virtual void visit (AST::MacroMatchFragment &match) override;
   virtual void visit (AST::MacroMatchRepetition &match) override;

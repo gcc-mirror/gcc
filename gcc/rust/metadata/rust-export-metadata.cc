@@ -93,46 +93,9 @@ ExportContext::emit_function (const HIR::Function &fn)
       // FIXME assert that this is actually an AST::Function
       AST::Function &function = static_cast<AST::Function &> (vis_item);
 
-      // we can emit an extern block with abi of "rust"
-      Identifier item_name = function.get_function_name ();
-
-      // always empty for extern linkage
-      AST::WhereClause where_clause = AST::WhereClause::create_empty ();
-      std::vector<std::unique_ptr<AST::GenericParam>> generic_params;
-
-      AST::Visibility vis = function.get_visibility ();
-      std::unique_ptr<AST::Type> return_type
-	= std::unique_ptr<AST::Type> (nullptr);
-      if (function.has_return_type ())
-	{
-	  return_type = function.get_return_type ()->clone_type ();
-	}
-
-      std::vector<AST::NamedFunctionParam> function_params;
-      for (auto &p : function.get_function_params ())
-	{
-	  if (p->is_variadic () || p->is_self ())
-	    rust_unreachable ();
-	  auto param = static_cast<AST::FunctionParam *> (p.get ());
-	  std::string name = param->get_pattern ()->as_string ();
-	  std::unique_ptr<AST::Type> param_type
-	    = param->get_type ()->clone_type ();
-
-	  AST::NamedFunctionParam np (name, std::move (param_type), {},
-				      param->get_locus ());
-	  function_params.push_back (std::move (np));
-	}
-
-      AST::ExternalItem *external_item
-	= new AST::ExternalFunctionItem (item_name, {} /* generic_params */,
-					 std::move (return_type), where_clause,
-					 std::move (function_params), vis,
-					 function.get_outer_attrs (),
-					 function.get_locus ());
-
       std::vector<std::unique_ptr<AST::ExternalItem>> external_items;
-      external_items.push_back (
-	std::unique_ptr<AST::ExternalItem> (external_item));
+      external_items.push_back (std::unique_ptr<AST::ExternalItem> (
+	static_cast<AST::ExternalItem *> (&function)));
 
       AST::ExternBlock extern_block (get_string_from_abi (Rust::ABI::RUST),
 				     std::move (external_items),

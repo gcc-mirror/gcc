@@ -431,10 +431,6 @@ ResolverBase::visit (AST::ExternalStaticItem &)
 {}
 
 void
-ResolverBase::visit (AST::ExternalFunctionItem &)
-{}
-
-void
 ResolverBase::visit (AST::ExternBlock &)
 {}
 

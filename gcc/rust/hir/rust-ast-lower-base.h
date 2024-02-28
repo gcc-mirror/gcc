@@ -186,7 +186,6 @@ public:
   //  virtual void visit(ExternalItem& item);
   virtual void visit (AST::ExternalTypeItem &item);
   virtual void visit (AST::ExternalStaticItem &item);
-  virtual void visit (AST::ExternalFunctionItem &item);
   virtual void visit (AST::ExternBlock &block);
 
   // rust-macro.h

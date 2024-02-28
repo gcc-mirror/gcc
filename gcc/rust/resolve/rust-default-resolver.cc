@@ -493,10 +493,6 @@ DefaultResolver::visit (AST::ExternalStaticItem &)
 {}
 
 void
-DefaultResolver::visit (AST::ExternalFunctionItem &)
-{}
-
-void
 DefaultResolver::visit (AST::MacroMatchRepetition &)
 {}
 

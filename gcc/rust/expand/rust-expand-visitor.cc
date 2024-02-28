@@ -923,23 +923,6 @@ ExpandVisitor::visit (AST::ExternalStaticItem &static_item)
 }
 
 void
-ExpandVisitor::visit (AST::ExternalFunctionItem &item)
-{
-  for (auto &param : item.get_generic_params ())
-    visit (param);
-
-  for (auto &param : item.get_function_params ())
-    if (!param.is_variadic ())
-      maybe_expand_type (param.get_type ());
-
-  if (item.has_return_type ())
-    maybe_expand_type (item.get_return_type ());
-
-  if (item.has_where_clause ())
-    expand_where_clause (item.get_where_clause ());
-}
-
-void
 ExpandVisitor::visit (AST::ExternBlock &block)
 {
   visit_inner_attrs (block);

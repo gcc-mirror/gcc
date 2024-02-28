@@ -2975,69 +2975,6 @@ ExternalStaticItem::as_string () const
 }
 
 std::string
-ExternalFunctionItem::as_string () const
-{
-  // outer attributes
-  std::string str = append_attributes (outer_attrs, OUTER);
-
-  // start visibility on new line and with a space
-  str += "\n" + visibility.as_string () + " ";
-
-  str += "fn ";
-
-  // add name
-  str += item_name.as_string ();
-
-  // generic params
-  str += "\n Generic params: ";
-  if (generic_params.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &param : generic_params)
-	{
-	  // DEBUG: null pointer check
-	  if (param == nullptr)
-	    {
-	      rust_debug (
-		"something really terrible has gone wrong - null pointer "
-		"generic param in external function item.");
-	      return "NULL_POINTER_MARK";
-	    }
-
-	  str += "\n  " + param->as_string ();
-	}
-    }
-
-  // function params
-  str += "\n Function params: ";
-  if (function_params.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &param : function_params)
-	str += "\n  " + param.as_string ();
-    }
-
-  // add type on new line
-  str += "\n (return) Type: "
-	 + (has_return_type () ? return_type->as_string () : "()");
-
-  // where clause
-  str += "\n Where clause: ";
-  if (has_where_clause ())
-    str += where_clause.as_string ();
-  else
-    str += "none";
-
-  return str;
-}
-
-std::string
 NamedFunctionParam::as_string () const
 {
   std::string str = append_attributes (outer_attrs, OUTER);
@@ -4862,12 +4799,6 @@ ExternalTypeItem::accept_vis (ASTVisitor &vis)
 
 void
 ExternalStaticItem::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ExternalFunctionItem::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
