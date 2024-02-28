@@ -7,7 +7,8 @@
 /* { dg-final { scan-assembler-times "vpmovdw" 8 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpmovdb" 6 { target { ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpmovdb" 8 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vpmovwb" 8 } } */
+/* { dg-final { scan-assembler-times "vpmovwb" 8 { target { ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpmovwb" 10 { target { ! ia32 } } } } */
 
 #include <x86intrin.h>
 
@@ -113,6 +114,11 @@ __v2qi	mm32_cvtepi16_epi8_builtin_convertvector(__v2hi a)
   return __builtin_convertvector((__v2hi)a, __v2qi);
 }
 
+__v4qi	mm64_cvtepi16_epi8_builtin_convertvector(__v4hi a)
+{
+  return __builtin_convertvector((__v4hi)a, __v4qi);
+}
+
 __v8qi	mm_cvtepi16_epi8_builtin_convertvector(__m128i a)
 {
   return __builtin_convertvector((__v8hi)a, __v8qi);
@@ -216,6 +222,11 @@ __m128i	mm512_cvtepu32_epu8_builtin_convertvector(__m512i a)
 __v2qu	mm32_cvtepu16_epu8_builtin_convertvector(__v2hu a)
 {
   return __builtin_convertvector((__v2hu)a, __v2qu);
+}
+
+__v4qu	mm64_cvtepu16_epu8_builtin_convertvector(__v4hu a)
+{
+  return __builtin_convertvector((__v4hu)a, __v4qu);
 }
 
 __v8qu	mm_cvtepu16_epu8_builtin_convertvector(__m128i a)

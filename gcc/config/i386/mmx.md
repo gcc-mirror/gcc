@@ -67,6 +67,9 @@
 ;; 4-byte integer vector modes
 (define_mode_iterator VI_32 [V4QI V2HI])
 
+;; 8-byte and 4-byte HImode vector modes
+(define_mode_iterator VI2_32_64 [(V4HI "TARGET_MMX_WITH_SSE") V2HI])
+
 ;; 4-byte and 2-byte integer vector modes
 (define_mode_iterator VI_16_32 [V4QI V2QI V2HI])
 
@@ -105,6 +108,12 @@
 
 (define_mode_attr mmxdoublemode
   [(V8QI "V8HI") (V4HI "V4SI")])
+
+(define_mode_attr mmxhalfmode
+  [(V4HI "V4QI") (V2HI "V2QI")])
+
+(define_mode_attr mmxhalfmodelower
+  [(V4HI "v4qi") (V2HI "v2qi")])
 
 ;; Mapping of vector float modes to an integer mode of the same size
 (define_mode_attr mmxintvecmode
@@ -4880,10 +4889,10 @@
   DONE;
 })
 
-(define_insn "truncv2hiv2qi2"
-  [(set (match_operand:V2QI 0 "register_operand" "=v")
-	(truncate:V2QI
-	  (match_operand:V2HI 1 "register_operand" "v")))]
+(define_insn "trunc<mode><mmxhalfmodelower>2"
+  [(set (match_operand:<mmxhalfmode> 0 "register_operand" "=v")
+	(truncate:<mmxhalfmode>
+	  (match_operand:VI2_32_64 1 "register_operand" "v")))]
   "TARGET_AVX512VL && TARGET_AVX512BW"
   "vpmovwb\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")

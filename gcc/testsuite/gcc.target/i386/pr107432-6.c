@@ -1,18 +1,15 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512fp16 -mavx512vl -mavx512bw -O2 -mavx512dq -fno-trapping-math" } */
-/* { dg-final { scan-assembler-times "vcvttpd2dq" 2 { target { ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttpd2dq" 3 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttpd2udq" 2 { target { ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttpd2udq" 3 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttps2dq" 3 { target { ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttps2dq" 4 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttps2udq" 3 { target { ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttps2udq" 4 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttph2w" 4 } } */
-/* { dg-final { scan-assembler-times "vcvttph2uw" 4 } } */
+/* { dg-final { scan-assembler-times "vcvttpd2dq" 4 { target { ia32 } } } } */
+/* { dg-final { scan-assembler-times "vcvttpd2dq" 6 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vcvttps2dq" 6 { target { ia32 } } } } */
+/* { dg-final { scan-assembler-times "vcvttps2dq" 8 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vcvttph2w" 8 { target { ia32 } } } } */
+/* { dg-final { scan-assembler-times "vcvttph2w" 10 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpmovdb" 10 { target { ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpmovdb" 14 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vpmovwb" 8 } } */
+/* { dg-final { scan-assembler-times "vpmovwb" 8 { target { ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpmovwb" 10 { target { ! ia32 } } } } */
 
 #include <x86intrin.h>
 
@@ -103,6 +100,11 @@ __v2qi	mm32_cvtph_epi8_builtin_convertvector(__v2hf a)
   return __builtin_convertvector((__v2hf)a, __v2qi);
 }
 
+__v4qi	mm64_cvtph_epi8_builtin_convertvector(__v4hf a)
+{
+  return __builtin_convertvector((__v4hf)a, __v4qi);
+}
+
 __v8qi	mm128_cvtph_epi8_builtin_convertvector(__v8hf a)
 {
   return __builtin_convertvector((__v8hf)a, __v8qi);
@@ -121,6 +123,11 @@ __v32qi	mm512_cvtph_epi8_builtin_convertvector(__v32hf a)
 __v2qu	mm32_cvtph_epu8_builtin_convertvector(__v2hf a)
 {
   return __builtin_convertvector((__v2hf)a, __v2qu);
+}
+
+__v4qu	mm64_cvtph_epu8_builtin_convertvector(__v4hf a)
+{
+  return __builtin_convertvector((__v4hf)a, __v4qu);
 }
 
 __v8qu	mm128_cvtph_epu8_builtin_convertvector(__v8hf a)
