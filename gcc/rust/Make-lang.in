@@ -225,7 +225,7 @@ RUST_ALL_OBJS = $(GRS_OBJS) $(RUST_TARGET_OBJS)
 
 rust_OBJS = $(RUST_ALL_OBJS) rust/rustspec.o
 
-RUST_LDFLAGS = $(LDFLAGS) -L./../libgrust/libproc_macro_internal -L./../libgrust/librustc_format_parser/
+RUST_LDFLAGS = $(LDFLAGS) -L./../libgrust/libproc_macro_internal
 RUST_LIBDEPS = $(LIBDEPS) ../libgrust/libproc_macro_internal/libproc_macro_internal.a rust/libformat_parser.a
 
 # The compiler itself is called crab1
