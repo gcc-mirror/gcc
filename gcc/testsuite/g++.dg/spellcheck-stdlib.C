@@ -104,6 +104,8 @@ void test_cstring (char *dest, char *src)
   // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
   strcpy(dest, "test"); // { dg-error "was not declared" }
   // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strerror(0); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
   strlen("test"); // { dg-error "was not declared" }
   // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
   strncat(dest, "test", 3); // { dg-error "was not declared" }
