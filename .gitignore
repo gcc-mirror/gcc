@@ -77,4 +77,3 @@ test.code-workspace
 
 gcc/rust/test3-tiny/*
 .clang-format.swap
-libgrust/*/target/
