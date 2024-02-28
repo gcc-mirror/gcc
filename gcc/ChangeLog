@@ -1,3 +1,50 @@
+2024-02-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113871
+	* config/i386/mmx.md (V248FI): Add V2BF mode.
+	(V24FI_32): Ditto.
+
+2024-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-dse.cc (compute_trims): Fix description.  Return early
+	if either ref->offset is not byte aligned or ref->size is not known
+	to be equal to ref->max_size.
+	(maybe_trim_complex_store): Fix description.
+	(maybe_trim_constructor_store): Likewise.
+	(maybe_trim_partially_dead_store): Likewise.
+
+2024-02-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/mmintrin.h: Warn if this header is included without
+	defining __ENABLE_DEPRECATED_IWMMXT.
+
+2024-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114074
+	* tree-chrec.h (chrec_convert_rhs): Default at_stmt arg to NULL.
+	* tree-chrec.cc (chrec_fold_multiply): Canonicalize inputs.
+	Handle poly vs. non-poly multiplication correctly with respect
+	to undefined behavior on overflow.
+
+2024-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114044
+	* internal-fn.def (CLRSB, CLZ, CTZ, FFS, PARITY): Use
+	DEF_INTERNAL_INT_EXT_FN macro rather than DEF_INTERNAL_INT_FN.
+	* internal-fn.h (expand_CLRSB, expand_CLZ, expand_CTZ, expand_FFS,
+	expand_PARITY): Declare.
+	* internal-fn.cc (expand_bitquery, expand_CLRSB, expand_CLZ,
+	expand_CTZ, expand_FFS, expand_PARITY): New functions.
+	(expand_POPCOUNT): Use expand_bitquery.
+
+2024-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114081
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Perform manual dominator update for prologue peeling.
+	(vect_do_peeling): Properly update dominators after adding the
+	prologue-around guard.
+
 2024-02-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.opt (mcall-prologues, mrelax, maccumulate-args)

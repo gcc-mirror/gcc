@@ -1,3 +1,16 @@
+2024-02-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenACC Runtime Library Routines): Document new 3.3
+	routines that simply map to their C counterpart.
+	* openacc.f90 (openacc): Add them.
+	* openacc_lib.h: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_host_device_ptr.f90: New test.
+	* testsuite/libgomp.oacc-fortran/acc-memcpy.f90: New test.
+	* testsuite/libgomp.oacc-fortran/acc-memcpy-2.f90: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-59.c: Crossref to f90 test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-60.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-95.c: Likewise.
+
 2024-02-21  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP Context Selectors): Add 'nvptx64' as additional

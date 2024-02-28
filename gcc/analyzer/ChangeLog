@@ -1,3 +1,18 @@
+2024-02-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110483
+	PR analyzer/111802
+	* access-diagram.cc
+	(string_literal_spatial_item::add_column_for_byte): Use %wu for
+	printing unsigned HOST_WIDE_INT.
+
+2024-02-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111881
+	* constraint-manager.cc (bound::ensure_closed): Assert that
+	m_constant has integral type.
+	(range::add_bound): Bail out on floating point constants.
+
 2024-02-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/113999
