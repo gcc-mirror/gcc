@@ -226,14 +226,15 @@ RUST_ALL_OBJS = $(GRS_OBJS) $(RUST_TARGET_OBJS)
 rust_OBJS = $(RUST_ALL_OBJS) rust/rustspec.o
 
 LIBPROC_MACRO_INTERNAL = ../libgrust/libproc_macro_internal/libproc_macro_internal.a
+LIBFORMAT_PARSER = rust/libformat_parser.a
 
-RUST_LIBDEPS = $(LIBDEPS) $(LIBPROC_MACRO_INTERNAL) rust/libformat_parser.a
+RUST_LIBDEPS = $(LIBDEPS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER)
 
 # The compiler itself is called crab1
 crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(RUST_LIBDEPS) $(rust.prev)
 	@$(call LINK_PROGRESS,$(INDEX.rust),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(LIBPROC_MACRO_INTERNAL) rust/libformat_parser.a $(BACKENDLIBS)
+	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.rust),end)
 
 # Build hooks.
@@ -423,7 +424,7 @@ rust/%.o: rust/lex/%.cc
 	echo $@
 
 # TODO: Improve `cargo` invocation with host specific flags, possibly creating a $(CARGO) variable?
-rust/libformat_parser.a: $(srcdir)/../libgrust/libformat_parser/Cargo.toml $(wildcard $(srcdir)/../libgrust/libformat_parser/src/*.rs)
+$(LIBFORMAT_PARSER): $(srcdir)/../libgrust/libformat_parser/Cargo.toml $(wildcard $(srcdir)/../libgrust/libformat_parser/src/*.rs)
 	cd $(srcdir)/../libgrust/libformat_parser && cargo build --offline  # FIXME: Not always release, right?
 	cp $(srcdir)/../libgrust/libformat_parser/target/debug/liblibformat_parser.a $@
 
