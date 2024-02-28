@@ -1,3 +1,31 @@
+2024-02-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-02-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114098
+	* config/i386/amxtileintrin.h (_tile_loadconfig): Use
+	__builtin_ia32_ldtilecfg.
+	(_tile_storeconfig): Use __builtin_ia32_sttilecfg.
+	* config/i386/i386-builtin.def (BDESC): Add
+	__builtin_ia32_ldtilecfg and __builtin_ia32_sttilecfg.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Handle
+	IX86_BUILTIN_LDTILECFG and IX86_BUILTIN_STTILECFG.
+	* config/i386/i386.md (ldtilecfg): New pattern.
+	(sttilecfg): Likewise.
+
+2024-02-27  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2023-08-31  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/110411
+	* config/rs6000/mma.md (define_insn_and_split movoo): Disallow
+	AltiVec address operands.
+	(define_insn_and_split movxo): Likewise.
+	* config/rs6000/predicates.md (vsx_quad_dform_memory_operand): Remove
+	redundant mode size check.
+
 2024-02-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
