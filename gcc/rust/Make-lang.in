@@ -226,7 +226,7 @@ RUST_ALL_OBJS = $(GRS_OBJS) $(RUST_TARGET_OBJS)
 rust_OBJS = $(RUST_ALL_OBJS) rust/rustspec.o
 
 LIBPROC_MACRO_INTERNAL = ../libgrust/libproc_macro_internal/libproc_macro_internal.a
-LIBFORMAT_PARSER = rust/libformat_parser.a
+LIBFORMAT_PARSER = $(srcdir)/../libgrust/libformat_parser/target/debug/liblibformat_parser.a
 
 # The compiler itself is called crab1
 crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(rust.prev)
@@ -424,7 +424,6 @@ rust/%.o: rust/lex/%.cc
 # TODO: Improve `cargo` invocation with host specific flags, possibly creating a $(CARGO) variable?
 $(LIBFORMAT_PARSER): $(srcdir)/../libgrust/libformat_parser/Cargo.toml $(wildcard $(srcdir)/../libgrust/libformat_parser/src/*.rs)
 	cd $(srcdir)/../libgrust/libformat_parser && cargo build --offline  # FIXME: Not always release, right?
-	cp $(srcdir)/../libgrust/libformat_parser/target/debug/liblibformat_parser.a $@
 
 # build all rust/parse files in rust folder, add cross-folder includes
 rust/%.o: rust/parse/%.cc
