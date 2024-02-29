@@ -14760,13 +14760,67 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	  goto error;
 	}
 
-      if (CLASS_DATA (me_arg)->ts.u.derived
-	  != resolve_bindings_derived)
+      /* The derived type is not a PDT template.  Resolve as usual.  */
+      if (!resolve_bindings_derived->attr.pdt_template
+	  && (CLASS_DATA (me_arg)->ts.u.derived != resolve_bindings_derived))
 	{
-	  gfc_error ("Argument %qs of %qs with PASS(%s) at %L must be of"
-		     " the derived-type %qs", me_arg->name, proc->name,
+	  gfc_error ("Argument %qs of %qs with PASS(%s) at %L must be of "
+		     "the derived-type %qs", me_arg->name, proc->name,
 		     me_arg->name, &where, resolve_bindings_derived->name);
 	  goto error;
+	}
+
+      if (resolve_bindings_derived->attr.pdt_template
+	  && !gfc_pdt_is_instance_of (resolve_bindings_derived,
+				      CLASS_DATA (me_arg)->ts.u.derived))
+	{
+	  gfc_error ("Argument %qs of %qs with PASS(%s) at %L must be of "
+		     "the parametric derived-type %qs", me_arg->name,
+		     proc->name, me_arg->name, &where,
+		     resolve_bindings_derived->name);
+	  goto error;
+	}
+
+      if (resolve_bindings_derived->attr.pdt_template
+	  && gfc_pdt_is_instance_of (resolve_bindings_derived,
+				     CLASS_DATA (me_arg)->ts.u.derived)
+          && (me_arg->param_list != NULL)
+          && (gfc_spec_list_type (me_arg->param_list,
+				  CLASS_DATA(me_arg)->ts.u.derived)
+				  != SPEC_ASSUMED))
+	{
+
+          /* Add a check to verify if there are any LEN parameters in the
+	     first place.  If there are LEN parameters, throw this error.
+	     If there are only KIND parameters, then don't trigger
+	     this error.  */
+	  gfc_component *c;
+	  bool seen_len_param = false;
+	  gfc_actual_arglist *me_arg_param = me_arg->param_list;
+
+	  for (; me_arg_param; me_arg_param = me_arg_param->next)
+	    {
+	      c = gfc_find_component (CLASS_DATA(me_arg)->ts.u.derived,
+				     me_arg_param->name, true, true, NULL);
+
+	      gcc_assert (c != NULL);
+
+	      if (c->attr.pdt_kind)
+	        continue;
+
+	      /* Getting here implies that there is a pdt_len parameter
+	         in the list.  */
+	      seen_len_param = true;
+	      break;
+	    }
+
+	    if (seen_len_param)
+	      {
+		gfc_error ("All LEN type parameters of the passed dummy "
+			   "argument %qs of %qs at %L must be ASSUMED.",
+			   me_arg->name, proc->name, &where);
+		goto error;
+	      }
 	}
 
       gcc_assert (me_arg->ts.type == BT_CLASS);
@@ -15886,11 +15940,13 @@ resolve_pdt (gfc_symbol* sym)
       else if (param->spec_type == SPEC_ASSUMED)
 	assumed_len_exprs = true;
 
-      if (param->spec_type == SPEC_DEFERRED
-	  && !attr->allocatable && !attr->pointer)
-	gfc_error ("The object %qs at %L has a deferred LEN "
-		   "parameter %qs and is neither allocatable "
-		   "nor a pointer", sym->name, &sym->declared_at,
+      if (param->spec_type == SPEC_DEFERRED && !attr->allocatable
+	  && ((sym->ts.type == BT_DERIVED && !attr->pointer)
+	      || (sym->ts.type == BT_CLASS && !attr->class_pointer)))
+	gfc_error ("Entity %qs at %L has a deferred LEN "
+		   "parameter %qs and requires either the POINTER "
+		   "or ALLOCATABLE attribute",
+		   sym->name, &sym->declared_at,
 		   param->name);
 
     }
