@@ -499,7 +499,7 @@ make_dummy_type (Entity_Id gnat_type)
   if (No (gnat_equiv))
     gnat_equiv = gnat_type;
 
-  /* If it there already a dummy type, use that one.  Else make one.  */
+  /* If there is already a dummy type, use that one.  Else make one.  */
   if (PRESENT_DUMMY_NODE (gnat_equiv))
     return GET_DUMMY_NODE (gnat_equiv);
 

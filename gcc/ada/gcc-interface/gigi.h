@@ -906,7 +906,7 @@ extern tree build_call_alloc_dealloc (tree gnu_obj, tree gnu_size,
 				      Entity_Id gnat_pool, Node_Id gnat_node);
 
 /* Build a GCC tree to correspond to allocating an object of TYPE whose
-   initial value if INIT, if INIT is nonzero.  Convert the expression to
+   initial value is INIT, if INIT is nonzero.  Convert the expression to
    RESULT_TYPE, which must be some type of pointer.  Return the tree.
 
    GNAT_PROC and GNAT_POOL optionally give the procedure to call and

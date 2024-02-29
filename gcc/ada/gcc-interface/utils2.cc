@@ -2884,7 +2884,7 @@ gnat_protect_expr (tree exp)
   if (code == NON_LVALUE_EXPR
       || CONVERT_EXPR_CODE_P (code)
       || code == VIEW_CONVERT_EXPR)
-  return build1 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)));
+    return build1 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)));
 
   /* If we're indirectly referencing something, we only need to protect the
      address since the data itself can't change in these situations.  */

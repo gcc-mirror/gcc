@@ -1384,7 +1384,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    volatile_flag = false;
 	    gnu_size = NULL_TREE;
 
-	    /* In case this was a aliased object whose nominal subtype is
+	    /* In case this was an aliased object whose nominal subtype is
 	       unconstrained, the pointer above will be a thin pointer and
 	       build_allocator will automatically make the template.
 
@@ -2103,7 +2103,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	   1. the array type (suffix XUA) containing the actual data,
 
-	   2. the template type (suffix XUB) containng the bounds,
+	   2. the template type (suffix XUB) containing the bounds,
 
 	   3. the fat pointer type (suffix XUP) representing a pointer or a
 	      reference to the unconstrained array type:
@@ -5445,8 +5445,8 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 	  if (gnu_comp_align > TYPE_ALIGN (gnu_type))
 	    gnu_comp_align = 0;
 	}
-       else
-	 gnu_comp_align = 0;
+      else
+	gnu_comp_align = 0;
 
       gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, gnu_comp_align,
 				 gnat_array, true, definition, true);
