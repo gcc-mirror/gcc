@@ -205,6 +205,8 @@ static Entity_Id Gigi_Cloned_Subtype (Entity_Id);
 static tree gnu_ext_name_for_subprog (Entity_Id, tree);
 static void set_nonaliased_component_on_array_type (tree);
 static void set_reverse_storage_order_on_array_type (tree);
+static void set_typeless_storage_on_aggregate_type (tree);
+static void set_universal_aliasing_on_type (tree);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (tree, Entity_Id);
 static bool compile_time_known_address_p (Node_Id);
@@ -2385,6 +2387,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      set_reverse_storage_order_on_array_type (tem);
 	    if (array_type_has_nonaliased_component (tem, gnat_entity))
 	      set_nonaliased_component_on_array_type (tem);
+	    if (Universal_Aliasing (gnat_entity)
+	        || Universal_Aliasing (Component_Type (gnat_entity)))
+	      set_typeless_storage_on_aggregate_type (tem);
 	  }
 
 	/* If this is a packed type implemented specially, then process the
@@ -2790,6 +2795,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		set_reverse_storage_order_on_array_type (gnu_type);
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 		set_nonaliased_component_on_array_type (gnu_type);
+	      if (Universal_Aliasing (gnat_entity)
+		  || Universal_Aliasing (Component_Type (gnat_entity)))
+		set_typeless_storage_on_aggregate_type (gnu_type);
 
 	      /* Clear the TREE_OVERFLOW flag, if any, for null arrays.  */
 	      if (gnu_null_ranges[index])
@@ -4757,7 +4765,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  /* Record whether a pragma Universal_Aliasing was specified.  */
 	  if (Universal_Aliasing (gnat_entity) && !TYPE_IS_DUMMY_P (gnu_type))
-	    TYPE_UNIVERSAL_ALIASING_P (gnu_type) = 1;
+	    {
+	      /* Set TYPE_TYPELESS_STORAGE if this is an aggregate type and
+		 TYPE_UNIVERSAL_ALIASING_P otherwise, since the former is not
+		 available in the latter case  Both will effectively put alias
+		 set 0 on the type, but the former is more robust because it
+		 will be streamed in LTO mode.  */
+	      if (AGGREGATE_TYPE_P (gnu_type))
+		set_typeless_storage_on_aggregate_type (gnu_type);
+	      else
+		set_universal_aliasing_on_type (gnu_type);
+	    }
 
 	  /* If it is passed by reference, force BLKmode to ensure that
 	     objects of this type will always be put in memory.  */
@@ -6639,6 +6657,26 @@ set_reverse_storage_order_on_array_type (tree type)
   TYPE_REVERSE_STORAGE_ORDER (type) = 1;
   if (TYPE_CANONICAL (type))
     TYPE_REVERSE_STORAGE_ORDER (TYPE_CANONICAL (type)) = 1;
+}
+
+/* Set TYPE_TYPELESS_STORAGE on an aggregate type.  */
+
+static void
+set_typeless_storage_on_aggregate_type (tree type)
+{
+  TYPE_TYPELESS_STORAGE (type) = 1;
+  if (TYPE_CANONICAL (type))
+    TYPE_TYPELESS_STORAGE (TYPE_CANONICAL (type)) = 1;
+}
+
+/* Set TYPE_UNIVERSAL_ALIASING_P on a type.  */
+
+static void
+set_universal_aliasing_on_type (tree type)
+{
+  TYPE_UNIVERSAL_ALIASING_P (type) = 1;
+  if (TYPE_CANONICAL (type))
+    TYPE_UNIVERSAL_ALIASING_P (TYPE_CANONICAL (type)) = 1;
 }
 
 /* Return true if DISCR1 and DISCR2 represent the same discriminant.  */
