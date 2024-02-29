@@ -15,6 +15,11 @@
 
 #include "parallel_backend_utils.h"
 
+#ifndef TBB_SUPPRESS_DEPRECATED_MESSAGES
+# define TBB_SUPPRESS_DEPRECATED_MESSAGES 1
+# define _GLIBCXX_UNDEF_SUPPRESS
+#endif
+
 // Bring in minimal required subset of Intel TBB
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
@@ -24,6 +29,11 @@
 #include <tbb/task_arena.h>
 #include <tbb/tbb_allocator.h>
 #include <tbb/task.h>
+
+#ifdef _GLIBCXX_UNDEF_SUPPRESS
+# undef TBB_SUPPRESS_DEPRECATED_MESSAGES
+# undef _GLIBCXX_UNDEF_SUPPRESS
+#endif
 
 #if TBB_INTERFACE_VERSION < 10000
 #    error Intel(R) Threading Building Blocks 2018 is required; older versions are not supported.
