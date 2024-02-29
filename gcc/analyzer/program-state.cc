@@ -1143,14 +1143,14 @@ program_state::to_json (const extrinsic_state &ext_state) const
 
 void
 program_state::push_frame (const extrinsic_state &ext_state ATTRIBUTE_UNUSED,
-			   function *fun)
+			   const function &fun)
 {
   m_region_model->push_frame (fun, NULL, NULL);
 }
 
 /* Get the current function of this state.  */
 
-function *
+const function *
 program_state::get_current_function () const
 {
   return m_region_model->get_current_function ();

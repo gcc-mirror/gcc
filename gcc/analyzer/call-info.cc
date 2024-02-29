@@ -143,6 +143,14 @@ call_info::call_info (const call_details &cd)
   gcc_assert (m_fndecl);
 }
 
+call_info::call_info (const call_details &cd,
+		      const function &called_fn)
+: m_call_stmt (cd.get_call_stmt ()),
+  m_fndecl (called_fn.decl)
+{
+  gcc_assert (m_fndecl);
+}
+
 /* class succeed_or_fail_call_info : public call_info.  */
 
 label_text

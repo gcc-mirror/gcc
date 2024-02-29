@@ -730,7 +730,7 @@ extern poly_int64 get_stack_dynamic_offset ();
 
 /* Returns the name of the current function.  */
 extern const char *fndecl_name (tree);
-extern const char *function_name (struct function *);
+extern const char *function_name (const function *);
 extern const char *current_function_name (void);
 
 extern void used_types_insert (tree);

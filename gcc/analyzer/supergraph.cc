@@ -364,6 +364,7 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
     FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     {
       function *fun = node->get_fun ();
+      gcc_assert (fun);
       const char *funcname = function_name (fun);
       gv.println ("subgraph \"cluster_%s\" {",
 		  funcname);
@@ -409,9 +410,9 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
 
       /* Add an invisible edge from ENTRY to EXIT, to improve the graph layout.  */
       pp_string (pp, "\t");
-      get_node_for_function_entry (fun)->dump_dot_id (pp);
+      get_node_for_function_entry (*fun)->dump_dot_id (pp);
       pp_string (pp, ":s -> ");
-      get_node_for_function_exit (fun)->dump_dot_id (pp);
+      get_node_for_function_exit (*fun)->dump_dot_id (pp);
       pp_string (pp, ":n [style=\"invis\",constraint=true];\n");
 
       /* Terminate per-function "subgraph" */

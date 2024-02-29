@@ -1072,7 +1072,7 @@ point_and_state::validate (const extrinsic_state &ext_state) const
     {
       int index = iter_frame->get_index ();
       gcc_assert (m_point.get_function_at_depth (index)
-		  == iter_frame->get_function ());
+		  == &iter_frame->get_function ());
     }
 }
 
@@ -1496,14 +1496,17 @@ exploded_node::on_stmt (exploded_graph &eg,
 	per_function_data *called_fn_data
 	  = eg.get_per_function_data (called_fn);
 	if (called_fn_data)
-	  return replay_call_summaries (eg,
-					snode,
-					as_a <const gcall *> (stmt),
-					state,
-					path_ctxt,
-					called_fn,
-					called_fn_data,
-					&ctxt);
+	  {
+	    gcc_assert (called_fn);
+	    return replay_call_summaries (eg,
+					  snode,
+					  as_a <const gcall *> (stmt),
+					  state,
+					  path_ctxt,
+					  *called_fn,
+					  *called_fn_data,
+					  &ctxt);
+	  }
       }
 
   bool unknown_side_effects = false;
@@ -1610,10 +1613,10 @@ class call_summary_edge_info : public call_info
 {
 public:
   call_summary_edge_info (const call_details &cd,
-			  function *called_fn,
+			  const function &called_fn,
 			  call_summary *summary,
 			  const extrinsic_state &ext_state)
-  : call_info (cd),
+  : call_info (cd, called_fn),
     m_called_fn (called_fn),
     m_summary (summary),
     m_ext_state (ext_state)
@@ -1648,7 +1651,7 @@ public:
   }
 
 private:
-  function *m_called_fn;
+  const function &m_called_fn;
   call_summary *m_summary;
   const extrinsic_state &m_ext_state;
 };
@@ -1662,18 +1665,15 @@ exploded_node::replay_call_summaries (exploded_graph &eg,
 				      const gcall *call_stmt,
 				      program_state *state,
 				      path_context *path_ctxt,
-				      function *called_fn,
-				      per_function_data *called_fn_data,
+				      const function &called_fn,
+				      per_function_data &called_fn_data,
 				      region_model_context *ctxt)
 {
   logger *logger = eg.get_logger ();
   LOG_SCOPE (logger);
 
-  gcc_assert (called_fn);
-  gcc_assert (called_fn_data);
-
   /* Each summary will call bifurcate on the PATH_CTXT.  */
-  for (auto summary : called_fn_data->m_summaries)
+  for (auto summary : called_fn_data.m_summaries)
     replay_call_summary (eg, snode, call_stmt, state,
 			 path_ctxt, called_fn, summary, ctxt);
   path_ctxt->terminate_path ();
@@ -1691,7 +1691,7 @@ exploded_node::replay_call_summary (exploded_graph &eg,
 				    const gcall *call_stmt,
 				    program_state *old_state,
 				    path_context *path_ctxt,
-				    function *called_fn,
+				    const function &called_fn,
 				    call_summary *summary,
 				    region_model_context *ctxt)
 {
@@ -1700,13 +1700,12 @@ exploded_node::replay_call_summary (exploded_graph &eg,
   gcc_assert (snode);
   gcc_assert (call_stmt);
   gcc_assert (old_state);
-  gcc_assert (called_fn);
   gcc_assert (summary);
 
   if (logger)
     logger->log ("using %s as summary for call to %qE from %qE",
 		 summary->get_desc ().get (),
-		 called_fn->decl,
+		 called_fn.decl,
 		 snode->get_function ()->decl);
   const extrinsic_state &ext_state = eg.get_ext_state ();
   const program_state &summary_end_state = summary->get_state ();
@@ -2784,16 +2783,17 @@ private:
    Return the exploded_node for the entrypoint to the function.  */
 
 exploded_node *
-exploded_graph::add_function_entry (function *fun)
+exploded_graph::add_function_entry (const function &fun)
 {
-  gcc_assert (gimple_has_body_p (fun->decl));
+  gcc_assert (gimple_has_body_p (fun.decl));
 
   /* Be idempotent.  */
-  if (m_functions_with_enodes.contains (fun))
+  function *key = const_cast<function *> (&fun);
+  if (m_functions_with_enodes.contains (key))
     {
       logger * const logger = get_logger ();
        if (logger)
-	logger->log ("entrypoint for %qE already exists", fun->decl);
+	logger->log ("entrypoint for %qE already exists", fun.decl);
       return NULL;
     }
 
@@ -2805,10 +2805,10 @@ exploded_graph::add_function_entry (function *fun)
 
   std::unique_ptr<custom_edge_info> edge_info = NULL;
 
-  if (lookup_attribute ("tainted_args", DECL_ATTRIBUTES (fun->decl)))
+  if (lookup_attribute ("tainted_args", DECL_ATTRIBUTES (fun.decl)))
     {
-      if (mark_params_as_tainted (&state, fun->decl, m_ext_state))
-	edge_info = make_unique<tainted_args_function_info> (fun->decl);
+      if (mark_params_as_tainted (&state, fun.decl, m_ext_state))
+	edge_info = make_unique<tainted_args_function_info> (fun.decl);
     }
 
   if (!state.m_valid)
@@ -2820,7 +2820,7 @@ exploded_graph::add_function_entry (function *fun)
 
   add_edge (m_origin, enode, NULL, false, std::move (edge_info));
 
-  m_functions_with_enodes.add (fun);
+  m_functions_with_enodes.add (key);
 
   return enode;
 }
@@ -3108,7 +3108,7 @@ exploded_graph::get_per_function_data (function *fun) const
    called via other functions.  */
 
 static bool
-toplevel_function_p (function *fun, logger *logger)
+toplevel_function_p (const function &fun, logger *logger)
 {
   /* Don't directly traverse into functions that have an "__analyzer_"
      prefix.  Doing so is useful for the analyzer test suite, allowing
@@ -3119,17 +3119,17 @@ toplevel_function_p (function *fun, logger *logger)
      excess messages from the case of the first function being traversed
      directly.  */
 #define ANALYZER_PREFIX "__analyzer_"
-  if (!strncmp (IDENTIFIER_POINTER (DECL_NAME (fun->decl)), ANALYZER_PREFIX,
+  if (!strncmp (IDENTIFIER_POINTER (DECL_NAME (fun.decl)), ANALYZER_PREFIX,
 		strlen (ANALYZER_PREFIX)))
     {
       if (logger)
 	logger->log ("not traversing %qE (starts with %qs)",
-		     fun->decl, ANALYZER_PREFIX);
+		     fun.decl, ANALYZER_PREFIX);
       return false;
     }
 
   if (logger)
-    logger->log ("traversing %qE (all checks passed)", fun->decl);
+    logger->log ("traversing %qE (all checks passed)", fun.decl);
 
   return true;
 }
@@ -3254,9 +3254,9 @@ add_tainted_args_callback (exploded_graph *eg, tree field, tree fndecl,
 
   program_point point
     = program_point::from_function_entry (*ext_state.get_model_manager (),
-					  eg->get_supergraph (), fun);
+					  eg->get_supergraph (), *fun);
   program_state state (ext_state);
-  state.push_frame (ext_state, fun);
+  state.push_frame (ext_state, *fun);
 
   if (!mark_params_as_tainted (&state, fndecl, ext_state))
     return;
@@ -3330,9 +3330,10 @@ exploded_graph::build_initial_worklist ()
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
   {
     function *fun = node->get_fun ();
-    if (!toplevel_function_p (fun, logger))
+    gcc_assert (fun);
+    if (!toplevel_function_p (*fun, logger))
       continue;
-    exploded_node *enode = add_function_entry (fun);
+    exploded_node *enode = add_function_entry (*fun);
     if (logger)
       {
 	if (enode)
@@ -3838,8 +3839,8 @@ exploded_graph::maybe_create_dynamic_call (const gcall *call,
   if (fun)
     {
       const supergraph &sg = this->get_supergraph ();
-      supernode *sn_entry = sg.get_node_for_function_entry (fun);
-      supernode *sn_exit = sg.get_node_for_function_exit (fun);
+      supernode *sn_entry = sg.get_node_for_function_entry (*fun);
+      supernode *sn_exit = sg.get_node_for_function_exit (*fun);
 
       program_point new_point
 	= program_point::before_supernode (sn_entry,
@@ -4962,7 +4963,7 @@ maybe_update_for_edge (logger *logger,
 		      == PK_BEFORE_SUPERNODE);
 	  function *fun = eedge->m_dest->get_function ();
 	  gcc_assert (fun);
-	  m_model.push_frame (fun, NULL, ctxt);
+	  m_model.push_frame (*fun, NULL, ctxt);
 	  if (logger)
 	    logger->log ("  pushing frame for %qD", fun->decl);
 	}
@@ -5582,7 +5583,7 @@ exploded_graph::on_escaped_function (tree fndecl)
   if (!gimple_has_body_p (fndecl))
     return;
 
-  exploded_node *enode = add_function_entry (fun);
+  exploded_node *enode = add_function_entry (*fun);
   if (logger)
     {
       if (enode)

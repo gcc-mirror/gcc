@@ -1676,7 +1676,7 @@ region_model_manager::get_cast_region (const region *original_region,
 
 const frame_region *
 region_model_manager::get_frame_region (const frame_region *calling_frame,
-					function *fun)
+					const function &fun)
 {
   int index = calling_frame ? calling_frame->get_index () + 1 : 0;
 

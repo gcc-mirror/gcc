@@ -1306,10 +1306,10 @@ void
 frame_region::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   if (simple)
-    pp_printf (pp, "frame: %qs@%i", function_name (m_fun), get_stack_depth ());
+    pp_printf (pp, "frame: %qs@%i", function_name (&m_fun), get_stack_depth ());
   else
     pp_printf (pp, "frame_region(%qs, index: %i, depth: %i)",
-	       function_name (m_fun), m_index, get_stack_depth ());
+	       function_name (&m_fun), m_index, get_stack_depth ());
 }
 
 const decl_region *
@@ -1334,14 +1334,14 @@ frame_region::get_region_for_local (region_model_manager *mgr,
 	  /* Fall through.  */
 	case PARM_DECL:
 	case RESULT_DECL:
-	  gcc_assert (DECL_CONTEXT (expr) == m_fun->decl);
+	  gcc_assert (DECL_CONTEXT (expr) == m_fun.decl);
 	  break;
 	case SSA_NAME:
 	  {
 	    if (tree var = SSA_NAME_VAR (expr))
 	      {
 		if (DECL_P (var))
-		  gcc_assert (DECL_CONTEXT (var) == m_fun->decl);
+		  gcc_assert (DECL_CONTEXT (var) == m_fun.decl);
 	      }
 	    else if (ctxt)
 	      if (const extrinsic_state *ext_state = ctxt->get_ext_state ())
@@ -1351,7 +1351,7 @@ frame_region::get_region_for_local (region_model_manager *mgr,
 		    const gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
 		    const supernode *snode
 		      = sg->get_supernode_for_stmt (def_stmt);
-		    gcc_assert (snode->get_function () == m_fun);
+		    gcc_assert (snode->get_function () == &m_fun);
 		  }
 	  }
 	  break;

@@ -167,7 +167,7 @@ call_summary::dump (const extrinsic_state &ext_state, bool simple) const
    arguments at the caller. */
 
 call_summary_replay::call_summary_replay (const call_details &cd,
-					  function *called_fn,
+					  const function &called_fn,
 					  call_summary *summary,
 					  const extrinsic_state &ext_state)
 : m_cd (cd),
@@ -177,7 +177,7 @@ call_summary_replay::call_summary_replay (const call_details &cd,
   region_model_manager *mgr = cd.get_manager ();
 
   // populate params based on args
-  tree fndecl = called_fn->decl;
+  tree fndecl = called_fn.decl;
 
   /* Get a frame_region for use with respect to the summary.
      This will be a top-level frame, since that's what's in
@@ -196,7 +196,7 @@ call_summary_replay::call_summary_replay (const call_details &cd,
 	break;
       const svalue *caller_arg_sval = cd.get_arg_svalue (idx);
       tree parm_lval = iter_parm;
-      if (tree parm_default_ssa = ssa_default_def (called_fn, iter_parm))
+      if (tree parm_default_ssa = get_ssa_default_def (called_fn, iter_parm))
 	parm_lval = parm_default_ssa;
       const region *summary_parm_reg
 	= summary_frame->get_region_for_local (mgr, parm_lval, cd.get_ctxt ());

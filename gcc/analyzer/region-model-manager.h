@@ -131,7 +131,7 @@ public:
   const region *get_cast_region (const region *original_region,
 				 tree type);
   const frame_region *get_frame_region (const frame_region *calling_frame,
-					function *fun);
+					const function &fun);
   const region *get_symbolic_region (const svalue *sval);
   const string_region *get_region_for_string (tree string_cst);
   const region *get_bit_range (const region *parent, tree type,

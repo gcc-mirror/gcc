@@ -6391,7 +6391,7 @@ fndecl_name (tree fndecl)
 
 /* Returns the name of function FN.  */
 const char *
-function_name (struct function *fn)
+function_name (const function *fn)
 {
   tree fndecl = (fn == NULL) ? NULL : fn->decl;
   return fndecl_name (fndecl);
