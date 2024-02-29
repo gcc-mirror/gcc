@@ -23,10 +23,13 @@
 #include "rust-ast-fragment.h"
 
 namespace Rust {
+namespace Fmt {
 
 tl::optional<AST::Fragment>
-expand_format_args (AST::FormatArgs &fmt);
+expand_format_args (AST::FormatArgs &fmt,
+		    std::vector<std::unique_ptr<AST::Token>> &&tokens);
 
+} // namespace Fmt
 } // namespace Rust
 
 #endif //! RUST_EXPAND_FORMAT_ARGS_H

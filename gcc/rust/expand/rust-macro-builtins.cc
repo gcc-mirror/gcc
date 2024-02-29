@@ -20,6 +20,7 @@
 #include "libproc_macro_internal/tokenstream.h"
 #include "rust-ast-full-decls.h"
 #include "rust-builtin-ast-nodes.h"
+#include "rust-expand-format-args.h"
 #include "rust-token-converter.h"
 #include "rust-system.h"
 #include "rust-macro-builtins.h"
@@ -1102,13 +1103,23 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
   // TODO: we now need to take care of creating `unfinished_literal`? this is
   // for creating the `template`
 
-  auto fmt_args_node = new AST::FormatArgs (invoc_locus, std::move (pieces),
-					    std::move (input->args));
-  auto node = std::unique_ptr<AST::Expr> (fmt_args_node);
-  auto single_node = AST::SingleASTNode (std::move (node));
+  auto fmt_args_node = AST::FormatArgs (invoc_locus, std::move (pieces),
+					std::move (input->args));
 
-  return AST::Fragment ({std::move (single_node)},
-			invoc.get_delim_tok_tree ().to_token_stream ());
+  auto expanded
+    = Fmt::expand_format_args (fmt_args_node,
+			       invoc.get_delim_tok_tree ().to_token_stream ());
+
+  if (!expanded.has_value ())
+    return AST::Fragment::create_error ();
+
+  return *expanded;
+
+  // auto node = std::unique_ptr<AST::Expr> (fmt_args_node);
+  // auto single_node = AST::SingleASTNode (std::move (node));
+
+  // return AST::Fragment ({std::move (single_node)},
+  // 	invoc.get_delim_tok_tree ().to_token_stream ());
 }
 
 tl::optional<AST::Fragment>

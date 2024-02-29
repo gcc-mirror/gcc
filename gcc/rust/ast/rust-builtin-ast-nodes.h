@@ -132,6 +132,9 @@ public:
     return *this;
   }
 
+  FormatArgumentKind get_kind () const { return kind; }
+  const Expr &get_expr () const { return *expr; }
+
 private:
   FormatArgument (FormatArgumentKind::Kind kind, tl::optional<Identifier> ident,
 		  std::unique_ptr<Expr> expr)
@@ -159,6 +162,7 @@ public:
   FormatArguments &operator= (const FormatArguments &other) = default;
 
   void push (FormatArgument &&elt) { args.emplace_back (std::move (elt)); }
+  const FormatArgument at (size_t idx) const { return args.at (idx); }
 
 private:
   std::vector<FormatArgument> args;
@@ -195,6 +199,7 @@ public:
   void accept_vis (AST::ASTVisitor &vis) override;
 
   const Fmt::Pieces &get_template () const { return template_pieces; }
+  const FormatArguments &get_arguments () const { return arguments; }
   virtual location_t get_locus () const override;
 
 private:
