@@ -2754,6 +2754,14 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
   if (!is_widening_mult_p (stmt, &type1, &rhs1, &type2, &rhs2))
     return false;
 
+  /* if any one of rhs1 and rhs2 is subject to abnormal coalescing,
+     avoid the tranform. */
+  if ((TREE_CODE (rhs1) == SSA_NAME
+       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
+      || (TREE_CODE (rhs2) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs2)))
+    return false;
+
   to_mode = SCALAR_INT_TYPE_MODE (type);
   from_mode = SCALAR_INT_TYPE_MODE (type1);
   if (to_mode == from_mode)
