@@ -449,13 +449,16 @@ DefaultResolver::visit (AST::EnumItemDiscriminant &item)
 void
 DefaultResolver::visit (AST::ConstantItem &item)
 {
-  auto expr_vis = [this, &item] () {
-    item.get_expr ().accept_vis (*this);
-    visit (item.get_type ());
-  };
+  if (item.has_expr ())
+    {
+      auto expr_vis = [this, &item] () {
+	item.get_expr ().accept_vis (*this);
+	visit (item.get_type ());
+      };
 
-  // FIXME: Why do we need a Rib here?
-  ctx.scoped (Rib::Kind::Item, item.get_node_id (), expr_vis);
+      // FIXME: Why do we need a Rib here?
+      ctx.scoped (Rib::Kind::Item, item.get_node_id (), expr_vis);
+    }
 }
 
 void
