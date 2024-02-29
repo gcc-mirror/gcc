@@ -798,10 +798,10 @@ package body Exp_Ch7 is
          return;
       end if;
 
-      --  When the transient object is initialized by an aggregate, the
-      --  attachment must occur after the last aggregate assignment takes
-      --  place. Only then is the object considered initialized. Likewise
-      --  if we have a build-in-place call: we must attach only after it.
+      --  When the object is initialized by an aggregate, the attachment must
+      --  occur after the last aggregate assignment takes place; only then is
+      --  the object considered initialized. Likewise if it is initialized by
+      --  a build-in-place call: we must attach only after the call.
 
       if Ekind (Obj_Id) in E_Constant | E_Variable then
          if Present (Last_Aggregate_Assignment (Obj_Id)) then
