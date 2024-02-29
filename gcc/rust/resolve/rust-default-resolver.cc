@@ -487,7 +487,7 @@ DefaultResolver::visit (AST::ConstantItem &item)
       };
 
       // FIXME: Why do we need a Rib here?
-      ctx.scoped (Rib::Kind::Item, item.get_node_id (), expr_vis);
+      ctx.scoped (Rib::Kind::ConstantItem, item.get_node_id (), expr_vis);
     }
 }
 
