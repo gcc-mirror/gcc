@@ -3565,6 +3565,7 @@ avr_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname,
 {
   cum->nregs = AVR_TINY ? 6 : 18;
   cum->regno = FIRST_CUM_REG;
+  cum->has_stack_args = 0;
   if (!libname && stdarg_p (fntype))
     cum->nregs = 0;
 
@@ -3604,6 +3605,8 @@ avr_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
   if (cum->nregs && bytes <= cum->nregs)
     return gen_rtx_REG (arg.mode, cum->regno - bytes);
+
+  cum->has_stack_args = 1;
 
   return NULL_RTX;
 }
@@ -6014,6 +6017,8 @@ out_movhi_mr_r (rtx_insn *insn, rtx op[], int *plen)
   return "";
 }
 
+
+/* Implement `TARGET_FRAME_POINTER_REQUIRED'.  */
 /* Return 1 if frame pointer for current function required.  */
 
 static bool
@@ -6022,7 +6027,7 @@ avr_frame_pointer_required_p (void)
   return (cfun->calls_alloca
 	  || cfun->calls_setjmp
 	  || cfun->has_nonlocal_label
-	  || crtl->args.info.nregs == 0
+	  || crtl->args.info.has_stack_args
 	  || get_frame_size () > 0);
 }
 

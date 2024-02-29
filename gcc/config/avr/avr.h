@@ -333,6 +333,10 @@ typedef struct avr_args
 
   /* Next available register number */
   int regno;
+
+  /* Whether some of the arguments are passed on the stack,
+     and hence an arg pointer is needed.  */
+  int has_stack_args;
 } CUMULATIVE_ARGS;
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
