@@ -88,6 +88,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@TARGET_LIBRARY_FALSE@am__append_1 = libformat_parser
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -165,7 +166,7 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = libformat_parser libproc_macro_internal
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -308,7 +309,7 @@ AM_CFLAGS = -I $(srcdir)/../libgcc -I $(MULTIBUILDTOP)../../gcc/include
 TOP_GCCDIR := $(shell cd $(top_srcdir) && cd .. && pwd)
 GCC_DIR = $(TOP_GCCDIR)/gcc
 RUST_SRC = $(GCC_DIR)/rust
-SUBDIRS = libproc_macro_internal
+SUBDIRS = $(am__append_1) libproc_macro_internal
 RUST_BUILDDIR := $(shell pwd)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS

@@ -103,6 +103,9 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
+AM_CONDITIONAL(TARGET_LIBRARY, test -n "$with_target_subdir")
+
+AC_CONFIG_FILES([libformat_parser/Makefile])
 
 AC_CONFIG_FILES(AC_FOREACH([DIR], [libproc_macro_internal], [DIR/Makefile ]),
  [ cat > vpsed$$ << \_EOF
