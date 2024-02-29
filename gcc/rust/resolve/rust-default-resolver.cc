@@ -237,6 +237,36 @@ DefaultResolver::visit (AST::ReturnExpr &expr)
 {}
 
 void
+DefaultResolver::visit (AST::CallExpr &expr)
+{
+  expr.get_function_expr ().accept_vis (*this);
+
+  for (auto &param : expr.get_params ())
+    param->accept_vis (*this);
+}
+
+void
+DefaultResolver::visit (AST::MethodCallExpr &expr)
+{
+  expr.get_receiver_expr ().accept_vis (*this);
+
+  if (expr.get_method_name ().has_generic_args ())
+    {
+      auto &args = expr.get_method_name ().get_generic_args ();
+      for (auto &arg : args.get_generic_args ())
+	arg.accept_vis (*this);
+      for (auto &arg : args.get_binding_args ())
+	if (!arg.is_error ())
+	  arg.get_type ().accept_vis (*this);
+      for (auto &arg : args.get_lifetime_args ())
+	arg.accept_vis (*this);
+    }
+
+  for (auto &param : expr.get_params ())
+    param->accept_vis (*this);
+}
+
+void
 DefaultResolver::visit (AST::LoopExpr &expr)
 {}
 
