@@ -4258,7 +4258,7 @@ create_temporary_var (tree type)
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
-  DECL_CONTEXT (decl) = current_function_decl;
+  DECL_CONTEXT (decl) = current_scope ();
 
   return decl;
 }
