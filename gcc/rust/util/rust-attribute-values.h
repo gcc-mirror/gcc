@@ -53,6 +53,8 @@ public:
     = "rustc_inherit_overflow_checks";
   static constexpr auto &STABLE = "stable";
   static constexpr auto &UNSTABLE = "unstable";
+  static constexpr auto &RUSTC_CONST_STABLE = "rustc_const_stable";
+  static constexpr auto &RUSTC_CONST_UNSTABLE = "rustc_const_unstable";
 };
 } // namespace Values
 } // namespace Rust
