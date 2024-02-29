@@ -205,6 +205,7 @@ GRS_OBJS = \
     rust/rust-unicode.o \
     rust/rust-punycode.o \
 	rust/rust-lang-item.o \
+	rust/rust-expand-format-args.o \
     $(END)
 # removed object files from here
 
