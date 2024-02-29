@@ -123,6 +123,8 @@ std::unordered_map<std::string, AST::MacroTranscriberFunc>
     {"test_case", MacroBuiltin::sorry},
     {"global_allocator", MacroBuiltin::sorry},
     {"cfg_accessible", MacroBuiltin::sorry},
+    {"rustc_const_stable", MacroBuiltin::sorry},
+    {"rustc_const_unstable", MacroBuiltin::sorry},
     /* Derive builtins do not need a real transcriber, but still need one. It
        should however never be called since builtin derive macros get expanded
        differently, and benefit from knowing on what kind of items they are
