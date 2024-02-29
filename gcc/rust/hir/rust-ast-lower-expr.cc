@@ -19,7 +19,6 @@
 #include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-block.h"
-#include "rust-ast-lower-format-args.h"
 #include "rust-ast-lower-struct-field-expr.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-type.h"
@@ -824,9 +823,6 @@ ASTLoweringExpr::visit (AST::ClosureExprInnerTyped &expr)
 void
 ASTLoweringExpr::visit (AST::FormatArgs &fmt)
 {
-  // Lowering FormatArgs is complex, and this file is already very long
-  translated = FormatArgsLowering ().go (fmt);
-
   rust_sorry_at (fmt.get_locus (),
 		 "FormatArgs lowering is not implemented yet");
 }
