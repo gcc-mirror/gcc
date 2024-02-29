@@ -1,3 +1,91 @@
+2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114152
+	* include/experimental/scope (scope_exit scope_fail): Make
+	destructor unconditionally noexcept.
+	(scope_sucess): Fix noexcept-specifier.
+	* testsuite/experimental/scopeguard/114152.cc: New test.
+
+2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Change URLs to use
+	https.
+	* doc/html/manual/*: Regenerate.
+
+2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Replace outdated
+	info on ChangeLog entries.
+	* doc/html/manual/appendix_contributing.html: Regenerate.
+
+2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (vector<bool, A>::at): Add
+	nodiscard.
+	* include/bits/stl_vector.h (vector<T, A>::at): Likewise.
+	(operator==, operator<=>, operator<, operator!=, operator>)
+	(operator<=, operator>=): Likewise.
+	* include/debug/vector (operator==, operator<=>, operator<)
+	(operator!=, operator>, operator<=, operator>=): Likewise.
+	* testsuite/23_containers/vector/nodiscard.cc: New test.
+
+2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (operator|, operator&): Add
+	noexcept.
+	* include/bits/fs_fwd.h (operator&, operator|, operator^)
+	(operator~): Add nodiscard to overloads for copy_options, perms,
+	perm_options, and directory_options.
+	* include/bits/ios_base.h (operator&, operator|, operator^)
+	(operator~): Add nodiscard and noexcept to overloads for
+	_Ios_Fmtflags, _Ios_Openmode, and _Ios_Iostate.
+	(operator|=, operator&=, operator^=): Add constexpr for C++14.
+	* include/bits/regex_constants.h (operator&, operator|, operator^)
+	(operator~): Add nodiscard and noexcept to overloads for
+	syntax_option_type and match_flag_type.
+	(operator|=, operator&=, operator^=): Add noexcept.
+	* include/std/charconv (operator&, operator|, operator^)
+	(operator~): Add nodiscard to overloads for chars_format.
+	* include/std/future (operator&, operator|, operator^)
+	(operator~): Add nodiscard for overloads for launch.
+	(operator&=, operator|=, operator^=): Add constexpr for C++14.
+	* include/experimental/bits/fs_fwd.h  (operator&, operator|)
+	(operator^, operator~): Add nodiscard to overloads for
+	copy_options, perms, and directory_options.
+	* testsuite/27_io/ios_base/types/fmtflags/bitmask_operators.cc:
+	Add dg-warning for nodiscard warnings.
+	* testsuite/27_io/ios_base/types/iostate/bitmask_operators.cc:
+	Likewise.
+	* testsuite/27_io/ios_base/types/openmode/bitmask_operators.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/bitmask_types.cc:
+	New test.
+
+2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_ostream/print/1.cc: Check error
+	handling.
+	* testsuite/27_io/print/1.cc: Likewise.
+
+2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (vprint_unicode) [__CYGWIN__]: Use POSIX
+	code path for Cygwin instead of Windows.
+	* include/std/print (vprint_unicode) [__CYGWIN__]: Likewise.
+	* testsuite/27_io/basic_ostream/print/1.cc: Only add -lstdc++exp
+	for *-*-mingw* targets.
+	* testsuite/27_io/print/1.cc: Likewise.
+
+2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h: Include <bits/stl_iterator.h> for
+	__make_move_if_noexcept_iterator.
+
+2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace: Add nodiscard attribute to all
+	functions without side effects.
+
 2024-02-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algobase.h (std::__niter_wrap): Add a call to

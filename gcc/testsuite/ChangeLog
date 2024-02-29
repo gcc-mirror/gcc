@@ -1,3 +1,73 @@
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113976
+	* g++.dg/cpp1y/var-templ87.C: New test.
+
+2024-02-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	PR target/113453
+	PR target/113453
+	* gcc.target/bpf/btfext-funcinfo-nocore.c: Add.
+	* gcc.target/bpf/btfext-funcinfo.c: Add.
+	* gcc.target/bpf/core-attr-5.c: Fix regexp.
+	* gcc.target/bpf/core-attr-6.c: Fix regexp.
+	* gcc.target/bpf/core-builtin-fieldinfo-offset-1.c: Fix regexp.
+	* gcc.target/bpf/core-section-1.c: Fix regexp.
+
+2024-02-28  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/pr101026.f: Let variables used in specification
+	expression be passed as dummy arguments
+
+2024-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	PR tree-optimization/108355
+	* gcc.dg/tree-ssa/ssa-fre-104.c: XFAIL.
+
+2024-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114121
+	* gcc.dg/torture/pr114121.c: New testcase.
+
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/111462
+	* gcc.dg/tree-ssa/ssa-sink-18.c: XFAIL also on powerpc64.
+
+2024-02-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/91567
+	* gcc.dg/tree-ssa/builtin-snprintf-6.c (scan-tree-dump-times):
+	Treat i?86-*-* like x86_64-*-*.
+
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114075
+	* gcc.dg/gomp/pr114075.c: New test.
+
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114041
+	* gcc.dg/graphite/run-id-pr114041-1.c: New test.
+	* gcc.dg/graphite/run-id-pr114041-2.c: New test.
+
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113988
+	* gcc.dg/bitint-91.c: New test.
+
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/c23-stdarg-6.c: New test.
+
+2024-02-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113970
+	PR c++/114013
+	* g++.dg/cpp1z/inline-var10.C: New test.
+
 2024-02-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/113871

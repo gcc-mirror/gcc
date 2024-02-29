@@ -1,3 +1,7 @@
+2024-02-28  Fangrui Song  <maskray@gcc.gnu.org>
+
+	* MAINTAINERS: Add myself.
+
 2024-02-26  Juergen Christ  <jchrist@linux.ibm.com>
 
 	* MAINTAINERS: Add myself to write after approval and DCO.

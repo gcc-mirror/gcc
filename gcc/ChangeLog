@@ -1,3 +1,110 @@
+2024-02-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config.gcc (target_gtfiles): Change coreout to btfext-out.
+	(extra_objs): Change coreout to btfext-out.
+	* config/bpf/coreout.cc: Rename to btfext-out.cc.
+	* config/bpf/btfext-out.cc: Add.
+	* config/bpf/coreout.h: Rename to btfext-out.h.
+	* config/bpf/btfext-out.h: Add.
+	* config/bpf/core-builtins.cc: Change include.
+	* config/bpf/core-builtins.h: Change include.
+	* config/bpf/t-bpf: Accomodate renamed files.
+
+2024-02-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	PR target/113453
+	* config/bpf/bpf.cc (bpf_function_prologue): Define target
+	hook.
+	* config/bpf/coreout.cc (brf_ext_info_section)
+	(btf_ext_info): Move from coreout.h
+	(btf_ext_funcinfo, btf_ext_lineinfo): Add struct.
+	(bpf_core_reloc): Rename to btf_ext_core_reloc.
+	(btf_ext): Add static variable.
+	(btfext_info_sec_find_or_add, SEARCH_NODE_AND_RETURN)
+	(bpf_create_or_find_funcinfo, bpt_create_core_reloc)
+	(btf_ext_add_string, btf_funcinfo_type_callback)
+	(btf_add_func_info_for, btf_validate_funcinfo)
+	(btf_ext_info_len, output_btfext_func_info): Add function.
+	(output_btfext_header, bpf_core_reloc_add)
+	(output_btfext_core_relocs, btf_ext_init, btf_ext_output):
+	Change to support new structs.
+	* config/bpf/coreout.h (btf_ext_funcinfo, btf_ext_lineinfo):
+	Move and change in coreout.cc.
+	(btf_add_func_info_for, btf_ext_add_string): Add prototypes.
+
+2024-02-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_option_override): Make .BTF.ext
+	enabled by default for BPF.
+	(bpf_file_end): Call BTF deallocation.
+	(bpf_asm_init_sections): Correct condition.
+	* dwarf2ctf.cc (ctf_debug_finalize): Conditionally execute BTF
+	deallocation.
+	(ctf_debuf_finish): Correct condition for calling
+	ctf_debug_finalize.
+
+2024-02-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* btfout.cc (output_btf_func_types): Use FOR_EACH_VEC_ELT.
+	(traverse_btf_func_types): Define function.
+	* ctfc.h (funcs_traverse_callback): Typedef for function
+	prototype.
+	(traverse_btf_func_types): Add prototype.
+
+2024-02-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* btfout.cc (btf_collect_dataset): Corrects BTF type id.
+
+2024-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	PR tree-optimization/108355
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): Revert
+	PR113831 fix.
+
+2024-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114121
+	* tree-ssa-sccvn.h (vn_reference_s::offset,
+	vn_reference_s::max_size): New fields.
+	(vn_reference_insert_pieces): Adjust prototype.
+	* tree-ssa-pre.cc (phi_translate_1): Preserve offset/max_size.
+	* tree-ssa-sccvn.cc (vn_reference_eq): Compare offset and
+	size, allow using "don't know" state.
+	(vn_walk_cb_data::finish): Pass along offset/max_size.
+	(vn_reference_lookup_or_insert_for_pieces): Take offset and
+	max_size as argument and use it.
+	(vn_reference_lookup_3): Properly adjust offset and max_size
+	according to the adjusted ao_ref.
+	(vn_reference_lookup_pieces): Initialize offset and max_size.
+	(vn_reference_lookup): Likewise.
+	(vn_reference_lookup_call): Likewise.
+	(vn_reference_insert): Likewise.
+	(visit_reference_op_call): Likewise.
+	(vn_reference_insert_pieces): Take offset and max_size
+	as argument and use it.
+
+2024-02-28  Juergen Christ  <jchrist@linux.ibm.com>
+
+	PR tree-optimization/114075
+	* tree-vect-stmts.cc (vectorizable_operation): Don't emulate floating
+	point vectors
+
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114041
+	* graphite-sese-to-poly.cc (add_conditions_to_domain): Check for
+	INTEGRAL_TYPE_P check rather than INTEGER_TYPE.
+
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113988
+	* stor-layout.h (bitwise_mode_for_size): Declare.
+	* stor-layout.cc (bitwise_mode_for_size): New function.
+	* gimple-fold.cc (gimple_fold_builtin_memory_op): Use it.
+	Use bitwise_type_for_mode instead of build_nonstandard_integer_type.
+	Use BITS_PER_UNIT instead of 8.
+
 2024-02-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/113871

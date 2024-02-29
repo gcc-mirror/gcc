@@ -1,3 +1,17 @@
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113976
+	* decl.cc (grokdeclarator): Don't call cp_apply_type_quals_to_decl
+	on DECL_TEMPLATE_INSTANTIATED VAR_DECLs.
+
+2024-02-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113970
+	PR c++/114013
+	* decl.cc (make_rtl_for_nonlocal_decl): Don't defer inline
+	variables.
+
 2024-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/113083
