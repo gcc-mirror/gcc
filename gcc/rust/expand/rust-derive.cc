@@ -24,7 +24,7 @@ namespace Rust {
 namespace AST {
 
 DeriveVisitor::DeriveVisitor (location_t loc)
-  : loc (loc), builder (AstBuilder (loc))
+  : loc (loc), builder (Builder (loc))
 {}
 
 std::unique_ptr<Item>

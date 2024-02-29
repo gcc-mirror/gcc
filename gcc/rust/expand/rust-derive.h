@@ -41,7 +41,7 @@ protected:
   DeriveVisitor (location_t loc);
 
   location_t loc;
-  AstBuilder builder;
+  Builder builder;
 
 private:
   // the 4 "allowed" visitors, which a derive-visitor can specify and override
