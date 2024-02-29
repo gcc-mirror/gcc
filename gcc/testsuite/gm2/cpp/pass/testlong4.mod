@@ -1,4 +1,4 @@
-(* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc. *)
+(* Copyright (C) 2024 Free Software Foundation, Inc. *)
 (* This file is part of GNU Modula-2.
 
 GNU Modula-2 is free software; you can redistribute it and/or modify it under
@@ -15,12 +15,19 @@ You should have received a copy of the GNU General Public License along
 with gm2; see the file COPYING.  If not, write to the Free Software
 Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
 
-MODULE TestLong4 ;
+MODULE testlong4 ;
 
 FROM libc IMPORT exit ;
 
 VAR
    l: LONGCARD ;
 BEGIN
-   l := MAX (LONGCARD)
-END TestLong4.
+   (* test for assignment of MAX(LONGINT)+1 *)
+#if __SIZEOF_LONG__ == 4
+    l := 2147483648
+#elif __SIZEOF_LONG__ == 8
+    l := 9223372036854775808
+#else
+#  error "add the clause for the size of long here"
+#endif
+END testlong4.
