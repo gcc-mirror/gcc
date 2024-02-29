@@ -107,6 +107,14 @@ msp8
 Target RejectNegative Var(avr_sp8) Init(0)
 The device has no SPH special function register. This option will be overridden by the compiler driver with the correct setting if presence/absence of SPH can be deduced from -mmcu=MCU.
 
+mfuse-add
+Target Alias(mfuse-add=, 1, 0) Optimization
+Split register additions from load/store instructions. Most useful on Reduced Tiny.
+
+mfuse-add=
+Target Joined RejectNegative UInteger Var(avr_fuse_add) Init(0) Optimization IntegerRange(0, 3)
+Split register additions from load/store instructions. Most useful on Reduced Tiny.
+
 Waddr-space-convert
 Warning C Var(avr_warn_addr_space_convert) Init(0)
 Warn if the address space of an address is changed.

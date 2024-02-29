@@ -1779,6 +1779,585 @@ sequent_regs_live (void)
   return (cur_seq == live_seq) ? live_seq : 0;
 }
 
+
+namespace {
+static const pass_data avr_pass_data_fuse_add =
+{
+  RTL_PASS,	    // type
+  "",		    // name (will be patched)
+  OPTGROUP_NONE,    // optinfo_flags
+  TV_DF_SCAN,	    // tv_id
+  0,		    // properties_required
+  0,		    // properties_provided
+  0,		    // properties_destroyed
+  0,		    // todo_flags_start
+  TODO_df_finish    // todo_flags_finish
+};
+
+
+class avr_pass_fuse_add : public rtl_opt_pass
+{
+public:
+  avr_pass_fuse_add (gcc::context *ctxt, const char *name)
+    : rtl_opt_pass (avr_pass_data_fuse_add, ctxt)
+  {
+    this->name = name;
+  }
+
+  virtual bool gate (function *) { return optimize && avr_fuse_add > 0; }
+
+  virtual unsigned int execute (function *);
+
+  struct Some_Insn
+  {
+    rtx_insn *insn = nullptr;
+    rtx dest, src;
+    bool valid () const { return insn != nullptr; }
+    void set_deleted ()
+    {
+      gcc_assert (insn);
+      SET_INSN_DELETED (insn);
+      insn = nullptr;
+    }
+  };
+
+  // If .insn is not NULL, then this is a  reg:HI += const_int
+  // of an address register.
+  struct Add_Insn : Some_Insn
+  {
+    rtx addend;
+    int regno;
+    Add_Insn () {}
+    Add_Insn (rtx_insn *insn);
+  };
+
+  // If .insn is not NULL, then this sets an address register
+  // to a constant value.
+  struct Ldi_Insn : Some_Insn
+  {
+    int regno;
+    Ldi_Insn () {}
+    Ldi_Insn (rtx_insn *insn);
+  };
+
+  // If .insn is not NULL, then this is a load or store insn where the
+  // address is REG or POST_INC with an address register.
+  struct Mem_Insn : Some_Insn
+  {
+    rtx reg_or_0, mem, addr, addr_reg;
+    int addr_regno;
+    enum rtx_code addr_code;
+    machine_mode mode;
+    addr_space_t addr_space;
+    bool store_p, volatile_p;
+    Mem_Insn () {}
+    Mem_Insn (rtx_insn *insn);
+  };
+
+  rtx_insn *fuse_ldi_add (Ldi_Insn &prev_ldi, Add_Insn &add);
+  rtx_insn *fuse_add_add (Add_Insn &prev_add, Add_Insn &add);
+  rtx_insn *fuse_add_mem (Add_Insn &prev_add, Mem_Insn &mem);
+  rtx_insn *fuse_mem_add (Mem_Insn &prev_mem, Add_Insn &add);
+}; // avr_pass_fuse_add
+
+} // anon namespace
+
+rtl_opt_pass *
+make_avr_pass_fuse_add (gcc::context *ctxt)
+{
+  return new avr_pass_fuse_add (ctxt, "avr-fuse-add");
+}
+
+/* Describe properties of AVR's indirect load and store instructions
+   LD, LDD, ST, STD, LPM, ELPM depending on register number, volatility etc.
+   Rules for "volatile" accesses are:
+
+         | Xmega           |  non-Xmega
+   ------+-----------------+----------------
+   load  | read LSB first  | read LSB first
+   store | write LSB first | write MSB first
+*/
+
+struct AVR_LdSt_Props
+{
+  bool has_postinc, has_predec, has_ldd;
+  // The insn printers will use POST_INC or PRE_DEC addressing, no matter
+  // what adressing modes we are feeding into them.
+  bool want_postinc, want_predec;
+
+  AVR_LdSt_Props (int regno, bool store_p, bool volatile_p, addr_space_t as)
+  {
+    bool generic_p = ADDR_SPACE_GENERIC_P (as);
+    bool flashx_p = ! generic_p && as != ADDR_SPACE_MEMX;
+    has_postinc = generic_p || (flashx_p && regno == REG_Z);
+    has_predec = generic_p;
+    has_ldd = ! AVR_TINY && generic_p && (regno == REG_Y || regno == REG_Z);
+    want_predec  = volatile_p && generic_p && ! AVR_XMEGA && store_p;
+    want_postinc = volatile_p && generic_p && (AVR_XMEGA || ! store_p);
+    want_postinc |= flashx_p && regno == REG_Z;
+  }
+
+  AVR_LdSt_Props (const avr_pass_fuse_add::Mem_Insn &m)
+    : AVR_LdSt_Props (m.addr_regno, m.store_p, m.volatile_p, m.addr_space)
+  {
+    gcc_assert (m.valid ());
+  }
+};
+
+/* Emit a single_set that clobbers REG_CC.  */
+
+static rtx_insn *
+emit_move_ccc (rtx dest, rtx src)
+{
+  return emit_insn (gen_gen_move_clobbercc (dest, src));
+}
+
+/* Emit a single_set that clobbers REG_CC after insn AFTER.  */
+
+static rtx_insn *
+emit_move_ccc_after (rtx dest, rtx src, rtx_insn *after)
+{
+  return emit_insn_after (gen_gen_move_clobbercc (dest, src), after);
+}
+
+static bool
+reg_seen_between_p (const_rtx reg, const rtx_insn *from, const rtx_insn *to)
+{
+  return (reg_used_between_p (reg, from, to)
+	  || reg_set_between_p (reg, from, to));
+}
+
+
+static void
+avr_maybe_adjust_cfa (rtx_insn *insn, rtx reg, int addend)
+{
+  if (addend
+      && frame_pointer_needed
+      && REGNO (reg) == FRAME_POINTER_REGNUM
+      && avr_fuse_add == 3)
+    {
+      rtx plus = plus_constant (Pmode, reg, addend);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, gen_rtx_SET (reg, plus));
+    }
+}
+
+
+// If successful, this represents a SET of a pointer register to a constant.
+avr_pass_fuse_add::Ldi_Insn::Ldi_Insn (rtx_insn *insn)
+{
+  rtx set = single_set (insn);
+  if (!set)
+    return;
+
+  src = SET_SRC (set);
+  dest = SET_DEST (set);
+
+  if (REG_P (dest)
+      && GET_MODE (dest) == Pmode
+      && IN_RANGE (regno = REGNO (dest), REG_X, REG_Z)
+      && CONSTANT_P (src))
+    {
+      this->insn = insn;
+    }
+}
+
+// If successful, this represents a PLUS with CONST_INT of a pointer
+// register X, Y or Z.  Otherwise, the object is not valid().
+avr_pass_fuse_add::Add_Insn::Add_Insn (rtx_insn *insn)
+{
+  rtx set = single_set (insn);
+  if (!set)
+    return;
+
+  src = SET_SRC (set);
+  dest = SET_DEST (set);
+  if (REG_P (dest)
+      // We are only interested in PLUSes that change address regs.
+      && GET_MODE (dest) == Pmode
+      && IN_RANGE (regno = REGNO (dest), REG_X, REG_Z)
+      && PLUS == GET_CODE (src)
+      && rtx_equal_p (XEXP (src, 0), dest)
+      && CONST_INT_P (XEXP (src, 1)))
+    {
+      // This is reg:HI += const_int.
+      addend = XEXP (src, 1);
+      this->insn = insn;
+    }
+}
+
+// If successful, this represents a load or store insn where the addressing
+// mode uses pointer register X, Y or Z.  Otherwise, the object is not valid().
+avr_pass_fuse_add::Mem_Insn::Mem_Insn (rtx_insn *insn)
+{
+  rtx set = single_set (insn);
+  if (!set)
+    return;
+
+  src = SET_SRC (set);
+  dest = SET_DEST (set);
+  mode = GET_MODE (dest);
+
+  if (MEM_P (dest)
+      && (REG_P (src) || src == CONST0_RTX (mode)))
+    {
+      reg_or_0 = src;
+      mem = dest;
+    }
+  else if (REG_P (dest) && MEM_P (src))
+    {
+      reg_or_0 = dest;
+      mem = src;
+    }
+  else
+    return;
+
+  addr = XEXP (mem, 0);
+  addr_code = GET_CODE (addr);
+
+  if (addr_code == REG)
+    addr_reg = addr;
+  else if (addr_code == POST_INC || addr_code == PRE_DEC)
+    addr_reg = XEXP (addr, 0);
+  else
+    return;
+
+  addr_regno = REGNO (addr_reg);
+
+  if (avr_fuse_add == 2
+      && frame_pointer_needed
+      && addr_regno == FRAME_POINTER_REGNUM)
+    MEM_VOLATILE_P (mem) = 0;
+
+  if (reg_overlap_mentioned_p (reg_or_0, addr) // Can handle CONSTANT_P.
+      || addr_regno > REG_Z
+      || avr_mem_memx_p (mem)
+      // The following optimizations only handle REG and POST_INC,
+      // so that's all what we allow here.
+      || (addr_code != REG && addr_code != POST_INC))
+    return;
+
+  addr_space = MEM_ADDR_SPACE (mem);
+  volatile_p = MEM_VOLATILE_P (mem);
+  store_p = MEM_P (dest);
+
+  // Turn this "valid".
+  this->insn = insn;
+}
+
+/* Try to combine a Ldi insn with a PLUS CONST_INT addend to one Ldi insn.
+   If LDI is valid, then it precedes ADD in the same block.
+   When a replacement is found, a new insn is emitted and the old insns
+   are pseudo-deleted.  The returned insn is the point where the calling
+   scanner should continue.  When no replacement is found, nullptr is
+   returned and nothing changed.  */
+
+rtx_insn *
+avr_pass_fuse_add::fuse_ldi_add (Ldi_Insn &ldi, Add_Insn &add)
+{
+  if (! ldi.valid ()
+      || reg_seen_between_p (ldi.dest, ldi.insn, add.insn))
+    {
+      // If something is between the Ldi and the current insn, we can
+      // set the Ldi invalid to speed future scans.
+      return ldi.insn = nullptr;
+    }
+
+  // Found a Ldi with const and a PLUS insns in the same BB,
+  // and with no interfering insns between them.
+
+  // Emit new Ldi with the sum of the original offsets after the old Ldi.
+  rtx xval = plus_constant (Pmode, ldi.src, INTVAL (add.addend));
+
+  rtx_insn *insn = emit_move_ccc_after (ldi.dest, xval, ldi.insn);
+  avr_dump (";; new Ldi[%d] insn %d after %d: R%d = %r\n\n", ldi.regno,
+	    INSN_UID (insn), INSN_UID (ldi.insn), ldi.regno, xval);
+
+  rtx_insn *next = NEXT_INSN (add.insn);
+  ldi.set_deleted ();
+  add.set_deleted ();
+
+  return next;
+}
+
+/* Try to combine two PLUS insns with CONST_INT addend to one such insn.
+   If PREV_ADD is valid, then it precedes ADD in the same basic block.
+   When a replacement is found, a new insn is emitted and the old insns
+   are pseudo-deleted.  The returned insn is the point where the calling
+   scanner should continue.  When no replacement is found, nullptr is
+   returned and nothing changed.  */
+
+rtx_insn *
+avr_pass_fuse_add::fuse_add_add (Add_Insn &prev_add, Add_Insn &add)
+{
+  if (! prev_add.valid ()
+      || reg_seen_between_p (add.dest, prev_add.insn, add.insn))
+    {
+      // If something is between the previous Add and the current insn,
+      // we can set the previous Add invalid to speed future scans.
+      return prev_add.insn = nullptr;
+    }
+
+  // Found two PLUS insns in the same BB, and with no interfering
+  // insns between them.
+  rtx plus = plus_constant (Pmode, add.src, INTVAL (prev_add.addend));
+
+  rtx_insn *next;
+  if (REG_P (plus))
+    {
+      avr_dump (";; Add[%d] from %d annihilates %d\n\n", add.regno,
+		INSN_UID (prev_add.insn), INSN_UID (add.insn));
+      next = NEXT_INSN (add.insn);
+    }
+  else
+    {
+      // Emit after the current insn, so that it will be picked
+      // up as next valid Add insn.
+      next = emit_move_ccc_after (add.dest, plus, add.insn);
+      avr_dump (";; #1 new Add[%d] insn %d after %d: R%d += %d\n\n",
+		add.regno, INSN_UID (next), INSN_UID (add.insn),
+		add.regno, (int) INTVAL (XEXP (plus, 1)));
+      gcc_assert (GET_CODE (plus) == PLUS);
+    }
+
+  add.set_deleted ();
+  prev_add.set_deleted ();
+
+  return next;
+}
+
+/* Try to combine a PLUS of the address register with a load or store insn.
+   If ADD is valid, then it precedes MEM in the same basic block.
+   When a replacement is found, a new insn is emitted and the old insns
+   are pseudo-deleted.  The returned insn is the point where the calling
+   scanner should continue.  When no replacement is found, nullptr is
+   returned and nothing changed.  */
+
+rtx_insn *
+avr_pass_fuse_add::fuse_add_mem (Add_Insn &add, Mem_Insn &mem)
+{
+  if (! add.valid ()
+      || reg_seen_between_p (add.dest, add.insn, mem.insn))
+    {
+      // If something is between the Add and the current insn, we can
+      // set the Add invalid to speed future scans.
+      return add.insn = nullptr;
+    }
+
+  AVR_LdSt_Props ap { mem };
+
+  int msize = GET_MODE_SIZE (mem.mode);
+
+  // The mem insn really wants PRE_DEC.
+  bool case1 = ((mem.addr_code == REG || mem.addr_code == POST_INC)
+		&& msize > 1 && ap.want_predec && ! ap.has_ldd);
+
+  // The offset can be consumed by a PRE_DEC.
+  bool case2 = (- INTVAL (add.addend) == msize
+		&& (mem.addr_code == REG || mem.addr_code == POST_INC)
+		&& ap.has_predec && ! ap.want_postinc);
+
+  if (! case1 && ! case2)
+    return nullptr;
+
+  // Change from REG or POST_INC to PRE_DEC.
+  rtx xmem = change_address (mem.mem, mem.mode,
+			     gen_rtx_PRE_DEC (Pmode, mem.addr_reg));
+  rtx dest = mem.store_p ? xmem : mem.reg_or_0;
+  rtx src  = mem.store_p ? mem.reg_or_0 : xmem;
+
+  rtx_insn *next = emit_move_ccc_after (dest, src, mem.insn);
+  add_reg_note (next, REG_INC, mem.addr_reg);
+  avr_dump (";; new Mem[%d] insn %d after %d: %r = %r\n\n", mem.addr_regno,
+	    INSN_UID (next), INSN_UID (mem.insn), dest, src);
+
+  // Changing REG or POST_INC -> PRE_DEC means that the addend before
+  // the memory access must be increased by the size of the access,
+  rtx plus = plus_constant (Pmode, add.src, msize);
+  if (! REG_P (plus))
+    {
+      rtx_insn *insn = emit_move_ccc_after (add.dest, plus, add.insn);
+      avr_dump (";; #2 new Add[%d] insn %d after %d: R%d += %d\n\n",
+		add.regno, INSN_UID (insn), INSN_UID (add.insn),
+		add.regno, (int) INTVAL (XEXP (plus, 1)));
+      gcc_assert (GET_CODE (plus) == PLUS);
+    }
+  else
+    avr_dump (";; Add[%d] insn %d consumed into %d\n\n",
+	      add.regno, INSN_UID (add.insn), INSN_UID (next));
+
+  // Changing POST_INC -> PRE_DEC means that the addend after the mem has to be
+  // the size of the access.  The hope is that this new add insn may be unused.
+  if (mem.addr_code == POST_INC)
+    {
+      plus = plus_constant (Pmode, add.dest, msize);
+      rtx_insn *next2 = emit_move_ccc_after (add.dest, plus, next);
+      avr_dump (";; #3 new Add[%d] insn %d after %d: R%d += %d\n\n", add.regno,
+		INSN_UID (next2), INSN_UID (next), add.regno, msize);
+      next = next2;
+    }
+
+  add.set_deleted ();
+  mem.set_deleted ();
+
+  return next;
+}
+
+/* Try to combine a load or store insn with a PLUS of the address register.
+   If MEM is valid, then it precedes ADD in the same basic block.
+   When a replacement is found, a new insn is emitted and the old insns
+   are pseudo-deleted.  The returned insn is the point where the calling
+   scanner should continue.  When no replacement is found, nullptr is
+   returned and nothing changed.  */
+
+rtx_insn *
+avr_pass_fuse_add::fuse_mem_add (Mem_Insn &mem, Add_Insn &add)
+{
+  if (! mem.valid ()
+      || reg_seen_between_p (add.dest, mem.insn, add.insn))
+    {
+      // If something is between the Mem and the current insn, we can
+      // set the Mem invalid to speed future scans.
+      return mem.insn = nullptr;
+    }
+
+  AVR_LdSt_Props ap { mem };
+
+  int msize = GET_MODE_SIZE (mem.mode);
+
+  // The add insn can be consumed by a POST_INC.
+  bool case1 = (mem.addr_code == REG
+		&& INTVAL (add.addend) == msize
+		&& ap.has_postinc && ! ap.want_predec);
+
+  // There are cases where even a partial consumption of the offset is better.
+  // This are the cases where no LD+offset addressing is available, because
+  // the address register is obviously used after the mem insn, and a mem insn
+  // with REG addressing mode will have to restore the address.
+  bool case2 = (mem.addr_code == REG
+		&& msize > 1 && ap.want_postinc && ! ap.has_ldd);
+
+  if (! case1 && ! case2)
+    return nullptr;
+
+  // Change addressing mode from REG to POST_INC.
+  rtx xmem = change_address (mem.mem, mem.mode,
+			     gen_rtx_POST_INC (Pmode, mem.addr_reg));
+  rtx dest = mem.store_p ? xmem : mem.reg_or_0;
+  rtx src  = mem.store_p ? mem.reg_or_0 : xmem;
+
+  rtx_insn *insn = emit_move_ccc_after (dest, src, mem.insn);
+  add_reg_note (insn, REG_INC, mem.addr_reg);
+  avr_dump (";; new Mem[%d] insn %d after %d: %r = %r\n\n", add.regno,
+	    INSN_UID (insn), INSN_UID (mem.insn), dest, src);
+
+  rtx_insn *next = NEXT_INSN (add.insn);
+
+  // Changing REG -> POST_INC means that the post addend must be
+  // decreased by the size of the access.
+  rtx plus = plus_constant (Pmode, add.src, -msize);
+  if (! REG_P (plus))
+    {
+      next = emit_move_ccc_after (mem.addr_reg, plus, add.insn);
+      avr_dump (";; #4 new Add[%d] insn %d after %d: R%d += %d\n\n",
+		add.regno, INSN_UID (next), INSN_UID (add.insn),
+		add.regno, (int) INTVAL (XEXP (plus, 1)));
+      gcc_assert (GET_CODE (plus) == PLUS);
+    }
+  else
+    avr_dump (";; Add[%d] insn %d consumed into %d\n\n",
+	      add.regno, INSN_UID (add.insn), INSN_UID (insn));
+
+  add.set_deleted ();
+  mem.set_deleted ();
+
+  return next;
+}
+
+/* Try to post-reload combine PLUS with CONST_INt of pointer registers with:
+   - Sets to a constant address.
+   - PLUS insn of that kind.
+   - Indirect loads and stores.
+   In almost all cases, combine opportunities arise from the preparation
+   done by `avr_split_tiny_move', but in some rare cases combinations are
+   found for the ordinary cores, too.
+      As we consider at most one Mem insn per try, there may still be missed
+   optimizations like  POST_INC + PLUS + POST_INC  might be performed
+   as  PRE_DEC + PRE_DEC  for two adjacent locations.  */
+
+unsigned int
+avr_pass_fuse_add::execute (function *func)
+{
+  df_note_add_problem ();
+  df_analyze ();
+
+  int n_add = 0, n_mem = 0, n_ldi = 0;
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, func)
+    {
+      Ldi_Insn prev_ldi_insns[32];
+      Add_Insn prev_add_insns[32];
+      Mem_Insn prev_mem_insns[32];
+      rtx_insn *insn, *curr;
+
+      avr_dump ("\n;; basic block %d\n\n", bb->index);
+
+      FOR_BB_INSNS_SAFE (bb, insn, curr)
+	{
+	  rtx_insn *next = nullptr;
+	  Ldi_Insn ldi_insn { insn };
+	  Add_Insn add_insn { insn };
+	  Mem_Insn mem_insn { insn };
+
+	  if (add_insn.valid ())
+	    {
+	      // Found reg:HI += const_int
+	      avr_dump (";; insn %d: Add[%d]: R%d += %d\n\n",
+			INSN_UID (add_insn.insn), add_insn.regno,
+			add_insn.regno, (int) INTVAL (add_insn.addend));
+	      Ldi_Insn &prev_ldi_insn = prev_ldi_insns[add_insn.regno];
+	      Add_Insn &prev_add_insn = prev_add_insns[add_insn.regno];
+	      Mem_Insn &prev_mem_insn = prev_mem_insns[add_insn.regno];
+	      if ((next = fuse_ldi_add (prev_ldi_insn, add_insn)))
+		curr = next, n_ldi += 1;
+	      else if ((next = fuse_add_add (prev_add_insn, add_insn)))
+		curr = next, n_add += 1;
+	      else if ((next = fuse_mem_add (prev_mem_insn, add_insn)))
+		curr = next, n_mem += 1;
+	      else
+		prev_add_insn = add_insn;
+	    }
+	  else if (mem_insn.valid ())
+	    {
+	      int addr_regno = REGNO (mem_insn.addr_reg);
+	      avr_dump (";; insn %d: Mem[%d]: %r = %r\n\n",
+			INSN_UID (mem_insn.insn), addr_regno,
+			mem_insn.dest, mem_insn.src);
+	      Add_Insn &prev_add_insn = prev_add_insns[addr_regno];
+	      if ((next = fuse_add_mem (prev_add_insn, mem_insn)))
+		curr = next, n_mem += 1;
+	      else
+		prev_mem_insns[addr_regno] = mem_insn;
+	    }
+	  else if (ldi_insn.valid ())
+	    {
+	      if (! CONST_INT_P (ldi_insn.src))
+		avr_dump (";; insn %d: Ldi[%d]: R%d = %r\n\n",
+			  INSN_UID (ldi_insn.insn), ldi_insn.regno,
+			  ldi_insn.regno, ldi_insn.src);
+	      prev_ldi_insns[ldi_insn.regno] = ldi_insn;
+	    }
+	} // for insns
+    } // for BBs
+
+  avr_dump (";; Function %f: Found %d changes: %d ldi, %d add, %d mem.\n",
+	    n_ldi + n_add + n_mem, n_ldi, n_add, n_mem);
+
+  return 0;
+}
+
+
 namespace {
 static const pass_data avr_pass_data_pre_proep =
 {
@@ -2776,7 +3355,10 @@ avr_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	    && CONST_INT_P (op1)
 	    && INTVAL (op1) >= 0)
 	  {
-	    bool fit = IN_RANGE (INTVAL (op1), 0, MAX_LD_OFFSET (mode));
+	    bool fit = (IN_RANGE (INTVAL (op1), 0, MAX_LD_OFFSET (mode))
+			// Reduced Tiny does not support PLUS addressing
+			// anyway, so we are not restricted to LD offset.
+			|| AVR_TINY);
 
 	    if (fit)
 	      {
@@ -6018,6 +6600,174 @@ out_movhi_mr_r (rtx_insn *insn, rtx op[], int *plen)
 }
 
 
+/* During reload, we allow much more addresses than Reduced Tiny actually
+   supports.  Split them after reload in order to get closer to the
+   core's capabilities.  This sets the stage for pass .avr-fuse-add.  */
+
+bool
+avr_split_tiny_move (rtx_insn * /*insn*/, rtx *xop)
+{
+  bool store_p = false;
+  rtx mem, reg_or_0;
+
+  if (REG_P (xop[0]) && MEM_P (xop[1]))
+    {
+      reg_or_0 = xop[0];
+      mem = xop[1];
+    }
+  else if (MEM_P (xop[0])
+	   && (REG_P (xop[1])
+	       || xop[1] == CONST0_RTX (GET_MODE (xop[0]))))
+    {
+      mem = xop[0];
+      reg_or_0 = xop[1];
+      store_p = true;
+    }
+  else
+    return false;
+
+  machine_mode mode = GET_MODE (mem);
+  rtx base, addr = XEXP (mem, 0);
+  enum rtx_code addr_code = GET_CODE (addr);
+
+  if (REG_P (reg_or_0)
+      && reg_overlap_mentioned_p (reg_or_0, addr))
+    return false;
+  else if (addr_code == PLUS || addr_code == PRE_DEC || addr_code == POST_INC)
+    base = XEXP (addr, 0);
+  else if (addr_code == REG)
+    base = addr;
+  else
+    return false;
+
+  if (REGNO (base) > REG_Z)
+    return false;
+
+  bool volatile_p = MEM_VOLATILE_P (mem);
+  bool mem_volatile_p = false;
+  if (frame_pointer_needed
+      && REGNO (base) == FRAME_POINTER_REGNUM)
+    {
+      if (avr_fuse_add < 2
+	  // Be a projection (we always split PLUS).
+	  || (avr_fuse_add == 2 && volatile_p && addr_code != PLUS))
+	return false;
+
+      // Changing the frame pointer locally may confuse later passes
+      // like .dse2 which don't track changes of FP, not even when
+      // respective CFA notes are present.  An example is pr22141-1.c.
+      if (avr_fuse_add == 2)
+	mem_volatile_p = true;
+    }
+
+  enum rtx_code new_code = UNKNOWN;
+  HOST_WIDE_INT add = 0, sub = 0;
+  int msize = GET_MODE_SIZE (mode);
+
+  AVR_LdSt_Props ap { REGNO (base), store_p, volatile_p, ADDR_SPACE_GENERIC };
+
+  switch (addr_code)
+    {
+    default:
+      return false;
+
+    case PLUS:
+      add = INTVAL (XEXP (addr, 1));
+      if (msize == 1)
+	{
+	  new_code = REG;
+	  sub = -add;
+	}
+      else if (ap.want_predec)
+	{
+	  // volatile stores prefer PRE_DEC (MSB first)
+	  sub = -add;
+	  add += msize;
+	  new_code = PRE_DEC;
+	}
+      else
+	{
+	  new_code = POST_INC;
+	  sub = -add - msize;
+	}
+      break;
+
+    case POST_INC:
+      // volatile stores prefer PRE_DEC (MSB first)
+      if (msize > 1 && ap.want_predec)
+	{
+	  add = msize;
+	  new_code = PRE_DEC;
+	  sub = msize;
+	  break;
+	}
+      return false;
+
+    case PRE_DEC:
+      // volatile loads prefer POST_INC (LSB first)
+      if (msize > 1 && ap.want_postinc)
+	{
+	  add = -msize;
+	  new_code = POST_INC;
+	  sub = -msize;
+	  break;
+	}
+      return false;
+
+    case REG:
+      if (msize == 1)
+	return false;
+
+      if (ap.want_predec)
+	{
+	  add = msize;
+	  new_code = PRE_DEC;
+	  sub = 0;
+	}
+      else
+	{
+	  add = 0;
+	  new_code = POST_INC;
+	  sub = -msize;
+	}
+      break;
+    } // switch addr_code
+
+  rtx_insn *insn;
+
+  if (add)
+    {
+      insn = emit_move_ccc (base, plus_constant (Pmode, base, add));
+      avr_maybe_adjust_cfa (insn, base, add);
+    }
+
+  rtx new_addr = new_code == REG
+    ? base
+    : gen_rtx_fmt_e (new_code, Pmode, base);
+
+  rtx new_mem = change_address (mem, mode, new_addr);
+  if (mem_volatile_p)
+    MEM_VOLATILE_P (new_mem) = 1;
+
+  insn = emit_move_ccc (store_p ? new_mem : reg_or_0,
+			store_p ? reg_or_0 : new_mem);
+  if (auto_inc_p (new_addr))
+    {
+      add_reg_note (insn, REG_INC, base);
+      int off = new_code == POST_INC ? msize : -msize;
+      avr_maybe_adjust_cfa (insn, base, off);
+    }
+
+  if (sub)
+    {
+      insn = emit_move_ccc (base, plus_constant (Pmode, base, sub));
+      avr_maybe_adjust_cfa (insn, base, sub);
+    }
+
+  return true;
+}
+
+
 /* Implement `TARGET_FRAME_POINTER_REQUIRED'.  */
 /* Return 1 if frame pointer for current function required.  */
 
@@ -8217,6 +8967,28 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
 		    *pcc = CC_SET_CZN;
 		}
 
+	      i++;
+	      continue;
+	    }
+	}
+
+      if (AVR_TINY
+	  && optimize
+	  && i == 0
+	  && n_bytes == 2
+	  // When that pass adjusts the frame pointer, then we know that
+	  // reg Y points to ordinary memory, and the only side-effect
+	  // of -Y and Y+ is the side effect on Y.
+	  && avr_fuse_add >= 2
+	  && frame_pointer_needed
+	  && REGNO (xop[0]) == FRAME_POINTER_REGNUM)
+	{
+	  rtx xval16 = simplify_gen_subreg (HImode, xval, imode, i);
+	  if (xval16 == const1_rtx || xval16 == constm1_rtx)
+	    {
+	      avr_asm_len ((code == PLUS) == (xval16 == const1_rtx)
+			   ? "ld __tmp_reg__,%a0+"
+			   : "ld __tmp_reg__,-%a0", xop, plen, 1);
 	      i++;
 	      continue;
 	    }
@@ -12812,6 +13584,11 @@ avr_mode_code_base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
       return POINTER_Z_REGS;
     }
 
+  if (AVR_TINY)
+    // We allow all offsets for all pointer regs.  Pass .avr-fuse-add
+    // will rectify it (register allocation cannot do it).
+    return POINTER_REGS;
+
   if (!avr_strict_X)
     return reload_completed ? BASE_POINTER_REGS : POINTER_REGS;
 
@@ -12873,6 +13650,12 @@ avr_regno_mode_code_ok_for_base_p (int regno,
     }
 
   if (avr_strict_X
+      // On Reduced Tiny, all registers are equal in that they do not
+      // support PLUS addressing; respective addresses will be fake,
+      // even for the frame pointer.  They must be handled in the
+      // printers by add-store-sub sequences -- or may be split after
+      // reload by `avr_split_tiny_move'.
+      && ! AVR_TINY
       && PLUS == outer_code
       && regno == REG_X)
     {

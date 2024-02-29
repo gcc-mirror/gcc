@@ -88,6 +88,7 @@ extern void avr_expand_prologue (void);
 extern void avr_expand_epilogue (bool);
 extern bool avr_emit_cpymemhi (rtx*);
 extern int avr_epilogue_uses (int regno);
+extern bool avr_split_tiny_move (rtx_insn *insn, rtx *operands);
 
 extern void avr_output_addr_vec (rtx_insn*, rtx);
 extern const char *avr_out_sbxx_branch (rtx_insn *insn, rtx operands[]);
@@ -161,6 +162,7 @@ extern bool avr_have_dimode;
 namespace gcc { class context; }
 class rtl_opt_pass;
 
+extern rtl_opt_pass *make_avr_pass_fuse_add (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);

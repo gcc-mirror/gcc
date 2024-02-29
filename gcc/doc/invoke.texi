@@ -884,7 +884,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args
--mbranch-cost=@var{cost}
+-mbranch-cost=@var{cost}  -mfuse-add=@var{level}
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}
 -mn_flash=@var{size}  -mno-interrupts
@@ -23784,6 +23784,14 @@ integers. The default branch cost is 0.
 @item -mcall-prologues
 Functions prologues/epilogues are expanded as calls to appropriate
 subroutines.  Code size is smaller.
+
+@opindex mfuse-add
+@item -mfuse-add
+@itemx -mno-fuse-add
+@itemx -mfuse-add=@var{level}
+Optimize indirect memory accesses on reduced Tiny devices.
+The default uses @code{@var{level}=1} for optimizations @option{-Og}
+and @option{-O1}, and @code{@var{level}=2} for higher optimizations.
 
 @opindex mdouble
 @opindex mlong-double
