@@ -3704,6 +3704,19 @@ namespace __format
 	static _Element_t
 	_S_make_elt(_Tp& __v)
 	{
+	  using _Tq = remove_const_t<_Tp>;
+	  using _CharT = typename _Context::char_type;
+	  static_assert(is_default_constructible_v<formatter<_Tq, _CharT>>,
+			"std::formatter must be specialized for the type "
+			"of each format arg");
+	  using __format::__formattable_with;
+	  if constexpr (is_const_v<_Tp>)
+	    if constexpr (!__formattable_with<_Tp, _Context>)
+	      if constexpr (__formattable_with<_Tq, _Context>)
+		static_assert(__formattable_with<_Tp, _Context>,
+			      "format arg must be non-const because its "
+			      "std::formatter specialization has a "
+			      "non-const reference parameter");
 	  basic_format_arg<_Context> __arg(__v);
 	  if constexpr (_S_values_only)
 	    return __arg._M_val;
