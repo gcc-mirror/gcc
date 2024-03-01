@@ -6030,7 +6030,13 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   tree induc_val = NULL_TREE;
   tree adjustment_def = NULL;
   if (slp_node)
-    ;
+    {
+      /* Optimize: for induction condition reduction, if we can't use zero
+	 for induc_val, use initial_def.  */
+      if (STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
+	induc_val = STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info);
+      /* ???  Coverage for double_reduc and 'else' isn't clear.  */
+    }
   else
     {
       /* Optimize: for induction condition reduction, if we can't use zero
@@ -6075,23 +6081,46 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   if (STMT_VINFO_REDUC_TYPE (reduc_info) == COND_REDUCTION)
     {
       auto_vec<std::pair<tree, bool>, 2> ccompares;
-      stmt_vec_info cond_info = STMT_VINFO_REDUC_DEF (reduc_info);
-      cond_info = vect_stmt_to_vectorize (cond_info);
-      while (cond_info != reduc_info)
+      if (slp_node)
 	{
-	  if (gimple_assign_rhs_code (cond_info->stmt) == COND_EXPR)
+	  slp_tree cond_node = slp_node_instance->root;
+	  while (cond_node != slp_node_instance->reduc_phis)
 	    {
-	      gimple *vec_stmt = STMT_VINFO_VEC_STMTS (cond_info)[0];
-	      gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
-	      ccompares.safe_push
-		(std::make_pair (unshare_expr (gimple_assign_rhs1 (vec_stmt)),
-				 STMT_VINFO_REDUC_IDX (cond_info) == 2));
+	      stmt_vec_info cond_info = SLP_TREE_REPRESENTATIVE (cond_node);
+	      if (gimple_assign_rhs_code (cond_info->stmt) == COND_EXPR)
+		{
+		  gimple *vec_stmt
+		    = SSA_NAME_DEF_STMT (SLP_TREE_VEC_DEFS (cond_node)[0]);
+		  gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
+		  ccompares.safe_push
+		    (std::make_pair (gimple_assign_rhs1 (vec_stmt),
+				     STMT_VINFO_REDUC_IDX (cond_info) == 2));
+		}
+	      /* ???  We probably want to have REDUC_IDX on the SLP node?  */
+	      cond_node = SLP_TREE_CHILDREN
+			    (cond_node)[STMT_VINFO_REDUC_IDX (cond_info)];
 	    }
-	  cond_info
-	    = loop_vinfo->lookup_def (gimple_op (cond_info->stmt,
-						 1 + STMT_VINFO_REDUC_IDX
-							(cond_info)));
+	}
+      else
+	{
+	  stmt_vec_info cond_info = STMT_VINFO_REDUC_DEF (reduc_info);
 	  cond_info = vect_stmt_to_vectorize (cond_info);
+	  while (cond_info != reduc_info)
+	    {
+	      if (gimple_assign_rhs_code (cond_info->stmt) == COND_EXPR)
+		{
+		  gimple *vec_stmt = STMT_VINFO_VEC_STMTS (cond_info)[0];
+		  gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
+		  ccompares.safe_push
+		    (std::make_pair (gimple_assign_rhs1 (vec_stmt),
+				     STMT_VINFO_REDUC_IDX (cond_info) == 2));
+		}
+	      cond_info
+		= loop_vinfo->lookup_def (gimple_op (cond_info->stmt,
+						     1 + STMT_VINFO_REDUC_IDX
+						     (cond_info)));
+	      cond_info = vect_stmt_to_vectorize (cond_info);
+	    }
 	}
       gcc_assert (ccompares.length () != 0);
 
@@ -7844,7 +7873,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   /* If we have a condition reduction, see if we can simplify it further.  */
   if (v_reduc_type == COND_REDUCTION)
     {
-      if (slp_node)
+      if (slp_node && SLP_TREE_LANES (slp_node) != 1)
 	return false;
 
       /* When the condition uses the reduction value in the condition, fail.  */
@@ -8048,6 +8077,18 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 			    "reduction: not commutative/associative\n");
 	  return false;
 	}
+    }
+
+  if ((reduction_type == COND_REDUCTION
+       || reduction_type == INTEGER_INDUC_COND_REDUCTION
+       || reduction_type == CONST_COND_REDUCTION)
+      && slp_node
+      && SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) > 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "multiple types in condition reduction reduction.\n");
+      return false;
     }
 
   if ((double_reduc || reduction_type != TREE_CODE_REDUCTION)
@@ -8765,7 +8806,31 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
   if (slp_node)
     {
       vec_initial_defs.reserve (vec_num);
-      if (nested_cycle)
+      /* Optimize: if initial_def is for REDUC_MAX smaller than the base
+	 and we can't use zero for induc_val, use initial_def.  Similarly
+	 for REDUC_MIN and initial_def larger than the base.  */
+      if (STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
+	{
+	  gcc_assert (SLP_TREE_LANES (slp_node) == 1);
+	  tree initial_def = vect_phi_initial_value (phi);
+	  reduc_info->reduc_initial_values.safe_push (initial_def);
+	  tree induc_val = STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info);
+	  if (TREE_CODE (initial_def) == INTEGER_CST
+	      && !integer_zerop (induc_val)
+	      && ((STMT_VINFO_REDUC_CODE (reduc_info) == MAX_EXPR
+		   && tree_int_cst_lt (initial_def, induc_val))
+		  || (STMT_VINFO_REDUC_CODE (reduc_info) == MIN_EXPR
+		      && tree_int_cst_lt (induc_val, initial_def))))
+	    {
+	      induc_val = initial_def;
+	      /* Communicate we used the initial_def to epilouge
+		 generation.  */
+	      STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info) = NULL_TREE;
+	    }
+	  vec_initial_defs.quick_push
+	    (build_vector_from_val (vectype_out, induc_val));
+	}
+      else if (nested_cycle)
 	{
 	  unsigned phi_idx = loop_preheader_edge (loop)->dest_idx;
 	  vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[phi_idx],
