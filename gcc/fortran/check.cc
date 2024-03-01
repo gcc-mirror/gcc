@@ -4357,6 +4357,9 @@ gfc_check_null (gfc_expr *mold)
   if (mold == NULL)
     return true;
 
+  if (mold->expr_type == EXPR_NULL)
+    return true;
+
   if (!variable_check (mold, 0, true))
     return false;
 
@@ -5187,7 +5190,7 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
 {
   *msg = NULL;
 
-  if (expr->expr_type == EXPR_NULL)
+  if (expr->expr_type == EXPR_NULL && expr->ts.type == BT_UNKNOWN)
     {
       *msg = "NULL() is not interoperable";
       return false;
