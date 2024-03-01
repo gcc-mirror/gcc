@@ -81,10 +81,9 @@ Attribute Atomic_Always_Lock_Free
 =================================
 .. index:: Atomic_Always_Lock_Free
 
-The prefix of the ``Atomic_Always_Lock_Free`` attribute is a type.
-The result is a Boolean value which is True if the type has discriminants,
-and False otherwise.  The result indicate whether atomic operations are
-supported by the target for the given type.
+The prefix of the ``Atomic_Always_Lock_Free`` attribute is a type. The
+result indicates whether atomic operations are supported by the target
+for the given type.
 
 Attribute Bit
 =============

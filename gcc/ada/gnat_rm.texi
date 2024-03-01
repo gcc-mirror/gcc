@@ -10373,10 +10373,9 @@ either be omitted, or explicitly given as @code{No_Output_Operands}.
 
 @geindex Atomic_Always_Lock_Free
 
-The prefix of the @code{Atomic_Always_Lock_Free} attribute is a type.
-The result is a Boolean value which is True if the type has discriminants,
-and False otherwise.  The result indicate whether atomic operations are
-supported by the target for the given type.
+The prefix of the @code{Atomic_Always_Lock_Free} attribute is a type. The
+result indicates whether atomic operations are supported by the target
+for the given type.
 
 @node Attribute Bit,Attribute Bit_Position,Attribute Atomic_Always_Lock_Free,Implementation Defined Attributes
 @anchor{gnat_rm/implementation_defined_attributes attribute-bit}@anchor{178}
