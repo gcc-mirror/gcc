@@ -880,7 +880,7 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
     {
       auto builtin
 	= MacroBuiltin::builtins.lookup (macro->get_rule_name ().as_string ());
-      if (!MacroBuiltin::builtins.is_iter_ok (builtin))
+      if (!builtin.has_value ())
 	{
 	  rust_error_at (macro->get_locus (),
 			 "cannot find a built-in macro with name %qs",

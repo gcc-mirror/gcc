@@ -97,17 +97,15 @@ tl::optional<LangItem::Kind>
 LangItem::Parse (const std::string &item)
 {
   auto lang_item = LangItem::lang_items.lookup (item);
-  if (!LangItem::lang_items.is_iter_ok (lang_item))
-    return tl::nullopt;
 
-  return lang_item->second;
+  return lang_item;
 }
 
 std::string
 LangItem::ToString (LangItem::Kind type)
 {
   auto str = LangItem::lang_items.lookup (type);
-  return str->second;
+  return str.value ();
 }
 
 LangItem::Kind
