@@ -1938,8 +1938,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  inform (olddecl_loc, "previous declaration %q#D", olddecl);
 	  return error_mark_node;
 	}
-      else if ((VAR_P (olddecl) && DECL_DECOMPOSITION_P (olddecl))
-	       || (VAR_P (newdecl) && DECL_DECOMPOSITION_P (newdecl)))
+      else if (DECL_DECOMPOSITION_P (olddecl) || DECL_DECOMPOSITION_P (newdecl))
 	/* A structured binding must be unique in its declarative region.  */;
       else if (DECL_IMPLICIT_TYPEDEF_P (olddecl)
 	       || DECL_IMPLICIT_TYPEDEF_P (newdecl))

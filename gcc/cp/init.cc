@@ -2008,7 +2008,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       tree itype = init ? TREE_TYPE (init) : NULL_TREE;
       int from_array = 0;
 
-      if (VAR_P (exp) && DECL_DECOMPOSITION_P (exp))
+      if (DECL_DECOMPOSITION_P (exp))
 	{
 	  from_array = 1;
 	  init = mark_rvalue_use (init);
