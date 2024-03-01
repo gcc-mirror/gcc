@@ -134,9 +134,9 @@ TESTS = $(am__append_4) $(MAKETESTS) $(am__EXEEXT_16)
 @NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	stest.dSYM stest_alloc.dSYM \
 @NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	edtest.dSYM edtest_alloc.dSYM
 @HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_6 = b2test
-@HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_7 = b2test_buildid
+@HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_7 = b2test_buildid b2test_buildidfull
 @HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_8 = b3test
-@HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_9 = b3test_dwz_buildid
+@HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_9 = b3test_dwz_buildid b3test_dwz_buildidfull
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am__append_10 = btest_lto
 @NATIVE_TRUE@am__append_11 = btest_alloc stest stest_alloc
 @HAVE_DWZ_TRUE@@NATIVE_TRUE@am__append_12 = btest_dwz
@@ -152,7 +152,7 @@ TESTS = $(am__append_4) $(MAKETESTS) $(am__EXEEXT_16)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@am__append_21 =  \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	ttest.dSYM \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	ttest_alloc.dSYM
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_22 = btest_gnudebuglink
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_22 = btest_gnudebuglink btest_gnudebuglinkfull
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_23 = ctestg ctesta
 @HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@am__append_24 = ctestzstd
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_25 = ctestg_alloc ctesta_alloc
@@ -2113,9 +2113,23 @@ b2test_buildid.log: b2test_buildid
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+b2test_buildidfull.log: b2test_buildidfull
+	@p='b2test_buildidfull'; \
+	b='b2test_buildidfull'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 b3test_dwz_buildid.log: b3test_dwz_buildid
 	@p='b3test_dwz_buildid'; \
 	b='b3test_dwz_buildid'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+b3test_dwz_buildidfull.log: b3test_dwz_buildidfull
+	@p='b3test_dwz_buildidfull'; \
+	b='b3test_dwz_buildidfull'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -2137,6 +2151,13 @@ btest_dwz_gnudebuglink.log: btest_dwz_gnudebuglink
 btest_gnudebuglink.log: btest_gnudebuglink
 	@p='btest_gnudebuglink'; \
 	b='btest_gnudebuglink'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+btest_gnudebuglinkfull.log: btest_gnudebuglinkfull
+	@p='btest_gnudebuglinkfull'; \
+	b='btest_gnudebuglinkfull'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -2578,11 +2599,21 @@ uninstall-am:
 @HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --only-keep-debug $< $@.debug
 @HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --strip-debug --add-gnu-debuglink=$@.debug $< $@
 
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@%_gnudebuglinkfull: %
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --only-keep-debug $< $@.debug
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --strip-all --add-gnu-debuglink=$@.debug $< $@
+
 @NATIVE_TRUE@%_buildid: %
 @NATIVE_TRUE@	./install-debuginfo-for-buildid.sh \
 @NATIVE_TRUE@	  "$(TEST_BUILD_ID_DIR)" \
 @NATIVE_TRUE@	  $<
 @NATIVE_TRUE@	$(OBJCOPY) --strip-debug $< $@
+
+@NATIVE_TRUE@%_buildidfull: %
+@NATIVE_TRUE@	./install-debuginfo-for-buildid.sh \
+@NATIVE_TRUE@	  "$(TEST_BUILD_ID_DIR)" \
+@NATIVE_TRUE@	  $<
+@NATIVE_TRUE@	$(OBJCOPY) --strip-all $< $@
 
 @HAVE_MINIDEBUG_TRUE@@NATIVE_TRUE@%_minidebug: %
 @HAVE_MINIDEBUG_TRUE@@NATIVE_TRUE@	$(NM) -D $< -P --defined-only | $(AWK) '{ print $$1 }' | sort > $<.dsyms

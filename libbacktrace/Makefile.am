@@ -257,7 +257,7 @@ b2test_LDFLAGS = -Wl,--build-id
 b2test_LDADD = libbacktrace_elf_for_test.la
 
 check_PROGRAMS += b2test
-MAKETESTS += b2test_buildid
+MAKETESTS += b2test_buildid b2test_buildidfull
 
 if HAVE_DWZ
 
@@ -267,7 +267,7 @@ b3test_LDFLAGS = -Wl,--build-id
 b3test_LDADD = libbacktrace_elf_for_test.la
 
 check_PROGRAMS += b3test
-MAKETESTS += b3test_dwz_buildid
+MAKETESTS += b3test_dwz_buildid b3test_dwz_buildidfull
 
 endif HAVE_DWZ
 
@@ -443,11 +443,15 @@ endif HAVE_PTHREAD
 
 if HAVE_OBJCOPY_DEBUGLINK
 
-MAKETESTS += btest_gnudebuglink
+MAKETESTS += btest_gnudebuglink btest_gnudebuglinkfull
 
 %_gnudebuglink: %
 	$(OBJCOPY) --only-keep-debug $< $@.debug
 	$(OBJCOPY) --strip-debug --add-gnu-debuglink=$@.debug $< $@
+
+%_gnudebuglinkfull: %
+	$(OBJCOPY) --only-keep-debug $< $@.debug
+	$(OBJCOPY) --strip-all --add-gnu-debuglink=$@.debug $< $@
 
 endif HAVE_OBJCOPY_DEBUGLINK
 
@@ -456,6 +460,12 @@ endif HAVE_OBJCOPY_DEBUGLINK
 	  "$(TEST_BUILD_ID_DIR)" \
 	  $<
 	$(OBJCOPY) --strip-debug $< $@
+
+%_buildidfull: %
+	./install-debuginfo-for-buildid.sh \
+	  "$(TEST_BUILD_ID_DIR)" \
+	  $<
+	$(OBJCOPY) --strip-all $< $@
 
 if HAVE_COMPRESSED_DEBUG
 
