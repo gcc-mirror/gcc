@@ -70,6 +70,7 @@ files_and_dependencies () {
 # fixincludes
 fixincludes/configure: fixincludes/configure.ac fixincludes/aclocal.m4
 fixincludes/config.h.in: fixincludes/configure.ac fixincludes/aclocal.m4
+fixincludes/fixincl.x: fixincludes/inclhack.def fixincludes/fixincl.tpl
 # intl library
 intl/plural.c: intl/plural.y
 intl/plural-config.h: intl/plural.y
@@ -106,6 +107,7 @@ gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h
 # direct2s.c:35: warning: current file is older than direct2.c
 gcc/testsuite/gcc.dg/cpp/direct2s.c: gcc/testsuite/gcc.dg/cpp/direct2.c
 # lto-plugin
+lto-plugin/aclocal.m4: lto-plugin/configure.ac
 lto-plugin/configure: lto-plugin/configure.ac lto-plugin/aclocal.m4
 lto-plugin/Makefile.in: lto-plugin/Makefile.am lto-plugin/aclocal.m4
 # tools
@@ -186,7 +188,13 @@ libphobos/config.h.in: libphobos/configure.ac libphobos/aclocal.m4
 libphobos/configure: libphobos/configure.ac libphobos/aclocal.m4
 libphobos/src/Makefile.in: libphobos/src/Makefile.am libphobos/aclocal.m4
 libphobos/testsuite/Makefile.in: libphobos/testsuite/Makefile.am libphobos/aclocal.m4
+libstdc++-v3/aclocal.m4: libstdc++-v3/configure.ac libstdc++-v3/acinclude.m4
+libstdc++-v3/Makefile.in: libstdc++-v3/Makefile.am libstdc++-v3/aclocal.m4
+libstdc++-v3/configure: libstdc++-v3/configure.ac libstdc++-v3/acinclude.m4
 libstdc++-v3/include/bits/version.h: libstdc++-v3/include/bits/version.def libstdc++-v3/include/bits/version.tpl
+libcc1/aclocal.m4: libcc1/configure.ac
+libcc1/Makefile.in: libcc1/Makefile.am libcc1/configure.ac libcc1/aclocal.m4
+libcc1/configure: libcc1/configure.ac
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.ac config/acx.m4
