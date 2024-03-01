@@ -4626,6 +4626,14 @@ package body Exp_Aggr is
             Component_Loop : while Present (Elmt) loop
                Expr := Expression (Elmt);
 
+               --  If the expression involves a construct that generates a
+               --  loop, we must generate individual assignments and no
+               --  flattening is possible.
+
+               if Nkind (Expr) = N_Quantified_Expression then
+                  return False;
+               end if;
+
                --  In the case of a multidimensional array, check that the
                --  aggregate can be recursively flattened.
 
@@ -4641,14 +4649,6 @@ package body Exp_Aggr is
 
                   if Nkind (Choice) = N_Others_Choice then
                      Rep_Count := 0;
-
-                     --  If the expression involves a construct that generates
-                     --  a loop, we must generate individual assignments and
-                     --  no flattening is possible.
-
-                     if Nkind (Expr) = N_Quantified_Expression then
-                        return False;
-                     end if;
 
                      for J in Vals'Range loop
                         if No (Vals (J)) then
