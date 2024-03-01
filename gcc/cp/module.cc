@@ -11585,9 +11585,11 @@ has_definition (tree decl)
       break;
 
     case VAR_DECL:
+      /* DECL_INITIALIZED_P might not be set on a dependent VAR_DECL.  */
       if (DECL_LANG_SPECIFIC (decl)
-	  && DECL_TEMPLATE_INFO (decl))
-	return DECL_INITIAL (decl);
+	  && DECL_TEMPLATE_INFO (decl)
+	  && DECL_INITIAL (decl))
+	return true;
       else
 	{
 	  if (!DECL_INITIALIZED_P (decl))
@@ -17528,13 +17530,14 @@ module_state::write_inits (elf_out *to, depset::hash &table, unsigned *crc_ptr)
   tree list = static_aggregates;
   for (int passes = 0; passes != 2; passes++)
     {
-      for (tree init = list; init; init = TREE_CHAIN (init), count++)
+      for (tree init = list; init; init = TREE_CHAIN (init))
 	if (TREE_LANG_FLAG_0 (init))
 	  {
 	    tree decl = TREE_VALUE (init);
 
 	    dump ("Initializer:%u for %N", count, decl);
 	    sec.tree_node (decl);
+	    ++count;
 	  }
 
       list = tls_aggregates;
