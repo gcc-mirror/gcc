@@ -7477,6 +7477,7 @@ extern tree make_decltype_auto			(void);
 extern tree make_constrained_auto		(tree, tree);
 extern tree make_constrained_decltype_auto	(tree, tree);
 extern tree make_template_placeholder		(tree);
+extern tree make_cast_auto			(void);
 extern bool template_placeholder_p		(tree);
 extern bool ctad_template_p			(tree);
 extern bool unparenthesized_id_or_class_member_access_p (tree);

@@ -3921,7 +3921,8 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 	 parameter pack (14.6.3), or the type-specifier-seq of a type-id that
 	 is a pack expansion, the invented template parameter is a template
 	 parameter pack.  */
-      if (ppd->type_pack_expansion_p && is_auto (t))
+      if (ppd->type_pack_expansion_p && is_auto (t)
+	  && TEMPLATE_TYPE_LEVEL (t) != 0)
 	TEMPLATE_TYPE_PARAMETER_PACK (t) = true;
       if (TEMPLATE_TYPE_PARAMETER_PACK (t))
         parameter_pack_p = true;
@@ -16297,9 +16298,19 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
 
     case TEMPLATE_TYPE_PARM:
-      if (template_placeholder_p (t))
+      if (TEMPLATE_TYPE_LEVEL (t) == 0)
 	{
+	  /* This is either an ordinary level-less auto or a CTAD placeholder
+	     auto.  These get replaced only via do_auto_deduction which, in the
+	     ordinary case, temporarily overrides its level to 1 before calling
+	     tsubst.  CTAD placeholders are replaced via do_class_deduction.  */
+	  gcc_checking_assert (is_auto (t));
 	  tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (t);
+	  if (!tmpl)
+	    /* Ordinary level-less auto has nothing to substitute.  */
+	    return t;
+
+	  /* Substitute the template of this CTAD placeholder.  */
 	  tmpl = tsubst_expr (tmpl, args, complain, in_decl);
 	  if (TREE_CODE (tmpl) == TEMPLATE_TEMPLATE_PARM)
 	    tmpl = TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (tmpl);
@@ -29311,6 +29322,17 @@ template_placeholder_p (tree t)
   return is_auto (t) && CLASS_PLACEHOLDER_TEMPLATE (t);
 }
 
+/* Return an auto for an explicit cast expression auto(x).
+   Like CTAD placeholders, these have level 0 so that they're
+   not accidentally replaced via tsubst and are always directly
+   resolved via do_auto_deduction.  */
+
+tree
+make_cast_auto ()
+{
+  return make_auto_1 (auto_identifier, true, /*level=*/0);
+}
+
 /* Make a "constrained auto" type-specifier. This is an auto or
   decltype(auto) type with constraints that must be associated after
   deduction.  The constraint is formed from the given concept CON
@@ -31211,6 +31233,16 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	    }
 	  return error_mark_node;
 	}
+    }
+
+  if (TEMPLATE_TYPE_LEVEL (auto_node) == 0)
+    {
+      /* Substitute this level-less auto via tsubst by temporarily
+	 overriding its level to 1.  */
+      TEMPLATE_TYPE_LEVEL (auto_node) = 1;
+      type = tsubst (type, targs, complain, NULL_TREE);
+      TEMPLATE_TYPE_LEVEL (auto_node) = 0;
+      return type;
     }
 
   if (TEMPLATE_TYPE_LEVEL (auto_node) == 1)

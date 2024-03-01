@@ -33314,6 +33314,17 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
   if (!type)
     type = error_mark_node;
 
+  if (TREE_CODE (type) == TYPE_DECL
+      && is_auto (TREE_TYPE (type)))
+    type = TREE_TYPE (type);
+
+  if (is_auto (type)
+      && !AUTO_IS_DECLTYPE (type)
+      && !PLACEHOLDER_TYPE_CONSTRAINTS (type)
+      && !CLASS_PLACEHOLDER_TEMPLATE (type))
+    /* auto(x) and auto{x} need to use a level-less auto.  */
+    type = make_cast_auto ();
+
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
       cp_lexer_set_source_position (parser->lexer);
