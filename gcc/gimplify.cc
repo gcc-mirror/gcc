@@ -8144,13 +8144,6 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
   n = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
   if ((ctx->region_type & ORT_TARGET) != 0)
     {
-      if (ctx->region_type & ORT_ACC)
-	/* For OpenACC, as remarked above, defer expansion.  */
-	shared = false;
-      else
-	shared = true;
-
-      ret = lang_hooks.decls.omp_disregard_value_expr (decl, shared);
       if (n == NULL)
 	{
 	  unsigned nflags = flags;
@@ -8275,9 +8268,22 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	    }
 	found_outer:
 	  omp_add_variable (ctx, decl, nflags);
+	  if (ctx->region_type & ORT_ACC)
+	    /* For OpenACC, as remarked above, defer expansion.  */
+	    shared = false;
+	  else
+	    shared = (nflags & (GOVD_PRIVATE | GOVD_FIRSTPRIVATE)) == 0;
+	  ret = lang_hooks.decls.omp_disregard_value_expr (decl, shared);
 	}
       else
 	{
+	  if (ctx->region_type & ORT_ACC)
+	    /* For OpenACC, as remarked above, defer expansion.  */
+	    shared = false;
+	  else
+	    shared = ((n->value | flags)
+		      & (GOVD_PRIVATE | GOVD_FIRSTPRIVATE)) == 0;
+	  ret = lang_hooks.decls.omp_disregard_value_expr (decl, shared);
 	  /* If nothing changed, there's nothing left to do.  */
 	  if ((n->value & flags) == flags)
 	    return ret;
