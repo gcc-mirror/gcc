@@ -5329,6 +5329,22 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 		  gimple_assign_set_rhs1 (stmt, rhs1);
 		  gimple_assign_set_rhs_code (stmt, SSA_NAME);
 		}
+	      else if (m_names == NULL
+		       || !bitmap_bit_p (m_names, SSA_NAME_VERSION (rhs1)))
+		{
+		  gimple *g = SSA_NAME_DEF_STMT (rhs1);
+		  gcc_assert (gimple_assign_load_p (g));
+		  tree mem = gimple_assign_rhs1 (g);
+		  tree ltype = TREE_TYPE (lhs);
+		  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (mem));
+		  if (as != TYPE_ADDR_SPACE (ltype))
+		    ltype
+		      = build_qualified_type (ltype,
+					      TYPE_QUALS (ltype)
+					      | ENCODE_QUAL_ADDR_SPACE (as));
+		  rhs1 = build1 (VIEW_CONVERT_EXPR, ltype, mem);
+		  gimple_assign_set_rhs1 (stmt, rhs1);
+		}
 	      else
 		{
 		  int part = var_to_partition (m_map, rhs1);
