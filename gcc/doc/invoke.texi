@@ -23792,6 +23792,7 @@ subroutines.  Code size is smaller.
 Optimize indirect memory accesses on reduced Tiny devices.
 The default uses @code{@var{level}=1} for optimizations @option{-Og}
 and @option{-O1}, and @code{@var{level}=2} for higher optimizations.
+Valid values for @var{level} are @code{0}, @code{1} and @code{2}.
 
 @opindex mdouble
 @opindex mlong-double
