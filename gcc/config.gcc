@@ -1270,6 +1270,19 @@ aarch64*-*-gnu*)
         tmake_file="${tmake_file} aarch64/t-aarch64"
         tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
 	;;
+aarch64-*-mingw*)
+	tmake_file="${tmake_file} aarch64/t-aarch64"
+	case ${enable_threads} in
+	  "" | yes | win32)
+	    thread_file='win32'
+	    ;;
+	  posix)
+	    thread_file='posix'
+	    ;;
+	esac
+	default_use_cxa_atexit=yes
+	user_headers_inc_next_post="${user_headers_inc_next_post} float.h"
+	;;
 aarch64*-wrs-vxworks*)
         tm_file="${tm_file} elfos.h aarch64/aarch64-elf.h"
         tm_file="${tm_file} vx-common.h vxworks.h aarch64/aarch64-vxworks.h"
