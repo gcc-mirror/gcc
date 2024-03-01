@@ -7667,6 +7667,21 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       return false;
     }
 
+  /* Lane-reducing ops also never can be used in a SLP reduction group
+     since we'll mix lanes belonging to different reductions.  But it's
+     OK to use them in a reduction chain or when the reduction group
+     has just one element.  */
+  if (lane_reduc_code_p
+      && slp_node
+      && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+      && SLP_TREE_LANES (slp_node) > 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "lane-reducing reduction in reduction group.\n");
+      return false;
+    }
+
   /* All uses but the last are expected to be defined in the loop.
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the

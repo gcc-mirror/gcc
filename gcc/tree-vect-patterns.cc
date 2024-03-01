@@ -7160,7 +7160,6 @@ vect_pattern_recog_1 (vec_info *vinfo,
 		      vect_recog_func *recog_func, stmt_vec_info stmt_info)
 {
   gimple *pattern_stmt;
-  loop_vec_info loop_vinfo;
   tree pattern_vectype;
 
   /* If this statement has already been replaced with pattern statements,
@@ -7186,8 +7185,6 @@ vect_pattern_recog_1 (vec_info *vinfo,
       return;
     }
 
-  loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
- 
   /* Found a vectorizable pattern.  */
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -7196,16 +7193,6 @@ vect_pattern_recog_1 (vec_info *vinfo,
 
   /* Mark the stmts that are involved in the pattern. */
   vect_mark_pattern_stmts (vinfo, stmt_info, pattern_stmt, pattern_vectype);
-
-  /* Patterns cannot be vectorized using SLP, because they change the order of
-     computation.  */
-  if (loop_vinfo)
-    {
-      unsigned ix, ix2;
-      stmt_vec_info *elem_ptr;
-      VEC_ORDERED_REMOVE_IF (LOOP_VINFO_REDUCTIONS (loop_vinfo), ix, ix2,
-			     elem_ptr, *elem_ptr == stmt_info);
-    }
 }
 
 

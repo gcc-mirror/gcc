@@ -3627,14 +3627,24 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	= as_a <loop_vec_info> (vinfo)->reductions;
       scalar_stmts.create (reductions.length ());
       for (i = 0; reductions.iterate (i, &next_info); i++)
-	if ((STMT_VINFO_RELEVANT_P (next_info)
-	     || STMT_VINFO_LIVE_P (next_info))
-	    /* ???  Make sure we didn't skip a conversion around a reduction
-	       path.  In that case we'd have to reverse engineer that conversion
-	       stmt following the chain using reduc_idx and from the PHI
-	       using reduc_def.  */
-	    && STMT_VINFO_DEF_TYPE (next_info) == vect_reduction_def)
-	  scalar_stmts.quick_push (next_info);
+	{
+	  gassign *g;
+	  next_info = vect_stmt_to_vectorize (next_info);
+	  if ((STMT_VINFO_RELEVANT_P (next_info)
+	       || STMT_VINFO_LIVE_P (next_info))
+	      /* ???  Make sure we didn't skip a conversion around a reduction
+		 path.  In that case we'd have to reverse engineer that
+		 conversion stmt following the chain using reduc_idx and from
+		 the PHI using reduc_def.  */
+	      && STMT_VINFO_DEF_TYPE (next_info) == vect_reduction_def
+	      /* Do not discover SLP reductions for lane-reducing ops, that
+		 will fail later.  */
+	      && (!(g = dyn_cast <gassign *> (STMT_VINFO_STMT (next_info)))
+		  || (gimple_assign_rhs_code (g) != DOT_PROD_EXPR
+		      && gimple_assign_rhs_code (g) != WIDEN_SUM_EXPR
+		      && gimple_assign_rhs_code (g) != SAD_EXPR)))
+	    scalar_stmts.quick_push (next_info);
+	}
       /* If less than two were relevant/live there's nothing to SLP.  */
       if (scalar_stmts.length () < 2)
 	return false;
