@@ -1,6 +1,6 @@
 // P1381R1
 // { dg-do compile { target c++11 } }
-// { dg-options "" }
+// { dg-options "-Wno-c++20-extensions" }
 
 struct Foo { int a : 1; int b; };
 

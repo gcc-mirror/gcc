@@ -607,6 +607,16 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 					 TCTX_CAPTURE_BY_COPY, type))
 	    return error_mark_node;
 	}
+
+      if (cxx_dialect < cxx20)
+	{
+	  auto_diagnostic_group d;
+	  tree stripped_init = tree_strip_any_location_wrapper (initializer);
+	  if (DECL_DECOMPOSITION_P (stripped_init)
+	      && pedwarn (input_location, OPT_Wc__20_extensions,
+			  "captured structured bindings are a C++20 extension"))
+	    inform (DECL_SOURCE_LOCATION (stripped_init), "declared here");
+	}
     }
 
   /* Add __ to the beginning of the field name so that user code
