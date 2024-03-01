@@ -3586,7 +3586,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
 			   slp_instance_kind kind,
 			   unsigned max_tree_size, unsigned *limit)
 {
-  unsigned int i;
   vec<stmt_vec_info> scalar_stmts;
 
   if (is_a <bb_vec_info> (vinfo))
@@ -3619,35 +3618,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	= STMT_VINFO_DEF_TYPE (scalar_stmts.last ());
       STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
 	= STMT_VINFO_REDUC_DEF (vect_orig_stmt (scalar_stmts.last ()));
-    }
-  else if (kind == slp_inst_kind_reduc_group)
-    {
-      /* Collect reduction statements.  */
-      const vec<stmt_vec_info> &reductions
-	= as_a <loop_vec_info> (vinfo)->reductions;
-      scalar_stmts.create (reductions.length ());
-      for (i = 0; reductions.iterate (i, &next_info); i++)
-	{
-	  gassign *g;
-	  next_info = vect_stmt_to_vectorize (next_info);
-	  if ((STMT_VINFO_RELEVANT_P (next_info)
-	       || STMT_VINFO_LIVE_P (next_info))
-	      /* ???  Make sure we didn't skip a conversion around a reduction
-		 path.  In that case we'd have to reverse engineer that
-		 conversion stmt following the chain using reduc_idx and from
-		 the PHI using reduc_def.  */
-	      && STMT_VINFO_DEF_TYPE (next_info) == vect_reduction_def
-	      /* Do not discover SLP reductions for lane-reducing ops, that
-		 will fail later.  */
-	      && (!(g = dyn_cast <gassign *> (STMT_VINFO_STMT (next_info)))
-		  || (gimple_assign_rhs_code (g) != DOT_PROD_EXPR
-		      && gimple_assign_rhs_code (g) != WIDEN_SUM_EXPR
-		      && gimple_assign_rhs_code (g) != SAD_EXPR)))
-	    scalar_stmts.quick_push (next_info);
-	}
-      /* If less than two were relevant/live there's nothing to SLP.  */
-      if (scalar_stmts.length () < 2)
-	return false;
     }
   else
     gcc_unreachable ();
@@ -3740,9 +3710,40 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 
       /* Find SLP sequences starting from groups of reductions.  */
       if (loop_vinfo->reductions.length () > 1)
-	vect_analyze_slp_instance (vinfo, bst_map, loop_vinfo->reductions[0],
-				   slp_inst_kind_reduc_group, max_tree_size,
-				   &limit);
+	{
+	  /* Collect reduction statements.  */
+	  vec<stmt_vec_info> scalar_stmts;
+	  scalar_stmts.create (loop_vinfo->reductions.length ());
+	  for (auto next_info : loop_vinfo->reductions)
+	    {
+	      gassign *g;
+	      next_info = vect_stmt_to_vectorize (next_info);
+	      if ((STMT_VINFO_RELEVANT_P (next_info)
+		   || STMT_VINFO_LIVE_P (next_info))
+		  /* ???  Make sure we didn't skip a conversion around a
+		     reduction path.  In that case we'd have to reverse
+		     engineer that conversion stmt following the chain using
+		     reduc_idx and from the PHI using reduc_def.  */
+		  && STMT_VINFO_DEF_TYPE (next_info) == vect_reduction_def
+		  /* Do not discover SLP reductions for lane-reducing ops, that
+		     will fail later.  */
+		  && (!(g = dyn_cast <gassign *> (STMT_VINFO_STMT (next_info)))
+		      || (gimple_assign_rhs_code (g) != DOT_PROD_EXPR
+			  && gimple_assign_rhs_code (g) != WIDEN_SUM_EXPR
+			  && gimple_assign_rhs_code (g) != SAD_EXPR)))
+		scalar_stmts.quick_push (next_info);
+	    }
+	  if (scalar_stmts.length () > 1)
+	    {
+	      vec<stmt_vec_info> roots = vNULL;
+	      vec<tree> remain = vNULL;
+	      vect_build_slp_instance (loop_vinfo, slp_inst_kind_reduc_group,
+				       scalar_stmts, roots, remain,
+				       max_tree_size, &limit, bst_map, NULL);
+	    }
+	  else
+	    scalar_stmts.release ();
+	}
     }
 
   hash_set<slp_tree> visited_patterns;
