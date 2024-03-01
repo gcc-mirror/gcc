@@ -3650,7 +3650,8 @@ assign_parms (tree fndecl)
   assign_parms_initialize_all (&all);
   fnargs = assign_parms_augmented_arg_list (&all);
 
-  if (TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (fndecl)))
+  if (TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (fndecl))
+      && fnargs.is_empty ())
     {
       struct assign_parm_data_one data = {};
       assign_parms_setup_varargs (&all, &data, false);
