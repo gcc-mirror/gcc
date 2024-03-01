@@ -6314,6 +6314,16 @@ Permissible values for this parameter are @code{user}, @code{supervisor},
 and @code{machine}.  If there is no parameter, then it defaults to
 @code{machine}.
 
+@cindex @code{riscv_vector_cc} function attribute, RISC-V
+@item riscv_vector_cc
+Use this attribute to force the function to use the vector calling
+convention variant.
+
+@smallexample
+void foo() __attribute__((riscv_vector_cc));
+[[riscv::vector_cc]] void foo(); // For C++11 and C23
+@end smallexample
+
 @end table
 
 The following target-specific function attributes are available for the

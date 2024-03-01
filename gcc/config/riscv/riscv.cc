@@ -537,24 +537,52 @@ static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 
 /* Defining target-specific uses of __attribute__.  */
-TARGET_GNU_ATTRIBUTES (riscv_attribute_table,
+static const attribute_spec riscv_gnu_attributes[] =
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
 	       function_type_required, affects_type_identity, handler,
 	       exclude } */
 
   /* The attribute telling no prologue/epilogue.  */
-  { "naked",	0,  0, true, false, false, false,
-    riscv_handle_fndecl_attribute, NULL },
+  {"naked", 0, 0, true, false, false, false, riscv_handle_fndecl_attribute,
+   NULL},
   /* This attribute generates prologue/epilogue for interrupt handlers.  */
-  { "interrupt", 0, 1, false, true, true, false,
-    riscv_handle_type_attribute, NULL },
+  {"interrupt", 0, 1, false, true, true, false, riscv_handle_type_attribute,
+   NULL},
 
   /* The following two are used for the built-in properties of the Vector type
      and are not used externally */
   {"RVV sizeless type", 4, 4, false, true, false, true, NULL, NULL},
-  {"RVV type", 0, 0, false, true, false, true, NULL, NULL}
-});
+  {"RVV type", 0, 0, false, true, false, true, NULL, NULL},
+  /* This attribute is used to declare a function, forcing it to use the
+    standard vector calling convention variant. Syntax:
+    __attribute__((riscv_vector_cc)). */
+  {"riscv_vector_cc", 0, 0, false, true, true, true, NULL, NULL}
+};
+
+static const scoped_attribute_specs riscv_gnu_attribute_table  =
+{
+  "gnu", {riscv_gnu_attributes}
+};
+
+static const attribute_spec riscv_attributes[] =
+{
+  /* This attribute is used to declare a function, forcing it to use the
+     standard vector calling convention variant. Syntax:
+     [[riscv::vector_cc]]. */
+  {"vector_cc", 0, 0, false, true, true, true, NULL, NULL}
+};
+
+static const scoped_attribute_specs riscv_nongnu_attribute_table =
+{
+  "riscv", {riscv_attributes}
+};
+
+static const scoped_attribute_specs *const riscv_attribute_table[] =
+{
+  &riscv_gnu_attribute_table,
+  &riscv_nongnu_attribute_table
+};
 
 /* Order for the CLOBBERs/USEs of gpr_save.  */
 static const unsigned gpr_save_reg_order[] = {
@@ -5425,6 +5453,16 @@ riscv_arguments_is_vector_type_p (const_tree fntype)
   return false;
 }
 
+/* Return true if FUNC is a riscv_vector_cc function.
+   For more details please reference the below link.
+   https://github.com/riscv-non-isa/riscv-c-api-doc/pull/67 */
+static bool
+riscv_vector_cc_function_p (const_tree fntype)
+{
+  return lookup_attribute ("vector_cc", TYPE_ATTRIBUTES (fntype)) != NULL_TREE
+	 || lookup_attribute ("riscv_vector_cc", TYPE_ATTRIBUTES (fntype)) != NULL_TREE;
+}
+
 /* Implement TARGET_FNTYPE_ABI.  */
 
 static const predefined_function_abi &
@@ -5434,7 +5472,8 @@ riscv_fntype_abi (const_tree fntype)
      reference the below link.
      https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389  */
   if (riscv_return_value_is_vector_type_p (fntype)
-	  || riscv_arguments_is_vector_type_p (fntype))
+	  || riscv_arguments_is_vector_type_p (fntype)
+	  || riscv_vector_cc_function_p (fntype))
     return riscv_v_abi ();
 
   return default_function_abi;
