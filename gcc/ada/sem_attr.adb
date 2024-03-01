@@ -3425,7 +3425,7 @@ package body Sem_Attr is
       --  perform legality checks on the original tree.
 
       if Nkind (P) in N_Raise_xxx_Error then
-         Rewrite (N, Relocate_Node (P));
+         Rewrite (N, P);
          P := Original_Node (P_Old);
       end if;
 

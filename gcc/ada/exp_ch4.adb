@@ -5109,7 +5109,7 @@ package body Exp_Ch4 is
                   else
                      Alt_Expr :=
                        Make_Attribute_Reference (Alt_Loc,
-                         Prefix         => Relocate_Node (Alt_Expr),
+                         Prefix         => Alt_Expr,
                          Attribute_Name => Name_Unrestricted_Access);
                   end if;
                end if;
