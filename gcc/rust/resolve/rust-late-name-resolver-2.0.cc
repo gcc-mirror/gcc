@@ -130,7 +130,10 @@ Late::visit (AST::IdentifierExpr &expr)
     resolved = label;
   else if (value)
     resolved = value;
-  // TODO: else emit error?
+  else {
+      rust_error_at(expr.get_locus (), "could not resolve identifier expression: %qs", expr.get_ident ().as_string ().c_str ());
+      return;
+  }
 
   ctx.map_usage (expr.get_node_id (), *resolved);
 
