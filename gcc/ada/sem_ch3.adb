@@ -1965,6 +1965,9 @@ package body Sem_Ch3 is
       --  a limited type. Used to validate declaration against that of
       --  enclosing record.
 
+      procedure Add_Range_Checks (Subt_Indic : Node_Id);
+      --  Adds range constraint checks for a subtype indication
+
       ----------------------
       -- Is_Known_Limited --
       ----------------------
@@ -1998,6 +2001,50 @@ package body Sem_Ch3 is
             return False;
          end if;
       end Is_Known_Limited;
+
+      ----------------------
+      -- Add_Range_Checks --
+      ----------------------
+
+      procedure Add_Range_Checks (Subt_Indic : Node_Id)
+      is
+
+      begin
+         if Present (Subt_Indic) and then
+           Nkind (Subt_Indic) = N_Subtype_Indication and then
+           Nkind (Constraint (Subt_Indic)) = N_Index_Or_Discriminant_Constraint
+         then
+
+            declare
+               Typ : constant Entity_Id := Entity (Subtype_Mark (Subt_Indic));
+               Indic_Typ    : constant Entity_Id := Underlying_Type (Typ);
+               Subt_Index   : Node_Id;
+               Target_Index : Node_Id;
+            begin
+
+               if Present (Indic_Typ) and then Is_Array_Type (Indic_Typ) then
+
+                  Target_Index := First_Index (Indic_Typ);
+                  Subt_Index := First (Constraints (Constraint (Subt_Indic)));
+
+                  while Present (Target_Index) loop
+                     if Nkind (Subt_Index) in N_Expanded_Name | N_Identifier
+                     and then Nkind
+                        (Scalar_Range (Entity (Subt_Index))) = N_Range
+                     then
+                        Apply_Range_Check
+                           (Expr        => Scalar_Range (Entity (Subt_Index)),
+                            Target_Typ  => Etype (Target_Index),
+                            Insert_Node => Subt_Indic);
+                     end if;
+
+                     Next (Subt_Index);
+                     Next_Index (Target_Index);
+                  end loop;
+               end if;
+            end;
+         end if;
+      end Add_Range_Checks;
 
    --  Start of processing for Analyze_Component_Declaration
 
@@ -2224,6 +2271,9 @@ package body Sem_Ch3 is
       Analyze_Aspect_Specifications (N, Id);
 
       Analyze_Dimension (N);
+
+      Add_Range_Checks (Subtype_Indication (Component_Definition (N)));
+
    end Analyze_Component_Declaration;
 
    --------------------------
