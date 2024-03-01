@@ -545,6 +545,8 @@ Necessary to run @samp{make check} for @file{fixinc}.
 Necessary to regenerate the top level @file{Makefile.in} file from
 @file{Makefile.tpl} and @file{Makefile.def}.
 
+Necessary to regenerate the @file{bits/version.h} header for libstdc++.
+
 @item Flex version 2.5.4 (or later)
 
 Necessary when modifying @file{*.l} files.

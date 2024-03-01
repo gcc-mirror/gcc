@@ -1480,6 +1480,12 @@ update-version:
 	cd ${bits_srcdir} && \
 	autogen version.def
 
+if MAINTAINER_MODE
+# Regenerate it automatically in maintainer mode.
+${bits_srcdir}/version.h: ${bits_srcdir}/version.def ${bits_srcdir}/version.tpl
+	$(MAKE) update-version
+endif
+
 # The real deal.
 install-data-local: install-headers
 install-headers:
