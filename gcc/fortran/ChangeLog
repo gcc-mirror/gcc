@@ -1,3 +1,34 @@
+2024-02-29  Alexander Westbrooks  <alexanderw@gcc.gnu.org>
+
+	PR fortran/82943
+	PR fortran/86148
+	PR fortran/86268
+	* decl.cc (gfc_get_pdt_instance): Set the PDT instance field
+	'f2k_derived', if not set already, to point to the given
+	PDT template 'f2k_derived' namespace in order to give the
+	PDT instance referential access to the typebound procedures
+	of the template.
+	* gfortran.h (gfc_pdt_is_instance_of): Add prototype.
+	* resolve.cc (resolve_typebound_procedure): If the derived type
+	does not have the attribute 'pdt_template' set, compare the
+	dummy argument to the 'resolve_bindings_derived' type like usual.
+	If the derived type is a 'pdt_template', then check if the
+	dummy argument is an instance of the PDT template. If the derived
+	type is a PDT template, and the dummy argument is an instance of
+	that template, but the dummy argument 'param_list' is not
+	SPEC_ASSUMED, check if there are any LEN parameters in the
+	dummy argument. If there are no LEN parameters, then this implies
+	that there are only KIND parameters in the dummy argument.
+	If there are LEN parameters, this would be an error, for all
+	LEN parameters for the dummy argument MUST be assumed for
+	typebound procedures of PDTs.
+	(resolve_pdt): Add a check for ALLOCATABLE and POINTER attributes for
+	SPEC_DEFERRED parameters of PDT class symbols.  ALLOCATABLE and
+	POINTER attributes for a PDT class symbol are stored in the
+	'class_pointer' and 'allocatable' attributes of the '_data'
+	component respectively.
+	* symbol.cc (gfc_pdt_is_instance_of): New function.
+
 2024-02-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/114012

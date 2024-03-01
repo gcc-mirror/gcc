@@ -1,3 +1,58 @@
+2024-02-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114159
+	* c-c++-common/analyzer/call-summaries-pr114159.c: New test.
+
+2024-02-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114132
+	* gcc.target/avr/pr114132-1.c: New test.
+	* gcc.target/avr/torture/pr114132-2.c: New test.
+
+2024-02-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113987
+	* g++.dg/warn/Wuninitialized-15.C: Turn dg-warning into dg-bogus.
+	* g++.dg/warn/Wuninitialized-34.C: New test.
+
+2024-02-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/102344
+	* gm2/pim/pass/TestLong4.mod: Rewrite.
+	* gm2/cpp/pass/testlong4.mod: New test.
+
+2024-02-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/108174
+	* gcc.target/aarch64/acle/memtag_4.c: New test.
+
+2024-02-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/crc-sext.c: New test;
+
+2024-02-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/111710
+	* g++.dg/modules/lambda-7.h: New test.
+	* g++.dg/modules/lambda-7_a.H: New test.
+	* g++.dg/modules/lambda-7_b.C: New test.
+	* g++.dg/modules/lambda-7_c.C: New test.
+
+2024-02-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr114130.c: New.
+
+2024-02-29  Alexander Westbrooks  <alexanderw@gcc.gnu.org>
+
+	PR fortran/82943
+	PR fortran/86148
+	PR fortran/86268
+	* gfortran.dg/pdt_4.f03: Update modified error message.
+	* gfortran.dg/pdt_34.f03: New test.
+	* gfortran.dg/pdt_35.f03: New test.
+	* gfortran.dg/pdt_36.f03: New test.
+	* gfortran.dg/pdt_37.f03: New test.
+
 2024-02-28  Jakub Jelinek  <jakub@redhat.com>
 	    Patrick Palka  <ppalka@redhat.com>
 

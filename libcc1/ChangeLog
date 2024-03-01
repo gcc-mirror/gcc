@@ -1,3 +1,24 @@
+2024-02-29  Tom Tromey  <tom@tromey.com>
+
+	PR libcc1/113977
+	* libcc1plugin.cc (plugin_finish_record_or_union): New function.
+	(plugin_finish_record_or_union): Rewrite.
+	(plugin_init): Use GCC_C_FE_VERSION_2.
+	* libcc1.cc (c_vtable): Use GCC_C_FE_VERSION_2.
+	(gcc_c_fe_context): Check for GCC_C_FE_VERSION_2.
+
+2024-02-29  Tom Tromey  <tom@tromey.com>
+
+	* libcp1.cc (libcp1::libcp1): Use FE version number from context.
+	* libcc1.cc (libcc1::libcc1): Use FE version number from context.
+	(c_vtable): Use GCC_C_FE_VERSION_1.
+
+2024-02-29  Tom Tromey  <tom@tromey.com>
+
+	* libcc1plugin.cc (safe_lookup_builtin_type): Handle ERROR_MARK.
+	(plugin_int_type): Fall back to plugin_int_type_v0.
+	(plugin_float_type): Fall back to plugin_float_type_v0.
+
 2024-02-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98388

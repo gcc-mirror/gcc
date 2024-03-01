@@ -1,3 +1,66 @@
+2024-02-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114159
+	* function.cc (function_name): Make param const.
+	* function.h (function_name): Likewise.
+
+2024-02-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114100
+	* doc/invoke.texi (AVR Options) <-mfuse-add>: Document.
+	* config/avr/avr.opt (-mfuse-add=): New target option.
+	* common/config/avr/avr-common.cc (avr_option_optimization_table)
+	[OPT_LEVELS_1_PLUS]: Set -mfuse-add=1.
+	[OPT_LEVELS_2_PLUS]: Set -mfuse-add=2.
+	* config/avr/avr-passes.def (avr_pass_fuse_add): Insert new pass.
+	* config/avr/avr-protos.h (avr_split_tiny_move)
+	(make_avr_pass_fuse_add): New protos.
+	* config/avr/avr.md [AVR_TINY]: New post-reload splitter uses
+	avr_split_tiny_move to split indirect memory accesses.
+	(gen_move_clobbercc): New define_expand helper.
+	* config/avr/avr.cc (avr_pass_data_fuse_add): New pass data.
+	(avr_pass_fuse_add): New class from rtl_opt_pass.
+	(make_avr_pass_fuse_add, avr_split_tiny_move): New functions.
+	(reg_seen_between_p, emit_move_ccc, emit_move_ccc_after): New functions.
+	(avr_legitimate_address_p) [AVR_TINY]: Don't restrict offsets
+	of PLUS addressing for AVR_TINY.
+	(avr_regno_mode_code_ok_for_base_p) [AVR_TINY]: Ignore -mstrict-X.
+	(avr_out_plus_1) [AVR_TINY]: Tweak ++Y and --Y.
+	(avr_mode_code_base_reg_class) [AVR_TINY]: Always return POINTER_REGS.
+
+2024-02-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114132
+	* config/avr/avr.h (CUMULATIVE_ARGS) <has_stack_args>: New field.
+	* config/avr/avr.cc (avr_init_cumulative_args): Initialize it.
+	(avr_function_arg): Set it.
+	(avr_frame_pointer_required_p): Use it instead of .nregs.
+
+2024-02-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/108174
+	* config/aarch64/aarch64-builtins.cc (aarch64_memtag_builtin_data): Make
+	static and mark with GTY.
+
+2024-02-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md
+	(loongarch_<crc>_w_<size>_w_extended): New define_insn.
+
+2024-02-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (CRC): New define_int_iterator.
+	(crc): New define_int_attr.
+	(loongarch_crc_w_<size>_w, loongarch_crcc_w_<size>_w): Unify
+	into ...
+	(loongarch_<crc>_w_<size>_w): ... here.
+
+2024-02-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/114130
+	* config/riscv/sync.md (atomic_compare_and_swap<mode>): Sign
+	extend the expected value if needed.
+
 2024-02-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
 
 	* config.gcc (target_gtfiles): Change coreout to btfext-out.

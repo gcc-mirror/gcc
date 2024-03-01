@@ -1,3 +1,7 @@
+2024-02-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc-changelog/git_commit.py (bug_components): Add libcc1.
+
 2024-02-23  Richard Biener  <rguenther@suse.de>
 
 	PR target/90785

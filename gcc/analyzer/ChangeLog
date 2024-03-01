@@ -1,3 +1,90 @@
+2024-02-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114159
+	* analyzer.cc: Include "tree-dfa.h".
+	(get_ssa_default_def): New decl.
+	* analyzer.h (get_ssa_default_def): New.
+	* call-info.cc (call_info::call_info): New ctor taking an explicit
+	called_fn.
+	* call-info.h (call_info::call_info): Likewise.
+	* call-summary.cc (call_summary_replay::call_summary_replay):
+	Convert param from function * to const function &.
+	* call-summary.h (call_summary_replay::call_summary_replay):
+	Likewise.
+	* checker-event.h (state_change_event::get_dest_function):
+	Constify return value.
+	* engine.cc (point_and_state::validate): Update for conversion to
+	const function &.
+	(exploded_node::on_stmt): Likewise.
+	(call_summary_edge_info::call_summary_edge_info): Likewise.
+	Pass in called_fn to call_info ctor.
+	(exploded_node::replay_call_summaries): Update for conversion to
+	const function &.  Convert per_function_data from * to &.
+	(exploded_node::replay_call_summary): Update for conversion to
+	const function &.
+	(exploded_graph::add_function_entry): Likewise.
+	(toplevel_function_p): Likewise.
+	(add_tainted_args_callback): Likewise.
+	(exploded_graph::build_initial_worklist): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(maybe_update_for_edge): Likewise.
+	(exploded_graph::on_escaped_function): Likewise.
+	* exploded-graph.h (exploded_node::replay_call_summaries):
+	Likewise.
+	(exploded_node::replay_call_summary): Likewise.
+	(exploded_graph::add_function_entry): Likewise.
+	* program-point.cc (function_point::from_function_entry):
+	Likewise.
+	(program_point::from_function_entry): Likewise.
+	* program-point.h (function_point::from_function_entry): Likewise.
+	(program_point::from_function_entry): Likewise.
+	* program-state.cc (program_state::push_frame): Likewise.
+	(program_state::get_current_function): Constify return type.
+	* program-state.h (program_state::push_frame): Update for
+	conversion to const function &.
+	(program_state::get_current_function): Likewise.
+	* region-model-manager.cc
+	(region_model_manager::get_frame_region): Likewise.
+	* region-model-manager.h
+	(region_model_manager::get_frame_region): Likewise.
+	* region-model.cc (region_model::called_from_main_p): Likewise.
+	(region_model::update_for_gcall): Likewise.
+	(region_model::push_frame): Likewise.
+	(region_model::get_current_function): Constify return type.
+	(region_model::pop_frame): Update for conversion to
+	const function &.
+	(selftest::test_stack_frames): Likewise.
+	(selftest::test_get_representative_path_var): Likewise.
+	(selftest::test_state_merging): Likewise.
+	(selftest::test_alloca): Likewise.
+	* region-model.h (region_model::push_frame): Likewise.
+	(region_model::get_current_function): Likewise.
+	* region.cc (frame_region::dump_to_pp): Likewise.
+	(frame_region::get_region_for_local): Likewise.
+	* region.h (class frame_region): Likewise.
+	* sm-signal.cc (signal_unsafe_call::describe_state_change):
+	Likewise.
+	(update_model_for_signal_handler): Likewise.
+	(signal_delivery_edge_info_t::update_model): Likewise.
+	(register_signal_handler::impl_transition): Likewise.
+	* state-purge.cc (class gimple_op_visitor): Likewise.
+	(state_purge_map::state_purge_map): Likewise.
+	(state_purge_map::get_or_create_data_for_decl): Likewise.
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Likewise.
+	(state_purge_per_ssa_name::add_to_worklist): Likewise.
+	(state_purge_per_ssa_name::process_point): Likewise.
+	(state_purge_per_decl::add_to_worklist): Likewise.
+	(state_purge_annotator::print_needed): Likewise.
+	* state-purge.h
+	(state_purge_map::get_or_create_data_for_decl): Likewise.
+	(class state_purge_per_tree): Likewise.
+	(class state_purge_per_ssa_name): Likewise.
+	(class state_purge_per_decl): Likewise.
+	* supergraph.cc (supergraph::dump_dot_to_pp): Likewise.
+	* supergraph.h
+	(supergraph::get_node_for_function_entry): Likewise.
+	(supergraph::get_node_for_function_exit): Likewise.
+
 2024-02-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/110483

@@ -1,3 +1,31 @@
+2024-02-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113987
+	* call.cc (conv_binds_to_reference_parm_p): New.
+	* cp-tree.h (conv_binds_to_reference_parm_p): Declare.
+	* init.cc (find_uninit_fields_r): Call it.
+
+2024-02-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/111710
+	* cp-tree.h (DECL_MODULE_KEYED_DECLS_P): Remove tree checking.
+	(struct lang_decl_base): Update comments and fix whitespace.
+	* module.cc (trees_out::lang_decl_bools): Always write
+	module_keyed_decls_p flag...
+	(trees_in::lang_decl_bools): ...and always read it.
+	(trees_out::decl_value): Handle all kinds of keyed decls.
+	(trees_in::decl_value): Likewise.
+	(trees_in::tree_value): Deduplicate LAMBDA_EXPRs.
+	(maybe_key_decl): Also support lambdas attached to fields,
+	parameters, and types. Key lambdas attached to fields to their
+	class.
+	(trees_out::get_merge_kind): Likewise.
+	(trees_out::key_mergeable): Likewise.
+	(trees_in::key_mergeable): Support keyed decls in a TYPE_DECL
+	container.
+	* parser.cc (cp_parser_class_head): Start a lambda scope when
+	parsing base classes.
+
 2024-02-28  Jakub Jelinek  <jakub@redhat.com>
 	    Patrick Palka  <ppalka@redhat.com>
 

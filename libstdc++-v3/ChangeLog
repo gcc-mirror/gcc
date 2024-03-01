@@ -1,3 +1,21 @@
+2024-02-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (basic_format_arg::handle::__maybe_const_t):
+	Fix condition to check if const type is formattable.
+	(basic_format_arg::handle::handle(T&)): Remove redundant
+	static_assert.
+	* testsuite/std/format/formatter/basic.cc: New test.
+
+2024-02-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113960
+	* include/bits/stl_algobase.h (__is_byte_iter): Replace with ...
+	(__memcmp_ordered_with): New concept.
+	(lexicographical_compare_three_way): Use __memcmp_ordered_with
+	instead of __is_byte_iter. Use correct length for memcmp.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/113960.cc:
+	New test.
+
 2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/114152
