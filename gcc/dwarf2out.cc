@@ -8215,6 +8215,15 @@ should_move_die_to_comdat (dw_die_ref die)
           || is_nested_in_subprogram (die)
           || contains_subprogram_definition (die))
 	return false;
+      if (die->die_tag != DW_TAG_enumeration_type)
+	{
+	  /* Don't move non-constant size aggregates.  */
+	  dw_attr_node *sz = get_AT (die, DW_AT_byte_size);
+	  if (sz == NULL
+	      || (AT_class (sz) != dw_val_class_unsigned_const
+		  && AT_class (sz) != dw_val_class_unsigned_const_implicit))
+	    return false;
+	}
       return true;
     case DW_TAG_array_type:
     case DW_TAG_interface_type:
