@@ -971,6 +971,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	tuple(allocator_arg_t __tag, const _Alloc& __a)
 	: _Inherited(__tag, __a) { }
 
+      template<typename _Alloc,
+	       _ExplicitDefaultCtor<is_object<_Alloc>::value> = false>
+	_GLIBCXX20_CONSTEXPR
+	explicit
+	tuple(allocator_arg_t __tag, const _Alloc& __a)
+	: _Inherited(__tag, __a) { }
+
       template<typename _Alloc, bool _NotEmpty = (sizeof...(_Elements) >= 1),
 	       _ImplicitCtor<_NotEmpty, const _Elements&...> = true>
 	_GLIBCXX20_CONSTEXPR
@@ -1450,6 +1457,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc,
 	       _ImplicitDefaultCtor<is_object<_Alloc>::value, _T1, _T2> = true>
 	_GLIBCXX20_CONSTEXPR
+	tuple(allocator_arg_t __tag, const _Alloc& __a)
+	: _Inherited(__tag, __a) { }
+
+      template<typename _Alloc,
+	       _ExplicitDefaultCtor<is_object<_Alloc>::value, _T1, _T2> = false>
+	_GLIBCXX20_CONSTEXPR
+	explicit
 	tuple(allocator_arg_t __tag, const _Alloc& __a)
 	: _Inherited(__tag, __a) { }
 
