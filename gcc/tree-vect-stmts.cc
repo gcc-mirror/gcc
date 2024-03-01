@@ -4210,6 +4210,16 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 				     " supported for mismatched vector sizes.\n");
 		  return false;
 		}
+	      if (!expand_vec_cond_expr_p (clone_arg_vectype,
+					   arginfo[i].vectype, ERROR_MARK))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				     vect_location,
+				     "cannot compute mask argument for"
+				     " in-branch vector clones.\n");
+		  return false;
+		}
 	    }
 	  else if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
 	    {
