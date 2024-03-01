@@ -186,11 +186,11 @@ ExpandVisitor::expand_inner_items (
 		    {
 		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
 			to_derive.get ().as_string ());
-		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
+		      if (maybe_builtin.has_value ())
 			{
 			  auto new_item
 			    = builtin_derive_item (*item, current,
-						   maybe_builtin->second);
+						   maybe_builtin.value ());
 			  // this inserts the derive *before* the item - is it a
 			  // problem?
 			  it = items.insert (it, std::move (new_item));
@@ -272,11 +272,11 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 		    {
 		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
 			to_derive.get ().as_string ());
-		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
+		      if (maybe_builtin.has_value ())
 			{
 			  auto new_item
 			    = builtin_derive_item (item, current,
-						   maybe_builtin->second);
+						   maybe_builtin.value ());
 			  // this inserts the derive *before* the item - is it a
 			  // problem?
 			  it = stmts.insert (it, std::move (new_item));

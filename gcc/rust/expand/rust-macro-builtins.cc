@@ -142,9 +142,9 @@ tl::optional<BuiltinMacro>
 builtin_macro_from_string (const std::string &identifier)
 {
   auto macro = MacroBuiltin::builtins.lookup (identifier);
-  rust_assert (MacroBuiltin::builtins.is_iter_ok (macro));
+  rust_assert (macro.has_value ());
 
-  return macro->second;
+  return macro;
 }
 
 namespace {
@@ -152,9 +152,9 @@ std::string
 make_macro_path_str (BuiltinMacro kind)
 {
   auto str = MacroBuiltin::builtins.lookup (kind);
-  rust_assert (MacroBuiltin::builtins.is_iter_ok (str));
+  rust_assert (str.has_value ());
 
-  return str->second;
+  return str.value ();
 }
 
 static std::vector<std::unique_ptr<AST::MacroInvocation>>
