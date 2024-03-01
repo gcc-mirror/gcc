@@ -127,13 +127,20 @@ Late::visit (AST::IdentifierExpr &expr)
   auto value = ctx.values.get (expr.get_ident ());
 
   if (label)
-    resolved = label;
+    {
+      resolved = label;
+    }
   else if (value)
-    resolved = value;
-  else {
-      rust_error_at(expr.get_locus (), "could not resolve identifier expression: %qs", expr.get_ident ().as_string ().c_str ());
+    {
+      resolved = value;
+    }
+  else
+    {
+      rust_error_at (expr.get_locus (),
+		     "could not resolve identifier expression: %qs",
+		     expr.get_ident ().as_string ().c_str ());
       return;
-  }
+    }
 
   ctx.map_usage (expr.get_node_id (), *resolved);
 
