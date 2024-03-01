@@ -1052,23 +1052,7 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
 {
   auto input = format_args_parse_arguments (invoc);
 
-  // auto fmt_arg
-  //   // FIXME: this eneds to be split up into a smaller function
-  //   = parse_single_string_literal (append_newline ?
-  //   BuiltinMacro::FormatArgsNl
-  // 				  : BuiltinMacro::FormatArgs,
-  // 		   invoc.get_delim_tok_tree (), invoc_locus,
-  // 		   invoc.get_expander ());
-
-  //  if (!fmt_arg->is_literal ())
-  //    {
-  //      rust_sorry_at (
-  // invoc_locus,
-  // "cannot yet use eager macro invocations as format strings");
-  //      return AST::Fragment::create_empty ();
-  //    }
-
-  // FIXME: We need to handle this
+  // TODO(Arthur): We need to handle this
   // // if it is not a literal, it's an eager macro invocation - return it
   // if (!fmt_expr->is_literal ())
   //   {
@@ -1077,10 +1061,10 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
   // 	    token_tree.to_token_stream ());
   //   }
 
-  // auto fmt_str = static_cast<AST::LiteralExpr &> (*fmt_arg.get ());
-
-  // Switch on the format string to know if the string is raw or cooked
-  // switch (fmt_str.get_lit_type ())
+  // TODO(Arthur): Handle this as well - raw strings are special for the
+  // format_args parser auto fmt_str = static_cast<AST::LiteralExpr &>
+  // (*fmt_arg.get ()); Switch on the format string to know if the string is raw
+  // or cooked switch (fmt_str.get_lit_type ())
   //   {
   //   // case AST::Literal::RAW_STRING:
   //   case AST::Literal::STRING:
