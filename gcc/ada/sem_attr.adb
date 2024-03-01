@@ -6448,49 +6448,6 @@ package body Sem_Attr is
          Check_Not_CPP_Type;
          Set_Etype (N, Universal_Integer);
 
-         --  If we are processing pragmas Compile_Time_Warning and Compile_
-         --  Time_Errors after the back end has been called and this occurrence
-         --  of 'Size is known at compile time then it is safe to perform this
-         --  evaluation. Needed to perform the static evaluation of the full
-         --  boolean expression of these pragmas. Note that Known_RM_Size is
-         --  sometimes True when Size_Known_At_Compile_Time is False, when the
-         --  back end has computed it.
-
-         if In_Compile_Time_Warning_Or_Error
-           and then Is_Entity_Name (P)
-           and then (Is_Type (Entity (P))
-                      or else Ekind (Entity (P)) = E_Enumeration_Literal)
-           and then (Known_RM_Size (Entity (P))
-                       or else Size_Known_At_Compile_Time (Entity (P)))
-         then
-            declare
-               Prefix_E : Entity_Id := Entity (P);
-               Siz      : Uint;
-
-            begin
-               --  Handle private and incomplete types
-
-               if Present (Underlying_Type (Prefix_E)) then
-                  Prefix_E := Underlying_Type (Prefix_E);
-               end if;
-
-               if Known_Static_RM_Size (Prefix_E) then
-                  Siz := RM_Size (Prefix_E);
-               else
-                  Siz := Esize (Prefix_E);
-               end if;
-
-               --  Protect the frontend against cases where the attribute
-               --  Size_Known_At_Compile_Time is set, but the Esize value
-               --  is not available (see Einfo.ads).
-
-               if Present (Siz) then
-                  Rewrite (N, Make_Integer_Literal (Sloc (N), Siz));
-                  Analyze (N);
-               end if;
-            end;
-         end if;
-
       -----------
       -- Small --
       -----------
@@ -7867,6 +7824,9 @@ package body Sem_Attr is
       --  Computes the Fore value for the current attribute prefix, which is
       --  known to be a static fixed-point type. Used by Fore and Width.
 
+      function Full_Type (Typ : Entity_Id) return Entity_Id;
+      --  Return the Underlying_Type of Typ if it exists, otherwise return Typ
+
       function Mantissa return Uint;
       --  Returns the Mantissa value for the prefix type
 
@@ -7930,7 +7890,13 @@ package body Sem_Attr is
          T : constant Entity_Id := Etype (N);
 
       begin
-         Fold_Uint (N, Val, False);
+         --  If we are processing a pragma Compile_Time_{Warning,Error} after
+         --  the back end has been called and the value of this attribute is
+         --  known at compile time, then it is safe to perform its evaluation
+         --  as static. This is needed to perform the evaluation of the full
+         --  boolean expression of these pragmas.
+
+         Fold_Uint (N, Val, Static => In_Compile_Time_Warning_Or_Error);
 
          --  Check that result is in bounds of the type if it is static
 
@@ -7993,6 +7959,22 @@ package body Sem_Attr is
 
          return R;
       end Fore_Value;
+
+      ---------------
+      -- Full_Type --
+      ---------------
+
+      function Full_Type (Typ : Entity_Id) return Entity_Id is
+         Underlying_Typ : constant Entity_Id := Underlying_Type (Typ);
+
+      begin
+         if Present (Underlying_Typ) then
+            return Underlying_Typ;
+
+         else
+            return Typ;
+         end if;
+      end Full_Type;
 
       --------------
       -- Mantissa --
@@ -8655,25 +8637,40 @@ package body Sem_Attr is
       --  for a size from an attribute definition clause). At this stage, this
       --  can happen only for types (e.g. record types) for which the size is
       --  always non-static. We exclude generic types from consideration (since
-      --  they have bogus sizes set within templates). We can also fold
-      --  Max_Size_In_Storage_Elements in the same cases.
+      --  they have bogus sizes set within templates).
 
-      elsif (Id = Attribute_Size or
+      elsif Id = Attribute_Size
+        and then Is_Type (P_Entity)
+        and then not Is_Generic_Type (P_Entity)
+        and then Known_Static_RM_Size (Full_Type (P_Entity))
+      then
+         Compile_Time_Known_Attribute (N, RM_Size (Full_Type (P_Entity)));
+         return;
+
+      --  We can also fold 'Object_Size applied to a type if the object size is
+      --  known (as happens for a size from an attribute definition clause). At
+      --  this stage, this can happen only for types (e.g. record types) for
+      --  which the size is always non-static. We exclude generic types from
+      --  consideration (since they have bogus sizes set within templates).
+      --  We can also fold Max_Size_In_Storage_Elements in the same cases.
+
+      elsif (Id = Attribute_Object_Size or
              Id = Attribute_Max_Size_In_Storage_Elements)
         and then Is_Type (P_Entity)
         and then not Is_Generic_Type (P_Entity)
-        and then Known_Static_RM_Size (P_Entity)
+        and then Known_Static_Esize (Full_Type (P_Entity))
       then
          declare
-            Attr_Value : Uint := RM_Size (P_Entity);
+            Attr_Value : Uint := Esize (Full_Type (P_Entity));
+
          begin
             if Id = Attribute_Max_Size_In_Storage_Elements then
-               Attr_Value := (Attr_Value + System_Storage_Unit - 1)
-                             / System_Storage_Unit;
+               Attr_Value := (Attr_Value + System_Storage_Unit - 1) /
+                                                           System_Storage_Unit;
             end if;
             Compile_Time_Known_Attribute (N, Attr_Value);
+            return;
          end;
-         return;
 
       --  We can fold 'Alignment applied to a type if the alignment is known
       --  (as happens for an alignment from an attribute definition clause).
@@ -8684,9 +8681,9 @@ package body Sem_Attr is
       elsif Id = Attribute_Alignment
         and then Is_Type (P_Entity)
         and then not Is_Generic_Type (P_Entity)
-        and then Known_Alignment (P_Entity)
+        and then Known_Alignment (Full_Type (P_Entity))
       then
-         Compile_Time_Known_Attribute (N, Alignment (P_Entity));
+         Compile_Time_Known_Attribute (N, Alignment (Full_Type (P_Entity)));
          return;
 
       --  If this is an access attribute that is known to fail accessibility
@@ -9033,7 +9030,7 @@ package body Sem_Attr is
       ---------------
 
       when Attribute_Alignment => Alignment_Block : declare
-         P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
+         P_TypeA : constant Entity_Id := Full_Type (P_Type);
 
       begin
          --  Fold if alignment is set and not otherwise
@@ -9765,7 +9762,7 @@ package body Sem_Attr is
       --  Note: Machine_Size is identical to Object_Size
 
       when Attribute_Machine_Size => Machine_Size : declare
-         P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
+         P_TypeA : constant Entity_Id := Full_Type (P_Type);
 
       begin
          if Known_Esize (P_TypeA) then
@@ -9900,13 +9897,17 @@ package body Sem_Attr is
       --  Storage_Unit boundary. We can fold any cases for which the size
       --  is known by the front end.
 
-      when Attribute_Max_Size_In_Storage_Elements =>
-         if Known_Esize (P_Type) then
+      when Attribute_Max_Size_In_Storage_Elements => Max_Size : declare
+         P_TypeA : constant Entity_Id := Full_Type (P_Type);
+
+      begin
+         if Known_Esize (P_TypeA) then
             Fold_Uint (N,
-              (Esize (P_Type) + System_Storage_Unit - 1) /
+              (Esize (P_TypeA) + System_Storage_Unit - 1) /
                                           System_Storage_Unit,
                Static);
          end if;
+      end Max_Size;
 
       --------------------
       -- Mechanism_Code --
@@ -10020,7 +10021,7 @@ package body Sem_Attr is
       --  type and can be folded if this value is known.
 
       when Attribute_Object_Size => Object_Size : declare
-         P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
+         P_TypeA : constant Entity_Id := Full_Type (P_Type);
 
       begin
          if Known_Esize (P_TypeA) then
@@ -10338,7 +10339,7 @@ package body Sem_Attr is
          | Attribute_VADS_Size
       =>
          Size : declare
-            P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
+            P_TypeA : constant Entity_Id := Full_Type (P_Type);
 
          begin
             pragma Assert
@@ -10494,7 +10495,7 @@ package body Sem_Attr is
       ----------------
 
       when Attribute_Type_Class => Type_Class : declare
-         Typ : constant Entity_Id := Underlying_Type (P_Base_Type);
+         Typ : constant Entity_Id := Full_Type (P_Base_Type);
          Id  : RE_Id;
 
       begin
@@ -10558,7 +10559,7 @@ package body Sem_Attr is
       -------------------------
 
       when Attribute_Unconstrained_Array => Unconstrained_Array : declare
-         Typ : constant Entity_Id := Underlying_Type (P_Type);
+         Typ : constant Entity_Id := Full_Type (P_Type);
 
       begin
          Rewrite (N, New_Occurrence_Of (
@@ -10616,7 +10617,7 @@ package body Sem_Attr is
       --  it is annoying that a size of zero means two things!
 
       when Attribute_Value_Size => Value_Size : declare
-         P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
+         P_TypeA : constant Entity_Id := Full_Type (P_Type);
 
       begin
          pragma Assert
