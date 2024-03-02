@@ -1,3 +1,64 @@
+2024-03-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104919
+	PR c++/106009
+	* module.cc (depset::hash::sneakoscope): Remove.
+	(trees_out::decl_node): Always add a dependency on a local type.
+	(depset::hash::find_dependencies): Remove sneakoscope stuff.
+
+2024-03-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114170
+	* module.cc (has_definition): Fall back to DECL_INITIALIZED_P
+	when DECL_INITIAL is not set on a template.
+	(module_state::write_inits): Only increment count when
+	initializers are actually written.
+
+2024-03-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114005
+	* init.cc (create_temporary_var): Use current_scope instead of
+	current_function_decl.
+
+2024-03-01  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (maybe_register_incomplete_var): Restrict second
+	branch to static data members from a not-yet-complete class.
+
+2024-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110358
+	PR c++/109642
+	* call.cc (no_dangling_p): New.
+	(reference_like_class_p): Use it.
+	(do_warn_dangling_reference): Use it.  Don't warn when the function
+	or its enclosing class has attribute gnu::no_dangling.
+	* tree.cc (cxx_gnu_attributes): Add gnu::no_dangling.
+	(handle_no_dangling_attribute): New.
+
+2024-03-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110025
+	PR c++/114138
+	* cp-tree.h (make_cast_auto): Declare.
+	* parser.cc (cp_parser_functional_cast): If the type is an auto,
+	replace it with a level-less one via make_cast_auto.
+	* pt.cc (find_parameter_packs_r): Don't treat level-less auto
+	as a type parameter pack.
+	(tsubst) <case TEMPLATE_TYPE_PARM>: Generalize CTAD placeholder
+	auto handling to all level-less autos.
+	(make_cast_auto): Define.
+	(do_auto_deduction): Handle replacement of a level-less auto.
+
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92687
+	* decl.cc (lookup_decomp_type): Return NULL_TREE if decomp_type_table
+	doesn't have entry for V.
+	* semantics.cc (finish_decltype_type): If ptds.saved, assert
+	DECL_HAS_VALUE_EXPR_P is true and decide on tuple vs. non-tuple based
+	on if lookup_decomp_type is NULL or not.
+
 2024-02-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113987

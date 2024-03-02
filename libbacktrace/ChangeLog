@@ -1,3 +1,11 @@
+2024-03-01  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_add): Add the symbol table from a debuginfo file.
+	* Makefile.am (MAKETESTS): Add buildidfull and gnudebuglinkfull
+	variants of buildid and gnudebuglink tests.
+	(%_gnudebuglinkfull, %_buildidfull): New patterns.
+	* Makefile.in: Regenerate.
+
 2023-11-30  Ian Lance Taylor  <iant@golang.org>
 
 	* pecoff.c: Include <windows.h> if available.

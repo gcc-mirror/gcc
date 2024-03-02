@@ -1,3 +1,112 @@
+2024-03-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104919
+	PR c++/106009
+	* tree-inline.cc (remap_decl): Handle copy_decl returning the
+	original decl.
+	(remap_decls): Handle remap_decl returning the original decl.
+	(copy_fn): Adjust copy_decl callback to skip TYPE_DECL and
+	CONST_DECL.
+
+2024-03-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md (zero_extendqi<SUPERQI:mode>2_internal): Fix
+	type attribute.
+	(extendsidi2_internal, movhf_hardfloat, movhf_softfloat): Likewise.
+	(movdi_32bit, movdi_64bit, movsi_internal): Likewise.
+	(movhi_internal, movqi_internal): Likewise.
+	(movsf_softfloat, movsf_hardfloat): Likewise.
+	(movdf_hardfloat_rv32, movdf_hardfloat_rv64): Likewise.
+	(movdf_softfloat): Likewise.
+
+2024-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110358
+	PR c++/109642
+	* doc/extend.texi: Document gnu::no_dangling.
+	* doc/invoke.texi: Mention that gnu::no_dangling disables
+	-Wdangling-reference.
+
+2024-03-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt: Overhaul help screen.
+
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/110347
+	* gimplify.cc (omp_notice_variable): Fix 'shared' arg to
+	lang_hooks.decls.omp_disregard_value_expr for
+	(first)private in target regions.
+
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114136
+	* calls.cc (expand_call): For TYPE_NO_NAMED_ARGS_STDARG_P set
+	n_named_args initially before INIT_CUMULATIVE_ARGS to
+	structure_value_addr_parm rather than 0, after it don't modify
+	it if strict_argument_naming and clear only if
+	!pretend_outgoing_varargs_named.
+
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/114015
+	* dwarf2out.cc (should_move_die_to_comdat): Return false for
+	aggregates without DW_AT_byte_size attribute or with non-constant
+	DW_AT_byte_size.
+
+2024-03-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options) <-mfuse-add=level>: Document
+	valid values for level.
+
+2024-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114070
+	* match.pd ((c ? a : b) op d  -->  c ? (a op d) : (b op d)):
+	Allow the folding if before lowering and the current IL
+	isn't supported with vcond_mask.
+
+2024-03-01  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv.cc (TARGET_GNU_ATTRIBUTES): Add riscv_vector_cc
+	attribute to riscv_attribute_table.
+	(riscv_vector_cc_function_p): Return true if FUNC is a riscv_vector_cc function.
+	(riscv_fntype_abi): Add riscv_vector_cc attribute check.
+	* doc/extend.texi: Add riscv_vector_cc attribute description.
+
+2024-03-01  Pan Li  <pan2.li@intel.com>
+
+	PR target/112817
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::execute): Replace
+	RVV_FIXED_VLMAX to RVV_VECTOR_BITS_ZVL.
+	* config/riscv/riscv-opts.h (enum riscv_autovec_preference_enum): Remove.
+	(enum rvv_vector_bits_enum): New enum for different RVV vector bits.
+	* config/riscv/riscv-selftests.cc (riscv_run_selftests): Update
+	comments for option replacement.
+	* config/riscv/riscv-v.cc (autovec_use_vlmax_p): Replace enum of
+	riscv_autovec_preference to rvv_vector_bits.
+	(vls_mode_valid_p): Ditto.
+	(estimated_poly_value): Ditto.
+	* config/riscv/riscv.cc (riscv_convert_vector_chunks): Rename to
+	vector chunks and honor new option mrvv-vector-bits.
+	(riscv_override_options_internal): Update comments and rename the
+	vector chunks.
+	* config/riscv/riscv.opt: Add option mrvv-vector-bits and remove
+	internal option param=riscv-autovec-preference.
+
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.cc (assign_parms): Only call assign_parms_setup_varargs
+	early for TYPE_NO_NAMED_ARGS_STDARG_P functions if fnargs is empty.
+
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114156
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_stmt): Allow
+	rhs1 of a VCE to have no underlying variable if it is a load and
+	handle that case.
+
 2024-02-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114159

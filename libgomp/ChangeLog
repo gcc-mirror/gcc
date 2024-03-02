@@ -1,3 +1,18 @@
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/110347
+	* testsuite/libgomp.c++/target-lambda-3.C: Moved from
+	gcc/testsuite/g++.dg/gomp/ and fixed is-mapped handling.
+	* testsuite/libgomp.c++/target-lambda-1.C: Modify to also
+	also work without offloading.
+	* testsuite/libgomp.c++/firstprivate-1.C: New test.
+	* testsuite/libgomp.c++/firstprivate-2.C: New test.
+	* testsuite/libgomp.c++/private-1.C: New test.
+	* testsuite/libgomp.c++/private-2.C: New test.
+	* testsuite/libgomp.c++/target-lambda-4.C: New test.
+	* testsuite/libgomp.c++/use_device_ptr-1.C: New test.
+
 2024-02-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenACC Runtime Library Routines): Document new 3.3
