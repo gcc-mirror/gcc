@@ -1517,7 +1517,7 @@ avr_outgoing_args_size (void)
 }
 
 
-/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+/* Implement `TARGET_STARTING_FRAME_OFFSET'.  */
 /* This is the offset from the frame pointer register to the first stack slot
    that contains a variable living in the frame.  */
 
@@ -1583,6 +1583,7 @@ avr_allocate_stack_slots_for_args (void)
 }
 
 
+/* Implement `TARGET_CAN_ELIMINATE'.  */
 /* Return true if register FROM can be eliminated via register TO.  */
 
 static bool
@@ -1604,6 +1605,8 @@ avr_warn_func_return (tree decl)
   return !avr_naked_function_p (decl);
 }
 
+
+/* Worker function for `INITIAL_ELIMINATION_OFFSET'.  */
 /* Compute offset between arg_pointer and frame_pointer.  */
 
 int
@@ -1676,6 +1679,7 @@ avr_build_builtin_va_list (void)
 }
 
 
+/* Worker function for `INCOMING_RETURN_ADDR_RTX'.  */
 /* Return contents of MEM at frame pointer + stack size + 1 (+2 if 3-byte PC).
    This is return address of function.  */
 
@@ -2990,7 +2994,7 @@ avr_asm_function_end_prologue (FILE *file)
 }
 
 
-/* Implement `EPILOGUE_USES'.  */
+/* Worker function for `EPILOGUE_USES'.  */
 
 int
 avr_epilogue_uses (int regno ATTRIBUTE_UNUSED)
@@ -3934,8 +3938,7 @@ avr_print_operand (FILE *file, rtx x, int code)
 }
 
 
-/* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
-
+/* Implement `TARGET_USE_BY_PIECES_INFRASTRUCTURE_P'.  */
 /* Prefer sequence of loads/stores for moves of size upto
    two - two pairs of load/store instructions are always better
    than the 5 instruction sequence for a loop (1 instruction
@@ -11302,7 +11305,8 @@ avr_addr_space_diagnose_usage (addr_space_t as, location_t loc)
   (void) avr_addr_space_supported_p (as, loc);
 }
 
-/* Implement `TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID. Zero is a valid
+
+/* Implement `TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID'.  Zero is a valid
    address in all address spaces. Even in ADDR_SPACE_FLASH1 etc..,
    a zero address is valid and means 0x<RAMPZ val>0000, where RAMPZ is
    set to the appropriate segment value. */
@@ -11312,6 +11316,7 @@ avr_addr_space_zero_address_valid (addr_space_t)
 {
   return true;
 }
+
 
 /* Look if DECL shall be placed in program memory space by
    means of attribute `progmem' or some address-space qualifier.
@@ -13496,7 +13501,8 @@ jump_over_one_insn_p (rtx_insn *insn, rtx dest)
 	      && avr_2word_insn_p (next_active_insn (insn))));
 }
 
-/* Implement TARGET_HARD_REGNO_NREGS. CCmode is four units for historical
+
+/* Implement `TARGET_HARD_REGNO_NREGS'.  CCmode is four units for historical
    reasons. If this hook is not defined, TARGET_HARD_REGNO_NREGS
    reports that CCmode requires four registers.
    Define this hook to allow CCmode to fit in a single REG_CC. For
@@ -13513,7 +13519,7 @@ avr_hard_regno_nregs (unsigned int regno, machine_mode mode)
 }
 
 
-/* Implement TARGET_HARD_REGNO_MODE_OK.  On the enhanced core, anything
+/* Implement `TARGET_HARD_REGNO_MODE_OK'.  On the enhanced core, anything
    larger than 1 byte must start in even numbered register for "movw" to
    work (this way we don't have to check for odd registers everywhere).  */
 
@@ -13551,7 +13557,7 @@ avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 }
 
 
-/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
+/* Implement `TARGET_HARD_REGNO_CALL_PART_CLOBBERED'.  */
 
 static bool
 avr_hard_regno_call_part_clobbered (unsigned, unsigned regno,
@@ -14241,6 +14247,7 @@ avr_out_sbxx_branch (rtx_insn *insn, rtx operands[])
   return "";
 }
 
+
 /* Worker function for `TARGET_ASM_CONSTRUCTOR'.  */
 
 static void
@@ -14261,7 +14268,7 @@ avr_asm_out_dtor (rtx symbol, int priority)
 }
 
 
-/* Worker function for `TARGET_RETURN_IN_MEMORY'.  */
+/* Implement `TARGET_RETURN_IN_MEMORY'.  */
 
 static bool
 avr_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
@@ -14584,7 +14591,6 @@ avr_convert_to_type (tree type, tree expr)
 
 
 /* Implement `TARGET_LEGITIMATE_COMBINED_INSN'.  */
-
 /* PR78883: Filter out paradoxical SUBREGs of MEM which are not handled
    properly by following passes.  As INSN_SCHEDULING is off and hence
    general_operand accepts such expressions, ditch them now.  */
@@ -15984,6 +15990,8 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
   return NULL_TREE;
 }
 
+
+/* Implement `TARGET_MD_ASM_ADJUST'.  */
 /* Prepend to CLOBBERS hard registers that are automatically clobbered
    for an asm. We do this for CC_REGNUM to maintain source compatibility
    with the original cc0-based compiler.  */
