@@ -8983,14 +8983,17 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
 	  && frame_pointer_needed
 	  && REGNO (xop[0]) == FRAME_POINTER_REGNUM)
 	{
-	  rtx xval16 = simplify_gen_subreg (HImode, xval, imode, i);
-	  if (xval16 == const1_rtx || xval16 == constm1_rtx)
+	  if (AVR_HAVE_8BIT_SP)
 	    {
-	      avr_asm_len ((code == PLUS) == (xval16 == const1_rtx)
+	      avr_asm_len ("subi %A0,%n2", xop, plen, 1);
+	      return;
+	    }
+	  else if (xop[2] == const1_rtx || xop[2] == constm1_rtx)
+	    {
+	      avr_asm_len (xop[2] == const1_rtx
 			   ? "ld __tmp_reg__,%a0+"
 			   : "ld __tmp_reg__,-%a0", xop, plen, 1);
-	      i++;
-	      continue;
+	      return;
 	    }
 	}
 
