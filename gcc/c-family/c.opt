@@ -1214,6 +1214,10 @@ Wpragmas
 C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas.
 
+Wpragma-once-outside-header
+C ObjC C++ ObjC++ Var(warn_pragma_once_outside_header) CppReason(CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER) Init(1) Warning
+Warn about #pragma once outside of a header.
+
 Wprio-ctor-dtor
 C ObjC C++ ObjC++ Var(warn_prio_ctor_dtor) Init(1) Warning
 Warn if constructor or destructors with priorities from 0 to 100 are used.

@@ -684,6 +684,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-pointer-to-int-cast)
 Wpragmas
 UrlSuffix(gcc/Warning-Options.html#index-Wno-pragmas)
 
+Wpragma-once-outside-header
+UrlSuffix(gcc/Warning-Options.html#index-Wno-pragma-once-outside-header)
+
 Wprio-ctor-dtor
 UrlSuffix(gcc/Warning-Options.html#index-Wno-prio-ctor-dtor)
 

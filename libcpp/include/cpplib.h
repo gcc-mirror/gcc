@@ -714,7 +714,8 @@ enum cpp_warning_reason {
   CPP_W_BIDIRECTIONAL,
   CPP_W_INVALID_UTF8,
   CPP_W_UNICODE,
-  CPP_W_HEADER_GUARD
+  CPP_W_HEADER_GUARD,
+  CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER
 };
 
 /* Callback for header lookup for HEADER, which is the name of a

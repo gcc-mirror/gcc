@@ -395,8 +395,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded
 -Wparentheses  -Wno-pedantic-ms-format
 -Wpointer-arith  -Wno-pointer-compare  -Wno-pointer-to-int-cast
--Wno-pragmas  -Wno-prio-ctor-dtor  -Wredundant-decls
--Wrestrict  -Wno-return-local-addr  -Wreturn-type
+-Wno-pragmas  -Wno-pragma-once-outside-header  -Wno-prio-ctor-dtor
+-Wredundant-decls  -Wrestrict  -Wno-return-local-addr  -Wreturn-type
 -Wno-scalar-storage-order  -Wsequence-point
 -Wshadow  -Wshadow=global  -Wshadow=local  -Wshadow=compatible-local
 -Wno-shadow-ivar
@@ -8146,6 +8146,12 @@ the warnings are only enabled by the @option{-Wall} command-line option.
 Do not warn about misuses of pragmas, such as incorrect parameters,
 invalid syntax, or conflicts between pragmas.  See also
 @option{-Wunknown-pragmas}.
+
+@opindex Wno-pragma-once-outside-header
+@opindex Wpragma-once-outside-header
+@item -Wno-pragma-once-outside-header
+Do not warn when @code{#pragma once} is used in a file that is not a header
+file, such as a main file.
 
 @opindex Wno-prio-ctor-dtor
 @opindex Wprio-ctor-dtor
