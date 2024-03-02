@@ -171,10 +171,10 @@ static bool avr_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
-#define FIRST_CUM_REG 26
+#define FIRST_CUM_REG REG_26
 
 /* Last call saved register */
-#define LAST_CALLEE_SAVED_REG (AVR_TINY ? 19 : 17)
+#define LAST_CALLEE_SAVED_REG (AVR_TINY ? REG_19 : REG_17)
 
 /* Implicit target register of LPM instruction (R0) */
 extern GTY(()) rtx lpm_reg_rtx;
@@ -197,8 +197,8 @@ extern GTY(()) rtx cc_reg_rtx;
 rtx cc_reg_rtx;
 
 /* RTXs for all general purpose registers as QImode */
-extern GTY(()) rtx all_regs_rtx[32];
-rtx all_regs_rtx[32];
+extern GTY(()) rtx all_regs_rtx[REG_32];
+rtx all_regs_rtx[REG_32];
 
 /* SREG, the processor status */
 extern GTY(()) rtx sreg_rtx;
@@ -542,7 +542,7 @@ avr_casei_sequence_check_operands (rtx *xop)
 
   if (AVR_HAVE_EIJMP_EICALL
       // The last clobber op of the tablejump.
-      && xop[8] == all_regs_rtx[24])
+      && xop[8] == all_regs_rtx[REG_24])
     {
       // $6 is: (subreg:SI ($5) 0)
       sub_5 = xop[6];
@@ -1171,7 +1171,7 @@ avr_init_machine_status (void)
 void
 avr_init_expanders (void)
 {
-  for (int regno = 0; regno < 32; regno ++)
+  for (int regno = REG_0; regno < REG_32; regno ++)
     all_regs_rtx[regno] = gen_rtx_REG (QImode, regno);
 
   lpm_reg_rtx  = all_regs_rtx[LPM_REGNO];
@@ -1549,7 +1549,7 @@ avr_regs_to_save (HARD_REG_SET *set)
       || cfun->machine->is_OS_main)
     return 0;
 
-  for (int reg = 0; reg < 32; reg++)
+  for (int reg = REG_0; reg < REG_32; reg++)
     {
       /* Do not push/pop __tmp_reg__, __zero_reg__, as well as
 	 any global register variables.  */
@@ -2300,9 +2300,9 @@ avr_pass_fuse_add::execute (function *func)
 
   FOR_EACH_BB_FN (bb, func)
     {
-      Ldi_Insn prev_ldi_insns[32];
-      Add_Insn prev_add_insns[32];
-      Mem_Insn prev_mem_insns[32];
+      Ldi_Insn prev_ldi_insns[REG_32];
+      Add_Insn prev_add_insns[REG_32];
+      Mem_Insn prev_mem_insns[REG_32];
       rtx_insn *insn, *curr;
 
       avr_dump ("\n;; basic block %d\n\n", bb->index);
@@ -2484,7 +2484,7 @@ avr_incoming_return_addr_rtx (void)
 static int
 avr_hregs_split_reg (HARD_REG_SET *set)
 {
-  for (int regno = 0; regno < 32; regno++)
+  for (int regno = REG_0; regno < REG_32; regno++)
     if (TEST_HARD_REG_BIT (*set, regno))
       {
 	// Don't remove a register from *SET which might indicate that
@@ -2620,9 +2620,9 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
 
       first_reg = (LAST_CALLEE_SAVED_REG + 1) - (live_seq - 2);
 
-      for (reg = 29, offset = -live_seq + 1;
+      for (reg = REG_29, offset = -live_seq + 1;
 	   reg >= first_reg;
-	   reg = (reg == 28 ? LAST_CALLEE_SAVED_REG : reg - 1), ++offset)
+	   reg = (reg == REG_28 ? LAST_CALLEE_SAVED_REG : reg - 1), ++offset)
 	{
 	  rtx m, r;
 
@@ -2636,7 +2636,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
     }
   else /* !minimize */
     {
-      for (int reg = 0; reg < 32; ++reg)
+      for (int reg = REG_0; reg < REG_32; ++reg)
 	if (TEST_HARD_REG_BIT (set, reg))
 	  emit_push_byte (reg, true);
 
@@ -3795,7 +3795,7 @@ avr_print_operand (FILE *file, rtx x, int code)
     {
       if (x == zero_reg_rtx)
 	fprintf (file, "__zero_reg__");
-      else if (code == 'r' && REGNO (x) < 32)
+      else if (code == 'r' && REGNO (x) < REG_32)
 	fprintf (file, "%d", (int) REGNO (x));
       else
 	fprintf (file, "%s", reg_names[REGNO (x) + abcd]);
@@ -4136,7 +4136,9 @@ avr_asm_final_postscan_insn (FILE *stream, rtx_insn *insn, rtx *, int)
 int
 avr_function_arg_regno_p (int r)
 {
-  return AVR_TINY ? IN_RANGE (r, 20, 25) : IN_RANGE (r, 8, 25);
+  return AVR_TINY
+    ? IN_RANGE (r, REG_20, REG_25)
+    : IN_RANGE (r, REG_8, REG_25);
 }
 
 
@@ -4148,7 +4150,7 @@ void
 avr_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname,
 			  tree fndecl ATTRIBUTE_UNUSED)
 {
-  cum->nregs = AVR_TINY ? 6 : 18;
+  cum->nregs = 1 + AVR_TINY ? REG_25 - REG_20 : REG_25 - REG_8;
   cum->regno = FIRST_CUM_REG;
   cum->has_stack_args = 0;
   if (!libname && stdarg_p (fntype))
@@ -4216,7 +4218,7 @@ avr_function_arg_advance (cumulative_args_t cum_v,
      a function must not pass arguments in call-saved regs in order to get
      tail-called.  */
 
-  if (cum->regno >= 8
+  if (cum->regno >= REG_8
       && cum->nregs >= 0
       && !call_used_or_fixed_reg_p (cum->regno))
     {
@@ -4233,7 +4235,7 @@ avr_function_arg_advance (cumulative_args_t cum_v,
      user has fixed a GPR needed to pass an argument, an (implicit) function
      call will clobber that fixed register.  See PR45099 for an example.  */
 
-  if (cum->regno >= 8
+  if (cum->regno >= REG_8
       && cum->nregs >= 0)
     {
       for (int regno = cum->regno; regno < cum->regno + bytes; regno++)
@@ -4348,7 +4350,7 @@ avr_find_unused_d_reg (rtx_insn *insn, rtx exclude)
   bool isr_p = (avr_interrupt_function_p (current_function_decl)
 		|| avr_signal_function_p (current_function_decl));
 
-  for (int regno = 16; regno < 32; regno++)
+  for (int regno = REG_16; regno < REG_32; regno++)
     {
       rtx reg = all_regs_rtx[regno];
 
@@ -7117,7 +7119,7 @@ avr_out_compare64 (rtx_insn *insn, rtx *op, int *plen)
 {
   rtx xop[3];
 
-  xop[0] = gen_rtx_REG (DImode, 18);
+  xop[0] = gen_rtx_REG (DImode, ACC_A);
   xop[1] = op[0];
   xop[2] = op[1];
 
@@ -7340,7 +7342,7 @@ out_shift_with_cnt (const char *templ, rtx_insn *insn, rtx operands[],
 	  /* No scratch register available, use one from LD_REGS (saved in
 	     __tmp_reg__) that doesn't overlap with registers to shift.  */
 
-	  op[3] = all_regs_rtx[((REGNO (op[0]) - 1) & 15) + 16];
+	  op[3] = all_regs_rtx[((REGNO (op[0]) - 1) & 15) + REG_16];
 	  op[4] = tmp_reg_rtx;
 	  saved_in_tmp = true;
 
@@ -13712,8 +13714,8 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
   /* (REG:SI 14) is special: It's neither in LD_REGS nor in NO_LD_REGS
      but has some subregs that are in LD_REGS.  Use the MSB (REG:QI 17).  */
 
-  if (REGNO (dest) < 16
-      && REGNO (dest) + GET_MODE_SIZE (mode) > 16)
+  if (REGNO (dest) < REG_16
+      && REGNO (dest) + GET_MODE_SIZE (mode) > REG_16)
     {
       clobber_reg = all_regs_rtx[REGNO (dest) + n_bytes - 1];
     }
@@ -14093,7 +14095,7 @@ avr_conditional_register_usage (void)
 	 - R0-R15 are not available in Tiny Core devices
 	 - R16 and R17 are fixed registers.  */
 
-      for (size_t i = 0; i <= 17;  i++)
+      for (size_t i = REG_0; i <= REG_17;  i++)
 	{
 	  fixed_regs[i] = 1;
 	  call_used_regs[i] = 1;
@@ -14103,7 +14105,7 @@ avr_conditional_register_usage (void)
 	 - R18, R19, R20 and R21 are the callee saved registers in
 	   Tiny Core devices  */
 
-      for (size_t i = 18; i <= LAST_CALLEE_SAVED_REG; i++)
+      for (size_t i = REG_18; i <= LAST_CALLEE_SAVED_REG; i++)
 	{
 	  call_used_regs[i] = 0;
 	}
@@ -15180,9 +15182,9 @@ avr_map_decompose (unsigned int f, const avr_map_op_t *g, bool val_const_p)
 	 fake values.  Mimic effect of reloading xop[3]: Unused operands
 	 are mapped to 0 and used operands are reloaded to xop[0].  */
 
-      xop[0] = all_regs_rtx[24];
+      xop[0] = all_regs_rtx[REG_24];
       xop[1] = gen_int_mode (f_ginv.map, SImode);
-      xop[2] = all_regs_rtx[25];
+      xop[2] = all_regs_rtx[REG_25];
       xop[3] = val_used_p ? xop[0] : const0_rtx;
 
       avr_out_insert_bits (xop, &f_ginv.cost);

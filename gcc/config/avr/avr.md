@@ -51,22 +51,33 @@
 ;;  ~  Output 'r' if not AVR_HAVE_JMP_CALL.
 ;;  !  Output 'e' if AVR_HAVE_EIJMP_EICALL.
 
-
+;; Used in avr.cc to avoid magic numbers for register numbers.
 (define_constants
-  [(REG_X       26)
-   (REG_Y       28)
-   (REG_Z       30)
-   (REG_W       24)
-   (REG_SP      32)
-   (REG_CC      36)
-   (LPM_REGNO   0)      ; implicit target register of LPM
-   (TMP_REGNO   0)      ; temporary register r0
-   (ZERO_REGNO  1)      ; zero register r1
+  [(REG_0   0)   (REG_1   1)   (REG_2   2)
+   (REG_8   8)   (REG_9   9)   (REG_10 10)   (REG_11 11)
+   (REG_12 12)   (REG_13 13)   (REG_14 14)   (REG_15 15)
+   (REG_16 16)   (REG_17 17)   (REG_18 18)   (REG_19 19)
+   (REG_20 20)   (REG_21 21)   (REG_22 22)   (REG_23 23)
+   (REG_24 24)   (REG_25 25)   (REG_26 26)   (REG_27 27)
+   (REG_28 28)   (REG_29 29)   (REG_30 30)   (REG_31 31)
+   (REG_32 32)   (REG_36 36)
    ])
 
 (define_constants
-  [(TMP_REGNO_TINY  16) ; r16 is temp register for AVR_TINY
-   (ZERO_REGNO_TINY 17) ; r17 is zero register for AVR_TINY
+  [(REG_X       REG_26)
+   (REG_Y       REG_28)
+   (REG_Z       REG_30)
+   (REG_W       REG_24)
+   (REG_SP      REG_32)
+   (REG_CC      REG_36)
+   (LPM_REGNO   REG_0)      ; implicit target register of LPM
+   (TMP_REGNO   REG_0)      ; temporary register r0
+   (ZERO_REGNO  REG_1)      ; zero register r1
+   ])
+
+(define_constants
+  [(TMP_REGNO_TINY  REG_16) ; r16 is temp register for AVR_TINY
+   (ZERO_REGNO_TINY REG_17) ; r17 is zero register for AVR_TINY
   ])
 
 (define_c_enum "unspec"
