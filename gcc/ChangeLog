@@ -1,3 +1,13 @@
+2024-03-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110221
+	* tree-vect-slp.cc (vect_schedule_slp_node): When loop
+	masking / len is applied make sure to not schedule
+	intenal defs outside of the loop.
+
 2024-02-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-dse.cc (compute_trims): Fix description.  Return early

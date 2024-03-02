@@ -1,3 +1,11 @@
+2024-03-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110221
+	* gfortran.dg/pr110221.f: New testcase.
+
 2024-02-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt104.ads, gnat.dg/opt104.adb: New test.
