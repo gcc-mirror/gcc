@@ -870,7 +870,8 @@
       JUMP_LABEL (j) = skip_hiset_label;
       LABEL_NUSES (skip_hiset_label)++;
 
-      emit_insn (gen_iorsi3 (dst_lo, dst_lo, GEN_INT (1 << 31)));
+      const HOST_WIDE_INT bit31_mask = HOST_WIDE_INT_1U << 31;
+      emit_insn (gen_iorsi3 (dst_lo, dst_lo, GEN_INT (bit31_mask)));
       emit_label (skip_hiset_label);
       emit_insn (gen_rtx_SET (dst_hi,
 			      gen_rtx_LSHIFTRT (SImode, src_hi, const1_rtx)));
@@ -959,7 +960,8 @@
       JUMP_LABEL (j) = skip_hiset_label;
       LABEL_NUSES (skip_hiset_label)++;
 
-      emit_insn (gen_iorsi3 (dst_hi, dst_hi, GEN_INT (1 << 0)));
+      const HOST_WIDE_INT bit0_mask = HOST_WIDE_INT_1U << 0;
+      emit_insn (gen_iorsi3 (dst_hi, dst_hi, GEN_INT (bit0_mask)));
       emit_label (skip_hiset_label);
       emit_insn (gen_rtx_SET (dst_lo,
 			      gen_rtx_ASHIFT (SImode, src_lo, const1_rtx)));
