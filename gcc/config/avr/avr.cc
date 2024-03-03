@@ -170,7 +170,8 @@ static struct machine_function *avr_init_machine_status (void);
 static bool avr_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 
 
-/* Allocate registers from r25 to r8 for parameters for function calls.  */
+/* Allocate registers from r25 to r8 for parameters for function calls
+   resp. r25 to r20 for reduced Tiny.  */
 #define FIRST_CUM_REG REG_26
 
 /* Last call saved register */
@@ -4150,7 +4151,7 @@ void
 avr_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname,
 			  tree fndecl ATTRIBUTE_UNUSED)
 {
-  cum->nregs = 1 + AVR_TINY ? REG_25 - REG_20 : REG_25 - REG_8;
+  cum->nregs = AVR_TINY ? 1 + REG_25 - REG_20 : 1 + REG_25 - REG_8;
   cum->regno = FIRST_CUM_REG;
   cum->has_stack_args = 0;
   if (!libname && stdarg_p (fntype))
