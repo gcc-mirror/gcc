@@ -1,3 +1,24 @@
+2024-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113758
+	* d-codegen.cc (d_build_call): Force a TARGET_EXPR when callee
+	destorys its arguments.
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Set
+	SET_DECL_VALUE_EXPR on the temporary variable to make it a placeholder
+	for the TARGET_EXPR_SLOT.
+
+2024-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113125
+	* types.cc (TypeVisitor::visit (TypeStruct *)): Generate TYPE_DECL and
+	apply UDAs to opaque struct declarations.
+
 2023-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

@@ -1,3 +1,23 @@
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114007
+	* c-lex.cc (c_common_has_attribute): Parse 2 CPP_COLONs with
+	the first one with COLON_SCOPE flag the same as CPP_SCOPE but
+	ensure 0 is returned then.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/113262
+	* c-attribs.cc (handle_copy_attribute): Don't use
+	DECL_SOURCE_LOCATION (decl) if decl is not DECL_P, use input_location
+	instead.  Formatting fixes.
+
 2024-01-27  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/105608

@@ -1,3 +1,132 @@
+2024-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113758
+	* gdc.dg/torture/pr113758.d: New test.
+
+2024-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113125
+	* gdc.dg/imports/pr113125.d: New test.
+	* gdc.dg/pr113125.d: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114041
+	* gcc.dg/graphite/run-id-pr114041-2.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/c23-stdarg-6.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114090
+	* gcc.dg/pr114090.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114007
+	* gcc.dg/c23-attr-syntax-8.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113993
+	* gcc.dg/tree-ssa/pr113993.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113674
+	* c-c++-common/Wattributes-3.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110754
+	* gcc.dg/attr-assume-6.c: New test.
+	* g++.dg/cpp23/attr-assume12.C: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113656
+	* gcc.target/i386/pr113656.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113603
+	* gcc.c-torture/compile/pr113603.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/113122
+	* gcc.target/i386/pr113122-1.c: New test.
+	* gcc.target/i386/pr113122-2.c: New test.
+	* gcc.target/i386/pr113122-3.c: New test.
+	* gcc.target/i386/pr113122-4.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113372
+	PR middle-end/90348
+	PR middle-end/110115
+	PR middle-end/111422
+	* gcc.c-torture/execute/pr90348.c: New test.
+	* gcc.c-torture/execute/pr110115.c: New test.
+	* gcc.c-torture/execute/pr111422.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/113262
+	* gcc.dg/pr113262.c: New test.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/112758
+	* gcc.c-torture/execute/pr112758.c: New test.
+
 2024-02-29  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

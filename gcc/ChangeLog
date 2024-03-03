@@ -1,3 +1,144 @@
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114136
+	* calls.cc (expand_call): For TYPE_NO_NAMED_ARGS_STDARG_P set
+	n_named_args initially before INIT_CUMULATIVE_ARGS to
+	structure_value_addr_parm rather than 0, after it don't modify
+	it if strict_argument_naming and clear only if
+	!pretend_outgoing_varargs_named.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.cc (assign_parms): Only call assign_parms_setup_varargs
+	early for TYPE_NO_NAMED_ARGS_STDARG_P functions if fnargs is empty.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114041
+	* graphite-sese-to-poly.cc (add_conditions_to_domain): Check for
+	INTEGRAL_TYPE_P check rather than INTEGER_TYPE.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114090
+	* match.pd ((x >= 0 ? x : 0) + (x <= 0 ? -x : 0) -> abs x):
+	Restrict pattern to ANY_INTEGRAL_TYPE_P and TYPE_OVERFLOW_UNDEFINED
+	types.
+	((x <= 0 ? -x : 0) -> max(-x, 0)): Likewise.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113993
+	* tree-call-cdce.cc (get_no_error_domain): Handle
+	BUILT_IN_{COSH,SINH,EXP{,M1,2}}{F32X,F64X}.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113674
+	* attribs.cc (extract_attribute_substring): Remove.
+	(lookup_scoped_attribute_spec): Don't call it.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110754
+	* gimple-low.cc (assumption_copy_decl): For TREE_THIS_VOLATILE
+	decls create PARM_DECL with pointer to original type, set
+	TREE_READONLY and keep TREE_THIS_VOLATILE, TREE_ADDRESSABLE,
+	DECL_NOT_GIMPLE_REG_P and DECL_BY_REFERENCE cleared.
+	(adjust_assumption_stmt_op): For remapped TREE_THIS_VOLATILE decls
+	wrap PARM_DECL into a simple TREE_THIS_NO_TRAP MEM_REF.
+	(lower_assumption): For TREE_THIS_VOLATILE vars pass ADDR_EXPR
+	of the var as argument.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* ggc-common.cc (gt_pch_save): Allow addr to be equal to
+	mmi.preferred_base + mmi.size - sizeof (void *).
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113656
+	* simplify-rtx.cc (simplify_context::simplify_unary_operation_1)
+	<case FLOAT_TRUNCATE>: Fix up last argument to simplify_gen_unary.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113603
+	* tree-ssa-strlen.cc (strlen_pass::handle_store): After
+	count_nonzero_bytes call refetch si using get_strinfo in case it
+	has been unshared in the meantime.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/generic.texi (VECTOR_CST): Fix typo - petterns -> patterns.
+	* doc/rtl.texi (CONST_VECTOR): Likewise.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/113122
+	* config/i386/i386.cc (x86_function_profiler): Add -masm=intel
+	support.  Add missing space after , in emitted assembly in some
+	cases.  Formatting fixes.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113372
+	PR middle-end/90348
+	PR middle-end/110115
+	PR middle-end/111422
+	* cfgexpand.cc (add_scope_conflicts_2): New function.
+	(add_scope_conflicts_1): Use it.
+
+2024-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/112758
+	* combine.cc (make_compopund_operation_int): Optimize AND of a SUBREG
+	based on nonzero_bits of SUBREG_REG and constant mask on
+	WORD_REGISTER_OPERATIONS targets only if it is a zero extending
+	MEM load.
+
 2024-02-29  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
