@@ -475,6 +475,18 @@ bool equivalent(Type src, Type t)
     return dmd.typesem.equivalent(src, t);
 }
 
+Type sarrayOf(Type type, dinteger_t dim)
+{
+    import dmd.typesem;
+    return dmd.typesem.sarrayOf(type, dim);
+}
+
+Type arrayOf(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.arrayOf(type);
+}
+
 Type constOf(Type type)
 {
     import dmd.typesem;
@@ -533,6 +545,30 @@ Type sharedWildConstOf(Type type)
 {
     import dmd.typesem;
     return dmd.typesem.sharedWildConstOf(type);
+}
+
+Type substWildTo(Type type, uint mod)
+{
+    import dmd.typesem;
+    return dmd.typesem.substWildTo(type, mod);
+}
+
+Type unqualify(Type type, uint m)
+{
+    import dmd.typesem;
+    return dmd.typesem.unqualify(type, m);
+}
+
+Type toHeadMutable(const(Type) type)
+{
+    import dmd.typesem;
+    return dmd.typesem.toHeadMutable(type);
+}
+
+Type aliasthisOf(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.aliasthisOf(type);
 }
 
 Type castMod(Type type, MOD mod)

@@ -1394,6 +1394,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
 {
     enum SourceEncoding { utf16, utf32}
     enum Endian { little, big}
+    immutable loc = mod.getLoc();
 
     /*
      * Convert a buffer from UTF32 to UTF8
@@ -1413,7 +1414,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
 
         if (buf.length & 3)
         {
-            .error(mod.loc, "%s `%s` odd length of UTF-32 char source %llu",
+            .error(loc, "%s `%s` odd length of UTF-32 char source %llu",
                 mod.kind, mod.toPrettyChars, cast(ulong) buf.length);
             return null;
         }
@@ -1430,7 +1431,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
             {
                 if (u > 0x10FFFF)
                 {
-                    .error(mod.loc, "%s `%s` UTF-32 value %08x greater than 0x10FFFF", mod.kind, mod.toPrettyChars, u);
+                    .error(loc, "%s `%s` UTF-32 value %08x greater than 0x10FFFF", mod.kind, mod.toPrettyChars, u);
                     return null;
                 }
                 dbuf.writeUTF8(u);
@@ -1460,7 +1461,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
 
         if (buf.length & 1)
         {
-            .error(mod.loc, "%s `%s` odd length of UTF-16 char source %llu", mod.kind, mod.toPrettyChars, cast(ulong) buf.length);
+            .error(loc, "%s `%s` odd length of UTF-16 char source %llu", mod.kind, mod.toPrettyChars, cast(ulong) buf.length);
             return null;
         }
 
@@ -1480,13 +1481,13 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
                     i++;
                     if (i >= eBuf.length)
                     {
-                        .error(mod.loc, "%s `%s` surrogate UTF-16 high value %04x at end of file", mod.kind, mod.toPrettyChars, u);
+                        .error(loc, "%s `%s` surrogate UTF-16 high value %04x at end of file", mod.kind, mod.toPrettyChars, u);
                         return null;
                     }
                     const u2 = readNext(&eBuf[i]);
                     if (u2 < 0xDC00 || 0xE000 <= u2)
                     {
-                        .error(mod.loc, "%s `%s` surrogate UTF-16 low value %04x out of range", mod.kind, mod.toPrettyChars, u2);
+                        .error(loc, "%s `%s` surrogate UTF-16 low value %04x out of range", mod.kind, mod.toPrettyChars, u2);
                         return null;
                     }
                     u = (u - 0xD7C0) << 10;
@@ -1494,12 +1495,12 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
                 }
                 else if (u >= 0xDC00 && u <= 0xDFFF)
                 {
-                    .error(mod.loc, "%s `%s` unpaired surrogate UTF-16 value %04x", mod.kind, mod.toPrettyChars, u);
+                    .error(loc, "%s `%s` unpaired surrogate UTF-16 value %04x", mod.kind, mod.toPrettyChars, u);
                     return null;
                 }
                 else if (u == 0xFFFE || u == 0xFFFF)
                 {
-                    .error(mod.loc, "%s `%s` illegal UTF-16 value %04x", mod.kind, mod.toPrettyChars, u);
+                    .error(loc, "%s `%s` illegal UTF-16 value %04x", mod.kind, mod.toPrettyChars, u);
                     return null;
                 }
                 dbuf.writeUTF8(u);
@@ -1558,7 +1559,6 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
     // It's UTF-8
     if (buf[0] >= 0x80)
     {
-        auto loc = mod.getLoc();
         .error(loc, "%s `%s` source file must start with BOM or ASCII character, not \\x%02X", mod.kind, mod.toPrettyChars, buf[0]);
         return null;
     }

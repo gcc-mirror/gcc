@@ -2155,7 +2155,7 @@ final class CParser(AST) : Parser!AST
                 error("function identifier-list cannot end with `...`");
             ft.parameterList.varargs = AST.VarArg.KRvariadic;   // but C11 allows extra arguments
             auto plLength = pl.length;
-            if (symbols.length != plLength)
+            if (symbols && symbols.length != plLength)
                 error(token.loc, "%d identifiers does not match %d declarations", cast(int)plLength, cast(int)symbols.length);
 
             /* Transfer the types and storage classes from symbols[] to pl[]
@@ -2176,6 +2176,12 @@ final class CParser(AST) : Parser!AST
 
                 if (p.type || !(p.storageClass & STC.parameter))
                     error("storage class and type are not allowed in identifier-list");
+                if (!symbols)
+                {
+                    // Error already given in cparseDeclaration
+                    p.type = AST.Type.terror;
+                    continue;
+                }
                 foreach (s; (*symbols)[]) // yes, quadratic
                 {
                     auto ad = s.isAttribDeclaration();

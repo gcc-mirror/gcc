@@ -2211,7 +2211,7 @@ get_vtable_decl (ClassDeclaration *decl)
   tree ident = mangle_internal_decl (decl, "__vtbl", "Z");
   /* Note: Using a static array type for the VAR_DECL, the DECL_INITIAL value
      will have a different type.  However the back-end seems to accept this.  */
-  tree type = build_ctype (Type::tvoidptr->sarrayOf (decl->vtbl.length));
+  tree type = build_ctype (dmd::sarrayOf (Type::tvoidptr, decl->vtbl.length));
 
   Dsymbol *vtblsym = decl->vtblSymbol ();
   vtblsym->csym = declare_extern_var (ident, type);

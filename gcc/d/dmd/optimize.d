@@ -1349,7 +1349,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         if (b++ == global.recursionLimit)
         {
             error(e.loc, "infinite loop while optimizing expression");
-            fatal();
+            return ErrorExp.get();
         }
 
         auto ex = ret;

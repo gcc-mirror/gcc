@@ -957,7 +957,7 @@ d_array_convert (Expression *exp)
 
   if (tb->ty == TY::Tsarray)
     {
-      Type *totype = tb->nextOf ()->arrayOf ();
+      Type *totype = dmd::arrayOf (tb->nextOf ());
       return convert_expr (build_expr (exp), exp->type, totype);
     }
 
@@ -986,7 +986,7 @@ d_array_convert (Type *etype, Expression *exp)
 	  expr = compound_expr (modify_expr (var, expr), var);
 	}
 
-      return d_array_value (build_ctype (exp->type->arrayOf ()),
+      return d_array_value (build_ctype (dmd::arrayOf (exp->type)),
 			    size_int (1), build_address (expr));
     }
   else

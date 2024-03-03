@@ -12357,8 +12357,16 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return result;
         }
 
-        void handleCatArgument(Expressions *arguments, Expression e)
+        void handleCatArgument(Expressions *arguments, Expression e, Type catType, bool isRightArg)
         {
+            auto tb = e.type.toBasetype();
+
+            if ((isRightArg && e.parens) || (!isRightArg && !tb.equals(catType)))
+            {
+                arguments.push(e);
+                return;
+            }
+
             if (auto ce = e.isCatExp())
             {
                 Expression lowering = ce.lowering;
@@ -12388,8 +12396,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             arguments.push(new StringExp(exp.loc, funcname.toDString()));
         }
 
-        handleCatArgument(arguments, exp.e1);
-        handleCatArgument(arguments, exp.e2);
+        handleCatArgument(arguments, exp.e1, exp.type.toBasetype(), false);
+        handleCatArgument(arguments, exp.e2, exp.type.toBasetype(), true);
 
         Expression id = new IdentifierExp(exp.loc, Id.empty);
         id = new DotIdExp(exp.loc, id, Id.object);

@@ -1687,7 +1687,7 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             if (!ClassDeclaration.object)
             {
                 .error(Loc.initial, "missing or corrupt object.d");
-                fatal();
+                return error();
             }
 
             __gshared FuncDeclaration feq = null;
@@ -6229,6 +6229,29 @@ Type referenceTo(Type type)
     return type.rto;
 }
 
+// Make corresponding static array type without semantic
+Type sarrayOf(Type type, dinteger_t dim)
+{
+    assert(type.deco);
+    Type t = new TypeSArray(type, new IntegerExp(Loc.initial, dim, Type.tsize_t));
+    // according to TypeSArray.semantic()
+    t = t.addMod(type.mod);
+    t = t.merge();
+    return t;
+}
+
+Type arrayOf(Type type)
+{
+    if (type.ty == Terror)
+        return type;
+    if (!type.arrayof)
+    {
+        Type t = new TypeDArray(type);
+        type.arrayof = t.merge();
+    }
+    return type.arrayof;
+}
+
 /********************************
  * Convert to 'const'.
  */
@@ -6478,6 +6501,104 @@ Type sharedWildConstOf(Type type)
     return t;
 }
 
+Type unqualify(Type type, uint m)
+{
+    Type t = type.mutableOf().unSharedOf();
+
+    Type tn = type.ty == Tenum ? null : type.nextOf();
+    if (tn && tn.ty != Tfunction)
+    {
+        Type utn = tn.unqualify(m);
+        if (utn != tn)
+        {
+            if (type.ty == Tpointer)
+                t = utn.pointerTo();
+            else if (type.ty == Tarray)
+                t = utn.arrayOf();
+            else if (type.ty == Tsarray)
+                t = new TypeSArray(utn, (cast(TypeSArray)type).dim);
+            else if (type.ty == Taarray)
+            {
+                t = new TypeAArray(utn, (cast(TypeAArray)type).index);
+            }
+            else
+                assert(0);
+
+            t = t.merge();
+        }
+    }
+    t = t.addMod(type.mod & ~m);
+    return t;
+}
+
+/**************************
+ * Return type with the top level of it being mutable.
+ *
+ * Params:
+ *  t = type for which the top level mutable version is being returned
+ *
+ * Returns:
+ *  type version with mutable top level
+ */
+Type toHeadMutable(const Type t)
+{
+    Type unqualType = cast(Type) t;
+    if (t.isTypeStruct() || t.isTypeClass())
+        return unqualType;
+
+    if (!t.mod)
+        return unqualType;
+    return unqualType.mutableOf();
+}
+
+Type aliasthisOf(Type type)
+{
+    auto ad = isAggregate(type);
+    if (!ad || !ad.aliasthis)
+        return null;
+
+    auto s = ad.aliasthis.sym;
+    if (s.isAliasDeclaration())
+        s = s.toAlias();
+
+    if (s.isTupleDeclaration())
+        return null;
+
+    if (auto vd = s.isVarDeclaration())
+    {
+        auto t = vd.type;
+        if (vd.needThis())
+            t = t.addMod(type.mod);
+        return t;
+    }
+    Dsymbol callable = s.isFuncDeclaration();
+    callable = callable ? callable : s.isTemplateDeclaration();
+    if (callable)
+    {
+        auto fd = resolveFuncCall(Loc.initial, null, callable, null, type, ArgumentList(), FuncResolveFlag.quiet);
+        if (!fd || fd.errors || !functionSemantic(fd))
+            return Type.terror;
+
+        auto t = fd.type.nextOf();
+        if (!t) // https://issues.dlang.org/show_bug.cgi?id=14185
+            return Type.terror;
+        t = t.substWildTo(type.mod == 0 ? MODFlags.mutable : type.mod);
+        return t;
+    }
+    if (auto d = s.isDeclaration())
+    {
+        assert(d.type);
+        return d.type;
+    }
+    if (auto ed = s.isEnumDeclaration())
+    {
+        return ed.type;
+    }
+
+    //printf("%s\n", s.kind());
+    return null;
+}
+
 /************************************
  * Apply MODxxxx bits to existing type.
  */
@@ -6526,6 +6647,137 @@ Type castMod(Type type, MOD mod)
         assert(0);
     }
     return t;
+}
+
+Type substWildTo(Type type, uint mod)
+{
+    auto tf = type.isTypeFunction();
+    if (!tf)
+    {
+        //printf("+Type.substWildTo this = %s, mod = x%x\n", toChars(), mod);
+        Type t;
+
+        if (Type tn = type.nextOf())
+        {
+            // substitution has no effect on function pointer type.
+            if (type.ty == Tpointer && tn.ty == Tfunction)
+            {
+                t = type;
+                goto L1;
+            }
+
+            t = tn.substWildTo(mod);
+            if (t == tn)
+                t = type;
+            else
+            {
+                if (type.ty == Tpointer)
+                    t = t.pointerTo();
+                else if (type.ty == Tarray)
+                    t = t.arrayOf();
+                else if (type.ty == Tsarray)
+                    t = new TypeSArray(t, (cast(TypeSArray)type).dim.syntaxCopy());
+                else if (type.ty == Taarray)
+                {
+                    t = new TypeAArray(t, (cast(TypeAArray)type).index.syntaxCopy());
+                }
+                else if (type.ty == Tdelegate)
+                {
+                    t = new TypeDelegate(t.isTypeFunction());
+                }
+                else
+                    assert(0);
+
+                t = t.merge();
+            }
+        }
+        else
+            t = type;
+
+    L1:
+        if (type.isWild())
+        {
+            if (mod == MODFlags.immutable_)
+            {
+                t = t.immutableOf();
+            }
+            else if (mod == MODFlags.wildconst)
+            {
+                t = t.wildConstOf();
+            }
+            else if (mod == MODFlags.wild)
+            {
+                if (type.isWildConst())
+                    t = t.wildConstOf();
+                else
+                    t = t.wildOf();
+            }
+            else if (mod == MODFlags.const_)
+            {
+                t = t.constOf();
+            }
+            else
+            {
+                if (type.isWildConst())
+                    t = t.constOf();
+                else
+                    t = t.mutableOf();
+            }
+        }
+        if (type.isConst())
+            t = t.addMod(MODFlags.const_);
+        if (type.isShared())
+            t = t.addMod(MODFlags.shared_);
+
+        //printf("-Type.substWildTo t = %s\n", t.toChars());
+        return t;
+    }
+
+    if (!tf.iswild && !(tf.mod & MODFlags.wild))
+        return tf;
+
+    // Substitude inout qualifier of function type to mutable or immutable
+    // would break type system. Instead substitude inout to the most weak
+    // qualifer - const.
+    uint m = MODFlags.const_;
+
+    assert(tf.next);
+    Type tret = tf.next.substWildTo(m);
+    Parameters* params = tf.parameterList.parameters;
+    if (tf.mod & MODFlags.wild)
+        params = tf.parameterList.parameters.copy();
+    for (size_t i = 0; i < params.length; i++)
+    {
+        Parameter p = (*params)[i];
+        Type t = p.type.substWildTo(m);
+        if (t == p.type)
+            continue;
+        if (params == tf.parameterList.parameters)
+            params = tf.parameterList.parameters.copy();
+        (*params)[i] = new Parameter(p.loc, p.storageClass, t, null, null, null);
+    }
+    if (tf.next == tret && params == tf.parameterList.parameters)
+        return tf;
+
+    // Similar to TypeFunction.syntaxCopy;
+    auto t = new TypeFunction(ParameterList(params, tf.parameterList.varargs), tret, tf.linkage);
+    t.mod = ((tf.mod & MODFlags.wild) ? (tf.mod & ~MODFlags.wild) | MODFlags.const_ : tf.mod);
+    t.isnothrow = tf.isnothrow;
+    t.isnogc = tf.isnogc;
+    t.purity = tf.purity;
+    t.isproperty = tf.isproperty;
+    t.isref = tf.isref;
+    t.isreturn = tf.isreturn;
+    t.isreturnscope = tf.isreturnscope;
+    t.isScopeQual = tf.isScopeQual;
+    t.isreturninferred = tf.isreturninferred;
+    t.isscopeinferred = tf.isscopeinferred;
+    t.isInOutParam = false;
+    t.isInOutQual = false;
+    t.trust = tf.trust;
+    t.fargs = tf.fargs;
+    t.isctor = tf.isctor;
+    return t.merge();
 }
 
 /************************************
@@ -6631,6 +6883,69 @@ Type addMod(Type type, MOD mod)
         }
     }
     return t;
+}
+
+/**
+ * Check whether this type has endless `alias this` recursion.
+ *
+ * Params:
+ *   t = type to check whether it has a recursive alias this
+ * Returns:
+ *   `true` if `t` has an `alias this` that can be implicitly
+ *    converted back to `t` itself.
+ */
+private bool checkAliasThisRec(Type t)
+{
+    Type tb = t.toBasetype();
+    AliasThisRec* pflag;
+    if (tb.ty == Tstruct)
+        pflag = &(cast(TypeStruct)tb).att;
+    else if (tb.ty == Tclass)
+        pflag = &(cast(TypeClass)tb).att;
+    else
+        return false;
+
+    AliasThisRec flag = cast(AliasThisRec)(*pflag & AliasThisRec.typeMask);
+    if (flag == AliasThisRec.fwdref)
+    {
+        Type att = aliasthisOf(t);
+        flag = att && att.implicitConvTo(t) ? AliasThisRec.yes : AliasThisRec.no;
+    }
+    *pflag = cast(AliasThisRec)(flag | (*pflag & ~AliasThisRec.typeMask));
+    return flag == AliasThisRec.yes;
+}
+
+/**************************************
+ * Check and set 'att' if 't' is a recursive 'alias this' type
+ *
+ * The goal is to prevent endless loops when there is a cycle in the alias this chain.
+ * Since there is no multiple `alias this`, the chain either ends in a leaf,
+ * or it loops back on itself as some point.
+ *
+ * Example: S0 -> (S1 -> S2 -> S3 -> S1)
+ *
+ * `S0` is not a recursive alias this, so this returns `false`, and a rewrite to `S1` can be tried.
+ * `S1` is a recursive alias this type, but since `att` is initialized to `null`,
+ * this still returns `false`, but `att1` is set to `S1`.
+ * A rewrite to `S2` and `S3` can be tried, but when we want to try a rewrite to `S1` again,
+ * we notice `att == t`, so we're back at the start of the loop, and this returns `true`.
+ *
+ * Params:
+ *   att = type reference used to detect recursion. Should be initialized to `null`.
+ *   t   = type of 'alias this' rewrite to attempt
+ *
+ * Returns:
+ *   `false` if the rewrite is safe, `true` if it would loop back around
+ */
+bool isRecursiveAliasThis(ref Type att, Type t)
+{
+    //printf("+isRecursiveAliasThis(att = %s, t = %s)\n", att ? att.toChars() : "null", t.toChars());
+    auto tb = t.toBasetype();
+    if (att && tb.equivalent(att))
+        return true;
+    else if (!att && tb.checkAliasThisRec())
+        att = tb;
+    return false;
 }
 
 /******************************* Private *****************************************/

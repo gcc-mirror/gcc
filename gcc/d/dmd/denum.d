@@ -20,7 +20,6 @@ import dmd.astenums;
 import dmd.attrib;
 import dmd.gluelayer;
 import dmd.declaration;
-import dmd.dscope;
 import dmd.dsymbol;
 import dmd.expression;
 import dmd.id;

@@ -274,7 +274,7 @@ build_shuffle_mask_type (tree type)
   gcc_assert (t != NULL);
   unsigned HOST_WIDE_INT nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
 
-  return build_ctype (TypeVector::create (t->sarrayOf (nunits)));
+  return build_ctype (TypeVector::create (dmd::sarrayOf (t, nunits)));
 }
 
 /* Checks if call to intrinsic FUNCTION in CALLEXP matches the internal
@@ -414,7 +414,7 @@ maybe_warn_intrinsic_mismatch (tree function, tree callexp)
 	      break;
 
 	    Type *inner = build_frontend_type (TREE_TYPE (vec0));
-	    Type *vector = TypeVector::create (inner->sarrayOf (nunits));
+	    Type *vector = TypeVector::create (dmd::sarrayOf (inner, nunits));
 	    return warn_mismatched_argument (callexp, 1,
 					     build_ctype (vector), true);
 	  }
@@ -479,7 +479,7 @@ maybe_warn_intrinsic_mismatch (tree function, tree callexp)
 	      break;
 
 	    Type *inner = build_frontend_type (TREE_TYPE (arg));
-	    Type *vector = TypeVector::create (inner->sarrayOf (nunits));
+	    Type *vector = TypeVector::create (dmd::sarrayOf (inner, nunits));
 	    return warn_mismatched_argument (callexp, 0,
 					     build_ctype (vector), true);
 	  }

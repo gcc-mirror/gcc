@@ -1185,108 +1185,10 @@ extern (C++) abstract class Type : ASTNode
         return t;
     }
 
-    final Type arrayOf()
-    {
-        if (ty == Terror)
-            return this;
-        if (!arrayof)
-        {
-            Type t = new TypeDArray(this);
-            arrayof = t.merge();
-        }
-        return arrayof;
-    }
-
-    // Make corresponding static array type without semantic
-    final Type sarrayOf(dinteger_t dim)
-    {
-        assert(deco);
-        Type t = new TypeSArray(this, new IntegerExp(Loc.initial, dim, Type.tsize_t));
-        // according to TypeSArray::semantic()
-        t = t.addMod(mod);
-        t = t.merge();
-        return t;
-    }
-
     final bool hasDeprecatedAliasThis()
     {
         auto ad = isAggregate(this);
         return ad && ad.aliasthis && (ad.aliasthis.isDeprecated || ad.aliasthis.sym.isDeprecated);
-    }
-
-    final Type aliasthisOf()
-    {
-        auto ad = isAggregate(this);
-        if (!ad || !ad.aliasthis)
-            return null;
-
-        auto s = ad.aliasthis.sym;
-        if (s.isAliasDeclaration())
-            s = s.toAlias();
-
-        if (s.isTupleDeclaration())
-            return null;
-
-        if (auto vd = s.isVarDeclaration())
-        {
-            auto t = vd.type;
-            if (vd.needThis())
-                t = t.addMod(this.mod);
-            return t;
-        }
-        Dsymbol callable = s.isFuncDeclaration();
-        callable = callable ? callable : s.isTemplateDeclaration();
-        if (callable)
-        {
-            auto fd = resolveFuncCall(Loc.initial, null, callable, null, this, ArgumentList(), FuncResolveFlag.quiet);
-            if (!fd || fd.errors || !functionSemantic(fd))
-                return Type.terror;
-
-            auto t = fd.type.nextOf();
-            if (!t) // https://issues.dlang.org/show_bug.cgi?id=14185
-                return Type.terror;
-            t = t.substWildTo(mod == 0 ? MODFlags.mutable : mod);
-            return t;
-        }
-        if (auto d = s.isDeclaration())
-        {
-            assert(d.type);
-            return d.type;
-        }
-        if (auto ed = s.isEnumDeclaration())
-        {
-            return ed.type;
-        }
-
-        //printf("%s\n", s.kind());
-        return null;
-    }
-
-    /**
-     * Check whether this type has endless `alias this` recursion.
-     * Returns:
-     *   `true` if this type has an `alias this` that can be implicitly
-     *    converted back to this type itself.
-     */
-    extern (D) final bool checkAliasThisRec()
-    {
-        Type tb = toBasetype();
-        AliasThisRec* pflag;
-        if (tb.ty == Tstruct)
-            pflag = &(cast(TypeStruct)tb).att;
-        else if (tb.ty == Tclass)
-            pflag = &(cast(TypeClass)tb).att;
-        else
-            return false;
-
-        AliasThisRec flag = cast(AliasThisRec)(*pflag & AliasThisRec.typeMask);
-        if (flag == AliasThisRec.fwdref)
-        {
-            Type att = aliasthisOf();
-            flag = att && att.implicitConvTo(this) ? AliasThisRec.yes : AliasThisRec.no;
-        }
-        *pflag = cast(AliasThisRec)(flag | (*pflag & ~AliasThisRec.typeMask));
-        return flag == AliasThisRec.yes;
     }
 
     Type makeConst()
@@ -1449,129 +1351,6 @@ extern (C++) abstract class Type : ASTNode
                 assert(0);
         }
         return 0;
-    }
-
-    Type substWildTo(uint mod)
-    {
-        //printf("+Type::substWildTo this = %s, mod = x%x\n", toChars(), mod);
-        Type t;
-
-        if (Type tn = nextOf())
-        {
-            // substitution has no effect on function pointer type.
-            if (ty == Tpointer && tn.ty == Tfunction)
-            {
-                t = this;
-                goto L1;
-            }
-
-            t = tn.substWildTo(mod);
-            if (t == tn)
-                t = this;
-            else
-            {
-                if (ty == Tpointer)
-                    t = t.pointerTo();
-                else if (ty == Tarray)
-                    t = t.arrayOf();
-                else if (ty == Tsarray)
-                    t = new TypeSArray(t, (cast(TypeSArray)this).dim.syntaxCopy());
-                else if (ty == Taarray)
-                {
-                    t = new TypeAArray(t, (cast(TypeAArray)this).index.syntaxCopy());
-                }
-                else if (ty == Tdelegate)
-                {
-                    t = new TypeDelegate(t.isTypeFunction());
-                }
-                else
-                    assert(0);
-
-                t = t.merge();
-            }
-        }
-        else
-            t = this;
-
-    L1:
-        if (isWild())
-        {
-            if (mod == MODFlags.immutable_)
-            {
-                t = t.immutableOf();
-            }
-            else if (mod == MODFlags.wildconst)
-            {
-                t = t.wildConstOf();
-            }
-            else if (mod == MODFlags.wild)
-            {
-                if (isWildConst())
-                    t = t.wildConstOf();
-                else
-                    t = t.wildOf();
-            }
-            else if (mod == MODFlags.const_)
-            {
-                t = t.constOf();
-            }
-            else
-            {
-                if (isWildConst())
-                    t = t.constOf();
-                else
-                    t = t.mutableOf();
-            }
-        }
-        if (isConst())
-            t = t.addMod(MODFlags.const_);
-        if (isShared())
-            t = t.addMod(MODFlags.shared_);
-
-        //printf("-Type::substWildTo t = %s\n", t.toChars());
-        return t;
-    }
-
-    final Type unqualify(uint m)
-    {
-        Type t = this.mutableOf().unSharedOf();
-
-        Type tn = ty == Tenum ? null : nextOf();
-        if (tn && tn.ty != Tfunction)
-        {
-            Type utn = tn.unqualify(m);
-            if (utn != tn)
-            {
-                if (ty == Tpointer)
-                    t = utn.pointerTo();
-                else if (ty == Tarray)
-                    t = utn.arrayOf();
-                else if (ty == Tsarray)
-                    t = new TypeSArray(utn, (cast(TypeSArray)this).dim);
-                else if (ty == Taarray)
-                {
-                    t = new TypeAArray(utn, (cast(TypeAArray)this).index);
-                }
-                else
-                    assert(0);
-
-                t = t.merge();
-            }
-        }
-        t = t.addMod(mod & ~m);
-        return t;
-    }
-
-    /**************************
-     * Return type with the top level of it being mutable.
-     */
-    inout(Type) toHeadMutable() inout
-    {
-        if (!mod)
-            return this;
-        Type unqualThis = cast(Type) this;
-        // `mutableOf` needs a mutable `this` only for caching
-        return cast(inout(Type)) unqualThis.mutableOf();
     }
 
     inout(ClassDeclaration) isClassHandle() inout
@@ -3396,55 +3175,6 @@ extern (C++) final class TypeFunction : TypeNext
         return linkage == LINK.d && parameterList.varargs == VarArg.variadic;
     }
 
-    override Type substWildTo(uint)
-    {
-        if (!iswild && !(mod & MODFlags.wild))
-            return this;
-
-        // Substitude inout qualifier of function type to mutable or immutable
-        // would break type system. Instead substitude inout to the most weak
-        // qualifer - const.
-        uint m = MODFlags.const_;
-
-        assert(next);
-        Type tret = next.substWildTo(m);
-        Parameters* params = parameterList.parameters;
-        if (mod & MODFlags.wild)
-            params = parameterList.parameters.copy();
-        for (size_t i = 0; i < params.length; i++)
-        {
-            Parameter p = (*params)[i];
-            Type t = p.type.substWildTo(m);
-            if (t == p.type)
-                continue;
-            if (params == parameterList.parameters)
-                params = parameterList.parameters.copy();
-            (*params)[i] = new Parameter(p.loc, p.storageClass, t, null, null, null);
-        }
-        if (next == tret && params == parameterList.parameters)
-            return this;
-
-        // Similar to TypeFunction::syntaxCopy;
-        auto t = new TypeFunction(ParameterList(params, parameterList.varargs), tret, linkage);
-        t.mod = ((mod & MODFlags.wild) ? (mod & ~MODFlags.wild) | MODFlags.const_ : mod);
-        t.isnothrow = isnothrow;
-        t.isnogc = isnogc;
-        t.purity = purity;
-        t.isproperty = isproperty;
-        t.isref = isref;
-        t.isreturn = isreturn;
-        t.isreturnscope = isreturnscope;
-        t.isScopeQual = isScopeQual;
-        t.isreturninferred = isreturninferred;
-        t.isscopeinferred = isscopeinferred;
-        t.isInOutParam = false;
-        t.isInOutQual = false;
-        t.trust = trust;
-        t.fargs = fargs;
-        t.isctor = isctor;
-        return t.merge();
-    }
-
     extern(D) static const(char)* getMatchError(A...)(const(char)* format, A args)
     {
         if (global.gag && !global.params.v.showGaggedErrors)
@@ -4316,7 +4046,7 @@ extern (C++) final class TypeStruct : Type
         MATCH m;
         if (!(ty == to.ty && sym == (cast(TypeStruct)to).sym) && sym.aliasthis && !(att & AliasThisRec.tracing))
         {
-            if (auto ato = aliasthisOf())
+            if (auto ato = aliasthisOf(this))
             {
                 att = cast(AliasThisRec)(att | AliasThisRec.tracing);
                 m = ato.implicitConvTo(to);
@@ -4353,7 +4083,7 @@ extern (C++) final class TypeStruct : Type
 
         if (t.hasWild() && sym.aliasthis && !(att & AliasThisRec.tracing))
         {
-            if (auto ato = aliasthisOf())
+            if (auto ato = aliasthisOf(this))
             {
                 att = cast(AliasThisRec)(att | AliasThisRec.tracing);
                 wm = ato.deduceWild(t, isRef);
@@ -4362,11 +4092,6 @@ extern (C++) final class TypeStruct : Type
         }
 
         return wm;
-    }
-
-    override inout(Type) toHeadMutable() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -4595,7 +4320,7 @@ extern (C++) final class TypeClass : Type
         MATCH m;
         if (sym.aliasthis && !(att & AliasThisRec.tracing))
         {
-            if (auto ato = aliasthisOf())
+            if (auto ato = aliasthisOf(this))
             {
                 att = cast(AliasThisRec)(att | AliasThisRec.tracing);
                 m = ato.implicitConvTo(to);
@@ -4644,7 +4369,7 @@ extern (C++) final class TypeClass : Type
 
         if (t.hasWild() && sym.aliasthis && !(att & AliasThisRec.tracing))
         {
-            if (auto ato = aliasthisOf())
+            if (auto ato = aliasthisOf(this))
             {
                 att = cast(AliasThisRec)(att | AliasThisRec.tracing);
                 wm = ato.deduceWild(t, isRef);
@@ -4653,11 +4378,6 @@ extern (C++) final class TypeClass : Type
         }
 
         return wm;
-    }
-
-    override inout(Type) toHeadMutable() inout
-    {
-        return this;
     }
 
     override bool isZeroInit(const ref Loc loc)
@@ -5851,37 +5571,4 @@ TypeIdentifier getException()
     tid.addIdent(Id.object);
     tid.addIdent(Id.Exception);
     return tid;
-}
-
-/**************************************
- * Check and set 'att' if 't' is a recursive 'alias this' type
- *
- * The goal is to prevent endless loops when there is a cycle in the alias this chain.
- * Since there is no multiple `alias this`, the chain either ends in a leaf,
- * or it loops back on itself as some point.
- *
- * Example: S0 -> (S1 -> S2 -> S3 -> S1)
- *
- * `S0` is not a recursive alias this, so this returns `false`, and a rewrite to `S1` can be tried.
- * `S1` is a recursive alias this type, but since `att` is initialized to `null`,
- * this still returns `false`, but `att1` is set to `S1`.
- * A rewrite to `S2` and `S3` can be tried, but when we want to try a rewrite to `S1` again,
- * we notice `att == t`, so we're back at the start of the loop, and this returns `true`.
- *
- * Params:
- *   att = type reference used to detect recursion. Should be initialized to `null`.
- *   t   = type of 'alias this' rewrite to attempt
- *
- * Returns:
- *   `false` if the rewrite is safe, `true` if it would loop back around
- */
-bool isRecursiveAliasThis(ref Type att, Type t)
-{
-    //printf("+isRecursiveAliasThis(att = %s, t = %s)\n", att ? att.toChars() : "null", t.toChars());
-    auto tb = t.toBasetype();
-    if (att && tb.equivalent(att))
-        return true;
-    else if (!att && tb.checkAliasThisRec())
-        att = tb;
-    return false;
 }

@@ -415,7 +415,7 @@ class TypeInfoVisitor : public Visitor
     tree decl = this->internal_reference (value);
     TREE_READONLY (decl) = 1;
 
-    value = d_array_value (build_ctype (Type::tchar->arrayOf ()),
+    value = d_array_value (build_ctype (dmd::arrayOf (Type::tchar)),
 			   size_int (len), build_address (decl));
     this->layout_field (value);
   }
@@ -1137,7 +1137,7 @@ public:
     this->layout_base (Type::typeinfotypelist);
 
     /* TypeInfo[] elements;  */
-    Type *satype = Type::tvoidptr->sarrayOf (ti->arguments->length);
+    Type *satype = dmd::sarrayOf (Type::tvoidptr, ti->arguments->length);
     vec<constructor_elt, va_gc> *elms = NULL;
     for (size_t i = 0; i < ti->arguments->length; i++)
       {

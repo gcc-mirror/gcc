@@ -34,12 +34,10 @@ import dmd.dmodule;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
-import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.escape;
 import dmd.expression;
-import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
@@ -57,7 +55,6 @@ import dmd.semantic2;
 import dmd.semantic3;
 import dmd.statement_rewrite_walker;
 import dmd.statement;
-import dmd.statementsem;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
@@ -113,90 +110,6 @@ enum BUILTIN : ubyte
     toPrecFloat,
     toPrecDouble,
     toPrecReal
-}
-
-/* Tweak all return statements and dtor call for nrvo_var, for correct NRVO.
- */
-extern (C++) final class NrvoWalker : StatementRewriteWalker
-{
-    alias visit = typeof(super).visit;
-public:
-    FuncDeclaration fd;
-    Scope* sc;
-
-    override void visit(ReturnStatement s)
-    {
-        // See if all returns are instead to be replaced with a goto returnLabel;
-        if (fd.returnLabel)
-        {
-            /* Rewrite:
-             *  return exp;
-             * as:
-             *  vresult = exp; goto Lresult;
-             */
-            auto gs = new GotoStatement(s.loc, Id.returnLabel);
-            gs.label = fd.returnLabel;
-
-            Statement s1 = gs;
-            if (s.exp)
-                s1 = new CompoundStatement(s.loc, new ExpStatement(s.loc, s.exp), gs);
-
-            replaceCurrent(s1);
-        }
-    }
-
-    override void visit(TryFinallyStatement s)
-    {
-        DtorExpStatement des;
-        if (fd.isNRVO() && s.finalbody && (des = s.finalbody.isDtorExpStatement()) !is null &&
-            fd.nrvo_var == des.var)
-        {
-            if (!(global.params.useExceptions && ClassDeclaration.throwable))
-            {
-                /* Don't need to call destructor at all, since it is nrvo
-                 */
-                replaceCurrent(s._body);
-                s._body.accept(this);
-                return;
-            }
-
-            /* Normally local variable dtors are called regardless exceptions.
-             * But for nrvo_var, its dtor should be called only when exception is thrown.
-             *
-             * Rewrite:
-             *      try { s.body; } finally { nrvo_var.edtor; }
-             *      // equivalent with:
-             *      //    s.body; scope(exit) nrvo_var.edtor;
-             * as:
-             *      try { s.body; } catch(Throwable __o) { nrvo_var.edtor; throw __o; }
-             *      // equivalent with:
-             *      //    s.body; scope(failure) nrvo_var.edtor;
-             */
-            Statement sexception = new DtorExpStatement(Loc.initial, fd.nrvo_var.edtor, fd.nrvo_var);
-            Identifier id = Identifier.generateId("__o");
-
-            Statement handler = new PeelStatement(sexception);
-            if (sexception.blockExit(fd, null) & BE.fallthru)
-            {
-                auto ts = new ThrowStatement(Loc.initial, new IdentifierExp(Loc.initial, id));
-                ts.internalThrow = true;
-                handler = new CompoundStatement(Loc.initial, handler, ts);
-            }
-
-            auto catches = new Catches();
-            auto ctch = new Catch(Loc.initial, getThrowable(), id, handler);
-            ctch.internalCatch = true;
-            ctch.catchSemantic(sc); // Run semantic to resolve identifier '__o'
-            catches.push(ctch);
-
-            Statement s2 = new TryCatchStatement(Loc.initial, s._body, catches);
-            fd.hasNoEH = false;
-            replaceCurrent(s2);
-            s2.accept(this);
-        }
-        else
-            StatementRewriteWalker.visit(s);
-    }
 }
 
 private struct FUNCFLAG
@@ -2022,44 +1935,6 @@ extern (C++) class FuncDeclaration : Declaration
     }
 
     /****************************************************
-     * Declare result variable lazily.
-     */
-    extern (D) final void buildResultVar(Scope* sc, Type tret)
-    {
-        if (!vresult)
-        {
-            Loc loc = fensure ? fensure.loc : this.loc;
-
-            /* If inferRetType is true, tret may not be a correct return type yet.
-             * So, in here it may be a temporary type for vresult, and after
-             * fbody.dsymbolSemantic() running, vresult.type might be modified.
-             */
-            vresult = new VarDeclaration(loc, tret, Id.result, null);
-            vresult.storage_class |= STC.nodtor | STC.temp;
-            if (!isVirtual())
-                vresult.storage_class |= STC.const_;
-            vresult.storage_class |= STC.result;
-
-            // set before the semantic() for checkNestedReference()
-            vresult.parent = this;
-        }
-
-        if (sc && vresult.semanticRun == PASS.initial)
-        {
-            TypeFunction tf = type.toTypeFunction();
-            if (tf.isref)
-                vresult.storage_class |= STC.ref_;
-            vresult.type = tret;
-
-            vresult.dsymbolSemantic(sc);
-
-            if (!sc.insert(vresult))
-                .error(loc, "%s `%s` out result %s is already defined", kind, toPrettyChars, vresult.toChars());
-            assert(vresult.parent == this);
-        }
-    }
-
-    /****************************************************
      * Merge into this function the 'in' contracts of all it overrides.
      * 'in's are OR'd together, i.e. only one of them needs to pass.
      */
@@ -2678,57 +2553,6 @@ extern (C++) class FuncDeclaration : Declaration
     {
         v.visit(this);
     }
-}
-
-/********************************************************
- * Generate Expression to call the invariant.
- * Input:
- *      ad      aggregate with the invariant
- *      vthis   variable with 'this'
- * Returns:
- *      void expression that calls the invariant
- */
-Expression addInvariant(AggregateDeclaration ad, VarDeclaration vthis)
-{
-    Expression e = null;
-    // Call invariant directly only if it exists
-    FuncDeclaration inv = ad.inv;
-    ClassDeclaration cd = ad.isClassDeclaration();
-
-    while (!inv && cd)
-    {
-        cd = cd.baseClass;
-        if (!cd)
-            break;
-        inv = cd.inv;
-    }
-    if (inv)
-    {
-        version (all)
-        {
-            // Workaround for https://issues.dlang.org/show_bug.cgi?id=13394
-            // For the correct mangling,
-            // run attribute inference on inv if needed.
-            functionSemantic(inv);
-        }
-
-        //e = new DsymbolExp(Loc.initial, inv);
-        //e = new CallExp(Loc.initial, e);
-        //e = e.semantic(sc2);
-
-        /* https://issues.dlang.org/show_bug.cgi?id=13113
-         * Currently virtual invariant calls completely
-         * bypass attribute enforcement.
-         * Change the behavior of pre-invariant call by following it.
-         */
-        e = new ThisExp(Loc.initial);
-        e.type = ad.type.addMod(vthis.type.mod);
-        e = new DotVarExp(Loc.initial, e, inv, false);
-        e.type = inv.type;
-        e = new CallExp(Loc.initial, e);
-        e.type = Type.tvoid;
-    }
-    return e;
 }
 
 /***************************************************
