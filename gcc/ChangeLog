@@ -1,3 +1,19 @@
+2024-03-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (REG_0, ... REG_36): New define_constants.
+	* config/avr/avr.cc: Use them instead of magic numbers when it
+	means a register number.
+
+2024-03-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc: Adjust some comments.
+
+2024-03-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114100
+	* config/avr/avr.cc (avr_out_plus_1) [-mtiny-stack]: Only adjust
+	the low part of the frame pointer with 8-bit stack pointer.
+
 2024-03-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104919

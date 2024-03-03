@@ -1,3 +1,21 @@
+2024-03-02  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (libbacktrace_testing_ldflags): Define.
+	(*_LDFLAGS): Add $(libbacktrace_testing_ldflags) for test
+	programs.
+	* Makefile.in: Regenerate
+
+2024-03-02  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_uncompress_lzma_block): Skip all header padding bytes
+	and verify that they are zero.
+
+2024-03-02  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/114201
+	* elf.c (elf_add): Add caller_opd parameter.  Change all callers.
+	Release opd data after all recursive calls.
+
 2024-03-01  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_add): Add the symbol table from a debuginfo file.
