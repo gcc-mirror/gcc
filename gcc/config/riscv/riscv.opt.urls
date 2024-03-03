@@ -12,7 +12,7 @@ UrlSuffix(gcc/RISC-V-Options.html#index-mbranch-cost-4)
 ; skipping UrlSuffix for 'mplt' due to finding no URLs
 
 mabi=
-UrlSuffix(gcc/RISC-V-Options.html#index-mabi-4)
+UrlSuffix(gcc/RISC-V-Options.html#index-mabi-5)
 
 mpreferred-stack-boundary=
 UrlSuffix(gcc/RISC-V-Options.html#index-mpreferred-stack-boundary)

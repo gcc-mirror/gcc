@@ -146,7 +146,7 @@ miamcu
 UrlSuffix(gcc/x86-Options.html#index-miamcu)
 
 mabi=
-UrlSuffix(gcc/x86-Options.html#index-mabi-6)
+UrlSuffix(gcc/x86-Options.html#index-mabi-7)
 
 mcall-ms2sysv-xlogues
 UrlSuffix(gcc/x86-Options.html#index-mcall-ms2sysv-xlogues)
@@ -596,6 +596,12 @@ UrlSuffix(gcc/x86-Options.html#index-msm4)
 
 mapxf
 UrlSuffix(gcc/x86-Options.html#index-mapxf)
+
+mapx-inline-asm-use-gpr32
+UrlSuffix(gcc/x86-Options.html#index-mapx-inline-asm-use-gpr32)
+
+mevex512
+UrlSuffix(gcc/x86-Options.html#index-mevex512)
 
 musermsr
 UrlSuffix(gcc/x86-Options.html#index-musermsr)

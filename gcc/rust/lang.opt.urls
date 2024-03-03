@@ -24,6 +24,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-const-variable)
 Wunused-result
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-result)
 
+Winfinite-recursion
+UrlSuffix(gcc/Warning-Options.html#index-Winfinite-recursion)
+
 o
 UrlSuffix(gcc/Overall-Options.html#index-o)
 
