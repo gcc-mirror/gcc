@@ -12550,9 +12550,20 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	    }
 
 	  /* If the inner mode is narrower and we are extracting the low part,
-	     we can treat the SUBREG as if it were a ZERO_EXTEND.  */
+	     we can treat the SUBREG as if it were a ZERO_EXTEND ...  */
 	  if (paradoxical_subreg_p (op0))
-	    ;
+	    {
+	      if (WORD_REGISTER_OPERATIONS
+		  && GET_MODE_PRECISION (inner_mode) < BITS_PER_WORD
+		  /* On WORD_REGISTER_OPERATIONS targets the bits
+		     beyond sub_mode aren't considered undefined,
+		     so optimize only if it is a MEM load when MEM loads
+		     zero extend, because then the upper bits are all zero.  */
+		  && !(MEM_P (SUBREG_REG (op0))
+		       && load_extend_op (inner_mode) == ZERO_EXTEND))
+		break;
+	      /* FALLTHROUGH to case ZERO_EXTEND */
+	    }
 	  else if (subreg_lowpart_p (op0)
 		   && GET_MODE_CLASS (mode) == MODE_INT
 		   && is_int_mode (GET_MODE (SUBREG_REG (op0)), &inner_mode)
