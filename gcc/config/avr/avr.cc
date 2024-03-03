@@ -163,6 +163,7 @@ static int avr_operand_rtx_cost (rtx, machine_mode, enum rtx_code,
 				 int, bool);
 static void output_reload_in_const (rtx *, rtx, int *, bool);
 static struct machine_function *avr_init_machine_status (void);
+static int _reg_unused_after (rtx_insn *insn, rtx reg, bool look_at_insn);
 
 
 /* Prototypes for hook implementors if needed before their implementation.  */
@@ -8825,7 +8826,7 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *len)
    fixed-point rounding, cf. `avr_out_round'.  */
 
 static void
-avr_out_plus_1 (rtx /*insn*/, rtx *xop, int *plen, enum rtx_code code,
+avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
 		enum rtx_code code_sat, int sign, bool out_label)
 {
   /* MODE of the operation.  */
@@ -8973,6 +8974,10 @@ avr_out_plus_1 (rtx /*insn*/, rtx *xop, int *plen, enum rtx_code code,
 	  && frame_pointer_needed
 	  && REGNO (xop[0]) == FRAME_POINTER_REGNUM)
 	{
+	  if (INSN_P (insn)
+	      && _reg_unused_after (as_a <rtx_insn *> (insn), xop[0], false))
+	    return;
+
 	  if (AVR_HAVE_8BIT_SP)
 	    {
 	      avr_asm_len ("subi %A0,%n2", xop, plen, 1);
@@ -10818,31 +10823,32 @@ int
 reg_unused_after (rtx_insn *insn, rtx reg)
 {
   return (dead_or_set_p (insn, reg)
-	  || (REG_P (reg) && _reg_unused_after (insn, reg)));
+	  || (REG_P (reg) && _reg_unused_after (insn, reg, true)));
 }
 
-/* Return nonzero if REG is not used after INSN.
+/* A helper for the previous function.
+   Return nonzero if REG is not used after INSN.
    We assume REG is a reload reg, and therefore does
    not live past labels.  It may live past calls or jumps though.  */
 
 int
-_reg_unused_after (rtx_insn *insn, rtx reg)
+_reg_unused_after (rtx_insn *insn, rtx reg, bool look_at_insn)
 {
-  enum rtx_code code;
-  rtx set;
-
-  /* If the reg is set by this instruction, then it is safe for our
-     case.  Disregard the case where this is a store to memory, since
-     we are checking a register used in the store address.  */
-  set = single_set (insn);
-  if (set && !MEM_P (SET_DEST (set))
-      && reg_overlap_mentioned_p (reg, SET_DEST (set)))
-    return 1;
+  if (look_at_insn)
+    {
+      /* If the reg is set by this instruction, then it is safe for our
+	 case.  Disregard the case where this is a store to memory, since
+	 we are checking a register used in the store address.  */
+      rtx set = single_set (insn);
+      if (set && !MEM_P (SET_DEST (set))
+	  && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+	return 1;
+    }
 
   while ((insn = NEXT_INSN (insn)))
     {
       rtx set;
-      code = GET_CODE (insn);
+      enum rtx_code code = GET_CODE (insn);
 
 #if 0
       /* If this is a label that existed before reload, then the register
