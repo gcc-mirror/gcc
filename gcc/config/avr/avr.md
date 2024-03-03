@@ -116,10 +116,6 @@
 (include "predicates.md")
 (include "constraints.md")
 
-;; Condition code settings.
-(define_attr "cc" "none,set_czn,set_zn,set_vzn,set_n,compare,clobber,
-                   plus,ldi"
-  (const_string "none"))
 
 (define_attr "type" "branch,branch1,arith,xcall"
   (const_string "arith"))
