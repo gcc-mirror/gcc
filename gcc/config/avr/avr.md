@@ -377,8 +377,8 @@
     rtx offset = gen_int_mode (targetm.starting_frame_offset (), Pmode);
     emit_move_insn (virtual_stack_vars_rtx,
                     gen_rtx_PLUS (Pmode, hard_frame_pointer_rtx, offset));
-    /* ; This might change the hard frame pointer in ways that aren't
-       ; apparent to early optimization passes, so force a clobber.  */
+    // This might change the hard frame pointer in ways that aren't
+    // apparent to early optimization passes, so force a clobber.
     emit_clobber (hard_frame_pointer_rtx);
     DONE;
   })
@@ -575,11 +575,10 @@
   "&& 1"
   [(clobber (const_int 0))]
   {
-    /* ; Split away the high part of the address.  GCC's register allocator
-       ; in not able to allocate segment registers and reload the resulting
-       ; expressions.  Notice that no address register can hold a PSImode.  */
+    // Split away the high part of the address.  GCC's register allocator
+    // in not able to allocate segment registers and reload the resulting
+    // expressions.  Notice that no address register can hold a PSImode.
 
-    rtx_insn *insn;
     rtx addr = XEXP (operands[1], 0);
     rtx hi8 = gen_reg_rtx (QImode);
     rtx reg_z = gen_rtx_REG (HImode, REG_Z);
@@ -587,7 +586,7 @@
     emit_move_insn (reg_z, simplify_gen_subreg (HImode, addr, PSImode, 0));
     emit_move_insn (hi8, simplify_gen_subreg (QImode, addr, PSImode, 2));
 
-    insn = emit_insn (gen_xload<mode>_8 (operands[0], hi8));
+    rtx_insn *insn = emit_insn (gen_xload<mode>_8 (operands[0], hi8));
     set_mem_addr_space (SET_SRC (single_set (insn)),
                                  MEM_ADDR_SPACE (operands[1]));
     DONE;
@@ -617,15 +616,15 @@
     addr_space_t as = MEM_ADDR_SPACE (operands[1]);
     rtx_insn *insn;
 
-    /* Split the address to R21:Z */
+    // Split the address to R21:Z
     emit_move_insn (reg_z, simplify_gen_subreg (HImode, addr, PSImode, 0));
     emit_move_insn (gen_rtx_REG (QImode, 21), addr_hi8);
 
-    /* Load with code from libgcc */
+    // Load with code from libgcc.
     insn = emit_insn (gen_xload_<mode>_libgcc ());
     set_mem_addr_space (SET_SRC (single_set (insn)), as);
 
-    /* Move to destination */
+    // Move to destination.
     emit_move_insn (operands[0], gen_rtx_REG (<MODE>mode, 22));
 
     DONE;
@@ -721,7 +720,7 @@
         SUBREG_REG (src) = copy_to_mode_reg (GET_MODE (const_addr), const_addr);
       }
 
-    /* One of the operands has to be in a register.  */
+    // One of the operands has to be in a register.
     if (!register_operand (dest, <MODE>mode)
         && !reg_or_0_operand (src, <MODE>mode))
       {
@@ -736,8 +735,8 @@
           src = replace_equiv_address (src, copy_to_mode_reg (PSImode, addr));
 
         if (!avr_xload_libgcc_p (<MODE>mode))
-          /* ; No <mode> here because gen_xload8<mode>_A only iterates over ALL1.
-             ; insn-emit does not depend on the mode, it's all about operands.  */
+          // No <mode> here because gen_xload8<mode>_A only iterates over ALL1.
+          // insn-emit does not depend on the mode, it's all about operands.
           emit_insn (gen_xload8qi_A (dest, src));
         else
           emit_insn (gen_xload<mode>_A (dest, src));
@@ -747,7 +746,7 @@
 
     if (avr_load_libgcc_p (src))
       {
-        /* For the small devices, do loads per libgcc call.  */
+        // For the small devices, do loads per libgcc call.
         emit_insn (gen_load<mode>_libgcc (dest, src));
         DONE;
       }
@@ -1291,21 +1290,18 @@
               (clobber (match_dup 4))])]
   ""
   {
-    rtx addr0;
-    machine_mode mode;
-
-    /* If value to set is not zero, use the library routine.  */
+    // If value to set is not zero, use the library routine.
     if (operands[2] != const0_rtx)
       FAIL;
 
     if (!CONST_INT_P (operands[1]))
       FAIL;
 
-    mode = u8_operand (operands[1], VOIDmode) ? QImode : HImode;
+    machine_mode mode = u8_operand (operands[1], VOIDmode) ? QImode : HImode;
     operands[4] = gen_rtx_SCRATCH (mode);
     operands[1] = copy_to_mode_reg (mode,
                                     gen_int_mode (INTVAL (operands[1]), mode));
-    addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
+    rtx addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
     operands[0] = gen_rtx_MEM (BLKmode, addr0);
   })
 
@@ -1392,10 +1388,9 @@
               (clobber (scratch:QI))])]
   ""
   {
-    rtx addr;
     if (operands[2] != const0_rtx)
       FAIL;
-    addr = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
+    rtx addr = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
     operands[1] = gen_rtx_MEM (BLKmode, addr);
     operands[5] = addr;
     operands[4] = gen_reg_rtx (HImode);
@@ -1640,10 +1635,10 @@
   ""
   [(const_int 0)]
   {
-    /* Do not attempt to split this pattern. This FAIL is necessary
-       to prevent the splitter from matching *add<ALL2>3_split, splitting
-       it, and then failing later because constraints don't match, as split
-       does not look at constraints. */
+    // Do not attempt to split this pattern. This FAIL is necessary
+    // to prevent the splitter from matching *add<ALL2>3_split, splitting
+    // it, and then failing later because constraints don't match, as split
+    // does not look at constraints.
     FAIL;
   }
   [(set_attr "length" "6")
@@ -3221,10 +3216,10 @@
         DONE;
       }
 
-    /* ; For small constants we can do better by extending them on the fly.
-       ; The constant can be loaded in one instruction and the widening
-       ; multiplication is shorter.  First try the unsigned variant because it
-       ; allows constraint "d" instead of "a" for the signed version.  */
+    // For small constants we can do better by extending them on the fly.
+    // The constant can be loaded in one instruction and the widening
+    // multiplication is shorter.  First try the unsigned variant because it
+    // allows constraint "d" instead of "a" for the signed version.  */
 
     if (s9_operand (operands[2], HImode))
       {
@@ -3415,8 +3410,8 @@
    (set (match_dup 0)
         (reg:SI 22))]
   {
-    /* Do the QI -> HI extension explicitely before the multiplication.  */
-    /* Do the HI -> SI extension implicitely and after the multiplication.  */
+    // Do the QI -> HI extension explicitely before the multiplication.
+    // Do the HI -> SI extension implicitely and after the multiplication.
 
     if (QImode == <MODE>mode)
       operands[1] = gen_rtx_ZERO_EXTEND (HImode, operands[1]);
@@ -3467,8 +3462,8 @@
    (set (match_dup 0)
         (reg:SI 22))]
   {
-    /* Do the QI -> HI extension explicitely before the multiplication.  */
-    /* Do the HI -> SI extension implicitely and after the multiplication.  */
+    // Do the QI -> HI extension explicitely before the multiplication.
+    // Do the HI -> SI extension implicitely and after the multiplication.
 
     if (QImode == <MODE>mode)
       operands[1] = gen_rtx_SIGN_EXTEND (HImode, operands[1]);
@@ -3581,8 +3576,8 @@
     rtx xop1 = operands[1];
     rtx xop2 = operands[2];
 
-    /* Do the QI -> HI extension explicitely before the multiplication.  */
-    /* Do the HI -> SI extension implicitely and after the multiplication.  */
+    // Do the QI -> HI extension explicitely before the multiplication.
+    // Do the HI -> SI extension implicitely and after the multiplication.
 
     if (QImode == <QIHI:MODE>mode)
       xop1 = gen_rtx_fmt_e (<any_extend:CODE>, HImode, xop1);
@@ -3600,8 +3595,8 @@
       }
     else
       {
-        /* <any_extend:CODE>  = SIGN_EXTEND */
-        /* <any_extend2:CODE> = ZERO_EXTEND */
+        // <any_extend:CODE>  = SIGN_EXTEND
+        // <any_extend2:CODE> = ZERO_EXTEND
 
         operands[1] = xop2;
         operands[2] = xop1;
@@ -4269,7 +4264,7 @@
                 (match_operand:SI 2 "pseudo_register_operand")))
    (set (match_operand:SI 3 "pseudo_register_operand")
         (mod:SI (match_dup 1)
-	        (match_dup 2)))
+                (match_dup 2)))
    (clobber (reg:SI 18))
    (clobber (reg:SI 22))
    (clobber (reg:HI 26))
@@ -4926,7 +4921,7 @@
     else if (offset == 1
              || offset == GET_MODE_BITSIZE (<MODE>mode) -1)
       {
-        /*; Support rotate left/right by 1  */
+        // Support rotate left/right by 1.
 
         emit_move_insn (operands[0],
                         gen_rtx_ROTATE (<MODE>mode, operands[1], operands[2]));
@@ -5726,7 +5721,7 @@
         (lshiftrt:ALL1 (match_operand:ALL1 1 "register_operand" "")
                        (match_operand:QI 2 "nop_general_operand" "")))])
 
-(define_split	; lshrqi3_const4
+(define_split ; lshrqi3_const4
   [(set (match_operand:ALL1 0 "d_register_operand" "")
         (lshiftrt:ALL1 (match_dup 0)
                        (const_int 4)))]
@@ -5741,7 +5736,7 @@
     operands[1] = avr_to_int_mode (operands[0]);
   })
 
-(define_split	; lshrqi3_const5
+(define_split ; lshrqi3_const5
   [(set (match_operand:ALL1 0 "d_register_operand" "")
         (lshiftrt:ALL1 (match_dup 0)
                        (const_int 5)))]
@@ -5753,7 +5748,7 @@
     operands[1] = avr_to_int_mode (operands[0]);
   })
 
-(define_split	; lshrqi3_const6
+(define_split ; lshrqi3_const6
   [(set (match_operand:QI 0 "d_register_operand" "")
         (lshiftrt:QI (match_dup 0)
                      (const_int 6)))]
@@ -6160,17 +6155,17 @@
 
 (define_insn_and_split "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=d,r")
-	(neg:SF (match_operand:SF 1 "register_operand" "0,0")))]
+        (neg:SF (match_operand:SF 1 "register_operand" "0,0")))]
   ""
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
-	               (neg:SF (match_dup 1)))
+                   (neg:SF (match_dup 1)))
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*negsf2"
   [(set (match_operand:SF 0 "register_operand" "=d,r")
-	(neg:SF (match_operand:SF 1 "register_operand" "0,0")))
+        (neg:SF (match_operand:SF 1 "register_operand" "0,0")))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   "@
@@ -7132,7 +7127,7 @@
            : "rjmp %x0";
   }
   [(set (attr "length")
-        (if_then_else (match_operand 0 "symbol_ref_operand" "")	
+        (if_then_else (match_operand 0 "symbol_ref_operand" "")
                       (if_then_else (match_test "!AVR_HAVE_JMP_CALL")
                                     (const_int 1)
                                     (const_int 2))
@@ -7695,7 +7690,6 @@
                       (pc)))]
   "dead_or_set_regno_p (insn, REG_CC)"
   {
-    const char *op;
     int jump_mode;
     if (avr_adiw_reg_p (operands[0]))
       output_asm_insn ("sbiw %0,1", operands);
@@ -7704,7 +7698,7 @@
                        "sbc %B0,__zero_reg__", operands);
 
     jump_mode = avr_jump_mode (operands[2], insn);
-    op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
+    const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
     switch (jump_mode)
@@ -7736,16 +7730,14 @@
                       (pc)))]
   "dead_or_set_regno_p (insn, REG_CC)"
   {
-    const char *op;
-    int jump_mode;
     if (avr_adiw_reg_p (operands[0]))
       output_asm_insn ("sbiw %0,1", operands);
     else
       output_asm_insn ("subi %A0,1" CR_TAB
                        "sbc %B0,__zero_reg__", operands);
 
-    jump_mode = avr_jump_mode (operands[2], insn);
-    op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
+    int jump_mode = avr_jump_mode (operands[2], insn);
+    const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
     switch (jump_mode)
@@ -7777,14 +7769,12 @@
                       (pc)))]
   "dead_or_set_regno_p (insn, REG_CC)"
   {
-    const char *op;
-    int jump_mode;
     output_asm_insn ("ldi %3,1"   CR_TAB
                      "sub %A0,%3" CR_TAB
                      "sbc %B0,__zero_reg__", operands);
 
-    jump_mode = avr_jump_mode (operands[2], insn);
-    op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
+    int jump_mode = avr_jump_mode (operands[2], insn);
+    const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
     switch (jump_mode)
@@ -7813,13 +7803,10 @@
                       (pc)))]
   "dead_or_set_regno_p (insn, REG_CC)"
   {
-    const char *op;
-    int jump_mode;
-
     output_asm_insn ("subi %A0,1", operands);
 
-    jump_mode = avr_jump_mode (operands[1], insn);
-    op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
+    int jump_mode = avr_jump_mode (operands[1], insn);
+    const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[0] = gen_rtx_CONST_STRING (VOIDmode, op);
 
     switch (jump_mode)
@@ -7927,7 +7914,7 @@
   [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "L,P")]
                     UNSPECV_ENABLE_IRQS)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))]
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))]
   ""
   "@
 	cli
@@ -8067,7 +8054,7 @@
                      (const_int 1)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))]
   ""
   "#"
@@ -8085,7 +8072,7 @@
                      (const_int 1)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
@@ -8099,7 +8086,7 @@
                      (const_int 2)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:HI 2 "=&w,&d"))]
   ""
   "#"
@@ -8119,7 +8106,7 @@
                      (const_int 2)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:HI 2 "=&w,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
@@ -8134,7 +8121,7 @@
                      (const_int 3)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
    (clobber (match_scratch:QI 3 "=&d"))
    (clobber (match_scratch:QI 4 "=&d"))]
@@ -8156,7 +8143,7 @@
                      (const_int 3)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
    (clobber (match_scratch:QI 3 "=&d"))
    (clobber (match_scratch:QI 4 "=&d"))
@@ -8176,7 +8163,7 @@
                      (const_int 4)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
    (clobber (match_scratch:QI 3 "=&d"))
    (clobber (match_scratch:QI 4 "=&d"))
@@ -8200,7 +8187,7 @@
                      (const_int 4)]
                     UNSPECV_DELAY_CYCLES)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))
    (clobber (match_scratch:QI 3 "=&d"))
    (clobber (match_scratch:QI 4 "=&d"))
@@ -8781,7 +8768,7 @@
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "P,K")]
                     UNSPECV_NOP)
    (set (match_operand:BLK 1 "" "")
-	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))]
+        (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))]
   ""
   "@
 	nop
@@ -8803,7 +8790,7 @@
 (define_insn "*sleep"
   [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)
    (set (match_operand:BLK 0 "" "")
-	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
+        (unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
   ""
   "sleep"
   [(set_attr "length" "1")])
@@ -8823,7 +8810,7 @@
 (define_insn "*wdr"
   [(unspec_volatile [(const_int 0)] UNSPECV_WDR)
    (set (match_operand:BLK 0 "" "")
-	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
+        (unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
   ""
   "wdr"
   [(set_attr "length" "1")])
