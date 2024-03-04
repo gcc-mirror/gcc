@@ -29370,7 +29370,8 @@ Or:
 
 @smallexample
 template <typename T>
-[[gnu::no_dangling(std::is_reference_v<T>)]] int& foo (T& t) @{
+[[gnu::no_dangling(std::is_lvalue_reference_v<T>)]]
+decltype(auto) foo(T&& t) @{
   @dots{}
 @};
 @end smallexample
