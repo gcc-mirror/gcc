@@ -115,10 +115,10 @@ package body System.Task_Primitives.Operations is
    Abort_Handler_Installed : Boolean := False;
    --  True if a handler for the abort signal is installed
 
-   type RTS_Lock_Ptr is not null access all RTS_Lock;
-
-   function Init_Mutex (L : RTS_Lock_Ptr; Prio : Any_Priority) return int;
-   --  Initialize the mutex L. If Ceiling_Support is True, then set the ceiling
+   function Initialize_Lock
+     (L    : not null access RTS_Lock;
+      Prio : Any_Priority) return int;
+   --  Initialize the lock L. If Ceiling_Support is True, then set the ceiling
    --  to Prio. Returns 0 for success, or ENOMEM for out-of-memory.
 
    function Get_Policy (Prio : System.Any_Priority) return Character;
@@ -319,11 +319,19 @@ package body System.Task_Primitives.Operations is
 
    function Self return Task_Id renames Specific.Self;
 
-   ----------------
-   -- Init_Mutex --
-   ----------------
+   ---------------------
+   -- Initialize_Lock --
+   ---------------------
 
-   function Init_Mutex (L : RTS_Lock_Ptr; Prio : Any_Priority) return int
+   --  Note: mutexes and cond_variables needed per-task basis are initialized
+   --  in Initialize_TCB and the Storage_Error is handled. Other mutexes (such
+   --  as RTS_Lock, Memory_Lock...) used in RTS is initialized before any
+   --  status change of RTS. Therefore raising Storage_Error in the following
+   --  routines should be able to be handled safely.
+
+   function Initialize_Lock
+     (L    : not null access RTS_Lock;
+      Prio : Any_Priority) return int
    is
       Attributes : aliased pthread_mutexattr_t;
       Result     : int;
@@ -365,35 +373,26 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result_2 = 0);
 
       return Result;
-   end Init_Mutex;
-
-   ---------------------
-   -- Initialize_Lock --
-   ---------------------
-
-   --  Note: mutexes and cond_variables needed per-task basis are initialized
-   --  in Initialize_TCB and the Storage_Error is handled. Other mutexes (such
-   --  as RTS_Lock, Memory_Lock...) used in RTS is initialized before any
-   --  status change of RTS. Therefore raising Storage_Error in the following
-   --  routines should be able to be handled safely.
+   end Initialize_Lock;
 
    procedure Initialize_Lock
      (Prio : System.Any_Priority;
       L    : not null access Lock)
    is
    begin
-      if Init_Mutex (L.WO'Access, Prio) = ENOMEM then
+      if Initialize_Lock (L.WO'Access, Prio) = ENOMEM then
          raise Storage_Error with "Failed to allocate a lock";
       end if;
    end Initialize_Lock;
 
    procedure Initialize_Lock
-     (L : not null access RTS_Lock; Level : Lock_Level)
+     (L     : not null access RTS_Lock;
+      Level : Lock_Level)
    is
       pragma Unreferenced (Level);
 
    begin
-      if Init_Mutex (L.all'Access, Any_Priority'Last) = ENOMEM then
+      if Initialize_Lock (L, Any_Priority'Last) = ENOMEM then
          raise Storage_Error with "Failed to allocate a lock";
       end if;
    end Initialize_Lock;
@@ -706,7 +705,8 @@ package body System.Task_Primitives.Operations is
       Next_Serial_Number := Next_Serial_Number + 1;
       pragma Assert (Next_Serial_Number /= 0);
 
-      Result := Init_Mutex (Self_ID.Common.LL.L'Access, Any_Priority'Last);
+      Result :=
+        Initialize_Lock (Self_ID.Common.LL.L'Access, Any_Priority'Last);
       pragma Assert (Result = 0);
 
       if Result /= 0 then

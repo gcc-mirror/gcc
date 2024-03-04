@@ -239,7 +239,9 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock
-     (L : not null access RTS_Lock; Level : Lock_Level) is
+     (L     : not null access RTS_Lock;
+      Level : Lock_Level)
+   is
    begin
       null;
    end Initialize_Lock;
