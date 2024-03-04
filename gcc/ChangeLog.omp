@@ -1,3 +1,14 @@
+2024-03-04  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/110347
+	* gimplify.cc (omp_notice_variable): Fix 'shared' arg to
+	lang_hooks.decls.omp_disregard_value_expr for
+	(first)private in target regions.
+
 2023-11-28  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

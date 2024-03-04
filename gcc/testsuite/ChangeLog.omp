@@ -1,3 +1,13 @@
+2024-03-04  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/110347
+	* g++.dg/gomp/target-lambda-1.C: Moved to become a
+	run-time test under testsuite/libgomp.c++.
+
 2023-11-28  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
