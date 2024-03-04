@@ -1,5 +1,5 @@
 /* PR rtl-optimization/110079 */
-/* { dg-do compile { target lra } } */
+/* { dg-do compile { target { nvptx-*-* || lra } } } */
 /* { dg-options "-O2" } */
 /* { dg-additional-options "-freorder-blocks-and-partition" { target freorder } } */
 

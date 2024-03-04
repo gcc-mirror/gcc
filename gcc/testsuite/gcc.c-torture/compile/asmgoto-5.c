@@ -1,5 +1,5 @@
 /* Test to generate output reload in asm goto on x86_64.  */
-/* { dg-do compile { target lra } } */
+/* { dg-do compile { target asm_goto_with_outputs } } */
 /* { dg-skip-if "no O0" { { i?86-*-* x86_64-*-* } && { ! ia32 } } { "-O0" } { "" } } */
 
 #if defined __x86_64__

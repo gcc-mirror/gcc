@@ -1,5 +1,4 @@
-
-/* { dg-do compile { target lra } } */
+/* { dg-do compile { target asm_goto_with_outputs } } */
 /* PR middle-end/110420 */
 /* PR middle-end/103979 */
 /* PR middle-end/98619 */

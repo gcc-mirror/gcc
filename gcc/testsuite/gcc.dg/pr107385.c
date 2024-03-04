@@ -1,5 +1,5 @@
 /* PR middle-end/107385 */
-/* { dg-do run { target lra } } */
+/* { dg-do run { target asm_goto_with_outputs } } */
 /* { dg-options "-O2" } */
 
 __attribute__((noipa)) int

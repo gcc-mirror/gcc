@@ -2871,6 +2871,9 @@ Target supports weak undefined symbols
 @item R_flag_in_section
 Target supports the 'R' flag in .section directive in assembly inputs.
 
+@item asm_goto_with_outputs
+Target supports 'asm goto' with outputs.
+
 @item automatic_stack_alignment
 Target supports automatic stack alignment.
 
@@ -2945,6 +2948,9 @@ Target is using an LLVM assembler and/or linker, instead of GNU Binutils.
 
 @item lra
 Target supports local register allocator (LRA).
+This must not be called (results in @code{ERROR}) for targets that
+don't do register allocation, and therefore neither use nor don't use
+LRA.
 
 @item lto
 Compiler has been configured to support link-time optimization (LTO).
