@@ -12554,6 +12554,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  if (paradoxical_subreg_p (op0))
 	    {
 	      if (WORD_REGISTER_OPERATIONS
+		  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (op0)),
+					     &inner_mode)
 		  && GET_MODE_PRECISION (inner_mode) < BITS_PER_WORD
 		  /* On WORD_REGISTER_OPERATIONS targets the bits
 		     beyond sub_mode aren't considered undefined,
