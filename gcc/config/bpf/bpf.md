@@ -663,4 +663,21 @@
   FAIL;
 })
 
+;; memset
+;; 0 is dst
+;; 1 is length
+;; 2 is value
+;; 3 is alignment
+(define_expand "setmemdi"
+  [(set (match_operand:BLK 0 "memory_operand")
+	(match_operand:QI  2 "nonmemory_operand"))
+   (use (match_operand:DI  1 "general_operand"))
+   (match_operand 3 "immediate_operand")]
+ ""
+ {
+  if (bpf_expand_setmem (operands))
+    DONE;
+  FAIL;
+})
+
 (include "atomic.md")

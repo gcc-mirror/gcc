@@ -36,5 +36,6 @@ class gimple_opt_pass;
 gimple_opt_pass *make_pass_lower_bpf_core (gcc::context *ctxt);
 
 bool bpf_expand_cpymem (rtx *, bool);
+bool bpf_expand_setmem (rtx *);
 
 #endif /* ! GCC_BPF_PROTOS_H */

@@ -1309,6 +1309,72 @@ bpf_expand_cpymem (rtx *operands, bool is_move)
   return true;
 }
 
+/* Expand setmem, as from __builtin_memset.
+   OPERANDS are the same as the setmem pattern.
+   Return true if the expansion was successful, false otherwise.  */
+
+bool
+bpf_expand_setmem (rtx *operands)
+{
+  /* Size must be constant for this expansion to work.  */
+  if (!CONST_INT_P (operands[1]))
+    {
+      if (flag_building_libgcc)
+	warning (0, "could not inline call to %<__builtin_memset%>: "
+		 "size must be constant");
+      else
+	error ("could not inline call to %<__builtin_memset%>: "
+	       "size must be constant");
+      return false;
+    }
+
+  /* Alignment is a CONST_INT.  */
+  gcc_assert (CONST_INT_P (operands[3]));
+
+  rtx dst = operands[0];
+  rtx size = operands[1];
+  rtx val = operands[2];
+  unsigned HOST_WIDE_INT size_bytes = UINTVAL (size);
+  unsigned align = UINTVAL (operands[3]);
+  enum machine_mode mode;
+  switch (align)
+    {
+    case 1: mode = QImode; break;
+    case 2: mode = HImode; break;
+    case 4: mode = SImode; break;
+    case 8: mode = DImode; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  unsigned iters = size_bytes >> ceil_log2 (align);
+  unsigned remainder = size_bytes & (align - 1);
+  unsigned inc = GET_MODE_SIZE (mode);
+  unsigned offset = 0;
+
+  for (unsigned int i = 0; i < iters; i++)
+    {
+      emit_move_insn (adjust_address (dst, mode, offset), val);
+      offset += inc;
+    }
+  if (remainder & 4)
+    {
+      emit_move_insn (adjust_address (dst, SImode, offset), val);
+      offset += 4;
+      remainder -= 4;
+    }
+  if (remainder & 2)
+    {
+      emit_move_insn (adjust_address (dst, HImode, offset), val);
+      offset += 2;
+      remainder -= 2;
+    }
+  if (remainder & 1)
+    emit_move_insn (adjust_address (dst, QImode, offset), val);
+
+  return true;
+}
+
 /* Finally, build the GCC target.  */
 
 struct gcc_target targetm = TARGET_INITIALIZER;
