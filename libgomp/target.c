@@ -3447,7 +3447,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 
   if (n == NULL)
     gomp_fatal ("Cannot find reverse-offload function");
-  void (*host_fn)() = (void (*)()) n->k->host_start;
+  void (*host_fn) (void *) = (void (*) (void *)) n->k->host_start;
 
   if ((devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM) || mapnum == 0)
     {
