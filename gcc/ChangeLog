@@ -1,3 +1,62 @@
+2024-03-03  Greg McGary  <gkm@rivosinc.com>
+
+	PR rtl-optimization/113010
+	* combine.cc (simplify_comparison): Simplify a SUBREG on
+	WORD_REGISTER_OPERATIONS targets only if it is a zero-extending
+	MEM load.
+
+2024-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc: Resolve ATTRIBUTE_UNUSED.
+	Use bool in place of int for boolean logic (if possible).
+	Move declarations to definitions (if possible).
+	* config/avr/avr.md: Use C++ comments.  Fix some indentation glitches.
+	* config/avr/avr-dimode.md: Same.
+	* config/avr/constraints.md: Same.
+	* config/avr/predicates.md: Same.
+
+2024-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113720
+	* config/alpha/alpha.md (umuldi3_highpart): Remove expander.
+	(*umuldi3_highpart_reg): Rename to umuldi3_highpart and
+	simplify insn RTX using UMUL_HIGHPART rtx_code.
+	(*umuldi3_highpart_const): Remove.
+
+2024-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114100
+	* config/avr/avr-protos.h (_reg_unused_after): Remove proto.
+	* config/avr/avr.cc (_reg_unused_after): Make static.  And
+	add 3rd argument to skip the current insn.
+	(reg_unused_after): Adjust call of reg_unused_after.
+	(avr_out_plus_1) [AVR_TINY && -mfuse-add >= 2]: Don't output
+	unneeded frame pointer adjustments.
+
+2024-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/92729
+	* config/avr/avr.md (define_attr "cc"): Remove.
+	* config/avr/avr-protos.h (avr_out_plus): Remove pcc argument
+	from prototype.
+	* config/avr/avr.cc (avr_out_plus_1): Remove pcc argument and
+	its uses.  Add insn argument.
+	(avr_out_plus_symbol): Remove pcc argument and its uses.
+	(avr_out_plus): Remove pcc argument and its uses.
+	Adjust calls of avr_out_plus_symbol and avr_out_plus_1.
+	(avr_out_round): Adjust call of avr_out_plus.
+
+2024-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_init_cumulative_args): Fix a typo
+	from  r14-9273.
+
+2024-03-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/101737
+	* config/sh/sh.cc (sh_is_nott_insn): Handle case where the input
+	is not an insn, but e.g. a code label.
+
 2024-03-02  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (REG_0, ... REG_36): New define_constants.

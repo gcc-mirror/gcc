@@ -1,3 +1,28 @@
+2024-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd f8bae04558.
+	* dmd/VERSION: Bump version to v2.108.0-beta.1.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	* d-codegen.cc (build_assert_call): Likewise.
+	* d-convert.cc (d_array_convert): Likewise.
+	* decl.cc (get_vtable_decl): Likewise.
+	* expr.cc (ExprVisitor::visit (EqualExp *)): Likewise.
+	(ExprVisitor::visit (VarExp *)): Likewise.
+	(ExprVisitor::visit (ArrayLiteralExp *)): Likewise.
+	(ExprVisitor::visit (AssocArrayLiteralExp)): Likewise.
+	* intrinsics.cc (build_shuffle_mask_type): Likewise.
+	(maybe_warn_intrinsic_mismatch): Likewise.
+	* runtime.cc (get_libcall_type): Likewise.
+	* typeinfo.cc (TypeInfoVisitor::layout_string): Likewise.
+	(TypeInfoVisitor::visit(TypeInfoTupleDeclaration *)): Likewise.
+
+2024-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/114171
+	* d-codegen.cc (lower_struct_comparison): Keep alignment of original
+	type in reinterpret cast for comparison.
+
 2024-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd ceff48bf7d.
