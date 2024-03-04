@@ -9143,8 +9143,14 @@ push_namespace (tree name, bool make_inline)
     {
       /* A public namespace is exported only if explicitly marked, or
 	 it contains exported entities.  */
-      if (TREE_PUBLIC (ns) && module_exporting_p ())
-	DECL_MODULE_EXPORT_P (ns) = true;
+      if (module_exporting_p ())
+	{
+	  if (TREE_PUBLIC (ns))
+	    DECL_MODULE_EXPORT_P (ns) = true;
+	  else if (!header_module_p ())
+	    error_at (input_location,
+		      "exporting namespace with internal linkage");
+	}
       if (module_purview_p ())
 	DECL_MODULE_PURVIEW_P (ns) = true;
 

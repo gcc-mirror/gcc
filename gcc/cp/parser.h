@@ -312,8 +312,12 @@ struct GTY(()) cp_parser {
 
   /* TRUE if the declaration we are parsing is part of a
      linkage-specification of the form `extern string-literal
-     declaration'.  */
+     name-declaration'.  */
   bool in_unbraced_linkage_specification_p;
+
+  /* TRUE if the declaration we are parsing is part of an
+     export-declaration of the form 'export name-declaration'.  */
+  bool in_unbraced_export_declaration_p;
 
   /* TRUE if we are presently parsing a declarator, after the
      direct-declarator.  */
