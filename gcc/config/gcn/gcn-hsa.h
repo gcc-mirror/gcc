@@ -107,6 +107,7 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 		  "%{" NO_XNACK XNACKOPT "} " \
 		  "%{" NO_SRAM_ECC SRAMOPT "} " \
 		  "%{march=gfx1030|march=gfx1100:-mattr=+wavefrontsize64} " \
+		  "%{march=gfx1030|march=gfx1100:-mattr=+cumode} " \
 		  "-filetype=obj"
 #define LINK_SPEC "--pie --export-dynamic"
 #define LIB_SPEC  "-lc"
