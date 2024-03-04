@@ -27721,11 +27721,20 @@ cp_parser_class_head (cp_parser* parser,
                          class_head_start_location,
                          get_finish (type_start_token->location));
       rich_location richloc (line_table, reported_loc);
-      richloc.add_fixit_insert_before (class_head_start_location,
-                                       "template <> ");
-      error_at (&richloc,
-		"an explicit specialization must be preceded by"
-		" %<template <>%>");
+      if (processing_explicit_instantiation)
+	{
+	  richloc.add_fixit_insert_before ("<> ");
+	  error_at (&richloc,
+		    "an explicit instantiation cannot have a definition;"
+		    " use %<template <>%> to declare a specialization");
+	}
+      else
+	{
+	  richloc.add_fixit_insert_before ("template <> ");
+	  error_at (&richloc,
+		    "an explicit specialization must be preceded by"
+		    " %<template <>%>");
+	}
       invalid_explicit_specialization_p = true;
       /* Take the same action that would have been taken by
 	 cp_parser_explicit_specialization.  */
