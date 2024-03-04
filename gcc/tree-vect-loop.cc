@@ -6066,20 +6066,32 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
   stmt_vec_info single_live_out_stmt[] = { stmt_info };
   array_slice<const stmt_vec_info> live_out_stmts = single_live_out_stmt;
-  if (slp_reduc)
-    /* All statements produce live-out values.  */
-    live_out_stmts = SLP_TREE_SCALAR_STMTS (slp_node);
-  else if (slp_node)
+  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+      && loop_exit != LOOP_VINFO_IV_EXIT (loop_vinfo)
+      /* ???  We should fend this off earlier.  For conversions we create
+	 multiple epilogues, one dead.  */
+      && stmt_info == reduc_info->reduc_def)
     {
-      /* The last statement in the reduction chain produces the live-out
-	 value.  Note SLP optimization can shuffle scalar stmts to
-	 optimize permutations so we have to search for the last stmt.  */
-      for (k = 0; k < group_size; ++k)
-	if (!REDUC_GROUP_NEXT_ELEMENT (SLP_TREE_SCALAR_STMTS (slp_node)[k]))
-	  {
-	    single_live_out_stmt[0] = SLP_TREE_SCALAR_STMTS (slp_node)[k];
-	    break;
-	  }
+      gcc_assert (!slp_node);
+      single_live_out_stmt[0] = reduc_info;
+    }
+  else
+    {
+      if (slp_reduc)
+	/* All statements produce live-out values.  */
+	live_out_stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+      else if (slp_node)
+	{
+	  /* The last statement in the reduction chain produces the live-out
+	     value.  Note SLP optimization can shuffle scalar stmts to
+	     optimize permutations so we have to search for the last stmt.  */
+	  for (k = 0; k < group_size; ++k)
+	    if (!REDUC_GROUP_NEXT_ELEMENT (SLP_TREE_SCALAR_STMTS (slp_node)[k]))
+	      {
+		single_live_out_stmt[0] = SLP_TREE_SCALAR_STMTS (slp_node)[k];
+		break;
+	      }
+	}
     }
 
   unsigned vec_num;
