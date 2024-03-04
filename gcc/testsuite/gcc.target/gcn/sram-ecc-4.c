@@ -18,4 +18,4 @@ f ()
     a[n] = b[n];
 }
 
-/* { dg-final { scan-assembler "zero_extendv64hiv64si2" } } */
+/* { dg-final { scan-assembler "(\\\*zero_extendv64hiv64si_sdwa|\\\*zero_extendv64hiv64si_shift)" } } */
