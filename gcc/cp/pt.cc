@@ -10533,7 +10533,7 @@ lookup_and_finish_template_variable (tree templ, tree targs,
   if (var == error_mark_node)
     return error_mark_node;
   var = finish_template_variable (var, complain);
-  mark_used (var);
+  mark_used (var, complain);
   return var;
 }
 
