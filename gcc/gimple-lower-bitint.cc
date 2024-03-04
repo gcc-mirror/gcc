@@ -620,7 +620,7 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
   else if (TREE_CODE (var) == MEM_REF && tree_fits_uhwi_p (idx))
     {
       ret
-	= build2 (MEM_REF, ltype, TREE_OPERAND (var, 0),
+	= build2 (MEM_REF, ltype, unshare_expr (TREE_OPERAND (var, 0)),
 		  size_binop (PLUS_EXPR, TREE_OPERAND (var, 1),
 			      build_int_cst (TREE_TYPE (TREE_OPERAND (var, 1)),
 					     tree_to_uhwi (idx)
@@ -5342,7 +5342,7 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 		      = build_qualified_type (ltype,
 					      TYPE_QUALS (ltype)
 					      | ENCODE_QUAL_ADDR_SPACE (as));
-		  rhs1 = build1 (VIEW_CONVERT_EXPR, ltype, mem);
+		  rhs1 = build1 (VIEW_CONVERT_EXPR, ltype, unshare_expr (mem));
 		  gimple_assign_set_rhs1 (stmt, rhs1);
 		}
 	      else
