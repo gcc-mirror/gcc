@@ -3701,6 +3701,14 @@ bitfields_to_lower_p (class loop *loop,
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 
+	      if (TREE_THIS_VOLATILE (op))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "\t Bitfield NO OK to lower,"
+					" the access is volatile.\n");
+		  return false;
+		}
+
 	      if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4031,18 +4039,25 @@ pass_if_conversion::execute (function *fun)
   if (todo & TODO_update_ssa_any)
     update_ssa (todo & TODO_update_ssa_any);
 
-  /* If if-conversion elided the loop fall back to the original one.  */
+  /* If if-conversion elided the loop fall back to the original one.  Likewise
+     if the loops are not nested in the same outer loop.  */
   for (unsigned i = 0; i < preds.length (); ++i)
     {
       gimple *g = preds[i];
       if (!gimple_bb (g))
 	continue;
-      unsigned ifcvt_loop = tree_to_uhwi (gimple_call_arg (g, 0));
-      unsigned orig_loop = tree_to_uhwi (gimple_call_arg (g, 1));
-      if (!get_loop (fun, ifcvt_loop) || !get_loop (fun, orig_loop))
+      auto ifcvt_loop = get_loop (fun, tree_to_uhwi (gimple_call_arg (g, 0)));
+      auto orig_loop = get_loop (fun, tree_to_uhwi (gimple_call_arg (g, 1)));
+      if (!ifcvt_loop || !orig_loop)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "If-converted loop vanished\n");
+	  fold_loop_internal_call (g, boolean_false_node);
+	}
+      else if (loop_outer (ifcvt_loop) != loop_outer (orig_loop))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "If-converted loop in different outer loop\n");
 	  fold_loop_internal_call (g, boolean_false_node);
 	}
     }
