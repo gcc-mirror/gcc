@@ -1,3 +1,9 @@
+2024-03-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/101737
+	* config/sh/sh.c (sh_is_nott_insn): Handle case where the input
+	is not an insn, but e.g. a code label.
+
 2024-02-27  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
