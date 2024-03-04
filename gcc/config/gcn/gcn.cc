@@ -4932,8 +4932,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       }
     case GCN_BUILTIN_FIRST_CALL_THIS_THREAD_P:
       {
-	/* Stash a marker in the unused upper 16 bits of s[0:1] to indicate
-	   whether it was the first call.  */
+	/* Stash a marker in the unused upper 16 bits of QUEUE_PTR_ARG to
+	   indicate whether it was the first call.  */
 	rtx result = gen_reg_rtx (BImode);
 	emit_move_insn (result, const0_rtx);
 	if (cfun->machine->args.reg[QUEUE_PTR_ARG] >= 0)
