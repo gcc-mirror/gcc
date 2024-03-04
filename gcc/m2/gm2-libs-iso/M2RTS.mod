@@ -45,20 +45,7 @@ CONST
 TYPE
    PtrToChar = POINTER TO CHAR ;
 
-   ProcedureChain = POINTER TO RECORD
-                                  p   : PROC ;
-                                  prev,
-                                  next: ProcedureChain ;
-                                END ;
-
-   ProcedureList = RECORD
-                      head, tail: ProcedureChain
-                   END ;
-
-
 VAR
-   InitialProc,
-   TerminateProc      : ProcedureList ;
    ExitValue          : INTEGER ;
    isTerminating,
    isHalting,
@@ -122,28 +109,13 @@ END RequestDependant ;
 
 
 (*
-   ExecuteReverse - execute the procedure associated with procptr
-                    and then proceed to try and execute all previous
-                    procedures in the chain.
-*)
-
-PROCEDURE ExecuteReverse (procptr: ProcedureChain) ;
-BEGIN
-   WHILE procptr # NIL DO
-      procptr^.p ;  (* Invoke the procedure.  *)
-      procptr := procptr^.prev
-   END
-END ExecuteReverse ;
-
-
-(*
    ExecuteTerminationProcedures - calls each installed termination procedure
                                   in reverse order.
 *)
 
 PROCEDURE ExecuteTerminationProcedures ;
 BEGIN
-   ExecuteReverse (TerminateProc.tail)
+   M2Dependent.ExecuteTerminationProcedures
 END ExecuteTerminationProcedures ;
 
 
@@ -154,32 +126,8 @@ END ExecuteTerminationProcedures ;
 
 PROCEDURE ExecuteInitialProcedures ;
 BEGIN
-   ExecuteReverse (InitialProc.tail)
+   M2Dependent.ExecuteInitialProcedures
 END ExecuteInitialProcedures ;
-
-
-(*
-   AppendProc - append proc to the end of the procedure list
-                defined by proclist.
-*)
-
-PROCEDURE AppendProc (VAR proclist: ProcedureList; proc: PROC) : BOOLEAN ;
-VAR
-   pdes: ProcedureChain ;
-BEGIN
-   NEW (pdes) ;
-   WITH pdes^ DO
-      p := proc ;
-      prev := proclist.tail ;
-      next := NIL
-   END ;
-   IF proclist.head = NIL
-   THEN
-      proclist.head := pdes
-   END ;
-   proclist.tail := pdes ;
-   RETURN TRUE
-END AppendProc ;
 
 
 (*
@@ -192,7 +140,7 @@ END AppendProc ;
 
 PROCEDURE InstallTerminationProcedure (p: PROC) : BOOLEAN ;
 BEGIN
-   RETURN AppendProc (TerminateProc, p)
+   RETURN M2Dependent.InstallTerminationProcedure (p)
 END InstallTerminationProcedure ;
 
 
@@ -204,7 +152,7 @@ END InstallTerminationProcedure ;
 
 PROCEDURE InstallInitialProcedure (p: PROC) : BOOLEAN ;
 BEGIN
-   RETURN AppendProc (InitialProc, p)
+   RETURN M2Dependent.InstallInitialProcedure (p)
 END InstallInitialProcedure ;
 
 
@@ -626,24 +574,11 @@ END NoException ;
 
 
 (*
-   InitProcList - initialize the head and tail pointers to NIL.
-*)
-
-PROCEDURE InitProcList (VAR p: ProcedureList) ;
-BEGIN
-   p.head := NIL ;
-   p.tail := NIL
-END InitProcList ;
-
-
-(*
    Init -
 *)
 
 PROCEDURE Init ;
 BEGIN
-   InitProcList (InitialProc) ;
-   InitProcList (TerminateProc) ;
    ExitValue := 0 ;
    isHalting := FALSE ;
    CallExit := FALSE ;  (* default by calling abort *)
