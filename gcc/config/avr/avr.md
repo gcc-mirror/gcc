@@ -932,6 +932,55 @@
     operands[5] = gen_rtx_REG (HImode, REGNO (operands[3]));
   })
 
+
+;; Register alloc may expand a 3-operand arithmetic X = Y o CST as
+;;    X = CST
+;;    X o= Y
+;; where it may be better to instead:
+;;    X = Y
+;;    X o= CST
+;; because 1) the first insn may use MOVW for "X = Y", and 2) the
+;; operation may be more efficient when performed with a constant,
+;; for example when ADIW or SBIW can be used, or some bytes of
+;; the constant are 0x00 or 0xff.
+(define_peephole2
+  [(parallel [(set (match_operand:HISI 0 "d_register_operand")
+                   (match_operand:HISI 1 "const_int_operand"))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 0)
+                   (piaop:HISI (match_dup 0)
+                               (match_operand:HISI 2 "register_operand")))
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])]
+  "! reg_overlap_mentioned_p (operands[0], operands[2])"
+  [(parallel [(set (match_dup 0)
+                   (match_dup 2))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 0)
+                   (piaop:HISI (match_dup 0)
+                               (match_dup 1)))
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])])
+
+;; Same, but just for plus:HI without a scratch:QI.
+(define_peephole2
+  [(parallel [(set (match_operand:HI 0 "d_register_operand")
+                   (match_operand:HI 1 "const_int_operand"))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 0)
+                   (plus:HI (match_dup 0)
+                            (match_operand:HI 2 "register_operand")))
+              (clobber (reg:CC REG_CC))])]
+  "! reg_overlap_mentioned_p (operands[0], operands[2])"
+  [(parallel [(set (match_dup 0)
+                   (match_dup 2))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 0)
+                   (plus:HI (match_dup 0)
+                            (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+
 ;; For LPM loads from AS1 we split
 ;;    R = *Z
 ;; to
@@ -1644,9 +1693,9 @@
   [(set_attr "length" "6")
    (set_attr "adjust_len" "addto_sp")])
 
-;; "*addhi3"
-;; "*addhq3" "*adduhq3"
-;; "*addha3" "*adduha3"
+;; "*addhi3_split"
+;; "*addhq3_split"  "*adduhq3_split"
+;; "*addha3_split"  "*adduha3_split"
 (define_insn_and_split "*add<mode>3_split"
   [(set (match_operand:ALL2 0 "register_operand"                   "=??r,d,!w    ,d")
         (plus:ALL2 (match_operand:ALL2 1 "register_operand"          "%0,0,0     ,0")
@@ -1661,6 +1710,9 @@
   ""
   [(set_attr "isa" "*,*,adiw,*")])
 
+;; "*addhi3"
+;; "*addhq3"  "*adduhq3"
+;; "*addha3"  "*adduha3"
 (define_insn "*add<mode>3"
   [(set (match_operand:ALL2 0 "register_operand"                   "=??r,d,!w    ,d")
         (plus:ALL2 (match_operand:ALL2 1 "register_operand"          "%0,0,0     ,0")
@@ -1732,6 +1784,9 @@
               (clobber (match_dup 3))
               (clobber (reg:CC REG_CC))])])
 
+;; "*addhi3_clobber"
+;; "*addhq3_clobber"  "*adduhq3_clobber"
+;; "*addha3_clobber"  "*adduha3_clobber"
 (define_insn "*add<mode>3_clobber"
   [(set (match_operand:ALL2 0 "register_operand"            "=!w    ,d    ,r")
         (plus:ALL2 (match_operand:ALL2 1 "register_operand"  "%0    ,0    ,0")
