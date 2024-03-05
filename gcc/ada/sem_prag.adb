@@ -32978,8 +32978,7 @@ package body Sem_Prag is
          return Has_Discriminants (Typ) and then not Is_Constrained (Typ);
 
       elsif Is_Private_Type (Typ) then
-         return Has_Discriminants (Typ)
-           or else Has_Unknown_Discriminants (Typ);
+         return not Is_Constrained (Typ);
 
       else
          return False;
