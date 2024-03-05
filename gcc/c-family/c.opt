@@ -802,6 +802,10 @@ Wframe-address
 C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when __builtin_frame_address or __builtin_return_address is used unsafely.
 
+Wglobal-module
+C++ ObjC++ Var(warn_global_module) Warning Init(1)
+Warn about the global module fragment not containing only preprocessing directives.
+
 Wif-not-aligned
 C ObjC C++ ObjC++ Var(warn_if_not_aligned) Init(1) Warning
 Warn when the field in a struct is not aligned.

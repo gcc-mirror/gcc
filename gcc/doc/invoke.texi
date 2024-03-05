@@ -256,7 +256,7 @@ in the following sections.
 -Wdeprecated-copy -Wdeprecated-copy-dtor
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion
 -Weffc++ -Wno-elaborated-enum-base
--Wno-exceptions -Wextra-semi  -Wno-inaccessible-base
+-Wno-exceptions -Wextra-semi -Wno-global-module -Wno-inaccessible-base
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime
 -Winvalid-constexpr -Winvalid-imported-macros
 -Wno-invalid-offsetof  -Wno-literal-suffix
@@ -4773,6 +4773,12 @@ undefined behavior at runtime.  This warning is enabled by default.
 @opindex Wno-extra-semi
 @item -Wextra-semi @r{(C++, Objective-C++ only)}
 Warn about redundant semicolons after in-class function definitions.
+
+@opindex Wno-global-module
+@opindex Wglobal-module
+@item -Wno-global-module @r{(C++ and Objective-C++ only)}
+Disable the diagnostic for when the global module fragment of a module
+unit does not consist only of preprocessor directives.
 
 @opindex Winaccessible-base
 @opindex Wno-inaccessible-base
