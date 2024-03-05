@@ -56,3 +56,4 @@ int foo(void *data)
 /* { dg-final { scan-assembler-times "0x8\[\t \]+\[^\n\]*bpfcr_kind" 13 } } BPF_TYPE_EXISTS */
 /* { dg-final { scan-assembler-times "0x9\[\t \]+\[^\n\]*bpfcr_kind" 11 } } BPF_TYPE_SIZE */
 /* { dg-final { scan-assembler-times "0xc\[\t \]+\[^\n\]*bpfcr_kind" 13 } } BPF_TYPE_MATCHES */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \[(\"\]+0\[(\"\]+" 37 } } */

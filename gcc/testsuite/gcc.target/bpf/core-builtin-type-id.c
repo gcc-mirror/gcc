@@ -38,3 +38,4 @@ int foo(void *data)
 /* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bpfcr_type" 0  { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-times "0x6\[\t \]+\[^\n\]*bpfcr_kind" 13 } } BPF_TYPE_ID_LOCAL */
 /* { dg-final { scan-assembler-times "0x7\[\t \]+\[^\n\]*bpfcr_kind" 7 } } BPF_TYPE_ID_TARGET */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \[(\"\]+0\[(\"\]+" 20 } } */

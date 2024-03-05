@@ -299,8 +299,9 @@ bpf_core_reloc_add (const tree type, const char * section_name,
 
   /* Buffer the access string in the auxiliary strtab.  */
   bpfcr->bpfcr_astr_off = 0;
-  if (accessor != NULL)
-    bpfcr->bpfcr_astr_off = btf_ext_add_string (accessor);
+  gcc_assert (accessor != NULL);
+  bpfcr->bpfcr_astr_off = btf_ext_add_string (accessor);
+
   bpfcr->bpfcr_type = get_btf_id (ctf_lookup_tree_type (ctfc, type));
   bpfcr->bpfcr_insn_label = label;
   bpfcr->bpfcr_kind = kind;

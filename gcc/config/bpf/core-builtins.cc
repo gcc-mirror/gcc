@@ -205,7 +205,7 @@ struct cr_local
 /* Core Relocation Final data */
 struct cr_final
 {
-  char *str;
+  const char *str;
   tree type;
   enum btf_core_reloc_kind kind;
 };
@@ -868,8 +868,10 @@ process_enum_value (struct cr_builtins *data)
 	{
 	  if (TREE_VALUE (l) == expr)
 	    {
-	      ret.str = (char *) ggc_alloc_atomic ((index / 10) + 1);
-	      sprintf (ret.str, "%d", index);
+	      char *tmp = (char *) ggc_alloc_atomic ((index / 10) + 1);
+	      sprintf (tmp, "%d", index);
+	      ret.str = (const char *) tmp;
+
 	      break;
 	    }
 	  index++;
@@ -987,7 +989,7 @@ process_type (struct cr_builtins *data)
 	      || data->kind == BPF_RELO_TYPE_MATCHES);
 
   struct cr_final ret;
-  ret.str = NULL;
+  ret.str = ggc_strdup ("0");
   ret.type = data->type;
   ret.kind = data->kind;
 
