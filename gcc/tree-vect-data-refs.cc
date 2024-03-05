@@ -2290,8 +2290,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{
 		  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-		  nscalars = (STMT_SLP_TYPE (stmt_info)
-			      ? vf * DR_GROUP_SIZE (stmt_info) : vf);
+		  unsigned group_size = 1;
+		  if (STMT_SLP_TYPE (stmt_info)
+		      && STMT_VINFO_GROUPED_ACCESS (stmt_info))
+		    group_size = DR_GROUP_SIZE (stmt_info);
+		  nscalars = vf * group_size;
 		}
 
 	      /* Save info about DR in the hash table.  Also include peeling
