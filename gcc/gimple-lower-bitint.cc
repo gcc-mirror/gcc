@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "tree-switch-conversion.h"
 #include "ubsan.h"
+#include "stor-layout.h"
 #include "gimple-lower-bitint.h"
 
 /* Split BITINT_TYPE precisions in 4 categories.  Small _BitInt, where
@@ -212,6 +213,7 @@ mergeable_op (gimple *stmt)
     case BIT_NOT_EXPR:
     case SSA_NAME:
     case INTEGER_CST:
+    case BIT_FIELD_REF:
       return true;
     case LSHIFT_EXPR:
       {
@@ -435,6 +437,7 @@ struct bitint_large_huge
   tree handle_plus_minus (tree_code, tree, tree, tree);
   tree handle_lshift (tree, tree, tree);
   tree handle_cast (tree, tree, tree);
+  tree handle_bit_field_ref (tree, tree);
   tree handle_load (gimple *, tree);
   tree handle_stmt (gimple *, tree);
   tree handle_operand_addr (tree, gimple *, int *, int *);
@@ -1685,6 +1688,86 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
   return NULL_TREE;
 }
 
+/* Helper function for handle_stmt method, handle a BIT_FIELD_REF.  */
+
+tree
+bitint_large_huge::handle_bit_field_ref (tree op, tree idx)
+{
+  if (tree_fits_uhwi_p (idx))
+    {
+      if (m_first)
+	m_data.safe_push (NULL);
+      ++m_data_cnt;
+      unsigned HOST_WIDE_INT sz = tree_to_uhwi (TYPE_SIZE (m_limb_type));
+      tree bfr = build3 (BIT_FIELD_REF, m_limb_type,
+			 TREE_OPERAND (op, 0),
+			 TYPE_SIZE (m_limb_type),
+			 size_binop (PLUS_EXPR, TREE_OPERAND (op, 2),
+				     bitsize_int (tree_to_uhwi (idx) * sz)));
+      tree r = make_ssa_name (m_limb_type);
+      gimple *g = gimple_build_assign (r, bfr);
+      insert_before (g);
+      tree type = limb_access_type (TREE_TYPE (op), idx);
+      if (!useless_type_conversion_p (type, m_limb_type))
+	r = add_cast (type, r);
+      return r;
+    }
+  tree var;
+  if (m_first)
+    {
+      unsigned HOST_WIDE_INT sz = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (op)));
+      machine_mode mode;
+      tree type, bfr;
+      if (bitwise_mode_for_size (sz).exists (&mode)
+	  && known_eq (GET_MODE_BITSIZE (mode), sz))
+	type = bitwise_type_for_mode (mode);
+      else
+	{
+	  mode = VOIDmode;
+	  type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (op, 0)));
+	}
+      if (TYPE_ALIGN (type) < TYPE_ALIGN (TREE_TYPE (op)))
+	type = build_aligned_type (type, TYPE_ALIGN (TREE_TYPE (op)));
+      var = create_tmp_var (type);
+      TREE_ADDRESSABLE (var) = 1;
+      gimple *g;
+      if (mode != VOIDmode)
+	{
+	  bfr = build3 (BIT_FIELD_REF, type, TREE_OPERAND (op, 0),
+			TYPE_SIZE (type), TREE_OPERAND (op, 2));
+	  g = gimple_build_assign (make_ssa_name (type),
+				   BIT_FIELD_REF, bfr);
+	  gimple_set_location (g, m_loc);
+	  gsi_insert_after (&m_init_gsi, g, GSI_NEW_STMT);
+	  bfr = gimple_assign_lhs (g);
+	}
+      else
+	bfr = TREE_OPERAND (op, 0);
+      g = gimple_build_assign (var, bfr);
+      gimple_set_location (g, m_loc);
+      gsi_insert_after (&m_init_gsi, g, GSI_NEW_STMT);
+      if (mode == VOIDmode)
+	{
+	  unsigned HOST_WIDE_INT nelts
+	    = CEIL (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (op))), limb_prec);
+	  tree atype = build_array_type_nelts (m_limb_type, nelts);
+	  var = build2 (MEM_REF, atype, build_fold_addr_expr (var),
+			build_int_cst (build_pointer_type (type),
+				       tree_to_uhwi (TREE_OPERAND (op, 2))
+				       / BITS_PER_UNIT));
+	}
+      m_data.safe_push (var);
+    }
+  else
+    var = unshare_expr (m_data[m_data_cnt]);
+  ++m_data_cnt;
+  var = limb_access (TREE_TYPE (op), var, idx, false);
+  tree r = make_ssa_name (m_limb_type);
+  gimple *g = gimple_build_assign (r, var);
+  insert_before (g);
+  return r;
+}
+
 /* Add a new EH edge from SRC to EH_EDGE->dest, where EH_EDGE
    is an older EH edge, and except for virtual PHIs duplicate the
    PHI argument from the EH_EDGE to the new EH edge.  */
@@ -2019,6 +2102,8 @@ bitint_large_huge::handle_stmt (gimple *stmt, tree idx)
 	  return handle_cast (TREE_TYPE (gimple_assign_lhs (stmt)),
 			      TREE_OPERAND (gimple_assign_rhs1 (stmt), 0),
 			      idx);
+	case BIT_FIELD_REF:
+	  return handle_bit_field_ref (gimple_assign_rhs1 (stmt), idx);
 	default:
 	  break;
 	}
