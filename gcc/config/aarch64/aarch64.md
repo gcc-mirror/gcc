@@ -553,8 +553,7 @@
 ;; The RTL mapping therefore applies at LD1 granularity, rather than
 ;; being broken down into individual types of load.
 (define_attr "stride_type"
-  "none,ld1_consecutive,ld1_strided,st1_consecutive,st1_strided,
-   luti_consecutive,luti_strided"
+  "none,ld1_consecutive,ld1_strided,st1_consecutive,st1_strided"
   (const_string "none"))
 
 ;; Attribute used to identify load pair and store pair instructions.

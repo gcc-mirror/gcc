@@ -1060,8 +1060,7 @@ is_stride_candidate (rtx_insn *insn)
     return false;
 
   auto stride_type = get_attr_stride_type (insn);
-  return (stride_type == STRIDE_TYPE_LUTI_CONSECUTIVE
-	  || stride_type == STRIDE_TYPE_LD1_CONSECUTIVE
+  return (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE
 	  || stride_type == STRIDE_TYPE_ST1_CONSECUTIVE);
 }
 
@@ -3212,8 +3211,7 @@ early_ra::maybe_convert_to_strided_access (rtx_insn *insn)
   auto stride_type = get_attr_stride_type (insn);
   rtx pat = PATTERN (insn);
   rtx op;
-  if (stride_type == STRIDE_TYPE_LUTI_CONSECUTIVE
-      || stride_type == STRIDE_TYPE_LD1_CONSECUTIVE)
+  if (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE)
     op = SET_DEST (pat);
   else if (stride_type == STRIDE_TYPE_ST1_CONSECUTIVE)
     op = XVECEXP (SET_SRC (pat), 0, 1);
@@ -3262,20 +3260,6 @@ early_ra::maybe_convert_to_strided_access (rtx_insn *insn)
       // ??? Why doesn't the generator get this right?
       XVECEXP (SET_SRC (pat), 0, XVECLEN (SET_SRC (pat), 0) - 1)
 	= *recog_data.dup_loc[0];
-    }
-  else if (stride_type == STRIDE_TYPE_LUTI_CONSECUTIVE)
-    {
-      auto bits = INTVAL (XVECEXP (SET_SRC (pat), 0, 4));
-      if (range.count == 2)
-	pat = gen_aarch64_sme_lut_strided2 (bits, single_mode,
-					    regs[0], regs[1],
-					    recog_data.operand[1],
-					    recog_data.operand[2]);
-      else
-	pat = gen_aarch64_sme_lut_strided4 (bits, single_mode,
-					    regs[0], regs[1], regs[2], regs[3],
-					    recog_data.operand[1],
-					    recog_data.operand[2]);
     }
   else
     gcc_unreachable ();
