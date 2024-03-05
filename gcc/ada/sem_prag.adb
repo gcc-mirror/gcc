@@ -32971,13 +32971,10 @@ package body Sem_Prag is
       if Is_Tagged_Type (Typ) then
          return True;
 
-      elsif Is_Array_Type (Typ) then
-         return not Is_Constrained (Typ);
-
-      elsif Is_Record_Type (Typ) then
-         return Has_Discriminants (Typ) and then not Is_Constrained (Typ);
-
-      elsif Is_Private_Type (Typ) then
+      elsif Is_Array_Type (Typ)
+        or else Is_Record_Type (Typ)
+        or else Is_Private_Type (Typ)
+      then
          return not Is_Constrained (Typ);
 
       else
