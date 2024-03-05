@@ -251,6 +251,20 @@ package System.Soft_Links is
 
    Get_Stack_Info : Get_Stack_Access_Call := Get_Stack_Info_NT'Access;
 
+   ----------------------
+   -- Locking Soft-Links --
+   ----------------------
+
+   procedure Null_Set_Address (Addr : Address) is null;
+
+   --  Soft-Links are used for procedures that manipulate locks to avoid
+   --  dragging the tasking run time when using access-to-controlled types.
+
+   Initialize_RTS_Lock : Set_Address_Call := Null_Set_Address'Access;
+   Finalize_RTS_Lock   : Set_Address_Call := Null_Set_Address'Access;
+   Acquire_RTS_Lock    : Set_Address_Call := Null_Set_Address'Access;
+   Release_RTS_Lock    : Set_Address_Call := Null_Set_Address'Access;
+
    --------------------------
    -- Master_Id Soft-Links --
    --------------------------

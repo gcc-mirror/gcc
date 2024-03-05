@@ -32,8 +32,7 @@
 with Ada.Exceptions;           use Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 
-with System.Atomic_Primitives; use System.Atomic_Primitives;
-with System.Soft_Links;        use System.Soft_Links;
+with System.Soft_Links; use System.Soft_Links;
 
 package body System.Finalization_Primitives is
 
@@ -402,7 +401,7 @@ package body System.Finalization_Primitives is
       Collection.Head.Prev := Collection.Head'Unchecked_Access;
       Collection.Head.Next := Collection.Head'Unchecked_Access;
 
-      Collection.Lock := 0;
+      Initialize_RTS_Lock (Collection.Lock'Address);
    end Initialize;
 
    ---------------------
@@ -411,9 +410,7 @@ package body System.Finalization_Primitives is
 
    procedure Lock_Collection (Collection : in out Finalization_Collection) is
    begin
-      while Atomic_Test_And_Set (Collection.Lock'Address, Acquire) loop
-         null;
-      end loop;
+      Acquire_RTS_Lock (Collection.Lock'Address);
    end Lock_Collection;
 
    -------------------------------------
@@ -430,10 +427,8 @@ package body System.Finalization_Primitives is
    -----------------------
 
    procedure Unlock_Collection (Collection : in out Finalization_Collection) is
-      procedure Lock_Store is new Atomic_Store (Lock_Type);
-
    begin
-      Lock_Store (Collection.Lock'Address, 0, Release);
+      Release_RTS_Lock (Collection.Lock'Address);
    end Unlock_Collection;
 
 end System.Finalization_Primitives;

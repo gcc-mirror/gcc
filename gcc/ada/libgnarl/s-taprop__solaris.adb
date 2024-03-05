@@ -36,12 +36,12 @@
 
 with Interfaces.C;
 
-with System.Multiprocessors;
-with System.Tasking.Debug;
 with System.Interrupt_Management;
+with System.Multiprocessors;
 with System.OS_Constants;
 with System.OS_Primitives;
 with System.Task_Info;
+with System.Tasking.Debug;
 
 pragma Warnings (Off);
 with System.OS_Lib;
@@ -58,12 +58,14 @@ package body System.Task_Primitives.Operations is
    package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
 
-   use System.Tasking.Debug;
-   use System.Tasking;
    use Interfaces.C;
+
    use System.OS_Interface;
-   use System.Parameters;
+   use System.OS_Locks;
    use System.OS_Primitives;
+   use System.Parameters;
+   use System.Tasking;
+   use System.Tasking.Debug;
 
    ----------------
    -- Local Data --

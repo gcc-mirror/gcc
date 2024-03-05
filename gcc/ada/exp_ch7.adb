@@ -965,6 +965,12 @@ package body Exp_Ch7 is
       if Restriction_Active (No_Finalization) then
          return False;
 
+      --  The System.Finalization_Primitives unit must have been preloaded if
+      --  finalization is really required.
+
+      elsif not RTU_Loaded (System_Finalization_Primitives) then
+         return False;
+
       --  Do not consider C and C++ types since it is assumed that the non-Ada
       --  side will handle their cleanup.
 
@@ -8623,6 +8629,38 @@ package body Exp_Ch7 is
    begin
       return Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped;
    end Node_To_Be_Wrapped;
+
+   --------------------------------------
+   -- Preload_Finalization_Collection --
+   --------------------------------------
+
+   procedure Preload_Finalization_Collection (Compilation_Unit : Node_Id) is
+   begin
+      --  We can't call RTE (Finalization_Collection) for at least some
+      --  predefined units, because it would introduce cyclic dependences,
+      --  as the type is itself a controlled type.
+      --
+      --  It's only needed when finalization is involved in the unit, which
+      --  requires the presence of controlled or class-wide types in the unit
+      --  (see the Sem_Util.Needs_Finalization predicate for the rationale).
+      --  But controlled types are tagged or contain tagged (sub)components
+      --  so it is sufficient for the parser to detect the "interface" and
+      --  "tagged" keywords.
+      --
+      --  Don't do it if Finalization_Collection is unavailable in the runtime
+
+      if not In_Predefined_Unit (Compilation_Unit)
+        and then (Interface_Seen or else Tagged_Seen)
+        and then not No_Run_Time_Mode
+        and then RTE_Available (RE_Finalization_Collection)
+      then
+         declare
+            Ignore : constant Entity_Id := RTE (RE_Finalization_Collection);
+         begin
+            null;
+         end;
+      end if;
+   end Preload_Finalization_Collection;
 
    ----------------------------
    -- Store_Actions_In_Scope --

@@ -31,6 +31,7 @@
 
 with Ada.Finalization;
 
+with System.OS_Locks;
 with System.Storage_Elements;
 
 --  This package encapsulates the types and operations used by the compiler
@@ -251,9 +252,8 @@ private
       --  of a collection. The allocations must raise Program_Error. This may
       --  arise in a multitask environment.
 
-      Lock : Lock_Type;
-      pragma Atomic (Lock);
-      --  A spinlock to synchronize concurrent accesses to the collection
+      Lock : aliased System.OS_Locks.RTS_Lock;
+      --  A lock to synchronize concurrent accesses to the collection
    end record;
 
    --  This operation is very simple and thus can be performed in line

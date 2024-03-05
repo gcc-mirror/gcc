@@ -4694,6 +4694,8 @@ package body Exp_Ch4 is
                Build_Allocate_Deallocate_Proc (Temp_Decl);
                Rewrite (N, New_Occurrence_Of (Temp, Loc));
                Analyze_And_Resolve (N, PtrT);
+
+               Apply_Predicate_Check (N, Dtyp, Deref => True);
             end;
 
          --  Or else build the fully-fledged initialization if need be

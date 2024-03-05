@@ -41,8 +41,9 @@ pragma Style_Checks (All_Checks);
 
 with Ada.Exceptions;
 
-with System.Task_Primitives.Operations;
+with System.OS_Locks;
 with System.Soft_Links.Tasking;
+with System.Task_Primitives.Operations;
 
 with System.Soft_Links;
 --  Used for the non-tasking routines (*_NT) that refer to global data. They
@@ -63,7 +64,7 @@ package body System.Tasking.Restricted.Stages is
    Tasks_Activation_Chain : Task_Id;
    --  Chain of all the tasks to activate
 
-   Global_Task_Lock : aliased System.Task_Primitives.RTS_Lock;
+   Global_Task_Lock : aliased System.OS_Locks.RTS_Lock;
    --  This is a global lock; it is used to execute in mutual exclusion
    --  from all other tasks. It is only used by Task_Lock and Task_Unlock.
 

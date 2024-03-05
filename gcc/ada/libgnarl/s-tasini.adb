@@ -33,10 +33,11 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram alpha ordering check, since we group soft link bodies
 --  and dummy soft link bodies together separately in this unit.
 
-with System.Task_Primitives;
-with System.Task_Primitives.Operations;
+with System.OS_Locks;
 with System.Soft_Links;
 with System.Soft_Links.Tasking;
+with System.Task_Primitives;
+with System.Task_Primitives.Operations;
 with System.Tasking.Debug;
 with System.Tasking.Task_Attributes;
 
@@ -48,13 +49,14 @@ pragma Unreferenced (System.Secondary_Stack);
 
 package body System.Tasking.Initialization is
 
-   package STPO renames System.Task_Primitives.Operations;
+   package SOL  renames System.OS_Locks;
    package SSL  renames System.Soft_Links;
+   package STPO renames System.Task_Primitives.Operations;
 
    use Parameters;
    use Task_Primitives.Operations;
 
-   Global_Task_Lock : aliased System.Task_Primitives.RTS_Lock;
+   Global_Task_Lock : aliased SOL.RTS_Lock;
    --  This is a global lock; it is used to execute in mutual exclusion from
    --  all other tasks. It is only used by Task_Lock, Task_Unlock, and
    --  Final_Task_Unlock.
@@ -87,6 +89,18 @@ package body System.Tasking.Initialization is
 
    function Task_Name return String;
    --  Returns current task's name
+
+   procedure Initialize_RTS_Lock (Addr : Address);
+   --  Initialize the RTS lock at Addr
+
+   procedure Finalize_RTS_Lock (Addr : Address);
+   --  Finalize the RTS lock at Addr
+
+   procedure Acquire_RTS_Lock (Addr : Address);
+   --  Acquire the RTS lock at Addr
+
+   procedure Release_RTS_Lock (Addr : Address);
+   --  Release the RTS lock at Addr
 
    ------------------------
    --  Local Subprograms --
@@ -220,6 +234,54 @@ package body System.Tasking.Initialization is
       return STPO.Self.Common.Compiler_Data.Current_Excep'Access;
    end Get_Current_Excep;
 
+   -------------------------
+   -- Initialize_RTS_Lock --
+   -------------------------
+
+   procedure Initialize_RTS_Lock (Addr : Address) is
+      Lock : aliased SOL.RTS_Lock;
+      for Lock'Address use Addr;
+
+   begin
+      Initialize_Lock (Lock'Unchecked_Access, PO_Level);
+   end Initialize_RTS_Lock;
+
+   -----------------------
+   -- Finalize_RTS_Lock --
+   -----------------------
+
+   procedure Finalize_RTS_Lock (Addr : Address) is
+      Lock : aliased SOL.RTS_Lock;
+      for Lock'Address use Addr;
+
+   begin
+      Finalize_Lock (Lock'Unchecked_Access);
+   end Finalize_RTS_Lock;
+
+   ----------------------
+   -- Acquire_RTS_Lock --
+   ----------------------
+
+   procedure Acquire_RTS_Lock (Addr : Address) is
+      Lock : aliased SOL.RTS_Lock;
+      for Lock'Address use Addr;
+
+   begin
+      Write_Lock (Lock'Unchecked_Access);
+   end Acquire_RTS_Lock;
+
+   ----------------------
+   -- Release_RTS_Lock --
+   ----------------------
+
+   procedure Release_RTS_Lock (Addr : Address) is
+      Lock : aliased SOL.RTS_Lock;
+      for Lock'Address use Addr;
+
+   begin
+      Unlock (Lock'Unchecked_Access);
+   end Release_RTS_Lock;
+
    -----------------------
    -- Do_Pending_Action --
    -----------------------
@@ -351,6 +413,11 @@ package body System.Tasking.Initialization is
       SSL.Check_Abort_Status := Check_Abort_Status'Access;
       SSL.Task_Name          := Task_Name'Access;
       SSL.Get_Current_Excep  := Get_Current_Excep'Access;
+
+      SSL.Initialize_RTS_Lock := Initialize_RTS_Lock'Access;
+      SSL.Finalize_RTS_Lock   := Finalize_RTS_Lock'Access;
+      SSL.Acquire_RTS_Lock    := Acquire_RTS_Lock'Access;
+      SSL.Release_RTS_Lock    := Release_RTS_Lock'Access;
 
       --  Initialize the tasking soft links (if not done yet) that are common
       --  to the full and the restricted run times.

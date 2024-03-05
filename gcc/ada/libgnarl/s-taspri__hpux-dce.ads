@@ -34,17 +34,13 @@
 --  This package provides low-level support for most tasking features
 
 with System.OS_Interface;
+with System.OS_Locks;
 
 package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
    --  Should be used for implementation of protected objects
-
-   type RTS_Lock is limited private;
-   --  Should be used inside the runtime system. The difference between Lock
-   --  and the RTS_Lock is that the later one serves only as a semaphore so
-   --  that do not check for ceiling violations.
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control
@@ -67,12 +63,10 @@ package System.Task_Primitives is
 
 private
    type Lock is record
-      L              : aliased System.OS_Interface.pthread_mutex_t;
+      L              : aliased System.OS_Locks.RTS_Lock;
       Priority       : Integer;
       Owner_Priority : Integer;
    end record;
-
-   type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
 
    type Suspension_Object is record
       State   : Boolean;
@@ -84,7 +78,7 @@ private
       Waiting : Boolean;
       --  Flag showing if there is a task already suspended on this object
 
-      L : aliased System.OS_Interface.pthread_mutex_t;
+      L : aliased System.OS_Locks.RTS_Lock;
       --  Protection for ensuring mutual exclusion on the Suspension_Object
 
       CV : aliased System.OS_Interface.pthread_cond_t;
@@ -103,8 +97,9 @@ private
       --  are updated in atomic fashion.
 
       CV : aliased System.OS_Interface.pthread_cond_t;
+      --  Condition variable used to queue threads until condition is signaled
 
-      L : aliased RTS_Lock;
+      L : aliased System.OS_Locks.RTS_Lock;
       --  Protection for all components is lock L
    end record;
 

@@ -36,8 +36,9 @@
 
 package body System.Task_Primitives.Operations is
 
-   use System.Tasking;
+   use System.OS_Locks;
    use System.Parameters;
+   use System.Tasking;
 
    pragma Warnings (Off);
    --  Turn off warnings since so many unreferenced parameters

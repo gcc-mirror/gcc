@@ -30,8 +30,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Style_Checks ("M32766");
---  Allow long lines
+pragma Style_Checks ("N");
+--  Disable style checks
 
 */
 

@@ -2,13 +2,13 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---                 S Y S T E M . T A S K _ P R I M I T I V E S              --
+--                       S Y S T E M . O S _ L O C K S                      --
 --                                                                          --
---                                  S p e c                                 --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1991-2024, Free Software Foundation, Inc.         --
+--            Copyright (C) 2024, Free Software Foundation, Inc.            --
 --                                                                          --
--- GNARL is free software; you can  redistribute it  and/or modify it under --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
@@ -29,30 +29,56 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a no tasking version of this package
+--  This is a Solaris (native) version of this package
 
-with System.OS_Locks;
+with Interfaces.C;
 
-package System.Task_Primitives is
+package System.OS_Locks is
    pragma Preelaborate;
 
-   type Lock is new Integer;
+   type mutex_t is limited private;
 
-   type Suspension_Object is new Integer;
+   type Private_Task_Serial_Number is mod 2 ** Long_Long_Integer'Size;
+   --  Used to give each task a unique serial number
 
-   type Task_Body_Access is access procedure;
+   type Owner_Int is new Integer;
+   for Owner_Int'Alignment use Standard'Maximum_Alignment;
 
-   type Private_Data is limited record
-      Thread : aliased Integer;
-      CV     : aliased Integer;
-      L      : aliased System.OS_Locks.RTS_Lock;
+   type Owner_ID is access all Owner_Int;
+
+   function To_Owner_ID is
+     new Ada.Unchecked_Conversion (System.Address, Owner_ID);
+
+   type RTS_Lock;
+   type RTS_Lock_Ptr is access all RTS_Lock;
+
+   type RTS_Lock is record
+      L              : aliased mutex_t;
+      Ceiling        : System.Any_Priority := System.Any_Priority'First;
+      Saved_Priority : System.Any_Priority := System.Any_Priority'First;
+      Owner          : Owner_ID;
+      Next           : RTS_Lock_Ptr;
+      Level          : Private_Task_Serial_Number := 0;
+      Buddy          : Owner_ID;
+      Frozen         : Boolean := False;
    end record;
 
-   subtype Task_Address is System.Address;
-   Task_Address_Size : constant := Standard'Address_Size;
-   --  Type used for task addresses and its size
+private
 
-   Alternate_Stack_Size : constant := 0;
-   --  No alternate signal stack is used on this platform
+   type array_type_9 is array (0 .. 3) of unsigned_char;
+   type record_type_3 is record
+      flag  : array_type_9;
+      Xtype : unsigned_long;
+   end record;
+   pragma Convention (C, record_type_3);
 
-end System.Task_Primitives;
+   type upad64_t is new Interfaces.Unsigned_64;
+
+   type mutex_t is record
+      flags : record_type_3;
+      lock  : upad64_t;
+      data  : upad64_t;
+   end record;
+  pragma Convention (C, mutex_t);
+
+end System.OS_Locks;

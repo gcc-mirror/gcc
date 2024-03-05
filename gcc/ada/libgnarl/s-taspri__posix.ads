@@ -35,17 +35,13 @@
 --  Note: this file can only be used for POSIX compliant systems
 
 with System.OS_Interface;
+with System.OS_Locks;
 
 package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
    --  Should be used for implementation of protected objects
-
-   type RTS_Lock is limited private;
-   --  Should be used inside the runtime system. The difference between Lock
-   --  and the RTS_Lock is that the latter serves only as a semaphore so that
-   --  we do not check for ceiling violations.
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control
@@ -68,11 +64,9 @@ package System.Task_Primitives is
 
 private
 
-   type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
-
    type Lock is record
       RW : aliased System.OS_Interface.pthread_rwlock_t;
-      WO : aliased RTS_Lock;
+      WO : aliased System.OS_Locks.RTS_Lock;
    end record;
 
    type Suspension_Object is record
@@ -85,7 +79,7 @@ private
       Waiting : Boolean;
       --  Flag showing if there is a task already suspended on this object
 
-      L : aliased RTS_Lock;
+      L : aliased System.OS_Locks.RTS_Lock;
       --  Protection for ensuring mutual exclusion on the Suspension_Object
 
       CV : aliased System.OS_Interface.pthread_cond_t;
@@ -107,9 +101,9 @@ private
       --  On targets where lwp is not relevant, this is equivalent to Thread.
 
       CV : aliased System.OS_Interface.pthread_cond_t;
-      --  Should be commented ??? (in all versions of taspri)
+      --  Condition variable used to queue threads until condition is signaled
 
-      L : aliased RTS_Lock;
+      L : aliased System.OS_Locks.RTS_Lock;
       --  Protection for all components is lock L
    end record;
 

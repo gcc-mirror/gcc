@@ -2,13 +2,13 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---                 S Y S T E M . T A S K _ P R I M I T I V E S              --
+--                       S Y S T E M . O S _ L O C K S                      --
 --                                                                          --
---                                  S p e c                                 --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1991-2024, Free Software Foundation, Inc.         --
+--            Copyright (C) 2024, Free Software Foundation, Inc.            --
 --                                                                          --
--- GNARL is free software; you can  redistribute it  and/or modify it under --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
@@ -31,28 +31,9 @@
 
 --  This is a no tasking version of this package
 
-with System.OS_Locks;
-
-package System.Task_Primitives is
+package System.OS_Locks is
    pragma Preelaborate;
 
-   type Lock is new Integer;
+   type RTS_Lock is new Boolean;
 
-   type Suspension_Object is new Integer;
-
-   type Task_Body_Access is access procedure;
-
-   type Private_Data is limited record
-      Thread : aliased Integer;
-      CV     : aliased Integer;
-      L      : aliased System.OS_Locks.RTS_Lock;
-   end record;
-
-   subtype Task_Address is System.Address;
-   Task_Address_Size : constant := Standard'Address_Size;
-   --  Type used for task addresses and its size
-
-   Alternate_Stack_Size : constant := 0;
-   --  No alternate signal stack is used on this platform
-
-end System.Task_Primitives;
+end System.OS_Locks;

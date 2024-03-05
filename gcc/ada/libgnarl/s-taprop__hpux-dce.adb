@@ -38,11 +38,11 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
 
-with System.Tasking.Debug;
 with System.Interrupt_Management;
 with System.OS_Constants;
 with System.OS_Primitives;
 with System.Task_Primitives.Interrupt_Operations;
+with System.Tasking.Debug;
 
 pragma Warnings (Off);
 with System.Interrupt_Management.Operations;
@@ -60,12 +60,14 @@ package body System.Task_Primitives.Operations is
    package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
 
-   use System.Tasking.Debug;
-   use System.Tasking;
    use Interfaces.C;
+
    use System.OS_Interface;
-   use System.Parameters;
+   use System.OS_Locks;
    use System.OS_Primitives;
+   use System.Parameters;
+   use System.Tasking;
+   use System.Tasking.Debug;
 
    package PIO renames System.Task_Primitives.Interrupt_Operations;
 

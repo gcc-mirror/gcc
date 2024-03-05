@@ -652,6 +652,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-multip$(objext) \
   s-os_lib$(objext) \
   s-oscons$(objext) \
+  s-oslock$(objext) \
   s-osprim$(objext) \
   s-pack03$(objext) \
   s-pack05$(objext) \
@@ -831,6 +832,7 @@ a-intnam.ads<libgnarl/a-intnam__dummy.ads \
 s-inmaop.adb<libgnarl/s-inmaop__dummy.adb \
 s-intman.adb<libgnarl/s-intman__dummy.adb \
 s-osinte.ads<libgnarl/s-osinte__dummy.ads \
+s-oslock.ads<libgnat/s-oslock__dummy.ads \
 s-osprim.adb<libgnat/s-osprim__posix.adb \
 s-taprop.adb<libgnarl/s-taprop__dummy.adb \
 s-taspri.ads<libgnarl/s-taspri__dummy.ads
@@ -1097,6 +1099,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7%, $(target_cpu) $(targe
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
   s-osinte.ads<libgnarl/s-osinte__vxworks.ads \
   s-osinte.adb<libgnarl/s-osinte__vxworks.adb \
+  s-oslock.ads<libgnat/s-oslock__vxworks.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.ads<libgnat/s-parame__vxworks.ads \
   s-parame.adb<libgnat/s-parame__vxworks.adb \
@@ -1198,6 +1201,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks7%, $(target_cpu) $(target_vend
   s-inmaop.adb<libgnarl/s-inmaop__hwint.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
+  s-oslock.ads<libgnat/s-oslock__vxworks.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.ads<libgnat/s-parame__vxworks.ads \
   s-parame.adb<libgnat/s-parame__vxworks.adb \
@@ -1306,6 +1310,7 @@ ifeq ($(strip $(filter-out aarch64 arm wrs vxworks7%, $(target_cpu) $(target_ven
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
   s-osinte.adb<libgnarl/s-osinte__vxworks.adb \
   s-osinte.ads<libgnarl/s-osinte__vxworks.ads \
+  s-oslock.ads<libgnat/s-oslock__vxworks.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.ads<libgnat/s-parame__vxworks.ads \
   s-parame.adb<libgnat/s-parame__vxworks.adb \
@@ -1386,6 +1391,7 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux__android.ads \
   s-osinte.adb<libgnarl/s-osinte__android.adb \
   s-osinte.ads<libgnarl/s-osinte__android.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -1414,6 +1420,7 @@ ifeq ($(strip $(filter-out arm aarch64 %qnx,$(target_cpu) $(target_os))),)
   s-intman.adb<libgnarl/s-intman__qnx.adb \
   s-osinte.adb<libgnarl/s-osinte__qnx.adb \
   s-osinte.ads<libgnarl/s-osinte__qnx.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-qnx.ads<libgnarl/s-qnx.ads \
   s-taprop.adb<libgnarl/s-taprop__qnx.adb \
@@ -1461,6 +1468,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.adb<libgnarl/s-osinte__solaris.adb \
   s-osinte.ads<libgnarl/s-osinte__solaris.ads \
+  s-oslock.ads<libgnat/s-oslock__solaris.ads \
   s-osprim.adb<libgnat/s-osprim__solaris.adb \
   s-taprop.adb<libgnarl/s-taprop__solaris.adb \
   s-tasinf.adb<libgnarl/s-tasinf__solaris.adb \
@@ -1504,6 +1512,7 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.adb<libgnarl/s-osinte__solaris.adb \
   s-osinte.ads<libgnarl/s-osinte__solaris.ads \
+  s-oslock.ads<libgnat/s-oslock__solaris.ads \
   s-osprim.adb<libgnat/s-osprim__solaris.adb \
   s-taprop.adb<libgnarl/s-taprop__solaris.adb \
   s-tasinf.adb<libgnarl/s-tasinf__solaris.adb \
@@ -1577,6 +1586,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS += \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -1607,6 +1617,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(target_cpu) $(target_os))),)
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__kfreebsd-gnu.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -1637,6 +1648,7 @@ ifeq ($(strip $(filter-out %86 pc gnu,$(target_cpu) $(target_vendor) $(target_os
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__gnu.adb \
   s-osinte.ads<libgnarl/s-osinte__gnu.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -1656,6 +1668,7 @@ ifeq ($(strip $(filter-out %86 pc gnu,$(target_cpu) $(target_vendor) $(target_os
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
+# x86-64 kfreebsd
 ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
@@ -1663,6 +1676,7 @@ ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__kfreebsd-gnu.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -1694,6 +1708,7 @@ ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.adb<libgnarl/s-osinte__freebsd.adb \
   s-osinte.ads<libgnarl/s-osinte__freebsd.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -1723,6 +1738,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.adb<libgnarl/s-osinte__freebsd.adb \
   s-osinte.ads<libgnarl/s-osinte__freebsd.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -1753,6 +1769,7 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.adb<libgnarl/s-osinte__freebsd.adb \
   s-osinte.ads<libgnarl/s-osinte__freebsd.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -1785,6 +1802,7 @@ ifeq ($(strip $(filter-out %86_64 dragonfly%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.adb<libgnarl/s-osinte__dragonfly.adb \
   s-osinte.ads<libgnarl/s-osinte__dragonfly.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -1816,6 +1834,7 @@ ifeq ($(strip $(filter-out s390% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -1856,6 +1875,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux10%,$(target_cpu) $(target_vendor) $(tar
   s-osinte.adb<libgnarl/s-osinte__hpux-dce.adb \
   s-osinte.ads<libgnarl/s-osinte__hpux-dce.ads \
   s-parame.ads<libgnat/s-parame__hpux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__hpux-dce.adb \
   s-taspri.ads<libgnarl/s-taspri__hpux-dce.ads \
@@ -1875,6 +1895,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(target_cpu) $(target_vendor) $(tar
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__hpux.ads \
   s-parame.ads<libgnat/s-parame__hpux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-traceb.adb<libgnat/s-traceb__hpux.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
@@ -1900,6 +1921,7 @@ ifeq ($(strip $(filter-out ibm aix%,$(target_vendor) $(target_os))),)
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__aix.adb \
   s-osinte.ads<libgnarl/s-osinte__aix.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -1941,6 +1963,7 @@ ifeq ($(strip $(filter-out lynxos178%,$(target_os))),)
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__lynxos.adb \
   s-osinte.adb<libgnarl/s-osinte__lynxos178.adb \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.ads<libgnat/s-osprim__lynxos.ads \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__lynxos.ads \
@@ -1974,6 +1997,7 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   s-intman.ads<libgnarl/s-intman__rtems.ads \
   s-osinte.adb<libgnarl/s-osinte__rtems.adb \
   s-osinte.ads<libgnarl/s-osinte__rtems.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__rtems.adb \
   s-parame.adb<libgnat/s-parame__rtems.adb \
   s-parame.ads<libgnat/s-parame__posix2008.ads \
@@ -2075,6 +2099,7 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   s-intman.adb<libgnarl/s-intman__mingw.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__mingw.ads \
+  s-oslock.ads<libgnat/s-oslock__mingw.ads \
   s-osprim.adb<libgnat/s-osprim__mingw.adb \
   s-taprop.adb<libgnarl/s-taprop__mingw.adb
 
@@ -2135,6 +2160,7 @@ ifeq ($(strip $(filter-out loongarch% linux%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2179,6 +2205,7 @@ ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux__mips.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2226,6 +2253,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2272,6 +2300,7 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2312,6 +2341,7 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2346,6 +2376,7 @@ ifeq ($(strip $(filter-out sparc% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux__sparc.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2385,6 +2416,7 @@ ifeq ($(strip $(filter-out hppa% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux__hppa.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2412,6 +2444,7 @@ ifeq ($(strip $(filter-out m68k% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2439,6 +2472,7 @@ ifeq ($(strip $(filter-out sh4% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2474,6 +2508,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2509,6 +2544,7 @@ ifeq ($(strip $(filter-out ia64% hp hpux%,$(target_cpu) $(target_vendor) $(targe
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__hpux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
@@ -2542,6 +2578,7 @@ ifeq ($(strip $(filter-out alpha% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux__alpha.ads \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2578,6 +2615,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2622,6 +2660,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__x32.adb \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__x32.adb \
   s-parame.ads<libgnat/s-parame__posix2008.ads \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
@@ -2661,6 +2700,7 @@ ifeq ($(strip $(filter-out riscv% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux__riscv.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
@@ -2699,6 +2739,7 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
     s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
     s-osinte.adb<libgnarl/s-osinte__darwin.adb \
     s-osinte.ads<libgnarl/s-osinte__darwin.ads \
+    s-oslock.ads<libgnat/s-oslock__posix.ads \
     s-taprop.adb<libgnarl/s-taprop__posix.adb \
     s-taspri.ads<libgnarl/s-taspri__posix.ads \
     g-sercom.adb<libgnat/g-sercom__linux.adb \

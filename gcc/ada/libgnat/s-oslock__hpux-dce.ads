@@ -2,13 +2,13 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---                 S Y S T E M . T A S K _ P R I M I T I V E S              --
+--                       S Y S T E M . O S _ L O C K S                      --
 --                                                                          --
---                                  S p e c                                 --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1991-2024, Free Software Foundation, Inc.         --
+--            Copyright (C) 2024, Free Software Foundation, Inc.            --
 --                                                                          --
--- GNARL is free software; you can  redistribute it  and/or modify it under --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
@@ -29,30 +29,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a no tasking version of this package
+--  This is the HP-UX version of this package
 
-with System.OS_Locks;
+with Interfaces.C;
+with System.OS_Constants;
 
-package System.Task_Primitives is
+package System.OS_Locks is
    pragma Preelaborate;
 
-   type Lock is new Integer;
+   type pthread_mutex_t is limited private;
 
-   type Suspension_Object is new Integer;
+   subtype RTS_Lock is pthread_mutex_t;
+   --  Should be used inside the runtime system. The difference between Lock
+   --  and the RTS_Lock is that the latter serves only as a semaphore so that
+   --  we do not check for ceiling violations.
 
-   type Task_Body_Access is access procedure;
+private
 
-   type Private_Data is limited record
-      Thread : aliased Integer;
-      CV     : aliased Integer;
-      L      : aliased System.OS_Locks.RTS_Lock;
+   type cma_t_address is new System.Address;
+
+   type cma_t_handle is record
+      field1 : cma_t_address;
+      field2 : Short_Integer;
+      field3 : Short_Integer;
    end record;
+   for cma_t_handle'Size use 64;
 
-   subtype Task_Address is System.Address;
-   Task_Address_Size : constant := Standard'Address_Size;
-   --  Type used for task addresses and its size
+   type pthread_mutex_t is new cma_t_handle;
+   pragma Convention (C_Pass_By_Copy, pthread_mutex_t);
 
-   Alternate_Stack_Size : constant := 0;
-   --  No alternate signal stack is used on this platform
-
-end System.Task_Primitives;
+end System.OS_Locks;

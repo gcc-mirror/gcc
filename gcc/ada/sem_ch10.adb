@@ -31,6 +31,7 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
+with Exp_Ch7;
 with Exp_Disp;       use Exp_Disp;
 with Exp_Put_Image;
 with Exp_Util;       use Exp_Util;
@@ -924,6 +925,8 @@ package body Sem_Ch10 is
       Analyze_Context (N);
 
       Set_Context_Pending (N, False);
+
+      Exp_Ch7.Preload_Finalization_Collection (N);
 
       --  If the unit is a package body, the spec is already loaded and must be
       --  analyzed first, before we analyze the body.
