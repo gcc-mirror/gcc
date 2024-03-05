@@ -32,5 +32,5 @@ f3 (void)
    register on ia32 for a noreturn function.  */
 /* { dg-final { scan-assembler-times "push\[ql\]" 1 { target { ! ia32 } } } }  */
 /* { dg-final { scan-assembler-times "push\[ql\]" 3 { target ia32 } } }  */
-/* { dg-final { scan-assembler-times "pop" 1 } } */
-
+/* { dg-final { scan-assembler-not "pop" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "pop" 1 { target ia32 } } } */

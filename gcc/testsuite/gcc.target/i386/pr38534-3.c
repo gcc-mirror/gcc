@@ -13,7 +13,7 @@ foo (void)
   fn ();
 }
 
-/* { dg-final { scan-assembler-not "push" } } */
-/* { dg-final { scan-assembler-not "pop" } } */
+/* { dg-final { scan-assembler-not "push\[^\n\r\]*(?:\[abcd\]x|\[sd\]i|sp|r\[0-9\]|\[xyz\]mm)" } } */
+/* { dg-final { scan-assembler-not "pop\[^\n\r\]*(?:\[abcd\]x|\[sd\]i|sp|r\[0-9\]|\[xyz\]mm)" } } */
 /* { dg-final { scan-assembler-not "jmp" } } */
 /* { dg-final { scan-assembler "call\[\\t \]+" } } */

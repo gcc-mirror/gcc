@@ -984,8 +984,9 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 
   /* Sibling call isn't OK if callee has no callee-saved registers
      and the calling function has callee-saved registers.  */
-  if ((cfun->machine->call_saved_registers
-       != TYPE_NO_CALLEE_SAVED_REGISTERS)
+  if (cfun->machine->call_saved_registers != TYPE_NO_CALLEE_SAVED_REGISTERS
+      && (cfun->machine->call_saved_registers
+	  != TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP)
       && lookup_attribute ("no_callee_saved_registers",
 			   TYPE_ATTRIBUTES (type)))
     return false;
@@ -6649,6 +6650,11 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 
     case TYPE_NO_CALLEE_SAVED_REGISTERS:
       return false;
+
+    case TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP:
+      if (regno != HARD_FRAME_POINTER_REGNUM)
+	return false;
+      break;
     }
 
   if (regno == REAL_PIC_OFFSET_TABLE_REGNUM

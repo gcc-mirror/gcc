@@ -3384,7 +3384,9 @@ ix86_set_func_type (tree fndecl)
 {
   /* No need to save and restore callee-saved registers for a noreturn
      function with nothrow or compiled with -fno-exceptions unless when
-     compiling with -O0 or -Og.
+     compiling with -O0 or -Og.  So that backtrace works for those at least
+     in most cases, save the bp register if it is used, because it often
+     is used in callers to compute CFA.
 
      NB: Can't use just TREE_THIS_VOLATILE to check if this is a noreturn
      function.  The local-pure-const pass turns an interrupt function
@@ -3394,15 +3396,20 @@ ix86_set_func_type (tree fndecl)
      function is marked with TREE_THIS_VOLATILE in the IR output, which
      leads to the incompatible attribute error in LTO1.  Ignore the
      interrupt function in this case.  */
-  bool has_no_callee_saved_registers
-    = ((TREE_THIS_VOLATILE (fndecl)
-	&& !lookup_attribute ("interrupt",
-			      TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))
-	&& optimize
-	&& !optimize_debug
-	&& (TREE_NOTHROW (fndecl) || !flag_exceptions))
-       || lookup_attribute ("no_callee_saved_registers",
-			    TYPE_ATTRIBUTES (TREE_TYPE (fndecl))));
+  enum call_saved_registers_type no_callee_saved_registers
+    = TYPE_DEFAULT_CALL_SAVED_REGISTERS;
+  if (lookup_attribute ("no_callee_saved_registers",
+			TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+    no_callee_saved_registers = TYPE_NO_CALLEE_SAVED_REGISTERS;
+  else if (TREE_THIS_VOLATILE (fndecl)
+	   && optimize
+	   && !optimize_debug
+	   && (TREE_NOTHROW (fndecl) || !flag_exceptions)
+	   && !lookup_attribute ("interrupt",
+				 TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))
+	   && !lookup_attribute ("no_caller_saved_registers",
+				 TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+    no_callee_saved_registers = TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP;
 
   if (cfun->machine->func_type == TYPE_UNKNOWN)
     {
@@ -3413,7 +3420,7 @@ ix86_set_func_type (tree fndecl)
 	    error_at (DECL_SOURCE_LOCATION (fndecl),
 		      "interrupt and naked attributes are not compatible");
 
-	  if (has_no_callee_saved_registers)
+	  if (no_callee_saved_registers)
 	    error_at (DECL_SOURCE_LOCATION (fndecl),
 		      "%qs and %qs attributes are not compatible",
 		      "interrupt", "no_callee_saved_registers");
@@ -3442,7 +3449,7 @@ ix86_set_func_type (tree fndecl)
 				TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
 	    cfun->machine->call_saved_registers
 	      = TYPE_NO_CALLER_SAVED_REGISTERS;
-	  if (has_no_callee_saved_registers)
+	  if (no_callee_saved_registers)
 	    {
 	      if (cfun->machine->call_saved_registers
 		  == TYPE_NO_CALLER_SAVED_REGISTERS)
@@ -3451,7 +3458,7 @@ ix86_set_func_type (tree fndecl)
 			  "no_caller_saved_registers",
 			  "no_callee_saved_registers");
 	      cfun->machine->call_saved_registers
-		= TYPE_NO_CALLEE_SAVED_REGISTERS;
+		= no_callee_saved_registers;
 	    }
 	}
     }
