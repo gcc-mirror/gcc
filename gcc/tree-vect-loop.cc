@@ -7139,56 +7139,46 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
   gcc_assert (TREE_CODE_LENGTH (tree_code (code)) == binary_op);
 
   if (slp_node)
-    {
-      if (is_cond_op)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "fold-left reduction on SLP not supported.\n");
-	  return false;
-	}
-
-      gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (vectype_out),
-			    TYPE_VECTOR_SUBPARTS (vectype_in)));
-    }
+    gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (vectype_out),
+			  TYPE_VECTOR_SUBPARTS (vectype_in)));
 
   /* The operands either come from a binary operation or an IFN_COND operation.
      The former is a gimple assign with binary rhs and the latter is a
      gimple call with four arguments.  */
   gcc_assert (num_ops == 2 || num_ops == 4);
-  tree op0, opmask;
-  if (!is_cond_op)
-    op0 = ops[1 - reduc_index];
-  else
-    {
-      op0 = ops[2 + (1 - reduc_index)];
-      opmask = ops[0];
-      gcc_assert (!slp_node);
-    }
 
   int group_size = 1;
   stmt_vec_info scalar_dest_def_info;
   auto_vec<tree> vec_oprnds0, vec_opmask;
   if (slp_node)
     {
-      auto_vec<vec<tree> > vec_defs (2);
-      vect_get_slp_defs (loop_vinfo, slp_node, &vec_defs);
-      vec_oprnds0.safe_splice (vec_defs[1 - reduc_index]);
-      vec_defs[0].release ();
-      vec_defs[1].release ();
+      vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[(is_cond_op ? 2 : 0)
+						      + (1 - reduc_index)],
+						      &vec_oprnds0);
       group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
       scalar_dest_def_info = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
+      /* For an IFN_COND_OP we also need the vector mask operand.  */
+      if (is_cond_op)
+	vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[0], &vec_opmask);
     }
   else
     {
+      tree op0, opmask;
+      if (!is_cond_op)
+	op0 = ops[1 - reduc_index];
+      else
+	{
+	  op0 = ops[2 + (1 - reduc_index)];
+	  opmask = ops[0];
+	}
       vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, 1,
 				     op0, &vec_oprnds0);
       scalar_dest_def_info = stmt_info;
 
       /* For an IFN_COND_OP we also need the vector mask operand.  */
       if (is_cond_op)
-	  vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, 1,
-					 opmask, &vec_opmask);
+	vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, 1,
+				       opmask, &vec_opmask);
     }
 
   gimple *sdef = vect_orig_stmt (scalar_dest_def_info)->stmt;
@@ -8210,7 +8200,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     }
 
   if (reduction_type == FOLD_LEFT_REDUCTION
-      && slp_node
+      && (slp_node && SLP_TREE_LANES (slp_node) > 1)
       && !REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
       /* We cannot use in-order reductions in this case because there is
