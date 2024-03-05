@@ -21578,8 +21578,12 @@ Enable the FEAT_SME_I16I64 extension to SME.
 Enable the FEAT_SME_F64F64 extension to SME.
 +@item sme2
 Enable the Scalable Matrix Extension 2.  This also enables SME instructions.
+@item lse128
+Enable the LSE128 128-bit atomic instructions extension.  This also
+enables LSE instructions.
 @item d128
 Enable support for 128-bit system register read/write instructions.
+This also enables the LSE128 extension.
 @item gcs
 Enable support for Armv9.4-a Guarded Control Stack extension.
 @item the
