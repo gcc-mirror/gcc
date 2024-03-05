@@ -174,7 +174,7 @@ AARCH64_OPT_FMV_EXTENSION("rcpc", RCPC, (), (), (), "lrcpc")
 
 AARCH64_FMV_FEATURE("rcpc2", RCPC2, (RCPC))
 
-AARCH64_OPT_FMV_EXTENSION("rcpc3", RCPC3, (), (), (), "rcpc3")
+AARCH64_OPT_FMV_EXTENSION("rcpc3", RCPC3, (), (), (), "lrcpc3")
 
 AARCH64_FMV_FEATURE("frintts", FRINTTS, ())
 
