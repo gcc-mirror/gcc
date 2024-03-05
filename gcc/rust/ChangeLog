@@ -1,3 +1,7 @@
+2024-03-04  Mark Wielaard  <mark@klomp.org>
+
+	* lang.opt.urls: Regenerate.
+
 2024-02-21  0xn4utilus  <gyanendrabanjare8@gmail.com>
 
 	* checks/errors/rust-ast-validation.cc (ASTValidation::visit):

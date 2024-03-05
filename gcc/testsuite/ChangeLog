@@ -1,3 +1,53 @@
+2024-03-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/using-12.C: New test.
+	* g++.dg/modules/using-13.h: New test.
+	* g++.dg/modules/using-13_a.C: New test.
+	* g++.dg/modules/using-13_b.C: New test.
+
+2024-03-04  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/memset-1.c: New test.
+
+2024-03-04  Jan Dubiec  <jdx@o2.pl>
+
+	* gcc.c-torture/execute/20101011-1.c: Do not test on H8 series.
+
+2024-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114197
+	* gcc.dg/torture/pr114197.c: New testcase.
+
+2024-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114203
+	* gcc.dg/torture/pr114203.c: New testcase.
+
+2024-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114209
+	* gcc.dg/bitint-97.c: New test.
+
+2024-03-04  Xi Ruoyao  <xry111@xry111.site>
+
+	PR testsuite/113418
+	* gcc.dg/pr104992.c (dg-options): Use -fdump-tree-forwprop2
+	instead of -fdump-tree-optimized.
+	(dg-final): Scan forwprop2 dump instead of optimized, and remove
+	the use of vect_int_mod.
+	* lib/target-supports.exp (check_effective_target_vect_int_mod):
+	Remove because it's not used anymore.
+
+2024-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114184
+	* gcc.target/i386/pr114184.c: New test.
+
+2024-03-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/114187
+	* g++.target/i386/pr114187.C: New test case.
+
 2024-03-03  Greg McGary  <gkm@rivosinc.com>
 
 	* gcc.c-torture/execute/pr113010.c: New test.

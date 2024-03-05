@@ -1,3 +1,9 @@
+2024-03-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (walk_module_binding): Remove completed FIXME.
+	(do_nonmember_using_decl): Mark redeclared entities as exported
+	when needed. Check for re-exporting internal linkage types.
+
 2024-03-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104919

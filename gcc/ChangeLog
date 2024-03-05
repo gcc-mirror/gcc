@@ -1,3 +1,326 @@
+2024-03-04  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf-protos.h (bpf_expand_setmem): New prototype.
+	* config/bpf/bpf.cc (bpf_expand_setmem): New.
+	* config/bpf/bpf.md (setmemdi): New define_expand.
+
+2024-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113010
+	* combine.cc (simplify_comparison): Guard the
+	WORD_REGISTER_OPERATIONS check on scalar_int_mode of SUBREG_REG
+	and initialize inner_mode.
+
+2024-03-04  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/iterators.md (supf): Remove VMLALDAVXQ_U, VMLALDAVXQ_P_U,
+	VMLALDAVAXQ_U cases.
+	(VMLALDAVXQ): Remove iterator.
+	(VMLALDAVXQ_P): Likewise.
+	(VMLALDAVAXQ): Likewise.
+	* config/arm/mve.md (mve_vstrwq_p_fv4sf): Replace use of <MVE_VPRED>
+	mode iterator attribute with V4BI mode.
+	* config/arm/unspecs.md (VMLALDAVXQ_U, VMLALDAVXQ_P_U,
+	VMLALDAVAXQ_U): Remove unused unspecs.
+
+2024-03-04  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.md (mve_safe_imp_xlane_pred): New attribute.
+	* config/arm/iterators.md (mve_vmaxmin_safe_imp): New iterator
+	attribute.
+	* config/arm/mve.md (vaddvq_s, vaddvq_u, vaddlvq_s, vaddlvq_u,
+	vaddvaq_s, vaddvaq_u, vmaxavq_s, vmaxvq_u, vmladavq_s, vmladavq_u,
+	vmladavxq_s, vmlsdavq_s, vmlsdavxq_s, vaddlvaq_s, vaddlvaq_u,
+	vmlaldavq_u, vmlaldavq_s, vmlaldavq_u, vmlaldavxq_s, vmlsldavq_s,
+	vmlsldavxq_s, vrmlaldavhq_u, vrmlaldavhq_s, vrmlaldavhxq_s,
+	vrmlsldavhq_s, vrmlsldavhxq_s, vrmlaldavhaq_s, vrmlaldavhaq_u,
+	vrmlaldavhaxq_s, vrmlsldavhaq_s, vrmlsldavhaxq_s, vabavq_s, vabavq_u,
+	vmladavaq_u, vmladavaq_s, vmladavaxq_s, vmlsdavaq_s, vmlsdavaxq_s,
+	vmlaldavaq_s, vmlaldavaq_u, vmlaldavaxq_s, vmlsldavaq_s,
+	vmlsldavaxq_s): Added mve_safe_imp_xlane_pred.
+
+2024-03-04  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm.md (mve_unpredicated_insn): New attribute.
+	* config/arm/arm.h (MVE_VPT_PREDICATED_INSN_P): New define.
+	(MVE_VPT_UNPREDICATED_INSN_P): Likewise.
+	(MVE_VPT_PREDICABLE_INSN_P): Likewise.
+	* config/arm/vec-common.md (mve_vshlq_<supf><mode>): Add attribute.
+	* config/arm/mve.md (arm_vcx1q<a>_p_v16qi): Add attribute.
+	(arm_vcx1q<a>v16qi): Likewise.
+	(arm_vcx1qav16qi): Likewise.
+	(arm_vcx1qv16qi): Likewise.
+	(arm_vcx2q<a>_p_v16qi): Likewise.
+	(arm_vcx2q<a>v16qi): Likewise.
+	(arm_vcx2qav16qi): Likewise.
+	(arm_vcx2qv16qi): Likewise.
+	(arm_vcx3q<a>_p_v16qi): Likewise.
+	(arm_vcx3q<a>v16qi): Likewise.
+	(arm_vcx3qav16qi): Likewise.
+	(arm_vcx3qv16qi): Likewise.
+	(@mve_<mve_insn>q_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q_int_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q_<supf>v4si): Likewise.
+	(@mve_<mve_insn>q_n_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q_r_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q_f<mode>): Likewise.
+	(@mve_<mve_insn>q_m_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q_m_n_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q_m_r_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q_m_f<mode>): Likewise.
+	(@mve_<mve_insn>q_int_m_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q_p_<supf>v4si): Likewise.
+	(@mve_<mve_insn>q_p_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q<mve_rot>_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q<mve_rot>_f<mode>): Likewise.
+	(@mve_<mve_insn>q<mve_rot>_m_<supf><mode>): Likewise.
+	(@mve_<mve_insn>q<mve_rot>_m_f<mode>): Likewise.
+	(mve_v<absneg_str>q_f<mode>): Likewise.
+	(mve_<mve_addsubmul>q<mode>): Likewise.
+	(mve_<mve_addsubmul>q_f<mode>): Likewise.
+	(mve_vadciq_<supf>v4si): Likewise.
+	(mve_vadciq_m_<supf>v4si): Likewise.
+	(mve_vadcq_<supf>v4si): Likewise.
+	(mve_vadcq_m_<supf>v4si): Likewise.
+	(mve_vandq_<supf><mode>): Likewise.
+	(mve_vandq_f<mode>): Likewise.
+	(mve_vandq_m_<supf><mode>): Likewise.
+	(mve_vandq_m_f<mode>): Likewise.
+	(mve_vandq_s<mode>): Likewise.
+	(mve_vandq_u<mode>): Likewise.
+	(mve_vbicq_<supf><mode>): Likewise.
+	(mve_vbicq_f<mode>): Likewise.
+	(mve_vbicq_m_<supf><mode>): Likewise.
+	(mve_vbicq_m_f<mode>): Likewise.
+	(mve_vbicq_m_n_<supf><mode>): Likewise.
+	(mve_vbicq_n_<supf><mode>): Likewise.
+	(mve_vbicq_s<mode>): Likewise.
+	(mve_vbicq_u<mode>): Likewise.
+	(@mve_vclzq_s<mode>): Likewise.
+	(mve_vclzq_u<mode>): Likewise.
+	(@mve_vcmp_<mve_cmp_op>q_<mode>): Likewise.
+	(@mve_vcmp_<mve_cmp_op>q_n_<mode>): Likewise.
+	(@mve_vcmp_<mve_cmp_op>q_f<mode>): Likewise.
+	(@mve_vcmp_<mve_cmp_op>q_n_f<mode>): Likewise.
+	(@mve_vcmp_<mve_cmp_op1>q_m_f<mode>): Likewise.
+	(@mve_vcmp_<mve_cmp_op1>q_m_n_<supf><mode>): Likewise.
+	(@mve_vcmp_<mve_cmp_op1>q_m_<supf><mode>): Likewise.
+	(@mve_vcmp_<mve_cmp_op1>q_m_n_f<mode>): Likewise.
+	(mve_vctp<MVE_vctp>q<MVE_vpred>): Likewise.
+	(mve_vctp<MVE_vctp>q_m<MVE_vpred>): Likewise.
+	(mve_vcvtaq_<supf><mode>): Likewise.
+	(mve_vcvtaq_m_<supf><mode>): Likewise.
+	(mve_vcvtbq_f16_f32v8hf): Likewise.
+	(mve_vcvtbq_f32_f16v4sf): Likewise.
+	(mve_vcvtbq_m_f16_f32v8hf): Likewise.
+	(mve_vcvtbq_m_f32_f16v4sf): Likewise.
+	(mve_vcvtmq_<supf><mode>): Likewise.
+	(mve_vcvtmq_m_<supf><mode>): Likewise.
+	(mve_vcvtnq_<supf><mode>): Likewise.
+	(mve_vcvtnq_m_<supf><mode>): Likewise.
+	(mve_vcvtpq_<supf><mode>): Likewise.
+	(mve_vcvtpq_m_<supf><mode>): Likewise.
+	(mve_vcvtq_from_f_<supf><mode>): Likewise.
+	(mve_vcvtq_m_from_f_<supf><mode>): Likewise.
+	(mve_vcvtq_m_n_from_f_<supf><mode>): Likewise.
+	(mve_vcvtq_m_n_to_f_<supf><mode>): Likewise.
+	(mve_vcvtq_m_to_f_<supf><mode>): Likewise.
+	(mve_vcvtq_n_from_f_<supf><mode>): Likewise.
+	(mve_vcvtq_n_to_f_<supf><mode>): Likewise.
+	(mve_vcvtq_to_f_<supf><mode>): Likewise.
+	(mve_vcvttq_f16_f32v8hf): Likewise.
+	(mve_vcvttq_f32_f16v4sf): Likewise.
+	(mve_vcvttq_m_f16_f32v8hf): Likewise.
+	(mve_vcvttq_m_f32_f16v4sf): Likewise.
+	(mve_vdwdupq_m_wb_u<mode>_insn): Likewise.
+	(mve_vdwdupq_wb_u<mode>_insn): Likewise.
+	(mve_veorq_s><mode>): Likewise.
+	(mve_veorq_u><mode>): Likewise.
+	(mve_veorq_f<mode>): Likewise.
+	(mve_vidupq_m_wb_u<mode>_insn): Likewise.
+	(mve_vidupq_u<mode>_insn): Likewise.
+	(mve_viwdupq_m_wb_u<mode>_insn): Likewise.
+	(mve_viwdupq_wb_u<mode>_insn): Likewise.
+	(mve_vldrbq_<supf><mode>): Likewise.
+	(mve_vldrbq_gather_offset_<supf><mode>): Likewise.
+	(mve_vldrbq_gather_offset_z_<supf><mode>): Likewise.
+	(mve_vldrbq_z_<supf><mode>): Likewise.
+	(mve_vldrdq_gather_base_<supf>v2di): Likewise.
+	(mve_vldrdq_gather_base_wb_<supf>v2di_insn): Likewise.
+	(mve_vldrdq_gather_base_wb_z_<supf>v2di_insn): Likewise.
+	(mve_vldrdq_gather_base_z_<supf>v2di): Likewise.
+	(mve_vldrdq_gather_offset_<supf>v2di): Likewise.
+	(mve_vldrdq_gather_offset_z_<supf>v2di): Likewise.
+	(mve_vldrdq_gather_shifted_offset_<supf>v2di): Likewise.
+	(mve_vldrdq_gather_shifted_offset_z_<supf>v2di): Likewise.
+	(mve_vldrhq_<supf><mode>): Likewise.
+	(mve_vldrhq_fv8hf): Likewise.
+	(mve_vldrhq_gather_offset_<supf><mode>): Likewise.
+	(mve_vldrhq_gather_offset_fv8hf): Likewise.
+	(mve_vldrhq_gather_offset_z_<supf><mode>): Likewise.
+	(mve_vldrhq_gather_offset_z_fv8hf): Likewise.
+	(mve_vldrhq_gather_shifted_offset_<supf><mode>): Likewise.
+	(mve_vldrhq_gather_shifted_offset_fv8hf): Likewise.
+	(mve_vldrhq_gather_shifted_offset_z_<supf><mode>): Likewise.
+	(mve_vldrhq_gather_shifted_offset_z_fv8hf): Likewise.
+	(mve_vldrhq_z_<supf><mode>): Likewise.
+	(mve_vldrhq_z_fv8hf): Likewise.
+	(mve_vldrwq_<supf>v4si): Likewise.
+	(mve_vldrwq_fv4sf): Likewise.
+	(mve_vldrwq_gather_base_<supf>v4si): Likewise.
+	(mve_vldrwq_gather_base_fv4sf): Likewise.
+	(mve_vldrwq_gather_base_wb_<supf>v4si_insn): Likewise.
+	(mve_vldrwq_gather_base_wb_fv4sf_insn): Likewise.
+	(mve_vldrwq_gather_base_wb_z_<supf>v4si_insn): Likewise.
+	(mve_vldrwq_gather_base_wb_z_fv4sf_insn): Likewise.
+	(mve_vldrwq_gather_base_z_<supf>v4si): Likewise.
+	(mve_vldrwq_gather_base_z_fv4sf): Likewise.
+	(mve_vldrwq_gather_offset_<supf>v4si): Likewise.
+	(mve_vldrwq_gather_offset_fv4sf): Likewise.
+	(mve_vldrwq_gather_offset_z_<supf>v4si): Likewise.
+	(mve_vldrwq_gather_offset_z_fv4sf): Likewise.
+	(mve_vldrwq_gather_shifted_offset_<supf>v4si): Likewise.
+	(mve_vldrwq_gather_shifted_offset_fv4sf): Likewise.
+	(mve_vldrwq_gather_shifted_offset_z_<supf>v4si): Likewise.
+	(mve_vldrwq_gather_shifted_offset_z_fv4sf): Likewise.
+	(mve_vldrwq_z_<supf>v4si): Likewise.
+	(mve_vldrwq_z_fv4sf): Likewise.
+	(mve_vmvnq_s<mode>): Likewise.
+	(mve_vmvnq_u<mode>): Likewise.
+	(mve_vornq_<supf><mode>): Likewise.
+	(mve_vornq_f<mode>): Likewise.
+	(mve_vornq_m_<supf><mode>): Likewise.
+	(mve_vornq_m_f<mode>): Likewise.
+	(mve_vornq_s<mode>): Likewise.
+	(mve_vornq_u<mode>): Likewise.
+	(mve_vorrq_<supf><mode>): Likewise.
+	(mve_vorrq_f<mode>): Likewise.
+	(mve_vorrq_m_<supf><mode>): Likewise.
+	(mve_vorrq_m_f<mode>): Likewise.
+	(mve_vorrq_m_n_<supf><mode>): Likewise.
+	(mve_vorrq_n_<supf><mode>): Likewise.
+	(mve_vorrq_s<mode>): Likewise.
+	(mve_vorrq_s<mode>): Likewise.
+	(mve_vsbciq_<supf>v4si): Likewise.
+	(mve_vsbciq_m_<supf>v4si): Likewise.
+	(mve_vsbcq_<supf>v4si): Likewise.
+	(mve_vsbcq_m_<supf>v4si): Likewise.
+	(mve_vshlcq_<supf><mode>): Likewise.
+	(mve_vshlcq_m_<supf><mode>): Likewise.
+	(mve_vshrq_m_n_<supf><mode>): Likewise.
+	(mve_vshrq_n_<supf><mode>): Likewise.
+	(mve_vstrbq_<supf><mode>): Likewise.
+	(mve_vstrbq_p_<supf><mode>): Likewise.
+	(mve_vstrbq_scatter_offset_<supf><mode>_insn): Likewise.
+	(mve_vstrbq_scatter_offset_p_<supf><mode>_insn): Likewise.
+	(mve_vstrdq_scatter_base_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_p_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_offset_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_offset_p_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn): Likewise.
+	(mve_vstrhq_<supf><mode>): Likewise.
+	(mve_vstrhq_fv8hf): Likewise.
+	(mve_vstrhq_p_<supf><mode>): Likewise.
+	(mve_vstrhq_p_fv8hf): Likewise.
+	(mve_vstrhq_scatter_offset_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_offset_fv8hf_insn): Likewise.
+	(mve_vstrhq_scatter_offset_p_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_offset_p_fv8hf_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_fv8hf_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_fv8hf_insn): Likewise.
+	(mve_vstrwq_<supf>v4si): Likewise.
+	(mve_vstrwq_fv4sf): Likewise.
+	(mve_vstrwq_p_<supf>v4si): Likewise.
+	(mve_vstrwq_p_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_p_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_p_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_wb_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): Likewise.
+	(mve_vstrwq_scatter_offset_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_offset_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_offset_p_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_offset_p_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_fv4sf_insn): Likewise.
+
+2024-03-04  Marek Polacek  <polacek@redhat.com>
+
+	* doc/extend.texi: Update [[gnu::no_dangling]].
+
+2024-03-04  Andrew Stubbs  <ams@baylibre.com>
+
+	* dojump.cc (do_compare_and_jump): Use full-width integers for shifts.
+	* expr.cc (store_constructor): Likewise.
+	(do_store_flag): Likewise.
+
+2024-03-04  Mark Wielaard  <mark@klomp.org>
+
+	* common.opt.urls: Regenerate.
+	* config/avr/avr.opt.urls: Likewise.
+	* config/i386/i386.opt.urls: Likewise.
+	* config/pru/pru.opt.urls: Likewise.
+	* config/riscv/riscv.opt.urls: Likewise.
+	* config/rs6000/rs6000.opt.urls: Likewise.
+
+2024-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114197
+	* tree-if-conv.cc (bitfields_to_lower_p): Do not lower if
+	there are volatile bitfield accesses.
+	(pass_if_conversion::execute): Throw away result if the
+	if-converted and original loops are not nested as expected.
+
+2024-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114164
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Fail if
+	the code generated for mask argument setup is not supported.
+
+2024-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114203
+	* tree-ssa-loop-niter.cc (build_cltz_expr): Apply CTZ->CLZ
+	adjustment before making the result defined at zero.
+
+2024-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114192
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Use the
+	appropriate def for the live out stmt in case of an alternate
+	exit.
+
+2024-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114209
+	* gimple-lower-bitint.cc (bitint_large_huge::limb_access): Call
+	unshare_expr when creating a MEM_REF from MEM_REF.
+	(bitint_large_huge::lower_stmt): Call unshare_expr.
+
+2024-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114184
+	* config/i386/i386-expand.cc (ix86_expand_move): If XFmode op1
+	is SUBREG of CONSTANT_P, force the SUBREG_REG into memory or
+	register.
+
+2024-03-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/114187
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Call
+	lowpart_subreg to perform type conversion, to avoid confusion
+	over the offset to use in the call to simplify_reg_subreg.
+
 2024-03-03  Greg McGary  <gkm@rivosinc.com>
 
 	PR rtl-optimization/113010

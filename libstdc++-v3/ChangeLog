@@ -1,3 +1,11 @@
+2024-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114147
+	* include/std/tuple (tuple::tuple(allocator_arg_t, const Alloc&)):
+	Add missing overload of allocator-extended default constructor.
+	(tuple<T1,T2>::tuple(allocator_arg_t, const Alloc&)): Likewise.
+	* testsuite/20_util/tuple/cons/114147.cc: New test.
+
 2024-02-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/format (basic_format_arg::handle::__maybe_const_t):

@@ -1,3 +1,39 @@
+2024-03-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114227
+	* gm2-libs-iso/M2RTS.mod (ProcedureChain): Remove.
+	(ProcedureList): Remove.
+	(ExecuteReverse): Remove.
+	(ExecuteTerminationProcedures): Rewrite.
+	(ExecuteInitialProcedures): Rewrite.
+	(AppendProc): Remove.
+	(InstallTerminationProcedure): Rewrite.
+	(InstallInitialProcedure): Rewrite.
+	(InitProcList): Remove.
+	* gm2-libs/M2Dependent.def (InstallTerminationProcedure):
+	New procedure.
+	(ExecuteTerminationProcedures): New procedure.
+	(InstallInitialProcedure): New procedure.
+	(ExecuteInitialProcedures): New procedure.
+	* gm2-libs/M2Dependent.mod (ProcedureChain): New type.
+	(ProcedureList): New type.
+	(ExecuteReverse): New procedure.
+	(ExecuteTerminationProcedures): New procedure.
+	(ExecuteInitialProcedures): New procedure.
+	(AppendProc): New procedure.
+	(InstallTerminationProcedure): New procedure.
+	(InstallInitialProcedure): New procedure.
+	(InitProcList): New procedure.
+	* gm2-libs/M2RTS.mod (ProcedureChain): Remove.
+	(ProcedureList): Remove.
+	(ExecuteReverse): Remove.
+	(ExecuteTerminationProcedures): Rewrite.
+	(ExecuteInitialProcedures): Rewrite.
+	(AppendProc): Remove.
+	(InstallTerminationProcedure): Rewrite.
+	(InstallInitialProcedure): Rewrite.
+	(InitProcList): Remove.
+
 2024-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/113749
