@@ -685,6 +685,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
 
               STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_double_reduction_def;
 	      STMT_VINFO_DEF_TYPE (reduc_stmt_info) = vect_double_reduction_def;
+	      /* Make it accessible for SLP vectorization.  */
+	      LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push (reduc_stmt_info);
             }
           else
             {
@@ -5975,7 +5977,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   stmt_vec_info rdef_info = stmt_info;
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     {
-      gcc_assert (!slp_node);
       double_reduc = true;
       stmt_info = loop_vinfo->lookup_def (gimple_phi_arg_def
 					    (stmt_info->stmt, 0));
@@ -6020,7 +6021,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     {
       outer_loop = loop;
       loop = loop->inner;
-      gcc_assert (!slp_node && double_reduc);
+      gcc_assert (double_reduc);
     }
 
   vectype = STMT_VINFO_REDUC_VECTYPE (reduc_info);
@@ -6035,7 +6036,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	 for induc_val, use initial_def.  */
       if (STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
 	induc_val = STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info);
-      /* ???  Coverage for double_reduc and 'else' isn't clear.  */
+      /* ???  Coverage for 'else' isn't clear.  */
     }
   else
     {
@@ -7605,21 +7606,30 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       return true;
     }
-  if (slp_node)
-    {
-      slp_node_instance->reduc_phis = slp_node;
-      /* ???  We're leaving slp_node to point to the PHIs, we only
-	 need it to get at the number of vector stmts which wasn't
-	 yet initialized for the instance root.  */
-    }
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     {
+      if (gimple_bb (stmt_info->stmt) != loop->header)
+	{
+	  /* For SLP we arrive here for both the inner loop LC PHI and
+	     the outer loop PHI.  The latter is what we want to analyze
+	     the reduction with.  */
+	  gcc_assert (slp_node);
+	  return true;
+	}
       use_operand_p use_p;
       gimple *use_stmt;
       bool res = single_imm_use (gimple_phi_result (stmt_info->stmt),
 				 &use_p, &use_stmt);
       gcc_assert (res);
       phi_info = loop_vinfo->lookup_stmt (use_stmt);
+    }
+
+  if (slp_node)
+    {
+      slp_node_instance->reduc_phis = slp_node;
+      /* ???  We're leaving slp_node to point to the PHIs, we only
+	 need it to get at the number of vector stmts which wasn't
+	 yet initialized for the instance root.  */
     }
 
   /* PHIs should not participate in patterns.  */
@@ -7637,6 +7647,11 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   bool only_slp_reduc_chain = true;
   stmt_info = NULL;
   slp_tree slp_for_stmt_info = slp_node ? slp_node_instance->root : NULL;
+  /* For double-reductions we start SLP analysis at the inner loop LC PHI
+     which is the def of the outer loop live stmt.  */
+  if (STMT_VINFO_DEF_TYPE (reduc_info) == vect_double_reduction_def
+      && slp_node)
+    slp_for_stmt_info = SLP_TREE_CHILDREN (slp_for_stmt_info)[0];
   while (reduc_def != PHI_RESULT (reduc_def_phi))
     {
       stmt_vec_info def = loop_vinfo->lookup_def (reduc_def);

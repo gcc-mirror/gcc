@@ -778,6 +778,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	    case vect_constant_def:
 	    case vect_internal_def:
 	    case vect_reduction_def:
+	    case vect_double_reduction_def:
 	    case vect_induction_def:
 	    case vect_nested_cycle:
 	    case vect_first_order_recurrence:
@@ -1906,7 +1907,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	    class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 	    /* Reduction initial values are not explicitely represented.  */
 	    if (def_type != vect_first_order_recurrence
-		&& !nested_in_vect_loop_p (loop, stmt_info))
+		&& gimple_bb (stmt_info->stmt) == loop->header)
 	      skip_args[loop_preheader_edge (loop)->dest_idx] = true;
 	    /* Reduction chain backedge defs are filled manually.
 	       ???  Need a better way to identify a SLP reduction chain PHI.
