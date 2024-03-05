@@ -283,7 +283,8 @@ package body Sem_Prag is
    function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
    --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
    --  pragma Depends. Determine whether the type of dependency item Item is
-   --  tagged, unconstrained array or unconstrained record.
+   --  tagged, unconstrained array, unconstrained private or unconstrained
+   --  record.
 
    procedure Record_Possible_Body_Reference
      (State_Id : Entity_Id;
@@ -32977,7 +32978,8 @@ package body Sem_Prag is
          return Has_Discriminants (Typ) and then not Is_Constrained (Typ);
 
       elsif Is_Private_Type (Typ) then
-         return Has_Discriminants (Typ);
+         return Has_Discriminants (Typ)
+           or else Has_Unknown_Discriminants (Typ);
 
       else
          return False;
