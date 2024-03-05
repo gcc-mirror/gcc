@@ -1514,10 +1514,10 @@ package body Sem_Disp is
                         Subp);
 
                   else
-
                      --  The subprogram body declares a primitive operation.
                      --  We must update its dispatching information here. The
                      --  information is taken from the overridden subprogram.
+                     --  Such a late-overriding body also needs extra formals.
                      --  We must also generate a cross-reference entry because
                      --  references to other primitives were already created
                      --  when type was frozen.
@@ -1527,6 +1527,7 @@ package body Sem_Disp is
                      if Present (DTC_Entity (Old_Subp)) then
                         Set_DTC_Entity (Subp, DTC_Entity (Old_Subp));
                         Set_DT_Position_Value (Subp, DT_Position (Old_Subp));
+                        Create_Extra_Formals (Subp);
 
                         if not Restriction_Active (No_Dispatching_Calls) then
                            if Building_Static_DT (Tagged_Type) then
