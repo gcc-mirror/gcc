@@ -23312,10 +23312,18 @@ type_unification_real (tree tparms,
 	   parameter pack is a non-deduced context.  */
 	continue;
 
+      /* [temp.deduct.conv] only applies to the deduction of the return
+	 type, which is always the first argument here.  Other arguments
+	 (notably, explicit object parameters) should undergo normal
+	 call-like unification.  */
+      unification_kind_t kind = strict;
+      if (strict == DEDUCE_CONV && ia > 0)
+	kind = DEDUCE_CALL;
+
       arg = args[ia];
       ++ia;
 
-      if (unify_one_argument (tparms, full_targs, parm, arg, subr, strict,
+      if (unify_one_argument (tparms, full_targs, parm, arg, subr, kind,
 			      explain_p))
 	return 1;
     }
@@ -23324,6 +23332,8 @@ type_unification_real (tree tparms,
       && parms != void_list_node
       && TREE_CODE (TREE_VALUE (parms)) == TYPE_PACK_EXPANSION)
     {
+      gcc_assert (strict != DEDUCE_CONV);
+
       /* Unify the remaining arguments with the pack expansion type.  */
       tree argvec;
       tree parmvec = make_tree_vec (1);
