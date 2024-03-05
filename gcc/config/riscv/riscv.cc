@@ -1527,10 +1527,6 @@ riscv_v_adjust_bytesize (machine_mode mode, int scale)
 	return BYTES_PER_RISCV_VECTOR;
 
       poly_int64 nunits = GET_MODE_NUNITS (mode);
-      poly_int64 mode_size = GET_MODE_SIZE (mode);
-
-      if (maybe_eq (mode_size, (uint16_t) -1))
-	mode_size = riscv_vector_chunks * scale;
 
       if (nunits.coeffs[0] > 8)
 	return exact_div (nunits, 8);
