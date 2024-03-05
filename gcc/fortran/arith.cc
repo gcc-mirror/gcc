@@ -130,6 +130,30 @@ gfc_arith_error (arith code)
 }
 
 
+/* Check if a certain arithmetic error code is severe enough to prevent
+   further simplification, as opposed to errors thrown by the range check
+   (e.g. overflow) or arithmetic exceptions that are tolerated with
+   -fno-range-check.  */
+
+static bool
+is_hard_arith_error (arith code)
+{
+  switch (code)
+    {
+    case ARITH_OK:
+    case ARITH_OVERFLOW:
+    case ARITH_UNDERFLOW:
+    case ARITH_NAN:
+    case ARITH_DIV0:
+    case ARITH_ASYMMETRIC:
+      return false;
+
+    default:
+      return true;
+    }
+}
+
+
 /* Get things ready to do math.  */
 
 void
@@ -579,10 +603,10 @@ check_result (arith rc, gfc_expr *x, gfc_expr *r, gfc_expr **rp)
       val = ARITH_OK;
     }
 
-  if (val == ARITH_OK || val == ARITH_OVERFLOW)
-    *rp = r;
-  else
+  if (is_hard_arith_error (val))
     gfc_free_expr (r);
+  else
+    *rp = r;
 
   return val;
 }
@@ -792,23 +816,26 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       break;
 
     case BT_REAL:
-      if (mpfr_sgn (op2->value.real) == 0 && flag_range_check == 1)
-	{
-	  rc = ARITH_DIV0;
-	  break;
-	}
+      /* Set "Division by zero" only for regular numerator.  */
+      if (flag_range_check == 1
+	  && mpfr_zero_p (op2->value.real)
+	  && mpfr_regular_p (op1->value.real))
+	rc = ARITH_DIV0;
 
       mpfr_div (result->value.real, op1->value.real, op2->value.real,
 	       GFC_RND_MODE);
       break;
 
     case BT_COMPLEX:
-      if (mpc_cmp_si_si (op2->value.complex, 0, 0) == 0
-	  && flag_range_check == 1)
-	{
-	  rc = ARITH_DIV0;
-	  break;
-	}
+      /* Set "Division by zero" only for regular numerator.  */
+      if (flag_range_check == 1
+	  && mpfr_zero_p (mpc_realref (op2->value.complex))
+	  && mpfr_zero_p (mpc_imagref (op2->value.complex))
+	  && ((mpfr_regular_p (mpc_realref (op1->value.complex))
+	       && mpfr_number_p (mpc_imagref (op1->value.complex)))
+	      || (mpfr_regular_p (mpc_imagref (op1->value.complex))
+		  && mpfr_number_p (mpc_realref (op1->value.complex)))))
+	rc = ARITH_DIV0;
 
       gfc_set_model (mpc_realref (op1->value.complex));
       if (mpc_cmp_si_si (op2->value.complex, 0, 0) == 0)
@@ -1323,7 +1350,6 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
   gfc_constructor *c;
   gfc_expr *r;
   arith rc;
-  bool ov = false;
 
   if (op->expr_type == EXPR_CONSTANT)
     return eval (op, result);
@@ -1335,19 +1361,22 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
   head = gfc_constructor_copy (op->value.constructor);
   for (c = gfc_constructor_first (head); c; c = gfc_constructor_next (c))
     {
-      rc = reduce_unary (eval, c->expr, &r);
+      arith rc_tmp = reduce_unary (eval, c->expr, &r);
 
-      /* Remember any overflow encountered during reduction and continue,
-	 but terminate on serious errors.  */
-      if (rc == ARITH_OVERFLOW)
-	ov = true;
-      else if (rc != ARITH_OK)
-	break;
+      /* Remember first recoverable ("soft") error encountered during
+	 reduction and continue, but terminate on serious errors.  */
+      if (is_hard_arith_error (rc_tmp))
+	{
+	  rc = rc_tmp;
+	  break;
+	}
+      else if (rc_tmp != ARITH_OK && rc == ARITH_OK)
+	rc = rc_tmp;
 
       gfc_replace_expr (c->expr, r);
     }
 
-  if (rc != ARITH_OK && rc != ARITH_OVERFLOW)
+  if (is_hard_arith_error (rc))
     gfc_constructor_free (head);
   else
     {
@@ -1368,7 +1397,7 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
       *result = r;
     }
 
-  return ov ? ARITH_OVERFLOW : rc;
+  return rc;
 }
 
 
@@ -1384,22 +1413,31 @@ reduce_binary_ac (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   head = gfc_constructor_copy (op1->value.constructor);
   for (c = gfc_constructor_first (head); c; c = gfc_constructor_next (c))
     {
+      arith rc_tmp;
+
       gfc_simplify_expr (c->expr, 0);
 
       if (c->expr->expr_type == EXPR_CONSTANT)
-        rc = eval (c->expr, op2, &r);
+	rc_tmp = eval (c->expr, op2, &r);
       else if (c->expr->expr_type != EXPR_ARRAY)
-	rc = ARITH_NOT_REDUCED;
+	rc_tmp = ARITH_NOT_REDUCED;
       else
-	rc = reduce_binary_ac (eval, c->expr, op2, &r);
+	rc_tmp = reduce_binary_ac (eval, c->expr, op2, &r);
 
-      if (rc != ARITH_OK)
-	break;
+      /* Remember first recoverable ("soft") error encountered during
+	 reduction and continue, but terminate on serious errors.  */
+      if (is_hard_arith_error (rc_tmp))
+	{
+	  rc = rc_tmp;
+	  break;
+	}
+      else if (rc_tmp != ARITH_OK && rc == ARITH_OK)
+	rc = rc_tmp;
 
       gfc_replace_expr (c->expr, r);
     }
 
-  if (rc != ARITH_OK)
+  if (is_hard_arith_error (rc))
     gfc_constructor_free (head);
   else
     {
@@ -1438,22 +1476,31 @@ reduce_binary_ca (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   head = gfc_constructor_copy (op2->value.constructor);
   for (c = gfc_constructor_first (head); c; c = gfc_constructor_next (c))
     {
+      arith rc_tmp;
+
       gfc_simplify_expr (c->expr, 0);
 
       if (c->expr->expr_type == EXPR_CONSTANT)
-	rc = eval (op1, c->expr, &r);
+	rc_tmp = eval (op1, c->expr, &r);
       else if (c->expr->expr_type != EXPR_ARRAY)
-	rc = ARITH_NOT_REDUCED;
+	rc_tmp = ARITH_NOT_REDUCED;
       else
-	rc = reduce_binary_ca (eval, op1, c->expr, &r);
+	rc_tmp = reduce_binary_ca (eval, op1, c->expr, &r);
 
-      if (rc != ARITH_OK)
-	break;
+      /* Remember first recoverable ("soft") error encountered during
+	 reduction and continue, but terminate on serious errors.  */
+      if (is_hard_arith_error (rc_tmp))
+	{
+	  rc = rc_tmp;
+	  break;
+	}
+      else if (rc_tmp != ARITH_OK && rc == ARITH_OK)
+	rc = rc_tmp;
 
       gfc_replace_expr (c->expr, r);
     }
 
-  if (rc != ARITH_OK)
+  if (is_hard_arith_error (rc))
     gfc_constructor_free (head);
   else
     {
@@ -1503,10 +1550,17 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
        c && d;
        c = gfc_constructor_next (c), d = gfc_constructor_next (d))
     {
-      rc = reduce_binary (eval, c->expr, d->expr, &r);
+      arith rc_tmp = reduce_binary (eval, c->expr, d->expr, &r);
 
-      if (rc != ARITH_OK)
-	break;
+      /* Remember first recoverable ("soft") error encountered during
+	 reduction and continue, but terminate on serious errors.  */
+      if (is_hard_arith_error (rc_tmp))
+	{
+	  rc = rc_tmp;
+	  break;
+	}
+      else if (rc_tmp != ARITH_OK && rc == ARITH_OK)
+	rc = rc_tmp;
 
       gfc_replace_expr (c->expr, r);
     }
@@ -1514,7 +1568,7 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   if (rc == ARITH_OK && (c || d))
     rc = ARITH_INCOMMENSURATE;
 
-  if (rc != ARITH_OK)
+  if (is_hard_arith_error (rc))
     gfc_constructor_free (head);
   else
     {
