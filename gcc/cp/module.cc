@@ -10126,23 +10126,12 @@ trees_out::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 	  tree dflt = TREE_PURPOSE (parm);
 	  tree_node (dflt);
 
-	  if (streaming_p ())
-	    {
-	      tree decl = TREE_VALUE (parm);
-	      if (TREE_CODE (decl) == TEMPLATE_DECL)
-		{
-		  tree ctx = DECL_CONTEXT (decl);
-		  tree inner = DECL_TEMPLATE_RESULT (decl);
-		  tree tpi = (TREE_CODE (inner) == TYPE_DECL
-			      ? TEMPLATE_TYPE_PARM_INDEX (TREE_TYPE (decl))
-			      : DECL_INITIAL (inner));
-		  bool original = (TEMPLATE_PARM_LEVEL (tpi)
-				   == TEMPLATE_PARM_ORIG_LEVEL (tpi));
-		  /* Original template template parms have a context
-		     of their owning template.  Reduced ones do not.  */
-		  gcc_checking_assert (original ? ctx == tmpl : !ctx);
-		}
-	    }
+	  /* Template template parameters need a context of their owning
+	     template. This is quite tricky to infer correctly on stream-in
+	     (see PR c++/98881) so we'll just provide it directly.  */
+	  tree decl = TREE_VALUE (parm);
+	  if (TREE_CODE (decl) == TEMPLATE_DECL)
+	    tree_node (DECL_CONTEXT (decl));
 	}
     }
 }
@@ -10160,24 +10149,14 @@ trees_in::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 	{
 	  tree parm = TREE_VEC_ELT (vec, ix);
 	  tree dflt = tree_node ();
-	  if (get_overrun ())
-	    return false;
 	  TREE_PURPOSE (parm) = dflt;
 
 	  tree decl = TREE_VALUE (parm);
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    {
-	      tree inner = DECL_TEMPLATE_RESULT (decl);
-	      tree tpi = (TREE_CODE (inner) == TYPE_DECL
-			  ? TEMPLATE_TYPE_PARM_INDEX (TREE_TYPE (decl))
-			  : DECL_INITIAL (inner));
-	      bool original = (TEMPLATE_PARM_LEVEL (tpi)
-			       == TEMPLATE_PARM_ORIG_LEVEL (tpi));
-	      /* Original template template parms have a context
-		 of their owning template.  Reduced ones do not.  */
-	      if (original)
-		DECL_CONTEXT (decl) = tmpl;
-	    }
+	    DECL_CONTEXT (decl) = tree_node ();
+
+	  if (get_overrun ())
+	    return false;
 	}
     }
   return true;
