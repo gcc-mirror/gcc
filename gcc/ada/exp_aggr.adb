@@ -1649,11 +1649,14 @@ package body Exp_Aggr is
            and then Local_Expr_Value (H) - Local_Expr_Value (L) <= 2
            and then not Is_Iterated_Component
          then
-            Append_List_To (S, Gen_Assign (New_Copy_Tree (L), Expr));
-            Append_List_To (S, Gen_Assign (Add (1, To => L), Expr));
+            Append_List_To
+              (S, Gen_Assign (New_Copy_Tree (L), New_Copy_Tree (Expr)));
+            Append_List_To
+              (S, Gen_Assign (Add (1, To => L), New_Copy_Tree (Expr)));
 
             if Local_Expr_Value (H) - Local_Expr_Value (L) = 2 then
-               Append_List_To (S, Gen_Assign (Add (2, To => L), Expr));
+               Append_List_To
+                 (S, Gen_Assign (Add (2, To => L), New_Copy_Tree (Expr)));
             end if;
 
             return S;
