@@ -2029,8 +2029,9 @@ package body Sem_Ch3 is
 
                   while Present (Target_Index) loop
                      if Nkind (Subt_Index) in N_Expanded_Name | N_Identifier
-                     and then Nkind
-                        (Scalar_Range (Entity (Subt_Index))) = N_Range
+                       and then Is_Scalar_Type (Entity (Subt_Index))
+                       and then
+                         Nkind (Scalar_Range (Entity (Subt_Index))) = N_Range
                      then
                         Apply_Range_Check
                            (Expr        => Scalar_Range (Entity (Subt_Index)),
