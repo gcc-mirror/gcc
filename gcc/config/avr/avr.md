@@ -170,7 +170,7 @@
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
    ashlpsi, ashrpsi, lshrpsi,
-   insert_bits, insv_notbit,
+   insert_bits, insv_notbit, insv,
    add_set_ZN, cmp_uext, cmp_sext,
    no"
   (const_string "no"))
@@ -4380,10 +4380,10 @@
   [(set_attr "length" "1,1,2")])
 
 (define_insn_and_split "andhi3"
-  [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
-        (and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
-                (match_operand:HI 2 "nonmemory_operand" "r,s,n,Ca2,n")))
-   (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))]
+  [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r  ,r")
+        (and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,r  ,0")
+                (match_operand:HI 2 "nonmemory_operand" "r,s,n,Ca2,Cb2,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X,X  ,X  ,&d"))]
   ""
   "#"
   "&& reload_completed"
@@ -4394,10 +4394,10 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*andhi3"
-  [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
-        (and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
-                (match_operand:HI 2 "nonmemory_operand" "r,s,n,Ca2,n")))
-   (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))
+  [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r  ,r")
+        (and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,r  ,0")
+                (match_operand:HI 2 "nonmemory_operand" "r,s,n,Ca2,Cb2,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X,X  ,X  ,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
@@ -4405,17 +4405,19 @@
       return "and %A0,%A2\;and %B0,%B2";
     else if (which_alternative == 1)
       return "andi %A0,lo8(%2)\;andi %B0,hi8(%2)";
+    else if (which_alternative == 4)
+      return avr_out_insv (insn, operands, NULL);
 
     return avr_out_bitop (insn, operands, NULL);
   }
-  [(set_attr "length" "2,2,2,4,4")
-   (set_attr "adjust_len" "*,*,out_bitop,out_bitop,out_bitop")])
+  [(set_attr "length" "2,2,2,4,4,4")
+   (set_attr "adjust_len" "*,*,out_bitop,out_bitop,insv,out_bitop")])
 
 (define_insn_and_split "andpsi3"
-  [(set (match_operand:PSI 0 "register_operand"        "=??r,d,r  ,r")
-        (and:PSI (match_operand:PSI 1 "register_operand" "%0,0,0  ,0")
-                 (match_operand:PSI 2 "nonmemory_operand" "r,n,Ca3,n")))
-   (clobber (match_scratch:QI 3                          "=X,X,X  ,&d"))]
+  [(set (match_operand:PSI 0 "register_operand"        "=??r,d,r  ,r  ,r")
+        (and:PSI (match_operand:PSI 1 "register_operand" "%0,0,0  ,r  ,0")
+                 (match_operand:PSI 2 "nonmemory_operand" "r,n,Ca3,Cb3,n")))
+   (clobber (match_scratch:QI 3                          "=X,X,X  ,X  ,&d"))]
   ""
   "#"
   "&& reload_completed"
@@ -4426,10 +4428,10 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*andpsi3"
-  [(set (match_operand:PSI 0 "register_operand"        "=??r,d,r  ,r")
-        (and:PSI (match_operand:PSI 1 "register_operand" "%0,0,0  ,0")
-                 (match_operand:PSI 2 "nonmemory_operand" "r,n,Ca3,n")))
-   (clobber (match_scratch:QI 3                          "=X,X,X  ,&d"))
+  [(set (match_operand:PSI 0 "register_operand"        "=??r,d,r  ,r  ,r")
+        (and:PSI (match_operand:PSI 1 "register_operand" "%0,0,0  ,r  ,0")
+                 (match_operand:PSI 2 "nonmemory_operand" "r,n,Ca3,Cb3,n")))
+   (clobber (match_scratch:QI 3                          "=X,X,X  ,X  ,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
@@ -4438,16 +4440,19 @@
              "and %B0,%B2" CR_TAB
              "and %C0,%C2";
 
+    if (which_alternative == 3)
+      return avr_out_insv (insn, operands, NULL);
+
     return avr_out_bitop (insn, operands, NULL);
   }
-  [(set_attr "length" "3,3,6,6")
-   (set_attr "adjust_len" "*,out_bitop,out_bitop,out_bitop")])
+  [(set_attr "length" "3,3,6,5,6")
+   (set_attr "adjust_len" "*,out_bitop,out_bitop,insv,out_bitop")])
 
 (define_insn_and_split "andsi3"
-  [(set (match_operand:SI 0 "register_operand"       "=??r,d,r  ,r")
-        (and:SI (match_operand:SI 1 "register_operand" "%0,0,0  ,0")
-                (match_operand:SI 2 "nonmemory_operand" "r,n,Ca4,n")))
-   (clobber (match_scratch:QI 3                        "=X,X,X  ,&d"))]
+  [(set (match_operand:SI 0 "register_operand"       "=??r,d,r  ,r  ,r")
+        (and:SI (match_operand:SI 1 "register_operand" "%0,0,0  ,r  ,0")
+                (match_operand:SI 2 "nonmemory_operand" "r,n,Ca4,Cb4,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X  ,X  ,&d"))]
   ""
   "#"
   "&& reload_completed"
@@ -4458,10 +4463,10 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*andsi3"
-  [(set (match_operand:SI 0 "register_operand"       "=??r,d,r  ,r")
-        (and:SI (match_operand:SI 1 "register_operand" "%0,0,0  ,0")
-                (match_operand:SI 2 "nonmemory_operand" "r,n,Ca4,n")))
-   (clobber (match_scratch:QI 3                        "=X,X,X  ,&d"))
+  [(set (match_operand:SI 0 "register_operand"       "=??r,d,r  ,r  ,r")
+        (and:SI (match_operand:SI 1 "register_operand" "%0,0,0  ,r  ,0")
+                (match_operand:SI 2 "nonmemory_operand" "r,n,Ca4,Cb4,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X  ,X  ,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
@@ -4471,10 +4476,13 @@
              "and %C0,%C2" CR_TAB
              "and %D0,%D2";
 
+    if (which_alternative == 3)
+      return avr_out_insv (insn, operands, NULL);
+
     return avr_out_bitop (insn, operands, NULL);
   }
-  [(set_attr "length" "4,4,8,8")
-   (set_attr "adjust_len" "*,out_bitop,out_bitop,out_bitop")])
+  [(set_attr "length" "4,4,8,6,8")
+   (set_attr "adjust_len" "*,out_bitop,out_bitop,insv,out_bitop")])
 
 (define_peephole2 ; andi
   [(parallel [(set (match_operand:QI 0 "d_register_operand" "")
@@ -9852,6 +9860,12 @@
                          (const_int 1)
                          (const_int 7)))])
 
+;; This insn serves as a combine bridge because insn combine will only
+;; combine so much (3) insns at most.  It's not actually an open coded
+;; bit-insertion but just a part of it.  It may occur in other contexts
+;; than INSV though, and in such a case the code may be worse than without
+;; this pattern.  We still have to emit code for it in that case because
+;; we cannot roll back.
 (define_insn_and_split "*insv.any_shift.<mode>_split"
   [(set (match_operand:QISI 0 "register_operand" "=r")
         (and:QISI (any_shift:QISI (match_operand:QISI 1 "register_operand" "r")
@@ -9874,27 +9888,9 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    int shift = <CODE> == ASHIFT ? INTVAL (operands[2]) : -INTVAL (operands[2]);
-    int mask = GET_MODE_MASK (<MODE>mode) & INTVAL (operands[3]);
-    // Position of the output / input bit, respectively.
-    int obit = exact_log2 (mask);
-    int ibit = obit - shift;
-    gcc_assert (IN_RANGE (obit, 0, <MSB>));
-    gcc_assert (IN_RANGE (ibit, 0, <MSB>));
-    operands[3] = GEN_INT (obit);
-    operands[2] = GEN_INT (ibit);
-
-    if (<SIZE> == 1) return "bst %T1%T2\;clr %0\;"                 "bld %T0%T3";
-    if (<SIZE> == 2) return "bst %T1%T2\;clr %A0\;clr %B0\;"       "bld %T0%T3";
-    if (<SIZE> == 3) return "bst %T1%T2\;clr %A0\;clr %B0\;clr %C0\;bld %T0%T3";
-    return AVR_HAVE_MOVW
-      ? "bst %T1%T2\;clr %A0\;clr %B0\;movw %C0,%A0\;"  "bld %T0%T3"
-      : "bst %T1%T2\;clr %A0\;clr %B0\;clr %C0\;clr %D0\;bld %T0%T3";
+    return avr_out_insv (insn, operands, nullptr);
   }
-  [(set (attr "length")
-        (minus (symbol_ref "2 + <SIZE>")
-               ; One less if we can use a MOVW to clear.
-               (symbol_ref "<SIZE> == 4 && AVR_HAVE_MOVW")))])
+  [(set_attr "adjust_len" "insv")])
 
 
 (define_insn_and_split "*extzv.<mode>hi2"

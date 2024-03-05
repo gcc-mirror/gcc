@@ -9795,6 +9795,178 @@ avr_out_insert_notbit (rtx_insn *insn, rtx op[], int *plen)
 }
 
 
+/* Output instructions for  XOP[0] = (XOP[1] <Shift> XOP[2]) & XOP[3]  where
+   -  XOP[0] and XOP[1] have the same mode which is one of: QI, HI, PSI, SI.
+   -  XOP[3] is an exact const_int power of 2.
+   -  XOP[2] and XOP[3] are const_int.
+   -  <Shift> is any of: ASHIFT, LSHIFTRT, ASHIFTRT.
+   -  The result depends on XOP[1].
+   or  XOP[0] = XOP[1] & XOP[2]  where
+   -  XOP[0] and XOP[1] have the same mode which is one of: HI, PSI, SI.
+   -  XOP[2] is an exact const_int power of 2.
+   Returns "".
+   PLEN != 0: Set *PLEN to the code length in words.  Don't output anything.
+   PLEN == 0: Output instructions.  */
+
+const char*
+avr_out_insv (rtx_insn *insn, rtx xop[], int *plen)
+{
+  machine_mode mode = GET_MODE (xop[0]);
+  int n_bytes = GET_MODE_SIZE (mode);
+  rtx xsrc = SET_SRC (single_set (insn));
+
+  gcc_assert (AND == GET_CODE (xsrc));
+
+  rtx xop2 = xop[2];
+  rtx xop3 = xop[3];
+
+  if (REG_P (XEXP (xsrc, 0)))
+    {
+      // This function can also handle AND with an exact power of 2,
+      // which can be regarded as a XOP[1] shift with offset 0.
+      rtx xshift = gen_rtx_ASHIFT (mode, xop[1], const0_rtx);
+      xsrc = gen_rtx_AND (mode, xshift, xop[2]);
+      xop3 = xop[2];
+      xop2 = const0_rtx;
+    }
+
+  // Any of ASHIFT, LSHIFTRT, ASHIFTRT.
+  enum rtx_code code = GET_CODE (XEXP (xsrc, 0));
+  int shift = code == ASHIFT ? INTVAL (xop2) : -INTVAL (xop2);
+
+  // Determines the position of the output bit.
+  unsigned mask = GET_MODE_MASK (mode) & INTVAL (xop3);
+
+  // Position of the output / input bit, respectively.
+  int obit = exact_log2 (mask);
+  int ibit = obit - shift;
+
+  gcc_assert (IN_RANGE (obit, 0, GET_MODE_BITSIZE (mode) - 1));
+  gcc_assert (IN_RANGE (ibit, 0, GET_MODE_BITSIZE (mode) - 1));
+
+  // In the remainder, use the sub-bytes that hold the bits.
+  rtx op[4] =
+    {
+      // Output
+      simplify_gen_subreg (QImode, xop[0], mode, obit / 8),
+      GEN_INT (obit & 7),
+      // Input
+      simplify_gen_subreg (QImode, xop[1], mode, ibit / 8),
+      GEN_INT (ibit & 7)
+    };
+  obit &= 7;
+  ibit &= 7;
+
+  // The length of the default sequence at the end of this function.
+  // We only emit anything other than the default when we find a sequence
+  // that is strictly shorter than the default sequence; which is:
+  // BST + <CLR-result-bytes> + BLD.
+  const int len0 = 2 + n_bytes - (n_bytes == 4 && AVR_HAVE_MOVW);
+
+  // Finding something shorter than the default sequence implies that there
+  // must be at most 2 instructions that deal with the bytes containing the
+  // relevant bits.  In addition, we need  N_BYTES - 1  instructions to clear
+  // the remaining result bytes.
+
+  const int n_clr = n_bytes - 1;
+  bool clr_p = false;
+  bool andi_p = false;
+
+  if (plen)
+    *plen = 0;
+
+  if (REGNO (op[0]) == REGNO (op[2])
+      // Output reg allows ANDI.
+      && test_hard_reg_class (LD_REGS, op[0]))
+    {
+      if (1 + n_clr < len0
+	  // Same byte and bit: A single ANDI will do.
+	  && obit == ibit)
+	{
+	  clr_p = andi_p = true;
+	}
+      else if (2 + n_clr < len0
+	       // |obit - ibit| = 4:  SWAP + ANDI will do.
+	       && (obit == ibit + 4 || obit == ibit - 4))
+	{
+	  avr_asm_len ("swap %0", op, plen, 1);
+	  clr_p = andi_p = true;
+	}
+      else if (2 + n_clr < len0
+	       // LSL + ANDI will do.
+	       && obit == ibit + 1)
+	{
+	  avr_asm_len ("lsl %0", op, plen, 1);
+	  clr_p = andi_p = true;
+	}
+      else if (2 + n_clr < len0
+	       // LSR + ANDI will do.
+	       && obit == ibit - 1)
+	{
+	  avr_asm_len ("lsr %0", op, plen, 1);
+	  clr_p = andi_p = true;
+	}
+    }
+
+  if (REGNO (op[0]) != REGNO (op[2])
+      && obit == ibit)
+    {
+      if (2 + n_clr < len0
+	  // Same bit but different byte: MOV + ANDI will do.
+	  && test_hard_reg_class (LD_REGS, op[0]))
+	{
+	  avr_asm_len ("mov %0,%2", op, plen, 1);
+	  clr_p = andi_p = true;
+	}
+      else if (2 + n_clr < len0
+	       // Same bit but different byte:  We can use ANDI + MOV,
+	       // but only if the input byte is LD_REGS and unused after.
+	       && test_hard_reg_class (LD_REGS, op[2])
+	       && reg_unused_after (insn, op[2]))
+	{
+	  avr_asm_len ("andi %2,1<<%3"  CR_TAB
+		       "mov %0,%2", op, plen, 2);
+	  clr_p = true;
+	}
+    }
+
+  // Output remaining instructions of the shorter sequence.
+
+  if (andi_p)
+    avr_asm_len ("andi %0,1<<%1", op, plen, 1);
+
+  if (clr_p)
+    {
+      for (int b = 0; b < n_bytes; ++b)
+	{
+	  rtx byte = simplify_gen_subreg (QImode, xop[0], mode, b);
+	  if (REGNO (byte) != REGNO (op[0]))
+	    avr_asm_len ("clr %0", &byte, plen, 1);
+	}
+
+      // CLR_P means we found a shorter sequence, so we are done now.
+      return "";
+    }
+
+  // No shorter sequence found, just emit  BST, CLR*, BLD  sequence.
+
+  avr_asm_len ("bst %2,%3", op, plen, -1);
+
+  if (n_bytes == 4 && AVR_HAVE_MOVW)
+    avr_asm_len ("clr %A0"   CR_TAB
+		 "clr %B0"   CR_TAB
+		 "movw %C0,%A0", xop, plen, 3);
+  else
+    for (int b = 0; b < n_bytes; ++b)
+      {
+	rtx byte = simplify_gen_subreg (QImode, xop[0], mode, b);
+	avr_asm_len ("clr %0", &byte, plen, 1);
+      }
+
+  return avr_asm_len ("bld %0,%1", op, plen, 1);
+}
+
+
 /* Output instructions to extract a bit to 8-bit register XOP[0].
    The input XOP[1] is a register or an 8-bit MEM in the lower I/O range.
    XOP[2] is the const_int bit position.  Return "".
@@ -10721,6 +10893,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_OUT_BITOP: avr_out_bitop (insn, op, &len); break;
     case ADJUST_LEN_EXTR_NOT: avr_out_extr_not (insn, op, &len); break;
     case ADJUST_LEN_EXTR: avr_out_extr (insn, op, &len); break;
+    case ADJUST_LEN_INSV: avr_out_insv (insn, op, &len); break;
 
     case ADJUST_LEN_PLUS: avr_out_plus (insn, op, &len); break;
     case ADJUST_LEN_ADDTO_SP: avr_out_addto_sp (op, &len); break;
@@ -12204,6 +12377,14 @@ avr_cbranch_cost (rtx x)
       // *cbranch<HISI:mode>.<code><QIPSI:mode>.0/1, code = sign_extend.
       // Make it a bit cheaper than it actually is (less reg pressure).
       return COSTS_N_INSNS (size + 1 + 1);
+    }
+
+  if (GET_CODE (xreg) == ZERO_EXTRACT
+      && XEXP (xreg, 1) == const1_rtx)
+    {
+      // Branch on a single bit, with an additional edge due to less
+      // register pressure.
+      return (int) COSTS_N_INSNS (1.5);
     }
 
   bool reg_p = register_operand (xreg, mode);
