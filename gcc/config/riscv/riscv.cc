@@ -8111,7 +8111,10 @@ riscv_expand_epilogue (int style)
       need_barrier_p = false;
 
       poly_int64 adjust_offset = -frame->hard_frame_pointer_offset;
+      rtx dwarf_adj = gen_int_mode (adjust_offset, Pmode);
       rtx adjust = NULL_RTX;
+      bool sum_of_two_s12 = false;
+      HOST_WIDE_INT one, two;
 
       if (!adjust_offset.is_constant ())
 	{
@@ -8123,14 +8126,23 @@ riscv_expand_epilogue (int style)
 	}
       else
 	{
-	  if (!SMALL_OPERAND (adjust_offset.to_constant ()))
+	  HOST_WIDE_INT adj_off_value = adjust_offset.to_constant ();
+	  if (SMALL_OPERAND (adj_off_value))
 	    {
-	      riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode),
-			       GEN_INT (adjust_offset.to_constant ()));
-	      adjust = RISCV_PROLOGUE_TEMP (Pmode);
+	      adjust = GEN_INT (adj_off_value);
+	    }
+	  else if (SUM_OF_TWO_S12_ALGN (adj_off_value))
+	    {
+	      riscv_split_sum_of_two_s12 (adj_off_value, &one, &two);
+	      dwarf_adj = adjust = GEN_INT (one);
+	      sum_of_two_s12 = true;
 	    }
 	  else
-	    adjust = GEN_INT (adjust_offset.to_constant ());
+	    {
+	      riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode),
+			       GEN_INT (adj_off_value));
+	      adjust = RISCV_PROLOGUE_TEMP (Pmode);
+	    }
 	}
 
       insn = emit_insn (
@@ -8138,14 +8150,21 @@ riscv_expand_epilogue (int style)
 			      adjust));
 
       rtx dwarf = NULL_RTX;
-      rtx cfa_adjust_value = gen_rtx_PLUS (
-			       Pmode, hard_frame_pointer_rtx,
-			       gen_int_mode (-frame->hard_frame_pointer_offset, Pmode));
+      rtx cfa_adjust_value = gen_rtx_PLUS (Pmode, hard_frame_pointer_rtx,
+					   dwarf_adj);
       rtx cfa_adjust_rtx = gen_rtx_SET (stack_pointer_rtx, cfa_adjust_value);
       dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, cfa_adjust_rtx, dwarf);
+
       RTX_FRAME_RELATED_P (insn) = 1;
 
       REG_NOTES (insn) = dwarf;
+
+      if (sum_of_two_s12)
+	{
+	  insn = emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
+			    GEN_INT (two)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
     }
 
   if (use_restore_libcall || use_multi_pop)
