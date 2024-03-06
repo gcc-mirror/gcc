@@ -1576,9 +1576,8 @@ vect_recog_abd_pattern (vec_info *vinfo,
       && !TYPE_UNSIGNED (abd_out_type))
     {
       tree unsign = unsigned_type_for (abd_out_type);
-      tree unsign_vectype = get_vectype_for_scalar_type (vinfo, unsign);
-      stmt = vect_convert_output (vinfo, stmt_vinfo, unsign, stmt,
-				  unsign_vectype);
+      stmt = vect_convert_output (vinfo, stmt_vinfo, unsign, stmt, vectype_out);
+      vectype_out = get_vectype_for_scalar_type (vinfo, unsign);
     }
 
   return vect_convert_output (vinfo, stmt_vinfo, out_type, stmt, vectype_out);
