@@ -12513,6 +12513,13 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case PLUS:
+      if (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && REG_P (XEXP (x, 1)))
+	{
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode) - 1);
+	  return true;
+	}
+
       switch (mode)
 	{
 	case E_QImode:
