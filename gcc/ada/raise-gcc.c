@@ -596,7 +596,15 @@ get_ip_from_context (_Unwind_Context *uw_context)
 #endif
 
 #if !defined(__USING_SJLJ_EXCEPTIONS__) && defined(__CHERI__)
+#if __has_builtin (__builtin_code_address_from_pointer)
   ip = __builtin_code_address_from_pointer ((void *)ip);
+#elif defined(__aarch64__)
+  /* Clang doesn't have __builtin_code_address_from_pointer to abstract over
+     target-specific differences. On AArch64, we need to drop the LSB of the
+     instruction pointer because it's not part of the address; it indicates the
+     CPU mode. */
+  ip &= ~1UL;
+#endif
 #endif
 
   /* Subtract 1 if necessary because GetIPInfo yields a call return address
