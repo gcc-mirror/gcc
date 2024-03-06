@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-unify.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Resolver {
@@ -236,6 +237,15 @@ UnifyRules::go ()
 	  ltype = i;
 	}
     }
+
+  // The never type should always get coerced to the type it's being matched
+  // against, so in that case, ltype. This avoids doing the same check in all
+  // the `expect_*` functions.
+  // However, this does not work if we have an annoying ltype - like INFER.
+  // TODO: Is ltype == Infer the only special case here? What about projections?
+  // references?
+  if (rtype->get_kind () == TyTy::NEVER && ltype->get_kind () != TyTy::INFER)
+    return ltype->clone ();
 
   switch (ltype->get_kind ())
     {
@@ -1536,32 +1546,8 @@ UnifyRules::expect_never (TyTy::NeverType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-    case TyTy::NEVER:
+    default:
       return rtype->clone ();
-
-    case TyTy::PLACEHOLDER:
-    case TyTy::PROJECTION:
-    case TyTy::DYNAMIC:
-    case TyTy::CLOSURE:
-    case TyTy::SLICE:
-    case TyTy::PARAM:
-    case TyTy::POINTER:
-    case TyTy::STR:
-    case TyTy::ADT:
-    case TyTy::REF:
-    case TyTy::ARRAY:
-    case TyTy::FNDEF:
-    case TyTy::FNPTR:
-    case TyTy::TUPLE:
-    case TyTy::BOOL:
-    case TyTy::CHAR:
-    case TyTy::INT:
-    case TyTy::UINT:
-    case TyTy::FLOAT:
-    case TyTy::USIZE:
-    case TyTy::ISIZE:
-    case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
     }
   return new TyTy::ErrorType (0);
 }
