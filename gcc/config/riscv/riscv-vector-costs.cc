@@ -414,6 +414,8 @@ compute_local_live_ranges (
 				  auto *r = get_live_range (live_ranges, arg);
 				  gcc_assert (r);
 				  (*r).second = MAX (point, (*r).second);
+				  biggest_mode = get_biggest_mode (
+				    biggest_mode, TYPE_MODE (TREE_TYPE (arg)));
 				}
 			    }
 			  else
