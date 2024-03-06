@@ -1960,10 +1960,18 @@
 (define_insn "*memory_barrier"
   [(set (match_operand:BLK 0)
 	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
-  ""
-  "{buffer_wbinvl1_vol|buffer_gl0_inv}"
+  "!TARGET_RDNA2_PLUS"
+  "buffer_wbinvl1_vol"
   [(set_attr "type" "mubuf")
    (set_attr "length" "4")])
+
+(define_insn "*memory_barrier"
+  [(set (match_operand:BLK 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
+  "TARGET_RDNA2_PLUS"
+  "buffer_gl1_inv\;buffer_gl0_inv"
+  [(set_attr "type" "mult")
+   (set_attr "length" "8")])
 
 ; FIXME: These patterns have been disabled as they do not seem to work
 ; reliably - they can cause hangs or incorrect results.
@@ -2094,9 +2102,13 @@
 	  case 0:
 	    return "s_load%o0\t%0, %A1 glc\;s_waitcnt\tlgkmcnt(0)";
 	  case 1:
-	    return "flat_load%o0\t%0, %A1%O1 glc\;s_waitcnt\t0";
+	    return (TARGET_RDNA2 /* Not GFX11.  */
+		    ? "flat_load%o0\t%0, %A1%O1 glc dlc\;s_waitcnt\t0"
+		    : "flat_load%o0\t%0, %A1%O1 glc\;s_waitcnt\t0");
 	  case 2:
-	    return "global_load%o0\t%0, %A1%O1 glc\;s_waitcnt\tvmcnt(0)";
+	    return (TARGET_RDNA2 /* Not GFX11.  */
+		    ? "global_load%o0\t%0, %A1%O1 glc dlc\;s_waitcnt\tvmcnt(0)"
+		    : "global_load%o0\t%0, %A1%O1 glc\;s_waitcnt\tvmcnt(0)");
 	  }
 	break;
       case MEMMODEL_CONSUME:
@@ -2108,15 +2120,21 @@
 	    return "s_load%o0\t%0, %A1 glc\;s_waitcnt\tlgkmcnt(0)\;"
 		   "s_dcache_wb_vol";
 	  case 1:
-	    return (TARGET_RDNA2_PLUS
+	    return (TARGET_RDNA2
+		    ? "flat_load%o0\t%0, %A1%O1 glc dlc\;s_waitcnt\t0\;"
+		      "buffer_gl1_inv\;buffer_gl0_inv"
+		    : TARGET_RDNA3
 		    ? "flat_load%o0\t%0, %A1%O1 glc\;s_waitcnt\t0\;"
-		      "buffer_gl0_inv"
+		      "buffer_gl1_inv\;buffer_gl0_inv"
 		    : "flat_load%o0\t%0, %A1%O1 glc\;s_waitcnt\t0\;"
 		      "buffer_wbinvl1_vol");
 	  case 2:
-	    return (TARGET_RDNA2_PLUS
+	    return (TARGET_RDNA2
+		    ? "global_load%o0\t%0, %A1%O1 glc dlc\;s_waitcnt\tvmcnt(0)\;"
+		      "buffer_gl1_inv\;buffer_gl0_inv"
+		    : TARGET_RDNA3
 		    ? "global_load%o0\t%0, %A1%O1 glc\;s_waitcnt\tvmcnt(0)\;"
-		      "buffer_gl0_inv"
+		      "buffer_gl1_inv\;buffer_gl0_inv"
 		    : "global_load%o0\t%0, %A1%O1 glc\;s_waitcnt\tvmcnt(0)\;"
 		      "buffer_wbinvl1_vol");
 	  }
@@ -2130,15 +2148,21 @@
 	    return "s_dcache_wb_vol\;s_load%o0\t%0, %A1 glc\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
-	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 glc\;"
-		      "s_waitcnt\t0\;buffer_gl0_inv"
+	    return (TARGET_RDNA2
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 glc dlc\;"
+		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
+		    : TARGET_RDNA3
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 glc\;"
+		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;flat_load%o0\t%0, %A1%O1 glc\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol");
 	  case 2:
-	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 glc\;"
-		      "s_waitcnt\tvmcnt(0)\;buffer_gl0_inv"
+	    return (TARGET_RDNA2
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 glc dlc\;"
+		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
+		    : TARGET_RDNA3
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 glc\;"
+		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;global_load%o0\t%0, %A1%O1 glc\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol");
 	  }
@@ -2147,7 +2171,7 @@
     gcc_unreachable ();
   }
   [(set_attr "type" "smem,flat,flat")
-   (set_attr "length" "20")
+   (set_attr "length" "28")
    (set_attr "gcn_version" "gcn5,*,gcn5")
    (set_attr "rdna" "no,*,*")])
 
@@ -2180,11 +2204,11 @@
 	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc";
 	  case 1:
 	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 glc"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 glc"
 		    : "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 glc");
 	  case 2:
 	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 glc"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 glc"
 		    : "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 glc");
 	  }
 	break;
@@ -2198,14 +2222,14 @@
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 glc\;"
-		      "s_waitcnt\t0\;buffer_gl0_inv"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 glc\;"
+		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 glc\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol");
 	  case 2:
 	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 glc\;"
-		      "s_waitcnt\tvmcnt(0)\;buffer_gl0_inv"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 glc\;"
+		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 glc\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol");
 	  }
@@ -2214,7 +2238,7 @@
     gcc_unreachable ();
   }
   [(set_attr "type" "smem,flat,flat")
-   (set_attr "length" "20")
+   (set_attr "length" "28")
    (set_attr "gcn_version" "gcn5,*,gcn5")
    (set_attr "rdna" "no,*,*")])
 
@@ -2253,13 +2277,13 @@
 	  case 1:
 	    return (TARGET_RDNA2_PLUS
 		    ? "flat_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\t0\;"
-		      "buffer_gl0_inv"
+		      "buffer_gl1_inv\;buffer_gl0_inv"
 		    : "flat_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\t0\;"
 		      "buffer_wbinvl1_vol");
 	  case 2:
 	    return (TARGET_RDNA2_PLUS
 		    ? "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
-		      "s_waitcnt\tvmcnt(0)\;buffer_gl0_inv"
+		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol");
 	  }
@@ -2273,13 +2297,13 @@
 		   "s_waitcnt\tlgkmcnt(0)";
 	  case 1:
 	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
 		      "s_waitcnt\t0"
 		    : "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
 		      "s_waitcnt\t0");
 	  case 2:
 	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;"
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
 		      "s_waitcnt\tvmcnt(0)"
 		    : "buffer_wbinvl1_vol\;"
@@ -2297,15 +2321,15 @@
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
-		      "s_waitcnt\t0\;buffer_gl0_inv"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
+		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol");
 	  case 2:
 	    return (TARGET_RDNA2_PLUS
-		    ? "buffer_gl0_inv\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;"
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
-		      "s_waitcnt\tvmcnt(0)\;buffer_gl0_inv"
+		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : "buffer_wbinvl1_vol\;"
 		      "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol");
@@ -2315,7 +2339,7 @@
     gcc_unreachable ();
   }
   [(set_attr "type" "smem,flat,flat")
-   (set_attr "length" "20")
+   (set_attr "length" "28")
    (set_attr "gcn_version" "gcn5,*,gcn5")
    (set_attr "rdna" "no,*,*")])
 
