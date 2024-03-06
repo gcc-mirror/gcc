@@ -1120,7 +1120,20 @@ unformatted_read (st_parameter_dt *dtp, bt type,
 	  dtp->u.p.current_unit->child_dtio++;
 	  dtp->u.p.ufdtio_ptr (dest, &unit, child_iostat, child_iomsg,
 			       child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
+	      snprintf (message, child_iomsg_len, child_iomsg);
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
+
 	  return;
     }
 
@@ -1250,7 +1263,19 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	  dtp->u.p.current_unit->child_dtio++;
 	  dtp->u.p.ufdtio_ptr (source, &unit, child_iostat, child_iomsg,
 			       child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
+	      snprintf (message, child_iomsg_len, child_iomsg);
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
 	  return;
     }
 
@@ -1730,7 +1755,19 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, f->u.udf.vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
+	      snprintf (message, child_iomsg_len, child_iomsg);
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
 
 	  if (f->u.udf.string_len != 0)
 	    free (iotype);
@@ -2214,7 +2251,19 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, f->u.udf.vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
+	      snprintf (message, child_iomsg_len, child_iomsg);
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
 
 	  if (f->u.udf.string_len != 0)
 	    free (iotype);
