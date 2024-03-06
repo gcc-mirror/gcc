@@ -11,15 +11,14 @@ program main
   integer(int8), allocatable :: char(:)
   type(c_ptr) :: dptr
   integer(c_intptr_t) :: i
-  integer(int8) :: j
 
   allocate(char(-128:127))
   do i = -128, 127
-    char(j) = int (j, int8)
+    char(i) = int (i, int8)
   end do
 
   dptr = acc_malloc (256_c_size_t)
-  call acc_memcpy_to_device (dptr, char, 255_c_size_t)
+  call acc_memcpy_to_device (dptr, char, 256_c_size_t)
 
   do i = 0, 255
     if (acc_is_present (transfer (transfer(char, i) + i, dptr), 1)) &
@@ -31,8 +30,7 @@ program main
   call acc_memcpy_from_device (char, dptr, 256_c_size_t)
 
   do i = -128, 127
-    char(i) = int (j, int8)
-    if (char(i) /= j) &
+    if (char(i) /= i) &
       stop 2
   end do
 
