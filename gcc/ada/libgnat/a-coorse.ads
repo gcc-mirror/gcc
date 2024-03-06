@@ -323,6 +323,9 @@ is
          Old_Key   : Key_Access;
       end record;
 
+      overriding procedure Adjust (Control : in out Reference_Control_Type);
+      pragma Inline (Adjust);
+
       overriding procedure Finalize (Control : in out Reference_Control_Type);
       pragma Inline (Finalize);
 
