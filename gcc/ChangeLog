@@ -1,3 +1,106 @@
+2024-03-05  Cupertino Miranda  <cupertino.miranda@oracle.com>
+	    Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/114186
+	* dwarf2ctf.cc (gen_ctf_array_type): Invoke the ctf_add_array ()
+	in the correct order of the dimensions.
+	(gen_ctf_subrange_type): Refactor out handling of
+	DW_TAG_subrange_type DIE to here.
+
+2024-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR sanitizer/97696
+	* asan.cc (asan_expand_mark_ifn): Allow the length to be a poly_int.
+
+2024-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (stride_type): Remove luti_consecutive
+	and luti_strided.
+	* config/aarch64/aarch64-sme.md
+	(@aarch64_sme_lut<LUTI_BITS><mode>): Remove stride_type attribute.
+	(@aarch64_sme_lut<LUTI_BITS><mode>_strided2): Delete.
+	(@aarch64_sme_lut<LUTI_BITS><mode>_strided4): Likewise.
+	* config/aarch64/aarch64-early-ra.cc (is_stride_candidate)
+	(early_ra::maybe_convert_to_strided_access): Remove support for
+	strided LUTI2 and LUTI4.
+
+2024-03-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/113510
+	* config/arm/thumb1.md (peephole2 to fuse mov imm/add SP): Use
+	low_register_operand.
+
+2024-03-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Add two RTL peepholes for PLUS, IOR and AND
+	in HI, PSI, SI that swap operation order from "X = CST, X o= Y"
+	to "X = Y, X o= CST".
+
+2024-03-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.h (ADDITIONAL_REGISTER_NAMES): Add
+	s9 as an alias of r22.
+
+2024-03-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/avr/avr-protos.h (avr_out_insv): New proto.
+	* config/avr/avr.cc (avr_out_insv): New function.
+	(avr_adjust_insn_length) [ADJUST_LEN_INSV]: Handle case.
+	(avr_cbranch_cost) [ZERO_EXTRACT]: Adjust rtx costs.
+	* config/avr/avr.md (define_attr "adjust_len") Add insv.
+	(andhi3, *andhi3, andpsi3, *andpsi3, andsi3, *andsi3):
+	Add constraint alternative where the 3rd operand is a power
+	of 2, and the source register may differ from the destination.
+	(*insv.any_shift.<mode>_split): Call avr_out_insv to output
+	instructions.  Set attr "length" to "insv".
+	* config/avr/constraints.md (Cb2, Cb3, Cb4): New constraints.
+
+2024-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114231
+	* tree-vect-slp.cc (vect_analyze_slp): Lookup patterns when
+	processing a BB SLP root.
+
+2024-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114211
+	* lower-subreg.cc (resolve_simple_move): For double-word
+	rotates by BITS_PER_WORD if there is overlap between source
+	and destination use a temporary.
+
+2024-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114157
+	* gimple-lower-bitint.cc: Include stor-layout.h.
+	(mergeable_op): Return true for BIT_FIELD_REF.
+	(struct bitint_large_huge): Declare handle_bit_field_ref method.
+	(bitint_large_huge::handle_bit_field_ref): New method.
+	(bitint_large_huge::handle_stmt): Use it for BIT_FIELD_REF.
+
+2024-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114116
+	* config/i386/i386.h (enum call_saved_registers_type): Add
+	TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP enumerator.
+	* config/i386/i386-options.cc (ix86_set_func_type): Remove
+	has_no_callee_saved_registers variable, add no_callee_saved_registers
+	instead, initialize it depending on whether it is
+	no_callee_saved_registers function or not.  Don't set it if
+	no_caller_saved_registers attribute is present.  Adjust users.
+	* config/i386/i386.cc (ix86_function_ok_for_sibcall): Handle
+	TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP like
+	TYPE_NO_CALLEE_SAVED_REGISTERS.
+	(ix86_save_reg): Handle TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP.
+
+2024-03-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_v_adjust_bytesize): Cleanup unused
+	mode_size related code.
+
+2024-03-05  Patrick Palka  <ppalka@redhat.com>
+
+	* doc/invoke.texi (-Wno-global-module): Document.
+
 2024-03-04  David Faust  <david.faust@oracle.com>
 
 	* config/bpf/bpf-protos.h (bpf_expand_setmem): New prototype.

@@ -1,3 +1,66 @@
+2024-03-05  Cupertino Miranda  <cupertino.miranda@oracle.com>
+	    Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/114186
+	* gcc.dg/debug/ctf/ctf-array-6.c: Add test.
+
+2024-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR sanitizer/97696
+	* gcc.target/aarch64/sve/pr97696.c: New test.
+
+2024-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/strided_1.c (test5): Remove.
+
+2024-03-05  Saurabh Jha  <saujha01@e130340.arm.com>
+
+	PR target/112337
+	* gcc.target/arm/pr112337.c: Check for, then use the right MVE
+	options.
+
+2024-03-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/regname-fp-s9.c: New test.
+
+2024-03-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/avr/torture/insv-anyshift-hi.c: New test.
+	* gcc.target/avr/torture/insv-anyshift-si.c: New test.
+
+2024-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114231
+	* gcc.dg/vect/pr114231.c: New testcase.
+
+2024-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114211
+	* gcc.dg/pr114211.c: New test.
+
+2024-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114157
+	* gcc.dg/bitint-98.c: New test.
+	* gcc.target/i386/avx2-pr114157.c: New test.
+	* gcc.target/i386/avx512f-pr114157.c: New test.
+
+2024-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114116
+	* gcc.target/i386/pr38534-1.c: Allow push/pop of bp.
+	* gcc.target/i386/pr38534-4.c: Likewise.
+	* gcc.target/i386/pr38534-2.c: Likewise.
+	* gcc.target/i386/pr38534-3.c: Likewise.
+	* gcc.target/i386/pr114097-1.c: Likewise.
+	* gcc.target/i386/stack-check-17.c: Expect no pop on ! ia32.
+
+2024-03-05  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/friend-6_a.C: Pass -Wno-global-module instead
+	of -Wno-pedantic.  Remove now unnecessary preprocessing
+	directives from GMF.
+
 2024-03-04  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* g++.dg/modules/using-12.C: New test.
