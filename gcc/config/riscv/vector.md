@@ -5351,10 +5351,10 @@
   "@
    vmadd.vv\t%0,%4,%5%p1
    vmacc.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%4\;vmacc.vv\t%0,%3,%4%p1
+   vmv%m4r.v\t%0,%4\;vmacc.vv\t%0,%3,%4%p1
    vmadd.vv\t%0,%4,%5%p1
    vmacc.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%5\;vmacc.vv\t%0,%3,%4%p1"
+   vmv%m5r.v\t%0,%5\;vmacc.vv\t%0,%3,%4%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")])
 
@@ -5378,9 +5378,9 @@
   "TARGET_VECTOR"
   "@
    vmadd.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%2\;vmadd.vv\t%0,%3,%4%p1
+   vmv%m2r.v\t%0,%2\;vmadd.vv\t%0,%3,%4%p1
    vmadd.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%2\;vmadd.vv\t%0,%3,%4%p1"
+   vmv%m2r.v\t%0,%2\;vmadd.vv\t%0,%3,%4%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "2")
@@ -5409,9 +5409,9 @@
   "TARGET_VECTOR"
   "@
    vmacc.vv\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vmacc.vv\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4;vmacc.vv\t%0,%2,%3%p1
    vmacc.vv\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vmacc.vv\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vmacc.vv\t%0,%2,%3%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
@@ -5462,9 +5462,9 @@
   "TARGET_VECTOR"
   "@
    vmadd.vx\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vmadd.vx\t%0,%2,%4%p1
+   vmv%m3r.v\t%0,%3\;vmadd.vx\t%0,%2,%4%p1
    vmadd.vx\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vmadd.vx\t%0,%2,%4%p1"
+   vmv%m3r.v\t%0,%3\;vmadd.vx\t%0,%2,%4%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "3")
@@ -5494,9 +5494,9 @@
   "TARGET_VECTOR"
   "@
    vmacc.vx\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vmacc.vx\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4\;vmacc.vx\t%0,%2,%3%p1
    vmacc.vx\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vmacc.vx\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vmacc.vx\t%0,%2,%3%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
@@ -5562,9 +5562,9 @@
   "TARGET_VECTOR && !TARGET_64BIT"
   "@
    vmadd.vx\t%0,%2,%4%p1
-   vmv.v.v\t%0,%2\;vmadd.vx\t%0,%2,%4%p1
+   vmv%m2r.v\t%0,%2\;vmadd.vx\t%0,%2,%4%p1
    vmadd.vx\t%0,%2,%4%p1
-   vmv.v.v\t%0,%2\;vmadd.vx\t%0,%2,%4%p1"
+   vmv%m2r.v\t%0,%2\;vmadd.vx\t%0,%2,%4%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "3")
@@ -5595,9 +5595,9 @@
   "TARGET_VECTOR && !TARGET_64BIT"
   "@
    vmacc.vx\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vmacc.vx\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4\;vmacc.vx\t%0,%2,%3%p1
    vmacc.vx\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vmacc.vx\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vmacc.vx\t%0,%2,%3%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
@@ -5649,10 +5649,10 @@
   "@
    vnmsub.vv\t%0,%4,%5%p1
    vnmsac.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%3\;vnmsub.vv\t%0,%4,%5%p1
+   vmv%m3r.v\t%0,%3\;vnmsub.vv\t%0,%4,%5%p1
    vnmsub.vv\t%0,%4,%5%p1
    vnmsac.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%3\;vnmsub.vv\t%0,%4,%5%p1"
+   vmv%m3r.v\t%0,%3\;vnmsub.vv\t%0,%4,%5%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")])
 
@@ -5676,9 +5676,9 @@
   "TARGET_VECTOR"
   "@
    vnmsub.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%2\;vnmsub.vv\t%0,%3,%4%p1
+   vmv%m2r.v\t%0,%2\;vnmsub.vv\t%0,%3,%4%p1
    vnmsub.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%2\;vnmsub.vv\t%0,%3,%4%p1"
+   vmv%m2r.v\t%0,%2\;vnmsub.vv\t%0,%3,%4%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "2")
@@ -5707,9 +5707,9 @@
   "TARGET_VECTOR"
   "@
    vnmsac.vv\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vnmsac.vv\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4\;vnmsac.vv\t%0,%2,%3%p1
    vnmsac.vv\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vnmsac.vv\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vnmsac.vv\t%0,%2,%3%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
@@ -5760,9 +5760,9 @@
   "TARGET_VECTOR"
   "@
    vnmsub.vx\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vnmsub.vx\t%0,%2,%4%p1
+   vmv%m3r.v\t%0,%3\;vnmsub.vx\t%0,%2,%4%p1
    vnmsub.vx\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vnmsub.vx\t%0,%2,%4%p1"
+   vmv%m3r.v\t%0,%3\;vnmsub.vx\t%0,%2,%4%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "3")
@@ -5792,9 +5792,9 @@
   "TARGET_VECTOR"
   "@
    vnmsac.vx\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vnmsac.vx\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4\;vnmsac.vx\t%0,%2,%3%p1
    vnmsac.vx\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vnmsac.vx\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vnmsac.vx\t%0,%2,%3%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
@@ -5860,9 +5860,9 @@
   "TARGET_VECTOR && !TARGET_64BIT"
   "@
    vnmsub.vx\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vnmsub.vx\t%0,%2,%4%p1
+   vmv%m3r.v\t%0,%3\;vnmsub.vx\t%0,%2,%4%p1
    vnmsub.vx\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vnmsub.vx\t%0,%2,%4%p1"
+   vmv%m3r.v\t%0,%3\;vnmsub.vx\t%0,%2,%4%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "3")
@@ -5893,9 +5893,9 @@
   "TARGET_VECTOR && !TARGET_64BIT"
   "@
    vnmsac.vx\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vnmsac.vx\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4\;vnmsac.vx\t%0,%2,%3%p1
    vnmsac.vx\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vnmsac.vx\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vnmsac.vx\t%0,%2,%3%p1"
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
@@ -6555,10 +6555,10 @@
   "@
    vf<madd_msub>.vv\t%0,%4,%5%p1
    vf<macc_msac>.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%3\;vf<madd_msub>.vv\t%0,%4,%5%p1
+   vmv%m3r.v\t%0,%3\;vf<madd_msub>.vv\t%0,%4,%5%p1
    vf<madd_msub>.vv\t%0,%4,%5%p1
    vf<macc_msac>.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%3\;vf<madd_msub>.vv\t%0,%4,%5%p1"
+   vmv%m3r.v\t%0,%3\;vf<madd_msub>.vv\t%0,%4,%5%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set (attr "frm_mode")
@@ -6586,9 +6586,9 @@
   "TARGET_VECTOR"
   "@
    vf<madd_msub>.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%2\;vf<madd_msub>.vv\t%0,%3,%4%p1
+   vmv%m2r.v\t%0,%2\;vf<madd_msub>.vv\t%0,%3,%4%p1
    vf<madd_msub>.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%2\;vf<madd_msub>.vv\t%0,%3,%4%p1"
+   vmv%m2r.v\t%0,%2\;vf<madd_msub>.vv\t%0,%3,%4%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "2")
@@ -6621,9 +6621,9 @@
   "TARGET_VECTOR"
   "@
    vf<macc_msac>.vv\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vf<macc_msac>.vv\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4\;vf<macc_msac>.vv\t%0,%2,%3%p1
    vf<macc_msac>.vv\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vf<macc_msac>.vv\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vf<macc_msac>.vv\t%0,%2,%3%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
@@ -6680,9 +6680,9 @@
   "TARGET_VECTOR"
   "@
    vf<madd_msub>.vf\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vf<madd_msub>.vf\t%0,%2,%4%p1
+   vmv%m3r.v\t%0,%3\;vf<madd_msub>.vf\t%0,%2,%4%p1
    vf<madd_msub>.vf\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vf<madd_msub>.vf\t%0,%2,%4%p1"
+   vmv%m3r.v\t%0,%3\;vf<madd_msub>.vf\t%0,%2,%4%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "3")
@@ -6716,9 +6716,9 @@
   "TARGET_VECTOR"
   "@
    vf<macc_msac>.vf\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vf<macc_msac>.vf\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4\;vf<macc_msac>.vf\t%0,%2,%3%p1
    vf<macc_msac>.vf\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vf<macc_msac>.vf\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vf<macc_msac>.vf\t%0,%2,%3%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
@@ -6778,10 +6778,10 @@
   "@
    vf<nmsub_nmadd>.vv\t%0,%4,%5%p1
    vf<nmsac_nmacc>.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%3\;vf<nmsub_nmadd>.vv\t%0,%4,%5%p1
+   vmv%m3r.v\t%0,%3\;vf<nmsub_nmadd>.vv\t%0,%4,%5%p1
    vf<nmsub_nmadd>.vv\t%0,%4,%5%p1
    vf<nmsac_nmacc>.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%3\;vf<nmsub_nmadd>.vv\t%0,%4,%5%p1"
+   vmv%m3r.v\t%0,%3\;vf<nmsub_nmadd>.vv\t%0,%4,%5%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set (attr "frm_mode")
@@ -6810,9 +6810,9 @@
   "TARGET_VECTOR"
   "@
    vf<nmsub_nmadd>.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%2\;vf<nmsub_nmadd>.vv\t%0,%3,%4%p1
+   vmv%m2r.v\t%0,%2\;vf<nmsub_nmadd>.vv\t%0,%3,%4%p1
    vf<nmsub_nmadd>.vv\t%0,%3,%4%p1
-   vmv.v.v\t%0,%2\;vf<nmsub_nmadd>.vv\t%0,%3,%4%p1"
+   vmv%m2r.v\t%0,%2\;vf<nmsub_nmadd>.vv\t%0,%3,%4%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "2")
@@ -6846,9 +6846,9 @@
   "TARGET_VECTOR"
   "@
    vf<nmsac_nmacc>.vv\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vf<nmsac_nmacc>.vv\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4\;vf<nmsac_nmacc>.vv\t%0,%2,%3%p1
    vf<nmsac_nmacc>.vv\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vf<nmsac_nmacc>.vv\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vf<nmsac_nmacc>.vv\t%0,%2,%3%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
@@ -6907,9 +6907,9 @@
   "TARGET_VECTOR"
   "@
    vf<nmsub_nmadd>.vf\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vf<nmsub_nmadd>.vf\t%0,%2,%4%p1
+   vmv%m3r.v\t%0,%3\;vf<nmsub_nmadd>.vf\t%0,%2,%4%p1
    vf<nmsub_nmadd>.vf\t%0,%2,%4%p1
-   vmv.v.v\t%0,%3\;vf<nmsub_nmadd>.vf\t%0,%2,%4%p1"
+   vmv%m3r.v\t%0,%3\;vf<nmsub_nmadd>.vf\t%0,%2,%4%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "3")
@@ -6944,9 +6944,9 @@
   "TARGET_VECTOR"
   "@
    vf<nmsac_nmacc>.vf\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vf<nmsac_nmacc>.vf\t%0,%2,%3%p1
+   vmv%m4r.v\t%0,%4\;vf<nmsac_nmacc>.vf\t%0,%2,%3%p1
    vf<nmsac_nmacc>.vf\t%0,%2,%3%p1
-   vmv.v.v\t%0,%4\;vf<nmsac_nmacc>.vf\t%0,%2,%3%p1"
+   vmv%m4r.v\t%0,%4\;vf<nmsac_nmacc>.vf\t%0,%2,%3%p1"
   [(set_attr "type" "vfmuladd")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "4")
