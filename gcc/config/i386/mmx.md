@@ -2874,11 +2874,18 @@
         (neg:V2QI
 	  (match_operand:V2QI 1 "register_operand" "0,Yw")))
    (clobber (reg:CC FLAGS_REG))]
-  "!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun)"
+  "!TARGET_PARTIAL_REG_STALL || optimize_size || TARGET_SSE2"
   "#"
   [(set_attr "isa" "*,sse2")
    (set_attr "type" "multi")
-   (set_attr "mode" "QI,TI")])
+   (set_attr "mode" "QI,TI")
+   (set (attr "enabled")
+	(cond [(and (eq_attr "alternative" "0")
+		    (and (match_test "TARGET_PARTIAL_REG_STALL")
+			 (not (match_test "optimize_function_for_size_p (cfun)"))))
+		(symbol_ref "false")
+	      ]
+	      (const_string "*")))])
 
 (define_split
   [(set (match_operand:V2QI 0 "general_reg_operand")
@@ -2912,8 +2919,7 @@
         (neg:V2QI
 	  (match_operand:V2QI 1 "sse_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
-  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
-   && TARGET_SSE2 && reload_completed"
+  "TARGET_SSE2 && reload_completed"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0)
 	(minus:V16QI (match_dup 0) (match_dup 1)))]
@@ -2975,11 +2981,18 @@
 	  (match_operand:V2QI 1 "register_operand" "<comm>0,0,Yw")
 	  (match_operand:V2QI 2 "register_operand" "Q,x,Yw")))
    (clobber (reg:CC FLAGS_REG))]
-  "!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun)"
+  "!TARGET_PARTIAL_REG_STALL || optimize_size || TARGET_SSE2"
   "#"
   [(set_attr "isa" "*,sse2_noavx,avx")
    (set_attr "type" "multi,sseadd,sseadd")
-   (set_attr "mode" "QI,TI,TI")])
+   (set_attr "mode" "QI,TI,TI")
+   (set (attr "enabled")
+	(cond [(and (eq_attr "alternative" "0")
+		    (and (match_test "TARGET_PARTIAL_REG_STALL")
+			 (not (match_test "optimize_function_for_size_p (cfun)"))))
+		(symbol_ref "false")
+	      ]
+	      (const_string "*")))])
 
 (define_split
   [(set (match_operand:V2QI 0 "general_reg_operand")
@@ -3021,8 +3034,7 @@
 	  (match_operand:V2QI 1 "sse_reg_operand")
 	  (match_operand:V2QI 2 "sse_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
-  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
-   && TARGET_SSE2 && reload_completed"
+  "TARGET_SSE2 && reload_completed"
   [(set (match_dup 0)
         (plusminus:V16QI (match_dup 1) (match_dup 2)))]
 {
@@ -3684,9 +3696,10 @@
 	  (match_operand:V2QI 1 "register_operand" "0")
 	  (match_operand:QI 2 "nonmemory_operand" "cI")))
    (clobber (reg:CC FLAGS_REG))]
-  "!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun)"
+  "!TARGET_PARTIAL_REG_STALL || optimize_size"
   "#"
-  "&& reload_completed"
+  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
+   && reload_completed"
   [(parallel
      [(set (zero_extract:HI (match_dup 3) (const_int 8) (const_int 8))
 	   (subreg:HI
