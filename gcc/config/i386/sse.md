@@ -818,7 +818,8 @@
 
 (define_mode_attr ssebytemode
   [(V8DI "V64QI") (V4DI "V32QI") (V2DI "V16QI")
-   (V16SI "V64QI") (V8SI "V32QI") (V4SI "V16QI")])
+   (V16SI "V64QI") (V8SI "V32QI") (V4SI "V16QI")
+   (V8HI "V16QI")])
 
 (define_mode_attr sseintconvert
   [(V32HI "w") (V16HI "w") (V8HI "w")
@@ -14852,14 +14853,26 @@
 
 (define_mode_iterator PMOV_DST_MODE_2
   [V4SI V8HI (V16QI "TARGET_AVX512BW")])
+(define_mode_iterator PMOV_DST_MODE_2_AVX2
+  [V4SI V8HI V16QI])
 (define_mode_attr pmov_suff_2
   [(V16QI "wb") (V8HI "dw") (V4SI "qd")])
 
 (define_expand "trunc<ssedoublemodelower><mode>2"
-  [(set (match_operand:PMOV_DST_MODE_2 0 "nonimmediate_operand")
-	(truncate:PMOV_DST_MODE_2
+  [(set (match_operand:PMOV_DST_MODE_2_AVX2 0 "nonimmediate_operand")
+	(truncate:PMOV_DST_MODE_2_AVX2
 	  (match_operand:<ssedoublemode> 1 "register_operand")))]
-  "TARGET_AVX512VL")
+  "TARGET_AVX2"
+{
+  if (!TARGET_AVX512VL
+      || (<MODE>mode == V16QImode && !TARGET_AVX512BW))
+    {
+      ix86_expand_trunc_with_avx2_noavx512f (operands[0],
+					     operands[1],
+					     <ssedoublevecmode>mode);
+      DONE;
+    }
+})
 
 (define_insn "*avx512vl_<code><ssedoublemodelower><mode>2"
   [(set (match_operand:PMOV_DST_MODE_2 0 "nonimmediate_operand" "=v,m")
@@ -14939,6 +14952,7 @@
   "TARGET_AVX512VL")
 
 (define_mode_iterator PMOV_SRC_MODE_3 [V4DI V2DI V8SI V4SI (V8HI "TARGET_AVX512BW")])
+(define_mode_iterator PMOV_SRC_MODE_3_AVX2 [V4DI V2DI V8SI V4SI V8HI])
 (define_mode_attr pmov_dst_3_lower
   [(V4DI "v4qi") (V2DI "v2qi") (V8SI "v8qi") (V4SI "v4qi") (V8HI "v8qi")])
 (define_mode_attr pmov_dst_3
@@ -14951,16 +14965,26 @@
 (define_expand "trunc<mode><pmov_dst_3_lower>2"
   [(set (match_operand:<pmov_dst_3> 0 "register_operand")
 	(truncate:<pmov_dst_3>
-	  (match_operand:PMOV_SRC_MODE_3 1 "register_operand")))]
-  "TARGET_AVX512VL"
+	  (match_operand:PMOV_SRC_MODE_3_AVX2 1 "register_operand")))]
+  "TARGET_AVX2"
 {
-  rtx op0 = gen_reg_rtx (V16QImode);
+  if (TARGET_AVX512VL
+      && (<MODE>mode != V8HImode || TARGET_AVX512BW))
+    {
+       rtx op0 = gen_reg_rtx (V16QImode);
 
-  emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>qi2
-	     (op0, operands[1], CONST0_RTX (<pmov_dst_zeroed_3>mode)));
+       emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>qi2
+	         (op0, operands[1], CONST0_RTX (<pmov_dst_zeroed_3>mode)));
 
-  emit_move_insn (operands[0],
-		  lowpart_subreg (<pmov_dst_3>mode, op0, V16QImode));
+       emit_move_insn (operands[0],
+		       lowpart_subreg (<pmov_dst_3>mode, op0, V16QImode));
+    }
+  else
+    {
+      ix86_expand_trunc_with_avx2_noavx512f (operands[0],
+					     operands[1],
+					     <ssebytemode>mode);
+    }
   DONE;
 })
 
@@ -15332,15 +15356,21 @@
   [(set (match_operand:<pmov_dst_4> 0 "register_operand")
 	(truncate:<pmov_dst_4>
 	  (match_operand:PMOV_SRC_MODE_4 1 "register_operand")))]
-  "TARGET_AVX512VL"
+  "TARGET_AVX2"
 {
-  rtx op0 = gen_reg_rtx (V8HImode);
+  if (TARGET_AVX512VL)
+    {
+      rtx op0 = gen_reg_rtx (V8HImode);
 
-  emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>hi2
-	     (op0, operands[1], CONST0_RTX (<pmov_dst_zeroed_4>mode)));
+      emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>hi2
+		(op0, operands[1], CONST0_RTX (<pmov_dst_zeroed_4>mode)));
 
-  emit_move_insn (operands[0],
-		  lowpart_subreg (<pmov_dst_4>mode, op0, V8HImode));
+      emit_move_insn (operands[0],
+		      lowpart_subreg (<pmov_dst_4>mode, op0, V8HImode));
+      DONE;
+    }
+  else
+    ix86_expand_trunc_with_avx2_noavx512f (operands[0], operands[1], <ssewvecmode>mode);
   DONE;
 })
 
@@ -15581,15 +15611,27 @@
   [(set (match_operand:V2SI 0 "register_operand")
 	(truncate:V2SI
 	  (match_operand:V2DI 1 "register_operand")))]
-  "TARGET_AVX512VL"
+  "TARGET_AVX2"
 {
-  rtx op0 = gen_reg_rtx (V4SImode);
+  if (TARGET_AVX512VL)
+    {
+      rtx op0 = gen_reg_rtx (V4SImode);
 
-  emit_insn (gen_avx512vl_truncatev2div2si2
-	     (op0, operands[1], CONST0_RTX (V2SImode)));
+      emit_insn (gen_avx512vl_truncatev2div2si2
+		(op0, operands[1], CONST0_RTX (V2SImode)));
 
-  emit_move_insn (operands[0],
-		  lowpart_subreg (V2SImode, op0, V4SImode));
+      emit_move_insn (operands[0],
+		      lowpart_subreg (V2SImode, op0, V4SImode));
+    }
+  else
+    {
+      rtx tmp = lowpart_subreg (V4SImode,
+				force_reg (V2DImode, operands[1]), V2DImode);
+      rtx op0 = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse_shufps_v4si (op0, tmp, tmp, const0_rtx, GEN_INT (2),
+				      GEN_INT (6), GEN_INT (7)));
+      emit_move_insn (operands[0], lowpart_subreg (V2SImode, op0, V4SImode));
+    }
   DONE;
 })
 

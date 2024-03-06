@@ -112,6 +112,9 @@
 (define_mode_attr mmxhalfmode
   [(V4HI "V4QI") (V2HI "V2QI")])
 
+(define_mode_attr mmxbytemode
+  [(V4HI "V8QI") (V2HI "V4QI")])
+
 (define_mode_attr mmxhalfmodelower
   [(V4HI "v4qi") (V2HI "v2qi")])
 
@@ -4889,7 +4892,20 @@
   DONE;
 })
 
-(define_insn "trunc<mode><mmxhalfmodelower>2"
+(define_expand "trunc<mode><mmxhalfmodelower>2"
+  [(set (match_operand:<mmxhalfmode> 0 "register_operand")
+	(truncate:<mmxhalfmode>
+	  (match_operand:VI2_32_64 1 "register_operand")))]
+  "TARGET_AVX2"
+{
+  if (TARGET_AVX512VL && TARGET_AVX512BW)
+    emit_insn (gen_avx512vl_trunc<mode><mmxhalfmodelower>2 (operands[0], operands[1]));
+  else
+    ix86_expand_trunc_with_avx2_noavx512f (operands[0], operands[1], <mmxbytemode>mode);
+  DONE;
+})
+
+(define_insn "avx512vl_trunc<mode><mmxhalfmodelower>2"
   [(set (match_operand:<mmxhalfmode> 0 "register_operand" "=v")
 	(truncate:<mmxhalfmode>
 	  (match_operand:VI2_32_64 1 "register_operand" "v")))]
@@ -4900,7 +4916,22 @@
    (set_attr "mode" "TI")])
 
 (define_mode_iterator V2QI_V2HI [V2QI V2HI])
-(define_insn "truncv2si<mode>2"
+(define_mode_attr v2qi_quad_v2hi_double
+  [(V2QI "V8QI") (V2HI "V4HI")])
+(define_expand "truncv2si<mode>2"
+  [(set (match_operand:V2QI_V2HI 0 "register_operand")
+	(truncate:V2QI_V2HI
+	  (match_operand:V2SI 1 "register_operand")))]
+  "TARGET_AVX2 && TARGET_MMX_WITH_SSE"
+{
+  if (TARGET_AVX512VL)
+    emit_insn (gen_avx512vl_truncv2si<mode>2 (operands[0], operands[1]));
+  else
+    ix86_expand_trunc_with_avx2_noavx512f (operands[0], operands[1], <v2qi_quad_v2hi_double>mode);
+  DONE;
+})
+
+(define_insn "avx512vl_truncv2si<mode>2"
   [(set (match_operand:V2QI_V2HI 0 "register_operand" "=v")
 	(truncate:V2QI_V2HI
 	  (match_operand:V2SI 1 "register_operand" "v")))]

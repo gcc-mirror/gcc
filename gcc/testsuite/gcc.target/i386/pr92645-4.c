@@ -52,5 +52,3 @@ void f(char *dst, char *src, unsigned long n, unsigned c)
    a uniform CTOR with a vector promotion to a CTOR on a promoted
    element.  */
 /* { dg-final { scan-tree-dump-times "\\(vector\\(16\\) short unsigned int\\)" 2 "optimized" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "VEC_PACK_TRUNC" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "BIT_FIELD_REF" 2 "optimized" } } */

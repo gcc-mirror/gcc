@@ -248,6 +248,7 @@ extern rtx ix86_gen_ccmp_first (rtx_insn **, rtx_insn **, enum rtx_code,
 extern rtx ix86_gen_ccmp_next (rtx_insn **, rtx_insn **, rtx,
 			       enum rtx_code, tree, tree, enum rtx_code);
 extern int ix86_get_flags_cc (enum rtx_code);
+extern void ix86_expand_trunc_with_avx2_noavx512f (rtx, rtx, machine_mode);
 extern rtx ix86_memtag_untagged_pointer (rtx, rtx);
 extern bool ix86_memtag_can_tag_addresses (void);
 
@@ -298,6 +299,8 @@ extern void ix86_expand_sse2_mulvxdi3 (rtx, rtx, rtx);
 extern void ix86_expand_sse2_abs (rtx, rtx);
 extern bool ix86_expand_vector_init_duplicate (bool, machine_mode, rtx,
 					       rtx);
+extern bool ix86_expand_vector_init_one_nonzero (bool, machine_mode, rtx,
+						 rtx, int);
 extern bool ix86_extract_perm_from_pool_constant (int*, rtx);
 
 /* In i386-c.cc  */

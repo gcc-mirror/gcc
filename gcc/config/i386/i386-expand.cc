@@ -1898,10 +1898,6 @@ ix86_split_convert_uns_si_sse (rtx operands[])
   emit_insn (gen_xorv4si3 (value, value, large));
 }
 
-static bool ix86_expand_vector_init_one_nonzero (bool mmx_ok,
-						 machine_mode mode, rtx target,
-						 rtx var, int one_var);
-
 /* Convert an unsigned DImode value into a DFmode, using only SSE.
    Expects the 64-bit DImode to be supplied in a pair of integral
    registers.  Requires SSE2; will use SSE3 if available.  For x86_32,
@@ -16126,7 +16122,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
    whose ONE_VAR element is VAR, and other elements are zero.  Return true
    if successful.  */
 
-static bool
+bool
 ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
 				     rtx target, rtx var, int one_var)
 {
@@ -26135,6 +26131,44 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
   rtvec vec = gen_rtvec (4, tmp0, tmp1, tmp2, GEN_INT (idx));
   emit_move_insn (target, gen_rtx_UNSPEC (mode, vec, UNSPEC_VTERNLOG));
   return target;
+}
+
+/* Trunc a vector to a narrow vector, like v4di -> v4si.  */
+
+void
+ix86_expand_trunc_with_avx2_noavx512f (rtx output, rtx input, machine_mode cvt_mode)
+{
+  machine_mode out_mode = GET_MODE (output);
+  machine_mode in_mode = GET_MODE (input);
+  int len = GET_MODE_SIZE (in_mode);
+  gcc_assert (len == GET_MODE_SIZE (cvt_mode)
+	      && GET_MODE_INNER (out_mode) == GET_MODE_INNER (cvt_mode)
+	      && (REG_P (input) || SUBREG_P (input)));
+  scalar_mode inner_out_mode = GET_MODE_INNER (out_mode);
+  int in_innersize = GET_MODE_SIZE (GET_MODE_INNER (in_mode));
+  int out_innersize = GET_MODE_SIZE (inner_out_mode);
+
+  struct expand_vec_perm_d d;
+  d.target = gen_reg_rtx (cvt_mode);
+  d.op0 = lowpart_subreg (cvt_mode, force_reg(in_mode, input), in_mode);
+  d.op1 = d.op0;
+  d.vmode = cvt_mode;
+  d.nelt = GET_MODE_NUNITS (cvt_mode);
+  d.testing_p = false;
+  d.one_operand_p = true;
+
+  /* Init perm. Put the needed bits of input in order and
+     fill the rest of bits by default.  */
+  for (int i = 0; i < d.nelt; ++i)
+    {
+      d.perm[i] = i;
+      if (i < GET_MODE_NUNITS (out_mode))
+	d.perm[i] = i * (in_innersize / out_innersize);
+    }
+
+  bool ok = ix86_expand_vec_perm_const_1(&d);
+  gcc_assert (ok);
+  emit_move_insn (output, gen_lowpart (out_mode, d.target));
 }
 
 #include "gt-i386-expand.h"
