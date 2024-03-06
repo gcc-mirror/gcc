@@ -4633,8 +4633,6 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	       || (code == NE && rtx_equal_p (alt, op0)))
 	    {
 	      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
-	      if (!rtx_equal_p (cons, op0))
-		std::swap (alt, cons);
 	      alt = force_reg (mode, alt);
 	      emit_insn (gen_rtx_SET (dest,
 				      gen_rtx_IF_THEN_ELSE (mode, cond,
