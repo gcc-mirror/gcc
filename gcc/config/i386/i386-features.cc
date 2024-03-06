@@ -2690,6 +2690,7 @@ rest_of_handle_insert_vzeroupper (void)
 	    }
 	}
 
+  df_remove_problem (df_note);
   df_analyze ();
   return 0;
 }
