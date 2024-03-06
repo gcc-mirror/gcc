@@ -1,9 +1,3 @@
-#if defined(__hppa__) && !defined(__LP64__)
-#define NUM_THREADS 50
-#else
-#define NUM_THREADS 64
-#endif
-
 extern void abort (void);
 int a;
 
@@ -25,7 +19,7 @@ foo ()
 int
 main (void)
 {
-#pragma omp parallel num_threads (NUM_THREADS)
+#pragma omp parallel num_threads (64)
   foo ();
 
   return 0;
