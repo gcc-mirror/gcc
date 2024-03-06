@@ -10498,21 +10498,20 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 		    }
 		}
 
-	    if (RECORD_OR_UNION_TYPE_P (ctx))
+	    if (TREE_CODE (decl) == TEMPLATE_DECL
+		&& DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 	      {
-		if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
-		  mk = MK_field;
+		mk = MK_local_friend;
 		break;
 	      }
 
-	    if (TREE_CODE (decl) == TEMPLATE_DECL
-		&& DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
-	      mk = MK_local_friend;
-	    else if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
+	    if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
 	      {
-		if (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && UNSCOPED_ENUM_P (TREE_TYPE (decl))
-		    && TYPE_VALUES (TREE_TYPE (decl)))
+		if (RECORD_OR_UNION_TYPE_P (ctx))
+		  mk = MK_field;
+		else if (DECL_IMPLICIT_TYPEDEF_P (decl)
+			 && UNSCOPED_ENUM_P (TREE_TYPE (decl))
+			 && TYPE_VALUES (TREE_TYPE (decl)))
 		  /* Keyed by first enum value, and underlying type.  */
 		  mk = MK_enum;
 		else
