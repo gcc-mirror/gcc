@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref.h"
 #include "target.h"
 #include "tree-ssa-loop-niter.h"
+#include "tree-ssa.h"
 
 /* This file implements dead store elimination.
 
@@ -614,6 +615,7 @@ increment_start_addr (gimple *stmt, tree *where, int increment)
 					      *where,
 					      build_int_cst (ptr_type_node,
 							     increment)));
+  STRIP_USELESS_TYPE_CONVERSION (*where);
 }
 
 /* STMT is builtin call that writes bytes in bitmap ORIG, some bytes are dead
