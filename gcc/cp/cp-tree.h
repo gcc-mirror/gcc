@@ -7642,8 +7642,7 @@ extern void walk_specializations		(bool,
 						 void *);
 extern tree match_mergeable_specialization	(bool is_decl, spec_entry *);
 extern unsigned get_mergeable_specialization_flags (tree tmpl, tree spec);
-extern void add_mergeable_specialization        (bool is_decl, bool is_alias,
-						 spec_entry *,
+extern void add_mergeable_specialization        (bool is_decl, spec_entry *,
 						 tree outer, unsigned);
 extern tree add_to_template_args		(tree, tree);
 extern tree add_outermost_template_args		(tree, tree);

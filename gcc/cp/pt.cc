@@ -10055,6 +10055,32 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
       /* Now we should have enough arguments.  */
       gcc_assert (parm_depth == arg_depth);
 
+      if (DECL_ALIAS_TEMPLATE_P (gen_tmpl))
+	{
+	  /* The user referred to a specialization of an alias
+	    template represented by GEN_TMPL.
+
+	    [temp.alias]/2 says:
+
+		When a template-id refers to the specialization of an
+		alias template, it is equivalent to the associated
+		type obtained by substitution of its
+		template-arguments for the template-parameters in the
+		type-id of the alias template.  */
+
+	  t = instantiate_alias_template (gen_tmpl, arglist, complain);
+	  /* Note that the call above (by indirectly calling
+	     register_specialization in tsubst_decl) registers the
+	     TYPE_DECL representing the specialization of the alias
+	     template.  So next time someone substitutes ARGLIST for
+	     the template parms into the alias template (GEN_TMPL),
+	     she'll get that TYPE_DECL back.  */
+
+	  if (t == error_mark_node)
+	    return error_mark_node;
+	  return TREE_TYPE (t);
+	}
+
       /* From here on, we're only interested in the most general
 	 template.  */
 
@@ -10120,7 +10146,6 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
          lookup. This prevents redundant checks on previously
          instantiated specializations. */
       if (flag_concepts
-	  && !DECL_ALIAS_TEMPLATE_P (gen_tmpl)
 	  && !constraints_satisfied_p (gen_tmpl, arglist))
         {
           if (complain & tf_error)
@@ -10189,31 +10214,7 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 	context = global_namespace;
 
       /* Create the type.  */
-      if (DECL_ALIAS_TEMPLATE_P (gen_tmpl))
-	{
-	  /* The user referred to a specialization of an alias
-	    template represented by GEN_TMPL.
-
-	    [temp.alias]/2 says:
-
-	        When a template-id refers to the specialization of an
-		alias template, it is equivalent to the associated
-		type obtained by substitution of its
-		template-arguments for the template-parameters in the
-		type-id of the alias template.  */
-
-	  t = tsubst (TREE_TYPE (gen_tmpl), arglist, complain, in_decl);
-	  /* Note that the call above (by indirectly calling
-	     register_specialization in tsubst_decl) registers the
-	     TYPE_DECL representing the specialization of the alias
-	     template.  So next time someone substitutes ARGLIST for
-	     the template parms into the alias template (GEN_TMPL),
-	     she'll get that TYPE_DECL back.  */
-
-	  if (t == error_mark_node)
-	    return t;
-	}
-      else if (TREE_CODE (template_type) == ENUMERAL_TYPE)
+      if (TREE_CODE (template_type) == ENUMERAL_TYPE)
 	{
 	  if (!is_dependent_type)
 	    {
@@ -10301,8 +10302,7 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 	    }
 	}
 
-      if (OVERLOAD_TYPE_P (t)
-	  && !DECL_ALIAS_TEMPLATE_P (gen_tmpl))
+      if (OVERLOAD_TYPE_P (t))
 	{
 	  static const char *tags[] = {"abi_tag", "may_alias"};
 
@@ -10369,7 +10369,7 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 	{
 	  TREE_VEC_LENGTH (arglist)--;
 	  ++processing_template_decl;
-	  tree tinfo = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (TREE_TYPE (gen_tmpl));
+	  tree tinfo = TYPE_TEMPLATE_INFO (TREE_TYPE (gen_tmpl));
 	  tree partial_inst_args =
 	    tsubst (INNERMOST_TEMPLATE_ARGS (TI_ARGS (tinfo)),
 		    arglist, complain, NULL_TREE);
@@ -10407,17 +10407,9 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 	     TEMPLATE_PARM_LEVEL.  */
 	  found = tsubst (gen_tmpl, arglist, tf_none, NULL_TREE);
 	  TREE_VEC_LENGTH (arglist)++;
-	  /* FOUND is either a proper class type, or an alias
-	     template specialization.  In the later case, it's a
-	     TYPE_DECL, resulting from the substituting of arguments
-	     for parameters in the TYPE_DECL of the alias template
-	     done earlier.  So be careful while getting the template
-	     of FOUND.  */
 	  found = (TREE_CODE (found) == TEMPLATE_DECL
 		   ? found
-		   : (TREE_CODE (found) == TYPE_DECL
-		      ? DECL_TI_TEMPLATE (found)
-		      : CLASSTYPE_TI_TEMPLATE (found)));
+		   : CLASSTYPE_TI_TEMPLATE (found));
 
 	  if (DECL_CLASS_TEMPLATE_P (found)
 	      && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (found)))
@@ -10447,8 +10439,7 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 		     DECL_TEMPLATE_INSTANTIATIONS (found));
 
       if (TREE_CODE (template_type) == ENUMERAL_TYPE
-	  && !uses_template_parms (current_nonlambda_scope ())
-	  && !DECL_ALIAS_TEMPLATE_P (gen_tmpl))
+	  && !uses_template_parms (current_nonlambda_scope ()))
 	/* Now that the type has been registered on the instantiations
 	   list, we set up the enumerators.  Because the enumeration
 	   constants may involve the enumeration type itself, we make
@@ -31578,8 +31569,8 @@ get_mergeable_specialization_flags (tree tmpl, tree decl)
    get_mergeable_specialization_flags.  */
 
 void
-add_mergeable_specialization (bool decl_p, bool alias_p, spec_entry *elt,
-			      tree decl, unsigned flags)
+add_mergeable_specialization (bool decl_p, spec_entry *elt, tree decl,
+			      unsigned flags)
 {
   hashval_t hash = spec_hasher::hash (elt);
   if (decl_p)
@@ -31590,15 +31581,8 @@ add_mergeable_specialization (bool decl_p, bool alias_p, spec_entry *elt,
       auto entry = ggc_alloc<spec_entry> ();
       *entry = *elt;
       *slot = entry;
-
-      if (alias_p)
-	{
-	  elt->spec = TREE_TYPE (elt->spec);
-	  gcc_checking_assert (elt->spec);
-	}
     }
-
-  if (!decl_p || alias_p)
+  else
     {
       auto *slot = type_specializations->find_slot_with_hash (elt, hash, INSERT);
 

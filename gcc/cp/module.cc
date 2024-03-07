@@ -2305,11 +2305,7 @@ private:
     DB_HIDDEN_BIT,		/* A hidden binding.  */
     /* The following bits are not independent, but enumerating them is
        awkward.  */
-    DB_ALIAS_TMPL_INST_BIT,	/* An alias template instantiation. */
-    DB_ALIAS_SPEC_BIT,		/* Specialization of an alias template
-				   (in both spec tables).  */
-    DB_TYPE_SPEC_BIT,		/* Specialization in the type table.
-				   */
+    DB_TYPE_SPEC_BIT,		/* Specialization in the type table.  */
     DB_FRIEND_SPEC_BIT,		/* An instantiated template friend.  */
   };
 
@@ -2399,14 +2395,6 @@ public:
   bool is_unreached () const
   {
     return get_flag_bit<DB_UNREACHED_BIT> ();
-  }
-  bool is_alias_tmpl_inst () const
-  {
-    return get_flag_bit<DB_ALIAS_TMPL_INST_BIT> ();
-  }
-  bool is_alias () const
-  {
-    return get_flag_bit<DB_ALIAS_SPEC_BIT> ();
   }
   bool is_hidden () const
   {
@@ -2781,13 +2769,11 @@ enum merge_kind
   MK_template_mask = 0x10,  /* A template specialization.  */
 
   MK_tmpl_decl_mask = 0x4, /* In decl table.  */
-  MK_tmpl_alias_mask = 0x2, /* Also in type table  */
 
   MK_tmpl_tmpl_mask = 0x1, /* We want TEMPLATE_DECL.  */
 
   MK_type_spec = MK_template_mask,
   MK_decl_spec = MK_template_mask | MK_tmpl_decl_mask,
-  MK_alias_spec = MK_decl_spec | MK_tmpl_alias_mask,
 
   MK_hwm = 0x20
 };
@@ -2805,7 +2791,7 @@ static char const *const merge_kind_name[MK_hwm] =
     NULL, NULL,
 
     "decl spec", "decl tmpl spec",	/* 20,21 decl (template).  */
-    "alias spec", "alias tmpl spec",	/* 22,23 alias (template). */
+    NULL, NULL,
     NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL,
   };
@@ -6350,8 +6336,7 @@ trees_out::core_vals (tree t)
       gcc_checking_assert
       	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
       gcc_checking_assert
-	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result)
-	 || dep_hash->find_dependency (t)->is_alias_tmpl_inst ());
+	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result));
       if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (t))
 	WT (DECL_CHAIN (t));
       break;
@@ -8270,16 +8255,13 @@ trees_in::decl_value ()
 	{
 	  bool is_type = TREE_CODE (inner) == TYPE_DECL;
 	  spec.spec = is_type ? type : inner;
-	  add_mergeable_specialization (!is_type, false,
-					&spec, decl, spec_flags);
+	  add_mergeable_specialization (!is_type, &spec, decl, spec_flags);
 	}
       else if (mk & MK_template_mask)
 	{
 	  bool is_type = !(mk & MK_tmpl_decl_mask);
 	  spec.spec = is_type ? type : mk & MK_tmpl_tmpl_mask ? inner : decl;
-	  add_mergeable_specialization (!is_type,
-					!is_type && mk & MK_tmpl_alias_mask,
-					&spec, decl, spec_flags);
+	  add_mergeable_specialization (!is_type, &spec, decl, spec_flags);
 	}
 
       if (NAMESPACE_SCOPE_P (decl)
@@ -8356,7 +8338,7 @@ trees_in::decl_value ()
       if (!e)
 	{
 	  spec.spec = inner;
-	  add_mergeable_specialization (true, false, &spec, decl, spec_flags);
+	  add_mergeable_specialization (true, &spec, decl, spec_flags);
 	}
       else if (e != existing)
 	set_overrun ();
@@ -10514,8 +10496,6 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	  mk = MK_friend_spec;
 	else if (dep->is_type_spec ())
 	  mk = MK_type_spec;
-	else if (dep->is_alias ())
-	  mk = MK_alias_spec;
 	else
 	  mk = MK_decl_spec;
 
@@ -10626,11 +10606,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  gcc_assert (existing);
 	  if (mk & MK_tmpl_decl_mask)
 	    {
-	      if (mk & MK_tmpl_alias_mask)
-		/* It should be in both tables.  */
-		gcc_checking_assert
-		  (same_type_p (match_mergeable_specialization (false, entry),
-				TREE_TYPE (existing)));
 	      if (mk & MK_tmpl_tmpl_mask)
 		existing = DECL_TI_TEMPLATE (existing);
 	    }
@@ -12716,17 +12691,12 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	 bindings.  */
       *slot = dep = make_entity (decl, ek, has_def);
 
-      if (TREE_CODE (decl) == TEMPLATE_DECL)
-	{
-	  if (DECL_ALIAS_TEMPLATE_P (decl) && DECL_TEMPLATE_INFO (decl))
-	    dep->set_flag_bit<DB_ALIAS_TMPL_INST_BIT> ();
-	  else if (CHECKING_P)
-	    /* The template_result should otherwise not be in the
-	       table, or be an empty redirect (created above).  */
-	    if (auto *eslot = entity_slot (DECL_TEMPLATE_RESULT (decl), false))
-	      gcc_checking_assert ((*eslot)->get_entity_kind () == EK_REDIRECT
-				   && !(*eslot)->deps.length ());
-	}
+      if (CHECKING_P && TREE_CODE (decl) == TEMPLATE_DECL)
+	/* The template_result should otherwise not be in the
+	   table, or be an empty redirect (created above).  */
+	if (auto *eslot = entity_slot (DECL_TEMPLATE_RESULT (decl), false))
+	  gcc_checking_assert ((*eslot)->get_entity_kind () == EK_REDIRECT
+			       && !(*eslot)->deps.length ());
 
       if (ek != EK_USING)
 	{
@@ -13114,16 +13084,10 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
 	 heuristic.  We don't attempt to replicate that algorithm, but
 	 observe its behaviour and reproduce it upon read back.  */
 
-       gcc_checking_assert (DECL_ALIAS_TEMPLATE_P (entry->tmpl)
-			   || TREE_CODE (entry->spec) == ENUMERAL_TYPE
+       gcc_checking_assert (TREE_CODE (entry->spec) == ENUMERAL_TYPE
 			   || DECL_CLASS_TEMPLATE_P (entry->tmpl));
 
-       /* Only alias templates can appear in both tables (and
-	  if they're in the type table they must also be in the decl
-	  table).  */
-       gcc_checking_assert
-	 (!match_mergeable_specialization (true, entry)
-	  == !DECL_ALIAS_TEMPLATE_P (entry->tmpl));
+       gcc_checking_assert (!match_mergeable_specialization (true, entry));
     }
   else if (VAR_OR_FUNCTION_DECL_P (entry->spec))
     gcc_checking_assert (!DECL_LOCAL_DECL_P (entry->spec));
@@ -13179,7 +13143,6 @@ depset::hash::add_specializations (bool decl_p)
       spec_entry *entry = data.pop ();
       tree spec = entry->spec;
       int use_tpl = 0;
-      bool is_alias = false;
       bool is_friend = false;
 
       if (decl_p && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (entry->tmpl))
@@ -13187,13 +13150,7 @@ depset::hash::add_specializations (bool decl_p)
 	   instantiation.  */
 	is_friend = true;
 
-      if (!decl_p && DECL_ALIAS_TEMPLATE_P (entry->tmpl))
-	{
-	  spec = TYPE_NAME (spec);
-	  is_alias = true;
-	}
-
-      if (decl_p || is_alias)
+      if (decl_p)
 	{
 	  if (tree ti = DECL_TEMPLATE_INFO (spec))
 	    {
@@ -13278,20 +13235,9 @@ depset::hash::add_specializations (bool decl_p)
       gcc_checking_assert (!TREE_VISITED (spec));
       depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
       if (dep->is_special ())
-	{
-	  /* An already located specialization, this must be the TYPE
-	     corresponding to an alias_decl we found in the decl
-	     table.  */
-	  spec_entry *other = reinterpret_cast <spec_entry *> (dep->deps[0]);
-	  gcc_checking_assert (!decl_p && is_alias && !dep->is_type_spec ());
-	  gcc_checking_assert (other->tmpl == entry->tmpl
-			       && template_args_equal (other->args, entry->args)
-			       && TREE_TYPE (other->spec) == entry->spec);
-	  dep->set_flag_bit<DB_ALIAS_SPEC_BIT> ();
-	}
+	gcc_unreachable ();
       else
 	{
-	  gcc_checking_assert (decl_p || !is_alias);
 	  if (dep->get_entity_kind () == depset::EK_REDIRECT)
 	    dep = dep->deps[0];
 	  else if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
