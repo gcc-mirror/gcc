@@ -612,7 +612,7 @@ nvptx_get_num_devices (void)
 	}
     }
 
-  CUDA_CALL_ERET (-1, cuDeviceGetCount, &n);
+  CUDA_CALL_ASSERT (cuDeviceGetCount, &n);
   return n;
 }
 
