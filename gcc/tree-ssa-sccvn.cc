@@ -1221,7 +1221,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	  if (maybe_eq (op->off, -1))
 	    max_size = -1;
 	  else
-	    offset += op->off << LOG2_BITS_PER_UNIT;
+	    offset += op->off * BITS_PER_UNIT;
 	  break;
 
 	case REALPART_EXPR:
