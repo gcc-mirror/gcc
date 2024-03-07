@@ -4657,8 +4657,6 @@ package body Exp_Ch4 is
          if Is_Array_Type (Dtyp) and then not No_Initialization (N) then
             Apply_Constraint_Check (Expression (N), Dtyp, No_Sliding => True);
 
-            Apply_Predicate_Check (Expression (N), Dtyp);
-
             if Nkind (Expression (N)) = N_Raise_Constraint_Error then
                Rewrite (N, New_Copy (Expression (N)));
                Set_Etype (N, PtrT);
@@ -4751,6 +4749,8 @@ package body Exp_Ch4 is
 
             Rewrite (N, New_Occurrence_Of (Temp, Loc));
             Analyze_And_Resolve (N, PtrT);
+
+            Apply_Predicate_Check (N, Dtyp, Deref => True);
 
          --  Case of no initialization procedure present
 
@@ -5118,6 +5118,8 @@ package body Exp_Ch4 is
 
                Rewrite (N, New_Occurrence_Of (Temp, Loc));
                Analyze_And_Resolve (N, PtrT);
+
+               Apply_Predicate_Check (N, Dtyp, Deref => True);
 
                --  When designated type has Default_Initial_Condition aspects,
                --  make a call to the type's DIC procedure to perform the
