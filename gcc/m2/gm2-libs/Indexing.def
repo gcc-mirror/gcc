@@ -27,14 +27,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 DEFINITION MODULE Indexing ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-EXPORT QUALIFIED Index, InitIndex, KillIndex, GetIndice, PutIndice,
-                 HighIndice, LowIndice, InBounds, IsIndiceInIndex,
-                 RemoveIndiceFromIndex, IncludeIndiceIntoIndex,
-                 ForeachIndiceInIndexDo, DeleteIndice, DebugIndex ;
+
 
 TYPE
    Index ;
    IndexProcedure = PROCEDURE (ADDRESS) ;
+
+
+(*
+   InitIndexTuned - creates a dynamic array with low indice.
+                    minsize is the initial number of elements the
+                    array is allocated and growfactor determines how
+                    it will be resized once it becomes full.
+*)
+
+PROCEDURE InitIndexTuned (low, minsize, growfactor: CARDINAL) : Index ;
 
 
 (*
@@ -128,6 +135,13 @@ PROCEDURE IncludeIndiceIntoIndex (i: Index; a: ADDRESS) ;
 *)
 
 PROCEDURE ForeachIndiceInIndexDo (i: Index; p: IndexProcedure) ;
+
+
+(*
+   IsEmpty - return TRUE if the array has no entries it.
+*)
+
+PROCEDURE IsEmpty (i: Index) : BOOLEAN ;
 
 
 END Indexing.
