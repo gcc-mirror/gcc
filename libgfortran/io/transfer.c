@@ -1128,8 +1128,9 @@ unformatted_read (st_parameter_dt *dtp, bt type,
 	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
 	    {
 	      char message[IOMSG_LEN + 1];
-	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
-	      snprintf (message, child_iomsg_len, child_iomsg);
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
 	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
 			      message);
 	    }
@@ -1271,8 +1272,9 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
 	    {
 	      char message[IOMSG_LEN + 1];
-	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
-	      snprintf (message, child_iomsg_len, child_iomsg);
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
 	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
 			      message);
 	    }
@@ -1763,8 +1765,9 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
 	    {
 	      char message[IOMSG_LEN + 1];
-	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
-	      snprintf (message, child_iomsg_len, child_iomsg);
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
 	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
 			      message);
 	    }
@@ -2259,8 +2262,9 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
 	    {
 	      char message[IOMSG_LEN + 1];
-	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
-	      snprintf (message, child_iomsg_len, child_iomsg);
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
 	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
 			      message);
 	    }

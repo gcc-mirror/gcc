@@ -1999,8 +1999,9 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
 	    {
 	      char message[IOMSG_LEN + 1];
-	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
-	      snprintf (message, child_iomsg_len, child_iomsg);
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
 	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
 			      message);
 	    }
@@ -2352,8 +2353,9 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 		      char message[IOMSG_LEN + 1];
 
 		      /* Trim trailing spaces from the message.  */
-		      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
-		      snprintf (message, child_iomsg_len, child_iomsg);
+		      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+		      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+		      message[child_iomsg_len] = '\0';
 		      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
 				      message);
 		    }

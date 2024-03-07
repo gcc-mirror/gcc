@@ -2268,9 +2268,10 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
 	    {
 	      char message[IOMSG_LEN + 1];
-	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
 	      free_line (dtp);
-	      snprintf (message, child_iomsg_len, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
 	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
 			      message);
 	    }
@@ -3082,8 +3083,9 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
 		    !(dtp->common.flags & IOPARM_HAS_IOSTAT))
 		  {
 		    char message[IOMSG_LEN + 1];
-		    child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg) + 1;
-		    snprintf (message, child_iomsg_len, child_iomsg);
+		    child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+		    fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+		    message[child_iomsg_len] = '\0';
 		    generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
 				    message);
 		    goto nml_err_ret;
