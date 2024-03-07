@@ -404,11 +404,10 @@ package body Uname is
       Suffix : Boolean := True)
    is
    begin
-      pragma Assert (Buf.Chars (1) /= '"');
-      pragma Assert (Is_Body_Name (N) or else Is_Spec_Name (N));
-
       Buf.Length := 0;
       Append_Decoded (Buf, N);
+      pragma Assert (Buf.Chars (1) /= '"');
+      pragma Assert (Is_Body_Name (N) or else Is_Spec_Name (N));
 
       --  Buf always ends with "%s" or "%b", which we either remove, or replace
       --  with " (spec)" or " (body)". Set_Casing of Buf after checking for
