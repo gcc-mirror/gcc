@@ -1513,10 +1513,12 @@ assign_agent_ids (hsa_agent_t agent, void *data)
 }
 
 /* Initialize hsa_context if it has not already been done.
-   Return TRUE on success.  */
+   If !PROBE: returns TRUE on success.
+   If PROBE: returns TRUE on success or if the plugin/device shall be silently
+   ignored, and otherwise emits an error and returns FALSE.  */
 
 static bool
-init_hsa_context (void)
+init_hsa_context (bool probe)
 {
   hsa_status_t status;
   int agent_index = 0;
@@ -1531,7 +1533,7 @@ init_hsa_context (void)
 	GOMP_PLUGIN_fatal ("%s\n", msg);
       else
 	GCN_WARNING ("%s\n", msg);
-      return false;
+      return probe ? true : false;
     }
   status = hsa_fns.hsa_init_fn ();
   if (status != HSA_STATUS_SUCCESS)
@@ -3337,8 +3339,8 @@ GOMP_OFFLOAD_version (void)
 int
 GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
 {
-  if (!init_hsa_context ())
-    return 0;
+  if (!init_hsa_context (true))
+    exit (EXIT_FAILURE);
   /* Return -1 if no omp_requires_mask cannot be fulfilled but
      devices were present.  */
   if (hsa_context.agent_count > 0
@@ -3355,7 +3357,7 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
 bool
 GOMP_OFFLOAD_init_device (int n)
 {
-  if (!init_hsa_context ())
+  if (!init_hsa_context (false))
     return false;
   if (n >= hsa_context.agent_count)
     {

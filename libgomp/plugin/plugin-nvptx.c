@@ -604,12 +604,14 @@ nvptx_get_num_devices (void)
       CUresult r = CUDA_CALL_NOCHECK (cuInit, 0);
       /* This is not an error: e.g. we may have CUDA libraries installed but
          no devices available.  */
-      if (r != CUDA_SUCCESS)
+      if (r == CUDA_ERROR_NO_DEVICE)
 	{
 	  GOMP_PLUGIN_debug (0, "Disabling nvptx offloading; cuInit: %s\n",
 			     cuda_error (r));
 	  return 0;
 	}
+      else if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuInit error: %s", cuda_error (r));
     }
 
   CUDA_CALL_ASSERT (cuDeviceGetCount, &n);
