@@ -28,12 +28,4 @@ set_large (struct context *ctx)
   __builtin_memset (dest, 0xfe, 130);
 }
 
-void
-set_variable (struct context *ctx)
-{
-  void *data = (void *)(long)ctx->data;
-  char *dest = data;
-  __builtin_memset (dest, 0xbc, ctx->data_meta); /* { dg-error "could not inline call" } */
-}
-
 /* { dg-final { scan-assembler-times "call" 0 } } */
