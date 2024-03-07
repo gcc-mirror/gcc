@@ -526,6 +526,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       basic_string()
       _GLIBCXX_NOEXCEPT_IF(is_nothrow_default_constructible<_Alloc>::value)
+#if __cpp_concepts && __glibcxx_type_trait_variable_templates
+      requires is_default_constructible_v<_Alloc>
+#endif
       : _M_dataplus(_M_local_data())
       {
 	_M_init_local_buf();

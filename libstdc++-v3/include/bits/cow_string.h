@@ -515,6 +515,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       basic_string()
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       _GLIBCXX_NOEXCEPT
+#endif
+#if __cpp_concepts && __glibcxx_type_trait_variable_templates
+      requires is_default_constructible_v<_Alloc>
+#endif
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc())
 #else
       : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc())
