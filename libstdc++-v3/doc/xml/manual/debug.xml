@@ -351,6 +351,8 @@
 
   <para> The <link linkend="manual.ext.compile_checks">Compile-Time
   Checks</link> extension has compile-time checks for many algorithms.
+  These checks were designed for C++98 and have not been updated to work
+  with C++11 and later standards. They might be removed at a future date.
   </para>
 </section>
 
