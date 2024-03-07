@@ -4785,8 +4785,6 @@ package body Exp_Ch4 is
          if Is_Array_Type (Dtyp) and then not No_Initialization (N) then
             Apply_Constraint_Check (Expression (N), Dtyp, No_Sliding => True);
 
-            Apply_Predicate_Check (Expression (N), Dtyp);
-
             if Nkind (Expression (N)) = N_Raise_Constraint_Error then
                Rewrite (N, New_Copy (Expression (N)));
                Set_Etype (N, PtrT);
