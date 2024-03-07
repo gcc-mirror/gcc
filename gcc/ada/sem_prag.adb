@@ -20388,15 +20388,23 @@ package body Sem_Prag is
                  ("pragma % must apply to a protected entry declaration");
             end if;
 
-            --  Check for duplicates
+            --  Check for conflicting use of synonyms. Note that we exclude
+            --  the detection of duplicates here because they are detected
+            --  elsewhere.
 
-            if Has_Rep_Pragma (Entry_Id, Name_Max_Entry_Queue_Length)
+            if (Has_Rep_Pragma (Entry_Id, Name_Max_Entry_Queue_Length)
+                  and then
+                Prag_Id /= Pragma_Max_Entry_Queue_Length)
                  or else
-               Has_Rep_Pragma (Entry_Id, Name_Max_Entry_Queue_Depth)
+               (Has_Rep_Pragma (Entry_Id, Name_Max_Entry_Queue_Depth)
+                  and then
+                Prag_Id /= Pragma_Max_Entry_Queue_Depth)
                  or else
-               Has_Rep_Pragma (Entry_Id, Name_Max_Queue_Length)
+               (Has_Rep_Pragma (Entry_Id, Name_Max_Queue_Length)
+                  and then
+                Prag_Id /= Pragma_Max_Queue_Length)
             then
-               Error_Msg_N ("??duplicate Max_Entry_Queue_Length pragma", N);
+               Error_Msg_N ("??maximum entry queue length already set", N);
             end if;
 
             --  Mark the pragma as Ghost if the related subprogram is also
