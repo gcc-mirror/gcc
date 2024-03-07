@@ -1,3 +1,27 @@
+2024-03-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/io.h (IOMSG_LEN): Moved to here.
+	* io/list_read.c (MSGLEN): Removed MSGLEN.
+	(convert_integer): Changed MSGLEN to IOMSG_LEN.
+	(parse_repeat): Likewise.
+	(read_logical): Likewise.
+	(read_integer): Likewise.
+	(read_character): Likewise.
+	(parse_real): Likewise.
+	(read_complex): Likewise.
+	(read_real): Likewise.
+	(check_type): Likewise.
+	(list_formatted_read_scalar): Adjust to IOMSG_LEN.
+	(nml_read_obj): Add user defined error message.
+	* io/transfer.c (unformatted_read): Add user defined error
+	message.
+	(unformatted_write): Add user defined error message.
+	(formatted_transfer_scalar_read): Add user defined error message.
+	(formatted_transfer_scalar_write): Add user defined error message.
+	* io/write.c (list_formatted_write_scalar): Add user defined error message.
+	(nml_write_obj): Add user defined error message.
+
 2024-02-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/105456

@@ -1,3 +1,94 @@
+2024-03-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/114232
+	* config/i386/mmx.md (negv2qi2): Enable for optimize_size instead
+	of optimize_function_for_size_p.  Explictily enable for TARGET_SSE2.
+	(negv2qi SSE reg splitter): Enable for TARGET_SSE2 only.
+	(<plusminus:insn>v2qi3): Enable for optimize_size instead
+	of optimize_function_for_size_p.  Explictily enable for TARGET_SSE2.
+	(<plusminus:insn>v2qi SSE reg splitter): Enable for TARGET_SSE2 only.
+	(<any_shift:insn>v2qi3): Enable for optimize_size instead
+	of optimize_function_for_size_p.
+
+2024-03-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/114200
+	PR target/114202
+	* config/riscv/vector.md: Use vmv[1248]r.v instead of vmv.v.v.
+
+2024-03-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-vector-costs.cc (adjust_stmt_cost): Move...
+	(costs::adjust_stmt_cost): ... to here and add vec_load/vec_store
+	offset handling.
+	(costs::add_stmt_cost): Also adjust cost for statements without
+	stmt_info.
+	* config/riscv/riscv-vector-costs.h: Define zero constant.
+
+2024-03-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/113915
+	* config/arm/arm.md (NOCOND): Improve comment.
+	(arm_rev*) Add predicable.
+	* config/arm/arm.cc (arm_final_prescan_insn): Add check for
+	PREDICABLE_YES.
+
+2024-03-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/113001
+	PR target/112871
+	* config/riscv/riscv.cc (expand_conditional_move): Do not swap
+	operands when the comparison operand is the same as the false
+	arm for a NE test.
+
+2024-03-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_move) [TARGET_MACHO]:
+	Eliminate common code and use generic code instead.
+
+2024-03-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_rtx_costs_1) [PLUS+ZERO_EXTEND]: Adjust
+	rtx cost.
+
+2024-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114239
+	* tree-vect-loop.cc (vect_get_vect_def): Remove.
+	(vect_create_epilog_for_reduction): The passed in stmt_info
+	should now be the live stmt that produces the scalar reduction
+	result.  Revert PR114192 fix.  Base reduction info off
+	info_for_reduction.  Remove special handling of
+	early-break/peeled, restore original vector def gathering.
+	Make sure to pick the correct exit PHIs.
+	(vectorizable_live_operation): Pass in the proper stmt_info
+	for early break exits.
+
+2024-03-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-feature-deps.h (feature_deps::info): Add
+	out-of-class definitions of static constants.
+
+2024-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114249
+	* tree-vect-slp.cc (vect_build_slp_instance): Move making
+	a BB reduction lane number even ...
+	(vect_slp_check_for_roots): ... here to avoid leaking
+	pattern defs.
+
+2024-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114246
+	* tree-ssa-dse.cc (increment_start_addr): Strip useless
+	type conversions from the adjusted address.
+
+2024-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114190
+	* config/i386/i386-features.cc (rest_of_handle_insert_vzeroupper):
+	Call df_remove_problem for df_note before calling df_analyze.
+
 2024-03-05  Cupertino Miranda  <cupertino.miranda@oracle.com>
 	    Indu Bhagat  <indu.bhagat@oracle.com>
 

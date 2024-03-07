@@ -1,3 +1,22 @@
+2024-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114114
+	* pt.cc (maybe_instantiate_noexcept): Save/restore
+	cp_unevaluated_operand, c_inhibit_evaluation_warnings, and
+	cp_noexcept_operand around the tsubst_expr call.
+
+2024-03-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113629
+	* pt.cc (type_unification_real): Only use DEDUCE_CONV for the
+	return type of a conversion function.
+
+2024-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (trees_out::get_merge_kind) <case depset::EK_DECL>:
+	Accomodate class-scope DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P
+	TEMPLATE_DECL.  Consolidate IDENTIFIER_ANON_P cases.
+
 2024-03-05  Patrick Palka  <ppalka@redhat.com>
 
 	* parser.cc (cp_parser_translation_unit): Relax GMF contents

@@ -1,3 +1,93 @@
+2024-03-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr114200.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr114202.c: New test.
+
+2024-03-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/vse-slp-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/vse-slp-2.c: New test.
+
+2024-03-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/113915
+	* gcc.target/arm/builtin-bswap-1.c: Fix test to allow conditional
+	execution both for Arm and Thumb-2.
+
+2024-03-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/113001
+	PR target/112871
+	* gcc.target/riscv/zicond-ice-3.c: New test.
+	* gcc.target/riscv/zicond-ice-4.c: New test.
+
+2024-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103707
+	PR fortran/106987
+	* gfortran.dg/pr99350.f90:
+	* gfortran.dg/arithmetic_overflow_3.f90: New test.
+
+2024-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114114
+	* g++.dg/cpp0x/noexcept84.C: New test.
+
+2024-03-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/gcn/sram-ecc-3.c: Adjust.
+	* gcc.target/gcn/sram-ecc-4.c: Likewise.
+	* gcc.target/gcn/sram-ecc-7.c: Likewise.
+	* gcc.target/gcn/sram-ecc-8.c: Likewise.
+
+2024-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114239
+	* gcc.dg/vect/vect-early-break_122-pr114239.c: New testcase.
+
+2024-03-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vfcmp-f.c: Rewrite to avoid named
+	registers.
+	* gcc.target/loongarch/vfcmp-d.c: Likewise.
+	* gcc.target/loongarch/xvfcmp-f.c: Likewise.
+	* gcc.target/loongarch/xvfcmp-d.c: Likewise.
+
+2024-03-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113629
+	* g++.dg/cpp23/explicit-obj-conv-op.C: New test.
+
+2024-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114249
+	* gcc.dg/vect/bb-slp-pr114249.c: New testcase.
+
+2024-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114246
+	* gcc.dg/torture/pr114246.c: New testcase.
+
+2024-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114190
+	* gcc.target/i386/avx-pr114190.c: New test.
+
+2024-03-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* gfortran.dg/pr105456-nmlr.f90: New test.
+	* gfortran.dg/pr105456-nmlw.f90: New test.
+	* gfortran.dg/pr105456-ruf.f90: New test.
+	* gfortran.dg/pr105456-wf.f90: New test.
+	* gfortran.dg/pr105456-wuf.f90: New test.
+
+2024-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/friend-7.h: New test.
+	* g++.dg/modules/friend-7_a.H: New test.
+	* g++.dg/modules/friend-7_b.C: New test.
+
 2024-03-05  Cupertino Miranda  <cupertino.miranda@oracle.com>
 	    Indu Bhagat  <indu.bhagat@oracle.com>
 
