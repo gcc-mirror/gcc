@@ -1390,7 +1390,7 @@ proc check_effective_target_shared { } {
     # here to be undefined.
     set extra_flags ""
     if { [istarget *-*-darwin\[912\]*] } {
-      set extra_flags "-Wl,-U,_foo,-U,_bar"
+      set extra_flags "-Wl,-U,_foo,-U,_bar,-U,__Z3foov"
     }
     # Note that M68K has a multilib that supports -fpic but not
     # -fPIC, so we need to check both.  We test with a program that
