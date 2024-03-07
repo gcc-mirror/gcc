@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "tree-dfa.h"
+#include "diagnostic-core.h"
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
 #include "analyzer/analyzer.h"

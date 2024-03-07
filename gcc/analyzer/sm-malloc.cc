@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "options.h"
 #include "bitmap.h"
+#include "diagnostic-core.h"
 #include "diagnostic-path.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
