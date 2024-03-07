@@ -18,6 +18,7 @@
 
 #include "expected.h"
 #include "libproc_macro_internal/tokenstream.h"
+#include "optional.h"
 #include "rust-ast-full-decls.h"
 #include "rust-builtin-ast-nodes.h"
 #include "rust-expand-format-args.h"
@@ -961,7 +962,7 @@ MacroBuiltin::stringify_handler (location_t invoc_locus,
 
 struct FormatArgsInput
 {
-  std::unique_ptr<AST::Expr> format_str;
+  std::string format_str;
   AST::FormatArguments args;
   // bool is_literal?
 };
@@ -985,12 +986,18 @@ format_args_parse_arguments (AST::MacroInvocData &invoc)
 
   auto args = AST::FormatArguments ();
   auto last_token_id = macro_end_token (invoc.get_delim_tok_tree (), parser);
-  std::unique_ptr<AST::Expr> format_str = nullptr;
+  std::unique_ptr<AST::Expr> format_expr = nullptr;
 
   // TODO: Handle the case where we're not parsing a string literal (macro
   // invocation for e.g.)
   if (parser.peek_current_token ()->get_id () == STRING_LITERAL)
-    format_str = parser.parse_literal_expr ();
+    format_expr = parser.parse_literal_expr ();
+
+  // TODO(Arthur): Clean this up - if we haven't parsed a string literal but a
+  // macro invocation, what do we do here? return a tl::unexpected?
+  auto format_str = static_cast<AST::LiteralExpr &> (*format_expr)
+		      .get_literal ()
+		      .as_string ();
 
   // TODO: Allow implicit captures ONLY if the the first arg is a string literal
   // and not a macro invocation
@@ -1053,6 +1060,13 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
 {
   auto input = format_args_parse_arguments (invoc);
 
+  if (!input)
+    {
+      rust_error_at (invoc_locus,
+		     "could not parse arguments to %<format_args!()%>");
+      return tl::nullopt;
+    }
+
   // TODO(Arthur): We need to handle this
   // // if it is not a literal, it's an eager macro invocation - return it
   // if (!fmt_expr->is_literal ())
@@ -1080,20 +1094,13 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
   //     rust_unreachable ();
   //   }
 
-  // Remove the delimiters from the macro invocation:
-  // the invoc data for `format_args!(fmt, arg1, arg2)` is `(fmt, arg1, arg2)`,
-  // so we pop the front and back to remove the parentheses (or curly brackets,
-  // or brackets)
-  auto tokens = invoc.get_delim_tok_tree ().to_token_stream ();
-  tokens.erase (tokens.begin ());
-  tokens.pop_back ();
+  bool append_newline = nl == AST::FormatArgs::Newline::Yes;
 
-  std::stringstream stream;
-  for (const auto &tok : tokens)
-    stream << tok->as_string () << ' ';
+  auto fmt_str = std::move (input->format_str);
+  if (append_newline)
+    fmt_str += '\n';
 
-  auto append_newline = nl == AST::FormatArgs::Newline::Yes ? true : false;
-  auto pieces = Fmt::Pieces::collect (stream.str (), append_newline);
+  auto pieces = Fmt::Pieces::collect (fmt_str, append_newline);
 
   // TODO:
   // do the transformation into an AST::FormatArgs node
