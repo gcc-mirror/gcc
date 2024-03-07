@@ -4681,6 +4681,36 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 	      saved_stmts.release ();
 	    }
 	}
+
+      /* Make sure to vectorize only-live stmts, usually inductions.  */
+      for (edge e : get_loop_exit_edges (LOOP_VINFO_LOOP (loop_vinfo)))
+	for (auto gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi);
+	     gsi_next (&gsi))
+	  {
+	    gphi *lc_phi = *gsi;
+	    tree def = gimple_phi_arg_def_from_edge (lc_phi, e);
+	    stmt_vec_info stmt_info;
+	    if (TREE_CODE (def) == SSA_NAME
+		&& !virtual_operand_p (def)
+		&& (stmt_info = loop_vinfo->lookup_def (def))
+		&& STMT_VINFO_RELEVANT (stmt_info) == vect_used_only_live
+		&& STMT_VINFO_LIVE_P (stmt_info)
+		&& (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
+		    || (STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
+			&& STMT_VINFO_REDUC_IDX (stmt_info) == -1)))
+	      {
+		vec<stmt_vec_info> stmts;
+		vec<stmt_vec_info> roots = vNULL;
+		vec<tree> remain = vNULL;
+		stmts.create (1);
+		stmts.quick_push (vect_stmt_to_vectorize (stmt_info));
+		vect_build_slp_instance (vinfo,
+					 slp_inst_kind_reduc_group,
+					 stmts, roots, remain,
+					 max_tree_size, &limit,
+					 bst_map, NULL);
+	      }
+	  }
     }
 
   hash_set<slp_tree> visited_patterns;
