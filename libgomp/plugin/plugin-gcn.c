@@ -1382,9 +1382,10 @@ init_hsa_runtime_functions (void)
 #define DLSYM_FN(function) \
   hsa_fns.function##_fn = dlsym (handle, #function); \
   if (hsa_fns.function##_fn == NULL) \
-    return false;
+    GOMP_PLUGIN_fatal ("'%s' is missing '%s'", hsa_runtime_lib, #function);
 #define DLSYM_OPT_FN(function) \
   hsa_fns.function##_fn = dlsym (handle, #function);
+
   void *handle = dlopen (hsa_runtime_lib, RTLD_LAZY);
   if (handle == NULL)
     return false;

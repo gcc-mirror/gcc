@@ -126,7 +126,7 @@ init_cuda_lib (void)
 # define CUDA_ONE_CALL_1(call, allow_null)		\
   cuda_lib.call = dlsym (h, #call);	\
   if (!allow_null && cuda_lib.call == NULL)		\
-    return false;
+    GOMP_PLUGIN_fatal ("'%s' is missing '%s'", cuda_runtime_lib, #call);
 #include "cuda-lib.def"
 # undef CUDA_ONE_CALL
 # undef CUDA_ONE_CALL_1
