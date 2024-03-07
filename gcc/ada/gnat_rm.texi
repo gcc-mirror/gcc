@@ -5312,7 +5312,7 @@ no effect in GNAT, other than being syntax checked.
 Syntax:
 
 @example
-pragma Max_Entry_Queue (static_integer_EXPRESSION);
+pragma Max_Queue_Length (static_integer_EXPRESSION);
 @end example
 
 This pragma is used to specify the maximum callers per entry queue for

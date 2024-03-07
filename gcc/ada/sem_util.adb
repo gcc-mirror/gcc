@@ -10714,26 +10714,38 @@ package body Sem_Util is
 
    function Get_Max_Queue_Length (Id : Entity_Id) return Uint is
       pragma Assert (Is_Entry (Id));
-      Prag : constant Entity_Id := Get_Pragma (Id, Pragma_Max_Queue_Length);
-      Max  : Uint;
+      PMQL  : constant Entity_Id := Get_Pragma (Id, Pragma_Max_Queue_Length);
+      PMEQD : constant Entity_Id :=
+         Get_Pragma (Id, Pragma_Max_Entry_Queue_Depth);
+      PMEQL : constant Entity_Id :=
+         Get_Pragma (Id, Pragma_Max_Entry_Queue_Length);
+      Max   : Uint;
 
    begin
       --  A value of 0 or -1 represents no maximum specified, and entries and
       --  entry families with no Max_Queue_Length aspect or pragma default to
       --  it.
 
-      if No (Prag) then
-         return Uint_0;
-      end if;
+      --  We have already checked that there is at most one of these pragmas
 
-      Max := Expr_Value
-        (Expression (First (Pragma_Argument_Associations (Prag))));
+      if Present (PMQL) then
+         Max := Expr_Value
+            (Expression (First (Pragma_Argument_Associations (PMQL))));
+      elsif Present (PMEQD) then
+         Max := Expr_Value
+            (Expression (First (Pragma_Argument_Associations (PMEQD))));
+      elsif Present (PMEQL) then
+         Max := Expr_Value
+            (Expression (First (Pragma_Argument_Associations (PMEQL))));
+      else
+         Max := Uint_0;
+      end if;
 
       --  Since -1 and 0 are equivalent, return 0 for instances of -1 for
       --  uniformity.
 
       if Max = -1 then
-         return Uint_0;
+         Max := Uint_0;
       end if;
 
       return Max;
@@ -12217,7 +12229,10 @@ package body Sem_Util is
    begin
       return
         Ekind (Id) = E_Entry
-          and then Present (Get_Pragma (Id, Pragma_Max_Queue_Length));
+          and then
+        (Present (Get_Pragma (Id, Pragma_Max_Queue_Length)) or else
+         Present (Get_Pragma (Id, Pragma_Max_Entry_Queue_Depth)) or else
+         Present (Get_Pragma (Id, Pragma_Max_Entry_Queue_Length)));
    end Has_Max_Queue_Length;
 
    ---------------------------------

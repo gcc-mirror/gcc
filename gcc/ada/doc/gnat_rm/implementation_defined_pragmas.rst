@@ -3771,7 +3771,7 @@ Pragma Max_Queue_Length
 
 Syntax::
 
-   pragma Max_Entry_Queue (static_integer_EXPRESSION);
+   pragma Max_Queue_Length (static_integer_EXPRESSION);
 
 
 This pragma is used to specify the maximum callers per entry queue for

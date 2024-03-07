@@ -9405,7 +9405,8 @@ package body Exp_Ch9 is
       end loop;
 
       --  Create the declaration of an array object which contains the values
-      --  of aspect/pragma Max_Queue_Length for all entries of the protected
+      --  of any aspect/pragma Max_Queue_Length, Max_Entry_Queue_Length or
+      --  Max_EntryQueue_Depth for all entries of the protected
       --  type. This object is later passed to the appropriate protected object
       --  initialization routine.
 
@@ -9422,7 +9423,8 @@ package body Exp_Ch9 is
             Need_Array : Boolean := False;
 
          begin
-            --  First check if there is any Max_Queue_Length pragma
+            --  First check if there is any Max_Queue_Length,
+            --  Max_Entry_Queue_Length or Max_Entry_Queue_Depth pragma.
 
             Item := First_Entity (Prot_Typ);
             while Present (Item) loop
