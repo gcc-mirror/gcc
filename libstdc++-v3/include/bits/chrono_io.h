@@ -3113,6 +3113,9 @@ namespace __detail
 	  unsigned __num = 0; // Non-zero for N modifier.
 	  bool __is_flag = false; // True if we're processing a % flag.
 
+	  constexpr bool __is_floating
+	    = treat_as_floating_point_v<typename _Duration::rep>;
+
 	  // If an out-of-range value is extracted (e.g. 61min for %M),
 	  // do not set failbit immediately because we might not need it
 	  // (e.g. parsing chrono::year doesn't care about invalid %M values).
@@ -3195,7 +3198,7 @@ namespace __detail
 			  __d = day(__tm.tm_mday);
 			  __h = hours(__tm.tm_hour);
 			  __min = minutes(__tm.tm_min);
-			  __s = duration_cast<_Duration>(seconds(__tm.tm_sec));
+			  __s = seconds(__tm.tm_sec);
 			}
 		    }
 		  __parts |= _ChronoParts::_DateTime;
@@ -3564,8 +3567,8 @@ namespace __detail
 		      if (!__is_failed(__err))
 			__s = seconds(__tm.tm_sec);
 		    }
-		  else if constexpr (ratio_equal_v<typename _Duration::period,
-						   ratio<1>>)
+		  else if constexpr (_Duration::period::den == 1
+				       && !__is_floating)
 		    {
 		      auto __val = __read_unsigned(__num ? __num : 2);
 		      if (0 <= __val && __val <= 59) [[likely]]
@@ -3577,7 +3580,7 @@ namespace __detail
 			  break;
 			}
 		    }
-		  else
+		  else // Read fractional seconds
 		    {
 		      basic_stringstream<_CharT> __buf;
 		      auto __digit = _S_try_read_digit(__is, __err);
@@ -3626,7 +3629,10 @@ namespace __detail
 			  else
 			    {
 			      duration<long double> __fs(__val);
-			      __s = duration_cast<_Duration>(__fs);
+			      if constexpr (__is_floating)
+				__s = __fs;
+			      else
+				__s = chrono::round<_Duration>(__fs);
 			    }
 			}
 		    }
@@ -3737,7 +3743,7 @@ namespace __detail
 			{
 			  __h = hours(__tm.tm_hour);
 			  __min = minutes(__tm.tm_min);
-			  __s = duration_cast<_Duration>(seconds(__tm.tm_sec));
+			  __s = seconds(__tm.tm_sec);
 			}
 		    }
 		  __parts |= _ChronoParts::_TimeOfDay;
