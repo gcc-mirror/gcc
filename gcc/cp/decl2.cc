@@ -3398,6 +3398,10 @@ import_export_decl (tree decl)
      unit.  */
   import_p = false;
 
+  /* FIXME: Since https://github.com/itanium-cxx-abi/cxx-abi/pull/171,
+     the ABI specifies that classes attached to named modules should
+     have their vtables uniquely emitted in the object for the module
+     unit in which it is defined.  And similarly for RTTI structures.  */
   if (VAR_P (decl) && DECL_VTABLE_OR_VTT_P (decl))
     {
       class_type = DECL_CONTEXT (decl);
