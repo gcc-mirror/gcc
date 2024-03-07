@@ -37,6 +37,7 @@
 #include <sstream> // ostringstream
 #include <iomanip> // setw, setfill
 #include <format>
+#include <charconv> // from_chars
 
 #include <bits/streambuf_iterator.h>
 
@@ -3597,13 +3598,17 @@ namespace __detail
 			__err |= ios_base::eofbit;
 		      else
 			{
-			  auto& __np = use_facet<numpunct<_CharT>>(__loc);
-			  auto __dp = __np.decimal_point();
+			  _CharT __dp = '.';
+			  if (__loc != locale::classic())
+			    {
+			      auto& __np = use_facet<numpunct<_CharT>>(__loc);
+			      __dp = __np.decimal_point();
+			    }
 			  _CharT __c = _Traits::to_char_type(__i);
 			  if (__c == __dp)
 			    {
 			      (void) __is.get();
-			      __buf.put(__c);
+			      __buf.put('.');
 			      int __prec
 				= hh_mm_ss<_Duration>::fractional_width;
 			      do
@@ -3618,14 +3623,17 @@ namespace __detail
 			    }
 			}
 
-		      if (!__is_failed(__err))
+		      if (!__is_failed(__err)) [[likely]]
 			{
-			  auto& __ng = use_facet<num_get<_CharT>>(__loc);
-			  long double __val;
-			  ios_base::iostate __err2{};
-			  __ng.get(__buf, {}, __buf, __err2, __val);
-			  if (__is_failed(__err2)) [[unlikely]]
-			    __err |= __err2;
+			  long double __val{};
+			  string __str = std::move(__buf).str();
+			  auto __first = __str.data();
+			  auto __last = __first + __str.size();
+			  using enum chars_format;
+			  auto [ptr, ec] = std::from_chars(__first, __last,
+							   __val, fixed);
+			  if ((bool)ec || ptr != __last) [[unlikely]]
+			    __err |= ios_base::failbit;
 			  else
 			    {
 			      duration<long double> __fs(__val);
