@@ -161,9 +161,7 @@ package body ALI.Util is
       --  Process all dependent units
 
       for U in ALIs.Table (Id).First_Unit .. ALIs.Table (Id).Last_Unit loop
-         for
-           W in Units.Table (U).First_With .. Units.Table (U).Last_With
-         loop
+         for W in Units.Table (U).First_With .. Units.Table (U).Last_With loop
             Afile := Withs.Table (W).Afile;
 
             --  Only process if not a generic (Afile /= No_File) and if

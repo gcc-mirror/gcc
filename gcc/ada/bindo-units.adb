@@ -103,7 +103,9 @@ package body Bindo.Units is
 
    begin
       pragma Assert (U_Rec.Utype = Is_Spec);
-      return U_Id - 1;
+      return Result : constant Unit_Id := U_Id - 1 do
+         pragma Assert (ALI.Units.Table (Result).Utype = Is_Body);
+      end return;
    end Corresponding_Body;
 
    ------------------------
@@ -117,7 +119,9 @@ package body Bindo.Units is
 
    begin
       pragma Assert (U_Rec.Utype = Is_Body);
-      return U_Id + 1;
+      return Result : constant Unit_Id := U_Id + 1 do
+         pragma Assert (ALI.Units.Table (Result).Utype = Is_Spec);
+      end return;
    end Corresponding_Spec;
 
    ------------------------

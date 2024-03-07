@@ -50,14 +50,8 @@ package body Uname is
       Buffer : Bounded_String;
    begin
       Append (Buffer, N);
-
-      pragma Assert
-        (Buffer.Length > 2
-         and then Buffer.Chars (Buffer.Length - 1) = '%'
-         and then Buffer.Chars (Buffer.Length) = 's');
-
+      pragma Assert (Is_Spec_Name (N));
       Buffer.Chars (Buffer.Length) := 'b';
-
       return Name_Find (Buffer);
    end Get_Body_Name;
 
@@ -160,14 +154,8 @@ package body Uname is
       Buffer : Bounded_String;
    begin
       Append (Buffer, N);
-
-      pragma Assert
-        (Buffer.Length > 2
-         and then Buffer.Chars (Buffer.Length - 1) = '%'
-         and then Buffer.Chars (Buffer.Length) = 'b');
-
+      pragma Assert (Is_Body_Name (N));
       Buffer.Chars (Buffer.Length) := 's';
-
       return Name_Find (Buffer);
    end Get_Spec_Name;
 
@@ -416,6 +404,9 @@ package body Uname is
       Suffix : Boolean := True)
    is
    begin
+      pragma Assert (Buf.Chars (1) /= '"');
+      pragma Assert (Is_Body_Name (N) or else Is_Spec_Name (N));
+
       Buf.Length := 0;
       Append_Decoded (Buf, N);
 
@@ -424,17 +415,11 @@ package body Uname is
       --  (lower case) 's'/'b', and before appending (lower case) "spec" or
       --  "body".
 
-      pragma Assert (Buf.Length >= 3);
-      pragma Assert (Buf.Chars (1) /= '"');
-      pragma Assert (Buf.Chars (Buf.Length) in 's' | 'b');
-
       declare
          S : constant String :=
            (if Buf.Chars (Buf.Length) = 's' then " (spec)" else " (body)");
       begin
-         Buf.Length := Buf.Length - 1; -- remove 's' or 'b'
-         pragma Assert (Buf.Chars (Buf.Length) = '%');
-         Buf.Length := Buf.Length - 1; -- remove '%'
+         Buf.Length := Buf.Length - 2; -- remove "%s" or "%b"
          Set_Casing (Buf, Identifier_Casing (Source_Index (Main_Unit)));
 
          if Suffix then
@@ -474,9 +459,9 @@ package body Uname is
       Buffer : Bounded_String;
    begin
       Append (Buffer, N);
-      return Buffer.Length > 2
-        and then Buffer.Chars (Buffer.Length - 1) = '%'
-        and then Buffer.Chars (Buffer.Length) = 'b';
+      pragma Assert
+        (Buffer.Length > 2 and then Buffer.Chars (Buffer.Length - 1) = '%');
+      return Buffer.Chars (Buffer.Length) = 'b';
    end Is_Body_Name;
 
    -------------------
@@ -535,10 +520,7 @@ package body Uname is
       System     : constant String := "system";
 
    begin
-      if Name = Ada
-        or else Name = Interfaces
-        or else Name = System
-      then
+      if Name in Ada | Interfaces | System then
          return True;
       end if;
 
@@ -555,15 +537,14 @@ package body Uname is
 
       --  The following are the predefined renamings
 
-      return
-        Name = "calendar"
-          or else Name = "machine_code"
-          or else Name = "unchecked_conversion"
-          or else Name = "unchecked_deallocation"
-          or else Name = "direct_io"
-          or else Name = "io_exceptions"
-          or else Name = "sequential_io"
-          or else Name = "text_io";
+      return Name in "calendar"
+        | "machine_code"
+        | "unchecked_conversion"
+        | "unchecked_deallocation"
+        | "direct_io"
+        | "io_exceptions"
+        | "sequential_io"
+        | "text_io";
    end Is_Predefined_Unit_Name;
 
    ------------------
@@ -574,9 +555,9 @@ package body Uname is
       Buffer : Bounded_String;
    begin
       Append (Buffer, N);
-      return Buffer.Length > 2
-        and then Buffer.Chars (Buffer.Length - 1) = '%'
-        and then Buffer.Chars (Buffer.Length) = 's';
+      pragma Assert
+        (Buffer.Length > 2 and then Buffer.Chars (Buffer.Length - 1) = '%');
+      return Buffer.Chars (Buffer.Length) = 's';
    end Is_Spec_Name;
 
    -----------------------
