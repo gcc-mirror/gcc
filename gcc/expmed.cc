@@ -3285,11 +3285,15 @@ choose_mult_variant (machine_mode mode, HOST_WIDE_INT val,
       limit.latency = mult_cost - op_cost;
     }
 
-  synth_mult (&alg2, val - 1, &limit, mode);
-  alg2.cost.cost += op_cost;
-  alg2.cost.latency += op_cost;
-  if (CHEAPER_MULT_COST (&alg2.cost, &alg->cost))
-    *alg = alg2, *variant = add_variant;
+  if (val != HOST_WIDE_INT_MIN
+      || GET_MODE_UNIT_PRECISION (mode) == HOST_BITS_PER_WIDE_INT)
+    {
+      synth_mult (&alg2, val - HOST_WIDE_INT_1U, &limit, mode);
+      alg2.cost.cost += op_cost;
+      alg2.cost.latency += op_cost;
+      if (CHEAPER_MULT_COST (&alg2.cost, &alg->cost))
+	*alg = alg2, *variant = add_variant;
+    }
 
   return MULT_COST_LESS (&alg->cost, mult_cost);
 }
