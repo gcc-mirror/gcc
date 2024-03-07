@@ -409,11 +409,10 @@ package body Sem_Aggr is
    --  string as an aggregate, prior to resolution.
 
    function Resolve_Null_Array_Aggregate (N : Node_Id) return Boolean;
-   --  For the Ada 2022 construct, build a subtype with a null range for each
-   --  dimension, using the bounds from the context subtype (if the subtype
-   --  is constrained). If the subtype is unconstrained, then the bounds
-   --  are determined in much the same way as the bounds for a null string
-   --  literal with no applicable index constraint.
+   --  The recursive method used to construct an aggregate's bounds in
+   --  Resolve_Array_Aggregate cannot work for null array aggregates. This
+   --  function constructs an appropriate list of ranges and stores its first
+   --  element in Aggregate_Bounds (N).
 
    ---------------------------------
    --  Delta aggregate processing --
@@ -4540,7 +4539,8 @@ package body Sem_Aggr is
 
       Set_Parent (Constr, N);
 
-      --  Create a constrained subtype with null dimensions
+      --  Populate the list with null ranges. The relevant RM clauses are
+      --  RM 4.3.3 (26.1) and RM 4.3.3 (26).
 
       Index := First_Index (Typ);
       while Present (Index) loop
