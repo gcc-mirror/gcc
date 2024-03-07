@@ -971,7 +971,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mbig-endian -mlittle-endian
 -mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re -mjmpext
 -mjmp32 -malu32 -mv3-atomics -mbswap -msdiv -msmov -mcpu=@var{version}
--masm=@var{dialect}}
+-masm=@var{dialect} -minline-memops-threshold=@var{bytes}}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -25700,6 +25700,15 @@ Outputs normal assembly dialect.
 Outputs pseudo-c assembly dialect.
 
 @end table
+
+@opindex -minline-memops-threshold
+@item -minline-memops-threshold=@var{bytes}
+Specifies a size threshold in bytes at or below which memmove, memcpy
+and memset shall always be expanded inline.  Operations dealing with
+sizes larger than this threshold would have to be be implemented using
+a library call instead of being expanded inline, but since BPF doesn't
+allow libcalls, exceeding this threshold results in a compile-time
+error.  The default is @samp{1024} bytes.
 
 @end table
 

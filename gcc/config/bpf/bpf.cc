@@ -1244,9 +1244,9 @@ bool
 bpf_expand_cpymem (rtx *operands, bool is_move)
 {
   /* Size must be constant for this expansion to work.  */
+  const char *name = is_move ? "memmove" : "memcpy";
   if (!CONST_INT_P (operands[2]))
     {
-      const char *name = is_move ? "memmove" : "memcpy";
       if (flag_building_libgcc)
 	warning (0, "could not inline call to %<__builtin_%s%>: "
 		 "size must be constant", name);
@@ -1273,6 +1273,18 @@ bpf_expand_cpymem (rtx *operands, bool is_move)
     case 8: mode = DImode; break;
     default:
       gcc_unreachable ();
+    }
+
+  /* For sizes above threshold, always use a libcall.  */
+  if (size_bytes > (unsigned HOST_WIDE_INT) bpf_inline_memops_threshold)
+    {
+      if (flag_building_libgcc)
+	warning (0, "could not inline call to %<__builtin_%s%>: "
+		 "too many bytes, use %<-minline-memops-threshold%>", name);
+      else
+	error ("could not inline call to %<__builtin_%s%>: "
+	       "too many bytes, use %<-minline-memops-threshold%>", name);
+      return false;
     }
 
   unsigned iters = size_bytes >> ceil_log2 (align);
@@ -1345,6 +1357,18 @@ bpf_expand_setmem (rtx *operands)
     case 8: mode = DImode; break;
     default:
       gcc_unreachable ();
+    }
+
+  /* For sizes above threshold, always use a libcall.  */
+  if (size_bytes > (unsigned HOST_WIDE_INT) bpf_inline_memops_threshold)
+    {
+      if (flag_building_libgcc)
+	warning (0, "could not inline call to %<__builtin_memset%>: "
+		 "too many bytes, use %<-minline-memops-threshold%>");
+      else
+	error ("could not inline call to %<__builtin_memset%>: "
+	       "too many bytes, use %<-minline-memops-threshold%>");
+      return false;
     }
 
   unsigned iters = size_bytes >> ceil_log2 (align);
