@@ -1630,6 +1630,39 @@
   "subi %A0,%n2\;sbc %B0,%B0"
   [(set_attr "length" "2")])
 
+
+;; Occurs when computing offsets into 16-bit arrays.
+;; Saves up to 2 instructions.
+(define_insn_and_split "*addhi3_zero_extend.ashift1.split"
+  [(set (match_operand:HI 0 "register_operand"                                    "=r")
+        (plus:HI (ashift:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                            (const_int 1))
+                 (match_operand:HI 2 "register_operand"                            "0")))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:HI (ashift:HI (zero_extend:HI (match_dup 1))
+                                       (const_int 1))
+                            (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*addhi3_zero_extend.ashift1"
+  [(set (match_operand:HI 0 "register_operand"                                    "=r")
+        (plus:HI (ashift:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                            (const_int 1))
+                 (match_operand:HI 2 "register_operand"                            "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
+  {
+    return reg_overlap_mentioned_p (operands[1], operands[0])
+      ? "mov __tmp_reg__,%1\;add %A0,__tmp_reg__\;adc %B0,__zero_reg__\;add %A0,__tmp_reg__\;adc %B0,__zero_reg__"
+      : "add %A0,%1\;adc %B0,__zero_reg__\;add %A0,%1\;adc %B0,__zero_reg__";
+  }
+  [(set (attr "length")
+        (symbol_ref ("4 + reg_overlap_mentioned_p (operands[1], operands[0])")))])
+
+
 (define_insn_and_split "*usum_widenqihi3_split"
   [(set (match_operand:HI 0 "register_operand"                          "=r")
         (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "0"))

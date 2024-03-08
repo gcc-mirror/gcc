@@ -12513,6 +12513,17 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case PLUS:
+      // uint16_t += 2 * uint8_t;
+      if (mode == HImode
+	  && GET_CODE (XEXP (x, 0)) == ASHIFT
+	  && REG_P (XEXP (x, 1))
+	  && XEXP (XEXP (x, 0), 1) == const1_rtx
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (4);
+	  return true;
+	}
+
       if (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
 	  && REG_P (XEXP (x, 1)))
 	{
