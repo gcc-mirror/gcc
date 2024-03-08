@@ -854,6 +854,8 @@ forward_propagate_into (use_info *use, bool reg_prop_only = false)
 
   rtx dest = SET_DEST (def_set);
   rtx src = SET_SRC (def_set);
+  if (volatile_refs_p (src))
+    return false;
 
   /* Allow propagations into a loop only for reg-to-reg copies, since
      replacing one register by another shouldn't increase the cost.
