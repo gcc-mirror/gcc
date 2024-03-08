@@ -34,6 +34,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #else
 
+/* VxWorks provides its own version of the standard stdatomic.h, possibly
+   relying on non-gcc builtins, and our implementation of the gthr API resorts
+   to VxWorks specific functions for atomicity features.
+
+   When compiling libgcc (with gcc), make sure gcc's version of stdatomic.h
+   is used: #include it here, first, then define the macro used to guard the
+   system version so it doesn't get expanded when included indirectly by
+   other system headers.  */
+#if defined(IN_LIBGCC2)
+#include <../include/stdatomic.h>
+#define __INCstdatomich
+#endif
+
 #include <vxWorks.h>
 #include <_vxworks-versions.h>
 
