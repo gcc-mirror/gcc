@@ -61,6 +61,15 @@ struct Indexing_IndexProcedure_p { Indexing_IndexProcedure_t proc; };
 
 
 /*
+   InitIndexTuned - creates a dynamic array with low indice.
+                    minsize is the initial number of elements the
+                    array is allocated and growfactor determines how
+                    it will be resized once it becomes full.
+*/
+
+EXTERN Indexing_Index Indexing_InitIndexTuned (unsigned int low, unsigned int minsize, unsigned int growfactor);
+
+/*
    InitIndex - creates and returns an Index.
 */
 
@@ -139,6 +148,12 @@ EXTERN void Indexing_IncludeIndiceIntoIndex (Indexing_Index i, void * a);
 */
 
 EXTERN void Indexing_ForeachIndiceInIndexDo (Indexing_Index i, Indexing_IndexProcedure p);
+
+/*
+   IsEmpty - return TRUE if the array has no entries it.
+*/
+
+EXTERN bool Indexing_IsEmpty (Indexing_Index i);
 #   ifdef __cplusplus
 }
 #   endif

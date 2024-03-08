@@ -72,6 +72,38 @@ EXTERN void M2Dependent_RegisterModule (void * modulename, void * libname, M2Dep
 */
 
 EXTERN void M2Dependent_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname);
+
+/*
+   InstallTerminationProcedure - installs a procedure, p, which will
+                                 be called when the procedure
+                                 ExecuteTerminationProcedures
+                                 is invoked.  It returns TRUE is the
+                                 procedure is installed.
+*/
+
+EXTERN bool M2Dependent_InstallTerminationProcedure (PROC p);
+
+/*
+   ExecuteInitialProcedures - executes the initial procedures installed
+                              by InstallInitialProcedure.
+*/
+
+EXTERN void M2Dependent_ExecuteInitialProcedures (void);
+
+/*
+   InstallInitialProcedure - installs a procedure to be executed just
+                             before the BEGIN code section of the main
+                             program module.
+*/
+
+EXTERN bool M2Dependent_InstallInitialProcedure (PROC p);
+
+/*
+   ExecuteTerminationProcedures - calls each installed termination procedure
+                                  in reverse order.
+*/
+
+EXTERN void M2Dependent_ExecuteTerminationProcedures (void);
 #   ifdef __cplusplus
 }
 #   endif

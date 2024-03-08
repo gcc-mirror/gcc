@@ -28,7 +28,10 @@ FROM M2Debug IMPORT Assert ;
 FROM libc IMPORT printf ;
 
 IMPORT Indexing ;
-FROM Indexing IMPORT InitIndex, InBounds, LowIndice, HighIndice, PutIndice, GetIndice ;
+
+FROM Indexing IMPORT InitIndex, InBounds, LowIndice, HighIndice,
+                     PutIndice, GetIndice, InitIndexTuned ;
+
 FROM Sets IMPORT Set, InitSet, IncludeElementIntoSet, IsElementInSet ;
 FROM m2linemap IMPORT location_t ;
 
@@ -1644,7 +1647,7 @@ BEGIN
    InitTree (ConstLitPoolTree) ;
    InitTree (DefModuleTree) ;
    InitTree (ModuleTree) ;
-   Symbols := InitIndex (1) ;
+   Symbols := InitIndexTuned (1, 1024*1024 DIV 16, 16) ;
    ConstLitArray := InitIndex (1) ;
    FreeSymbol := 1 ;
    ScopePtr := 1 ;

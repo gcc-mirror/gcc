@@ -230,7 +230,8 @@ FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord,
                         PushWord, PopWord, PeepWord, RemoveTop,
                         IsEmptyWord, NoOfItemsInStackWord ;
 
-FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, InBounds, HighIndice, IncludeIndiceIntoIndex ;
+FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, InBounds, HighIndice,
+                     IncludeIndiceIntoIndex, InitIndexTuned ;
 
 FROM M2Range IMPORT InitAssignmentRangeCheck,
                     InitReturnRangeCheck,
@@ -15451,7 +15452,7 @@ BEGIN
    LogicalXorTok := MakeKey('_LXOR') ;
    LogicalDifferenceTok := MakeKey('_LDIFF') ;
    ArithPlusTok := MakeKey ('_ARITH_+') ;
-   QuadArray := InitIndex (1) ;
+   QuadArray := InitIndexTuned (1, 1024*1024 DIV 16, 16) ;
    FreeList := 1 ;
    NewQuad(NextQuad) ;
    Assert(NextQuad=1) ;
