@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Calendar;               use Ada.Calendar;
+with Ada.Calendar.Formatting;    use Ada.Calendar;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Containers.Vectors;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
@@ -1392,6 +1392,17 @@ package body Ada.Directories is
                   end record;
 
                   Res : Result := (Found => False);
+
+                  --  This declaration of No_Time copied from GNAT.Calendar
+                  --  because adding a "with GNAT.Calendar;" to this unit
+                  --  results in problems.
+
+                  No_Time : constant Ada.Calendar.Time :=
+                    Ada.Calendar.Formatting.Time_Of
+                      (Ada.Calendar.Year_Number'First,
+                       Ada.Calendar.Month_Number'First,
+                       Ada.Calendar.Day_Number'First,
+                       Time_Zone => 0);
                begin
                   --  Get the file attributes for the directory item
 
@@ -1452,7 +1463,10 @@ package body Ada.Directories is
                               Full_Name         => To_Unbounded_String (Path),
                               Attr_Error_Code   => 0,
                               Kind              => Res.Kind,
-                              Modification_Time => Modification_Time (Path),
+                              Modification_Time =>
+                               (if Res.Kind = Special_File
+                                  then No_Time
+                                  else Modification_Time (Path)),
                               Size              => Res.Size));
                      end if;
                   end if;
