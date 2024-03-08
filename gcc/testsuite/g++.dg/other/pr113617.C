@@ -2,7 +2,7 @@
 // { dg-do link { target c++11 } }
 // { dg-options "-O2" }
 // { dg-additional-options "-fPIC" { target fpic } } */
-// { dg-additional-options "-shared" { target shared } } */
+// { dg-additional-options "-shared -DSHARED" { target shared } } */
 // { dg-additional-sources pr113617-aux.cc }
 
 #include "pr113617.h"
