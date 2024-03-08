@@ -1,3 +1,25 @@
+2024-03-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109969
+	* gm2-compiler/M2LexBuf.def (TokenToLineNo): Rename parameter.
+	(TokenToColumnNo): Rename parameter.
+	(TokenToLocation): Rename parameter.
+	(FindFileNameFromToken): Rename parameter.
+	(DumpTokens): Rewrite comment.
+	* gm2-compiler/M2LexBuf.mod: Rewrite.
+	* gm2-compiler/P0SyntaxCheck.bnf (CheckInsertCandidate):
+	DumpTokens before and after inserting recovery token.
+	* gm2-gcc/m2builtins.cc (do_target_support_exists): Add
+	bf_c99_compl case.
+	* gm2-libs/Indexing.def (InitIndexTuned): New procedure
+	function.
+	(IsEmpty): New procedure function.
+	* gm2-libs/Indexing.mod (InitIndexTuned): New procedure
+	function.
+	(IsEmpty): New procedure function.
+	(Index): New field GrowFactor.
+	(PutIndice): Use GrowFactor to extend dynamic array.
+
 2024-03-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114227

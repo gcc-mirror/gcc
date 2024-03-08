@@ -1,3 +1,12 @@
+2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* access-diagram.cc: Include diagnostic-core.h before including
+	diagnostic.h or diagnostic-path.h.
+	* sm-malloc.cc: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* call-summary.cc: Likewise.
+	* record-layout.cc: Likewise.
+
 2024-02-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114159

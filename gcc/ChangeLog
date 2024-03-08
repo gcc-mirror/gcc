@@ -1,3 +1,72 @@
+2024-03-07  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/113618
+	* config/aarch64/aarch64.cc (aarch64_copy_one_block): Remove.
+	(aarch64_expand_cpymem): Emit single load/store only.
+	(aarch64_set_one_block): Emit single stores only.
+
+2024-03-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/114196
+	* tree-vect-loop-manip.cc (vect_can_peel_nonlinear_iv_p): Merge
+	vectorization guards.
+
+2024-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cppopts.texi: Remove incorrect claim about -dD not
+	outputting predefined macros.
+
+2024-03-07  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/113950
+	* config/rs6000/vsx.md (vsx_splat_<mode>): Correct assignment to operand1
+	and simplify else if with else.
+
+2024-03-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* system.h: Include safe-ctype.h after C++ standard headers.
+
+2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/110079
+	* bb-reorder.cc (fix_crossing_unconditional_branches): Don't adjust
+	asm goto.
+
+2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105533
+	* expmed.cc (choose_mult_variant): Only try the val - 1 variant
+	if val is not HOST_WIDE_INT_MIN or if mode has exactly
+	HOST_BITS_PER_WIDE_INT precision.  Avoid triggering UB while computing
+	val - 1.
+
+2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105533
+	* tree-ssa-sccvn.cc (ao_ref_init_from_vn_reference) <case ARRAY_REF>:
+	Multiple op->off by BITS_PER_UNIT instead of shifting it left by
+	LOG2_BITS_PER_UNIT.
+
+2024-03-07  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.gcc: Add a case for loongarch*-*-linux-musl*.
+	* config/loongarch/linux.h: Disable the multilib-compatible
+	treatment for *musl* targets.
+	* config/loongarch/musl.h: New file.
+
+2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114009
+	* genmatch.cc (decision_tree::gen): Emit ARG_UNUSED for captures
+	argument even for GENERIC, not just for GIMPLE.
+	* match.pd (a * !a -> 0): New simplifications.
+
+2024-03-07  demin.han  <demin.han@starfivetech.com>
+
+	* config/riscv/riscv-protos.h (expand_vec_cmp): Change proto
+	* config/riscv/riscv-v.cc (expand_vec_cmp): Use default arguments
+	(expand_vec_cmp_float): Adapt arguments
+
 2024-03-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/114232

@@ -1,3 +1,69 @@
+2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114229
+	* module.cc (trees_out::core_bools): Redetermine
+	DECL_INTERFACE_KNOWN on stream-in for vtables and tinfo.
+	* decl2.cc (import_export_decl): Add fixme for ABI changes with
+	module vtables and tinfo.
+
+2024-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103994
+	* cp-tree.h (add_mergeable_specialization): Remove second
+	parameter.
+	* module.cc (depset::disc_bits::DB_ALIAS_TMPL_INST_BIT): Remove.
+	(depset::disc_bits::DB_ALIAS_SPEC_BIT): Remove.
+	(depset::is_alias_tmpl_inst): Remove.
+	(depset::is_alias): Remove.
+	(merge_kind::MK_tmpl_alias_mask): Remove.
+	(merge_kind::MK_alias_spec): Remove.
+	(merge_kind_name): Remove entries for alias specializations.
+	(trees_out::core_vals) <case TEMPLATE_DECL>: Adjust after
+	removing is_alias_tmpl_inst.
+	(trees_in::decl_value): Adjust add_mergeable_specialization
+	calls.
+	(trees_out::get_merge_kind) <case depset::EK_SPECIALIZATION>:
+	Use MK_decl_spec for alias template specializations.
+	(trees_out::key_mergeable): Simplify after MK_tmpl_alias_mask
+	removal.
+	(depset::hash::make_dependency): Adjust after removing
+	DB_ALIAS_TMPL_INST_BIT.
+	(specialization_add): Don't allow alias templates when !decl_p.
+	(depset::hash::add_specializations): Remove now-dead code
+	accomodating alias template specializations in the type table.
+	* pt.cc (lookup_template_class): Dispatch early to
+	instantiate_alias_template for alias templates.  Simplify
+	accordingly.
+	(add_mergeable_specialization): Remove alias_p parameter and
+	simplify accordingly.
+
+2024-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110730
+	PR c++/105512
+	* module.cc (module_state::write_namespaces): Stream the
+	abi_tag attribute of an inline namespace.
+	(module_state::read_namespaces): Likewise.
+
+2024-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110031
+	* pt.cc (lookup_and_finish_template_variable): Pass complain to
+	mark_used.
+
+2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98356
+	* typeck2.cc (cxx_incomplete_type_diagnostic): Don't assume
+	'member' will be a FUNCTION_DECL (or something like it).
+
+2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98881
+	* module.cc (trees_out::tpl_parms_fini): Stream out DECL_CONTEXT
+	for template template parameters.
+	(trees_in::tpl_parms_fini): Read it.
+
 2024-03-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/114114

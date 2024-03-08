@@ -1,3 +1,16 @@
+2024-03-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/list_read.c (list_formatted_read_scalar): Use fstrcpy
+	from libgfortran/runtime/string.c to replace snprintf.
+	(nml_read_obj): Likewise.
+	* io/transfer.c (unformatted_read): Likewise.
+	(unformatted_write): Likewise.
+	(formatted_transfer_scalar_read): Likewise.
+	(formatted_transfer_scalar_write): Likewise.
+	* io/write.c (list_formatted_write_scalar): Likewise.
+	(nml_write_obj): Likewise.
+
 2024-03-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/105456

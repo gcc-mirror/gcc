@@ -1,3 +1,73 @@
+2024-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (_Parser::operator()): Use
+	std::from_chars to parse fractional seconds.
+
+2024-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114244
+	* include/bits/chrono_io.h (_Parser::operator()): Remove
+	redundant uses of duration_cast. Use chrono::round to convert
+	long double value to durations with integer representations.
+	Check represenation type when deciding whether to skip parsing
+	fractional seconds.
+	* testsuite/20_util/duration/114244.cc: New test.
+	* testsuite/20_util/duration/io.cc: Check that a floating-point
+	duration with ratio<1> precision can be parsed.
+
+2024-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114103
+	* include/bits/version.def (atomic_lock_free_type_aliases): Add
+	extra_cond to check for at least one always-lock-free type.
+	* include/bits/version.h: Regenerate.
+	* include/std/atomic (atomic_signed_lock_free)
+	(atomic_unsigned_lock_free): Only use always-lock-free types.
+	* src/c++20/tzdb.cc (time_zone::_Impl::RulesCounter): Don't use
+	atomic counter if lock-free aliases aren't available.
+	* testsuite/29_atomics/atomic/lock_free_aliases.cc: XFAIL for
+	targets without lock-free word-size compare_exchange.
+
+2024-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (__get_leap_second_info): Update expiry
+	time for hardcoded list of leap seconds.
+	* testsuite/std/time/tzdb/leap_seconds.cc: Update comment.
+
+2024-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/allocator/default_init.cc: Use
+	std::memset instead of __builtin_memset.
+	* testsuite/23_containers/forward_list/allocator/default_init.cc:
+	Likewise.
+	* testsuite/23_containers/list/allocator/default_init.cc:
+	Likewise.
+	* testsuite/23_containers/map/allocator/default_init.cc:
+	Likewise.
+	* testsuite/23_containers/set/allocator/default_init.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/allocator/default_init.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/allocator/default_init.cc:
+	Likewise.
+	* testsuite/23_containers/vector/allocator/default_init.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/allocator/default_init.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic/compare_exchange_padding.cc:
+	Likewise.
+	* testsuite/util/atomic/wait_notify_util.h: Likewise.
+
+2024-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (_Arg_store::_S_make_elt): Add two
+	static_assert checks to give more user-friendly error messages.
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Prune another
+	form of "in requirements with" note.
+	* testsuite/std/format/arguments/args_neg.cc: Check for
+	user-friendly diagnostics for non-formattable types.
+	* testsuite/std/format/string_neg.cc: Likewise.
+
 2024-03-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/114147

@@ -1,3 +1,107 @@
+2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114229
+	* g++.dg/modules/virt-2_b.C: Update test to acknowledge that we
+	now emit vtables here too.
+	* g++.dg/modules/virt-3_a.C: New test.
+	* g++.dg/modules/virt-3_b.C: New test.
+	* g++.dg/modules/virt-3_c.C: New test.
+	* g++.dg/modules/virt-3_d.C: New test.
+
+2024-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103994
+	* g++.dg/modules/pr99425-1_b.H: s/alias/decl in dump scan.
+	* g++.dg/modules/tpl-alias-1_a.H: Likewise.
+	* g++.dg/modules/tpl-alias-2_a.H: New test.
+	* g++.dg/modules/tpl-alias-2_b.C: New test.
+
+2024-03-07  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/113618
+	* gcc.target/aarch64/pr113618.c: New test.
+
+2024-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110730
+	PR c++/105512
+	* g++.dg/modules/hello-2_a.C: New test.
+	* g++.dg/modules/hello-2_b.C: New test.
+	* g++.dg/modules/namespace-6_a.H: New test.
+	* g++.dg/modules/namespace-6_b.C: New test.
+
+2024-03-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/114233
+	* lib/target-supports.exp: Fix test for C++.
+
+2024-03-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/aarch64/pr114196.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr114196.c: New test.
+
+2024-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110031
+	* g++.dg/cpp1z/inline-var11.C: New test.
+
+2024-03-07  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/113950
+	* gcc.target/powerpc/pr113950.c: New testcase.
+
+2024-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/predicate15.adb: New test.
+
+2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98356
+	* g++.dg/pr98356.C: New test.
+
+2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98881
+	* g++.dg/modules/tpl-tpl-parm-3.h: New test.
+	* g++.dg/modules/tpl-tpl-parm-3_a.H: New test.
+	* g++.dg/modules/tpl-tpl-parm-3_b.C: New test.
+	* g++.dg/modules/tpl-tpl-parm-3_c.C: New test.
+
+2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/110079
+	* gcc.dg/pr110079.c: New test.
+
+2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105533
+	* gcc.dg/pr105533.c: New test.
+
+2024-03-07  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvfrint_s.c: Replace
+	ASSERTEQ_64 with the macro ASSERTEQ_32.
+	* gcc.target/loongarch/vector/lasx/lasx-xvshuf_b.c: Modify the expected
+	test results of some functions according to the function of the vector
+	instruction.
+	* gcc.target/loongarch/vector/lsx/lsx-vfrint_s.c: Same
+	modification as lasx-xvfrint_s.c.
+	* gcc.target/loongarch/vector/lsx/lsx-vshuf.c: Same
+	modification as lasx-xvshuf_b.c.
+	* gcc.target/loongarch/vector/simd_correctness_check.h: Use the llabs()
+	function instead of abs() to check the correctness of the results.
+
+2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114009
+	* gcc.dg/tree-ssa/pr114009.c: New test.
+
+2024-03-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* gfortran.dg/pr105456.f90: Revise using '%' characters
+	in users error message.
+
 2024-03-06  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* gcc.target/riscv/rvv/autovec/pr114200.c: New test.
