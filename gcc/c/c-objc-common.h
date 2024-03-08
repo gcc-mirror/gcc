@@ -119,6 +119,9 @@ static const scoped_attribute_specs *const c_objc_attribute_table[] =
 #undef LANG_HOOKS_GIMPLIFY_EXPR
 #define LANG_HOOKS_GIMPLIFY_EXPR c_gimplify_expr
 
+#undef LANG_HOOKS_TYPE_DWARF_ATTRIBUTE
+#define LANG_HOOKS_TYPE_DWARF_ATTRIBUTE c_type_dwarf_attribute
+
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING c_omp_predetermined_sharing
 

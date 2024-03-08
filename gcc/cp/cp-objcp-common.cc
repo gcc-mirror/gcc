@@ -410,6 +410,11 @@ cp_type_dwarf_attribute (const_tree type, int attr)
 	return 1;
       break;
 
+    case DW_AT_export_symbols:
+      if (ANON_AGGR_TYPE_P (type))
+	return 1;
+      break;
+
     default:
       break;
     }

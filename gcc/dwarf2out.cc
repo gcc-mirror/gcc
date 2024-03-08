@@ -25162,6 +25162,17 @@ gen_field_die (tree decl, struct vlr_context *ctx, dw_die_ref context_die)
 
   add_accessibility_attribute (decl_die, decl);
 
+  /* Add DW_AT_export_symbols to anonymous unions or structs.  */
+  if ((dwarf_version >= 5 || !dwarf_strict) && DECL_NAME (decl) == NULL_TREE)
+    if (tree type = member_declared_type (decl))
+      if (lang_hooks.types.type_dwarf_attribute (TYPE_MAIN_VARIANT (type),
+						 DW_AT_export_symbols) != -1)
+	{
+	  dw_die_ref type_die = lookup_type_die (TYPE_MAIN_VARIANT (type));
+	  if (type_die && get_AT (type_die, DW_AT_export_symbols) == NULL)
+	    add_AT_flag (type_die, DW_AT_export_symbols, 1);
+	}
+
   /* Equate decl number to die, so that we can look up this decl later on.  */
   equate_decl_number_to_die (decl, decl_die);
 }

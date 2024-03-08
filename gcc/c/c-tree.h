@@ -731,6 +731,7 @@ extern bool c_warn_unused_global_decl (const_tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
 extern bool c_var_mod_p (tree x, tree fn);
 extern alias_set_type c_get_alias_set (tree);
+extern int c_type_dwarf_attribute (const_tree, int);
 
 /* in c-typeck.cc */
 extern int in_alignof;
