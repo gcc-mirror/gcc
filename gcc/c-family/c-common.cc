@@ -7793,9 +7793,14 @@ resolve_overloaded_atomic_exchange (location_t loc, tree function,
   /* Convert object pointer to required type.  */
   p0 = build1 (VIEW_CONVERT_EXPR, I_type_ptr, p0);
   (*params)[0] = p0; 
-  /* Convert new value to required type, and dereference it.  */
-  p1 = build_indirect_ref (loc, p1, RO_UNARY_STAR);
-  p1 = build1 (VIEW_CONVERT_EXPR, I_type, p1);
+  /* Convert new value to required type, and dereference it.
+     If *p1 type can have padding or may involve floating point which
+     could e.g. be promoted to wider precision and demoted afterwards,
+     state of padding bits might not be preserved.  */
+  build_indirect_ref (loc, p1, RO_UNARY_STAR);
+  p1 = build2_loc (loc, MEM_REF, I_type,
+		   build1 (VIEW_CONVERT_EXPR, I_type_ptr, p1),
+		   build_zero_cst (TREE_TYPE (p1)));
   (*params)[1] = p1;
 
   /* Move memory model to the 3rd position, and end param list.  */
@@ -7873,9 +7878,14 @@ resolve_overloaded_atomic_compare_exchange (location_t loc, tree function,
   p1 = build1 (VIEW_CONVERT_EXPR, I_type_ptr, p1);
   (*params)[1] = p1;
 
-  /* Convert desired value to required type, and dereference it.  */
-  p2 = build_indirect_ref (loc, p2, RO_UNARY_STAR);
-  p2 = build1 (VIEW_CONVERT_EXPR, I_type, p2);
+  /* Convert desired value to required type, and dereference it.
+     If *p2 type can have padding or may involve floating point which
+     could e.g. be promoted to wider precision and demoted afterwards,
+     state of padding bits might not be preserved.  */
+  build_indirect_ref (loc, p2, RO_UNARY_STAR);
+  p2 = build2_loc (loc, MEM_REF, I_type,
+		   build1 (VIEW_CONVERT_EXPR, I_type_ptr, p2),
+		   build_zero_cst (TREE_TYPE (p2)));
   (*params)[2] = p2;
 
   /* The rest of the parameters are fine. NULL means no special return value

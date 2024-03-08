@@ -20090,6 +20090,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	RETURN (r);
       }
 
+    case MEM_REF:
+      {
+	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	tree op1 = RECUR (TREE_OPERAND (t, 0));
+	tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	RETURN (build2_loc (EXPR_LOCATION (t), MEM_REF, new_type, op0, op1));
+      }
+
     case NOP_EXPR:
       {
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
