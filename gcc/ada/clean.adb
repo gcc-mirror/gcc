@@ -248,7 +248,7 @@ package body Clean is
                      for J in ALIs.Table (The_ALI).First_Sdep ..
                        ALIs.Table (The_ALI).Last_Sdep
                      loop
-                        if Sdep.Table (J).Subunit_Name /= No_Name then
+                        if Sdep.Table (J).Subunit_Name /= No_Unit_Name then
                            Sources.Increment_Last;
                            Sources.Table (Sources.Last) :=
                              Sdep.Table (J).Sfile;

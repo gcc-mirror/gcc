@@ -2334,7 +2334,7 @@ package body Binde is
       for J in Sdep.First .. Sdep.Last loop
          Source := Sdep.Table (J).Sfile;
 
-         if Sdep.Table (J).Subunit_Name /= No_Name
+         if Sdep.Table (J).Subunit_Name /= No_Unit_Name
            and then Put_In_Sources (Source)
            and then not Is_Internal_File_Name (Source)
          then
