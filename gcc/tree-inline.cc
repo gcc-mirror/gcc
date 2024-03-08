@@ -2984,23 +2984,13 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
       gimple *stmt = gsi_stmt (si);
       if (is_gimple_call (stmt))
 	{
-	  tree old_lhs = gimple_call_lhs (stmt);
 	  struct cgraph_edge *edge = id->dst_node->get_edge (stmt);
 	  if (edge)
 	    {
 	      if (!id->killed_new_ssa_names)
 		id->killed_new_ssa_names = new hash_set<tree> (16);
-	      gimple *new_stmt
-		= cgraph_edge::redirect_call_stmt_to_callee (edge,
-		    id->killed_new_ssa_names);
-	      if (old_lhs
-		  && TREE_CODE (old_lhs) == SSA_NAME
-		  && !gimple_call_lhs (new_stmt))
-		/* In case of IPA-SRA removing the LHS, the name should have
-		   been already added to the hash.  But in case of redirecting
-		   to builtin_unreachable it was not and the name still should
-		   be pruned from debug statements.  */
-		id->killed_new_ssa_names->add (old_lhs);
+	      cgraph_edge::redirect_call_stmt_to_callee (edge,
+		id->killed_new_ssa_names);
 
 	      if (stmt == last && id->call_stmt && maybe_clean_eh_stmt (stmt))
 		gimple_purge_dead_eh_edges (bb);
