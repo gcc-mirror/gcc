@@ -1450,6 +1450,7 @@ See RS/6000 and PowerPC Options.
 -mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt}
 -mpartial-vector-fp-math
 -mmove-max=@var{bits} -mstore-max=@var{bits}
+-mnoreturn-no-callee-saved-registers
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes
@@ -35396,6 +35397,15 @@ Prefer 256-bit vector width for instructions.
 @item 512
 Prefer 512-bit vector width for instructions.
 @end table
+
+@opindex mnoreturn-no-callee-saved-registers
+@item -mnoreturn-no-callee-saved-registers
+This option optimizes functions with @code{noreturn} attribute or
+@code{_Noreturn} specifier by not saving in the function prologue callee-saved
+registers which are used in the function (except for the @code{BP}
+register).  This option can interfere with debugging of the caller of the
+@code{noreturn} function or any function further up in the call stack, so it
+is not enabled by default.
 
 @opindex mcx16
 @item -mcx16

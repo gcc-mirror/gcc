@@ -3384,7 +3384,8 @@ ix86_set_func_type (tree fndecl)
 {
   /* No need to save and restore callee-saved registers for a noreturn
      function with nothrow or compiled with -fno-exceptions unless when
-     compiling with -O0 or -Og.  So that backtrace works for those at least
+     compiling with -O0 or -Og, except that it interferes with debugging
+     of callers.  So that backtrace works for those at least
      in most cases, save the bp register if it is used, because it often
      is used in callers to compute CFA.
 
@@ -3401,7 +3402,8 @@ ix86_set_func_type (tree fndecl)
   if (lookup_attribute ("no_callee_saved_registers",
 			TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
     no_callee_saved_registers = TYPE_NO_CALLEE_SAVED_REGISTERS;
-  else if (TREE_THIS_VOLATILE (fndecl)
+  else if (ix86_noreturn_no_callee_saved_registers
+	   && TREE_THIS_VOLATILE (fndecl)
 	   && optimize
 	   && !optimize_debug
 	   && (TREE_NOTHROW (fndecl) || !flag_exceptions)

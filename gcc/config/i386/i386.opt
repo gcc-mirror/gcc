@@ -659,6 +659,10 @@ mstore-max=
 Target RejectNegative Joined Var(ix86_store_max) Enum(prefer_vector_width) Init(PVW_NONE) Save
 Maximum number of bits that can be stored to memory efficiently.
 
+mnoreturn-no-callee-saved-registers
+Target Var(ix86_noreturn_no_callee_saved_registers)
+Optimize noreturn functions by not saving callee-saved registers used in the function.
+
 ;; ISA support
 
 m32
