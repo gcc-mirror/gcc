@@ -2024,7 +2024,8 @@ fix_up_fall_thru_edges (void)
 			     See PR108596.  */
 			  rtx_insn *j = BB_END (cur_bb);
 			  gcc_checking_assert (JUMP_P (j)
-					       && asm_noperands (PATTERN (j)));
+					       && (asm_noperands (PATTERN (j))
+						   > 0));
 			  edge e2 = find_edge (cur_bb, e->dest);
 			  if (e2)
 			    e2->flags |= EDGE_CROSSING;
