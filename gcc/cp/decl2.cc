@@ -2718,7 +2718,12 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
       /* Fall through.  */
     case VAR_DECL:
     case FUNCTION_DECL:
-      if (! TREE_PUBLIC (t))
+      if (decl_constant_var_p (t))
+	/* The ODR allows definitions in different TUs to refer to distinct
+	   constant variables with internal or no linkage, so such a reference
+	   shouldn't affect visibility (PR110323).  FIXME but only if the
+	   lvalue-rvalue conversion is applied.  */;
+      else if (! TREE_PUBLIC (t))
 	tpvis = VISIBILITY_ANON;
       else
 	tpvis = DECL_VISIBILITY (t);
