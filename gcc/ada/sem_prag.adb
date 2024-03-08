@@ -280,12 +280,6 @@ package body Sem_Prag is
    --  Determine whether dependency clause Clause is surrounded by extra
    --  parentheses. If this is the case, issue an error message.
 
-   function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
-   --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
-   --  pragma Depends. Determine whether the type of dependency item Item is
-   --  tagged, unconstrained array, unconstrained private or unconstrained
-   --  record.
-
    procedure Record_Possible_Body_Reference
      (State_Id : Entity_Id;
       Ref      : Node_Id);
@@ -32958,29 +32952,6 @@ package body Sem_Prag is
           and then Nkind (Parent (N)) = N_Package_Specification
           and then List_Containing (N) = Private_Declarations (Parent (N));
    end Is_Private_SPARK_Mode;
-
-   -------------------------------------
-   -- Is_Unconstrained_Or_Tagged_Item --
-   -------------------------------------
-
-   function Is_Unconstrained_Or_Tagged_Item
-     (Item : Entity_Id) return Boolean
-   is
-      Typ : constant Entity_Id := Etype (Item);
-   begin
-      if Is_Tagged_Type (Typ) then
-         return True;
-
-      elsif Is_Array_Type (Typ)
-        or else Is_Record_Type (Typ)
-        or else Is_Private_Type (Typ)
-      then
-         return not Is_Constrained (Typ);
-
-      else
-         return False;
-      end if;
-   end Is_Unconstrained_Or_Tagged_Item;
 
    -----------------------------
    -- Is_Valid_Assertion_Kind --

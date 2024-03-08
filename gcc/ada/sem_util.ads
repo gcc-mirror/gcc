@@ -2397,6 +2397,11 @@ package Sem_Util is
    pragma Inline (Is_Universal_Numeric_Type);
    --  True if T is Universal_Integer or Universal_Real
 
+   function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
+   --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
+   --  pragma Depends. Determine whether the type of dependency item Item is
+   --  tagged, unconstrained array or unconstrained record.
+
    function Is_User_Defined_Equality (Id : Entity_Id) return Boolean;
    --  Determine whether an entity denotes a user-defined equality
 

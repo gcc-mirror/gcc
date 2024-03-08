@@ -20709,6 +20709,29 @@ package body Sem_Util is
       return T = Universal_Integer or else T = Universal_Real;
    end Is_Universal_Numeric_Type;
 
+   -------------------------------------
+   -- Is_Unconstrained_Or_Tagged_Item --
+   -------------------------------------
+
+   function Is_Unconstrained_Or_Tagged_Item
+     (Item : Entity_Id) return Boolean
+   is
+      Typ : constant Entity_Id := Etype (Item);
+   begin
+      if Is_Tagged_Type (Typ) then
+         return True;
+
+      elsif Is_Array_Type (Typ)
+        or else Is_Record_Type (Typ)
+        or else Is_Private_Type (Typ)
+      then
+         return not Is_Constrained (Typ);
+
+      else
+         return False;
+      end if;
+   end Is_Unconstrained_Or_Tagged_Item;
+
    ------------------------------
    -- Is_User_Defined_Equality --
    ------------------------------
