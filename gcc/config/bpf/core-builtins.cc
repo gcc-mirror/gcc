@@ -553,7 +553,11 @@ bpf_core_get_index (const tree node, bool *valid)
 	{
 	  if (l == node)
 	    return i;
-	  i++;
+	  /* Skip unnamed padding, not represented by BTF.  */
+	  if (DECL_NAME(l) != NULL_TREE
+	      || TREE_CODE (TREE_TYPE (l)) == UNION_TYPE
+	      || TREE_CODE (TREE_TYPE (l)) == RECORD_TYPE)
+	    i++;
 	}
     }
   else if (code == ARRAY_REF || code == ARRAY_RANGE_REF || code == MEM_REF)

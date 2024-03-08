@@ -14,6 +14,9 @@ struct T {
   struct S s[2];
   char c;
   char d;
+  int a: 1;
+  int:31;
+  int f;
 };
 
 enum {
@@ -38,7 +41,9 @@ unsigned int foo (struct T *t)
   unsigned e1 = __builtin_preserve_field_info (bar()->d, FIELD_BYTE_OFFSET);
   unsigned e2 = __builtin_preserve_field_info (bar()->s[1].a4, FIELD_BYTE_OFFSET);
 
-  return s0a1 + s0a4 + s0x + s1a1 + s1a4 + s1x + c + d + e1 + e2;
+  unsigned f1 = __builtin_preserve_field_info (t->f, FIELD_BYTE_OFFSET);
+
+  return s0a1 + s0a4 + s0x + s1a1 + s1a4 + s1x + c + d + e1 + e2 + f1;
 }
 
 /* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],4" 2 } } */
@@ -65,5 +70,6 @@ unsigned int foo (struct T *t)
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:1:4\"\\)" 1 } } */
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:2\"\\)" 1 } } */
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:3\"\\)" 2 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:5\"\\)" 1 } } */
 
-/* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bpfcr_kind" 10 } } */
+/* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bpfcr_kind" 11 } } */
