@@ -497,8 +497,8 @@ PrivacyReporter::visit (HIR::BlockExpr &expr)
   for (auto &stmt : expr.get_statements ())
     stmt->accept_vis (*this);
 
-  auto &last_expr = expr.get_final_expr ();
-  last_expr.accept_vis (*this);
+  if (expr.has_final_expr ())
+    expr.get_final_expr ().accept_vis (*this);
 }
 
 void
@@ -508,8 +508,8 @@ PrivacyReporter::visit (HIR::ContinueExpr &)
 void
 PrivacyReporter::visit (HIR::BreakExpr &expr)
 {
-  auto &break_expr = expr.get_expr ();
-  break_expr.accept_vis (*this);
+  if (expr.has_break_expr ())
+    expr.get_expr ().accept_vis (*this);
 }
 
 void
@@ -551,7 +551,8 @@ PrivacyReporter::visit (HIR::RangeToInclExpr &)
 void
 PrivacyReporter::visit (HIR::ReturnExpr &expr)
 {
-  expr.get_expr ().accept_vis (*this);
+  if (expr.has_expr ())
+    expr.get_expr ().accept_vis (*this);
 }
 
 void

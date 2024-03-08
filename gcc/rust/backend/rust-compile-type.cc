@@ -208,12 +208,12 @@ TyTyResolveCompile::visit (const TyTy::FnType &type)
 
   for (auto &param_pair : type.get_params ())
     {
-      auto param_tyty = param_pair.second;
+      auto param_tyty = param_pair.get_type ();
       auto compiled_param_type
 	= TyTyResolveCompile::compile (ctx, param_tyty, trait_object_mode);
 
       auto compiled_param = Backend::typed_identifier (
-	param_pair.first->as_string (), compiled_param_type,
+	param_pair.get_pattern ().as_string (), compiled_param_type,
 	ctx->get_mappings ().lookup_location (param_tyty->get_ref ()));
 
       parameters.push_back (compiled_param);

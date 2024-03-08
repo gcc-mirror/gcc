@@ -574,15 +574,15 @@ TypeCheckItem::visit (HIR::Function &function)
 	function.get_return_type ().get_mappings ().get_hirid ());
     }
 
-  std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *>> params;
+  std::vector<TyTy::FnParam> params;
   for (auto &param : function.get_function_params ())
     {
       // get the name as well required for later on
       auto param_tyty = TypeCheckType::Resolve (param.get_type ());
-      params.emplace_back (&param.get_param_name (), param_tyty);
-
       context->insert_type (param.get_mappings (), param_tyty);
       TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
+      params.push_back (
+	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
     }
 
   auto path = CanonicalPath::create_empty ();

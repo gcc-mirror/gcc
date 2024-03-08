@@ -1267,7 +1267,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
 
     const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (base);
     auto &param = fn->param_at (index);
-    *result = param.second;
+    *result = param.get_type ();
 
     return true;
   };
@@ -1401,7 +1401,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       // assignments are coercion sites so lets convert the rvalue if
       // necessary, offset from the already adjusted implicit self
       bool ok;
-      TyTy::BaseType *expected = fntype->param_at (i + 1).second;
+      TyTy::BaseType *expected = fntype->param_at (i + 1).get_type ();
 
       TyTy::BaseType *actual = nullptr;
       ok = ctx->get_tyctx ()->lookup_type (

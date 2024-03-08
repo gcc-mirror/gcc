@@ -130,8 +130,7 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 	function.get_return_type ().get_mappings ().get_hirid ());
     }
 
-  std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
-  std::unique_ptr<HIR::IdentifierPattern> param_pattern = nullptr;
+  std::vector<TyTy::FnParam> params;
   for (auto &param : function.get_function_params ())
     {
       // get the name as well required for later on
@@ -143,14 +142,12 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
-      param_pattern = Rust::make_unique<HIR::IdentifierPattern> (
+      auto param_pattern = Rust::make_unique<HIR::IdentifierPattern> (
 	HIR::IdentifierPattern (mapping, param.get_param_name (),
 				UNDEF_LOCATION, false, Mutability::Imm,
 				std::unique_ptr<HIR::Pattern> (nullptr)));
 
-      params.push_back (
-	std::pair<HIR::Pattern *, TyTy::BaseType *> (param_pattern.get (),
-						     param_tyty));
+      params.push_back (TyTy::FnParam (std::move (param_pattern), param_tyty));
 
       context->insert_type (param.get_mappings (), param_tyty);
 
@@ -375,8 +372,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	function.get_return_type ().get_mappings ().get_hirid ());
     }
 
-  std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
-  std::unique_ptr<HIR::IdentifierPattern> self_pattern = nullptr;
+  std::vector<TyTy::FnParam> params;
   if (function.is_method ())
     {
       // these are implicit mappings and not used
@@ -390,10 +386,11 @@ TypeCheckImplItem::visit (HIR::Function &function)
       // reuse the HIR identifier pattern which requires it
       HIR::SelfParam &self_param = function.get_self_param ();
       // FIXME: which location should be used for Rust::Identifier for `self`?
-      self_pattern = Rust::make_unique<HIR::IdentifierPattern> (
-	HIR::IdentifierPattern (mapping, {"self"}, self_param.get_locus (),
-				self_param.is_ref (), self_param.get_mut (),
-				std::unique_ptr<HIR::Pattern> (nullptr)));
+      std::unique_ptr<HIR::Pattern> self_pattern
+	= Rust::make_unique<HIR::IdentifierPattern> (
+	  HIR::IdentifierPattern (mapping, {"self"}, self_param.get_locus (),
+				  self_param.is_ref (), self_param.get_mut (),
+				  std::unique_ptr<HIR::Pattern> (nullptr)));
 
       // might have a specified type
       TyTy::BaseType *self_type = nullptr;
@@ -450,9 +447,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	}
 
       context->insert_type (self_param.get_mappings (), self_type);
-      params.push_back (
-	std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern.get (),
-						     self_type));
+      params.push_back (TyTy::FnParam (std::move (self_pattern), self_type));
     }
 
   for (auto &param : function.get_function_params ())
@@ -464,8 +459,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
       TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
 
       params.push_back (
-	std::pair<HIR::Pattern *, TyTy::BaseType *> (&param.get_param_name (),
-						     param_tyty));
+	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
     }
 
   tl::optional<CanonicalPath> canonical_path;
