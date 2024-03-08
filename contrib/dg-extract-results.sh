@@ -28,14 +28,17 @@
 
 PROGNAME=dg-extract-results.sh
 
-# Try to use the python version if possible, since it tends to be faster.
+# Try to use the python version if possible, since it tends to be faster and
+# produces more stable results.
 PYTHON_VER=`echo "$0" | sed 's/sh$/py/'`
-if test "$PYTHON_VER" != "$0" &&
-   test -f "$PYTHON_VER" &&
-   python -c 'import sys, getopt, re, io, datetime, operator; sys.exit (0 if sys.version_info >= (2, 6) else 1)' \
-     > /dev/null 2> /dev/null; then
-  exec python $PYTHON_VER "$@"
-fi
+for python in python3 python python2 ; do
+  if test "$PYTHON_VER" != "$0" &&
+     test -f "$PYTHON_VER" &&
+     ${python} -c 'import sys, getopt, re, io, datetime, operator; sys.exit (0 if sys.version_info >= (2, 6) else 1)' \
+       > /dev/null 2> /dev/null; then
+    exec ${python} $PYTHON_VER "$@"
+  fi
+done
 
 usage() {
   cat <<EOF >&2
