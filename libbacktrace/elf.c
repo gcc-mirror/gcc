@@ -5076,7 +5076,7 @@ elf_uncompress_chdr (struct backtrace_state *state,
 		     backtrace_error_callback error_callback, void *data,
 		     unsigned char **uncompressed, size_t *uncompressed_size)
 {
-  const b_elf_chdr *chdr;
+  b_elf_chdr chdr;
   char *alc;
   size_t alc_len;
   unsigned char *po;
@@ -5088,27 +5088,30 @@ elf_uncompress_chdr (struct backtrace_state *state,
   if (compressed_size < sizeof (b_elf_chdr))
     return 1;
 
-  chdr = (const b_elf_chdr *) compressed;
+  /* The lld linker can misalign a compressed section, so we can't safely read
+     the fields directly as we can for other ELF sections.  See
+     https://github.com/ianlancetaylor/libbacktrace/pull/120.  */
+  memcpy (&chdr, compressed, sizeof (b_elf_chdr));
 
   alc = NULL;
   alc_len = 0;
-  if (*uncompressed != NULL && *uncompressed_size >= chdr->ch_size)
+  if (*uncompressed != NULL && *uncompressed_size >= chdr.ch_size)
     po = *uncompressed;
   else
     {
-      alc_len = chdr->ch_size;
+      alc_len = chdr.ch_size;
       alc = backtrace_alloc (state, alc_len, error_callback, data);
       if (alc == NULL)
 	return 0;
       po = (unsigned char *) alc;
     }
 
-  switch (chdr->ch_type)
+  switch (chdr.ch_type)
     {
     case ELFCOMPRESS_ZLIB:
       if (!elf_zlib_inflate_and_verify (compressed + sizeof (b_elf_chdr),
 					compressed_size - sizeof (b_elf_chdr),
-					zdebug_table, po, chdr->ch_size))
+					zdebug_table, po, chdr.ch_size))
 	goto skip;
       break;
 
@@ -5116,7 +5119,7 @@ elf_uncompress_chdr (struct backtrace_state *state,
       if (!elf_zstd_decompress (compressed + sizeof (b_elf_chdr),
 				compressed_size - sizeof (b_elf_chdr),
 				(unsigned char *)zdebug_table, po,
-				chdr->ch_size))
+				chdr.ch_size))
 	goto skip;
       break;
 
@@ -5126,7 +5129,7 @@ elf_uncompress_chdr (struct backtrace_state *state,
     }
 
   *uncompressed = po;
-  *uncompressed_size = chdr->ch_size;
+  *uncompressed_size = chdr.ch_size;
 
   return 1;
 
@@ -6876,8 +6879,8 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	}
     }
 
-  // A debuginfo file may not have a useful .opd section, but we can use the
-  // one from the original executable.
+  /* A debuginfo file may not have a useful .opd section, but we can use the
+     one from the original executable.  */
   if (opd == NULL)
     opd = caller_opd;
 
