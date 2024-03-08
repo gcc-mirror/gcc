@@ -549,8 +549,6 @@ public:
 
   Pattern &get_param_name () { return *param_name; }
 
-  std::unique_ptr<Pattern> take_param_name () { return std::move (param_name); }
-
   Type &get_type () { return *type; }
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }

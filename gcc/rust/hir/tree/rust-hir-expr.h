@@ -2238,6 +2238,7 @@ public:
 
   bool is_final_stmt (Stmt *stmt) { return statements.back ().get () == stmt; }
 
+  bool has_final_expr () { return expr != nullptr; }
   Expr &get_final_expr () { return *expr; }
 
   std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
@@ -2785,6 +2786,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
+  bool has_expr () { return return_expr != nullptr; }
   Expr &get_expr () { return *return_expr; }
 
   ExprType get_expression_type () const override final

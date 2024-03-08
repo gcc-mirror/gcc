@@ -465,7 +465,10 @@ public:
 
   virtual void accept_vis (HIRTypeVisitor &vis) = 0;
 
-  virtual Analysis::NodeMapping get_mappings () const { return mappings; }
+  virtual const Analysis::NodeMapping &get_mappings () const
+  {
+    return mappings;
+  }
   virtual location_t get_locus () const { return locus; }
 
 protected:

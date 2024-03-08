@@ -315,13 +315,13 @@ compile_fn_params (Context *ctx, TyTy::FnType *fntype, tree fndecl,
 {
   for (auto &parm : fntype->get_params ())
     {
-      auto &referenced_param = parm.first;
-      auto &param_tyty = parm.second;
+      auto &referenced_param = parm.get_pattern ();
+      auto param_tyty = parm.get_type ();
       auto compiled_param_type = TyTyResolveCompile::compile (ctx, param_tyty);
 
-      location_t param_locus = referenced_param->get_locus ();
+      location_t param_locus = referenced_param.get_locus ();
       Bvariable *compiled_param_var
-	= CompileFnParam::compile (ctx, fndecl, *referenced_param,
+	= CompileFnParam::compile (ctx, fndecl, referenced_param,
 				   compiled_param_type, param_locus);
 
       compiled_param_variables->push_back (compiled_param_var);
@@ -496,9 +496,10 @@ transmute_handler (Context *ctx, TyTy::FnType *fntype)
       rust_error_at (fntype->get_locus (),
 		     "cannot transmute between types of different sizes, or "
 		     "dependently-sized types");
-      rust_inform (fntype->get_ident ().locus, "source type: %qs (%lu bits)",
-		   fntype->get_params ().at (0).second->as_string ().c_str (),
-		   (unsigned long) source_size);
+      rust_inform (
+	fntype->get_ident ().locus, "source type: %qs (%lu bits)",
+	fntype->get_params ().at (0).get_type ()->as_string ().c_str (),
+	(unsigned long) source_size);
       rust_inform (fntype->get_ident ().locus, "target type: %qs (%lu bits)",
 		   fntype->get_return_type ()->as_string ().c_str (),
 		   (unsigned long) target_size);
@@ -1226,7 +1227,7 @@ assume_handler (Context *ctx, TyTy::FnType *fntype)
   // TODO: make sure this is actually helping the compiler optimize
 
   rust_assert (fntype->get_params ().size () == 1);
-  rust_assert (fntype->param_at (0).second->get_kind ()
+  rust_assert (fntype->param_at (0).get_type ()->get_kind ()
 	       == TyTy::TypeKind::BOOL);
 
   tree lookup = NULL_TREE;

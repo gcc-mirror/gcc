@@ -711,7 +711,7 @@ HIRCompileBase::compile_function (
   for (auto &referenced_param : function_params)
     {
       auto &tyty_param = fntype->param_at (i++);
-      auto param_tyty = tyty_param.second;
+      auto param_tyty = tyty_param.get_type ();
       auto compiled_param_type = TyTyResolveCompile::compile (ctx, param_tyty);
 
       location_t param_locus = referenced_param.get_locus ();

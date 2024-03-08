@@ -735,8 +735,8 @@ public:
 
     for (size_t i = 0; i < base->num_params (); i++)
       {
-	auto a = base->param_at (i).second;
-	auto b = type.param_at (i).second;
+	auto a = base->param_at (i).get_type ();
+	auto b = type.param_at (i).get_type ();
 
 	if (!a->can_eq (b, emit_error_flag))
 	  {
@@ -831,7 +831,7 @@ public:
     for (size_t i = 0; i < base->num_params (); i++)
       {
 	auto this_param = base->get_param_type_at (i);
-	auto other_param = type.param_at (i).second;
+	auto other_param = type.param_at (i).get_type ();
 	if (!this_param->can_eq (other_param, emit_error_flag))
 	  {
 	    BaseCmp::visit (type);

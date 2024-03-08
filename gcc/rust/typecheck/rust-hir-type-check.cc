@@ -222,9 +222,8 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	function.get_return_type ().get_mappings ().get_hirid ());
     }
 
-  std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
+  std::vector<TyTy::FnParam> params;
 
-  std::unique_ptr<HIR::IdentifierPattern> self_pattern = nullptr;
   if (function.is_method ())
     {
       // these are implicit mappings and not used
@@ -238,7 +237,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
       // for compilation to know parameter names. The types are ignored
       // but we reuse the HIR identifier pattern which requires it
       HIR::SelfParam &self_param = function.get_self ();
-      self_pattern
+      std::unique_ptr<HIR::Pattern> self_pattern
 	= Rust::make_unique<HIR::IdentifierPattern> (HIR::IdentifierPattern (
 	  mapping, {"self"}, self_param.get_locus (), self_param.is_ref (),
 	  self_param.is_mut () ? Mutability::Mut : Mutability::Imm,
@@ -290,21 +289,18 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	}
 
       context->insert_type (self_param.get_mappings (), self_type);
-      params.push_back (
-	std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern.get (),
-						     self_type));
+      params.push_back (TyTy::FnParam (std::move (self_pattern), self_type));
     }
 
   for (auto &param : function.get_function_params ())
     {
       // get the name as well required for later on
       auto param_tyty = TypeCheckType::Resolve (param.get_type ());
-      params.push_back (
-	std::pair<HIR::Pattern *, TyTy::BaseType *> (&param.get_param_name (),
-						     param_tyty));
-
       context->insert_type (param.get_mappings (), param_tyty);
       TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
+      // FIXME: Should we take the name ? Use a shared pointer instead ?
+      params.push_back (
+	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
     }
 
   auto &mappings = Analysis::Mappings::get ();
@@ -332,7 +328,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
     function.get_function_name ().as_string (), ident,
     function.is_method () ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
 			  : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
-    ABI::RUST, params, ret_type, substitutions,
+    ABI::RUST, std::move (params), ret_type, substitutions,
     TyTy::SubstitutionArgumentMappings::empty (
       context->get_lifetime_resolver ().get_num_bound_regions ()),
     region_constraints);

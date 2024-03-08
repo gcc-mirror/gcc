@@ -62,7 +62,7 @@ MethodResolver::Select (std::set<MethodCandidate> &candidates,
       for (size_t i = 0; i < arguments.size (); i++)
 	{
 	  TyTy::BaseType *arg = arguments.at (i);
-	  TyTy::BaseType *param = fn.get_params ().at (i + 1).second;
+	  TyTy::BaseType *param = fn.get_params ().at (i + 1).get_type ();
 	  TyTy::BaseType *coerced
 	    = try_coercion (0, TyTy::TyWithLocation (param),
 			    TyTy::TyWithLocation (arg), UNDEF_LOCATION);
