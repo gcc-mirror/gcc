@@ -3157,6 +3157,16 @@ namespace __detail
 	  minutes __tz_offset = __bad_min;
 	  basic_string<_CharT, _Traits> __tz_abbr;
 
+	  if ((_M_need & _ChronoParts::_TimeOfDay)
+		&& (_M_need & _ChronoParts::_Year))
+	    {
+	      // For time_points assume "00:00:00" is implicitly present,
+	      // so we don't fail to parse if it's not (PR libstdc++/114240).
+	      // We will still fail to parse if there's no year+month+day.
+	      __h = hours(0);
+	      __parts = _ChronoParts::_TimeOfDay;
+	    }
+
 	  // bool __is_neg = false; // TODO: how is this handled for parsing?
 
 	  _CharT __mod{}; // One of 'E' or 'O' or nul.
@@ -4098,7 +4108,7 @@ namespace __detail
 	      const bool __need_wday = _M_need & _ChronoParts::_Weekday;
 
 	      // Whether the caller wants _M_sys_days and _M_time.
-	      // Only true for time_points.
+	      // Only true for durations and time_points.
 	      const bool __need_time = _M_need & _ChronoParts::_TimeOfDay;
 
 	      if (__need_wday && __wday != __bad_wday)
