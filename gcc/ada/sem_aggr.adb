@@ -1335,7 +1335,7 @@ package body Sem_Aggr is
       Index_Base_High : constant Node_Id   := Type_High_Bound (Index_Base);
       --  Ditto for the base type
 
-      Others_Present : Boolean := False;
+      Others_N : Node_Id := Empty;
 
       Nb_Choices : Nat := 0;
       --  Contains the overall number of named choices in this sub-aggregate
@@ -1870,7 +1870,7 @@ package body Sem_Aggr is
 
             while Present (Choice) loop
                if Nkind (Choice) = N_Others_Choice then
-                  Others_Present := True;
+                  Others_N := Choice;
 
                else
                   Analyze (Choice);
@@ -2189,7 +2189,7 @@ package body Sem_Aggr is
             Delete_Choice := False;
             while Present (Choice) loop
                if Nkind (Choice) = N_Others_Choice then
-                  Others_Present := True;
+                  Others_N := Choice;
 
                   if Choice /= First (Choice_List (Assoc))
                     or else Present (Next (Choice))
@@ -2289,7 +2289,7 @@ package body Sem_Aggr is
 
       if Present (Expressions (N))
         and then (Nb_Choices > 1
-                   or else (Nb_Choices = 1 and then not Others_Present))
+                   or else (Nb_Choices = 1 and then No (Others_N)))
       then
          Error_Msg_N
            ("cannot mix named and positional associations in array aggregate",
@@ -2299,16 +2299,11 @@ package body Sem_Aggr is
 
       --  Test for the validity of an others choice if present
 
-      if Others_Present and then not Others_Allowed then
-         declare
-            Others_N : constant Node_Id :=
-              First (Choice_List (First (Component_Associations (N))));
-         begin
-            Error_Msg_N ("OTHERS choice not allowed here", Others_N);
-            Error_Msg_N ("\qualify the aggregate with a constrained subtype "
-                         & "to provide bounds for it", Others_N);
-            return Failure;
-         end;
+      if Present (Others_N) and then not Others_Allowed then
+         Error_Msg_N ("OTHERS choice not allowed here", Others_N);
+         Error_Msg_N ("\qualify the aggregate with a constrained subtype "
+                      & "to provide bounds for it", Others_N);
+         return Failure;
       end if;
 
       --  Protect against cascaded errors
@@ -2320,7 +2315,7 @@ package body Sem_Aggr is
       --  STEP 2: Process named components
 
       if No (Expressions (N)) then
-         if Others_Present then
+         if Present (Others_N) then
             Case_Table_Size := Nb_Choices - 1;
          else
             Case_Table_Size := Nb_Choices;
@@ -2709,7 +2704,7 @@ package body Sem_Aggr is
 
                      if Lo_Val <= Hi_Val
                        or else (Lo_Val > Hi_Val + 1
-                                 and then not Others_Present)
+                                 and then No (Others_N))
                      then
                         Missing_Or_Duplicates := True;
                         exit;
@@ -2796,7 +2791,7 @@ package body Sem_Aggr is
                      --  Loop through entries in table to find missing indexes.
                      --  Not needed if others, since missing impossible.
 
-                     if not Others_Present then
+                     if No (Others_N) then
                         for J in 2 .. Nb_Discrete_Choices loop
                            Lo_Val := Expr_Value (Table (J).Lo);
                            Hi_Val := Table (J - 1).Highest;
@@ -2862,7 +2857,7 @@ package body Sem_Aggr is
             --  If Others is present, then bounds of aggregate come from the
             --  index constraint (not the choices in the aggregate itself).
 
-            if Others_Present then
+            if Present (Others_N) then
                Get_Index_Bounds (Index_Constr, Aggr_Low, Aggr_High);
 
                --  Abandon processing if either bound is already signalled as
@@ -3043,7 +3038,7 @@ package body Sem_Aggr is
             Next (Expr);
          end loop;
 
-         if Others_Present then
+         if Present (Others_N) then
             Assoc := Last (Component_Associations (N));
 
             --  Ada 2005 (AI-231)
@@ -3102,7 +3097,7 @@ package body Sem_Aggr is
 
          --  STEP 3 (B): Compute the aggregate bounds
 
-         if Others_Present then
+         if Present (Others_N) then
             Get_Index_Bounds (Index_Constr, Aggr_Low, Aggr_High);
 
          else
@@ -3126,7 +3121,7 @@ package body Sem_Aggr is
 
       --  Check (B)
 
-      if Others_Present and then Nb_Discrete_Choices > 0 then
+      if Present (Others_N) and then Nb_Discrete_Choices > 0 then
          Check_Bounds (Aggr_Low, Aggr_High, Choices_Low, Choices_High);
          Check_Bounds (Index_Typ_Low, Index_Typ_High,
                        Choices_Low, Choices_High);
@@ -3135,7 +3130,7 @@ package body Sem_Aggr is
 
       --  Check (C)
 
-      elsif Others_Present and then Nb_Elements > 0 then
+      elsif Present (Others_N) and then Nb_Elements > 0 then
          Check_Length (Aggr_Low, Aggr_High, Nb_Elements);
          Check_Length (Index_Typ_Low, Index_Typ_High, Nb_Elements);
          Check_Length (Index_Base_Low, Index_Base_High, Nb_Elements);
@@ -3154,7 +3149,7 @@ package body Sem_Aggr is
       --  to tree and analyze first. Reset analyzed flag to ensure it will get
       --  analyzed when it is a literal bound whose type must be properly set.
 
-      if Others_Present or else Nb_Discrete_Choices > 0 then
+      if Present (Others_N) or else Nb_Discrete_Choices > 0 then
          Aggr_High := Duplicate_Subexpr (Aggr_High);
 
          if Etype (Aggr_High) = Universal_Integer then
@@ -3186,7 +3181,7 @@ package body Sem_Aggr is
       Analyze_And_Resolve (Aggregate_Bounds (N), Index_Typ);
       Check_Unset_Reference (Aggregate_Bounds (N));
 
-      if not Others_Present and then Nb_Discrete_Choices = 0 then
+      if No (Others_N) and then Nb_Discrete_Choices = 0 then
          Set_High_Bound
            (Aggregate_Bounds (N),
             Duplicate_Subexpr (High_Bound (Aggregate_Bounds (N))));
