@@ -25734,22 +25734,6 @@ cp_parser_parameter_declaration (cp_parser *parser,
       decl_specifiers.locations[ds_this] = 0;
     }
 
-  if (xobj_param_p
-      && ((declarator && declarator->parameter_pack_p)
-	  || cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)))
-    {
-      location_t xobj_param
-	= make_location (decl_specifiers.locations[ds_this],
-			 decl_spec_token_start->location,
-			 input_location);
-      error_at (xobj_param,
-		"an explicit object parameter cannot "
-		"be a function parameter pack");
-      /* Suppress errors that occur down the line.  */
-      if (declarator)
-	declarator->parameter_pack_p = false;
-    }
-
   /* If a function parameter pack was specified and an implicit template
      parameter was introduced during cp_parser_parameter_declaration,
      change any implicit parameters introduced into packs.  */
@@ -25762,9 +25746,10 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	(INNERMOST_TEMPLATE_PARMS (current_template_parms));
 
       if (latest_template_parm_idx != template_parm_idx)
-	decl_specifiers.type = convert_generic_types_to_packs
-	  (decl_specifiers.type,
-	   template_parm_idx, latest_template_parm_idx);
+	decl_specifiers.type
+	  = convert_generic_types_to_packs (decl_specifiers.type,
+					    template_parm_idx,
+					    latest_template_parm_idx);
     }
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -25792,6 +25777,21 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  else
 	    decl_specifiers.type = make_pack_expansion (type);
 	}
+    }
+
+  if (xobj_param_p
+      && (declarator ? declarator->parameter_pack_p
+		     : PACK_EXPANSION_P (decl_specifiers.type)))
+    {
+      location_t xobj_param
+	= make_location (decl_specifiers.locations[ds_this],
+			 decl_spec_token_start->location,
+			 input_location);
+      error_at (xobj_param,
+		"an explicit object parameter cannot "
+		"be a function parameter pack");
+      xobj_param_p = false;
+      decl_specifiers.locations[ds_this] = 0;
     }
 
   /* The restriction on defining new types applies only to the type
