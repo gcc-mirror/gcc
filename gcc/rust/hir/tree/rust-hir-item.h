@@ -3154,9 +3154,9 @@ class ExternalTypeItem : public ExternalItem
 {
 public:
   ExternalTypeItem (Analysis::NodeMapping mappings, Identifier item_name,
-		    location_t locus)
+		    Visibility vis, location_t locus)
     : ExternalItem (std::move (mappings), std::move (item_name),
-		    Visibility (Visibility::PRIVATE),
+		    Visibility (std::move (vis)),
 		    /* FIXME: Is that correct? */
 		    {}, locus)
   {}
