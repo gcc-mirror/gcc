@@ -31,7 +31,7 @@
 ;;  j  Branch condition.
 ;;  k  Reverse branch condition.
 ;;..m..Constant Direct Data memory address.
-;;  i  Print the SFR address quivalent of a CONST_INT or a CONST_INT
+;;  i  Print the SFR address equivalent of a CONST_INT or a CONST_INT
 ;;     RAM address.  The resulting address is suitable to be used in IN/OUT.
 ;;  o  Displacement for (mem (plus (reg) (const_int))) operands.
 ;;  p  POST_INC or PRE_DEC address as a pointer (X, Y, Z)
@@ -475,7 +475,7 @@
         //                  (reg:HI 28)))
         //    (set (mem:HI (post_dec:HI (reg:HI 32 SP))
         //         (reg:HI **)))
- 
+
         emit_insn (gen_pushhi1_insn (operands[0]));
         DONE;
       }
@@ -540,7 +540,7 @@
   "#"
   "&& reload_completed"
   [(parallel [(set (reg:MOVMODE 22)
-                    (match_dup 0))
+                   (match_dup 0))
               (clobber (reg:CC REG_CC))])]
   ""
   [(set_attr "isa" "rjmp,jmp")])
@@ -576,7 +576,7 @@
   [(clobber (const_int 0))]
   {
     // Split away the high part of the address.  GCC's register allocator
-    // in not able to allocate segment registers and reload the resulting
+    // is not able to allocate segment registers and reload the resulting
     // expressions.  Notice that no address register can hold a PSImode.
 
     rtx addr = XEXP (operands[1], 0);
@@ -614,14 +614,13 @@
     rtx reg_z = gen_rtx_REG (HImode, REG_Z);
     rtx addr_hi8 = simplify_gen_subreg (QImode, addr, PSImode, 2);
     addr_space_t as = MEM_ADDR_SPACE (operands[1]);
-    rtx_insn *insn;
 
     // Split the address to R21:Z
     emit_move_insn (reg_z, simplify_gen_subreg (HImode, addr, PSImode, 0));
     emit_move_insn (gen_rtx_REG (QImode, 21), addr_hi8);
 
     // Load with code from libgcc.
-    insn = emit_insn (gen_xload_<mode>_libgcc ());
+    rtx_insn *insn = emit_insn (gen_xload_<mode>_libgcc ());
     set_mem_addr_space (SET_SRC (single_set (insn)), as);
 
     // Move to destination.
@@ -1704,7 +1703,7 @@
   "reload_completed"
   "sub %A0,%2\;sbc %B0,%B0"
   [(set_attr "length" "2")])
-    
+
 (define_insn_and_split "*addhi3_sp"
   [(set (match_operand:HI 1 "stack_register_operand"           "=q")
         (plus:HI (match_operand:HI 2 "stack_register_operand"   "q")
@@ -2169,8 +2168,8 @@
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
-                  (minus:HI (match_dup 1)
-                            (sign_extend:HI (match_dup 2))))
+                   (minus:HI (match_dup 1)
+                             (sign_extend:HI (match_dup 2))))
               (clobber (reg:CC REG_CC))])])
 
 
@@ -2506,7 +2505,7 @@
   "&& reload_completed"
   [(parallel [(set (reg:HI 24)
                    (mult:HI (zero_extend:HI (reg:QI 22))
-                   (zero_extend:HI (reg:QI 24))))
+                            (zero_extend:HI (reg:QI 24))))
               (clobber (reg:QI 21))
               (clobber (reg:HI 22))
               (clobber (reg:CC REG_CC))])])
@@ -2890,7 +2889,7 @@
 
 ;; Special case of a += 2*b as frequently seen with accesses to int arrays.
 ;; This is shorter, faster than MUL and has lower register pressure.
-
+;; See also "*addhi3_zero_extend.ashift1".
 (define_insn_and_split "*umaddqihi4.2"
   [(set (match_operand:HI 0 "register_operand"                                  "=r")
         (plus:HI (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
@@ -3356,12 +3355,14 @@
            ? "mul %A1,%A1\;movw %0,r0\;mul %A1,%B1\;add %B0,r0\;add %B0,r0\;clr r1"
            : "mul %A1,%A2\;movw %0,r0\;mul %A1,%B2\;add %B0,r0\;mul %B1,%A2\;add %B0,r0\;clr r1";
   }
-  [(set_attr "length" "7")])
+  [(set (attr "length")
+        (symbol_ref ("7 - (REGNO (operands[1]) == REGNO (operands[2]))")))])
 
 (define_expand "mulhi3_call"
   [(set (reg:HI 24) (match_operand:HI 1 "register_operand" ""))
    (set (reg:HI 22) (match_operand:HI 2 "register_operand" ""))
-   (parallel [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
+   (parallel [(set (reg:HI 24)
+                   (mult:HI (reg:HI 24) (reg:HI 22)))
               (clobber (reg:HI 22))
               (clobber (reg:QI 21))])
    (set (match_operand:HI 0 "register_operand" "")
@@ -3373,19 +3374,22 @@
 
 
 (define_insn_and_split "*mulhi3_call_split"
-  [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
+  [(set (reg:HI 24)
+        (mult:HI (reg:HI 24) (reg:HI 22)))
    (clobber (reg:HI 22))
    (clobber (reg:QI 21))]
   "!AVR_HAVE_MUL"
   "#"
   "&& reload_completed"
-  [(parallel [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
+  [(parallel [(set (reg:HI 24)
+                   (mult:HI (reg:HI 24) (reg:HI 22)))
               (clobber (reg:HI 22))
               (clobber (reg:QI 21))
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*mulhi3_call"
-  [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
+  [(set (reg:HI 24)
+        (mult:HI (reg:HI 24) (reg:HI 22)))
    (clobber (reg:HI 22))
    (clobber (reg:QI 21))
    (clobber (reg:CC REG_CC))]
@@ -3550,8 +3554,8 @@
    (set (match_dup 0)
         (reg:SI 22))]
   {
-    // Do the QI -> HI extension explicitely before the multiplication.
-    // Do the HI -> SI extension implicitely and after the multiplication.
+    // Do the QI -> HI extension explicitly before the multiplication.
+    // Do the HI -> SI extension implicitly and after the multiplication.
 
     if (QImode == <MODE>mode)
       operands[1] = gen_rtx_SIGN_EXTEND (HImode, operands[1]);
@@ -3664,8 +3668,8 @@
     rtx xop1 = operands[1];
     rtx xop2 = operands[2];
 
-    // Do the QI -> HI extension explicitely before the multiplication.
-    // Do the HI -> SI extension implicitely and after the multiplication.
+    // Do the QI -> HI extension explicitly before the multiplication.
+    // Do the HI -> SI extension implicitly and after the multiplication.
 
     if (QImode == <QIHI:MODE>mode)
       xop1 = gen_rtx_fmt_e (<any_extend:CODE>, HImode, xop1);
@@ -4852,7 +4856,7 @@
     operands[4] = lo_first ? dst_hi : dst_lo;
     operands[5] = lo_first ? src_hi : src_lo;
   })
-  
+
 (define_split
   [(set (match_operand:HI 0 "register_operand")
         (match_operand:HI 1 "reg_or_0_operand"))]
@@ -4900,7 +4904,7 @@
 ;; by
 ;;    $1 = $1 <op> const
 ;;    $0 = $1
-;; This transorms constraint alternative "r,0,n,&d" of the first operation
+;; This transforms constraint alternative "r,0,n,&d" of the first operation
 ;; to alternative "d,0,n,X".
 ;; "*addhi3_clobber"  "*addpsi3"  "*addsi3"
 ;; "*addhq3"  "*adduhq3"  "*addha3"  "*adduha3"
@@ -5000,12 +5004,10 @@
               (clobber (match_dup 3))])]
   ""
   {
-    int offset;
-
     if (!CONST_INT_P (operands[2]))
       FAIL;
 
-    offset = INTVAL (operands[2]);
+    int offset = INTVAL (operands[2]);
 
     if (0 == offset % 8)
       {
@@ -7022,8 +7024,8 @@
 
 
 ;; Test a single bit in a QI/HI/SImode register.
-;; Combine will create zero extract patterns for single bit tests.
-;; permit any mode in source pattern by using VOIDmode.
+;; Combine will create zero-extract patterns for single-bit tests.
+;; Permit any mode in source pattern by using VOIDmode.
 
 (define_insn_and_split "*sbrx_branch<mode>_split"
   [(set (pc)
@@ -7075,8 +7077,8 @@
                                     (const_int 2)
                                     (const_int 4))))])
 
-;; Same test based on bitwise AND.  Keep this in case gcc changes patterns.
-;; or for old peepholes.
+;; Same test based on bitwise AND.  Keep this in case gcc changes patterns
+;; or for text peepholes.
 ;; Fixme - bitwise Mask will not work for DImode
 
 (define_insn_and_split "*sbrx_and_branch<mode>_split"
@@ -7274,10 +7276,10 @@
   ;; Operand 2 is 1 for tail-call, 0 otherwise.
   ""
   "@
-    %!icall
-    %~call %x0
-    %!ijmp
-    %~jmp %x0"
+	%!icall
+	%~call %x0
+	%!ijmp
+	%~jmp %x0"
   [(set_attr "length" "1,*,1,*")
    (set_attr "adjust_len" "*,call,*,call")])
 
@@ -7290,10 +7292,10 @@
   ;; Operand 3 is 1 for tail-call, 0 otherwise.
   ""
   "@
-    %!icall
-    %~call %x1
-    %!ijmp
-    %~jmp %x1"
+	%!icall
+	%~call %x1
+	%!ijmp
+	%~jmp %x1"
   [(set_attr "length" "1,*,1,*")
    (set_attr "adjust_len" "*,call,*,call")])
 
@@ -7427,7 +7429,7 @@
 ;;   "casesi_<mode>_sequence" (used to recog + extract casesi
 ;;   sequences in pass .avr-casesi) and propagate all adjustments
 ;;   also to that pattern and the code of the extra pass.
-  
+
 (define_expand "casesi"
   [(parallel [(set (match_dup 5)
                    (plus:SI (match_operand:SI 0 "register_operand")
@@ -7743,8 +7745,6 @@
                       (pc)))]
   "dead_or_set_regno_p (insn, REG_CC)"
   {
-    const char *op;
-    int jump_mode;
     if (avr_adiw_reg_p (operands[0]))
       output_asm_insn ("sbiw %0,1" CR_TAB
                        "sbc %C0,__zero_reg__" CR_TAB
@@ -7755,8 +7755,8 @@
                        "sbc %C0,__zero_reg__" CR_TAB
                        "sbc %D0,__zero_reg__", operands);
 
-    jump_mode = avr_jump_mode (operands[2], insn);
-    op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
+    int jump_mode = avr_jump_mode (operands[2], insn);
+    const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
     switch (jump_mode)
@@ -7786,14 +7786,13 @@
                       (pc)))]
   "dead_or_set_regno_p (insn, REG_CC)"
   {
-    int jump_mode;
     if (avr_adiw_reg_p (operands[0]))
       output_asm_insn ("sbiw %0,1", operands);
     else
       output_asm_insn ("subi %A0,1" CR_TAB
                        "sbc %B0,__zero_reg__", operands);
 
-    jump_mode = avr_jump_mode (operands[2], insn);
+    int jump_mode = avr_jump_mode (operands[2], insn);
     const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
