@@ -19,6 +19,8 @@
 # License along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+PASSES_EXTRA += $(srcdir)/config/pru/pru-passes.def
+
 # Unfortunately mabi=ti is not feature-complete enough to build newlib.
 # Hence we cannot present mabi=gnu/ti as a multilib option.
 

@@ -626,11 +626,6 @@ pru_option_override (void)
      options.  */
   target_option_default_node = target_option_current_node
     = build_target_option_node (&global_options, &global_options_set);
-
-  /* Due to difficulties in implementing the TI ABI with GCC,
-     at least check and error-out if GCC cannot compile a
-     compliant output.  */
-  pru_register_abicheck_pass ();
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete

@@ -44,10 +44,10 @@ namespace {
 /* Scan the tree to ensure that the compiled code by GCC
    conforms to the TI ABI specification.  If GCC cannot
    output a conforming code, raise an error.  */
-const pass_data pass_data_tiabi_check =
+const pass_data pass_data_pru_tiabi_check =
 {
   GIMPLE_PASS, /* type */
-  "*tiabi_check", /* name */
+  "*pru_tiabi_check", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
@@ -58,11 +58,11 @@ const pass_data pass_data_tiabi_check =
 };
 
 /* Implementation class for the TI ABI compliance-check pass.  */
-class pass_tiabi_check : public gimple_opt_pass
+class pass_pru_tiabi_check : public gimple_opt_pass
 {
 public:
-  pass_tiabi_check (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_tiabi_check, ctxt)
+  pass_pru_tiabi_check (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_pru_tiabi_check, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -73,7 +73,7 @@ public:
     return pru_current_abi == PRU_ABI_TI;
   }
 
-}; // class pass_tiabi_check
+}; // class pass_pru_tiabi_check
 
 /* Return 1 if type TYPE is a pointer to function type or a
    structure having a pointer to function type as one of its fields.
@@ -187,7 +187,7 @@ check_op_callback (tree *tp, int *walk_subtrees, void *data)
 
 /* Pass implementation.  */
 unsigned
-pass_tiabi_check::execute (function *fun)
+pass_pru_tiabi_check::execute (function *fun)
 {
   struct walk_stmt_info wi;
   const_tree fntype = TREE_TYPE (fun->decl);
@@ -210,19 +210,7 @@ pass_tiabi_check::execute (function *fun)
 } // anon namespace
 
 gimple_opt_pass *
-make_pass_tiabi_check (gcc::context *ctxt)
+make_pru_tiabi_check (gcc::context *ctxt)
 {
-  return new pass_tiabi_check (ctxt);
-}
-
-/* Register as early as possible.  */
-void
-pru_register_abicheck_pass (void)
-{
-  opt_pass *tiabi_check = make_pass_tiabi_check (g);
-  struct register_pass_info tiabi_check_info
-    = { tiabi_check, "*warn_unused_result",
-	1, PASS_POS_INSERT_AFTER
-      };
-  register_pass (&tiabi_check_info);
+  return new pass_pru_tiabi_check (ctxt);
 }
