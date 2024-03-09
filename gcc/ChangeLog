@@ -1,3 +1,68 @@
+2024-03-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113757
+	* tree-inline.cc (redirect_all_calls): Remove code adding SSAs to
+	id->killed_new_ssa_names.
+
+2024-03-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/113790
+	* lra-assigns.cc (assign_by_spills): Set up all_spilled_pseudos
+	for non-reload pseudo too.
+
+2024-03-08  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_expand_cpymem, bpf_expand_setmem): Do
+	not attempt inline expansion if size is above threshold.
+	* config/bpf/bpf.opt (-minline-memops-threshold): New option.
+	* doc/invoke.texi (eBPF Options) <-minline-memops-threshold>:
+	Document.
+
+2024-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114269
+	PR tree-optimization/114074
+	* tree-chrec.cc (chrec_fold_plus_1): Handle sign-conversions
+	in the third CASE_CONVERT case as well.
+	(chrec_fold_multiply): Handle sign-conversions from unsigned
+	by performing the operation in the unsigned type.
+
+2024-03-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*addhi3_zero_extend.ashift1): New pattern.
+	* config/avr/avr.cc (avr_rtx_costs_1) [PLUS]: Compute its cost.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* bb-reorder.cc (fix_up_fall_thru_edges): Fix up checking assert,
+	asm_noperands < 0 means it is not asm goto too.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/38534
+	* config/i386/i386.opt (mnoreturn-no-callee-saved-registers): New
+	option.
+	* config/i386/i386-options.cc (ix86_set_func_type): Don't use
+	TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP unless
+	ix86_noreturn_no_callee_saved_registers is enabled.
+	* doc/invoke.texi (-mnoreturn-no-callee-saved-registers): Document.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/113918
+	* dwarf2out.cc (gen_field_die): Emit DW_AT_export_symbols
+	on anonymous unions or structs for -gdwarf-5 or -gno-strict-dwarf.
+
+2024-03-08  demin.han  <demin.han@starfivetech.com>
+
+	PR target/114264
+	* config/riscv/riscv-vector-costs.cc: Fix ICE
+
+2024-03-08  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* fwprop.cc (forward_propagate_into): Return false for volatile set
+	source rtx.
+
 2024-03-07  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	PR target/113618

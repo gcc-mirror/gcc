@@ -1,3 +1,9 @@
+2024-03-08  Sam James  <sam@gentoo.org>
+
+	PR other/109668
+	* dg-extract-results.sh: Check for python3 before python. Check for
+	python2 last.
+
 2024-03-07  Filip Kastl  <fkastl@suse.cz>
 
 	* test_mklog.py: "Moved to..." -> "Move to..."

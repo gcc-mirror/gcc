@@ -1,3 +1,89 @@
+2024-03-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113757
+	* g++.dg/ipa/pr113757.C: New test.
+
+2024-03-08  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/inline-memops-threshold-1.c: New test.
+	* gcc.target/bpf/inline-memops-threshold-2.c: New test.
+
+2024-03-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/113542
+	* gcc.target/arm/bics_3.c: Adjust code to something which should
+	always result in BICS.
+
+2024-03-08  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/memset-1.c: Move error test case to...
+	* gcc.target/bpf/memset-2.c: ... here. New test.
+
+2024-03-08  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/113915
+	* gcc.target/arm/builtin-bswap.x: Fix test to avoid emitting CBZ.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113617
+	PR target/114233
+	* g++.dg/other/pr113617.C: Define -DSHARED when linking with -shared.
+	* g++.dg/other/pr113617-aux.cc: Add definitions for used methods and
+	templates not defined elsewhere.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/38534
+	* gcc.target/i386/pr38534-1.c: Add -mnoreturn-no-callee-saved-registers
+	to dg-options.
+	* gcc.target/i386/pr38534-2.c: Likewise.
+	* gcc.target/i386/pr38534-3.c: Likewise.
+	* gcc.target/i386/pr38534-4.c: Likewise.
+	* gcc.target/i386/pr38534-5.c: Likewise.
+	* gcc.target/i386/pr38534-6.c: Likewise.
+	* gcc.target/i386/pr114097-1.c: Likewise.
+	* gcc.target/i386/stack-check-17.c: Likewise.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ext/atomic-5.C: New test.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/113918
+	* c-c++-common/dwarf2/pr113918.c: New test.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113802
+	* g++.dg/cpp23/explicit-obj-diagnostics3.C (S0, S1, S2, S3, S4): Don't
+	expect any diagnostics on f and fd member function templates, add
+	similar templates with ...Selves instead of Selves as k and kd and
+	expect diagnostics for those.  Expect extra diagnostics in error
+	recovery for g and gd member function templates.
+
+2024-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/108355
+	* gcc.dg/tree-ssa/ssa-fre-104.c: Align e.
+
+2024-03-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/iso/pass/arrayconst.mod: New test.
+	* gm2/iso/pass/arrayconst2.mod: New test.
+	* gm2/iso/pass/arrayconst3.mod: New test.
+	* gm2/iso/pass/arrayconst4.mod: New test.
+
+2024-03-08  demin.han  <demin.han@starfivetech.com>
+
+	PR target/114264
+	* gcc.dg/vect/costmodel/riscv/rvv/pr114264.c: New test.
+
+2024-03-08  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/fwprop-1.c: New.
+
 2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/114229

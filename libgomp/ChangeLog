@@ -1,3 +1,21 @@
+2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_can_run): Don't consider
+	'GCN_SUPPRESS_HOST_FALLBACK' anymore (assume always-'true').
+	(init_hsa_context): Adjust 'GCN_SUPPRESS_HOST_FALLBACK' error
+	message.
+
+2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-nvptx.c (nvptx_get_num_devices):
+	'cuDeviceGetCount' failure is fatal.
+
+2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-gcn.c (init_hsa_runtime_functions): Fatal error
+	for missing symbols.
+	* plugin/plugin-nvptx.c (init_cuda_lib): Likewise.
+
 2024-03-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	Revert:

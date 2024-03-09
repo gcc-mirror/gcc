@@ -1,3 +1,18 @@
+2024-03-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Quads.mod (Init): Use InitIndexTuned with
+	default size 65K.
+	* gm2-compiler/SymbolConversion.mod (Init): Ditto.
+	* gm2-compiler/SymbolTable.mod (BEGIN):	Ditto.
+	* mc-boot/GM2Dependent.cc: Rebuild.
+	* mc-boot/GM2Dependent.h: Rebuild.
+	* mc-boot/GM2RTS.cc: Rebuild.
+	* pge-boot/GIndexing.cc: Rebuild.
+	* pge-boot/GIndexing.h: Rebuild.
+	* pge-boot/GM2Dependent.cc: Rebuild.
+	* pge-boot/GM2Dependent.h: Rebuild.
+	* pge-boot/GM2RTS.cc: Rebuild.
+
 2024-03-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109969

@@ -1,3 +1,11 @@
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/113918
+	* c-tree.h (c_type_dwarf_attribute): Declare.
+	* c-objc-common.h (LANG_HOOKS_TYPE_DWARF_ATTRIBUTE): Redefine.
+	* c-objc-common.cc: Include dwarf2.h.
+	(c_type_dwarf_attribute): New function.
+
 2024-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/114042

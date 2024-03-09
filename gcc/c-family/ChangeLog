@@ -1,3 +1,10 @@
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (resolve_overloaded_atomic_exchange): Instead of setting
+	p1 to VIEW_CONVERT_EXPR<I_type> (*p1), set it to MEM_REF with p1 and
+	(typeof (p1)) 0 operands and I_type type.
+	(resolve_overloaded_atomic_compare_exchange): Similarly for p2.
+
 2024-03-05  Mark Wielaard  <mark@klomp.org>
 
 	* c.opt.urls: Regenerate.

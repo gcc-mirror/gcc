@@ -1,3 +1,8 @@
+2024-03-08  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_uncompress_chdr): Don't assume compressed section is
+	aligned.
+
 2024-03-02  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (libbacktrace_testing_ldflags): Define.
