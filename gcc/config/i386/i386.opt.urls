@@ -184,6 +184,9 @@ UrlSuffix(gcc/x86-Options.html#index-mmove-max)
 mstore-max=
 UrlSuffix(gcc/x86-Options.html#index-mstore-max)
 
+mnoreturn-no-callee-saved-registers
+UrlSuffix(gcc/x86-Options.html#index-mnoreturn-no-callee-saved-registers)
+
 m32
 UrlSuffix(gcc/x86-Options.html#index-m32-2)
 
