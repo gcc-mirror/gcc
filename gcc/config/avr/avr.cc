@@ -12524,10 +12524,25 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	  return true;
 	}
 
+      // *usum_widenqihi
+      if (mode == HImode
+	  && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (3);
+	  return true;
+	}
+
       if (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
 	  && REG_P (XEXP (x, 1)))
 	{
-	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode) - 1);
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+	  return true;
+	}
+      if (REG_P (XEXP (x, 0))
+	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
 	  return true;
 	}
 
@@ -12610,6 +12625,29 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case MINUS:
+      // *udiff_widenqihi
+      if (mode == HImode
+	  && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+      // *sub<mode>3_zero_extend1
+      if (REG_P (XEXP (x, 0))
+	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+	  return true;
+	}
+      // *sub<mode>3.sign_extend2
+      if (REG_P (XEXP (x, 0))
+	  && GET_CODE (XEXP (x, 1)) == SIGN_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (2 + GET_MODE_SIZE (mode));
+	  return true;
+	}
+
       if (AVR_HAVE_MUL
 	  && QImode == mode
 	  && register_operand (XEXP (x, 0), QImode)
