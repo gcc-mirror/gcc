@@ -1950,6 +1950,7 @@ package body Exp_Ch3 is
               or else not Compile_Time_Known_Value (Type_Low_Bound (Comp_Type))
               or else not
                 Compile_Time_Known_Value (Type_High_Bound (Comp_Type))
+              or else Has_Predicates (Etype (Comp))
             then
                Initialization_Warning (T);
                return Empty;
