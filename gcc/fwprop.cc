@@ -451,6 +451,7 @@ try_fwprop_subst_pattern (obstack_watermark &attempt, insn_change &use_change,
 
   if (!prop.likely_profitable_p ()
       && (prop.changed_mem_p ()
+	  || contains_mem_rtx_p (src)
 	  || use_insn->is_asm ()
 	  || !single_set (use_rtl)))
     {
