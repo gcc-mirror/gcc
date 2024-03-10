@@ -959,7 +959,7 @@ optimize_mode_switching (void)
 
 	  FOR_BB_INSNS (bb, insn)
 	    {
-	      if (INSN_P (insn))
+	      if (NONDEBUG_INSN_P (insn))
 		{
 		  int mode = targetm.mode_switching.needed (e, insn, live_now);
 		  rtx link;
