@@ -1,3 +1,26 @@
+2024-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114240
+	* include/bits/chrono_io.h (_Parser::operator()): Assume
+	hours(0) for a time_point, so that a time is not required
+	to be present.
+	* testsuite/std/time/parse/114240.cc: New test.
+
+2024-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114279
+	* include/bits/chrono_io.h (_Parser::_M_is_leap_second): New
+	data member.
+	(_Parser::_M_reserved): Reserve padding bits for future use.
+	(_Parser::operator()): Set _M_is_leap_second if %S reads 60s.
+	(from_stream): Only allow _M_is_leap_second for utc_time and
+	local_time. Adjust arithmetic for utc_time so that leap seconds
+	are preserved. Use time_point_cast to convert to a possibly
+	lower-precision result type.
+	* testsuite/std/time/parse.cc: Move to ...
+	* testsuite/std/time/parse/parse.cc: ... here.
+	* testsuite/std/time/parse/114279.cc: New test.
+
 2024-03-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/chrono_io.h (_Parser::operator()): Use

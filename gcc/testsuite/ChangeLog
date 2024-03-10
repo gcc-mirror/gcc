@@ -1,3 +1,18 @@
+2024-03-09  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/tls-ie-relax.c: New test.
+	* gcc.target/loongarch/tls-ie-norelax.c: New test.
+	* gcc.target/loongarch/tls-ie-extreme.c: New test.
+
+2024-03-09  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/regname-fp-s9.c: Add compilation option
+	'-Wno-pedantic -std=gnu90'.
+
+2024-03-09  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* g++.target/loongarch/atomic-cas-int.C: New test.
+
 2024-03-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/113757

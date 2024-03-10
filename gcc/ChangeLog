@@ -1,3 +1,42 @@
+2024-03-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Fix typos in comment, indentation glitches
+	and some other nits.
+
+2024-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114284
+	* fwprop.cc (try_fwprop_subst_pattern): Don't propagate
+	src containing MEMs unless prop.likely_profitable_p ().
+
+2024-03-09  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_print_operand_reloc):
+	Support 'Q' for R_LARCH_RELAX for TLS IE.
+	(loongarch_output_move): Use 'Q' to print R_LARCH_RELAX for TLS
+	IE.
+	* config/loongarch/loongarch.md (ld_from_got<mode>): Likewise.
+
+2024-03-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_rtx_costs_1) [PLUS]: Determine cost for
+	usum_widenqihi and add_zero_extend1.
+	[MINUS]: Determine costs for udiff_widenqihi, sub+zero_extend,
+	sub+sign_extend.
+	* config/avr/avr.md (*addhi3.sign_extend1, *subhi3.sign_extend2):
+	Compute exact insn lengths.
+	(*usum_widenqihi3): Allow input operands to commute.
+
+2024-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.opt.urls: Regenerate.
+
+2024-03-09  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/sync.md (atomic_cas_value_strong<mode>):
+	In loongarch64, a sign extension operation is added when
+	operands[2] is a register operand and the mode is SImode.
+
 2024-03-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/113757
