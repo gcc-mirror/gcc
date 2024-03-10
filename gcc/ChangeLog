@@ -1,3 +1,12 @@
+2024-03-09  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2024-03-09  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/sync.md (atomic_cas_value_strong<mode>):
+	In loongarch64, a sign extension operation is added when
+	operands[2] is a register operand and the mode is SImode.
+
 2024-03-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/101737
