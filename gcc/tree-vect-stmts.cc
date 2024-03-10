@@ -8697,8 +8697,13 @@ vectorizable_store (vec_info *vinfo,
        ? &LOOP_VINFO_LENS (loop_vinfo)
        : NULL);
 
-  /* Shouldn't go with length-based approach if fully masked.  */
-  gcc_assert (!loop_lens || !loop_masks);
+  /* The vect_transform_stmt and vect_analyze_stmt will go here but there
+     are some difference here.  We cannot enable both the lens and masks
+     during transform but it is allowed during analysis.
+     Shouldn't go with length-based approach if fully masked.  */
+  if (cost_vec == NULL)
+    /* The cost_vec is NULL during transfrom.  */
+    gcc_assert ((!loop_lens || !loop_masks));
 
   /* Targets with store-lane instructions must not require explicit
      realignment.  vect_supportable_dr_alignment always returns either
@@ -10577,8 +10582,13 @@ vectorizable_load (vec_info *vinfo,
        ? &LOOP_VINFO_LENS (loop_vinfo)
        : NULL);
 
-  /* Shouldn't go with length-based approach if fully masked.  */
-  gcc_assert (!loop_lens || !loop_masks);
+  /* The vect_transform_stmt and vect_analyze_stmt will go here but there
+     are some difference here.  We cannot enable both the lens and masks
+     during transform but it is allowed during analysis.
+     Shouldn't go with length-based approach if fully masked.  */
+  if (cost_vec == NULL)
+    /* The cost_vec is NULL during transfrom.  */
+    gcc_assert ((!loop_lens || !loop_masks));
 
   /* Targets with store-lane instructions must not require explicit
      realignment.  vect_supportable_dr_alignment always returns either
