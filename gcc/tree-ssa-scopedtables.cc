@@ -127,10 +127,49 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
 
 	  switch (code)
 	    {
-	    /* For these cases, if we know the operands
-	       are equal, then we know the result.  */
+	    /* For these cases, if we know some relationships
+	       between the operands, then we can simplify.  */
 	    case MIN_EXPR:
 	    case MAX_EXPR:
+	      {
+		/* Build a simple equality expr and query the hash table
+		   for it.  */
+		struct hashable_expr expr;
+		expr.type = boolean_type_node;
+		expr.kind = EXPR_BINARY;
+		expr.ops.binary.op = LE_EXPR;
+		tree rhs1 = gimple_assign_rhs1 (stmt);
+		tree rhs2 = gimple_assign_rhs2 (stmt);
+		if (tree_swap_operands_p (rhs1, rhs2))
+		  std::swap (rhs1, rhs2);
+		expr.ops.binary.opnd0 = rhs1;
+		expr.ops.binary.opnd1 = rhs2;
+		class expr_hash_elt element2 (&expr, NULL_TREE);
+		expr_hash_elt **slot
+		  = m_avail_exprs->find_slot (&element2, NO_INSERT);
+
+		/* If the query was successful and returned a nonzero
+		   result, then we know the result of the MIN/MAX, even
+		   though it is not a constant value.  */
+		if (slot && *slot && integer_onep ((*slot)->lhs ()))
+		  return code == MIN_EXPR ? rhs1 : rhs2;
+
+		/* Try again, this time with GE_EXPR.  */
+		expr.ops.binary.op = GE_EXPR;
+		class expr_hash_elt element3 (&expr, NULL_TREE);
+		slot = m_avail_exprs->find_slot (&element3, NO_INSERT);
+
+		/* If the query was successful and returned a nonzero
+		   result, then we know the result of the MIN/MAX, even
+		   though it is not a constant value.  */
+		if (slot && *slot && integer_onep ((*slot)->lhs ()))
+		  return code == MIN_EXPR ? rhs2 : rhs1;
+
+		break;
+	      }
+
+	    /* For these cases, if we know the operands
+	       are equal, then we know the result.  */
 	    case BIT_IOR_EXPR:
 	    case BIT_AND_EXPR:
 	    case BIT_XOR_EXPR:
@@ -151,8 +190,12 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
 		expr.type = boolean_type_node;
 		expr.kind = EXPR_BINARY;
 		expr.ops.binary.op = EQ_EXPR;
-		expr.ops.binary.opnd0 = gimple_assign_rhs1 (stmt);
-		expr.ops.binary.opnd1 = gimple_assign_rhs2 (stmt);
+		tree rhs1 = gimple_assign_rhs1 (stmt);
+		tree rhs2 = gimple_assign_rhs2 (stmt);
+		if (tree_swap_operands_p (rhs1, rhs2))
+		  std::swap (rhs1, rhs2);
+		expr.ops.binary.opnd0 = rhs1;
+		expr.ops.binary.opnd1 = rhs2;
 		class expr_hash_elt element2 (&expr, NULL_TREE);
 		expr_hash_elt **slot
 		  = m_avail_exprs->find_slot (&element2, NO_INSERT);
@@ -168,8 +211,6 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
 		  {
 		    switch (code)
 		      {
-		      case MIN_EXPR:
-		      case MAX_EXPR:
 		      case BIT_IOR_EXPR:
 		      case BIT_AND_EXPR:
 			return gimple_assign_rhs1 (stmt);
