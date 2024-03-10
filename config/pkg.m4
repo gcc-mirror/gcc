@@ -147,6 +147,14 @@ AC_MSG_CHECKING([for $2])
 _PKG_CONFIG([$1][_CFLAGS], [cflags], [$2])
 _PKG_CONFIG([$1][_LIBS], [libs], [$2])
 
+dnl Check whether $pkg_cv_[]$1[]_LIBS works.
+if test $pkg_failed = no; then
+  pkg_save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS $pkg_cv_[]$1[]_LIBS"
+  AC_TRY_LINK([],[], [], [pkg_failed=yes])
+  LDFLAGS=$pkg_save_LDFLAGS
+fi
+
 m4_define([_PKG_TEXT], [Alternatively, you may set the environment variables $1[]_CFLAGS
 and $1[]_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.])
