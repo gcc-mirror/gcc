@@ -110,6 +110,13 @@ AC_ARG_ENABLE(host-pie,
 		[build host code as PIE])],
 [PICFLAG=-fPIE; LD_PICFLAG=-pie], [])
 AC_SUBST(PICFLAG)
+
+# Enable --enable-host-bind-now
+AC_ARG_ENABLE(host-bind-now,
+[AS_HELP_STRING([--enable-host-bind-now],
+       [link host code as BIND_NOW])],
+[LD_PICFLAG="$LD_PICFLAG -Wl,-z,now"], [])
+AC_SUBST(enable_host_bind_now)
 AC_SUBST(LD_PICFLAG)
 
 # Check if O_CLOEXEC is defined by fcntl

@@ -7439,6 +7439,12 @@ AC_ARG_ENABLE(host-pie,
 		[build host code as PIE])])
 AC_SUBST(enable_host_pie)
 
+# Enable --enable-host-bind-now
+AC_ARG_ENABLE(host-bind-now,
+[AS_HELP_STRING([--enable-host-bind-now],
+		[link host code as BIND_NOW])])
+AC_SUBST(enable_host_bind_now)
+
 AC_ARG_ENABLE(libquadmath-support,
 [AS_HELP_STRING([--disable-libquadmath-support],
   [disable libquadmath support for Fortran])],
@@ -7580,6 +7586,8 @@ else
   PICFLAG=
 fi
 
+AC_SUBST([PICFLAG])
+
 if test x$enable_host_pie = xyes; then
   LD_PICFLAG=-pie
 elif test x$gcc_cv_no_pie = xyes; then
@@ -7588,7 +7596,10 @@ else
   LD_PICFLAG=
 fi
 
-AC_SUBST([PICFLAG])
+if test x$enable_host_bind_now = xyes; then
+  LD_PICFLAG="$LD_PICFLAG -Wl,-z,now"
+fi
+
 AC_SUBST([LD_PICFLAG])
 
 # Enable Intel CET on Intel CET enabled host if jit is enabled.

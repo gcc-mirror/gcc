@@ -663,6 +663,7 @@ accel_dir_suffix
 gcc_build_dir
 CET_HOST_FLAGS
 ac_lto_plugin_ldflags
+enable_host_bind_now
 ac_lto_plugin_warn_cflags
 EGREP
 GREP
@@ -778,6 +779,7 @@ enable_maintainer_mode
 with_libiberty
 enable_dependency_tracking
 enable_largefile
+enable_host_bind_now
 enable_cet
 with_gcc_major_version_only
 enable_shared
@@ -1425,6 +1427,7 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --disable-largefile     omit support for large files
+  --enable-host-bind-now  link host code as BIND_NOW
   --enable-cet            enable Intel CET in host libraries [default=auto]
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
@@ -5668,6 +5671,19 @@ LDFLAGS="$saved_LDFLAGS"
 if test "x$have_static_libgcc" = xyes; then
    ac_lto_plugin_ldflags="-Wc,-static-libgcc"
 fi
+
+# Enable --enable-host-bind-now
+# Check whether --enable-host-bind-now was given.
+if test "${enable_host_bind_now+set}" = set; then :
+  enableval=$enable_host_bind_now;
+fi
+
+
+
+if test x$enable_host_bind_now = xyes; then
+  ac_lto_plugin_ldflags="$ac_lto_plugin_ldflags -Wl,-z,now"
+fi
+
 
 
  # Check whether --enable-cet was given.
@@ -12134,7 +12150,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12137 "configure"
+#line 12153 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12240,7 +12256,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12243 "configure"
+#line 12259 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
