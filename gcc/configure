@@ -5483,9 +5483,7 @@ case "${target}" in
     sh-*-linux* | sh[2346lbe]*-*-linux*)
 	PICFLAG_FOR_TARGET=-fpic
 	;;
-    # FIXME: Simplify to sh*-*-netbsd*?
-    sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
-      sh64-*-netbsd* | sh64l*-*-netbsd*)
+    sh*-*-netbsd*)
 	PICFLAG_FOR_TARGET=-fpic
 	;;
     # Default to -fPIC unless specified otherwise.
@@ -19902,7 +19900,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19905 "configure"
+#line 19903 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -20008,7 +20006,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 20011 "configure"
+#line 20009 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
