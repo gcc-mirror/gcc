@@ -10143,7 +10143,7 @@ build_truth_vector_type_for_mode (poly_uint64 nunits, machine_mode mask_mode)
   unsigned HOST_WIDE_INT esize;
   if (VECTOR_MODE_P (mask_mode))
     {
-      poly_uint64 vsize = GET_MODE_BITSIZE (mask_mode);
+      poly_uint64 vsize = GET_MODE_PRECISION (mask_mode);
       esize = vector_element_size (vsize, nunits);
     }
   else
