@@ -150,6 +150,18 @@ for plugin in $plugin_names; do
     break
   fi
 done
+dnl Check if ${AR} $plugin_option rc works.
+AC_CHECK_TOOL(AR, ar)
+if test "${AR}" = "" ; then
+  AC_MSG_ERROR([Required archive tool 'ar' not found on PATH.])
+fi
+touch conftest.c
+${AR} $plugin_option rc conftest.a conftest.c
+if test "$?" != 0; then
+  AC_MSG_WARN([Failed: $AR $plugin_option rc])
+  plugin_option=
+fi
+rm -f conftest.*
 if test -n "$plugin_option"; then
   $1="$plugin_option"
   AC_MSG_RESULT($plugin_option)

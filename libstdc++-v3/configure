@@ -7182,7 +7182,15 @@ fi
 test -z "$AR" && AR=ar
 if test -n "$plugin_option"; then
   if $AR --help 2>&1 | grep -q "\--plugin"; then
-    AR="$AR $plugin_option"
+    touch conftest.c
+    $AR $plugin_option rc conftest.a conftest.c
+    if test "$?" != 0; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Failed: $AR $plugin_option rc" >&5
+$as_echo "$as_me: WARNING: Failed: $AR $plugin_option rc" >&2;}
+    else
+      AR="$AR $plugin_option"
+    fi
+    rm -f conftest.*
   fi
 fi
 test -z "$AR_FLAGS" && AR_FLAGS=cru
@@ -12210,7 +12218,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12213 "configure"
+#line 12221 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12316,7 +12324,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12319 "configure"
+#line 12327 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16040,7 +16048,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16043 "configure"
+#line 16051 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16075,7 +16083,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16078 "configure"
+#line 16086 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16110,7 +16118,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16113 "configure"
+#line 16121 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16146,7 +16154,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16149 "configure"
+#line 16157 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16302,7 +16310,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16305 "configure"
+#line 16313 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16344,7 +16352,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16347 "configure"
+#line 16355 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };

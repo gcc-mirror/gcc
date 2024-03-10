@@ -1342,7 +1342,14 @@ AC_CHECK_TOOL(AR, ar, false)
 test -z "$AR" && AR=ar
 if test -n "$plugin_option"; then
   if $AR --help 2>&1 | grep -q "\--plugin"; then
-    AR="$AR $plugin_option"
+    touch conftest.c
+    $AR $plugin_option rc conftest.a conftest.c
+    if test "$?" != 0; then
+      AC_MSG_WARN([Failed: $AR $plugin_option rc])
+    else
+      AR="$AR $plugin_option"
+    fi
+    rm -f conftest.*
   fi
 fi
 test -z "$AR_FLAGS" && AR_FLAGS=cru
