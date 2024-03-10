@@ -3584,6 +3584,33 @@ proc check_effective_target_fixed_point { } {
     }]
 }
 
+# Return 1 if the target supports _BitInt(N), 0 otherwise.
+
+proc check_effective_target_bitint { } {
+    return [check_no_compiler_messages bitint object {
+	_BitInt (2) a = 1wb;
+	unsigned _BitInt (__BITINT_MAXWIDTH__) b = 0uwb;
+    } "-std=c2x"]
+}
+
+# Return 1 if the target supports _BitInt(128), 0 otherwise.
+
+proc check_effective_target_bitint128 { } {
+    return [check_no_compiler_messages bitint128 object {
+	_BitInt (2) a = 1wb;
+	unsigned _BitInt (128) b = 0uwb;
+    } "-std=c2x"]
+}
+
+# Return 1 if the target supports _BitInt(575), 0 otherwise.
+
+proc check_effective_target_bitint575 { } {
+    return [check_no_compiler_messages bitint575 object {
+	_BitInt (2) a = 1wb;
+	unsigned _BitInt (575) b = 0uwb;
+    } "-std=c2x"]
+}
+
 # Return 1 if the target supports compiling decimal floating point,
 # 0 otherwise.
 

@@ -406,7 +406,7 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 		elimination_fp2sp_occured_p = true;
 
 	      if (! update_p && ! full_p)
-		return gen_rtx_PLUS (Pmode, to, XEXP (x, 1));
+		return simplify_gen_binary (PLUS, Pmode, to, XEXP (x, 1));
 
 	      if (maybe_ne (update_sp_offset, 0))
 		offset = ep->to_rtx == stack_pointer_rtx ? update_sp_offset : 0;

@@ -270,7 +270,7 @@ enum c_storage_class {
 
 /* A type specifier keyword "void", "_Bool", "char", "int", "float",
    "double", "_Decimal32", "_Decimal64", "_Decimal128", "_Fract", "_Accum",
-   or none of these.  */
+   "_BitInt", or none of these.  */
 enum c_typespec_keyword {
   cts_none,
   cts_void,
@@ -286,6 +286,7 @@ enum c_typespec_keyword {
   cts_floatn_nx,
   cts_fract,
   cts_accum,
+  cts_bitint,
   cts_auto_type
 };
 
@@ -366,11 +367,16 @@ struct c_declspecs {
      specifier, in bytes, or -1 if no such specifiers with nonzero
      alignment.  */
   int align_log;
-  /* For the __intN declspec, this stores the index into the int_n_* arrays.  */
-  int int_n_idx;
-  /* For the _FloatN and _FloatNx declspec, this stores the index into
-     the floatn_nx_types array.  */
-  int floatn_nx_idx;
+  union {
+    /* For the __intN declspec, this stores the index into the int_n_*
+       arrays.  */
+    int int_n_idx;
+    /* For the _FloatN and _FloatNx declspec, this stores the index into
+       the floatn_nx_types array.  */
+    int floatn_nx_idx;
+    /* For _BitInt(N) this stores the N.  */
+    int bitint_prec;
+  } u;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
   /* Any type specifier keyword used such as "int", not reflecting

@@ -521,31 +521,6 @@ get_same_bb_set (hash_set<set_info *> &sets, const basic_block cfg_bb)
   return nullptr;
 }
 
-/* Recursively find all predecessor blocks for cfg_bb. */
-static hash_set<basic_block>
-get_all_predecessors (basic_block cfg_bb)
-{
-  hash_set<basic_block> blocks;
-  auto_vec<basic_block> work_list;
-  hash_set<basic_block> visited_list;
-  work_list.safe_push (cfg_bb);
-
-  while (!work_list.is_empty ())
-    {
-      basic_block new_cfg_bb = work_list.pop ();
-      visited_list.add (new_cfg_bb);
-      edge e;
-      edge_iterator ei;
-      FOR_EACH_EDGE (e, ei, new_cfg_bb->preds)
-	{
-	  if (!visited_list.contains (e->src))
-	    work_list.safe_push (e->src);
-	  blocks.add (e->src);
-	}
-    }
-  return blocks;
-}
-
 /* Helper function to get SEW operand. We always have SEW value for
    all RVV instructions that have VTYPE OP.  */
 static uint8_t
@@ -746,8 +721,7 @@ insert_vsetvl (enum emit_type emit_type, rtx_insn *rinsn,
       gcc_assert (has_vtype_op (rinsn) || vsetvl_insn_p (rinsn));
       /* For user vsetvli a5, zero, we should use get_vl to get the VL
 	 operand "a5".  */
-      rtx vl_op
-	= vsetvl_insn_p (rinsn) ? get_vl (rinsn) : info.get_avl_reg_rtx ();
+      rtx vl_op = info.get_avl_or_vl_reg ();
       gcc_assert (!vlmax_avl_p (vl_op));
       emit_vsetvl_insn (VSETVL_NORMAL, emit_type, info, vl_op, rinsn);
       return VSETVL_NORMAL;
@@ -2872,7 +2846,6 @@ private:
   void ssa_post_optimization (void) const;
 
   /* Phase 6.  */
-  bool cleanup_earliest_vsetvls (const basic_block) const;
   void df_post_optimization (void) const;
 
   void init (void);
@@ -4209,61 +4182,6 @@ has_no_uses (basic_block cfg_bb, rtx_insn *rinsn, int regno)
   return true;
 }
 
-/* For many reasons, we failed to elide the redundant vsetvls
-   in Phase 3 and Phase 4.
-
-     - VLMAX-AVL case: 'vlmax_avl<mode>' may locate at some unlucky
-       point which make us set ANTLOC as false for LCM in 'O1'.
-       We don't want to complicate phase 3 and phase 4 too much,
-       so we do the post optimization for redundant VSETVLs here.
-*/
-bool
-pass_vsetvl::cleanup_earliest_vsetvls (const basic_block cfg_bb) const
-{
-  bool is_earliest_p = false;
-  if (cfg_bb->index >= (int) m_vector_manager->vector_block_infos.length ())
-    is_earliest_p = true;
-
-  rtx_insn *rinsn
-    = get_first_vsetvl_before_rvv_insns (cfg_bb, VSETVL_VTYPE_CHANGE_ONLY);
-  if (!rinsn)
-    return is_earliest_p;
-
-  sbitmap avail;
-  if (is_earliest_p)
-    {
-      gcc_assert (single_succ_p (cfg_bb) && single_pred_p (cfg_bb));
-      const bb_info *pred_bb = crtl->ssa->bb (single_pred (cfg_bb));
-      gcc_assert (pred_bb->index ()
-		  < m_vector_manager->vector_block_infos.length ());
-      avail = m_vector_manager->vector_avout[pred_bb->index ()];
-    }
-  else
-    avail = m_vector_manager->vector_avin[cfg_bb->index];
-
-  if (!bitmap_empty_p (avail))
-    {
-      unsigned int bb_index;
-      sbitmap_iterator sbi;
-      vector_insn_info strictest_info = vector_insn_info ();
-      EXECUTE_IF_SET_IN_BITMAP (avail, 0, bb_index, sbi)
-	{
-	  const auto *expr = m_vector_manager->vector_exprs[bb_index];
-	  if (strictest_info.uninit_p ()
-	      || !expr->compatible_p (
-		static_cast<const vl_vtype_info &> (strictest_info)))
-	    strictest_info = *expr;
-	}
-      vector_insn_info info;
-      info.parse_insn (rinsn);
-      if (!strictest_info.same_vtype_p (info))
-	return is_earliest_p;
-      eliminate_insn (rinsn);
-    }
-
-  return is_earliest_p;
-}
-
 /* This function does the following post optimization base on dataflow
    analysis:
 
@@ -4283,8 +4201,6 @@ pass_vsetvl::df_post_optimization (void) const
   rtx_insn *rinsn;
   FOR_ALL_BB_FN (cfg_bb, cfun)
     {
-      if (cleanup_earliest_vsetvls (cfg_bb))
-	continue;
       FOR_BB_INSNS (cfg_bb, rinsn)
 	{
 	  if (NONDEBUG_INSN_P (rinsn) && vsetvl_insn_p (rinsn))

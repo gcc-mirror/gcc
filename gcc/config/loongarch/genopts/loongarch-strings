@@ -23,6 +23,7 @@ OPTSTR_ARCH	      arch
 OPTSTR_TUNE	      tune
 
 STR_CPU_NATIVE	      native
+STR_CPU_ABI_DEFAULT   abi-default
 STR_CPU_LOONGARCH64   loongarch64
 STR_CPU_LA464	      la464
 
@@ -31,7 +32,7 @@ STR_ISA_BASE_LA64V100 la64
 
 # -mfpu
 OPTSTR_ISA_EXT_FPU    fpu
-STR_ISA_EXT_NOFPU     none
+STR_NONE	      none
 STR_ISA_EXT_FPU0      0
 STR_ISA_EXT_FPU32     32
 STR_ISA_EXT_FPU64     64
@@ -39,6 +40,11 @@ STR_ISA_EXT_FPU64     64
 OPTSTR_SOFT_FLOAT     soft-float
 OPTSTR_SINGLE_FLOAT   single-float
 OPTSTR_DOUBLE_FLOAT   double-float
+
+# SIMD extensions
+OPTSTR_ISA_EXT_SIMD   simd
+STR_ISA_EXT_LSX       lsx
+STR_ISA_EXT_LASX      lasx
 
 # -mabi=
 OPTSTR_ABI_BASE	      abi

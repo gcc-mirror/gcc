@@ -222,7 +222,6 @@ enum class aarch64_feature : unsigned char {
 #define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 #define AARCH64_ISA_CSSC	   (aarch64_isa_flags & AARCH64_FL_CSSC)
-#define AARCH64_ISA_RCPC           (aarch64_isa_flags & AARCH64_FL_RCPC)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (AARCH64_ISA_CRYPTO)

@@ -70,6 +70,10 @@ typedef struct _var_map
   /* Vector of basic block in the region.  */
   vec<basic_block> vec_bbs;
 
+  /* If non-NULL, only coalesce SSA_NAMEs from this bitmap, and try harder
+     for those (for bitint lowering pass).  */
+  bitmap bitint;
+
   /* True if this map is for out-of-ssa, otherwise for live range
      computation.  When for out-of-ssa, it also means the var map is computed
      for whole current function.  */
@@ -80,7 +84,7 @@ typedef struct _var_map
 /* Value used to represent no partition number.  */
 #define NO_PARTITION		-1
 
-extern var_map init_var_map (int, class loop* = NULL);
+extern var_map init_var_map (int, class loop * = NULL, bitmap = NULL);
 extern void delete_var_map (var_map);
 extern int var_union (var_map, tree, tree);
 extern void partition_view_normal (var_map);
@@ -100,7 +104,7 @@ inline bool
 region_contains_p (var_map map, basic_block bb)
 {
   /* It's possible that the function is called with ENTRY_BLOCK/EXIT_BLOCK.  */
-  if (map->outofssa_p)
+  if (map->outofssa_p || map->bitint)
     return (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK);
 
   return bitmap_bit_p (map->bmp_bbs, bb->index);

@@ -1,3 +1,55 @@
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* c-attribs.cc (type_valid_for_vector_size): Reject vector types
+	with BITINT_TYPE elements even if they have mode precision and
+	suitable size.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* c-common.cc (c_common_reswords): Add _BitInt as keyword.
+	(unsafe_conversion_p): Handle BITINT_TYPE like INTEGER_TYPE.
+	(c_common_signed_or_unsigned_type): Handle BITINT_TYPE.
+	(c_common_truthvalue_conversion, c_common_get_alias_set,
+	check_builtin_function_arguments): Handle BITINT_TYPE like
+	INTEGER_TYPE.
+	(sync_resolve_size): Add ORIG_FORMAT argument.  If
+	FETCH && !ORIG_FORMAT, type is BITINT_TYPE, return -1 if size isn't
+	one of 1, 2, 4, 8 or 16 or if it is 16 but TImode is not supported.
+	(atomic_bitint_fetch_using_cas_loop): New function.
+	(resolve_overloaded_builtin): Adjust sync_resolve_size caller.  If
+	-1 is returned, use atomic_bitint_fetch_using_cas_loop to lower it.
+	Formatting fix.
+	(keyword_begins_type_specifier): Handle RID_BITINT.
+	* c-common.h (enum rid): Add RID_BITINT enumerator.
+	* c-cppbuiltin.cc (c_cpp_builtins): For C call
+	targetm.c.bitint_type_info and predefine __BITINT_MAXWIDTH__
+	and for -fbuilding-libgcc also __LIBGCC_BITINT_LIMB_WIDTH__ and
+	__LIBGCC_BITINT_ORDER__ macros if _BitInt is supported.
+	* c-lex.cc (interpret_integer): Handle CPP_N_BITINT.
+	* c-pretty-print.cc (c_pretty_printer::simple_type_specifier,
+	c_pretty_printer::direct_abstract_declarator,
+	c_pretty_printer::direct_declarator, c_pretty_printer::declarator):
+	Handle BITINT_TYPE.
+	(pp_c_integer_constant): Handle printing of large precision wide_ints
+	which would buffer overflow digit_buffer.
+	* c-warn.cc (conversion_warning, warnings_for_convert_and_check,
+	warnings_for_convert_and_check): Handle BITINT_TYPE like
+	INTEGER_TYPE.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* c-ubsan.cc (ubsan_instrument_shift): Use UBSAN_PRINT_FORCE_INT
+	for type0 type descriptor.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.cc (interpret_float): For C diagnostics on FN and FNx suffixes
+	append " before C2X" to diagnostics text and follow behavior of
+	pedwarn_c11.
+
 2023-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/111069

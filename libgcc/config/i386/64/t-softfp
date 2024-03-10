@@ -1,4 +1,4 @@
-softfp_extras := fixhfti fixunshfti floattihf floatuntihf \
+softfp_extras += fixhfti fixunshfti floattihf floatuntihf \
 		 floattibf floatuntibf
 
 CFLAGS-fixhfti.c += -msse2

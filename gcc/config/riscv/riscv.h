@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RISCV_H
 #define GCC_RISCV_H
 
+#include <stdbool.h>
 #include "config/riscv/riscv-opts.h"
 
 /* Target CPU builtins.  */
@@ -666,6 +667,9 @@ enum reg_class
 
 #define MAX_ARGS_IN_REGISTERS (riscv_abi == ABI_ILP32E ? 6 : 8)
 
+#define MAX_ARGS_IN_VECTOR_REGISTERS (16)
+#define MAX_ARGS_IN_MASK_REGISTERS (1)
+
 /* Symbolic macros for the first/last argument registers.  */
 
 #define GP_ARG_FIRST (GP_REG_FIRST + 10)
@@ -673,6 +677,8 @@ enum reg_class
 #define GP_TEMP_FIRST (GP_REG_FIRST + 5)
 #define FP_ARG_FIRST (FP_REG_FIRST + 10)
 #define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
+#define V_ARG_FIRST (V_REG_FIRST + 8)
+#define V_ARG_LAST (V_ARG_FIRST + MAX_ARGS_IN_VECTOR_REGISTERS - 1)
 
 #define CALLEE_SAVED_REG_NUMBER(REGNO)			\
   ((REGNO) >= 8 && (REGNO) <= 9 ? (REGNO) - 8 :		\
@@ -696,7 +702,19 @@ enum reg_class
   (IN_RANGE ((N), GP_ARG_FIRST, GP_ARG_LAST)				\
    || (UNITS_PER_FP_ARG && IN_RANGE ((N), FP_ARG_FIRST, FP_ARG_LAST)))
 
+/* Define the standard RISC-V calling convention and variants.  */
+
+enum riscv_cc
+{
+  RISCV_CC_BASE = 0, /* Base standard RISC-V ABI.  */
+  RISCV_CC_V, /* For functions that pass or return values in V registers.  */
+  RISCV_CC_UNKNOWN
+};
+
 typedef struct {
+  /* The calling convention that current function used.  */
+  enum riscv_cc variant_cc;
+
   /* Number of integer registers used so far, up to MAX_ARGS_IN_REGISTERS. */
   unsigned int num_gprs;
 
@@ -704,7 +722,17 @@ typedef struct {
   unsigned int num_fprs;
 
   int rvv_psabi_warning;
+
+  /* Number of mask registers used so far, up to MAX_ARGS_IN_MASK_REGISTERS.  */
+  unsigned int num_mrs;
+
+  /* The used state of args in vector registers, true for used by prev arg,
+     initial to false.  */
+  bool used_vrs[MAX_ARGS_IN_VECTOR_REGISTERS];
 } CUMULATIVE_ARGS;
+
+/* Return riscv calling convention of call_insn.  */
+extern enum riscv_cc get_riscv_cc (const rtx use);
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -1020,6 +1048,21 @@ do									\
 while (0)
 
 #define ASM_COMMENT_START "#"
+
+/* Add output .variant_cc directive for specific function definition.  */
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)                             \
+  riscv_declare_function_name (STR, NAME, DECL)
+
+/* Add output .variant_cc directive for specific alias definition.  */
+#undef ASM_OUTPUT_DEF_FROM_DECLS
+#define ASM_OUTPUT_DEF_FROM_DECLS(STR, DECL, TARGET)                           \
+  riscv_asm_output_alias (STR, DECL, TARGET)
+
+/* Add output .variant_cc directive for specific extern function.  */
+#undef ASM_OUTPUT_EXTERNAL
+#define ASM_OUTPUT_EXTERNAL(STR, DECL, NAME)                                   \
+  riscv_asm_output_external (STR, DECL, NAME)
 
 #undef SIZE_TYPE
 #define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")

@@ -1011,6 +1011,7 @@ Driver Undocumented
 ;     Default in G++ 13.
 ;
 ; 19: Emits ABI tags if needed in structured binding mangled names.
+;     Ignores cv-quals on [[no_unique_object]] members.
 ;     Default in G++ 14.
 ;
 ; Additional positive integers will be assigned as new versions of

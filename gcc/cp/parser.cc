@@ -8160,7 +8160,10 @@ cp_parser_parenthesized_expression_list_elt (cp_parser *parser, bool cast_p,
       /* A braced-init-list.  */
       cp_lexer_set_source_position (parser->lexer);
       maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
-      expr = cp_parser_braced_list (parser, &expr_non_constant_p);
+      expr = cp_parser_braced_list (parser,
+				    (non_constant_p != nullptr
+				    ? &expr_non_constant_p
+				    : nullptr));
       if (non_constant_p && expr_non_constant_p)
 	*non_constant_p = true;
     }
@@ -25986,9 +25989,11 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
 
       /* Parse the initializer.  */
       initializer = cp_parser_initializer_clause (parser,
-						  &clause_non_constant_p);
+						  (non_constant_p != nullptr
+						   ? &clause_non_constant_p
+						   : nullptr));
       /* If any clause is non-constant, so is the entire initializer.  */
-      if (clause_non_constant_p && non_constant_p)
+      if (non_constant_p && clause_non_constant_p)
 	*non_constant_p = true;
 
       if (TREE_CODE (initializer) == CONSTRUCTOR)

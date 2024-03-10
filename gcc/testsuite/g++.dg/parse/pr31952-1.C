@@ -8,7 +8,7 @@ try
 }
 catch (...)
 {
-  int bar = 0; // { dg-error "redeclaration" }
+  int bar = 0; // { dg-error "shadows a parameter" }
   return 1;
 }
 

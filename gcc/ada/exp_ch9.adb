@@ -3457,6 +3457,7 @@ package body Exp_Ch9 is
       Set_Uses_Sec_Stack (Block_Id, Uses_Sec_Stack (Corresponding_Spec (N)));
 
       Reset_Scopes_To (First (Bod_Stmts), Block_Id);
+      Set_At_End_Proc (First (Bod_Stmts), At_End_Proc (N));
 
       case Corresponding_Runtime_Package (Pid) is
          when System_Tasking_Protected_Objects_Entries =>
@@ -3553,7 +3554,6 @@ package body Exp_Ch9 is
          --  Establish link between subprogram body and source entry body
 
          Set_Corresponding_Entry_Body (Proc_Body, N);
-         Set_At_End_Proc (Proc_Body, At_End_Proc (N));
 
          Reset_Scopes_To (Proc_Body, Protected_Body_Subprogram (Ent));
          return Proc_Body;

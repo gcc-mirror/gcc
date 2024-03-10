@@ -111,6 +111,15 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	  && TYPE_PRECISION (outer_type) != 1)
 	return false;
 
+      /* Preserve conversions to/from BITINT_TYPE.  While we don't
+	 need to care that much about such conversions within a function's
+	 body, we need to prevent changing BITINT_TYPE to INTEGER_TYPE
+	 of the same precision or vice versa when passed to functions,
+	 especially for varargs.  */
+      if ((TREE_CODE (inner_type) == BITINT_TYPE)
+	  != (TREE_CODE (outer_type) == BITINT_TYPE))
+	return false;
+
       /* We don't need to preserve changes in the types minimum or
 	 maximum value in general as these do not generate code
 	 unless the types precisions are different.  */

@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include "tree-vect.h"
 
 short a[32], b[32];

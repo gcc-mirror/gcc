@@ -19433,6 +19433,23 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
       mmode = VOIDmode;
     }
 
+  /* Canonicalize vec_merge.  */
+  if (swap_commutative_operands_p (op1, op0)
+      /* Two operands have same precedence, then
+	 first bit of mask select first operand.  */
+      || (!swap_commutative_operands_p (op0, op1)
+	  && !(mask & 1)))
+    {
+      unsigned n_elts = GET_MODE_NUNITS (vmode);
+      std::swap (op0, op1);
+      unsigned HOST_WIDE_INT mask_all = HOST_WIDE_INT_1U;
+      if (n_elts == HOST_BITS_PER_WIDE_INT)
+	mask_all  = -1;
+      else
+	mask_all = (HOST_WIDE_INT_1U << n_elts) - 1;
+      mask = ~mask & mask_all;
+    }
+
   if (mmode != VOIDmode)
     maskop = force_reg (mmode, gen_int_mode (mask, mmode));
   else

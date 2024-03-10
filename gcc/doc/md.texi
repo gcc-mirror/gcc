@@ -2892,6 +2892,17 @@ as @code{st.w} and @code{ld.w}.
 A signed 12-bit constant (for arithmetic instructions).
 @item K
 An unsigned 12-bit constant (for logic instructions).
+@item M
+A constant that cannot be loaded using @code{lui}, @code{addiu}
+or @code{ori}.
+@item N
+A constant in the range -65535 to -1 (inclusive).
+@item O
+A signed 15-bit constant.
+@item P
+A constant in the range 1 to 65535 (inclusive).
+@item R
+An address that can be used in a non-macro load or store.
 @item ZB
 An address that is held in a general-purpose register.
 The offset is zero.

@@ -10650,6 +10650,25 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
   tree ssa_name = NULL_TREE;
   gimple *g;
 
+  /* Some ABIs define padding bits in _BitInt uninitialized.  Normally, RTL
+     expansion sign/zero extends integral types with less than mode precision
+     when reading from bit-fields and after arithmetic operations (see
+     REDUCE_BIT_FIELD in expand_expr_real_2) and on subsequent loads relies
+     on those extensions to have been already performed, but because of the
+     above for _BitInt they need to be sign/zero extended when reading from
+     locations that could be exposed to ABI boundaries (when loading from
+     objects in memory, or function arguments, return value).  Because we
+     internally extend after arithmetic operations, we can avoid doing that
+     when reading from SSA_NAMEs of vars.  */
+#define EXTEND_BITINT(expr) \
+  ((TREE_CODE (type) == BITINT_TYPE					\
+    && reduce_bit_field							\
+    && mode != BLKmode							\
+    && modifier != EXPAND_MEMORY					\
+    && modifier != EXPAND_WRITE						\
+    && modifier != EXPAND_CONST_ADDRESS)				\
+   ? reduce_to_bit_field_precision ((expr), NULL_RTX, type) : (expr))
+
   type = TREE_TYPE (exp);
   mode = TYPE_MODE (type);
   unsignedp = TYPE_UNSIGNED (type);
@@ -10823,6 +10842,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       ssa_name = exp;
       decl_rtl = get_rtx_for_ssa_name (ssa_name);
       exp = SSA_NAME_VAR (ssa_name);
+      /* Optimize and avoid to EXTEND_BITINIT doing anything if it is an
+	 SSA_NAME computed within the current function.  In such case the
+	 value have been already extended before.  While if it is a function
+	 parameter, result or some memory location, we need to be prepared
+	 for some other compiler leaving the bits uninitialized.  */
+      if (!exp || VAR_P (exp))
+	reduce_bit_field = false;
       goto expand_decl_rtl;
 
     case VAR_DECL:
@@ -10956,7 +10982,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    temp = expand_misaligned_mem_ref (temp, mode, unsignedp,
 					      MEM_ALIGN (temp), NULL_RTX, NULL);
 
-	  return temp;
+	  return EXTEND_BITINT (temp);
 	}
 
       if (exp)
@@ -11002,13 +11028,36 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  temp = gen_lowpart_SUBREG (mode, decl_rtl);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
 	  SUBREG_PROMOTED_SET (temp, unsignedp);
-	  return temp;
+	  return EXTEND_BITINT (temp);
 	}
 
-      return decl_rtl;
+      return EXTEND_BITINT (decl_rtl);
 
     case INTEGER_CST:
       {
+	if (TREE_CODE (type) == BITINT_TYPE)
+	  {
+	    unsigned int prec = TYPE_PRECISION (type);
+	    struct bitint_info info;
+	    bool ok = targetm.c.bitint_type_info (prec, &info);
+	    gcc_assert (ok);
+	    scalar_int_mode limb_mode
+	      = as_a <scalar_int_mode> (info.limb_mode);
+	    unsigned int limb_prec = GET_MODE_PRECISION (limb_mode);
+	    if (prec > limb_prec)
+	      {
+		scalar_int_mode arith_mode
+		  = (targetm.scalar_mode_supported_p (TImode)
+		     ? TImode : DImode);
+		if (prec > GET_MODE_PRECISION (arith_mode))
+		  {
+		    /* Emit large/huge _BitInt INTEGER_CSTs into memory.  */
+		    exp = tree_output_constant_def (exp);
+		    return expand_expr (exp, target, VOIDmode, modifier);
+		  }
+	      }
+	  }
+
 	/* Given that TYPE_PRECISION (type) is not always equal to
 	   GET_MODE_PRECISION (TYPE_MODE (type)), we need to extend from
 	   the former to the latter according to the signedness of the
@@ -11187,7 +11236,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    && align < GET_MODE_ALIGNMENT (mode))
 	  temp = expand_misaligned_mem_ref (temp, mode, unsignedp,
 					    align, NULL_RTX, NULL);
-	return temp;
+	return EXTEND_BITINT (temp);
       }
 
     case MEM_REF:
@@ -11258,7 +11307,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 					    ? NULL_RTX : target, alt_rtl);
 	if (reverse)
 	  temp = flip_storage_order (mode, temp);
-	return temp;
+	return EXTEND_BITINT (temp);
       }
 
     case ARRAY_REF:
@@ -11810,6 +11859,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    && modifier != EXPAND_WRITE)
 	  op0 = flip_storage_order (mode1, op0);
 
+	op0 = EXTEND_BITINT (op0);
+
 	if (mode == mode1 || mode1 == BLKmode || mode1 == tmode
 	    || modifier == EXPAND_CONST_ADDRESS
 	    || modifier == EXPAND_INITIALIZER)
@@ -12155,6 +12206,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       return expand_expr_real_2 (&ops, target, tmode, modifier);
     }
 }
+#undef EXTEND_BITINT
 
 /* Subroutine of above: reduce EXP to the precision of TYPE (in the
    signedness of TYPE), possibly returning the result in TARGET.

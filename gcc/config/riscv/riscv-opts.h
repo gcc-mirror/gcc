@@ -81,7 +81,7 @@ enum riscv_autovec_lmul_enum {
   RVV_M4 = 4,
   RVV_M8 = 8,
   /* For dynamic LMUL, we compare COST start with LMUL8.  */
-  RVV_DYNAMIC = RVV_M8
+  RVV_DYNAMIC = 9
 };
 
 enum riscv_multilib_select_kind {
@@ -320,6 +320,12 @@ enum riscv_entity
 #define TARGET_XTHEADMEMIDX  ((riscv_xthead_subext & MASK_XTHEADMEMIDX) != 0)
 #define TARGET_XTHEADMEMPAIR ((riscv_xthead_subext & MASK_XTHEADMEMPAIR) != 0)
 #define TARGET_XTHEADSYNC    ((riscv_xthead_subext & MASK_XTHEADSYNC) != 0)
+
+#define MASK_XVENTANACONDOPS  (1 << 0)
+
+#define TARGET_XVENTANACONDOPS ((riscv_xventana_subext & MASK_XVENTANACONDOPS) != 0)
+
+#define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))
 
 /* We only enable VLS modes for VLA vectorization since fixed length VLMAX mode
    is the highest priority choice and should not conflict with VLS modes.  */

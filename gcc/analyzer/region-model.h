@@ -370,8 +370,11 @@ class region_model
   void set_value (tree lhs, tree rhs, region_model_context *ctxt);
   void clobber_region (const region *reg);
   void purge_region (const region *reg);
-  void fill_region (const region *reg, const svalue *sval);
-  void zero_fill_region (const region *reg);
+  void fill_region (const region *reg,
+		    const svalue *sval,
+		    region_model_context *ctxt);
+  void zero_fill_region (const region *reg,
+			 region_model_context *ctxt);
   void write_bytes (const region *dest_reg,
 		    const svalue *num_bytes_sval,
 		    const svalue *sval,

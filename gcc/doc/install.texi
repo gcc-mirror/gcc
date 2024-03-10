@@ -1236,7 +1236,7 @@ sysv, aix.
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for aarch64*-*-*, arm*-*-*, loongarch64-*-*, riscv*-*-*, sh*-*-* and
+for aarch64*-*-*, arm*-*-*, loongarch*-*-*, riscv*-*-*, sh*-*-* and
 x86-64-*-linux*.  The accepted values and meaning for each target is given
 below.
 
@@ -1326,12 +1326,33 @@ profile.  The union of these options is considered when specifying both
 @end multitable
 
 @item loongarch*-*-*
-@var{list} is a comma-separated list of the following ABI identifiers:
-@code{lp64d[/base]} @code{lp64f[/base]} @code{lp64d[/base]}, where the
-@code{/base} suffix may be omitted, to enable their respective run-time
-libraries.  If @var{list} is empty or @code{default},
-or if @option{--with-multilib-list} is not specified, then the default ABI
-as specified by @option{--with-abi} or implied by @option{--target} is selected.
+@var{list} is a comma-separated list, with each of the element starting with
+the following ABI identifiers: @code{lp64d[/base]} @code{lp64f[/base]}
+@code{lp64d[/base]} (the @code{/base} suffix may be omitted)
+to enable their respective run-time libraries.
+
+A suffix @code{[/@var{arch}][/@var{option}/@dots{}]} may follow immediately
+after the ABI identifier to customize the compiler options for building the
+given set of libraries.  @var{arch} denotes the architecture name recognized
+by the @option{-march=@var{arch}} compiler option, which acts as a basic target
+ISA configuration that can be adjusted using the subsequent @var{option}
+suffixes, where each @var{option} is a compiler option without a leading dash
+('-').
+
+If no such suffix is present for a given multilib variant, the
+configured value of @option{--with-multilib-default} is appended as a default
+suffix.  If @option{--with-multilib-default} is not given, the default build
+option @option{-march=abi-default} is applied when building the variants
+without a suffix.
+
+As a special case, @code{fixed} may be used in the position of @var{arch},
+which means using the architecture configured with
+@option{--with-arch=@var{arch}}, or its default value (e.g. @code{loongarch64}
+for @code{loongarch64-*} targets).
+
+If @var{list} is empty or @code{default}, or if @option{--with-multilib-list}
+is not specified, then only the default variant of the libraries are built,
+where the default ABI is implied by the configured target triplet.
 
 @item riscv*-*-*
 @var{list} is a single ABI name.  The target architecture must be either
@@ -1381,6 +1402,23 @@ and only the default run-time library will be enabled.
 If @option{--with-multilib-list} is not given, then only 32-bit and
 64-bit run-time libraries will be enabled.
 @end table
+
+@item --with-multilib-default
+On LoongArch targets, set the default build options for enabled multilibs
+without build options appended to their corresponding
+@option{--with-multilib-list} items.  The format of this value is
+@code{[/@var{arch}][/@var{option}/@dots{}]}, where @var{arch} is an
+architecture name recognized by @option{-march=@var{arch}} compiler option,
+and subsequent @var{option} suffixes are compiler options minus a leading
+dash ('-').
+
+Multiple @var{option}s may appear consecutively while @var{arch} may only
+appear in the beginning or be omitted (which means @option{-march=abi-default}
+is applied when building the libraries).
+
+@item --with-strict-align-lib
+On LoongArch targets, build all enabled multilibs with @option{-mstrict-align}
+(Not enabled by default).
 
 @item --with-multilib-generator=@var{config}
 Specify what multilibs to build.  @var{config} is a semicolon separated list of
@@ -1531,6 +1569,7 @@ x86-64, PowerPC, and SPARC@.
 @itemx --with-abi=@var{abi}
 @itemx --with-fpu=@var{type}
 @itemx --with-float=@var{type}
+@itemx --with-simd=@var{type}
 These configure options provide default values for the @option{-mschedule=},
 @option{-march=}, @option{-mtune=}, @option{-mabi=}, and @option{-mfpu=}
 options and for @option{-mhard-float} or @option{-msoft-float}.  As with
@@ -4505,8 +4544,7 @@ Uses @code{lp64s/base} ABI by default.
 @end table
 
 @item loongarch64-linux-gnu
-Same as @code{loongarch64-linux-gnuf64}, but may be used with
-@option{--with-abi=*} to configure the default ABI type.
+Same as @code{loongarch64-linux-gnuf64} for legacy support.
 @end table
 
 More information about LoongArch can be found at

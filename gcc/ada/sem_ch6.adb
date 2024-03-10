@@ -9139,13 +9139,13 @@ package body Sem_Ch6 is
       begin
          Ada_Version := Ada_2022;
 
-         if Needs_Result_Accessibility_Level (Ref_E)
+         if Needs_Result_Accessibility_Extra_Formal (Ref_E)
            or else
              (Present (Parent_Subp)
-                and then Needs_Result_Accessibility_Level (Parent_Subp))
+                and then Needs_Result_Accessibility_Extra_Formal (Parent_Subp))
            or else
              (Present (Alias_Subp)
-                and then Needs_Result_Accessibility_Level (Alias_Subp))
+                and then Needs_Result_Accessibility_Extra_Formal (Alias_Subp))
          then
             Set_Extra_Accessibility_Of_Result (E,
               Add_Extra_Formal (E, Standard_Natural, E, "L"));
@@ -9694,7 +9694,7 @@ package body Sem_Ch6 is
       --  Check attribute Extra_Accessibility_Of_Result
 
       if Ekind (E) in E_Function | E_Subprogram_Type
-        and then Needs_Result_Accessibility_Level (E)
+        and then Needs_Result_Accessibility_Extra_Formal (E)
         and then No (Extra_Accessibility_Of_Result (E))
       then
          return False;

@@ -68,6 +68,8 @@ is
         when others => raise Program_Error)
    with Ghost;
 
+   pragma Annotate (Gnatcheck, Exempt_On, "Discriminated_Records",
+                    "variant record only used in proof code");
    type Uns_Option (Overflow : Boolean := False) is record
       case Overflow is
          when True =>
@@ -76,6 +78,7 @@ is
             Value : Uns := 0;
       end case;
    end record;
+   pragma Annotate (Gnatcheck, Exempt_Off, "Discriminated_Records");
 
    function Wrap_Option (Value : Uns) return Uns_Option is
      (Overflow => False, Value => Value);

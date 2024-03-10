@@ -256,8 +256,8 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
-      tree data = ubsan_create_data ("__ubsan_shift_data", 1, &loc,
-				     ubsan_type_descriptor (type0),
+      tree utd0 = ubsan_type_descriptor (type0, UBSAN_PRINT_FORCE_INT);
+      tree data = ubsan_create_data ("__ubsan_shift_data", 1, &loc, utd0,
 				     ubsan_type_descriptor (type1), NULL_TREE,
 				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);

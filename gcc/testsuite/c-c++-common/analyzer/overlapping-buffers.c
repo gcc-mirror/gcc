@@ -55,7 +55,7 @@ void test_memcpy_symbolic_1 (void *p, size_t n)
 void *  __attribute__((noinline))
 call_memcpy_nonintersecting_concrete_1 (void *dest, const void *src, size_t n)
 {
-  return memcpy (dest, src, n); /* { dg-bogus "overlapping buffers" } */
+  return memcpy (dest, src, n); /* { dg-bogus "overlapping buffers passed as" } */
 }
 
 void test_memcpy_nonintersecting_concrete_1 (char *p)
@@ -66,7 +66,7 @@ void test_memcpy_nonintersecting_concrete_1 (char *p)
 void *  __attribute__((noinline))
 call_memcpy_nonintersecting_concrete_2 (void *dest, const void *src, size_t n)
 {
-  return memcpy (dest, src, n); /* { dg-bogus "overlapping buffers" } */
+  return memcpy (dest, src, n); /* { dg-bogus "overlapping buffers passed as" } */
 }
 
 void test_memcpy_nonintersecting_concrete_2 (char *p)
@@ -111,7 +111,7 @@ void test_memcpy_intersecting_symbolic_1 (char *p, size_t n)
 void *  __attribute__((noinline))
 call_memcpy_nonintersecting_symbolic_1 (void *dest, const void *src, size_t n)
 {
-  return memcpy (dest, src, n); /* { dg-bogus "overlapping buffers" } */
+  return memcpy (dest, src, n); /* { dg-bogus "overlapping buffers passed as" } */
 }
 
 void test_memcpy_nonintersecting_symbolic_1 (char *p, size_t n)
@@ -122,7 +122,7 @@ void test_memcpy_nonintersecting_symbolic_1 (char *p, size_t n)
 void *  __attribute__((noinline))
 call_memcpy_nonintersecting_symbolic_2 (void *dest, const void *src, size_t n)
 {
-  return memcpy (dest, src, n); /* { dg-bogus "overlapping buffers" } */
+  return memcpy (dest, src, n); /* { dg-bogus "overlapping buffers passed as" } */
 }
 
 void test_memcpy_nonintersecting_symbolic_2 (char *p, size_t n)
@@ -134,7 +134,7 @@ void test_memcpy_nonintersecting_symbolic_2 (char *p, size_t n)
 void *  __attribute__((noinline))
 call_memmove_symbolic_1 (void *dest, const void *src, size_t n)
 {
-  return memmove (dest, src, n); /* { dg-bogus "overlapping buffers" } */
+  return memmove (dest, src, n); /* { dg-bogus "overlapping buffers passed as" } */
 }
 
 void test_memmove_symbolic_1 (void *p, size_t n)
@@ -142,6 +142,14 @@ void test_memmove_symbolic_1 (void *p, size_t n)
   call_memmove_symbolic_1 (p, p, n);
 }
 
-/* TODO:
-   - strncpy
- */
+static char *  __attribute__((noinline))
+call_strncpy_1 (char *dest, const char *src, size_t n)
+{
+  return strncpy (dest, src, n); /* { dg-warning "overlapping buffers" } */
+}
+
+void
+test_strncpy_1 (char *p, size_t n)
+{
+  call_strncpy_1 (p, p, n);
+}

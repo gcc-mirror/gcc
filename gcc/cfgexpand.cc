@@ -4524,6 +4524,10 @@ expand_debug_expr (tree exp)
       /* Fall through.  */
 
     case INTEGER_CST:
+      if (TREE_CODE (TREE_TYPE (exp)) == BITINT_TYPE
+	  && TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
+	return NULL;
+      /* FALLTHRU */
     case REAL_CST:
     case FIXED_CST:
       op0 = expand_expr (exp, NULL_RTX, mode, EXPAND_INITIALIZER);

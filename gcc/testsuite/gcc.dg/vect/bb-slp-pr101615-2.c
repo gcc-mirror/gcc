@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-O3 -w -Wno-psabi" } */
 
 #include "tree-vect.h"

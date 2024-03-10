@@ -1,3 +1,73 @@
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* libgcc2.c (bitint_negate): Add function comment.
+	* soft-fp/bitint.h (bitint_negate): Add function comment.
+	(FP_TO_BITINT, FP_FROM_BITINT): Add comment explaining the macros.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* config/aarch64/t-softfp (softfp_extras): Use += rather than :=.
+	* config/i386/64/t-softfp (softfp_extras): Likewise.
+	* config/i386/libgcc-glibc.ver (GCC_14.0.0): Export _BitInt support
+	routines.
+	* config/i386/t-softfp (softfp_extras): Add fixxfbitint and
+	bf, hf and xf mode floatbitint.
+	(CFLAGS-floatbitintbf.c, CFLAGS-floatbitinthf.c): Add -msse2.
+	* config/riscv/t-softfp32 (softfp_extras): Use += rather than :=.
+	* config/rs6000/t-e500v1-fp (softfp_extras): Likewise.
+	* config/rs6000/t-e500v2-fp (softfp_extras): Likewise.
+	* config/t-softfp (softfp_floatbitint_funcs): New.
+	(softfp_bid_list): New.
+	(softfp_func_list): Add sf and df mode from and to _BitInt libcalls.
+	(softfp_bid_file_list): New.
+	(LIB2ADD_ST): Add $(softfp_bid_file_list).
+	* config/t-softfp-sfdftf (softfp_extras): Add fixtfbitint and
+	floatbitinttf.
+	* config/t-softfp-tf (softfp_extras): Likewise.
+	* libgcc2.c (bitint_reduce_prec): New inline function.
+	(BITINT_INC, BITINT_END): Define.
+	(bitint_mul_1, bitint_addmul_1): New helper functions.
+	(__mulbitint3): New function.
+	(bitint_negate, bitint_submul_1): New helper functions.
+	(__divmodbitint4): New function.
+	* libgcc2.h (LIBGCC2_UNITS_PER_WORD): When building _BitInt support
+	libcalls, redefine depending on __LIBGCC_BITINT_LIMB_WIDTH__.
+	(__mulbitint3, __divmodbitint4): Declare.
+	* libgcc-std.ver.in (GCC_14.0.0): Export _BitInt support routines.
+	* Makefile.in (lib2funcs): Add _mulbitint3.
+	(LIB2_DIVMOD_FUNCS): Add _divmodbitint4.
+	* soft-fp/bitint.h: New file.
+	* soft-fp/fixdfbitint.c: New file.
+	* soft-fp/fixsfbitint.c: New file.
+	* soft-fp/fixtfbitint.c: New file.
+	* soft-fp/fixxfbitint.c: New file.
+	* soft-fp/floatbitintbf.c: New file.
+	* soft-fp/floatbitintdf.c: New file.
+	* soft-fp/floatbitinthf.c: New file.
+	* soft-fp/floatbitintsf.c: New file.
+	* soft-fp/floatbitinttf.c: New file.
+	* soft-fp/floatbitintxf.c: New file.
+	* soft-fp/op-common.h (_FP_FROM_INT): Add support for rsize up to
+	4 * _FP_W_TYPE_SIZE rather than just 2 * _FP_W_TYPE_SIZE.
+	* soft-fp/bitintpow10.c: New file.
+	* soft-fp/fixsdbitint.c: New file.
+	* soft-fp/fixddbitint.c: New file.
+	* soft-fp/fixtdbitint.c: New file.
+	* soft-fp/floatbitintsd.c: New file.
+	* soft-fp/floatbitintdd.c: New file.
+	* soft-fp/floatbitinttd.c: New file.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* soft-fp/bitintpow10.h: New file.
+
+2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.host: add loongarch*-elf target.
+
 2023-08-11  Thomas Neumann  <thomas.neumann@in.tum.de>
 
 	PR libgcc/110956

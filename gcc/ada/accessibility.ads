@@ -197,11 +197,21 @@ package Accessibility is
    --  prefix is an aliased formal of Scop and that Scop returns an anonymous
    --  access type. See RM 3.10.2 for more details.
 
+   function Needs_Result_Accessibility_Extra_Formal
+     (Func_Id : Entity_Id) return Boolean;
+   --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
+   --  parameter to identify the accessibility level of the function result.
+   --  If the type of the function result is a private type and its completion
+   --  is unavailable, which can happen when we are analyzing an abstract
+   --  subprogram, determines its result using the returned private type. This
+   --  function is used by Create_Extra_Formals.
+
    function Needs_Result_Accessibility_Level
      (Func_Id : Entity_Id) return Boolean;
    --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
    --  parameter to identify the accessibility level of the function result
-   --  "determined by the point of call".
+   --  "determined by the point of call". Return False if the type of the
+   --  function result is a private type and its completion is unavailable.
 
    function Subprogram_Access_Level (Subp : Entity_Id) return Uint;
    --  Return the accessibility level of the view denoted by Subp

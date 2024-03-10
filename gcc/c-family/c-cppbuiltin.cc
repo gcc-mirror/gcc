@@ -1190,6 +1190,29 @@ c_cpp_builtins (cpp_reader *pfile)
   builtin_define_type_width ("__PTRDIFF_WIDTH__", ptrdiff_type_node, NULL_TREE);
   builtin_define_type_width ("__SIZE_WIDTH__", size_type_node, NULL_TREE);
 
+  if (!c_dialect_cxx ())
+    {
+      struct bitint_info info;
+      /* For now, restrict __BITINT_MAXWIDTH__ to what can be represented in
+	 wide_int and widest_int.  */
+      if (targetm.c.bitint_type_info (WIDE_INT_MAX_PRECISION - 1, &info))
+	{
+	  cpp_define_formatted (pfile, "__BITINT_MAXWIDTH__=%d",
+				(int) WIDE_INT_MAX_PRECISION - 1);
+	  if (flag_building_libgcc)
+	    {
+	      scalar_int_mode limb_mode
+		= as_a <scalar_int_mode> (info.limb_mode);
+	      cpp_define_formatted (pfile, "__LIBGCC_BITINT_LIMB_WIDTH__=%d",
+				    (int) GET_MODE_PRECISION (limb_mode));
+	      cpp_define_formatted (pfile, "__LIBGCC_BITINT_ORDER__=%s",
+				    info.big_endian
+				    ? "__ORDER_BIG_ENDIAN__"
+				    : "__ORDER_LITTLE_ENDIAN__");
+	    }
+	}
+    }
+
   if (c_dialect_cxx ())
     for (i = 0; i < NUM_INT_N_ENTS; i ++)
       if (int_n_enabled_p[i])

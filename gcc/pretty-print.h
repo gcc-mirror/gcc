@@ -336,8 +336,23 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 #define pp_wide_int(PP, W, SGN)					\
   do								\
     {								\
-      print_dec (W, pp_buffer (PP)->digit_buffer, SGN);		\
-      pp_string (PP, pp_buffer (PP)->digit_buffer);		\
+      const wide_int_ref &pp_wide_int_ref = (W);		\
+      unsigned int pp_wide_int_prec				\
+	= pp_wide_int_ref.get_precision ();			\
+      if ((pp_wide_int_prec + 3) / 4				\
+	  > sizeof (pp_buffer (PP)->digit_buffer) - 3)		\
+	{							\
+	  char *pp_wide_int_buf					\
+	    = XALLOCAVEC (char, (pp_wide_int_prec + 3) / 4 + 3);\
+	  print_dec (pp_wide_int_ref, pp_wide_int_buf, SGN);	\
+	  pp_string (PP, pp_wide_int_buf);			\
+	}							\
+      else							\
+	{							\
+	  print_dec (pp_wide_int_ref,				\
+		     pp_buffer (PP)->digit_buffer, SGN);	\
+	  pp_string (PP, pp_buffer (PP)->digit_buffer);		\
+	}							\
     }								\
   while (0)
 #define pp_vrange(PP, R)					\

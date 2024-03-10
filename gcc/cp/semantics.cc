@@ -1624,6 +1624,7 @@ begin_function_try_block (tree *compound_stmt)
   /* This outer scope does not exist in the C++ standard, but we need
      a place to put __FUNCTION__ and similar variables.  */
   *compound_stmt = begin_compound_stmt (0);
+  current_binding_level->artificial = 1;
   r = begin_try_block ();
   FN_TRY_BLOCK_P (r) = 1;
   return r;

@@ -760,6 +760,25 @@ go_format_type (class godump_container *container, tree type,
       }
       break;
 
+    case BITINT_TYPE:
+      {
+	const char *s;
+	char buf[100];
+
+	s = go_get_uinttype_for_precision (TYPE_PRECISION (type),
+					   TYPE_UNSIGNED (type));
+	if (s == NULL)
+	  {
+	    snprintf (buf, sizeof buf, "INVALID-bitint-%u%s",
+		      TYPE_PRECISION (type),
+		      TYPE_UNSIGNED (type) ? "u" : "");
+	    s = buf;
+	    ret = false;
+	  }
+	obstack_grow (ob, s, strlen(s));
+      }
+      break;
+
     case REAL_TYPE:
       {
 	const char *s;

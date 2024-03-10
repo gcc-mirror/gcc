@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with System.Address_Operations; use System.Address_Operations;
+with System.Storage_Elements;   use System.Storage_Elements;
 
 with Ada.Unchecked_Conversion;
 
@@ -82,8 +83,8 @@ package body System.Compare_Array_Signed_16 is
            and then W (L).all = W (R).all
          loop
             Clen := Clen - 2;
-            L := AddA (L, 4);
-            R := AddA (R, 4);
+            L := L + Storage_Offset (4);
+            R := R + Storage_Offset (4);
          end loop;
       end if;
 
@@ -100,8 +101,8 @@ package body System.Compare_Array_Signed_16 is
             end if;
 
             Clen := Clen - 1;
-            L := AddA (L, 2);
-            R := AddA (R, 2);
+            L := L + Storage_Offset (2);
+            R := R + Storage_Offset (2);
          end loop;
 
       --  Case of going by unaligned half words
@@ -117,8 +118,8 @@ package body System.Compare_Array_Signed_16 is
             end if;
 
             Clen := Clen - 1;
-            L := AddA (L, 2);
-            R := AddA (R, 2);
+            L := L + Storage_Offset (2);
+            R := R + Storage_Offset (2);
          end loop;
       end if;
 

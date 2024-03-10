@@ -136,7 +136,7 @@ hppa*-*-*)
 lm32*-*-*)
 	cpu_type=lm32
 	;;
-loongarch*-*-*)
+loongarch*-*)
 	cpu_type=loongarch
 	tmake_file="loongarch/t-loongarch"
 	if test "${libgcc_cv_loongarch_hard_float}" = yes; then
@@ -944,7 +944,7 @@ lm32-*-uclinux*)
         extra_parts="$extra_parts crtbegin.o crtendS.o crtbeginT.o"
         tmake_file="lm32/t-lm32 lm32/t-uclinux t-libgcc-pic t-softfp-sfdf t-softfp"
 	;;
-loongarch*-*-linux*)
+loongarch*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
 	case ${host} in
@@ -953,6 +953,11 @@ loongarch*-*-linux*)
 	    ;;
 	esac
 	md_unwind_header=loongarch/linux-unwind.h
+	;;
+loongarch*-elf*)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
+	tmake_file="${tmake_file} t-slibgcc-libgcc"
 	;;
 m32r-*-elf*)
 	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"

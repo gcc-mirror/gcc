@@ -5212,10 +5212,14 @@ package body Sem_Ch4 is
             end if;
          end loop;
 
-         if Present (Par) and then Is_Generic_Actual_Type (Par) then
+         --  If Par is a generic actual, look for component in ancestor types.
+         --  Skip this if we have no Declaration_Node, as is the case for
+         --  itypes.
 
-            --  Now look for component in ancestor types
-
+         if Present (Par)
+           and then Is_Generic_Actual_Type (Par)
+           and then Present (Declaration_Node (Par))
+         then
             Par := Generic_Parent_Type (Declaration_Node (Par));
             loop
                Find_Component_In_Instance (Par);

@@ -6,7 +6,7 @@ try
 {
   return 0;
 }
-catch (int bar)  // { dg-error "redeclaration" }
+catch (int bar)  // { dg-error "shadows a parameter" }
 {
   return 1;
 }

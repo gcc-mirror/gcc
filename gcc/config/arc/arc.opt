@@ -322,8 +322,8 @@ Target Var(TARGET_EARLY_CBRANCHSI)
 Enable pre-reload use of cbranchsi pattern.
 
 mbbit-peephole
-Target Var(TARGET_BBIT_PEEPHOLE)
-Enable bbit peephole2.
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
 
 mcase-vector-pcrel
 Target Var(TARGET_CASE_VECTOR_PC_RELATIVE)

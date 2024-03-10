@@ -95,12 +95,10 @@ package body Specific is
       Result := pthread_getspecific (ATCB_Key);
 
       --  If the key value is Null then it is a non-Ada task
-
-      if Result /= System.Null_Address then
-         return To_Task_Id (Result);
-      else
-         return Register_Foreign_Thread;
-      end if;
+      return
+         (if Result /= System.Null_Address then To_Task_Id (Result)
+          else Register_Foreign_Thread
+         );
    end Self;
 
 end Specific;

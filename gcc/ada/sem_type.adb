@@ -2578,8 +2578,8 @@ package body Sem_Type is
          end if;
 
          loop
-            if Present (Interfaces (E))
-              and then not Is_Empty_Elmt_List (Interfaces (E))
+            if Is_Record_Type (E)
+              and then Present (Interfaces (E))
             then
                Elmt := First_Elmt (Interfaces (E));
                while Present (Elmt) loop
@@ -2649,34 +2649,32 @@ package body Sem_Type is
       --  In case of concurrent types we can't use the Corresponding Record_Typ
       --  to look for the interface because it is built by the expander (and
       --  hence it is not always available). For this reason we traverse the
-      --  list of interfaces (available in the parent of the concurrent type)
+      --  list of interfaces (available in the parent of the concurrent type).
 
       if Is_Concurrent_Type (Target_Typ) then
-         if Present (Interface_List (Parent (Target_Typ))) then
-            declare
-               AI : Node_Id;
+         declare
+            AI : Node_Id;
 
-            begin
-               AI := First (Interface_List (Parent (Target_Typ)));
+         begin
+            AI := First (Interface_List (Parent (Target_Typ)));
 
-               --  The progenitor itself may be a subtype of an interface type.
+            --  The progenitor itself may be a subtype of an interface type
 
-               while Present (AI) loop
-                  if Etype (AI) = Iface_Typ
-                    or else Base_Type (Etype (AI)) = Iface_Typ
-                  then
-                     return True;
+            while Present (AI) loop
+               if Etype (AI) = Iface_Typ
+                 or else Base_Type (Etype (AI)) = Iface_Typ
+               then
+                  return True;
 
-                  elsif Present (Interfaces (Etype (AI)))
-                    and then Iface_Present_In_Ancestor (Etype (AI))
-                  then
-                     return True;
-                  end if;
+               elsif Present (Interfaces (Etype (AI)))
+                 and then Iface_Present_In_Ancestor (Etype (AI))
+               then
+                  return True;
+               end if;
 
-                  Next (AI);
-               end loop;
-            end;
-         end if;
+               Next (AI);
+            end loop;
+         end;
 
          return False;
       end if;

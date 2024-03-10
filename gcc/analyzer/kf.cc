@@ -358,7 +358,7 @@ kf_calloc::impl_call_pre (const call_details &cd) const
     = model->get_or_create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
   const region *sized_reg
     = mgr->get_sized_region (new_reg, NULL_TREE, prod_sval);
-  model->zero_fill_region (sized_reg);
+  model->zero_fill_region (sized_reg, cd.get_ctxt ());
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
@@ -650,10 +650,7 @@ kf_memset::impl_call_pre (const call_details &cd) const
   const region *sized_dest_reg = mgr->get_sized_region (dest_reg,
 							NULL_TREE,
 							num_bytes_sval);
-  model->check_region_for_write (sized_dest_reg,
-				 nullptr,
-				 cd.get_ctxt ());
-  model->fill_region (sized_dest_reg, fill_value_u8);
+  model->fill_region (sized_dest_reg, fill_value_u8, cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_sval);
 }
@@ -1378,6 +1375,186 @@ make_kf_strlen ()
   return make_unique<kf_strlen> ();
 }
 
+/* Handler for "strncpy" and "__builtin_strncpy".
+   See e.g. https://en.cppreference.com/w/c/string/byte/strncpy
+
+     extern char *strncpy (char *dst, const char *src, size_t count);
+
+   Handle this by splitting into two outcomes:
+   (a) truncated read from "src" of "count" bytes,
+       writing "count" bytes to "dst"
+   (b) read from "src" of up to (and including) the null terminator,
+       where the number of bytes read < "count" bytes,
+       writing those bytes to "dst", and zero-filling the rest,
+       up to "count".  */
+
+class kf_strncpy : public builtin_known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1)
+	    && cd.arg_is_integral_p (2));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRNCPY;
+  }
+  void impl_call_post (const call_details &cd) const final override;
+};
+
+void
+kf_strncpy::impl_call_post (const call_details &cd) const
+{
+  class strncpy_call_info : public call_info
+  {
+  public:
+    strncpy_call_info (const call_details &cd,
+		       const svalue *num_bytes_with_terminator_sval,
+		       bool truncated_read)
+    : call_info (cd),
+      m_num_bytes_with_terminator_sval (num_bytes_with_terminator_sval),
+      m_truncated_read (truncated_read)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const final override
+    {
+      if (m_truncated_read)
+	return make_label_text (can_colorize,
+				"when %qE truncates the source string",
+				get_fndecl ());
+      else
+	return make_label_text (can_colorize,
+				"when %qE copies the full source string",
+				get_fndecl ());
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+
+      const svalue *dest_sval = cd.get_arg_svalue (0);
+      const region *dest_reg
+	= model->deref_rvalue (dest_sval, cd.get_arg_tree (0), ctxt);
+
+      const svalue *src_sval = cd.get_arg_svalue (1);
+      const region *src_reg
+	= model->deref_rvalue (src_sval, cd.get_arg_tree (1), ctxt);
+
+      const svalue *count_sval = cd.get_arg_svalue (2);
+
+      /* strncpy returns the initial param.  */
+      cd.maybe_set_lhs (dest_sval);
+
+      const svalue *num_bytes_read_sval;
+      if (m_truncated_read)
+	{
+	  /* Truncated read.  */
+	  num_bytes_read_sval = count_sval;
+
+	  if (m_num_bytes_with_terminator_sval)
+	    {
+	      /* The terminator is after the limit.  */
+	      if (!model->add_constraint (m_num_bytes_with_terminator_sval,
+					  GT_EXPR,
+					  count_sval,
+					  ctxt))
+		return false;
+	    }
+	  else
+	    {
+	      /* We don't know where the terminator is, or if there is one.
+		 In theory we know that the first COUNT bytes are non-zero,
+		 but we don't have a way to record that constraint.  */
+	    }
+	}
+      else
+	{
+	  /* Full read of the src string before reaching the limit,
+	     so there must be a terminator and it must be at or before
+	     the limit.  */
+	  if (m_num_bytes_with_terminator_sval)
+	    {
+	      if (!model->add_constraint (m_num_bytes_with_terminator_sval,
+					  LE_EXPR,
+					  count_sval,
+					  ctxt))
+		return false;
+	      num_bytes_read_sval = m_num_bytes_with_terminator_sval;
+
+	      /* First, zero-fill the dest buffer.
+		 We don't need to do this for the truncation case, as
+		 this fully populates the dest buffer.  */
+	      const region *sized_dest_reg
+		= model->get_manager ()->get_sized_region (dest_reg,
+							   NULL_TREE,
+							   count_sval);
+	      model->zero_fill_region (sized_dest_reg, ctxt);
+	    }
+	  else
+	    {
+	      /* Don't analyze this case; the other case will
+		 assume a "truncated" read up to the limit.  */
+	      return false;
+	    }
+	}
+
+      gcc_assert (num_bytes_read_sval);
+
+      const svalue *bytes_to_copy
+	= model->read_bytes (src_reg,
+			     cd.get_arg_tree (1),
+			     num_bytes_read_sval,
+			     ctxt);
+      cd.complain_about_overlap (0, 1, num_bytes_read_sval);
+      model->write_bytes (dest_reg,
+			  num_bytes_read_sval,
+			  bytes_to_copy,
+			  ctxt);
+
+      return true;
+    }
+  private:
+    /* (strlen + 1) of the source string if it has a terminator,
+       or NULL for the case where UB would happen before
+       finding any terminator.  */
+    const svalue *m_num_bytes_with_terminator_sval;
+
+    /* true: if this is the outcome where the limit was reached before
+       the null terminator
+       false: if the null terminator was reached before the limit.  */
+    bool m_truncated_read;
+  };
+
+  /* Body of kf_strncpy::impl_call_post.  */
+  if (cd.get_ctxt ())
+    {
+      /* First, scan for a null terminator as if there were no limit,
+	 with a null ctxt so no errors are reported.  */
+      const region_model *model = cd.get_model ();
+      const svalue *ptr_arg_sval = cd.get_arg_svalue (1);
+      const region *buf_reg
+	= model->deref_rvalue (ptr_arg_sval, cd.get_arg_tree (1), nullptr);
+      const svalue *num_bytes_with_terminator_sval
+	= model->scan_for_null_terminator (buf_reg,
+					   cd.get_arg_tree (1),
+					   nullptr,
+					   nullptr);
+      cd.get_ctxt ()->bifurcate
+	(make_unique<strncpy_call_info> (cd, num_bytes_with_terminator_sval,
+					 false));
+      cd.get_ctxt ()->bifurcate
+	(make_unique<strncpy_call_info> (cd, num_bytes_with_terminator_sval,
+					 true));
+      cd.get_ctxt ()->terminate_path ();
+    }
+};
+
 /* Handler for "strndup" and "__builtin_strndup".  */
 
 class kf_strndup : public builtin_known_function
@@ -1407,6 +1584,100 @@ public:
       }
   }
 };
+
+/* Handler for "strstr" and "__builtin_strstr".
+     extern char *strstr (const char* str, const char* substr);
+   See e.g. https://en.cppreference.com/w/c/string/byte/strstr  */
+
+class kf_strstr : public builtin_known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRSTR;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    cd.check_for_null_terminated_string_arg (0);
+    cd.check_for_null_terminated_string_arg (1);
+  }
+  void impl_call_post (const call_details &cd) const final override;
+};
+
+void
+kf_strstr::impl_call_post (const call_details &cd) const
+{
+  class strstr_call_info : public call_info
+  {
+  public:
+    strstr_call_info (const call_details &cd, bool found)
+    : call_info (cd), m_found (found)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const final override
+    {
+      if (m_found)
+	return make_label_text (can_colorize,
+				"when %qE returns non-NULL",
+				get_fndecl ());
+      else
+	return make_label_text (can_colorize,
+				"when %qE returns NULL",
+				get_fndecl ());
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      if (tree lhs_type = cd.get_lhs_type ())
+	{
+	  region_model_manager *mgr = model->get_manager ();
+	  const svalue *result;
+	  if (m_found)
+	    {
+	      const svalue *str_sval = cd.get_arg_svalue (0);
+	      const region *str_reg
+		= model->deref_rvalue (str_sval, cd.get_arg_tree (0),
+				       cd.get_ctxt ());
+	      /* We want str_sval + OFFSET for some unknown OFFSET.
+		 Use a conjured_svalue to represent the offset,
+		 using the str_reg as the id of the conjured_svalue.  */
+	      const svalue *offset
+		= mgr->get_or_create_conjured_svalue (size_type_node,
+						      cd.get_call_stmt (),
+						      str_reg,
+						      conjured_purge (model,
+								      ctxt));
+	      result = mgr->get_or_create_binop (lhs_type, POINTER_PLUS_EXPR,
+						 str_sval, offset);
+	    }
+	  else
+	    result = mgr->get_or_create_int_cst (lhs_type, 0);
+	  cd.maybe_set_lhs (result);
+	}
+      return true;
+    }
+  private:
+    bool m_found;
+  };
+
+  /* Body of kf_strstr::impl_call_post.  */
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<strstr_call_info> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<strstr_call_info> (cd, true));
+      cd.get_ctxt ()->terminate_path ();
+    }
+}
 
 class kf_ubsan_bounds : public internal_known_function
 {
@@ -1623,10 +1894,14 @@ register_known_functions (known_function_manager &kfm)
     kfm.add ("__builtin___strcat_chk", make_unique<kf_strcat> (3, true));
     kfm.add ("strdup", make_unique<kf_strdup> ());
     kfm.add ("__builtin_strdup", make_unique<kf_strdup> ());
+    kfm.add ("strncpy", make_unique<kf_strncpy> ());
+    kfm.add ("__builtin_strncpy", make_unique<kf_strncpy> ());
     kfm.add ("strndup", make_unique<kf_strndup> ());
     kfm.add ("__builtin_strndup", make_unique<kf_strndup> ());
     kfm.add ("strlen", make_unique<kf_strlen> ());
     kfm.add ("__builtin_strlen", make_unique<kf_strlen> ());
+    kfm.add ("strstr", make_unique<kf_strstr> ());
+    kfm.add ("__builtin_strstr", make_unique<kf_strstr> ());
 
     register_atomic_builtins (kfm);
     register_varargs_builtins (kfm);

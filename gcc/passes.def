@@ -237,6 +237,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_tail_recursion);
       NEXT_PASS (pass_ch);
       NEXT_PASS (pass_lower_complex);
+      NEXT_PASS (pass_lower_bitint);
       NEXT_PASS (pass_sra);
       /* The dom pass will also resolve all __builtin_constant_p calls
          that are still there to 0.  This has to be done after some
@@ -386,6 +387,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_strip_predict_hints, false /* early_p */);
       /* Lower remaining pieces of GIMPLE.  */
       NEXT_PASS (pass_lower_complex);
+      NEXT_PASS (pass_lower_bitint);
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_lower_switch);
       /* Perform simple scalar cleanup which is constant/copy propagation.  */
@@ -429,6 +431,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_vaarg);
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_lower_complex_O0);
+  NEXT_PASS (pass_lower_bitint_O0);
   NEXT_PASS (pass_sancov_O0);
   NEXT_PASS (pass_lower_switch_O0);
   NEXT_PASS (pass_asan_O0);

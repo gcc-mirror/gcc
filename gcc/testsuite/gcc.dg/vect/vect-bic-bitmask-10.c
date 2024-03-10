@@ -1,5 +1,4 @@
 /* { dg-skip-if "missing optab for vectorization" { sparc*-*-* } } */
-/* { dg-do run } */
 /* { dg-additional-options "-O3 -fdump-tree-dce -w" } */
 
 #include <stdint.h>

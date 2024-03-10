@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-O3 -fno-tree-forwprop -fno-tree-scev-cprop" } */
 
 #include "tree-vect.h"

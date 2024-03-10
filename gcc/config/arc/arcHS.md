@@ -46,7 +46,7 @@
 (define_insn_reservation "hs_alu1" 4
   (and (match_test "TARGET_HS")
        (eq_attr "tune" "none")
-       (eq_attr "type" "move, cmove, unary, binary, compare, misc"))
+       (eq_attr "type" "move, cmove, unary, binary, compare, misc, add, sub, bxor"))
   "hs_issue+x1, nothing*3")
 
 (define_insn_reservation "hs_divrem" 13

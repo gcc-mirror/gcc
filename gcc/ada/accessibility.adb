@@ -56,6 +56,16 @@ with Tbuild;         use Tbuild;
 
 package body Accessibility is
 
+   function Needs_Result_Accessibility_Level_Param
+     (Func_Id  : Entity_Id;
+      Func_Typ : Entity_Id) return Boolean;
+   --  Subsidiary of functions Needs_Result_Accessibility_Extra_Formal and
+   --  Needs_Result_Accessibility_Level_Param. Return True if the function
+   --  needs an implicit parameter to identify the accessibility level of
+   --  the function result "determined by the point of call". Func_Typ is
+   --  the function return type; this function returns False if Func_Typ is
+   --  Empty.
+
    ---------------------------
    -- Accessibility_Message --
    ---------------------------
@@ -1892,6 +1902,34 @@ package body Accessibility is
                and then Is_Explicitly_Aliased (Entity (Prefix (Exp)));
    end Is_Special_Aliased_Formal_Access;
 
+   ---------------------------------------------
+   -- Needs_Result_Accessibility_Extra_Formal --
+   ---------------------------------------------
+
+   function Needs_Result_Accessibility_Extra_Formal
+     (Func_Id : Entity_Id) return Boolean
+   is
+      Func_Typ : Entity_Id;
+
+   begin
+      if Present (Underlying_Type (Etype (Func_Id))) then
+         Func_Typ := Underlying_Type (Etype (Func_Id));
+
+      --  Case of a function returning a private type which is not completed
+      --  yet. The support for this case is required because this function is
+      --  called to create the extra formals of dispatching primitives, and
+      --  they may be frozen before we see the full-view of their returned
+      --  private type.
+
+      else
+         --  Temporarily restore previous behavior
+         --  Func_Typ := Etype (Func_Id);
+         Func_Typ := Empty;
+      end if;
+
+      return Needs_Result_Accessibility_Level_Param (Func_Id, Func_Typ);
+   end Needs_Result_Accessibility_Extra_Formal;
+
    --------------------------------------
    -- Needs_Result_Accessibility_Level --
    --------------------------------------
@@ -1901,6 +1939,18 @@ package body Accessibility is
    is
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
+   begin
+      return Needs_Result_Accessibility_Level_Param (Func_Id, Func_Typ);
+   end Needs_Result_Accessibility_Level;
+
+   --------------------------------------------
+   -- Needs_Result_Accessibility_Level_Param --
+   --------------------------------------------
+
+   function Needs_Result_Accessibility_Level_Param
+     (Func_Id  : Entity_Id;
+      Func_Typ : Entity_Id) return Boolean
+   is
       function Has_Unconstrained_Access_Discriminant_Component
         (Comp_Typ : Entity_Id) return Boolean;
       --  Returns True if any component of the type has an unconstrained access
@@ -1952,7 +2002,7 @@ package body Accessibility is
       --  Flag used to temporarily disable a "True" result for tagged types.
       --  See comments further below for details.
 
-   --  Start of processing for Needs_Result_Accessibility_Level
+   --  Start of processing for Needs_Result_Accessibility_Level_Param
 
    begin
       --  False if completion unavailable, which can happen when we are
@@ -2028,7 +2078,7 @@ package body Accessibility is
       else
          return False;
       end if;
-   end Needs_Result_Accessibility_Level;
+   end Needs_Result_Accessibility_Level_Param;
 
    ------------------------------------------
    -- Prefix_With_Safe_Accessibility_Level --

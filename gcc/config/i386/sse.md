@@ -459,8 +459,9 @@
 (define_mode_iterator VF1_AVX512VL
   [V16SF (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")])
 
-(define_mode_iterator VHFBF
-  [V32HF V16HF V8HF V32BF V16BF V8BF])
+(define_mode_iterator VHFBF [V32HF V16HF V8HF V32BF V16BF V8BF])
+(define_mode_iterator VHFBF_256 [V16HF V16BF])
+(define_mode_iterator VHFBF_128 [V8HF V8BF])
 
 (define_mode_iterator VHF_AVX512VL
   [V32HF (V16HF "TARGET_AVX512VL") (V8HF "TARGET_AVX512VL")])
@@ -11134,13 +11135,11 @@
   DONE;
 })
 
-(define_mode_iterator V8BFH_128 [V8HF V8BF])
-
 (define_insn "avx512fp16_mov<mode>"
-  [(set (match_operand:V8BFH_128 0 "register_operand" "=v")
-	(vec_merge:V8BFH_128
-          (match_operand:V8BFH_128 2 "register_operand" "v")
-	  (match_operand:V8BFH_128 1 "register_operand" "v")
+  [(set (match_operand:V8_128 0 "register_operand" "=v")
+	(vec_merge:V8_128
+	  (match_operand:V8_128 2 "register_operand" "v")
+	  (match_operand:V8_128 1 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512FP16"
   "vmovsh\t{%2, %1, %0|%0, %1, %2}"
@@ -30358,8 +30357,6 @@
   [(set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_mode_iterator V16BFH_256 [V16HF V16BF])
-
 (define_mode_attr bf16_ph
   [(V8HF "ph") (V16HF "ph")
    (V8BF "bf16") (V16BF "bf16")])
@@ -30368,7 +30365,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(float_extend:V4SF
 	  (vec_select:<ssehalfvecmode>
-	    (match_operand:V8BFH_128 1 "memory_operand" "m")
+	    (match_operand:VHFBF_128 1 "memory_operand" "m")
 	    (parallel [(const_int 0) (const_int 2)
 		       (const_int 4) (const_int 6)]))))]
   "TARGET_AVXNECONVERT"
@@ -30380,7 +30377,7 @@
   [(set (match_operand:V8SF 0 "register_operand" "=x")
 	(float_extend:V8SF
 	  (vec_select:<ssehalfvecmode>
-	    (match_operand:V16BFH_256 1 "memory_operand" "m")
+	    (match_operand:VHFBF_256 1 "memory_operand" "m")
 	    (parallel [(const_int 0) (const_int 2)
 		       (const_int 4) (const_int 6)
 		       (const_int 8) (const_int 10)
@@ -30394,7 +30391,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(float_extend:V4SF
 	  (vec_select:<ssehalfvecmode>
-	    (match_operand:V8BFH_128 1 "memory_operand" "m")
+	    (match_operand:VHFBF_128 1 "memory_operand" "m")
 	    (parallel [(const_int 1) (const_int 3)
 		       (const_int 5) (const_int 7)]))))]
   "TARGET_AVXNECONVERT"
@@ -30406,7 +30403,7 @@
   [(set (match_operand:V8SF 0 "register_operand" "=x")
 	(float_extend:V8SF
 	  (vec_select:<ssehalfvecmode>
-	    (match_operand:V16BFH_256 1 "memory_operand" "m")
+	    (match_operand:VHFBF_256 1 "memory_operand" "m")
 	    (parallel [(const_int 1) (const_int 3)
 		       (const_int 5) (const_int 7)
 		       (const_int 9) (const_int 11)

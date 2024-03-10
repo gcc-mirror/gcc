@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jul 17, 2023
+GNAT User's Guide for Native Platforms , Aug 31, 2023
 
 AdaCore
 
@@ -12578,7 +12578,7 @@ you know what you are doing in writing the pragma, and it
 should not complain at you.
 @end table
 
-@geindex -gnatwm (gcc)
+@geindex -gnatw.x (gcc)
 
 
 @table @asis

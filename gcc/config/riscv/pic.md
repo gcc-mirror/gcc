@@ -27,21 +27,24 @@
 	(mem:ANYI (match_operand 1 "absolute_symbolic_operand" "")))]
   "USE_LOAD_ADDRESS_MACRO (operands[1])"
   "<default_load>\t%0,%1"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "load")
+   (set (attr "length") (const_int 8))])
 
 (define_insn "*local_pic_load_s<SUBX:mode>"
   [(set (match_operand:SUPERQI 0 "register_operand" "=r")
 	(sign_extend:SUPERQI (mem:SUBX (match_operand 1 "absolute_symbolic_operand" ""))))]
   "USE_LOAD_ADDRESS_MACRO (operands[1])"
   "<SUBX:load>\t%0,%1"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "load")
+   (set (attr "length") (const_int 8))])
 
 (define_insn "*local_pic_load_u<SUBX:mode>"
   [(set (match_operand:SUPERQI 0 "register_operand" "=r")
 	(zero_extend:SUPERQI (mem:SUBX (match_operand 1 "absolute_symbolic_operand" ""))))]
   "USE_LOAD_ADDRESS_MACRO (operands[1])"
   "<SUBX:load>u\t%0,%1"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "load")
+   (set (attr "length") (const_int 8))])
 
 ;; We can support ANYLSF loads into X register if there is no double support
 ;; or if the target is 64-bit.
@@ -55,7 +58,8 @@
   "@
    <ANYLSF:load>\t%0,%1,%2
    <softload>\t%0,%1"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "fpload")
+   (set (attr "length") (const_int 8))])
 
 ;; ??? For a 32-bit target with double float, a DF load into a X reg isn't
 ;; supported.  ld is not valid in that case.  Punt for now.  Maybe add a split
@@ -68,14 +72,16 @@
   "TARGET_HARD_FLOAT && USE_LOAD_ADDRESS_MACRO (operands[1])
    && (TARGET_DOUBLE_FLOAT && !TARGET_64BIT)"
   "<ANYLSF:load>\t%0,%1,%2"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "fpload")
+   (set (attr "length") (const_int 8))])
 
 (define_insn "*local_pic_load_sf<mode>"
   [(set (match_operand:SOFTF 0 "register_operand" "=r")
 	(mem:SOFTF (match_operand 1 "absolute_symbolic_operand" "")))]
   "!TARGET_HARD_FLOAT && USE_LOAD_ADDRESS_MACRO (operands[1])"
   "<softload>\t%0,%1"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "fpload")
+   (set (attr "length") (const_int 8))])
 
 ;; Simplify PIC stores to static variables.
 ;; These should go away once we figure out how to emit auipc discretely.
@@ -86,7 +92,8 @@
    (clobber (match_scratch:P 2 "=&r"))]
   "USE_LOAD_ADDRESS_MACRO (operands[0])"
   "<ANYI:store>\t%z1,%0,%2"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "store")
+   (set (attr "length") (const_int 8))])
 
 (define_insn "*local_pic_store<ANYLSF:mode>"
   [(set (mem:ANYLSF (match_operand 0 "absolute_symbolic_operand" ""))
@@ -97,7 +104,8 @@
   "@
    <ANYLSF:store>\t%1,%0,%2
    <softstore>\t%1,%0,%2"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "fpstore")
+   (set (attr "length") (const_int 8))])
 
 ;; ??? For a 32-bit target with double float, a DF store from a X reg isn't
 ;; supported.  sd is not valid in that case.  Punt for now.  Maybe add a split
@@ -110,7 +118,8 @@
   "TARGET_HARD_FLOAT && USE_LOAD_ADDRESS_MACRO (operands[1])
    && (TARGET_DOUBLE_FLOAT && !TARGET_64BIT)"
   "<ANYLSF:store>\t%1,%0,%2"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "fpstore")
+   (set (attr "length") (const_int 8))])
 
 (define_insn "*local_pic_store_sf<SOFTF:mode>"
   [(set (mem:SOFTF (match_operand 0 "absolute_symbolic_operand" ""))
@@ -118,4 +127,5 @@
    (clobber (match_scratch:P 2 "=&r"))]
   "!TARGET_HARD_FLOAT && USE_LOAD_ADDRESS_MACRO (operands[0])"
   "<softstore>\t%1,%0,%2"
-  [(set (attr "length") (const_int 8))])
+  [(set_attr "type" "fpstore")
+   (set (attr "length") (const_int 8))])

@@ -3096,10 +3096,6 @@ check_local_shadow (tree decl)
   if (TREE_CODE (decl) == PARM_DECL && !DECL_CONTEXT (decl))
     return;
 
-  /* External decls are something else.  */
-  if (DECL_EXTERNAL (decl))
-    return;
-
   tree old = NULL_TREE;
   cp_binding_level *old_scope = NULL;
   if (cxx_binding *binding = outer_binding (DECL_NAME (decl), NULL, true))
@@ -3130,11 +3126,9 @@ check_local_shadow (tree decl)
 	      && DECL_CONTEXT (old) == lambda_function (current_lambda_expr ())
 	      && TREE_CODE (old) == PARM_DECL
 	      && DECL_NAME (decl) != this_identifier)
-	    {
-	      error_at (DECL_SOURCE_LOCATION (old),
-			"lambda parameter %qD "
-			"previously declared as a capture", old);
-	    }
+	    error_at (DECL_SOURCE_LOCATION (old),
+		      "lambda parameter %qD "
+		      "previously declared as a capture", old);
 	  return;
 	}
       /* Don't complain if it's from an enclosing function.  */
@@ -3146,18 +3140,31 @@ check_local_shadow (tree decl)
 	     them there.  */
 	  cp_binding_level *b = current_binding_level->level_chain;
 
-	  if (FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
-	    /* Skip the ctor/dtor cleanup level.  */
+	  if (in_function_try_handler && b->kind == sk_catch)
+	    b = b->level_chain;
+
+	  /* Skip artificially added scopes which aren't present
+	     in the C++ standard, e.g. for function-try-block or
+	     ctor/dtor cleanups.  */
+	  while (b->artificial)
 	    b = b->level_chain;
 
 	  /* [basic.scope.param] A parameter name shall not be redeclared
 	     in the outermost block of the function definition.  */
 	  if (b->kind == sk_function_parms)
 	    {
-	      error_at (DECL_SOURCE_LOCATION (decl),
-			"declaration of %q#D shadows a parameter", decl);
-	      inform (DECL_SOURCE_LOCATION (old),
-		      "%q#D previously declared here", old);
+	      auto_diagnostic_group d;
+	      bool emit = true;
+	      if (DECL_EXTERNAL (decl))
+		emit = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+				"declaration of %q#D shadows a parameter",
+				decl);
+	      else
+		error_at (DECL_SOURCE_LOCATION (decl),
+			  "declaration of %q#D shadows a parameter", decl);
+	      if (emit)
+		inform (DECL_SOURCE_LOCATION (old),
+			"%q#D previously declared here", old);
 	      return;
 	    }
 	}
@@ -3183,10 +3190,16 @@ check_local_shadow (tree decl)
 	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
 	{
 	  auto_diagnostic_group d;
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "redeclaration of %q#D", decl);
-	  inform (DECL_SOURCE_LOCATION (old),
-		  "%q#D previously declared here", old);
+	  bool emit = true;
+	  if (DECL_EXTERNAL (decl))
+	    emit = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+			    "redeclaration of %q#D", decl);
+	  else
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "redeclaration of %q#D", decl);
+	  if (emit)
+	    inform (DECL_SOURCE_LOCATION (old),
+		    "%q#D previously declared here", old);
 	  return;
 	}
       /* C++11:
@@ -3194,21 +3207,20 @@ check_local_shadow (tree decl)
 	 shall not be redeclared in the outermost block of the handler.
 	 3.3.3/2:  A parameter name shall not be redeclared (...) in
 	 the outermost block of any handler associated with a
-	 function-try-block.
-	 3.4.1/15: The function parameter names shall not be redeclared
-	 in the exception-declaration nor in the outermost block of a
-	 handler for the function-try-block.  */
-      else if ((TREE_CODE (old) == VAR_DECL
-		&& old_scope == current_binding_level->level_chain
-		&& old_scope->kind == sk_catch)
-	       || (TREE_CODE (old) == PARM_DECL
-		   && (current_binding_level->kind == sk_catch
-		       || current_binding_level->level_chain->kind == sk_catch)
-		   && in_function_try_handler))
+	 function-try-block.  */
+      else if (TREE_CODE (old) == VAR_DECL
+	       && old_scope == current_binding_level->level_chain
+	       && old_scope->kind == sk_catch)
 	{
 	  auto_diagnostic_group d;
-	  if (permerror (DECL_SOURCE_LOCATION (decl),
-			 "redeclaration of %q#D", decl))
+	  bool emit;
+	  if (DECL_EXTERNAL (decl))
+	    emit = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+			    "redeclaration of %q#D", decl);
+	  else
+	    emit = permerror (DECL_SOURCE_LOCATION (decl),
+			      "redeclaration of %q#D", decl);
+	  if (emit)
 	    inform (DECL_SOURCE_LOCATION (old),
 		    "%q#D previously declared here", old);
 	  return;
@@ -3312,6 +3324,7 @@ check_local_shadow (tree decl)
 	  || (TREE_CODE (old) == TYPE_DECL
 	      && (!DECL_ARTIFICIAL (old)
 		  || TREE_CODE (decl) == TYPE_DECL)))
+      && !DECL_EXTERNAL (decl)
       && !instantiating_current_function_p ()
       && !warning_suppressed_p (decl, OPT_Wshadow))
     /* XXX shadow warnings in outer-more namespaces */

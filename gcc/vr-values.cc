@@ -111,21 +111,21 @@ check_for_binary_op_overflow (range_query *query,
     {
       /* So far we found that there is an overflow on the boundaries.
 	 That doesn't prove that there is an overflow even for all values
-	 in between the boundaries.  For that compute widest_int range
+	 in between the boundaries.  For that compute widest2_int range
 	 of the result and see if it doesn't overlap the range of
 	 type.  */
-      widest_int wmin, wmax;
-      widest_int w[4];
+      widest2_int wmin, wmax;
+      widest2_int w[4];
       int i;
       signop sign0 = TYPE_SIGN (TREE_TYPE (op0));
       signop sign1 = TYPE_SIGN (TREE_TYPE (op1));
-      w[0] = widest_int::from (vr0.lower_bound (), sign0);
-      w[1] = widest_int::from (vr0.upper_bound (), sign0);
-      w[2] = widest_int::from (vr1.lower_bound (), sign1);
-      w[3] = widest_int::from (vr1.upper_bound (), sign1);
+      w[0] = widest2_int::from (vr0.lower_bound (), sign0);
+      w[1] = widest2_int::from (vr0.upper_bound (), sign0);
+      w[2] = widest2_int::from (vr1.lower_bound (), sign1);
+      w[3] = widest2_int::from (vr1.upper_bound (), sign1);
       for (i = 0; i < 4; i++)
 	{
-	  widest_int wt;
+	  widest2_int wt;
 	  switch (subcode)
 	    {
 	    case PLUS_EXPR:
@@ -153,10 +153,10 @@ check_for_binary_op_overflow (range_query *query,
 	}
       /* The result of op0 CODE op1 is known to be in range
 	 [wmin, wmax].  */
-      widest_int wtmin
-	= widest_int::from (irange_val_min (type), TYPE_SIGN (type));
-      widest_int wtmax
-	= widest_int::from (irange_val_max (type), TYPE_SIGN (type));
+      widest2_int wtmin
+	= widest2_int::from (irange_val_min (type), TYPE_SIGN (type));
+      widest2_int wtmax
+	= widest2_int::from (irange_val_max (type), TYPE_SIGN (type));
       /* If all values in [wmin, wmax] are smaller than
 	 [wtmin, wtmax] or all are larger than [wtmin, wtmax],
 	 the arithmetic operation will always overflow.  */
@@ -1760,12 +1760,11 @@ simplify_using_ranges::simplify_internal_call_using_ranges
     g = gimple_build_assign (gimple_call_lhs (stmt), subcode, op0, op1);
   else
     {
-      int prec = TYPE_PRECISION (type);
       tree utype = type;
       if (ovf
 	  || !useless_type_conversion_p (type, TREE_TYPE (op0))
 	  || !useless_type_conversion_p (type, TREE_TYPE (op1)))
-	utype = build_nonstandard_integer_type (prec, 1);
+	utype = unsigned_type_for (type);
       if (TREE_CODE (op0) == INTEGER_CST)
 	op0 = fold_convert (utype, op0);
       else if (!useless_type_conversion_p (utype, TREE_TYPE (op0)))

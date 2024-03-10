@@ -24,21 +24,11 @@
 ; <http://www.gnu.org/licenses/>.
 ;
 
-; Variables (macros) that should be exported by loongarch.opt:
-;   la_opt_switches,
-;   la_opt_abi_base, la_opt_abi_ext,
-;   la_opt_cpu_arch, la_opt_cpu_tune,
-;   la_opt_fpu,
-;   la_cmodel.
-
 HeaderInclude
 config/loongarch/loongarch-opts.h
 
 HeaderInclude
 config/loongarch/loongarch-str.h
-
-Variable
-HOST_WIDE_INT la_opt_switches = 0
 
 ; ISA related options
 ;; Base ISA
@@ -49,14 +39,13 @@ Basic ISAs of LoongArch:
 EnumValue
 Enum(isa_base) String(la64) Value(ISA_BASE_LA64V100)
 
-
 ;; ISA extensions / adjustments
 Enum
 Name(isa_ext_fpu) Type(int)
 FPU types of LoongArch:
 
 EnumValue
-Enum(isa_ext_fpu) String(none) Value(ISA_EXT_NOFPU)
+Enum(isa_ext_fpu) String(none) Value(ISA_EXT_NONE)
 
 EnumValue
 Enum(isa_ext_fpu) String(32) Value(ISA_EXT_FPU32)
@@ -65,24 +54,48 @@ EnumValue
 Enum(isa_ext_fpu) String(64) Value(ISA_EXT_FPU64)
 
 mfpu=
-Target RejectNegative Joined ToLower Enum(isa_ext_fpu) Var(la_opt_fpu) Init(M_OPTION_NOT_SEEN)
+Target RejectNegative Joined ToLower Enum(isa_ext_fpu) Var(la_opt_fpu) Init(M_OPT_UNSET)
 -mfpu=FPU	Generate code for the given FPU.
 
 mfpu=0
 Target RejectNegative Alias(mfpu=,none)
 
 msoft-float
-Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_SOFTF) Negative(msingle-float)
+Target Driver Defer Var(la_deferred_options) RejectNegative Negative(msingle-float)
 Prevent the use of all hardware floating-point instructions.
 
 msingle-float
-Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F32) Negative(mdouble-float)
+Target Driver Defer Var(la_deferred_options) RejectNegative Negative(mdouble-float)
 Restrict the use of hardware floating-point instructions to 32-bit operations.
 
 mdouble-float
-Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F64) Negative(msoft-float)
+Target Driver Defer Var(la_deferred_options) RejectNegative Negative(msoft-float)
 Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations.
 
+Enum
+Name(isa_ext_simd) Type(int)
+SIMD extension levels of LoongArch:
+
+EnumValue
+Enum(isa_ext_simd) String(none) Value(ISA_EXT_NONE)
+
+EnumValue
+Enum(isa_ext_simd) String(lsx) Value(ISA_EXT_SIMD_LSX)
+
+EnumValue
+Enum(isa_ext_simd) String(lasx) Value(ISA_EXT_SIMD_LASX)
+
+msimd=
+Target RejectNegative Joined ToLower Enum(isa_ext_simd) Var(la_opt_simd) Init(M_OPT_UNSET)
+-msimd=SIMD	Generate code for the given SIMD extension.
+
+mlsx
+Target Driver Defer Var(la_deferred_options)
+Enable LoongArch SIMD Extension (LSX, 128-bit).
+
+mlasx
+Target Driver Defer Var(la_deferred_options)
+Enable LoongArch Advanced SIMD Extension (LASX, 256-bit).
 
 ;; Base target models (implies ISA & tune parameters)
 Enum
@@ -93,17 +106,20 @@ EnumValue
 Enum(cpu_type) String(native) Value(CPU_NATIVE)
 
 EnumValue
+Enum(cpu_type) String(abi-default) Value(CPU_ABI_DEFAULT)
+
+EnumValue
 Enum(cpu_type) String(loongarch64) Value(CPU_LOONGARCH64)
 
 EnumValue
 Enum(cpu_type) String(la464) Value(CPU_LA464)
 
 march=
-Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPTION_NOT_SEEN)
+Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPT_UNSET)
 -march=PROCESSOR	Generate code for the given PROCESSOR ISA.
 
 mtune=
-Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_tune) Init(M_OPTION_NOT_SEEN)
+Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_tune) Init(M_OPT_UNSET)
 -mtune=PROCESSOR	Generate optimized code for PROCESSOR.
 
 
@@ -125,17 +141,21 @@ EnumValue
 Enum(abi_base) String(lp64s) Value(ABI_BASE_LP64S)
 
 mabi=
-Target RejectNegative Joined ToLower Enum(abi_base) Var(la_opt_abi_base) Init(M_OPTION_NOT_SEEN)
+Target RejectNegative Joined ToLower Enum(abi_base) Var(la_opt_abi_base) Init(M_OPT_UNSET)
 -mabi=BASEABI	Generate code that conforms to the given BASEABI.
+
 
 ;; ABI Extension
 Variable
-int la_opt_abi_ext = M_OPTION_NOT_SEEN
-
+int la_opt_abi_ext = M_OPT_UNSET
 
 mbranch-cost=
 Target RejectNegative Joined UInteger Var(loongarch_branch_cost)
 -mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
+
+mmemvec-cost=
+Target RejectNegative Joined UInteger Var(loongarch_vector_access_cost) IntegerRange(1, 5)
+mmemvec-cost=COST      Set the cost of vector memory access instructions.
 
 mcheck-zero-division
 Target Mask(CHECK_ZERO_DIV)
@@ -189,7 +209,7 @@ EnumValue
 Enum(cmodel) String(extreme) Value(CMODEL_EXTREME)
 
 mcmodel=
-Target RejectNegative Joined Enum(cmodel) Var(la_opt_cmodel) Init(CMODEL_NORMAL)
+Target RejectNegative Joined Enum(cmodel) Var(la_opt_cmodel) Init(M_OPT_UNSET)
 Specify the code model.
 
 mdirect-extern-access

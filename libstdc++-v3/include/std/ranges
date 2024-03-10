@@ -106,8 +106,14 @@ namespace ranges
 
   namespace __detail
   {
+#if __cpp_lib_ranges >= 202207L // C++ >= 23
+    // P2494R2 Relaxing range adaptors to allow for move only types
+    template<typename _Tp>
+      concept __boxable = move_constructible<_Tp> && is_object_v<_Tp>;
+#else
     template<typename _Tp>
       concept __boxable = copy_constructible<_Tp> && is_object_v<_Tp>;
+#endif
 
     template<__boxable _Tp>
       struct __box : std::optional<_Tp>
@@ -132,7 +138,7 @@ namespace ranges
 	constexpr __box&
 	operator=(const __box& __that)
 	noexcept(is_nothrow_copy_constructible_v<_Tp>)
-	requires (!copyable<_Tp>)
+	requires (!copyable<_Tp>) && copy_constructible<_Tp>
 	{
 	  if (this != std::__addressof(__that))
 	    {
@@ -160,13 +166,22 @@ namespace ranges
 	}
       };
 
-    // For types which are already copyable, this specialization of the
-    // copyable wrapper stores the object directly without going through
-    // std::optional.  It provides just the subset of the primary template's
-    // API that we currently use.
+    template<typename _Tp>
+      concept __boxable_copyable
+	= copy_constructible<_Tp>
+	    && (copyable<_Tp> || (is_nothrow_move_constructible_v<_Tp>
+				    && is_nothrow_copy_constructible_v<_Tp>));
+    template<typename _Tp>
+      concept __boxable_movable
+	= (!copy_constructible<_Tp>)
+	    && (movable<_Tp> || is_nothrow_move_constructible_v<_Tp>);
+
+    // For types which are already copyable (or since C++23, movable)
+    // this specialization of the box wrapper stores the object directly
+    // without going through std::optional.  It provides just the subset of
+    // the primary template's API that we currently use.
     template<__boxable _Tp>
-      requires copyable<_Tp> || (is_nothrow_move_constructible_v<_Tp>
-				 && is_nothrow_copy_constructible_v<_Tp>)
+      requires __boxable_copyable<_Tp> || __boxable_movable<_Tp>
       struct __box<_Tp>
       {
       private:
@@ -178,6 +193,7 @@ namespace ranges
 	constexpr explicit
 	__box(const _Tp& __t)
 	noexcept(is_nothrow_copy_constructible_v<_Tp>)
+	requires copy_constructible<_Tp>
 	: _M_value(__t)
 	{ }
 
@@ -198,12 +214,13 @@ namespace ranges
 	__box(const __box&) = default;
 	__box(__box&&) = default;
 	__box& operator=(const __box&) requires copyable<_Tp> = default;
-	__box& operator=(__box&&) requires copyable<_Tp> = default;
+	__box& operator=(__box&&) requires movable<_Tp> = default;
 
 	// When _Tp is nothrow_copy_constructible but not copy_assignable,
 	// copy assignment is implemented via destroy-then-copy-construct.
 	constexpr __box&
 	operator=(const __box& __that) noexcept
+	requires (!copyable<_Tp>) && copy_constructible<_Tp>
 	{
 	  static_assert(is_nothrow_copy_constructible_v<_Tp>);
 	  if (this != std::__addressof(__that))
@@ -217,6 +234,7 @@ namespace ranges
 	// Likewise for move assignment.
 	constexpr __box&
 	operator=(__box&& __that) noexcept
+	requires (!movable<_Tp>)
 	{
 	  static_assert(is_nothrow_move_constructible_v<_Tp>);
 	  if (this != std::__addressof(__that))
@@ -250,7 +268,12 @@ namespace ranges
   } // namespace __detail
 
   /// A view that contains exactly one element.
-  template<copy_constructible _Tp> requires is_object_v<_Tp>
+#if __cpp_lib_ranges >= 202207L // C++ >= 23
+  template<move_constructible _Tp>
+#else
+  template<copy_constructible _Tp>
+#endif
+    requires is_object_v<_Tp>
     class single_view : public view_interface<single_view<_Tp>>
     {
     public:
@@ -259,6 +282,7 @@ namespace ranges
       constexpr explicit
       single_view(const _Tp& __t)
       noexcept(is_nothrow_copy_constructible_v<_Tp>)
+      requires copy_constructible<_Tp>
       : _M_value(__t)
       { }
 
@@ -1147,7 +1171,8 @@ namespace views::__adaptor
     };
 } // namespace views::__adaptor
 
-#if __cplusplus > 202002L
+#if __cpp_lib_ranges >= 202202L
+  // P2387R3 Pipe support for user-defined range adaptors
   template<typename _Derived>
     requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class range_adaptor_closure
@@ -1751,7 +1776,11 @@ namespace views::__adaptor
     inline constexpr _Filter filter;
   } // namespace views
 
+#if __cpp_lib_ranges >= 202207L // C++ >= 23
+  template<input_range _Vp, move_constructible _Fp>
+#else
   template<input_range _Vp, copy_constructible _Fp>
+#endif
     requires view<_Vp> && is_object_v<_Fp>
       && regular_invocable<_Fp&, range_reference_t<_Vp>>
       && std::__detail::__can_reference<invoke_result_t<_Fp&,
@@ -4623,7 +4652,7 @@ namespace views::__adaptor
 	return input_iterator_tag{};
     }
 
-    template<copy_constructible _Fp, input_range... _Ws>
+    template<move_constructible _Fp, input_range... _Ws>
       requires (view<_Ws> && ...) && (sizeof...(_Ws) > 0) && is_object_v<_Fp>
 	&& regular_invocable<_Fp&, range_reference_t<_Ws>...>
 	&& std::__detail::__can_reference<invoke_result_t<_Fp&, range_reference_t<_Ws>...>>
@@ -4894,7 +4923,7 @@ namespace views::__adaptor
 	= typename iterator_traits<iterator_t<__maybe_const_t<_Const, _Range>>>::iterator_category;
   }
 
-  template<copy_constructible _Fp, input_range... _Vs>
+  template<move_constructible _Fp, input_range... _Vs>
     requires (view<_Vs> && ...) && (sizeof...(_Vs) > 0) && is_object_v<_Fp>
       && regular_invocable<_Fp&, range_reference_t<_Vs>...>
       && std::__detail::__can_reference<invoke_result_t<_Fp&, range_reference_t<_Vs>...>>
@@ -5001,7 +5030,7 @@ namespace views::__adaptor
   template<class _Fp, class... Rs>
     zip_transform_view(_Fp, Rs&&...) -> zip_transform_view<_Fp, views::all_t<Rs>...>;
 
-  template<copy_constructible _Fp, input_range... _Vs>
+  template<move_constructible _Fp, input_range... _Vs>
     requires (view<_Vs> && ...) && (sizeof...(_Vs) > 0) && is_object_v<_Fp>
       && regular_invocable<_Fp&, range_reference_t<_Vs>...>
       && std::__detail::__can_reference<invoke_result_t<_Fp&, range_reference_t<_Vs>...>>
@@ -5131,7 +5160,7 @@ namespace views::__adaptor
     { return __x._M_inner - __y._M_inner; }
   };
 
-  template<copy_constructible _Fp, input_range... _Vs>
+  template<move_constructible _Fp, input_range... _Vs>
     requires (view<_Vs> && ...) && (sizeof...(_Vs) > 0) && is_object_v<_Fp>
       && regular_invocable<_Fp&, range_reference_t<_Vs>...>
       && std::__detail::__can_reference<invoke_result_t<_Fp&, range_reference_t<_Vs>...>>
@@ -5338,7 +5367,7 @@ namespace views::__adaptor
 
     friend class adjacent_view;
 
-    template<forward_range _Wp, copy_constructible _Fp, size_t _Mm>
+    template<forward_range _Wp, move_constructible _Fp, size_t _Mm>
       requires view<_Wp> && (_Mm > 0) && is_object_v<_Fp>
         && regular_invocable<__detail::__unarize<_Fp&, _Mm>, range_reference_t<_Wp>>
         && std::__detail::__can_reference<invoke_result_t<__detail::__unarize<_Fp&, _Mm>,
@@ -5580,7 +5609,7 @@ namespace views::__adaptor
     inline constexpr auto pairwise = adjacent<2>;
   }
 
-  template<forward_range _Vp, copy_constructible _Fp, size_t _Nm>
+  template<forward_range _Vp, move_constructible _Fp, size_t _Nm>
    requires view<_Vp> && (_Nm > 0) && is_object_v<_Fp>
      && regular_invocable<__detail::__unarize<_Fp&, _Nm>, range_reference_t<_Vp>>
      && std::__detail::__can_reference<invoke_result_t<__detail::__unarize<_Fp&, _Nm>,
@@ -5650,7 +5679,7 @@ namespace views::__adaptor
     { return _M_inner.size(); }
   };
 
-  template<forward_range _Vp, copy_constructible _Fp, size_t _Nm>
+  template<forward_range _Vp, move_constructible _Fp, size_t _Nm>
    requires view<_Vp> && (_Nm > 0) && is_object_v<_Fp>
      && regular_invocable<__detail::__unarize<_Fp&, _Nm>, range_reference_t<_Vp>>
      && std::__detail::__can_reference<invoke_result_t<__detail::__unarize<_Fp&, _Nm>,
@@ -5819,7 +5848,7 @@ namespace views::__adaptor
     { return __x._M_inner - __y._M_inner; }
   };
 
-  template<forward_range _Vp, copy_constructible _Fp, size_t _Nm>
+  template<forward_range _Vp, move_constructible _Fp, size_t _Nm>
    requires view<_Vp> && (_Nm > 0) && is_object_v<_Fp>
      && regular_invocable<__detail::__unarize<_Fp&, _Nm>, range_reference_t<_Vp>>
      && std::__detail::__can_reference<invoke_result_t<__detail::__unarize<_Fp&, _Nm>,
@@ -7528,8 +7557,8 @@ namespace views::__adaptor
   } // namespace views
 #endif // __cpp_lib_ranges_join_with
 
-#ifdef __cpp_lib_ranges_repeat // C++ >= 32
-  template<copy_constructible _Tp, semiregular _Bound = unreachable_sentinel_t>
+#ifdef __cpp_lib_ranges_repeat // C++ >= 23
+  template<move_constructible _Tp, semiregular _Bound = unreachable_sentinel_t>
     requires is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
       && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>)
   class repeat_view : public view_interface<repeat_view<_Tp, _Bound>>
@@ -7552,6 +7581,7 @@ namespace views::__adaptor
 
     constexpr explicit
     repeat_view(const _Tp& __value, _Bound __bound = _Bound())
+    requires copy_constructible<_Tp>
     : _M_value(__value), _M_bound(__bound)
     {
       if constexpr (!same_as<_Bound, unreachable_sentinel_t>)
@@ -7594,7 +7624,7 @@ namespace views::__adaptor
   template<typename _Tp, typename _Bound>
     repeat_view(_Tp, _Bound) -> repeat_view<_Tp, _Bound>;
 
-  template<copy_constructible _Tp, semiregular _Bound>
+  template<move_constructible _Tp, semiregular _Bound>
     requires is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
       && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>)
   class repeat_view<_Tp, _Bound>::_Iterator

@@ -1,3 +1,171 @@
+2023-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu): Really test Storage_Pool on
+	the simple return statement.
+
+2023-09-05  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Set bit-packed for
+	constrained and unconstrained array types.
+	* gcc-interface/misc.cc (gnat_get_array_descr_info): Examine
+	BIT_PACKED_ARRAY_TYPE_P.
+
+2023-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_type.adb (Interface_Present_In_Ancestor): Remove guard against no
+	list of interfaces; fix style in comments (trailing dots).
+
+2023-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_type.adb (Iface_Present_In_Ancestor): Only look at the list of
+	interfaces for types that allow it. The guard is a high-level equivalent
+	of the entity kinds listed in the preconditon of the Interfaces query.
+
+2023-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_type.adb (Iface_Present_In_Ancestor): Remove guard for empty list
+	of interfaces; the following loop will work just fine without it.
+
+2023-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Build_Protected_Entry): Move the At_End procedure
+	from the entry body to the inner block statement.
+
+2023-09-05  Bob Duff  <duff@adacore.com>
+
+	* sem_ch4.adb (Find_Component_In_Instance): Check that
+	Declaration_Node (Par) is not Empty, as it is for itypes.
+
+2023-09-05  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch7.adb (Analyze_Package_Declaration): Restrict calls to
+	`Sem_Warn.Check_References` and adjust comment accordingly.
+
+2023-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Enumeration_Type): Give an error on a type with
+	both representation clause and too large size.
+
+2023-09-05  Liaiss Merzougue  <merzougue@adacore.com>
+
+	* libgnat/s-imguti.adb: Remove comment.
+
+2023-09-05  Javier Miranda  <miranda@adacore.com>
+
+	* accessibility.ads (Needs_Result_Accessibility_Extra_Formal): New
+	subprogram.
+	* accessibility.adb (Needs_Result_Accessibility_Level_Param): New
+	subprogram.
+	(Needs_Result_Accessibility_Extra_Formal): New subprogram,
+	temporarily keep the previous behavior of the frontend.
+	* sem_ch6.adb (Create_Extra_Formals): Replace occurrences of
+	function Needs_Result_Accessibility_Level_Param by calls to
+	function Needs_Result_Accessibility_Extra_Formal.
+	(Extra_Formals_OK): Ditto.
+
+2023-09-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* libgnat/system-vxworks-ppc-rtp-smp.ads: Add -msmp to
+	Linker_Options pragma.
+
+2023-09-05  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Report warning on
+	infinite recursion if an empty container aggregate appears in the
+	return statement of its Empty function. Fix typo in comment.
+	* sem_aggr.adb (Resolve_Aggregate): Resolve Ada 2022 empty
+	aggregate that initializes a record type that has defined its
+	container aggregate aspects.
+	(Resolve_Iterated_Association): Protect access to attribute Etype.
+	* sem_ch13.adb (Resolve_Aspect_Aggregate): Fix typo in comment.
+
+2023-09-05  Steve Baird  <baird@adacore.com>
+
+	* sem_attr.adb (Denote_Same_Function): Handle the case where
+	Has_Homonym (Pref_Id) returns True but Homonym (Pref_Id) returns
+	an empty result.
+
+2023-09-05  Steve Baird  <baird@adacore.com>
+
+	* sem_res.adb (Resolve_Unary_Op): In deciding whether to emit a
+	warning about a modular type's unary minus operator being applied
+	to an integer literal, ignore integer literals for which
+	Comes_From_Source is False.
+
+2023-09-05  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnarl/s-taprop__qnx.adb: Implement Set_Task_Affinity.
+
+2023-09-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Fix
+	index.
+	* gnat_ugn.texi: Regenerate.
+
+2023-09-05  Daniel King  <dmking@adacore.com>
+
+	* libgnat/s-carsi8.adb: Use operations from
+	System.Storage_Elements for address arithmetic.
+	* libgnat/s-carun8.adb: Likewise
+	* libgnat/s-casi128.adb: Likewise
+	* libgnat/s-casi16.adb: Likewise
+	* libgnat/s-casi32.adb: Likewise
+	* libgnat/s-casi64.adb: Likewise
+	* libgnat/s-caun128.adb: Likewise
+	* libgnat/s-caun16.adb: Likewise
+	* libgnat/s-caun32.adb: Likewise
+	* libgnat/s-caun64.adb: Likewise
+	* libgnat/s-geveop.adb: Likewise
+
+2023-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Component_Type_For_Private_View): New function.
+	(Check_Generic_Actuals): For an actual type parameter, also check
+	its component type if it is an array type.
+	(Check_Private_View): Use Component_Type_For_Private_View in the
+	case of an array type.
+	(Instantiate_Type): Likewise.
+	(Save_Global_References.Set_Global_Type): Likewise.
+
+2023-09-05  Sheri Bernstein  <bernstein@adacore.com>
+
+	* libgnat/s-aridou.adb: Add pragma to exempt Metrics_LSLOC.
+	(Double_Divide): Add pragma to exempt
+	Metrics_Cyclomatic_Complexity.
+	(Scaled_Divide): Likewise.
+	* libgnat/s-vauspe.ads (Uns_Option): Add pragma to exempt
+	Discriminated_Records.
+
+2023-09-05  Ronan Desplanques  <desplanques@adacore.com>
+
+	* Makefile.rtl: Add missing units.
+
+2023-09-05  Sheri Bernstein  <bernstein@adacore.com>
+
+	* libgnarl/a-reatim.adb (Time_Of): Add pragma to exempt
+	Discriminated_Records.
+	* libgnat/s-imguti.adb (Round, Set_Decimal_Digits): Likewise.
+	* libgnat/s-multip.adb (Number_Of_CPUs): Likewise.
+	* libgnarl/s-tpopsp__posix-foreign.adb (Self): Refactor multiple
+	returns.
+
+2023-09-05  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): Add missing
+	subtype-conformance check on primitives implementing interface
+	primitives.
+	(Error_Posted_In_Formals): New subprogram.
+
+2023-09-05  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-tassta.adb: Tweak comment.
+
+2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* Makefile.rtl: Add LoongArch support.
+	* libgnarl/s-linux__loongarch.ads: New file.
+	* libgnat/system-linux-loongarch.ads: New file.
+
 2023-08-07  Sheri Bernstein  <bernstein@adacore.com>
 
 	* libgnat/s-parame__qnx.adb: Refactor multiple returns.

@@ -37,7 +37,8 @@ enum type_class
   function_type_class, method_type_class,
   record_type_class, union_type_class,
   array_type_class, string_type_class,
-  lang_type_class, opaque_type_class
+  lang_type_class, opaque_type_class,
+  bitint_type_class
 };
 
 #endif /* GCC_TYPECLASS_H */

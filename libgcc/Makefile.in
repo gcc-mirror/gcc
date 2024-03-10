@@ -446,7 +446,7 @@ lib2funcs = _muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3 _cmpdi2 _ucmpdi2	   \
 	    _paritysi2 _paritydi2 _powisf2 _powidf2 _powixf2 _powitf2	   \
 	    _mulhc3 _mulsc3 _muldc3 _mulxc3 _multc3 _divhc3 _divsc3	   \
 	    _divdc3 _divxc3 _divtc3 _bswapsi2 _bswapdi2 _clrsbsi2	   \
-	    _clrsbdi2
+	    _clrsbdi2 _mulbitint3
 
 # The floating-point conversion routines that involve a single-word integer.
 # XX stands for the integer mode.
@@ -466,7 +466,8 @@ endif
 # These might cause a divide overflow trap and so are compiled with
 # unwinder info.
 LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _divmoddi4 \
-		    _udivdi3 _umoddi3 _udivmoddi4 _udiv_w_sdiv
+		    _udivdi3 _umoddi3 _udivmoddi4 _udiv_w_sdiv \
+		    _divmodbitint4
 
 # Remove any objects from lib2funcs and LIB2_DIVMOD_FUNCS that are
 # defined as optimized assembly code in LIB1ASMFUNCS or as C code

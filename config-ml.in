@@ -301,6 +301,16 @@ arm-*-*)
 	  done
 	fi
 	;;
+loongarch*-*)
+	old_multidirs="${multidirs}"
+	multidirs=""
+	for x in ${old_multidirs}; do
+	case "$x" in
+	`${CC-gcc} --print-multi-directory`) : ;;
+	*) multidirs="${multidirs} ${x}" ;;
+	esac
+	done
+	;;
 m68*-*-*)
 	if [ x$enable_softfloat = xno ]
 	then

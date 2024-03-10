@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-require-effective-target vect_float_strict } */
 
 #include "tree-vect.h"
