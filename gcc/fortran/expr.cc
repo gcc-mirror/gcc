@@ -3656,7 +3656,7 @@ gfc_check_conformance (gfc_expr *op1, gfc_expr *op2, const char *optype_msgid, .
 /* Given an assignable expression and an arbitrary expression, make
    sure that the assignment can take place.  Only add a call to the intrinsic
    conversion routines, when allow_convert is set.  When this assign is a
-   coarray call, then the convert is done by the coarray routine implictly and
+   coarray call, then the convert is done by the coarray routine implicitly and
    adding the intrinsic conversion would do harm in most cases.  */
 
 bool

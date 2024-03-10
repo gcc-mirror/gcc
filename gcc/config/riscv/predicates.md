@@ -366,6 +366,11 @@
   (and (match_code "const_int")
        (match_test "popcount_hwi (~UINTVAL (op)) == 2")))
 
+(define_predicate "const_nottwobits_not_arith_operand"
+  (and (match_code "const_int")
+       (and (not (match_operand 0 "arith_operand"))
+	    (match_operand 0 "const_nottwobits_operand"))))
+
 ;; A CONST_INT operand that consists of a single run of 32 consecutive
 ;; set bits.
 (define_predicate "consecutive_bits32_operand"
@@ -411,4 +416,4 @@
 (define_predicate "not_uimm_extra_bit_or_nottwobits"
   (and (match_code "const_int")
        (ior (match_operand 0 "not_uimm_extra_bit_operand")
-	    (match_operand 0 "const_nottwobits_operand"))))
+	    (match_operand 0 "const_nottwobits_not_arith_operand"))))

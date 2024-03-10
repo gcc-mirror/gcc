@@ -61,7 +61,7 @@ extern bool assert_unreachable_fallthru_edge_p (edge);
 extern void delete_tree_cfg_annotations (function *);
 extern gphi *get_virtual_phi (basic_block);
 extern gimple *first_stmt (basic_block);
-extern gimple *last_stmt (basic_block);
+extern gimple *last_nondebug_stmt (basic_block);
 extern gimple *last_and_only_stmt (basic_block);
 extern bool verify_gimple_in_seq (gimple_seq, bool = true);
 extern bool verify_gimple_in_cfg (struct function *, bool, bool = true);
@@ -113,6 +113,7 @@ extern basic_block gimple_switch_default_bb (function *, gswitch *);
 extern edge gimple_switch_edge (function *, gswitch *, unsigned);
 extern edge gimple_switch_default_edge (function *, gswitch *);
 extern bool cond_only_block_p (basic_block);
+extern void copy_phi_arg_into_existing_phi (edge, edge);
 
 /* Return true if the LHS of a call should be removed.  */
 

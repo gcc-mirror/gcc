@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -54,7 +55,7 @@ typedef struct SymbolKey_IsSymbol_p SymbolKey_IsSymbol;
 
 typedef struct SymbolKey_PerformOperation_p SymbolKey_PerformOperation;
 
-typedef unsigned int (*SymbolKey_IsSymbol_t) (unsigned int);
+typedef bool (*SymbolKey_IsSymbol_t) (unsigned int);
 struct SymbolKey_IsSymbol_p { SymbolKey_IsSymbol_t proc; };
 
 typedef void (*SymbolKey_PerformOperation_t) (unsigned int);
@@ -97,7 +98,7 @@ EXTERN void SymbolKey_DelSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey);
    IsEmptyTree - returns true if SymbolTree, t, is empty.
 */
 
-EXTERN unsigned int SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t);
+EXTERN bool SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t);
 
 /*
    DoesTreeContainAny - returns true if SymbolTree, t, contains any
@@ -105,7 +106,7 @@ EXTERN unsigned int SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t);
                         P, is called with a symbol as its parameter.
 */
 
-EXTERN unsigned int SymbolKey_DoesTreeContainAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P);
+EXTERN bool SymbolKey_DoesTreeContainAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P);
 
 /*
    ForeachNodeDo - for each node in SymbolTree, t, a procedure, P,
@@ -119,7 +120,7 @@ EXTERN void SymbolKey_ForeachNodeDo (SymbolKey_SymbolTree t, SymbolKey_PerformOp
    ContainsSymKey - return TRUE if tree, t, contains an entry for, NameKey.
 */
 
-EXTERN unsigned int SymbolKey_ContainsSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey);
+EXTERN bool SymbolKey_ContainsSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey);
 
 /*
    NoOfNodes - returns the number of nodes in the tree t.

@@ -1476,7 +1476,7 @@ loop_versioning::prune_loop_conditions (class loop *loop)
       gimple *stmt = first_stmt (loop->header);
 
       if (get_range_query (cfun)->range_of_expr (r, name, stmt)
-	  && !r.contains_p (build_one_cst (TREE_TYPE (name))))
+	  && !r.contains_p (wi::one (TYPE_PRECISION (TREE_TYPE (name)))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, find_loop_location (loop),

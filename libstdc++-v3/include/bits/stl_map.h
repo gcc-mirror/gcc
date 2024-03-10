@@ -76,6 +76,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  retrieved based on a key, in logarithmic time.
    *
    *  @ingroup associative_containers
+   *  @headerfile map
+   *  @since C++98
    *
    *  @tparam _Key  Type of key objects.
    *  @tparam  _Tp  Type of mapped objects.

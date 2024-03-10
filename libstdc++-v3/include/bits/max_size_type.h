@@ -560,7 +560,8 @@ namespace ranges
 	// Arithmetic right shift.
 	const auto __msb = _M_rep._M_msb;
 	_M_rep >>= __r._M_rep;
-	_M_rep._M_msb |= __msb;
+	if (__msb)
+	  _M_rep |= ~(__max_size_type(-1) >> __r._M_rep);
 	return *this;
       }
 

@@ -288,6 +288,9 @@ extern int dot_symbols;
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION linux_libc_has_function
 
+#undef TARGET_LIBM_FUNCTION_MAX_ERROR
+#define TARGET_LIBM_FUNCTION_MAX_ERROR rs6000_linux_libm_function_max_error
+
 #undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\

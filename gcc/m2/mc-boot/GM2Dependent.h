@@ -54,7 +54,7 @@ typedef struct M2Dependent_ArgCVEnvP_p M2Dependent_ArgCVEnvP;
 typedef void (*M2Dependent_ArgCVEnvP_t) (int, void *, void *);
 struct M2Dependent_ArgCVEnvP_p { M2Dependent_ArgCVEnvP_t proc; };
 
-EXTERN void M2Dependent_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
+EXTERN void M2Dependent_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp);
 EXTERN void M2Dependent_DeconstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
 
 /*

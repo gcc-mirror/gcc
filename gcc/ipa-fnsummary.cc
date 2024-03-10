@@ -481,13 +481,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	      && (TYPE_SIZE (c->type) == TYPE_SIZE (vr.type ())))
 	    {
 	      if (!useless_type_conversion_p (c->type, vr.type ()))
-		{
-		  value_range res;
-		  range_fold_unary_expr (&res, NOP_EXPR,
-				     c->type, &vr, vr.type ());
-		  vr = res;
-		}
-	      tree type = c->type;
+		range_cast (vr, c->type);
 
 	      for (j = 0; vec_safe_iterate (c->param_ops, j, &op); j++)
 		{
@@ -496,26 +490,45 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 
 		  value_range res;
 		  if (!op->val[0])
-		    range_fold_unary_expr (&res, op->code, op->type, &vr, type);
+		    {
+		      range_op_handler handler (op->code, op->type);
+		      if (!handler
+			  || !res.supports_type_p (op->type)
+			  || !handler.fold_range (res, op->type, vr,
+						  value_range (op->type)))
+			res.set_varying (op->type);
+		    }
 		  else if (!op->val[1])
 		    {
-		      value_range op0 (op->val[0], op->val[0]);
-		      range_fold_binary_expr (&res, op->code, op->type,
-					      op->index ? &op0 : &vr,
-					      op->index ? &vr : &op0);
+		      value_range op0;
+		      range_op_handler handler (op->code, op->type);
+
+		      ipa_range_set_and_normalize (op0, op->val[0]);
+
+		      if (!handler
+			  || !res.supports_type_p (op->type)
+			  || !handler.fold_range (res, op->type,
+						  op->index ? op0 : vr,
+						  op->index ? vr : op0))
+			res.set_varying (op->type);
 		    }
 		  else
 		    res.set_varying (op->type);
-		  type = op->type;
 		  vr = res;
 		}
 	      if (!vr.varying_p () && !vr.undefined_p ())
 		{
 		  value_range res;
-		  value_range val_vr (c->val, c->val);
-		  range_fold_binary_expr (&res, c->code, boolean_type_node,
-					  &vr,
-					  &val_vr);
+		  value_range val_vr;
+		  range_op_handler handler (c->code, boolean_type_node);
+
+		  ipa_range_set_and_normalize (val_vr, c->val);
+
+		  if (!handler
+		      || !res.supports_type_p (boolean_type_node)
+		      || !handler.fold_range (res, boolean_type_node, vr, val_vr))
+		    res.set_varying (boolean_type_node);
+
 		  if (res.zero_p ())
 		    continue;
 		}
@@ -1558,7 +1571,6 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				   class ipa_node_params *params_summary,
 				   basic_block bb)
 {
-  gimple *last;
   tree op, op2;
   int index;
   struct agg_position_info aggpos;
@@ -1569,8 +1581,8 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   tree param_type;
   expr_eval_ops param_ops;
 
-  last = last_stmt (bb);
-  if (!last || gimple_code (last) != GIMPLE_COND)
+  gcond *last = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+  if (!last)
     return;
   if (!is_gimple_ip_invariant (gimple_cond_rhs (last)))
     return;
@@ -1652,7 +1664,6 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				     class ipa_node_params *params_summary,
 				     basic_block bb)
 {
-  gimple *lastg;
   tree op;
   int index;
   struct agg_position_info aggpos;
@@ -1663,10 +1674,9 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   tree param_type;
   expr_eval_ops param_ops;
 
-  lastg = last_stmt (bb);
-  if (!lastg || gimple_code (lastg) != GIMPLE_SWITCH)
+  gswitch *last = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb));
+  if (!last)
     return;
-  gswitch *last = as_a <gswitch *> (lastg);
   op = gimple_switch_index (last);
   if (!decompose_param_expr (fbi, last, op, &index, &param_type, &aggpos,
 			     &param_ops))
@@ -1682,9 +1692,10 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   get_range_query (cfun)->range_of_expr (vr, op);
   if (vr.undefined_p ())
     vr.set_varying (TREE_TYPE (op));
-  value_range_kind vr_type = vr.kind ();
-  wide_int vr_wmin = wi::to_wide (vr.min ());
-  wide_int vr_wmax = wi::to_wide (vr.max ());
+  tree vr_min, vr_max;
+  value_range_kind vr_type = get_legacy_range (vr, vr_min, vr_max);
+  wide_int vr_wmin = wi::to_wide (vr_min);
+  wide_int vr_wmax = wi::to_wide (vr_max);
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -2309,7 +2320,6 @@ phi_result_unknown_predicate (ipa_func_body_info *fbi,
   edge e;
   edge_iterator ei;
   basic_block first_bb = NULL;
-  gimple *stmt;
 
   if (single_pred_p (bb))
     {
@@ -2340,9 +2350,8 @@ phi_result_unknown_predicate (ipa_func_body_info *fbi,
   if (!first_bb)
     return false;
 
-  stmt = last_stmt (first_bb);
+  gcond *stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (first_bb));
   if (!stmt
-      || gimple_code (stmt) != GIMPLE_COND
       || !is_gimple_ip_invariant (gimple_cond_rhs (stmt)))
     return false;
 
@@ -3180,8 +3189,8 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	       for (e = node->callees; e; e = e->next_callee)
 		 {
 		   tree cdecl = e->callee->decl;
-		   if (fndecl_built_in_p (cdecl, BUILT_IN_APPLY_ARGS)
-		       || fndecl_built_in_p (cdecl, BUILT_IN_VA_START))
+		   if (fndecl_built_in_p (cdecl, BUILT_IN_APPLY_ARGS,
+						 BUILT_IN_VA_START))
 		     break;
 		 }
 	       node->can_change_signature = !e;

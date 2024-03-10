@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fno-tree-sra -fipa-pta -fdump-ipa-pta2" } */
+/* { dg-options "-O2 -fno-tree-sra -fipa-pta -fdump-ipa-pta2-details" } */
 
 struct X
 {

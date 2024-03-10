@@ -770,8 +770,6 @@ static DynamicStrings_String doDecimalPlaces (DynamicStrings_String s, unsigned 
   int l;
   int point;
   DynamicStrings_String t;
-  DynamicStrings_String whole;
-  DynamicStrings_String fraction;
   DynamicStrings_String tenths;
   DynamicStrings_String hundreths;
 
@@ -1917,7 +1915,7 @@ extern "C" DynamicStrings_String StringConvert_ToSigFig (DynamicStrings_String s
   int point;
   unsigned int poTen;
 
-  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/StringConvert.mod", 54, 1222, (const char *) "ToSigFig", 8);
+  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/StringConvert.mod", 54, 1220, (const char *) "ToSigFig", 8);
   point = DynamicStrings_Index (s, '.', 0);
   if (point < 0)
     {

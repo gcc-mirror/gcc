@@ -543,7 +543,7 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
   e1 = gfc_discard_nops (e1);
   e2 = gfc_discard_nops (e2);
 
-  /* Inizialize tentatively, clear if we don't return anything.  */
+  /* Initialize tentatively, clear if we don't return anything.  */
   mpz_init (*result);
 
   /* Case 1: c1 - c2 = c1 - c2, trivially.  */

@@ -26,6 +26,7 @@
 #define _CRT_RAND_S // define this before including <stdlib.h> to get rand_s
 
 #include <random>
+#include <system_error>
 
 #ifdef  _GLIBCXX_USE_C99_STDINT_TR1
 
@@ -94,6 +95,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
   namespace
   {
+    [[noreturn]]
+    inline void
+    __throw_syserr([[maybe_unused]] int e, [[maybe_unused]] const char* msg)
+    { _GLIBCXX_THROW_OR_ABORT(system_error(e, std::generic_category(), msg)); }
+
 #if USE_RDRAND
     unsigned int
     __attribute__ ((target("rdrnd")))
@@ -365,9 +371,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
       which = prng;
 #endif
     else
-      std::__throw_runtime_error(
-	  __N("random_device::random_device(const std::string&):"
-	      " unsupported token"));
+      std::__throw_syserr(EINVAL, __N("random_device::random_device"
+				      "(const std::string&):"
+				      " unsupported token"));
 
 #ifdef _GLIBCXX_USE_CRT_RAND_S
     if (which & rand_s)
@@ -508,8 +514,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	char* endptr;
 	seed = std::strtoul(nptr, &endptr, 0);
 	if (*nptr == '\0' || *endptr != '\0')
-	  std::__throw_runtime_error(__N("random_device::_M_init_pretr1"
-					 "(const std::string&)"));
+	  std::__throw_syserr(EINVAL, __N("random_device::_M_init_pretr1"
+					  "(const std::string&)"));
       }
     _M_mt.seed(seed);
 #else
@@ -582,7 +588,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	    p = static_cast<char*>(p) + e;
 	  }
 	else if (e != -1 || errno != EINTR)
-	  __throw_runtime_error(__N("random_device could not be read"));
+	  __throw_syserr(errno, __N("random_device could not be read"));
       }
     while (n > 0);
 #else // USE_POSIX_FILE_IO

@@ -65,6 +65,11 @@
 
   ;; OR-COMBINE
   UNSPEC_ORC_B
+
+  ;; Zbc unspecs
+  UNSPEC_CLMUL
+  UNSPEC_CLMULH
+  UNSPEC_CLMULR
 ])
 
 (define_c_enum "unspecv" [
@@ -163,13 +168,38 @@
 
 ;; Main data type used by the insn
 (define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,HF,SF,DF,TF,
-  VNx1BI,VNx2BI,VNx4BI,VNx8BI,VNx16BI,VNx32BI,VNx64BI,
-  VNx1QI,VNx2QI,VNx4QI,VNx8QI,VNx16QI,VNx32QI,VNx64QI,
-  VNx1HI,VNx2HI,VNx4HI,VNx8HI,VNx16HI,VNx32HI,
-  VNx1SI,VNx2SI,VNx4SI,VNx8SI,VNx16SI,
-  VNx1DI,VNx2DI,VNx4DI,VNx8DI,
-  VNx1SF,VNx2SF,VNx4SF,VNx8SF,VNx16SF,
-  VNx1DF,VNx2DF,VNx4DF,VNx8DF"
+  VNx1BI,VNx2BI,VNx4BI,VNx8BI,VNx16BI,VNx32BI,VNx64BI,VNx128BI,
+  VNx1QI,VNx2QI,VNx4QI,VNx8QI,VNx16QI,VNx32QI,VNx64QI,VNx128QI,
+  VNx1HI,VNx2HI,VNx4HI,VNx8HI,VNx16HI,VNx32HI,VNx64HI,
+  VNx1SI,VNx2SI,VNx4SI,VNx8SI,VNx16SI,VNx32SI,
+  VNx1DI,VNx2DI,VNx4DI,VNx8DI,VNx16DI,
+  VNx1SF,VNx2SF,VNx4SF,VNx8SF,VNx16SF,VNx32SF,
+  VNx1DF,VNx2DF,VNx4DF,VNx8DF,VNx16DF,
+  VNx2x64QI,VNx2x32QI,VNx3x32QI,VNx4x32QI,
+  VNx2x16QI,VNx3x16QI,VNx4x16QI,VNx5x16QI,VNx6x16QI,VNx7x16QI,VNx8x16QI,
+  VNx2x8QI,VNx3x8QI,VNx4x8QI,VNx5x8QI,VNx6x8QI,VNx7x8QI,VNx8x8QI,
+  VNx2x4QI,VNx3x4QI,VNx4x4QI,VNx5x4QI,VNx6x4QI,VNx7x4QI,VNx8x4QI,
+  VNx2x2QI,VNx3x2QI,VNx4x2QI,VNx5x2QI,VNx6x2QI,VNx7x2QI,VNx8x2QI,
+  VNx2x1QI,VNx3x1QI,VNx4x1QI,VNx5x1QI,VNx6x1QI,VNx7x1QI,VNx8x1QI,
+  VNx2x32HI,VNx2x16HI,VNx3x16HI,VNx4x16HI,
+  VNx2x8HI,VNx3x8HI,VNx4x8HI,VNx5x8HI,VNx6x8HI,VNx7x8HI,VNx8x8HI,
+  VNx2x4HI,VNx3x4HI,VNx4x4HI,VNx5x4HI,VNx6x4HI,VNx7x4HI,VNx8x4HI,
+  VNx2x2HI,VNx3x2HI,VNx4x2HI,VNx5x2HI,VNx6x2HI,VNx7x2HI,VNx8x2HI,
+  VNx2x1HI,VNx3x1HI,VNx4x1HI,VNx5x1HI,VNx6x1HI,VNx7x1HI,VNx8x1HI,
+  VNx2x16SI,VNx2x8SI,VNx3x8SI,VNx4x8SI,
+  VNx2x4SI,VNx3x4SI,VNx4x4SI,VNx5x4SI,VNx6x4SI,VNx7x4SI,VNx8x4SI,
+  VNx2x2SI,VNx3x2SI,VNx4x2SI,VNx5x2SI,VNx6x2SI,VNx7x2SI,VNx8x2SI,
+  VNx2x1SI,VNx3x1SI,VNx4x1SI,VNx5x1SI,VNx6x1SI,VNx7x1SI,VNx8x1SI,
+  VNx2x16SF,VNx2x8SF,VNx3x8SF,VNx4x8SF,
+  VNx2x4SF,VNx3x4SF,VNx4x4SF,VNx5x4SF,VNx6x4SF,VNx7x4SF,VNx8x4SF,
+  VNx2x2SF,VNx3x2SF,VNx4x2SF,VNx5x2SF,VNx6x2SF,VNx7x2SF,VNx8x2SF,
+  VNx2x1SF,VNx3x1SF,VNx4x1SF,VNx5x1SF,VNx6x1SF,VNx7x1SF,VNx8x1SF,
+  VNx2x8DI,VNx2x4DI,VNx3x4DI,VNx4x4DI,
+  VNx2x2DI,VNx3x2DI,VNx4x2DI,VNx5x2DI,VNx6x2DI,VNx7x2DI,VNx8x2DI,
+  VNx2x1DI,VNx3x1DI,VNx4x1DI,VNx5x1DI,VNx6x1DI,VNx7x1DI,VNx8x1DI,
+  VNx2x8DF,VNx2x4DF,VNx3x4DF,VNx4x4DF,
+  VNx2x2DF,VNx3x2DF,VNx4x2DF,VNx5x2DF,VNx6x2DF,VNx7x2DF,VNx8x2DF,
+  VNx2x1DF,VNx3x1DF,VNx4x1DF,VNx5x1DF,VNx6x1DF,VNx7x1DF,VNx8x1DF"
   (const_string "unknown"))
 
 ;; True if the main data type is twice the size of a word.
@@ -244,6 +274,7 @@
 ;; nop		no operation
 ;; ghost	an instruction that produces no real code
 ;; bitmanip	bit manipulation instructions
+;; clmul    clmul, clmulh, clmulr
 ;; rotate   rotation instructions
 ;; atomic   atomic instructions
 ;; condmove	conditional moves
@@ -266,6 +297,15 @@
 ;; vldff       vector unit-stride fault-only-first load instructions
 ;; vldr        vector whole register load instructions
 ;; vstr        vector whole register store instructions
+;; vlsegde     vector segment unit-stride load instructions
+;; vssegte     vector segment unit-stride store instructions
+;; vlsegds     vector segment strided load instructions
+;; vssegts     vector segment strided store instructions
+;; vlsegdux    vector segment unordered indexed load instructions
+;; vlsegdox    vector segment ordered indexed load instructions
+;; vssegtux    vector segment unordered indexed store instructions
+;; vssegtox    vector segment ordered indexed store instructions
+;; vlsegdff    vector segment unit-stride fault-only-first load instructions
 ;; 11. Vector integer arithmetic instructions
 ;; vialu       vector single-width integer add and subtract and logical nstructions
 ;; viwalu      vector widening integer add/subtract
@@ -344,8 +384,10 @@
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate,
+   clmul,min,max,minu,maxu,clz,ctz,cpop,
    atomic,condmove,crypto,rdvlenb,rdvl,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
+   vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
    vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
    vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,
    vsalu,vaalu,vsmul,vsshift,vnclip,
@@ -1056,6 +1098,22 @@
   [(set_attr "type" "idiv")
    (set_attr "mode" "DI")])
 
+(define_expand "<u>divmod<mode>4"
+  [(parallel
+     [(set (match_operand:GPR 0 "register_operand")
+           (only_div:GPR (match_operand:GPR 1 "register_operand")
+                         (match_operand:GPR 2 "register_operand")))
+      (set (match_operand:GPR 3 "register_operand")
+           (<paired_mod>:GPR (match_dup 1) (match_dup 2)))])]
+  "TARGET_DIV && riscv_use_divmod_expander ()"
+  {
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_<u>div<GPR:mode>3 (operands[0], operands[1], operands[2]));
+      emit_insn (gen_mul<GPR:mode>3 (tmp, operands[0], operands[2]));
+      emit_insn (gen_sub<GPR:mode>3 (operands[3], operands[1], tmp));
+      DONE;
+  })
+
 (define_insn "*<optab>si3_extended"
   [(set (match_operand:DI                 0 "register_operand" "=r")
 	(sign_extend:DI
@@ -1668,7 +1726,7 @@
   [(const_int 0)]
 {
   riscv_move_integer (operands[2], operands[0], INTVAL (operands[1]),
-		      <GPR:MODE>mode, TRUE);
+		      <GPR:MODE>mode);
   DONE;
 })
 
@@ -1677,11 +1735,11 @@
   [(set (match_operand:P 0 "register_operand")
 	(match_operand:P 1))
    (clobber (match_operand:P 2 "register_operand"))]
-  "riscv_split_symbol (operands[2], operands[1], MAX_MACHINE_MODE, NULL, TRUE)"
+  "riscv_split_symbol (operands[2], operands[1], MAX_MACHINE_MODE, NULL)"
   [(set (match_dup 0) (match_dup 3))]
 {
   riscv_split_symbol (operands[2], operands[1],
-		      MAX_MACHINE_MODE, &operands[3], TRUE);
+		      MAX_MACHINE_MODE, &operands[3]);
 })
 
 ;; Pretend to have the ability to load complex const_int in order to get
@@ -1698,7 +1756,7 @@
   [(const_int 0)]
 {
   riscv_move_integer (operands[0], operands[0], INTVAL (operands[1]),
-                      <MODE>mode, TRUE);
+                      <MODE>mode);
   DONE;
 })
 

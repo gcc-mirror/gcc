@@ -219,6 +219,9 @@ extern bool default_libc_has_fast_function (int fcode);
 extern bool no_c99_libc_has_function (enum function_class, tree);
 extern bool gnu_libc_has_function (enum function_class, tree);
 extern bool bsd_libc_has_function (enum function_class, tree);
+extern unsigned default_libm_function_max_error (unsigned, machine_mode, bool);
+extern unsigned glibc_linux_libm_function_max_error (unsigned, machine_mode,
+						     bool);
 
 extern tree default_builtin_tm_load_store (tree);
 

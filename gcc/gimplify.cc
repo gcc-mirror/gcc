@@ -3264,6 +3264,11 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    }
 	  need_non_reg = true;
 	}
+      else if (!is_gimple_reg_type (TREE_TYPE (t)))
+	/* When the result of an operation, in particular a VIEW_CONVERT_EXPR
+	   is a non-register type then require the base object to be a
+	   non-register as well.  */
+	need_non_reg = true;
     }
 
   /* Step 2 is to gimplify the base expression.  Make sure lvalue is set
@@ -3281,15 +3286,21 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if (need_non_reg && (fallback & fb_rvalue))
     prepare_gimple_addressable (p, pre_p);
 
-  /* Step 3: gimplify size expressions and the indices and operands of
-     ARRAY_REF.  During this loop we also remove any useless conversions.  */
 
+  /* Step 3: gimplify size expressions and the indices and operands of
+     ARRAY_REF.  During this loop we also remove any useless conversions.
+     If we operate on a register also make sure to properly gimplify
+     to individual operations.  */
+
+  bool reg_operations = is_gimple_reg (*p);
   for (; expr_stack.length () > 0; )
     {
       tree t = expr_stack.pop ();
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
+	  gcc_assert (!reg_operations);
+
 	  /* Gimplify the low bound and element type size. */
 	  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
 				is_gimple_reg, fb_rvalue);
@@ -3306,8 +3317,16 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	}
       else if (TREE_CODE (t) == COMPONENT_REF)
 	{
+	  gcc_assert (!reg_operations);
+
 	  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
 				is_gimple_reg, fb_rvalue);
+	  ret = MIN (ret, tret);
+	}
+      else if (reg_operations)
+	{
+	  tret = gimplify_expr (&TREE_OPERAND (t, 0), pre_p, post_p,
+				is_gimple_val, fb_rvalue);
 	  ret = MIN (ret, tret);
 	}
 
@@ -15830,8 +15849,8 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
       if (TREE_CODE (expr) == CALL_EXPR)
 	{
 	  if (tree fndecl = get_callee_fndecl (expr))
-	    if (fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING)
-		|| fndecl_built_in_p (fndecl, BUILT_IN_MEMCMP))
+	    if (fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING,
+					   BUILT_IN_MEMCMP))
 	      {
 		int nargs = call_expr_nargs (expr);
 		for (int i = 0; i < nargs; i++)

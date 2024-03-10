@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fgnu-tm -fdump-tree-ealias -O" } */
+/* { dg-options "-fgnu-tm -fdump-tree-ealias-details -O" } */
 
 typedef __UINTPTR_TYPE__ ptrcast;
 

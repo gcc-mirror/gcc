@@ -4685,6 +4685,7 @@ extern tree build_one_cst (tree);
 extern tree build_minus_one_cst (tree);
 extern tree build_all_ones_cst (tree);
 extern tree build_zero_cst (tree);
+extern tree build_replicated_int_cst (tree, unsigned, HOST_WIDE_INT);
 extern tree sign_mask_for (tree);
 extern tree build_string (unsigned, const char * = NULL);
 extern tree build_poly_int_cst (tree, const poly_wide_int_ref &);
@@ -4821,8 +4822,19 @@ tree_to_poly_uint64 (const_tree t)
 extern int tree_int_cst_sgn (const_tree);
 extern int tree_int_cst_sign_bit (const_tree);
 extern unsigned int tree_int_cst_min_precision (tree, signop);
-extern tree strip_array_types (tree);
 extern tree excess_precision_type (tree);
+
+/* Recursively examines the array elements of TYPE, until a non-array
+   element type is found.  */
+
+inline tree
+strip_array_types (tree type)
+{
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  return type;
+}
 
 /* Desription of the reason why the argument of valid_constant_size_p
    is not a valid size.  */
@@ -5374,8 +5386,6 @@ extern tree create_artificial_label (location_t);
 extern const char *get_name (tree);
 extern bool stdarg_p (const_tree);
 extern bool prototype_p (const_tree);
-extern bool is_typedef_decl (const_tree x);
-extern bool typedef_variant_p (const_tree);
 extern bool auto_var_p (const_tree);
 extern bool auto_var_in_fn_p (const_tree, const_tree);
 extern tree build_low_bits_mask (tree, unsigned);
@@ -5390,6 +5400,23 @@ extern bool warn_deprecated_use (tree, tree);
 extern void error_unavailable_use (tree, tree);
 extern tree cache_integer_cst (tree, bool might_duplicate = false);
 extern const char *combined_fn_name (combined_fn);
+
+/* Returns true if X is a typedef decl.  */
+
+inline bool
+is_typedef_decl (const_tree x)
+{
+  return (x && TREE_CODE (x) == TYPE_DECL
+	  && DECL_ORIGINAL_TYPE (x) != NULL_TREE);
+}
+
+/* Returns true iff TYPE is a type variant created for a typedef. */
+
+inline bool
+typedef_variant_p (const_tree type)
+{
+  return is_typedef_decl (TYPE_NAME (type));
+}
 
 /* Compare and hash for any structure which begins with a canonical
    pointer.  Assumes all pointers are interchangeable, which is sort
@@ -6585,6 +6612,24 @@ type_has_mode_precision_p (const_tree t)
   return known_eq (TYPE_PRECISION (t), GET_MODE_PRECISION (TYPE_MODE (t)));
 }
 
+/* Helper functions for fndecl_built_in_p.  */
+
+inline bool
+built_in_function_equal_p (built_in_function name0, built_in_function name1)
+{
+  return name0 == name1;
+}
+
+/* Recursive case for two or more names.  */
+
+template <typename... F>
+inline bool
+built_in_function_equal_p (built_in_function name0, built_in_function name1,
+			   built_in_function name2, F... names)
+{
+  return name0 == name1 || built_in_function_equal_p (name0, name2, names...);
+}
+
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function.
 
    Note that it is different from the DECL_IS_UNDECLARED_BUILTIN
@@ -6616,13 +6661,16 @@ fndecl_built_in_p (const_tree node, unsigned int name, built_in_class klass)
 }
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function
-   of BUILT_IN_NORMAL class with name equal to NAME.  */
+   of BUILT_IN_NORMAL class with name equal to NAME1 (or other mentioned
+   NAMES).  */
 
+template <typename... F>
 inline bool
-fndecl_built_in_p (const_tree node, built_in_function name)
+fndecl_built_in_p (const_tree node, built_in_function name1, F... names)
 {
   return (fndecl_built_in_p (node, BUILT_IN_NORMAL)
-	  && DECL_FUNCTION_CODE (node) == name);
+	  && built_in_function_equal_p (DECL_FUNCTION_CODE (node),
+					name1, names...));
 }
 
 /* A struct for encapsulating location information about an operator

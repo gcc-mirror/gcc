@@ -514,7 +514,7 @@ GM2_LIBS_BOOT     = m2/gm2-compiler-boot/gm2.a \
 cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) $(m2.prev)
 	cp -p $< $@
 
-m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(P) \
+m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o \
                             $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS) \
                             m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
@@ -527,7 +527,7 @@ m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(
 	@$(call LINK_PROGRESS,$(INDEX.m2),end)
 
 m2/stage1/cc1gm2$(exeext): gm2$(exeext) m2/gm2-compiler-boot/m2flex.o \
-                            $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
+                            $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
                             $(GM2_LIBS_BOOT) $(MC_LIBS) \
                             m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext) \
                             $(m2.prev)
@@ -1161,7 +1161,6 @@ MC-LIB-DEFS = \
    IO.def \
    M2Dependent.def \
    M2EXCEPTION.def \
-   M2LINK.def \
    M2RTS.def \
    MemUtils.def \
    NumberIO.def \
@@ -1710,7 +1709,6 @@ BUILD-PGE-O = \
    m2/pge-boot/Glibc.o \
    m2/pge-boot/Gerrno.o \
    m2/pge-boot/GUnixArgs.o \
-   m2/pge-boot/GM2LINK.o \
    m2/pge-boot/Gtermios.o \
    m2/pge-boot/GSysExceptions.o \
    m2/pge-boot/Gabort.o \

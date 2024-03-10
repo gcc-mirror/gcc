@@ -12588,6 +12588,7 @@ ix86_check_builtin_isa_match (unsigned int fcode,
   HOST_WIDE_INT isa2 = ix86_isa_flags2;
   HOST_WIDE_INT bisa = ix86_builtins_isa[fcode].isa;
   HOST_WIDE_INT bisa2 = ix86_builtins_isa[fcode].isa2;
+  HOST_WIDE_INT tmp_isa = isa, tmp_isa2 = isa2;
   /* The general case is we require all the ISAs specified in bisa{,2}
      to be enabled.
      The exceptions are:
@@ -12596,60 +12597,36 @@ ix86_check_builtin_isa_match (unsigned int fcode,
      OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4
      (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL) or
        OPTION_MASK_ISA2_AVXVNNI
-     (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512IFMA) or
+     (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL) or
        OPTION_MASK_ISA2_AVXIFMA
-     (OPTION_MASK_ISA_AVXNECONVERT | OPTION_MASK_ISA2_AVX512BF16) or
+     (OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA2_AVX512BF16) or
        OPTION_MASK_ISA2_AVXNECONVERT
      where for each such pair it is sufficient if either of the ISAs is
      enabled, plus if it is ored with other options also those others.
      OPTION_MASK_ISA_MMX in bisa is satisfied also if TARGET_MMX_WITH_SSE.  */
-  if (((bisa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
-       == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
-      && (isa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A)) != 0)
-    isa |= (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A);
 
-  if (((bisa & (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32))
-       == (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32))
-      && (isa & (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32)) != 0)
-    isa |= (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32);
-
-  if (((bisa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
-       == (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
-      && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
-    isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
-
-  if ((((bisa & (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL))
-	== (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL))
-       || (bisa2 & OPTION_MASK_ISA2_AVXVNNI) != 0)
-      && (((isa & (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL))
-	   == (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL))
-	  || (isa2 & OPTION_MASK_ISA2_AVXVNNI) != 0))
-    {
-      isa |= OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL;
-      isa2 |= OPTION_MASK_ISA2_AVXVNNI;
+#define SHARE_BUILTIN(A1, A2, B1, B2) \
+  if ((((bisa & (A1)) == (A1) && (bisa2 & (A2)) == (A2)) \
+       && ((bisa & (B1)) == (B1) && (bisa2 & (B2)) == (B2))) \
+      && (((isa & (A1)) == (A1) && (isa2 & (A2)) == (A2)) \
+	  || ((isa & (B1)) == (B1) && (isa2 & (B2)) == (B2)))) \
+    { \
+      tmp_isa |= (A1) | (B1); \
+      tmp_isa2 |= (A2) | (B2); \
     }
 
-  if ((((bisa & (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL))
-	== (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL))
-       || (bisa2 & OPTION_MASK_ISA2_AVXIFMA) != 0)
-      && (((isa & (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL))
-	   == (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL))
-	  || (isa2 & OPTION_MASK_ISA2_AVXIFMA) != 0))
-    {
-      isa |= OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL;
-      isa2 |= OPTION_MASK_ISA2_AVXIFMA;
-    }
-
-  if ((((bisa & OPTION_MASK_ISA_AVX512VL) != 0
-	 && (bisa2 & OPTION_MASK_ISA2_AVX512BF16) != 0)
-	&& (bisa2 & OPTION_MASK_ISA2_AVXNECONVERT) != 0)
-       && (((isa & OPTION_MASK_ISA_AVX512VL) != 0
-	    && (isa2 & OPTION_MASK_ISA2_AVX512BF16) != 0)
-	   || (isa2 & OPTION_MASK_ISA2_AVXNECONVERT) != 0))
-    {
-      isa |= OPTION_MASK_ISA_AVX512VL;
-      isa2 |= OPTION_MASK_ISA2_AVXNECONVERT | OPTION_MASK_ISA2_AVX512BF16;
-    }
+  SHARE_BUILTIN (OPTION_MASK_ISA_SSE, 0, OPTION_MASK_ISA_3DNOW_A, 0);
+  SHARE_BUILTIN (OPTION_MASK_ISA_SSE4_2, 0, OPTION_MASK_ISA_CRC32, 0);
+  SHARE_BUILTIN (OPTION_MASK_ISA_FMA, 0, OPTION_MASK_ISA_FMA4, 0);
+  SHARE_BUILTIN (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL, 0, 0,
+		 OPTION_MASK_ISA2_AVXVNNI);
+  SHARE_BUILTIN (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL, 0, 0,
+		 OPTION_MASK_ISA2_AVXIFMA);
+  SHARE_BUILTIN (OPTION_MASK_ISA_AVX512VL, OPTION_MASK_ISA2_AVX512BF16, 0,
+		 OPTION_MASK_ISA2_AVXNECONVERT);
+  SHARE_BUILTIN (OPTION_MASK_ISA_AES, 0, 0, OPTION_MASK_ISA2_VAES);
+  isa = tmp_isa;
+  isa2 = tmp_isa2;
 
   if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE
       /* __builtin_ia32_maskmovq requires MMX registers.  */
@@ -18986,6 +18963,78 @@ expand_vec_perm_movs (struct expand_vec_perm_d *d)
 }
 
 /* A subroutine of ix86_expand_vec_perm_const_1.  Try to implement D
+   using insertps.  */
+static bool
+expand_vec_perm_insertps (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  unsigned i, cnt_s, nelt = d->nelt;
+  int cnt_d = -1;
+  rtx src, dst;
+
+  if (d->one_operand_p)
+    return false;
+
+  if (!(TARGET_SSE4_1
+	&& (vmode == V4SFmode || vmode == V4SImode
+	    || (TARGET_MMX_WITH_SSE
+		&& (vmode == V2SFmode || vmode == V2SImode)))))
+    return false;
+
+  for (i = 0; i < nelt; ++i)
+    {
+      if (d->perm[i] == i)
+	continue;
+      if (cnt_d != -1)
+	{
+	  cnt_d = -1;
+	  break;
+	}
+      cnt_d = i;
+    }
+
+  if (cnt_d == -1)
+    {
+      for (i = 0; i < nelt; ++i)
+	{
+	  if (d->perm[i] == i + nelt)
+	    continue;
+	  if (cnt_d != -1)
+	    return false;
+	  cnt_d = i;
+	}
+
+      if (cnt_d == -1)
+	return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  gcc_assert (cnt_d != -1);
+
+  cnt_s = d->perm[cnt_d];
+  if (cnt_s < nelt)
+    {
+      src = d->op0;
+      dst = d->op1;
+    }
+  else
+    {
+      cnt_s -= nelt;
+      src = d->op1;
+      dst = d->op0;
+     }
+  gcc_assert (cnt_s < nelt);
+
+  rtx x = gen_sse4_1_insertps (vmode, d->target, dst, src,
+			       GEN_INT (cnt_s << 6 | cnt_d << 4));
+  emit_insn (x);
+
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_const_1.  Try to implement D
    in terms of blendp[sd] / pblendw / pblendvb / vpblendd.  */
 
 static bool
@@ -19916,6 +19965,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 
   /* Try movss/movsd instructions.  */
   if (expand_vec_perm_movs (d))
+    return true;
+
+  /* Try the SSE4.1 insertps instruction.  */
+  if (expand_vec_perm_insertps (d))
     return true;
 
   /* Try the fully general two operand permute.  */

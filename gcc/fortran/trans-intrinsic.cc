@@ -4126,7 +4126,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
       tree calc;
       /* For floating point types, the question is what MAX(a, NaN) or
 	 MIN(a, NaN) should return (where "a" is a normal number).
-	 There are valid usecase for returning either one, but the
+	 There are valid use case for returning either one, but the
 	 Fortran standard doesn't specify which one should be chosen.
 	 Also, there is no consensus among other tested compilers.  In
 	 short, it's a mess.  So lets just do whatever is fastest.  */

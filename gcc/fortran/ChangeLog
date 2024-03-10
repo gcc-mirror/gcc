@@ -1,3 +1,55 @@
+2023-05-04  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* openmp.cc (resolve_omp_clauses): Add diagnostic for
+	non-pointer/non-allocatable attach/detach.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Remove dereference for
+	pointer-to-scalar derived type component attach/detach.  Fix
+	attach/detach handling for descriptors.
+
+2023-04-28  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* trans-openmp.cc (gfc_trans_omp_clauses): Attach/detach clause fixes.
+
+2023-04-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.texi: Fix typos.
+	* decl.cc: Fix typos in comments and in a variable name.
+	* arith.cc: Fix comment typos.
+	* check.cc: Likewise.
+	* class.cc: Likewise.
+	* dependency.cc: Likewise.
+	* expr.cc: Likewise.
+	* frontend-passes.cc: Likewise.
+	* gfortran.h: Likewise.
+	* intrinsic.cc: Likewise.
+	* iresolve.cc: Likewise.
+	* match.cc: Likewise.
+	* module.cc: Likewise.
+	* primary.cc: Likewise.
+	* resolve.cc: Likewise.
+	* simplify.cc: Likewise.
+	* trans-array.cc: Likewise.
+	* trans-decl.cc: Likewise.
+	* trans-expr.cc: Likewise.
+	* trans-intrinsic.cc: Likewise.
+	* trans-openmp.cc: Likewise.
+	* trans-stmt.cc: Likewise.
+
+2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (gfc_resolve_omp_do_blocks): Handle zero
+	or more than one exec statements before/after 'omp scan'.
+	* trans-openmp.cc (gfc_trans_omp_do): Likewise.
+
+2023-04-22  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/109500
+	* interface.cc (gfc_compare_actual_formal): Reject allocatable
+	functions being used as actual argument for allocable dummy.
+
 2023-04-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/109511

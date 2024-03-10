@@ -148,7 +148,8 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libhwasan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1)
+	$(top_builddir)/lsan/libsanitizer_lsan.la $(am__append_1) \
+	$(am__append_2) $(am__DEPENDENCIES_1)
 am__objects_1 = hwasan_allocation_functions.lo hwasan_allocator.lo \
 	hwasan.lo hwasan_dynamic_shadow.lo hwasan_exceptions.lo \
 	hwasan_fuchsia.lo hwasan_globals.lo hwasan_interceptors.lo \
@@ -444,7 +445,8 @@ hwasan_files = \
 libhwasan_la_SOURCES = $(hwasan_files)
 libhwasan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(am__append_1) $(am__append_2) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
+	$(top_builddir)/lsan/libsanitizer_lsan.la $(am__append_1) \
+	$(am__append_2) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 libhwasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libhwasan)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS

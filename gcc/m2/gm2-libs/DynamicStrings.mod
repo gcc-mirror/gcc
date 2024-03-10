@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE DynamicStrings ;
 
-FROM libc IMPORT strlen, strncpy, write, exit ;
+FROM libc IMPORT strlen, strncpy, write, exit, snprintf ;
 FROM StrLib IMPORT StrLen ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM Assertion IMPORT Assert ;
@@ -411,12 +411,15 @@ END writeLongcard ;
 
 
 (*
-   writeAddress -
+   writeAddress - writes out the address of a with a C style hex prefix.
 *)
 
 PROCEDURE writeAddress (a: ADDRESS) ;
+VAR
+   buffer: ARRAY [0..30] OF CHAR ;
 BEGIN
-   writeLongcard (VAL (LONGCARD, a))
+   snprintf (ADR (buffer), SIZE (buffer), "0x%", a) ;
+   writeString (buffer) ;
 END writeAddress ;
 
 

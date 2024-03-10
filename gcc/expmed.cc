@@ -2535,14 +2535,10 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
 	op1 = SUBREG_REG (op1);
     }
 
-  /* Canonicalize rotates by constant amount.  If op1 is bitsize / 2,
-     prefer left rotation, if op1 is from bitsize / 2 + 1 to
-     bitsize - 1, use other direction of rotate with 1 .. bitsize / 2 - 1
-     amount instead.  */
-  if (rotate
-      && CONST_INT_P (op1)
-      && IN_RANGE (INTVAL (op1), GET_MODE_BITSIZE (scalar_mode) / 2 + left,
-		   GET_MODE_BITSIZE (scalar_mode) - 1))
+  /* Canonicalize rotates by constant amount.  We may canonicalize
+     to reduce the immediate or if the ISA can rotate by constants
+     in only on direction.  */
+  if (rotate && reverse_rotate_by_imm_p (scalar_mode, left, op1))
     {
       op1 = gen_int_shift_amount (mode, (GET_MODE_BITSIZE (scalar_mode)
 					 - INTVAL (op1)));

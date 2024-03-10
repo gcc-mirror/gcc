@@ -1,5 +1,5 @@
 /* CTF format description.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
 
    This file is part of libctf.
 
@@ -89,13 +89,13 @@ extern "C"
    entries and reorder them accordingly (dropping the indexes in the process).
 
    Variable records (as distinct from data objects) provide a modicum of support
-   for non-ELF systems, mapping a variable name to a CTF type ID.  The variable
-   names are sorted into ASCIIbetical order, permitting binary searching.  We do
-   not define how the consumer maps these variable names to addresses or
+   for non-ELF systems, mapping a variable or function name to a CTF type ID.
+   The names are sorted into ASCIIbetical order, permitting binary searching.
+   We do not define how the consumer maps these variable names to addresses or
    anything else, or indeed what these names represent: they might be names
    looked up at runtime via dlsym() or names extracted at runtime by a debugger
    or anything else the consumer likes.  Variable records with identically-
-   named entries in the data object section are removed.
+   named entries in the data object or function index section are removed.
 
    The data types section is a list of variable size records that represent each
    type, in order by their ID.  The types themselves form a directed graph,
@@ -132,6 +132,12 @@ extern "C"
 #define CTF_MAX_SIZE	0xfffffffe	/* Max size of a v2 type in bytes. */
 #define CTF_LSIZE_SENT	0xffffffff	/* Sentinel for v2 ctt_size.  */
 
+# define CTF_MAX_TYPE_V1	0xffff	/* Max type identifier value.  */
+# define CTF_MAX_PTYPE_V1	0x7fff	/* Max parent type identifier value.  */
+# define CTF_MAX_VLEN_V1	0x3ff	/* Max struct, union, enums or args.  */
+# define CTF_MAX_SIZE_V1	0xfffe	/* Max size of a type in bytes. */
+# define CTF_LSIZE_SENT_V1	0xffff	/* Sentinel for v1 ctt_size.  */
+
   /* Start of actual data structure definitions.
 
      Every field in these structures must have corresponding code in the
@@ -143,6 +149,20 @@ typedef struct ctf_preamble
   unsigned char ctp_version;	/* Data format version number (CTF_VERSION).  */
   unsigned char ctp_flags;	/* Flags (see below).  */
 } ctf_preamble_t;
+
+typedef struct ctf_header_v2
+{
+  ctf_preamble_t cth_preamble;
+  uint32_t cth_parlabel;	/* Ref to name of parent lbl uniq'd against.  */
+  uint32_t cth_parname;		/* Ref to basename of parent.  */
+  uint32_t cth_lbloff;		/* Offset of label section.  */
+  uint32_t cth_objtoff;		/* Offset of object section.  */
+  uint32_t cth_funcoff;		/* Offset of function section.  */
+  uint32_t cth_varoff;		/* Offset of variable section.  */
+  uint32_t cth_typeoff;		/* Offset of type section.  */
+  uint32_t cth_stroff;		/* Offset of string section.  */
+  uint32_t cth_strlen;		/* Length of string section in bytes.  */
+} ctf_header_v2_t;
 
 typedef struct ctf_header
 {
@@ -182,13 +202,19 @@ typedef struct ctf_header
 # define CTF_VERSION_1_UPGRADED_3 2
 # define CTF_VERSION_2 3
 
-/* Note: some flags may be valid only in particular format versions.  */
-
 #define CTF_VERSION_3 4
 #define CTF_VERSION CTF_VERSION_3 /* Current version.  */
 
-#define CTF_F_COMPRESS	0x1	/* Data buffer is compressed by libctf.  */
-#define CTF_F_NEWFUNCINFO 0x2	/* New v3 func info section format.  */
+/* All of these flags bar CTF_F_COMPRESS and CTF_F_IDXSORTED are bug-workaround
+   flags and are valid only in format v3: in v2 and below they cannot occur and
+   in v4 and later, they will be recycled for other purposes.  */
+
+#define CTF_F_COMPRESS	0x1		/* Data buffer is compressed by libctf.  */
+#define CTF_F_NEWFUNCINFO 0x2		/* New v3 func info section format.  */
+#define CTF_F_IDXSORTED 0x4		/* Index sections already sorted.  */
+#define CTF_F_DYNSTR 0x8		/* Strings come from .dynstr.  */
+#define CTF_F_MAX (CTF_F_COMPRESS | CTF_F_NEWFUNCINFO | CTF_F_IDXSORTED	\
+		   | CTF_F_DYNSTR)
 
 typedef struct ctf_lblent
 {
@@ -208,6 +234,52 @@ typedef struct ctf_varent
    Types larger than this must be stored in the ctf_lsize member of a
    ctf_type_t.  Use of this member is indicated by the presence of
    CTF_LSIZE_SENT in ctt_size.  */
+
+/* In v1, the same applies, only the limit is (USHRT_MAX - 1) and
+   CTF_MAX_SIZE_V1, and CTF_LSIZE_SENT_V1 is the sentinel.  */
+
+typedef struct ctf_stype_v1
+{
+  uint32_t ctt_name;		/* Reference to name in string table.  */
+  unsigned short ctt_info;	/* Encoded kind, variant length (see below).  */
+#ifndef __GNUC__
+  union
+  {
+    unsigned short _size;	/* Size of entire type in bytes.  */
+    unsigned short _type;	/* Reference to another type.  */
+  } _u;
+#else
+  __extension__
+  union
+  {
+    unsigned short ctt_size;	/* Size of entire type in bytes.  */
+    unsigned short ctt_type;	/* Reference to another type.  */
+  };
+#endif
+} ctf_stype_v1_t;
+
+typedef struct ctf_type_v1
+{
+  uint32_t ctt_name;		/* Reference to name in string table.  */
+  unsigned short ctt_info;	/* Encoded kind, variant length (see below).  */
+#ifndef __GNUC__
+  union
+  {
+    unsigned short _size;	/* Always CTF_LSIZE_SENT_V1.  */
+    unsigned short _type;	/* Do not use.  */
+  } _u;
+#else
+  __extension__
+  union
+  {
+    unsigned short ctt_size;	/* Always CTF_LSIZE_SENT_V1.  */
+    unsigned short ctt_type;	/* Do not use.  */
+  };
+#endif
+  uint32_t ctt_lsizehi;		/* High 32 bits of type size in bytes.  */
+  uint32_t ctt_lsizelo;		/* Low 32 bits of type size in bytes.  */
+} ctf_type_v1_t;
+
 
 typedef struct ctf_stype
 {
@@ -424,6 +496,13 @@ typedef struct ctf_slice
   unsigned short cts_bits;
 } ctf_slice_t;
 
+typedef struct ctf_array_v1
+{
+  unsigned short cta_contents;	/* Reference to type of array contents.  */
+  unsigned short cta_index;	/* Reference to type of array index.  */
+  uint32_t cta_nelems;		/* Number of elements.  */
+} ctf_array_v1_t;
+
 typedef struct ctf_array
 {
   uint32_t cta_contents;	/* Reference to type of array contents.  */
@@ -439,6 +518,28 @@ typedef struct ctf_array
    to be very rare (but nonetheless possible).  */
 
 #define CTF_LSTRUCT_THRESH	536870912
+
+/* In v1, the same is true, except that lmembers are used for structs >= 8192
+   bytes in size.  (The ordering of members in the ctf_member_* structures is
+   different to improve padding.)  */
+
+#define CTF_LSTRUCT_THRESH_V1	8192
+
+typedef struct ctf_member_v1
+{
+  uint32_t ctm_name;		/* Reference to name in string table.  */
+  unsigned short ctm_type;	/* Reference to type of member.  */
+  unsigned short ctm_offset;	/* Offset of this member in bits.  */
+} ctf_member_v1_t;
+
+typedef struct ctf_lmember_v1
+{
+  uint32_t ctlm_name;		/* Reference to name in string table.  */
+  unsigned short ctlm_type;	/* Reference to type of member.  */
+  unsigned short ctlm_pad;	/* Padding.  */
+  uint32_t ctlm_offsethi;	/* High 32 bits of member offset in bits.  */
+  uint32_t ctlm_offsetlo;	/* Low 32 bits of member offset in bits.  */
+} ctf_lmember_v1_t;
 
 typedef struct ctf_member_v2
 {
@@ -498,13 +599,13 @@ struct ctf_archive
   /* Offset of the name table.  */
   uint64_t ctfa_names;
 
-  /* Offset of the CTF table.  Each element starts with a size (a uint64_t
-     in network byte order) then a ctf_dict_t of that size.  */
+  /* Offset of the CTF table.  Each element starts with a size (a little-
+     endian uint64_t) then a ctf_dict_t of that size.  */
   uint64_t ctfa_ctfs;
 };
 
-/* An array of ctfa_nnamed of this structure lies at
-   ctf_archive[ctf_archive->ctfa_modents] and gives the ctfa_ctfs or
+/* An array of ctfa_ndicts of this structure lies at
+   ctf_archive[sizeof(struct ctf_archive)] and gives the ctfa_ctfs or
    ctfa_names-relative offsets of each name or ctf_dict_t.  */
 
 typedef struct ctf_archive_modent

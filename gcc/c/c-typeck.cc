@@ -9374,6 +9374,11 @@ pop_init_level (location_t loc, int implicit,
 	{
 	  if (constructor_erroneous || constructor_type == error_mark_node)
 	    ret.value = error_mark_node;
+	  else if (TREE_CODE (constructor_type) == FUNCTION_TYPE)
+	    {
+	      error_init (loc, "invalid initializer");
+	      ret.value = error_mark_node;
+	    }
 	  else if (TREE_CODE (constructor_type) == POINTER_TYPE)
 	    /* Ensure this is a null pointer constant in the case of a
 	       'constexpr' object initialized with {}.  */
@@ -10634,17 +10639,22 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 
   /* Handle superfluous braces around string cst as in
      char x[] = {"foo"}; */
-  if (string_flag
-      && constructor_type
+  if (constructor_type
       && !was_designated
       && TREE_CODE (constructor_type) == ARRAY_TYPE
       && INTEGRAL_TYPE_P (TREE_TYPE (constructor_type))
       && integer_zerop (constructor_unfilled_index))
     {
       if (constructor_stack->replacement_value.value)
-	error_init (loc, "excess elements in %<char%> array initializer");
-      constructor_stack->replacement_value = value;
-      return;
+	{
+	  error_init (loc, "excess elements in %qT initializer", constructor_type);
+	  return;
+	}
+      else if (string_flag)
+	{
+	  constructor_stack->replacement_value = value;
+	  return;
+	}
     }
 
   if (constructor_stack->replacement_value.value != NULL_TREE)

@@ -103,35 +103,6 @@ subparts_gt (tree type1, tree type2)
   return known_gt (n1, n2);
 }
 
-/* Build a constant of type TYPE, made of VALUE's bits replicated
-   every WIDTH bits to fit TYPE's precision.  */
-static tree
-build_replicated_const (tree type, unsigned int width, HOST_WIDE_INT value)
-{
-  int n = (TYPE_PRECISION (type) + HOST_BITS_PER_WIDE_INT - 1) 
-    / HOST_BITS_PER_WIDE_INT;
-  unsigned HOST_WIDE_INT low, mask;
-  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
-  int i;
-
-  gcc_assert (n && n <= WIDE_INT_MAX_ELTS);
-
-  if (width == HOST_BITS_PER_WIDE_INT)
-    low = value;
-  else
-    {
-      mask = ((HOST_WIDE_INT)1 << width) - 1;
-      low = (unsigned HOST_WIDE_INT) ~0 / mask * (value & mask);
-    }
-
-  for (i = 0; i < n; i++)
-    a[i] = low;
-
-  gcc_assert (TYPE_PRECISION (type) <= MAX_BITSIZE_MODE_ANY_INT);
-  return wide_int_to_tree
-    (type, wide_int::from_array (a, n, TYPE_PRECISION (type)));
-}
-
 static GTY(()) tree vector_inner_type;
 static GTY(()) tree vector_last_type;
 static GTY(()) int vector_last_nunits;
@@ -255,8 +226,8 @@ do_plus_minus (gimple_stmt_iterator *gsi, tree word_type, tree a, tree b,
   tree low_bits, high_bits, a_low, b_low, result_low, signs;
 
   max = GET_MODE_MASK (TYPE_MODE (inner_type));
-  low_bits = build_replicated_const (word_type, width, max >> 1);
-  high_bits = build_replicated_const (word_type, width, max & ~(max >> 1));
+  low_bits = build_replicated_int_cst (word_type, width, max >> 1);
+  high_bits = build_replicated_int_cst (word_type, width, max & ~(max >> 1));
 
   a = tree_vec_extract (gsi, word_type, a, bitsize, bitpos);
   b = tree_vec_extract (gsi, word_type, b, bitsize, bitpos);
@@ -289,8 +260,8 @@ do_negate (gimple_stmt_iterator *gsi, tree word_type, tree b,
   tree low_bits, high_bits, b_low, result_low, signs;
 
   max = GET_MODE_MASK (TYPE_MODE (inner_type));
-  low_bits = build_replicated_const (word_type, width, max >> 1);
-  high_bits = build_replicated_const (word_type, width, max & ~(max >> 1));
+  low_bits = build_replicated_int_cst (word_type, width, max >> 1);
+  high_bits = build_replicated_int_cst (word_type, width, max & ~(max >> 1));
 
   b = tree_vec_extract (gsi, word_type, b, bitsize, bitpos);
 

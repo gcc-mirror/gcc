@@ -88,6 +88,8 @@ class hash
       add_hwi (x.sext_elt (i));
   }
 
+  void add_real_value (const class real_value &v);
+
   /* Hash in pointer PTR.  */
   void add_ptr (const void *ptr)
   {

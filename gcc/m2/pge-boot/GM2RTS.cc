@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -90,16 +91,16 @@ struct M2RTS__T1_r {
 static M2RTS_ProcedureList InitialProc;
 static M2RTS_ProcedureList TerminateProc;
 static int ExitValue;
-static unsigned int isHalting;
-static unsigned int CallExit;
-static unsigned int Initialized;
+static bool isHalting;
+static bool CallExit;
+static bool Initialized;
 
 /*
    ConstructModules - resolve dependencies and then call each
                       module constructor in turn.
 */
 
-extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
+extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp);
 
 /*
    DeconstructModules - resolve dependencies and then call each
@@ -131,7 +132,7 @@ extern "C" void M2RTS_RequestDependant (void * modulename, void * libname, void 
                                  procedure is installed.
 */
 
-extern "C" unsigned int M2RTS_InstallTerminationProcedure (PROC p);
+extern "C" bool M2RTS_InstallTerminationProcedure (PROC p);
 
 /*
    ExecuteInitialProcedures - executes the initial procedures installed by
@@ -146,7 +147,7 @@ extern "C" void M2RTS_ExecuteInitialProcedures (void);
                              main program module.
 */
 
-extern "C" unsigned int M2RTS_InstallInitialProcedure (PROC p);
+extern "C" bool M2RTS_InstallInitialProcedure (PROC p);
 
 /*
    ExecuteTerminationProcedures - calls each installed termination procedure
@@ -183,7 +184,7 @@ extern "C" void M2RTS_HALT (int exitcode);
           to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high);
+extern "C" void M2RTS_Halt (const char *description_, unsigned int _description_high, const char *filename_, unsigned int _filename_high, const char *function_, unsigned int _function_high, unsigned int line);
 
 /*
    HaltC - provides a more user friendly version of HALT, which takes
@@ -191,7 +192,7 @@ extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, 
            to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description);
+extern "C" void M2RTS_HaltC (void * description, void * filename, void * function, unsigned int line);
 
 /*
    ExitOnHalt - if HALT is executed then call exit with the exit code, e.
@@ -250,7 +251,7 @@ static void ExecuteReverse (M2RTS_ProcedureChain procptr);
                 defined by proclist.
 */
 
-static unsigned int AppendProc (M2RTS_ProcedureList *proclist, PROC proc);
+static bool AppendProc (M2RTS_ProcedureList *proclist, PROC proc);
 
 /*
    ErrorString - writes a string to stderr.
@@ -313,7 +314,7 @@ static void ExecuteReverse (M2RTS_ProcedureChain procptr)
                 defined by proclist.
 */
 
-static unsigned int AppendProc (M2RTS_ProcedureList *proclist, PROC proc)
+static bool AppendProc (M2RTS_ProcedureList *proclist, PROC proc)
 {
   M2RTS_ProcedureChain pdes;
 
@@ -326,7 +327,7 @@ static unsigned int AppendProc (M2RTS_ProcedureList *proclist, PROC proc)
       (*proclist).head = pdes;
     }
   (*proclist).tail = pdes;
-  return TRUE;
+  return true;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -410,8 +411,8 @@ static void Init (void)
   InitProcList (&InitialProc);
   InitProcList (&TerminateProc);
   ExitValue = 0;
-  isHalting = FALSE;
-  CallExit = FALSE;  /* default by calling abort  */
+  isHalting = false;
+  CallExit = false;  /* default by calling abort  */
 }
 
 
@@ -426,7 +427,7 @@ static void CheckInitialized (void)
 {
   if (! Initialized)
     {
-      Initialized = TRUE;
+      Initialized = true;
       Init ();
     }
 }
@@ -437,9 +438,9 @@ static void CheckInitialized (void)
                       module constructor in turn.
 */
 
-extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp)
+extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp)
 {
-  M2Dependent_ConstructModules (applicationmodule, libname, argc, argv, envp);
+  M2Dependent_ConstructModules (applicationmodule, libname, overrideliborder, argc, argv, envp);
 }
 
 
@@ -485,7 +486,7 @@ extern "C" void M2RTS_RequestDependant (void * modulename, void * libname, void 
                                  procedure is installed.
 */
 
-extern "C" unsigned int M2RTS_InstallTerminationProcedure (PROC p)
+extern "C" bool M2RTS_InstallTerminationProcedure (PROC p)
 {
   return AppendProc (&TerminateProc, p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -510,7 +511,7 @@ extern "C" void M2RTS_ExecuteInitialProcedures (void)
                              main program module.
 */
 
-extern "C" unsigned int M2RTS_InstallInitialProcedure (PROC p)
+extern "C" bool M2RTS_InstallInitialProcedure (PROC p)
 {
   return AppendProc (&InitialProc, p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -557,7 +558,7 @@ extern "C" void M2RTS_HALT (int exitcode)
 {
   if (exitcode != -1)
     {
-      CallExit = TRUE;
+      CallExit = true;
       ExitValue = exitcode;
     }
   if (isHalting)
@@ -567,7 +568,7 @@ extern "C" void M2RTS_HALT (int exitcode)
     }
   else
     {
-      isHalting = TRUE;
+      isHalting = true;
       M2RTS_ExecuteTerminationProcedures ();
     }
   if (CallExit)
@@ -587,16 +588,16 @@ extern "C" void M2RTS_HALT (int exitcode)
           to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high)
+extern "C" void M2RTS_Halt (const char *description_, unsigned int _description_high, const char *filename_, unsigned int _filename_high, const char *function_, unsigned int _function_high, unsigned int line)
 {
+  char description[_description_high+1];
   char filename[_filename_high+1];
   char function[_function_high+1];
-  char description[_description_high+1];
 
   /* make a local copy of each unbounded array.  */
+  memcpy (description, description_, _description_high+1);
   memcpy (filename, filename_, _filename_high+1);
   memcpy (function, function_, _function_high+1);
-  memcpy (description, description_, _description_high+1);
 
   M2RTS_ErrorMessage ((const char *) description, _description_high, (const char *) filename, _filename_high, line, (const char *) function, _function_high);
 }
@@ -608,7 +609,7 @@ extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, 
            to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description)
+extern "C" void M2RTS_HaltC (void * description, void * filename, void * function, unsigned int line)
 {
   ErrorMessageC (description, filename, line, function);
 }
@@ -621,7 +622,7 @@ extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function
 extern "C" void M2RTS_ExitOnHalt (int e)
 {
   ExitValue = e;
-  CallExit = TRUE;
+  CallExit = true;
 }
 
 

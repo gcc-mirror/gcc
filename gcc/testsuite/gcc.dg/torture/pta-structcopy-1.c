@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fdump-tree-ealias -Wno-attributes" } */
+/* { dg-options "-fdump-tree-ealias-details -Wno-attributes" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
 struct X

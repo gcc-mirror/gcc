@@ -23,6 +23,7 @@
 
 website=http://gcc.gnu.org/
 files="
+    gcc-13/index.html gcc-13/changes.html
     gcc-12/index.html gcc-12/changes.html
     gcc-11/index.html gcc-11/changes.html
     gcc-10/index.html gcc-10/changes.html

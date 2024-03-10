@@ -2972,7 +2972,7 @@ void
 redirect_all_calls (copy_body_data * id, basic_block bb)
 {
   gimple_stmt_iterator si;
-  gimple *last = last_stmt (bb);
+  gimple *last = last_nondebug_stmt (bb);
   for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
     {
       gimple *stmt = gsi_stmt (si);

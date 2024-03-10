@@ -1916,7 +1916,7 @@ typedef struct gfc_symbol
      = 1 if it has been resolved in resolve_symbol.  */
   unsigned resolve_symbol_called:2;
   /* Set if this is a module function or subroutine with the
-     abreviated declaration in a submodule.  */
+     abbreviated declaration in a submodule.  */
   unsigned abr_modproc_decl:1;
   /* Set if a previous error or warning has occurred and no other
      should be reported.  */
@@ -2191,7 +2191,7 @@ typedef struct gfc_namespace
   /* Set to 1 if namespace is an interface body with "IMPORT" used.  */
   unsigned has_import_set:1;
 
-  /* Set to 1 if the namespace uses "IMPLICT NONE (export)".  */
+  /* Set to 1 if the namespace uses "IMPLICIT NONE (export)".  */
   unsigned has_implicit_none_export:1;
 
   /* Set to 1 if resolved has been called for this namespace.

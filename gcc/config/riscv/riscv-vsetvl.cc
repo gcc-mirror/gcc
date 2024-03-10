@@ -200,7 +200,9 @@ scalar_move_insn_p (rtx_insn *rinsn)
 static bool
 fault_first_load_p (rtx_insn *rinsn)
 {
-  return recog_memoized (rinsn) >= 0 && get_attr_type (rinsn) == TYPE_VLDFF;
+  return recog_memoized (rinsn) >= 0
+	 && (get_attr_type (rinsn) == TYPE_VLDFF
+	     || get_attr_type (rinsn) == TYPE_VLSEGDFF);
 }
 
 /* Return true if the instruction is read vl instruction.  */
@@ -1054,6 +1056,51 @@ change_vsetvl_insn (const insn_info *insn, const vector_insn_info &info)
   change_insn (rinsn, new_pat);
 }
 
+static void
+local_eliminate_vsetvl_insn (const vector_insn_info &dem)
+{
+  const insn_info *insn = dem.get_insn ();
+  if (!insn || insn->is_artificial ())
+    return;
+  rtx_insn *rinsn = insn->rtl ();
+  const bb_info *bb = insn->bb ();
+  if (vsetvl_insn_p (rinsn))
+    {
+      rtx vl = get_vl (rinsn);
+      for (insn_info *i = insn->next_nondebug_insn ();
+	   real_insn_and_same_bb_p (i, bb); i = i->next_nondebug_insn ())
+	{
+	  if (i->is_call () || i->is_asm ()
+	      || find_access (i->defs (), VL_REGNUM)
+	      || find_access (i->defs (), VTYPE_REGNUM))
+	    return;
+
+	  if (has_vtype_op (i->rtl ()))
+	    {
+	      if (!vsetvl_discard_result_insn_p (PREV_INSN (i->rtl ())))
+		return;
+	      rtx avl = get_avl (i->rtl ());
+	      if (avl != vl)
+		return;
+	      set_info *def = find_access (i->uses (), REGNO (avl))->def ();
+	      if (def->insn () != insn)
+		return;
+
+	      vector_insn_info new_info;
+	      new_info.parse_insn (i);
+	      if (!new_info.skip_avl_compatible_p (dem))
+		return;
+
+	      new_info.set_avl_info (dem.get_avl_info ());
+	      new_info = dem.merge (new_info, LOCAL_MERGE);
+	      change_vsetvl_insn (insn, new_info);
+	      eliminate_insn (PREV_INSN (i->rtl ()));
+	      return;
+	    }
+	}
+    }
+}
+
 static bool
 source_equal_p (insn_info *insn1, insn_info *insn2)
 {
@@ -1592,6 +1639,18 @@ backward_propagate_worthwhile_p (const basic_block cfg_bb,
   return true;
 }
 
+/* Count the number of REGNO in RINSN.  */
+static int
+count_regno_occurrences (rtx_insn *rinsn, unsigned int regno)
+{
+  int count = 0;
+  extract_insn (rinsn);
+  for (int i = 0; i < recog_data.n_operands; i++)
+    if (refers_to_regno_p (regno, recog_data.operand[i]))
+      count++;
+  return count;
+}
+
 avl_info::avl_info (const avl_info &other)
 {
   m_value = other.get_value ();
@@ -1985,6 +2044,19 @@ vector_insn_info::compatible_p (const vector_insn_info &other) const
 }
 
 bool
+vector_insn_info::skip_avl_compatible_p (const vector_insn_info &other) const
+{
+  gcc_assert (valid_or_dirty_p () && other.valid_or_dirty_p ()
+	      && "Can't compare invalid demanded infos");
+  unsigned array_size = sizeof (incompatible_conds) / sizeof (demands_cond);
+  /* Bypass AVL incompatible cases.  */
+  for (unsigned i = 1; i < array_size; i++)
+    if (incompatible_conds[i].dual_incompatible_p (*this, other))
+      return false;
+  return true;
+}
+
+bool
 vector_insn_info::compatible_avl_p (const vl_vtype_info &other) const
 {
   gcc_assert (valid_or_dirty_p () && "Can't compare invalid vl_vtype_info");
@@ -2178,7 +2250,7 @@ vector_insn_info::fuse_mask_policy (const vector_insn_info &info1,
 
 vector_insn_info
 vector_insn_info::merge (const vector_insn_info &merge_info,
-			 enum merge_type type = LOCAL_MERGE) const
+			 enum merge_type type) const
 {
   if (!vsetvl_insn_p (get_insn ()->rtl ()))
     gcc_assert (this->compatible_p (merge_info)
@@ -2342,6 +2414,21 @@ vector_infos_manager::get_all_available_exprs (
 }
 
 bool
+vector_infos_manager::all_empty_predecessor_p (const basic_block cfg_bb) const
+{
+  hash_set<basic_block> pred_cfg_bbs = get_all_predecessors (cfg_bb);
+  for (const basic_block pred_cfg_bb : pred_cfg_bbs)
+    {
+      const auto &pred_block_info = vector_block_infos[pred_cfg_bb->index];
+      if (!pred_block_info.local_dem.valid_or_dirty_p ()
+	  && !pred_block_info.reaching_out.valid_or_dirty_p ())
+	continue;
+      return false;
+    }
+  return true;
+}
+
+bool
 vector_infos_manager::all_same_ratio_p (sbitmap bitdata) const
 {
   if (bitmap_empty_p (bitdata))
@@ -2358,6 +2445,26 @@ vector_infos_manager::all_same_ratio_p (sbitmap bitdata) const
     else if (vector_exprs[bb_index]->get_ratio () != ratio)
       return false;
   }
+  return true;
+}
+
+/* Return TRUE if the incoming vector configuration state
+   to CFG_BB is compatible with the vector configuration
+   state in CFG_BB, FALSE otherwise.  */
+bool
+vector_infos_manager::all_avail_in_compatible_p (const basic_block cfg_bb) const
+{
+  const auto &info = vector_block_infos[cfg_bb->index].local_dem;
+  sbitmap avin = vector_avin[cfg_bb->index];
+  unsigned int bb_index;
+  sbitmap_iterator sbi;
+  EXECUTE_IF_SET_IN_BITMAP (avin, 0, bb_index, sbi)
+    {
+      const auto &avin_info
+	= static_cast<const vl_vtype_info &> (*vector_exprs[bb_index]);
+      if (!info.compatible_p (avin_info))
+	return false;
+    }
   return true;
 }
 
@@ -2684,7 +2791,7 @@ pass_vsetvl::compute_local_backward_infos (const bb_info *bb)
 		    && !reg_available_p (insn, change))
 		  && change.compatible_p (info))
 		{
-		  info = change.merge (info);
+		  info = change.merge (info, LOCAL_MERGE);
 		  /* Fix PR109399, we should update user vsetvl instruction
 		     if there is a change in demand fusion.  */
 		  if (vsetvl_insn_p (insn->rtl ()))
@@ -3122,6 +3229,14 @@ pass_vsetvl::backward_demand_fusion (void)
 	continue;
 
       if (!backward_propagate_worthwhile_p (cfg_bb, curr_block_info))
+	continue;
+
+      /* Fix PR108270:
+
+		bb 0 -> bb 1
+	 We don't need to backward fuse VL/VTYPE info from bb 1 to bb 0
+	 if bb 1 is not inside a loop and all predecessors of bb 0 are empty. */
+      if (m_vector_manager->all_empty_predecessor_p (cfg_bb))
 	continue;
 
       edge e;
@@ -3723,9 +3838,27 @@ pass_vsetvl::refine_vsetvls (void) const
 	  m_vector_manager->to_refine_vsetvls.add (rinsn);
 	  continue;
 	}
-      rinsn = PREV_INSN (rinsn);
-      rtx new_pat = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, info, NULL_RTX);
-      change_insn (rinsn, new_pat);
+
+      /* If all incoming edges to a block have a vector state that is compatbile
+	 with the block. In such a case we need not emit a vsetvl in the current
+	 block.  */
+
+      gcc_assert (has_vtype_op (insn->rtl ()));
+      rinsn = PREV_INSN (insn->rtl ());
+      gcc_assert (vector_config_insn_p (PREV_INSN (insn->rtl ())));
+      if (m_vector_manager->all_avail_in_compatible_p (cfg_bb))
+	{
+	  size_t id = m_vector_manager->get_expr_id (info);
+	  if (bitmap_bit_p (m_vector_manager->vector_del[cfg_bb->index], id))
+	    continue;
+	  eliminate_insn (rinsn);
+	}
+      else
+	{
+	  rtx new_pat
+	    = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, info, NULL_RTX);
+	  change_insn (rinsn, new_pat);
+	}
     }
 }
 
@@ -3905,6 +4038,21 @@ pass_vsetvl::pre_vsetvl (void)
     commit_edge_insertions ();
 }
 
+/* Before VSETVL PASS, RVV instructions pattern is depending on AVL operand
+   implicitly. Since we will emit VSETVL instruction and make RVV instructions
+   depending on VL/VTYPE global status registers, we remove the such AVL operand
+   in the RVV instructions pattern here in order to remove AVL dependencies when
+   AVL operand is a register operand.
+
+   Before the VSETVL PASS:
+     li a5,32
+     ...
+     vadd.vv (..., a5)
+   After the VSETVL PASS:
+     li a5,32
+     vsetvli zero, a5, ...
+     ...
+     vadd.vv (..., const_int 0).  */
 void
 pass_vsetvl::cleanup_insns (void) const
 {
@@ -3913,6 +4061,15 @@ pass_vsetvl::cleanup_insns (void) const
       for (insn_info *insn : bb->real_nondebug_insns ())
 	{
 	  rtx_insn *rinsn = insn->rtl ();
+	  const auto &dem = m_vector_manager->vector_insn_infos[insn->uid ()];
+	  /* Eliminate local vsetvl:
+	       bb 0:
+	       vsetvl a5,a6,...
+	       vsetvl zero,a5.
+
+	     Eliminate vsetvl in bb2 when a5 is only coming from
+	     bb 0.  */
+	  local_eliminate_vsetvl_insn (dem);
 
 	  if (vlmax_avl_insn_p (rinsn))
 	    {
@@ -3924,7 +4081,7 @@ pass_vsetvl::cleanup_insns (void) const
 	  if (!has_vl_op (rinsn) || !REG_P (get_vl (rinsn)))
 	    continue;
 	  rtx avl = get_vl (rinsn);
-	  if (count_occurrences (PATTERN (rinsn), avl, 0) == 1)
+	  if (count_regno_occurrences (rinsn, REGNO (avl)) == 1)
 	    {
 	      /* Get the list of uses for the new instruction.  */
 	      auto attempt = crtl->ssa->new_change_attempt ();

@@ -814,7 +814,6 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
   typedef unsigned char *BufferedRead__T3;
 
   void * t;
-  int result;
   int total;
   int n;
   BufferedRead__T3 p;
@@ -1242,7 +1241,6 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
   typedef unsigned char *BufferedWrite__T5;
 
   void * t;
-  int result;
   int total;
   int n;
   BufferedWrite__T5 p;

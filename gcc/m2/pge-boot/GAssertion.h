@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -53,7 +54,7 @@ extern "C" {
             is called.
 */
 
-EXTERN void Assertion_Assert (unsigned int Condition);
+EXTERN void Assertion_Assert (bool Condition);
 #   ifdef __cplusplus
 }
 #   endif

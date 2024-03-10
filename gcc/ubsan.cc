@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "gimple-fold.h"
 #include "varasm.h"
+#include "realmpfr.h"
 
 /* Map from a tree to a VAR_DECL tree.  */
 
@@ -1877,16 +1878,15 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
       /* For _Decimal128 up to 34 decimal digits, - sign,
 	 dot, e, exponent.  */
       char buf[64];
-      mpfr_t m;
       int p = REAL_MODE_FORMAT (mode)->p;
       REAL_VALUE_TYPE maxval, minval;
 
       /* Use mpfr_snprintf rounding to compute the smallest
 	 representable decimal number greater or equal than
 	 1 << (prec - !uns_p).  */
-      mpfr_init2 (m, prec + 2);
+      auto_mpfr m (prec + 2);
       mpfr_set_ui_2exp (m, 1, prec - !uns_p, MPFR_RNDN);
-      mpfr_snprintf (buf, sizeof buf, "%.*RUe", p - 1, m);
+      mpfr_snprintf (buf, sizeof buf, "%.*RUe", p - 1, (mpfr_srcptr) m);
       decimal_real_from_string (&maxval, buf);
       max = build_real (expr_type, maxval);
 
@@ -1900,11 +1900,10 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
 	     (-1 << (prec - 1)) - 1.  */
 	  mpfr_set_si_2exp (m, -1, prec - 1, MPFR_RNDN);
 	  mpfr_sub_ui (m, m, 1, MPFR_RNDN);
-	  mpfr_snprintf (buf, sizeof buf, "%.*RDe", p - 1, m);
+	  mpfr_snprintf (buf, sizeof buf, "%.*RDe", p - 1, (mpfr_srcptr) m);
 	  decimal_real_from_string (&minval, buf);
 	  min = build_real (expr_type, minval);
 	}
-      mpfr_clear (m);
     }
   else
     return NULL_TREE;

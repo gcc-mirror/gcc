@@ -2012,7 +2012,19 @@ replace_read (store_info *store_info, insn_info_t store_insn,
     }
   /* Force the value into a new register so that it won't be clobbered
      between the store and the load.  */
-  read_reg = copy_to_mode_reg (read_mode, read_reg);
+  if (WORD_REGISTER_OPERATIONS
+      && GET_CODE (read_reg) == SUBREG
+      && REG_P (SUBREG_REG (read_reg))
+      && GET_MODE (SUBREG_REG (read_reg)) == word_mode)
+    {
+      /* For WORD_REGISTER_OPERATIONS with subreg of word_mode register
+	 force SUBREG_REG into a new register rather than the SUBREG.  */
+      rtx r = copy_to_mode_reg (word_mode, SUBREG_REG (read_reg));
+      read_reg = shallow_copy_rtx (read_reg);
+      SUBREG_REG (read_reg) = r;
+    }
+  else
+    read_reg = copy_to_mode_reg (read_mode, read_reg);
   insns = get_insns ();
   end_sequence ();
 

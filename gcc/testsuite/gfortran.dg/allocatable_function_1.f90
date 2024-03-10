@@ -107,4 +107,4 @@ contains
     end function bar
 
 end program alloc_fun
-! { dg-final { scan-tree-dump-times "free" 10 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free " 10 "original" } }

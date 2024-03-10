@@ -2052,73 +2052,37 @@ fi
 
 # Target-specific stuff (defaults)
 TOOLS_TARGET_PAIRS=
-
 EXTRA_GNATTOOLS=
-
 
 # Per-target case statement
 # -------------------------
 case "${target}" in
   *-*-aix*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-aix.adb \
-    indepsw.adb<indepsw-aix.adb"
+    TOOLS_TARGET_PAIRS="indepsw.adb<indepsw-aix.adb"
     ;;
   *-*-darwin*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-darwin.adb \
-    indepsw.adb<indepsw-darwin.adb"
+    TOOLS_TARGET_PAIRS="indepsw.adb<indepsw-darwin.adb"
     ;;
   *-*-dragonfly*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
-    indepsw.adb<indepsw-gnu.adb"
+    TOOLS_TARGET_PAIRS="indepsw.adb<indepsw-gnu.adb"
     ;;
   *-*-freebsd*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
-    indepsw.adb<indepsw-gnu.adb"
+    TOOLS_TARGET_PAIRS="indepsw.adb<indepsw-gnu.adb"
     ;;
   *-*-linux*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
-    indepsw.adb<indepsw-gnu.adb"
-    ;;
-  *-*-solaris*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb"
+    TOOLS_TARGET_PAIRS="indepsw.adb<indepsw-gnu.adb"
     ;;
   *-*-vxworks*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
-    indepsw.adb<indepsw-gnu.adb"
-    ;;
-  hppa*-hp-hpux11*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-hpux.adb"
-    ;;
-  ia64-hp-hpux11*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-ia64-hpux.adb"
-    ;;
-  alpha*-*-vms* | alpha*-*-openvms*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-vms-alpha.adb \
-    symbols.adb<symbols-vms.adb \
-    symbols-processing.adb<symbols-processing-vms-alpha.adb"
-    EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
-    ;;
-  ia64-*-vms* | ia64-*-openvms*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-vms-ia64.adb \
-    symbols.adb<symbols-vms.adb \
-    symbols-processing.adb<symbols-processing-vms-ia64.adb"
-    EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
+    TOOLS_TARGET_PAIRS="indepsw.adb<indepsw-gnu.adb"
     ;;
   *-*-cygwin32* | *-*-mingw32* | *-*-pe)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-mingw.adb \
-    indepsw.adb<indepsw-mingw.adb"
+    TOOLS_TARGET_PAIRS="indepsw.adb<indepsw-gnu.adb"
     EXTRA_GNATTOOLS='../../gnatdll$(exeext)'
     ;;
 esac
+
+
+
 
 # From user or toplevel makefile.
 

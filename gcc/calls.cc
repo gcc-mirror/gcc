@@ -2541,6 +2541,16 @@ can_implement_as_sibling_call_p (tree exp,
       return false;
     }
 
+  /* __sanitizer_cov_trace_pc is supposed to inspect its return address
+     to identify the caller, and therefore should not be tailcalled.  */
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_SANITIZER_COV_TRACE_PC)
+    {
+      /* No need for maybe_complain_about_tail_call here:
+	 the call is synthesized by the compiler.  */
+      return false;
+    }
+
   /* If the called function is nested in the current one, it might access
      some of the caller's arguments, but could clobber them beforehand if
      the argument areas are shared.  */

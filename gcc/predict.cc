@@ -1685,7 +1685,6 @@ predict_iv_comparison (class loop *loop, basic_block bb,
 		       enum tree_code loop_bound_code,
 		       int loop_bound_step)
 {
-  gimple *stmt;
   tree compare_var, compare_base;
   enum tree_code compare_code;
   tree compare_step_var;
@@ -1695,10 +1694,10 @@ predict_iv_comparison (class loop *loop, basic_block bb,
   if (predicted_by_loop_heuristics_p (bb))
     return;
 
-  stmt = last_stmt (bb);
-  if (!stmt || gimple_code (stmt) != GIMPLE_COND)
+  gcond *stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+  if (!stmt)
     return;
-  if (!is_comparison_with_loop_invariant_p (as_a <gcond *> (stmt),
+  if (!is_comparison_with_loop_invariant_p (stmt,
 					    loop, &compare_var,
 					    &compare_code,
 					    &compare_step_var,
@@ -1877,13 +1876,8 @@ predict_extra_loop_exits (class loop *loop, edge exit_edge)
   gimple *lhs_def_stmt;
   gphi *phi_stmt;
   tree cmp_rhs, cmp_lhs;
-  gimple *last;
-  gcond *cmp_stmt;
 
-  last = last_stmt (exit_edge->src);
-  if (!last)
-    return;
-  cmp_stmt = dyn_cast <gcond *> (last);
+  gcond *cmp_stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (exit_edge->src));
   if (!cmp_stmt)
     return;
 
@@ -2104,9 +2098,8 @@ predict_loops (void)
 	    stmt = as_a <gcond *> (nb_iter->stmt);
 	    break;
 	  }
-      if (!stmt && last_stmt (loop->header)
-	  && gimple_code (last_stmt (loop->header)) == GIMPLE_COND)
-	stmt = as_a <gcond *> (last_stmt (loop->header));
+      if (!stmt)
+	stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (loop->header));
       if (stmt)
 	is_comparison_with_loop_invariant_p (stmt, loop,
 					     &loop_bound_var,
@@ -2195,7 +2188,6 @@ predict_loops (void)
 	      && single_succ_p (preheader_edge->src))
 	    preheader_edge = single_pred_edge (preheader_edge->src);
 
-	  gimple *stmt = last_stmt (preheader_edge->src);
 	  /* Pattern match fortran loop preheader:
 	     _16 = BUILTIN_EXPECT (_15, 1, PRED_FORTRAN_LOOP_PREHEADER);
 	     _17 = (logical(kind=4)) _16;
@@ -2208,8 +2200,9 @@ predict_loops (void)
 	     headers produced by fortran frontend and in this case we want
 	     to predict paths leading to this preheader.  */
 
+	  gcond *stmt
+	    = safe_dyn_cast <gcond *> (*gsi_last_bb (preheader_edge->src));
 	  if (stmt
-	      && gimple_code (stmt) == GIMPLE_COND
 	      && gimple_cond_code (stmt) == NE_EXPR
 	      && TREE_CODE (gimple_cond_lhs (stmt)) == SSA_NAME
 	      && integer_zerop (gimple_cond_rhs (stmt)))
@@ -2676,7 +2669,6 @@ get_predictor_value (br_predictor predictor, HOST_WIDE_INT probability)
 static void
 tree_predict_by_opcode (basic_block bb)
 {
-  gimple *stmt = last_stmt (bb);
   edge then_edge;
   tree op0, op1;
   tree type;
@@ -2686,6 +2678,7 @@ tree_predict_by_opcode (basic_block bb)
   enum br_predictor predictor;
   HOST_WIDE_INT probability;
 
+  gimple *stmt = *gsi_last_bb (bb);
   if (!stmt)
     return;
 
@@ -2941,11 +2934,9 @@ apply_return_prediction (void)
 
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
-      gimple *last = last_stmt (e->src);
-      if (last
-	  && gimple_code (last) == GIMPLE_RETURN)
+      if (greturn *last = safe_dyn_cast <greturn *> (*gsi_last_bb (e->src)))
 	{
-	  return_stmt = as_a <greturn *> (last);
+	  return_stmt = last;
 	  break;
 	}
     }

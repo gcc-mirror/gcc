@@ -5883,7 +5883,7 @@ resolve_variable (gfc_expr *e)
       /* Because this is an associate var and the first ref either is a ref to
 	 the _data component or not, no traversal of the ref chain is
 	 needed.  The array ref needs to be inserted after the _data ref,
-	 or when that is not present, which may happend for polymorphic
+	 or when that is not present, which may happened for polymorphic
 	 types, then at the first position.  */
       ref = e->ref;
       if (!ref)
@@ -6102,7 +6102,7 @@ resolve_procedure:
 	     the symbol in the expression and convert the array reference
 	     into an actual arglist if the old symbol is a variable; or
 	(ii) That in which an external function is typed but not declared
-	     explcitly to be external. Here, the old symbol is changed
+	     explicitly to be external. Here, the old symbol is changed
 	     from a variable to an external function.  */
 static bool
 check_host_association (gfc_expr *e)
@@ -11134,7 +11134,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       && (rhs->expr_type != EXPR_CONSTANT || !flag_dec_char_conversions))
     {
       /* Use of -fdec-char-conversions allows assignment of character data
-	 to non-character variables.  This not permited for nonconstant
+	 to non-character variables.  This not permitted for nonconstant
 	 strings.  */
       gfc_error ("Cannot convert %s to %s at %L", gfc_typename (rhs),
 		 gfc_typename (lhs), &rhs->where);

@@ -152,6 +152,11 @@
 ;; from the same template.
 (define_code_iterator any_mod [mod umod])
 
+;; These code iterators allow unsigned and signed divmod to be generated
+;; from the same template.
+(define_code_iterator only_div [div udiv])
+(define_code_attr paired_mod [(div "mod") (udiv "umod")])
+
 ;; These code iterators allow the signed and unsigned scc operations to use
 ;; the same template.
 (define_code_iterator any_gt [gt gtu])
@@ -181,6 +186,7 @@
 		     (lt "") (ltu "u")
 		     (le "") (leu "u")
 		     (fix "") (unsigned_fix "u")
+		     (div "") (udiv "u")
 		     (float "") (unsigned_float "u")])
 
 ;; <su> is like <u>, but the signed form expands to "s" rather than "".

@@ -373,7 +373,7 @@ private:
 						    unsigned unit_offset);
   ipa_param_body_replacement *lookup_first_base_replacement (tree base);
   tree replace_removed_params_ssa_names (tree old_name, gimple *stmt);
-  bool modify_expression (tree *expr_p, bool convert);
+  bool modify_expression (tree *expr_p, bool convert, gimple_seq * = nullptr);
   bool modify_assignment (gimple *stmt, gimple_seq *extra_stmts);
   bool modify_call_stmt (gcall **stmt_p, gimple *orig_stmt);
   bool modify_cfun_body ();

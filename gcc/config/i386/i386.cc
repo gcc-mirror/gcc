@@ -11035,8 +11035,9 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
       if (reg == NULL_RTX)
 	return false;
 
-      if ((strict && ! REG_OK_FOR_BASE_STRICT_P (reg))
-	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (reg)))
+      unsigned int regno = REGNO (reg);
+      if ((strict && !REGNO_OK_FOR_BASE_P (regno))
+	  || (!strict && !REGNO_OK_FOR_BASE_NONSTRICT_P (regno)))
 	/* Base is not valid.  */
 	return false;
     }
@@ -11049,8 +11050,9 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
       if (reg == NULL_RTX)
 	return false;
 
-      if ((strict && ! REG_OK_FOR_INDEX_STRICT_P (reg))
-	  || (! strict && ! REG_OK_FOR_INDEX_NONSTRICT_P (reg)))
+      unsigned int regno = REGNO (reg);
+      if ((strict && !REGNO_OK_FOR_INDEX_P (regno))
+	  || (!strict && !REGNO_OK_FOR_INDEX_NONSTRICT_P (regno)))
 	/* Index is not valid.  */
 	return false;
     }
@@ -23574,8 +23576,10 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       && stmt_info
       && (STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
 	  || STMT_VINFO_TYPE (stmt_info) == store_vec_info_type)
-      && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
-      && TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF (stmt_info))) != INTEGER_CST)
+      && ((STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
+	   && (TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF (stmt_info)))
+	       != INTEGER_CST))
+	  || STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER))
     {
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
       stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
@@ -25248,7 +25252,8 @@ ix86_libgcc_floating_mode_supported_p
 #undef TARGET_MEMTAG_TAG_SIZE
 #define TARGET_MEMTAG_TAG_SIZE ix86_memtag_tag_size
 
-static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
+static bool
+ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 {
 #ifdef OPTION_GLIBC
   if (OPTION_GLIBC)
@@ -25262,6 +25267,58 @@ static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 
 #undef TARGET_LIBC_HAS_FAST_FUNCTION
 #define TARGET_LIBC_HAS_FAST_FUNCTION ix86_libc_has_fast_function
+
+static unsigned
+ix86_libm_function_max_error (unsigned cfn, machine_mode mode,
+			      bool boundary_p)
+{
+#ifdef OPTION_GLIBC
+  bool glibc_p = OPTION_GLIBC;
+#else
+  bool glibc_p = false;
+#endif
+  if (glibc_p)
+    {
+      /* If __FAST_MATH__ is defined, glibc provides libmvec.  */
+      unsigned int libmvec_ret = 0;
+      if (!flag_trapping_math
+	  && flag_unsafe_math_optimizations
+	  && flag_finite_math_only
+	  && !flag_signed_zeros
+	  && !flag_errno_math)
+	switch (cfn)
+	  {
+	  CASE_CFN_COS:
+	  CASE_CFN_COS_FN:
+	  CASE_CFN_SIN:
+	  CASE_CFN_SIN_FN:
+	    if (!boundary_p)
+	      {
+		/* With non-default rounding modes, libmvec provides
+		   complete garbage in results.  E.g.
+		   _ZGVcN8v_sinf for 1.40129846e-45f in FE_UPWARD
+		   returns 0.00333309174f rather than 1.40129846e-45f.  */
+		if (flag_rounding_math)
+		  return ~0U;
+		/* https://www.gnu.org/software/libc/manual/html_node/Errors-in-Math-Functions.html
+		   claims libmvec maximum error is 4ulps.
+		   My own random testing indicates 2ulps for SFmode and
+		   0.5ulps for DFmode, but let's go with the 4ulps.  */
+		libmvec_ret = 4;
+	      }
+	    break;
+	  default:
+	    break;
+	  }
+      unsigned int ret = glibc_linux_libm_function_max_error (cfn, mode,
+							      boundary_p);
+      return MAX (ret, libmvec_ret);
+    }
+  return default_libm_function_max_error (cfn, mode, boundary_p);
+}
+
+#undef TARGET_LIBM_FUNCTION_MAX_ERROR
+#define TARGET_LIBM_FUNCTION_MAX_ERROR ix86_libm_function_max_error
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

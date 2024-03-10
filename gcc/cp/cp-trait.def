@@ -91,6 +91,7 @@ DEFTRAIT_TYPE (REMOVE_CV, "__remove_cv", 1)
 DEFTRAIT_TYPE (REMOVE_REFERENCE, "__remove_reference", 1)
 DEFTRAIT_TYPE (REMOVE_CVREF, "__remove_cvref", 1)
 DEFTRAIT_TYPE (UNDERLYING_TYPE,  "__underlying_type", 1)
+DEFTRAIT_TYPE (TYPE_PACK_ELEMENT, "__type_pack_element", -1)
 
 /* These traits yield a type pack, not a type, and are represented by
    cp_parser_trait as a special BASES tree instead of a TRAIT_TYPE tree.  */

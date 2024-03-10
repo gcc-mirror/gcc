@@ -3104,7 +3104,7 @@ gfc_resolve_trim (gfc_expr *f, gfc_expr *string)
 }
 
 
-/* Resolve the degree trignometric functions.  This amounts to setting
+/* Resolve the degree trigonometric functions.  This amounts to setting
    the function return type-spec from its argument and building a
    library function names of the form _gfortran_sind_r4.  */
 

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gc_zba_zbb -mabi=lp64" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Os" "-Oz" "-Og" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 int f(unsigned int* a)
 {
@@ -9,6 +9,6 @@ int f(unsigned int* a)
 }
 
 /* { dg-final { scan-assembler-times "minu" 1 } } */
-/* { dg-final { scan-assembler-times "sext.w" 1 } } */
+/* { dg-final { scan-assembler-not "sext.w" } } */
 /* { dg-final { scan-assembler-not "zext.w" } } */
 

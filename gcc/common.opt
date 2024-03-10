@@ -3318,6 +3318,10 @@ gas-locview-support
 Common Driver Var(dwarf2out_as_locview_support)
 Assume assembler support for view in (DWARF2+) .loc directives.
 
+gcodeview
+Common Driver JoinedOrMissing
+Generate debug information in CodeView format.
+
 gcoff
 Common Driver WarnRemoved
 Does nothing.  Preserved for backward compatibility.

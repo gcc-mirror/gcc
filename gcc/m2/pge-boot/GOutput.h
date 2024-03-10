@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -50,7 +51,7 @@ extern "C" {
           TRUE is returned if success, FALSE otherwise.
 */
 
-EXTERN unsigned int Output_Open (const char *filename_, unsigned int _filename_high);
+EXTERN bool Output_Open (const char *filename_, unsigned int _filename_high);
 
 /*
    Close - close the output file.

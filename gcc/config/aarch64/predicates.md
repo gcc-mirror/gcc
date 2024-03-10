@@ -587,6 +587,18 @@
   (and (match_code "const_vector")
        (match_test "aarch64_const_vec_all_same_in_range_p (op, 1, 64)")))
 
+(define_predicate "aarch64_simd_rshrn_imm_vec"
+  (and (match_code "const_vector")
+       (match_test "aarch64_const_vec_all_same_in_range_p (op, 1,
+				HOST_WIDE_INT_1U
+				<< (GET_MODE_UNIT_BITSIZE  (mode) - 1))")))
+
+(define_predicate "aarch64_simd_raddsubhn_imm_vec"
+  (and (match_code "const_vector")
+       (match_test "aarch64_const_vec_all_same_in_range_p (op, 1,
+				HOST_WIDE_INT_1U
+				<< (GET_MODE_UNIT_BITSIZE  (mode) / 2 - 1))")))
+
 (define_predicate "aarch64_simd_shift_imm_bitsize_qi"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 8)")))

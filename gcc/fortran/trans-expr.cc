@@ -5596,7 +5596,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
     }
   gfc_add_block_to_block (&block, &se.pre);
 
-  /* Create array decriptor and set version, rank, attribute, type. */
+  /* Create array descriptor and set version, rank, attribute, type. */
   cfi = gfc_create_var (gfc_get_cfi_type (e->rank < 0
 					  ? GFC_MAX_DIMENSIONS : e->rank,
 					  false), "cfi");
@@ -5750,7 +5750,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   if (e->ts.type == BT_ASSUMED)
     {
       /* Note: type(*) implies assumed-shape/assumed-rank if fsym requires
-	 an CFI descriptor.  Use the type in the descritor as it provide
+	 an CFI descriptor.  Use the type in the descriptor as it provide
 	 mode information. (Quality of implementation feature.)  */
       tree cond;
       tree ctype = gfc_get_cfi_desc_type (cfi);
@@ -8153,7 +8153,7 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   /* Wstringop-overflow appears at -O3 even though this warning is not
      explicitly available in fortran nor can it be switched off. If the
      source length is a constant, its negative appears as a very large
-     postive number and triggers the warning in BUILTIN_MEMSET. Fixing
+     positive number and triggers the warning in BUILTIN_MEMSET. Fixing
      the result of the MINUS_EXPR suppresses this spurious warning.  */
   tmp = fold_build2_loc (input_location, MINUS_EXPR,
 			 TREE_TYPE(dlen), dlen, slen);

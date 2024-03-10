@@ -775,7 +775,8 @@ get_min_precision (tree arg, signop sign)
     return prec + (orig_sign != sign);
   value_range r;
   while (!get_global_range_query ()->range_of_expr (r, arg)
-	 || r.kind () != VR_RANGE)
+	 || r.varying_p ()
+	 || r.undefined_p ())
     {
       gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)

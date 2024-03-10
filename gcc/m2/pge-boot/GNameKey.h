@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -83,7 +84,7 @@ EXTERN unsigned int NameKey_LengthKey (NameKey_Name Key);
    IsKey - returns TRUE if string, a, is currently a key.
 */
 
-EXTERN unsigned int NameKey_IsKey (const char *a_, unsigned int _a_high);
+EXTERN bool NameKey_IsKey (const char *a_, unsigned int _a_high);
 
 /*
    WriteKey - Display the symbol represented by Key.
@@ -96,7 +97,7 @@ EXTERN void NameKey_WriteKey (NameKey_Name key);
                          the same. It is case insensitive.
 */
 
-EXTERN unsigned int NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_Name key2);
+EXTERN bool NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_Name key2);
 
 /*
    KeyToCharStar - returns the C char * string equivalent for, key.

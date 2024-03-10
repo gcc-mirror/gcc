@@ -3847,6 +3847,7 @@ print_conversion_rejection (location_t loc, struct conversion_info *info,
       if (info->n_arg >= 0)
 	inform (loc, "  conversion of argument %d would be ill-formed:",
 		info->n_arg + 1);
+      iloc_sentinel ils = loc;
       perform_implicit_conversion (info->to_type, info->from,
 				   tf_warning_or_error);
     }

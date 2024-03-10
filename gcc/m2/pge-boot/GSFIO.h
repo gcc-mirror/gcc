@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -54,7 +55,7 @@ extern "C" {
    Exists - returns TRUE if a file named, fname exists for reading.
 */
 
-EXTERN unsigned int SFIO_Exists (DynamicStrings_String fname);
+EXTERN bool SFIO_Exists (DynamicStrings_String fname);
 
 /*
    OpenToRead - attempts to open a file, fname, for reading and
@@ -86,7 +87,7 @@ EXTERN FIO_File SFIO_OpenToWrite (DynamicStrings_String fname);
                    and modify an existing file.
 */
 
-EXTERN FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, unsigned int towrite, unsigned int newfile);
+EXTERN FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, bool towrite, bool newfile);
 
 /*
    WriteS - writes a string, s, to, file. It returns the String, s.

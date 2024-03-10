@@ -241,6 +241,15 @@ extern const function_base *const vget;
 extern const function_base *const read_vl;
 extern const function_base *const vleff;
 extern const function_base *const vlenb;
+extern const function_base *const vlseg;
+extern const function_base *const vsseg;
+extern const function_base *const vlsseg;
+extern const function_base *const vssseg;
+extern const function_base *const vluxseg;
+extern const function_base *const vloxseg;
+extern const function_base *const vsuxseg;
+extern const function_base *const vsoxseg;
+extern const function_base *const vlsegff;
 }
 
 } // end namespace riscv_vector

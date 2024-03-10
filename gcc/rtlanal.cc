@@ -643,8 +643,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, poly_int64 offset, poly_int64 size,
 	  return 1;
 	}
       /* All of the virtual frame registers are stack references.  */
-      if (REGNO (x) >= FIRST_VIRTUAL_REGISTER
-	  && REGNO (x) <= LAST_VIRTUAL_REGISTER)
+      if (VIRTUAL_REGISTER_P (x))
 	return 0;
       return 1;
 
@@ -733,8 +732,7 @@ nonzero_address_p (const_rtx x)
 	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
 	return true;
       /* All of the virtual frame registers are stack references.  */
-      if (REGNO (x) >= FIRST_VIRTUAL_REGISTER
-	  && REGNO (x) <= LAST_VIRTUAL_REGISTER)
+      if (VIRTUAL_REGISTER_P (x))
 	return true;
       return false;
 
@@ -1769,7 +1767,7 @@ refers_to_regno_p (unsigned int regno, unsigned int endregno, const_rtx x,
 	   || (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	       && x_regno == ARG_POINTER_REGNUM)
 	   || x_regno == FRAME_POINTER_REGNUM)
-	  && regno >= FIRST_VIRTUAL_REGISTER && regno <= LAST_VIRTUAL_REGISTER)
+	  && VIRTUAL_REGISTER_NUM_P (regno))
 	return true;
 
       return endregno > x_regno && regno < END_REGNO (x);
@@ -3206,6 +3204,9 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case LT:
     case LTGT:
     case COMPARE:
+    /* Treat min/max similar as comparisons.  */
+    case SMIN:
+    case SMAX:
       /* Some floating point comparisons may trap.  */
       if (!flag_trapping_math)
 	break;

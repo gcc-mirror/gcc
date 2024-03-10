@@ -241,7 +241,7 @@
         (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r")))]
   "TARGET_ZBB"
   "<bitmanip_insn>%~\t%0,%1"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "SI")])
 
 (define_insn "*<bitmanip_optab>disi2"
@@ -250,7 +250,7 @@
           (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r"))))]
   "TARGET_64BIT && TARGET_ZBB"
   "<bitmanip_insn>w\t%0,%1"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "SI")])
 
 (define_insn "*<bitmanip_optab>di2"
@@ -258,7 +258,7 @@
         (clz_ctz_pcnt:DI (match_operand:DI 1 "register_operand" "r")))]
   "TARGET_64BIT && TARGET_ZBB"
   "<bitmanip_insn>\t%0,%1"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "DI")])
 
 (define_insn "*zero_extendhi<GPR:mode>2_bitmanip"
@@ -297,7 +297,7 @@
   [(set (match_operand:GPR 0 "register_operand")
 	(rotatert:GPR (match_operand:GPR 1 "register_operand")
 		     (match_operand:QI 2 "arith_operand")))]
-  "TARGET_ZBB || TARGET_XTHEADBB"
+  "TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB"
 {
   if (TARGET_XTHEADBB && !immediate_operand (operands[2], VOIDmode))
     FAIL;
@@ -322,9 +322,9 @@
 (define_insn "*rotrsi3_sext"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
-				     (match_operand:QI 2 "register_operand" "r"))))]
+                                 (match_operand:QI 2 "arith_operand" "rI"))))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
-  "rorw\t%0,%1,%2"
+  "ror%i2%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
 (define_insn "rotlsi3"
@@ -357,17 +357,18 @@
   [(set (match_operand:X 0 "register_operand" "=r")
 	(unspec:X [(match_operand:X 1 "register_operand" "r")] UNSPEC_ORC_B))]
   "TARGET_ZBB"
-  "orc.b\t%0,%1")
+  "orc.b\t%0,%1"
+  [(set_attr "type" "bitmanip")])
 
 (define_expand "bswapdi2"
   [(set (match_operand:DI 0 "register_operand")
 	(bswap:DI (match_operand:DI 1 "register_operand")))]
-  "TARGET_64BIT && (TARGET_ZBB || TARGET_XTHEADBB)")
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB)")
 
 (define_expand "bswapsi2"
   [(set (match_operand:SI 0 "register_operand")
 	(bswap:SI (match_operand:SI 1 "register_operand")))]
-  "(!TARGET_64BIT && TARGET_ZBB) || TARGET_XTHEADBB")
+  "(!TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)) || TARGET_XTHEADBB")
 
 (define_insn "*bswap<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
@@ -400,13 +401,36 @@
   DONE;
 })
 
-(define_insn "<bitmanip_optab><mode>3"
+(define_expand "<bitmanip_optab>di3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (bitmanip_minmax:DI (match_operand:DI 1 "register_operand" "r")
+                            (match_operand:DI 2 "register_operand" "r")))]
+  "TARGET_64BIT && TARGET_ZBB")
+
+(define_expand "<bitmanip_optab>si3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (bitmanip_minmax:SI (match_operand:SI 1 "register_operand" "r")
+                            (match_operand:SI 2 "register_operand" "r")))]
+  "TARGET_ZBB"
+{
+  if (TARGET_64BIT)
+    {
+      rtx t = gen_reg_rtx (DImode);
+      operands[1] = force_reg (DImode, gen_rtx_SIGN_EXTEND (DImode, operands[1]));
+      operands[2] = force_reg (DImode, gen_rtx_SIGN_EXTEND (DImode, operands[2]));
+      emit_insn (gen_<bitmanip_optab>di3 (t, operands[1], operands[2]));
+      emit_move_insn (operands[0], gen_lowpart (SImode, t));
+      DONE;
+    }
+})
+
+(define_insn "*<bitmanip_optab><mode>3"
   [(set (match_operand:X 0 "register_operand" "=r")
         (bitmanip_minmax:X (match_operand:X 1 "register_operand" "r")
 			   (match_operand:X 2 "reg_or_0_operand" "rJ")))]
   "TARGET_ZBB"
   "<bitmanip_insn>\t%0,%1,%z2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "<bitmanip_insn>")])
 
 ;; Optimize the common case of a SImode min/max against a constant
 ;; that is safe both for sign- and zero-extension.
@@ -507,7 +531,7 @@
 (define_insn_and_split "*bclri<mode>_nottwobits"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "const_nottwobits_operand" "i")))]
+	       (match_operand:X 2 "const_nottwobits_not_arith_operand" "i")))]
   "TARGET_ZBS && !paradoxical_subreg_p (operands[1])"
   "#"
   "&& reload_completed"
@@ -526,7 +550,7 @@
 (define_insn_and_split "*bclridisi_nottwobits"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (match_operand:DI 1 "register_operand" "r")
-		(match_operand:DI 2 "const_nottwobits_operand" "i")))]
+		(match_operand:DI 2 "const_nottwobits_not_arith_operand" "i")))]
   "TARGET_64BIT && TARGET_ZBS
    && clz_hwi (~UINTVAL (operands[2])) > 33"
   "#"
@@ -695,3 +719,32 @@
    operands[8] = GEN_INT (setbit);
    operands[9] = GEN_INT (clearbit);
 })
+
+;; ZBKC or ZBC extension
+(define_insn "riscv_clmul_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")
+                  (match_operand:X 2 "register_operand" "r")]
+                  UNSPEC_CLMUL))]
+  "TARGET_ZBKC || TARGET_ZBC"
+  "clmul\t%0,%1,%2"
+  [(set_attr "type" "clmul")])
+
+(define_insn "riscv_clmulh_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")
+                  (match_operand:X 2 "register_operand" "r")]
+                  UNSPEC_CLMULH))]
+  "TARGET_ZBKC || TARGET_ZBC"
+  "clmulh\t%0,%1,%2"
+  [(set_attr "type" "clmul")])
+
+;; ZBC extension
+(define_insn "riscv_clmulr_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")
+                  (match_operand:X 2 "register_operand" "r")]
+                  UNSPEC_CLMULR))]
+  "TARGET_ZBC"
+  "clmulr\t%0,%1,%2"
+  [(set_attr "type" "clmul")])

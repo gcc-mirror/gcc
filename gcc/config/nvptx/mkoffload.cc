@@ -357,6 +357,20 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	fputc (sm_ver2[i], out);
       fprintf (out, "\"\n\t\".file 1 \\\"<dummy>\\\"\"\n");
 
+      /* WORKAROUND - see PR 108098
+	 It seems as if older CUDA JIT compiler optimizes the function pointers
+	 in offload_func_table to NULL, which can be prevented by adding a
+	 dummy procedure. With CUDA 11.1, it seems to work fine without
+	 workaround while CUDA 10.2 as some ancient version have need the
+	 workaround. Assuming CUDA 11.0 fixes it, emitting it could be
+	 restricted to 'if (sm_ver2[0] < 8 && version2[0] < 7)' as sm_80 and
+	 PTX ISA 7.0 are new in CUDA 11.0; for 11.1 it would be sm_86 and
+	 PTX ISA 7.1.  */
+      fprintf (out, "\n\t\".func __dummy$func ( );\"\n");
+      fprintf (out, "\t\".func __dummy$func ( )\"\n");
+      fprintf (out, "\t\"{\"\n");
+      fprintf (out, "\t\"}\"\n");
+
       size_t fidx = 0;
       for (id = func_ids; id; id = id->next)
 	{

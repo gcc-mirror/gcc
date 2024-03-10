@@ -1122,6 +1122,14 @@ namespace views::__adaptor
     };
 } // namespace views::__adaptor
 
+#if __cplusplus > 202002L
+  template<typename _Derived>
+    requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
+    class range_adaptor_closure
+    : public views::__adaptor::_RangeAdaptorClosure
+    { };
+#endif
+
   template<range _Range> requires is_object_v<_Range>
     class ref_view : public view_interface<ref_view<_Range>>
     {
@@ -9025,7 +9033,7 @@ namespace views::__adaptor
 	  return ref_view(static_cast<const element_type&>
 			  (std::forward<_Range>(__r).base()));
 	else if constexpr (is_lvalue_reference_v<_Range>
-			   && constant_range<_Tp>
+			   && constant_range<const _Tp>
 			   && !view<_Tp>)
 	  return ref_view(static_cast<const _Tp&>(__r));
 	else

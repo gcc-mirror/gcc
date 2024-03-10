@@ -26,10 +26,6 @@
     UNSPEC_PACKH
     UNSPEC_PACKW
 
-    ;; Zbkc unspecs
-    UNSPEC_CLMUL
-    UNSPEC_CLMULH
-
     ;; Zbkx unspecs
     UNSPEC_XPERM8
     UNSPEC_XPERM4
@@ -124,26 +120,6 @@
                   UNSPEC_PACKW))]
   "TARGET_ZBKB && TARGET_64BIT"
   "packw\t%0,%1,%2"
-  [(set_attr "type" "crypto")])
-
-;; ZBKC extension
-
-(define_insn "riscv_clmul_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")
-                  (match_operand:X 2 "register_operand" "r")]
-                  UNSPEC_CLMUL))]
-  "TARGET_ZBKC"
-  "clmul\t%0,%1,%2"
-  [(set_attr "type" "crypto")])
-
-(define_insn "riscv_clmulh_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")
-                  (match_operand:X 2 "register_operand" "r")]
-                  UNSPEC_CLMULH))]
-  "TARGET_ZBKC"
-  "clmulh\t%0,%1,%2"
   [(set_attr "type" "crypto")])
 
 ;; ZBKX extension

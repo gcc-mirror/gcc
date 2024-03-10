@@ -1405,6 +1405,18 @@ static tree arm_simd_polyHI_type_node = NULL_TREE;
 static tree arm_simd_polyDI_type_node = NULL_TREE;
 static tree arm_simd_polyTI_type_node = NULL_TREE;
 
+/* Wrapper around add_builtin_function.  NAME is the name of the built-in
+   function, TYPE is the function type, CODE is the function subcode
+   (relative to ARM_BUILTIN_GENERAL), and ATTRS is the function
+   attributes.  */
+static tree
+arm_general_add_builtin_function (const char* name, tree type,
+				  unsigned int code, tree attrs = NULL_TREE)
+{
+  code = (code << ARM_BUILTIN_SHIFT) | ARM_BUILTIN_GENERAL;
+  return add_builtin_function (name, type, code, BUILT_IN_MD, NULL, attrs);
+}
+
 static const char *
 arm_mangle_builtin_scalar_type (const_tree type)
 {
@@ -1811,8 +1823,7 @@ arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
     snprintf (namebuf, sizeof (namebuf), "%s_%s",
 	      prefix, d->name);
 
-  fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
-				 NULL, NULL_TREE);
+  fndecl = arm_general_add_builtin_function (namebuf, ftype, fcode);
   arm_builtin_decls[fcode] = fndecl;
 }
 
@@ -1832,7 +1843,7 @@ arm_init_bf16_types (void)
 /* Set up ACLE builtins, even builtins for instructions that are not
    in the current target ISA to allow the user to compile particular modules
    with different target specific options that differ from the command line
-   options.  Such builtins will be rejected in arm_expand_builtin.  */
+   options.  Such builtins will be rejected in arm_general_expand_builtin.  */
 
 static void
 arm_init_acle_builtins (void)
@@ -1845,9 +1856,9 @@ arm_init_acle_builtins (void)
 						 intSI_type_node,
 						 NULL);
   arm_builtin_decls[ARM_BUILTIN_SAT_IMM_CHECK]
-    = add_builtin_function ("__builtin_sat_imm_check", sat_check_fpr,
-			    ARM_BUILTIN_SAT_IMM_CHECK, BUILT_IN_MD,
-			    NULL, NULL_TREE);
+    = arm_general_add_builtin_function ("__builtin_sat_imm_check",
+					sat_check_fpr,
+					ARM_BUILTIN_SAT_IMM_CHECK);
 
   for (i = 0; i < ARRAY_SIZE (acle_builtin_data); i++, fcode++)
     {
@@ -1894,13 +1905,13 @@ arm_init_mve_builtins (void)
 						    intSI_type_node,
 						    NULL);
   arm_builtin_decls[ARM_BUILTIN_GET_FPSCR_NZCVQC]
-    = add_builtin_function ("__builtin_arm_get_fpscr_nzcvqc", get_fpscr_nzcvqc,
-			    ARM_BUILTIN_GET_FPSCR_NZCVQC, BUILT_IN_MD, NULL,
-			    NULL_TREE);
+    = arm_general_add_builtin_function ("__builtin_arm_get_fpscr_nzcvqc",
+					get_fpscr_nzcvqc,
+					ARM_BUILTIN_GET_FPSCR_NZCVQC);
   arm_builtin_decls[ARM_BUILTIN_SET_FPSCR_NZCVQC]
-    = add_builtin_function ("__builtin_arm_set_fpscr_nzcvqc", set_fpscr_nzcvqc,
-			    ARM_BUILTIN_SET_FPSCR_NZCVQC, BUILT_IN_MD, NULL,
-			    NULL_TREE);
+    = arm_general_add_builtin_function ("__builtin_arm_set_fpscr_nzcvqc",
+					set_fpscr_nzcvqc,
+					ARM_BUILTIN_SET_FPSCR_NZCVQC);
 
   for (i = 0; i < ARRAY_SIZE (mve_builtin_data); i++, fcode++)
     {
@@ -1912,7 +1923,7 @@ arm_init_mve_builtins (void)
 /* Set up all the NEON builtins, even builtins for instructions that are not
    in the current target ISA to allow the user to compile particular modules
    with different target specific options that differ from the command line
-   options. Such builtins will be rejected in arm_expand_builtin.  */
+   options.  Such builtins will be rejected in arm_general_expand_builtin.  */
 
 static void
 arm_init_neon_builtins (void)
@@ -2006,17 +2017,14 @@ arm_init_crypto_builtins (void)
     R##_ftype_##A1##_##A2##_##A3
   #define CRYPTO1(L, U, R, A) \
     arm_builtin_decls[C (U)] \
-      = add_builtin_function (N (L), FT1 (R, A), \
-		  C (U), BUILT_IN_MD, NULL, NULL_TREE);
+      = arm_general_add_builtin_function (N (L), FT1 (R, A), C (U));
   #define CRYPTO2(L, U, R, A1, A2)  \
     arm_builtin_decls[C (U)]	\
-      = add_builtin_function (N (L), FT2 (R, A1, A2), \
-		  C (U), BUILT_IN_MD, NULL, NULL_TREE);
+      = arm_general_add_builtin_function (N (L), FT2 (R, A1, A2), C (U));
 
   #define CRYPTO3(L, U, R, A1, A2, A3) \
     arm_builtin_decls[C (U)]	   \
-      = add_builtin_function (N (L), FT3 (R, A1, A2, A3), \
-				  C (U), BUILT_IN_MD, NULL, NULL_TREE);
+      = arm_general_add_builtin_function (N (L), FT3 (R, A1, A2, A3), C (U));
   #include "crypto.def"
 
   #undef CRYPTO1
@@ -2039,8 +2047,8 @@ arm_init_crypto_builtins (void)
 	  || bitmap_bit_p (arm_active_target.isa, FLAG))		\
 	{								\
 	  tree bdecl;							\
-	  bdecl = add_builtin_function ((NAME), (TYPE), (CODE),		\
-					BUILT_IN_MD, NULL, NULL_TREE);	\
+	  bdecl  = arm_general_add_builtin_function ((NAME), (TYPE),    \
+						     (CODE));		\
 	  arm_builtin_decls[CODE] = bdecl;				\
 	}								\
     }									\
@@ -2650,9 +2658,9 @@ arm_init_builtins (void)
 						      intSI_type_node,
 						      NULL);
       arm_builtin_decls[ARM_BUILTIN_SIMD_LANE_CHECK]
-      = add_builtin_function ("__builtin_arm_lane_check", lane_check_fpr,
-			      ARM_BUILTIN_SIMD_LANE_CHECK, BUILT_IN_MD,
-			      NULL, NULL_TREE);
+      = arm_general_add_builtin_function ("__builtin_arm_lane_check",
+					  lane_check_fpr,
+					  ARM_BUILTIN_SIMD_LANE_CHECK);
       if (TARGET_HAVE_MVE)
 	arm_init_mve_builtins ();
       else
@@ -2674,11 +2682,13 @@ arm_init_builtins (void)
 	= build_function_type_list (unsigned_type_node, NULL);
 
       arm_builtin_decls[ARM_BUILTIN_GET_FPSCR]
-	= add_builtin_function ("__builtin_arm_get_fpscr", ftype_get_fpscr,
-				ARM_BUILTIN_GET_FPSCR, BUILT_IN_MD, NULL, NULL_TREE);
+	= arm_general_add_builtin_function ("__builtin_arm_get_fpscr",
+					    ftype_get_fpscr,
+					    ARM_BUILTIN_GET_FPSCR);
       arm_builtin_decls[ARM_BUILTIN_SET_FPSCR]
-	= add_builtin_function ("__builtin_arm_set_fpscr", ftype_set_fpscr,
-				ARM_BUILTIN_SET_FPSCR, BUILT_IN_MD, NULL, NULL_TREE);
+	= arm_general_add_builtin_function ("__builtin_arm_set_fpscr",
+					    ftype_set_fpscr,
+					    ARM_BUILTIN_SET_FPSCR);
     }
 
   if (use_cmse)
@@ -2686,22 +2696,37 @@ arm_init_builtins (void)
       tree ftype_cmse_nonsecure_caller
 	= build_function_type_list (unsigned_type_node, NULL);
       arm_builtin_decls[ARM_BUILTIN_CMSE_NONSECURE_CALLER]
-	= add_builtin_function ("__builtin_arm_cmse_nonsecure_caller",
-				ftype_cmse_nonsecure_caller,
-				ARM_BUILTIN_CMSE_NONSECURE_CALLER, BUILT_IN_MD,
-				NULL, NULL_TREE);
+	= arm_general_add_builtin_function ("__builtin_arm_cmse_nonsecure_caller",
+					    ftype_cmse_nonsecure_caller,
+					    ARM_BUILTIN_CMSE_NONSECURE_CALLER);
     }
 }
 
-/* Return the ARM builtin for CODE.  */
-
+/* Implement TARGET_BUILTIN_DECL for general builtins.  */
 tree
-arm_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+arm_general_builtin_decl (unsigned code)
 {
   if (code >= ARM_BUILTIN_MAX)
     return error_mark_node;
 
   return arm_builtin_decls[code];
+}
+
+/* Implement TARGET_BUILTIN_DECL.  */
+/* Return the ARM builtin for CODE.  */
+tree
+arm_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+{
+  unsigned subcode = code >> ARM_BUILTIN_SHIFT;
+  switch (code & ARM_BUILTIN_CLASS)
+    {
+    case ARM_BUILTIN_GENERAL:
+      return arm_general_builtin_decl (subcode);
+    case ARM_BUILTIN_MVE:
+      return error_mark_node;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Errors in the source file can cause expand_expr to return const0_rtx
@@ -2769,7 +2794,7 @@ arm_expand_ternop_builtin (enum insn_code icode,
   return target;
 }
 
-/* Subroutine of arm_expand_builtin to take care of binop insns.  */
+/* Subroutine of arm_general_expand_builtin to take care of binop insns.  */
 
 static rtx
 arm_expand_binop_builtin (enum insn_code icode,
@@ -2809,7 +2834,7 @@ arm_expand_binop_builtin (enum insn_code icode,
   return target;
 }
 
-/* Subroutine of arm_expand_builtin to take care of unop insns.  */
+/* Subroutine of arm_general_expand_builtin to take care of unop insns.  */
 
 static rtx
 arm_expand_unop_builtin (enum insn_code icode,
@@ -2946,11 +2971,11 @@ mve_dereference_pointer (tree exp, tree type, machine_mode reg_mode,
 		      build_int_cst (build_pointer_type (array_type), 0));
 }
 
-/* Expand a builtin.  */
+/* Implement TARGET_EXPAND_BUILTIN for general builtins.  */
 static rtx
-arm_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
-		      int icode, int have_retval, tree exp,
-		      builtin_arg *args)
+arm_general_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
+				 int icode, int have_retval, tree exp,
+				 builtin_arg *args)
 {
   rtx pat;
   tree arg[SIMD_MAX_BUILTIN_ARGS];
@@ -3234,13 +3259,13 @@ constant_arg:
   return target;
 }
 
-/* Expand a builtin.  These builtins are "special" because they don't have
-   symbolic constants defined per-instruction or per instruction-variant.
+/* Expand a general builtin.  These builtins are "special" because they don't
+   have symbolic constants defined per-instruction or per instruction-variant.
    Instead, the required info is looked up in the ARM_BUILTIN_DATA record that
    is passed into the function.  */
 
 static rtx
-arm_expand_builtin_1 (int fcode, tree exp, rtx target,
+arm_general_expand_builtin_1 (int fcode, tree exp, rtx target,
 			   arm_builtin_datum *d)
 {
   enum insn_code icode = d->code;
@@ -3308,16 +3333,16 @@ arm_expand_builtin_1 (int fcode, tree exp, rtx target,
     }
   args[k] = ARG_BUILTIN_STOP;
 
-  /* The interface to arm_expand_builtin_args expects a 0 if
+  /* The interface to arm_general_expand_builtin_args expects a 0 if
      the function is void, and a 1 if it is not.  */
-  return arm_expand_builtin_args
+  return arm_general_expand_builtin_args
     (target, d->mode, fcode, icode, !is_void, exp,
      &args[1]);
 }
 
 /* Expand an ACLE builtin, i.e. those registered only if their respective
    target constraints are met.  This check happens within
-   arm_expand_builtin_args.  */
+   arm_general_expand_builtin_args.  */
 
 static rtx
 arm_expand_acle_builtin (int fcode, tree exp, rtx target)
@@ -3351,11 +3376,12 @@ arm_expand_acle_builtin (int fcode, tree exp, rtx target)
       ? &acle_builtin_data[fcode - ARM_BUILTIN_ACLE_PATTERN_START]
       : &cde_builtin_data[fcode - ARM_BUILTIN_CDE_PATTERN_START].base;
 
-  return arm_expand_builtin_1 (fcode, exp, target, d);
+  return arm_general_expand_builtin_1 (fcode, exp, target, d);
 }
 
-/* Expand an MVE builtin, i.e. those registered only if their respective target
-   constraints are met.  This check happens within arm_expand_builtin.  */
+/* Expand an MVE builtin, i.e. those registered only if their respective
+   target constraints are met.  This check happens within
+   arm_general_expand_builtin.  */
 
 static rtx
 arm_expand_mve_builtin (int fcode, tree exp, rtx target)
@@ -3371,7 +3397,7 @@ arm_expand_mve_builtin (int fcode, tree exp, rtx target)
   arm_builtin_datum *d
     = &mve_builtin_data[fcode - ARM_BUILTIN_MVE_PATTERN_START];
 
-  return arm_expand_builtin_1 (fcode, exp, target, d);
+  return arm_general_expand_builtin_1 (fcode, exp, target, d);
 }
 
 /* Expand a Neon builtin, i.e. those registered only if TARGET_NEON holds.
@@ -3394,7 +3420,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
   arm_builtin_datum *d
     = &neon_builtin_data[fcode - ARM_BUILTIN_NEON_PATTERN_START];
 
-  return arm_expand_builtin_1 (fcode, exp, target, d);
+  return arm_general_expand_builtin_1 (fcode, exp, target, d);
 }
 
 /* Expand a VFP builtin.  These builtins are treated like
@@ -3415,25 +3441,18 @@ arm_expand_vfp_builtin (int fcode, tree exp, rtx target)
   arm_builtin_datum *d
     = &vfp_builtin_data[fcode - ARM_BUILTIN_VFP_PATTERN_START];
 
-  return arm_expand_builtin_1 (fcode, exp, target, d);
+  return arm_general_expand_builtin_1 (fcode, exp, target, d);
 }
 
-/* Expand an expression EXP that calls a built-in function,
-   with result going to TARGET if that's convenient
-   (and in mode MODE if that's convenient).
-   SUBTARGET may be used as the target for computing one of EXP's operands.
-   IGNORE is nonzero if the value is to be ignored.  */
-
+/* Implement TARGET_EXPAND_BUILTIN for general builtins.  */
 rtx
-arm_expand_builtin (tree exp,
+arm_general_expand_builtin (unsigned int fcode,
+			    tree exp,
 		    rtx target,
-		    rtx subtarget ATTRIBUTE_UNUSED,
-		    machine_mode mode ATTRIBUTE_UNUSED,
 		    int ignore ATTRIBUTE_UNUSED)
 {
   const struct builtin_description * d;
   enum insn_code    icode;
-  tree              fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree              arg0;
   tree              arg1;
   tree              arg2;
@@ -3441,7 +3460,6 @@ arm_expand_builtin (tree exp,
   rtx               op1;
   rtx               op2;
   rtx               pat;
-  unsigned int      fcode = DECL_MD_FUNCTION_CODE (fndecl);
   size_t            i;
   machine_mode tmode;
   machine_mode mode0;
@@ -4052,6 +4070,33 @@ arm_expand_builtin (tree exp,
   return NULL_RTX;
 }
 
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+rtx
+arm_expand_builtin (tree exp,
+		    rtx target,
+		    rtx subtarget ATTRIBUTE_UNUSED,
+		    machine_mode mode ATTRIBUTE_UNUSED,
+		    int ignore ATTRIBUTE_UNUSED)
+{
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> ARM_BUILTIN_SHIFT;
+  switch (code & ARM_BUILTIN_CLASS)
+    {
+    case ARM_BUILTIN_GENERAL:
+      return arm_general_expand_builtin (subcode, exp, target, ignore);
+    case ARM_BUILTIN_MVE:
+      return arm_mve::expand_builtin (subcode, exp, target);
+    default:
+      gcc_unreachable ();
+    }
+}
+
 void
 arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
@@ -4122,22 +4167,21 @@ arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 			    reload_fenv, restore_fnenv), update_call);
 }
 
-/* Implement TARGET_CHECK_BUILTIN_CALL.  Record a read of the Q bit through
-   intrinsics in the machine function.  */
+/* Implement TARGET_CHECK_BUILTIN_CALL for general builtins.  Record a read of
+   the Q bit through intrinsics in the machine function for general built-in
+   functions.  */
 bool
-arm_check_builtin_call (location_t , vec<location_t> , tree fndecl,
-			tree, unsigned int, tree *)
+arm_general_check_builtin_call (unsigned int code)
 {
-  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
-  if (fcode == ARM_BUILTIN_saturation_occurred
-      || fcode == ARM_BUILTIN_set_saturation)
+  if (code == ARM_BUILTIN_saturation_occurred
+     || code == ARM_BUILTIN_set_saturation)
     {
       if (cfun && cfun->decl)
 	DECL_ATTRIBUTES (cfun->decl)
 	  = tree_cons (get_identifier ("acle qbit"), NULL_TREE,
 		       DECL_ATTRIBUTES (cfun->decl));
     }
-  if (fcode == ARM_BUILTIN_sel)
+  else if (code == ARM_BUILTIN_sel)
     {
       if (cfun && cfun->decl)
 	DECL_ATTRIBUTES (cfun->decl)
@@ -4147,19 +4191,58 @@ arm_check_builtin_call (location_t , vec<location_t> , tree fndecl,
   return true;
 }
 
+/* Implement TARGET_CHECK_BUILTIN_CALL.  */
+bool
+arm_check_builtin_call (location_t loc, vec<location_t> arg_loc,
+			tree fndecl, tree orig_fndecl,
+			unsigned int nargs, tree *args)
+{
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> ARM_BUILTIN_SHIFT;
+  switch (code & ARM_BUILTIN_CLASS)
+    {
+    case ARM_BUILTIN_GENERAL:
+      return arm_general_check_builtin_call (subcode);
+    case ARM_BUILTIN_MVE:
+      return arm_mve::check_builtin_call (loc, arg_loc, subcode,
+					  orig_fndecl, nargs, args);
+    default:
+      gcc_unreachable ();
+    }
+
+}
+
 enum resolver_ident
 arm_describe_resolver (tree fndecl)
 {
-  if (DECL_MD_FUNCTION_CODE (fndecl) >= ARM_BUILTIN_vcx1qv16qi
-    && DECL_MD_FUNCTION_CODE (fndecl) < ARM_BUILTIN_MVE_BASE)
-    return arm_cde_resolver;
-  return arm_no_resolver;
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> ARM_BUILTIN_SHIFT;
+  switch (code & ARM_BUILTIN_CLASS)
+    {
+    case ARM_BUILTIN_GENERAL:
+      if (subcode >= ARM_BUILTIN_vcx1qv16qi
+	&& subcode < ARM_BUILTIN_MVE_BASE)
+	return arm_cde_resolver;
+      return arm_no_resolver;
+    case ARM_BUILTIN_MVE:
+      return arm_mve_resolver;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 unsigned
 arm_cde_end_args (tree fndecl)
 {
-  return DECL_MD_FUNCTION_CODE (fndecl) >= ARM_BUILTIN_vcx1q_p_v16qi ? 2 : 1;
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> ARM_BUILTIN_SHIFT;
+  switch (code & ARM_BUILTIN_CLASS)
+    {
+    case ARM_BUILTIN_GENERAL:
+      return subcode >= ARM_BUILTIN_vcx1q_p_v16qi ? 2 : 1;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 #include "gt-arm-builtins.h"

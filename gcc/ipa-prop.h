@@ -1201,4 +1201,21 @@ tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 /* In ipa-cp.cc  */
 void ipa_cp_cc_finalize (void);
 
+/* Set R to the range of [VAL, VAL] while normalizing addresses to
+   non-zero.  */
+
+inline void
+ipa_range_set_and_normalize (irange &r, tree val)
+{
+  if (TREE_CODE (val) == INTEGER_CST)
+    {
+      wide_int w = wi::to_wide (val);
+      r.set (TREE_TYPE (val), w, w);
+    }
+  else if (TREE_CODE (val) == ADDR_EXPR)
+    r.set_nonzero (TREE_TYPE (val));
+  else
+    r.set_varying (TREE_TYPE (val));
+}
+
 #endif /* IPA_PROP_H */

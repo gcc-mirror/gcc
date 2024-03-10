@@ -476,6 +476,7 @@ BEGIN
    DummyOp            : |
    InitAddressOp      : CodeInitAddress(q, op1, op2, op3) |
    BecomesOp          : CodeBecomes(q) |
+   ArithAddOp,
    AddOp              : CodeAddChecked (q, op2, op3) |
    SubOp              : CodeSubChecked (q, op2, op3) |
    MultOp             : CodeMultChecked (q, op2, op3) |
@@ -586,6 +587,7 @@ BEGIN
          LogicalAndOp       : FoldSetAnd (tokenno, p, quad, op1, op2, op3) |
          LogicalXorOp       : FoldSymmetricDifference (tokenno, p, quad, op1, op2, op3) |
          BecomesOp          : FoldBecomes (tokenno, p, quad, op1, op3) |
+         ArithAddOp         : FoldArithAdd (op1pos, p, quad, op1, op2, op3) |
          AddOp              : FoldAdd (op1pos, p, quad, op1, op2, op3) |
          SubOp              : FoldSub (op1pos, p, quad, op1, op2, op3) |
          MultOp             : FoldMult (op1pos, p, quad, op1, op2, op3) |
@@ -3623,7 +3625,8 @@ END GetStr ;
 
 
 (*
-   FoldAdd - check addition for constant folding.
+   FoldAdd - check addition for constant folding.  It checks for conststrings
+             overloading the +.
 *)
 
 PROCEDURE FoldAdd (tokenno: CARDINAL; p: WalkAction;
@@ -3643,12 +3646,23 @@ BEGIN
       SubQuad (quad) ;
       s := KillString (s)
    ELSE
-      IF BinaryOperands (quad, op2, op3)
-      THEN
-         FoldBinary (tokenno, p, BuildAdd, quad, op1, op2, op3)
-      END
+      FoldArithAdd (tokenno, p, quad, op1, op2, op3)
    END
 END FoldAdd ;
+
+
+(*
+   FoldArithAdd - check arithmetic addition for constant folding.
+*)
+
+PROCEDURE FoldArithAdd (tokenno: CARDINAL; p: WalkAction;
+                        quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+BEGIN
+   IF BinaryOperands (quad, op2, op3)
+   THEN
+      FoldBinary (tokenno, p, BuildAdd, quad, op1, op2, op3)
+   END
+END FoldArithAdd ;
 
 
 (*

@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -55,7 +56,7 @@ typedef struct SymbolKey_Node_r SymbolKey_Node;
 
 typedef SymbolKey_Node *SymbolKey_SymbolTree;
 
-typedef unsigned int (*SymbolKey_IsSymbol_t) (unsigned int);
+typedef bool (*SymbolKey_IsSymbol_t) (unsigned int);
 struct SymbolKey_IsSymbol_p { SymbolKey_IsSymbol_t proc; };
 
 typedef void (*SymbolKey_PerformOperation_t) (unsigned int);
@@ -96,7 +97,7 @@ extern "C" void SymbolKey_DelSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
    IsEmptyTree - returns true if SymbolTree, t, is empty.
 */
 
-extern "C" unsigned int SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t);
+extern "C" bool SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t);
 
 /*
    DoesTreeContainAny - returns true if SymbolTree, t, contains any
@@ -106,7 +107,7 @@ extern "C" unsigned int SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t);
                         Left, hence we need two procedures.
 */
 
-extern "C" unsigned int SymbolKey_DoesTreeContainAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P);
+extern "C" bool SymbolKey_DoesTreeContainAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P);
 
 /*
    ForeachNodeDo - for each node in SymbolTree, t, a procedure, P,
@@ -121,7 +122,7 @@ extern "C" void SymbolKey_ForeachNodeDo (SymbolKey_SymbolTree t, SymbolKey_Perfo
    ContainsSymKey - return TRUE if tree, t, contains an entry for, NameKey.
 */
 
-extern "C" unsigned int SymbolKey_ContainsSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey);
+extern "C" bool SymbolKey_ContainsSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey);
 
 /*
    NoOfNodes - returns the number of nodes in the tree t.
@@ -149,7 +150,7 @@ static void FindNodeParentInTree (SymbolKey_SymbolTree t, NameKey_Name n, Symbol
                   therefore we must skip over it.
 */
 
-static unsigned int SearchForAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P);
+static bool SearchForAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P);
 
 /*
    SearchAndDo - searches all the nodes in SymbolTree, t, and
@@ -183,7 +184,7 @@ static void FindNodeParentInTree (SymbolKey_SymbolTree t, NameKey_Name n, Symbol
   (*parent) = t;
   if (t == NULL)
     {
-      Debug_Halt ((const char *) "parameter t should never be NIL", 31, 240, (const char *) "../../gcc-read-write/gcc/m2/gm2-compiler/SymbolKey.mod", 54);
+      Debug_Halt ((const char *) "parameter t should never be NIL", 31, (const char *) "../../gcc-read-write/gcc/m2/gm2-compiler/SymbolKey.mod", 54, (const char *) "FindNodeParentInTree", 20, 241);
     }
   Assertion_Assert (t->Right == NULL);
   (*child) = t->Left;
@@ -212,11 +213,11 @@ static void FindNodeParentInTree (SymbolKey_SymbolTree t, NameKey_Name n, Symbol
                   therefore we must skip over it.
 */
 
-static unsigned int SearchForAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P)
+static bool SearchForAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P)
 {
   if (t == NULL)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -392,7 +393,7 @@ extern "C" void SymbolKey_PutSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
     }
   else
     {
-      Debug_Halt ((const char *) "symbol already stored", 21, 156, (const char *) "../../gcc-read-write/gcc/m2/gm2-compiler/SymbolKey.mod", 54);
+      Debug_Halt ((const char *) "symbol already stored", 21, (const char *) "../../gcc-read-write/gcc/m2/gm2-compiler/SymbolKey.mod", 54, (const char *) "PutSymKey", 9, 156);
     }
 }
 
@@ -459,7 +460,7 @@ extern "C" void SymbolKey_DelSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
     }
   else
     {
-      Debug_Halt ((const char *) "trying to delete a symbol that is not in the tree - the compiler never expects this to occur", 92, 223, (const char *) "../../gcc-read-write/gcc/m2/gm2-compiler/SymbolKey.mod", 54);
+      Debug_Halt ((const char *) "trying to delete a symbol that is not in the tree - the compiler never expects this to occur", 92, (const char *) "../../gcc-read-write/gcc/m2/gm2-compiler/SymbolKey.mod", 54, (const char *) "DelSymKey", 9, 223);
     }
 }
 
@@ -468,7 +469,7 @@ extern "C" void SymbolKey_DelSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
    IsEmptyTree - returns true if SymbolTree, t, is empty.
 */
 
-extern "C" unsigned int SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t)
+extern "C" bool SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t)
 {
   return t->Left == NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -484,7 +485,7 @@ extern "C" unsigned int SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t)
                         Left, hence we need two procedures.
 */
 
-extern "C" unsigned int SymbolKey_DoesTreeContainAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P)
+extern "C" bool SymbolKey_DoesTreeContainAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P)
 {
   return SearchForAny (t->Left, P);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -509,7 +510,7 @@ extern "C" void SymbolKey_ForeachNodeDo (SymbolKey_SymbolTree t, SymbolKey_Perfo
    ContainsSymKey - return TRUE if tree, t, contains an entry for, NameKey.
 */
 
-extern "C" unsigned int SymbolKey_ContainsSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey)
+extern "C" bool SymbolKey_ContainsSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey)
 {
   SymbolKey_SymbolTree father;
   SymbolKey_SymbolTree child;

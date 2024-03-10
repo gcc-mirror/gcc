@@ -2057,7 +2057,7 @@ tm_region_init (struct tm_region *region)
       region = tm_region_init_1 (region, bb);
 
       /* Check for the last statement in the block beginning a new region.  */
-      g = last_stmt (bb);
+      g = last_nondebug_stmt (bb);
       old_region = region;
       if (g)
 	if (gtransaction *trans_stmt = dyn_cast <gtransaction *> (g))

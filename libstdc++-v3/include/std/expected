@@ -139,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   inline constexpr unexpect_t unexpect{};
 
-/// @cond undoc
+/// @cond undocumented
 namespace __expected
 {
   template<typename _Tp>
@@ -254,7 +254,7 @@ namespace __expected
 
   template<typename _Er> unexpected(_Er) -> unexpected<_Er>;
 
-/// @cond undoc
+/// @cond undocumented
 namespace __expected
 {
   template<typename _Tp>

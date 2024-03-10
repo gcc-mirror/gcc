@@ -330,6 +330,222 @@
 ;; Saturating addition, subtraction
 (define_code_iterator SSPLUSMINUS [ss_plus ss_minus])
 
+;; MVE integer binary operations.
+(define_code_iterator MVE_INT_BINARY_RTX [plus minus mult])
+
+(define_int_iterator MVE_INT_M_BINARY   [
+		     VADDQ_M_S VADDQ_M_U
+		     VMULQ_M_S VMULQ_M_U
+		     VSUBQ_M_S VSUBQ_M_U
+		     ])
+
+(define_int_iterator MVE_INT_SU_M_BINARY   [
+		     VABDQ_M_S VABDQ_M_U
+		     VHADDQ_M_S VHADDQ_M_U
+		     VHSUBQ_M_S VHSUBQ_M_U
+		     VMAXQ_M_S VMAXQ_M_U
+		     VMINQ_M_S VMINQ_M_U
+		     VMULHQ_M_S VMULHQ_M_U
+		     VQADDQ_M_S VQADDQ_M_U
+		     VQDMLADHQ_M_S
+		     VQDMLADHXQ_M_S
+		     VQDMLSDHQ_M_S
+		     VQDMLSDHXQ_M_S
+		     VQDMULHQ_M_S
+		     VQRDMLADHQ_M_S
+		     VQRDMLADHXQ_M_S
+		     VQRDMLSDHQ_M_S
+		     VQRDMLSDHXQ_M_S
+		     VQRDMULHQ_M_S
+		     VQRSHLQ_M_S VQRSHLQ_M_U
+		     VQSHLQ_M_S VQSHLQ_M_U
+		     VQSUBQ_M_S VQSUBQ_M_U
+		     VRHADDQ_M_S VRHADDQ_M_U
+		     VRMULHQ_M_S VRMULHQ_M_U
+		     VRSHLQ_M_S VRSHLQ_M_U
+		     VSHLQ_M_S VSHLQ_M_U
+		     ])
+
+(define_int_iterator MVE_INT_M_BINARY_LOGIC   [
+		     VANDQ_M_S VANDQ_M_U
+		     VBICQ_M_S VBICQ_M_U
+		     VEORQ_M_S VEORQ_M_U
+		     VORRQ_M_S VORRQ_M_U
+		     ])
+
+(define_int_iterator MVE_INT_M_N_BINARY [
+		     VADDQ_M_N_S VADDQ_M_N_U
+		     VMULQ_M_N_S VMULQ_M_N_U
+		     VSUBQ_M_N_S VSUBQ_M_N_U
+		     ])
+
+(define_int_iterator MVE_INT_M_N_BINARY_LOGIC [
+		     VBICQ_M_N_S VBICQ_M_N_U
+		     VORRQ_M_N_S VORRQ_M_N_U
+		     ])
+
+(define_int_iterator MVE_INT_SU_M_N_BINARY   [
+		     VHADDQ_M_N_S VHADDQ_M_N_U
+		     VHSUBQ_M_N_S VHSUBQ_M_N_U
+		     VMLAQ_M_N_S VMLAQ_M_N_U
+		     VMLASQ_M_N_S VMLASQ_M_N_U
+		     VQDMLAHQ_M_N_S
+		     VQDMLASHQ_M_N_S
+		     VQRDMLAHQ_M_N_S
+		     VQRDMLASHQ_M_N_S
+		     VQADDQ_M_N_S VQADDQ_M_N_U
+		     VQSUBQ_M_N_S VQSUBQ_M_N_U
+		     VQDMULHQ_M_N_S
+		     VQRDMULHQ_M_N_S
+		     ])
+
+(define_int_iterator MVE_INT_N_BINARY   [
+		     VADDQ_N_S VADDQ_N_U
+		     VMULQ_N_S VMULQ_N_U
+		     VSUBQ_N_S VSUBQ_N_U
+		     ])
+
+(define_int_iterator MVE_INT_SU_N_BINARY   [
+		     VHADDQ_N_S VHADDQ_N_U
+		     VHSUBQ_N_S VHSUBQ_N_U
+		     VQADDQ_N_S VQADDQ_N_U
+		     VQDMULHQ_N_S
+		     VQRDMULHQ_N_S
+		     VQSUBQ_N_S VQSUBQ_N_U
+		     ])
+
+(define_int_iterator MVE_INT_SU_BINARY   [
+		     VABDQ_S VABDQ_U
+		     VHADDQ_S VHADDQ_U
+		     VHSUBQ_S VHSUBQ_U
+		     VMULHQ_S VMULHQ_U
+		     VQADDQ_S VQADDQ_U
+		     VQDMULHQ_S
+		     VQRDMULHQ_S
+		     VQRSHLQ_S VQRSHLQ_U
+		     VQSHLQ_S VQSHLQ_U
+		     VQSUBQ_S VQSUBQ_U
+		     VRHADDQ_S VRHADDQ_U
+		     VRMULHQ_S VRMULHQ_U
+		     VRSHLQ_S VRSHLQ_U
+		     ])
+
+(define_int_iterator MVE_INT_N_BINARY_LOGIC   [
+		     VBICQ_N_S VBICQ_N_U
+		     VORRQ_N_S VORRQ_N_U
+		     ])
+
+(define_int_iterator MVE_FP_M_BINARY   [
+		     VADDQ_M_F
+		     VMULQ_M_F
+		     VSUBQ_M_F
+		     ])
+
+(define_int_iterator MVE_FP_M_BINARY_LOGIC   [
+		     VANDQ_M_F
+		     VBICQ_M_F
+		     VEORQ_M_F
+		     VORRQ_M_F
+		     ])
+
+(define_int_iterator MVE_FP_M_N_BINARY [
+		     VADDQ_M_N_F
+		     VMULQ_M_N_F
+		     VSUBQ_M_N_F
+		     ])
+
+(define_int_iterator MVE_FP_N_BINARY   [
+		     VADDQ_N_F
+		     VMULQ_N_F
+		     VSUBQ_N_F
+		     ])
+
+(define_int_iterator MVE_FP_CREATE_ONLY [
+		     VCREATEQ_F
+		     ])
+
+(define_code_attr mve_addsubmul [
+		 (minus "vsub")
+		 (mult "vmul")
+		 (plus "vadd")
+		 ])
+
+(define_int_attr mve_insn [
+		 (VABDQ_M_S "vabd") (VABDQ_M_U "vabd")
+		 (VABDQ_S "vabd") (VABDQ_U "vabd")
+		 (VADDQ_M_N_S "vadd") (VADDQ_M_N_U "vadd") (VADDQ_M_N_F "vadd")
+		 (VADDQ_M_S "vadd") (VADDQ_M_U "vadd") (VADDQ_M_F "vadd")
+		 (VADDQ_N_S "vadd") (VADDQ_N_U "vadd") (VADDQ_N_F "vadd")
+		 (VANDQ_M_S "vand") (VANDQ_M_U "vand") (VANDQ_M_F "vand")
+		 (VBICQ_M_N_S "vbic") (VBICQ_M_N_U "vbic")
+		 (VBICQ_M_S "vbic") (VBICQ_M_U "vbic") (VBICQ_M_F "vbic")
+		 (VBICQ_N_S "vbic") (VBICQ_N_U "vbic")
+		 (VCREATEQ_S "vcreate") (VCREATEQ_U "vcreate") (VCREATEQ_F "vcreate")
+		 (VEORQ_M_S "veor") (VEORQ_M_U "veor") (VEORQ_M_F "veor")
+		 (VHADDQ_M_N_S "vhadd") (VHADDQ_M_N_U "vhadd")
+		 (VHADDQ_M_S "vhadd") (VHADDQ_M_U "vhadd")
+		 (VHADDQ_N_S "vhadd") (VHADDQ_N_U "vhadd")
+		 (VHADDQ_S "vhadd") (VHADDQ_U "vhadd")
+		 (VHSUBQ_M_N_S "vhsub") (VHSUBQ_M_N_U "vhsub")
+		 (VHSUBQ_M_S "vhsub") (VHSUBQ_M_U "vhsub")
+		 (VHSUBQ_N_S "vhsub") (VHSUBQ_N_U "vhsub")
+		 (VHSUBQ_S "vhsub") (VHSUBQ_U "vhsub")
+		 (VMAXQ_M_S "vmax") (VMAXQ_M_U "vmax")
+		 (VMINQ_M_S "vmin") (VMINQ_M_U "vmin")
+		 (VMLAQ_M_N_S "vmla") (VMLAQ_M_N_U "vmla")
+		 (VMLASQ_M_N_S "vmlas") (VMLASQ_M_N_U "vmlas")
+		 (VMULHQ_M_S "vmulh") (VMULHQ_M_U "vmulh")
+		 (VMULHQ_S "vmulh") (VMULHQ_U "vmulh")
+		 (VMULQ_M_N_S "vmul") (VMULQ_M_N_U "vmul") (VMULQ_M_N_F "vmul")
+		 (VMULQ_M_S "vmul") (VMULQ_M_U "vmul") (VMULQ_M_F "vmul")
+		 (VMULQ_N_S "vmul") (VMULQ_N_U "vmul") (VMULQ_N_F "vmul")
+		 (VORRQ_M_N_S "vorr") (VORRQ_M_N_U "vorr")
+		 (VORRQ_M_S "vorr") (VORRQ_M_U "vorr") (VORRQ_M_F "vorr")
+		 (VORRQ_N_S "vorr") (VORRQ_N_U "vorr")
+		 (VQADDQ_M_N_S "vqadd") (VQADDQ_M_N_U "vqadd")
+		 (VQADDQ_M_S "vqadd") (VQADDQ_M_U "vqadd")
+		 (VQADDQ_N_S "vqadd") (VQADDQ_N_U "vqadd")
+		 (VQADDQ_S "vqadd") (VQADDQ_U "vqadd")
+		 (VQDMLADHQ_M_S "vqdmladh")
+		 (VQDMLADHXQ_M_S "vqdmladhx")
+		 (VQDMLAHQ_M_N_S "vqdmlah")
+		 (VQDMLASHQ_M_N_S "vqdmlash")
+		 (VQDMLSDHQ_M_S "vqdmlsdh")
+		 (VQDMLSDHXQ_M_S "vqdmlsdhx")
+		 (VQDMULHQ_M_N_S "vqdmulh")
+		 (VQDMULHQ_M_S "vqdmulh")
+		 (VQDMULHQ_N_S "vqdmulh")
+		 (VQDMULHQ_S "vqdmulh")
+		 (VQRDMLADHQ_M_S "vqrdmladh")
+		 (VQRDMLADHXQ_M_S "vqrdmladhx")
+		 (VQRDMLAHQ_M_N_S "vqrdmlah")
+		 (VQRDMLASHQ_M_N_S "vqrdmlash")
+		 (VQRDMLSDHQ_M_S "vqrdmlsdh")
+		 (VQRDMLSDHXQ_M_S "vqrdmlsdhx")
+		 (VQRDMULHQ_M_N_S "vqrdmulh")
+		 (VQRDMULHQ_M_S "vqrdmulh")
+		 (VQRDMULHQ_N_S "vqrdmulh")
+		 (VQRDMULHQ_S "vqrdmulh")
+		 (VQRSHLQ_M_S "vqrshl") (VQRSHLQ_M_U "vqrshl")
+		 (VQRSHLQ_S "vqrshl") (VQRSHLQ_U "vqrshl")
+		 (VQSHLQ_M_S "vqshl") (VQSHLQ_M_U "vqshl")
+		 (VQSHLQ_S "vqshl") (VQSHLQ_U "vqshl")
+		 (VQSUBQ_M_N_S "vqsub") (VQSUBQ_M_N_U "vqsub")
+		 (VQSUBQ_M_S "vqsub") (VQSUBQ_M_U "vqsub")
+		 (VQSUBQ_N_S "vqsub") (VQSUBQ_N_U "vqsub")
+		 (VQSUBQ_S "vqsub") (VQSUBQ_U "vqsub")
+		 (VRHADDQ_M_S "vrhadd") (VRHADDQ_M_U "vrhadd")
+		 (VRHADDQ_S "vrhadd") (VRHADDQ_U "vrhadd")
+		 (VRMULHQ_M_S "vrmulh") (VRMULHQ_M_U "vrmulh")
+		 (VRMULHQ_S "vrmulh") (VRMULHQ_U "vrmulh")
+		 (VRSHLQ_M_S "vrshl") (VRSHLQ_M_U "vrshl")
+		 (VRSHLQ_S "vrshl") (VRSHLQ_U "vrshl")
+		 (VSHLQ_M_S "vshl") (VSHLQ_M_U "vshl")
+		 (VSUBQ_M_N_S "vsub") (VSUBQ_M_N_U "vsub") (VSUBQ_M_N_F "vsub")
+		 (VSUBQ_M_S "vsub") (VSUBQ_M_U "vsub") (VSUBQ_M_F "vsub")
+		 (VSUBQ_N_S "vsub") (VSUBQ_N_U "vsub") (VSUBQ_N_F "vsub")
+		 ])
+
 ;; plus and minus are the only SHIFTABLE_OPS for which Thumb2 allows
 ;; a stack pointer operand.  The minus operation is a candidate for an rsub
 ;; and hence only plus is supported.
@@ -1463,7 +1679,29 @@
 		       (VADCIQ_U "u") (VADCIQ_M_U "u") (VADCIQ_S "s")
 		       (VADCIQ_M_S "s") (SQRSHRL_64 "64") (SQRSHRL_48 "48")
 		       (UQRSHLL_64 "64") (UQRSHLL_48 "48") (VSHLCQ_M_S "s")
-		       (VSHLCQ_M_U "u")])
+		       (VSHLCQ_M_U "u")
+		       (VQDMLADHQ_M_S "s")
+		       (VQDMLADHXQ_M_S "s")
+		       (VQDMLSDHQ_M_S "s")
+		       (VQDMLSDHXQ_M_S "s")
+		       (VQDMULHQ_M_S "s")
+		       (VQRDMLADHQ_M_S "s")
+		       (VQRDMLADHXQ_M_S "s")
+		       (VQRDMLSDHQ_M_S "s")
+		       (VQRDMLSDHXQ_M_S "s")
+		       (VQRDMULHQ_M_S "s")
+		       (VQDMULHQ_N_S "s")
+		       (VQRDMULHQ_N_S "s")
+		       (VQDMLAHQ_M_N_S "s")
+		       (VQDMLASHQ_M_N_S "s")
+		       (VQRDMLAHQ_M_N_S "s")
+		       (VQRDMLASHQ_M_N_S "s")
+		       (VQDMULHQ_M_N_S "s")
+		       (VQRDMULHQ_M_N_S "s")
+		       (VQDMULHQ_S "s")
+		       (VQRDMULHQ_S "s")
+		       ])
+
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])
 (define_code_attr return_str [(return "") (simple_return "simple_")])

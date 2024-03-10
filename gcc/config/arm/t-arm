@@ -154,14 +154,40 @@ arm-builtins.o: $(srcdir)/config/arm/arm-builtins.cc $(CONFIG_H) \
 		$(srcdir)/config/arm/arm-builtins.cc
 
 arm-mve-builtins.o: $(srcdir)/config/arm/arm-mve-builtins.cc $(CONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-  fold-const.h langhooks.h stringpool.h attribs.h diagnostic.h \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(TM_P_H) \
+  memmodel.h insn-codes.h optabs.h recog.h expr.h basic-block.h \
+  function.h fold-const.h gimple.h gimple-fold.h emit-rtl.h langhooks.h \
+  stringpool.h attribs.h diagnostic.h \
   $(srcdir)/config/arm/arm-protos.h \
   $(srcdir)/config/arm/arm-builtins.h \
   $(srcdir)/config/arm/arm-mve-builtins.h \
-  $(srcdir)/config/arm/arm-mve-builtins.def
+  $(srcdir)/config/arm/arm-mve-builtins-base.h \
+  $(srcdir)/config/arm/arm-mve-builtins-shapes.h \
+  $(srcdir)/config/arm/arm-mve-builtins.def \
+  $(srcdir)/config/arm/arm-mve-builtins-base.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-mve-builtins.cc
+
+arm-mve-builtins-shapes.o: \
+  $(srcdir)/config/arm/arm-mve-builtins-shapes.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+  $(RTL_H) memmodel.h insn-codes.h optabs.h \
+  $(srcdir)/config/arm/arm-mve-builtins.h \
+  $(srcdir)/config/arm/arm-mve-builtins-shapes.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/arm/arm-mve-builtins-shapes.cc
+
+arm-mve-builtins-base.o: \
+  $(srcdir)/config/arm/arm-mve-builtins-base.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
+  memmodel.h insn-codes.h $(OPTABS_H) \
+  $(BASIC_BLOCK_H) $(FUNCTION_H) $(GIMPLE_H) \
+  $(srcdir)/config/arm/arm-mve-builtins.h \
+  $(srcdir)/config/arm/arm-mve-builtins-shapes.h \
+  $(srcdir)/config/arm/arm-mve-builtins-base.h \
+  $(srcdir)/config/arm/arm-mve-builtins-functions.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/arm/arm-mve-builtins-base.cc
 
 arm-c.o: $(srcdir)/config/arm/arm-c.cc $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H)

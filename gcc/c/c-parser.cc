@@ -5677,11 +5677,14 @@ c_parser_initializer (c_parser *parser, tree decl)
     {
       struct c_expr ret;
       location_t loc = c_parser_peek_token (parser)->location;
-      if (decl != error_mark_node && C_DECL_VARIABLE_SIZE (decl))
-	error_at (loc,
-		  "variable-sized object may not be initialized except "
-		  "with an empty initializer");
       ret = c_parser_expr_no_commas (parser, NULL);
+      if (decl != error_mark_node && C_DECL_VARIABLE_SIZE (decl))
+	{
+	  error_at (loc,
+		    "variable-sized object may not be initialized except "
+		    "with an empty initializer");
+	  ret.set_error ();
+	}
       /* This is handled mostly by gimplify.cc, but we have to deal with
 	 not warning about int x = x; as it is a GCC extension to turn off
 	 this warning but only if warn_init_self is zero.  */
@@ -20112,6 +20115,7 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
   tree substmt;
   location_t loc;
   tree clauses = NULL_TREE;
+  bool found_scan = false;
 
   loc = c_parser_peek_token (parser)->location;
   if (!open_brace_parsed
@@ -20122,7 +20126,15 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
       return;
     }
 
-  substmt = c_parser_omp_structured_block_sequence (parser, PRAGMA_OMP_SCAN);
+  if (c_parser_peek_token (parser)->pragma_kind != PRAGMA_OMP_SCAN)
+    substmt = c_parser_omp_structured_block_sequence (parser, PRAGMA_OMP_SCAN);
+  else
+    {
+      warning_at (c_parser_peek_token (parser)->location, 0,
+		  "%<#pragma omp scan%> with zero preceding executable "
+		  "statements");
+      substmt = build_empty_stmt (loc);
+    }
   substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
   SET_EXPR_LOCATION (substmt, loc);
   add_stmt (substmt);
@@ -20131,6 +20143,7 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
   if (c_parser_peek_token (parser)->pragma_kind == PRAGMA_OMP_SCAN)
     {
       enum omp_clause_code clause = OMP_CLAUSE_ERROR;
+      found_scan = true;
 
       c_parser_consume_pragma (parser);
 
@@ -20160,7 +20173,15 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
     error ("expected %<#pragma omp scan%>");
 
   clauses = c_finish_omp_clauses (clauses, C_ORT_OMP);
-  substmt = c_parser_omp_structured_block_sequence (parser, PRAGMA_NONE);
+  if (!c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
+    substmt = c_parser_omp_structured_block_sequence (parser, PRAGMA_NONE);
+  else
+    {
+      if (found_scan)
+	warning_at (loc, 0, "%<#pragma omp scan%> with zero succeeding "
+			    "executable statements");
+      substmt = build_empty_stmt (loc);
+    }
   substmt = build2 (OMP_SCAN, void_type_node, substmt, clauses);
   SET_EXPR_LOCATION (substmt, loc);
   add_stmt (substmt);

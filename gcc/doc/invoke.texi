@@ -509,6 +509,7 @@ Objective-C and Objective-C++ Dialects}.
 -gstrict-dwarf  -gno-strict-dwarf
 -gas-loc-support  -gno-as-loc-support
 -gas-locview-support  -gno-as-locview-support
+-gcodeview
 -gcolumn-info  -gno-column-info  -gdwarf32  -gdwarf64
 -gstatement-frontiers  -gno-statement-frontiers
 -gvariable-location-views  -gno-variable-location-views
@@ -1226,7 +1227,8 @@ See RS/6000 and PowerPC Options.
 -mbig-endian  -mlittle-endian
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg}
 -mstack-protector-guard-offset=@var{offset}
--mcsr-check -mno-csr-check}
+-mcsr-check -mno-csr-check
+-minline-atomics  -mno-inline-atomics}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs
@@ -1473,7 +1475,8 @@ See RS/6000 and PowerPC Options.
 -mtarget-align  -mno-target-align
 -mlongcalls  -mno-longcalls
 -mabi=@var{abi-type}
--mextra-l32r-costs=@var{cycles}}
+-mextra-l32r-costs=@var{cycles}
+-mstrict-align  -mno-strict-align}
 
 @emph{zSeries Options}
 See S/390 and zSeries Options.
@@ -11328,6 +11331,12 @@ at file-scope or global-scope only.
 Produce debugging information in Alpha/VMS debug format (if that is
 supported).  This is the format used by DEBUG on Alpha/VMS systems.
 
+@item -gcodeview
+@opindex gcodeview
+Produce debugging information in CodeView debug format (if that is
+supported).  This is the format used by Microsoft Visual C++ on
+Windows.
+
 @item -g@var{level}
 @itemx -ggdb@var{level}
 @itemx -gvms@var{level}
@@ -15979,14 +15988,8 @@ The maximum number of may-defs we analyze when looking for a must-def
 specifying the dynamic type of an object that invokes a virtual call
 we may be able to devirtualize speculatively.
 
-@item evrp-sparse-threshold
-Maximum number of basic blocks before EVRP uses a sparse cache.
-
 @item ranger-debug
 Specifies the type of debug output to be issued for ranges.
-
-@item evrp-switch-limit
-Specifies the maximum number of switch cases before EVRP ignores a switch.
 
 @item unroll-jam-min-percent
 The minimum percentage of memory references that must be optimized
@@ -16045,6 +16048,15 @@ this parameter.  The default value of this parameter is 50.
 
 @item vect-induction-float
 Enable loop vectorization of floating point inductions.
+
+@item vrp-sparse-threshold
+Maximum number of basic blocks before VRP uses a sparse bitmap cache.
+
+@item vrp-switch-limit
+Maximum number of outgoing edges in a switch before VRP will not process it.
+
+@item vrp-vector-threshold
+Maximum number of basic blocks for VRP to use a basic cache vector.
 
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
@@ -20133,6 +20145,16 @@ Generate code for the large code model.  This makes no assumptions about
 addresses and sizes of sections.  Programs can be statically linked only.  The
 @option{-mcmodel=large} option is incompatible with @option{-mabi=ilp32},
 @option{-fpic} and @option{-fPIC}.
+
+@item -mtp=@var{name}
+@opindex mtp
+Specify the system register to use as a thread pointer.  The valid values
+are @samp{el0}, @samp{el1}, @samp{el2}, @samp{el3}.  These correspond to
+using the @samp{tpidr_el0}, @samp{tpidr_el1}, @samp{tpidr_el2},
+@samp{tpidr_el3} registers accordingly.  The default setting is @samp{el0}.
+It is recommended to compile all code intended to interoperate with the same
+value of this option to avoid accessing a different thread pointer from the
+wrong exception level.
 
 @opindex mstrict-align
 @opindex mno-strict-align
@@ -29006,6 +29028,13 @@ Do or don't use smaller but slower prologue and epilogue code that uses
 library function calls.  The default is to use fast inline prologues and
 epilogues.
 
+@opindex minline-atomics
+@item -minline-atomics
+@itemx -mno-inline-atomics
+Do or don't use smaller but slower subword atomic emulation code that uses
+libatomic function calls.  The default is to use fast inline subword atomics
+that do not require libatomic.
+
 @opindex mshorten-memrefs
 @item -mshorten-memrefs
 @itemx -mno-shorten-memrefs
@@ -34394,6 +34423,17 @@ instructions, in clock cycles.  This affects, when optimizing for speed,
 whether loading a constant from literal pool using @code{L32R} or
 synthesizing the constant from a small one with a couple of arithmetic
 instructions.  The default value is 0.
+
+@opindex mstrict-align
+@opindex mno-strict-align
+@item -mstrict-align
+@itemx -mno-strict-align
+Avoid or allow generating memory accesses that may not be aligned on a natural
+object boundary as described in the architecture specification.
+The default is @option{-mno-strict-align} for cores that support both
+unaligned loads and stores in hardware and @option{-mstrict-align} for all
+other cores.
+
 @end table
 
 @node zSeries Options

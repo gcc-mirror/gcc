@@ -3234,7 +3234,8 @@ constrain_operands (int strict, alternative_mask alternatives)
 		  else if (constraint_satisfied_p (op, cn))
 		    win = 1;
 
-		  else if (insn_extra_memory_constraint (cn)
+		  else if ((insn_extra_memory_constraint (cn)
+			    || insn_extra_relaxed_memory_constraint (cn))
 			   /* Every memory operand can be reloaded to fit.  */
 			   && ((strict < 0 && MEM_P (op))
 			       /* Before reload, accept what reload can turn
@@ -3849,7 +3850,7 @@ copy_frame_info_to_split_insn (rtx_insn *old_insn, rtx_insn *new_insn)
   maybe_copy_prologue_epilogue_insn (old_insn, new_insn);
 }
 
-/* While scanning basic block BB, we found a match of length MATCH_LEN,
+/* While scanning basic block BB, we found a match of length MATCH_LEN + 1,
    starting at INSN.  Perform the replacement, removing the old insns and
    replacing them with ATTEMPT.  Returns the last insn emitted, or NULL
    if the replacement is rejected.  */
@@ -4035,7 +4036,7 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
 /* After performing a replacement in basic block BB, fix up the life
    information in our buffer.  LAST is the last of the insns that we
    emitted as a replacement.  PREV is the insn before the start of
-   the replacement.  MATCH_LEN is the number of instructions that were
+   the replacement.  MATCH_LEN + 1 is the number of instructions that were
    matched, and which now need to be replaced in the buffer.  */
 
 static void

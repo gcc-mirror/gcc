@@ -406,6 +406,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  and fixed time insertion/deletion at any point in the sequence.
    *
    *  @ingroup sequences
+   *  @headerfile forward_list
+   *  @since C++11
    *
    *  @tparam _Tp  Type of element.
    *  @tparam _Alloc  Allocator type, defaults to allocator<_Tp>.

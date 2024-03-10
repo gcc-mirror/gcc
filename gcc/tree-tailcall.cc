@@ -1105,7 +1105,6 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
   bool changed = false;
   basic_block first = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   tree param;
-  gimple *stmt;
   edge_iterator ei;
 
   if (!suitable_for_tail_opt_p ())
@@ -1117,10 +1116,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
     {
       /* Only traverse the normal exits, i.e. those that end with return
 	 statement.  */
-      stmt = last_stmt (e->src);
-
-      if (stmt
-	  && gimple_code (stmt) == GIMPLE_RETURN)
+      if (safe_is_a <greturn *> (*gsi_last_bb (e->src)))
 	find_tail_calls (e->src, &tailcalls);
     }
 
@@ -1201,10 +1197,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
       /* Modify the remaining return statements.  */
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
 	{
-	  stmt = last_stmt (e->src);
-
-	  if (stmt
-	      && gimple_code (stmt) == GIMPLE_RETURN)
+	  if (safe_is_a <greturn *> (*gsi_last_bb (e->src)))
 	    adjust_return_value (e->src, m_acc, a_acc);
 	}
     }

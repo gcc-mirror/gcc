@@ -22,6 +22,11 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+/** @file include/bits/uses_allocator_args.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{memory}
+ */
+
 #ifndef _USES_ALLOCATOR_H
 #define _USES_ALLOCATOR_H 1
 

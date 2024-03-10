@@ -1572,7 +1572,10 @@ scan_one_insn (rtx_insn *insn)
       && (! ira_use_lra_p || ! pic_offset_table_rtx
 	  || ! contains_symbol_ref_p (XEXP (note, 0))))
     {
-      enum reg_class cl = GENERAL_REGS;
+      /* Costs for NO_REGS are used in cost calculation on the
+	 1st pass when the preferred register classes are not
+	 known yet.  In this case we take the best scenario.  */
+      enum reg_class cl = NO_REGS;
       rtx reg = SET_DEST (set);
       int num = COST_INDEX (REGNO (reg));
 

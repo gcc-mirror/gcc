@@ -56,6 +56,7 @@ static tree dfs_get_pure_virtuals (tree, void *);
 
 struct lookup_base_data_s
 {
+  HOST_WIDE_INT offset; /* Offset we want, or -1 if any.  */
   tree t;		/* type being searched.  */
   tree base;		/* The base type we're looking for.  */
   tree binfo;		/* Found binfo.  */
@@ -73,6 +74,22 @@ static tree
 dfs_lookup_base (tree binfo, void *data_)
 {
   struct lookup_base_data_s *data = (struct lookup_base_data_s *) data_;
+
+  if (data->offset != -1)
+    {
+      /* We're looking for the type at a particular offset.  */
+      int comp = compare_tree_int (BINFO_OFFSET (binfo), data->offset);
+      if (comp > 0)
+	/* Don't bother looking into bases laid out later; even if they
+	   do virtually inherit from the base we want, we can get there
+	   by another path.  */
+	return dfs_skip_bases;
+      else if (comp != 0
+	       && SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), data->base))
+	/* Right type, wrong offset.  */
+	return dfs_skip_bases;
+      /* Fall through.  */
+    }
 
   if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), data->base))
     {
@@ -190,7 +207,7 @@ accessible_base_p (tree t, tree base, bool consider_local_p)
 /* Lookup BASE in the hierarchy dominated by T.  Do access checking as
    ACCESS specifies.  Return the binfo we discover.  If KIND_PTR is
    non-NULL, fill with information about what kind of base we
-   discovered.
+   discovered.  If OFFSET is other than -1, only match at that offset.
 
    If the base is inaccessible, or ambiguous, then error_mark_node is
    returned.  If the tf_error bit of COMPLAIN is not set, no error
@@ -198,7 +215,8 @@ accessible_base_p (tree t, tree base, bool consider_local_p)
 
 tree
 lookup_base (tree t, tree base, base_access access,
-	     base_kind *kind_ptr, tsubst_flags_t complain)
+	     base_kind *kind_ptr, tsubst_flags_t complain,
+	     HOST_WIDE_INT offset /* = -1 */)
 {
   tree binfo;
   tree t_binfo;
@@ -246,8 +264,9 @@ lookup_base (tree t, tree base, base_access access,
       data.base = base;
       data.binfo = NULL_TREE;
       data.ambiguous = data.via_virtual = false;
-      data.repeated_base = CLASSTYPE_REPEATED_BASE_P (t);
+      data.repeated_base = (offset == -1) && CLASSTYPE_REPEATED_BASE_P (t);
       data.want_any = access == ba_any;
+      data.offset = offset;
 
       dfs_walk_once (t_binfo, dfs_lookup_base, NULL, &data);
       binfo = data.binfo;

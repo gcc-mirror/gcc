@@ -90,7 +90,8 @@
   UNSPEC_RCP
   UNSPEC_FLBIT_INT
   UNSPEC_FLOOR UNSPEC_CEIL UNSPEC_SIN UNSPEC_COS UNSPEC_EXP2 UNSPEC_LOG2
-  UNSPEC_LDEXP UNSPEC_FREXP_EXP UNSPEC_FREXP_MANT])
+  UNSPEC_LDEXP UNSPEC_FREXP_EXP UNSPEC_FREXP_MANT
+  UNSPEC_DIV_SCALE UNSPEC_DIV_FMAS UNSPEC_DIV_FIXUP])
 
 ;; }}}
 ;; {{{ Attributes
@@ -301,6 +302,11 @@
 ; their inputs are overwritten by subsequent instructions.
 
 (define_attr "delayeduse" "yes,no" (const_string "no"))
+
+; Identify instructions that require "Manually Inserted Wait State" if
+; a previous instruction writes to VCC.  The number gives the number of NOPs.
+
+(define_attr "vccwait" "" (const_int 0))
 
 ;; }}}
 ;; {{{ Iterators useful across the wole machine description

@@ -1787,8 +1787,7 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 
       /* Return false for deallocation functions that are known not
 	 to match.  */
-      if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
-	  || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+      if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE, BUILT_IN_REALLOC))
 	return false;
       /* Otherwise proceed below to check the deallocation function's
 	 "*dealloc" attributes to look for one that mentions this operator
@@ -1812,8 +1811,8 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	  if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
 	    return false;
 
-	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
-	      || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE,
+					       BUILT_IN_REALLOC))
 	    return true;
 
 	  alloc_dealloc_kind = alloc_kind_t::builtin;
@@ -4173,8 +4172,9 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 
   auto_bitmap visited;
 
-  auto_vec<tree> pointers;
-  pointers.safe_push (ptr);
+  auto_vec<tree, 8> pointers;
+  pointers.quick_push (ptr);
+  hash_map<tree, int> *phi_map = nullptr;
 
   /* Starting with PTR, iterate over POINTERS added by the loop, and
      either warn for their uses in basic blocks dominated by the STMT
@@ -4241,19 +4241,49 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 	      tree_code code = gimple_cond_code (cond);
 	      equality = code == EQ_EXPR || code == NE_EXPR;
 	    }
-	  else if (gimple_code (use_stmt) == GIMPLE_PHI)
+	  else if (gphi *phi = dyn_cast <gphi *> (use_stmt))
 	    {
 	      /* Only add a PHI result to POINTERS if all its
-		 operands are related to PTR, otherwise continue.  */
-	      tree lhs = gimple_phi_result (use_stmt);
-	      if (!pointers_related_p (stmt, lhs, ptr, m_ptr_qry))
-		continue;
-
-	      if (TREE_CODE (lhs) == SSA_NAME)
+		 operands are related to PTR, otherwise continue.  The
+		 PHI result is related once we've reached all arguments
+		 through this iteration.  That also means any invariant
+		 argument will make the PHI not related.  For arguments
+		 flowing over natural loop backedges we are optimistic
+		 (and diagnose the first iteration).  */
+	      tree lhs = gimple_phi_result (phi);
+	      if (!phi_map)
+		phi_map = new hash_map<tree, int>;
+	      bool existed_p;
+	      int &related = phi_map->get_or_insert (lhs, &existed_p);
+	      if (!existed_p)
 		{
-		  pointers.safe_push (lhs);
-		  continue;
+		  related = gimple_phi_num_args (phi) - 1;
+		  for (unsigned j = 0; j < gimple_phi_num_args (phi); ++j)
+		    {
+		      if ((unsigned) phi_arg_index_from_use (use_p) == j)
+			continue;
+		      tree arg = gimple_phi_arg_def (phi, j);
+		      edge e = gimple_phi_arg_edge (phi, j);
+		      basic_block arg_bb;
+		      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest)
+			  /* Make sure we are not forward visiting a
+			     backedge argument.  */
+			  && (TREE_CODE (arg) != SSA_NAME
+			      || (!SSA_NAME_IS_DEFAULT_DEF (arg)
+				  && ((arg_bb
+					 = gimple_bb (SSA_NAME_DEF_STMT (arg)))
+				      != e->dest)
+				  && !dominated_by_p (CDI_DOMINATORS,
+						      e->dest, arg_bb))))
+			related--;
+		    }
 		}
+	      else
+		related--;
+
+	      if (related == 0)
+		pointers.safe_push (lhs);
+	      continue;
 	    }
 
 	  /* Warn if USE_STMT is dominated by the deallocation STMT.
@@ -4292,6 +4322,9 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 	    }
 	}
     }
+
+  if (phi_map)
+    delete phi_map;
 }
 
 /* Check call STMT for invalid accesses.  */

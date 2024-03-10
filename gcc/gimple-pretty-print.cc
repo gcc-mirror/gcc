@@ -3004,11 +3004,8 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
 		     dump_flags_t flags)
 {
   edge e;
-  gimple *stmt;
 
-  stmt = last_stmt (bb);
-
-  if (stmt && gimple_code (stmt) == GIMPLE_COND)
+  if (safe_is_a <gcond *> (*gsi_last_bb (bb)))
     {
       edge true_edge, false_edge;
 

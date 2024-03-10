@@ -118,9 +118,11 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
   static hashval_t
   hash (const value_range *p)
     {
-      inchash::hash hstate (p->kind ());
-      inchash::add_expr (p->min (), hstate);
-      inchash::add_expr (p->max (), hstate);
+      tree min, max;
+      value_range_kind kind = get_legacy_range (*p, min, max);
+      inchash::hash hstate (kind);
+      inchash::add_expr (min, hstate);
+      inchash::add_expr (max, hstate);
       return hstate.end ();
     }
   static bool
@@ -435,13 +437,8 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 
       if (jump_func->m_vr)
 	{
-	  fprintf (f, "         VR  ");
-	  fprintf (f, "%s[",
-		   (jump_func->m_vr->kind () == VR_ANTI_RANGE) ? "~" : "");
-	  print_decs (wi::to_wide (jump_func->m_vr->min ()), f);
-	  fprintf (f, ", ");
-	  print_decs (wi::to_wide (jump_func->m_vr->max ()), f);
-	  fprintf (f, "]\n");
+	  jump_func->m_vr->dump (f);
+	  fprintf (f, "\n");
 	}
       else
 	fprintf (f, "         Unknown VR\n");
@@ -1531,7 +1528,7 @@ compute_complex_ancestor_jump_func (struct ipa_func_body_info *fbi,
 				    gcall *call, gphi *phi)
 {
   HOST_WIDE_INT offset;
-  gimple *assign, *cond;
+  gimple *assign;
   basic_block phi_bb, assign_bb, cond_bb;
   tree tmp, parm, expr, obj;
   int index, i;
@@ -1564,9 +1561,8 @@ compute_complex_ancestor_jump_func (struct ipa_func_body_info *fbi,
     return;
 
   cond_bb = single_pred (assign_bb);
-  cond = last_stmt (cond_bb);
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (cond_bb));
   if (!cond
-      || gimple_code (cond) != GIMPLE_COND
       || gimple_cond_code (cond) != NE_EXPR
       || gimple_cond_lhs (cond) != parm
       || !integer_zerop (gimple_cond_rhs (cond)))
@@ -2224,7 +2220,8 @@ ipa_get_value_range (value_range *tmp)
 static value_range *
 ipa_get_value_range (enum value_range_kind kind, tree min, tree max)
 {
-  value_range tmp (min, max, kind);
+  value_range tmp (TREE_TYPE (min),
+		   wi::to_wide (min), wi::to_wide (max), kind);
   return ipa_get_value_range (&tmp);
 }
 
@@ -2324,9 +2321,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      && get_range_query (cfun)->range_of_expr (vr, arg)
 	      && !vr.undefined_p ())
 	    {
-	      value_range resvr;
-	      range_fold_unary_expr (&resvr, NOP_EXPR, param_type,
-				     &vr, TREE_TYPE (arg));
+	      value_range resvr = vr;
+	      range_cast (resvr, param_type);
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
 		ipa_set_jfunc_vr (jfunc, &resvr);
 	      else
@@ -2681,8 +2677,8 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
   /* Third, let's see that the branching is done depending on the least
      significant bit of the pfn. */
 
-  gimple *branch = last_stmt (bb);
-  if (!branch || gimple_code (branch) != GIMPLE_COND)
+  gcond *branch = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+  if (!branch)
     return;
 
   if ((gimple_cond_code (branch) != NE_EXPR
@@ -3865,8 +3861,8 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 	  if (can_refer)
 	    {
 	      if (!t
-		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE)
-		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE_TRAP)
+		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE,
+					   BUILT_IN_UNREACHABLE_TRAP)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (t)))
 		{
@@ -4785,10 +4781,12 @@ ipa_write_jump_function (struct output_block *ob,
   streamer_write_bitpack (&bp);
   if (jump_func->m_vr)
     {
+      tree min, max;
+      value_range_kind kind = get_legacy_range (*jump_func->m_vr, min, max);
       streamer_write_enum (ob->main_stream, value_rang_type,
-			   VR_LAST, jump_func->m_vr->kind ());
-      stream_write_tree (ob, jump_func->m_vr->min (), true);
-      stream_write_tree (ob, jump_func->m_vr->max (), true);
+			   VR_LAST, kind);
+      stream_write_tree (ob, min, true);
+      stream_write_tree (ob, max, true);
     }
 }
 

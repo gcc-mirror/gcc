@@ -34,6 +34,10 @@
 // more portable and robust to differences in system printf behavior.
 // { dg-xfail-run-if "Non-conforming printf (see PR98384)" { *-*-solaris* *-*-darwin* } }
 
+// On systems that use double-precision from_chars for long double,
+// this is expected to fail.
+// { dg-xfail-run-if "from_chars limited to double-precision" { aarch64-*-vxworks* } }
+
 // { dg-require-effective-target ieee_floats }
 // { dg-require-effective-target size32plus }
 // { dg-require-cmath "" }

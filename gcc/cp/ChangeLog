@@ -1,3 +1,201 @@
+2023-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91618
+	PR c++/109649
+	* friend.cc (do_friend): Don't call check_explicit_specialization if
+	DECL_TEMPLATE_INFO is already set.
+	* decl2.cc (check_classfn): Set DECL_TEMPLATE_INFO.
+	* name-lookup.cc (set_decl_namespace): Likewise.
+
+2023-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.cc (cp_fold_data): Move definition earlier.
+	(cp_gimplify_expr): Pass address of ff_genericize | ff_mce_false
+	constructed data rather than &pset to cp_walk_tree with cp_fold_r.
+
+2023-05-03  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (reduce_template_parm_level): Fix comparison of
+	template template parm to cached version.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (instantiate_class_template): Skip the RECORD_TYPE
+	of a class template.
+	(tsubst_template_decl): Clear CLASSTYPE_USE_TEMPLATE.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.cc (pop_from_top_level): Don't
+	invalidate_class_lookup_cache.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109678
+	* cp-tree.h (lookup_base): Add offset parm.
+	* constexpr.cc (cxx_fold_indirect_ref_1): Pass it.
+	* search.cc (struct lookup_base_data_s): Add offset.
+	(dfs_lookup_base): Handle it.
+	(lookup_base): Pass it.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109678
+	* constexpr.cc (cxx_fold_indirect_ref_1): Handle empty base first.
+
+2023-05-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109666
+	* name-lookup.cc (maybe_push_to_top_level)
+	(maybe_pop_from_top_level): Split out...
+	* pt.cc (instantiate_body): ...from here.
+	* init.cc (maybe_instantiate_nsdmi_init): Use them.
+	* name-lookup.h: Declare them..
+
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Merge perf data collected when compiling cc1plus and runtime libraries
+
+2023-04-27  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (print_conversion_rejection): Use iloc_sentinel.
+
+2023-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61445
+	* pt.cc (instantiate_decl): Assert !defer_ok for local
+	class members.
+
+2023-04-26  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (nsdmi_inst): Remove.
+	(maybe_instantiate_nsdmi_init): Use DECL_INITIAL instead.
+
+2023-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109241
+	* pt.cc (instantiate_class_template): Do partially instantiate.
+	(tsubst_expr): Do call complete_type for partial instantiations.
+
+2023-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69836
+	* pt.cc (regenerate_decl_from_template): Skip unique friends.
+
+2023-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (most_specialized_partial_spec): Exit early when
+	DECL_TEMPLATE_SPECIALIZATIONS is empty.  Move local variable
+	declarations closer to their first use.  Remove redundant
+	flag_concepts test.  Remove redundant forward declaration.
+
+2023-04-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108975
+	* pt.cc (value_dependent_expression_p) <case VAR_DECL>:
+	Suppress conservative early exit for reference variables
+	when DECL_HAS_VALUE_EXPR_P.
+
+2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_scan_loop_body): Handle
+	zero exec statements before/after 'omp scan'.
+
+2023-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (cp_expr_location): Define here.
+	* tree.cc (cp_expr_location): Don't define here.
+
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* decl.cc (grokdeclarator): Don't clear typedef_decl after 'unsigned
+	typedef' pedwarn.  Use c_common_signed_or_unsigned_type.  Also
+	handle 'signed typedef'.
+
+2023-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.cc (cp_walk_subtrees): Avoid repeatedly dereferencing tp.
+	<case DECLTYPE_TYPE>: Use cp_unevaluated and WALK_SUBTREE.
+	<case ALIGNOF_EXPR etc>: Likewise.
+
+2023-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (tsubst) <case TEMPLATE_TYPE_PARM>: Don't recurse when
+	level lowering a cv-qualified type template parameter.  Remove
+	recursive loop breaker in the level lowering case for constrained
+	autos.  Use the TEMPLATE_PARM_DESCENDANTS cache in this case as
+	well.
+
+2023-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (diagnose_trait_expr): Convert a TREE_VEC
+	of arguments into a TREE_LIST for sake of pretty printing.
+	* cxx-pretty-print.cc (pp_cxx_trait): Handle TREE_VEC
+	instead of TREE_LIST of trailing variadic trait arguments.
+	* method.cc (constructible_expr): Likewise.
+	(is_xible_helper): Likewise.
+	* parser.cc (cp_parser_trait): Represent trailing variadic trait
+	arguments as a TREE_VEC instead of TREE_LIST.
+	* pt.cc (value_dependent_expression_p): Handle TREE_VEC
+	instead of TREE_LIST of trailing variadic trait arguments.
+	* semantics.cc (finish_type_pack_element): Likewise.
+	(check_trait_type): Likewise.
+
+2023-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.cc (strip_typedefs): Move TREE_LIST handling to
+	strip_typedefs_expr.  Dispatch to strip_typedefs_expr for
+	non-type 't'.
+	<case TYPENAME_TYPE>: Remove manual dispatching to
+	strip_typedefs_expr.
+	<case TRAIT_TYPE>: Likewise.
+	(strip_typedefs_expr): Replaces calls to strip_typedefs_expr
+	with strip_typedefs throughout.  Don't dispatch to strip_typedefs
+	for type 't'.
+	<case TREE_LIST>: Replace this with the better version from
+	strip_typedefs.
+
+2023-04-19  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/100157
+	* cp-trait.def (TYPE_PACK_ELEMENT): Define.
+	* cp-tree.h (finish_trait_type): Add complain parameter.
+	* cxx-pretty-print.cc (pp_cxx_trait): Handle
+	CPTK_TYPE_PACK_ELEMENT.
+	* parser.cc (cp_parser_constant_expression): Document default
+	arguments.
+	(cp_parser_trait): Handle CPTK_TYPE_PACK_ELEMENT.  Pass
+	tf_warning_or_error to finish_trait_type.
+	* pt.cc (tsubst) <case TRAIT_TYPE>: Handle non-type first
+	argument.  Pass complain to finish_trait_type.
+	* semantics.cc (finish_type_pack_element): Define.
+	(finish_trait_type): Add complain parameter.  Handle
+	CPTK_TYPE_PACK_ELEMENT.
+	* tree.cc (strip_typedefs): Handle non-type first argument.
+	Pass tf_warning_or_error to finish_trait_type.
+	* typeck.cc (structural_comptypes) <case TRAIT_TYPE>: Use
+	cp_tree_equal instead of same_type_p for the first argument.
+
+2023-04-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109556
+	* pt.cc (try_class_unification): Don't ggc_free the copy of
+	'targs'.
+
+2023-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* decl.cc (grokdeclarator): Keep typedef_decl for __int128_t.
+
+2023-04-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109531
+	* pt.cc (tsubst) <case BOUND_TEMPLATE_TEMPLATE_PARM>:
+	In the level-lowering case just use lookup_template_class
+	to rebuild the bound ttp.
+
 2023-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109357

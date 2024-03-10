@@ -1,3 +1,42 @@
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Define PROFILE_MERGER
+	* Makefile.tpl: Define PROFILE_MERGER
+
+2023-04-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Change my email address.
+
+2023-04-26  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-04-26  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: fix sorting
+
+2023-04-25  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-04-24  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Fix sorting.
+
+2023-04-21  Peter Foley  <pefoley2@pefoley.com>
+
+	* configure: Regenerate.
+	* configure.ac: Only create serdep.tmp if needed
+
+2023-04-21  “ajit.kumar.agarwal@ibm.com”  <aagarwa@ltcden2-lp1.aus.stglabs.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-04-21  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+	Ref: <680c7bbe-5d6e-07cd-8468-247afc65e1dd@gmail.com>
+
 2023-04-06  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* MAINTAINERS: Add myself.

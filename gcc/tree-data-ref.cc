@@ -646,7 +646,8 @@ compute_distributive_range (tree type, value_range &op0_range,
   if (!op.fold_range (wide_range, ssizetype, op0_range, op1_range))
     wide_range.set_varying (ssizetype);;
   flag_wrapv = saved_flag_wrapv;
-  if (wide_range.num_pairs () != 1 || !range_int_cst_p (&wide_range))
+  if (wide_range.num_pairs () != 1
+      || wide_range.varying_p () || wide_range.undefined_p ())
     return false;
 
   wide_int lb = wide_range.lower_bound ();
@@ -768,7 +769,10 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
       *var = size_int (0);
       *off = fold_convert (ssizetype, op0);
       if (result_range)
-	result_range->set (op0, op0);
+	{
+	  wide_int w = wi::to_wide (op0);
+	  result_range->set (TREE_TYPE (op0), w, w);
+	}
       return true;
 
     case POINTER_PLUS_EXPR:
@@ -794,7 +798,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	return false;
 
       split_constant_offset (op0, &var0, &off0, &op0_range, cache, limit);
-      op1_range.set (op1, op1);
+      op1_range.set (TREE_TYPE (op1), wi::to_wide (op1), wi::to_wide (op1));
       *off = size_binop (MULT_EXPR, off0, fold_convert (ssizetype, op1));
       if (!compute_distributive_range (type, op0_range, code, op1_range,
 				       off, result_range))
@@ -1024,9 +1028,10 @@ split_constant_offset (tree exp, tree *var, tree *off, value_range *exp_range,
 	  get_range_query (cfun)->range_of_expr (vr, exp);
 	  if (vr.undefined_p ())
 	    vr.set_varying (TREE_TYPE (exp));
-	  wide_int var_min = wi::to_wide (vr.min ());
-	  wide_int var_max = wi::to_wide (vr.max ());
-	  value_range_kind vr_kind = vr.kind ();
+	  tree vr_min, vr_max;
+	  value_range_kind vr_kind = get_legacy_range (vr, vr_min, vr_max);
+	  wide_int var_min = wi::to_wide (vr_min);
+	  wide_int var_max = wi::to_wide (vr_max);
 	  wide_int var_nonzero = get_nonzero_bits (exp);
 	  vr_kind = intersect_range_with_nonzero_bits (vr_kind,
 						       &var_min, &var_max,
@@ -6350,7 +6355,7 @@ dr_step_indicator (struct data_reference *dr, int useful_min)
       value_range vr;
       if (TREE_CODE (step) != SSA_NAME
 	  || !get_range_query (cfun)->range_of_expr (vr, step)
-	  || vr.kind () != VR_RANGE)
+	  || vr.undefined_p ())
 	{
 	  step_min = wi::to_wide (TYPE_MIN_VALUE (type));
 	  step_max = wi::to_wide (TYPE_MAX_VALUE (type));

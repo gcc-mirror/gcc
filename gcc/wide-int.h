@@ -264,6 +264,10 @@ along with GCC; see the file COPYING3.  If not see
 /* The number of HWIs needed to store an offset_int.  */
 #define OFFSET_INT_ELTS (ADDR_MAX_PRECISION / HOST_BITS_PER_WIDE_INT)
 
+/* The max number of HWIs needed to store a wide_int of PRECISION.  */
+#define WIDE_INT_MAX_HWIS(PRECISION) \
+  ((PRECISION + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT)
+
 /* The type of result produced by a binary operation on types T1 and T2.
    Defined purely for brevity.  */
 #define WI_BINARY_RESULT(T1, T2) \
@@ -1214,7 +1218,7 @@ template <int N>
 class GTY(()) fixed_wide_int_storage
 {
 private:
-  HOST_WIDE_INT val[(N + HOST_BITS_PER_WIDE_INT + 1) / HOST_BITS_PER_WIDE_INT];
+  HOST_WIDE_INT val[WIDE_INT_MAX_HWIS (N)];
   unsigned int len;
 
 public:
@@ -1475,8 +1479,7 @@ trailing_wide_ints <N>::set_precision (unsigned int precision,
   gcc_checking_assert (num_elements <= N);
   m_num_elements = num_elements;
   m_precision = precision;
-  m_max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
-	       / HOST_BITS_PER_WIDE_INT);
+  m_max_len = WIDE_INT_MAX_HWIS (precision);
 }
 
 /* Return a reference to element INDEX.  */
@@ -1505,8 +1508,7 @@ inline size_t
 trailing_wide_ints <N>::extra_size (unsigned int precision,
 				    unsigned int num_elements)
 {
-  unsigned int max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
-			  / HOST_BITS_PER_WIDE_INT);
+  unsigned int max_len = WIDE_INT_MAX_HWIS (precision);
   gcc_checking_assert (num_elements <= N);
   return (num_elements * max_len - 1) * sizeof (HOST_WIDE_INT);
 }

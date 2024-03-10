@@ -68,6 +68,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "opts.h"
 #include "hw-doloop.h"
+#include "targhooks.h"
+#include "case-cfn-macros.h"
 
 /* Which cpu we're compiling for (ARC600, ARC601, ARC700).  */
 static char arc_cpu_name[10] = "";
@@ -11808,6 +11810,37 @@ arc_insn_cost (rtx_insn *insn, bool speed)
   return cost;
 }
 
+static unsigned
+arc_libm_function_max_error (unsigned cfn, machine_mode mode,
+			     bool boundary_p)
+{
+#ifdef OPTION_GLIBC
+  bool glibc_p = OPTION_GLIBC;
+#else
+  bool glibc_p = false;
+#endif
+  if (glibc_p)
+    {
+      int rnd = flag_rounding_math ? 4 : 0;
+      switch (cfn)
+	{
+	CASE_CFN_SIN:
+	CASE_CFN_SIN_FN:
+	  if (!boundary_p && mode == DFmode)
+	    return 7 + rnd;
+	  break;
+	CASE_CFN_COS:
+	CASE_CFN_COS_FN:
+	  if (!boundary_p && mode == DFmode)
+	    return 4 + rnd;
+	default:
+	  break;
+	}
+      return glibc_linux_libm_function_max_error (cfn, mode, boundary_p);
+    }
+  return default_libm_function_max_error (cfn, mode, boundary_p);
+}
+
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
 
@@ -11831,6 +11864,9 @@ arc_insn_cost (rtx_insn *insn, bool speed)
 
 #undef  TARGET_INSN_COST
 #define TARGET_INSN_COST arc_insn_cost
+
+#undef  TARGET_LIBM_FUNCTION_MAX_ERROR
+#define TARGET_LIBM_FUNCTION_MAX_ERROR arc_libm_function_max_error
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -76,7 +76,7 @@ FROM M2Base IMPORT MixTypes, InitBase, Char, Integer, LongReal,
                    Cardinal, LongInt, LongCard, ZType, RType ;
 
 FROM M2System IMPORT Address ;
-FROM m2decl IMPORT DetermineSizeOfConstant ;
+FROM m2decl IMPORT ConstantStringExceedsZType ;
 FROM m2tree IMPORT Tree ;
 FROM m2linemap IMPORT BuiltinsLocation ;
 FROM StrLib IMPORT StrEqual ;
@@ -108,6 +108,14 @@ CONST
    UnboundedHighName    = "_m2_high_%d" ;
 
 TYPE
+   ConstLitPoolEntry = POINTER TO RECORD
+                                     sym      : CARDINAL ;
+                                     tok      : CARDINAL ;
+                                     constName: Name ;
+                                     constType: CARDINAL ;
+                                     next     : ConstLitPoolEntry ;
+                                  END ;
+
    LRLists = ARRAY [RightValue..LeftValue] OF List ;
 
    TypeOfSymbol = (RecordSym, VarientSym, DummySym,
@@ -469,6 +477,7 @@ TYPE
                     IsSet        : BOOLEAN ;      (* is the constant a set?      *)
                     IsConstructor: BOOLEAN ;      (* is the constant a set?      *)
                     FromType     : CARDINAL ;     (* type is determined FromType *)
+                    RangeError   : BOOLEAN ;      (* Have we reported an error?  *)
                     UnresFromType: BOOLEAN ;      (* is Type unresolved?         *)
                     Scope        : CARDINAL ;     (* Scope of declaration.       *)
                     At           : Where ;        (* Where was sym declared/used *)
@@ -819,7 +828,7 @@ TYPE
                SetSym              : Set              : SymSet |
                ProcedureSym        : Procedure        : SymProcedure |
                ProcTypeSym         : ProcType         : SymProcType |
-               ImportStatementSym        : ImportStatement        : SymImportStatement |
+               ImportStatementSym  : ImportStatement  : SymImportStatement |
                ImportSym           : Import           : SymImport |
                GnuAsmSym           : GnuAsm           : SymGnuAsm |
                InterfaceSym        : Interface        : SymInterface |
@@ -830,10 +839,10 @@ TYPE
             END ;
 
    CallFrame = RECORD
-                  Main  : CARDINAL ;  (* Main scope for insertions        *)
-                  Search: CARDINAL ;  (* Search scope for symbol searches *)
-                  Start : CARDINAL ;  (* ScopePtr value before StartScope *)
-                                      (* was called.                      *)
+                  Main  : CARDINAL ;  (* Main scope for insertions          *)
+                  Search: CARDINAL ;  (* Search scope for symbol searches   *)
+                  Start : CARDINAL ;  (* ScopePtr value before StartScope   *)
+                                      (* was called.                        *)
                END ;
 
    PtrToSymbol = POINTER TO Symbol ;
@@ -842,52 +851,51 @@ TYPE
    CheckProcedure = PROCEDURE (CARDINAL) ;
 
 VAR
-   Symbols       : Indexing.Index ;       (* ARRAY [1..MaxSymbols] OF Symbol.   *)
-   ScopeCallFrame: Indexing.Index ;       (* ARRAY [1..MaxScopes] OF CallFrame. *)
-   FreeSymbol    : CARDINAL ;    (* The next free symbol indice.       *)
+   Symbols       : Indexing.Index ;   (* ARRAY [1..MaxSymbols] OF Symbol.   *)
+   ScopeCallFrame: Indexing.Index ;   (* ARRAY [1..MaxScopes] OF CallFrame. *)
+   FreeSymbol    : CARDINAL ;         (* The next free symbol indice.       *)
    DefModuleTree : SymbolTree ;
-   ModuleTree    : SymbolTree ;  (* Tree of all modules ever used.     *)
+   ModuleTree    : SymbolTree ;       (* Tree of all modules ever used.     *)
    ConstLitStringTree
-                 : SymbolTree ;  (* String Literal Constants only need *)
-                                 (* to be declared once.               *)
-   ConstLitTree  : SymbolTree ;  (* Numerical Literal Constants only   *)
-                                 (* need to be declared once.          *)
-   CurrentModule : CARDINAL ;    (* Index into symbols determining the *)
-                                 (* current module being compiled.     *)
-                                 (* This maybe an inner module.        *)
-   MainModule    : CARDINAL ;    (* Index into symbols determining the *)
-                                 (* module the user requested to       *)
-                                 (* compile.                           *)
-   FileModule    : CARDINAL ;    (* Index into symbols determining     *)
-                                 (* which module (file) is being       *)
-                                 (* compiled. (Maybe an import def)    *)
-   ScopePtr      : CARDINAL ;    (* An index to the ScopeCallFrame.    *)
-                                 (* ScopePtr determines the top of the *)
-                                 (* ScopeCallFrame.                    *)
-   BaseScopePtr  : CARDINAL ;    (* An index to the ScopeCallFrame of  *)
-                                 (* the top of BaseModule. BaseModule  *)
-                                 (* is always left at the bottom of    *)
-                                 (* stack since it is used so          *)
-                                 (* frequently. When the BaseModule    *)
-                                 (* needs to be searched the ScopePtr  *)
-                                 (* is temporarily altered to          *)
-                                 (* BaseScopePtr and GetScopeSym is    *)
-                                 (* called.                            *)
-   BaseModule    : CARDINAL ;    (* Index to the symbol table of the   *)
-                                 (* Base pseudo modeule declaration.   *)
-   TemporaryNo   : CARDINAL ;    (* The next temporary number.         *)
-   CurrentError  : Error ;       (* Current error chain.               *)
-   AddressTypes  : List ;        (* A list of type symbols which must  *)
-                                 (* be declared as ADDRESS or pointer  *)
-(*
-   FreeFVarientList,             (* Lists used to maintain GC of field *)
-   UsedFVarientList: List ;      (* varients.                          *)
-*)
-   UnresolvedConstructorType: List ;  (* all constructors whose type   *)
-                                 (* is not yet known.                  *)
-   AnonymousName     : CARDINAL ;(* anonymous type name unique id      *)
-   ReportedUnknowns  : Set ;     (* set of symbols already reported as *)
-                                 (* unknowns to the user.              *)
+                 : SymbolTree ;       (* String Literal Constants only need *)
+                                      (* to be declared once.               *)
+   CurrentModule : CARDINAL ;         (* Index into symbols determining the *)
+                                      (* current module being compiled.     *)
+                                      (* This maybe an inner module.        *)
+   MainModule    : CARDINAL ;         (* Index into symbols determining the *)
+                                      (* module the user requested to       *)
+                                      (* compile.                           *)
+   FileModule    : CARDINAL ;         (* Index into symbols determining     *)
+                                      (* which module (file) is being       *)
+                                      (* compiled. (Maybe an import def)    *)
+   ScopePtr      : CARDINAL ;         (* An index to the ScopeCallFrame.    *)
+                                      (* ScopePtr determines the top of the *)
+                                      (* ScopeCallFrame.                    *)
+   BaseScopePtr  : CARDINAL ;         (* An index to the ScopeCallFrame of  *)
+                                      (* the top of BaseModule. BaseModule  *)
+                                      (* is always left at the bottom of    *)
+                                      (* stack since it is used so          *)
+                                      (* frequently. When the BaseModule    *)
+                                      (* needs to be searched the ScopePtr  *)
+                                      (* is temporarily altered to          *)
+                                      (* BaseScopePtr and GetScopeSym is    *)
+                                      (* called.                            *)
+   BaseModule    : CARDINAL ;         (* Index to the symbol table of the   *)
+                                      (* Base pseudo modeule declaration.   *)
+   TemporaryNo   : CARDINAL ;         (* The next temporary number.         *)
+   CurrentError  : Error ;            (* Current error chain.               *)
+   AddressTypes  : List ;             (* A list of type symbols which must  *)
+                                      (* be declared as ADDRESS or pointer  *)
+   UnresolvedConstructorType: List ;  (* all constructors whose type        *)
+                                      (* is not yet known.                  *)
+   AnonymousName     : CARDINAL ;     (* anonymous type name unique id      *)
+   ReportedUnknowns  : Set ;          (* set of symbols already reported as *)
+                                      (* unknowns to the user.              *)
+   ConstLitPoolTree  : SymbolTree ;   (* Pool of constants to ensure        *)
+                                      (* constants are reused between       *)
+                                      (* passes and reduce duplicate        *)
+                                      (* errors.                            *)
+   ConstLitArray     : Indexing.Index ;
 
 
 (*
@@ -1607,11 +1615,12 @@ VAR
 BEGIN
    AnonymousName := 0 ;
    CurrentError := NIL ;
-   InitTree(ConstLitTree) ;
-   InitTree(ConstLitStringTree) ;
-   InitTree(DefModuleTree) ;
-   InitTree(ModuleTree) ;
-   Symbols := InitIndex(1) ;
+   InitTree (ConstLitPoolTree) ;
+   InitTree (ConstLitStringTree) ;
+   InitTree (DefModuleTree) ;
+   InitTree (ModuleTree) ;
+   Symbols := InitIndex (1) ;
+   ConstLitArray := InitIndex (1) ;
    FreeSymbol := 1 ;
    ScopePtr := 1 ;
    ScopeCallFrame := InitIndex(1) ;
@@ -4752,23 +4761,19 @@ END MakeConstant ;
 
 
 (*
-   MakeConstLit - returns a constant literal of type, constType, with a constName,
-                  at location, tok.
+   CreateConstLit -
 *)
 
-PROCEDURE MakeConstLit (tok: CARDINAL; constName: Name; constType: CARDINAL) : CARDINAL ;
+PROCEDURE CreateConstLit (tok: CARDINAL; constName: Name; constType: CARDINAL) : CARDINAL ;
 VAR
    pSym      : PtrToSymbol ;
    Sym       : CARDINAL ;
-   issueError,
    overflow  : BOOLEAN ;
 BEGIN
-   issueError := TRUE ;
    overflow := FALSE ;
    IF constType=NulSym
    THEN
-      constType := GetConstLitType (tok, constName, overflow, issueError) ;
-      issueError := NOT overflow
+      constType := GetConstLitType (tok, constName, overflow, TRUE)
    END ;
    NewSym (Sym) ;
    pSym := GetPsym (Sym) ;
@@ -4778,14 +4783,15 @@ BEGIN
 
       ConstLitSym : ConstLit.name := constName ;
                     ConstLit.Value := InitValue () ;
-                    PushString (tok, constName, issueError) ;
+                    PushString (tok, constName, NOT overflow) ;
                     PopInto (ConstLit.Value) ;
                     ConstLit.Type := constType ;
                     ConstLit.IsSet := FALSE ;
                     ConstLit.IsConstructor := FALSE ;
                     ConstLit.FromType := NulSym ;     (* type is determined FromType *)
+                    ConstLit.RangeError := overflow ;
                     ConstLit.UnresFromType := FALSE ; (* is Type resolved?           *)
-                    ConstLit.Scope := GetCurrentScope() ;
+                    ConstLit.Scope := GetCurrentScope () ;
                     InitWhereDeclaredTok (tok, ConstLit.At) ;
                     InitWhereFirstUsedTok (tok, ConstLit.At)
 
@@ -4794,6 +4800,99 @@ BEGIN
       END
    END ;
    RETURN Sym
+END CreateConstLit ;
+
+
+(*
+   LookupConstLitPoolEntry - return a ConstLit symbol from the constant pool which
+                             matches tok, constName and constType.
+*)
+
+PROCEDURE LookupConstLitPoolEntry (tok: CARDINAL;
+                                   constName: Name; constType: CARDINAL) : CARDINAL ;
+VAR
+   pe       : ConstLitPoolEntry ;
+   rootIndex: CARDINAL ;
+BEGIN
+   rootIndex := GetSymKey (ConstLitPoolTree, constName) ;
+   IF rootIndex # 0
+   THEN
+      pe := Indexing.GetIndice (ConstLitArray, rootIndex) ;
+      WHILE pe # NIL DO
+         IF (pe^.tok = tok) AND
+            (pe^.constName = constName) AND
+            (pe^.constType = constType)
+         THEN
+            RETURN pe^.sym
+         END ;
+         pe := pe^.next
+      END
+   END ;
+   RETURN NulSym
+END LookupConstLitPoolEntry ;
+
+
+(*
+   AddConstLitPoolEntry - adds sym to the constlit pool.
+*)
+
+PROCEDURE AddConstLitPoolEntry (sym: CARDINAL; tok: CARDINAL;
+                                constName: Name; constType: CARDINAL) ;
+VAR
+   pe, old        : ConstLitPoolEntry ;
+   rootIndex, high: CARDINAL ;
+BEGIN
+   rootIndex := GetSymKey (ConstLitPoolTree, constName) ;
+   IF rootIndex = NulKey
+   THEN
+      high := Indexing.HighIndice (ConstLitArray) ;
+      NEW (pe) ;
+      IF pe = NIL
+      THEN
+         InternalError ('out of memory')
+      ELSE
+         pe^.sym := sym ;
+         pe^.tok := tok ;
+         pe^.constName := constName ;
+         pe^.constType := constType ;
+         pe^.next := NIL ;
+         PutSymKey (ConstLitPoolTree, constName, high+1) ;
+         Indexing.PutIndice (ConstLitArray, high+1, pe)
+      END
+   ELSE
+      NEW (pe) ;
+      IF pe = NIL
+      THEN
+         InternalError ('out of memory')
+      ELSE
+         old := Indexing.GetIndice (ConstLitArray, rootIndex) ;
+         pe^.sym := sym ;
+         pe^.tok := tok ;
+         pe^.constName := constName ;
+         pe^.constType := constType ;
+         pe^.next := old ;
+         Indexing.PutIndice (ConstLitArray, rootIndex, pe)
+      END
+   END
+END AddConstLitPoolEntry ;
+
+
+(*
+   MakeConstLit - returns a constant literal of type, constType, with a constName,
+                  at location, tok.
+*)
+
+PROCEDURE MakeConstLit (tok: CARDINAL; constName: Name; constType: CARDINAL) : CARDINAL ;
+VAR
+   sym: CARDINAL ;
+BEGIN
+   sym := LookupConstLitPoolEntry (tok, constName, constType) ;
+   IF sym = NulSym
+   THEN
+      sym := CreateConstLit (tok, constName, constType) ;
+      AddConstLitPoolEntry (sym, tok, constName, constType)
+   END ;
+   RETURN sym
 END MakeConstLit ;
 
 
@@ -4822,7 +4921,7 @@ BEGIN
             FromType := NulSym ;     (* type is determined FromType *)
             UnresFromType := FALSE ; (* is Type resolved?           *)
             IsTemp := FALSE ;
-            Scope := GetCurrentScope() ;
+            Scope := GetCurrentScope () ;
             InitWhereDeclaredTok (tok, At)
          END
       END ;
@@ -6376,10 +6475,8 @@ END IsHiddenType ;
 PROCEDURE GetConstLitType (tok: CARDINAL; name: Name;
                            VAR overflow: BOOLEAN; issueError: BOOLEAN) : CARDINAL ;
 VAR
-   loc          : location_t ;
-   s            : String ;
-   needsLong,
-   needsUnsigned: BOOLEAN ;
+   loc: location_t ;
+   s  : String ;
 BEGIN
    s := InitStringCharStar (KeyToCharStar (name)) ;
    IF char (s, -1) = 'C'
@@ -6395,27 +6492,14 @@ BEGIN
       loc := TokenToLocation (tok) ;
       CASE char (s, -1) OF
 
-      'H':  overflow := DetermineSizeOfConstant (loc, string (s), 16,
-                                                 needsLong, needsUnsigned, issueError) |
-      'B':  overflow := DetermineSizeOfConstant (loc, string (s), 8,
-                                                 needsLong, needsUnsigned, issueError) |
-      'A':  overflow := DetermineSizeOfConstant (loc, string (s), 2,
-                                                 needsLong, needsUnsigned, issueError)
+      'H':  overflow := ConstantStringExceedsZType (loc, string (s), 16, issueError) |
+      'B':  overflow := ConstantStringExceedsZType (loc, string (s), 8, issueError) |
+      'A':  overflow := ConstantStringExceedsZType (loc, string (s), 2, issueError)
 
       ELSE
-         overflow := DetermineSizeOfConstant (loc, string (s), 10,
-                                              needsLong, needsUnsigned, issueError)
+         overflow := ConstantStringExceedsZType (loc, string (s), 10, issueError)
       END ;
       s := KillString (s) ;
-(*
-      IF needsLong AND needsUnsigned
-      THEN
-         RETURN LongCard
-      ELSIF needsLong AND (NOT needsUnsigned)
-      THEN
-         RETURN LongInt
-      END ;
-*)
       RETURN ZType
    END
 END GetConstLitType ;
@@ -6655,7 +6739,8 @@ BEGIN
       WITH pSym^.Var DO
          RETURN( IsPointerCheck )
       END
-   END
+   END ;
+   RETURN FALSE
 END GetVarPointerCheck ;
 
 
@@ -12012,7 +12097,8 @@ BEGIN
          s := CollectUnknown (tok, GetScope (sym), n)
       END ;
       RETURN( s )
-   END
+   END ;
+   InternalError ('expecting sym should be a module, defimp or procedure symbol')
 END CollectUnknown ;
 
 

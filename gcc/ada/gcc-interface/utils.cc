@@ -5543,7 +5543,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	}
     }
 
-  /* Likewise if we are converting from a fixed-szie type to a type with self-
+  /* Likewise if we are converting from a fixed-size type to a type with self-
      referential size.  We use the max size to do the padding in this case.  */
   else if (!INDIRECT_REF_P (expr)
 	   && TREE_CODE (expr) != STRING_CST

@@ -2263,7 +2263,7 @@ zero_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
 {
   ub = lb = dconst0;
   if (signbit_known <= 0)
-    lb = real_value_negate (&dconst0);
+    lb = dconstm0;
   if (signbit_known < 0)
     ub = lb;
 }
@@ -2297,7 +2297,7 @@ zero_to_inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
   else if (signbit_known < 0)
     {
       lb = dconstninf;
-      ub = real_value_negate (&dconst0);
+      ub = dconstm0;
     }
   else
     {
@@ -2634,7 +2634,7 @@ private:
 	    if (real_isneg (&lh_lb) == real_isneg (&lh_ub))
 	      cp[1] = dconst0;
 	    else
-	      cp[1] = real_value_negate (&dconst0);
+	      cp[1] = dconstm0;
 	  }
 	else
 	  cp[1] = cp[0];

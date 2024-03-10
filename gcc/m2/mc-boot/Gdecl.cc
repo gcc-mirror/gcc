@@ -1028,7 +1028,7 @@ extern "C" void SYSTEM_ShiftRight (unsigned int *s, unsigned int _s_high, unsign
 extern "C" void SYSTEM_RotateVal (unsigned int *s, unsigned int _s_high, unsigned int *d, unsigned int _d_high, unsigned int SetSizeInBits, int RotateCount);
 extern "C" void SYSTEM_RotateLeft (unsigned int *s, unsigned int _s_high, unsigned int *d, unsigned int _d_high, unsigned int SetSizeInBits, unsigned int RotateCount);
 extern "C" void SYSTEM_RotateRight (unsigned int *s, unsigned int _s_high, unsigned int *d, unsigned int _d_high, unsigned int SetSizeInBits, unsigned int RotateCount);
-extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
+extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp);
 extern "C" void M2RTS_DeconstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
 extern "C" void M2RTS_RegisterModule (void * name, void * libname, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
 extern "C" void M2RTS_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname);

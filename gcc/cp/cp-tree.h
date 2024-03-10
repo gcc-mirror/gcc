@@ -49,7 +49,7 @@ c-common.h, not after.
    but not all node kinds do (e.g. constants, and references to
    params, locals, etc), so we stash a copy here.  */
 
-extern location_t cp_expr_location		(const_tree);
+inline location_t cp_expr_location		(const_tree);
 
 class cp_expr
 {
@@ -7515,7 +7515,8 @@ extern tree build_if_nonnull			(tree, tree, tsubst_flags_t);
 extern tree get_parent_with_private_access 	(tree decl, tree binfo);
 extern bool accessible_base_p			(tree, tree, bool);
 extern tree lookup_base                         (tree, tree, base_access,
-						 base_kind *, tsubst_flags_t);
+						 base_kind *, tsubst_flags_t,
+						 HOST_WIDE_INT = -1);
 extern tree dcast_base_hint			(tree, tree);
 extern int accessible_p				(tree, tree, bool);
 extern int accessible_in_template_p		(tree, tree);
@@ -7761,7 +7762,7 @@ extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
 extern tree fold_builtin_is_corresponding_member (location_t, int, tree *);
 extern tree fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
 extern tree finish_trait_expr			(location_t, enum cp_trait_kind, tree, tree);
-extern tree finish_trait_type			(enum cp_trait_kind, tree, tree);
+extern tree finish_trait_type			(enum cp_trait_kind, tree, tree, tsubst_flags_t);
 extern tree build_lambda_expr                   (void);
 extern tree build_lambda_object			(tree);
 extern tree begin_lambda_type                   (tree);
@@ -8161,6 +8162,30 @@ inline location_t
 loc_or_input_loc (location_t loc)
 {
   return loc == UNKNOWN_LOCATION ? input_location : loc;
+}
+
+/* Like EXPR_LOCATION, but also handle some tcc_exceptional that have
+   locations.  */
+
+inline location_t
+cp_expr_location (const_tree t_)
+{
+  tree t = CONST_CAST_TREE (t_);
+  if (t == NULL_TREE)
+    return UNKNOWN_LOCATION;
+  switch (TREE_CODE (t))
+    {
+    case LAMBDA_EXPR:
+      return LAMBDA_EXPR_LOCATION (t);
+    case STATIC_ASSERT:
+      return STATIC_ASSERT_SOURCE_LOCATION (t);
+    case TRAIT_EXPR:
+      return TRAIT_EXPR_LOCATION (t);
+    case PTRMEM_CST:
+      return PTRMEM_CST_LOCATION (t);
+    default:
+      return EXPR_LOCATION (t);
+    }
 }
 
 inline location_t

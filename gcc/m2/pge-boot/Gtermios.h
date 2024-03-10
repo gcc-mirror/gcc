@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -177,28 +178,28 @@ EXTERN int termios_tcflowoffo (int fd);
              if, t, supports, f.
 */
 
-EXTERN unsigned int termios_GetFlag (termios_TERMIOS t, termios_Flag f, unsigned int *b);
+EXTERN bool termios_GetFlag (termios_TERMIOS t, termios_Flag f, bool *b);
 
 /*
    SetFlag - sets a flag value in, t, to, b, and returns TRUE if
              this flag value is supported.
 */
 
-EXTERN unsigned int termios_SetFlag (termios_TERMIOS t, termios_Flag f, unsigned int b);
+EXTERN bool termios_SetFlag (termios_TERMIOS t, termios_Flag f, bool b);
 
 /*
    GetChar - sets a CHAR, ch, value from, t, and returns TRUE if
              this value is supported.
 */
 
-EXTERN unsigned int termios_GetChar (termios_TERMIOS t, termios_ControlChar c, char *ch);
+EXTERN bool termios_GetChar (termios_TERMIOS t, termios_ControlChar c, char *ch);
 
 /*
    SetChar - sets a CHAR value in, t, and returns TRUE if, c,
              is supported.
 */
 
-EXTERN unsigned int termios_SetChar (termios_TERMIOS t, termios_ControlChar c, char ch);
+EXTERN bool termios_SetChar (termios_TERMIOS t, termios_ControlChar c, char ch);
 #   ifdef __cplusplus
 }
 #   endif

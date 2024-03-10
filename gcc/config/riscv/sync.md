@@ -21,8 +21,12 @@
 
 (define_c_enum "unspec" [
   UNSPEC_COMPARE_AND_SWAP
+  UNSPEC_COMPARE_AND_SWAP_SUBWORD
   UNSPEC_SYNC_OLD_OP
+  UNSPEC_SYNC_OLD_OP_SUBWORD
   UNSPEC_SYNC_EXCHANGE
+  UNSPEC_SYNC_EXCHANGE_SUBWORD
+  UNSPEC_ATOMIC_LOAD
   UNSPEC_ATOMIC_STORE
   UNSPEC_MEMORY_BARRIER
 ])
@@ -42,18 +46,55 @@
   DONE;
 })
 
-;; Until the RISC-V memory model (hence its mapping from C++) is finalized,
-;; conservatively emit a full FENCE.
 (define_insn "mem_thread_fence_1"
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
    (match_operand:SI 1 "const_int_operand" "")] ;; model
   ""
-  "fence\tiorw,iorw")
+  {
+    enum memmodel model = (enum memmodel) INTVAL (operands[1]);
+    model = memmodel_base (model);
+    if (model == MEMMODEL_SEQ_CST)
+	return "fence\trw,rw";
+    else if (model == MEMMODEL_ACQ_REL)
+	return "fence.tso";
+    else if (model == MEMMODEL_ACQUIRE)
+	return "fence\tr,rw";
+    else if (model == MEMMODEL_RELEASE)
+	return "fence\trw,w";
+    else
+	gcc_unreachable ();
+  }
+  [(set (attr "length") (const_int 4))])
 
 ;; Atomic memory operations.
 
-;; Implement atomic stores with amoswap.  Fall back to fences for atomic loads.
+(define_insn "atomic_load<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+    (unspec_volatile:GPR
+      [(match_operand:GPR 1 "memory_operand" "A")
+       (match_operand:SI 2 "const_int_operand")]      ;; model
+      UNSPEC_ATOMIC_LOAD))]
+  "TARGET_ATOMIC"
+  {
+    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+    model = memmodel_base (model);
+
+    if (model == MEMMODEL_SEQ_CST)
+      return "fence\trw,rw\;"
+	     "l<amo>\t%0,%1\;"
+	     "fence\tr,rw";
+    if (model == MEMMODEL_ACQUIRE)
+      return "l<amo>\t%0,%1\;"
+	     "fence\tr,rw";
+    else
+      return "l<amo>\t%0,%1";
+  }
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 12))])
+
+;; Implement atomic stores with conservative fences.
+;; This allows us to be compatible with the ISA manual Table A.6 and Table A.7.
 (define_insn "atomic_store<mode>"
   [(set (match_operand:GPR 0 "memory_operand" "=A")
     (unspec_volatile:GPR
@@ -61,9 +102,22 @@
        (match_operand:SI 2 "const_int_operand")]      ;; model
       UNSPEC_ATOMIC_STORE))]
   "TARGET_ATOMIC"
-  "%F2amoswap.<amo>%A2 zero,%z1,%0"
+  {
+    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+    model = memmodel_base (model);
+
+    if (model == MEMMODEL_SEQ_CST)
+      return "fence\trw,w\;"
+	     "s<amo>\t%z1,%0\;"
+	     "fence\trw,rw";
+    if (model == MEMMODEL_RELEASE)
+      return "fence\trw,w\;"
+	     "s<amo>\t%z1,%0";
+    else
+      return "s<amo>\t%z1,%0";
+  }
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 8))])
+   (set (attr "length") (const_int 12))])
 
 (define_insn "atomic_<atomic_optab><mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+A")
@@ -73,9 +127,9 @@
 	   (match_operand:SI 2 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
   "TARGET_ATOMIC"
-  "%F2amo<insn>.<amo>%A2 zero,%z1,%0"
+  "amo<insn>.<amo>%A2\tzero,%z1,%0"
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 8))])
+   (set (attr "length") (const_int 4))])
 
 (define_insn "atomic_fetch_<atomic_optab><mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
@@ -87,9 +141,143 @@
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
   "TARGET_ATOMIC"
-  "%F3amo<insn>.<amo>%A3 %0,%z2,%1"
+  "amo<insn>.<amo>%A3\t%0,%z2,%1"
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 8))])
+   (set (attr "length") (const_int 4))])
+
+(define_insn "subword_atomic_fetch_strong_<atomic_optab>"
+  [(set (match_operand:SI 0 "register_operand" "=&r")		   ;; old value at mem
+	(match_operand:SI 1 "memory_operand" "+A"))		   ;; mem location
+   (set (match_dup 1)
+	(unspec_volatile:SI
+	  [(any_atomic:SI (match_dup 1)
+		     (match_operand:SI 2 "register_operand" "rI")) ;; value for op
+	   (match_operand:SI 3 "const_int_operand")]		   ;; model
+	 UNSPEC_SYNC_OLD_OP_SUBWORD))
+    (match_operand:SI 4 "register_operand" "rI")		   ;; mask
+    (match_operand:SI 5 "register_operand" "rI")		   ;; not_mask
+    (clobber (match_scratch:SI 6 "=&r"))			   ;; tmp_1
+    (clobber (match_scratch:SI 7 "=&r"))]			   ;; tmp_2
+  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  {
+    return "1:\;"
+	   "lr.w%I3\t%0, %1\;"
+	   "<insn>\t%6, %0, %2\;"
+	   "and\t%6, %6, %4\;"
+	   "and\t%7, %0, %5\;"
+	   "or\t%7, %7, %6\;"
+	   "sc.w%J3\t%6, %7, %1\;"
+	   "bnez\t%6, 1b";
+  }
+  [(set (attr "length") (const_int 28))])
+
+(define_expand "atomic_fetch_nand<mode>"
+  [(match_operand:SHORT 0 "register_operand")			      ;; old value at mem
+   (not:SHORT (and:SHORT (match_operand:SHORT 1 "memory_operand")     ;; mem location
+			 (match_operand:SHORT 2 "reg_or_0_operand"))) ;; value for op
+   (match_operand:SI 3 "const_int_operand")]			      ;; model
+  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+{
+  /* We have no QImode/HImode atomics, so form a mask, then use
+     subword_atomic_fetch_strong_nand to implement a LR/SC version of the
+     operation.  */
+
+  /* Logic duplicated in gcc/libgcc/config/riscv/atomic.c for use when inlining
+     is disabled.  */
+
+  rtx old = gen_reg_rtx (SImode);
+  rtx mem = operands[1];
+  rtx value = operands[2];
+  rtx model = operands[3];
+  rtx aligned_mem = gen_reg_rtx (SImode);
+  rtx shift = gen_reg_rtx (SImode);
+  rtx mask = gen_reg_rtx (SImode);
+  rtx not_mask = gen_reg_rtx (SImode);
+
+  riscv_subword_address (mem, &aligned_mem, &shift, &mask, &not_mask);
+
+  rtx shifted_value = gen_reg_rtx (SImode);
+  riscv_lshift_subword (<MODE>mode, value, shift, &shifted_value);
+
+  emit_insn (gen_subword_atomic_fetch_strong_nand (old, aligned_mem,
+						   shifted_value, model,
+						   mask, not_mask));
+
+  emit_move_insn (old, gen_rtx_ASHIFTRT (SImode, old,
+					 gen_lowpart (QImode, shift)));
+
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, old));
+
+  DONE;
+})
+
+(define_insn "subword_atomic_fetch_strong_nand"
+  [(set (match_operand:SI 0 "register_operand" "=&r")			  ;; old value at mem
+	(match_operand:SI 1 "memory_operand" "+A"))			  ;; mem location
+   (set (match_dup 1)
+	(unspec_volatile:SI
+	  [(not:SI (and:SI (match_dup 1)
+			   (match_operand:SI 2 "register_operand" "rI"))) ;; value for op
+	   (match_operand:SI 3 "const_int_operand")]			  ;; mask
+	 UNSPEC_SYNC_OLD_OP_SUBWORD))
+    (match_operand:SI 4 "register_operand" "rI")			  ;; mask
+    (match_operand:SI 5 "register_operand" "rI")			  ;; not_mask
+    (clobber (match_scratch:SI 6 "=&r"))				  ;; tmp_1
+    (clobber (match_scratch:SI 7 "=&r"))]				  ;; tmp_2
+  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  {
+    return "1:\;"
+	   "lr.w%I3\t%0, %1\;"
+	   "and\t%6, %0, %2\;"
+	   "not\t%6, %6\;"
+	   "and\t%6, %6, %4\;"
+	   "and\t%7, %0, %5\;"
+	   "or\t%7, %7, %6\;"
+	   "sc.w%J3\t%6, %7, %1\;"
+	   "bnez\t%6, 1b";
+  }
+  [(set (attr "length") (const_int 32))])
+
+(define_expand "atomic_fetch_<atomic_optab><mode>"
+  [(match_operand:SHORT 0 "register_operand")			 ;; old value at mem
+   (any_atomic:SHORT (match_operand:SHORT 1 "memory_operand")	 ;; mem location
+		     (match_operand:SHORT 2 "reg_or_0_operand")) ;; value for op
+   (match_operand:SI 3 "const_int_operand")]			 ;; model
+  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+{
+  /* We have no QImode/HImode atomics, so form a mask, then use
+     subword_atomic_fetch_strong_<mode> to implement a LR/SC version of the
+     operation.  */
+
+  /* Logic duplicated in gcc/libgcc/config/riscv/atomic.c for use when inlining
+     is disabled.  */
+
+  rtx old = gen_reg_rtx (SImode);
+  rtx mem = operands[1];
+  rtx value = operands[2];
+  rtx model = operands[3];
+  rtx aligned_mem = gen_reg_rtx (SImode);
+  rtx shift = gen_reg_rtx (SImode);
+  rtx mask = gen_reg_rtx (SImode);
+  rtx not_mask = gen_reg_rtx (SImode);
+
+  riscv_subword_address (mem, &aligned_mem, &shift, &mask, &not_mask);
+
+  rtx shifted_value = gen_reg_rtx (SImode);
+  riscv_lshift_subword (<MODE>mode, value, shift, &shifted_value);
+
+  emit_insn (gen_subword_atomic_fetch_strong_<atomic_optab> (old, aligned_mem,
+							     shifted_value,
+							     model, mask,
+							     not_mask));
+
+  emit_move_insn (old, gen_rtx_ASHIFTRT (SImode, old,
+					 gen_lowpart (QImode, shift)));
+
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, old));
+
+  DONE;
+})
 
 (define_insn "atomic_exchange<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
@@ -100,9 +288,62 @@
    (set (match_dup 1)
 	(match_operand:GPR 2 "register_operand" "0"))]
   "TARGET_ATOMIC"
-  "%F3amoswap.<amo>%A3 %0,%z2,%1"
+  "amoswap.<amo>%A3\t%0,%z2,%1"
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 8))])
+   (set (attr "length") (const_int 4))])
+
+(define_expand "atomic_exchange<mode>"
+  [(match_operand:SHORT 0 "register_operand") ;; old value at mem
+   (match_operand:SHORT 1 "memory_operand")   ;; mem location
+   (match_operand:SHORT 2 "register_operand") ;; value
+   (match_operand:SI 3 "const_int_operand")]  ;; model
+  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+{
+  rtx old = gen_reg_rtx (SImode);
+  rtx mem = operands[1];
+  rtx value = operands[2];
+  rtx model = operands[3];
+  rtx aligned_mem = gen_reg_rtx (SImode);
+  rtx shift = gen_reg_rtx (SImode);
+  rtx mask = gen_reg_rtx (SImode);
+  rtx not_mask = gen_reg_rtx (SImode);
+
+  riscv_subword_address (mem, &aligned_mem, &shift, &mask, &not_mask);
+
+  rtx shifted_value = gen_reg_rtx (SImode);
+  riscv_lshift_subword (<MODE>mode, value, shift, &shifted_value);
+
+  emit_insn (gen_subword_atomic_exchange_strong (old, aligned_mem,
+						 shifted_value, model,
+						 not_mask));
+
+  emit_move_insn (old, gen_rtx_ASHIFTRT (SImode, old,
+					 gen_lowpart (QImode, shift)));
+
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, old));
+  DONE;
+})
+
+(define_insn "subword_atomic_exchange_strong"
+  [(set (match_operand:SI 0 "register_operand" "=&r")	 ;; old value at mem
+	(match_operand:SI 1 "memory_operand" "+A"))	 ;; mem location
+   (set (match_dup 1)
+	(unspec_volatile:SI
+	  [(match_operand:SI 2 "reg_or_0_operand" "rI")	 ;; value
+	   (match_operand:SI 3 "const_int_operand")]	 ;; model
+      UNSPEC_SYNC_EXCHANGE_SUBWORD))
+    (match_operand:SI 4 "reg_or_0_operand" "rI")	 ;; not_mask
+    (clobber (match_scratch:SI 5 "=&r"))]		 ;; tmp_1
+  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  {
+    return "1:\;"
+	   "lr.w%I3\t%0, %1\;"
+	   "and\t%5, %0, %4\;"
+	   "or\t%5, %5, %2\;"
+	   "sc.w%J3\t%5, %5, %1\;"
+	   "bnez\t%5, 1b";
+  }
+  [(set (attr "length") (const_int 20))])
 
 (define_insn "atomic_cas_value_strong<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
@@ -115,9 +356,21 @@
 	 UNSPEC_COMPARE_AND_SWAP))
    (clobber (match_scratch:GPR 6 "=&r"))]
   "TARGET_ATOMIC"
-  "%F5 1: lr.<amo>%A5 %0,%1; bne %0,%z2,1f; sc.<amo>%A4 %6,%z3,%1; bnez %6,1b; 1:"
+  {
+    enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
+    enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
+    /* Find the union of the two memory models so we can satisfy both success
+       and failure memory models.  */
+    operands[5] = GEN_INT (riscv_union_memmodels (model_success, model_failure));
+    return "1:\;"
+	   "lr.<amo>%I5\t%0,%1\;"
+	   "bne\t%0,%z2,1f\;"
+	   "sc.<amo>%J5\t%6,%z3,%1\;"
+	   "bnez\t%6,1b\;"
+	   "1:";
+  }
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 20))])
+   (set (attr "length") (const_int 16))])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
@@ -153,6 +406,132 @@
   DONE;
 })
 
+(define_expand "atomic_compare_and_swap<mode>"
+  [(match_operand:SI 0 "register_operand")    ;; bool output
+   (match_operand:SHORT 1 "register_operand") ;; val output
+   (match_operand:SHORT 2 "memory_operand")   ;; memory
+   (match_operand:SHORT 3 "reg_or_0_operand") ;; expected value
+   (match_operand:SHORT 4 "reg_or_0_operand") ;; desired value
+   (match_operand:SI 5 "const_int_operand")   ;; is_weak
+   (match_operand:SI 6 "const_int_operand")   ;; mod_s
+   (match_operand:SI 7 "const_int_operand")]  ;; mod_f
+  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+{
+  emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
+						operands[3], operands[4],
+						operands[6], operands[7]));
+
+  rtx val = gen_reg_rtx (SImode);
+  if (operands[1] != const0_rtx)
+    emit_move_insn (val, gen_rtx_SIGN_EXTEND (SImode, operands[1]));
+  else
+    emit_move_insn (val, const0_rtx);
+
+  rtx exp = gen_reg_rtx (SImode);
+  if (operands[3] != const0_rtx)
+    emit_move_insn (exp, gen_rtx_SIGN_EXTEND (SImode, operands[3]));
+  else
+    emit_move_insn (exp, const0_rtx);
+
+  rtx compare = val;
+  if (exp != const0_rtx)
+    {
+      rtx difference = gen_rtx_MINUS (SImode, val, exp);
+      compare = gen_reg_rtx (SImode);
+      emit_move_insn (compare, difference);
+    }
+
+  if (word_mode != SImode)
+    {
+      rtx reg = gen_reg_rtx (word_mode);
+      emit_move_insn (reg, gen_rtx_SIGN_EXTEND (word_mode, compare));
+      compare = reg;
+    }
+
+  emit_move_insn (operands[0], gen_rtx_EQ (SImode, compare, const0_rtx));
+  DONE;
+})
+
+(define_expand "atomic_cas_value_strong<mode>"
+  [(match_operand:SHORT 0 "register_operand") ;; val output
+   (match_operand:SHORT 1 "memory_operand")   ;; memory
+   (match_operand:SHORT 2 "reg_or_0_operand") ;; expected value
+   (match_operand:SHORT 3 "reg_or_0_operand") ;; desired value
+   (match_operand:SI 4 "const_int_operand")   ;; mod_s
+   (match_operand:SI 5 "const_int_operand")   ;; mod_f
+   (match_scratch:SHORT 6)]
+  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+{
+  /* We have no QImode/HImode atomics, so form a mask, then use
+     subword_atomic_cas_strong<mode> to implement a LR/SC version of the
+     operation.  */
+
+  /* Logic duplicated in gcc/libgcc/config/riscv/atomic.c for use when inlining
+     is disabled.  */
+
+  rtx old = gen_reg_rtx (SImode);
+  rtx mem = operands[1];
+  rtx aligned_mem = gen_reg_rtx (SImode);
+  rtx shift = gen_reg_rtx (SImode);
+  rtx mask = gen_reg_rtx (SImode);
+  rtx not_mask = gen_reg_rtx (SImode);
+
+  riscv_subword_address (mem, &aligned_mem, &shift, &mask, &not_mask);
+
+  rtx o = operands[2];
+  rtx n = operands[3];
+  rtx shifted_o = gen_reg_rtx (SImode);
+  rtx shifted_n = gen_reg_rtx (SImode);
+
+  riscv_lshift_subword (<MODE>mode, o, shift, &shifted_o);
+  riscv_lshift_subword (<MODE>mode, n, shift, &shifted_n);
+
+  emit_move_insn (shifted_o, gen_rtx_AND (SImode, shifted_o, mask));
+  emit_move_insn (shifted_n, gen_rtx_AND (SImode, shifted_n, mask));
+
+  enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
+  enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
+  /* Find the union of the two memory models so we can satisfy both success
+     and failure memory models.  */
+  rtx model = GEN_INT (riscv_union_memmodels (model_success, model_failure));
+
+  emit_insn (gen_subword_atomic_cas_strong (old, aligned_mem,
+					    shifted_o, shifted_n,
+					    model, mask, not_mask));
+
+  emit_move_insn (old, gen_rtx_ASHIFTRT (SImode, old,
+					 gen_lowpart (QImode, shift)));
+
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, old));
+
+  DONE;
+})
+
+(define_insn "subword_atomic_cas_strong"
+  [(set (match_operand:SI 0 "register_operand" "=&r")			   ;; old value at mem
+	(match_operand:SI 1 "memory_operand" "+A"))			   ;; mem location
+   (set (match_dup 1)
+	(unspec_volatile:SI [(match_operand:SI 2 "reg_or_0_operand" "rJ")  ;; expected value
+			     (match_operand:SI 3 "reg_or_0_operand" "rJ")] ;; desired value
+	 UNSPEC_COMPARE_AND_SWAP_SUBWORD))
+	(match_operand:SI 4 "const_int_operand")			   ;; model
+	(match_operand:SI 5 "register_operand" "rI")			   ;; mask
+	(match_operand:SI 6 "register_operand" "rI")			   ;; not_mask
+	(clobber (match_scratch:SI 7 "=&r"))]				   ;; tmp_1
+  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  {
+    return "1:\;"
+	   "lr.w%I4\t%0, %1\;"
+	   "and\t%7, %0, %5\;"
+	   "bne\t%7, %z2, 1f\;"
+	   "and\t%7, %0, %6\;"
+	   "or\t%7, %7, %3\;"
+	   "sc.w%J4\t%7, %7, %1\;"
+	   "bnez\t%7, 1b\;"
+	   "1:";
+  }
+  [(set (attr "length") (const_int 28))])
+
 (define_expand "atomic_test_and_set"
   [(match_operand:QI 0 "register_operand" "")     ;; bool output
    (match_operand:QI 1 "memory_operand" "+A")    ;; memory
@@ -160,7 +539,7 @@
   "TARGET_ATOMIC"
 {
   /* We have no QImode atomics, so use the address LSBs to form a mask,
-     then use an aligned SImode atomic. */
+     then use an aligned SImode atomic.  */
   rtx result = operands[0];
   rtx mem = operands[1];
   rtx model = operands[2];

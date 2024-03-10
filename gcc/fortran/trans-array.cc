@@ -8588,7 +8588,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 			 "Creating array temporary at %L", &expr->where);
 	}
 
-      /* When optmizing, we can use gfc_conv_subref_array_arg for
+      /* When optimizing, we can use gfc_conv_subref_array_arg for
 	 making the packing and unpacking operation visible to the
 	 optimizers.  */
 
@@ -11193,7 +11193,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 }
 
 
-/* Initialize class descriptor's TKR infomation.  */
+/* Initialize class descriptor's TKR information.  */
 
 void
 gfc_trans_class_array (gfc_symbol * sym, gfc_wrapped_block * block)

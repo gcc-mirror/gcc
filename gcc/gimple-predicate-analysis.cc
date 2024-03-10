@@ -307,7 +307,8 @@ find_var_cmp_const (pred_chain_union preds, gphi *phi, gimple **flag_def,
 	  value_range r;
 	  if (!INTEGRAL_TYPE_P (type)
 	      || !get_range_query (cfun)->range_of_expr (r, cond_rhs)
-	      || r.kind () != VR_RANGE)
+	      || r.undefined_p ()
+	      || r.varying_p ())
 	    continue;
 
 	  wide_int min = r.lower_bound ();
@@ -1830,7 +1831,7 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 		}
 	    }
 	  /* Get the conditional controlling the bb exit edge.  */
-	  gimple *cond_stmt = last_stmt (guard_bb);
+	  gimple *cond_stmt = *gsi_last_bb (guard_bb);
 	  if (gimple_code (cond_stmt) == GIMPLE_COND)
 	    {
 	      /* The true edge corresponds to the uninteresting condition.

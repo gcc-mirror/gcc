@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RISCV_PROTOS_H
 #define GCC_RISCV_PROTOS_H
 
+#include "memmodel.h"
+
 /* Symbol types we understand.  The order of this list must match that of
    the unspec enum in riscv.md, subsequent to UNSPEC_ADDRESS_FIRST.  */
 enum riscv_symbol_type {
@@ -44,10 +46,10 @@ extern int riscv_const_insns (rtx);
 extern int riscv_split_const_insns (rtx);
 extern int riscv_load_store_insns (rtx, rtx_insn *);
 extern rtx riscv_emit_move (rtx, rtx);
-extern bool riscv_split_symbol (rtx, rtx, machine_mode, rtx *, bool);
+extern bool riscv_split_symbol (rtx, rtx, machine_mode, rtx *);
 extern bool riscv_split_symbol_type (enum riscv_symbol_type);
 extern rtx riscv_unspec_address (rtx, enum riscv_symbol_type);
-extern void riscv_move_integer (rtx, rtx, HOST_WIDE_INT, machine_mode, bool);
+extern void riscv_move_integer (rtx, rtx, HOST_WIDE_INT, machine_mode);
 extern bool riscv_legitimize_move (machine_mode, rtx, rtx);
 extern rtx riscv_subword (rtx, bool);
 extern bool riscv_split_64bit_move_p (rtx, rtx);
@@ -78,7 +80,11 @@ extern bool riscv_gpr_save_operation_p (rtx);
 extern void riscv_reinit (void);
 extern poly_uint64 riscv_regmode_natural_size (machine_mode);
 extern bool riscv_v_ext_vector_mode_p (machine_mode);
+extern bool riscv_v_ext_tuple_mode_p (machine_mode);
 extern bool riscv_shamt_matches_mask_p (int, HOST_WIDE_INT);
+extern void riscv_subword_address (rtx, rtx *, rtx *, rtx *, rtx *);
+extern void riscv_lshift_subword (machine_mode, rtx, rtx, rtx *);
+extern enum memmodel riscv_union_memmodels (enum memmodel, enum memmodel);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
@@ -165,6 +171,8 @@ void emit_vlmax_op (unsigned, rtx, rtx, rtx, machine_mode);
 void emit_nonvlmax_op (unsigned, rtx, rtx, rtx, machine_mode);
 enum vlmul_type get_vlmul (machine_mode);
 unsigned int get_ratio (machine_mode);
+unsigned int get_nf (machine_mode);
+machine_mode get_subpart_mode (machine_mode);
 int get_ta (rtx);
 int get_ma (rtx);
 int get_avl_type (rtx);
@@ -186,6 +194,7 @@ enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
 opt_machine_mode get_vector_mode (scalar_mode, poly_uint64);
+opt_machine_mode get_tuple_mode (machine_mode, unsigned int);
 bool simm5_p (rtx);
 bool neg_simm5_p (rtx);
 #ifdef RTX_CODE
@@ -207,6 +216,7 @@ enum vlen_enum
 bool slide1_sew64_helper (int, machine_mode, machine_mode,
 			  machine_mode, rtx *);
 rtx gen_avl_for_scalar_move (rtx);
+void expand_tuple_move (machine_mode, rtx *);
 }
 
 /* We classify builtin types into two classes:
@@ -237,4 +247,5 @@ extern const char*
 th_mempair_output_move (rtx[4], bool, machine_mode, RTX_CODE);
 #endif
 
+extern bool riscv_use_divmod_expander (void);
 #endif /* ! GCC_RISCV_PROTOS_H */

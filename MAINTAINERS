@@ -320,6 +320,7 @@ from other maintainers or reviewers.
 			Write After Approval	(last name alphabetical order)
 
 Mark G. Adams					<mark.g.adams@sympatico.ca>
+Ajit Kumar Agarwal				<aagarwa1@linux.ibm.com>
 Pedro Alves					<palves@redhat.com>
 Paul-Antoine Arras				<pa@codesourcery.com>
 Arsen Arsenović		      	    		<arsen@aarsen.me>
@@ -385,7 +386,8 @@ Lawrence Crowl					<crowl@google.com>
 Lili Cui					<lili.cui@intel.com>
 Ian Dall					<ian@beware.dropbear.id.au>
 David Daney					<david.daney@caviumnetworks.com>
-Robin Dapp					<rdapp@linux.ibm.com>
+Robin Dapp					<rdapp.gcc@gmail.com>
+Robin Dapp					<rdapp@ventanamicro.com>
 Simon Dardis					<simon.dardis@gmail.com>
 Sudakshina Das					<sudi.das@arm.com>
 Bud Davis					<jmdavis@link.com>
@@ -435,6 +437,7 @@ Haochen Gui					<guihaoc@gcc.gnu.org>
 Jiufu Guo					<guojiufu@linux.ibm.com>
 Xuepeng Guo					<terry.xpguo@gmail.com>
 Wei Guozhi					<carrot@google.com>
+Vineet Gupta					<vineetg@rivosinc.com>
 Naveen H.S					<naveenh@marvell.com>
 Mostafa Hagog					<hagog@gcc.gnu.org>
 Andrew Haley					<aph@redhat.com>
@@ -565,6 +568,7 @@ Phil Muldoon					<pmuldoon@redhat.com>
 Gaius Mulley					<gaiusmod2@gmail.com>
 Steven Munroe					<munroesj52@gmail.com>
 Szabolcs Nagy					<szabolcs.nagy@arm.com>
+Victor Do Nascimento				<victor.donascimento@arm.com>
 Quentin Neill					<quentin.neill.gnu@gmail.com>
 Adam Nemet					<adambnemet@gmail.com>
 Thomas Neumann					<tneumann@users.sourceforge.net>
@@ -576,6 +580,7 @@ Dorit Nuzman					<dorit@il.ibm.com>
 David O'Brien					<obrien@FreeBSD.org>
 Carlos O'Donell					<carlos@redhat.com>
 Peter O'Gorman					<pogma@thewrittenword.com>
+Patrick O'Neill					<patrick@rivosinc.com>
 Braden Obrzut					<admin@maniacsvault.net>
 Andrea Ornstein					<andrea.ornstein@st.com>
 Maxim Ostapenko					<m.ostapenko@samsung.com>
@@ -728,6 +733,8 @@ Certificate of Origin Version 1.1.  See https://gcc.gnu.org/dco.html for more
 information.
 
 
+Robin Dapp					<rdapp.gcc@gmail.com>
+Robin Dapp					<rdapp@ventanamicro.com>
 Matthias Kretz					<m.kretz@gsi.de>
 Tim Lange					<mail@tim-lange.me>
 Jeff Law					<jeffreyalaw@gmail.com>

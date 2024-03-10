@@ -1,6 +1,6 @@
 /* { dg-do assemble } */
-/* { dg-final { scan-assembler "movu.w \\\$r10,\\\$|movu.w 2047," } } */
-/* { dg-final { scan-assembler "and.w 2047,\\\$|and.d \\\$r10," } } */
+/* { dg-final { scan-assembler "movu.w \\\$r10,\\\$|movu.w 2045," } } */
+/* { dg-final { scan-assembler "and.w 2045,\\\$|and.d \\\$r10," } } */
 /* { dg-final { scan-assembler-not "move.d \\\$r10,\\\$" } } */
 /* { dg-final { scan-assembler "movu.b \\\$r10,\\\$|movu.b 95," } } */
 /* { dg-final { scan-assembler "and.b 95,\\\$|and.d \\\$r10," } } */
@@ -19,7 +19,7 @@
 unsigned int
 and_peep2_hi (unsigned int y, unsigned int *x)
 {
-  *x = y & 0x7ff;
+  *x = y & 0x7fd;
   return y;
 }
 

@@ -3675,6 +3675,16 @@ diagnose_trait_expr (tree expr, tree args)
 
   tree t1 = TRAIT_EXPR_TYPE1 (expr);
   tree t2 = TRAIT_EXPR_TYPE2 (expr);
+  if (t2 && TREE_CODE (t2) == TREE_VEC)
+    {
+      /* Convert the TREE_VEC of arguments into a TREE_LIST, since we can't
+	 directly print a TREE_VEC but we can a TREE_LIST via the E format
+	 specifier.  */
+      tree list = NULL_TREE;
+      for (tree t : tree_vec_range (t2))
+	list = tree_cons (NULL_TREE, t, list);
+      t2 = nreverse (list);
+    }
   switch (TRAIT_EXPR_KIND (expr))
     {
     case CPTK_HAS_NOTHROW_ASSIGN:

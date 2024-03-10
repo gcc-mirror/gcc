@@ -799,6 +799,26 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 	   && (TYPE_PRECISION (vr2->type)
 	       != TREE_INT_CST_LOW (TYPE_SIZE (vr2->type))))
     return false;
+  else if (VECTOR_BOOLEAN_TYPE_P (vr1->type)
+	   && VECTOR_BOOLEAN_TYPE_P (vr2->type))
+    {
+      /* Vector boolean types can have padding, verify we are dealing with
+	 the same number of elements, aka the precision of the types.
+	 For example, In most architecture the precision_size of vbool*_t
+	 types are caculated like below:
+	 precision_size = type_size * 8
+
+	 Unfortunately, the RISC-V will adjust the precision_size for the
+	 vbool*_t in order to align the ISA as below:
+	 type_size      = [1, 1, 1, 1,  2,  4,  8]
+	 precision_size = [1, 2, 4, 8, 16, 32, 64]
+
+	 Then the precision_size of RISC-V vbool*_t will not be the multiple
+	 of the type_size.  We take care of this case consolidated here.  */
+      if (maybe_ne (TYPE_VECTOR_SUBPARTS (vr1->type),
+		    TYPE_VECTOR_SUBPARTS (vr2->type)))
+	return false;
+    }
 
   i = 0;
   j = 0;
@@ -4757,8 +4777,8 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 				 && EDGE_COUNT (idom2->succs) == 2);
 
 	    /* Verify the controlling stmt is the same.  */
-	    gcond *last1 = as_a <gcond *> (last_stmt (idom1));
-	    gcond *last2 = as_a <gcond *> (last_stmt (idom2));
+	    gcond *last1 = as_a <gcond *> (*gsi_last_bb (idom1));
+	    gcond *last2 = as_a <gcond *> (*gsi_last_bb (idom2));
 	    bool inverted_p;
 	    if (! cond_stmts_equal_p (last1, vp1->cclhs, vp1->ccrhs,
 				      last2, vp2->cclhs, vp2->ccrhs,
@@ -4859,7 +4879,7 @@ vn_phi_lookup (gimple *phi, bool backedges_varying_p)
     {
       basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
       if (EDGE_COUNT (idom1->succs) == 2)
-	if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
+	if (gcond *last1 = safe_dyn_cast <gcond *> (*gsi_last_bb (idom1)))
 	  {
 	    /* ???  We want to use SSA_VAL here.  But possibly not
 	       allow VN_TOP.  */
@@ -4914,7 +4934,7 @@ vn_phi_insert (gimple *phi, tree result, bool backedges_varying_p)
     {
       basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
       if (EDGE_COUNT (idom1->succs) == 2)
-	if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
+	if (gcond *last1 = safe_dyn_cast <gcond *> (*gsi_last_bb (idom1)))
 	  {
 	    /* ???  We want to use SSA_VAL here.  But possibly not
 	       allow VN_TOP.  */
@@ -8491,8 +8511,7 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
       bitmap_set_bit (worklist, 0);
       while (!bitmap_empty_p (worklist))
 	{
-	  int idx = bitmap_first_set_bit (worklist);
-	  bitmap_clear_bit (worklist, idx);
+	  int idx = bitmap_clear_first_set_bit (worklist);
 	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[idx]);
 	  gcc_assert ((bb->flags & BB_EXECUTABLE)
 		      && !rpo_state[idx].visited);

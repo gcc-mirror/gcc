@@ -142,14 +142,14 @@ struct unswitch_predicate
 	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
 	int_range<2> rhs_range (TREE_TYPE (rhs));
 	if (CONSTANT_CLASS_P (rhs))
-	  rhs_range.set (rhs, rhs);
+	  {
+	    wide_int w = wi::to_wide (rhs);
+	    rhs_range.set (TREE_TYPE (rhs), w, w);
+	  }
 	if (!range_op.op1_range (true_range, TREE_TYPE (lhs),
-				 int_range<2> (boolean_true_node,
-					       boolean_true_node), rhs_range)
+				 range_true (), rhs_range)
 	    || !range_op.op1_range (false_range, TREE_TYPE (lhs),
-				    int_range<2> (boolean_false_node,
-						  boolean_false_node),
-				    rhs_range))
+				    range_false (), rhs_range))
 	  {
 	    true_range.set_varying (TREE_TYPE (lhs));
 	    false_range.set_varying (TREE_TYPE (lhs));
@@ -236,7 +236,7 @@ static void clean_up_after_unswitching (int);
 static vec<unswitch_predicate *> &
 get_predicates_for_bb (basic_block bb)
 {
-  gimple *last = last_stmt (bb);
+  gimple *last = last_nondebug_stmt (bb);
   return (*bb_predicates)[last == NULL ? 0 : gimple_uid (last)];
 }
 
@@ -245,7 +245,7 @@ get_predicates_for_bb (basic_block bb)
 static void
 set_predicates_for_bb (basic_block bb, vec<unswitch_predicate *> predicates)
 {
-  gimple_set_uid (last_stmt (bb), bb_predicates->length ());
+  gimple_set_uid (last_nondebug_stmt (bb), bb_predicates->length ());
   bb_predicates->safe_push (predicates);
 }
 
@@ -283,7 +283,7 @@ init_loop_unswitch_info (class loop *&loop, unswitch_predicate *&hottest,
       else
 	{
 	  candidates.release ();
-	  gimple *last = last_stmt (bbs[i]);
+	  gimple *last = last_nondebug_stmt (bbs[i]);
 	  if (last != NULL)
 	    gimple_set_uid (last, 0);
 	}
@@ -305,7 +305,7 @@ init_loop_unswitch_info (class loop *&loop, unswitch_predicate *&hottest,
       /* No predicates to unswitch on in the outer loops.  */
       if (!flow_bb_inside_loop_p (loop, bbs[i]))
 	{
-	  gimple *last = last_stmt (bbs[i]);
+	  gimple *last = last_nondebug_stmt (bbs[i]);
 	  if (last != NULL)
 	    gimple_set_uid (last, 0);
 	}
@@ -506,7 +506,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
   ssa_op_iter iter;
 
   /* BB must end in a simple conditional jump.  */
-  last = last_stmt (bb);
+  last = *gsi_last_bb (bb);
   if (!last)
     return;
 
@@ -605,12 +605,13 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	      tree cmp1 = fold_build2 (GE_EXPR, boolean_type_node, idx, low);
 	      tree cmp2 = fold_build2 (LE_EXPR, boolean_type_node, idx, high);
 	      cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1, cmp2);
-	      lab_range.set (low, high);
+	      lab_range.set (idx_type, wi::to_wide (low), wi::to_wide (high));
 	    }
 	  else
 	    {
 	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx, low);
-	      lab_range.set (low, low);
+	      wide_int w = wi::to_wide (low);
+	      lab_range.set (idx_type, w, w);
 	    }
 
 	  /* Combine the expression with the existing one.  */
@@ -805,7 +806,7 @@ simplify_loop_version (class loop *loop, predicate_vector &predicate_path,
       if (predicates.is_empty ())
 	continue;
 
-      gimple *stmt = last_stmt (bbs[i]);
+      gimple *stmt = *gsi_last_bb (bbs[i]);
       tree folded = evaluate_control_stmt_using_entry_checks (stmt,
 							      predicate_path,
 							      ignored_edge_flag,
@@ -885,7 +886,7 @@ evaluate_bbs (class loop *loop, predicate_vector *predicate_path,
       if (visit (bb))
 	break;
 
-      gimple *last = last_stmt (bb);
+      gimple *last = *gsi_last_bb (bb);
       if (gcond *cond = safe_dyn_cast <gcond *> (last))
 	{
 	  if (gimple_cond_true_p (cond))
@@ -1217,7 +1218,7 @@ find_loop_guard (class loop *loop, vec<gimple *> &dbg_to_reset)
 	next = single_succ (header);
       else
 	{
-	  cond = safe_dyn_cast <gcond *> (last_stmt (header));
+	  cond = safe_dyn_cast <gcond *> (*gsi_last_bb (header));
 	  if (! cond)
 	    return NULL;
 	  extract_true_false_edges_from_block (header, &te, &fe);
@@ -1471,7 +1472,7 @@ hoist_guard (class loop *loop, edge guard)
     gimple_cond_make_true (cond_stmt);
   update_stmt (cond_stmt);
   /* Create new loop pre-header.  */
-  e = split_block (pre_header, last_stmt (pre_header));
+  e = split_block (pre_header, last_nondebug_stmt (pre_header));
 
   dump_user_location_t loc = find_loop_location (loop);
 
@@ -1637,7 +1638,7 @@ clean_up_after_unswitching (int ignored_edge_flag)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gswitch *stmt= safe_dyn_cast <gswitch *> (last_stmt (bb));
+      gswitch *stmt= safe_dyn_cast <gswitch *> (*gsi_last_bb (bb));
       if (stmt && !CONSTANT_CLASS_P (gimple_switch_index (stmt)))
 	{
 	  unsigned nlabels = gimple_switch_num_labels (stmt);

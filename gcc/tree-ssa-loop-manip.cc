@@ -768,7 +768,6 @@ ip_end_pos (class loop *loop)
 basic_block
 ip_normal_pos (class loop *loop)
 {
-  gimple *last;
   basic_block bb;
   edge exit;
 
@@ -776,9 +775,7 @@ ip_normal_pos (class loop *loop)
     return NULL;
 
   bb = single_pred (loop->latch);
-  last = last_stmt (bb);
-  if (!last
-      || gimple_code (last) != GIMPLE_COND)
+  if (!safe_is_a <gcond *> (*gsi_last_bb (bb)))
     return NULL;
 
   exit = EDGE_SUCC (bb, 0);
@@ -801,7 +798,7 @@ standard_iv_increment_position (class loop *loop, gimple_stmt_iterator *bsi,
 				bool *insert_after)
 {
   basic_block bb = ip_normal_pos (loop), latch = ip_end_pos (loop);
-  gimple *last = last_stmt (latch);
+  gimple *last = last_nondebug_stmt (latch);
 
   if (!bb
       || (last && gimple_code (last) != GIMPLE_LABEL))
@@ -1010,7 +1007,7 @@ determine_exit_conditions (class loop *loop, class tree_niter_desc *desc,
       /* Convert the latch count to an iteration count.  */
       tree niter = fold_build2 (PLUS_EXPR, type, desc->niter,
 				build_one_cst (type));
-      if (multiple_of_p (type, niter, bigstep))
+      if (multiple_of_p (type, niter, build_int_cst (type, factor)))
 	return;
     }
 
@@ -1297,6 +1294,12 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 	}
 
       remove_path (exit);
+
+      /* The epilog loop latch executes at most factor - 1 times.
+	 Since the epilog is entered unconditionally it will need to handle
+	 up to factor executions of its body.  */
+      new_loop->any_upper_bound = 1;
+      new_loop->nb_iterations_upper_bound = factor - 1;
     }
   else
     new_exit = single_dom_exit (loop);
@@ -1582,7 +1585,7 @@ canonicalize_loop_ivs (class loop *loop, tree *nit, bool bump_in_latch)
 
   rewrite_all_phi_nodes_with_iv (loop, var_before);
 
-  stmt = as_a <gcond *> (last_stmt (exit->src));
+  stmt = as_a <gcond *> (*gsi_last_bb (exit->src));
   /* Make the loop exit if the control condition is not satisfied.  */
   if (exit->flags & EDGE_TRUE_VALUE)
     {

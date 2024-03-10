@@ -26,13 +26,13 @@
   </p><pre class="programlisting">
 #include &lt;exception&gt;
 #include &lt;iostream&gt;
+#include &lt;cstdlib&gt;
 #include &lt;cxxabi.h&gt;
 
 struct empty { };
 
 template &lt;typename T, int N&gt;
   struct bar { };
-
 
 int main()
 {
@@ -43,11 +43,9 @@ int main()
   bar&lt;empty,17&gt;          u;
   const std::type_info  &amp;ti = typeid(u);
 
-  realname = abi::__cxa_demangle(ti.name(), 0, 0, &amp;status);
+  realname = abi::__cxa_demangle(ti.name(), NULL, NULL, &amp;status);
   std::cout &lt;&lt; ti.name() &lt;&lt; "\t=&gt; " &lt;&lt; realname &lt;&lt; "\t: " &lt;&lt; status &lt;&lt; '\n';
-  free(realname);
-
-  return 0;
+  std::free(realname);
 }
    </pre><p>
      This prints

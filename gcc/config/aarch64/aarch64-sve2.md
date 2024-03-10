@@ -189,7 +189,7 @@
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Multiplication
 ;; -------------------------------------------------------------------------
-;; Includes the lane forms of:
+;; Includes the lane and unpredicated forms of:
 ;; - MUL
 ;; -------------------------------------------------------------------------
 
@@ -203,6 +203,21 @@
 	  (match_operand:SVE_FULL_HSDI 1 "register_operand" "w")))]
   "TARGET_SVE2"
   "mul\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>[%3]"
+)
+
+;; The 2nd and 3rd alternatives are valid for just TARGET_SVE as well but
+;; we include them here to allow matching simpler, unpredicated RTL.
+(define_insn "*aarch64_mul_unpredicated_<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w,w,?&w")
+	(mult:SVE_I
+	  (match_operand:SVE_I 1 "register_operand" "w,0,w")
+	  (match_operand:SVE_I 2 "aarch64_sve_vsm_operand" "w,vsm,vsm")))]
+  "TARGET_SVE2"
+  "@
+   mul\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>
+   mul\t%0.<Vetype>, %0.<Vetype>, #%2
+   movprfx\t%0, %1\;mul\t%0.<Vetype>, %0.<Vetype>, #%2"
+  [(set_attr "movprfx" "*,*,yes")]
 )
 
 ;; -------------------------------------------------------------------------

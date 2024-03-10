@@ -2075,8 +2075,9 @@ constructible_expr (tree to, tree from)
       if (!TYPE_REF_P (to))
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
-      for (; from; from = TREE_CHAIN (from))
-	vec_safe_push (args, build_stub_object (TREE_VALUE (from)));
+      vec_alloc (args, TREE_VEC_LENGTH (from));
+      for (tree arg : tree_vec_range (from))
+	args->quick_push (build_stub_object (arg));
       expr = build_special_member_call (ob, complete_ctor_identifier, &args,
 					ctype, LOOKUP_NORMAL, tf_none);
       if (expr == error_mark_node)
@@ -2096,9 +2097,9 @@ constructible_expr (tree to, tree from)
     }
   else
     {
-      if (from == NULL_TREE)
+      const int len = TREE_VEC_LENGTH (from);
+      if (len == 0)
 	return build_value_init (strip_array_types (to), tf_none);
-      const int len = list_length (from);
       if (len > 1)
 	{
 	  if (cxx_dialect < cxx20)
@@ -2112,9 +2113,9 @@ constructible_expr (tree to, tree from)
 	     should be true.  */
 	  vec<constructor_elt, va_gc> *v;
 	  vec_alloc (v, len);
-	  for (tree t = from; t; t = TREE_CHAIN (t))
+	  for (tree arg : tree_vec_range (from))
 	    {
-	      tree stub = build_stub_object (TREE_VALUE (t));
+	      tree stub = build_stub_object (arg);
 	      constructor_elt elt = { NULL_TREE, stub };
 	      v->quick_push (elt);
 	    }
@@ -2123,7 +2124,7 @@ constructible_expr (tree to, tree from)
 	  CONSTRUCTOR_IS_PAREN_INIT (from) = true;
 	}
       else
-	from = build_stub_object (TREE_VALUE (from));
+	from = build_stub_object (TREE_VEC_ELT (from, 0));
       expr = perform_direct_initialization_if_possible (to, from,
 							/*cast*/false,
 							tf_none);
@@ -2160,7 +2161,7 @@ is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
   tree expr;
   if (code == MODIFY_EXPR)
     expr = assignable_expr (to, from);
-  else if (trivial && from && TREE_CHAIN (from)
+  else if (trivial && TREE_VEC_LENGTH (from) > 1
 	   && cxx_dialect < cxx20)
     return error_mark_node; // only 0- and 1-argument ctors can be trivial
 			    // before C++20 aggregate paren init

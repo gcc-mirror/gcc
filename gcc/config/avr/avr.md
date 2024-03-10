@@ -417,8 +417,7 @@
         operands[0] = copy_to_mode_reg (<MODE>mode, operands[0]);
       }
     else if (REG_P (operands[0])
-             && IN_RANGE (REGNO (operands[0]), FIRST_VIRTUAL_REGISTER,
-                          LAST_VIRTUAL_REGISTER))
+             && VIRTUAL_REGISTER_P (operands[0]))
       {
         // Byte-wise pushing of virtual regs might result in something like
         //

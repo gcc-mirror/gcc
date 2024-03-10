@@ -1,3 +1,22 @@
+2023-04-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/109674
+	* hwasan/Makefile.am: Depend on liblsan.
+	* hwasan/Makefile.in: Re-generate.
+
+2023-04-30  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update revision.
+
+2023-04-26  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Change revision.
+
+2023-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Unsupport Darwin22+ until a mechanism can be found
+	to locate dyld in the shared cache.
+
 2023-01-31  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR sanitizer/108106

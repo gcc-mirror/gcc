@@ -2323,7 +2323,7 @@ Operand @code{OMP_FOR_INIT} is a vector containing iteration
 variable initializations of the form @code{VAR = N1}.
 
 Operand @code{OMP_FOR_COND} is vector containing loop
-conditional expressions of the form @code{VAR @{<,>,<=,>=@} N2}.
+conditional expressions of the form @code{VAR @{<,>,<=,>=,!=@} N2}.
 
 Operand @code{OMP_FOR_INCR} is a vector containing loop index
 increment expressions of the form @code{VAR @{+=,-=@} INCR}.
@@ -2349,7 +2349,7 @@ adjust their data-sharing attributes and diagnose errors.
 @code{OMP_FOR_ORIG_DECLS} is a vector field, with each element holding
 a list of @code{VAR_DECLS} for the corresponding collapse level.
 
-The loop index variable @code{VAR} must be a signed integer variable,
+The loop index variable @code{VAR} must be an integer variable,
 which is implicitly private to each thread.  For rectangular loops,
 the bounds @code{N1} and @code{N2} and the increment expression
 @code{INCR} are required to be loop-invariant integer expressions

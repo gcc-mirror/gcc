@@ -69,6 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
    *
    *  @ingroup strings
    *  @ingroup sequences
+   *  @headerfile string
+   *  @since C++98
    *
    *  @tparam _CharT  Type of character
    *  @tparam _Traits  Traits for character type, defaults to
@@ -758,7 +760,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	_GLIBCXX20_CONSTEXPR
         basic_string(_InputIterator __beg, _InputIterator __end,
 		     const _Alloc& __a = _Alloc())
-	: _M_dataplus(_M_local_data(), __a)
+	: _M_dataplus(_M_local_data(), __a), _M_string_length(0)
 	{
 #if __cplusplus >= 201103L
 	  _M_construct(__beg, __end, std::__iterator_category(__beg));

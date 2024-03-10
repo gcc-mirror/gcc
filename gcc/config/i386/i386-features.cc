@@ -1635,10 +1635,11 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
   switch (GET_CODE (src))
     {
     case REG:
-      PUT_MODE (src, V1TImode);
-      /* Call fix_debug_reg_uses only if SRC is never defined.  */
-      if (!DF_REG_DEF_CHAIN (REGNO (src)))
-	fix_debug_reg_uses (src);
+      if (GET_MODE (src) == TImode)
+	{
+	  PUT_MODE (src, V1TImode);
+	  fix_debug_reg_uses (src);
+	}
       break;
 
     case MEM:

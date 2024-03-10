@@ -38,7 +38,7 @@ hwasan_files = \
 	hwasan_type_test.cpp
 
 libhwasan_la_SOURCES = $(hwasan_files)
-libhwasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la
+libhwasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/lsan/libsanitizer_lsan.la
 if !USING_MAC_INTERPOSE
 libhwasan_la_LIBADD += $(top_builddir)/interception/libinterception.la
 endif

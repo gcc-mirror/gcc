@@ -30,5 +30,6 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 3 "phiopt1" } } */
+/* There should only be two MIN_EXPR left, the 3rd one was removed. */
+/* { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "phiopt1" } } */
 /* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "phiopt1" } } */

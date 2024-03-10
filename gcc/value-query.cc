@@ -142,34 +142,13 @@ range_query::dump (FILE *)
 {
 }
 
-// valuation_query support routines for value_range's.
-
-class equiv_allocator : public object_allocator<value_range>
-{
-public:
-  equiv_allocator ()
-    : object_allocator<value_range> ("equiv_allocator pool") { }
-};
-
-const value_range *
-range_query::get_value_range (const_tree expr, gimple *stmt)
-{
-  int_range_max r;
-  if (range_of_expr (r, const_cast<tree> (expr), stmt))
-    return new (equiv_alloc->allocate ()) value_range (r);
-  return new (equiv_alloc->allocate ()) value_range (TREE_TYPE (expr));
-}
-
 range_query::range_query ()
 {
-  equiv_alloc = new equiv_allocator;
   m_oracle = NULL;
 }
 
 range_query::~range_query ()
 {
-  equiv_alloc->release ();
-  delete equiv_alloc;
 }
 
 // Return a range in R for the tree EXPR.  Return true if a range is
@@ -197,16 +176,21 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      if (TREE_OVERFLOW_P (expr))
-	expr = drop_tree_overflow (expr);
-      r.set (expr, expr);
-      return true;
+      {
+	irange &i = as_a <irange> (r);
+	if (TREE_OVERFLOW_P (expr))
+	  expr = drop_tree_overflow (expr);
+	wide_int w = wi::to_wide (expr);
+	i.set (TREE_TYPE (expr), w, w);
+	return true;
+      }
 
     case REAL_CST:
       {
 	frange &f = as_a <frange> (r);
-	f.set (expr, expr);
-	if (!real_isnan (TREE_REAL_CST_PTR (expr)))
+	REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (expr);
+	f.set (TREE_TYPE (expr), *rv, *rv);
+	if (!real_isnan (rv))
 	  f.clear_nan ();
 	return true;
       }
@@ -282,13 +266,10 @@ get_ssa_name_range_info (vrange &r, const_tree name)
   gcc_checking_assert (!POINTER_TYPE_P (type));
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
 
-  void *ri = SSA_NAME_RANGE_INFO (name);
+  vrange_storage *ri = SSA_NAME_RANGE_INFO (name);
 
   if (ri)
-    {
-      vrange_storage vstore (NULL);
-      vstore.get_vrange (ri, r, TREE_TYPE (name));
-    }
+    ri->get_vrange (r, TREE_TYPE (name));
   else
     r.set_varying (type);
 }

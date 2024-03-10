@@ -2319,7 +2319,7 @@ redirect_eh_edge_1 (edge edge_in, basic_block new_bb, bool change_region)
   gcc_assert (old_lp_nr > 0);
   old_lp = get_eh_landing_pad_from_number (old_lp_nr);
 
-  throw_stmt = last_stmt (edge_in->src);
+  throw_stmt = *gsi_last_bb (edge_in->src);
   gcc_checking_assert (lookup_stmt_eh_lp (throw_stmt) == old_lp_nr);
 
   new_label = gimple_block_label (new_bb);
@@ -2490,6 +2490,9 @@ operation_could_trap_helper_p (enum tree_code op,
     case GT_EXPR:
     case GE_EXPR:
     case LTGT_EXPR:
+    /* MIN/MAX similar as LT/LE/GT/GE. */
+    case MIN_EXPR:
+    case MAX_EXPR:
       /* Some floating point comparisons may trap.  */
       return honor_nans;
 
@@ -3515,11 +3518,9 @@ pass_lower_resx::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple *last = last_stmt (bb);
-      if (last && is_gimple_resx (last))
+      if (gresx *last = safe_dyn_cast <gresx *> (*gsi_last_bb (bb)))
 	{
-	  dominance_invalidated |=
-	    lower_resx (bb, as_a <gresx *> (last), &mnt_map);
+	  dominance_invalidated |= lower_resx (bb, last, &mnt_map);
 	  any_rewritten = true;
 	}
     }
@@ -3944,7 +3945,7 @@ pass_lower_eh_dispatch::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple *last = last_stmt (bb);
+      gimple *last = *gsi_last_bb (bb);
       if (last == NULL)
 	continue;
       if (gimple_code (last) == GIMPLE_EH_DISPATCH)
@@ -3979,7 +3980,7 @@ pass_lower_eh_dispatch::execute (function *fun)
       for (int i = 0; i < rpo_n; ++i)
 	{
 	  bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
-	  gimple *last = last_stmt (bb);
+	  gimple *last = *gsi_last_bb (bb);
 	  if (last
 	      && gimple_code (last) == GIMPLE_RESX
 	      && !stmt_can_throw_external (fun, last))
@@ -4705,7 +4706,7 @@ cleanup_empty_eh (eh_landing_pad lp)
       for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
 	if (e->flags & EDGE_EH)
 	  {
-	    gimple *stmt = last_stmt (e->src);
+	    gimple *stmt = *gsi_last_bb (e->src);
 	    remove_stmt_from_eh_lp (stmt);
 	    remove_edge (e);
 	  }
@@ -4721,7 +4722,7 @@ cleanup_empty_eh (eh_landing_pad lp)
       for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
 	if (e->flags & EDGE_EH)
 	  {
-	    gimple *stmt = last_stmt (e->src);
+	    gimple *stmt = *gsi_last_bb (e->src);
 	    remove_stmt_from_eh_lp (stmt);
 	    add_stmt_to_eh_lp (stmt, new_lp_nr);
 	    remove_edge (e);

@@ -12478,16 +12478,14 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  if (typedef_decl)
 	    {
-	      pedwarn (loc, OPT_Wpedantic, "%qs specified with %qD",
+	      pedwarn (loc, OPT_Wpedantic,
+		       "%qs specified with typedef-name %qD",
 		       key, typedef_decl);
 	      ok = !flag_pedantic_errors;
+	      /* PR108099: __int128_t comes from c_common_nodes_and_builtins,
+		 and is not built as a typedef.  */
 	      if (is_typedef_decl (typedef_decl))
 		type = DECL_ORIGINAL_TYPE (typedef_decl);
-	      else
-		/* PR108099: __int128_t comes from c_common_nodes_and_builtins,
-		   and is not built as a typedef.  */
-		type = TREE_TYPE (typedef_decl);
-	      typedef_decl = NULL_TREE;
 	    }
 	  else if (declspecs->decltype_p)
 	    error_at (loc, "%qs specified with %<decltype%>", key);
@@ -12540,7 +12538,7 @@ grokdeclarator (const cp_declarator *declarator,
       else if (type == char_type_node)
 	type = unsigned_char_type_node;
       else if (typedef_decl)
-	type = unsigned_type_for (type);
+	type = c_common_unsigned_type (type);
       else
 	type = unsigned_type_node;
     }
@@ -12554,6 +12552,8 @@ grokdeclarator (const cp_declarator *declarator,
     type = long_integer_type_node;
   else if (short_p)
     type = short_integer_type_node;
+  else if (signed_p && typedef_decl)
+    type = c_common_signed_type (type);
 
   if (decl_spec_seq_has_spec_p (declspecs, ds_complex))
     {

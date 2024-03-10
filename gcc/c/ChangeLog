@@ -1,3 +1,48 @@
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	* c-typeck.cc (process_init_element): Print out array type
+	for excessive elements.
+
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/107926
+	* c-typeck.cc (process_init_element): Move the check
+	for string cst until after the error message.
+
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Merge perf data collected when compiling cc1 and runtime libraries
+
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109409
+	* c-parser.cc (c_parser_initializer): Move diagnostics about
+	initialization of variable sized object with non-empty initializer
+	after c_parser_expr_no_commas call and ret.set_error (); after it.
+
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107682
+	PR c/109412
+	* c-typeck.cc (pop_init_level): If constructor_type is FUNCTION_TYPE,
+	reject empty initializer as invalid.
+
+2023-04-26  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_parse_gimple_body): Avoid
+	last_stmt.
+
+2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_scan_loop_body): Handle
+	zero exec statements before/after 'omp scan'.
+
+2023-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107041
+	* c-decl.cc (diagnose_mismatched_decls): Avoid -Wenum-int-mismatch
+	warning on acc_on_device declaration.
+
 2023-03-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/107002

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_RANGE_H
 #define GCC_GIMPLE_RANGE_H
 
+#include "ssa.h"
 #include "range.h"
 #include "value-query.h"
 #include "gimple-range-op.h"
@@ -95,7 +96,7 @@ protected:
   void calculate_phi (gphi *phi, vrange &lhs_range, fur_source &src);
   void check_taken_edge (edge e, fur_source &src);
 
-  ssa_global_cache global;
+  ssa_lazy_cache global;
   gori_compute m_gori;
 };
 

@@ -463,7 +463,7 @@ static void writeCard (unsigned int c);
 static void writeLongcard (long unsigned int l);
 
 /*
-   writeAddress -
+   writeAddress - writes out the address of a with a C style hex prefix.
 */
 
 static void writeAddress (void * a);
@@ -684,8 +684,6 @@ static void writeNspace (unsigned int n)
 
 static void DumpStringInfo (DynamicStrings_String s, unsigned int i)
 {
-  DynamicStrings_String t;
-
   if (s != NULL)
     {
       writeNspace (i);
@@ -901,12 +899,18 @@ static void writeLongcard (long unsigned int l)
 
 
 /*
-   writeAddress -
+   writeAddress - writes out the address of a with a C style hex prefix.
 */
 
 static void writeAddress (void * a)
 {
-  writeLongcard ((long unsigned int ) (a));
+  typedef struct writeAddress__T4_a writeAddress__T4;
+
+  struct writeAddress__T4_a { char array[30+1]; };
+  writeAddress__T4 buffer;
+
+  libc_snprintf (&buffer, static_cast<size_t> (sizeof (buffer)), (const char *) "0x%", 3, a);
+  writeString ((const char *) &buffer.array[0], 30);
 }
 
 
@@ -1655,10 +1659,10 @@ extern "C" DynamicStrings_String DynamicStrings_InitStringCharStar (void * a)
 
 extern "C" DynamicStrings_String DynamicStrings_InitStringChar (char ch)
 {
-  typedef struct InitStringChar__T4_a InitStringChar__T4;
+  typedef struct InitStringChar__T5_a InitStringChar__T5;
 
-  struct InitStringChar__T4_a { char array[1+1]; };
-  InitStringChar__T4 a;
+  struct InitStringChar__T5_a { char array[1+1]; };
+  InitStringChar__T5 a;
   DynamicStrings_String s;
 
   a.array[0] = ch;
@@ -1763,10 +1767,10 @@ extern "C" DynamicStrings_String DynamicStrings_ConCat (DynamicStrings_String a,
 
 extern "C" DynamicStrings_String DynamicStrings_ConCatChar (DynamicStrings_String a, char ch)
 {
-  typedef struct ConCatChar__T5_a ConCatChar__T5;
+  typedef struct ConCatChar__T6_a ConCatChar__T6;
 
-  struct ConCatChar__T5_a { char array[1+1]; };
-  ConCatChar__T5 b;
+  struct ConCatChar__T6_a { char array[1+1]; };
+  ConCatChar__T6 b;
   DynamicStrings_String t;
 
   if (PoisonOn)
@@ -2620,7 +2624,6 @@ extern "C" void DynamicStrings_PopAllocation (bool halt)
 extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (bool halt, DynamicStrings_String e)
 {
   DynamicStrings_String s;
-  DynamicStrings_frame f;
   bool b;
 
   Init ();
@@ -2630,7 +2633,7 @@ extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (bool hal
       if (frameHead == NULL)
         {
           stop ();
-          M2RTS_Halt ((const char *) "mismatched number of PopAllocation's compared to PushAllocation's", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, (const char *) "PopAllocationExemption", 22, 177);
+          M2RTS_Halt ((const char *) "mismatched number of PopAllocation's compared to PushAllocation's", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, (const char *) "PopAllocationExemption", 22, 174);
         }
       else
         {

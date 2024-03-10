@@ -106,6 +106,10 @@
 (define_mode_attr mmxintvecmodelower
   [(V2SF "v2si") (V2SI "v2si") (V4HI "v4hi") (V8QI "v8qi")])
 
+;; Mapping of vector modes back to the scalar modes
+(define_mode_attr mmxscalarmode
+  [(V2SI "SI") (V2SF "SF")])
+
 (define_mode_attr Yv_Yw
   [(V8QI "Yw") (V4HI "Yw") (V2SI "Yv") (V1DI "Yv") (V2SF "Yv")])
 
@@ -1154,6 +1158,42 @@
   DONE;
 })
 
+(define_insn "@sse4_1_insertps_<mode>"
+  [(set (match_operand:V2FI 0 "register_operand" "=Yr,*x,v")
+	(unspec:V2FI
+	  [(match_operand:V2FI 2 "nonimmediate_operand" "Yrm,*xm,vm")
+	   (match_operand:V2FI 1 "register_operand" "0,0,v")
+	   (match_operand:SI 3 "const_0_to_255_operand")]
+	  UNSPEC_INSERTPS))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+{
+  if (MEM_P (operands[2]))
+    {
+      unsigned count_s = INTVAL (operands[3]) >> 6;
+      if (count_s)
+	operands[3] = GEN_INT (INTVAL (operands[3]) & 0x3f);
+      operands[2] = adjust_address_nv (operands[2],
+				       <mmxscalarmode>mode, count_s * 4);
+    }
+  switch (which_alternative)
+    {
+    case 0:
+    case 1:
+      return "insertps\t{%3, %2, %0|%0, %2, %3}";
+    case 2:
+      return "vinsertps\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,orig,maybe_evex")
+   (set_attr "mode" "V4SF")])
+
 (define_insn "*mmx_blendps"
   [(set (match_operand:V2SF 0 "register_operand" "=Yr,*x,x")
 	(vec_merge:V2SF
@@ -2050,6 +2090,55 @@
    vp<plusminus_mnemonic><mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseadd")
+   (set_attr "mode" "TI")])
+
+(define_expand "mulv2si3"
+  [(set (match_operand:V2SI 0 "register_operand")
+	(mult:V2SI
+	  (match_operand:V2SI 1 "register_operand")
+	  (match_operand:V2SI 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
+{
+  if (!TARGET_SSE4_1)
+    {
+      rtx op1 = lowpart_subreg (V4SImode, force_reg (V2SImode, operands[1]),
+				V2SImode);
+      rtx op2 = lowpart_subreg (V4SImode, force_reg (V2SImode, operands[2]),
+				V2SImode);
+
+      rtx tmp1 = gen_reg_rtx (V4SImode);
+      emit_insn (gen_vec_interleave_lowv4si (tmp1, op1, op1));
+      rtx tmp2 = gen_reg_rtx (V4SImode);
+      emit_insn (gen_vec_interleave_lowv4si (tmp2, op2, op2));
+
+      rtx res = gen_reg_rtx (V2DImode);
+      emit_insn (gen_vec_widen_umult_even_v4si (res, tmp1, tmp2));
+
+      rtx op0 = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd_1 (op0, gen_lowpart (V4SImode, res),
+				    const0_rtx, const2_rtx,
+				    const0_rtx, const2_rtx));
+
+      emit_move_insn (operands[0], lowpart_subreg (V2SImode, op0, V4SImode));
+      DONE;
+    }
+})
+
+(define_insn "*mulv2si3"
+  [(set (match_operand:V2SI 0 "register_operand" "=Yr,*x,v")
+	(mult:V2SI
+	  (match_operand:V2SI 1 "register_operand" "%0,0,v")
+	  (match_operand:V2SI 2 "register_operand" "Yr,*x,v")))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "@
+   pmulld\t{%2, %0|%0, %2}
+   pmulld\t{%2, %0|%0, %2}
+   vpmulld\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "sseimul")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "TI")])
 
 (define_expand "mmx_mulv4hi3"

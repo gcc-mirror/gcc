@@ -1632,7 +1632,7 @@ structural_comptypes (tree t1, tree t2, int strict)
     case TRAIT_TYPE:
       if (TRAIT_TYPE_KIND (t1) != TRAIT_TYPE_KIND (t2))
 	return false;
-      if (!same_type_p (TRAIT_TYPE_TYPE1 (t1), TRAIT_TYPE_TYPE1 (t2))
+      if (!cp_tree_equal (TRAIT_TYPE_TYPE1 (t1), TRAIT_TYPE_TYPE1 (t2))
 	  || !cp_tree_equal (TRAIT_TYPE_TYPE2 (t1), TRAIT_TYPE_TYPE2 (t2)))
 	return false;
       break;

@@ -65,4 +65,4 @@ test_vbool32_then_vbool64(int8_t * restrict in, int8_t * restrict out) {
 /* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*mf2,\s*ta,\s*ma} 1 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*mf8,\s*ta,\s*ma} 1 } } */
 /* { dg-final { scan-assembler-times {vlm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 12 } } */
-/* { dg-final { scan-assembler-times {vsm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 13 } } */
+/* { dg-final { scan-assembler-times {vsm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 12 } } */

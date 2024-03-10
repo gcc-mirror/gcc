@@ -385,14 +385,22 @@
 
 (define_insn_and_split "sldoi_to_mov<mode>"
   [(set (match_operand:VM 0 "altivec_register_operand")
-	(unspec:VM [(match_operand:VM 1 "easy_vector_constant")
+	(unspec:VM [(match_operand:VM 1 "const_vector_each_byte_same")
 	            (match_dup 1)
 		    (match_operand:QI 2 "u5bit_cint_operand")]
 		    UNSPEC_VSLDOI))]
-  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode) && can_create_pseudo_p ()"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode) && can_create_pseudo_p ()"
   "#"
   "&& 1"
-  [(set (match_dup 0) (match_dup 1))])
+  [(set (match_dup 0) (match_dup 1))]
+  "{
+     if (!easy_vector_constant (operands[1], <MODE>mode))
+       {
+	 rtx dest = gen_reg_rtx (<MODE>mode);
+	 emit_move_insn (dest, operands[1]);
+	 operands[1] = dest;
+       }
+  }")
 
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")

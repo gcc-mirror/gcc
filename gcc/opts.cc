@@ -3134,6 +3134,9 @@ common_handle_option (struct gcc_options *opts,
                        loc);
       break;
 
+    case OPT_gcodeview:
+      break;
+
     case OPT_gbtf:
       set_debug_level (BTF_DEBUG, false, arg, opts, opts_set, loc);
       /* set the debug level to level 2, but if already at level 3,

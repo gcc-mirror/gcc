@@ -1838,8 +1838,7 @@ instantiate_decl_rtl (rtx x)
   addr = XEXP (x, 0);
   if (CONSTANT_P (addr)
       || (REG_P (addr)
-	  && (REGNO (addr) < FIRST_VIRTUAL_REGISTER
-	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))
+	  && !VIRTUAL_REGISTER_P (addr)))
     return;
 
   instantiate_virtual_regs_in_rtx (&XEXP (x, 0));

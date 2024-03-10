@@ -1166,6 +1166,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define FIRST_INT_REG AX_REG
 #define LAST_INT_REG  SP_REG
 
+#define FIRST_INDEX_REG AX_REG
+#define LAST_INDEX_REG  BP_REG
+
 #define FIRST_QI_REG AX_REG
 #define LAST_QI_REG  BX_REG
 
@@ -1404,7 +1407,11 @@ enum reg_class
 #define QI_REGNO_P(N) IN_RANGE ((N), FIRST_QI_REG, LAST_QI_REG)
 
 #define LEGACY_INT_REG_P(X) (REG_P (X) && LEGACY_INT_REGNO_P (REGNO (X)))
-#define LEGACY_INT_REGNO_P(N) (IN_RANGE ((N), FIRST_INT_REG, LAST_INT_REG))
+#define LEGACY_INT_REGNO_P(N) IN_RANGE ((N), FIRST_INT_REG, LAST_INT_REG)
+
+#define LEGACY_INDEX_REG_P(X) (REG_P (X) && LEGACY_INDEX_REGNO_P (REGNO (X)))
+#define LEGACY_INDEX_REGNO_P(N) \
+  IN_RANGE ((N), FIRST_INDEX_REG, LAST_INDEX_REG)
 
 #define REX_INT_REG_P(X) (REG_P (X) && REX_INT_REGNO_P (REGNO (X)))
 #define REX_INT_REGNO_P(N) \
@@ -1413,6 +1420,10 @@ enum reg_class
 #define GENERAL_REG_P(X) (REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
 #define GENERAL_REGNO_P(N) \
   (LEGACY_INT_REGNO_P (N) || REX_INT_REGNO_P (N))
+
+#define INDEX_REG_P(X) (REG_P (X) && INDEX_REGNO_P (REGNO (X)))
+#define INDEX_REGNO_P(N) \
+  (LEGACY_INDEX_REGNO_P (N) || REX_INT_REGNO_P (N))
 
 #define ANY_QI_REG_P(X) (REG_P (X) && ANY_QI_REGNO_P (REGNO (X)))
 #define ANY_QI_REGNO_P(N) \
@@ -1678,56 +1689,26 @@ typedef struct ix86_args {
    has been allocated, which happens in reginfo.cc during register
    allocation.  */
 
-#define REGNO_OK_FOR_INDEX_P(REGNO) 					\
-  ((REGNO) < STACK_POINTER_REGNUM 					\
-   || REX_INT_REGNO_P (REGNO)						\
-   || (unsigned) reg_renumber[(REGNO)] < STACK_POINTER_REGNUM		\
-   || REX_INT_REGNO_P ((unsigned) reg_renumber[(REGNO)]))
+#define REGNO_OK_FOR_INDEX_P(REGNO)					\
+  (INDEX_REGNO_P (REGNO)						\
+   || INDEX_REGNO_P (reg_renumber[(REGNO)]))
 
-#define REGNO_OK_FOR_BASE_P(REGNO) 					\
+#define REGNO_OK_FOR_BASE_P(REGNO)					\
   (GENERAL_REGNO_P (REGNO)						\
    || (REGNO) == ARG_POINTER_REGNUM 					\
    || (REGNO) == FRAME_POINTER_REGNUM 					\
-   || GENERAL_REGNO_P ((unsigned) reg_renumber[(REGNO)]))
-
-/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
-   and check its validity for a certain class.
-   We have two alternate definitions for each of them.
-   The usual definition accepts all pseudo regs; the other rejects
-   them unless they have been allocated suitable hard regs.
-   The symbol REG_OK_STRICT causes the latter definition to be used.
-
-   Most source files want to accept pseudo regs in the hope that
-   they will get allocated to the class that the insn wants them to be in.
-   Source files for reload pass need to be strict.
-   After reload, it makes no difference, since pseudo regs have
-   been eliminated by then.  */
-
+   || GENERAL_REGNO_P (reg_renumber[(REGNO)]))
 
 /* Non strict versions, pseudos are ok.  */
-#define REG_OK_FOR_INDEX_NONSTRICT_P(X)					\
-  (REGNO (X) < STACK_POINTER_REGNUM					\
-   || REX_INT_REGNO_P (REGNO (X))					\
-   || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+#define REGNO_OK_FOR_INDEX_NONSTRICT_P(REGNO)				\
+  (INDEX_REGNO_P (REGNO)						\
+   || !HARD_REGISTER_NUM_P (REGNO))
 
-#define REG_OK_FOR_BASE_NONSTRICT_P(X)					\
-  (GENERAL_REGNO_P (REGNO (X))						\
-   || REGNO (X) == ARG_POINTER_REGNUM					\
-   || REGNO (X) == FRAME_POINTER_REGNUM 				\
-   || REGNO (X) >= FIRST_PSEUDO_REGISTER)
-
-/* Strict versions, hard registers only */
-#define REG_OK_FOR_INDEX_STRICT_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-#define REG_OK_FOR_BASE_STRICT_P(X)  REGNO_OK_FOR_BASE_P (REGNO (X))
-
-#ifndef REG_OK_STRICT
-#define REG_OK_FOR_INDEX_P(X)  REG_OK_FOR_INDEX_NONSTRICT_P (X)
-#define REG_OK_FOR_BASE_P(X)   REG_OK_FOR_BASE_NONSTRICT_P (X)
-
-#else
-#define REG_OK_FOR_INDEX_P(X)  REG_OK_FOR_INDEX_STRICT_P (X)
-#define REG_OK_FOR_BASE_P(X)   REG_OK_FOR_BASE_STRICT_P (X)
-#endif
+#define REGNO_OK_FOR_BASE_NONSTRICT_P(REGNO)				\
+  (GENERAL_REGNO_P (REGNO)						\
+   || (REGNO) == ARG_POINTER_REGNUM					\
+   || (REGNO) == FRAME_POINTER_REGNUM					\
+   || !HARD_REGISTER_NUM_P (REGNO))
 
 /* TARGET_LEGITIMATE_ADDRESS_P recognizes an RTL expression
    that is a valid memory address for an instruction.

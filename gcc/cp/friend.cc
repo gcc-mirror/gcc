@@ -661,7 +661,8 @@ do_friend (tree scope, tree declarator, tree decl,
   if (decl == error_mark_node)
     return error_mark_node;
 
-  if (!class_template_depth && DECL_IMPLICIT_INSTANTIATION (decl))
+  if (!class_template_depth && DECL_IMPLICIT_INSTANTIATION (decl)
+      && TREE_CODE (DECL_TI_TEMPLATE (decl)) != TEMPLATE_DECL)
     /* "[if no non-template match is found,] each remaining function template
        is replaced with the specialization chosen by deduction from the
        friend declaration or discarded if deduction fails."

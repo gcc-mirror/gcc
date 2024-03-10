@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-// { dg-additional-options "-fmodules-ts -fdirectives-only -isystem [srcdir]" }
+// { dg-additional-options "-fmodules-ts -fdirectives-only -isystem [srcdir] -fno-canonical-system-headers" }
 // a comment
 module; // line
 frob

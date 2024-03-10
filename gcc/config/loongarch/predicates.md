@@ -39,13 +39,49 @@
   (and (match_code "const_int")
        (match_test "IMM12_OPERAND (INTVAL (op))")))
 
+(define_predicate "const_dual_imm12_operand"
+  (and (match_code "const_int")
+       (match_test "DUAL_IMM12_OPERAND (INTVAL (op))")))
+
 (define_predicate "const_imm16_operand"
   (and (match_code "const_int")
        (match_test "IMM16_OPERAND (INTVAL (op))")))
 
+(define_predicate "const_addu16i_operand"
+  (and (match_code "const_int")
+       (match_test "ADDU16I_OPERAND (INTVAL (op))")))
+
+(define_predicate "const_addu16i_imm12_di_operand"
+  (and (match_code "const_int")
+       (match_test "loongarch_addu16i_imm12_operand_p (INTVAL (op), DImode)")))
+
+(define_predicate "const_addu16i_imm12_si_operand"
+  (and (match_code "const_int")
+       (match_test "loongarch_addu16i_imm12_operand_p (INTVAL (op), SImode)")))
+
+(define_predicate "const_dual_addu16i_operand"
+  (and (match_code "const_int")
+       (match_test "DUAL_ADDU16I_OPERAND (INTVAL (op))")))
+
 (define_predicate "arith_operand"
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
+
+(define_predicate "plus_di_operand"
+  (ior (match_operand 0 "arith_operand")
+       (match_operand 0 "const_dual_imm12_operand")
+       (match_operand 0 "const_addu16i_operand")
+       (match_operand 0 "const_addu16i_imm12_di_operand")
+       (match_operand 0 "const_dual_addu16i_operand")))
+
+(define_predicate "plus_si_extend_operand"
+  (ior (match_operand 0 "arith_operand")
+       (match_operand 0 "const_dual_imm12_operand")
+       (match_operand 0 "const_addu16i_imm12_si_operand")))
+
+(define_predicate "plus_si_operand"
+  (ior (match_operand 0 "plus_si_extend_operand")
+       (match_operand 0 "const_addu16i_operand")))
 
 (define_predicate "const_immalsl_operand"
   (and (match_code "const_int")

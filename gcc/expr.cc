@@ -8178,8 +8178,7 @@ force_operand (rtx value, rtx target)
       if (code == PLUS && CONST_INT_P (op2)
 	  && GET_CODE (XEXP (value, 0)) == PLUS
 	  && REG_P (XEXP (XEXP (value, 0), 0))
-	  && REGNO (XEXP (XEXP (value, 0), 0)) >= FIRST_VIRTUAL_REGISTER
-	  && REGNO (XEXP (XEXP (value, 0), 0)) <= LAST_VIRTUAL_REGISTER)
+	  && VIRTUAL_REGISTER_P (XEXP (XEXP (value, 0), 0)))
 	{
 	  rtx temp = expand_simple_binop (GET_MODE (value), code,
 					  XEXP (XEXP (value, 0), 0), op2,

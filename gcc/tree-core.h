@@ -33,7 +33,6 @@ struct function;
 struct real_value;
 struct fixed_value;
 struct ptr_info_def;
-struct irange_storage_slot;
 struct die_struct;
 
 
@@ -1605,17 +1604,12 @@ struct GTY(()) tree_ssa_name {
 
   /* Value range information.  */
   union ssa_name_info_type {
-    /* Ranges for integers.  */
-    struct GTY ((tag ("0"))) irange_storage_slot *irange_info;
-    /* Ranges for floating point numbers.  */
-    struct GTY ((tag ("1"))) frange_storage_slot *frange_info;
-    /* Pointer attributes used for alias analysis.  */
-    struct GTY ((tag ("2"))) ptr_info_def *ptr_info;
-    /* This holds any range info supported by ranger (except ptr_info
-       above) and is managed by vrange_storage.  */
-    void * GTY ((skip)) range_info;
+    /* Range and aliasing info for pointers.  */
+    struct GTY ((tag ("0"))) ptr_info_def *ptr_info;
+    /* Range info for everything else.  */
+    struct GTY ((tag ("1"))) vrange_storage * range_info;
   } GTY ((desc ("%1.typed.type ?" \
-		"(POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) ? 2 : SCALAR_FLOAT_TYPE_P (TREE_TYPE ((tree)&%1))) : 3"))) info;
+		"!POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) : 2"))) info;
   /* Immediate uses list for this SSA_NAME.  */
   struct ssa_use_operand_t imm_uses;
 };

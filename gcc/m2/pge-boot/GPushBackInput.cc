@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -69,7 +70,7 @@ static unsigned int ExitStatus;
 static unsigned int Column;
 static unsigned int StackPtr;
 static unsigned int LineNo;
-static unsigned int Debugging;
+static bool Debugging;
 
 /*
    Open - opens a file for reading.
@@ -142,7 +143,7 @@ extern "C" unsigned int PushBackInput_GetExitStatus (void);
    SetDebug - sets the debug flag on or off.
 */
 
-extern "C" void PushBackInput_SetDebug (unsigned int d);
+extern "C" void PushBackInput_SetDebug (bool d);
 
 /*
    GetColumnPosition - returns the column position of the current character.
@@ -275,7 +276,7 @@ extern "C" char PushBackInput_PutCh (char ch)
     }
   else
     {
-      Debug_Halt ((const char *) "max push back stack exceeded, increase MaxPushBackStack", 55, 150, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/PushBackInput.mod", 54);
+      Debug_Halt ((const char *) "max push back stack exceeded, increase MaxPushBackStack", 55, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/PushBackInput.mod", 54, (const char *) "PutCh", 5, 151);
     }
   return ch;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -301,7 +302,7 @@ extern "C" void PushBackInput_PutString (const char *a_, unsigned int _a_high)
       l -= 1;
       if ((PushBackInput_PutCh (a[l])) != a[l])
         {
-          Debug_Halt ((const char *) "assert failed", 13, 132, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/PushBackInput.mod", 54);
+          Debug_Halt ((const char *) "assert failed", 13, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/PushBackInput.mod", 54, (const char *) "PutString", 9, 132);
         }
     }
 }
@@ -322,7 +323,7 @@ extern "C" void PushBackInput_PutStr (DynamicStrings_String s)
       i -= 1;
       if ((PushBackInput_PutCh (DynamicStrings_char (s, static_cast<int> (i)))) != (DynamicStrings_char (s, static_cast<int> (i))))
         {
-          Debug_Halt ((const char *) "assert failed", 13, 113, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/PushBackInput.mod", 54);
+          Debug_Halt ((const char *) "assert failed", 13, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/PushBackInput.mod", 54, (const char *) "PutStr", 6, 113);
         }
     }
 }
@@ -442,7 +443,7 @@ extern "C" unsigned int PushBackInput_GetExitStatus (void)
    SetDebug - sets the debug flag on or off.
 */
 
-extern "C" void PushBackInput_SetDebug (unsigned int d)
+extern "C" void PushBackInput_SetDebug (bool d)
 {
   Debugging = d;
 }
@@ -480,7 +481,7 @@ extern "C" unsigned int PushBackInput_GetCurrentLine (void)
 
 extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
-  PushBackInput_SetDebug (FALSE);
+  PushBackInput_SetDebug (false);
   Init ();
 }
 

@@ -159,17 +159,13 @@ refine_value_range_using_guard (tree type, tree var,
 
       if (operand_equal_p (var, c0, 0))
 	{
-	  mpz_t valc1;
-
 	  /* Case of comparing VAR with its below/up bounds.  */
-	  mpz_init (valc1);
+	  auto_mpz valc1;
 	  wi::to_mpz (wi::to_wide (c1), valc1, TYPE_SIGN (type));
 	  if (mpz_cmp (valc1, below) == 0)
 	    cmp = GT_EXPR;
 	  if (mpz_cmp (valc1, up) == 0)
 	    cmp = LT_EXPR;
-
-	  mpz_clear (valc1);
 	}
       else
 	{
@@ -227,7 +223,8 @@ refine_value_range_using_guard (tree type, tree var,
   else if (TREE_CODE (varc1) == SSA_NAME
 	   && INTEGRAL_TYPE_P (type)
 	   && get_range_query (cfun)->range_of_expr (r, varc1)
-	   && r.kind () == VR_RANGE)
+	   && !r.undefined_p ()
+	   && !r.varying_p ())
     {
       gcc_assert (wi::le_p (r.lower_bound (), r.upper_bound (), sgn));
       wi::to_mpz (r.lower_bound (), minc1, sgn);
@@ -372,7 +369,10 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
       /* Either for VAR itself...  */
       Value_Range var_range (TREE_TYPE (var));
       get_range_query (cfun)->range_of_expr (var_range, var);
-      rtype = var_range.kind ();
+      if (var_range.varying_p () || var_range.undefined_p ())
+	rtype = VR_VARYING;
+      else
+	rtype = VR_RANGE;
       if (!var_range.undefined_p ())
 	{
 	  minv = var_range.lower_bound ();
@@ -388,7 +388,8 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 	  if (PHI_ARG_DEF_FROM_EDGE (phi, e) == var
 	      && get_range_query (cfun)->range_of_expr (phi_range,
 						    gimple_phi_result (phi))
-	      && phi_range.kind () == VR_RANGE)
+	      && !phi_range.varying_p ()
+	      && !phi_range.undefined_p ())
 	    {
 	      if (rtype != VR_RANGE)
 		{
@@ -408,7 +409,10 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 		    {
 		      Value_Range vr (TREE_TYPE (var));
 		      get_range_query (cfun)->range_of_expr (vr, var);
-		      rtype = vr.kind ();
+		      if (vr.varying_p () || vr.undefined_p ())
+			rtype = VR_VARYING;
+		      else
+			rtype = VR_RANGE;
 		      if (!vr.undefined_p ())
 			{
 			  minv = vr.lower_bound ();
@@ -440,7 +444,6 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 	{
 	  edge e;
 	  tree c0, c1;
-	  gimple *cond;
 	  enum tree_code cmp;
 
 	  if (!single_pred_p (bb))
@@ -450,7 +453,7 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 	  if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	    continue;
 
-	  cond = last_stmt (e->src);
+	  gcond *cond = as_a <gcond *> (*gsi_last_bb (e->src));
 	  c0 = gimple_cond_lhs (cond);
 	  cmp = gimple_cond_code (cond);
 	  c1 = gimple_cond_rhs (cond);
@@ -506,7 +509,6 @@ bound_difference_of_offsetted_base (tree type, mpz_t x, mpz_t y,
 {
   int rel = mpz_cmp (x, y);
   bool may_wrap = !nowrap_type_p (type);
-  mpz_t m;
 
   /* If X == Y, then the expressions are always equal.
      If X > Y, there are the following possibilities:
@@ -529,7 +531,7 @@ bound_difference_of_offsetted_base (tree type, mpz_t x, mpz_t y,
       return;
     }
 
-  mpz_init (m);
+  auto_mpz m;
   wi::to_mpz (wi::minus_one (TYPE_PRECISION (type)), m, UNSIGNED);
   mpz_add_ui (m, m, 1);
   mpz_sub (bnds->up, x, y);
@@ -542,8 +544,6 @@ bound_difference_of_offsetted_base (tree type, mpz_t x, mpz_t y,
       else
 	mpz_add (bnds->up, bnds->up, m);
     }
-
-  mpz_clear (m);
 }
 
 /* From condition C0 CMP C1 derives information regarding the
@@ -722,12 +722,10 @@ bound_difference (class loop *loop, tree x, tree y, bounds *bnds)
   tree type = TREE_TYPE (x);
   tree varx, vary;
   mpz_t offx, offy;
-  mpz_t minx, maxx, miny, maxy;
   int cnt = 0;
   edge e;
   basic_block bb;
   tree c0, c1;
-  gimple *cond;
   enum tree_code cmp;
 
   /* Get rid of unnecessary casts, but preserve the value of
@@ -754,19 +752,12 @@ bound_difference (class loop *loop, tree x, tree y, bounds *bnds)
     {
       /* Otherwise, use the value ranges to determine the initial
 	 estimates on below and up.  */
-      mpz_init (minx);
-      mpz_init (maxx);
-      mpz_init (miny);
-      mpz_init (maxy);
+      auto_mpz minx, maxx, miny, maxy;
       determine_value_range (loop, type, varx, offx, minx, maxx);
       determine_value_range (loop, type, vary, offy, miny, maxy);
 
       mpz_sub (bnds->below, minx, maxy);
       mpz_sub (bnds->up, maxx, miny);
-      mpz_clear (minx);
-      mpz_clear (maxx);
-      mpz_clear (miny);
-      mpz_clear (maxy);
     }
 
   /* If both X and Y are constants, we cannot get any more precise.  */
@@ -786,7 +777,7 @@ bound_difference (class loop *loop, tree x, tree y, bounds *bnds)
       if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	continue;
 
-      cond = last_stmt (e->src);
+      gcond *cond = as_a <gcond *> (*gsi_last_bb (e->src));
       c0 = gimple_cond_lhs (cond);
       cmp = gimple_cond_code (cond);
       c1 = gimple_cond_rhs (cond);
@@ -983,7 +974,6 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 {
   tree niter_type = unsigned_type_for (type);
   tree s, c, d, bits, assumption, tmp, bound;
-  mpz_t max;
 
   niter->control = *iv;
   niter->bound = final;
@@ -1011,12 +1001,11 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 		       fold_convert (niter_type, iv->base));
     }
 
-  mpz_init (max);
+  auto_mpz max;
   number_of_iterations_ne_max (max, iv->no_overflow, c, s, bnds,
 			       exit_must_be_taken);
   niter->max = widest_int::from (wi::from_mpz (niter_type, max, false),
 				 TYPE_SIGN (niter_type));
-  mpz_clear (max);
 
   /* Compute no-overflow information for the control iv.  This can be
      proven when below two conditions are satisfied:
@@ -1163,9 +1152,8 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
   tree niter_type = TREE_TYPE (step);
   tree mod = fold_build2 (FLOOR_MOD_EXPR, niter_type, *delta, step);
   tree tmod;
-  mpz_t mmod;
   tree assumption = boolean_true_node, bound, noloop;
-  bool ret = false, fv_comp_no_overflow;
+  bool fv_comp_no_overflow;
   tree type1 = type;
   if (POINTER_TYPE_P (type))
     type1 = sizetype;
@@ -1176,7 +1164,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
     mod = fold_build2 (MINUS_EXPR, niter_type, step, mod);
   tmod = fold_convert (type1, mod);
 
-  mpz_init (mmod);
+  auto_mpz mmod;
   wi::to_mpz (wi::to_wide (mod), mmod, UNSIGNED);
   mpz_neg (mmod, mmod);
 
@@ -1208,7 +1196,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 	  assumption = fold_build2 (LE_EXPR, boolean_type_node,
 				    iv1->base, bound);
 	  if (integer_zerop (assumption))
-	    goto end;
+	    return false;
 	}
       if (mpz_cmp (mmod, bnds->below) < 0)
 	noloop = boolean_false_node;
@@ -1234,7 +1222,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 	  assumption = fold_build2 (GE_EXPR, boolean_type_node,
 				    iv0->base, bound);
 	  if (integer_zerop (assumption))
-	    goto end;
+	    return false;
 	}
       if (mpz_cmp (mmod, bnds->below) < 0)
 	noloop = boolean_false_node;
@@ -1262,10 +1250,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
   bounds_add (bnds, wi::to_widest (mod), type);
   *delta = fold_build2 (PLUS_EXPR, niter_type, *delta, mod);
 
-  ret = true;
-end:
-  mpz_clear (mmod);
-  return ret;
+  return true;
 }
 
 /* Add assertions to NITER that ensure that the control variable of the loop
@@ -2121,9 +2106,8 @@ number_of_iterations_popcount (loop_p loop, edge exit,
 
   /* Check that condition for staying inside the loop is like
      if (iv != 0).  */
-  gimple *cond_stmt = last_stmt (exit->src);
+  gcond *cond_stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
   if (!cond_stmt
-      || gimple_code (cond_stmt) != GIMPLE_COND
       || code != NE_EXPR
       || !integer_zerop (gimple_cond_rhs (cond_stmt))
       || TREE_CODE (gimple_cond_lhs (cond_stmt)) != SSA_NAME)
@@ -2341,9 +2325,8 @@ number_of_iterations_cltz (loop_p loop, edge exit,
 
   /* Check that condition for staying inside the loop is like
      if (iv == 0).  */
-  gimple *cond_stmt = last_stmt (exit->src);
+  gcond *cond_stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
   if (!cond_stmt
-      || gimple_code (cond_stmt) != GIMPLE_COND
       || (code != EQ_EXPR && code != GE_EXPR)
       || !integer_zerop (gimple_cond_rhs (cond_stmt))
       || TREE_CODE (gimple_cond_lhs (cond_stmt)) != SSA_NAME)
@@ -2502,9 +2485,8 @@ number_of_iterations_cltz_complement (loop_p loop, edge exit,
 
   /* Check that condition for staying inside the loop is like
      if (iv != 0).  */
-  gimple *cond_stmt = last_stmt (exit->src);
+  gcond *cond_stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
   if (!cond_stmt
-      || gimple_code (cond_stmt) != GIMPLE_COND
       || code != NE_EXPR
       || !integer_zerop (gimple_cond_rhs (cond_stmt))
       || TREE_CODE (gimple_cond_lhs (cond_stmt)) != SSA_NAME)
@@ -2985,7 +2967,6 @@ simplify_using_initial_conditions (class loop *loop, tree expr)
 {
   edge e;
   basic_block bb;
-  gimple *stmt;
   tree cond, expanded, backup;
   int cnt = 0;
 
@@ -3008,7 +2989,7 @@ simplify_using_initial_conditions (class loop *loop, tree expr)
       if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	continue;
 
-      stmt = last_stmt (e->src);
+      gcond *stmt = as_a <gcond *> (*gsi_last_bb (e->src));
       cond = fold_build2 (gimple_cond_code (stmt),
 			  boolean_type_node,
 			  gimple_cond_lhs (stmt),
@@ -3117,8 +3098,6 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
 				       gcond **at_stmt, bool every_iteration,
 				       basic_block *body)
 {
-  gimple *last;
-  gcond *stmt;
   tree type;
   tree op0, op1;
   enum tree_code code;
@@ -3143,10 +3122,7 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
   niter->control.base = NULL_TREE;
   niter->control.step = NULL_TREE;
   niter->control.no_overflow = false;
-  last = last_stmt (exit->src);
-  if (!last)
-    return false;
-  stmt = dyn_cast <gcond *> (last);
+  gcond *stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
   if (!stmt)
     return false;
 
@@ -3557,12 +3533,11 @@ loop_niter_by_eval (class loop *loop, edge exit)
   tree acnd;
   tree op[2], val[2], next[2], aval[2];
   gphi *phi;
-  gimple *cond;
   unsigned i, j;
   enum tree_code cmp;
 
-  cond = last_stmt (exit->src);
-  if (!cond || gimple_code (cond) != GIMPLE_COND)
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
+  if (!cond)
     return chrec_dont_know;
 
   cmp = gimple_cond_code (cond);
@@ -3889,7 +3864,7 @@ do_warn_aggressive_loop_optimizations (class loop *loop,
   if (e == NULL)
     return;
 
-  gimple *estmt = last_stmt (e->src);
+  gimple *estmt = last_nondebug_stmt (e->src);
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
   print_dec (i_bound, buf, TYPE_UNSIGNED (TREE_TYPE (loop->nb_iterations))
 	     ? UNSIGNED : SIGNED);
@@ -4078,7 +4053,8 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (high) == INTEGER_CST
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
-	  && (base_range.kind () == VR_RANGE
+	  && ((!base_range.varying_p ()
+	       && !base_range.undefined_p ())
 	      || get_cst_init_from_scev (orig_base, &max, false))
 	  && wi::gts_p (wi::to_wide (high), max))
 	base = wide_int_to_tree (unsigned_type, max);
@@ -4100,7 +4076,8 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (low) == INTEGER_CST
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
-	  && (base_range.kind () == VR_RANGE
+	  && ((!base_range.varying_p ()
+	       && !base_range.undefined_p ())
 	      || get_cst_init_from_scev (orig_base, &min, true))
 	  && wi::gts_p (min, wi::to_wide (low)))
 	base = wide_int_to_tree (unsigned_type, min);
@@ -4368,7 +4345,7 @@ infer_loop_bounds_from_signedness (class loop *loop, gimple *stmt)
   high = upper_bound_in_type (type, type);
   Value_Range r (TREE_TYPE (def));
   get_range_query (cfun)->range_of_expr (r, def);
-  if (r.kind () == VR_RANGE)
+  if (!r.varying_p () && !r.undefined_p ())
     {
       low = wide_int_to_tree (type, r.lower_bound ());
       high = wide_int_to_tree (type, r.upper_bound ());
@@ -4829,7 +4806,7 @@ estimate_numbers_of_iterations (class loop *loop)
     {
       if (ex == likely_exit)
 	{
-	  gimple *stmt = last_stmt (ex->src);
+	  gimple *stmt = *gsi_last_bb (ex->src);
 	  if (stmt != NULL)
 	    {
 	      gcond *cond = dyn_cast<gcond *> (stmt);
@@ -4855,7 +4832,7 @@ estimate_numbers_of_iterations (class loop *loop)
 			build_int_cst (type, 0),
 			niter);
       record_estimate (loop, niter, niter_desc.max,
-		       last_stmt (ex->src),
+		       last_nondebug_stmt (ex->src),
 		       true, ex == likely_exit, true);
       record_control_iv (loop, &niter_desc);
     }
@@ -5418,7 +5395,7 @@ scev_var_range_cant_overflow (tree var, tree step, class loop *loop)
 
   Value_Range r (TREE_TYPE (var));
   get_range_query (cfun)->range_of_expr (r, var);
-  if (r.kind () != VR_RANGE)
+  if (r.varying_p () || r.undefined_p ())
     return false;
 
   /* VAR is a scev whose evolution part is STEP and value range info

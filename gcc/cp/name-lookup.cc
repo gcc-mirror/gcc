@@ -5938,6 +5938,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
 	 So tell check_explicit_specialization to look for a match.  */
       SET_DECL_IMPLICIT_INSTANTIATION (decl);
+      DECL_TEMPLATE_INFO (decl) = build_template_info (old, NULL_TREE);
       return;
     }
 
@@ -8205,9 +8206,6 @@ pop_from_top_level (void)
 
   auto_cond_timevar tv (TV_NAME_LOOKUP);
 
-  /* Clear out class-level bindings cache.  */
-  if (previous_class_level)
-    invalidate_class_lookup_cache ();
   pop_class_stack ();
 
   release_tree_vector (current_lang_base);
@@ -8234,6 +8232,43 @@ pop_from_top_level (void)
      push_to_top_level.  */
   s->prev = free_saved_scope;
   free_saved_scope = s;
+}
+
+/* Like push_to_top_level, but not if D is function-local.  Returns whether we
+   did push to top.  */
+
+bool
+maybe_push_to_top_level (tree d)
+{
+  /* Push if D isn't function-local, or is a lambda function, for which name
+     resolution is already done.  */
+  bool push_to_top
+    = !(current_function_decl
+	&& !LAMBDA_FUNCTION_P (d)
+	&& decl_function_context (d) == current_function_decl);
+
+  if (push_to_top)
+    push_to_top_level ();
+  else
+    {
+      gcc_assert (!processing_template_decl);
+      push_function_context ();
+      cp_unevaluated_operand = 0;
+      c_inhibit_evaluation_warnings = 0;
+    }
+
+  return push_to_top;
+}
+
+/* Return from whatever maybe_push_to_top_level did.  */
+
+void
+maybe_pop_from_top_level (bool push_to_top)
+{
+  if (push_to_top)
+    pop_from_top_level ();
+  else
+    pop_function_context ();
 }
 
 /* Push into the scope of the namespace NS, even if it is deeply

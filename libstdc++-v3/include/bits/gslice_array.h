@@ -183,6 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      _Array<size_t>(_M_index));
       }
 
+  /// @cond undocumented
 #undef _DEFINE_VALARRAY_OPERATOR
 #define _DEFINE_VALARRAY_OPERATOR(_Op, _Name)				\
   template<typename _Tp>						\
@@ -214,6 +215,7 @@ _DEFINE_VALARRAY_OPERATOR(<<, __shift_left)
 _DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_OPERATOR
+  /// @endcond
 
   /// @} group numeric_arrays
 

@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -58,8 +59,8 @@ typedef struct IO_BasicFds_r IO_BasicFds;
 typedef struct IO__T1_a IO__T1;
 
 struct IO_BasicFds_r {
-                       unsigned int IsEof;
-                       unsigned int IsRaw;
+                       bool IsEof;
+                       bool IsRaw;
                      };
 
 struct IO__T1_a { IO_BasicFds array[MaxDefaultFd+1]; };
@@ -84,8 +85,8 @@ extern "C" void IO_Write (char ch);
 */
 
 extern "C" void IO_Error (char ch);
-extern "C" void IO_UnBufferedMode (int fd, unsigned int input);
-extern "C" void IO_BufferedMode (int fd, unsigned int input);
+extern "C" void IO_UnBufferedMode (int fd, bool input);
+extern "C" void IO_BufferedMode (int fd, bool input);
 
 /*
    EchoOn - turns on echoing for file descriptor, fd.  This
@@ -94,7 +95,7 @@ extern "C" void IO_BufferedMode (int fd, unsigned int input);
             which is attached to a particular piece of hardware.
 */
 
-extern "C" void IO_EchoOn (int fd, unsigned int input);
+extern "C" void IO_EchoOn (int fd, bool input);
 
 /*
    EchoOff - turns off echoing for file descriptor, fd.  This
@@ -103,13 +104,13 @@ extern "C" void IO_EchoOn (int fd, unsigned int input);
              which is attached to a particular piece of hardware.
 */
 
-extern "C" void IO_EchoOff (int fd, unsigned int input);
+extern "C" void IO_EchoOff (int fd, bool input);
 
 /*
    IsDefaultFd - returns TRUE if, fd, is 0, 1 or 2.
 */
 
-static unsigned int IsDefaultFd (int fd);
+static bool IsDefaultFd (int fd);
 
 /*
    doWrite - performs the write of a single character, ch,
@@ -122,7 +123,7 @@ static void doWrite (int fd, FIO_File f, char ch);
    setFlag - sets or unsets the appropriate flag in, t.
 */
 
-static void setFlag (termios_TERMIOS t, termios_Flag f, unsigned int b);
+static void setFlag (termios_TERMIOS t, termios_Flag f, bool b);
 
 /*
    doraw - sets all the flags associated with making this
@@ -149,7 +150,7 @@ static void Init (void);
    IsDefaultFd - returns TRUE if, fd, is 0, 1 or 2.
 */
 
-static unsigned int IsDefaultFd (int fd)
+static bool IsDefaultFd (int fd)
 {
   return (fd <= MaxDefaultFd) && (fd >= 0);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -184,7 +185,7 @@ static void doWrite (int fd, FIO_File f, char ch)
                 r = errno_geterrno ();
                 if ((r != errno_EAGAIN) && (r != errno_EINTR))
                   {
-                    fdState.array[fd].IsEof = TRUE;
+                    fdState.array[fd].IsEof = true;
                     return ;
                   }
               }
@@ -202,7 +203,7 @@ static void doWrite (int fd, FIO_File f, char ch)
    setFlag - sets or unsets the appropriate flag in, t.
 */
 
-static void setFlag (termios_TERMIOS t, termios_Flag f, unsigned int b)
+static void setFlag (termios_TERMIOS t, termios_Flag f, bool b)
 {
   if (termios_SetFlag (t, f, b))
     {}  /* empty.  */
@@ -225,22 +226,22 @@ static void doraw (termios_TERMIOS term)
     *           termios_p->c_cflag &= ~(CSIZE | PARENB);
     *           termios_p->c_cflag |= CS8;
   */
-  setFlag (term, termios_ignbrk, FALSE);
-  setFlag (term, termios_ibrkint, FALSE);
-  setFlag (term, termios_iparmrk, FALSE);
-  setFlag (term, termios_istrip, FALSE);
-  setFlag (term, termios_inlcr, FALSE);
-  setFlag (term, termios_igncr, FALSE);
-  setFlag (term, termios_icrnl, FALSE);
-  setFlag (term, termios_ixon, FALSE);
-  setFlag (term, termios_opost, FALSE);
-  setFlag (term, termios_lecho, FALSE);
-  setFlag (term, termios_lechonl, FALSE);
-  setFlag (term, termios_licanon, FALSE);
-  setFlag (term, termios_lisig, FALSE);
-  setFlag (term, termios_liexten, FALSE);
-  setFlag (term, termios_parenb, FALSE);
-  setFlag (term, termios_cs8, TRUE);
+  setFlag (term, termios_ignbrk, false);
+  setFlag (term, termios_ibrkint, false);
+  setFlag (term, termios_iparmrk, false);
+  setFlag (term, termios_istrip, false);
+  setFlag (term, termios_inlcr, false);
+  setFlag (term, termios_igncr, false);
+  setFlag (term, termios_icrnl, false);
+  setFlag (term, termios_ixon, false);
+  setFlag (term, termios_opost, false);
+  setFlag (term, termios_lecho, false);
+  setFlag (term, termios_lechonl, false);
+  setFlag (term, termios_licanon, false);
+  setFlag (term, termios_lisig, false);
+  setFlag (term, termios_liexten, false);
+  setFlag (term, termios_parenb, false);
+  setFlag (term, termios_cs8, true);
 }
 
 
@@ -262,20 +263,20 @@ static void dononraw (termios_TERMIOS term)
     *           termios_p->c_cflag &= ~(CSIZE | PARENB);
     *           termios_p->c_cflag |= CS8;
   */
-  setFlag (term, termios_ignbrk, TRUE);
-  setFlag (term, termios_ibrkint, TRUE);
-  setFlag (term, termios_iparmrk, TRUE);
-  setFlag (term, termios_istrip, TRUE);
-  setFlag (term, termios_inlcr, TRUE);
-  setFlag (term, termios_igncr, TRUE);
-  setFlag (term, termios_icrnl, TRUE);
-  setFlag (term, termios_ixon, TRUE);
-  setFlag (term, termios_opost, TRUE);
-  setFlag (term, termios_lecho, TRUE);
-  setFlag (term, termios_lechonl, TRUE);
-  setFlag (term, termios_licanon, TRUE);
-  setFlag (term, termios_lisig, TRUE);
-  setFlag (term, termios_liexten, TRUE);
+  setFlag (term, termios_ignbrk, true);
+  setFlag (term, termios_ibrkint, true);
+  setFlag (term, termios_iparmrk, true);
+  setFlag (term, termios_istrip, true);
+  setFlag (term, termios_inlcr, true);
+  setFlag (term, termios_igncr, true);
+  setFlag (term, termios_icrnl, true);
+  setFlag (term, termios_ixon, true);
+  setFlag (term, termios_opost, true);
+  setFlag (term, termios_lecho, true);
+  setFlag (term, termios_lechonl, true);
+  setFlag (term, termios_licanon, true);
+  setFlag (term, termios_lisig, true);
+  setFlag (term, termios_liexten, true);
 }
 
 
@@ -285,12 +286,12 @@ static void dononraw (termios_TERMIOS term)
 
 static void Init (void)
 {
-  fdState.array[0].IsEof = FALSE;
-  fdState.array[0].IsRaw = FALSE;
-  fdState.array[1].IsEof = FALSE;
-  fdState.array[1].IsRaw = FALSE;
-  fdState.array[2].IsEof = FALSE;
-  fdState.array[2].IsRaw = FALSE;
+  fdState.array[0].IsEof = false;
+  fdState.array[0].IsRaw = false;
+  fdState.array[1].IsEof = false;
+  fdState.array[1].IsRaw = false;
+  fdState.array[2].IsEof = false;
+  fdState.array[2].IsRaw = false;
 }
 
 
@@ -325,7 +326,7 @@ extern "C" void IO_Read (char *ch)
                 r = errno_geterrno ();
                 if (r != errno_EAGAIN)
                   {
-                    fdState.array[0].IsEof = TRUE;
+                    fdState.array[0].IsEof = true;
                     (*ch) = ASCII_eof;
                     return ;
                   }
@@ -361,14 +362,14 @@ extern "C" void IO_Error (char ch)
   doWrite (2, FIO_StdErr, ch);
 }
 
-extern "C" void IO_UnBufferedMode (int fd, unsigned int input)
+extern "C" void IO_UnBufferedMode (int fd, bool input)
 {
   termios_TERMIOS term;
   int result;
 
   if (IsDefaultFd (fd))
     {
-      fdState.array[fd].IsRaw = TRUE;
+      fdState.array[fd].IsRaw = true;
     }
   term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
@@ -386,14 +387,14 @@ extern "C" void IO_UnBufferedMode (int fd, unsigned int input)
   term = termios_KillTermios (term);
 }
 
-extern "C" void IO_BufferedMode (int fd, unsigned int input)
+extern "C" void IO_BufferedMode (int fd, bool input)
 {
   termios_TERMIOS term;
   int r;
 
   if (IsDefaultFd (fd))
     {
-      fdState.array[fd].IsRaw = FALSE;
+      fdState.array[fd].IsRaw = false;
     }
   term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
@@ -419,7 +420,7 @@ extern "C" void IO_BufferedMode (int fd, unsigned int input)
             which is attached to a particular piece of hardware.
 */
 
-extern "C" void IO_EchoOn (int fd, unsigned int input)
+extern "C" void IO_EchoOn (int fd, bool input)
 {
   termios_TERMIOS term;
   int result;
@@ -427,7 +428,7 @@ extern "C" void IO_EchoOn (int fd, unsigned int input)
   term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
     {
-      setFlag (term, termios_lecho, TRUE);
+      setFlag (term, termios_lecho, true);
       if (input)
         {
           result = termios_tcsetattr (fd, termios_tcsflush (), term);
@@ -448,7 +449,7 @@ extern "C" void IO_EchoOn (int fd, unsigned int input)
              which is attached to a particular piece of hardware.
 */
 
-extern "C" void IO_EchoOff (int fd, unsigned int input)
+extern "C" void IO_EchoOff (int fd, bool input)
 {
   termios_TERMIOS term;
   int result;
@@ -456,7 +457,7 @@ extern "C" void IO_EchoOff (int fd, unsigned int input)
   term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
     {
-      setFlag (term, termios_lecho, FALSE);
+      setFlag (term, termios_lecho, false);
       if (input)
         {
           result = termios_tcsetattr (fd, termios_tcsflush (), term);

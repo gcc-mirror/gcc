@@ -185,7 +185,7 @@ namespace __format
   __failed_to_parse_format_spec()
   { __throw_format_error("format error: failed to parse format-spec"); }
 } // namespace __format
-/// @endcond
+  /// @endcond
 
   // [format.parse.ctx], class template basic_format_parse_context
   template<typename _CharT> class basic_format_parse_context;
@@ -3870,7 +3870,7 @@ namespace __format
     };
 #endif
 } // namespace __format
-/// @@endcond
+/// @endcond
 
   template<typename... _Args>
     [[nodiscard]]

@@ -1,6 +1,10 @@
 // P1467R9 - Extended floating-point types and standard names.
 // { dg-do compile { target c++23 } }
 // { dg-options "" }
+// { dg-add-options float16 }
+// { dg-add-options float32 }
+// { dg-add-options float64 }
+// { dg-add-options float128 }
 
 #include "ext-floating.h"
 

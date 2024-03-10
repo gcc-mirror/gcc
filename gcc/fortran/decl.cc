@@ -1081,7 +1081,7 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
   if (!gfc_expr_check_typed (*expr, gfc_current_ns, false))
     return MATCH_ERROR;
 
-  /* If gfortran gets an EXPR_OP, try to simplifiy it.  This catches things
+  /* If gfortran gets an EXPR_OP, try to simplify it.  This catches things
      like CHARACTER(([1])).   */
   if ((*expr)->expr_type == EXPR_OP)
     gfc_simplify_expr (*expr, 1);
@@ -1576,7 +1576,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	    }
 
           /* Character strings are only C interoperable if they have a
-	     length of 1.  However, as an argument they are also iteroperable
+	     length of 1.  However, as an argument they are also interoperable
 	     when passed as descriptor (which requires len=: or len=*).  */
 	  if (sym->ts.type == BT_CHARACTER)
 	    {
@@ -2847,7 +2847,7 @@ variable_decl (int elem)
 	}
     }
 
-  /* The dummy arguments and result of the abreviated form of MODULE
+  /* The dummy arguments and result of the abbreviated form of MODULE
      PROCEDUREs, used in SUBMODULES should not be redefined.  */
   if (gfc_current_ns->proc_name
       && gfc_current_ns->proc_name->abr_modproc_decl)
@@ -3117,7 +3117,7 @@ variable_decl (int elem)
 	}
     }
 
-  /* Before adding a possible initilizer, do a simple check for compatibility
+  /* Before adding a possible initializer, do a simple check for compatibility
      of lhs and rhs types.  Assigning a REAL value to a derived type is not a
      good thing.  */
   if (current_ts.type == BT_DERIVED && initializer
@@ -8348,7 +8348,7 @@ gfc_match_end (gfc_statement *st)
   match m;
   gfc_namespace *parent_ns, *ns, *prev_ns;
   gfc_namespace **nsp;
-  bool abreviated_modproc_decl = false;
+  bool abbreviated_modproc_decl = false;
   bool got_matching_end = false;
 
   old_loc = gfc_current_locus;
@@ -8372,7 +8372,7 @@ gfc_match_end (gfc_statement *st)
       state = gfc_state_stack->previous->state;
       block_name = gfc_state_stack->previous->sym == NULL
 		 ? NULL : gfc_state_stack->previous->sym->name;
-      abreviated_modproc_decl = gfc_state_stack->previous->sym
+      abbreviated_modproc_decl = gfc_state_stack->previous->sym
 		&& gfc_state_stack->previous->sym->abr_modproc_decl;
       break;
 
@@ -8380,8 +8380,8 @@ gfc_match_end (gfc_statement *st)
       break;
     }
 
-  if (!abreviated_modproc_decl)
-    abreviated_modproc_decl = gfc_current_block ()
+  if (!abbreviated_modproc_decl)
+    abbreviated_modproc_decl = gfc_current_block ()
 			      && gfc_current_block ()->abr_modproc_decl;
 
   switch (state)
@@ -8395,7 +8395,7 @@ gfc_match_end (gfc_statement *st)
 
     case COMP_SUBROUTINE:
       *st = ST_END_SUBROUTINE;
-      if (!abreviated_modproc_decl)
+      if (!abbreviated_modproc_decl)
       target = " subroutine";
       else
 	target = " procedure";
@@ -8404,7 +8404,7 @@ gfc_match_end (gfc_statement *st)
 
     case COMP_FUNCTION:
       *st = ST_END_FUNCTION;
-      if (!abreviated_modproc_decl)
+      if (!abbreviated_modproc_decl)
       target = " function";
       else
 	target = " procedure";
@@ -8533,7 +8533,7 @@ gfc_match_end (gfc_statement *st)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2008, "END statement "
 			       "instead of %s statement at %L",
-			       abreviated_modproc_decl ? "END PROCEDURE"
+			       abbreviated_modproc_decl ? "END PROCEDURE"
 			       : gfc_ascii_statement(*st), &old_loc))
 	    goto cleanup;
 	}
@@ -8551,7 +8551,7 @@ gfc_match_end (gfc_statement *st)
   /* Verify that we've got the sort of end-block that we're expecting.  */
   if (gfc_match (target) != MATCH_YES)
     {
-      gfc_error ("Expecting %s statement at %L", abreviated_modproc_decl
+      gfc_error ("Expecting %s statement at %L", abbreviated_modproc_decl
 		 ? "END PROCEDURE" : gfc_ascii_statement(*st), &old_loc);
       goto cleanup;
     }

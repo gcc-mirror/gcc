@@ -360,10 +360,10 @@ adjust_pointer_diff_expr (irange &res, const gimple *diff_stmt)
       && vrp_operand_equal_p (op1, gimple_call_arg (call, 0))
       && integer_zerop (gimple_call_arg (call, 1)))
     {
-      tree max = vrp_val_max (ptrdiff_type_node);
-      unsigned prec = TYPE_PRECISION (TREE_TYPE (max));
-      wide_int wmaxm1 = wi::to_wide (max, prec) - 1;
-      res.intersect (int_range<2> (TREE_TYPE (max), wi::zero (prec), wmaxm1));
+      wide_int maxm1 = irange_val_max (ptrdiff_type_node) - 1;
+      res.intersect (int_range<2> (ptrdiff_type_node,
+				   wi::zero (TYPE_PRECISION (ptrdiff_type_node)),
+				   maxm1));
     }
 }
 
@@ -404,7 +404,8 @@ adjust_imagpart_expr (vrange &res, const gimple *stmt)
       tree cst = gimple_assign_rhs1 (def_stmt);
       if (TREE_CODE (cst) == COMPLEX_CST)
 	{
-	  int_range<2> imag (TREE_IMAGPART (cst), TREE_IMAGPART (cst));
+	  wide_int w = wi::to_wide (TREE_IMAGPART (cst));
+	  int_range<1> imag (TREE_TYPE (TREE_IMAGPART (cst)), w, w);
 	  res.intersect (imag);
 	}
     }
@@ -430,8 +431,8 @@ adjust_realpart_expr (vrange &res, const gimple *stmt)
       tree cst = gimple_assign_rhs1 (def_stmt);
       if (TREE_CODE (cst) == COMPLEX_CST)
 	{
-	  tree imag = TREE_REALPART (cst);
-	  int_range<2> tmp (imag, imag);
+	  wide_int imag = wi::to_wide (TREE_REALPART (cst));
+	  int_range<2> tmp (TREE_TYPE (TREE_REALPART (cst)), imag, imag);
 	  res.intersect (tmp);
 	}
     }
@@ -689,7 +690,8 @@ fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
 	{
 	  /* For -fdelete-null-pointer-checks -fno-wrapv-pointer we don't
 	     allow going from non-NULL pointer to NULL.  */
-	  if (r.undefined_p () || !r.contains_p (build_zero_cst (r.type ())))
+	  if (r.undefined_p ()
+	      || !r.contains_p (wi::zero (TYPE_PRECISION (TREE_TYPE (expr)))))
 	    {
 	      /* We could here instead adjust r by off >> LOG2_BITS_PER_UNIT
 		 using POINTER_PLUS_EXPR if off_cst and just fall back to
@@ -771,16 +773,16 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 
 	  if (gimple_range_ssa_p (arg) && src.gori ())
 	    src.gori ()->register_dependency (phi_def, arg);
-
-	  // Track if all arguments are the same.
-	  if (!seen_arg)
-	    {
-	      seen_arg = true;
-	      single_arg = arg;
-	    }
-	  else if (single_arg != arg)
-	    single_arg = NULL_TREE;
 	}
+
+      // Track if all arguments are the same.
+      if (!seen_arg)
+	{
+	  seen_arg = true;
+	  single_arg = arg;
+	}
+      else if (single_arg != arg)
+	single_arg = NULL_TREE;
 
       // Once the value reaches varying, stop looking.
       if (r.varying_p () && single_arg == NULL_TREE)
@@ -942,28 +944,6 @@ fold_using_range::range_of_cond_expr  (vrange &r, gassign *s, fur_source &src)
   return true;
 }
 
-// Return the lower bound of R as a tree.
-
-static inline tree
-tree_lower_bound (const vrange &r, tree type)
-{
-  if (is_a <irange> (r))
-    return wide_int_to_tree (type, as_a <irange> (r).lower_bound ());
-  // ?? Handle floats when they contain endpoints.
-  return NULL;
-}
-
-// Return the upper bound of R as a tree.
-
-static inline tree
-tree_upper_bound (const vrange &r, tree type)
-{
-  if (is_a <irange> (r))
-    return wide_int_to_tree (type, as_a <irange> (r).upper_bound ());
-  // ?? Handle floats when they contain endpoints.
-  return NULL;
-}
-
 // If SCEV has any information about phi node NAME, return it as a range in R.
 
 void
@@ -972,30 +952,8 @@ fold_using_range::range_of_ssa_name_with_loop_info (vrange &r, tree name,
 						    fur_source &src)
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-  tree min, max, type = TREE_TYPE (name);
-  if (bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
-    {
-      if (!is_gimple_constant (min))
-	{
-	  if (src.query ()->range_of_expr (r, min, phi) && !r.undefined_p ())
-	    min = tree_lower_bound (r, type);
-	  else
-	    min = vrp_val_min (type);
-	}
-      if (!is_gimple_constant (max))
-	{
-	  if (src.query ()->range_of_expr (r, max, phi) && !r.undefined_p ())
-	    max = tree_upper_bound (r, type);
-	  else
-	    max = vrp_val_max (type);
-	}
-      if (min && max)
-	{
-	  r.set (min, max);
-	  return;
-	}
-    }
-  r.set_varying (type);
+  if (!range_of_var_in_loop (r, name, l, phi, src.query ()))
+    r.set_varying (TREE_TYPE (name));
 }
 
 // -----------------------------------------------------------------------
@@ -1069,7 +1027,7 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
   else if (ssa1_dep1 != ssa2_dep2 || ssa1_dep2 != ssa2_dep1)
     return;
 
-  int_range<2> bool_one (boolean_true_node, boolean_true_node);
+  int_range<2> bool_one = range_true ();
 
   relation_kind relation1 = handler1.op1_op2_relation (bool_one);
   relation_kind relation2 = handler2.op1_op2_relation (bool_one);
@@ -1081,7 +1039,7 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
 
   // x && y is false if the relation intersection of the true cases is NULL.
   if (is_and && relation_intersect (relation1, relation2) == VREL_UNDEFINED)
-    lhs_range = int_range<2> (boolean_false_node, boolean_false_node);
+    lhs_range = range_false (boolean_type_node);
   // x || y is true if the union of the true cases is NO-RELATION..
   // ie, one or the other being true covers the full range of possibilities.
   else if (!is_and && relation_union (relation1, relation2) == VREL_VARYING)

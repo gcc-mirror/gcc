@@ -511,31 +511,6 @@ fwd_jt_path_registry::lookup_redirection_data (edge e, insert_option insert)
     }
 }
 
-/* Similar to copy_phi_args, except that the PHI arg exists, it just
-   does not have a value associated with it.  */
-
-static void
-copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
-{
-  int src_idx = src_e->dest_idx;
-  int tgt_idx = tgt_e->dest_idx;
-
-  /* Iterate over each PHI in e->dest.  */
-  for (gphi_iterator gsi = gsi_start_phis (src_e->dest),
-			   gsi2 = gsi_start_phis (tgt_e->dest);
-       !gsi_end_p (gsi);
-       gsi_next (&gsi), gsi_next (&gsi2))
-    {
-      gphi *src_phi = gsi.phi ();
-      gphi *dest_phi = gsi2.phi ();
-      tree val = gimple_phi_arg_def (src_phi, src_idx);
-      location_t locus = gimple_phi_arg_location (src_phi, src_idx);
-
-      SET_PHI_ARG_DEF (dest_phi, tgt_idx, val);
-      gimple_phi_arg_set_location (dest_phi, tgt_idx, locus);
-    }
-}
-
 /* Given ssa_name DEF, backtrack jump threading PATH from node IDX
    to see if it has constant value in a flow sensitive manner.  Set
    LOCUS to location of the constant phi arg and return the value.

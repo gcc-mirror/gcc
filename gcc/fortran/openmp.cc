@@ -7711,6 +7711,22 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				     &n->where);
 		      }
 		  }
+		if (openacc
+		    && list == OMP_LIST_MAP
+		    && (n->u.map_op == OMP_MAP_ATTACH
+			|| n->u.map_op == OMP_MAP_DETACH))
+		  {
+		    symbol_attribute attr;
+		    if (n->expr)
+		      attr = gfc_expr_attr (n->expr);
+		    else
+		      attr = n->sym->attr;
+		    if (!attr.pointer && !attr.allocatable)
+		      gfc_error ("%qs clause argument must be ALLOCATABLE or "
+				 "a POINTER at %L",
+				 (n->u.map_op == OMP_MAP_ATTACH) ? "attach"
+				 : "detach", &n->where);
+		  }
 		if (lastref
 		    || (n->expr
 			&& (!resolved || n->expr->expr_type != EXPR_VARIABLE)))
@@ -9067,17 +9083,34 @@ gfc_resolve_omp_do_blocks (gfc_code *code, gfc_namespace *ns)
 	  if (code->ext.omp_clauses->sched_kind != OMP_SCHED_NONE)
 	    gfc_error ("SCHEDULE clause specified together with %<inscan%> "
 		       "REDUCTION clause at %L", loc);
-	  if (!c->block
-	      || !c->block->next
-	      || !c->block->next->next
-	      || c->block->next->next->op != EXEC_OMP_SCAN
-	      || !c->block->next->next->next
-	      || c->block->next->next->next->next)
+	  gfc_code *block = c->block ? c->block->next : NULL;
+	  if (block && block->op != EXEC_OMP_SCAN)
+	    while (block && block->next && block->next->op != EXEC_OMP_SCAN)
+	      block = block->next;
+	  if (!block
+	      || (block->op != EXEC_OMP_SCAN
+		  && (!block->next || block->next->op != EXEC_OMP_SCAN)))
 	    gfc_error ("With INSCAN at %L, expected loop body with !$OMP SCAN "
-		       "between two structured-block-sequences", loc);
+		       "between two structured block sequences", loc);
 	  else
-	    /* Mark as checked; flag will be unset later.  */
-	    c->block->next->next->ext.omp_clauses->if_present = true;
+	    {
+	      if (block->op == EXEC_OMP_SCAN)
+		gfc_warning (0, "!$OMP SCAN at %L with zero executable "
+				"statements in preceding structured block "
+				"sequence", &block->loc);
+	      if ((block->op == EXEC_OMP_SCAN && !block->next)
+		  || (block->next && block->next->op == EXEC_OMP_SCAN
+		      && !block->next->next))
+		gfc_warning (0, "!$OMP SCAN at %L with zero executable "
+				"statements in succeeding structured block "
+				"sequence", block->op == EXEC_OMP_SCAN
+					    ? &block->loc : &block->next->loc);
+	    }
+	  if (block && block->op != EXEC_OMP_SCAN)
+	    block = block->next;
+	  if (block && block->op == EXEC_OMP_SCAN)
+	    /* Mark 'omp scan' as checked; flag will be unset later.  */
+	    block->ext.omp_clauses->if_present = true;
 	}
     }
   gfc_resolve_blocks (code->block, ns);
