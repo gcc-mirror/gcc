@@ -39,8 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "go-c.h"
 #include "go-gcc.h"
 
-#ifndef TARGET_AIX
-#define TARGET_AIX 0
+#ifndef TARGET_AIX_OS
+#define TARGET_AIX_OS 0
 #endif
 
 /* Language-dependent contents of a type.  */
@@ -116,9 +116,9 @@ go_langhook_init (void)
   args.compiling_runtime = go_compiling_runtime;
   args.debug_escape_level = go_debug_escape_level;
   args.debug_escape_hash = go_debug_escape_hash;
-  args.nil_check_size_threshold = TARGET_AIX ? -1 : 4096;
+  args.nil_check_size_threshold = TARGET_AIX_OS ? -1 : 4096;
   args.debug_optimization = go_debug_optimization;
-  args.need_eqtype = TARGET_AIX ? true : false;
+  args.need_eqtype = TARGET_AIX_OS ? true : false;
   args.linemap = go_get_linemap();
   args.backend = go_get_backend();
   go_create_gogo (&args);
