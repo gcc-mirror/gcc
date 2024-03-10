@@ -1146,6 +1146,17 @@ proc check_effective_target_mmap {} {
 # Return 1 if the target supports sysconf, 0 otherwise.
 
 proc check_effective_target_sysconf {} {
+    # VxWorks has sysconf in rtp mode only, but our way to test can't
+    # tell kernel mode doesn't, as we're doing partial links for
+    # kernel modules.  We can tell by checking for a declaration, or
+    # for some sysconf parm, because configurations that don't offer
+    # sysconf don't have either.
+    if { [istarget *-*-vxworks*] } {
+	return [check_no_compiler_messages sysconfdecl assembly {
+	    #include <unistd.h>
+	    int f() { return sysconf(_SC_PAGESIZE); }
+	}];
+    }
     return [check_function_available "sysconf"]
 }
 
@@ -10954,7 +10965,7 @@ proc check_effective_target_aarch64_tiny { } {
 # various architecture extensions via the .arch_extension pseudo-op.
 
 foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod" "sve"
-			  "i8mm" "f32mm" "f64mm" "bf16" "sb" "sve2" } {
+			  "i8mm" "f32mm" "f64mm" "bf16" "sb" "sve2" "ls64" } {
     eval [string map [list FUNC $aarch64_ext] {
 	proc check_effective_target_aarch64_asm_FUNC_ok { } {
 	  if { [istarget aarch64*-*-*] } {
@@ -11251,20 +11262,20 @@ proc check_effective_target_branch_cost {} {
 
 # Record that dg-final test TEST requires convential compilation.
 
-proc force_conventional_output_for { test } {
+proc set_required_options_for { test } {
     if { [info proc $test] == "" } {
 	perror "$test does not exist"
 	exit 1
     }
     proc ${test}_required_options {} {
-	global gcc_force_conventional_output
+	global gcc_set_required_options
 	upvar 1 extra_tool_flags extra_tool_flags
 	if {[regexp -- "^scan-assembler" [info level 0]]
 	    && ![string match "*-fident*" $extra_tool_flags]} {
 	    # Do not let .ident confuse assembler scan tests
-	    return [list $gcc_force_conventional_output "-fno-ident"]
+	    return [list $gcc_set_required_options "-fno-ident"]
 	}
-	return $gcc_force_conventional_output
+	return $gcc_set_required_options
     }
 }
 
@@ -12267,7 +12278,7 @@ proc check_effective_target_o_flag_in_section { } {
 # return 1 if LRA is supported.
 
 proc check_effective_target_lra { } {
-    if { [istarget hppa*-*-*] || [istarget cris-*-*] } {
+    if { [istarget hppa*-*-*] || [istarget cris-*-*] || [istarget avr-*-*] } {
 	return 0
     }
     return 1

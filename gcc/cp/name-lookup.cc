@@ -3488,7 +3488,7 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
 
   tree not_tmpl = STRIP_TEMPLATE (decl);
   if ((TREE_CODE (not_tmpl) == FUNCTION_DECL
-       || TREE_CODE (not_tmpl) == VAR_DECL)
+       || VAR_P (not_tmpl))
       && DECL_THIS_STATIC (not_tmpl))
     /* Internal linkage.  */
     return;
@@ -6932,7 +6932,7 @@ consider_decl (tree decl,  best_match <tree, const char *> &bm,
 {
   /* Skip compiler-generated variables (e.g. __for_begin/__for_end
      within range for).  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl))
+  if (VAR_P (decl) && DECL_ARTIFICIAL (decl))
     return;
 
   tree suggestion = DECL_NAME (decl);
@@ -6967,7 +6967,7 @@ maybe_add_fuzzy_decl (auto_vec<tree> &vec, tree decl)
 {
   /* Skip compiler-generated variables (e.g. __for_begin/__for_end
      within range for).  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl))
+  if (VAR_P (decl) && DECL_ARTIFICIAL (decl))
     return false;
 
   tree suggestion = DECL_NAME (decl);
@@ -7449,6 +7449,28 @@ innermost_non_namespace_value (tree name)
   cxx_binding *binding;
   binding = outer_binding (name, /*binding=*/NULL, /*class_p=*/true);
   return binding ? binding->value : NULL_TREE;
+}
+
+/* True iff current_binding_level is within the potential scope of local
+   variable DECL. */
+
+bool
+decl_in_scope_p (tree decl)
+{
+  gcc_checking_assert (DECL_FUNCTION_SCOPE_P (decl));
+
+  tree name = DECL_NAME (decl);
+
+  for (cxx_binding *iter = NULL;
+       (iter = outer_binding (name, iter, /*class_p=*/false)); )
+    {
+      if (!LOCAL_BINDING_P (iter))
+	return false;
+      if (iter->value == decl)
+	return true;
+    }
+
+  return false;
 }
 
 /* Look up NAME in the current binding level and its superiors in the

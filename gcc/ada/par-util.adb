@@ -165,7 +165,7 @@ package body Util is
         and then Start_Column <= Scopes (Scope.Last).Ecol
       then
          Error_Msg_BC -- CODEFIX
-           ("(style) incorrect layout");
+           ("(style) incorrect layout?l?");
       end if;
    end Check_Bad_Layout;
 
@@ -713,7 +713,7 @@ package body Util is
         and then Scope.Last = Style_Max_Nesting_Level + 1
       then
          Error_Msg
-           ("(style) maximum nesting level exceeded",
+           ("(style) maximum nesting level exceeded?L?",
             First_Non_Blank_Location);
       end if;
 

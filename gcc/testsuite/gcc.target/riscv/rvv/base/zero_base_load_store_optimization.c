@@ -131,4 +131,5 @@ void test_vsoxei32_v_f32m1_shortcut (vuint32m1_t bindex, vfloat32m1_t val, size_
 
 /* { dg-final { scan-assembler-times {v[ls]e[0-9]+\.v\s+v[0-9]+,\s*0\(zero\)} 6 } } */
 /* { dg-final { scan-assembler-times {v[ls]se[0-9]+\.v\s+v[0-9]+,\s*0\(zero\),\s*[ax][0-9]+} 6 } } */
-/* { dg-final { scan-assembler-times {li\s+[a-x][0-9]+,\s*0} 12 } } */
+/* { dg-final { scan-assembler-times {v[ls][uo]xei[0-9]+\.v\s+v[0-9]+,\s*\(zero\),\s*v[0-9]+} 12 } } */
+/* { dg-final { scan-assembler-not {li\s+[a-x][0-9]+,\s*0} } } */

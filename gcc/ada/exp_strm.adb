@@ -51,20 +51,17 @@ package body Exp_Strm is
    -----------------------
 
    procedure Build_Array_Read_Write_Procedure
-     (Nod  : Node_Id;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : Entity_Id;
       Nam  : Name_Id);
    --  Common routine shared to build either an array Read procedure or an
    --  array Write procedure, Nam is Name_Read or Name_Write to select which.
    --  Pnam is the defining identifier for the constructed procedure. The
-   --  other parameters are as for Build_Array_Read_Procedure except that
-   --  the first parameter Nod supplies the Sloc to be used to generate code.
+   --  other parameters are as for Build_Array_Read_Procedure.
 
    procedure Build_Record_Read_Write_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : Entity_Id;
       Nam  : Name_Id);
@@ -74,8 +71,7 @@ package body Exp_Strm is
    --  as for Build_Record_Read_Procedure.
 
    procedure Build_Stream_Function
-     (Loc   : Source_Ptr;
-      Typ   : Entity_Id;
+     (Typ   : Entity_Id;
       Decl  : out Node_Id;
       Fnam  : Entity_Id;
       Decls : List_Id;
@@ -140,11 +136,11 @@ package body Exp_Strm is
    --  reference, so the name must be unique.
 
    procedure Build_Array_Input_Function
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Fnam : out Entity_Id)
    is
+      Loc    : constant Source_Ptr := Sloc (Typ);
       Dim    : constant Pos := Number_Dimensions (Typ);
       Lnam   : Name_Id;
       Hnam   : Name_Id;
@@ -235,7 +231,7 @@ package body Exp_Strm is
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Input));
 
-      Build_Stream_Function (Loc, Typ, Decl, Fnam, Decls, Stms);
+      Build_Stream_Function (Typ, Decl, Fnam, Decls, Stms);
    end Build_Array_Input_Function;
 
    ----------------------------------
@@ -243,11 +239,11 @@ package body Exp_Strm is
    ----------------------------------
 
    procedure Build_Array_Output_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
+      Loc  : constant Source_Ptr := Sloc (Typ);
       Stms : List_Id;
       Indx : Node_Id;
 
@@ -301,7 +297,7 @@ package body Exp_Strm is
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Output));
 
-      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, Outp => False);
+      Build_Stream_Procedure (Typ, Decl, Pnam, Stms, Outp => False);
    end Build_Array_Output_Procedure;
 
    --------------------------------
@@ -309,18 +305,17 @@ package body Exp_Strm is
    --------------------------------
 
    procedure Build_Array_Read_Procedure
-     (Nod  : Node_Id;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
-      Loc : constant Source_Ptr := Sloc (Nod);
+      Loc : constant Source_Ptr := Sloc (Typ);
 
    begin
       Pnam :=
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Read));
-      Build_Array_Read_Write_Procedure (Nod, Typ, Decl, Pnam, Name_Read);
+      Build_Array_Read_Write_Procedure (Typ, Decl, Pnam, Name_Read);
    end Build_Array_Read_Procedure;
 
    --------------------------------------
@@ -345,13 +340,12 @@ package body Exp_Strm is
    --  The out keyword for V is supplied in the Read case
 
    procedure Build_Array_Read_Write_Procedure
-     (Nod  : Node_Id;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : Entity_Id;
       Nam  : Name_Id)
    is
-      Loc  : constant Source_Ptr := Sloc (Nod);
+      Loc  : constant Source_Ptr := Sloc (Typ);
       Ndim : constant Pos        := Number_Dimensions (Typ);
       Ctyp : constant Entity_Id  := Component_Type (Typ);
 
@@ -402,7 +396,7 @@ package body Exp_Strm is
 
       for J in 1 .. Ndim loop
          Stm :=
-           Make_Implicit_Loop_Statement (Nod,
+           Make_Implicit_Loop_Statement (Typ,
              Iteration_Scheme =>
                Make_Iteration_Scheme (Loc,
                  Loop_Parameter_Specification =>
@@ -424,7 +418,7 @@ package body Exp_Strm is
       end loop;
 
       Build_Stream_Procedure
-        (Loc, Typ, Decl, Pnam, New_List (Stm), Outp => Nam = Name_Read);
+        (Typ, Decl, Pnam, New_List (Stm), Outp => Nam = Name_Read);
    end Build_Array_Read_Write_Procedure;
 
    ---------------------------------
@@ -432,17 +426,16 @@ package body Exp_Strm is
    ---------------------------------
 
    procedure Build_Array_Write_Procedure
-     (Nod  : Node_Id;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
-      Loc : constant Source_Ptr := Sloc (Nod);
+      Loc : constant Source_Ptr := Sloc (Typ);
    begin
       Pnam :=
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Write));
-      Build_Array_Read_Write_Procedure (Nod, Typ, Decl, Pnam, Name_Write);
+      Build_Array_Read_Write_Procedure (Typ, Decl, Pnam, Name_Write);
    end Build_Array_Write_Procedure;
 
    ---------------------------------
@@ -894,11 +887,12 @@ package body Exp_Strm is
    -----------------------------------------
 
    procedure Build_Mutable_Record_Read_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
+      Loc  : constant Source_Ptr := Sloc (Typ);
+
       Out_Formal : Node_Id;
       --  Expression denoting the out formal parameter
 
@@ -951,7 +945,7 @@ package body Exp_Strm is
            Make_Raise_Program_Error (Loc,
              Reason => PE_Unchecked_Union_Restriction));
 
-         Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, Outp => True);
+         Build_Stream_Procedure (Typ, Decl, Pnam, Stms, Outp => True);
          return;
       end if;
 
@@ -1007,7 +1001,7 @@ package body Exp_Strm is
       --  Generate reads for the components of the record (including those
       --  that depend on discriminants).
 
-      Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Read);
+      Build_Record_Read_Write_Procedure (Typ, Decl, Pnam, Name_Read);
 
       --  Save original statement sequence for component assignments, and
       --  replace it with Stms.
@@ -1066,11 +1060,11 @@ package body Exp_Strm is
    ------------------------------------------
 
    procedure Build_Mutable_Record_Write_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
+      Loc   : constant Source_Ptr := Sloc (Typ);
       Stms  : List_Id;
       Disc  : Entity_Id;
       D_Ref : Node_Id;
@@ -1111,7 +1105,7 @@ package body Exp_Strm is
       Pnam :=
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Write));
-      Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Write);
+      Build_Record_Read_Write_Procedure (Typ, Decl, Pnam, Name_Write);
 
       --  Write the discriminants before the rest of the components, so
       --  that discriminant values are properly set of variants, etc.
@@ -1152,11 +1146,11 @@ package body Exp_Strm is
    --  an elementary type, then no Cn constants are defined.
 
    procedure Build_Record_Or_Elementary_Input_Function
-     (Loc            : Source_Ptr;
-      Typ            : Entity_Id;
+     (Typ            : Entity_Id;
       Decl           : out Node_Id;
       Fnam           : out Entity_Id)
    is
+      Loc        : constant Source_Ptr := Sloc (Typ);
       B_Typ      : constant Entity_Id := Underlying_Type (Base_Type (Typ));
       Cn         : Name_Id;
       Constr     : List_Id;
@@ -1288,7 +1282,7 @@ package body Exp_Strm is
 
       Fnam := Make_Stream_Subprogram_Name (Loc, B_Typ, TSS_Stream_Input);
 
-      Build_Stream_Function (Loc, B_Typ, Decl, Fnam, Decls, Stms);
+      Build_Stream_Function (B_Typ, Decl, Fnam, Decls, Stms);
    end Build_Record_Or_Elementary_Input_Function;
 
    -------------------------------------------------
@@ -1296,11 +1290,11 @@ package body Exp_Strm is
    -------------------------------------------------
 
    procedure Build_Record_Or_Elementary_Output_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
+      Loc      : constant Source_Ptr := Sloc (Typ);
       Stms     : List_Id;
       Disc     : Entity_Id;
       Disc_Ref : Node_Id;
@@ -1356,7 +1350,7 @@ package body Exp_Strm is
 
       Pnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Output);
 
-      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, Outp => False);
+      Build_Stream_Procedure (Typ, Decl, Pnam, Stms, Outp => False);
    end Build_Record_Or_Elementary_Output_Procedure;
 
    ---------------------------------
@@ -1364,14 +1358,14 @@ package body Exp_Strm is
    ---------------------------------
 
    procedure Build_Record_Read_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
+      Loc : constant Source_Ptr := Sloc (Typ);
    begin
       Pnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Read);
-      Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Read);
+      Build_Record_Read_Write_Procedure (Typ, Decl, Pnam, Name_Read);
    end Build_Record_Read_Procedure;
 
    ---------------------------------------
@@ -1407,12 +1401,12 @@ package body Exp_Strm is
    --  The out keyword for V is supplied in the Read case
 
    procedure Build_Record_Read_Write_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : Entity_Id;
       Nam  : Name_Id)
    is
+      Loc  : constant Source_Ptr := Sloc (Typ);
       Rdef : Node_Id;
       Stms : List_Id;
       Typt : Entity_Id;
@@ -1616,7 +1610,7 @@ package body Exp_Strm is
       end if;
 
       Build_Stream_Procedure
-        (Loc, Typ, Decl, Pnam, Stms, Outp => Nam = Name_Read);
+        (Typ, Decl, Pnam, Stms, Outp => Nam = Name_Read);
    end Build_Record_Read_Write_Procedure;
 
    ----------------------------------
@@ -1624,14 +1618,14 @@ package body Exp_Strm is
    ----------------------------------
 
    procedure Build_Record_Write_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
+      Loc : constant Source_Ptr := Sloc (Typ);
    begin
       Pnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Write);
-      Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Write);
+      Build_Record_Read_Write_Procedure (Typ, Decl, Pnam, Name_Write);
    end Build_Record_Write_Procedure;
 
    -------------------------------
@@ -1674,13 +1668,13 @@ package body Exp_Strm is
    ---------------------------
 
    procedure Build_Stream_Function
-     (Loc   : Source_Ptr;
-      Typ   : Entity_Id;
+     (Typ   : Entity_Id;
       Decl  : out Node_Id;
       Fnam  : Entity_Id;
       Decls : List_Id;
       Stms  : List_Id)
    is
+      Loc  : constant Source_Ptr := Sloc (Typ);
       Spec : Node_Id;
 
    begin
@@ -1719,13 +1713,13 @@ package body Exp_Strm is
    ----------------------------
 
    procedure Build_Stream_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : Entity_Id;
       Stms : List_Id;
       Outp : Boolean)
    is
+      Loc  : constant Source_Ptr := Sloc (Typ);
       Spec : Node_Id;
 
    begin

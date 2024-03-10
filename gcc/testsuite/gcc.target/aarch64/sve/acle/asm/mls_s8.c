@@ -54,7 +54,7 @@ TEST_UNIFORM_ZX (mls_w0_s8_m_tied1, svint8_t, int8_t,
 		 z0 = svmls_m (p0, z0, z1, x0))
 
 /*
-** mls_w0_s8_m_untied: { xfail *-*-* }
+** mls_w0_s8_m_untied:
 **	mov	(z[0-9]+\.b), w0
 **	movprfx	z0, z1
 **	mls	z0\.b, p0/m, z2\.b, \1
@@ -75,7 +75,7 @@ TEST_UNIFORM_Z (mls_11_s8_m_tied1, svint8_t,
 		z0 = svmls_m (p0, z0, z1, 11))
 
 /*
-** mls_11_s8_m_untied: { xfail *-*-* }
+** mls_11_s8_m_untied:
 **	mov	(z[0-9]+\.b), #11
 **	movprfx	z0, z1
 **	mls	z0\.b, p0/m, z2\.b, \1

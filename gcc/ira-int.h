@@ -281,13 +281,20 @@ struct ira_allocno
   int regno;
   /* Mode of the allocno which is the mode of the corresponding
      pseudo-register.  */
-  ENUM_BITFIELD (machine_mode) mode : 8;
+  ENUM_BITFIELD (machine_mode) mode : MACHINE_MODE_BITSIZE;
   /* Widest mode of the allocno which in at least one case could be
      for paradoxical subregs where wmode > mode.  */
-  ENUM_BITFIELD (machine_mode) wmode : 8;
+  ENUM_BITFIELD (machine_mode) wmode : MACHINE_MODE_BITSIZE;
   /* Register class which should be used for allocation for given
      allocno.  NO_REGS means that we should use memory.  */
   ENUM_BITFIELD (reg_class) aclass : 16;
+  /* Hard register assigned to given allocno.  Negative value means
+     that memory was allocated to the allocno.  During the reload,
+     spilled allocno has value equal to the corresponding stack slot
+     number (0, ...) - 2.  Value -1 is used for allocnos spilled by the
+     reload (at this point pseudo-register has only one allocno) which
+     did not get stack slot yet.  */
+  signed int hard_regno : 16;
   /* A bitmask of the ABIs used by calls that occur while the allocno
      is live.  */
   unsigned int crossed_calls_abis : NUM_ABI_IDS;
@@ -321,22 +328,6 @@ struct ira_allocno
 
      This is only ever true for non-cap allocnos.  */
   unsigned int might_conflict_with_parent_p : 1;
-  /* Hard register assigned to given allocno.  Negative value means
-     that memory was allocated to the allocno.  During the reload,
-     spilled allocno has value equal to the corresponding stack slot
-     number (0, ...) - 2.  Value -1 is used for allocnos spilled by the
-     reload (at this point pseudo-register has only one allocno) which
-     did not get stack slot yet.  */
-  signed int hard_regno : 16;
-  /* Allocnos with the same regno are linked by the following member.
-     Allocnos corresponding to inner loops are first in the list (it
-     corresponds to depth-first traverse of the loops).  */
-  ira_allocno_t next_regno_allocno;
-  /* There may be different allocnos with the same regno in different
-     regions.  Allocnos are bound to the corresponding loop tree node.
-     Pseudo-register may have only one regular allocno with given loop
-     tree node but more than one cap (see comments above).  */
-  ira_loop_tree_node_t loop_tree_node;
   /* Accumulated usage references of the allocno.  Here and below,
      word 'accumulated' means info for given region and all nested
      subregions.  In this case, 'accumulated' means sum of references
@@ -362,6 +353,25 @@ struct ira_allocno
      register class living at the point than number of hard-registers
      of the class available for the allocation.  */
   int excess_pressure_points_num;
+  /* The number of objects tracked in the following array.  */
+  int num_objects;
+  /* Accumulated frequency of calls which given allocno
+     intersects.  */
+  int call_freq;
+  /* Accumulated number of the intersected calls.  */
+  int calls_crossed_num;
+  /* The number of calls across which it is live, but which should not
+     affect register preferences.  */
+  int cheap_calls_crossed_num;
+  /* Allocnos with the same regno are linked by the following member.
+     Allocnos corresponding to inner loops are first in the list (it
+     corresponds to depth-first traverse of the loops).  */
+  ira_allocno_t next_regno_allocno;
+  /* There may be different allocnos with the same regno in different
+     regions.  Allocnos are bound to the corresponding loop tree node.
+     Pseudo-register may have only one regular allocno with given loop
+     tree node but more than one cap (see comments above).  */
+  ira_loop_tree_node_t loop_tree_node;
   /* Allocno hard reg preferences.  */
   ira_pref_t allocno_prefs;
   /* Copies to other non-conflicting allocnos.  The copies can
@@ -374,21 +384,11 @@ struct ira_allocno
   /* It is a link to allocno (cap) on lower loop level represented by
      given cap.  Null if given allocno is not a cap.  */
   ira_allocno_t cap_member;
-  /* The number of objects tracked in the following array.  */
-  int num_objects;
   /* An array of structures describing conflict information and live
      ranges for each object associated with the allocno.  There may be
      more than one such object in cases where the allocno represents a
      multi-word register.  */
   ira_object_t objects[2];
-  /* Accumulated frequency of calls which given allocno
-     intersects.  */
-  int call_freq;
-  /* Accumulated number of the intersected calls.  */
-  int calls_crossed_num;
-  /* The number of calls across which it is live, but which should not
-     affect register preferences.  */
-  int cheap_calls_crossed_num;
   /* Registers clobbered by intersected calls.  */
    HARD_REG_SET crossed_calls_clobbered_regs;
   /* Array of usage costs (accumulated and the one updated during

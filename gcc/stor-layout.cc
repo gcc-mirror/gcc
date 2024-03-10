@@ -499,11 +499,13 @@ mode_for_vector (scalar_mode innermode, poly_uint64 nunits)
   else
     mode = MIN_MODE_VECTOR_INT;
 
-  /* Do not check vector_mode_supported_p here.  We'll do that
-     later in vector_type_mode.  */
+  /* Only check the broader vector_mode_supported_any_target_p here.
+     We'll filter through target-specific availability and
+     vector_mode_supported_p later in vector_type_mode.  */
   FOR_EACH_MODE_FROM (mode, mode)
     if (known_eq (GET_MODE_NUNITS (mode), nunits)
-	&& GET_MODE_INNER (mode) == innermode)
+	&& GET_MODE_INNER (mode) == innermode
+	&& targetm.vector_mode_supported_any_target_p (mode))
       return mode;
 
   /* For integers, try mapping it to a same-sized scalar mode.  */

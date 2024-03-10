@@ -17,11 +17,11 @@
 
 TEST_ALL (LOOP)
 
-/* { dg-final { scan-assembler-not {\tadd\tz[0-9]\.d,} } } */
-/* { dg-final { scan-assembler-not {\tlsl\tz[0-9]\.d,} } } */
-/* { dg-final { scan-assembler-not {\tand\tz[0-9]\.d,} } } */
-/* { dg-final { scan-assembler-not {\tuxtw\tz[0-9]\.d,} } } */
-/* { dg-final { scan-assembler-times {\tadr\tz[0-9]\.d, \[z[0-9]\.d, z[0-9]\.d, uxtw\]} 1 } } */
-/* { dg-final { scan-assembler-times {\tadr\tz[0-9]\.d, \[z[0-9]\.d, z[0-9]\.d, uxtw 1\]} 1 } } */
-/* { dg-final { scan-assembler-times {\tadr\tz[0-9]\.d, \[z[0-9]\.d, z[0-9]\.d, uxtw 2\]} 1 } } */
-/* { dg-final { scan-assembler-times {\tadr\tz[0-9]\.d, \[z[0-9]\.d, z[0-9]\.d, uxtw 3\]} 1 } } */
+/* { dg-final { scan-assembler-not {\tadd\tz[0-9]+\.d,} } } */
+/* { dg-final { scan-assembler-not {\tlsl\tz[0-9]+\.d,} } } */
+/* { dg-final { scan-assembler-not {\tand\tz[0-9]+\.d,} } } */
+/* { dg-final { scan-assembler-not {\tuxtw\tz[0-9]+\.d,} } } */
+/* { dg-final { scan-assembler-times {\tadr\tz[0-9]+\.d, \[z[0-9]+\.d, z[0-9]+\.d, uxtw\]} 1 } } */
+/* { dg-final { scan-assembler-times {\tadr\tz[0-9]+\.d, \[z[0-9]+\.d, z[0-9]+\.d, uxtw 1\]} 1 } } */
+/* { dg-final { scan-assembler-times {\tadr\tz[0-9]+\.d, \[z[0-9]+\.d, z[0-9]+\.d, uxtw 2\]} 1 } } */
+/* { dg-final { scan-assembler-times {\tadr\tz[0-9]+\.d, \[z[0-9]+\.d, z[0-9]+\.d, uxtw 3\]} 1 } } */

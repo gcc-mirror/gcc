@@ -5278,6 +5278,15 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
       tree argtype = TREE_TYPE (arg);
       if (DECL_NAME (arg) && INTEGRAL_TYPE_P (argtype))
 	arg2pos.put (arg, argpos);
+    }
+
+  argpos = 0;
+  for (tree arg = parms; arg; arg = TREE_CHAIN (arg), ++argpos)
+    {
+      if (!DECL_P (arg))
+	continue;
+
+      tree argtype = TREE_TYPE (arg);
 
       tree argspec = DECL_ATTRIBUTES (arg);
       if (!argspec)

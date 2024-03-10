@@ -385,6 +385,63 @@ vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_controls *dest_rgm,
   return false;
 }
 
+/* Populate DEST_RGM->controls, given that they should add up to STEP.
+
+     STEP = MIN_EXPR <ivtmp_34, VF>;
+
+     First length (MIN (X, VF/N)):
+       loop_len_15 = MIN_EXPR <STEP, VF/N>;
+
+     Second length:
+       tmp = STEP - loop_len_15;
+       loop_len_16 = MIN (tmp, VF/N);
+
+     Third length:
+       tmp2 = tmp - loop_len_16;
+       loop_len_17 = MIN (tmp2, VF/N);
+
+     Last length:
+       loop_len_18 = tmp2 - loop_len_17;
+*/
+
+static void
+vect_adjust_loop_lens_control (tree iv_type, gimple_seq *seq,
+			       rgroup_controls *dest_rgm, tree step)
+{
+  tree ctrl_type = dest_rgm->type;
+  poly_uint64 nitems_per_ctrl
+    = TYPE_VECTOR_SUBPARTS (ctrl_type) * dest_rgm->factor;
+  tree length_limit = build_int_cst (iv_type, nitems_per_ctrl);
+
+  for (unsigned int i = 0; i < dest_rgm->controls.length (); ++i)
+    {
+      tree ctrl = dest_rgm->controls[i];
+      if (i == 0)
+	{
+	  /* First iteration: MIN (X, VF/N) capped to the range [0, VF/N].  */
+	  gassign *assign
+	    = gimple_build_assign (ctrl, MIN_EXPR, step, length_limit);
+	  gimple_seq_add_stmt (seq, assign);
+	}
+      else if (i == dest_rgm->controls.length () - 1)
+	{
+	  /* Last iteration: Remain capped to the range [0, VF/N].  */
+	  gassign *assign = gimple_build_assign (ctrl, MINUS_EXPR, step,
+						 dest_rgm->controls[i - 1]);
+	  gimple_seq_add_stmt (seq, assign);
+	}
+      else
+	{
+	  /* (MIN (remain, VF*I/N)) capped to the range [0, VF/N].  */
+	  step = gimple_build (seq, MINUS_EXPR, iv_type, step,
+			       dest_rgm->controls[i - 1]);
+	  gassign *assign
+	    = gimple_build_assign (ctrl, MIN_EXPR, step, length_limit);
+	  gimple_seq_add_stmt (seq, assign);
+	}
+    }
+}
+
 /* Helper for vect_set_loop_condition_partial_vectors.  Generate definitions
    for all the rgroup controls in RGC and return a control that is nonzero
    when the loop needs to iterate.  Add any new preheader statements to
@@ -425,7 +482,8 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 				 gimple_seq *header_seq,
 				 gimple_stmt_iterator loop_cond_gsi,
 				 rgroup_controls *rgc, tree niters,
-				 tree niters_skip, bool might_wrap_p)
+				 tree niters_skip, bool might_wrap_p,
+				 tree *iv_step, tree *compare_step)
 {
   tree compare_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
   tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
@@ -468,8 +526,57 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
   gimple_stmt_iterator incr_gsi;
   bool insert_after;
   standard_iv_increment_position (loop, &incr_gsi, &insert_after);
-  create_iv (build_int_cst (iv_type, 0), nitems_step, NULL_TREE, loop,
-	     &incr_gsi, insert_after, &index_before_incr, &index_after_incr);
+  if (LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo))
+    {
+      /* Create an IV that counts down from niters_total and whose step
+	 is the (variable) amount processed in the current iteration:
+	   ...
+	   _10 = (unsigned long) count_12(D);
+	   ...
+	   # ivtmp_9 = PHI <ivtmp_35(6), _10(5)>
+	   _36 = (MIN_EXPR | SELECT_VL) <ivtmp_9, POLY_INT_CST [4, 4]>;
+	   ...
+	   vect__4.8_28 = .LEN_LOAD (_17, 32B, _36, 0);
+	   ...
+	   ivtmp_35 = ivtmp_9 - POLY_INT_CST [4, 4];
+	   ...
+	   if (ivtmp_9 > POLY_INT_CST [4, 4])
+	     goto <bb 4>; [83.33%]
+	   else
+	     goto <bb 5>; [16.67%]
+      */
+      nitems_total = gimple_convert (preheader_seq, iv_type, nitems_total);
+      tree step = rgc->controls.length () == 1 ? rgc->controls[0]
+					       : make_ssa_name (iv_type);
+      /* Create decrement IV.  */
+      if (LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo))
+	{
+	  create_iv (nitems_total, MINUS_EXPR, step, NULL_TREE, loop, &incr_gsi,
+		     insert_after, &index_before_incr, &index_after_incr);
+	  tree len = gimple_build (header_seq, IFN_SELECT_VL, iv_type,
+				   index_before_incr, nitems_step);
+	  gimple_seq_add_stmt (header_seq, gimple_build_assign (step, len));
+	}
+      else
+	{
+	  create_iv (nitems_total, MINUS_EXPR, nitems_step, NULL_TREE, loop,
+		     &incr_gsi, insert_after, &index_before_incr,
+		     &index_after_incr);
+	  gimple_seq_add_stmt (header_seq,
+			       gimple_build_assign (step, MIN_EXPR,
+						    index_before_incr,
+						    nitems_step));
+	}
+      *iv_step = step;
+      *compare_step = nitems_step;
+      return LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) ? index_after_incr
+						       : index_before_incr;
+    }
+
+  /* Create increment IV.  */
+  create_iv (build_int_cst (iv_type, 0), PLUS_EXPR, nitems_step, NULL_TREE,
+	     loop, &incr_gsi, insert_after, &index_before_incr,
+	     &index_after_incr);
 
   tree zero_index = build_int_cst (compare_type, 0);
   tree test_index, test_limit, first_limit;
@@ -732,7 +839,10 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
      the first control from any rgroup for the loop condition; here we
      arbitrarily pick the last.  */
   tree test_ctrl = NULL_TREE;
+  tree iv_step = NULL_TREE;
+  tree compare_step = NULL_TREE;
   rgroup_controls *rgc;
+  rgroup_controls *iv_rgc = nullptr;
   unsigned int i;
   auto_vec<rgroup_controls> *controls = use_masks_p
 					  ? &LOOP_VINFO_MASKS (loop_vinfo)
@@ -752,17 +862,36 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
 	      continue;
 	  }
 
-	/* See whether zero-based IV would ever generate all-false masks
-	   or zero length before wrapping around.  */
-	bool might_wrap_p = vect_rgroup_iv_might_wrap_p (loop_vinfo, rgc);
+	if (!LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo)
+	    || !iv_rgc
+	    || (iv_rgc->max_nscalars_per_iter * iv_rgc->factor
+		!= rgc->max_nscalars_per_iter * rgc->factor))
+	  {
+	    /* See whether zero-based IV would ever generate all-false masks
+	       or zero length before wrapping around.  */
+	    bool might_wrap_p = vect_rgroup_iv_might_wrap_p (loop_vinfo, rgc);
 
-	/* Set up all controls for this group.  */
-	test_ctrl = vect_set_loop_controls_directly (loop, loop_vinfo,
-						     &preheader_seq,
-						     &header_seq,
-						     loop_cond_gsi, rgc,
-						     niters, niters_skip,
-						     might_wrap_p);
+	    /* Set up all controls for this group.  */
+	    test_ctrl
+	      = vect_set_loop_controls_directly (loop, loop_vinfo,
+						 &preheader_seq, &header_seq,
+						 loop_cond_gsi, rgc, niters,
+						 niters_skip, might_wrap_p,
+						 &iv_step, &compare_step);
+
+	    iv_rgc = rgc;
+	  }
+
+	if (LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo)
+	    && rgc->controls.length () > 1)
+	  {
+	    /* vect_set_loop_controls_directly creates an IV whose step
+	       is equal to the expected sum of RGC->controls.  Use that
+	       information to populate RGC->controls.  */
+	    tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
+	    gcc_assert (iv_step);
+	    vect_adjust_loop_lens_control (iv_type, &header_seq, rgc, iv_step);
+	  }
       }
 
   /* Emit all accumulated statements.  */
@@ -771,10 +900,22 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
 
   /* Get a boolean result that tells us whether to iterate.  */
   edge exit_edge = single_exit (loop);
-  tree_code code = (exit_edge->flags & EDGE_TRUE_VALUE) ? EQ_EXPR : NE_EXPR;
-  tree zero_ctrl = build_zero_cst (TREE_TYPE (test_ctrl));
-  gcond *cond_stmt = gimple_build_cond (code, test_ctrl, zero_ctrl,
-					NULL_TREE, NULL_TREE);
+  gcond *cond_stmt;
+  if (LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo)
+      && !LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo))
+    {
+      gcc_assert (compare_step);
+      tree_code code = (exit_edge->flags & EDGE_TRUE_VALUE) ? LE_EXPR : GT_EXPR;
+      cond_stmt = gimple_build_cond (code, test_ctrl, compare_step, NULL_TREE,
+				     NULL_TREE);
+    }
+  else
+    {
+      tree_code code = (exit_edge->flags & EDGE_TRUE_VALUE) ? EQ_EXPR : NE_EXPR;
+      tree zero_ctrl = build_zero_cst (TREE_TYPE (test_ctrl));
+      cond_stmt
+	= gimple_build_cond (code, test_ctrl, zero_ctrl, NULL_TREE, NULL_TREE);
+    }
   gsi_insert_before (&loop_cond_gsi, cond_stmt, GSI_SAME_STMT);
 
   /* The loop iterates (NITERS - 1) / VF + 1 times.
@@ -893,7 +1034,7 @@ vect_set_loop_condition_normal (class loop *loop, tree niters, tree step,
     }
 
   standard_iv_increment_position (loop, &incr_gsi, &insert_after);
-  create_iv (init, step, NULL_TREE, loop,
+  create_iv (init, PLUS_EXPR, step, NULL_TREE, loop,
              &incr_gsi, insert_after, &indx_before_incr, &indx_after_incr);
   indx_after_incr = force_gimple_operand_gsi (&loop_cond_gsi, indx_after_incr,
 					      true, NULL_TREE, true,

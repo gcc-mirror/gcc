@@ -4877,7 +4877,7 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
       else
 	set_decl_section_name (decl, ".l2.text");
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       if (DECL_SECTION_NAME (decl) != NULL
 	  && strcmp (DECL_SECTION_NAME (decl),

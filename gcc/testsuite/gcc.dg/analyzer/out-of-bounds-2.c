@@ -82,5 +82,4 @@ void test5 (void)
   /* { dg-warning "heap-based buffer over-read" "bounds warning" { target *-*-* } test5 } */
   /* { dg-message "read of 4 bytes from after the end of the region" "num bad bytes note" { target *-*-* } test5 } */
 
-  /* { dg-warning "use of uninitialized value" "uninit warning" { target *-*-* } test5 } */
 }

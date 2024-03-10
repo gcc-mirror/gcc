@@ -1147,6 +1147,8 @@ struct GTY (()) machine_function
   /* The current frame information, calculated by loongarch_compute_frame_info.
    */
   struct loongarch_frame_info frame;
+
+  bool reg_is_wrapped_separately[FIRST_PSEUDO_REGISTER];
 };
 #endif
 

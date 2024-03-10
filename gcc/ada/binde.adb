@@ -1937,7 +1937,7 @@ package body Binde is
                      Units.Table (U).Last_With
             loop
                if Withs.Table (W).Sfile /= No_File
-                 and then (not Withs.Table (W).SAL_Interface)
+                 and then not Withs.Table (W).SAL_Interface
                then
                   --  Check for special case of withing a unit that does not
                   --  exist any more. If the unit was completely missing we
@@ -2793,7 +2793,7 @@ package body Binde is
                         Units.Table (U).Last_With
                loop
                   if Withs.Table (W).Sfile /= No_File
-                    and then (not Withs.Table (W).SAL_Interface)
+                    and then not Withs.Table (W).SAL_Interface
                   then
                      --  Check for special case of withing a unit that does not
                      --  exist any more.

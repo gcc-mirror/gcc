@@ -1,6 +1,6 @@
 /* Test BTF generation for a function with an unrepresentable parameter.
 
-   BTF has no encoding for floating point types, among others. Function
+   BTF has no encoding for vector types, among others. Function
    parameters of unrepresentable types are emitted as 'void' types.
 
    We expect one BTF_KIND_FUNC_PROTO with 3 parameters, one of which

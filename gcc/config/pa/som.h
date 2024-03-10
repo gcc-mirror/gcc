@@ -287,7 +287,7 @@ do {						\
    initialized variables and functions.  */
 #define MAKE_DECL_ONE_ONLY(DECL) \
   do {									\
-    if (TREE_CODE (DECL) == VAR_DECL					\
+    if (VAR_P (DECL)					\
         && (DECL_INITIAL (DECL) == 0					\
             || DECL_INITIAL (DECL) == error_mark_node))			\
       DECL_COMMON (DECL) = 1;						\

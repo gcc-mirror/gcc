@@ -35,11 +35,45 @@ namespace arm_mve
   {
 
     extern const function_shape *const binary;
+    extern const function_shape *const binary_lshift;
+    extern const function_shape *const binary_lshift_r;
+    extern const function_shape *const binary_acc_int32;
+    extern const function_shape *const binary_acc_int64;
+    extern const function_shape *const binary_acca_int32;
+    extern const function_shape *const binary_acca_int64;
+    extern const function_shape *const binary_imm32;
+    extern const function_shape *const binary_lshift_unsigned;
+    extern const function_shape *const binary_maxamina;
+    extern const function_shape *const binary_maxavminav;
+    extern const function_shape *const binary_maxvminv;
+    extern const function_shape *const binary_move_narrow;
+    extern const function_shape *const binary_move_narrow_unsigned;
     extern const function_shape *const binary_opt_n;
     extern const function_shape *const binary_orrq;
+    extern const function_shape *const binary_round_lshift;
+    extern const function_shape *const binary_rshift;
+    extern const function_shape *const binary_rshift_narrow;
+    extern const function_shape *const binary_rshift_narrow_unsigned;
+    extern const function_shape *const binary_widen_n;
+    extern const function_shape *const binary_widen_opt_n;
+    extern const function_shape *const cmp;
     extern const function_shape *const create;
     extern const function_shape *const inherent;
+    extern const function_shape *const mvn;
+    extern const function_shape *const ternary;
+    extern const function_shape *const ternary_lshift;
+    extern const function_shape *const ternary_n;
+    extern const function_shape *const ternary_opt_n;
+    extern const function_shape *const ternary_rshift;
+    extern const function_shape *const unary;
+    extern const function_shape *const unary_acc;
     extern const function_shape *const unary_convert;
+    extern const function_shape *const unary_int32;
+    extern const function_shape *const unary_int32_acc;
+    extern const function_shape *const unary_n;
+    extern const function_shape *const unary_widen;
+    extern const function_shape *const unary_widen_acc;
+    extern const function_shape *const vpsel;
 
   } /* end namespace arm_mve::shapes */
 } /* end namespace arm_mve */

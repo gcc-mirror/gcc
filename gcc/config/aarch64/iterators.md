@@ -622,8 +622,6 @@
     UNSPEC_FMINV	; Used in aarch64-simd.md.
     UNSPEC_FADDV	; Used in aarch64-simd.md.
     UNSPEC_ADDV		; Used in aarch64-simd.md.
-    UNSPEC_SADDLV	; Used in aarch64-simd.md.
-    UNSPEC_UADDLV	; Used in aarch64-simd.md.
     UNSPEC_SMAXV	; Used in aarch64-simd.md.
     UNSPEC_SMINV	; Used in aarch64-simd.md.
     UNSPEC_UMAXV	; Used in aarch64-simd.md.
@@ -640,11 +638,8 @@
     UNSPEC_FMULX	; Used in aarch64-simd.md.
     UNSPEC_USQADD	; Used in aarch64-simd.md.
     UNSPEC_SUQADD	; Used in aarch64-simd.md.
-    UNSPEC_SQXTUN	; Used in aarch64-simd.md.
     UNSPEC_SSRA		; Used in aarch64-simd.md.
     UNSPEC_USRA		; Used in aarch64-simd.md.
-    UNSPEC_SRSRA	; Used in aarch64-simd.md.
-    UNSPEC_URSRA	; Used in aarch64-simd.md.
     UNSPEC_SRSHR	; Used in aarch64-simd.md.
     UNSPEC_URSHR	; Used in aarch64-simd.md.
     UNSPEC_SQSHLU	; Used in aarch64-simd.md.
@@ -669,8 +664,6 @@
     UNSPEC_SSHLL	; Used in aarch64-simd.md.
     UNSPEC_USHLL	; Used in aarch64-simd.md.
     UNSPEC_ADDP		; Used in aarch64-simd.md.
-    UNSPEC_SADDLP	; Used in aarch64-simd.md.
-    UNSPEC_UADDLP	; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
     UNSPEC_TBX		; Used in vector permute patterns.
     UNSPEC_CONCAT	; Used in vector permute patterns.
@@ -1030,6 +1023,8 @@
 (define_mode_attr fpw [(DI "s") (SI "d")])
 
 (define_mode_attr short_mask [(HI "65535") (QI "255")])
+
+(define_mode_attr half_mask [(HI "255") (SI "65535") (DI "4294967295")])
 
 ;; For constraints used in scalar immediate vector moves
 (define_mode_attr hq [(HI "h") (QI "q")])
@@ -1486,6 +1481,9 @@
                   (V4HI "V2SI") (V8HI "V4SI")
                   (V2SI "DI")   (V4SI "V2DI")])
 
+(define_mode_attr VQUADW [(V8QI "V4SI") (V16QI "V8SI")
+                  (V4HI "V2DI") (V8HI "V4DI")])
+
 ;; Narrowed modes for VDN.
 (define_mode_attr VNARROWD [(V4HI "V8QI") (V2SI "V4HI")
 			    (DI   "V2SI")])
@@ -1530,6 +1528,12 @@
 			 (VNx16BI "VNx8BI") (VNx8BI "VNx4BI")
 			 (VNx4BI  "VNx2BI")])
 
+;; Modes with the same number of elements but strictly 2x the width.
+(define_mode_attr V2XWIDE [(V8QI "V8HI") (V4HI "V4SI")
+			   (V16QI "V16HI") (V8HI "V8SI")
+			   (V2SI "V2DI") (V4SI "V4DI")
+			   (V2DI "V2TI") (DI "TI")])
+
 ;; Predicate mode associated with VWIDE.
 (define_mode_attr VWIDE_PRED [(VNx8HF "VNx4BI") (VNx4SF "VNx2BI")])
 
@@ -1560,6 +1564,9 @@
 (define_mode_attr VWIDE_S [(V8QI "HI") (V4HI "SI")
 			  (V2SI "DI") (V16QI "HI")
 			  (V8HI "SI") (V4SI "DI")])
+
+(define_mode_attr VWIDE2X_S [(V8QI "SI") (V4HI "DI")
+			  (V16QI "SI") (V8HI "DI")])
 
 ;; Widened mode with half the element register suffixes for VD_BHSI/VQW/VQ_HSF.
 (define_mode_attr Vwhalf [(V8QI "4h") (V4HI "2s")
@@ -2136,6 +2143,10 @@
 ;; The constraint to use for an SVE FCMLA lane index.
 (define_mode_attr sve_lane_pair_con [(VNx8HF "y") (VNx4SF "x")])
 
+(define_mode_attr vec_or_offset [(V8QI "vec") (V16QI "vec") (V4HI "vec")
+				 (V8HI "vec") (V2SI "vec") (V4SI "vec")
+				 (V2DI "vec") (DI "offset")])
+
 ;; -------------------------------------------------------------------
 ;; Code Iterators
 ;; -------------------------------------------------------------------
@@ -2325,6 +2336,8 @@
 			  (us_plus "add")
 			  (ss_minus "sub")
 			  (us_minus "sub")])
+
+(define_code_attr SHIFTEXTEND [(ashiftrt "sign_extend") (lshiftrt "zero_extend")])
 
 ;; For comparison operators we use the FCM* and CM* instructions.
 ;; As there are no CMLE or CMLT instructions which act on 3 vector
@@ -2571,9 +2584,6 @@
 ;; Int Iterators.
 ;; -------------------------------------------------------------------
 
-;; The unspec codes for the SADALP, UADALP AdvancedSIMD instructions.
-(define_int_iterator ADALP [UNSPEC_SADALP UNSPEC_UADALP])
-
 (define_int_iterator MAXMINV [UNSPEC_UMAXV UNSPEC_UMINV
 			      UNSPEC_SMAXV UNSPEC_SMINV])
 
@@ -2583,10 +2593,6 @@
 (define_int_iterator FMAXMINNMV [UNSPEC_FMAXNMV UNSPEC_FMINNMV])
 
 (define_int_iterator SVE_INT_ADDV [UNSPEC_SADDV UNSPEC_UADDV])
-
-(define_int_iterator USADDLP [UNSPEC_SADDLP UNSPEC_UADDLP])
-
-(define_int_iterator USADDLV [UNSPEC_SADDLV UNSPEC_UADDLV])
 
 (define_int_iterator LOGICALF [UNSPEC_ANDF UNSPEC_IORF UNSPEC_XORF])
 
@@ -2629,8 +2635,7 @@
 (define_int_iterator VQSHL [UNSPEC_SQSHL UNSPEC_UQSHL
                             UNSPEC_SQRSHL UNSPEC_UQRSHL])
 
-(define_int_iterator VSRA [UNSPEC_SSRA UNSPEC_USRA
-			     UNSPEC_SRSRA UNSPEC_URSRA])
+(define_int_iterator VSRA [UNSPEC_SSRA UNSPEC_USRA])
 
 (define_int_iterator VSLRI [UNSPEC_SSLI UNSPEC_USLI
 			      UNSPEC_SSRI UNSPEC_USRI])
@@ -3174,6 +3179,8 @@
  [(UNSPECV_ATOMIC_LDOP_OR "ior") (UNSPECV_ATOMIC_LDOP_BIC "bic")
   (UNSPECV_ATOMIC_LDOP_XOR "xor") (UNSPECV_ATOMIC_LDOP_PLUS "add")])
 
+(define_int_iterator SUBDI_BITS [8 16 32])
+
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
 ;; -------------------------------------------------------------------
@@ -3328,10 +3335,6 @@
 ;; "s" for signed operations and "u" for unsigned ones.
 (define_int_attr su [(UNSPEC_SADDV "s")
 		     (UNSPEC_UADDV "u")
-		     (UNSPEC_SADDLP "s")
-		     (UNSPEC_UADDLP "u")
-		     (UNSPEC_SADDLV "s")
-		     (UNSPEC_UADDLV "u")
 		     (UNSPEC_UNPACKSHI "s")
 		     (UNSPEC_UNPACKUHI "u")
 		     (UNSPEC_UNPACKSLO "s")
@@ -3353,7 +3356,6 @@
 		      (UNSPEC_SSLI  "s") (UNSPEC_USLI  "u")
 		      (UNSPEC_SSRI  "s") (UNSPEC_USRI  "u")
 		      (UNSPEC_USRA  "u") (UNSPEC_SSRA  "s")
-		      (UNSPEC_URSRA  "ur") (UNSPEC_SRSRA  "sr")
 		      (UNSPEC_URSHR  "ur") (UNSPEC_SRSHR  "sr")
 		      (UNSPEC_SQSHLU "s") (UNSPEC_SQSHL   "s")
 		      (UNSPEC_UQSHL  "u")
@@ -4004,3 +4006,5 @@
    (UNSPECV_SET_FPSR "fpsr")
    (UNSPECV_GET_FPCR "fpcr")
    (UNSPECV_SET_FPCR "fpcr")])
+
+(define_int_attr bits_etype [(8 "b") (16 "h") (32 "s")])

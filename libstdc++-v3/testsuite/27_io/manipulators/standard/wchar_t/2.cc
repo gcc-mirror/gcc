@@ -40,7 +40,7 @@ test01()
   sin >> resetiosflags(ios_base::dec)
       >> setiosflags(ios_base::dec)
       >> setbase(ios_base::dec)
-      >> setfill(L'c')
+      >> setfill(L'c') // { dg-warning "deprecated" }
       >> setprecision(5)
       >> setw(20)
       >> ws;

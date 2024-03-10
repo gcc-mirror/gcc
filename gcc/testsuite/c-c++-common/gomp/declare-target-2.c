@@ -59,7 +59,7 @@ int n, o, s, t;
 #pragma omp declare target (s, t, s)		/* { dg-error "appears more than once on the same .declare target. directive" } */
 int p, q, r;
 #pragma omp declare target (p) to (q)		/* { dg-error "expected end of line before .to." } */
-#pragma omp declare target to (p) (q) link (r)	/* { dg-error "expected .#pragma omp. clause before" } */
-#pragma omp declare target link (r) (p)		/* { dg-error "expected .#pragma omp. clause before" } */
+#pragma omp declare target to (p) (q) link (r)	/* { dg-error "expected an OpenMP clause before" } */
+#pragma omp declare target link (r) (p)		/* { dg-error "expected an OpenMP clause before" } */
 #pragma omp declare target
 #pragma omp end declare target to (p)		/* { dg-error "expected end of line before .to." } */

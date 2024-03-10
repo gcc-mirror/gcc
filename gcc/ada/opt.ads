@@ -81,8 +81,13 @@ package Opt is
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
    --  Think twice before using "="; Ada_Version >= Ada_2012 is more likely
    --  what you want, because it will apply to future versions of the language.
+   --
    --  Note that Ada_With_All_Extensions should always be last since it should
-   --  always be a superset of the other Ada versions.
+   --  always be a superset of the other Ada versions. Likewise, the
+   --  penultimate one should be Ada_With_Core_Extensions.
+   --
+   --  Use the ..._Extensions_Allowed functions below instead of referring
+   --  directly to Ada_With_..._Extensions.
 
    --  WARNING: There is a matching C declaration of this type in fe.h
 
@@ -99,6 +104,16 @@ package Opt is
    --  predefined or internal file is compiled.
 
    --  WARNING: There is a matching C declaration of this variable in fe.h
+
+   function All_Extensions_Allowed return Boolean is
+     (Ada_Version = Ada_With_All_Extensions);
+   --  True if GNAT specific language extensions are allowed. See GNAT RM for
+   --  details.
+
+   function Core_Extensions_Allowed return Boolean is
+     (Ada_Version >= Ada_With_Core_Extensions);
+   --  True if some but not all GNAT specific language extensions are allowed.
+   --  See GNAT RM for details.
 
    Ada_Version_Pragma : Node_Id := Empty;
    --  Reflects the Ada_xxx pragma that resulted in setting Ada_Version. Used
@@ -593,16 +608,6 @@ package Opt is
    Expand_Nonbinary_Modular_Ops : Boolean := False;
    --  Set to True to convert nonbinary modular additions into code
    --  that relies on the front-end expansion of operator Mod.
-
-   function All_Extensions_Allowed return Boolean is
-     (Ada_Version = Ada_With_All_Extensions);
-   --  True if GNAT specific language extensions are allowed. See GNAT RM for
-   --  details.
-
-   function Core_Extensions_Allowed return Boolean is
-     (Ada_Version >= Ada_With_Core_Extensions);
-   --  True if some but not all GNAT specific language extensions are allowed.
-   --  See GNAT RM for details.
 
    type External_Casing_Type is (
      As_Is,       -- External names cased as they appear in the Ada source

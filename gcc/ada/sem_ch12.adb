@@ -263,7 +263,8 @@ package body Sem_Ch12 is
    --     package                  subprogram [body]
    --       Abstract_State           Contract_Cases
    --       Initial_Condition        Depends
-   --       Initializes              Extensions_Visible
+   --       Initializes              Exceptional_Cases
+   --                                Extensions_Visible
    --                                Global
    --     package body               Post
    --       Refined_State            Post_Class
@@ -3186,6 +3187,7 @@ package body Sem_Ch12 is
          Renaming_In_Par :=
            Make_Defining_Identifier (Loc, Chars (Gen_Unit));
          Mutate_Ekind (Renaming_In_Par, E_Package);
+         Set_Is_Not_Self_Hidden (Renaming_In_Par);
          Set_Etype (Renaming_In_Par, Standard_Void_Type);
          Set_Scope (Renaming_In_Par, Parent_Instance);
          Set_Parent (Renaming_In_Par, Parent (Formal));
@@ -3846,6 +3848,7 @@ package body Sem_Ch12 is
 
       Enter_Name (Id);
       Mutate_Ekind (Id, E_Generic_Package);
+      Set_Is_Not_Self_Hidden (Id);
       Set_Etype (Id, Standard_Void_Type);
 
       --  Set SPARK_Mode from context
@@ -4093,6 +4096,8 @@ package body Sem_Ch12 is
          Set_Etype (Id, Standard_Void_Type);
       end if;
 
+      Set_Is_Not_Self_Hidden (Id);
+
       --  Analyze the aspects of the generic copy to ensure that all generated
       --  pragmas (if any) perform their semantic effects.
 
@@ -4336,6 +4341,7 @@ package body Sem_Ch12 is
 
       Generate_Definition (Act_Decl_Id);
       Mutate_Ekind (Act_Decl_Id, E_Package);
+      Set_Is_Not_Self_Hidden (Act_Decl_Id);
 
       --  Initialize list of incomplete actuals before analysis
 
@@ -4788,91 +4794,68 @@ package body Sem_Ch12 is
             Needs_Body := False;
          end if;
 
+         --  If the context requires a full instantiation, set things up for
+         --  subsequent construction of the body.
+
          if Needs_Body then
-            --  Indicate that the enclosing scopes contain an instantiation,
-            --  and that cleanup actions should be delayed until after the
-            --  instance body is expanded.
+            declare
+               Fin_Scop, S : Entity_Id;
 
-            Check_Forward_Instantiation (Gen_Decl);
-            if Nkind (N) = N_Package_Instantiation then
-               declare
-                  Enclosing_Master : Entity_Id;
+            begin
+               Check_Forward_Instantiation (Gen_Decl);
 
-               begin
-                  --  Loop to search enclosing masters
+               Fin_Scop := Empty;
 
-                  Enclosing_Master := Current_Scope;
-                  Scope_Loop : while Enclosing_Master /= Standard_Standard loop
-                     if Ekind (Enclosing_Master) = E_Package then
-                        if Is_Compilation_Unit (Enclosing_Master) then
-                           if In_Package_Body (Enclosing_Master) then
-                              Set_Delay_Subprogram_Descriptors
-                                (Body_Entity (Enclosing_Master));
+               --  For a package instantiation that is not a compilation unit,
+               --  indicate that cleanup actions of the innermost enclosing
+               --  scope for which they are generated should be delayed until
+               --  after the package body is instantiated.
+
+               if Nkind (N) = N_Package_Instantiation
+                 and then not Is_Compilation_Unit (Act_Decl_Id)
+               then
+                  S := Current_Scope;
+
+                  while S /= Standard_Standard loop
+                     --  Cleanup actions are not generated within generic units
+                     --  or in the formal part of generic units.
+
+                     if Inside_A_Generic
+                       or else Is_Generic_Unit (S)
+                       or else Ekind (S) = E_Void
+                     then
+                        exit;
+
+                     --  For package scopes, cleanup actions are generated only
+                     --  for compilation units, for spec and body separately.
+
+                     elsif Ekind (S) = E_Package then
+                        if Is_Compilation_Unit (S) then
+                           if In_Package_Body (S) then
+                              Fin_Scop := Body_Entity (S);
                            else
-                              Set_Delay_Subprogram_Descriptors
-                                (Enclosing_Master);
+                              Fin_Scop := S;
                            end if;
 
-                           exit Scope_Loop;
+                           Set_Delay_Cleanups (Fin_Scop);
+                           exit;
 
                         else
-                           Enclosing_Master := Scope (Enclosing_Master);
+                           S := Scope (S);
                         end if;
 
-                     elsif Is_Generic_Unit (Enclosing_Master)
-                       or else Ekind (Enclosing_Master) = E_Void
-                     then
-                        --  Cleanup actions will eventually be performed on the
-                        --  enclosing subprogram or package instance, if any.
-                        --  Enclosing scope is void in the formal part of a
-                        --  generic subprogram.
-
-                        exit Scope_Loop;
+                     --  Cleanup actions are generated for all dynamic scopes
 
                      else
-                        if Ekind (Enclosing_Master) = E_Entry
-                          and then
-                            Ekind (Scope (Enclosing_Master)) = E_Protected_Type
-                        then
-                           if not Expander_Active then
-                              exit Scope_Loop;
-                           else
-                              Enclosing_Master :=
-                                Protected_Body_Subprogram (Enclosing_Master);
-                           end if;
-                        end if;
-
-                        Set_Delay_Cleanups (Enclosing_Master);
-
-                        while Ekind (Enclosing_Master) = E_Block loop
-                           Enclosing_Master := Scope (Enclosing_Master);
-                        end loop;
-
-                        if Is_Subprogram (Enclosing_Master) then
-                           Set_Delay_Subprogram_Descriptors (Enclosing_Master);
-
-                        elsif Is_Task_Type (Enclosing_Master) then
-                           declare
-                              TBP : constant Node_Id :=
-                                      Get_Task_Body_Procedure
-                                        (Enclosing_Master);
-                           begin
-                              if Present (TBP) then
-                                 Set_Delay_Subprogram_Descriptors (TBP);
-                                 Set_Delay_Cleanups (TBP);
-                              end if;
-                           end;
-                        end if;
-
-                        exit Scope_Loop;
+                        Fin_Scop := S;
+                        Set_Delay_Cleanups (Fin_Scop);
+                        exit;
                      end if;
-                  end loop Scope_Loop;
-               end;
+                  end loop;
+               end if;
 
-               --  Make entry in table
-
-               Add_Pending_Instantiation (N, Act_Decl);
-            end if;
+               Add_Pending_Instantiation (N, Act_Decl, Fin_Scop);
+            end;
          end if;
 
          Set_Categorization_From_Pragmas (Act_Decl);
@@ -5002,10 +4985,12 @@ package body Sem_Ch12 is
          Set_First_Private_Entity (Defining_Unit_Name (Unit_Renaming),
            First_Private_Entity (Act_Decl_Id));
 
-         --  If the instantiation will receive a body, the unit will be
-         --  transformed into a package body, and receive its own elaboration
-         --  entity. Otherwise, the nature of the unit is now a package
-         --  declaration.
+         --  If the instantiation needs a body, the unit will be turned into
+         --  a package body and receive its own elaboration entity. Otherwise,
+         --  the nature of the unit is now a package declaration.
+
+         --  Note that the below rewriting means that Act_Decl, which has been
+         --  analyzed and expanded, will be re-expanded as the rewritten N.
 
          if Nkind (Parent (N)) = N_Compilation_Unit
            and then not Needs_Body
@@ -5269,11 +5254,12 @@ package body Sem_Ch12 is
 
          Instantiate_Package_Body
            (Body_Info =>
-             ((Act_Decl                 => Act_Decl,
+             ((Inst_Node                => N,
+               Act_Decl                 => Act_Decl,
+               Fin_Scop                 => Empty,
                Config_Switches          => Config_Attrs,
                Current_Sem_Unit         => Current_Sem_Unit,
                Expander_Status          => Expander_Active,
-               Inst_Node                => N,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Scope_Suppress           => Scope_Suppress,
                Warnings                 => Save_Warnings)),
@@ -5324,7 +5310,7 @@ package body Sem_Ch12 is
                   Par : Entity_Id;
                begin
                   Par := Scope (Curr_Scope);
-                  while (Present (Par)) and then Par /= Standard_Standard loop
+                  while Present (Par) and then Par /= Standard_Standard loop
                      Install_Private_Declarations (Par);
                      Par := Scope (Par);
                   end loop;
@@ -5383,11 +5369,12 @@ package body Sem_Ch12 is
       else
          Instantiate_Package_Body
            (Body_Info =>
-             ((Act_Decl                 => Act_Decl,
+             ((Inst_Node                => N,
+               Act_Decl                 => Act_Decl,
+               Fin_Scop                 => Empty,
                Config_Switches          => Save_Config_Switches,
                Current_Sem_Unit         => Current_Sem_Unit,
                Expander_Status          => Expander_Active,
-               Inst_Node                => N,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Scope_Suppress           => Scope_Suppress,
                Warnings                 => Save_Warnings)),
@@ -7966,11 +7953,11 @@ package body Sem_Ch12 is
 
       --  Special casing for identifiers and other entity names and operators
 
-      if Nkind (New_N) in N_Character_Literal
-                        | N_Expanded_Name
-                        | N_Identifier
-                        | N_Operator_Symbol
-                        | N_Op
+      if Nkind (N) in N_Character_Literal
+                    | N_Expanded_Name
+                    | N_Identifier
+                    | N_Operator_Symbol
+                    | N_Op
       then
          if not Instantiating then
 
@@ -8174,6 +8161,15 @@ package body Sem_Ch12 is
                   then
                      Set_Entity (New_N, Assoc);
 
+                  --  Cope with the rewriting into expanded name that may have
+                  --  occurred in between, e.g. in Check_Generic_Child_Unit for
+                  --  generic renaming declarations.
+
+                  elsif Nkind (Assoc) = N_Expanded_Name then
+                     Rewrite (N, New_Copy_Tree (Assoc));
+                     Set_Associated_Node (N, Assoc);
+                     return Copy_Generic_Node (N, Parent_Id, Instantiating);
+
                   --  The name in the call may be a selected component if the
                   --  call has not been analyzed yet, as may be the case for
                   --  pre/post conditions in a generic unit.
@@ -8184,10 +8180,10 @@ package body Sem_Ch12 is
                      Set_Entity (New_N, Entity (Name (Assoc)));
 
                   elsif Nkind (Assoc) in N_Entity
-                    and then (Expander_Active or
-                                (GNATprove_Mode
-                                  and then not In_Spec_Expression
-                                  and then not Inside_A_Generic))
+                    and then (Expander_Active
+                               or else (GNATprove_Mode
+                                         and then not In_Spec_Expression
+                                         and then not Inside_A_Generic))
                   then
                      --  Inlining case: we are copying a tree that contains
                      --  global entities, which are preserved in the copy to be
@@ -11924,12 +11920,6 @@ package body Sem_Ch12 is
          return;
       end if;
 
-      --  The package being instantiated may be subject to pragma Ghost. Set
-      --  the mode now to ensure that any nodes generated during instantiation
-      --  are properly marked as Ghost.
-
-      Set_Ghost_Mode (Act_Decl_Id);
-
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
       --  Re-establish the state of information on which checks are suppressed.
@@ -12041,6 +12031,12 @@ package body Sem_Ch12 is
       else
          Instantiation_Node := Inst_Node;
       end if;
+
+      --  The package being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id);
 
       if Present (Gen_Body_Id) then
          Save_Env (Gen_Unit, Act_Decl_Id);
@@ -12175,9 +12171,6 @@ package body Sem_Ch12 is
            and then Nkind (Gen_Id) = N_Expanded_Name
          then
             Par_Ent := Entity (Prefix (Gen_Id));
-            Par_Vis := Is_Immediately_Visible (Par_Ent);
-            Install_Parent (Par_Ent, In_Body => True);
-            Par_Installed := True;
 
          elsif Ekind (Scope (Gen_Unit)) = E_Generic_Package
            and then Ekind (Scope (Act_Decl_Id)) = E_Package
@@ -12189,12 +12182,12 @@ package body Sem_Ch12 is
             Par_Ent := Entity
               (Prefix (Name (Get_Unit_Instantiation_Node
                                (Scope (Act_Decl_Id)))));
-            Par_Vis := Is_Immediately_Visible (Par_Ent);
-            Install_Parent (Par_Ent, In_Body => True);
-            Par_Installed := True;
 
          elsif Is_Child_Unit (Gen_Unit) then
             Par_Ent := Scope (Gen_Unit);
+         end if;
+
+         if Present (Par_Ent) then
             Par_Vis := Is_Immediately_Visible (Par_Ent);
             Install_Parent (Par_Ent, In_Body => True);
             Par_Installed := True;
@@ -12484,12 +12477,6 @@ package body Sem_Ch12 is
          return;
       end if;
 
-      --  The subprogram being instantiated may be subject to pragma Ghost. Set
-      --  the mode now to ensure that any nodes generated during instantiation
-      --  are properly marked as Ghost.
-
-      Set_Ghost_Mode (Act_Decl_Id);
-
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
       --  Re-establish the state of information on which checks are suppressed.
@@ -12526,6 +12513,12 @@ package body Sem_Ch12 is
       end if;
 
       Instantiation_Node := Inst_Node;
+
+      --  The subprogram being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id);
 
       if Present (Gen_Body_Id) then
          Gen_Body := Unit_Declaration_Node (Gen_Body_Id);
@@ -12611,12 +12604,11 @@ package body Sem_Ch12 is
            and then Nkind (Gen_Id) = N_Expanded_Name
          then
             Par_Ent := Entity (Prefix (Gen_Id));
-            Par_Vis := Is_Immediately_Visible (Par_Ent);
-            Install_Parent (Par_Ent, In_Body => True);
-            Par_Installed := True;
-
          elsif Is_Child_Unit (Gen_Unit) then
             Par_Ent := Scope (Gen_Unit);
+         end if;
+
+         if Present (Par_Ent) then
             Par_Vis := Is_Immediately_Visible (Par_Ent);
             Install_Parent (Par_Ent, In_Body => True);
             Par_Installed := True;
@@ -14715,13 +14707,14 @@ package body Sem_Ch12 is
                         Decl := First_Elmt (Previous_Instances);
                         while Present (Decl) loop
                            Info :=
-                             (Act_Decl                 =>
+                             (Inst_Node                => Node (Decl),
+                              Act_Decl                 =>
                                 Instance_Spec (Node (Decl)),
+                              Fin_Scop                 => Empty,
                               Config_Switches          => Save_Config_Switches,
                               Current_Sem_Unit         =>
                                 Get_Code_Unit (Sloc (Node (Decl))),
                               Expander_Status          => Exp_Status,
-                              Inst_Node                => Node (Decl),
                               Local_Suppress_Stack_Top =>
                                 Local_Suppress_Stack_Top,
                               Scope_Suppress           => Scope_Suppress,
@@ -14775,12 +14768,13 @@ package body Sem_Ch12 is
 
                   Instantiate_Package_Body
                     (Body_Info =>
-                       ((Act_Decl                 => True_Parent,
+                       ((Inst_Node                => Inst_Node,
+                         Act_Decl                 => True_Parent,
+                         Fin_Scop                 => Empty,
                          Config_Switches          => Save_Config_Switches,
                          Current_Sem_Unit         =>
                            Get_Code_Unit (Sloc (Inst_Node)),
                          Expander_Status          => Exp_Status,
-                         Inst_Node                => Inst_Node,
                          Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                          Scope_Suppress           => Scope_Suppress,
                          Warnings                 => Save_Warnings)),

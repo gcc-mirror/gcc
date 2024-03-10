@@ -830,7 +830,7 @@ package Sinfo is
    --    an unconstrained packed array and the dereference is the prefix of
    --    a 'Size attribute reference, or 2) when the dereference node is
    --    created for the expansion of an allocator with a subtype_indication
-   --    and the designated subtype is an unconstrained discriminated type.
+   --    and the designated subtype is an unconstrained composite type.
 
    --  Address_Warning_Posted
    --    Present in N_Attribute_Definition nodes. Set to indicate that we have
@@ -931,6 +931,12 @@ package Sinfo is
    --    For a subprogram declaration, the flag is set except in the case where
    --    a pragma Import or Interface applies, in which case no body is
    --    permitted (in Ada 83 or Ada 95).
+
+   --  Cannot_Be_Superflat
+   --    This flag is present in N_Range nodes. It is set if the range is of a
+   --    discrete type and cannot be superflat, i.e. it is guaranteed that the
+   --    inequality High_Bound >= Low_Bound - 1 is true. At the time of this
+   --    writing, it is only used by the code generator to streamline things.
 
    --  Cleanup_Actions
    --    Present in block statements created for transient blocks, contains
@@ -1046,8 +1052,8 @@ package Sinfo is
    --    and their first named subtypes.
 
    --  Corresponding_Spec
-   --    This field is set in subprogram, package, task, and protected body
-   --    nodes, where it points to the defining entity in the corresponding
+   --    This field is set in subprogram, package, task, entry and protected
+   --    body nodes where it points to the defining entity in the corresponding
    --    spec. The attribute is also set in N_With_Clause nodes where it points
    --    to the defining entity for the with'ed spec, and in a subprogram
    --    renaming declaration when it is a Renaming_As_Body. The field is Empty
@@ -1323,8 +1329,9 @@ package Sinfo is
    --    to the entity for the first subtype.
 
    --  Float_Truncate
-   --    A flag present in type conversion nodes. This is used for float to
-   --    integer conversions where truncation is required rather than rounding.
+   --    A flag present in type conversion nodes. It is used for floating-point
+   --    to fixed-point or integer conversions, where truncation is required
+   --    rather than rounding.
 
    --  Forwards_OK
    --    A flag present in the N_Assignment_Statement node. It is used only
@@ -1706,6 +1713,7 @@ package Sinfo is
    --      Abstract_State
    --      Contract_Cases
    --      Depends
+   --      Exceptional_Cases
    --      Extensions_Visible
    --      Global
    --      Initial_Condition
@@ -1720,6 +1728,7 @@ package Sinfo is
    --      Refined_Global
    --      Refined_Post
    --      Refined_State
+   --      Subprogram_Variant
    --      Test_Case
 
    --  Is_Homogeneous_Aggregate
@@ -2305,7 +2314,7 @@ package Sinfo is
    --    can be set in N_Object_Declaration nodes, to similarly suppress any
    --    checks on the initializing value. In assignment statements it also
    --    suppresses access checks in the generated code for out- and in-out
-   --    parameters in entry calls, as well as length checks.
+   --    parameters in entry calls, as well as discriminant and length checks.
 
    --  Suppress_Loop_Warnings
    --    Used in N_Loop_Statement node to indicate that warnings within the
@@ -3081,6 +3090,7 @@ package Sinfo is
       --  Sloc points to ..
       --  Low_Bound
       --  High_Bound
+      --  Cannot_Be_Superflat
       --  Includes_Infinities
       --  plus fields for expression
 
@@ -6199,6 +6209,7 @@ package Sinfo is
       --  Declarations
       --  Handled_Statement_Sequence
       --  Activation_Chain_Entity
+      --  Corresponding_Spec
       --  At_End_Proc (set to Empty if no clean up procedure)
 
       -----------------------------------
@@ -7955,8 +7966,8 @@ package Sinfo is
       --  operation) are also in this list.
 
       --  Contract_Test_Cases contains a collection of pragmas that correspond
-      --  to aspects/pragmas Contract_Cases, Test_Case and Subprogram_Variant.
-      --  The ordering in the list is in LIFO fashion.
+      --  to aspects/pragmas Contract_Cases, Exceptional_Cases, Test_Case and
+      --  Subprogram_Variant. The ordering in the list is in LIFO fashion.
 
       --  Classifications contains pragmas that either declare, categorize, or
       --  establish dependencies between subprogram or package inputs and

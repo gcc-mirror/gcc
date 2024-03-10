@@ -5949,14 +5949,14 @@ free_for_value_p (int regno, machine_mode mode, int opnum,
   return 1;
 }
 
-/* Return nonzero if the rtx X is invariant over the current function.  */
+/* Return true if the rtx X is invariant over the current function.  */
 /* ??? Actually, the places where we use this expect exactly what is
    tested here, and not everything that is function invariant.  In
    particular, the frame pointer and arg pointer are special cased;
    pic_offset_table_rtx is not, and we must not spill these things to
    memory.  */
 
-int
+bool
 function_invariant_p (const_rtx x)
 {
   if (CONSTANT_P (x))

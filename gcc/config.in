@@ -67,6 +67,12 @@
 #endif
 
 
+/* Define to larger than one set the number of match.pd partitions to make. */
+#ifndef USED_FOR_TARGET
+#undef DEFAULT_MATCHPD_PARTITIONS
+#endif
+
+
 /* Define to larger than zero set the default stack clash protector size. */
 #ifndef USED_FOR_TARGET
 #undef DEFAULT_STK_CLASH_GUARD_SIZE
@@ -2239,8 +2245,7 @@
 #endif
 
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #ifndef USED_FOR_TARGET
 #undef LT_OBJDIR
 #endif

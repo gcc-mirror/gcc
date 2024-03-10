@@ -69,7 +69,7 @@ enum bad_spec_place {
 
 static const char *redeclaration_error_message (tree, tree);
 
-static int decl_jump_unsafe (tree);
+static bool decl_jump_unsafe (tree);
 static void require_complete_types_for_parms (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
@@ -3548,10 +3548,9 @@ declare_local_label (tree id)
   return ent ? ent->label_decl : NULL_TREE;
 }
 
-/* Returns nonzero if it is ill-formed to jump past the declaration of
-   DECL.  Returns 2 if it's also a real problem.  */
+/* Returns true if it is ill-formed to jump past the declaration of DECL.  */
 
-static int
+static bool
 decl_jump_unsafe (tree decl)
 {
   /* [stmt.dcl]/3: A program that jumps from a point where a local variable
@@ -3562,18 +3561,11 @@ decl_jump_unsafe (tree decl)
      preceding types and is declared without an initializer (8.5).  */
   tree type = TREE_TYPE (decl);
 
-  if (!VAR_P (decl) || TREE_STATIC (decl)
-      || type == error_mark_node)
-    return 0;
-
-  if (DECL_NONTRIVIALLY_INITIALIZED_P (decl)
-      || variably_modified_type_p (type, NULL_TREE))
-    return 2;
-
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-    return 1;
-
-  return 0;
+  return (type != error_mark_node
+	  && VAR_P (decl)
+	  && !TREE_STATIC (decl)
+	  && (DECL_NONTRIVIALLY_INITIALIZED_P (decl)
+	      || variably_modified_type_p (type, NULL_TREE)));
 }
 
 /* A subroutine of check_previous_goto_1 and check_goto to identify a branch
@@ -3625,27 +3617,18 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	   new_decls = (DECL_P (new_decls) ? DECL_CHAIN (new_decls)
 			: TREE_CHAIN (new_decls)))
 	{
-	  int problem = decl_jump_unsafe (new_decls);
+	  bool problem = decl_jump_unsafe (new_decls);
 	  if (! problem)
 	    continue;
 
 	  if (!identified)
 	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  problem > 1
-					  ? DK_ERROR : DK_PERMERROR);
+	      complained = identify_goto (decl, input_location, locus, DK_ERROR);
 	      identified = 1;
 	    }
 	  if (complained)
-	    {
-	      if (problem > 1)
-		inform (DECL_SOURCE_LOCATION (new_decls),
-			"  crosses initialization of %q#D", new_decls);
-	      else
-		inform (DECL_SOURCE_LOCATION (new_decls),
-			"  enters scope of %q#D, which has "
-			"non-trivial destructor", new_decls);
-	    }
+	    inform (DECL_SOURCE_LOCATION (new_decls),
+		    "  crosses initialization of %q#D", new_decls);
 	}
 
       if (b == level)
@@ -3790,9 +3773,9 @@ check_goto (tree decl)
 
   FOR_EACH_VEC_SAFE_ELT (ent->bad_decls, ix, bad)
     {
-      int u = decl_jump_unsafe (bad);
+      bool problem = decl_jump_unsafe (bad);
 
-      if (u > 1 && DECL_ARTIFICIAL (bad))
+      if (problem && DECL_ARTIFICIAL (bad))
 	{
 	  /* Can't skip init of __exception_info.  */
 	  if (identified == 1)
@@ -3806,15 +3789,8 @@ check_goto (tree decl)
 	  saw_catch = true;
 	}
       else if (complained)
-	{
-	  if (u > 1)
-	    inform (DECL_SOURCE_LOCATION (bad),
-		    "  skips initialization of %q#D", bad);
-	  else
-	    inform (DECL_SOURCE_LOCATION (bad),
-		    "  enters scope of %q#D which has "
-		    "non-trivial destructor", bad);
-	}
+	inform (DECL_SOURCE_LOCATION (bad),
+		"  skips initialization of %q#D", bad);
     }
 
   if (complained)
@@ -5045,7 +5021,7 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   tree domain = NULL_TREE;
   tree init = NULL_TREE;
 
-  if (!(type_dep && in_template_function ()))
+  if (!(type_dep && current_function_decl && in_template_context))
     {
       const char *name = NULL;
       bool release_name = false;
@@ -6373,7 +6349,7 @@ layout_var_decl (tree decl)
       && !vec_safe_is_empty (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)))
       && DECL_SIZE (decl) != NULL_TREE
       && TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST
-      && TYPE_SIZE (type) != NULL_TREE
+      && COMPLETE_TYPE_P (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
       && tree_int_cst_equal (DECL_SIZE (decl), TYPE_SIZE (type)))
     {
@@ -8951,7 +8927,7 @@ get_tuple_size (tree type)
     return NULL_TREE;
   tree val = lookup_qualified_name (inst, value_identifier,
 				    LOOK_want::NORMAL, /*complain*/false);
-  if (TREE_CODE (val) == VAR_DECL || TREE_CODE (val) == CONST_DECL)
+  if (VAR_P (val) || TREE_CODE (val) == CONST_DECL)
     val = maybe_constant_value (val);
   if (TREE_CODE (val) == INTEGER_CST)
     return val;
@@ -18260,23 +18236,10 @@ finish_function (bool inline_p)
 
   /* Set up the named return value optimization, if we can.  Candidate
      variables are selected in check_return_expr.  */
-  if (current_function_return_value)
+  if (tree r = current_function_return_value)
     {
-      tree r = current_function_return_value;
-      tree outer;
-
-      if (r != error_mark_node
-	  /* This is only worth doing for fns that return in memory--and
-	     simpler, since we don't have to worry about promoted modes.  */
-	  && aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl)), fndecl)
-	  /* Only allow this for variables declared in the outer scope of
-	     the function so we know that their lifetime always ends with a
-	     return; see g++.dg/opt/nrv6.C.  We could be more flexible if
-	     we were to do this optimization in tree-ssa.  */
-	  && (outer = outer_curly_brace_block (fndecl))
-	  && chain_member (r, BLOCK_VARS (outer)))
-	finalize_nrv (&DECL_SAVED_TREE (fndecl), r, DECL_RESULT (fndecl));
-
+      if (r != error_mark_node)
+	finalize_nrv (fndecl, r);
       current_function_return_value = NULL_TREE;
     }
 

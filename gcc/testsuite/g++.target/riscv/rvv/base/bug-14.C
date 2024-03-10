@@ -382,7 +382,7 @@ vuint16m2_t var_18 = __riscv_vwmulu_vv_u16m2_mu(var_24, var_25, var_26, var_27, 
 if(!check(var_91, var_142, var_143)) {cerr << "check 141 fails" << endl; return_value = 1;}
 if(!check(var_90, var_139, var_140)) {cerr << "check 138 fails" << endl; return_value = 1;}
 __riscv_vsetvl_e64m1(2);
-vuint64m1_t var_7 = __riscv_vasubu_vx_u64m1(var_42, var_15, 2);
+vuint64m1_t var_7 = __riscv_vasubu_vx_u64m1(var_42, var_15, 0, 2);
 // 13578039560782071336, 1484621602351210644
 
 if(!check(var_94, var_136, var_137)) {cerr << "check 135 fails" << endl; return_value = 1;}
@@ -415,7 +415,7 @@ int32_t var_9 = __riscv_vmv_x_s_i32m4_i32(var_10);
 // 0
 
 __riscv_vsetvl_e32mf2(2);
-vint32mf2_t var_2 = __riscv_vsadd_vx_i32mf2_mu(var_47, var_48, var_49, var_9, 2);
+vint32mf2_t var_2 = __riscv_vsadd_vx_i32mf2_mu(var_47, var_48, var_49, var_9, 0, 2);
 // 470559939, 1961139923
 
 __riscv_vsuxei64_v_i32mf2(var_115, var_112, var_2, 2);

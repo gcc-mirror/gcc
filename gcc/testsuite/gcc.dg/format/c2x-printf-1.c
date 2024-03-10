@@ -28,12 +28,26 @@ foo (unsigned int u, unsigned short us, unsigned char uc, unsigned long ul,
   /* Use of 'L' and 'q' for long long is an extension.  */
   printf ("%Lb", ull); /* { dg-warning "does not support" } */
   printf ("%qb", ull); /* { dg-warning "does not support" } */
+  /* Similar tests with %B.  */
+  printf ("%B %hB %hhB %lB %llB %jB %zB %tB\n", u, us, uc, ul, ull, uj, z, ut);
+  printf ("%*.*llB\n", 1, 2, ull);
+  printf ("%-B\n", u);
+  printf ("%#B\n", u);
+  printf ("%08B\n", u);
+  printf ("%+B\n", u); /* { dg-warning "flag" } */
+  printf ("% B\n", u); /* { dg-warning "flag" } */
+  printf ("%-08B\n", u); /* { dg-warning "ignored" } */
+  printf ("%08.5B\n", u); /* { dg-warning "ignored" } */
+  printf ("%LB", ull); /* { dg-warning "does not support" } */
+  printf ("%qB", ull); /* { dg-warning "does not support" } */
   /* Use of %wN and %wfN with each valid conversion specifier.  */
   printf ("%w8d %w16d %w32d %w64d %wf8d %wf16d %wf32d %wf64d",
 	  i8, i16, i32, i64, if8, if16, if32, if64);
   printf ("%w8i %w16i %w32i %w64i %wf8i %wf16i %wf32i %wf64i",
 	  i8, i16, i32, i64, if8, if16, if32, if64);
   printf ("%w8b %w16b %w32b %w64b %wf8b %wf16b %wf32b %wf64b",
+	  u8, u16, u32, u64, uf8, uf16, uf32, uf64);
+  printf ("%w8B %w16B %w32B %w64B %wf8B %wf16B %wf32B %wf64B",
 	  u8, u16, u32, u64, uf8, uf16, uf32, uf64);
   printf ("%w8o %w16o %w32o %w64o %wf8o %wf16o %wf32o %wf64o",
 	  u8, u16, u32, u64, uf8, uf16, uf32, uf64);

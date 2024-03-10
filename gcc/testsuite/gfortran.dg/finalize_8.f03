@@ -1,35 +1,49 @@
-! { dg-do compile }
-
-! Parsing of finalizer procedure definitions.
-! Check that FINAL-declarations are only allowed on types defined in the
-! specification part of a module.
-
-MODULE final_type
+! { dg-do run }
+!
+! PR97122: Declaration of a finalizable derived type in a submodule
+! IS allowed.
+!
+! Contributed by Ian Harvey  <ian_harvey@bigpond.com>
+!
+MODULE m
   IMPLICIT NONE
+
+  INTERFACE
+    MODULE SUBROUTINE other(i)
+      IMPLICIT NONE
+      integer, intent(inout) :: i
+    END SUBROUTINE other
+  END INTERFACE
+
+  integer :: mi
+
+END MODULE m
+
+SUBMODULE (m) s
+  IMPLICIT NONE
+
+  TYPE :: t
+    integer :: i
+  CONTAINS
+    FINAL :: final_t  ! Used to be an error here
+  END TYPE t
 
 CONTAINS
 
-  SUBROUTINE bar
-    IMPLICIT NONE
+  SUBROUTINE final_t(arg)
+    TYPE(t), INTENT(INOUT) :: arg
+    mi = -arg%i
+  END SUBROUTINE final_t
 
-    TYPE :: mytype
-      INTEGER, ALLOCATABLE :: fooarr(:)
-      REAL :: foobar
-    CONTAINS
-      FINAL :: myfinal ! { dg-error "in the specification part of a MODULE" }
-    END TYPE mytype
+  module subroutine other(i)  ! 'ti' is finalized
+    integer, intent(inout) :: i
+    type(t) :: ti
+    ti%i = i
+  END subroutine other
+END SUBMODULE s
 
-  CONTAINS
-
-    SUBROUTINE myfinal (el)
-      TYPE(mytype) :: el
-    END SUBROUTINE myfinal
-
-  END SUBROUTINE bar
-
-END MODULE final_type
-
-PROGRAM finalizer
-  IMPLICIT NONE
-  ! Do nothing here
-END PROGRAM finalizer
+  use m
+  integer :: i = 42
+  call other(i)
+  if (mi .ne. -i) stop 1
+end

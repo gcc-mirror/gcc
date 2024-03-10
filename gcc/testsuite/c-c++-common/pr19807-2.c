@@ -6,7 +6,7 @@ int i;
 int main()
 {
   int a[4];
-  if ((char*)&a[1] + 4*i + 4 != (char*)&a[i+2])
+  if ((char*)&a[1] + __SIZEOF_INT__*i + __SIZEOF_INT__ != (char*)&a[i+2])
     link_error();
   return 0;
 }

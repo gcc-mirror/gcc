@@ -11,7 +11,7 @@ void
   return __builtin_memset (s, c, 1);
 }
 
-/* 1 stc 1 mvc */
+/* 3 vst */
 void
 *memset1(void *s, int c)
 {
@@ -170,8 +170,9 @@ void
 }
 
 /* { dg-final { scan-assembler-times "mvi\\s" 1 } } */
-/* { dg-final { scan-assembler-times "mvc\\s" 20 } } */
+/* { dg-final { scan-assembler-times "mvc\\s" 19 } } */
 /* { dg-final { scan-assembler-times "xc\\s" 28 } } */
-/* { dg-final { scan-assembler-times "stc\\s" 22 } } */
+/* { dg-final { scan-assembler-times "stc\\s" 21 } } */
 /* { dg-final { scan-assembler-times "stcy\\s" 0 } } */
 /* { dg-final { scan-assembler-times "pfd\\s" 2 } } */
+/* { dg-final { scan-assembler-times "vst\\s" 3 } } */

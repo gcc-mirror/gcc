@@ -787,7 +787,7 @@ lm32_in_small_data_p (const_tree exp)
   if (TREE_CODE (exp) == FUNCTION_DECL)
     return false;
 
-  if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
+  if (VAR_P (exp) && DECL_SECTION_NAME (exp))
     {
       const char *section = DECL_SECTION_NAME (exp);
       if (strcmp (section, ".sdata") == 0 || strcmp (section, ".sbss") == 0)

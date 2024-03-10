@@ -62,7 +62,7 @@ with Sem_Eval;       use Sem_Eval;
 with Sem_Mech;       use Sem_Mech;
 with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
-use Sem_Util.Storage_Model_Support;
+                     use Sem_Util.Storage_Model_Support;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
@@ -78,12 +78,10 @@ package body Exp_Aggr is
 
    function Build_Assignment_With_Temporary
      (Target : Node_Id;
-      Typ    : Node_Id;
+      Typ    : Entity_Id;
       Source : Node_Id) return List_Id;
    --  Returns a list of actions to assign Source to Target of type Typ using
-   --  an extra temporary:
-   --   Tmp := Source;
-   --   Target := Tmp;
+   --  an extra temporary, which can potentially be large.
 
    type Case_Bounds is record
      Choice_Lo   : Node_Id;
@@ -1062,6 +1060,7 @@ package body Exp_Aggr is
       Indexes     : List_Id := No_List) return List_Id
    is
       Loc          : constant Source_Ptr := Sloc (N);
+      Typ          : constant Entity_Id  := Etype (N);
       Index_Base   : constant Entity_Id  := Base_Type (Etype (Index));
       Index_Base_L : constant Node_Id := Type_Low_Bound (Index_Base);
       Index_Base_H : constant Node_Id := Type_High_Bound (Index_Base);
@@ -1424,24 +1423,6 @@ package body Exp_Aggr is
                 Expression => New_Copy_Tree (Init_Expr));
             Set_No_Ctrl_Actions (Init_Stmt);
 
-            --  If this is an aggregate for an array of arrays, each
-            --  subaggregate will be expanded as well, and even with
-            --  No_Ctrl_Actions the assignments of inner components will
-            --  require attachment in their assignments to temporaries. These
-            --  temporaries must be finalized for each subaggregate. Generate:
-
-            --    begin
-            --       Arr_Comp := Init_Expr;
-            --    end;
-
-            if Finalization_OK and then Is_Array_Type (Comp_Typ) then
-               Init_Stmt :=
-                 Make_Block_Statement (Loc,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => New_List (Init_Stmt)));
-            end if;
-
             Append_To (Blk_Stmts, Init_Stmt);
 
             --  Adjust the tag due to a possible view conversion. Generate:
@@ -1479,8 +1460,8 @@ package body Exp_Aggr is
               and then not Is_Build_In_Place_Function_Call (Init_Expr)
               and then not
                 (Is_Array_Type (Comp_Typ)
-                  and then Is_Controlled (Component_Type (Comp_Typ))
-                  and then Nkind (Expr) = N_Aggregate)
+                  and then Needs_Finalization (Component_Type (Comp_Typ))
+                  and then Nkind (Unqualify (Init_Expr)) = N_Aggregate)
             then
                Adj_Call :=
                  Make_Adjust_Call
@@ -1542,9 +1523,10 @@ package body Exp_Aggr is
             Init_Expr : Node_Id;
             Stmts     : List_Id)
          is
+            Init_Expr_Q : constant Node_Id := Unqualify (Init_Expr);
+
             Act_Aggr   : Node_Id;
             Act_Stmts  : List_Id;
-            Expr       : Node_Id;
             Fin_Call   : Node_Id;
             Hook_Clear : Node_Id;
 
@@ -1553,29 +1535,20 @@ package body Exp_Aggr is
             --  in-place expansion.
 
          begin
-            --  Duplicate the initialization expression in case the context is
-            --  a multi choice list or an "others" choice which plugs various
-            --  holes in the aggregate. As a result the expression is no longer
-            --  shared between the various components and is reevaluated for
-            --  each such component.
-
-            Expr := New_Copy_Tree (Init_Expr);
-            Set_Parent (Expr, Parent (Init_Expr));
-
             --  Perform a preliminary analysis and resolution to determine what
             --  the initialization expression denotes. An unanalyzed function
             --  call may appear as an identifier or an indexed component.
 
-            if Nkind (Expr) in N_Function_Call
-                             | N_Identifier
-                             | N_Indexed_Component
-              and then not Analyzed (Expr)
+            if Nkind (Init_Expr_Q) in N_Function_Call
+                                    | N_Identifier
+                                    | N_Indexed_Component
+              and then not Analyzed (Init_Expr)
             then
-               Preanalyze_And_Resolve (Expr, Comp_Typ);
+               Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
             end if;
 
             In_Place_Expansion :=
-              Nkind (Expr) = N_Function_Call
+              Nkind (Init_Expr_Q) = N_Function_Call
                 and then not Is_Build_In_Place_Result_Type (Comp_Typ);
 
             --  The initialization expression is a controlled function call.
@@ -1592,7 +1565,7 @@ package body Exp_Aggr is
                --  generation of a transient scope, which leads to out-of-order
                --  adjustment and finalization.
 
-               Set_No_Side_Effect_Removal (Expr);
+               Set_No_Side_Effect_Removal (Init_Expr);
 
                --  When the transient component initialization is related to a
                --  range or an "others", keep all generated statements within
@@ -1618,7 +1591,7 @@ package body Exp_Aggr is
                Process_Transient_Component
                  (Loc        => Loc,
                   Comp_Typ   => Comp_Typ,
-                  Init_Expr  => Expr,
+                  Init_Expr  => Init_Expr,
                   Fin_Call   => Fin_Call,
                   Hook_Clear => Hook_Clear,
                   Aggr       => Act_Aggr,
@@ -1633,7 +1606,7 @@ package body Exp_Aggr is
             Initialize_Array_Component
               (Arr_Comp  => Arr_Comp,
                Comp_Typ  => Comp_Typ,
-               Init_Expr => Expr,
+               Init_Expr => Init_Expr,
                Stmts     => Stmts);
 
             --  At this point the array element is fully initialized. Complete
@@ -1696,13 +1669,7 @@ package body Exp_Aggr is
          --  Ada 2005 (AI-287): In case of default initialized component, Expr
          --  is not present (and therefore we also initialize Expr_Q to empty).
 
-         if No (Expr) then
-            Expr_Q := Empty;
-         elsif Nkind (Expr) = N_Qualified_Expression then
-            Expr_Q := Expression (Expr);
-         else
-            Expr_Q := Expr;
-         end if;
+         Expr_Q := Unqualify (Expr);
 
          if Present (Etype (N)) and then Etype (N) /= Any_Composite then
             Comp_Typ := Component_Type (Etype (N));
@@ -1835,7 +1802,7 @@ package body Exp_Aggr is
 
             if Present (Comp_Typ)
               and then Needs_Finalization (Comp_Typ)
-              and then Nkind (Expr) /= N_Aggregate
+              and then Nkind (Expr_Q) /= N_Aggregate
             then
                Initialize_Ctrl_Array_Component
                  (Arr_Comp  => Indexed_Comp,
@@ -2059,6 +2026,7 @@ package body Exp_Aggr is
             Set_Etype (L_J, Any_Type);
 
             Mutate_Ekind (L_J, E_Variable);
+            Set_Is_Not_Self_Hidden (L_J);
             Set_Scope (L_J, Ent);
          else
             L_J := Make_Temporary (Loc, 'J', L);
@@ -2234,21 +2202,32 @@ package body Exp_Aggr is
       -- Get_Assoc_Expr --
       --------------------
 
+      --  Duplicate the expression in case we will be generating several loops.
+      --  As a result the expression is no longer shared between the loops and
+      --  is reevaluated for each such loop.
+
       function Get_Assoc_Expr (Assoc : Node_Id) return Node_Id is
          Typ : constant Entity_Id := Base_Type (Etype (N));
 
       begin
          if Box_Present (Assoc) then
             if Present (Default_Aspect_Component_Value (Typ)) then
-               return Default_Aspect_Component_Value (Typ);
+               return New_Copy_Tree (Default_Aspect_Component_Value (Typ));
             elsif Needs_Simple_Initialization (Ctype) then
-               return Get_Simple_Init_Val (Ctype, N);
+               return New_Copy_Tree (Get_Simple_Init_Val (Ctype, N));
             else
                return Empty;
             end if;
 
          else
-            return Expression (Assoc);
+            --  The expression will be passed to Gen_Loop, which immediately
+            --  calls Parent_Kind on it, so we set Parent when it matters.
+
+            return
+               Expr : constant Node_Id := New_Copy_Tree (Expression (Assoc))
+            do
+               Copy_Parent (To => Expr, From => Expression (Assoc));
+            end return;
          end if;
       end Get_Assoc_Expr;
 
@@ -2306,7 +2285,6 @@ package body Exp_Aggr is
       Assoc  : Node_Id;
       Choice : Node_Id;
       Expr   : Node_Id;
-      Typ    : Entity_Id;
 
       Bounds : Range_Nodes;
       Low    : Node_Id renames Bounds.First;
@@ -2324,11 +2302,9 @@ package body Exp_Aggr is
    --  Start of processing for Build_Array_Aggr_Code
 
    begin
-      --  First before we start, a special case. if we have a bit packed
+      --  First before we start, a special case. If we have a bit packed
       --  array represented as a modular type, then clear the value to
       --  zero first, to ensure that unused bits are properly cleared.
-
-      Typ := Etype (N);
 
       if Present (Typ)
         and then Is_Bit_Packed_Array (Typ)
@@ -2415,8 +2391,7 @@ package body Exp_Aggr is
 
          if Present (Others_Assoc) then
             declare
-               First    : Boolean := True;
-               Dup_Expr : Node_Id;
+               First : Boolean := True;
 
             begin
                for J in 0 .. Nb_Choices loop
@@ -2450,23 +2425,11 @@ package body Exp_Aggr is
                      end if;
                   end if;
 
-                  if First
-                    or else not Empty_Range (Low, High)
-                  then
+                  if First or else not Empty_Range (Low, High) then
                      First := False;
-
-                     --  Duplicate the expression in case we will be generating
-                     --  several loops. As a result the expression is no longer
-                     --  shared between the loops and is reevaluated for each
-                     --  such loop.
-
-                     Expr := Get_Assoc_Expr (Others_Assoc);
-                     Dup_Expr := New_Copy_Tree (Expr);
-                     Copy_Parent (To => Dup_Expr, From => Expr);
-
                      Set_Loop_Actions (Others_Assoc, New_List);
-                     Append_List
-                       (Gen_Loop (Low, High, Dup_Expr), To => New_Code);
+                     Expr := Get_Assoc_Expr (Others_Assoc);
+                     Append_List (Gen_Loop (Low, High, Expr), To => New_Code);
                   end if;
                end loop;
             end;
@@ -2524,33 +2487,33 @@ package body Exp_Aggr is
 
    function Build_Assignment_With_Temporary
      (Target : Node_Id;
-      Typ    : Node_Id;
+      Typ    : Entity_Id;
       Source : Node_Id) return List_Id
    is
       Loc : constant Source_Ptr := Sloc (Source);
 
       Aggr_Code : List_Id;
       Tmp       : Entity_Id;
-      Tmp_Decl  : Node_Id;
 
    begin
-      Tmp := Make_Temporary (Loc, 'A', Source);
-      Tmp_Decl :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Tmp,
-          Object_Definition   => New_Occurrence_Of (Typ, Loc));
-      Set_No_Initialization (Tmp_Decl, True);
+      Aggr_Code := New_List;
 
-      Aggr_Code := New_List (Tmp_Decl);
+      Tmp := Build_Temporary_On_Secondary_Stack (Loc, Typ, Aggr_Code);
+
       Append_To (Aggr_Code,
         Make_OK_Assignment_Statement (Loc,
-          Name       => New_Occurrence_Of (Tmp, Loc),
+          Name       =>
+            Make_Explicit_Dereference (Loc,
+              Prefix => New_Occurrence_Of (Tmp, Loc)),
           Expression => Source));
 
       Append_To (Aggr_Code,
         Make_OK_Assignment_Statement (Loc,
           Name       => Target,
-          Expression => New_Occurrence_Of (Tmp, Loc)));
+          Expression =>
+            Make_Explicit_Dereference (Loc,
+              Prefix => New_Occurrence_Of (Tmp, Loc))));
+
       return Aggr_Code;
    end Build_Assignment_With_Temporary;
 
@@ -3166,6 +3129,8 @@ package body Exp_Aggr is
          Init_Expr : Node_Id;
          Stmts     : List_Id)
       is
+         Init_Expr_Q : constant Node_Id := Unqualify (Init_Expr);
+
          Fin_Call   : Node_Id;
          Hook_Clear : Node_Id;
 
@@ -3178,16 +3143,16 @@ package body Exp_Aggr is
          --  the initialization expression denotes. Unanalyzed function calls
          --  may appear as identifiers or indexed components.
 
-         if Nkind (Init_Expr) in N_Function_Call
-                               | N_Identifier
-                               | N_Indexed_Component
+         if Nkind (Init_Expr_Q) in N_Function_Call
+                                 | N_Identifier
+                                 | N_Indexed_Component
            and then not Analyzed (Init_Expr)
          then
             Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
          end if;
 
          In_Place_Expansion :=
-           Nkind (Init_Expr) = N_Function_Call
+           Nkind (Init_Expr_Q) = N_Function_Call
              and then not Is_Build_In_Place_Result_Type (Comp_Typ);
 
          --  The initialization expression is a controlled function call.
@@ -3839,6 +3804,7 @@ package body Exp_Aggr is
       Comp := First (Component_Associations (N));
       while Present (Comp) loop
          Selector := Entity (First (Choices (Comp)));
+         pragma Assert (Present (Selector));
 
          --  C++ constructors
 
@@ -3941,11 +3907,7 @@ package body Exp_Aggr is
                 Prefix        => New_Copy_Tree (Target),
                 Selector_Name => New_Occurrence_Of (Selector, Loc));
 
-            if Nkind (Expression (Comp)) = N_Qualified_Expression then
-               Expr_Q := Expression (Expression (Comp));
-            else
-               Expr_Q := Expression (Comp);
-            end if;
+            Expr_Q := Unqualify (Expression (Comp));
 
             --  Now either create the assignment or generate the code for the
             --  inner aggregate top-down.
@@ -4061,7 +4023,9 @@ package body Exp_Aggr is
                         Decl  : Node_Id;
 
                      begin
-                        if Nkind (First (Choices (Assoc))) = N_Others_Choice
+                        if Present (Assoc)
+                          and then
+                            Nkind (First (Choices (Assoc))) = N_Others_Choice
                         then
                            Decl :=
                              Build_Actual_Subtype_Of_Component
@@ -4339,15 +4303,11 @@ package body Exp_Aggr is
    --------------------------------
 
    procedure Convert_Aggr_In_Assignment (N : Node_Id) is
-      Aggr : Node_Id            := Expression (N);
+      Aggr : constant Node_Id   := Unqualify (Expression (N));
       Typ  : constant Entity_Id := Etype (Aggr);
       Occ  : constant Node_Id   := New_Copy_Tree (Name (N));
 
    begin
-      if Nkind (Aggr) = N_Qualified_Expression then
-         Aggr := Expression (Aggr);
-      end if;
-
       Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ));
    end Convert_Aggr_In_Assignment;
 
@@ -4357,7 +4317,7 @@ package body Exp_Aggr is
 
    procedure Convert_Aggr_In_Object_Decl (N : Node_Id) is
       Obj  : constant Entity_Id  := Defining_Identifier (N);
-      Aggr : Node_Id             := Expression (N);
+      Aggr : constant Node_Id    := Unqualify (Expression (N));
       Loc  : constant Source_Ptr := Sloc (Aggr);
       Typ  : constant Entity_Id  := Etype (Aggr);
       Occ  : constant Node_Id    := New_Occurrence_Of (Obj, Loc);
@@ -4437,10 +4397,6 @@ package body Exp_Aggr is
    begin
       Set_Assignment_OK (Occ);
 
-      if Nkind (Aggr) = N_Qualified_Expression then
-         Aggr := Expression (Aggr);
-      end if;
-
       if Has_Discriminants (Typ)
         and then Typ /= Etype (Obj)
         and then Is_Constrained (Etype (Obj))
@@ -4505,8 +4461,7 @@ package body Exp_Aggr is
 
             while Present (Stmt) loop
                if Nkind (Stmt) = N_Procedure_Call_Statement
-                 and then Get_TSS_Name (Entity (Name (Stmt)))
-                            = TSS_Slice_Assign
+                 and then Is_TSS (Entity (Name (Stmt)), TSS_Slice_Assign)
                then
                   Param := First (Parameter_Associations (Stmt));
                   Insert_Actions
@@ -4571,8 +4526,9 @@ package body Exp_Aggr is
                                (Storage_Model_Object
                                   (Etype (Prefix (Expression (Target))))))
          then
-            Aggr_Code := Build_Assignment_With_Temporary (Target,
-                           Typ, New_Aggr);
+            Aggr_Code :=
+              Build_Assignment_With_Temporary (Target, Typ, New_Aggr);
+
          else
             Aggr_Code :=
               New_List (
@@ -5017,9 +4973,12 @@ package body Exp_Aggr is
 
       if
          --  Internal aggregate (transformed when expanding the parent)
+         --  excluding the Container aggregate as these are transformed to
+         --  procedure call later.
 
-         Parent_Kind in
-           N_Aggregate | N_Extension_Aggregate | N_Component_Association
+         (Parent_Kind in
+            N_Component_Association | N_Aggregate | N_Extension_Aggregate
+            and then not Is_Container_Aggregate (Parent_Node))
 
          --  Allocator (see Convert_Aggr_In_Allocator)
 
@@ -5834,12 +5793,9 @@ package body Exp_Aggr is
       ----------------------------
 
       procedure Build_Constrained_Type (Positional : Boolean) is
-         Loc      : constant Source_Ptr := Sloc (N);
-         Agg_Type : constant Entity_Id  := Make_Temporary (Loc, 'A');
-         Comp     : Node_Id;
+         Agg_Type : constant Entity_Id := Make_Temporary (Loc, 'A');
          Decl     : Node_Id;
-         Typ      : constant Entity_Id := Etype (N);
-         Indexes  : constant List_Id   := New_List;
+         Indexes  : constant List_Id := New_List;
          Num      : Nat;
          Sub_Agg  : Node_Id;
 
@@ -5851,20 +5807,15 @@ package body Exp_Aggr is
          if Positional then
             Sub_Agg := N;
 
-            for D in 1 .. Number_Dimensions (Typ) loop
-               Sub_Agg := First (Expressions (Sub_Agg));
-
-               Comp := Sub_Agg;
-               Num := 0;
-               while Present (Comp) loop
-                  Num := Num + 1;
-                  Next (Comp);
-               end loop;
+            for D in 1 .. Aggr_Dimension loop
+               Num := List_Length (Expressions (Sub_Agg));
 
                Append_To (Indexes,
                  Make_Range (Loc,
-                   Low_Bound  => Make_Integer_Literal (Loc, 1),
+                   Low_Bound  => Make_Integer_Literal (Loc, Uint_1),
                    High_Bound => Make_Integer_Literal (Loc, Num)));
+
+               Sub_Agg := First (Expressions (Sub_Agg));
             end loop;
 
          else
@@ -5872,7 +5823,7 @@ package body Exp_Aggr is
             --  is not processable by the back end, therefore not necessarily
             --  positional. Retrieve each dimension bounds (computed earlier).
 
-            for D in 1 .. Number_Dimensions (Typ) loop
+            for D in 1 .. Aggr_Dimension loop
                Append_To (Indexes,
                  Make_Range (Loc,
                    Low_Bound  => Aggr_Low  (D),
@@ -5888,7 +5839,6 @@ package body Exp_Aggr is
                    Discrete_Subtype_Definitions => Indexes,
                    Component_Definition         =>
                      Make_Component_Definition (Loc,
-                       Aliased_Present    => False,
                        Subtype_Indication =>
                          New_Occurrence_Of (Component_Type (Typ), Loc))));
 
@@ -5909,7 +5859,7 @@ package body Exp_Aggr is
          Ind_Bounds  : constant Range_Nodes :=
            Get_Index_Bounds (Index_Bounds_Node);
 
-         Cond : Node_Id := Empty;
+         Cond : Node_Id;
 
       begin
          --  For a null array aggregate check that high bound (i.e., low
@@ -5999,8 +5949,8 @@ package body Exp_Aggr is
       ----------------------------
 
       procedure Check_Same_Aggr_Bounds (Sub_Aggr : Node_Id; Dim : Pos) is
-         Sub_Bounds : constant Range_Nodes
-           := Get_Index_Bounds (Aggregate_Bounds (Sub_Aggr));
+         Sub_Bounds : constant Range_Nodes :=
+           Get_Index_Bounds (Aggregate_Bounds (Sub_Aggr));
          Sub_Lo : Node_Id renames Sub_Bounds.First;
          Sub_Hi : Node_Id renames Sub_Bounds.Last;
          --  The bounds of this specific subaggregate
@@ -6012,7 +5962,7 @@ package body Exp_Aggr is
          Ind_Typ : constant Entity_Id := Aggr_Index_Typ (Dim);
          --  The index type for this dimension.xxx
 
-         Cond  : Node_Id := Empty;
+         Cond  : Node_Id;
          Assoc : Node_Id;
          Expr  : Node_Id;
 
@@ -6959,7 +6909,7 @@ package body Exp_Aggr is
       --  If this is an array of tasks, it will be expanded into build-in-place
       --  assignments. Build an activation chain for the tasks now.
 
-      if Has_Task (Etype (N)) then
+      if Has_Task (Typ) then
          Build_Activation_Chain_Entity (N);
       end if;
 
@@ -7069,7 +7019,6 @@ package body Exp_Aggr is
              Defining_Identifier => Tmp,
              Object_Definition   => New_Occurrence_Of (Typ, Loc));
          Set_No_Initialization (Tmp_Decl, True);
-         Set_Warnings_Off (Tmp);
 
          --  If we are within a loop, the temporary will be pushed on the
          --  stack at each iteration. If the aggregate is the expression
@@ -7081,6 +7030,15 @@ package body Exp_Aggr is
            and then Parent_Kind = N_Allocator
          then
             Establish_Transient_Scope (N, Manage_Sec_Stack => False);
+
+         --  If the parent is an assignment for which no controlled actions
+         --  should take place, prevent the temporary from being finalized.
+
+         elsif Parent_Kind = N_Assignment_Statement
+           and then No_Ctrl_Actions (Parent_Node)
+         then
+            Mutate_Ekind (Tmp, E_Variable);
+            Set_Is_Ignored_Transient (Tmp);
          end if;
 
          Insert_Action (N, Tmp_Decl);
@@ -7139,20 +7097,20 @@ package body Exp_Aggr is
                                   (Storage_Model_Object
                                      (Etype (Prefix (Name (Parent_Node))))))
             then
-               Aggr_Code := Build_Assignment_With_Temporary (Target,
-                              Typ, New_Copy_Tree (N));
+               Aggr_Code := Build_Assignment_With_Temporary
+                              (Target, Typ, New_Copy_Tree (N));
+
             else
                if Maybe_In_Place_OK then
                   return;
                end if;
 
-               Aggr_Code :=
-                 New_List (
-                   Make_Assignment_Statement (Loc,
-                     Name       => Target,
-                     Expression => New_Copy_Tree (N)));
-
+               Aggr_Code := New_List (
+                 Make_Assignment_Statement (Loc,
+                   Name       => Target,
+                   Expression => New_Copy_Tree (N)));
             end if;
+
          else
             Aggr_Code :=
               Build_Array_Aggr_Code (N,
@@ -7398,7 +7356,7 @@ package body Exp_Aggr is
          Comp   : Node_Id;
          Choice : Node_Id;
          Lo, Hi : Node_Id;
-         Siz     : Int := 0;
+         Siz    : Int;
 
          procedure Add_Range_Size;
          --  Compute number of components specified by a component association
@@ -7423,11 +7381,9 @@ package body Exp_Aggr is
          end Add_Range_Size;
 
       begin
-         --  Aggregate is either all positional or all named.
+         --  Aggregate is either all positional or all named
 
-         if Present (Expressions (N)) then
-            Siz := List_Length (Expressions (N));
-         end if;
+         Siz := List_Length (Expressions (N));
 
          if Present (Component_Associations (N)) then
             Comp := First (Component_Associations (N));
@@ -8702,11 +8658,7 @@ package body Exp_Aggr is
                return False;
             end if;
 
-            if Nkind (Expression (C)) = N_Qualified_Expression then
-               Expr_Q := Expression (Expression (C));
-            else
-               Expr_Q := Expression (C);
-            end if;
+            Expr_Q := Unqualify (Expression (C));
 
             --  Return False for array components whose bounds raise
             --  constraint error.
@@ -9105,17 +9057,11 @@ package body Exp_Aggr is
    --------------------------
 
    function Is_Delayed_Aggregate (N : Node_Id) return Boolean is
-      Node : Node_Id   := N;
-      Kind : Node_Kind := Nkind (Node);
+      Unqual_N : constant Node_Id := Unqualify (N);
 
    begin
-      if Kind = N_Qualified_Expression then
-         Node := Expression (Node);
-         Kind := Nkind (Node);
-      end if;
-
-      return Kind in N_Aggregate | N_Extension_Aggregate
-        and then Expansion_Delayed (Node);
+      return Nkind (Unqual_N) in N_Aggregate | N_Extension_Aggregate
+        and then Expansion_Delayed (Unqual_N);
    end Is_Delayed_Aggregate;
 
    --------------------------------
@@ -9842,6 +9788,7 @@ package body Exp_Aggr is
       Res_Decl    : Node_Id;
       Res_Id      : Entity_Id;
       Res_Typ     : Entity_Id;
+      Copy_Init_Expr : constant Node_Id := New_Copy_Tree (Init_Expr);
 
    --  Start of processing for Process_Transient_Component
 
@@ -9892,7 +9839,15 @@ package body Exp_Aggr is
           Constant_Present    => True,
           Object_Definition   => New_Occurrence_Of (Res_Typ, Loc),
           Expression          =>
-            Make_Reference (Loc, New_Copy_Tree (Init_Expr)));
+            Make_Reference (Loc, Copy_Init_Expr));
+
+      --  In some cases, like iterated component, the Init_Expr may have been
+      --  analyzed in a context where all the Etype fields are not correct yet
+      --  and a later call to Analyze is expected to set them.
+      --  Resetting the Analyzed flag ensures this later call doesn't skip this
+      --  node.
+
+      Reset_Analyzed_Flags (Copy_Init_Expr);
 
       Add_Item (Res_Decl);
 

@@ -452,7 +452,7 @@ nvptx_encode_section_info (tree decl, rtx rtl, int first)
 
       if (TREE_CONSTANT (decl))
 	area = DATA_AREA_CONST;
-      else if (TREE_CODE (decl) == VAR_DECL)
+      else if (VAR_P (decl))
 	{
 	  if (lookup_attribute ("shared", DECL_ATTRIBUTES (decl)))
 	    {
@@ -635,7 +635,7 @@ pass_in_memory (machine_mode mode, const_tree type, bool for_return)
     {
       if (AGGREGATE_TYPE_P (type))
 	return true;
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	return true;
     }
 
@@ -6047,6 +6047,29 @@ nvptx_expand_shuffle (tree exp, rtx target, machine_mode mode, int ignore)
   return target;
 }
 
+/* Expander for the bit reverse builtins.  */
+
+static rtx
+nvptx_expand_brev (tree exp, rtx target, machine_mode mode, int ignore)
+{
+  if (ignore)
+    return target;
+  
+  rtx arg = expand_expr (CALL_EXPR_ARG (exp, 0),
+			 NULL_RTX, mode, EXPAND_NORMAL);
+  if (!REG_P (arg))
+    arg = copy_to_mode_reg (mode, arg);
+  if (!target)
+    target = gen_reg_rtx (mode);
+  rtx pat;
+  if (mode == SImode)
+    pat = gen_bitrevsi2 (target, arg);
+  else
+    pat = gen_bitrevdi2 (target, arg);
+  emit_insn (pat);
+  return target;
+}
+
 const char *
 nvptx_output_red_partition (rtx dst, rtx offset)
 {
@@ -6164,6 +6187,8 @@ enum nvptx_builtins
   NVPTX_BUILTIN_BAR_RED_AND,
   NVPTX_BUILTIN_BAR_RED_OR,
   NVPTX_BUILTIN_BAR_RED_POPC,
+  NVPTX_BUILTIN_BREV,
+  NVPTX_BUILTIN_BREVLL,
   NVPTX_BUILTIN_MAX
 };
 
@@ -6292,6 +6317,9 @@ nvptx_init_builtins (void)
   DEF (BAR_RED_POPC, "bar_red_popc",
        (UINT, UINT, UINT, UINT, UINT, NULL_TREE));
 
+  DEF (BREV, "brev", (UINT, UINT, NULL_TREE));
+  DEF (BREVLL, "brevll", (LLUINT, LLUINT, NULL_TREE));
+
 #undef DEF
 #undef ST
 #undef UINT
@@ -6338,6 +6366,10 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
     case NVPTX_BUILTIN_BAR_RED_OR:
     case NVPTX_BUILTIN_BAR_RED_POPC:
       return nvptx_expand_bar_red (exp, target, mode, ignore);
+
+    case NVPTX_BUILTIN_BREV:
+    case NVPTX_BUILTIN_BREVLL:
+      return nvptx_expand_brev (exp, target, mode, ignore);
 
     default: gcc_unreachable ();
     }
@@ -6699,7 +6731,7 @@ nvptx_generate_vector_shuffle (location_t loc,
   if (TREE_CODE (var_type) == COMPLEX_TYPE)
     var_type = TREE_TYPE (var_type);
 
-  if (TREE_CODE (var_type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (var_type))
     code = VIEW_CONVERT_EXPR;
 
   if (TYPE_SIZE (var_type)
@@ -6789,7 +6821,7 @@ nvptx_lockless_update (location_t loc, gimple_stmt_iterator *gsi,
   tree var_type = TREE_TYPE (var);
 
   if (TREE_CODE (var_type) == COMPLEX_TYPE
-      || TREE_CODE (var_type) == REAL_TYPE)
+      || SCALAR_FLOAT_TYPE_P (var_type))
     code = VIEW_CONVERT_EXPR;
 
   if (TYPE_SIZE (var_type) == TYPE_SIZE (long_long_unsigned_type_node))

@@ -93,6 +93,8 @@ public:
   bool is_internal_fn () const;
   bool is_builtin_fn () const;
   int get_rep () const { return rep; }
+  tree_code safe_as_tree_code () const;
+  combined_fn safe_as_fn_code () const;
   bool operator== (const code_helper &other) { return rep == other.rep; }
   bool operator!= (const code_helper &other) { return rep != other.rep; }
   bool operator== (tree_code c) { return rep == code_helper (c).rep; }
@@ -101,6 +103,25 @@ public:
 private:
   int rep;
 };
+
+/* Helper function that returns the tree_code representation of THIS
+   code_helper if it is a tree_code and MAX_TREE_CODES otherwise.  This is
+   useful when passing a code_helper to a tree_code only check.  */
+
+inline tree_code
+code_helper::safe_as_tree_code () const
+{
+  return is_tree_code () ? (tree_code) *this : MAX_TREE_CODES;
+}
+
+/* Helper function that returns the combined_fn representation of THIS
+   code_helper if it is a fn_code and CFN_LAST otherwise.  This is useful when
+   passing a code_helper to a combined_fn only check.  */
+
+inline combined_fn
+code_helper::safe_as_fn_code () const {
+  return is_fn_code () ? (combined_fn) *this : CFN_LAST;
+}
 
 inline code_helper::operator internal_fn () const
 {
@@ -1752,6 +1773,9 @@ class auto_suppress_location_wrappers
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->omp_clause.subcode.map_kind \
    = (unsigned int) (MAP_KIND))
 
+#define OMP_CLAUSE_MOTION_PRESENT(NODE) \
+  (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_FROM, OMP_CLAUSE_TO)->base.deprecated_flag)
+
 /* Nonzero if this map clause is for array (rather than pointer) based array
    section with zero bias.  Both the non-decl OMP_CLAUSE_MAP and corresponding
    OMP_CLAUSE_MAP with GOMP_MAP_POINTER are marked with this flag.  */
@@ -3232,6 +3256,12 @@ extern void decl_fini_priority_insert (tree, priority_type);
 /* In a VAR_DECL, nonzero if this variable is not aliased by any pointer.  */
 #define DECL_NONALIASED(NODE) \
   (VAR_DECL_CHECK (NODE)->base.nothrow_flag)
+
+/* In a VAR_DECL, nonzero if this variable is not required to have a distinct
+   address from other variables with the same constant value.  In other words,
+   consider -fmerge-all-constants to be on for this VAR_DECL.  */
+#define DECL_MERGEABLE(NODE) \
+  (VAR_DECL_CHECK (NODE)->decl_common.decl_flag_3)
 
 /* This field is used to reference anything in decl.result and is meant only
    for use by the garbage collector.  */

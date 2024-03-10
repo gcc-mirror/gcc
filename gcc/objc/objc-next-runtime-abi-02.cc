@@ -1571,7 +1571,7 @@ next_runtime_abi_02_get_category_super_ref (location_t loc ATTRIBUTE_UNUSED,
 static tree
 next_runtime_abi_02_receiver_is_class_object (tree receiver)
 {
-  if (TREE_CODE (receiver) == VAR_DECL
+  if (VAR_P (receiver)
       && IS_CLASS (TREE_TYPE (receiver))
       && vec_safe_length (classrefs))
     {
@@ -1824,7 +1824,7 @@ next_runtime_abi_02_build_objc_method_call (location_t loc,
       checked.  */
   bool check_for_nil = flag_objc_nilcheck;
   if (super
-      || (TREE_CODE (receiver) == VAR_DECL
+      || (VAR_P (receiver)
 	  && TREE_TYPE (receiver) == objc_class_type))
     check_for_nil = false;
 

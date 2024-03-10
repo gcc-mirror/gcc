@@ -91,7 +91,7 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
 
       /* Warn for real constant that is not an exact integer converted to
          integer type.  */
-      if (TREE_CODE (expr_type) == REAL_TYPE
+      if (SCALAR_FLOAT_TYPE_P (expr_type)
           && TREE_CODE (type) == INTEGER_TYPE)
         {
           if (!real_isinteger (TREE_REAL_CST_PTR (expr),
@@ -121,7 +121,7 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
           else
             give_warning = UNSAFE_OTHER;
         }
-      else if (TREE_CODE (type) == REAL_TYPE)
+      else if (SCALAR_FLOAT_TYPE_P (type))
         {
           /* Warn for an integer constant that does not fit into real type.  */
           if (TREE_CODE (expr_type) == INTEGER_TYPE)
@@ -133,7 +133,7 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
 
           /* Warn for a real constant that does not fit into a smaller real
           type.  */
-          else if (TREE_CODE (expr_type) == REAL_TYPE
+	  else if (SCALAR_FLOAT_TYPE_P (expr_type)
                    && TYPE_PRECISION (type) < TYPE_PRECISION (expr_type))
             {
               REAL_VALUE_TYPE a = TREE_REAL_CST (expr);
@@ -145,7 +145,7 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
   else
     {
       /* Warn for real types converted to integer types.  */
-      if (TREE_CODE (expr_type) == REAL_TYPE
+      if (SCALAR_FLOAT_TYPE_P (expr_type)
           && TREE_CODE (type) == INTEGER_TYPE)
         give_warning = UNSAFE_REAL;
 

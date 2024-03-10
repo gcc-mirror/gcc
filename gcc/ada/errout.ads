@@ -307,9 +307,9 @@ package Errout is
    --    Insertion character ?x? ?.x? ?_x? (warning with switch)
    --      "x" is a (lower-case) warning switch character.
    --      Like ??, but if the flag Warn_Doc_Switch is True, adds the string
-   --      "[-gnatwx]", "[-gnatw.x]", or "[-gnatw_x]", at the end of the
-   --      warning message. For continuations, use this on each continuation
-   --      message.
+   --      "[-gnatwx]", "[-gnatw.x]", "[-gnatw_x]", or "[-gnatyx]" (for style
+   --      messages), at the end of the warning message. For continuations, use
+   --      this on each continuation message.
 
    --    Insertion character ?*? (restriction warning)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string

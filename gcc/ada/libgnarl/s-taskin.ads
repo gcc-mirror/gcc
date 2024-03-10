@@ -958,11 +958,10 @@ package System.Tasking is
    type Entry_Call_Array is array (ATC_Level_Index) of
      aliased Entry_Call_Record;
 
-   type Atomic_Address is mod Memory_Size;
-   pragma Atomic (Atomic_Address);
    type Attribute_Array is
-     array (1 .. Parameters.Max_Attribute_Count) of Atomic_Address;
-   --  Array of task attributes. The value (Atomic_Address) will either be
+     array (1 .. Parameters.Max_Attribute_Count) of System.Address;
+   pragma Atomic_Components (Attribute_Array);
+   --  Array of task attributes. The value (System.Address) will either be
    --  converted to a task attribute if it fits, or to a pointer to a record
    --  by Ada.Task_Attributes.
 
@@ -1157,7 +1156,7 @@ package System.Tasking is
       --  non-terminated task so that the associated storage is automatically
       --  reclaimed when the task terminates.
 
-      Attributes : Attribute_Array := [others => 0];
+      Attributes : Attribute_Array := [others => Null_Address];
       --  Task attributes
 
       --  IMPORTANT Note: the Entry_Queues field is last for efficiency of

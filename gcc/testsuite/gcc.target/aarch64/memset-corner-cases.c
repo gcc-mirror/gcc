@@ -29,8 +29,8 @@ set0byte (int64_t *src)
 
 /* 35bytes would become 4 scalar instructions.  So favour NEON.
 **set0neon:
-**	movi	v0.4s, 0
-**	stp	q0, q0, \[x0\]
+**	movi	v([0-9]+).4s, 0
+**	stp	q\1, q\1, \[x0\]
 **	str	wzr, \[x0, 31\]
 **	ret
 */
@@ -56,15 +56,15 @@ set0scalar (int64_t *src)
 
 /* 256-bytes expanded
 **set256byte:
-**	dup	v0.16b, w1
-**	stp	q0, q0, \[x0\]
-**	stp	q0, q0, \[x0, 32\]
-**	stp	q0, q0, \[x0, 64\]
-**	stp	q0, q0, \[x0, 96\]
-**	stp	q0, q0, \[x0, 128\]
-**	stp	q0, q0, \[x0, 160\]
-**	stp	q0, q0, \[x0, 192\]
-**	stp	q0, q0, \[x0, 224\]
+**	dup	v([0-9]+).16b, w1
+**	stp	q\1, q\1, \[x0\]
+**	stp	q\1, q\1, \[x0, 32\]
+**	stp	q\1, q\1, \[x0, 64\]
+**	stp	q\1, q\1, \[x0, 96\]
+**	stp	q\1, q\1, \[x0, 128\]
+**	stp	q\1, q\1, \[x0, 160\]
+**	stp	q\1, q\1, \[x0, 192\]
+**	stp	q\1, q\1, \[x0, 224\]
 **	ret
 */
 void __attribute__((__noinline__))

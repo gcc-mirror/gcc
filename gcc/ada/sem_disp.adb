@@ -1392,7 +1392,7 @@ package body Sem_Disp is
          --  4. Wrappers built for inherited operations with inherited class-
          --     wide conditions, where the conditions include calls to other
          --     overridden primitives. The wrappers include checks on these
-         --     modified conditions. (AI12-113).
+         --     modified conditions. (AI12-195).
 
          --  5. Declarations built for subprograms without separate specs that
          --     are eligible for inlining in GNATprove (inside
@@ -1414,9 +1414,9 @@ package body Sem_Disp is
                  and then Is_Null_Interface_Primitive
                              (Ultimate_Alias (Old_Subp)))
 
-              or else Get_TSS_Name (Subp) = TSS_Stream_Read
-              or else Get_TSS_Name (Subp) = TSS_Stream_Write
-              or else Get_TSS_Name (Subp) = TSS_Put_Image
+              or else Get_TSS_Name (Subp) in TSS_Stream_Read
+                                           | TSS_Stream_Write
+                                           | TSS_Put_Image
 
               or else
                (Is_Wrapper (Subp)
@@ -1441,7 +1441,7 @@ package body Sem_Disp is
       --  where it can be a dispatching op is when it overrides an operation
       --  before the freezing point of the type.
 
-      elsif ((not Is_Package_Or_Generic_Package (Scope (Subp)))
+      elsif (not Is_Package_Or_Generic_Package (Scope (Subp))
                or else In_Package_Body (Scope (Subp)))
         and then not Has_Dispatching_Parent
       then
@@ -1488,7 +1488,7 @@ package body Sem_Disp is
 
                   Decl_Item := Next (Parent (Tagged_Type));
                   while Present (Decl_Item)
-                    and then (Decl_Item /= Subp_Body)
+                    and then Decl_Item /= Subp_Body
                   loop
                      if Comes_From_Source (Decl_Item)
                        and then (Nkind (Decl_Item) in N_Proper_Body
@@ -2969,7 +2969,7 @@ package body Sem_Disp is
          end loop;
       end if;
 
-      if (not Is_Package_Or_Generic_Package (Current_Scope))
+      if not Is_Package_Or_Generic_Package (Current_Scope)
         or else not In_Private_Part (Current_Scope)
       then
          --  Not a private primitive

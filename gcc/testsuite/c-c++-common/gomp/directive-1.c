@@ -20,7 +20,7 @@ foo (void)
   #pragma omp allocate, (i)			/* { dg-error "expected '\\\(' before ',' token" } */
 						/* { dg-error "expected end of line before ',' token" "" { target c++ } .-1 } */
 						/* { dg-message "not yet supported" "" { target *-*-* } .-2 } */
-  #pragma omp critical, (bar)			/* { dg-error "expected '#pragma omp' clause before '\\\(' token" } */
+  #pragma omp critical, (bar)			/* { dg-error "expected an OpenMP clause before '\\\(' token" } */
   ;
   #pragma omp flush, (k, l)			/* { dg-error "expected '\\\(' or end of line before ',' token" "" { target c } } */
 						/* { dg-error "expected end of line before ',' token" "" { target c++ } .-1 } */

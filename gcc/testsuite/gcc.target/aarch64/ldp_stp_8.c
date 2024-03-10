@@ -27,4 +27,4 @@ void ldp2 (fvec *a, ivec *b, struct vec_pair *p)
   *b = p->b;
 }
 
-/* { dg-final { scan-assembler-times "ldp\td\[0-9\], d\[0-9\]+, \\\[x\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "ldp\td\[0-9\]+, d\[0-9\]+, \\\[x\[0-9\]+\\\]" 2 } } */

@@ -47,6 +47,307 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-relation.h"
 #include "range-op.h"
 #include "tree-ssa-ccp.h"
+#include "range-op-mixed.h"
+
+integral_table integral_tree_table;
+pointer_table pointer_tree_table;
+
+// Instantiate a range_op_table for unified operations.
+class unified_table : public range_op_table
+{
+  public:
+    unified_table ();
+} unified_tree_table;
+
+// Instantiate the operators which apply to multiple types here.
+
+operator_equal op_equal;
+operator_not_equal op_not_equal;
+operator_lt op_lt;
+operator_le op_le;
+operator_gt op_gt;
+operator_ge op_ge;
+operator_identity op_ident;
+operator_cst op_cst;
+operator_cast op_cast;
+operator_plus op_plus;
+operator_abs op_abs;
+operator_minus op_minus;
+operator_negate op_negate;
+operator_mult op_mult;
+
+// Invoke the initialization routines for each class of range.
+
+unified_table::unified_table ()
+{
+  initialize_integral_ops ();
+  initialize_pointer_ops ();
+  initialize_float_ops ();
+
+  set (EQ_EXPR, op_equal);
+  set (NE_EXPR, op_not_equal);
+  set (LT_EXPR, op_lt);
+  set (LE_EXPR, op_le);
+  set (GT_EXPR, op_gt);
+  set (GE_EXPR, op_ge);
+  set (SSA_NAME, op_ident);
+  set (PAREN_EXPR, op_ident);
+  set (OBJ_TYPE_REF, op_ident);
+  set (REAL_CST, op_cst);
+  set (INTEGER_CST, op_cst);
+  set (NOP_EXPR, op_cast);
+  set (CONVERT_EXPR, op_cast);
+  set (PLUS_EXPR, op_plus);
+  set (ABS_EXPR, op_abs);
+  set (MINUS_EXPR, op_minus);
+  set (NEGATE_EXPR, op_negate);
+  set (MULT_EXPR, op_mult);
+}
+
+// The tables are hidden and accessed via a simple extern function.
+
+range_operator *
+get_op_handler (enum tree_code code, tree type)
+{
+  if (unified_tree_table[code])
+    {
+      // Should not be in any other table if it is in the unified table.
+      gcc_checking_assert (!pointer_tree_table[code]);
+      gcc_checking_assert (!integral_tree_table[code]);
+      return unified_tree_table[code];
+    }
+
+  if (POINTER_TYPE_P (type))
+    return pointer_tree_table[code];
+  if (INTEGRAL_TYPE_P (type))
+    return integral_tree_table[code];
+  return NULL;
+}
+
+range_op_handler::range_op_handler ()
+{
+  m_operator = NULL;
+}
+
+void
+range_op_handler::set_op_handler (tree_code code, tree type)
+{
+  m_operator = get_op_handler (code, type);
+}
+
+range_op_handler::range_op_handler (tree_code code, tree type)
+{
+  set_op_handler (code, type);
+}
+
+// Constructing without a type must come from the unified table.
+
+range_op_handler::range_op_handler (tree_code code)
+{
+  m_operator = unified_tree_table[code];
+}
+
+// Create a dispatch pattern for value range discriminators LHS, OP1, and OP2.
+// This is used to produce a unique value for each dispatch pattern.  Shift
+// values are based on the size of the m_discriminator field in value_range.h.
+
+constexpr unsigned
+dispatch_trio (unsigned lhs, unsigned op1, unsigned op2)
+{
+  return ((lhs << 8) + (op1 << 4) + (op2));
+}
+
+// These are the supported dispatch patterns. These map to the parameter list
+// of the routines in range_operator.  Note the last 3 characters are
+// shorthand for the LHS, OP1, and OP2 range discriminator class.
+
+const unsigned RO_III =	dispatch_trio (VR_IRANGE, VR_IRANGE, VR_IRANGE);
+const unsigned RO_IFI = dispatch_trio (VR_IRANGE, VR_FRANGE, VR_IRANGE);
+const unsigned RO_IFF = dispatch_trio (VR_IRANGE, VR_FRANGE, VR_FRANGE);
+const unsigned RO_FFF = dispatch_trio (VR_FRANGE, VR_FRANGE, VR_FRANGE);
+const unsigned RO_FIF = dispatch_trio (VR_FRANGE, VR_IRANGE, VR_FRANGE);
+const unsigned RO_FII = dispatch_trio (VR_FRANGE, VR_IRANGE, VR_IRANGE);
+
+// Return a dispatch value for parameter types LHS, OP1 and OP2.
+
+unsigned
+range_op_handler::dispatch_kind (const vrange &lhs, const vrange &op1,
+				 const vrange& op2) const
+{
+  return dispatch_trio (lhs.m_discriminator, op1.m_discriminator,
+			op2.m_discriminator);
+}
+
+// Dispatch a call to fold_range based on the types of R, LH and RH.
+
+bool
+range_op_handler::fold_range (vrange &r, tree type,
+			      const vrange &lh,
+			      const vrange &rh,
+			      relation_trio rel) const
+{
+  gcc_checking_assert (m_operator);
+  switch (dispatch_kind (r, lh, rh))
+    {
+      case RO_III:
+	return m_operator->fold_range (as_a <irange> (r), type,
+				       as_a <irange> (lh),
+				       as_a <irange> (rh), rel);
+      case RO_IFI:
+	return m_operator->fold_range (as_a <irange> (r), type,
+				       as_a <frange> (lh),
+				       as_a <irange> (rh), rel);
+      case RO_IFF:
+	return m_operator->fold_range (as_a <irange> (r), type,
+				       as_a <frange> (lh),
+				       as_a <frange> (rh), rel);
+      case RO_FFF:
+	return m_operator->fold_range (as_a <frange> (r), type,
+				       as_a <frange> (lh),
+				       as_a <frange> (rh), rel);
+      default:
+	return false;
+    }
+}
+
+// Dispatch a call to op1_range based on the types of R, LHS and OP2.
+
+bool
+range_op_handler::op1_range (vrange &r, tree type,
+			     const vrange &lhs,
+			     const vrange &op2,
+			     relation_trio rel) const
+{
+  gcc_checking_assert (m_operator);
+
+  if (lhs.undefined_p ())
+    return false;
+  switch (dispatch_kind (r, lhs, op2))
+    {
+      case RO_III:
+	return m_operator->op1_range (as_a <irange> (r), type,
+				      as_a <irange> (lhs),
+				      as_a <irange> (op2), rel);
+      case RO_FIF:
+	return m_operator->op1_range (as_a <frange> (r), type,
+				      as_a <irange> (lhs),
+				      as_a <frange> (op2), rel);
+      case RO_FFF:
+	return m_operator->op1_range (as_a <frange> (r), type,
+				      as_a <frange> (lhs),
+				      as_a <frange> (op2), rel);
+      default:
+	return false;
+    }
+}
+
+// Dispatch a call to op2_range based on the types of R, LHS and OP1.
+
+bool
+range_op_handler::op2_range (vrange &r, tree type,
+			     const vrange &lhs,
+			     const vrange &op1,
+			     relation_trio rel) const
+{
+  gcc_checking_assert (m_operator);
+  if (lhs.undefined_p ())
+    return false;
+
+  switch (dispatch_kind (r, lhs, op1))
+    {
+      case RO_III:
+	return m_operator->op2_range (as_a <irange> (r), type,
+				      as_a <irange> (lhs),
+				      as_a <irange> (op1), rel);
+      case RO_FIF:
+	return m_operator->op2_range (as_a <frange> (r), type,
+				      as_a <irange> (lhs),
+				      as_a <frange> (op1), rel);
+      case RO_FFF:
+	return m_operator->op2_range (as_a <frange> (r), type,
+				      as_a <frange> (lhs),
+				      as_a <frange> (op1), rel);
+      default:
+	return false;
+    }
+}
+
+// Dispatch a call to lhs_op1_relation based on the types of LHS, OP1 and OP2.
+
+relation_kind
+range_op_handler::lhs_op1_relation (const vrange &lhs,
+				    const vrange &op1,
+				    const vrange &op2,
+				    relation_kind rel) const
+{
+  gcc_checking_assert (m_operator);
+
+  switch (dispatch_kind (lhs, op1, op2))
+    {
+      case RO_III:
+	return m_operator->lhs_op1_relation (as_a <irange> (lhs),
+					     as_a <irange> (op1),
+					     as_a <irange> (op2), rel);
+      case RO_IFF:
+	return m_operator->lhs_op1_relation (as_a <irange> (lhs),
+					     as_a <frange> (op1),
+					     as_a <frange> (op2), rel);
+      case RO_FFF:
+	return m_operator->lhs_op1_relation (as_a <frange> (lhs),
+					     as_a <frange> (op1),
+					     as_a <frange> (op2), rel);
+      default:
+	return VREL_VARYING;
+    }
+}
+
+// Dispatch a call to lhs_op2_relation based on the types of LHS, OP1 and OP2.
+
+relation_kind
+range_op_handler::lhs_op2_relation (const vrange &lhs,
+				    const vrange &op1,
+				    const vrange &op2,
+				    relation_kind rel) const
+{
+  gcc_checking_assert (m_operator);
+  switch (dispatch_kind (lhs, op1, op2))
+    {
+      case RO_III:
+	return m_operator->lhs_op2_relation (as_a <irange> (lhs),
+					     as_a <irange> (op1),
+					     as_a <irange> (op2), rel);
+      case RO_IFF:
+	return m_operator->lhs_op2_relation (as_a <irange> (lhs),
+					     as_a <frange> (op1),
+					     as_a <frange> (op2), rel);
+      case RO_FFF:
+	return m_operator->lhs_op2_relation (as_a <frange> (lhs),
+					     as_a <frange> (op1),
+					     as_a <frange> (op2), rel);
+      default:
+	return VREL_VARYING;
+    }
+}
+
+// Dispatch a call to op1_op2_relation based on the type of LHS.
+
+relation_kind
+range_op_handler::op1_op2_relation (const vrange &lhs) const
+{
+  gcc_checking_assert (m_operator);
+  switch (dispatch_kind (lhs, lhs, lhs))
+    {
+      case RO_III:
+	return m_operator->op1_op2_relation (as_a <irange> (lhs));
+
+      case RO_FFF:
+	return m_operator->op1_op2_relation (as_a <frange> (lhs));
+
+      default:
+	return VREL_VARYING;
+    }
+}
+
 
 // Convert irange bitmasks into a VALUE MASK pair suitable for calling CCP.
 
@@ -286,7 +587,7 @@ range_operator::fold_range (irange &r, tree type,
 	    break;
 	}
       op1_op2_relation_effect (r, type, lh, rh, rel);
-      update_known_bitmask (r, m_code, lh, rh);
+      update_bitmask (r, lh, rh);
       return true;
     }
 
@@ -298,7 +599,7 @@ range_operator::fold_range (irange &r, tree type,
       wi_fold_in_parts (r, type, lh.lower_bound (), lh.upper_bound (),
 			rh.lower_bound (), rh.upper_bound ());
       op1_op2_relation_effect (r, type, lh, rh, rel);
-      update_known_bitmask (r, m_code, lh, rh);
+      update_bitmask (r, lh, rh);
       return true;
     }
 
@@ -316,12 +617,12 @@ range_operator::fold_range (irange &r, tree type,
 	if (r.varying_p ())
 	  {
 	    op1_op2_relation_effect (r, type, lh, rh, rel);
-	    update_known_bitmask (r, m_code, lh, rh);
+	    update_bitmask (r, lh, rh);
 	    return true;
 	  }
       }
   op1_op2_relation_effect (r, type, lh, rh, rel);
-  update_known_bitmask (r, m_code, lh, rh);
+  update_bitmask (r, lh, rh);
   return true;
 }
 
@@ -385,6 +686,14 @@ range_operator::op1_op2_relation_effect (irange &lhs_range ATTRIBUTE_UNUSED,
 				       relation_kind rel ATTRIBUTE_UNUSED) const
 {
   return false;
+}
+
+// Apply any known bitmask updates based on this operator.
+
+void
+range_operator::update_bitmask (irange &, const irange &,
+				       const irange &) const
+{
 }
 
 // Create and return a range from a pair of wide-ints that are known
@@ -542,32 +851,19 @@ get_bool_state (vrange &r, const vrange &lhs, tree val_type)
   return BRS_TRUE;
 }
 
+// ------------------------------------------------------------------------
 
-class operator_equal : public range_operator
+void
+operator_equal::update_bitmask (irange &r, const irange &lh,
+				const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &val,
-			  relation_trio = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &val,
-			  relation_trio = TRIO_VARYING) const;
-  virtual relation_kind op1_op2_relation (const irange &lhs) const;
-} op_equal;
+  update_known_bitmask (r, EQ_EXPR, lh, rh);
+}
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-equal_op1_op2_relation (const irange &lhs)
+operator_equal::op1_op2_relation (const irange &lhs) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -581,13 +877,6 @@ equal_op1_op2_relation (const irange &lhs)
     return VREL_EQ;
   return VREL_VARYING;
 }
-
-relation_kind
-operator_equal::op1_op2_relation (const irange &lhs) const
-{
-  return equal_op1_op2_relation (lhs);
-}
-
 
 bool
 operator_equal::fold_range (irange &r, tree type,
@@ -663,31 +952,19 @@ operator_equal::op2_range (irange &r, tree type,
   return operator_equal::op1_range (r, type, lhs, op1, rel.swap_op1_op2 ());
 }
 
-class operator_not_equal : public range_operator
+// -------------------------------------------------------------------------
+
+void
+operator_not_equal::update_bitmask (irange &r, const irange &lh,
+				    const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio = TRIO_VARYING) const;
-  virtual relation_kind op1_op2_relation (const irange &lhs) const;
-} op_not_equal;
+  update_known_bitmask (r, NE_EXPR, lh, rh);
+}
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-not_equal_op1_op2_relation (const irange &lhs)
+operator_not_equal::op1_op2_relation (const irange &lhs) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -700,12 +977,6 @@ not_equal_op1_op2_relation (const irange &lhs)
   if (lhs.undefined_p () || !contains_zero_p (lhs))
     return VREL_NE;
   return VREL_VARYING;
-}
-
-relation_kind
-operator_not_equal::op1_op2_relation (const irange &lhs) const
-{
-  return not_equal_op1_op2_relation (lhs);
 }
 
 bool
@@ -843,31 +1114,17 @@ build_ge (irange &r, tree type, const wide_int &val)
 }
 
 
-class operator_lt :  public range_operator
+void
+operator_lt::update_bitmask (irange &r, const irange &lh,
+			     const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio = TRIO_VARYING) const;
-  virtual relation_kind op1_op2_relation (const irange &lhs) const;
-} op_lt;
+  update_known_bitmask (r, LT_EXPR, lh, rh);
+}
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-lt_op1_op2_relation (const irange &lhs)
+operator_lt::op1_op2_relation (const irange &lhs) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -880,12 +1137,6 @@ lt_op1_op2_relation (const irange &lhs)
   if (lhs.undefined_p () || !contains_zero_p (lhs))
     return VREL_LT;
   return VREL_VARYING;
-}
-
-relation_kind
-operator_lt::op1_op2_relation (const irange &lhs) const
-{
-  return lt_op1_op2_relation (lhs);
 }
 
 bool
@@ -963,31 +1214,17 @@ operator_lt::op2_range (irange &r, tree type,
 }
 
 
-class operator_le :  public range_operator
+void
+operator_le::update_bitmask (irange &r, const irange &lh,
+			     const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio = TRIO_VARYING) const;
-  virtual relation_kind op1_op2_relation (const irange &lhs) const;
-} op_le;
+  update_known_bitmask (r, LE_EXPR, lh, rh);
+}
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-le_op1_op2_relation (const irange &lhs)
+operator_le::op1_op2_relation (const irange &lhs) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1000,12 +1237,6 @@ le_op1_op2_relation (const irange &lhs)
   if (lhs.undefined_p () || !contains_zero_p (lhs))
     return VREL_LE;
   return VREL_VARYING;
-}
-
-relation_kind
-operator_le::op1_op2_relation (const irange &lhs) const
-{
-  return le_op1_op2_relation (lhs);
 }
 
 bool
@@ -1080,31 +1311,17 @@ operator_le::op2_range (irange &r, tree type,
 }
 
 
-class operator_gt :  public range_operator
+void
+operator_gt::update_bitmask (irange &r, const irange &lh,
+			     const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio = TRIO_VARYING) const;
-  virtual relation_kind op1_op2_relation (const irange &lhs) const;
-} op_gt;
+  update_known_bitmask (r, GT_EXPR, lh, rh);
+}
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-gt_op1_op2_relation (const irange &lhs)
+operator_gt::op1_op2_relation (const irange &lhs) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1118,13 +1335,6 @@ gt_op1_op2_relation (const irange &lhs)
     return VREL_GT;
   return VREL_VARYING;
 }
-
-relation_kind
-operator_gt::op1_op2_relation (const irange &lhs) const
-{
-  return gt_op1_op2_relation (lhs);
-}
-
 
 bool
 operator_gt::fold_range (irange &r, tree type,
@@ -1196,31 +1406,17 @@ operator_gt::op2_range (irange &r, tree type,
 }
 
 
-class operator_ge :  public range_operator
+void
+operator_ge::update_bitmask (irange &r, const irange &lh,
+			     const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio = TRIO_VARYING) const;
-  virtual relation_kind op1_op2_relation (const irange &lhs) const;
-} op_ge;
+  update_known_bitmask (r, GE_EXPR, lh, rh);
+}
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-ge_op1_op2_relation (const irange &lhs)
+operator_ge::op1_op2_relation (const irange &lhs) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1233,12 +1429,6 @@ ge_op1_op2_relation (const irange &lhs)
   if (!contains_zero_p (lhs))
     return VREL_GE;
   return VREL_VARYING;
-}
-
-relation_kind
-operator_ge::op1_op2_relation (const irange &lhs) const
-{
-  return ge_op1_op2_relation (lhs);
 }
 
 bool
@@ -1313,33 +1503,12 @@ operator_ge::op2_range (irange &r, tree type,
 }
 
 
-class operator_plus : public range_operator
+void
+operator_plus::update_bitmask (irange &r, const irange &lh,
+			       const irange &rh) const
 {
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  using range_operator::lhs_op1_relation;
-  using range_operator::lhs_op2_relation;
-public:
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio) const;
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs, const irange &op1,
-					  const irange &op2,
-					  relation_kind rel) const;
-  virtual relation_kind lhs_op2_relation (const irange &lhs, const irange &op1,
-					  const irange &op2,
-					  relation_kind rel) const;
-} op_plus;
+  update_known_bitmask (r, PLUS_EXPR, lh, rh);
+}
 
 // Check to see if the range of OP2 indicates anything about the relation
 // between LHS and OP1.
@@ -1620,35 +1789,12 @@ operator_widen_plus_unsigned::wi_fold (irange &r, tree type,
    r = int_range<2> (type, new_lb, new_ub);
 }
 
-class operator_minus : public range_operator
+void
+operator_minus::update_bitmask (irange &r, const irange &lh,
+				const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio) const;
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs,
-					   const irange &op1,
-					   const irange &op2,
-					   relation_kind rel) const;
-  virtual bool op1_op2_relation_effect (irange &lhs_range,
-					tree type,
-					const irange &op1_range,
-					const irange &op2_range,
-					relation_kind rel) const;
-} op_minus;
+  update_known_bitmask (r, MINUS_EXPR, lh, rh);
+}
 
 void 
 operator_minus::wi_fold (irange &r, tree type,
@@ -1801,6 +1947,8 @@ class operator_pointer_diff : public range_operator
 					const irange &op1_range,
 					const irange &op2_range,
 					relation_kind rel) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, POINTER_DIFF_EXPR, lh, rh); }
 } op_pointer_diff;
 
 bool
@@ -1822,6 +1970,8 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, MIN_EXPR, lh, rh); }
 } op_min;
 
 void
@@ -1844,6 +1994,8 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, MAX_EXPR, lh, rh); }
 } op_max;
 
 void
@@ -1857,24 +2009,6 @@ operator_max::wi_fold (irange &r, tree type,
   value_range_with_overflow (r, type, new_lb, new_ub);
 }
 
-
-class cross_product_operator : public range_operator
-{
-public:
-  // Perform an operation between two wide-ints and place the result
-  // in R.  Return true if the operation overflowed.
-  virtual bool wi_op_overflows (wide_int &r,
-				tree type,
-				const wide_int &,
-				const wide_int &) const = 0;
-
-  // Calculate the cross product of two sets of sub-ranges and return it.
-  void wi_cross_product (irange &r, tree type,
-			 const wide_int &lh_lb,
-			 const wide_int &lh_ub,
-			 const wide_int &rh_lb,
-			 const wide_int &rh_ub) const;
-};
 
 // Calculate the cross product of two sets of ranges and return it.
 //
@@ -1931,28 +2065,12 @@ cross_product_operator::wi_cross_product (irange &r, tree type,
 }
 
 
-class operator_mult : public cross_product_operator
+void
+operator_mult::update_bitmask (irange &r, const irange &lh,
+			       const irange &rh) const
 {
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-			const wide_int &rh_ub) const final override;
-  virtual bool wi_op_overflows (wide_int &res, tree type,
-				const wide_int &w0, const wide_int &w1)
-    const final override;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio) const final override;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio) const final override;
-} op_mult;
+  update_known_bitmask (r, MULT_EXPR, lh, rh);
+}
 
 bool
 operator_mult::op1_range (irange &r, tree type,
@@ -2162,6 +2280,7 @@ operator_widen_mult_unsigned::wi_fold (irange &r, tree type,
 class operator_div : public cross_product_operator
 {
 public:
+  operator_div (tree_code div_kind) { m_code = div_kind; }
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
@@ -2170,7 +2289,16 @@ public:
   virtual bool wi_op_overflows (wide_int &res, tree type,
 				const wide_int &, const wide_int &)
     const final override;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, m_code, lh, rh); }
+protected:
+  tree_code m_code;
 };
+
+static operator_div op_trunc_div (TRUNC_DIV_EXPR);
+static operator_div op_floor_div (FLOOR_DIV_EXPR);
+static operator_div op_round_div (ROUND_DIV_EXPR);
+static operator_div op_ceil_div (CEIL_DIV_EXPR);
 
 bool
 operator_div::wi_op_overflows (wide_int &res, tree type,
@@ -2265,6 +2393,7 @@ class operator_exact_divide : public operator_div
 {
   using range_operator::op1_range;
 public:
+  operator_exact_divide () : operator_div (EXACT_DIV_EXPR) { }
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
@@ -2314,6 +2443,8 @@ public:
 				tree type,
 				const wide_int &,
 				const wide_int &) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, LSHIFT_EXPR, lh, rh); }
 } op_lshift;
 
 class operator_rshift : public cross_product_operator
@@ -2343,6 +2474,8 @@ public:
 					   const irange &op1,
 					   const irange &op2,
 					   relation_kind rel) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, RSHIFT_EXPR, lh, rh); }
 } op_rshift;
 
 
@@ -2658,31 +2791,6 @@ operator_rshift::wi_fold (irange &r, tree type,
   wi_cross_product (r, type, lh_lb, lh_ub, rh_lb, rh_ub);
 }
 
-
-class operator_cast: public range_operator
-{
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs,
-					  const irange &op1,
-					  const irange &op2,
-					  relation_kind) const;
-private:
-  bool truncating_cast_p (const irange &inner, const irange &outer) const;
-  bool inside_domain_p (const wide_int &min, const wide_int &max,
-			const irange &outer) const;
-  void fold_pair (irange &r, unsigned index, const irange &inner,
-			   const irange &outer) const;
-};
 
 // Add a partial equivalence between the LHS and op1 for casts.
 
@@ -3008,6 +3116,7 @@ class operator_bitwise_and : public range_operator
 {
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::lhs_op1_relation;
 public:
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
@@ -3026,6 +3135,8 @@ public:
 					  const irange &op1,
 					  const irange &op2,
 					  relation_kind) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, BIT_AND_EXPR, lh, rh); }
 private:
   void simple_op1_range_solver (irange &r, tree type,
 				const irange &lhs,
@@ -3524,6 +3635,8 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, BIT_IOR_EXPR, lh, rh); }
 } op_bitwise_or;
 
 void
@@ -3636,6 +3749,8 @@ public:
 					const irange &op1_range,
 					const irange &op2_range,
 					relation_kind rel) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, BIT_XOR_EXPR, lh, rh); }
 } op_bitwise_xor;
 
 void
@@ -3777,6 +3892,8 @@ public:
 			  const irange &lhs,
 			  const irange &op1,
 			  relation_trio) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, TRUNC_MOD_EXPR, lh, rh); }
 } op_trunc_mod;
 
 void
@@ -4007,16 +4124,6 @@ operator_bitwise_not::op1_range (irange &r, tree type,
 }
 
 
-class operator_cst : public range_operator
-{
-  using range_operator::fold_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
-} op_integer_cst;
-
 bool
 operator_cst::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
 			  const irange &lh,
@@ -4027,26 +4134,6 @@ operator_cst::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
   return true;
 }
 
-
-class operator_identity : public range_operator
-{
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::lhs_op1_relation;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs,
-					   const irange &op1,
-					   const irange &op2,
-					   relation_kind rel) const;
-};
 
 // Determine if there is a relationship between LHS and OP1.
 
@@ -4091,7 +4178,7 @@ public:
 			   const irange &op1,
 			   const irange &op2,
 			   relation_trio rel = TRIO_VARYING) const;
-};
+} op_unknown;
 
 bool
 operator_unknown::fold_range (irange &r, tree type,
@@ -4103,21 +4190,6 @@ operator_unknown::fold_range (irange &r, tree type,
   return true;
 }
 
-
-class operator_abs : public range_operator
-{
-  using range_operator::op1_range;
- public:
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio) const;
-} op_abs;
 
 void
 operator_abs::wi_fold (irange &r, tree type,
@@ -4270,21 +4342,6 @@ operator_absu::wi_fold (irange &r, tree type,
 }
 
 
-class operator_negate : public range_operator
-{
-  using range_operator::fold_range;
-  using range_operator::op1_range;
- public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-} op_negate;
-
 bool
 operator_negate::fold_range (irange &r, tree type,
 			     const irange &lh,
@@ -4355,6 +4412,7 @@ operator_addr_expr::op1_range (irange &r, tree type,
 
 class pointer_plus_operator : public range_operator
 {
+  using range_operator::op2_range;
 public:
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
@@ -4365,6 +4423,8 @@ public:
 			  const irange &lhs,
 			  const irange &op1,
 			  relation_trio = TRIO_VARYING) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, POINTER_PLUS_EXPR, lh, rh); }
 } op_pointer_plus;
 
 void
@@ -4436,7 +4496,7 @@ public:
   virtual void wi_fold (irange & r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
-};
+} op_ptr_min_max;
 
 void
 pointer_min_max_operator::wi_fold (irange &r, tree type,
@@ -4545,59 +4605,22 @@ pointer_or_operator::wi_fold (irange &r, tree type,
     r.set_varying (type);
 }
 
-// Return a pointer to the range_operator instance, if there is one
-// associated with tree_code CODE.
-
-range_operator *
-range_op_table::operator[] (enum tree_code code)
-{
-  gcc_checking_assert (code > 0 && code < MAX_TREE_CODES);
-  return m_range_tree[code];
-}
-
-// Add OP to the handler table for CODE.
-
-void
-range_op_table::set (enum tree_code code, range_operator &op)
-{
-  gcc_checking_assert (m_range_tree[code] == NULL);
-  m_range_tree[code] = &op;
-  gcc_checking_assert (op.m_code == ERROR_MARK || op.m_code == code);
-  op.m_code = code;
-}
-
-// Shared operators that require separate instantiations because they
-// do not share a common tree code.
-static operator_cast op_nop, op_convert;
-static operator_identity op_ssa, op_paren, op_obj_type;
-static operator_unknown op_realpart, op_imagpart;
-static pointer_min_max_operator op_ptr_min, op_ptr_max;
-static operator_div op_trunc_div;
-static operator_div op_floor_div;
-static operator_div op_round_div;
-static operator_div op_ceil_div;
-
-// Instantiate a range op table for integral operations.
-
-class integral_table : public range_op_table
-{
-public:
-  integral_table ();
-} integral_tree_table;
-
 integral_table::integral_table ()
 {
-  set (EQ_EXPR, op_equal);
-  set (NE_EXPR, op_not_equal);
-  set (LT_EXPR, op_lt);
-  set (LE_EXPR, op_le);
-  set (GT_EXPR, op_gt);
-  set (GE_EXPR, op_ge);
-  set (PLUS_EXPR, op_plus);
-  set (MINUS_EXPR, op_minus);
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
-  set (MULT_EXPR, op_mult);
+  set (BIT_AND_EXPR, op_bitwise_and);
+  set (BIT_IOR_EXPR, op_bitwise_or);
+  set (BIT_XOR_EXPR, op_bitwise_xor);
+  set (BIT_NOT_EXPR, op_bitwise_not);
+  set (ADDR_EXPR, op_addr);
+}
+
+// Initialize any integral operators to the primary table
+
+void
+range_op_table::initialize_integral_ops ()
+{
   set (TRUNC_DIV_EXPR, op_trunc_div);
   set (FLOOR_DIV_EXPR, op_floor_div);
   set (ROUND_DIV_EXPR, op_round_div);
@@ -4605,262 +4628,35 @@ integral_table::integral_table ()
   set (EXACT_DIV_EXPR, op_exact_div);
   set (LSHIFT_EXPR, op_lshift);
   set (RSHIFT_EXPR, op_rshift);
-  set (NOP_EXPR, op_nop);
-  set (CONVERT_EXPR, op_convert);
   set (TRUTH_AND_EXPR, op_logical_and);
-  set (BIT_AND_EXPR, op_bitwise_and);
   set (TRUTH_OR_EXPR, op_logical_or);
-  set (BIT_IOR_EXPR, op_bitwise_or);
-  set (BIT_XOR_EXPR, op_bitwise_xor);
   set (TRUNC_MOD_EXPR, op_trunc_mod);
   set (TRUTH_NOT_EXPR, op_logical_not);
-  set (BIT_NOT_EXPR, op_bitwise_not);
-  set (INTEGER_CST, op_integer_cst);
-  set (SSA_NAME, op_ssa);
-  set (PAREN_EXPR, op_paren);
-  set (OBJ_TYPE_REF, op_obj_type);
-  set (IMAGPART_EXPR, op_imagpart);
-  set (REALPART_EXPR, op_realpart);
-  set (POINTER_DIFF_EXPR, op_pointer_diff);
-  set (ABS_EXPR, op_abs);
+  set (IMAGPART_EXPR, op_unknown);
+  set (REALPART_EXPR, op_unknown);
   set (ABSU_EXPR, op_absu);
-  set (NEGATE_EXPR, op_negate);
-  set (ADDR_EXPR, op_addr);
 }
-
-// Instantiate a range op table for pointer operations.
-
-class pointer_table : public range_op_table
-{
-public:
-  pointer_table ();
-} pointer_tree_table;
 
 pointer_table::pointer_table ()
 {
   set (BIT_AND_EXPR, op_pointer_and);
   set (BIT_IOR_EXPR, op_pointer_or);
-  set (MIN_EXPR, op_ptr_min);
-  set (MAX_EXPR, op_ptr_max);
-  set (POINTER_PLUS_EXPR, op_pointer_plus);
+  set (MIN_EXPR, op_ptr_min_max);
+  set (MAX_EXPR, op_ptr_min_max);
 
-  set (EQ_EXPR, op_equal);
-  set (NE_EXPR, op_not_equal);
-  set (LT_EXPR, op_lt);
-  set (LE_EXPR, op_le);
-  set (GT_EXPR, op_gt);
-  set (GE_EXPR, op_ge);
-  set (SSA_NAME, op_ssa);
-  set (INTEGER_CST, op_integer_cst);
   set (ADDR_EXPR, op_addr);
-  set (NOP_EXPR, op_nop);
-  set (CONVERT_EXPR, op_convert);
 
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (BIT_XOR_EXPR, op_bitwise_xor);
 }
 
-// The tables are hidden and accessed via a simple extern function.
-
-static inline range_operator *
-get_handler (enum tree_code code, tree type)
-{
-  // First check if there is a pointer specialization.
-  if (POINTER_TYPE_P (type))
-    return pointer_tree_table[code];
-  if (INTEGRAL_TYPE_P (type))
-    return integral_tree_table[code];
-  return NULL;
-}
-
-// Return the floating point operator for CODE or NULL if none available.
-
-static inline range_operator_float *
-get_float_handler (enum tree_code code, tree)
-{
-  return (*floating_tree_table)[code];
-}
+// Initialize any pointer operators to the primary table
 
 void
-range_op_handler::set_op_handler (tree_code code, tree type)
+range_op_table::initialize_pointer_ops ()
 {
-  if (irange::supports_p (type))
-    {
-      m_float = NULL;
-      m_int = get_handler (code, type);
-      m_valid = m_int != NULL;
-    }
-  else if (frange::supports_p (type))
-    {
-      m_int = NULL;
-      m_float = get_float_handler (code, type);
-      m_valid = m_float != NULL;
-    }
-  else
-    {
-      m_int = NULL;
-      m_float = NULL;
-      m_valid = false;
-    }
-}
-
-range_op_handler::range_op_handler ()
-{
-  m_int = NULL;
-  m_float = NULL;
-  m_valid = false;
-}
-
-range_op_handler::range_op_handler (tree_code code, tree type)
-{
-  set_op_handler (code, type);
-}
-
-
-bool
-range_op_handler::fold_range (vrange &r, tree type,
-			      const vrange &lh,
-			      const vrange &rh,
-			      relation_trio rel) const
-{
-  gcc_checking_assert (m_valid);
-  if (m_int)
-    return m_int->fold_range (as_a <irange> (r), type,
-			   as_a <irange> (lh),
-			   as_a <irange> (rh), rel);
-
-  if (is_a <irange> (r))
-    {
-      if (is_a <irange> (rh))
-	return m_float->fold_range (as_a <irange> (r), type,
-				    as_a <frange> (lh),
-				    as_a <irange> (rh), rel);
-      else
-	return m_float->fold_range (as_a <irange> (r), type,
-				    as_a <frange> (lh),
-				    as_a <frange> (rh), rel);
-    }
-  return m_float->fold_range (as_a <frange> (r), type,
-			      as_a <frange> (lh),
-			      as_a <frange> (rh), rel);
-}
-
-bool
-range_op_handler::op1_range (vrange &r, tree type,
-			     const vrange &lhs,
-			     const vrange &op2,
-			     relation_trio rel) const
-{
-  gcc_checking_assert (m_valid);
-
-  if (lhs.undefined_p ())
-    return false;
-  if (m_int)
-    return m_int->op1_range (as_a <irange> (r), type,
-			     as_a <irange> (lhs),
-			     as_a <irange> (op2), rel);
-
-  if (is_a <irange> (lhs))
-    return m_float->op1_range (as_a <frange> (r), type,
-			       as_a <irange> (lhs),
-			       as_a <frange> (op2), rel);
-  return m_float->op1_range (as_a <frange> (r), type,
-			     as_a <frange> (lhs),
-			     as_a <frange> (op2), rel);
-}
-
-bool
-range_op_handler::op2_range (vrange &r, tree type,
-			     const vrange &lhs,
-			     const vrange &op1,
-			     relation_trio rel) const
-{
-  gcc_checking_assert (m_valid);
-  if (lhs.undefined_p ())
-    return false;
-  if (m_int)
-    return m_int->op2_range (as_a <irange> (r), type,
-			     as_a <irange> (lhs),
-			     as_a <irange> (op1), rel);
-
-  if (is_a <irange> (lhs))
-    return m_float->op2_range (as_a <frange> (r), type,
-			       as_a <irange> (lhs),
-			       as_a <frange> (op1), rel);
-  return m_float->op2_range (as_a <frange> (r), type,
-			     as_a <frange> (lhs),
-			     as_a <frange> (op1), rel);
-}
-
-relation_kind
-range_op_handler::lhs_op1_relation (const vrange &lhs,
-				    const vrange &op1,
-				    const vrange &op2,
-				    relation_kind rel) const
-{
-  gcc_checking_assert (m_valid);
-  if (m_int)
-    return m_int->lhs_op1_relation (as_a <irange> (lhs),
-				    as_a <irange> (op1),
-				    as_a <irange> (op2), rel);
-
-  if (is_a <irange> (lhs))
-    return m_float->lhs_op1_relation (as_a <irange> (lhs),
-				 as_a <frange> (op1),
-				 as_a <frange> (op2), rel);
-  return m_float->lhs_op1_relation (as_a <frange> (lhs),
-			       as_a <frange> (op1),
-			       as_a <frange> (op2), rel);
-}
-
-relation_kind
-range_op_handler::lhs_op2_relation (const vrange &lhs,
-				    const vrange &op1,
-				    const vrange &op2,
-				    relation_kind rel) const
-{
-  gcc_checking_assert (m_valid);
-  if (m_int)
-    return m_int->lhs_op2_relation (as_a <irange> (lhs),
-				    as_a <irange> (op1),
-				    as_a <irange> (op2), rel);
-
-  if (is_a <irange> (lhs))
-    return m_float->lhs_op2_relation (as_a <irange> (lhs),
-				      as_a <frange> (op1),
-				      as_a <frange> (op2), rel);
-  return m_float->lhs_op2_relation (as_a <frange> (lhs),
-				      as_a <frange> (op1),
-				      as_a <frange> (op2), rel);
-}
-
-relation_kind
-range_op_handler::op1_op2_relation (const vrange &lhs) const
-{
-  gcc_checking_assert (m_valid);
-  if (m_int)
-    return m_int->op1_op2_relation (as_a <irange> (lhs));
-  if (is_a <irange> (lhs))
-    return m_float->op1_op2_relation (as_a <irange> (lhs));
-  return m_float->op1_op2_relation (as_a <frange> (lhs));
-}
-
-// Cast the range in R to TYPE.
-
-bool
-range_cast (vrange &r, tree type)
-{
-  Value_Range tmp (r);
-  Value_Range varying (type);
-  varying.set_varying (type);
-  range_op_handler op (CONVERT_EXPR, type);
-  // Call op_convert, if it fails, the result is varying.
-  if (!op || !op.fold_range (r, type, tmp, varying))
-    {
-      r.set_varying (type);
-      return false;
-    }
-  return true;
+  set (POINTER_PLUS_EXPR, op_pointer_plus);
+  set (POINTER_DIFF_EXPR, op_pointer_diff);
 }
 
 #if CHECKING_P

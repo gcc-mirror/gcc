@@ -23,4 +23,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler "faddp\[ \t\]+\[dD\]\[0-9\]+, v\[0-9\].2d+\n" } } */
+/* { dg-final { scan-assembler "faddp\[ \t\]+\[dD\]\[0-9\]+, v\[0-9\]+.2d+\n" } } */

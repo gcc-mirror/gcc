@@ -19,10 +19,10 @@ bar ()
 {
   S s;
   if consteval {			// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
-    constexpr auto fn1 = foo;		// { dg-error "immediate evaluation returns address of immediate function" }
-    constexpr auto fn2 = &foo;		// { dg-error "immediate evaluation returns address of immediate function" }
-    constexpr auto fn3 = &S::foo;	// { dg-error "immediate evaluation returns address of immediate function" }
-    constexpr auto fn4 = &S::bar;	// { dg-error "immediate evaluation returns address of immediate function" }
+    constexpr auto fn1 = foo;		// { dg-error "constant evaluation returns address of immediate function" }
+    constexpr auto fn2 = &foo;		// { dg-error "constant evaluation returns address of immediate function" }
+    constexpr auto fn3 = &S::foo;	// { dg-error "constant evaluation returns address of immediate function" }
+    constexpr auto fn4 = &S::bar;	// { dg-error "constant evaluation returns address of immediate function" }
     constexpr auto fn5 = baz ();	// { dg-error "immediate evaluation returns address of immediate function" }
     constexpr auto fn6 = qux ();	// { dg-error "immediate evaluation returns address of immediate function" }
     constexpr auto fn7 = corge ();	// { dg-error "immediate evaluation returns address of immediate function" }

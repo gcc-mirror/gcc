@@ -945,10 +945,10 @@ compare_type_sizes (tree type1, tree type2)
   /* Be conservative for arrays and vectors.  We want to support partial
      overlap on int[3] and int[3] as tested in gcc.dg/torture/alias-2.c.  */
   while (TREE_CODE (type1) == ARRAY_TYPE
-	 || TREE_CODE (type1) == VECTOR_TYPE)
+	 || VECTOR_TYPE_P (type1))
     type1 = TREE_TYPE (type1);
   while (TREE_CODE (type2) == ARRAY_TYPE
-	 || TREE_CODE (type2) == VECTOR_TYPE)
+	 || VECTOR_TYPE_P (type2))
     type2 = TREE_TYPE (type2);
   return compare_sizes (TYPE_SIZE (type1), TYPE_SIZE (type2));
 }

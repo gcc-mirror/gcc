@@ -113,7 +113,7 @@ create_canonical_iv (class loop *loop, edge exit, tree niter,
 		       niter,
 		       build_int_cst (type, 1));
   incr_at = gsi_last_bb (in->src);
-  create_iv (niter,
+  create_iv (niter, PLUS_EXPR,
 	     build_int_cst (type, -1),
 	     NULL_TREE, loop,
 	     &incr_at, false, var_before, &var);

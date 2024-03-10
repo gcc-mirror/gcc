@@ -3901,7 +3901,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	double _M_p;
 
 	double _M_q;
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
 	double _M_d1, _M_d2, _M_s1, _M_s2, _M_c,
 	       _M_a1, _M_a123, _M_s, _M_lf, _M_lp1p;
 #endif
@@ -4015,7 +4015,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
         operator==(const binomial_distribution& __d1,
 		   const binomial_distribution& __d2)
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
 	{ return __d1._M_param == __d2._M_param && __d1._M_nd == __d2._M_nd; }
 #else
         { return __d1._M_param == __d2._M_param; }
@@ -4068,7 +4068,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       param_type _M_param;
 
-      // NB: Unused when _GLIBCXX_USE_C99_MATH_TR1 is undefined.
+      // NB: Unused when _GLIBCXX_USE_C99_MATH_FUNCS is undefined.
       std::normal_distribution<double> _M_nd;
     };
 
@@ -4595,7 +4595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	double _M_mean;
 
 	double _M_lm_thr;
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
 	double _M_lfm, _M_sm, _M_d, _M_scx, _M_1cx, _M_c2b, _M_cb;
 #endif
       };
@@ -4700,7 +4700,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend bool
       operator==(const poisson_distribution& __d1,
 		 const poisson_distribution& __d2)
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
       { return __d1._M_param == __d2._M_param && __d1._M_nd == __d2._M_nd; }
 #else
       { return __d1._M_param == __d2._M_param; }
@@ -4746,7 +4746,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       param_type _M_param;
 
-      // NB: Unused when _GLIBCXX_USE_C99_MATH_TR1 is undefined.
+      // NB: Unused when _GLIBCXX_USE_C99_MATH_FUNCS is undefined.
       std::normal_distribution<double> _M_nd;
     };
 

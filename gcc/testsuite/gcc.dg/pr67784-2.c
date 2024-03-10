@@ -7,7 +7,7 @@ int T;
 void
 fn1 (void)
 {
-  for (typedef int T;;) /* { dg-error "declaration of non-variable" } */
+  for (typedef int T;;)
     if (1)
       ;
   T *x; /* { dg-error "undeclared" } */
@@ -16,7 +16,7 @@ fn1 (void)
 void
 fn2 (void)
 {
-  for (typedef int T;;) /* { dg-error "declaration of non-variable" } */
+  for (typedef int T;;)
     if (1)
       T = 1; /* { dg-error "expected expression" } */
   T *x; /* { dg-error "undeclared" } */
@@ -25,7 +25,7 @@ fn2 (void)
 void
 fn3 (void)
 {
-  for (typedef int T;;) /* { dg-error "declaration of non-variable" } */
+  for (typedef int T;;)
     if (1)
       {
       }
@@ -35,7 +35,7 @@ fn3 (void)
 void
 fn4 (void)
 {
-  for (typedef int T;;) /* { dg-error "declaration of non-variable" } */
+  for (typedef int T;;)
     if (1)
 L:
       ;
@@ -45,7 +45,7 @@ L:
 void
 fn5 (void)
 {
-  for (typedef int T;;) /* { dg-error "declaration of non-variable" } */
+  for (typedef int T;;)
     if (1)
       ;
     else

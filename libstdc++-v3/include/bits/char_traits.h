@@ -762,10 +762,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef char16_t          char_type;
 #ifdef __UINT_LEAST16_TYPE__
       typedef __UINT_LEAST16_TYPE__	    int_type;
-#elif defined _GLIBCXX_USE_C99_STDINT_TR1
-      typedef uint_least16_t    int_type;
 #else
-      typedef make_unsigned<char16_t>::type int_type;
+      typedef uint_least16_t    int_type;
 #endif
 #if _GLIBCXX_HOSTED
       typedef streamoff         off_type;
@@ -891,10 +889,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef char32_t          char_type;
 #ifdef __UINT_LEAST32_TYPE__
       typedef __UINT_LEAST32_TYPE__	    int_type;
-#elif defined _GLIBCXX_USE_C99_STDINT_TR1
-      typedef uint_least32_t    int_type;
 #else
-      typedef make_unsigned<char32_t>::type int_type;
+      typedef uint_least32_t    int_type;
 #endif
 #if _GLIBCXX_HOSTED
       typedef streamoff         off_type;

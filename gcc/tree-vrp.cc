@@ -994,11 +994,15 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
   set_all_edges_as_executable (fun);
   gimple_ranger *ranger = enable_ranger (fun, false);
   rvrp_folder folder (ranger);
+  phi_analysis_initialize (ranger->const_query ());
   folder.substitute_and_fold ();
   // Remove tagged builtin-unreachable and maybe update globals.
   folder.m_unreachable.remove_and_update_globals (final_p);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    ranger->dump (dump_file);
+    {
+      phi_analysis ().dump (dump_file);
+      ranger->dump (dump_file);
+    }
 
   if ((warn_array_bounds || warn_strict_flex_arrays) && warn_array_bounds_p)
     {
@@ -1020,6 +1024,7 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
       array_checker.check ();
     }
 
+  phi_analysis_finalize ();
   disable_ranger (fun);
   scev_finalize ();
   loop_optimizer_finalize ();

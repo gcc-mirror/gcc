@@ -1,4 +1,4 @@
-# Make-maintainer.in build support tools for GNU M2.
+# Make-maintainer.in subsidiary -*- makefile -*- build support for GNU M2 tools.
 
 # Copyright (C) 2022-2023 Free Software Foundation, Inc.
 

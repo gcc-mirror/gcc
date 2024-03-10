@@ -251,6 +251,9 @@ public:
      and known (rather than -1).  */
   poly_int64 width;
 
+  /* The address space that the memory reference uses.  */
+  unsigned char addrspace;
+
   union
     {
       /* A bitmask as wide as the number of bytes in the word that
@@ -1524,6 +1527,7 @@ record_store (rtx body, bb_info_t bb_info)
   ptr = active_local_stores;
   last = NULL;
   redundant_reason = NULL;
+  unsigned char addrspace = MEM_ADDR_SPACE (mem);
   mem = canon_rtx (mem);
 
   if (group_id < 0)
@@ -1548,7 +1552,9 @@ record_store (rtx body, bb_info_t bb_info)
       while (!s_info->is_set)
 	s_info = s_info->next;
 
-      if (s_info->group_id == group_id && s_info->cse_base == base)
+      if (s_info->group_id == group_id
+	  && s_info->cse_base == base
+	  && s_info->addrspace == addrspace)
 	{
 	  HOST_WIDE_INT i;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1688,6 +1694,7 @@ record_store (rtx body, bb_info_t bb_info)
   store_info->rhs = rhs;
   store_info->const_rhs = const_rhs;
   store_info->redundant_reason = redundant_reason;
+  store_info->addrspace = addrspace;
 
   /* If this is a clobber, we return 0.  We will only be able to
      delete this insn if there is only one store USED store, but we

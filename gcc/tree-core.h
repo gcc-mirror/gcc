@@ -572,7 +572,8 @@ enum omp_clause_defaultmap_kind {
   OMP_CLAUSE_DEFAULTMAP_NONE = 6 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
   OMP_CLAUSE_DEFAULTMAP_DEFAULT
     = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
-  OMP_CLAUSE_DEFAULTMAP_MASK = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1)
+  OMP_CLAUSE_DEFAULTMAP_PRESENT = 8 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_MASK = 15 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1)
 };
 
 enum omp_clause_bind_kind {
@@ -1680,18 +1681,9 @@ struct GTY(()) tree_type_common {
   tree attributes;
   unsigned int uid;
 
-  unsigned int precision : 10;
-  unsigned no_force_blk_flag : 1;
-  unsigned needs_constructing_flag : 1;
-  unsigned transparent_aggr_flag : 1;
-  unsigned restrict_flag : 1;
-  unsigned contains_placeholder_bits : 2;
+  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
 
-  ENUM_BITFIELD(machine_mode) mode : 8;
-
-  /* TYPE_STRING_FLAG for INTEGER_TYPE and ARRAY_TYPE.
-     TYPE_CXX_ODR_P for RECORD_TYPE and UNION_TYPE.  */
-  unsigned string_flag : 1;
+  unsigned int precision : 16;
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
   unsigned lang_flag_2 : 1;
@@ -1707,12 +1699,22 @@ struct GTY(()) tree_type_common {
      so we need to store the value 32 (not 31, as we need the zero
      as well), hence six bits.  */
   unsigned align : 6;
+  /* TYPE_STRING_FLAG for INTEGER_TYPE and ARRAY_TYPE.
+     TYPE_CXX_ODR_P for RECORD_TYPE and UNION_TYPE.  */
+  unsigned string_flag : 1;
+  unsigned no_force_blk_flag : 1;
+
   unsigned warn_if_not_align : 6;
+  unsigned needs_constructing_flag : 1;
+  unsigned transparent_aggr_flag : 1;
+
+  unsigned contains_placeholder_bits : 2;
+  unsigned restrict_flag : 1;
   unsigned typeless_storage : 1;
   unsigned empty_flag : 1;
   unsigned indivisible_p : 1;
   unsigned no_named_args_stdarg_p : 1;
-  unsigned spare : 15;
+  unsigned spare : 1;
 
   alias_set_type alias_set;
   tree pointer_to;
@@ -1770,7 +1772,7 @@ struct GTY(()) tree_decl_common {
   struct tree_decl_minimal common;
   tree size;
 
-  ENUM_BITFIELD(machine_mode) mode : 8;
+  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
 
   unsigned nonlocal_flag : 1;
   unsigned virtual_flag : 1;
@@ -1802,7 +1804,8 @@ struct GTY(()) tree_decl_common {
      In VAR_DECL, PARM_DECL and RESULT_DECL, this is
      DECL_HAS_VALUE_EXPR_P.  */
   unsigned decl_flag_2 : 1;
-  /* In FIELD_DECL, this is DECL_PADDING_P.  */
+  /* In FIELD_DECL, this is DECL_PADDING_P.
+     In VAR_DECL, this is DECL_MERGEABLE.  */
   unsigned decl_flag_3 : 1;
   /* Logically, these two would go in a theoretical base shared by var and
      parm decl. */
@@ -1828,7 +1831,7 @@ struct GTY(()) tree_decl_common {
   /* In FIELD_DECL, this is DECL_NOT_FLEXARRAY.  */
   unsigned int decl_not_flexarray : 1;
 
-  /* 13 bits unused.  */
+  /* 5 bits unused.  */
 
   /* UID for points-to sets, stable over copying from inlining.  */
   unsigned int pt_uid;

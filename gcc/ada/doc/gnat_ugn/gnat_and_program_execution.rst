@@ -3530,12 +3530,12 @@ leak memory even though it does not perform explicit deallocation:
            for A'Storage_Pool use X;
            v : A;
         begin
-           for I in  1 .. 50 loop
+           for I in 1 .. 50 loop
               v := new Integer;
            end loop;
         end Internal;
      begin
-        for I in  1 .. 100 loop
+        for I in 1 .. 100 loop
            Internal;
         end loop;
      end Pooloc1;

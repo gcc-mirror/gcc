@@ -150,7 +150,7 @@ END checkOpenErrno ;
 PROCEDURE newCid (fname: ARRAY OF CHAR;
                   f: FlagSet;
                   VAR res: OpenResults;
-                  toRead: BOOLEAN;
+                  toRead, toAppend: BOOLEAN;
                   whichreset: ResetProc) : ChanId ;
 VAR
    c   : RTio.ChanId ;
@@ -158,19 +158,22 @@ VAR
    e   : INTEGER ;
    p   : DeviceTablePtr ;
 BEGIN
-   IF toRead
+   IF toAppend
    THEN
-      file := FIO.OpenToRead(fname)
+      file := FIO.OpenForRandom (fname, NOT toRead, NOT FIO.Exists (fname))
+   ELSIF toRead
+   THEN
+      file := FIO.OpenToRead (fname)
    ELSE
-      file := FIO.OpenToWrite(fname)
+      file := FIO.OpenToWrite (fname)
    END ;
-   checkOpenErrno(file, e, res) ;
+   checkOpenErrno (file, e, res) ;
 
-   IF FIO.IsNoError(file)
+   IF FIO.IsNoError (file)
    THEN
-      MakeChan(did, c) ;
-      RTio.SetFile(c, file) ;
-      p := DeviceTablePtrValue(c, did) ;
+      MakeChan (did, c) ;
+      RTio.SetFile (c, file) ;
+      p := DeviceTablePtrValue (c, did) ;
       WITH p^ DO
          flags := f ;
          errNum := e ;
@@ -189,7 +192,7 @@ BEGIN
       END ;
       RETURN( c )
    ELSE
-      RETURN( IOChan.InvalidChan() )
+      RETURN( IOChan.InvalidChan () )
    END
 END newCid ;
 
@@ -213,7 +216,7 @@ BEGIN
    THEN
       INCL(flags, ChanConsts.textFlag)
    END ;
-   cid := newCid(name, flags, res, FALSE, resetWrite)
+   cid := newCid(name, flags, res, FALSE, FALSE, resetWrite)
 END OpenWrite ;
 
 
@@ -235,7 +238,7 @@ BEGIN
    THEN
       INCL(flags, ChanConsts.textFlag)
    END ;
-   cid := newCid(name, flags, res, TRUE, resetRead)
+   cid := newCid(name, flags, res, TRUE, FALSE, resetRead)
 END OpenRead ;
 
 
@@ -250,7 +253,7 @@ END OpenRead ;
                 length of the file.  If a channel cannot be opened
                 as required, the value of res indicates the reason,
                 and cid identifies the invalid channel.
-  *)
+*)
 
 PROCEDURE OpenAppend (VAR cid: ChanId; name: ARRAY OF CHAR;
                       flags: FlagSet; VAR res: OpenResults) ;
@@ -258,13 +261,13 @@ BEGIN
    flags := flags + ChanConsts.write + ChanConsts.old ;
    IF NOT (ChanConsts.rawFlag IN flags)
    THEN
-      INCL(flags, ChanConsts.textFlag)
+      INCL (flags, ChanConsts.textFlag)
    END ;
-   cid := newCid(name, flags, res, FALSE, resetAppend) ;
+   cid := newCid (name, flags, res, FALSE, TRUE, resetAppend) ;
    IF IsSeqFile(cid)
    THEN
-      FIO.SetPositionFromEnd(RTio.GetFile(cid), 0) ;
-      checkErrno(dev, RTio.GetDevicePtr(cid))
+      FIO.SetPositionFromEnd (RTio.GetFile (cid), 0) ;
+      checkErrno (dev, RTio.GetDevicePtr (cid))
    END
 END OpenAppend ;
 
@@ -287,7 +290,7 @@ END resetAppend ;
 
 
 (*
-   resetRead - 
+   resetRead -
 *)
 
 PROCEDURE resetRead (d: DeviceTablePtr) ;
@@ -297,7 +300,7 @@ END resetRead ;
 
 
 (*
-   resetWrite - 
+   resetWrite -
 *)
 
 PROCEDURE resetWrite (d: DeviceTablePtr) ;
@@ -392,7 +395,7 @@ END Rewrite ;
 
 
 (*
-   handlefree - 
+   handlefree -
 *)
 
 PROCEDURE handlefree (d: DeviceTablePtr) ;
@@ -434,7 +437,7 @@ END Close ;
 
 
 (*
-   Init - 
+   Init -
 *)
 
 PROCEDURE Init ;

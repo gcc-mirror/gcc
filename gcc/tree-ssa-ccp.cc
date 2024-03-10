@@ -289,7 +289,7 @@ get_default_value (tree var)
 	 consider it VARYING.  */
       if (!virtual_operand_p (var)
 	  && SSA_NAME_VAR (var)
-	  && TREE_CODE (SSA_NAME_VAR (var)) == VAR_DECL)
+	  && VAR_P (SSA_NAME_VAR (var)))
 	val.lattice_val = UNDEFINED;
       else
 	{
@@ -1552,6 +1552,8 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 		  *mask = wi::lrotate (r1mask, shift, width);
 		  *val = wi::lrotate (r1val, shift, width);
 		}
+	      *mask = wi::ext (*mask, width, sgn);
+	      *val = wi::ext (*val, width, sgn);
 	    }
 	}
       else if (wi::ltu_p (r2val | r2mask, width)
@@ -1593,8 +1595,8 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	      /* Accumulate the result.  */
 	      res_mask |= tmp_mask | (res_val ^ tmp_val);
 	    }
-	  *val = wi::bit_and_not (res_val, res_mask);
-	  *mask = res_mask;
+	  *val = wi::ext (wi::bit_and_not (res_val, res_mask), width, sgn);
+	  *mask = wi::ext (res_mask, width, sgn);
 	}
       break;
 
@@ -2399,11 +2401,12 @@ evaluate_stmt (gimple *stmt)
 		  wide_int wval = wi::to_wide (val.value);
 		  val.value
 		    = wide_int_to_tree (type,
-					wide_int::from (wval, prec,
-							UNSIGNED).bswap ());
+					wi::bswap (wide_int::from (wval, prec,
+								   UNSIGNED)));
 		  val.mask
-		    = widest_int::from (wide_int::from (val.mask, prec,
-							UNSIGNED).bswap (),
+		    = widest_int::from (wi::bswap (wide_int::from (val.mask,
+								   prec,
+								   UNSIGNED)),
 					UNSIGNED);
 		  if (wi::sext (val.mask, prec) != -1)
 		    break;

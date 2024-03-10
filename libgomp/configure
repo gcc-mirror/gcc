@@ -656,6 +656,7 @@ tmake_file
 XLDFLAGS
 XCFLAGS
 config_path
+FLOCK
 CPU_COUNT
 LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_FALSE
 LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE
@@ -678,6 +679,7 @@ libtool_VERSION
 ac_ct_FC
 FCFLAGS
 FC
+CXX
 MAINT
 MAINTAINER_MODE_FALSE
 MAINTAINER_MODE_TRUE
@@ -703,7 +705,6 @@ SED
 LIBTOOL
 BUILD_INFO_FALSE
 BUILD_INFO_TRUE
-PERL
 RANLIB
 AR
 am__fastdepCC_FALSE
@@ -4773,47 +4774,6 @@ esac
 else
   RANLIB="$ac_cv_prog_RANLIB"
 fi
-
-# Extract the first word of "perl", so it can be a program name with args.
-set dummy perl; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_PERL+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $PERL in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PERL="$PERL" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_PERL="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_path_PERL" && ac_cv_path_PERL="perl-not-found-in-path-error"
-  ;;
-esac
-fi
-PERL=$ac_cv_path_PERL
-if test -n "$PERL"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PERL" >&5
-$as_echo "$PERL" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${MAKE-make} sets \$(MAKE)" >&5
 $as_echo_n "checking whether ${MAKE-make} sets \$(MAKE)... " >&6; }
@@ -11418,7 +11378,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11421 "configure"
+#line 11381 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11524,7 +11484,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11527 "configure"
+#line 11487 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11810,11 +11770,22 @@ fi
 
 
 
+# We optionally test libgomp C++ support, and for that want to use the proper
+# C++ driver, 'g++' (or 'xg++' for build-tree testing).  Given that build of
+# target libstdc++-v3 depends on target libgomp (see '../Makefile.def'), we
+# cannot make build of target libgomp depend on target libstdc++-v3: circular
+# dependency.  We thus cannot instantiate 'AC_PROG_CXX' here: we'd get
+# '-funconfigured-libstdc++-v3' (see '../configure.ac').  Therefore, just
+# capture 'CXX', and we'll fix this up at 'make check' time (see
+# 'testsuite/lib/libgomp.exp:libgomp_init').
+
+
 # Create a spec file, so that compile/link tests don't fail
 test -f libgfortran.spec || touch libgfortran.spec
 FCFLAGS="$FCFLAGS -L."
 
-# We need gfortran to compile parts of the library
+# We need 'gfortran' to compile parts of the library, and test libgomp Fortran
+# support.
 # We can't use AC_PROG_FC because it expects a fully working gfortran.
 #AC_PROG_FC(gfortran)
 case `echo $GFORTRAN` in
@@ -16486,6 +16457,91 @@ $as_echo "unable to detect (assuming 1)" >&6; }
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for flock implementation" >&5
+$as_echo "$as_me: checking for flock implementation" >&6;}
+for ac_prog in flock
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_FLOCK+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$FLOCK"; then
+  ac_cv_prog_FLOCK="$FLOCK" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_FLOCK="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+FLOCK=$ac_cv_prog_FLOCK
+if test -n "$FLOCK"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $FLOCK" >&5
+$as_echo "$FLOCK" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$FLOCK" && break
+done
+
+# Fallback if 'perl' is available.
+if test -z "$FLOCK"; then
+  # Extract the first word of "perl", so it can be a program name with args.
+set dummy perl; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_FLOCK+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$FLOCK"; then
+  ac_cv_prog_FLOCK="$FLOCK" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_FLOCK="$srcdir/testsuite/flock"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+FLOCK=$ac_cv_prog_FLOCK
+if test -n "$FLOCK"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $FLOCK" >&5
+$as_echo "$FLOCK" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+
 # Get target configury.
 . ${srcdir}/configure.tgt
 CFLAGS="$save_CFLAGS $XCFLAGS"
@@ -16732,9 +16788,9 @@ fi
 # which will force linkage against -lpthread (or equivalent for the system).
 # That's not 100% ideal, but about the best we can do easily.
 if test $enable_shared = yes; then
-  link_gomp="-lgomp %{static: $LIBS}"
+  link_gomp="-lgomp %{static: $LIBS${DL_LIBS:+ $DL_LIBS}}"
 else
-  link_gomp="-lgomp $LIBS"
+  link_gomp="-lgomp $LIBS${DL_LIBS:+ $DL_LIBS}"
 fi
 
 

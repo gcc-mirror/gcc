@@ -11,10 +11,11 @@
 /* { dg-options "-O0 -gbtf -dA" } */
 
 /* Struct type with 2 members (struct foo).  */
+/* { dg-final { scan-assembler-times " BTF_KIND_STRUCT 'foo'" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0x4000002\[\t \]+\[^\n\]*btt_info" 1 } } */
 /* Struct type with 1 member (anon struct).  */
+/* { dg-final { scan-assembler-times " BTF_KIND_STRUCT ''" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0x4000001\[\t \]+\[^\n\]*btt_info" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0\[\t \]+\[^\n\]*btt_name" 1 } } */
 
 struct foo
 {

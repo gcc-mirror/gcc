@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target int32plus } */
 
 struct a {
   unsigned c : 17;

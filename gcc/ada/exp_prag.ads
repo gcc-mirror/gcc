@@ -42,6 +42,10 @@ package Exp_Prag is
    --  Subp_Id's body. All generated code is added to list Stmts. If Stmts is
    --  No_List on entry, a new list is created.
 
+   procedure Expand_Pragma_Exceptional_Cases (Prag : Node_Id);
+   --  Given pragma Exceptional_Cases Prag, create the circuitry needed to
+   --  catch exceptions and evaluate consequence expressions.
+
    procedure Expand_Pragma_Initial_Condition
      (Pack_Id : Entity_Id;
       N       : Node_Id);

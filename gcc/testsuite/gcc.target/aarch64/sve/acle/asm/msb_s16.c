@@ -54,7 +54,7 @@ TEST_UNIFORM_ZX (msb_w0_s16_m_tied1, svint16_t, int16_t,
 		 z0 = svmsb_m (p0, z0, z1, x0))
 
 /*
-** msb_w0_s16_m_untied: { xfail *-*-* }
+** msb_w0_s16_m_untied:
 **	mov	(z[0-9]+\.h), w0
 **	movprfx	z0, z1
 **	msb	z0\.h, p0/m, z2\.h, \1
@@ -75,7 +75,7 @@ TEST_UNIFORM_Z (msb_11_s16_m_tied1, svint16_t,
 		z0 = svmsb_m (p0, z0, z1, 11))
 
 /*
-** msb_11_s16_m_untied: { xfail *-*-* }
+** msb_11_s16_m_untied:
 **	mov	(z[0-9]+\.h), #11
 **	movprfx	z0, z1
 **	msb	z0\.h, p0/m, z2\.h, \1

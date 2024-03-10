@@ -393,7 +393,7 @@ extern void set_reg_attrs_from_value (rtx, rtx);
 extern void set_reg_attrs_for_parm (rtx, rtx);
 extern void set_reg_attrs_for_decl_rtl (tree t, rtx x);
 extern void adjust_reg_mode (rtx, machine_mode);
-extern int mem_expr_equal_p (const_tree, const_tree);
+extern bool mem_expr_equal_p (const_tree, const_tree);
 extern rtx gen_int_shift_amount (machine_mode, poly_int64);
 
 extern bool need_atomic_barrier_p (enum memmodel, bool);

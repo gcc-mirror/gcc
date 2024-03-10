@@ -5,6 +5,7 @@
 /* FIXME: remove me after PR sanitizer/82501 is resolved.  */
 /* { dg-additional-options "-fno-section-anchors" } */
 /* { dg-additional-options "-msdata=none" { target { powerpc*-*-* } } } */
+/* { dg-additional-options "-msmall-data-limit=0" { target { riscv*-*-* } } } */
 
 volatile int v;
 

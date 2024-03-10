@@ -1887,7 +1887,7 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 {
   machine_mode mode = TYPE_MODE (type);
 
-  if (TREE_CODE (type) == VECTOR_TYPE && !VECTOR_MODE_P (mode))
+  if (VECTOR_TYPE_P (type) && !VECTOR_MODE_P (mode))
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
       if ((size == 8 || size == 16 || size == 32 || size == 64)
@@ -1904,7 +1904,7 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 	  if (DECIMAL_FLOAT_MODE_P (innermode))
 	    return mode;
 
-	  if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
+	  if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (type)))
 	    mode = MIN_MODE_VECTOR_FLOAT;
 	  else
 	    mode = MIN_MODE_VECTOR_INT;
@@ -3412,7 +3412,7 @@ ix86_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
   /* To simplify the code below, represent vector types with a vector mode
      even if MMX/SSE are not active.  */
-  if (arg.type && TREE_CODE (arg.type) == VECTOR_TYPE)
+  if (arg.type && VECTOR_TYPE_P (arg.type))
     mode = type_natural_mode (arg.type, cum, false);
 
   if (TARGET_64BIT)
@@ -15954,6 +15954,17 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	       && REGNO (XEXP (op1, 0)) == FLAGS_REG
 	       && XEXP (op1, 1) == const0_rtx)
 	return CCCmode;
+      /* Similarly for *x86_cmc pattern.
+	 Match LTU of op0 (neg:QI (ltu:QI (reg:CCC FLAGS_REG) (const_int 0)))
+	 and op1 (geu:QI (reg:CCC FLAGS_REG) (const_int 0)).
+	 It is sufficient to test that the operand modes are CCCmode.  */
+      else if (code == LTU
+	       && GET_CODE (op0) == NEG
+	       && GET_CODE (XEXP (op0, 0)) == LTU
+	       && GET_MODE (XEXP (XEXP (op0, 0), 0)) == CCCmode
+	       && GET_CODE (op1) == GEU
+	       && GET_MODE (XEXP (op1, 0)) == CCCmode)
+	return CCCmode;
       else
 	return CCmode;
     case GTU:			/* CF=0 & ZF=0 */
@@ -15985,6 +15996,29 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Return TRUE or FALSE depending on whether the ptest instruction
+   INSN has source and destination with suitable matching CC modes.  */
+
+bool
+ix86_match_ptest_ccmode (rtx insn)
+{
+  rtx set, src;
+  machine_mode set_mode;
+
+  set = PATTERN (insn);
+  gcc_assert (GET_CODE (set) == SET);
+  src = SET_SRC (set);
+  gcc_assert (GET_CODE (src) == UNSPEC
+	      && XINT (src, 1) == UNSPEC_PTEST);
+
+  set_mode = GET_MODE (src);
+  if (set_mode != CCZmode
+      && set_mode != CCCmode
+      && set_mode != CCmode)
+    return false;
+  return GET_MODE (SET_DEST (set)) == set_mode;
 }
 
 /* Return the fixed registers used for condition codes.  */
@@ -17470,9 +17504,7 @@ ix86_data_alignment (tree type, unsigned int align, bool opt)
 	   || TYPE_MODE (type) == TCmode) && align < 128)
 	return 128;
     }
-  else if ((TREE_CODE (type) == RECORD_TYPE
-	    || TREE_CODE (type) == UNION_TYPE
-	    || TREE_CODE (type) == QUAL_UNION_TYPE)
+  else if (RECORD_OR_UNION_TYPE_P (type)
 	   && TYPE_FIELDS (type))
     {
       if (DECL_MODE (TYPE_FIELDS (type)) == DFmode && align < 64)
@@ -17480,7 +17512,7 @@ ix86_data_alignment (tree type, unsigned int align, bool opt)
       if (ALIGN_MODE_128 (DECL_MODE (TYPE_FIELDS (type))) && align < 128)
 	return 128;
     }
-  else if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == VECTOR_TYPE
+  else if (SCALAR_FLOAT_TYPE_P (type) || VECTOR_TYPE_P (type)
 	   || TREE_CODE (type) == INTEGER_TYPE)
     {
       if (TYPE_MODE (type) == DFmode && align < 64)
@@ -17596,9 +17628,7 @@ ix86_local_alignment (tree exp, machine_mode mode,
 	   || TYPE_MODE (type) == TCmode) && align < 128)
 	return 128;
     }
-  else if ((TREE_CODE (type) == RECORD_TYPE
-	    || TREE_CODE (type) == UNION_TYPE
-	    || TREE_CODE (type) == QUAL_UNION_TYPE)
+  else if (RECORD_OR_UNION_TYPE_P (type)
 	   && TYPE_FIELDS (type))
     {
       if (DECL_MODE (TYPE_FIELDS (type)) == DFmode && align < 64)
@@ -17606,7 +17636,7 @@ ix86_local_alignment (tree exp, machine_mode mode,
       if (ALIGN_MODE_128 (DECL_MODE (TYPE_FIELDS (type))) && align < 128)
 	return 128;
     }
-  else if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == VECTOR_TYPE
+  else if (SCALAR_FLOAT_TYPE_P (type) || VECTOR_TYPE_P (type)
 	   || TREE_CODE (type) == INTEGER_TYPE)
     {
 
@@ -17932,6 +17962,8 @@ ix86_masked_all_ones (unsigned HOST_WIDE_INT elems, tree arg_mask)
     return false;
 
   unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (arg_mask);
+  if (elems == HOST_BITS_PER_WIDE_INT)
+    return  mask == HOST_WIDE_INT_M1U;
   if ((mask | (HOST_WIDE_INT_M1U << elems)) != HOST_WIDE_INT_M1U)
     return false;
 
@@ -18411,7 +18443,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 bool
 ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
-  gimple *stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi), *g;
+  gimple_seq stmts = NULL;
   tree fndecl = gimple_call_fndecl (stmt);
   gcc_checking_assert (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_MD));
   int n_args = gimple_call_num_args (stmt);
@@ -18424,6 +18457,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   unsigned HOST_WIDE_INT count;
   bool is_vshift;
   unsigned HOST_WIDE_INT elems;
+  location_t loc;
 
   /* Don't fold when there's isa mismatch.  */
   if (!ix86_check_builtin_isa_match (fn_code, NULL, NULL))
@@ -18459,8 +18493,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  if (!expr_not_equal_to (arg0, wi::zero (prec)))
 	    return false;
 
-	  location_t loc = gimple_location (stmt);
-	  gimple *g = gimple_build_call (decl, 1, arg0);
+	  loc = gimple_location (stmt);
+	  g = gimple_build_call (decl, 1, arg0);
 	  gimple_set_location (g, loc);
 	  tree lhs = make_ssa_name (integer_type_node);
 	  gimple_call_set_lhs (g, lhs);
@@ -18482,8 +18516,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  arg0 = gimple_call_arg (stmt, 0);
 	  if (idx < TYPE_PRECISION (TREE_TYPE (arg0)))
 	    break;
-	  location_t loc = gimple_location (stmt);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
+	  loc = gimple_location (stmt);
+	  g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
@@ -18498,9 +18532,9 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg1 = gimple_call_arg (stmt, 1);
       if (integer_all_onesp (arg1) && gimple_call_lhs (stmt))
 	{
-	  location_t loc = gimple_location (stmt);
+	  loc = gimple_location (stmt);
 	  arg0 = gimple_call_arg (stmt, 0);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
+	  g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
@@ -18531,23 +18565,24 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg2 = gimple_call_arg (stmt, 2);
       if (gimple_call_lhs (stmt))
 	{
-	  location_t loc = gimple_location (stmt);
+	  loc = gimple_location (stmt);
 	  tree type = TREE_TYPE (arg2);
-	  gimple_seq stmts = NULL;
 	  if (VECTOR_FLOAT_TYPE_P (type))
 	    {
 	      tree itype = GET_MODE_INNER (TYPE_MODE (type)) == E_SFmode
 		? intSI_type_node : intDI_type_node;
 	      type = get_same_sized_vectype (itype, type);
-	      arg2 = gimple_build (&stmts, VIEW_CONVERT_EXPR, type, arg2);
 	    }
+	  else
+	    type = signed_type_for (type);
+	  arg2 = gimple_build (&stmts, VIEW_CONVERT_EXPR, type, arg2);
 	  tree zero_vec = build_zero_cst (type);
 	  tree cmp_type = truth_type_for (type);
 	  tree cmp = gimple_build (&stmts, LT_EXPR, cmp_type, arg2, zero_vec);
 	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
-					   VEC_COND_EXPR, cmp,
-					   arg1, arg0);
+	  g = gimple_build_assign (gimple_call_lhs (stmt),
+				   VEC_COND_EXPR, cmp,
+				   arg1, arg0);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	}
@@ -18583,17 +18618,16 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg1 = gimple_call_arg (stmt, 1);
       if (gimple_call_lhs (stmt))
 	{
-	  location_t loc = gimple_location (stmt);
+	  loc = gimple_location (stmt);
 	  tree type = TREE_TYPE (arg0);
 	  tree zero_vec = build_zero_cst (type);
 	  tree minus_one_vec = build_minus_one_cst (type);
 	  tree cmp_type = truth_type_for (type);
-	  gimple_seq stmts = NULL;
 	  tree cmp = gimple_build (&stmts, tcode, cmp_type, arg0, arg1);
 	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	  gimple* g = gimple_build_assign (gimple_call_lhs (stmt),
-					   VEC_COND_EXPR, cmp,
-					   minus_one_vec, zero_vec);
+	  g = gimple_build_assign (gimple_call_lhs (stmt),
+				   VEC_COND_EXPR, cmp,
+				   minus_one_vec, zero_vec);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	}
@@ -18798,8 +18832,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       if (count == 0)
 	{
 	  /* Just return the first argument for shift by 0.  */
-	  location_t loc = gimple_location (stmt);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
+	  loc = gimple_location (stmt);
+	  g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
@@ -18809,9 +18843,9 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	{
 	  /* For shift counts equal or greater than precision, except for
 	     arithmetic right shift the result is zero.  */
-	  location_t loc = gimple_location (stmt);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
-					   build_zero_cst (TREE_TYPE (arg0)));
+	  loc = gimple_location (stmt);
+	  g = gimple_build_assign (gimple_call_lhs (stmt),
+				   build_zero_cst (TREE_TYPE (arg0)));
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
@@ -18840,7 +18874,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	    return false;
 
 	  machine_mode imode = GET_MODE_INNER (TYPE_MODE (TREE_TYPE (arg0)));
-	  location_t loc = gimple_location (stmt);
+	  loc = gimple_location (stmt);
 	  tree itype = (imode == E_DFmode
 			? long_long_integer_type_node : integer_type_node);
 	  tree vtype = build_vector_type (itype, elems);
@@ -18871,15 +18905,64 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
 	  tree perm_mask = elts.build ();
 	  arg1 = gimple_call_arg (stmt, 1);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
-					   VEC_PERM_EXPR,
-					   arg0, arg1, perm_mask);
+	  g = gimple_build_assign (gimple_call_lhs (stmt),
+				   VEC_PERM_EXPR,
+				   arg0, arg1, perm_mask);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
 	}
       // Do not error yet, the constant could be propagated later?
       break;
+
+    case IX86_BUILTIN_PABSB:
+    case IX86_BUILTIN_PABSW:
+    case IX86_BUILTIN_PABSD:
+      /* 64-bit vector abs<mode>2 is only supported under TARGET_MMX_WITH_SSE.  */
+      if (!TARGET_MMX_WITH_SSE)
+	break;
+      /* FALLTHRU.  */
+    case IX86_BUILTIN_PABSB128:
+    case IX86_BUILTIN_PABSB256:
+    case IX86_BUILTIN_PABSB512:
+    case IX86_BUILTIN_PABSW128:
+    case IX86_BUILTIN_PABSW256:
+    case IX86_BUILTIN_PABSW512:
+    case IX86_BUILTIN_PABSD128:
+    case IX86_BUILTIN_PABSD256:
+    case IX86_BUILTIN_PABSD512:
+    case IX86_BUILTIN_PABSQ128:
+    case IX86_BUILTIN_PABSQ256:
+    case IX86_BUILTIN_PABSQ512:
+    case IX86_BUILTIN_PABSB128_MASK:
+    case IX86_BUILTIN_PABSB256_MASK:
+    case IX86_BUILTIN_PABSW128_MASK:
+    case IX86_BUILTIN_PABSW256_MASK:
+    case IX86_BUILTIN_PABSD128_MASK:
+    case IX86_BUILTIN_PABSD256_MASK:
+      gcc_assert (n_args >= 1);
+      if (!gimple_call_lhs (stmt))
+	break;
+      arg0 = gimple_call_arg (stmt, 0);
+      elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      /* For masked ABS, only optimize if the mask is all ones.  */
+      if (n_args > 1
+	  && !ix86_masked_all_ones (elems, gimple_call_arg (stmt, n_args - 1)))
+	break;
+      {
+	tree utype, ures, vce;
+	utype = unsigned_type_for (TREE_TYPE (arg0));
+	/* PABSB/W/D/Q store the unsigned result in dst, use ABSU_EXPR
+	   instead of ABS_EXPR to hanlde overflow case(TYPE_MIN).  */
+	ures = gimple_build (&stmts, ABSU_EXPR, utype, arg0);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	loc = gimple_location (stmt);
+	vce = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (arg0), ures);
+	g = gimple_build_assign (gimple_call_lhs (stmt),
+				 VIEW_CONVERT_EXPR, vce);
+	gsi_replace (gsi, g, false);
+      }
+      return true;
 
     default:
       break;
@@ -20439,7 +20522,8 @@ ix86_widen_mult_cost (const struct processor_costs *cost,
       basic_cost = cost->mulss * 2 + cost->sse_op * 4;
       break;
     default:
-      gcc_unreachable();
+      /* Not implemented.  */
+      return 100;
     }
   return ix86_vec_cost (mode, basic_cost + extra_cost);
 }
@@ -20463,34 +20547,107 @@ ix86_multiplication_cost (const struct processor_costs *cost,
 			   inner_mode == DFmode ? cost->mulsd : cost->mulss);
   else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
     {
-      /* vpmullq is used in this case. No emulation is needed.  */
-      if (TARGET_AVX512DQ)
-	return ix86_vec_cost (mode, cost->mulss);
+      int nmults, nops;
+      /* Cost of reading the memory.  */
+      int extra;
 
-      /* V*QImode is emulated with 7-13 insns.  */
-      if (mode == V16QImode || mode == V32QImode)
+      switch (mode)
 	{
-	  int extra = 11;
-	  if (TARGET_XOP && mode == V16QImode)
-	    extra = 5;
-	  else if (TARGET_SSSE3)
-	    extra = 6;
-	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * extra);
-	}
-      /* V*DImode is emulated with 5-8 insns.  */
-      else if (mode == V2DImode || mode == V4DImode)
-	{
-	  if (TARGET_XOP && mode == V2DImode)
-	    return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 3);
+	case V4QImode:
+	case V8QImode:
+	  /* Partial V*QImode is emulated with 4-6 insns.  */
+	  nmults = 1;
+	  nops = 3;
+	  extra = 0;
+
+	  if (TARGET_AVX512BW && TARGET_AVX512VL)
+	    ;
+	  else if (TARGET_AVX2)
+	    nops += 2;
+	  else if (TARGET_XOP)
+	    extra += cost->sse_load[2];
+	  else
+	    {
+	      nops += 1;
+	      extra += cost->sse_load[2];
+	    }
+	  goto do_qimode;
+
+	case V16QImode:
+	  /* V*QImode is emulated with 4-11 insns.  */
+	  nmults = 1;
+	  nops = 3;
+	  extra = 0;
+
+	  if (TARGET_AVX2 && !TARGET_PREFER_AVX128)
+	    {
+	      if (!(TARGET_AVX512BW && TARGET_AVX512VL))
+		nops += 3;
+	    }
+	  else if (TARGET_XOP)
+	    {
+	      nmults += 1;
+	      nops += 2;
+	      extra += cost->sse_load[2];
+	    }
+	  else
+	    {
+	      nmults += 1;
+	      nops += 4;
+	      extra += cost->sse_load[2];
+	    }
+	  goto do_qimode;
+
+	case V32QImode:
+	  nmults = 1;
+	  nops = 3;
+	  extra = 0;
+
+	  if (!TARGET_AVX512BW || TARGET_PREFER_AVX256)
+	    {
+	      nmults += 1;
+	      nops += 4;
+	      extra += cost->sse_load[3] * 2;
+	    }
+	  goto do_qimode;
+
+	case V64QImode:
+	  nmults = 2;
+	  nops = 9;
+	  extra = cost->sse_load[3] * 2 + cost->sse_load[4] * 2;
+
+	do_qimode:
+	  return ix86_vec_cost (mode, cost->mulss * nmults
+				+ cost->sse_op * nops) + extra;
+
+	case V4SImode:
+	  /* pmulld is used in this case. No emulation is needed.  */
+	  if (TARGET_SSE4_1)
+	    goto do_native;
+	  /* V4SImode is emulated with 7 insns.  */
+	  else
+	    return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5);
+
+	case V2DImode:
+	case V4DImode:
+	  /* vpmullq is used in this case. No emulation is needed.  */
+	  if (TARGET_AVX512DQ && TARGET_AVX512VL)
+	    goto do_native;
+	  /* V*DImode is emulated with 6-8 insns.  */
+	  else if (TARGET_XOP && mode == V2DImode)
+	    return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 4);
+	  /* FALLTHRU */
+	case V8DImode:
+	  /* vpmullq is used in this case. No emulation is needed.  */
+	  if (TARGET_AVX512DQ && mode == V8DImode)
+	    goto do_native;
 	  else
 	    return ix86_vec_cost (mode, cost->mulss * 3 + cost->sse_op * 5);
+
+	default:
+	do_native:
+	  return ix86_vec_cost (mode, cost->mulss);
 	}
-      /* Without sse4.1, we don't have PMULLD; it's emulated with 7
-	 insns, including two PMULUDQ.  */
-      else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
-	return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5);
-      else
-	return ix86_vec_cost (mode, cost->mulss);
     }
   else
     return (cost->mult_init[MODE_INDEX (mode)] + cost->mult_bit * 7);
@@ -20529,20 +20686,51 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 			enum rtx_code code,
 			enum machine_mode mode, bool constant_op1,
 			HOST_WIDE_INT op1_val,
-			bool speed,
 			bool and_in_op1,
 			bool shift_and_truncate,
 			bool *skip_op0, bool *skip_op1)
 {
   if (skip_op0)
     *skip_op0 = *skip_op1 = false;
+
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
     {
-      /* V*QImode is emulated with 1-11 insns.  */
-      if (mode == V16QImode || mode == V32QImode)
+      int count;
+      /* Cost of reading the memory.  */
+      int extra;
+
+      switch (mode)
 	{
-	  int count = 11;
-	  if (TARGET_XOP && mode == V16QImode)
+	case V4QImode:
+	case V8QImode:
+	  if (TARGET_AVX2)
+	    /* Use vpbroadcast.  */
+	    extra = cost->sse_op;
+	  else
+	    extra = cost->sse_load[2];
+
+	  if (constant_op1)
+	    {
+	      if (code == ASHIFTRT)
+		{
+		  count = 4;
+		  extra *= 2;
+		}
+	      else
+		count = 2;
+	    }
+	  else if (TARGET_AVX512BW && TARGET_AVX512VL)
+	    return ix86_vec_cost (mode, cost->sse_op * 4);
+	  else if (TARGET_SSE4_1)
+	    count = 5;
+	  else if (code == ASHIFTRT)
+	    count = 6;
+	  else
+	    count = 5;
+	  return ix86_vec_cost (mode, cost->sse_op * count) + extra;
+
+	case V16QImode:
+	  if (TARGET_XOP)
 	    {
 	      /* For XOP we use vpshab, which requires a broadcast of the
 		 value to the variable shift insn.  For constants this
@@ -20550,37 +20738,80 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 		 shift with one insn set the cost to prefer paddb.  */
 	      if (constant_op1)
 		{
-		  if (skip_op1)
-		    *skip_op1 = true;
-		  return ix86_vec_cost (mode,
-					cost->sse_op
-					+ (speed
-					   ? 2
-					   : COSTS_N_BYTES
-					       (GET_MODE_UNIT_SIZE (mode))));
+		  extra = cost->sse_load[2];
+		  return ix86_vec_cost (mode, cost->sse_op) + extra;
 		}
-	      count = 3;
+	      else
+		{
+		  count = (code == ASHIFT) ? 3 : 4;
+		  return ix86_vec_cost (mode, cost->sse_op * count);
+		}
 	    }
-	  else if (TARGET_SSSE3)
-	    count = 7;
-	  return ix86_vec_cost (mode, cost->sse_op * count);
+	  /* FALLTHRU */
+	case V32QImode:
+	  if (TARGET_AVX2)
+	    /* Use vpbroadcast.  */
+	    extra = cost->sse_op;
+	  else
+	    extra = (mode == V16QImode) ? cost->sse_load[2] : cost->sse_load[3];
+
+	  if (constant_op1)
+	    {
+	      if (code == ASHIFTRT)
+		{
+		  count = 4;
+		  extra *= 2;
+		}
+	      else
+		count = 2;
+	    }
+	  else if (TARGET_AVX512BW
+		   && ((mode == V32QImode && !TARGET_PREFER_AVX256)
+		       || (mode == V16QImode && TARGET_AVX512VL
+			   && !TARGET_PREFER_AVX128)))
+	    return ix86_vec_cost (mode, cost->sse_op * 4);
+	  else if (TARGET_AVX2
+		   && mode == V16QImode && !TARGET_PREFER_AVX128)
+	    count = 6;
+	  else if (TARGET_SSE4_1)
+	    count = 9;
+	  else if (code == ASHIFTRT)
+	    count = 10;
+	  else
+	    count = 9;
+	  return ix86_vec_cost (mode, cost->sse_op * count) + extra;
+
+	case V2DImode:
+	case V4DImode:
+	  /* V*DImode arithmetic right shift is emulated.  */
+	  if (code == ASHIFTRT && !TARGET_AVX512VL)
+	    {
+	      if (constant_op1)
+		{
+		  if (op1_val == 63)
+		    count = TARGET_SSE4_2 ? 1 : 2;
+		  else if (TARGET_XOP)
+		    count = 2;
+		  else if (TARGET_SSE4_1)
+		    count = 3;
+		  else
+		    count = 4;
+		}
+	      else if (TARGET_XOP)
+		count = 3;
+	      else if (TARGET_SSE4_2)
+		count = 4;
+	      else
+		count = 5;
+
+	      return ix86_vec_cost (mode, cost->sse_op * count);
+	    }
+	  /* FALLTHRU */
+	default:
+	  return ix86_vec_cost (mode, cost->sse_op);
 	}
-      /* V*DImode arithmetic right shift is emulated.  */
-      else if (code == ASHIFTRT
-	       && (mode == V2DImode || mode == V4DImode)
-	       && !TARGET_XOP
-	       && !TARGET_AVX512VL)
-	{
-	  int count = 4;
-	  if (constant_op1 && op1_val == 63 && TARGET_SSE4_2)
-	    count = 2;
-	  else if (constant_op1)
-	    count = 3;
-	  return ix86_vec_cost (mode, cost->sse_op * count);
-	}
-      else
-	return ix86_vec_cost (mode, cost->sse_op);
     }
+
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     {
       if (constant_op1)
@@ -20750,7 +20981,6 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 				       CONSTANT_P (XEXP (x, 1)),
 				       CONST_INT_P (XEXP (x, 1))
 					 ? INTVAL (XEXP (x, 1)) : -1,
-				       speed,
 				       GET_CODE (XEXP (x, 1)) == AND,
 				       SUBREG_P (XEXP (x, 1))
 				       && GET_CODE (XEXP (XEXP (x, 1),
@@ -21099,6 +21329,31 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	{
 	  /* This is *setcc_qi_addqi3_cconly_overflow_1_* patterns, a nop.  */
 	  *total = 0;
+	  return true;
+	}
+      /* Match x
+	 (compare:CCC (neg:QI (ltu:QI (reg:CCC FLAGS_REG) (const_int 0)))
+		      (geu:QI (reg:CCC FLAGS_REG) (const_int 0)))  */
+      if (mode == CCCmode
+	  && GET_CODE (op0) == NEG
+	  && GET_CODE (XEXP (op0, 0)) == LTU
+	  && REG_P (XEXP (XEXP (op0, 0), 0))
+	  && GET_MODE (XEXP (XEXP (op0, 0), 0)) == CCCmode
+	  && REGNO (XEXP (XEXP (op0, 0), 0)) == FLAGS_REG
+	  && XEXP (XEXP (op0, 0), 1) == const0_rtx
+	  && GET_CODE (op1) == GEU
+	  && REG_P (XEXP (op1, 0))
+	  && GET_MODE (XEXP (op1, 0)) == CCCmode
+	  && REGNO (XEXP (op1, 0)) == FLAGS_REG
+	  && XEXP (op1, 1) == const0_rtx)
+	{
+	  /* This is *x86_cmc.  */
+	  if (!speed)
+	    *total = COSTS_N_BYTES (1);
+	  else if (TARGET_SLOW_STC)
+	    *total = COSTS_N_INSNS (2);
+	  else 
+	    *total = COSTS_N_INSNS (1);
 	  return true;
 	}
 
@@ -21836,8 +22091,12 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	      break;
 	    case CM_SMALL_PIC:
 	    case CM_MEDIUM_PIC:
-	      fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
-	      break;
+	      if (!ix86_direct_extern_access)
+		{
+		  fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+		  break;
+		}
+	      /* fall through */
 	    default:
 	      x86_print_call_or_nop (file, mcount_name);
 	      break;
@@ -23518,7 +23777,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		            TREE_CODE (op2) == INTEGER_CST,
 			    cst_and_fits_in_hwi (op2)
 			    ? int_cst_value (op2) : -1,
-		            true, false, false, NULL, NULL);
+			    false, false, NULL, NULL);
 	  }
 	  break;
 	case NOP_EXPR:
@@ -23584,7 +23843,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
       stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
     }
-  else if (kind == vec_construct
+  else if ((kind == vec_construct || kind == scalar_to_vec)
 	   && node
 	   && SLP_TREE_DEF_TYPE (node) == vect_external_def
 	   && INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
@@ -23617,7 +23876,9 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	     Likewise with a BIT_FIELD_REF extracting from a vector
 	     register we can hope to avoid using a GPR.  */
 	  if (!is_gimple_assign (def)
-	      || (!gimple_assign_load_p (def)
+	      || ((!gimple_assign_load_p (def)
+		   || (!TARGET_SSE4_1
+		       && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op))) == 1))
 		  && (gimple_assign_rhs_code (def) != BIT_FIELD_REF
 		      || !VECTOR_TYPE_P (TREE_TYPE
 				(TREE_OPERAND (gimple_assign_rhs1 (def), 0))))))
@@ -23831,7 +24092,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	 for 64-bit code), accept that SIMDLEN, otherwise warn and don't
 	 emit corresponding clone.  */
       tree ctype = ret_type;
-      if (TREE_CODE (ret_type) == VOID_TYPE)
+      if (VOID_TYPE_P (ret_type))
 	ctype = base_type;
       int cnt = GET_MODE_BITSIZE (TYPE_MODE (ctype)) * clonei->simdlen;
       if (SCALAR_INT_MODE_P (TYPE_MODE (ctype)))

@@ -110,9 +110,9 @@
 )
 
 (define_expand "smin<mode>3"
-  [(set (match_operand:VALLW 0 "s_register_operand")
-	(smin:VALLW (match_operand:VALLW 1 "s_register_operand")
-		    (match_operand:VALLW 2 "s_register_operand")))]
+  [(set (match_operand:VDQWH 0 "s_register_operand")
+	(smin:VDQWH (match_operand:VDQWH 1 "s_register_operand")
+		    (match_operand:VDQWH 2 "s_register_operand")))]
    "ARM_HAVE_<MODE>_ARITH"
 )
 
@@ -124,9 +124,9 @@
 )
 
 (define_expand "smax<mode>3"
-  [(set (match_operand:VALLW 0 "s_register_operand")
-	(smax:VALLW (match_operand:VALLW 1 "s_register_operand")
-		    (match_operand:VALLW 2 "s_register_operand")))]
+  [(set (match_operand:VDQWH 0 "s_register_operand")
+	(smax:VDQWH (match_operand:VDQWH 1 "s_register_operand")
+		    (match_operand:VDQWH 2 "s_register_operand")))]
    "ARM_HAVE_<MODE>_ARITH"
 )
 
@@ -357,14 +357,14 @@
     }
 })
 
-(define_insn "mve_vshlq_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w,w")
 	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w,w")
 		       (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "w,Ds")]
 	 VSHLQ))]
   "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
   "@
-   vshl.<supf>%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2
+   <mve_insn>.<supf>%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2
    * return neon_output_shift_immediate (\"vshl\", 'i', &operands[2], <MODE>mode, VALID_NEON_QREG_MODE (<MODE>mode), true);"
   [(set_attr "type" "neon_shift_reg<q>, neon_shift_imm<q>")]
 )
@@ -559,7 +559,7 @@
       /* vaddv generates a 32 bits accumulator.  */
       rtx op0 = gen_reg_rtx (SImode);
 
-      emit_insn (gen_mve_vaddvq (VADDVQ_S, <MODE>mode, op0, operands[1]));
+      emit_insn (gen_mve_q (VADDVQ_S, VADDVQ_S, <MODE>mode, op0, operands[1]));
       emit_move_insn (operands[0], gen_lowpart (<V_elem>mode, op0));
     }
 

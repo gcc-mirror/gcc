@@ -176,9 +176,7 @@ package body Ada.Directories is
          raise Name_Error with
            "invalid directory path name """ & Containing_Directory & '"';
 
-      elsif
-        Extension'Length = 0 and then (not Is_Valid_Simple_Name (Name))
-      then
+      elsif Extension'Length = 0 and then not Is_Valid_Simple_Name (Name) then
          raise Name_Error with
            "invalid simple name """ & Name & '"';
 

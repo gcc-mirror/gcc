@@ -157,8 +157,10 @@ gcn_option_override (void)
 	acc_lds_size = 32768;
     }
 
-  /* The xnack option is a placeholder, for now.  */
-  if (flag_xnack)
+  /* The xnack option is a placeholder, for now.  Before removing, update
+     gcn-hsa.h's XNACKOPT, gcn.opt's mxnack= default init+descr, and
+     invoke.texi's default description.  */
+  if (flag_xnack != HSACO_ATTR_OFF)
     sorry ("XNACK support");
 }
 
@@ -6162,11 +6164,12 @@ static void
 output_file_start (void)
 {
   /* In HSACOv4 no attribute setting means the binary supports "any" hardware
-     configuration.  In GCC binaries, this is true for SRAM ECC, but not
-     XNACK.  */
-  const char *xnack = (flag_xnack ? ":xnack+" : ":xnack-");
-  const char *sram_ecc = (flag_sram_ecc == SRAM_ECC_ON ? ":sramecc+"
-			  : flag_sram_ecc == SRAM_ECC_OFF ? ":sramecc-"
+     configuration.  */
+  const char *xnack = (flag_xnack == HSACO_ATTR_ON ? ":xnack+"
+		       : flag_xnack == HSACO_ATTR_OFF ? ":xnack-"
+		       : "");
+  const char *sram_ecc = (flag_sram_ecc == HSACO_ATTR_ON ? ":sramecc+"
+			  : flag_sram_ecc == HSACO_ATTR_OFF ? ":sramecc-"
 			  : "");
 
   const char *cpu;
@@ -6210,7 +6213,7 @@ void
 gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 {
   int sgpr, vgpr;
-  bool xnack_enabled = false;
+  bool xnack_enabled = TARGET_XNACK;
 
   fputs ("\n\n", file);
 
@@ -6523,7 +6526,7 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
   tree decl;
   if (cfun
       && (decl = SYMBOL_REF_DECL (x)) != 0
-      && TREE_CODE (decl) == VAR_DECL
+      && VAR_P (decl)
       && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
     {
       /* LDS symbols (emitted using this hook) are only used at present
@@ -6539,7 +6542,7 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
       /* FIXME: See above -- this condition is unreachable.  */
       if (cfun
 	  && (decl = SYMBOL_REF_DECL (x)) != 0
-	  && TREE_CODE (decl) == VAR_DECL
+	  && VAR_P (decl)
 	  && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
 	fputs ("@abs32", file);
     }

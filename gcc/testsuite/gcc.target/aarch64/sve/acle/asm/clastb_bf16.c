@@ -43,8 +43,13 @@ TEST_FOLD_LEFT_D (clastb_d0_bf16, bfloat16_t, svbfloat16_t,
 
 /*
 ** clastb_d1_bf16:
+** (
 **	mov	v0\.h\[0\], v1\.h\[0\]
 **	clastb	h0, p0, h0, z2\.h
+** |
+**	clastb	h1, p0, h1, z2\.h
+**	mov	v0\.h\[0\], v1\.h\[0\]
+** )
 **	ret
 */
 TEST_FOLD_LEFT_D (clastb_d1_bf16, bfloat16_t, svbfloat16_t,

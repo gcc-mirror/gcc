@@ -240,6 +240,13 @@ __deregister_frame_info_bases (const void *begin)
 
   // And remove
   ob = btree_remove (&registered_frames, range[0]);
+  bool empty_table = (range[1] - range[0]) == 0;
+
+  // Deallocate the sort array if any.
+  if (ob && ob->s.b.sorted)
+    {
+      free (ob->u.sort);
+    }
 #else
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
@@ -276,9 +283,12 @@ __deregister_frame_info_bases (const void *begin)
 
  out:
   __gthread_mutex_unlock (&object_mutex);
+  const int empty_table = 0; // The non-atomic path stores all tables.
 #endif
 
-  gcc_assert (in_shutdown || ob);
+  // If we didn't find anything in the lookup data structures then they
+  // were either already destroyed or we tried to remove an empty range.
+  gcc_assert (in_shutdown || (empty_table || ob));
   return (void *) ob;
 }
 
@@ -624,8 +634,6 @@ fde_radixsort (struct object *ob, fde_extractor_t fde_extractor,
       // Stop if we are already sorted.
       if (!violations)
 	{
-	  // The sorted data is in a1 now.
-	  a2 = a1;
 	  break;
 	}
 
@@ -660,9 +668,9 @@ fde_radixsort (struct object *ob, fde_extractor_t fde_extractor,
 #undef FANOUT
 #undef FANOUTBITS
 
-  // The data is in a2 now, move in place if needed.
-  if (a2 != v1->array)
-    memcpy (v1->array, a2, sizeof (const fde *) * n);
+  // The data is in a1 now, move in place if needed.
+  if (a1 != v1->array)
+    memcpy (v1->array, a1, sizeof (const fde *) * n);
 }
 
 static inline void

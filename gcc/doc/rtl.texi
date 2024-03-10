@@ -2742,6 +2742,17 @@ integer of mode @var{m}.  The mode of @var{x} must be @var{m} or
 Represents the value @var{x} with the order of bytes reversed, carried out
 in mode @var{m}, which must be a fixed-point machine mode.
 The mode of @var{x} must be @var{m} or @code{VOIDmode}.
+
+@findex bitreverse
+@item (bitreverse:@var{m} @var{x})
+Represents the value @var{x} with the order of bits reversed, carried out
+in mode @var{m}, which must be a fixed-point machine mode.
+The mode of @var{x} must be @var{m} or @code{VOIDmode}.
+
+@findex copysign
+@item (copysign:@var{m} @var{x} @var{y})
+Represents the value @var{x} with the sign of @var{y}.
+Both @var{x} and @var{y} must have floating point machine mode @var{m}.
 @end table
 
 @node Comparisons

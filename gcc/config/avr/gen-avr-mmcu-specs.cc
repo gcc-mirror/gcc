@@ -30,7 +30,7 @@
 #include "avr-devices.cc"
 
 // Get rid of "defaults.h".  We just need tm.h for `WITH_AVRLIBC' and
-// and `WITH_RTEMS'.  */
+// and `WITH_RTEMS'.
 #define GCC_DEFAULTS_H
 
 #include "tm.h"

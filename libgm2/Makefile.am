@@ -25,7 +25,7 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 
 SUFFIXES = .c .mod .def .o .obj .lo .a
 
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # Multilib support.
 MAKEOVERRIDES=

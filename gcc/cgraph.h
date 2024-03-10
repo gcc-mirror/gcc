@@ -2650,7 +2650,7 @@ inline bool
 decl_in_symtab_p (const_tree decl)
 {
   return (TREE_CODE (decl) == FUNCTION_DECL
-          || (TREE_CODE (decl) == VAR_DECL
+	  || (VAR_P (decl)
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))));
 }
 
@@ -3359,7 +3359,7 @@ cgraph_node::optimize_for_size_p (void)
 inline symtab_node *
 symtab_node::get_create (tree node)
 {
-  if (TREE_CODE (node) == VAR_DECL)
+  if (VAR_P (node))
     return varpool_node::get_create (node);
   else
     return cgraph_node::get_create (node);

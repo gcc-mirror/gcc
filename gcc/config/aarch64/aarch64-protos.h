@@ -733,11 +733,11 @@ const unsigned int AARCH64_BUILTIN_CLASS = (1 << AARCH64_BUILTIN_SHIFT) - 1;
 class aarch64_simd_switcher
 {
 public:
-  aarch64_simd_switcher (unsigned int extra_flags = 0);
+  aarch64_simd_switcher (aarch64_feature_flags extra_flags = 0);
   ~aarch64_simd_switcher ();
 
 private:
-  unsigned long m_old_asm_isa_flags;
+  aarch64_feature_flags m_old_asm_isa_flags;
   bool m_old_general_regs_only;
 };
 
@@ -758,6 +758,8 @@ bool aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
 bool aarch64_const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT,
 					    HOST_WIDE_INT);
+bool aarch64_const_vec_rnd_cst_p (rtx, rtx);
+bool aarch64_const_vec_rsra_rnd_imm_p (rtx);
 bool aarch64_constant_address_p (rtx);
 bool aarch64_emit_approx_div (rtx, rtx, rtx);
 bool aarch64_emit_approx_sqrt (rtx, rtx, bool);
@@ -817,6 +819,8 @@ bool aarch64_regno_ok_for_index_p (int, bool);
 bool aarch64_reinterpret_float_as_int (rtx value, unsigned HOST_WIDE_INT *fail);
 bool aarch64_simd_check_vect_par_cnst_half (rtx op, machine_mode mode,
 					    bool high);
+bool aarch64_parallel_select_half_p (machine_mode, rtx);
+bool aarch64_pars_overlap_p (rtx, rtx);
 bool aarch64_simd_scalar_immediate_valid_for_move (rtx, scalar_int_mode);
 bool aarch64_simd_shift_imm_p (rtx, machine_mode, bool);
 bool aarch64_sve_ptrue_svpattern_p (rtx, struct simd_immediate_info *);
@@ -1066,5 +1070,7 @@ extern bool aarch64_harden_sls_retbr_p (void);
 extern bool aarch64_harden_sls_blr_p (void);
 
 extern void aarch64_output_patchable_area (unsigned int, bool);
+
+extern void aarch64_adjust_reg_alloc_order ();
 
 #endif /* GCC_AARCH64_PROTOS_H */

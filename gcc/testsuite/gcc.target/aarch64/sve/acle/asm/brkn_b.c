@@ -18,8 +18,13 @@ TEST_UNIFORM_P (brkn_b_z_tied2,
 
 /*
 ** brkn_b_z_untied:
+** (
 **	mov	p0\.b, p2\.b
 **	brkn	p0\.b, p3/z, p1\.b, p0\.b
+** |
+**	brkn	p2\.b, p3/z, p1\.b, p2\.b
+**	mov	p0\.b, p2\.b
+** )
 **	ret
 */
 TEST_UNIFORM_P (brkn_b_z_untied,

@@ -973,6 +973,8 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     vectorizable (false),
     can_use_partial_vectors_p (param_vect_partial_vector_usage != 0),
     using_partial_vectors_p (false),
+    using_decrementing_iv_p (false),
+    using_select_vl_p (false),
     epil_using_partial_vectors_p (false),
     partial_load_store_bias (0),
     peeling_for_gaps (false),
@@ -2725,6 +2727,88 @@ start_over:
       && !vect_verify_loop_lens (loop_vinfo))
     LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 
+  /* If we're vectorizing a loop that uses length "controls" and
+     can iterate more than once, we apply decrementing IV approach
+     in loop control.  */
+  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+      && !LOOP_VINFO_LENS (loop_vinfo).is_empty ()
+      && LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo) == 0
+      && !(LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	   && known_le (LOOP_VINFO_INT_NITERS (loop_vinfo),
+			LOOP_VINFO_VECT_FACTOR (loop_vinfo))))
+    LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo) = true;
+
+  /* If a loop uses length controls and has a decrementing loop control IV,
+     we will normally pass that IV through a MIN_EXPR to calcaluate the
+     basis for the length controls.  E.g. in a loop that processes one
+     element per scalar iteration, the number of elements would be
+     MIN_EXPR <N, VF>, where N is the number of scalar iterations left.
+
+     This MIN_EXPR approach allows us to use pointer IVs with an invariant
+     step, since only the final iteration of the vector loop can have
+     inactive lanes.
+
+     However, some targets have a dedicated instruction for calculating the
+     preferred length, given the total number of elements that still need to
+     be processed.  This is encapsulated in the SELECT_VL internal function.
+
+     If the target supports SELECT_VL, we can use it instead of MIN_EXPR
+     to determine the basis for the length controls.  However, unlike the
+     MIN_EXPR calculation, the SELECT_VL calculation can decide to make
+     lanes inactive in any iteration of the vector loop, not just the last
+     iteration.  This SELECT_VL approach therefore requires us to use pointer
+     IVs with variable steps.
+
+     Once we've decided how many elements should be processed by one
+     iteration of the vector loop, we need to populate the rgroup controls.
+     If a loop has multiple rgroups, we need to make sure that those rgroups
+     "line up" (that is, they must be consistent about which elements are
+     active and which aren't).  This is done by vect_adjust_loop_lens_control.
+
+     In principle, it would be possible to use vect_adjust_loop_lens_control
+     on either the result of a MIN_EXPR or the result of a SELECT_VL.
+     However:
+
+     (1) In practice, it only makes sense to use SELECT_VL when a vector
+	 operation will be controlled directly by the result.  It is not
+	 worth using SELECT_VL if it would only be the input to other
+	 calculations.
+
+     (2) If we use SELECT_VL for an rgroup that has N controls, each associated
+	 pointer IV will need N updates by a variable amount (N-1 updates
+	 within the iteration and 1 update to move to the next iteration).
+
+     Because of this, we prefer to use the MIN_EXPR approach whenever there
+     is more than one length control.
+
+     In addition, SELECT_VL always operates to a granularity of 1 unit.
+     If we wanted to use it to control an SLP operation on N consecutive
+     elements, we would need to make the SELECT_VL inputs measure scalar
+     iterations (rather than elements) and then multiply the SELECT_VL
+     result by N.  But using SELECT_VL this way is inefficient because
+     of (1) above.
+
+     2. We don't apply SELECT_VL on single-rgroup when both (1) and (2) are
+	satisfied:
+
+     (1). LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) is true.
+     (2). LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant () is true.
+
+     Since SELECT_VL (variable step) will make SCEV analysis failed and then
+     we will fail to gain benefits of following unroll optimizations. We prefer
+     using the MIN_EXPR approach in this situation.  */
+  if (LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo))
+    {
+      tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
+      if (direct_internal_fn_supported_p (IFN_SELECT_VL, iv_type,
+					  OPTIMIZE_FOR_SPEED)
+	  && LOOP_VINFO_LENS (loop_vinfo).length () == 1
+	  && LOOP_VINFO_LENS (loop_vinfo)[0].factor == 1 && !slp
+	  && (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	      || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()))
+	LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = true;
+    }
+
   /* If we're vectorizing an epilogue loop, the vectorized loop either needs
      to be able to handle fewer than VF scalars, or needs to have a lower VF
      than the main loop.  */
@@ -3044,7 +3128,7 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
 		     res ? "succeeded" : " failed",
 		     GET_MODE_NAME (loop_vinfo->vector_mode));
 
-  if (!main_loop_vinfo && suggested_unroll_factor > 1)
+  if (res && !main_loop_vinfo && suggested_unroll_factor > 1)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
@@ -5567,7 +5651,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       gimple_stmt_iterator incr_gsi;
       bool insert_after;
       standard_iv_increment_position (loop, &incr_gsi, &insert_after);
-      create_iv (series_vect, vec_step, NULL_TREE, loop, &incr_gsi,
+      create_iv (series_vect, PLUS_EXPR, vec_step, NULL_TREE, loop, &incr_gsi,
 		 insert_after, &indx_before_incr, &indx_after_incr);
 
       /* Next create a new phi node vector (NEW_PHI_TREE) which starts
@@ -10360,12 +10444,16 @@ vect_record_loop_len (loop_vec_info loop_vinfo, vec_loop_lens *lens,
     }
 }
 
-/* Given a complete set of length LENS, extract length number INDEX for an
-   rgroup that operates on NVECTORS vectors, where 0 <= INDEX < NVECTORS.  */
+/* Given a complete set of lengths LENS, extract length number INDEX
+   for an rgroup that operates on NVECTORS vectors of type VECTYPE,
+   where 0 <= INDEX < NVECTORS.  Return a value that contains FACTOR
+   multipled by the number of elements that should be processed.
+   Insert any set-up statements before GSI.  */
 
 tree
-vect_get_loop_len (loop_vec_info loop_vinfo, vec_loop_lens *lens,
-		   unsigned int nvectors, unsigned int index)
+vect_get_loop_len (loop_vec_info loop_vinfo, gimple_stmt_iterator *gsi,
+		   vec_loop_lens *lens, unsigned int nvectors, tree vectype,
+		   unsigned int index, unsigned int factor)
 {
   rgroup_controls *rgl = &(*lens)[nvectors - 1];
   bool use_bias_adjusted_len =
@@ -10400,8 +10488,28 @@ vect_get_loop_len (loop_vec_info loop_vinfo, vec_loop_lens *lens,
 
   if (use_bias_adjusted_len)
     return rgl->bias_adjusted_ctrl;
-  else
-    return rgl->controls[index];
+
+  tree loop_len = rgl->controls[index];
+  if (rgl->factor == 1 && factor == 1)
+    {
+      poly_int64 nunits1 = TYPE_VECTOR_SUBPARTS (rgl->type);
+      poly_int64 nunits2 = TYPE_VECTOR_SUBPARTS (vectype);
+      if (maybe_ne (nunits1, nunits2))
+	{
+	  /* A loop len for data type X can be reused for data type Y
+	     if X has N times more elements than Y and if Y's elements
+	     are N times bigger than X's.  */
+	  gcc_assert (multiple_p (nunits1, nunits2));
+	  factor = exact_div (nunits1, nunits2).to_constant ();
+	  tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
+	  gimple_seq seq = NULL;
+	  loop_len = gimple_build (&seq, RDIV_EXPR, iv_type, loop_len,
+				   build_int_cst (iv_type, factor));
+	  if (seq)
+	    gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
+	}
+    }
+  return loop_len;
 }
 
 /* Scale profiling counters by estimation for LOOP which is vectorized

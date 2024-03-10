@@ -2746,7 +2746,7 @@ promoted_arithmetic_type_p (tree type)
      integral types plus floating types.  */
   return ((CP_INTEGRAL_TYPE_P (type)
 	   && same_type_p (type_promotes_to (type), type))
-	  || TREE_CODE (type) == REAL_TYPE);
+	  || SCALAR_FLOAT_TYPE_P (type));
 }
 
 /* Create any builtin operator overload candidates for the operator in
@@ -4129,6 +4129,14 @@ add_list_candidates (tree fns, tree first_arg,
   if (CONSTRUCTOR_NELTS (init_list) == 0
       && TYPE_HAS_DEFAULT_CONSTRUCTOR (totype))
     ;
+  else if (CONSTRUCTOR_IS_DESIGNATED_INIT (init_list)
+	   && !CP_AGGREGATE_TYPE_P (totype))
+    {
+      if (complain & tf_error)
+	error ("designated initializers cannot be used with a "
+	       "non-aggregate type %qT", totype);
+      return;
+    }
   /* If the class has a list ctor, try passing the list as a single
      argument first, but only consider list ctors.  */
   else if (TYPE_HAS_LIST_CTOR (totype))
@@ -4139,14 +4147,6 @@ add_list_candidates (tree fns, tree first_arg,
 		      access_path, flags, candidates, complain);
       if (any_strictly_viable (*candidates))
 	return;
-    }
-  else if (CONSTRUCTOR_IS_DESIGNATED_INIT (init_list)
-	   && !CP_AGGREGATE_TYPE_P (totype))
-    {
-      if (complain & tf_error)
-	error ("designated initializers cannot be used with a "
-	       "non-aggregate type %qT", totype);
-      return;
     }
 
   /* Expand the CONSTRUCTOR into a new argument vec.  */
@@ -4272,9 +4272,19 @@ maybe_init_list_as_array (tree elttype, tree init)
   if (has_non_trivial_temporaries (first))
     return NULL_TREE;
 
+  /* We can't do this if copying from the initializer_list would be
+     ill-formed.  */
+  tree copy_argtypes = make_tree_vec (1);
+  TREE_VEC_ELT (copy_argtypes, 0)
+    = cp_build_qualified_type (elttype, TYPE_QUAL_CONST);
+  if (!is_xible (INIT_EXPR, elttype, copy_argtypes))
+    return NULL_TREE;
+
   init_elttype = cp_build_qualified_type (init_elttype, TYPE_QUAL_CONST);
   tree arr = build_array_of_n_type (init_elttype, CONSTRUCTOR_NELTS (init));
-  return finish_compound_literal (arr, init, tf_none);
+  arr = finish_compound_literal (arr, init, tf_none);
+  DECL_MERGEABLE (TARGET_EXPR_SLOT (arr)) = true;
+  return arr;
 }
 
 /* If we were going to call e.g. vector(initializer_list<string>) starting
@@ -5759,10 +5769,10 @@ build_conditional_expr (const op_location_t &loc,
   if ((TREE_CODE (arg2) == EXCESS_PRECISION_EXPR
        || TREE_CODE (arg3) == EXCESS_PRECISION_EXPR)
       && (TREE_CODE (arg2_type) == INTEGER_TYPE
-	  || TREE_CODE (arg2_type) == REAL_TYPE
+	  || SCALAR_FLOAT_TYPE_P (arg2_type)
 	  || TREE_CODE (arg2_type) == COMPLEX_TYPE)
       && (TREE_CODE (arg3_type) == INTEGER_TYPE
-	  || TREE_CODE (arg3_type) == REAL_TYPE
+	  || SCALAR_FLOAT_TYPE_P (arg3_type)
 	  || TREE_CODE (arg3_type) == COMPLEX_TYPE))
     {
       semantic_result_type
@@ -5775,8 +5785,8 @@ build_conditional_expr (const op_location_t &loc,
 	    t1 = TREE_TYPE (t1);
 	  if (TREE_CODE (t2) == COMPLEX_TYPE)
 	    t2 = TREE_TYPE (t2);
-	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
-			       && TREE_CODE (t2) == REAL_TYPE
+	  gcc_checking_assert (SCALAR_FLOAT_TYPE_P (t1)
+			       && SCALAR_FLOAT_TYPE_P (t2)
 			       && (extended_float_type_p (t1)
 				   || extended_float_type_p (t2))
 			       && cp_compare_floating_point_conversion_ranks
@@ -6127,8 +6137,8 @@ build_conditional_expr (const op_location_t &loc,
 	    t1 = TREE_TYPE (t1);
 	  if (TREE_CODE (t2) == COMPLEX_TYPE)
 	    t2 = TREE_TYPE (t2);
-	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
-			       && TREE_CODE (t2) == REAL_TYPE
+	  gcc_checking_assert (SCALAR_FLOAT_TYPE_P (t1)
+			       && SCALAR_FLOAT_TYPE_P (t2)
 			       && (extended_float_type_p (t1)
 				   || extended_float_type_p (t2))
 			       && cp_compare_floating_point_conversion_ranks
@@ -6147,8 +6157,8 @@ build_conditional_expr (const op_location_t &loc,
 	    t1 = TREE_TYPE (t1);
 	  if (TREE_CODE (t2) == COMPLEX_TYPE)
 	    t2 = TREE_TYPE (t2);
-	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
-			       && TREE_CODE (t2) == REAL_TYPE
+	  gcc_checking_assert (SCALAR_FLOAT_TYPE_P (t1)
+			       && SCALAR_FLOAT_TYPE_P (t2)
 			       && (extended_float_type_p (t1)
 				   || extended_float_type_p (t2))
 			       && cp_compare_floating_point_conversion_ranks
@@ -6185,8 +6195,8 @@ build_conditional_expr (const op_location_t &loc,
       else if ((complain & tf_warning)
 	       && warn_deprecated_enum_float_conv
 	       && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE
-		    && TREE_CODE (arg3_type) == REAL_TYPE)
-		   || (TREE_CODE (arg2_type) == REAL_TYPE
+		    && SCALAR_FLOAT_TYPE_P (arg3_type))
+		   || (SCALAR_FLOAT_TYPE_P (arg2_type)
 		       && TREE_CODE (arg3_type) == ENUMERAL_TYPE)))
 	{
 	  if (TREE_CODE (arg2_type) == ENUMERAL_TYPE)
@@ -8321,8 +8331,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				"direct-initialization",
 				totype, TREE_TYPE (expr));
 
-      if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
-	  && TREE_CODE (totype) == REAL_TYPE
+      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (expr))
+	  && SCALAR_FLOAT_TYPE_P (totype)
 	  && (extended_float_type_p (TREE_TYPE (expr))
 	      || extended_float_type_p (totype)))
 	switch (cp_compare_floating_point_conversion_ranks (TREE_TYPE (expr),
@@ -8360,15 +8370,6 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				   /*issue_conversion_warnings=*/false,
 				   /*c_cast_p=*/false, /*nested_p=*/true,
 				   complain);
-	      if (convs->kind == ck_ref_bind)
-		expr = convert_to_reference (totype, expr, CONV_IMPLICIT,
-					     LOOKUP_NORMAL, NULL_TREE,
-					     complain);
-	      else
-		expr = cp_convert (totype, expr, complain);
-	      if (complained)
-		maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
-	      return expr;
 	    }
 	  else if (t->kind == ck_user || !t->bad_p)
 	    {
@@ -8376,6 +8377,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				   /*issue_conversion_warnings=*/false,
 				   /*c_cast_p=*/false, /*nested_p=*/true,
 				   complain);
+	      if (t->bad_p)
+		complained = 1;
 	      break;
 	    }
 	  else if (t->kind == ck_ambig)
@@ -8394,10 +8397,15 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				  "invalid conversion from %qH to %qI",
 				  TREE_TYPE (expr), totype);
 	}
+      if (convs->kind == ck_ref_bind)
+	expr = convert_to_reference (totype, expr, CONV_IMPLICIT,
+				     LOOKUP_NORMAL, NULL_TREE,
+				     complain);
+      else
+	expr = cp_convert (totype, expr, complain);
       if (complained == 1)
 	maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
-
-      return cp_convert (totype, expr, complain);
+      return expr;
     }
 
   if (issue_conversion_warnings && (complain & tf_warning))
@@ -8533,7 +8541,16 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	unsigned len = CONSTRUCTOR_NELTS (expr);
 	tree array;
 
-	if (len)
+	if (tree init = maybe_init_list_as_array (elttype, expr))
+	  {
+	    elttype = cp_build_qualified_type
+	      (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
+	    array = build_array_of_n_type (elttype, len);
+	    array = build_vec_init_expr (array, init, complain);
+	    array = get_target_expr (array);
+	    array = cp_build_addr_expr (array, complain);
+	  }
+	else if (len)
 	  {
 	    tree val; unsigned ix;
 
@@ -8560,6 +8577,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	      (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
 	    array = build_array_of_n_type (elttype, len);
 	    array = finish_compound_literal (array, new_ctor, complain);
+	    /* This is dubious now, should be blessed by P2752.  */
+	    DECL_MERGEABLE (TARGET_EXPR_SLOT (array)) = true;
 	    /* Take the address explicitly rather than via decay_conversion
 	       to avoid the error about taking the address of a temporary.  */
 	    array = cp_build_addr_expr (array, complain);
@@ -8976,7 +8995,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
      type that is subject to the floating-point promotion
      (_conv.fpprom_), the value of the argument is converted to the
      promoted type before the call.  */
-  if (TREE_CODE (arg_type) == REAL_TYPE
+  if (SCALAR_FLOAT_TYPE_P (arg_type)
       && (TYPE_PRECISION (arg_type)
 	  < TYPE_PRECISION (double_type_node))
       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (arg_type))
@@ -9798,7 +9817,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	      obj_arg = NULL_TREE;
 	    }
 	  /* Look through *(const T *)&obj.  */
-	  else if (obj_arg && TREE_CODE (obj_arg) == INDIRECT_REF)
+	  else if (obj_arg && INDIRECT_REF_P (obj_arg))
 	    {
 	      tree addr = TREE_OPERAND (obj_arg, 0);
 	      STRIP_NOPS (addr);
@@ -10462,7 +10481,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	      obj_arg = NULL_TREE;
 	    }
 	  /* Look through *(const T *)&obj.  */
-	  else if (obj_arg && TREE_CODE (obj_arg) == INDIRECT_REF)
+	  else if (obj_arg && INDIRECT_REF_P (obj_arg))
 	    {
 	      tree addr = TREE_OPERAND (obj_arg, 0);
 	      STRIP_NOPS (addr);
@@ -12199,7 +12218,7 @@ compare_ics (conversion *ics1, conversion *ics2)
 	std::swap (fp3, t3);
       }
     if (TYPE_MAIN_VARIANT (fp1) == TYPE_MAIN_VARIANT (fp3)
-	&& TREE_CODE (fp1) == REAL_TYPE
+	&& SCALAR_FLOAT_TYPE_P (fp1)
 	/* Only apply this rule if at least one of the 3 types is
 	   extended floating-point type, otherwise keep them as
 	   before for compatibility reasons with types like __float128.
@@ -12207,15 +12226,15 @@ compare_ics (conversion *ics1, conversion *ics2)
 	   ranks and so when just those 3 types are involved, this
 	   rule doesn't trigger.  */
 	&& (extended_float_type_p (fp1)
-	    || (TREE_CODE (fp2) == REAL_TYPE && extended_float_type_p (fp2))
-	    || (TREE_CODE (t3) == REAL_TYPE && extended_float_type_p (t3))))
+	    || (SCALAR_FLOAT_TYPE_P (fp2) && extended_float_type_p (fp2))
+	    || (SCALAR_FLOAT_TYPE_P (t3) && extended_float_type_p (t3))))
       {
 	if (TREE_CODE (fp2) != REAL_TYPE)
 	  {
 	    ret = -ret;
 	    std::swap (fp2, t3);
 	  }
-	if (TREE_CODE (fp2) == REAL_TYPE)
+	if (SCALAR_FLOAT_TYPE_P (fp2))
 	  {
 	    /* cp_compare_floating_point_conversion_ranks returns -1, 0 or 1
 	       if the conversion rank is equal (-1 or 1 if the subrank is
@@ -12242,7 +12261,7 @@ compare_ics (conversion *ics1, conversion *ics2)
 		     FP1 <-> T3 conversion is better.  */
 		  return -ret;
 	      }
-	    else if (TREE_CODE (t3) == REAL_TYPE
+	    else if (SCALAR_FLOAT_TYPE_P (t3)
 		     && IN_RANGE (cp_compare_floating_point_conversion_ranks
 								(fp1, t3),
 				  -1, 1))
@@ -12609,6 +12628,17 @@ cand_parms_match (z_candidate *c1, z_candidate *c2)
   return compparms (parms1, parms2);
 }
 
+/* True iff FN is a copy or move constructor or assignment operator.  */
+
+static bool
+sfk_copy_or_move (tree fn)
+{
+  if (TREE_CODE (fn) != FUNCTION_DECL)
+    return false;
+  special_function_kind sfk = special_function_p (fn);
+  return sfk >= sfk_copy_constructor && sfk <= sfk_move_assignment;
+}
+
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
 
@@ -12907,6 +12937,26 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       if (winner)
 	return winner;
     }
+
+  /* CWG2735 (PR109247): A copy/move ctor/op= for which its operand uses an
+     explicit conversion (due to list-initialization) is worse.  */
+  {
+    z_candidate *sp = nullptr;
+    if (sfk_copy_or_move (cand1->fn))
+      sp = cand1;
+    if (sfk_copy_or_move (cand2->fn))
+      sp = sp ? nullptr : cand2;
+    if (sp)
+      {
+	conversion *conv = sp->convs[!DECL_CONSTRUCTOR_P (sp->fn)];
+	if (conv->user_conv_p)
+	  for (; conv; conv = next_conversion (conv))
+	    if (conv->kind == ck_user
+		&& DECL_P (conv->cand->fn)
+		&& DECL_NONCONVERTING_P (conv->cand->fn))
+	      return (sp == cand1) ? -1 : 1;
+      }
+  }
 
   /* or, if not that,
      F1 is a non-template function and F2 is a template function
@@ -13573,8 +13623,13 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
      VAR.  */
   if (TREE_CODE (expr) != TARGET_EXPR)
     expr = get_target_expr (expr);
-  else if (TREE_ADDRESSABLE (expr))
-    TREE_ADDRESSABLE (var) = 1;
+  else
+    {
+      if (TREE_ADDRESSABLE (expr))
+	TREE_ADDRESSABLE (var) = 1;
+      if (DECL_MERGEABLE (TARGET_EXPR_SLOT (expr)))
+	DECL_MERGEABLE (var) = true;
+    }
 
   if (TREE_CODE (decl) == FIELD_DECL
       && extra_warnings && !warning_suppressed_p (decl))

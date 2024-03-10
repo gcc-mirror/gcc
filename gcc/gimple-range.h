@@ -64,6 +64,7 @@ public:
   bool fold_stmt (gimple_stmt_iterator *gsi, tree (*) (tree));
   void register_inferred_ranges (gimple *s);
   void register_transitive_inferred_ranges (basic_block bb);
+  range_query &const_query ();
 protected:
   bool fold_range_internal (vrange &r, gimple *s, tree name);
   void prefill_name (vrange &r, tree name);

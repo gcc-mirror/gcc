@@ -96,6 +96,7 @@ package Aspects is
       Aspect_Dynamic_Predicate,
       Aspect_Effective_Reads,               -- GNAT
       Aspect_Effective_Writes,              -- GNAT
+      Aspect_Exceptional_Cases,             -- GNAT
       Aspect_Extensions_Visible,            -- GNAT
       Aspect_External_Name,
       Aspect_External_Tag,
@@ -269,6 +270,7 @@ package Aspects is
       Aspect_Dimension_System           => True,
       Aspect_Effective_Reads            => True,
       Aspect_Effective_Writes           => True,
+      Aspect_Exceptional_Cases          => True,
       Aspect_Extensions_Visible         => True,
       Aspect_Favor_Top_Level            => True,
       Aspect_Ghost                      => True,
@@ -291,6 +293,7 @@ package Aspects is
       Aspect_Shared                     => True,
       Aspect_Simple_Storage_Pool        => True,
       Aspect_Simple_Storage_Pool_Type   => True,
+      Aspect_Subprogram_Variant         => True,
       Aspect_Suppress_Debug_Info        => True,
       Aspect_Suppress_Initialization    => True,
       Aspect_Thread_Local_Storage       => True,
@@ -389,6 +392,7 @@ package Aspects is
       Aspect_Dynamic_Predicate          => Expression,
       Aspect_Effective_Reads            => Optional_Expression,
       Aspect_Effective_Writes           => Optional_Expression,
+      Aspect_Exceptional_Cases          => Expression,
       Aspect_Extensions_Visible         => Optional_Expression,
       Aspect_External_Name              => Expression,
       Aspect_External_Tag               => Expression,
@@ -496,6 +500,7 @@ package Aspects is
       Aspect_Dynamic_Predicate            => False,
       Aspect_Effective_Reads              => False,
       Aspect_Effective_Writes             => False,
+      Aspect_Exceptional_Cases            => False,
       Aspect_Exclusive_Functions          => False,
       Aspect_Extensions_Visible           => False,
       Aspect_External_Name                => False,
@@ -653,6 +658,7 @@ package Aspects is
       Aspect_Effective_Reads              => Name_Effective_Reads,
       Aspect_Effective_Writes             => Name_Effective_Writes,
       Aspect_Elaborate_Body               => Name_Elaborate_Body,
+      Aspect_Exceptional_Cases            => Name_Exceptional_Cases,
       Aspect_Exclusive_Functions          => Name_Exclusive_Functions,
       Aspect_Export                       => Name_Export,
       Aspect_Extensions_Visible           => Name_Extensions_Visible,
@@ -981,6 +987,7 @@ package Aspects is
       Aspect_Disable_Controlled           => Never_Delay,
       Aspect_Effective_Reads              => Never_Delay,
       Aspect_Effective_Writes             => Never_Delay,
+      Aspect_Exceptional_Cases            => Never_Delay,
       Aspect_Export                       => Never_Delay,
       Aspect_Extensions_Visible           => Never_Delay,
       Aspect_Ghost                        => Never_Delay,

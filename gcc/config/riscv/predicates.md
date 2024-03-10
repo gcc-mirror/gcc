@@ -27,6 +27,12 @@
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "arith_operand_or_mode_mask"
+  (ior (match_operand 0 "arith_operand")
+       (and (match_code "const_int")
+            (match_test "UINTVAL (op) == GET_MODE_MASK (HImode)
+			 || UINTVAL (op) == GET_MODE_MASK (SImode)"))))
+
 (define_predicate "lui_operand"
   (and (match_code "const_int")
        (match_test "LUI_OPERAND (INTVAL (op))")))
@@ -235,13 +241,15 @@
   (and (match_code "const_int")
        (match_test "SINGLE_BIT_MASK_OPERAND (~UINTVAL (op))")))
 
-(define_predicate "const31_operand"
+(define_predicate "const_si_mask_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) == 31")))
+       (match_test "(INTVAL (op) & (GET_MODE_BITSIZE (SImode) - 1))
+                    == GET_MODE_BITSIZE (SImode) - 1")))
 
-(define_predicate "const63_operand"
+(define_predicate "const_di_mask_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) == 63")))
+       (match_test "(INTVAL (op) & (GET_MODE_BITSIZE (DImode) - 1))
+                    == GET_MODE_BITSIZE (DImode) - 1")))
 
 (define_predicate "imm5_operand"
   (and (match_code "const_int")
@@ -321,6 +329,10 @@
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_vector")
             (match_test "riscv_vector::const_vec_all_same_in_range_p (op, 0, 31)"))))
+
+(define_predicate "vector_perm_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_code "const_vector")))
 
 (define_predicate "ltge_operator"
   (match_code "lt,ltu,ge,geu"))

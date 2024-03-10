@@ -2022,7 +2022,7 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
 	}
 
       /* Make sure this is a REG and not some instance
-	 of ZERO_EXTRACT or SUBREG or other dangerous stuff.
+	 of ZERO_EXTRACT or non-paradoxical SUBREG or other dangerous stuff.
 	 If we have a memory destination then we have a pair of simple
 	 basic blocks performing an operation of the form [addr] = c ? a : b.
 	 bb_valid_for_noce_process_p will have ensured that these are
@@ -2030,7 +2030,8 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
 	 to be renamed.  Assert that the callers set this up properly.  */
       if (MEM_P (SET_DEST (sset_b)))
 	gcc_assert (rtx_equal_p (SET_DEST (sset_b), to_rename));
-      else if (!REG_P (SET_DEST (sset_b)))
+      else if (!REG_P (SET_DEST (sset_b))
+	       && !paradoxical_subreg_p (SET_DEST (sset_b)))
 	{
 	  BITMAP_FREE (bba_sets);
 	  return false;
@@ -3136,14 +3137,17 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
 
 	  rtx sset = single_set (insn);
 	  gcc_assert (sset);
+	  rtx dest = SET_DEST (sset);
+	  if (SUBREG_P (dest))
+	    dest = SUBREG_REG (dest);
 
 	  if (contains_mem_rtx_p (SET_SRC (sset))
-	      || !REG_P (SET_DEST (sset))
-	      || reg_overlap_mentioned_p (SET_DEST (sset), cond))
+	      || !REG_P (dest)
+	      || reg_overlap_mentioned_p (dest, cond))
 	    goto free_bitmap_and_fail;
 
 	  potential_cost += pattern_cost (sset, speed_p);
-	  bitmap_set_bit (test_bb_temps, REGNO (SET_DEST (sset)));
+	  bitmap_set_bit (test_bb_temps, REGNO (dest));
 	}
     }
 

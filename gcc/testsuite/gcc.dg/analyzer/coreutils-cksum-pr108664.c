@@ -1,3 +1,6 @@
+/* { dg-require-effective-target int32plus } */
+/* { dg-require-effective-target size24plus } */
+
 /* Reduced from coreutils's cksum.c: cksum_slice8 */
 
 typedef long unsigned int size_t;

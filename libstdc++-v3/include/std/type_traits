@@ -61,9 +61,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, _Tp __v>
     struct integral_constant
     {
-      static constexpr _Tp                  value = __v;
-      typedef _Tp                           value_type;
-      typedef integral_constant<_Tp, __v>   type;
+      static constexpr _Tp value = __v;
+      using value_type = _Tp;
+      using type = integral_constant<_Tp, __v>;
       constexpr operator value_type() const noexcept { return value; }
 #if __cplusplus > 201103L
 
@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Partial specialization for true.
   template<typename _Tp>
     struct enable_if<true, _Tp>
-    { typedef _Tp type; };
+    { using type = _Tp; };
 
   // __enable_if_t (std::enable_if_t for C++11)
   template<bool _Cond, typename _Tp = void>
@@ -578,19 +578,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_enum
   template<typename _Tp>
     struct is_enum
-    : public integral_constant<bool, __is_enum(_Tp)>
+    : public __bool_constant<__is_enum(_Tp)>
     { };
 
   /// is_union
   template<typename _Tp>
     struct is_union
-    : public integral_constant<bool, __is_union(_Tp)>
+    : public __bool_constant<__is_union(_Tp)>
     { };
 
   /// is_class
   template<typename _Tp>
     struct is_class
-    : public integral_constant<bool, __is_class(_Tp)>
+    : public __bool_constant<__is_class(_Tp)>
     { };
 
   /// is_function
@@ -784,7 +784,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivial
   template<typename _Tp>
     struct is_trivial
-    : public integral_constant<bool, __is_trivial(_Tp)>
+    : public __bool_constant<__is_trivial(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -793,7 +793,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivially_copyable
   template<typename _Tp>
     struct is_trivially_copyable
-    : public integral_constant<bool, __is_trivially_copyable(_Tp)>
+    : public __bool_constant<__is_trivially_copyable(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -802,7 +802,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_standard_layout
   template<typename _Tp>
     struct is_standard_layout
-    : public integral_constant<bool, __is_standard_layout(_Tp)>
+    : public __bool_constant<__is_standard_layout(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -817,7 +817,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct
     _GLIBCXX20_DEPRECATED_SUGGEST("is_standard_layout && is_trivial")
     is_pod
-    : public integral_constant<bool, __is_pod(_Tp)>
+    : public __bool_constant<__is_pod(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -831,7 +831,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct
     _GLIBCXX17_DEPRECATED
     is_literal_type
-    : public integral_constant<bool, __is_literal_type(_Tp)>
+    : public __bool_constant<__is_literal_type(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -840,13 +840,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_empty
   template<typename _Tp>
     struct is_empty
-    : public integral_constant<bool, __is_empty(_Tp)>
+    : public __bool_constant<__is_empty(_Tp)>
     { };
 
   /// is_polymorphic
   template<typename _Tp>
     struct is_polymorphic
-    : public integral_constant<bool, __is_polymorphic(_Tp)>
+    : public __bool_constant<__is_polymorphic(_Tp)>
     { };
 
 #if __cplusplus >= 201402L
@@ -855,14 +855,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @since C++14
   template<typename _Tp>
     struct is_final
-    : public integral_constant<bool, __is_final(_Tp)>
+    : public __bool_constant<__is_final(_Tp)>
     { };
 #endif
 
   /// is_abstract
   template<typename _Tp>
     struct is_abstract
-    : public integral_constant<bool, __is_abstract(_Tp)>
+    : public __bool_constant<__is_abstract(_Tp)>
     { };
 
   /// @cond undocumented
@@ -873,7 +873,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_signed_helper<_Tp, true>
-    : public integral_constant<bool, _Tp(-1) < _Tp(0)>
+    : public __bool_constant<_Tp(-1) < _Tp(0)>
     { };
   /// @endcond
 
@@ -946,7 +946,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_destructible_impl
     : public __do_is_destructible_impl
     {
-      typedef decltype(__test<_Tp>(0)) type;
+      using type = decltype(__test<_Tp>(0));
     };
 
   template<typename _Tp,
@@ -1000,7 +1000,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_nt_destructible_impl
     : public __do_is_nt_destructible_impl
     {
-      typedef decltype(__test<_Tp>(0)) type;
+      using type = decltype(__test<_Tp>(0));
     };
 
   template<typename _Tp,
@@ -1252,7 +1252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_implicitly_default_constructible_impl
     : public __do_is_implicitly_default_constructible_impl
     {
-      typedef decltype(__test(declval<_Tp>())) type;
+      using type = decltype(__test(declval<_Tp>()));
     };
 
   template<typename _Tp>
@@ -1333,7 +1333,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// has_virtual_destructor
   template<typename _Tp>
     struct has_virtual_destructor
-    : public integral_constant<bool, __has_virtual_destructor(_Tp)>
+    : public __bool_constant<__has_virtual_destructor(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -1392,7 +1392,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     struct is_same
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_SAME
-    : public integral_constant<bool, __is_same(_Tp, _Up)>
+    : public __bool_constant<__is_same(_Tp, _Up)>
 #else
     : public false_type
 #endif
@@ -1408,7 +1408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_base_of
   template<typename _Base, typename _Derived>
     struct is_base_of
-    : public integral_constant<bool, __is_base_of(_Base, _Derived)>
+    : public __bool_constant<__is_base_of(_Base, _Derived)>
     { };
 
 #if __has_builtin(__is_convertible)
@@ -1422,7 +1422,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                         is_array<_To>>::value>
     struct __is_convertible_helper
     {
-      typedef typename is_void<_To>::type type;
+      using type = typename is_void<_To>::type;
     };
 
 #pragma GCC diagnostic push
@@ -1443,7 +1443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__test(...);
 
     public:
-      typedef decltype(__test<_From, _To>(0)) type;
+      using type = decltype(__test<_From, _To>(0));
     };
 #pragma GCC diagnostic pop
 
@@ -1521,20 +1521,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// remove_const
   template<typename _Tp>
     struct remove_const
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   template<typename _Tp>
     struct remove_const<_Tp const>
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   /// remove_volatile
   template<typename _Tp>
     struct remove_volatile
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   template<typename _Tp>
     struct remove_volatile<_Tp volatile>
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   /// remove_cv
 #if __has_builtin(__remove_cv)
@@ -1658,83 +1658,83 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Unqualified>
     struct __cv_selector<_Unqualified, false, false>
-    { typedef _Unqualified __type; };
+    { using __type = _Unqualified; };
 
   template<typename _Unqualified>
     struct __cv_selector<_Unqualified, false, true>
-    { typedef volatile _Unqualified __type; };
+    { using __type = volatile _Unqualified; };
 
   template<typename _Unqualified>
     struct __cv_selector<_Unqualified, true, false>
-    { typedef const _Unqualified __type; };
+    { using __type = const _Unqualified; };
 
   template<typename _Unqualified>
     struct __cv_selector<_Unqualified, true, true>
-    { typedef const volatile _Unqualified __type; };
+    { using __type = const volatile _Unqualified; };
 
   template<typename _Qualified, typename _Unqualified,
 	   bool _IsConst = is_const<_Qualified>::value,
 	   bool _IsVol = is_volatile<_Qualified>::value>
     class __match_cv_qualifiers
     {
-      typedef __cv_selector<_Unqualified, _IsConst, _IsVol> __match;
+      using __match = __cv_selector<_Unqualified, _IsConst, _IsVol>;
 
     public:
-      typedef typename __match::__type __type;
+      using __type = typename __match::__type;
     };
 
   // Utility for finding the unsigned versions of signed integral types.
   template<typename _Tp>
     struct __make_unsigned
-    { typedef _Tp __type; };
+    { using __type = _Tp; };
 
   template<>
     struct __make_unsigned<char>
-    { typedef unsigned char __type; };
+    { using __type = unsigned char; };
 
   template<>
     struct __make_unsigned<signed char>
-    { typedef unsigned char __type; };
+    { using __type = unsigned char; };
 
   template<>
     struct __make_unsigned<short>
-    { typedef unsigned short __type; };
+    { using __type = unsigned short; };
 
   template<>
     struct __make_unsigned<int>
-    { typedef unsigned int __type; };
+    { using __type = unsigned int; };
 
   template<>
     struct __make_unsigned<long>
-    { typedef unsigned long __type; };
+    { using __type = unsigned long; };
 
   template<>
     struct __make_unsigned<long long>
-    { typedef unsigned long long __type; };
+    { using __type = unsigned long long; };
 
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   __extension__
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_0>
-    { typedef unsigned __GLIBCXX_TYPE_INT_N_0 __type; };
+    { using __type = unsigned __GLIBCXX_TYPE_INT_N_0; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_1)
   __extension__
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_1>
-    { typedef unsigned __GLIBCXX_TYPE_INT_N_1 __type; };
+    { using __type = unsigned __GLIBCXX_TYPE_INT_N_1; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_2)
   __extension__
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_2>
-    { typedef unsigned __GLIBCXX_TYPE_INT_N_2 __type; };
+    { using __type = unsigned __GLIBCXX_TYPE_INT_N_2; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_3)
   __extension__
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_3>
-    { typedef unsigned __GLIBCXX_TYPE_INT_N_3 __type; };
+    { using __type = unsigned __GLIBCXX_TYPE_INT_N_3; };
 #endif
 
   // Select between integral and enum: not possible to be both.
@@ -1833,7 +1833,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// make_unsigned
   template<typename _Tp>
     struct make_unsigned
-    { typedef typename __make_unsigned_selector<_Tp>::__type type; };
+    { using type = typename __make_unsigned_selector<_Tp>::__type; };
 
   // Integral, but don't define.
   template<> struct make_unsigned<bool>;
@@ -1846,55 +1846,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Utility for finding the signed versions of unsigned integral types.
   template<typename _Tp>
     struct __make_signed
-    { typedef _Tp __type; };
+    { using __type = _Tp; };
 
   template<>
     struct __make_signed<char>
-    { typedef signed char __type; };
+    { using __type = signed char; };
 
   template<>
     struct __make_signed<unsigned char>
-    { typedef signed char __type; };
+    { using __type = signed char; };
 
   template<>
     struct __make_signed<unsigned short>
-    { typedef signed short __type; };
+    { using __type = signed short; };
 
   template<>
     struct __make_signed<unsigned int>
-    { typedef signed int __type; };
+    { using __type = signed int; };
 
   template<>
     struct __make_signed<unsigned long>
-    { typedef signed long __type; };
+    { using __type = signed long; };
 
   template<>
     struct __make_signed<unsigned long long>
-    { typedef signed long long __type; };
+    { using __type = signed long long; };
 
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   __extension__
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_0>
-    { typedef __GLIBCXX_TYPE_INT_N_0 __type; };
+    { using __type = __GLIBCXX_TYPE_INT_N_0; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_1)
   __extension__
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_1>
-    { typedef __GLIBCXX_TYPE_INT_N_1 __type; };
+    { using __type = __GLIBCXX_TYPE_INT_N_1; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_2)
   __extension__
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_2>
-    { typedef __GLIBCXX_TYPE_INT_N_2 __type; };
+    { using __type = __GLIBCXX_TYPE_INT_N_2; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_3)
   __extension__
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_3>
-    { typedef __GLIBCXX_TYPE_INT_N_3 __type; };
+    { using __type = __GLIBCXX_TYPE_INT_N_3; };
 #endif
 
   // Select between integral and enum: not possible to be both.
@@ -1918,10 +1918,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class __make_signed_selector<_Tp, false, true>
     {
-      typedef typename __make_unsigned_selector<_Tp>::__type __unsigned_type;
+      using __unsigned_type = typename __make_unsigned_selector<_Tp>::__type;
 
     public:
-      typedef typename __make_signed_selector<__unsigned_type>::__type __type;
+      using __type = typename __make_signed_selector<__unsigned_type>::__type;
     };
 
   // wchar_t, char16_t and char32_t are integral types but are neither
@@ -1965,7 +1965,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// make_signed
   template<typename _Tp>
     struct make_signed
-    { typedef typename __make_signed_selector<_Tp>::__type type; };
+    { using type = typename __make_signed_selector<_Tp>::__type; };
 
   // Integral, but don't define.
   template<> struct make_signed<bool>;
@@ -1988,28 +1988,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// remove_extent
   template<typename _Tp>
     struct remove_extent
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   template<typename _Tp, std::size_t _Size>
     struct remove_extent<_Tp[_Size]>
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   template<typename _Tp>
     struct remove_extent<_Tp[]>
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   /// remove_all_extents
   template<typename _Tp>
     struct remove_all_extents
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   template<typename _Tp, std::size_t _Size>
     struct remove_all_extents<_Tp[_Size]>
-    { typedef typename remove_all_extents<_Tp>::type     type; };
+    { using type = typename remove_all_extents<_Tp>::type; };
 
   template<typename _Tp>
     struct remove_all_extents<_Tp[]>
-    { typedef typename remove_all_extents<_Tp>::type     type; };
+    { using type = typename remove_all_extents<_Tp>::type; };
 
 #if __cplusplus > 201103L
   /// Alias template for remove_extent
@@ -2025,11 +2025,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename>
     struct __remove_pointer_helper
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   template<typename _Tp, typename _Up>
     struct __remove_pointer_helper<_Tp, _Up*>
-    { typedef _Up     type; };
+    { using type = _Up; };
 
   /// remove_pointer
   template<typename _Tp>
@@ -2153,7 +2153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// The value of the strictest alignment of _Types.
       static const size_t alignment_value = __strictest::_S_alignment;
       /// The storage.
-      typedef typename aligned_storage<_S_len, alignment_value>::type type;
+      using type = typename aligned_storage<_S_len, alignment_value>::type;
     };
 
   template <size_t _Len, typename... _Types>
@@ -2200,13 +2200,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct __strip_reference_wrapper
     {
-      typedef _Tp __type;
+      using __type = _Tp;
     };
 
   template<typename _Tp>
     struct __strip_reference_wrapper<reference_wrapper<_Tp> >
     {
-      typedef _Tp& __type;
+      using __type = _Tp&;
     };
 
   // __decay_t (std::decay_t for C++11).
@@ -2233,12 +2233,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Define a member typedef @c type to one of two argument types.
   template<bool _Cond, typename _Iftrue, typename _Iffalse>
     struct conditional
-    { typedef _Iftrue type; };
+    { using type = _Iftrue; };
 
   // Partial specialization for false.
   template<typename _Iftrue, typename _Iffalse>
     struct conditional<false, _Iftrue, _Iffalse>
-    { typedef _Iffalse type; };
+    { using type = _Iffalse; };
 
   /// common_type
   template<typename... _Tp>
@@ -2255,7 +2255,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __success_type
-    { typedef _Tp type; };
+    { using type = _Tp; };
 
   struct __failure_type
   { };
@@ -2426,7 +2426,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __result_of_memfun_ref
     : private __result_of_memfun_ref_impl
     {
-      typedef decltype(_S_test<_MemPtr, _Arg, _Args...>(0)) type;
+      using type = decltype(_S_test<_MemPtr, _Arg, _Args...>(0));
     };
 
   // [func.require] paragraph 1 bullet 2:
@@ -2445,7 +2445,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __result_of_memfun_deref
     : private __result_of_memfun_deref_impl
     {
-      typedef decltype(_S_test<_MemPtr, _Arg, _Args...>(0)) type;
+      using type = decltype(_S_test<_MemPtr, _Arg, _Args...>(0));
     };
 
   // [func.require] paragraph 1 bullet 3:
@@ -2464,7 +2464,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __result_of_memobj_ref
     : private __result_of_memobj_ref_impl
     {
-      typedef decltype(_S_test<_MemPtr, _Arg>(0)) type;
+      using type = decltype(_S_test<_MemPtr, _Arg>(0));
     };
 
   // [func.require] paragraph 1 bullet 4:
@@ -2483,7 +2483,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __result_of_memobj_deref
     : private __result_of_memobj_deref_impl
     {
-      typedef decltype(_S_test<_MemPtr, _Arg>(0)) type;
+      using type = decltype(_S_test<_MemPtr, _Arg>(0));
     };
 
   template<typename _MemPtr, typename _Arg>
@@ -2492,13 +2492,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename _Class, typename _Arg>
     struct __result_of_memobj<_Res _Class::*, _Arg>
     {
-      typedef __remove_cvref_t<_Arg> _Argval;
-      typedef _Res _Class::* _MemPtr;
-      typedef typename __conditional_t<__or_<is_same<_Argval, _Class>,
+      using _Argval = __remove_cvref_t<_Arg>;
+      using _MemPtr = _Res _Class::*;
+      using type = typename __conditional_t<__or_<is_same<_Argval, _Class>,
         is_base_of<_Class, _Argval>>::value,
         __result_of_memobj_ref<_MemPtr, _Arg>,
         __result_of_memobj_deref<_MemPtr, _Arg>
-      >::type type;
+      >::type;
     };
 
   template<typename _MemPtr, typename _Arg, typename... _Args>
@@ -2507,12 +2507,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename _Class, typename _Arg, typename... _Args>
     struct __result_of_memfun<_Res _Class::*, _Arg, _Args...>
     {
-      typedef typename remove_reference<_Arg>::type _Argval;
-      typedef _Res _Class::* _MemPtr;
-      typedef typename __conditional_t<is_base_of<_Class, _Argval>::value,
+      using _Argval = typename remove_reference<_Arg>::type;
+      using _MemPtr = _Res _Class::*;
+      using type = typename __conditional_t<is_base_of<_Class, _Argval>::value,
         __result_of_memfun_ref<_MemPtr, _Arg, _Args...>,
         __result_of_memfun_deref<_MemPtr, _Arg, _Args...>
-      >::type type;
+      >::type;
     };
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -2535,7 +2535,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<bool, bool, typename _Functor, typename... _ArgTypes>
     struct __result_of_impl
     {
-      typedef __failure_type type;
+      using type = __failure_type;
     };
 
   template<typename _MemPtr, typename _Arg>
@@ -2566,7 +2566,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __result_of_impl<false, false, _Functor, _ArgTypes...>
     : private __result_of_other_impl
     {
-      typedef decltype(_S_test<_Functor, _ArgTypes...>(0)) type;
+      using type = decltype(_S_test<_Functor, _ArgTypes...>(0));
     };
 
   // __invoke_result (std::invoke_result for C++11)
@@ -2763,14 +2763,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_swappable_impl
     : public __swappable_details::__do_is_swappable_impl
     {
-      typedef decltype(__test<_Tp>(0)) type;
+      using type = decltype(__test<_Tp>(0));
     };
 
   template<typename _Tp>
     struct __is_nothrow_swappable_impl
     : public __swappable_details::__do_is_nothrow_swappable_impl
     {
-      typedef decltype(__test<_Tp>(0)) type;
+      using type = decltype(__test<_Tp>(0));
     };
 
   template<typename _Tp>
@@ -2853,7 +2853,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_swappable_with_impl
     : public __swappable_with_details::__do_is_swappable_with_impl
     {
-      typedef decltype(__test<_Tp, _Up>(0)) type;
+      using type = decltype(__test<_Tp, _Up>(0));
     };
 
   // Optimization for the homogenous lvalue case, not required:
@@ -2861,14 +2861,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_swappable_with_impl<_Tp&, _Tp&>
     : public __swappable_details::__do_is_swappable_impl
     {
-      typedef decltype(__test<_Tp&>(0)) type;
+      using type = decltype(__test<_Tp&>(0));
     };
 
   template<typename _Tp, typename _Up>
     struct __is_nothrow_swappable_with_impl
     : public __swappable_with_details::__do_is_nothrow_swappable_with_impl
     {
-      typedef decltype(__test<_Tp, _Up>(0)) type;
+      using type = decltype(__test<_Tp, _Up>(0));
     };
 
   // Optimization for the homogenous lvalue case, not required:
@@ -2876,7 +2876,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_nothrow_swappable_with_impl<_Tp&, _Tp&>
     : public __swappable_details::__do_is_nothrow_swappable_impl
     {
-      typedef decltype(__test<_Tp&>(0)) type;
+      using type = decltype(__test<_Tp&>(0));
     };
   /// @endcond
 

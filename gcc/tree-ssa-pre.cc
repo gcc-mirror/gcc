@@ -2216,6 +2216,10 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	}
     }
 
+  /* Dump ANTIC_OUT before it's pruned.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    print_bitmap_set (dump_file, ANTIC_OUT, "ANTIC_OUT", block->index);
+
   /* Prune expressions that are clobbered in block and thus become
      invalid if translated from ANTIC_OUT to ANTIC_IN.  */
   prune_clobbered_mems (ANTIC_OUT, block);
@@ -2270,9 +2274,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
  maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      if (ANTIC_OUT)
-	print_bitmap_set (dump_file, ANTIC_OUT, "ANTIC_OUT", block->index);
-
       if (changed)
 	fprintf (dump_file, "[changed] ");
       print_bitmap_set (dump_file, ANTIC_IN (block), "ANTIC_IN",
@@ -3622,19 +3623,47 @@ do_hoist_insertion (basic_block block)
       && stmt_ends_bb_p (gsi_stmt (last)))
     return false;
 
-  /* Compute the set of hoistable expressions from ANTIC_IN.  First compute
+  /* We have multiple successors, compute ANTIC_OUT by taking the intersection
+     of all of ANTIC_IN translating through PHI nodes.  Note we do not have to
+     worry about iteration stability here so just use the expression set
+     from the first set and prune that by sorted_array_from_bitmap_set.
+     This is a simplification of what we do in compute_antic_aux.  */
+  bitmap_set_t ANTIC_OUT = bitmap_set_new ();
+  bool first = true;
+  FOR_EACH_EDGE (e, ei, block->succs)
+    {
+      if (first)
+	{
+	  phi_translate_set (ANTIC_OUT, ANTIC_IN (e->dest), e);
+	  first = false;
+	}
+      else if (!gimple_seq_empty_p (phi_nodes (e->dest)))
+	{
+	  bitmap_set_t tmp = bitmap_set_new ();
+	  phi_translate_set (tmp, ANTIC_IN (e->dest), e);
+	  bitmap_and_into (&ANTIC_OUT->values, &tmp->values);
+	  bitmap_set_free (tmp);
+	}
+      else
+	bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (e->dest)->values);
+    }
+
+  /* Compute the set of hoistable expressions from ANTIC_OUT.  First compute
      hoistable values.  */
   bitmap_set hoistable_set;
 
-  /* A hoistable value must be in ANTIC_IN(block)
+  /* A hoistable value must be in ANTIC_OUT(block)
      but not in AVAIL_OUT(BLOCK).  */
   bitmap_initialize (&hoistable_set.values, &grand_bitmap_obstack);
   bitmap_and_compl (&hoistable_set.values,
-		    &ANTIC_IN (block)->values, &AVAIL_OUT (block)->values);
+		    &ANTIC_OUT->values, &AVAIL_OUT (block)->values);
 
   /* Short-cut for a common case: hoistable_set is empty.  */
   if (bitmap_empty_p (&hoistable_set.values))
-    return false;
+    {
+      bitmap_set_free (ANTIC_OUT);
+      return false;
+    }
 
   /* Compute which of the hoistable values is in AVAIL_OUT of
      at least one of the successors of BLOCK.  */
@@ -3652,11 +3681,14 @@ do_hoist_insertion (basic_block block)
 
   /* Short-cut for a common case: availout_in_some is empty.  */
   if (bitmap_empty_p (&availout_in_some))
-    return false;
+    {
+      bitmap_set_free (ANTIC_OUT);
+      return false;
+    }
 
   /* Hack hoitable_set in-place so we can use sorted_array_from_bitmap_set.  */
   bitmap_move (&hoistable_set.values, &availout_in_some);
-  hoistable_set.expressions = ANTIC_IN (block)->expressions;
+  hoistable_set.expressions = ANTIC_OUT->expressions;
 
   /* Now finally construct the topological-ordered expression set.  */
   vec<pre_expr> exprs = sorted_array_from_bitmap_set (&hoistable_set);
@@ -3731,6 +3763,7 @@ do_hoist_insertion (basic_block block)
     }
 
   exprs.release ();
+  bitmap_set_free (ANTIC_OUT);
 
   return new_stuff;
 }

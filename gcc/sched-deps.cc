@@ -2833,7 +2833,7 @@ sched_macro_fuse_insns (rtx_insn *insn)
      compile time complexity.  */
   if (DEBUG_INSN_P (insn))
     return;
-  prev = prev_nonnote_nondebug_insn (insn);
+  prev = prev_nonnote_nondebug_insn_bb (insn);
   if (!prev)
     return;
 

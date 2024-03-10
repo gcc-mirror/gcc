@@ -2398,17 +2398,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    { return {}; }
 	  };
 
-	// True if the maximum constructor argument can be represented in _Tp.
-	template<typename _Tp>
-	  static constexpr bool __fits
-	    = duration_values<typename _Duration::rep>::max()
-		<= duration_values<_Tp>::max();
-
 	template<typename _Rep, typename _Period>
 	  requires (!treat_as_floating_point_v<_Rep>)
 	    && ratio_less_v<_Period, ratio<1, 1>>
-	    && (ratio_greater_equal_v<_Period, ratio<1, 250>>
-		  || __fits<unsigned char>)
+	    && ratio_greater_equal_v<_Period, ratio<1, 250>>
 	  struct __subseconds<duration<_Rep, _Period>>
 	  {
 	    unsigned char _M_r{};
@@ -2421,8 +2414,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	template<typename _Rep, typename _Period>
 	  requires (!treat_as_floating_point_v<_Rep>)
 	    && ratio_less_v<_Period, ratio<1, 250>>
-	    && (ratio_greater_equal_v<_Period, ratio<1, 4000000000>>
-		  || __fits<uint_least32_t>)
+	    && ratio_greater_equal_v<_Period, ratio<1, 4000000000>>
 	  struct __subseconds<duration<_Rep, _Period>>
 	  {
 	    uint_least32_t _M_r{};

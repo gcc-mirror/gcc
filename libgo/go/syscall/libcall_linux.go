@@ -189,6 +189,14 @@ func Gettid() (tid int) {
 //sys	PivotRoot(newroot string, putold string) (err error)
 //pivot_root(newroot *byte, putold *byte) _C_int
 
+// Used by golang.org/x/sys/unix.
+//sys	prlimit(pid int, resource int, newlimit *Rlimit, oldlimit *Rlimit) (err error)
+//prlimit(pid Pid_t, resource _C_int, newlimit *Rlimit, oldlimit *Rlimit) _C_int
+
+func Prlimit(pid int, resource int, newlimit *Rlimit, oldlimit *Rlimit) error {
+	return prlimit(pid, resource, newlimit, oldlimit)
+}
+
 //sys	Removexattr(path string, attr string) (err error)
 //removexattr(path *byte, name *byte) _C_int
 

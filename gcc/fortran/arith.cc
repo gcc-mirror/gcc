@@ -1663,6 +1663,12 @@ eval_intrinsic (gfc_intrinsic_op op,
       if (!gfc_numeric_ts (&op1->ts) || !gfc_numeric_ts (&op2->ts))
 	goto runtime;
 
+      /* Do not perform conversions if operands are not conformable as
+	 required for the binary intrinsic operators (F2018:10.1.5).
+	 Defer to a possibly overloading user-defined operator.  */
+      if (!gfc_op_rank_conformable (op1, op2))
+	    goto runtime;
+
       /* Insert any necessary type conversions to make the operands
 	 compatible.  */
 

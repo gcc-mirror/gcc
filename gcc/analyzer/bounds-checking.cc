@@ -767,9 +767,10 @@ public:
   }
 };
 
-/* Check whether an access is past the end of the BASE_REG.  */
+/* Check whether an access is past the end of the BASE_REG.
+  Return TRUE if the access was valid, FALSE otherwise.  */
 
-void
+bool
 region_model::check_symbolic_bounds (const region *base_reg,
 				     const svalue *sym_byte_offset,
 				     const svalue *num_bytes_sval,
@@ -800,6 +801,7 @@ region_model::check_symbolic_bounds (const region *base_reg,
 							      offset_tree,
 							      num_bytes_tree,
 							      capacity_tree));
+	  return false;
 	  break;
 	case DIR_WRITE:
 	  ctxt->warn (make_unique<symbolic_buffer_overflow> (base_reg,
@@ -807,9 +809,11 @@ region_model::check_symbolic_bounds (const region *base_reg,
 							     offset_tree,
 							     num_bytes_tree,
 							     capacity_tree));
+	  return false;
 	  break;
 	}
     }
+  return true;
 }
 
 static tree
@@ -822,9 +826,10 @@ maybe_get_integer_cst_tree (const svalue *sval)
   return NULL_TREE;
 }
 
-/* May complain when the access on REG is out-of-bounds.  */
+/* May complain when the access on REG is out-of-bounds.
+   Return TRUE if the access was valid, FALSE otherwise.  */
 
-void
+bool
 region_model::check_region_bounds (const region *reg,
 				   enum access_direction dir,
 				   region_model_context *ctxt) const
@@ -839,14 +844,14 @@ region_model::check_region_bounds (const region *reg,
      (e.g. because the analyzer did not see previous offsets on the latter,
      it might think that a negative access is before the buffer).  */
   if (base_reg->symbolic_p ())
-    return;
+	  return true;
 
   /* Find out how many bytes were accessed.  */
   const svalue *num_bytes_sval = reg->get_byte_size_sval (m_mgr);
   tree num_bytes_tree = maybe_get_integer_cst_tree (num_bytes_sval);
   /* Bail out if 0 bytes are accessed.  */
   if (num_bytes_tree && zerop (num_bytes_tree))
-    return;
+	  return true;
 
   /* Get the capacity of the buffer.  */
   const svalue *capacity = get_capacity (base_reg);
@@ -877,13 +882,13 @@ region_model::check_region_bounds (const region *reg,
 	}
       else
 	byte_offset_sval = reg_offset.get_symbolic_byte_offset ();
-      check_symbolic_bounds (base_reg, byte_offset_sval, num_bytes_sval,
+		  return check_symbolic_bounds (base_reg, byte_offset_sval, num_bytes_sval,
 			     capacity, dir, ctxt);
-      return;
     }
 
   /* Otherwise continue to check with concrete values.  */
   byte_range out (0, 0);
+  bool oob_safe = true;
   /* NUM_BYTES_TREE should always be interpreted as unsigned.  */
   byte_offset_t num_bytes_unsigned = wi::to_offset (num_bytes_tree);
   byte_range read_bytes (offset, num_bytes_unsigned);
@@ -899,10 +904,12 @@ region_model::check_region_bounds (const region *reg,
 	case DIR_READ:
 	  ctxt->warn (make_unique<concrete_buffer_under_read> (reg, diag_arg,
 							       out));
+	  oob_safe = false;
 	  break;
 	case DIR_WRITE:
 	  ctxt->warn (make_unique<concrete_buffer_underwrite> (reg, diag_arg,
 							       out));
+	  oob_safe = false;
 	  break;
 	}
     }
@@ -911,7 +918,7 @@ region_model::check_region_bounds (const region *reg,
      do a symbolic check here because the inequality check does not reason
      whether constants are greater than symbolic values.  */
   if (!cst_capacity_tree)
-    return;
+	  return oob_safe;
 
   byte_range buffer (0, wi::to_offset (cst_capacity_tree));
   /* If READ_BYTES exceeds BUFFER, we do have an overflow.  */
@@ -929,13 +936,16 @@ region_model::check_region_bounds (const region *reg,
 	case DIR_READ:
 	  ctxt->warn (make_unique<concrete_buffer_over_read> (reg, diag_arg,
 							      out, byte_bound));
+	  oob_safe = false;
 	  break;
 	case DIR_WRITE:
 	  ctxt->warn (make_unique<concrete_buffer_overflow> (reg, diag_arg,
 							     out, byte_bound));
+	  oob_safe = false;
 	  break;
 	}
     }
+  return oob_safe;
 }
 
 } // namespace ana

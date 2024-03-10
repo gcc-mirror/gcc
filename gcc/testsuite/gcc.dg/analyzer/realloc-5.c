@@ -40,7 +40,6 @@ void test_1 ()
     
       /* { dg-warning "UNKNOWN" "warning" { target *-*-* } eval } */
       /* { dg-warning "heap-based buffer over-read" "warning" { target *-*-* } eval } */
-      /* { dg-warning "use of uninitialized value" "warning" { target *-*-* } eval } */
     }
 
   free (q);

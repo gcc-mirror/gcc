@@ -99,7 +99,7 @@ c_convert (tree type, tree expr, bool init_const)
     return fold_convert_loc (loc, type, expr);
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
-  if (TREE_CODE (TREE_TYPE (expr)) == VOID_TYPE)
+  if (VOID_TYPE_P (TREE_TYPE (expr)))
     {
       error ("void value not ignored as it ought to be");
       return error_mark_node;
@@ -119,7 +119,7 @@ c_convert (tree type, tree expr, bool init_const)
     case INTEGER_TYPE:
       if (sanitize_flags_p (SANITIZE_FLOAT_CAST)
 	  && current_function_decl != NULL_TREE
-	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+	  && SCALAR_FLOAT_TYPE_P (TREE_TYPE (expr))
 	  && COMPLETE_TYPE_P (type))
 	{
 	  expr = save_expr (expr);

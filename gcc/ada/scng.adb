@@ -951,12 +951,20 @@ package body Scng is
             C3   : Character;
 
          begin
+            --  Skip processing operator symbols if we are scanning an
+            --  interpolated string literal.
+
+            if Inside_Interpolated_String_Literal
+              and then not Inside_Interpolated_String_Expression
+            then
+               null;
+
             --  Token_Name is currently set to Error_Name. The following
             --  section of code resets Token_Name to the proper Name_Op_xx
             --  value if the string is a valid operator symbol, otherwise it is
             --  left set to Error_Name.
 
-            if Slen = 1 then
+            elsif Slen = 1 then
                C1 := Source (Token_Ptr + 1);
 
                case C1 is
@@ -1527,10 +1535,10 @@ package body Scng is
             end if;
 
          --  Left curly bracket, treated as right paren but proper delimiter
-         --  of interpolated string literals when all extensions are allowed.
+         --  of interpolated string literals when core extensions are allowed.
 
          when '{' =>
-            if All_Extensions_Allowed then
+            if Core_Extensions_Allowed then
                Scan_Ptr := Scan_Ptr + 1;
                Token := Tok_Left_Curly_Bracket;
 
@@ -1962,10 +1970,10 @@ package body Scng is
             return;
 
          --  Right curly bracket, treated as right paren but proper delimiter
-         --  of interpolated string literals when all extensions are allowed.
+         --  of interpolated string literals when core extensions are allowed.
 
          when '}' =>
-            if All_Extensions_Allowed then
+            if Core_Extensions_Allowed then
                Token := Tok_Right_Curly_Bracket;
 
             else
@@ -2125,7 +2133,7 @@ package body Scng is
          --  Lower case letters
 
          when 'a' .. 'z' =>
-            if All_Extensions_Allowed
+            if Core_Extensions_Allowed
               and then Source (Scan_Ptr) = 'f'
               and then Source (Scan_Ptr + 1) = '"'
             then
@@ -2145,7 +2153,7 @@ package body Scng is
          --  Upper case letters
 
          when 'A' .. 'Z' =>
-            if All_Extensions_Allowed
+            if Core_Extensions_Allowed
               and then Source (Scan_Ptr) = 'F'
               and then Source (Scan_Ptr + 1) = '"'
             then

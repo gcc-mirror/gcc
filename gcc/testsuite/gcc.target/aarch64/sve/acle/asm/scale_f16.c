@@ -43,7 +43,7 @@ TEST_UNIFORM_ZX (scale_w0_f16_m_tied1, svfloat16_t, int16_t,
 		 z0 = svscale_m (p0, z0, x0))
 
 /*
-** scale_w0_f16_m_untied: { xfail *-*-* }
+** scale_w0_f16_m_untied:
 **	mov	(z[0-9]+\.h), w0
 **	movprfx	z0, z1
 **	fscale	z0\.h, p0/m, z0\.h, \1
@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (scale_3_f16_m_tied1, svfloat16_t,
 		z0 = svscale_m (p0, z0, 3))
 
 /*
-** scale_3_f16_m_untied: { xfail *-*-* }
+** scale_3_f16_m_untied:
 **	mov	(z[0-9]+\.h), #3
 **	movprfx	z0, z1
 **	fscale	z0\.h, p0/m, z0\.h, \1
@@ -127,7 +127,7 @@ TEST_UNIFORM_ZX (scale_w0_f16_z_tied1, svfloat16_t, int16_t,
 		 z0 = svscale_z (p0, z0, x0))
 
 /*
-** scale_w0_f16_z_untied: { xfail *-*-* }
+** scale_w0_f16_z_untied:
 **	mov	(z[0-9]+\.h), w0
 **	movprfx	z0\.h, p0/z, z1\.h
 **	fscale	z0\.h, p0/m, z0\.h, \1
@@ -149,7 +149,7 @@ TEST_UNIFORM_Z (scale_3_f16_z_tied1, svfloat16_t,
 		z0 = svscale_z (p0, z0, 3))
 
 /*
-** scale_3_f16_z_untied: { xfail *-*-* }
+** scale_3_f16_z_untied:
 **	mov	(z[0-9]+\.h), #3
 **	movprfx	z0\.h, p0/z, z1\.h
 **	fscale	z0\.h, p0/m, z0\.h, \1
@@ -211,7 +211,7 @@ TEST_UNIFORM_ZX (scale_w0_f16_x_tied1, svfloat16_t, int16_t,
 		 z0 = svscale_x (p0, z0, x0))
 
 /*
-** scale_w0_f16_x_untied: { xfail *-*-* }
+** scale_w0_f16_x_untied:
 **	mov	(z[0-9]+\.h), w0
 **	movprfx	z0, z1
 **	fscale	z0\.h, p0/m, z0\.h, \1
@@ -232,7 +232,7 @@ TEST_UNIFORM_Z (scale_3_f16_x_tied1, svfloat16_t,
 		z0 = svscale_x (p0, z0, 3))
 
 /*
-** scale_3_f16_x_untied: { xfail *-*-* }
+** scale_3_f16_x_untied:
 **	mov	(z[0-9]+\.h), #3
 **	movprfx	z0, z1
 **	fscale	z0\.h, p0/m, z0\.h, \1

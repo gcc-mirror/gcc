@@ -37,7 +37,7 @@ FROM m2linemap IMPORT location_t ;
 EXPORT QUALIFIED ConvertQuadsToTree, ResolveConstantExpressions,
                  GetHighFromUnbounded, StringToChar,
                  LValueToGenericPtr, ZConstToTypedConst,
-                 DoCopyString ;
+                 PrepareCopyString ;
 
 
 (*
@@ -91,13 +91,22 @@ PROCEDURE ZConstToTypedConst (t: Tree; op1, op2: CARDINAL) : Tree ;
 
 
 (*
-   DoCopyString - returns trees:
-                  t    number of bytes to be copied (including the nul)
-                  op3t the string with the extra nul character
-                       providing it fits.
+   PrepareCopyString - returns two trees:
+                       length    number of bytes to be copied (including the nul if room)
+                       srcTreeType the new string type (with the extra nul character).
+
+                       Pre condition:  destStrType the dest type string.
+                                       src is the original string (without a nul)
+                                       to be copied.
+                       Post condition: TRUE or FALSE is returned.
+                                       if true length and srcTreeType will be assigned
+                                       else length is set to the maximum length to be
+                                            copied and srcTree is set to the max length
+                                            which fits in dest.
 *)
 
-PROCEDURE DoCopyString (tokenno: CARDINAL; VAR length, op3t: Tree; op1t, op3: CARDINAL) ;
+PROCEDURE PrepareCopyString (tokenno: CARDINAL; VAR length, srcTree: Tree;
+                             src, destStrType: CARDINAL) : BOOLEAN ;
 
 
 END M2GenGCC.

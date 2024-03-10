@@ -3,6 +3,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-O2 -std=c99" } */
+/* { dg-require-effective-target int32plus } */
 
 #include <limits.h>
 #include <assert.h>

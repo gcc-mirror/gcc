@@ -1247,7 +1247,7 @@ gm2_finish_decl (location_t location, tree decl)
   int was_incomplete = (DECL_SIZE (decl) == 0);
 
   m2assert_AssertLocation (location);
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     {
       if (DECL_SIZE (decl) == 0 && TREE_TYPE (decl) != error_mark_node
           && COMPLETE_TYPE_P (TREE_TYPE (decl)))
@@ -1278,7 +1278,7 @@ gm2_finish_decl (location_t location, tree decl)
      functions, unless the type is an undefined structure or union.  If
      not, it will get done when the type is completed.  */
 
-  if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
+  if (VAR_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
     {
       if (DECL_FILE_SCOPE_P (decl))
         {

@@ -67,7 +67,7 @@ is
      (Item      : char_array_access;
       Nul_Check : Boolean := False) return chars_ptr
    with
-     SPARK_Mode => Off;
+     SPARK_Mode => Off;  --  To_Chars_Ptr'Result is aliased with Item
 
    function New_Char_Array (Chars : char_array) return chars_ptr with
      Volatile_Function,
@@ -118,13 +118,16 @@ is
       Chars  : char_array;
       Check  : Boolean := True)
    with
-     Pre    =>
+     Pre      =>
        Item /= Null_Ptr
          and then
       (if Check then
          Strlen (Item) <= size_t'Last - Offset
            and then Strlen (Item) + Offset <= Chars'Length),
-     Global => (In_Out => C_Memory);
+     Global   => (In_Out => C_Memory),
+     Annotate => (GNATprove, Might_Not_Return);
+     --  Update may not return if Check is False and the null terminator
+     --  is overwritten or skipped with Offset.
 
    procedure Update
      (Item   : chars_ptr;
@@ -132,13 +135,16 @@ is
       Str    : String;
       Check  : Boolean := True)
    with
-     Pre    =>
+     Pre      =>
        Item /= Null_Ptr
          and then
       (if Check then
          Strlen (Item) <= size_t'Last - Offset
            and then Strlen (Item) + Offset <= Str'Length),
-     Global => (In_Out => C_Memory);
+     Global   => (In_Out => C_Memory),
+     Annotate => (GNATprove, Might_Not_Return);
+     --  Update may not return if Check is False and the null terminator
+     --  is overwritten or skipped with Offset.
 
    Update_Error : exception;
 

@@ -29,7 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 bool
 m2tree_is_var (tree var)
 {
-  return TREE_CODE (var) == VAR_DECL;
+  return VAR_P (var);
 }
 
 bool

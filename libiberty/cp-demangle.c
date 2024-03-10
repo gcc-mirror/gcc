@@ -1947,6 +1947,7 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "ng", NL ("-"),         1 },
   { "nt", NL ("!"),         1 },
   { "nw", NL ("new"),       3 },
+  { "nx", NL ("noexcept"),  1 },
   { "oR", NL ("|="),        2 },
   { "oo", NL ("||"),        2 },
   { "or", NL ("|"),         2 },
@@ -5836,8 +5837,8 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	if (code && !strcmp (code, "gs"))
 	  /* Avoid parens after '::'.  */
 	  d_print_comp (dpi, options, operand);
-	else if (code && !strcmp (code, "st"))
-	  /* Always print parens for sizeof (type).  */
+	else if (code && (!strcmp (code, "st") || !strcmp (code, "nx")))
+	  /* Always print parens for sizeof (type) and noexcept(expr).  */
 	  {
 	    d_append_char (dpi, '(');
 	    d_print_comp (dpi, options, operand);

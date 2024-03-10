@@ -785,8 +785,6 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
   releasing_vec argvec;
   if (init && !BRACE_ENCLOSED_INITIALIZER_P (init))
     {
-      gcc_assert (same_type_ignoring_top_level_qualifiers_p
-		  (type, TREE_TYPE (init)));
       tree init_type = strip_array_types (TREE_TYPE (init));
       tree dummy = build_dummy_object (init_type);
       if (!lvalue_p (init))
@@ -1173,7 +1171,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
     }
 
   /* Avoid spurious warnings with VLAs (c++/54583).  */
-  if (TYPE_SIZE (t) && EXPR_P (TYPE_SIZE (t)))
+  if (CAN_HAVE_LOCATION_P (TYPE_SIZE (t)))
     suppress_warning (TYPE_SIZE (t), OPT_Wunused);
 
   /* Push these needs up to the ARRAY_TYPE so that initialization takes
@@ -3911,7 +3909,7 @@ is_this_expression (tree t)
 {
   t = get_innermost_component (t);
   /* See through deferences and no-op conversions.  */
-  if (TREE_CODE (t) == INDIRECT_REF)
+  if (INDIRECT_REF_P (t))
     t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == NOP_EXPR)
     t = TREE_OPERAND (t, 0);
@@ -5045,7 +5043,14 @@ handle_no_unique_addr_attribute (tree* node,
 				 int /*flags*/,
 				 bool* no_add_attrs)
 {
-  if (TREE_CODE (*node) != FIELD_DECL)
+  if (TREE_CODE (*node) == VAR_DECL)
+    {
+      DECL_MERGEABLE (*node) = true;
+      if (pedantic)
+	warning (OPT_Wattributes, "%qE attribute can only be applied to "
+		 "non-static data members", name);
+    }
+  else if (TREE_CODE (*node) != FIELD_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute can only be applied to "
 	       "non-static data members", name);

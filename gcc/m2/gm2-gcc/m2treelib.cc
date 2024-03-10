@@ -99,7 +99,7 @@ build_modify_expr (location_t location, tree lhs, enum tree_code modifycode,
   if (TREE_CODE (lhs) == COMPONENT_REF
       && (TREE_CODE (lhstype) == INTEGER_TYPE
           || TREE_CODE (lhstype) == BOOLEAN_TYPE
-          || TREE_CODE (lhstype) == REAL_TYPE
+	  || SCALAR_FLOAT_TYPE_P (lhstype)
           || TREE_CODE (lhstype) == ENUMERAL_TYPE))
     lhstype = TREE_TYPE (get_unwidened (lhs, 0));
 

@@ -11,4 +11,4 @@ int test1(int i, int k)
   return 1;
 }
 
-/* { dg-final { scan-tree-dump "Removing dead stmt \[^\r\n\]* = j_.* == 10" "vrp1" } } */
+/* { dg-final { scan-tree-dump "Removing dead stmt:\[^\r\n\]* = j_.* == 10" "vrp1" } } */

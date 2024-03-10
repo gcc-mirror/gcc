@@ -1,20 +1,41 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vldrw.32	q[0-9]+, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+*/
 int32x4_t
-foo (int32_t const * base)
+foo (int32_t const *base)
 {
   return vld1q_s32 (base);
 }
 
+
+/*
+**foo1:
+**	...
+**	vldrw.32	q[0-9]+, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+*/
 int32x4_t
-foo1 (int32_t const * base)
+foo1 (int32_t const *base)
 {
   return vld1q (base);
 }
 
-/* { dg-final { scan-assembler-times "vldrw.32" 2 }  } */
+#ifdef __cplusplus
+}
+#endif
+
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */

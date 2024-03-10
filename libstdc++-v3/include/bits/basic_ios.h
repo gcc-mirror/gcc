@@ -66,6 +66,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     class basic_ios : public ios_base
     {
+#if __cplusplus >= 202002L
+      static_assert(is_same_v<_CharT, typename _Traits::char_type>);
+#endif
+
     public:
       ///@{
       /**

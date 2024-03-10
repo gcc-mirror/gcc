@@ -1041,7 +1041,7 @@ m2expr_build_unary_op_check (location_t location, enum tree_code code,
   if (check != NULL)
     result = build2 (COMPOUND_EXPR, argtype, check, result);
 
-  if (TREE_CODE (argtype) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (argtype))
     m2expr_checkRealOverflow (location, code, result);
 
   return m2expr_FoldAndStrip (result);
@@ -2594,7 +2594,7 @@ m2expr_build_binary_op_check (location_t location, enum tree_code code,
   if (check != NULL)
     result = build2 (COMPOUND_EXPR, TREE_TYPE (result), check, result);
 
-  if (TREE_CODE (type1) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type1))
     m2expr_checkRealOverflow (location, code, result);
   return result;
 }

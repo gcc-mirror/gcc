@@ -24,7 +24,6 @@ test_1 (void)
   __analyzer_eval (a != NULL); /* { dg-warning "TRUE" } */
   return *a; /* { dg-line test_1 } */
 
-  /* { dg-warning "use of uninitialized value '\\*a'" "warning" { target *-*-* } test_1 } */
   /* { dg-warning "stack-based buffer over-read" "warning" { target *-*-* } test_1 } */
 }
 

@@ -1134,9 +1134,9 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
 }
 
 
-/* Return nonzero if C1 is a subset of C2, i.e., if every register in C1
+/* Return true if C1 is a subset of C2, i.e., if every register in C1
    is also in C2.  */
-int
+bool
 reg_class_subset_p (reg_class_t c1, reg_class_t c2)
 {
   return (c1 == c2
@@ -1145,8 +1145,8 @@ reg_class_subset_p (reg_class_t c1, reg_class_t c2)
 				   reg_class_contents[(int) c2]));
 }
 
-/* Return nonzero if there is a register that is in both C1 and C2.  */
-int
+/* Return true if there is a register that is in both C1 and C2.  */
+bool
 reg_classes_intersect_p (reg_class_t c1, reg_class_t c2)
 {
   return (c1 == c2

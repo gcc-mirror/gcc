@@ -2,13 +2,13 @@
 # Copyright (C) 2011 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 #
-# Yuri Kozlov <yuray@komyakino.ru>, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022.
+# Yuri Kozlov <yuray@komyakino.ru>, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 12.1-b20220213\n"
+"Project-Id-Version: cpplib 13.1-b20230212\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2023-02-10 22:39+0000\n"
-"PO-Revision-Date: 2022-02-19 10:41+0300\n"
+"PO-Revision-Date: 2023-05-07 09:35+0300\n"
 "Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
 "Language: ru\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Lokalize 20.12.0\n"
+"X-Generator: Lokalize 22.12.3\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: charset.cc:683
@@ -61,53 +61,45 @@ msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "назначение «\\%c» отличается в традиционном C"
 
 #: charset.cc:1483
-#, fuzzy
-#| msgid "'?' without following ':'"
 msgid "'\\N' not followed by '{'"
-msgstr "«?» без последующего «:»"
+msgstr "«\\N» без последующего «{»"
 
 #: charset.cc:1513
 msgid "empty named universal character escape sequence; treating it as separate tokens"
-msgstr ""
+msgstr "пустая экранирующая последовательность именованных универсальных символов; учитываем как разделитель токенов"
 
 #: charset.cc:1520
-#, fuzzy
-#| msgid "incomplete universal character name %.*s"
 msgid "empty named universal character escape sequence"
-msgstr "неполное универсальное имя символа %.*s"
+msgstr "пустая экранирующая последовательность именованных универсальных символов"
 
 #: charset.cc:1525
-#, fuzzy
-#| msgid "universal character names are only valid in C++ and C99"
 msgid "named universal character escapes are only valid in C++23"
-msgstr "универсальные имена символов допустимы только в C++ и C99"
+msgstr "экранирование именованных универсальных символов допускается только в C++23"
 
 #: charset.cc:1545
-#, fuzzy, c-format
-#| msgid "%.*s is not a valid universal character"
+#, c-format
 msgid "\\N{%.*s} is not a valid universal character; treating it as separate tokens"
-msgstr "%.*s не является допустимым универсальным именем символа"
+msgstr "\\N{%.*s} не является допустимым универсальным символом; учитываем как разделитель токенов"
 
 #: charset.cc:1551
-#, fuzzy, c-format
-#| msgid "%.*s is not a valid universal character"
+#, c-format
 msgid "\\N{%.*s} is not a valid universal character"
-msgstr "%.*s не является допустимым универсальным именем символа"
+msgstr "\\N{%.*s} не является допустимым универсальным символом"
 
 #: charset.cc:1561
 #, c-format
 msgid "did you mean \\N{%s}?"
-msgstr ""
+msgstr "имелось в виду \\N{%s}?"
 
 #: charset.cc:1579
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s; treating it as separate tokens"
-msgstr ""
+msgstr "«\\N{» не заканчивается «}» после %.*s; учитываем как разделитель токенов"
 
 #: charset.cc:1588
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s"
-msgstr ""
+msgstr "«\\N{» не заканчивается «}» после %.*s"
 
 #: charset.cc:1596
 msgid "In _cpp_valid_ucn but not a UCN"
@@ -115,32 +107,30 @@ msgstr "В _cpp_valid_ucn, но не UCN"
 
 #: charset.cc:1638
 msgid "empty delimited escape sequence; treating it as separate tokens"
-msgstr ""
+msgstr "пустая разделяющая экранирующая последовательность; учитываем как разделитель токенов"
 
 #: charset.cc:1645 charset.cc:1978 charset.cc:2081
 msgid "empty delimited escape sequence"
-msgstr ""
+msgstr "пустая разделяющая экранирующая последовательность"
 
 #: charset.cc:1649 charset.cc:1984 charset.cc:2087
-#, fuzzy
-#| msgid "universal character names are only valid in C++ and C99"
 msgid "delimited escape sequences are only valid in C++23"
-msgstr "универсальные имена символов допустимы только в C++ и C99"
+msgstr "разделяющие экранирующие последовательности допускаются только в C++23"
 
 #: charset.cc:1663
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s; treating it as separate tokens"
-msgstr ""
+msgstr "«\\u{» не заканчивается «}» после %.*s; учитываем как разделитель токенов"
 
 #: charset.cc:1675
 #, c-format
 msgid "incomplete universal character name %.*s"
-msgstr "неполное универсальное имя символа %.*s"
+msgstr "неполное имя универсального символа %.*s"
 
 #: charset.cc:1679
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s"
-msgstr ""
+msgstr "«\\u{» не заканчивается «}» после %.*s"
 
 #: charset.cc:1694
 #, c-format
@@ -195,22 +185,20 @@ msgstr "после \\x нет шестнадцатеричных цифр"
 #: charset.cc:1998
 #, c-format
 msgid "'\\x{' not terminated with '}' after %.*s"
-msgstr ""
+msgstr "«\\x{» не заканчивается «}» после %.*s"
 
 #: charset.cc:2006
 msgid "hex escape sequence out of range"
 msgstr "шестнадцатеричная экранирующая последовательность за пределами диапазона"
 
 #: charset.cc:2049
-#, fuzzy
-#| msgid "'?' without following ':'"
 msgid "'\\o' not followed by '{'"
-msgstr "«?» без последующего «:»"
+msgstr "«\\o» без последующего «{»"
 
 #: charset.cc:2093
 #, c-format
 msgid "'\\o{' not terminated with '}' after %.*s"
-msgstr ""
+msgstr "«\\o{» не заканчивается «}» после %.*s"
 
 #: charset.cc:2102
 msgid "octal escape sequence out of range"
@@ -837,22 +825,22 @@ msgstr "обнаружен проблемный символы Юникода «
 #: lex.cc:1736 lex.cc:1742
 #, c-format
 msgid "invalid UTF-8 character <%x>"
-msgstr ""
+msgstr "недопустимый символ UTF-8 <%x>"
 
 #: lex.cc:1752 lex.cc:1758
 #, c-format
 msgid "invalid UTF-8 character <%x><%x>"
-msgstr ""
+msgstr "недопустимый символ UTF-8 <%x><%x>"
 
 #: lex.cc:1768 lex.cc:1774
 #, c-format
 msgid "invalid UTF-8 character <%x><%x><%x>"
-msgstr ""
+msgstr "недопустимый символ UTF-8 <%x><%x><%x>"
 
 #: lex.cc:1784 lex.cc:1790
 #, c-format
 msgid "invalid UTF-8 character <%x><%x><%x><%x>"
-msgstr ""
+msgstr "недопустимый символ UTF-8 <%x><%x><%x><%x>"
 
 #: lex.cc:1872
 msgid "\"/*\" within comment"
@@ -882,10 +870,8 @@ msgid "__VA_OPT__ is not available until C++20"
 msgstr "__VA_OPT__ недоступна до C++20"
 
 #: lex.cc:2144
-#, fuzzy
-#| msgid "__VA_OPT__ is not available until C++20"
 msgid "__VA_OPT__ is not available until C2X"
-msgstr "__VA_OPT__ недоступна до C++20"
+msgstr "__VA_OPT__ недоступна до C2X"
 
 #: lex.cc:2152
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"

@@ -121,7 +121,9 @@ ASM_MISA_SPEC
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
 #define DWARF_FRAME_REGNUM(REGNO)                                              \
-  (VL_REG_P (REGNO) ? RISCV_DWARF_VL                                           \
+  (FRM_REG_P (REGNO)	? RISCV_DWARF_FRM                                      \
+   : VXRM_REG_P (REGNO) ? RISCV_DWARF_VXRM                                     \
+   : VL_REG_P (REGNO)	? RISCV_DWARF_VL                                       \
    : VTYPE_REG_P (REGNO)                                                       \
      ? RISCV_DWARF_VTYPE                                                       \
      : (GP_REG_P (REGNO) || FP_REG_P (REGNO) || V_REG_P (REGNO)                \
@@ -148,6 +150,7 @@ ASM_MISA_SPEC
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#define BITS_PER_WORD (BITS_PER_UNIT * UNITS_PER_WORD)
 #ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
 #endif
@@ -372,6 +375,8 @@ ASM_MISA_SPEC
   ((unsigned int) ((int) (REGNO) - V_REG_FIRST) < V_REG_NUM)
 #define VL_REG_P(REGNO) ((REGNO) == VL_REGNUM)
 #define VTYPE_REG_P(REGNO) ((REGNO) == VTYPE_REGNUM)
+#define VXRM_REG_P(REGNO) ((REGNO) == VXRM_REGNUM)
+#define FRM_REG_P(REGNO) ((REGNO) == FRM_REGNUM)
 
 /* True when REGNO is in SIBCALL_REGS set.  */
 #define SIBCALL_REG_P(REGNO)	\
@@ -390,6 +395,8 @@ ASM_MISA_SPEC
 #define FRAME_POINTER_REGNUM 65
 
 /* Define Dwarf for RVV.  */
+#define RISCV_DWARF_FRM (4096 + 0x003)
+#define RISCV_DWARF_VXRM (4096 + 0x00a)
 #define RISCV_DWARF_VL (4096 + 0xc20)
 #define RISCV_DWARF_VTYPE (4096 + 0xc21)
 #define RISCV_DWARF_VLENB (4096 + 0xc22)
@@ -572,7 +579,7 @@ enum reg_class
 #define POLY_SMALL_OPERAND_P(POLY_VALUE)		\
   (POLY_VALUE.is_constant () ?				\
      SMALL_OPERAND (POLY_VALUE.to_constant ()) : false)
-     
+
 /* True if VALUE can be loaded into a register using LUI.  */
 
 #define LUI_OPERAND(VALUE)						\
@@ -839,7 +846,7 @@ typedef struct {
   "fs0", "fs1", "fa0", "fa1", "fa2", "fa3", "fa4", "fa5",	\
   "fa6", "fa7", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7",	\
   "fs8", "fs9", "fs10","fs11","ft8", "ft9", "ft10","ft11",	\
-  "arg", "frame", "vl", "vtype", "N/A", "N/A", "N/A", "N/A",    \
+  "arg", "frame", "vl", "vtype", "vxrm", "N/A", "N/A", "N/A",   \
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",	\
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",	\
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",	\
@@ -1095,5 +1102,14 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #define DWARF_REG_TO_UNWIND_COLUMN(REGNO) \
   ((REGNO == RISCV_DWARF_VLENB) ? (FIRST_PSEUDO_REGISTER + 1) : REGNO)
+
+/* Like s390, riscv also defined this macro for the vector comparision.  Then
+   the simplify-rtx relational_result will canonicalize the result to the
+   CONST1_RTX for the simplification.  */
+#define VECTOR_STORE_FLAG_VALUE(MODE) CONSTM1_RTX (GET_MODE_INNER (MODE))
+
+/* Mode switching (Lazy code motion) for RVV rounding mode instructions.  */
+#define OPTIMIZE_MODE_SWITCHING(ENTITY) (TARGET_VECTOR)
+#define NUM_MODES_FOR_MODE_SWITCHING {VXRM_MODE_NONE}
 
 #endif /* ! GCC_RISCV_H */

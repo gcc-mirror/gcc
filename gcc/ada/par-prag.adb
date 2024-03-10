@@ -120,7 +120,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    procedure Add_List_Pragma_Entry (PT : List_Pragma_Type; Loc : Source_Ptr) is
    begin
       if List_Pragmas.Last < List_Pragmas.First
-        or else (List_Pragmas.Table (List_Pragmas.Last)) /= ((PT, Loc))
+        or else List_Pragmas.Table (List_Pragmas.Last) /= (PT, Loc)
       then
          List_Pragmas.Append ((PT, Loc));
       end if;
@@ -176,7 +176,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
       Error : Boolean := Nkind (Expression (Arg)) /= N_Identifier;
    begin
       if not Error then
-         Error := (Chars (Argx) not in Name_On | Name_Off)
+         Error := Chars (Argx) not in Name_On | Name_Off
            and then not (All_OK_Too and Chars (Argx) = Name_All);
       end if;
       if Error then
@@ -1150,13 +1150,14 @@ begin
          -------------------------------------
 
          function First_Arg_Is_Matching_Tool_Name return Boolean is
+            Expr : constant Node_Id := Get_Pragma_Arg (Arg1);
          begin
-            return Nkind (Arg1) = N_Identifier
+            return Nkind (Expr) = N_Identifier
 
               --  Return True if the tool name is GNAT, and we're not in
               --  GNATprove or CodePeer mode...
 
-              and then ((Chars (Arg1) = Name_Gnat
+              and then ((Chars (Expr) = Name_Gnat
                           and then not
                             (CodePeer_Mode or GNATprove_Mode))
 
@@ -1164,7 +1165,7 @@ begin
               --  mode.
 
                         or else
-                        (Chars (Arg1) = Name_Gnatprove
+                        (Chars (Expr) = Name_Gnatprove
                           and then GNATprove_Mode));
          end First_Arg_Is_Matching_Tool_Name;
 
@@ -1189,7 +1190,7 @@ begin
          --------------
 
          function Last_Arg return Node_Id is
-               Last_Arg : Node_Id;
+            Last_Arg : Node_Id;
 
          begin
             if Arg_Count = 1 then
@@ -1370,6 +1371,7 @@ begin
          | Pragma_Elaboration_Checks
          | Pragma_Eliminate
          | Pragma_Enable_Atomic_Synchronization
+         | Pragma_Exceptional_Cases
          | Pragma_Export
          | Pragma_Export_Function
          | Pragma_Export_Object

@@ -773,12 +773,18 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       do
          for J in Source'Range loop
             Result (J - (Source'First - 1)) := Mapping.all (Source (J));
+            pragma Annotate (GNATprove, False_Positive,
+                             "call via access-to-subprogram",
+                             "function Mapping must always terminate");
             pragma Loop_Invariant
               (for all K in Source'First .. J =>
                  Result (K - (Source'First - 1))'Initialized);
             pragma Loop_Invariant
               (for all K in Source'First .. J =>
                  Result (K - (Source'First - 1)) = Mapping (Source (K)));
+            pragma Annotate (GNATprove, False_Positive,
+                             "call via access-to-subprogram",
+                             "function Mapping must always terminate");
          end loop;
       end return;
    end Translate;
@@ -791,9 +797,15 @@ package body Ada.Strings.Fixed with SPARK_Mode is
    begin
       for J in Source'Range loop
          Source (J) := Mapping.all (Source (J));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
          pragma Loop_Invariant
            (for all K in Source'First .. J =>
               Source (K) = Mapping (Source'Loop_Entry (K)));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
       end loop;
    end Translate;
 

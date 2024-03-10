@@ -2009,6 +2009,13 @@
   const vsll __builtin_vsx_xxspltd_2di (vsll, const int<1>);
     XXSPLTD_V2DI vsx_xxspltd_v2di {}
 
+  const vsq __builtin_pack_vector_int128 (unsigned long long, \
+                                          unsigned long long);
+    PACK_V1TI packv1ti {}
+
+  const unsigned long __builtin_unpack_vector_int128 (vsq, const int<1>);
+    UNPACK_V1TI unpackv1ti {}
+
 
 ; Power7 builtins (ISA 2.06).
 [power7]
@@ -2030,15 +2037,8 @@
   const unsigned int __builtin_divweu (unsigned int, unsigned int);
     DIVWEU diveu_si {}
 
-  const vsq __builtin_pack_vector_int128 (unsigned long long, \
-                                          unsigned long long);
-    PACK_V1TI packv1ti {}
-
   void __builtin_ppc_speculation_barrier ();
     SPECBARR speculation_barrier {}
-
-  const unsigned long __builtin_unpack_vector_int128 (vsq, const int<1>);
-    UNPACK_V1TI unpackv1ti {}
 
 
 ; Power7 builtins requiring 64-bit GPRs (even with 32-bit addressing).
@@ -2846,6 +2846,8 @@
   const signed int __builtin_dtstsfi_ov_td (const int<6>, _Decimal128);
     TSTSFI_OV_TD dfptstsfi_unordered_td {}
 
+  const signed int  __builtin_vsx_scalar_extract_exp (double);
+    VSEEDP xsxexpdp_si {}
 
 [power9-64]
   void __builtin_altivec_xst_len_r (vsc, void *, long);
@@ -2860,18 +2862,15 @@
   pure vsc __builtin_vsx_lxvl (const void *, signed long);
     LXVL lxvl {}
 
-  const signed long __builtin_vsx_scalar_extract_exp (double);
-    VSEEDP xsxexpdp {}
-
-  const signed long __builtin_vsx_scalar_extract_sig (double);
+  const signed long long __builtin_vsx_scalar_extract_sig (double);
     VSESDP xsxsigdp {}
 
   const double __builtin_vsx_scalar_insert_exp (unsigned long long, \
                                                 unsigned long long);
-    VSIEDP xsiexpdp {}
+    VSIEDP xsiexpdp_di {}
 
   const double __builtin_vsx_scalar_insert_exp_dp (double, unsigned long long);
-    VSIEDPF xsiexpdpf {}
+    VSIEDPF xsiexpdpf_di {}
 
   pure vsc __builtin_vsx_xl_len_r (void *, signed long);
     XL_LEN_R xl_len_r {}
@@ -3161,10 +3160,10 @@
   void __builtin_altivec_tr_stxvrbx (vsq, signed long, signed char *);
     TR_STXVRBX vsx_stxvrbx {stvec}
 
-  void __builtin_altivec_tr_stxvrhx (vsq, signed long, signed int *);
+  void __builtin_altivec_tr_stxvrhx (vsq, signed long, signed short *);
     TR_STXVRHX vsx_stxvrhx {stvec}
 
-  void __builtin_altivec_tr_stxvrwx (vsq, signed long, signed short *);
+  void __builtin_altivec_tr_stxvrwx (vsq, signed long, signed int *);
     TR_STXVRWX vsx_stxvrwx {stvec}
 
   void __builtin_altivec_tr_stxvrdx (vsq, signed long, signed long long *);

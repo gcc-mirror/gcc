@@ -1,6 +1,7 @@
 /* PR tree-optimization/96779 */
 /* { dg-do run } */
 /* { dg-options "-O -fdump-tree-optimized" } */
+/* { dg-require-effective-target int32plus } */
 
 #include <stdbool.h>
 

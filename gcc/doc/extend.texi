@@ -12026,7 +12026,14 @@ elements in the operand.
 It is possible to use shifting operators @code{<<}, @code{>>} on
 integer-type vectors. The operation is defined as following: @code{@{a0,
 a1, @dots{}, an@} >> @{b0, b1, @dots{}, bn@} == @{a0 >> b0, a1 >> b1,
-@dots{}, an >> bn@}}@. Vector operands must have the same number of
+@dots{}, an >> bn@}}@.  Unlike OpenCL, values of @code{b} are not
+implicitly taken modulo bit width of the base type @code{B}, and the behavior
+is undefined if any @code{bi} is greater than or equal to @code{B}.
+
+In contrast to scalar operations in C and C++, operands of integer vector
+operations do not undergo integer promotions.
+
+Operands of binary vector operations must have the same number of
 elements. 
 
 For convenience, it is allowed to use a binary vector operation
@@ -14685,6 +14692,7 @@ instructions, but allow the compiler to schedule those calls.
 * Other MIPS Built-in Functions::
 * MSP430 Built-in Functions::
 * NDS32 Built-in Functions::
+* Nvidia PTX Built-in Functions::
 * Basic PowerPC Built-in Functions::
 * PowerPC AltiVec/VSX Built-in Functions::
 * PowerPC Hardware Transactional Memory Built-in Functions::
@@ -17944,6 +17952,20 @@ Enable global interrupt.
 Disable global interrupt.
 @enddefbuiltin
 
+@node Nvidia PTX Built-in Functions
+@subsection Nvidia PTX Built-in Functions
+
+These built-in functions are available for the Nvidia PTX target:
+
+@defbuiltin{unsigned int __builtin_nvptx_brev (unsigned int @var{x})}
+Reverse the bit order of a 32-bit unsigned integer.
+Disable global interrupt.
+@enddefbuiltin
+
+@defbuiltin{unsigned long long __builtin_nvptx_brevll (unsigned long long @var{x})}
+Reverse the bit order of a 64-bit unsigned integer.
+@enddefbuiltin
+
 @node Basic PowerPC Built-in Functions
 @subsection Basic PowerPC Built-in Functions
 
@@ -19739,7 +19761,10 @@ bool scalar_test_neg (double source);
 bool scalar_test_neg (__ieee128 source);
 @end smallexample
 
-The @code{scalar_extract_exp} and @code{scalar_extract_sig}
+The @code{scalar_extract_exp} with a 64-bit source argument
+function requires an environment supporting ISA 3.0 or later.
+The @code{scalar_extract_exp} with a 128-bit source argument
+and @code{scalar_extract_sig}
 functions require a 64-bit environment supporting ISA 3.0 or later.
 The @code{scalar_extract_exp} and @code{scalar_extract_sig} built-in
 functions return the significand and the biased exponent value
@@ -25457,12 +25482,12 @@ assumption is valid. For example, @code{assume(n > 0)}.
 @item axiom
 Introduces an axiom definition. Axioms introduce requirements on values.
 
-@kindex axiom
+@kindex forall
 @item forall
 Introduces a universally quantified object in an axiom. For example,
-@code{forall (int n) n + 0 == n}).
+@code{forall (int n) n + 0 == n}.
 
-@kindex axiom
+@kindex concept
 @item concept
 Introduces a concept definition. Concepts are sets of syntactic and semantic
 requirements on types and their values.

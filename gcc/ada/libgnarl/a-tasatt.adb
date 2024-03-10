@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.Storage_Elements;
 with System.Tasking;
 with System.Tasking.Initialization;
 with System.Tasking.Task_Attributes;
@@ -43,6 +44,7 @@ with Ada.Unchecked_Deallocation;
 package body Ada.Task_Attributes is
 
    use System,
+       System.Storage_Elements,
        System.Tasking.Initialization,
        System.Tasking,
        System.Tasking.Task_Attributes;
@@ -75,34 +77,32 @@ package body Ada.Task_Attributes is
    --  System.Tasking.Task_Attributes.Attribute_Record and to allow unchecked
    --  conversions between Attribute_Access and Real_Attribute_Access.
 
-   function New_Attribute (Val : Attribute) return Atomic_Address;
+   function New_Attribute (Val : Attribute) return System.Address;
    --  Create a new Real_Attribute using Val, and return its address. The
    --  returned value can be converted via To_Real_Attribute.
 
-   procedure Deallocate (Ptr : Atomic_Address);
+   procedure Deallocate (Ptr : System.Address);
    --  Free memory associated with Ptr, a Real_Attribute_Access in reality
 
    function To_Real_Attribute is new
-     Ada.Unchecked_Conversion (Atomic_Address, Real_Attribute_Access);
+     Ada.Unchecked_Conversion (System.Address, Real_Attribute_Access);
 
    pragma Warnings (Off);
    --  Kill warning about possible size mismatch
 
    function To_Address is new
-     Ada.Unchecked_Conversion (Attribute, Atomic_Address);
+     Ada.Unchecked_Conversion (Attribute, System.Address);
    function To_Attribute is new
-     Ada.Unchecked_Conversion (Atomic_Address, Attribute);
+     Ada.Unchecked_Conversion (System.Address, Attribute);
 
    type Unsigned is mod 2 ** Integer'Size;
-   function To_Address is new
-     Ada.Unchecked_Conversion (Attribute, System.Address);
    function To_Unsigned is new
      Ada.Unchecked_Conversion (Attribute, Unsigned);
 
    pragma Warnings (On);
 
    function To_Address is new
-     Ada.Unchecked_Conversion (Real_Attribute_Access, Atomic_Address);
+     Ada.Unchecked_Conversion (Real_Attribute_Access, System.Address);
 
    pragma Warnings (Off);
    --  Kill warning about possible aliasing
@@ -121,12 +121,12 @@ package body Ada.Task_Attributes is
 
    Fast_Path : constant Boolean :=
                  (Attribute'Size = Integer'Size
-                   and then Attribute'Alignment <= Atomic_Address'Alignment
+                   and then Attribute'Alignment <= System.Address'Alignment
                    and then To_Unsigned (Initial_Value) = 0)
                  or else (Attribute'Size = System.Address'Size
-                   and then Attribute'Alignment <= Atomic_Address'Alignment
-                   and then To_Address (Initial_Value) = System.Null_Address);
-   --  If the attribute fits in an Atomic_Address (both size and alignment)
+                   and then Attribute'Alignment <= System.Address'Alignment
+                   and then To_Address (Initial_Value) = Null_Address);
+   --  If the attribute fits in a System.Address (both size and alignment)
    --  and Initial_Value is 0 (or null), then we will map the attribute
    --  directly into ATCB.Attributes (Index), otherwise we will create
    --  a level of indirection and instead use Attributes (Index) as a
@@ -153,11 +153,11 @@ package body Ada.Task_Attributes is
          while C /= null loop
             STPO.Write_Lock (C);
 
-            if C.Attributes (Index) /= 0
+            if C.Attributes (Index) /= Null_Address
               and then Require_Finalization (Index)
             then
                Deallocate (C.Attributes (Index));
-               C.Attributes (Index) := 0;
+               C.Attributes (Index) := Null_Address;
             end if;
 
             STPO.Unlock (C);
@@ -173,7 +173,7 @@ package body Ada.Task_Attributes is
    -- Deallocate --
    ----------------
 
-   procedure Deallocate (Ptr : Atomic_Address) is
+   procedure Deallocate (Ptr : System.Address) is
       Obj : Real_Attribute_Access := To_Real_Attribute (Ptr);
    begin
       Free (Obj);
@@ -183,7 +183,7 @@ package body Ada.Task_Attributes is
    -- New_Attribute --
    -------------------
 
-   function New_Attribute (Val : Attribute) return Atomic_Address is
+   function New_Attribute (Val : Attribute) return System.Address is
       Tmp : Real_Attribute_Access;
    begin
       Tmp := new Real_Attribute'(Free  => Deallocate'Unrestricted_Access,
@@ -223,7 +223,7 @@ package body Ada.Task_Attributes is
          Self_Id := STPO.Self;
          Task_Lock (Self_Id);
 
-         if TT.Attributes (Index) = 0 then
+         if TT.Attributes (Index) = Null_Address then
             TT.Attributes (Index) := New_Attribute (Initial_Value);
          end if;
 
@@ -266,11 +266,11 @@ package body Ada.Task_Attributes is
          Task_Lock (Self_Id);
 
          declare
-            Attr : Atomic_Address renames TT.Attributes (Index);
+            Attr : System.Address renames TT.Attributes (Index);
          begin
-            if Attr /= 0 then
+            if Attr /= Null_Address then
                Deallocate (Attr);
-               Attr := 0;
+               Attr := Null_Address;
             end if;
          end;
 
@@ -304,7 +304,8 @@ package body Ada.Task_Attributes is
          --  No finalization needed, simply set to Val
 
          if Attribute'Size = Integer'Size then
-            TT.Attributes (Index) := Atomic_Address (To_Unsigned (Val));
+            TT.Attributes (Index) :=
+              To_Address (Integer_Address (To_Unsigned (Val)));
          else
             TT.Attributes (Index) := To_Address (Val);
          end if;
@@ -314,10 +315,10 @@ package body Ada.Task_Attributes is
          Task_Lock (Self_Id);
 
          declare
-            Attr : Atomic_Address renames TT.Attributes (Index);
+            Attr : System.Address renames TT.Attributes (Index);
 
          begin
-            if Attr /= 0 then
+            if Attr /= Null_Address then
                Deallocate (Attr);
             end if;
 
@@ -357,10 +358,10 @@ package body Ada.Task_Attributes is
          Task_Lock (Self_Id);
 
          declare
-            Attr : Atomic_Address renames TT.Attributes (Index);
+            Attr : System.Address renames TT.Attributes (Index);
 
          begin
-            if Attr = 0 then
+            if Attr = Null_Address then
                Task_Unlock (Self_Id);
                return Initial_Value;
 

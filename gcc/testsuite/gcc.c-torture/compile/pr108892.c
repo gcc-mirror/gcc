@@ -1,3 +1,5 @@
+/* { dg-require-effective-target int32 } */
+
 typedef char __attribute__((__vector_size__ (64))) U;
 typedef int __attribute__((__vector_size__ (64))) V;
 

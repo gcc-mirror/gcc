@@ -9,8 +9,8 @@ typedef unsigned int v4usi  __attribute__((vector_size (16)));
 
 /*
 ** food:
-**	ptrue	p0.b, all
-**	sdiv	z0.d, p0/m, z0.d, z1.d
+**	ptrue	(p[0-7]).b, all
+**	sdiv	z0.d, \1/m, z0.d, z1.d
 **	ret
 */
 
@@ -22,8 +22,8 @@ food (v2di a, v2di b)
 
 /*
 ** fooud:
-**	ptrue	p0.b, all
-**	udiv	z0.d, p0/m, z0.d, z1.d
+**	ptrue	(p[0-7]).b, all
+**	udiv	z0.d, \1/m, z0.d, z1.d
 **	ret
 */
 
@@ -35,8 +35,8 @@ fooud (v2udi a, v2udi b)
 
 /*
 ** foos:
-**	ptrue	p0.b, all
-**	sdiv	z0.s, p0/m, z0.s, z1.s
+**	ptrue	(p[0-7]).b, all
+**	sdiv	z0.s, \1/m, z0.s, z1.s
 **	ret
 */
 
@@ -48,8 +48,8 @@ foos (v4si a, v4si b)
 
 /*
 ** foous:
-**	ptrue	p0.b, all
-**	udiv	z0.s, p0/m, z0.s, z1.s
+**	ptrue	(p[0-7]).b, all
+**	udiv	z0.s, \1/m, z0.s, z1.s
 **	ret
 */
 

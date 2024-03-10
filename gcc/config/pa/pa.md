@@ -9940,6 +9940,23 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "52")])
 
+(define_expand "clear_cache"
+  [(match_operand 0 "pmode_register_operand")
+   (match_operand 1 "pmode_register_operand")]
+  ""
+{
+  rtx line_length = gen_reg_rtx (Pmode);
+
+  emit_move_insn (line_length, GEN_INT (MIN_CACHELINE_SIZE));
+  if (TARGET_64BIT)
+    emit_insn (gen_icacheflushdi (operands[0], operands[1], line_length,
+				  gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));
+  else
+    emit_insn (gen_icacheflushsi (operands[0], operands[1], line_length,
+				  gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));
+  DONE;
+})
+
 ;; An out-of-line prologue.
 (define_insn "outline_prologue_call"
   [(unspec_volatile [(const_int 0)] UNSPECV_OPC)

@@ -367,17 +367,25 @@ package body Erroutc is
 
    function Get_Warning_Option (Id : Error_Msg_Id) return String is
       Warn     : constant Boolean         := Errors.Table (Id).Warn;
+      Style    : constant Boolean         := Errors.Table (Id).Style;
       Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
+
    begin
-      if Warn and then Warn_Chr /= "  " and then Warn_Chr (1) /= '?' then
+      if (Warn or Style)
+        and then Warn_Chr /= "  "
+        and then Warn_Chr (1) /= '?'
+      then
          if Warn_Chr = "$ " then
             return "-gnatel";
+         elsif Style then
+            return "-gnaty" & Warn_Chr (1);
          elsif Warn_Chr (2) = ' ' then
             return "-gnatw" & Warn_Chr (1);
          else
             return "-gnatw" & Warn_Chr;
          end if;
       end if;
+
       return "";
    end Get_Warning_Option;
 
@@ -387,10 +395,12 @@ package body Erroutc is
 
    function Get_Warning_Tag (Id : Error_Msg_Id) return String is
       Warn     : constant Boolean         := Errors.Table (Id).Warn;
+      Style    : constant Boolean         := Errors.Table (Id).Style;
       Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
       Option   : constant String          := Get_Warning_Option (Id);
+
    begin
-      if Warn then
+      if Warn or Style then
          if Warn_Chr = "? " then
             return "[enabled by default]";
          elsif Warn_Chr = "* " then
@@ -880,7 +890,7 @@ package body Erroutc is
             J := J + 1;
 
          elsif J < Msg'Last and then Msg (J + 1) = C
-           and then Msg (J) in 'a' .. 'z' | '*' | '$'
+           and then Msg (J) in 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '*' | '$'
          then
             Message_Class := Msg (J) & " ";
             J := J + 2;
@@ -964,19 +974,20 @@ package body Erroutc is
          --  Warning message (? or < insertion sequence)
 
          elsif Msg (J) = '?' or else Msg (J) = '<' then
-            Is_Warning_Msg := Msg (J) = '?' or else Error_Msg_Warn;
-            J := J + 1;
-
-            if Is_Warning_Msg then
+            if Msg (J) = '?' or else Error_Msg_Warn then
+               Is_Warning_Msg := not Is_Style_Msg;
+               J := J + 1;
                Warning_Msg_Char := Parse_Message_Class;
+
+               --  Bomb if untagged warning message. This code can be
+               --  uncommented for debugging when looking for untagged warning
+               --  messages.
+
+               --  pragma Assert (Warning_Msg_Char /= "  ");
+
+            else
+               J := J + 1;
             end if;
-
-            --  Bomb if untagged warning message. This code can be uncommented
-            --  for debugging when looking for untagged warning messages.
-
-            --  if Is_Warning_Msg and then Warning_Msg_Char = ' ' then
-            --     raise Program_Error;
-            --  end if;
 
          --  Unconditional message (! insertion)
 

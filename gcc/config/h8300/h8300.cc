@@ -5009,7 +5009,7 @@ h8300_encode_section_info (tree decl, rtx rtl, int first)
   if (TREE_CODE (decl) == FUNCTION_DECL
       && h8300_funcvec_function_p (decl))
     extra_flags = SYMBOL_FLAG_FUNCVEC_FUNCTION;
-  else if (TREE_CODE (decl) == VAR_DECL
+  else if (VAR_P (decl)
 	   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     {
       if (h8300_eightbit_data_p (decl))
@@ -5624,9 +5624,6 @@ pre_incdec_with_reg (rtx op, unsigned int reg)
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P h8300_modes_tieable_p
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	h8300_legitimate_address_p

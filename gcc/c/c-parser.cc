@@ -1541,7 +1541,7 @@ static void c_parser_static_assert_declaration_no_semi (c_parser *);
 static void c_parser_static_assert_declaration (c_parser *);
 static struct c_typespec c_parser_enum_specifier (c_parser *);
 static struct c_typespec c_parser_struct_or_union_specifier (c_parser *);
-static tree c_parser_struct_declaration (c_parser *);
+static tree c_parser_struct_declaration (c_parser *, tree *);
 static struct c_typespec c_parser_typeof_specifier (c_parser *);
 static tree c_parser_alignas_specifier (c_parser *);
 static struct c_declarator *c_parser_direct_declarator (c_parser *, bool,
@@ -2263,6 +2263,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  if (!handled_assume)
 	    pedwarn (here, 0, "empty declaration");
 	}
+      /* We still have to evaluate size expressions.  */
+      if (specs->expr)
+	add_stmt (fold_convert (void_type_node, specs->expr));
       c_parser_consume_token (parser);
       if (oacc_routine_data)
 	c_finish_oacc_routine (oacc_routine_data, NULL_TREE, false);
@@ -3782,6 +3785,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	 so we'll be minimizing the number of node traversals required
 	 by chainon.  */
       tree contents;
+      tree expr = NULL;
       timevar_push (TV_PARSE_STRUCT);
       contents = NULL_TREE;
       c_parser_consume_token (parser);
@@ -3843,7 +3847,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	    }
 	  /* Parse some comma-separated declarations, but not the
 	     trailing semicolon if any.  */
-	  decls = c_parser_struct_declaration (parser);
+	  decls = c_parser_struct_declaration (parser, &expr);
 	  contents = chainon (decls, contents);
 	  /* If no semicolon follows, either we have a parse error or
 	     are at the end of the struct or union and should
@@ -3874,7 +3878,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 					 chainon (attrs, postfix_attrs)),
 				struct_info);
       ret.kind = ctsk_tagdef;
-      ret.expr = NULL_TREE;
+      ret.expr = expr;
       ret.expr_const_operands = true;
       ret.has_enum_type_specifier = false;
       timevar_pop (TV_PARSE_STRUCT);
@@ -3936,7 +3940,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
    expressions will be diagnosed as non-constant.  */
 
 static tree
-c_parser_struct_declaration (c_parser *parser)
+c_parser_struct_declaration (c_parser *parser, tree *expr)
 {
   struct c_declspecs *specs;
   tree prefix_attrs;
@@ -3949,7 +3953,7 @@ c_parser_struct_declaration (c_parser *parser)
       tree decl;
       ext = disable_extension_diagnostics ();
       c_parser_consume_token (parser);
-      decl = c_parser_struct_declaration (parser);
+      decl = c_parser_struct_declaration (parser, expr);
       restore_extension_diagnostics (ext);
       return decl;
     }
@@ -3995,7 +3999,7 @@ c_parser_struct_declaration (c_parser *parser)
 
 	  ret = grokfield (c_parser_peek_token (parser)->location,
 			   build_id_declarator (NULL_TREE), specs,
-			   NULL_TREE, &attrs);
+			   NULL_TREE, &attrs, expr);
 	  if (ret)
 	    decl_attributes (&ret, attrs, 0);
 	}
@@ -4056,7 +4060,7 @@ c_parser_struct_declaration (c_parser *parser)
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
 	    postfix_attrs = c_parser_gnu_attributes (parser);
 	  d = grokfield (c_parser_peek_token (parser)->location,
-			 declarator, specs, width, &all_prefix_attrs);
+			 declarator, specs, width, &all_prefix_attrs, expr);
 	  decl_attributes (&d, chainon (postfix_attrs,
 					all_prefix_attrs), 0);
 	  DECL_CHAIN (d) = decls;
@@ -11732,7 +11736,7 @@ c_parser_objc_class_instance_variables (c_parser *parser)
 	}
 
       /* Parse some comma-separated declarations.  */
-      decls = c_parser_struct_declaration (parser);
+      decls = c_parser_struct_declaration (parser, NULL);
       if (decls == NULL)
 	{
 	  /* There is a syntax error.  We want to skip the offending
@@ -12871,7 +12875,7 @@ c_parser_objc_at_property_declaration (c_parser *parser)
   /* 'properties' is the list of properties that we read.  Usually a
      single one, but maybe more (eg, in "@property int a, b, c;" there
      are three).  */
-  tree properties = c_parser_struct_declaration (parser);
+  tree properties = c_parser_struct_declaration (parser, NULL);
 
   if (properties == error_mark_node)
     c_parser_skip_until_found (parser, CPP_SEMICOLON, NULL);
@@ -14935,6 +14939,13 @@ c_parser_omp_clause_defaultmap (c_parser *parser, tree list)
 	goto invalid_behavior;
       break;
 
+    case 'p':
+      if (strcmp ("present", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_PRESENT;
+      else
+	goto invalid_behavior;
+      break;
+
     case 't':
       if (strcmp ("tofrom", p) == 0)
 	behavior = OMP_CLAUSE_DEFAULTMAP_TOFROM;
@@ -15730,7 +15741,7 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
 		OMP_CLAUSE_REDUCTION_INSCAN (c) = 1;
 	      if (code == ERROR_MARK
 		  || !(INTEGRAL_TYPE_P (type)
-		       || TREE_CODE (type) == REAL_TYPE
+		       || SCALAR_FLOAT_TYPE_P (type)
 		       || TREE_CODE (type) == COMPLEX_TYPE))
 		OMP_CLAUSE_REDUCTION_PLACEHOLDER (c)
 		  = c_omp_reduction_lookup (reduc_id,
@@ -17105,6 +17116,7 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
 
   int always_modifier = 0;
   int close_modifier = 0;
+  int present_modifier = 0;
   for (int pos = 1; pos < map_kind_pos; ++pos)
     {
       c_token *tok = c_parser_peek_token (parser);
@@ -17136,11 +17148,21 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
 	    }
 	  close_modifier++;
 	}
+      else if (strcmp ("present", p) == 0)
+	{
+	  if (present_modifier)
+	    {
+	      c_parser_error (parser, "too many %<present%> modifiers");
+	      parens.skip_until_found_close (parser);
+	      return list;
+	    }
+	  present_modifier++;
+	}
       else
 	{
 	  c_parser_error (parser, "%<#pragma omp target%> with "
-				  "modifier other than %<always%> or "
-				  "%<close%> on %<map%> clause");
+				  "modifier other than %<always%>, %<close%> "
+				  "or %<present%> on %<map%> clause");
 	  parens.skip_until_found_close (parser);
 	  return list;
 	}
@@ -17152,14 +17174,25 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
       && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
     {
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      int always_present_modifier = always_modifier && present_modifier;
+
       if (strcmp ("alloc", p) == 0)
-	kind = GOMP_MAP_ALLOC;
+	kind = present_modifier ? GOMP_MAP_PRESENT_ALLOC : GOMP_MAP_ALLOC;
       else if (strcmp ("to", p) == 0)
-	kind = always_modifier ? GOMP_MAP_ALWAYS_TO : GOMP_MAP_TO;
+	kind = (always_present_modifier ? GOMP_MAP_ALWAYS_PRESENT_TO
+		: present_modifier ? GOMP_MAP_PRESENT_TO
+		: always_modifier ? GOMP_MAP_ALWAYS_TO
+		: GOMP_MAP_TO);
       else if (strcmp ("from", p) == 0)
-	kind = always_modifier ? GOMP_MAP_ALWAYS_FROM : GOMP_MAP_FROM;
+	kind = (always_present_modifier ? GOMP_MAP_ALWAYS_PRESENT_FROM
+		: present_modifier ? GOMP_MAP_PRESENT_FROM
+		: always_modifier ? GOMP_MAP_ALWAYS_FROM
+		: GOMP_MAP_FROM);
       else if (strcmp ("tofrom", p) == 0)
-	kind = always_modifier ? GOMP_MAP_ALWAYS_TOFROM : GOMP_MAP_TOFROM;
+	kind = (always_present_modifier ? GOMP_MAP_ALWAYS_PRESENT_TOFROM
+		: present_modifier ? GOMP_MAP_PRESENT_TOFROM
+		: always_modifier ? GOMP_MAP_ALWAYS_TOFROM
+		: GOMP_MAP_TOFROM);
       else if (strcmp ("release", p) == 0)
 	kind = GOMP_MAP_RELEASE;
       else if (strcmp ("delete", p) == 0)
@@ -17415,21 +17448,42 @@ c_parser_omp_clause_device_type (c_parser *parser, tree list)
 }
 
 /* OpenMP 4.0:
-   to ( variable-list ) */
+   from ( variable-list )
+   to ( variable-list )
+
+   OpenMP 5.1:
+   from ( [present :] variable-list )
+   to ( [present :] variable-list ) */
 
 static tree
-c_parser_omp_clause_to (c_parser *parser, tree list)
+c_parser_omp_clause_from_to (c_parser *parser, enum omp_clause_code kind,
+			     tree list)
 {
-  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_TO, list, true);
-}
+  location_t loc = c_parser_peek_token (parser)->location;
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
 
-/* OpenMP 4.0:
-   from ( variable-list ) */
+  bool present = false;
+  c_token *token = c_parser_peek_token (parser);
 
-static tree
-c_parser_omp_clause_from (c_parser *parser, tree list)
-{
-  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_FROM, list, true);
+  if (token->type == CPP_NAME
+      && strcmp (IDENTIFIER_POINTER (token->value), "present") == 0
+      && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+    {
+      present = true;
+      c_parser_consume_token (parser);
+      c_parser_consume_token (parser);
+    }
+
+  tree nl = c_parser_omp_variable_list (parser, loc, kind, list);
+  parens.skip_until_found_close (parser);
+
+  if (present)
+    for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
+      OMP_CLAUSE_MOTION_PRESENT (c) = 1;
+
+  return nl;
 }
 
 /* OpenMP 4.0:
@@ -17688,7 +17742,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 						c_name, clauses);
 	  break;
 	default:
-	  c_parser_error (parser, "expected %<#pragma acc%> clause");
+	  c_parser_error (parser, "expected an OpenACC clause");
 	  goto saw_error;
 	}
 
@@ -17936,11 +17990,13 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	      clauses = nl;
 	    }
 	  else
-	    clauses = c_parser_omp_clause_to (parser, clauses);
+	    clauses = c_parser_omp_clause_from_to (parser, OMP_CLAUSE_TO,
+						   clauses);
 	  c_name = "to";
 	  break;
 	case PRAGMA_OMP_CLAUSE_FROM:
-	  clauses = c_parser_omp_clause_from (parser, clauses);
+	  clauses = c_parser_omp_clause_from_to (parser, OMP_CLAUSE_FROM,
+						 clauses);
 	  c_name = "from";
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNIFORM:
@@ -18046,7 +18102,7 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "enter";
 	  break;
 	default:
-	  c_parser_error (parser, "expected %<#pragma omp%> clause");
+	  c_parser_error (parser, "expected an OpenMP clause");
 	  goto saw_error;
 	}
 
@@ -21764,11 +21820,18 @@ c_parser_omp_target_data (location_t loc, c_parser *parser, bool *if_p)
 	  {
 	  case GOMP_MAP_TO:
 	  case GOMP_MAP_ALWAYS_TO:
+	  case GOMP_MAP_PRESENT_TO:
+	  case GOMP_MAP_ALWAYS_PRESENT_TO:
 	  case GOMP_MAP_FROM:
 	  case GOMP_MAP_ALWAYS_FROM:
+	  case GOMP_MAP_PRESENT_FROM:
+	  case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	  case GOMP_MAP_TOFROM:
 	  case GOMP_MAP_ALWAYS_TOFROM:
+	  case GOMP_MAP_PRESENT_TOFROM:
+	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 	  case GOMP_MAP_ALLOC:
+	  case GOMP_MAP_PRESENT_ALLOC:
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
@@ -21914,7 +21977,10 @@ c_parser_omp_target_enter_data (location_t loc, c_parser *parser,
 	  {
 	  case GOMP_MAP_TO:
 	  case GOMP_MAP_ALWAYS_TO:
+	  case GOMP_MAP_PRESENT_TO:
+	  case GOMP_MAP_ALWAYS_PRESENT_TO:
 	  case GOMP_MAP_ALLOC:
+	  case GOMP_MAP_PRESENT_ALLOC:
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_TOFROM:
@@ -21923,6 +21989,14 @@ c_parser_omp_target_enter_data (location_t loc, c_parser *parser,
 	    break;
 	  case GOMP_MAP_ALWAYS_TOFROM:
 	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_TO);
+	    map_seen = 3;
+	    break;
+	  case GOMP_MAP_PRESENT_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_PRESENT_TO);
+	    map_seen = 3;
+	    break;
+	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_PRESENT_TO);
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
@@ -22012,6 +22086,8 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 	  {
 	  case GOMP_MAP_FROM:
 	  case GOMP_MAP_ALWAYS_FROM:
+	  case GOMP_MAP_PRESENT_FROM:
+	  case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	  case GOMP_MAP_RELEASE:
 	  case GOMP_MAP_DELETE:
 	    map_seen = 3;
@@ -22022,6 +22098,14 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 	    break;
 	  case GOMP_MAP_ALWAYS_TOFROM:
 	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_FROM);
+	    map_seen = 3;
+	    break;
+	  case GOMP_MAP_PRESENT_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_PRESENT_FROM);
+	    map_seen = 3;
+	    break;
+	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_PRESENT_FROM);
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
@@ -22269,11 +22353,18 @@ check_clauses:
 	  {
 	  case GOMP_MAP_TO:
 	  case GOMP_MAP_ALWAYS_TO:
+	  case GOMP_MAP_PRESENT_TO:
+	  case GOMP_MAP_ALWAYS_PRESENT_TO:
 	  case GOMP_MAP_FROM:
 	  case GOMP_MAP_ALWAYS_FROM:
+	  case GOMP_MAP_PRESENT_FROM:
+	  case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	  case GOMP_MAP_TOFROM:
 	  case GOMP_MAP_ALWAYS_TOFROM:
+	  case GOMP_MAP_PRESENT_TOFROM:
+	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 	  case GOMP_MAP_ALLOC:
+	  case GOMP_MAP_PRESENT_ALLOC:
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_ALWAYS_POINTER:
 	  case GOMP_MAP_ATTACH_DETACH:
@@ -23293,7 +23384,7 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
 	  if (type == error_mark_node)
 	    ;
 	  else if ((INTEGRAL_TYPE_P (type)
-		    || TREE_CODE (type) == REAL_TYPE
+		    || SCALAR_FLOAT_TYPE_P (type)
 		    || TREE_CODE (type) == COMPLEX_TYPE)
 		   && orig_reduc_id == NULL_TREE)
 	    error_at (loc, "predeclared arithmetic type in "

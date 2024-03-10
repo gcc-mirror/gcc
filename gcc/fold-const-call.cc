@@ -1060,7 +1060,8 @@ fold_const_call_ss (wide_int *result, combined_fn fn, const wide_int_ref &arg,
     case CFN_BUILT_IN_BSWAP32:
     case CFN_BUILT_IN_BSWAP64:
     case CFN_BUILT_IN_BSWAP128:
-      *result = wide_int::from (arg, precision, TYPE_SIGN (arg_type)).bswap ();
+      *result = wi::bswap (wide_int::from (arg, precision,
+					   TYPE_SIGN (arg_type)));
       return true;
 
     default:

@@ -59,12 +59,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <time.h>
 #endif
 
-/* Define FALSE if one hasn't already been defined.  */
-
-#if !defined(FALSE)
-#define FALSE (1 == 0)
-#endif
-
 /* Define a generic NULL if one hasn't already been defined.  */
 
 #if !defined(NULL)
@@ -214,7 +208,7 @@ EXPORT(signbit) (double r)
      sizeof(double).  */
   return signbit (r);
 #else
-  return FALSE;
+  return false;
 #endif
 }
 
@@ -227,7 +221,7 @@ EXPORT(signbitl) (long double r)
      sizeof(double).  */
   return signbitl (r);
 #else
-  return FALSE;
+  return false;
 #endif
 }
 
@@ -240,7 +234,7 @@ EXPORT(signbitf) (float r)
      sizeof(double).  */
   return signbitf (r);
 #else
-  return FALSE;
+  return false;
 #endif
 }
 
@@ -253,7 +247,7 @@ EXPORT(isfinite) (double x)
 #if defined(FP_NAN) && defined(FP_INFINITE)
   return (fpclassify (x) != FP_NAN && fpclassify (x) != FP_INFINITE);
 #else
-  return FALSE;
+  return false;
 #endif
 }
 
@@ -266,7 +260,7 @@ EXPORT(isfinitel) (long double x)
 #if defined(FP_NAN) && defined(FP_INFINITE)
   return (fpclassify (x) != FP_NAN && fpclassify (x) != FP_INFINITE);
 #else
-  return FALSE;
+  return false;
 #endif
 }
 
@@ -279,7 +273,7 @@ EXPORT(isfinitef) (float x)
 #if defined(FP_NAN) && defined(FP_INFINITE)
   return (fpclassify (x) != FP_NAN && fpclassify (x) != FP_INFINITE);
 #else
-  return FALSE;
+  return false;
 #endif
 }
 

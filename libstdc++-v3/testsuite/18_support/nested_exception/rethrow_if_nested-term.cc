@@ -1,5 +1,5 @@
 // { dg-do run { target c++11 } }
-// { dg-skip-if "" { *-*-* } { "-fno-exceptions" } }
+// { dg-require-effective-target exceptions_enabled }
 
 #include <exception>
 #include <cstdlib>

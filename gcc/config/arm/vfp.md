@@ -2138,7 +2138,7 @@
 (define_insn_and_split "no_literal_pool_df_immediate"
   [(set (match_operand:DF 0 "s_register_operand" "=w")
 	(match_operand:DF 1 "const_double_operand" "F"))
-   (clobber (match_operand:DF 2 "s_register_operand" "=r"))]
+   (clobber (match_operand:DI 2 "s_register_operand" "=r"))]
   "arm_disable_literal_pool
    && TARGET_VFP_BASE
    && !arm_const_double_rtx (operands[1])
@@ -2153,8 +2153,9 @@
   unsigned HOST_WIDE_INT ival = zext_hwi (buf[order], 32);
   ival |= (zext_hwi (buf[1 - order], 32) << 32);
   rtx cst = gen_int_mode (ival, DImode);
-  emit_move_insn (simplify_gen_subreg (DImode, operands[2], DFmode, 0), cst);
-  emit_move_insn (operands[0], operands[2]);
+  emit_move_insn (operands[2], cst);
+  emit_move_insn (operands[0],
+		  simplify_gen_subreg (DFmode, operands[2], DImode, 0));
   DONE;
 }
 )

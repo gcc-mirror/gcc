@@ -203,7 +203,10 @@ vrange::operator= (const vrange &src)
   else if (is_a <frange> (src))
     as_a <frange> (*this) = as_a <frange> (src);
   else
-    gcc_unreachable ();
+    {
+      gcc_checking_assert (is_a <unsupported_range> (src));
+      m_kind = src.m_kind;
+    }
   return *this;
 }
 
@@ -266,14 +269,14 @@ add_vrange (const vrange &v, inchash::hash &hstate,
   if (is_a <frange> (v))
     {
       const frange &r = as_a <frange> (v);
-      if (r.varying_p ())
-	hstate.add_int (VR_VARYING);
+      if (r.known_isnan ())
+	hstate.add_int (VR_NAN);
       else
-	hstate.add_int (VR_RANGE);
-
-      hstate.add_real_value (r.lower_bound ());
-      hstate.add_real_value (r.upper_bound ());
-
+	{
+	  hstate.add_int (r.varying_p () ? VR_VARYING : VR_RANGE);
+	  hstate.add_real_value (r.lower_bound ());
+	  hstate.add_real_value (r.upper_bound ());
+	}
       nan_state nan = r.get_nan_state ();
       hstate.add_int (nan.pos_p ());
       hstate.add_int (nan.neg_p ());
@@ -356,14 +359,7 @@ frange::set (tree type,
       gcc_unreachable ();
     }
 
-  // Handle NANs.
-  if (real_isnan (&min) || real_isnan (&max))
-    {
-      gcc_checking_assert (real_identical (&min, &max));
-      bool sign = real_isneg (&min);
-      set_nan (type, sign);
-      return;
-    }
+  gcc_checking_assert (!real_isnan (&min) && !real_isnan (&max));
 
   m_kind = kind;
   m_type = type;
@@ -901,6 +897,9 @@ frange::set_nonnegative (tree type)
 irange &
 irange::operator= (const irange &src)
 {
+  int needed = src.num_pairs ();
+  maybe_resize (needed);
+
   unsigned x;
   unsigned lim = src.m_num_ranges;
   if (lim > m_max_ranges)
@@ -1340,6 +1339,7 @@ irange::union_ (const vrange &v)
   // Now it simply needs to be copied, and if there are too many
   // ranges, merge some.  We wont do any analysis as to what the
   // "best" merges are, simply combine the final ranges into one.
+  maybe_resize (i / 2);
   if (i > m_max_ranges * 2)
     {
       res[m_max_ranges * 2 - 1] = res[i - 1];
@@ -1438,6 +1438,11 @@ irange::intersect (const vrange &v)
   // If R fully contains this, then intersection will change nothing.
   if (r.irange_contains_p (*this))
     return intersect_nonzero_bits (r);
+
+  // ?? We could probably come up with something smarter than the
+  // worst case scenario here.
+  int needed = num_pairs () + r.num_pairs ();
+  maybe_resize (needed);
 
   signop sign = TYPE_SIGN (m_type);
   unsigned bld_pair = 0;
@@ -1638,14 +1643,11 @@ irange::invert ()
   wide_int type_min = wi::min_value (prec, sign);
   wide_int type_max = wi::max_value (prec, sign);
   m_nonzero_mask = wi::minus_one (prec);
-  if (m_num_ranges == m_max_ranges
-      && lower_bound () != type_min
-      && upper_bound () != type_max)
-    {
-      m_base[1] = type_max;
-      m_num_ranges = 1;
-      return;
-    }
+
+  // At this point, we need one extra sub-range to represent the
+  // inverse.
+  maybe_resize (m_num_ranges + 1);
+
   // The algorithm is as follows.  To calculate INVERT ([a,b][c,d]), we
   // generate [-MIN, a-1][b+1, c-1][d+1, MAX].
   //
@@ -1859,12 +1861,13 @@ irange::union_nonzero_bits (const irange &r)
   bool changed = false;
   if (m_nonzero_mask != r.m_nonzero_mask)
     {
-      m_nonzero_mask = get_nonzero_bits () | r.get_nonzero_bits ();
+      wide_int save = get_nonzero_bits ();
+      m_nonzero_mask = save | r.get_nonzero_bits ();
       // No need to call set_range_from_nonzero_bits, because we'll
       // never narrow the range.  Besides, it would cause endless
       // recursion because of the union_ in
       // set_range_from_nonzero_bits.
-      changed = true;
+      changed = m_nonzero_mask != save;
     }
   normalize_kind ();
   if (flag_checking)

@@ -1226,9 +1226,7 @@ iq2000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   int bias = 0;
   unsigned int *arg_words = &cum->arg_words;
   int struct_p = (type != 0
-		  && (TREE_CODE (type) == RECORD_TYPE
-		      || TREE_CODE (type) == UNION_TYPE
-		      || TREE_CODE (type) == QUAL_UNION_TYPE));
+		  && RECORD_OR_UNION_TYPE_P (type));
 
   if (TARGET_DEBUG_D_MODE)
     {
@@ -1304,7 +1302,7 @@ iq2000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
 	  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	    if (TREE_CODE (field) == FIELD_DECL
-		&& TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		&& SCALAR_FLOAT_TYPE_P (TREE_TYPE (field))
 		&& TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
 		&& tree_fits_shwi_p (bit_position (field))
 		&& int_bit_position (field) % BITS_PER_WORD == 0)
@@ -1346,7 +1344,7 @@ iq2000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
 		  if (field
 		      && int_bit_position (field) == bitpos
-		      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		      && SCALAR_FLOAT_TYPE_P (TREE_TYPE (field))
 		      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
 		    reg = gen_rtx_REG (DFmode, regno++);
 		  else

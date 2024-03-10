@@ -555,7 +555,7 @@ install_var_field (tree var, tree record_type, field_map_t *fields)
 	  name = get_identifier (tmp);
 	}
     }
-  else if (TREE_CODE (var) == VAR_DECL)
+  else if (VAR_P (var))
     {
       name = DECL_NAME (var);
       if (!name)
@@ -577,7 +577,7 @@ install_var_field (tree var, tree record_type, field_map_t *fields)
 
   tree field = build_decl (BUILTINS_LOCATION, FIELD_DECL, name, type);
 
-  if (TREE_CODE (var) == VAR_DECL && type == TREE_TYPE (var))
+  if (VAR_P (var) && type == TREE_TYPE (var))
     {
       SET_DECL_ALIGN (field, DECL_ALIGN (var));
       DECL_USER_ALIGN (field) = DECL_USER_ALIGN (var);
@@ -1143,7 +1143,7 @@ worker_single_copy (basic_block from, basic_block to,
 	  update_stmt (barrier_phi);
 	}
       else
-	gcc_assert (TREE_CODE (var) == VAR_DECL);
+	gcc_assert (VAR_P (var));
 
       /* If we had no record type, we will have no fields map.  */
       field_map_t *fields = record_field_map->get (record_type);
@@ -1162,7 +1162,7 @@ worker_single_copy (basic_block from, basic_block to,
 	  gsi_insert_after (&copyout_gsi, recv, GSI_CONTINUE_LINKING);
 	  update_stmt (recv);
 
-	  if (TREE_CODE (var) == VAR_DECL)
+	  if (VAR_P (var))
 	    {
 	      /* If it's a VAR_DECL, we only copied to an SSA temporary.  Copy
 		 to the final location now.  */
@@ -1194,7 +1194,7 @@ worker_single_copy (basic_block from, basic_block to,
 	      gimple_seq_add_stmt (&sender_seq, send);
 	      update_stmt (send);
 	    }
-	  else if (TREE_CODE (var) == VAR_DECL)
+	  else if (VAR_P (var))
 	    {
 	      tree tmp = make_ssa_name (TREE_TYPE (var));
 	      gassign *send = gimple_build_assign (tmp, var);

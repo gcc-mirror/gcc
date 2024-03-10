@@ -1542,7 +1542,7 @@ package body System.Dwarf_Lines is
                exit when Ar_Start = Null_Address and Ar_Len = 0;
 
                Len   := uint32 (Ar_Len);
-               Start := uint32 (Address'(Ar_Start - C.Low));
+               Start := uint32 (Storage_Count'(Ar_Start - C.Low));
 
                --  Search START in the array
 
@@ -1762,7 +1762,7 @@ package body System.Dwarf_Lines is
 
       if C.Cache /= null then
          declare
-            Addr_Off : constant uint32 := uint32 (Address'(Addr - C.Low));
+            Off : constant uint32 := uint32 (Storage_Count'(Addr - C.Low));
 
             First, Last, Mid : Natural;
          begin
@@ -1772,17 +1772,17 @@ package body System.Dwarf_Lines is
 
             while First <= Last loop
                Mid := First + (Last - First) / 2;
-               if Addr_Off < C.Cache (Mid).First then
+               if Off < C.Cache (Mid).First then
                   Last := Mid - 1;
-               elsif Addr_Off >= C.Cache (Mid).First + C.Cache (Mid).Size then
+               elsif Off >= C.Cache (Mid).First + C.Cache (Mid).Size then
                   First := Mid + 1;
                else
                   exit;
                end if;
             end loop;
 
-            if Addr_Off >= C.Cache (Mid).First
-              and then Addr_Off < C.Cache (Mid).First + C.Cache (Mid).Size
+            if Off >= C.Cache (Mid).First
+              and then Off < C.Cache (Mid).First + C.Cache (Mid).Size
             then
                Line_Offset := Offset (C.Cache (Mid).Line);
                S := Read_Symbol (C.Obj.all, Offset (C.Cache (Mid).Sym));

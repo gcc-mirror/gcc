@@ -3,6 +3,7 @@
 /* { dg-additional-options "-mbmi" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } */
 /* { dg-additional-options "-march=rv64gc_zbb" { target { rv64 } } } */
 /* { dg-additional-options "-march=rv32gc_zbb" { target { rv32 } } } */
+/* { dg-require-effective-target int32plus } */
 
 int ctz1 (unsigned x)
 {

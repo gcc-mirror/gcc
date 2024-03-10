@@ -97,7 +97,7 @@ test01()
   duration<int, std::micro> d1_copy(d1);
   VERIFY(d1.count() * 1000 == d1_copy.count());
   
-  duration<double, std::micro> d2(8.0);
+  duration<double, std::micro> d2(85000);
   duration<double, std::milli> d2_copy(d2);
   VERIFY(d2.count() == d2_copy.count() * 1000.0);
   
@@ -105,7 +105,7 @@ test01()
   duration<int_emulator, std::micro> d3_copy(d3);
   VERIFY(d3.count() * 1000 == d3_copy.count());
   
-  duration<dbl_emulator, std::micro> d4(5.0);
+  duration<dbl_emulator, std::micro> d4(50000);
   duration<dbl_emulator, std::milli> d4_copy(d4);
   VERIFY(d4.count() == d4_copy.count() * dbl_emulator(1000.0));
 }

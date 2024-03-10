@@ -1,6 +1,7 @@
 /* PR rtl-optimization/94291 */
 /* { dg-do compile } */
 /* { dg-options "-Og" } */
+/* { dg-skip-if "accessing data memory with program memory address" { "avr-*-*" } } */
 
 unsigned a;
 

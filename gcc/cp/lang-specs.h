@@ -53,9 +53,9 @@ along with GCC; see the file COPYING3.  If not see
       "  %{fmodules-ts:-fmodule-header %{fpreprocessed:-fdirectives-only}}"
       "  %(cc1_options) %2"
       "  %{!fsyntax-only:"
-      "    %{!S:-o %g.s%V}"
+      "    %{!S:-o %g.s}"
       "    %{!fmodule-*:%{!fmodules-*:%{!fdump-ada-spec*:"
-      "	         %{!o*:--output-pch %i.gch}%W{o*:--output-pch %*}}}}}"
+      "	         %{!o*:--output-pch %w%i.gch}%W{o*:--output-pch %w%*}}}}%{!S:%V}}"
       "}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++-system-header",
@@ -74,9 +74,9 @@ along with GCC; see the file COPYING3.  If not see
       "    %{fpreprocessed:-fdirectives-only}}"
       "  %(cc1_options) %2"
       "  %{!fsyntax-only:"
-      "    %{!S:-o %g.s%V}"
+      "    %{!S:-o %g.s}"
       "    %{!fmodule-*:%{!fmodules-*:%{!fdump-ada-spec*:"
-      "	         %{!o*:--output-pch %i.gch}%W{o*:--output-pch %*}}}}}"
+      "	         %{!o*:--output-pch %w%i.gch}%W{o*:--output-pch %w%*}}}}%{!S:%V}}"
       "}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++-user-header",
@@ -94,9 +94,9 @@ along with GCC; see the file COPYING3.  If not see
       "  %{fmodules-ts:-fmodule-header=user %{fpreprocessed:-fdirectives-only}}"
       "  %(cc1_options) %2"
       "  %{!fsyntax-only:"
-      "    %{!S:-o %g.s%V}"
+      "    %{!S:-o %g.s}"
       "    %{!fmodule-*:%{!fmodules-*:%{!fdump-ada-spec*:"
-      "	         %{!o*:--output-pch %i.gch}%W{o*:--output-pch %*}}}}}"
+      "	         %{!o*:--output-pch %w%i.gch}%W{o*:--output-pch %w%*}}}}%{!S:%V}}"
       "}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++",

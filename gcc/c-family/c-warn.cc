@@ -1227,7 +1227,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	  {
 	    bool cstresult
 	      = (result
-		 && TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant);
+		 && CONSTANT_CLASS_P (result));
 	    if (TYPE_UNSIGNED (type))
 	      {
 		if (cstresult)
@@ -1255,7 +1255,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 			      expr_type, type, expr);
 	      }
 	  }
-	else if (TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant)
+	else if (CONSTANT_CLASS_P (result))
 	  warning_at (loc, warnopt,
 		      "conversion from %qT to %qT changes value from %qE to %qE",
 		      expr_type, type, expr, result);
@@ -1404,7 +1404,7 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
   while (TREE_CODE (result) == COMPOUND_EXPR)
     result = TREE_OPERAND (result, 1);
 
-  bool cst = TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant;
+  bool cst = CONSTANT_CLASS_P (result);
   tree exprtype = TREE_TYPE (expr);
   tree result_diag;
   /* We're interested in the actual numerical value here, not its ASCII

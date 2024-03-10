@@ -45,7 +45,7 @@ if test "$build" != "$host"; then
       *-*-darwin*,*-*-darwin*)
 	hostos=`echo $host | sed 's/.*-darwin/darwin/'`
 	targetos=`echo $target | sed 's/.*-darwin/darwin/'`
-	if test $hostos = $targetos -o $targetos = darwin ; then
+	if test $hostos = $targetos || test $targetos = darwin ; then
 	  GLIBCXX_IS_NATIVE=true
 	fi
 	;;
@@ -537,6 +537,9 @@ GLIBCXX_EMERGENCY_EH_ALLOC
 
 # For src/c++20/tzdb.cc defaults.
 GLIBCXX_ZONEINFO_DIR
+
+# For src/c++11/shared_ptr.cc alignment.
+GLIBCXX_CHECK_ALIGNAS_CACHELINE
 
 # Define documentation rules conditionally.
 

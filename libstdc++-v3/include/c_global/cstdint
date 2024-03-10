@@ -47,7 +47,7 @@
 
 namespace std
 {
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_C99_STDINT
   using ::int8_t;
   using ::int16_t;
   using ::int32_t;
@@ -83,7 +83,7 @@ namespace std
 
   using ::uintmax_t;
   using ::uintptr_t;
-#else // !_GLIBCXX_USE_C99_STDINT_TR1
+#else // !_GLIBCXX_USE_C99_STDINT
 
   using intmax_t = __INTMAX_TYPE__;
   using uintmax_t = __UINTMAX_TYPE__;
@@ -138,7 +138,7 @@ namespace std
   using uintptr_t = __UINTPTR_TYPE__;
 #endif
 
-#endif // _GLIBCXX_USE_C99_STDINT_TR1
+#endif // _GLIBCXX_USE_C99_STDINT
 } // namespace std
 
 #endif // C++11

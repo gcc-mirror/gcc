@@ -38,10 +38,10 @@ TEST_LOOP (uint32_t);
 /* Four iterations are needed; ought to stay a loop.  */
 TEST_LOOP (uint64_t);
 
-/* { dg-final { scan-assembler {\tld1b\tz[0-9]\.b} } } */
-/* { dg-final { scan-assembler {\tld1h\tz[0-9]\.h} } } */
-/* { dg-final { scan-assembler {\tld1w\tz[0-9]\.s} } } */
-/* { dg-final { scan-assembler {\tld1d\tz[0-9]\.d} } } */
+/* { dg-final { scan-assembler {\tld1b\tz[0-9]+\.b} } } */
+/* { dg-final { scan-assembler {\tld1h\tz[0-9]+\.h} } } */
+/* { dg-final { scan-assembler {\tld1w\tz[0-9]+\.s} } } */
+/* { dg-final { scan-assembler {\tld1d\tz[0-9]+\.d} } } */
 /* { dg-final { scan-assembler-not {\tldr\tz[0-9]} } } */
 /* { dg-final { scan-assembler-not {\tstr\tz[0-9]} } } */
 /* { dg-final { scan-assembler-not {\tldr\tp[0-9]} } } */

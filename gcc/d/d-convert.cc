@@ -257,7 +257,7 @@ convert (tree type, tree expr)
     return fold_convert (type, expr);
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
-  if (TREE_CODE (TREE_TYPE (expr)) == VOID_TYPE)
+  if (VOID_TYPE_P (TREE_TYPE (expr)))
     {
       error ("void value not ignored as it ought to be");
       return error_mark_node;
@@ -270,8 +270,7 @@ convert (tree type, tree expr)
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-      if (TREE_CODE (etype) == POINTER_TYPE
-	  || TREE_CODE (etype) == REFERENCE_TYPE)
+      if (POINTER_TYPE_P (etype))
 	{
 	  if (integer_zerop (e))
 	    return build_int_cst (type, 0);
@@ -300,7 +299,7 @@ convert (tree type, tree expr)
       return fold (convert_to_real (type, e));
 
     case COMPLEX_TYPE:
-      if (TREE_CODE (etype) == REAL_TYPE && TYPE_IMAGINARY_FLOAT (etype))
+      if (SCALAR_FLOAT_TYPE_P (etype) && TYPE_IMAGINARY_FLOAT (etype))
 	return fold_build2 (COMPLEX_EXPR, type,
 			    build_zero_cst (TREE_TYPE (type)),
 			    convert (TREE_TYPE (type), expr));
@@ -656,7 +655,7 @@ convert_for_rvalue (tree expr, Type *etype, Type *totype)
       && ebtype->ty == TY::Tsarray
       && tbtype->nextOf ()->ty == ebtype->nextOf ()->ty
       && INDIRECT_REF_P (expr)
-      && CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (expr, 0)))
+      && CONVERT_EXPR_P (TREE_OPERAND (expr, 0))
       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (expr, 0), 0)) == ADDR_EXPR)
     {
       /* If expression is a vector that was casted to an array either by

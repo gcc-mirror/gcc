@@ -475,7 +475,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  && !c->agg_contents
 	  && (!val || TREE_CODE (val) != INTEGER_CST))
 	{
-	  value_range vr = avals->m_known_value_ranges[c->operand_num];
+	  Value_Range vr (avals->m_known_value_ranges[c->operand_num]);
 	  if (!vr.undefined_p ()
 	      && !vr.varying_p ()
 	      && (TYPE_SIZE (c->type) == TYPE_SIZE (vr.type ())))
@@ -630,8 +630,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		|| ipa_is_param_used_by_ipa_predicates (callee_pi, i))
 	      {
 		/* Determine if we know constant value of the parameter.  */
-		tree cst = ipa_value_from_jfunc (caller_parms_info, jf,
-						 ipa_get_type (callee_pi, i));
+		tree type = ipa_get_type (callee_pi, i);
+		tree cst = ipa_value_from_jfunc (caller_parms_info, jf, type);
 
 		if (!cst && e->call_stmt
 		    && i < (int)gimple_call_num_args (e->call_stmt))
@@ -659,10 +659,9 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		    && vrp_will_run_p (caller)
 		    && ipa_is_param_used_by_ipa_predicates (callee_pi, i))
 		  {
-		    value_range vr
-		       = ipa_value_range_from_jfunc (caller_parms_info, e, jf,
-						     ipa_get_type (callee_pi,
-								   i));
+		    Value_Range vr (type);
+
+		    ipa_value_range_from_jfunc (vr, caller_parms_info, e, jf, type);
 		    if (!vr.undefined_p () && !vr.varying_p ())
 		      {
 			if (!avals->m_known_value_ranges.length ())
@@ -670,7 +669,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 			    avals->m_known_value_ranges.safe_grow (count, true);
 			    for (int i = 0; i < count; ++i)
 			      new (&avals->m_known_value_ranges[i])
-				value_range ();
+				Value_Range ();
 			  }
 			avals->m_known_value_ranges[i] = vr;
 		      }

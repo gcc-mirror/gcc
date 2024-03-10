@@ -43,3 +43,23 @@ INSERT_PASS_BEFORE (pass_free_cfg, 1, avr_pass_recompute_notes);
    insns withaout any insns in between.  */
 
 INSERT_PASS_AFTER (pass_expand, 1, avr_pass_casesi);
+
+/* If-else decision trees generated for switch / case may produce sequences
+   like
+
+      SREG = compare (reg, val);
+	  if (SREG == 0)  goto label1;
+      SREG = compare (reg, 1 + val);
+	  if (SREG >= 0)  goto label2;
+
+   which can be optimized to
+
+      SREG = compare (reg, val);
+	  if (SREG == 0)  goto label1;
+	  if (SREG >= 0)  goto label2;
+
+   The optimal place for such a pass would be directly after expand, but
+   it's not possible for a jump insn to target more than one code label.
+   Hence, run a mini pass right before split2 which introduces REG_CC.  */
+
+INSERT_PASS_BEFORE (pass_split_after_reload, 1, avr_pass_ifelse);

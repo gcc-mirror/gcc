@@ -283,8 +283,8 @@ one() {
     echo "${GOOD_PROG}" >> $FILE1
     echo "${GOOD_PROG}" > $FILE2
 
-    if [ "${FAIL_VERSION}" == "yes" ]; then
-	if [ "${EXP}" == "${EXP_PASS}" ]; then
+    if [ "${FAIL_VERSION}" = "yes" ]; then
+	if [ "${EXP}" = "${EXP_PASS}" ]; then
 	    NAME=${KIND}-${EXP_FAIL}
 	else
 	    NAME=${KIND}-${EXP_XFAIL}
@@ -322,8 +322,8 @@ two() {
     echo "${GOOD_PROG}" >> $FILE1
     echo "${GOOD_PROG}" > $FILE2
 
-    if [ "${FAIL_VERSION}" == "yes" ]; then
-	if [ "${EXP}" == "${EXP_PASS}" ]; then
+    if [ "${FAIL_VERSION}" = "yes" ]; then
+	if [ "${EXP}" = "${EXP_PASS}" ]; then
 	    NAME=${KIND1}-${KIND2}-${EXP_FAIL}
 	else
 	    NAME=${KIND1}-${KIND2}-${EXP_XFAIL}
@@ -364,8 +364,8 @@ three() {
     echo "${GOOD_PROG}" >> $FILE1
     echo "${GOOD_PROG}" > $FILE2
 
-    if [ "${FAIL_VERSION}" == "${yes}" ]; then
-	if [ "${EXP}" == "${EXP_PASS}" ]; then
+    if [ "${FAIL_VERSION}" = "${yes}" ]; then
+	if [ "${EXP}" = "${EXP_PASS}" ]; then
 	    NAME=${KIND1}-${KIND2}-${KIND3}-${EXP_FAIL}
 	else
 	    NAME=${KIND1}-${KIND2}-${KIND3}-${EXP_XFAIL}

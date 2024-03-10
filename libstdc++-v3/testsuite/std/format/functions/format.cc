@@ -206,6 +206,8 @@ test_width()
   VERIFY( s == "    " );
   s = std::format("{:{}}", "", 3);
   VERIFY( s == "   " );
+  s = std::format("{:{}}|{:{}}", 1, 2, 3, 4);
+  VERIFY( s == " 1|   3" );
   s = std::format("{1:{0}}", 2, "");
   VERIFY( s == "  " );
   s = std::format("{:03}", 9);
@@ -342,6 +344,45 @@ test_float128()
 #endif
 }
 
+void
+test_pointer()
+{
+  void* p = nullptr;
+  const void* pc = p;
+  std::string s, str_int;
+
+  s = std::format("{} {} {}", p, pc, nullptr);
+  VERIFY( s == "0x0 0x0 0x0" );
+  s = std::format("{:p} {:p} {:p}", p, pc, nullptr);
+  VERIFY( s == "0x0 0x0 0x0" );
+  s = std::format("{:4},{:5},{:6}", p, pc, nullptr); // width
+  VERIFY( s == " 0x0,  0x0,   0x0" );
+  s = std::format("{:<4},{:>5},{:^7}", p, pc, nullptr); // align+width
+  VERIFY( s == "0x0 ,  0x0,  0x0  " );
+  s = std::format("{:o<4},{:o>5},{:o^7}", p, pc, nullptr); // fill+align+width
+  VERIFY( s == "0x0o,oo0x0,oo0x0oo" );
+
+  pc = p = &s;
+  str_int = std::format("{:#x}", reinterpret_cast<std::uintptr_t>(p));
+  s = std::format("{} {} {}", p, pc, nullptr);
+  VERIFY( s == (str_int + ' ' + str_int + " 0x0") );
+  str_int = std::format("{:#20x}", reinterpret_cast<std::uintptr_t>(p));
+  s = std::format("{:20} {:20p}", p, pc);
+  VERIFY( s == (str_int + ' ' + str_int) );
+
+#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
+  // P2510R3 Formatting pointers
+  s = std::format("{:06} {:07P} {:08p}", (void*)0, (const void*)0, nullptr);
+  VERIFY( s == "0x0000 0X00000 0x000000" );
+  str_int = std::format("{:#016x}", reinterpret_cast<std::uintptr_t>(p));
+  s = std::format("{:016} {:016}", p, pc);
+  VERIFY( s == (str_int + ' ' + str_int) );
+  str_int = std::format("{:#016X}", reinterpret_cast<std::uintptr_t>(p));
+  s = std::format("{:016P} {:016P}", p, pc);
+  VERIFY( s == (str_int + ' ' + str_int) );
+#endif
+}
+
 int main()
 {
   test_no_args();
@@ -354,4 +395,5 @@ int main()
   test_minmax();
   test_p1652r1();
   test_float128();
+  test_pointer();
 }

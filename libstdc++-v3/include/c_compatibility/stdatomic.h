@@ -62,7 +62,7 @@ using std::atomic_char8_t;
 using std::atomic_char16_t;
 using std::atomic_char32_t;
 using std::atomic_wchar_t;
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_C99_STDINT
 using std::atomic_int8_t;
 using std::atomic_uint8_t;
 using std::atomic_int16_t;
@@ -92,7 +92,7 @@ using std::atomic_intptr_t;
 using std::atomic_uintptr_t;
 using std::atomic_size_t;
 using std::atomic_ptrdiff_t;
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_C99_STDINT
 using std::atomic_intmax_t;
 using std::atomic_uintmax_t;
 #endif

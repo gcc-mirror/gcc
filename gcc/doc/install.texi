@@ -366,7 +366,7 @@ Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
 @command{tar} if you have problems.
 
-@item Perl version between 5.6.1 and 5.6.24
+@item Perl version 5.6.1 (or later)
 
 Necessary when targeting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
@@ -381,6 +381,9 @@ repository (mainly Unicode-related and rarely changing) from source
 tables.
 
 Used by @command{automake}.
+
+If available, enables parallel testing of @samp{libgomp} in case that
+@command{flock} is not available.
 
 @end table
 
@@ -3633,8 +3636,6 @@ information have to.
 @item
 @uref{#aarch64-x-x,,aarch64*-*-*}
 @item
-@uref{#alpha-x-x,,alpha*-*-*}
-@item
 @uref{#amdgcn-x-amdhsa,,amdgcn-*-amdhsa}
 @item
 @uref{#amd64-x-solaris2,,amd64-*-solaris2*}
@@ -3835,15 +3836,6 @@ types of branch protections.  Conversely,
 @option{--disable-standard-branch-protection} will disable both the
 protections by default.  This mechanism is turned off by default if neither
 of the options are given at configure time.
-
-@html
-<hr />
-@end html
-@anchor{alpha-x-x}
-@heading alpha*-*-*
-This section contains general configuration information for all
-Alpha-based platforms using ELF@.  In addition to reading this
-section, please read all other sections that match your target.
 
 @html
 <hr />

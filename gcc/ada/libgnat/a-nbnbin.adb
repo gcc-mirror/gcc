@@ -160,7 +160,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
 
    function To_Integer (Arg : Valid_Big_Integer) return Integer is
    begin
-      return Integer (From_Bignum (Get_Bignum (Arg)));
+      return Integer (Long_Long_Integer'(From_Bignum (Get_Bignum (Arg))));
    end To_Integer;
 
    ------------------------
@@ -186,7 +186,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
 
       function From_Big_Integer (Arg : Valid_Big_Integer) return Int is
       begin
-         return Int (From_Bignum (Get_Bignum (Arg)));
+         return Int (Long_Long_Long_Integer'(From_Bignum (Get_Bignum (Arg))));
       end From_Big_Integer;
 
    end Signed_Conversions;
@@ -214,7 +214,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
 
       function From_Big_Integer (Arg : Valid_Big_Integer) return Int is
       begin
-         return Int (From_Bignum (Get_Bignum (Arg)));
+         return Int (Unsigned_128'(From_Bignum (Get_Bignum (Arg))));
       end From_Big_Integer;
 
    end Unsigned_Conversions;

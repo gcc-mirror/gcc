@@ -17,7 +17,7 @@
 
 SUFFIXES = .c .mod .def .o .obj .lo .a .la
 
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 VPATH = . @srcdir@ @srcdir@/../../gcc/m2/gm2-libs
 

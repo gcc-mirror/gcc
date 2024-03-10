@@ -70,6 +70,14 @@ gimple_ranger::~gimple_ranger ()
   m_stmt_list.release ();
 }
 
+// Return a range_query which accesses just the known global values.
+
+range_query &
+gimple_ranger::const_query ()
+{
+  return m_cache.const_query ();
+}
+
 bool
 gimple_ranger::range_of_expr (vrange &r, tree expr, gimple *stmt)
 {
@@ -320,8 +328,8 @@ gimple_ranger::range_of_stmt (vrange &r, gimple *s, tree name)
       // Combine the new value with the old value.  This is required because
       // the way value propagation works, when the IL changes on the fly we
       // can sometimes get different results.  See PR 97741.
-      r.intersect (tmp);
-      m_cache.set_global_range (name, r);
+      bool changed = r.intersect (tmp);
+      m_cache.set_global_range (name, r, changed);
       res = true;
     }
 
@@ -393,8 +401,8 @@ gimple_ranger::prefill_stmt_dependencies (tree ssa)
 	      // Make sure we don't lose any current global info.
 	      Value_Range tmp (TREE_TYPE (name));
 	      m_cache.get_global_range (tmp, name);
-	      r.intersect (tmp);
-	      m_cache.set_global_range (name, r);
+	      bool changed = tmp.intersect (r);
+	      m_cache.set_global_range (name, tmp, changed);
 	    }
 	  continue;
 	}

@@ -2880,7 +2880,7 @@ _mm512_maskz_dbsad_epu8 (__mmask32 __U, __m512i __A, __m512i __B,
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_srli_epi16 (__m512i __A, const int __imm)
+_mm512_srli_epi16 (__m512i __A, const unsigned int __imm)
 {
   return (__m512i) __builtin_ia32_psrlwi512_mask ((__v32hi) __A, __imm,
 						  (__v32hi)
@@ -2891,7 +2891,7 @@ _mm512_srli_epi16 (__m512i __A, const int __imm)
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_srli_epi16 (__m512i __W, __mmask32 __U, __m512i __A,
-			const int __imm)
+			const unsigned int __imm)
 {
   return (__m512i) __builtin_ia32_psrlwi512_mask ((__v32hi) __A, __imm,
 						  (__v32hi) __W,
@@ -2910,7 +2910,7 @@ _mm512_maskz_srli_epi16 (__mmask32 __U, __m512i __A, const int __imm)
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_slli_epi16 (__m512i __A, const int __B)
+_mm512_slli_epi16 (__m512i __A, const unsigned int __B)
 {
   return (__m512i) __builtin_ia32_psllwi512_mask ((__v32hi) __A, __B,
 						  (__v32hi)
@@ -2921,7 +2921,7 @@ _mm512_slli_epi16 (__m512i __A, const int __B)
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_slli_epi16 (__m512i __W, __mmask32 __U, __m512i __A,
-			const int __B)
+			const unsigned int __B)
 {
   return (__m512i) __builtin_ia32_psllwi512_mask ((__v32hi) __A, __B,
 						  (__v32hi) __W,
@@ -2930,7 +2930,7 @@ _mm512_mask_slli_epi16 (__m512i __W, __mmask32 __U, __m512i __A,
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_slli_epi16 (__mmask32 __U, __m512i __A, const int __B)
+_mm512_maskz_slli_epi16 (__mmask32 __U, __m512i __A, const unsigned int __B)
 {
   return (__m512i) __builtin_ia32_psllwi512_mask ((__v32hi) __A, __B,
 						  (__v32hi)
@@ -3008,7 +3008,7 @@ _mm512_maskz_shufflelo_epi16 (__mmask32 __U, __m512i __A,
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_srai_epi16 (__m512i __A, const int __imm)
+_mm512_srai_epi16 (__m512i __A, const unsigned int __imm)
 {
   return (__m512i) __builtin_ia32_psrawi512_mask ((__v32hi) __A, __imm,
 						  (__v32hi)
@@ -3019,7 +3019,7 @@ _mm512_srai_epi16 (__m512i __A, const int __imm)
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_srai_epi16 (__m512i __W, __mmask32 __U, __m512i __A,
-			const int __imm)
+			const unsigned int __imm)
 {
   return (__m512i) __builtin_ia32_psrawi512_mask ((__v32hi) __A, __imm,
 						  (__v32hi) __W,
@@ -3028,7 +3028,7 @@ _mm512_mask_srai_epi16 (__m512i __W, __mmask32 __U, __m512i __A,
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_srai_epi16 (__mmask32 __U, __m512i __A, const int __imm)
+_mm512_maskz_srai_epi16 (__mmask32 __U, __m512i __A, const unsigned int __imm)
 {
   return (__m512i) __builtin_ia32_psrawi512_mask ((__v32hi) __A, __imm,
 						  (__v32hi)
@@ -3196,29 +3196,32 @@ _mm512_bsrli_epi128 (__m512i __A, const int __N)
 
 #define _mm512_srli_epi16(A, B)                                         \
   ((__m512i) __builtin_ia32_psrlwi512_mask ((__v32hi)(__m512i)(A),      \
-    (int)(B), (__v32hi)_mm512_setzero_si512 (), (__mmask32)-1))
+    (unsigned int)(B), (__v32hi)_mm512_setzero_si512 (), (__mmask32)-1))
 
 #define _mm512_mask_srli_epi16(W, U, A, B)                              \
   ((__m512i) __builtin_ia32_psrlwi512_mask ((__v32hi)(__m512i)(A),      \
-    (int)(B), (__v32hi)(__m512i)(W), (__mmask32)(U)))
+    (unsigned int)(B), (__v32hi)(__m512i)(W), (__mmask32)(U)))
 
 #define _mm512_maskz_srli_epi16(U, A, B)                                \
   ((__m512i) __builtin_ia32_psrlwi512_mask ((__v32hi)(__m512i)(A),      \
     (int)(B), (__v32hi)_mm512_setzero_si512 (), (__mmask32)(U)))
 
-#define _mm512_slli_epi16(X, C)						   \
-  ((__m512i)__builtin_ia32_psllwi512_mask ((__v32hi)(__m512i)(X), (int)(C),\
-    (__v32hi)(__m512i)_mm512_setzero_si512 (),				   \
+#define _mm512_slli_epi16(X, C)						    \
+  ((__m512i)__builtin_ia32_psllwi512_mask ((__v32hi)(__m512i)(X),	    \
+    (unsigned int)(C),							    \
+    (__v32hi)(__m512i)_mm512_setzero_si512 (),				    \
     (__mmask32)-1))
 
-#define _mm512_mask_slli_epi16(W, U, X, C)                                 \
-  ((__m512i)__builtin_ia32_psllwi512_mask ((__v32hi)(__m512i)(X), (int)(C),\
-    (__v32hi)(__m512i)(W),\
+#define _mm512_mask_slli_epi16(W, U, X, C)				    \
+  ((__m512i)__builtin_ia32_psllwi512_mask ((__v32hi)(__m512i)(X),	    \
+    (unsigned int)(C),							    \
+    (__v32hi)(__m512i)(W),						    \
     (__mmask32)(U)))
 
-#define _mm512_maskz_slli_epi16(U, X, C)                                   \
-  ((__m512i)__builtin_ia32_psllwi512_mask ((__v32hi)(__m512i)(X), (int)(C),\
-    (__v32hi)(__m512i)_mm512_setzero_si512 (),				   \
+#define _mm512_maskz_slli_epi16(U, X, C)				    \
+  ((__m512i)__builtin_ia32_psllwi512_mask ((__v32hi)(__m512i)(X),	    \
+    (unsigned int)(C),							    \
+    (__v32hi)(__m512i)_mm512_setzero_si512 (),				    \
     (__mmask32)(U)))
 
 #define _mm512_shufflehi_epi16(A, B)                                                \
@@ -3257,15 +3260,15 @@ _mm512_bsrli_epi128 (__m512i __A, const int __N)
 
 #define _mm512_srai_epi16(A, B)                                         \
   ((__m512i) __builtin_ia32_psrawi512_mask ((__v32hi)(__m512i)(A),      \
-    (int)(B), (__v32hi)_mm512_setzero_si512 (), (__mmask32)-1))
+    (unsigned int)(B), (__v32hi)_mm512_setzero_si512 (), (__mmask32)-1))
 
 #define _mm512_mask_srai_epi16(W, U, A, B)                              \
   ((__m512i) __builtin_ia32_psrawi512_mask ((__v32hi)(__m512i)(A),      \
-    (int)(B), (__v32hi)(__m512i)(W), (__mmask32)(U)))
+    (unsigned int)(B), (__v32hi)(__m512i)(W), (__mmask32)(U)))
 
 #define _mm512_maskz_srai_epi16(U, A, B)                                \
   ((__m512i) __builtin_ia32_psrawi512_mask ((__v32hi)(__m512i)(A),      \
-    (int)(B), (__v32hi)_mm512_setzero_si512 (), (__mmask32)(U)))
+    (unsigned int)(B), (__v32hi)_mm512_setzero_si512 (), (__mmask32)(U)))
 
 #define _mm512_mask_blend_epi16(__U, __A, __W)			      \
   ((__m512i) __builtin_ia32_blendmw_512_mask ((__v32hi) (__A),	      \

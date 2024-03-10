@@ -9,6 +9,7 @@ proc load_gcc_lib { filename } {
 }
 
 load_lib dg.exp
+load_lib standard.exp
 
 # Required to use gcc-dg.exp - however, the latter should NOT be
 # loaded until ${tool}_target_compile is defined since it uses that
@@ -42,13 +43,14 @@ load_gcc_lib torture-options.exp
 load_gcc_lib fortran-modules.exp
 
 # Try to load a test support file, built during libgomp configuration.
-load_file libgomp-test-support.exp
+# Search in '..' vs. '.' to support parallel vs. sequential testing.
+if [info exists ::env(GCC_RUNTEST_PARALLELIZE_DIR)] {
+    load_file ../libgomp-test-support.exp
+} else {
+    load_file libgomp-test-support.exp
+}
 
 set dg-do-what-default run
-
-#
-# GCC_UNDER_TEST is the compiler under test.
-#
 
 set libgomp_compile_options ""
 
@@ -66,12 +68,11 @@ proc libgomp_init { args } {
     global srcdir blddir objdir tool_root_dir
     global libgomp_initialized
     global tmpdir
-    global blddir
     global gluefile wrap_flags
     global ALWAYS_CFLAGS
     global CFLAGS
     global TOOL_EXECUTABLE TOOL_OPTIONS
-    global GCC_UNDER_TEST
+    global GCC_UNDER_TEST GXX_UNDER_TEST GFORTRAN_UNDER_TEST
     global TESTING_IN_BUILD_TREE
     global target_triplet
     global always_ld_library_path
@@ -90,11 +91,44 @@ proc libgomp_init { args } {
       setenv LANG C.ASCII
     }
 
+    if { $blddir != "" } {
+	# Fix up '-funconfigured-libstdc++-v3' in 'GXX_UNDER_TEST' (see
+	# '../../configure.ac').
+	set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
+	if { [file exists $flags_file] } {
+	    set flags [exec sh $flags_file --build-includes]
+	    verbose -log "GXX_UNDER_TEST = $GXX_UNDER_TEST"
+	    set GXX_UNDER_TEST [string map [list \
+	      " -funconfigured-libstdc++-v3 " " $flags " \
+					   ] $GXX_UNDER_TEST]
+	    verbose -log "GXX_UNDER_TEST = $GXX_UNDER_TEST"
+	}
+    }
     if ![info exists GCC_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GCC_UNDER_TEST $TOOL_EXECUTABLE
 	} else {
 	    set GCC_UNDER_TEST "[find_gcc]"
+	}
+	# Only if we're guessing 'GCC_UNDER_TEST', we're also going to guess
+	# 'GXX_UNDER_TEST', 'GFORTRAN_UNDER_TEST'.
+	if ![info exists GXX_UNDER_TEST] then {
+	    if [info exists TOOL_EXECUTABLE] {
+		set GXX_UNDER_TEST $TOOL_EXECUTABLE
+	    } else {
+		set GXX_UNDER_TEST "[find_g++]"
+	    }
+	} else {
+	    error "GXX_UNDER_TEST set but not GCC_UNDER_TEST"
+	}
+	if ![info exists GFORTRAN_UNDER_TEST] then {
+	    if [info exists TOOL_EXECUTABLE] {
+		set GFORTRAN_UNDER_TEST $TOOL_EXECUTABLE
+	    } else {
+		set GFORTRAN_UNDER_TEST "[find_gfortran]"
+	    }
+	} else {
+	    error "GFORTRAN_UNDER_TEST set but not GCC_UNDER_TEST"
 	}
     }
 
@@ -118,7 +152,7 @@ proc libgomp_init { args } {
     }
 
     # Compute what needs to be put into LD_LIBRARY_PATH
-    set always_ld_library_path ".:${blddir}/.libs"
+    set always_ld_library_path "."
 
     global offload_additional_lib_paths
     if { $offload_additional_lib_paths != "" } {
@@ -157,6 +191,8 @@ proc libgomp_init { args } {
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
         lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
         lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
+
+	append always_ld_library_path ":${blddir}/.libs"
     }
     # The top-level include directory, for gomp-constants.h.
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../../include"
@@ -233,24 +269,25 @@ proc libgomp_target_compile { source dest type options } {
     global gluefile wrap_flags
     global ALWAYS_CFLAGS
     global GCC_UNDER_TEST
-    global lang_test_file
-    global lang_library_path
-    global lang_link_flags
-    global lang_include_flags
-    global lang_source_re
 
-    if { [info exists lang_test_file] } {
-        if { $blddir != "" } {
-            # Some targets use libgfortran.a%s in their specs, so they need
-            # a -B option for uninstalled testing.
-            lappend options "additional_flags=-B${blddir}/${lang_library_path}"
-            lappend options "ldflags=-L${blddir}/${lang_library_path}"
-        }
-        lappend options "ldflags=${lang_link_flags}"
-	if { [info exists lang_include_flags] \
-	     && [regexp ${lang_source_re} ${source}] } {
-	    lappend options "additional_flags=${lang_include_flags}"
+    global lang_source_re lang_include_flags
+    if { [info exists lang_include_flags] \
+	 && [regexp ${lang_source_re} ${source}] } {
+	lappend options "additional_flags=${lang_include_flags}"
+    }
+
+    global lang_library_paths
+    if { [info exists lang_library_paths] } {
+	foreach lang_library_path $lang_library_paths {
+	    # targets that use lib[...].a%s in their specs need a -B option
+	    # for uninstalled testing.
+	    lappend options "additional_flags=-B${blddir}/${lang_library_path}"
+	    lappend options "ldflags=-L${blddir}/${lang_library_path}"
 	}
+    }
+    global lang_link_flags
+    if { [info exists lang_link_flags] } {
+	lappend options "ldflags=${lang_link_flags}"
     }
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
@@ -260,7 +297,6 @@ proc libgomp_target_compile { source dest type options } {
 
     lappend options "additional_flags=[libio_include_flags]"
     lappend options "timeout=[timeout_value]"
-    lappend options "compiler=$GCC_UNDER_TEST"
 
     set options [concat $libgomp_compile_options $options]
 
@@ -289,6 +325,36 @@ proc libgomp_option_proc { option } {
 	return 1
     } else {
 	return 0
+    }
+}
+
+if ![info exists ::env(GCC_RUNTEST_PARALLELIZE_DIR)] {
+    # No parallel testing.
+} elseif { $FLOCK == "" } {
+    # Using just one parallel slot.
+} else {
+    # Using several parallel slots.  Override DejaGnu
+    # 'standard.exp:${tool}_load'...
+    rename libgomp_load standard_libgomp_load
+    proc libgomp_load { program args } {
+	# ... in order to serialize execution testing via an exclusive lock.
+	# We use stdout, as per <https://perldoc.perl.org/functions/flock>
+	# "[...] FILEHANDLE [...] be open with write intent to use LOCK_EX".
+	set lock_file ../lock
+	set lock_kind --exclusive
+	set lock_fd [open $lock_file a+]
+	set lock_clock_begin [clock seconds]
+	global FLOCK
+	exec $FLOCK $lock_kind 1 >@ $lock_fd
+	set lock_clock_end [clock seconds]
+	verbose -log "Got ${FLOCK}('$lock_file', '$lock_kind') at [clock format $lock_clock_end] after [expr $lock_clock_end - $lock_clock_begin] s" 2
+
+	set result [standard_libgomp_load $program $args]
+
+	# Unlock (implicit with 'close').
+	close $lock_fd
+
+	return $result
     }
 }
 

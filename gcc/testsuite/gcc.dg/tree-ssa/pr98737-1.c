@@ -2,8 +2,11 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* powerpc*-*-* aarch64*-*-* } } */
 /* { dg-options "-O2 -fdump-tree-optimized -fcompare-debug" } */
 /* { dg-additional-options "-march=i686" { target ia32 } } */
-/* { dg-final { scan-tree-dump-not "__atomic_fetch_" "optimized" } } */
-/* { dg-final { scan-tree-dump-not "__sync_fetch_and_" "optimized" } } */
+/* Note the choice between __atomic_fetch_and_* and __atomic_and_*_fetch
+   if the result is not used does not matter. so check if make sure we don't
+   have __atomic_fetch_ with an assignment */
+/* { dg-final { scan-tree-dump-not "= __atomic_fetch_" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "= __sync_fetch_and_" "optimized" } } */
 
 typedef signed char schar;
 typedef unsigned long ulong;

@@ -583,10 +583,6 @@ package body Exp_Ch3 is
       Ptr       : Entity_Id;
 
    begin
-      if not Expander_Active then
-         return;
-      end if;
-
       --  Create List of actuals for indirect call. The last parameter of the
       --  subprogram declaration is the access value for the indirect call.
 
@@ -2082,8 +2078,8 @@ package body Exp_Ch3 is
          Typ         : constant Entity_Id  := Underlying_Type (Etype (Id));
 
          Adj_Call : Node_Id;
-         Exp      : Node_Id   := Default;
-         Kind     : Node_Kind := Nkind (Default);
+         Exp      : Node_Id;
+         Exp_Q    : Node_Id;
          Lhs      : Node_Id;
          Res      : List_Id;
 
@@ -2094,13 +2090,14 @@ package body Exp_Ch3 is
              Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
 
-         --  Take a copy of Exp to ensure that later copies of this component
+         --  Take copy of Default to ensure that later copies of this component
          --  declaration in derived types see the original tree, not a node
          --  rewritten during expansion of the init_proc. If the copy contains
          --  itypes, the scope of the new itypes is the init_proc being built.
 
          declare
             Map : Elist_Id := No_Elist;
+
          begin
             if Has_Late_Init_Comp then
                --  Map the type to the _Init parameter in order to
@@ -2131,7 +2128,7 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id, Map => Map);
+            Exp := New_Copy_Tree (Default, New_Scope => Proc_Id, Map => Map);
          end;
 
          Res := New_List (
@@ -2141,6 +2138,8 @@ package body Exp_Ch3 is
 
          Set_No_Ctrl_Actions (First (Res));
 
+         Exp_Q := Unqualify (Exp);
+
          --  Adjust the tag if tagged (because of possible view conversions).
          --  Suppress the tag adjustment when not Tagged_Type_Expansion because
          --  tags are represented implicitly in objects, and when the record is
@@ -2148,9 +2147,7 @@ package body Exp_Ch3 is
 
          if Is_Tagged_Type (Typ)
            and then Tagged_Type_Expansion
-           and then Nkind (Exp) /= N_Raise_Expression
-           and then (Nkind (Exp) /= N_Qualified_Expression
-                       or else Nkind (Expression (Exp)) /= N_Raise_Expression)
+           and then Nkind (Exp_Q) /= N_Raise_Expression
          then
             Append_To (Res,
               Make_Assignment_Statement (Default_Loc,
@@ -2173,12 +2170,8 @@ package body Exp_Ch3 is
          --  Adjust the component if controlled except if it is an aggregate
          --  that will be expanded inline.
 
-         if Kind = N_Qualified_Expression then
-            Kind := Nkind (Expression (Default));
-         end if;
-
          if Needs_Finalization (Typ)
-           and then Kind not in N_Aggregate | N_Extension_Aggregate
+           and then Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
            and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
@@ -2192,16 +2185,6 @@ package body Exp_Ch3 is
             if Present (Adj_Call) then
                Append_To (Res, Adj_Call);
             end if;
-         end if;
-
-         --  If a component type has a predicate, add check to the component
-         --  assignment. Discriminants are handled at the point of the call,
-         --  which provides for a better error message.
-
-         if Comes_From_Source (Exp)
-           and then Predicate_Enabled (Typ)
-         then
-            Append (Make_Predicate_Check (Typ, Exp), Res);
          end if;
 
          return Res;
@@ -2946,8 +2929,8 @@ package body Exp_Ch3 is
                   while Present (Next (Ins_Nod))
                     and then
                       (Nkind (Ins_Nod) /= N_If_Statement
-                        or else (Nkind (First (Then_Statements (Ins_Nod)))
-                                   /= N_Procedure_Call_Statement)
+                        or else Nkind (First (Then_Statements (Ins_Nod)))
+                                  /= N_Procedure_Call_Statement
                         or else not Is_Init_Proc
                                       (Name (First (Then_Statements
                                          (Ins_Nod)))))
@@ -6910,6 +6893,12 @@ package body Exp_Ch3 is
 
                  and then not Has_Predicates (Component_Type (Typ))
 
+                 --  Array default component value takes precedence over
+                 --  Init_Or_Norm_Scalars.
+
+                 and then No (Find_Aspect (Typ,
+                                           Aspect_Default_Component_Value))
+
                  --  The component type must have a single initialization value
 
                  and then Simple_Initialization_OK (Component_Type (Typ))
@@ -7196,7 +7185,7 @@ package body Exp_Ch3 is
             --  We always use the type of the expression for the qualified
             --  expression, rather than the return object's type. We cannot
             --  always use the return object's type because the expression
-            --  might be of a specific type and the return object mignt not.
+            --  might be of a specific type and the return object might not.
 
             Alloc :=
               Make_Allocator (Loc,
@@ -7338,7 +7327,7 @@ package body Exp_Ch3 is
         and then (Restriction_Active (No_Implicit_Heap_Allocations)
           or else Restriction_Active (No_Implicit_Task_Allocations))
         and then not (Ekind (Typ) in E_Array_Type | E_Array_Subtype
-                      and then (Has_Init_Expression (N)))
+                      and then Has_Init_Expression (N))
       then
          declare
             PS_Count, SS_Count : Int := 0;
@@ -9251,9 +9240,13 @@ package body Exp_Ch3 is
          --  this is indeed the case, associate the Finalize_Address routine
          --  of the full view with the finalization masters of all pending
          --  access types. This scenario applies to anonymous access types as
-         --  well.
+         --  well. But the Finalize_Address routine is missing if the type is
+         --  class-wide and we are under restriction No_Dispatching_Calls, see
+         --  Expand_Freeze_Class_Wide_Type above for the rationale.
 
          elsif Needs_Finalization (Typ)
+           and then (not Is_Class_Wide_Type (Typ)
+                      or else not Restriction_Active (No_Dispatching_Calls))
            and then Present (Pending_Access_Types (Typ))
          then
             E := First_Elmt (Pending_Access_Types (Typ));
@@ -11105,9 +11098,10 @@ package body Exp_Ch3 is
                 Null_Record_Present => True);
 
             --  GNATprove will use expression of an expression function as an
-            --  implicit postcondition. GNAT will not benefit from expression
-            --  function (and would struggle if we add an expression function
-            --  to freezing actions).
+            --  implicit postcondition. GNAT will also benefit from expression
+            --  function to avoid premature freezing, but would struggle if we
+            --  added an expression function to freezing actions, so we create
+            --  the expanded form directly.
 
             if GNATprove_Mode then
                Func_Body :=
@@ -11126,6 +11120,7 @@ package body Exp_Ch3 is
                        Statements => New_List (
                          Make_Simple_Return_Statement (Loc,
                            Expression => Ext_Aggr))));
+               Set_Was_Expression_Function (Func_Body);
             end if;
 
             Append_To (Body_List, Func_Body);
@@ -11898,8 +11893,8 @@ package body Exp_Ch3 is
 
       --  Spec of Put_Image
 
-      if (not No_Run_Time_Mode)
-         and then RTE_Available (RE_Root_Buffer_Type)
+      if not No_Run_Time_Mode
+        and then RTE_Available (RE_Root_Buffer_Type)
       then
          --  No_Run_Time_Mode implies that the declaration of Tag_Typ
          --  (like any tagged type) will be rejected. Given this, avoid
@@ -12413,7 +12408,7 @@ package body Exp_Ch3 is
       --  Body of Put_Image
 
       if No (TSS (Tag_Typ, TSS_Put_Image))
-         and then (not No_Run_Time_Mode)
+         and then not No_Run_Time_Mode
          and then RTE_Available (RE_Root_Buffer_Type)
       then
          Build_Record_Put_Image_Procedure (Loc, Tag_Typ, Decl, Ent);
@@ -12429,14 +12424,14 @@ package body Exp_Ch3 is
       if Stream_Operation_OK (Tag_Typ, TSS_Stream_Read)
         and then No (TSS (Tag_Typ, TSS_Stream_Read))
       then
-         Build_Record_Read_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Read_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
       if Stream_Operation_OK (Tag_Typ, TSS_Stream_Write)
         and then No (TSS (Tag_Typ, TSS_Stream_Write))
       then
-         Build_Record_Write_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Write_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
@@ -12448,14 +12443,14 @@ package body Exp_Ch3 is
         and then No (TSS (Tag_Typ, TSS_Stream_Input))
       then
          Build_Record_Or_Elementary_Input_Function
-           (Loc, Tag_Typ, Decl, Ent);
+           (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
       if Stream_Operation_OK (Tag_Typ, TSS_Stream_Output)
         and then No (TSS (Tag_Typ, TSS_Stream_Output))
       then
-         Build_Record_Or_Elementary_Output_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Or_Elementary_Output_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 

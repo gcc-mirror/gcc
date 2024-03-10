@@ -142,7 +142,7 @@ process_patch () {
     # build failures, quit now.
 
     if [ ${SKIP} -eq 0 ]; then
-      if [ "x${REG_NEWMID}" == "x" \
+      if [ "x${REG_NEWMID}" = "x" \
            -o ${TEST_ID} -eq ${LATER_THAN} \
            -o ${TEST_ID} -eq ${EARLIER_THAN} ]; then
         error "build failed for ${TEST_ID}"

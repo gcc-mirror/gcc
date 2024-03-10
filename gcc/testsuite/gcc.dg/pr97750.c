@@ -1,6 +1,7 @@
 /* PR tree-optimization/97750 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wall -Wextra" } */
+/* { dg-require-effective-target ptr_eq_long } */
 
 char CopyPlane_src;
 long CopyPlane_copy_pitch;

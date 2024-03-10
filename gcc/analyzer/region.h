@@ -161,6 +161,7 @@ public:
   const frame_region *maybe_get_frame_region () const;
   enum memory_space get_memory_space () const;
   bool can_have_initial_svalue_p () const;
+  const svalue *get_initial_value_at_main (region_model_manager *mgr) const;
 
   tree maybe_get_decl () const;
 
@@ -240,6 +241,7 @@ public:
 
  private:
   region_offset calc_offset (region_model_manager *mgr) const;
+  const svalue *calc_initial_value_at_main (region_model_manager *mgr) const;
 
   complexity m_complexity;
   unsigned m_id; // purely for deterministic sorting at this stage, for dumps
@@ -247,6 +249,10 @@ public:
   tree m_type;
 
   mutable region_offset *m_cached_offset;
+
+  /* For regions within a global decl, a cache of the svalue for the initial
+     value of this region when the program starts.  */
+  mutable const svalue *m_cached_init_sval_at_main;
 };
 
 } // namespace ana
@@ -696,7 +702,8 @@ class decl_region : public region
 public:
   decl_region (unsigned id, const region *parent, tree decl)
   : region (complexity (parent), id, parent, TREE_TYPE (decl)), m_decl (decl),
-    m_tracked (calc_tracked_p (decl))
+    m_tracked (calc_tracked_p (decl)),
+    m_ctor_svalue (NULL)
   {}
 
   enum region_kind get_kind () const final override { return RK_DECL; }
@@ -716,6 +723,8 @@ public:
   const svalue *get_svalue_for_initializer (region_model_manager *mgr) const;
 
 private:
+  const svalue *calc_svalue_for_constructor (tree ctor,
+					     region_model_manager *mgr) const;
   static bool calc_tracked_p (tree decl);
 
   tree m_decl;
@@ -725,6 +734,9 @@ private:
      store objects).
      This can be debugged using -fdump-analyzer-untracked.  */
   bool m_tracked;
+
+  /* Cached result of get_svalue_for_constructor.  */
+  mutable const svalue *m_ctor_svalue;
 };
 
 } // namespace ana

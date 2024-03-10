@@ -76,6 +76,8 @@ class GTY((user)) vrange
 {
   template <typename T> friend bool is_a (vrange &);
   friend class Value_Range;
+  friend void streamer_write_vrange (struct output_block *, const vrange &);
+  friend class range_op_handler;
 public:
   virtual void accept (const class vrange_visitor &v) const = 0;
   virtual void set (tree, tree, value_range_kind = VR_RANGE);
@@ -100,9 +102,6 @@ public:
   bool operator== (const vrange &) const;
   bool operator!= (const vrange &r) const { return !(*this == r); }
   void dump (FILE *) const;
-
-  enum value_range_kind kind () const;		// DEPRECATED
-
 protected:
   vrange (enum value_range_discriminator d) : m_discriminator (d) { }
   ENUM_BITFIELD(value_range_kind) m_kind : 8;
@@ -167,9 +166,10 @@ public:
   void set_nonzero_bits (const wide_int &bits);
 
 protected:
+  void maybe_resize (int needed);
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
   virtual bool contains_p (tree cst) const override;
-  irange (wide_int *, unsigned);
+  irange (wide_int *, unsigned nranges, bool resizable);
 
    // In-place operators.
   bool irange_contains_p (const irange &) const;
@@ -179,6 +179,8 @@ protected:
 
   void verify_range ();
 
+  // Hard limit on max ranges allowed.
+  static const int HARD_MAX_RANGES = 255;
 private:
   friend void gt_ggc_mx (irange *);
   friend void gt_pch_nx (irange *);
@@ -192,16 +194,22 @@ private:
 
   bool intersect (const wide_int& lb, const wide_int& ub);
   unsigned char m_num_ranges;
-  const unsigned char m_max_ranges;
+  bool m_resizable;
+  unsigned char m_max_ranges;
   tree m_type;
   wide_int m_nonzero_mask;
+protected:
   wide_int *m_base;
 };
 
 // Here we describe an irange with N pairs of ranges.  The storage for
 // the pairs is embedded in the class as an array.
+//
+// If RESIZABLE is true, the storage will be resized on the heap when
+// the number of ranges needed goes past N up to a max of
+// HARD_MAX_RANGES.  This new storage is freed upon destruction.
 
-template<unsigned N>
+template<unsigned N, bool RESIZABLE = false>
 class GTY((user)) int_range : public irange
 {
 public:
@@ -211,7 +219,7 @@ public:
   int_range (tree type);
   int_range (const int_range &);
   int_range (const irange &);
-  virtual ~int_range () = default;
+  virtual ~int_range ();
   int_range& operator= (const int_range &);
 protected:
   int_range (tree, tree, value_range_kind = VR_RANGE);
@@ -321,6 +329,7 @@ public:
 	    const nan_state &, value_range_kind = VR_RANGE);
   void set_nan (tree type);
   void set_nan (tree type, bool sign);
+  void set_nan (tree type, const nan_state &);
   virtual void set_varying (tree type) override;
   virtual void set_undefined () override;
   virtual bool union_ (const vrange &) override;
@@ -451,6 +460,45 @@ is_a <frange> (vrange &v)
   return v.m_discriminator == VR_FRANGE;
 }
 
+template <>
+inline bool
+is_a <unsupported_range> (vrange &v)
+{
+  return v.m_discriminator == VR_UNKNOWN;
+}
+
+// For resizable ranges, resize the range up to HARD_MAX_RANGES if the
+// NEEDED pairs is greater than the current capacity of the range.
+
+inline void
+irange::maybe_resize (int needed)
+{
+  if (!m_resizable || m_max_ranges == HARD_MAX_RANGES)
+    return;
+
+  if (needed > m_max_ranges)
+    {
+      m_max_ranges = HARD_MAX_RANGES;
+      wide_int *newmem = new wide_int[m_max_ranges * 2];
+      memcpy (newmem, m_base, sizeof (wide_int) * num_pairs () * 2);
+      m_base = newmem;
+    }
+}
+
+template<unsigned N, bool RESIZABLE>
+inline
+int_range<N, RESIZABLE>::~int_range ()
+{
+  if (RESIZABLE && m_base != m_ranges)
+    delete[] m_base;
+}
+
+// This is an "infinite" precision irange for use in temporary
+// calculations.  It starts with a sensible default covering 99% of
+// uses, and goes up to HARD_MAX_RANGES when needed.  Any allocated
+// storage is freed upon destruction.
+typedef int_range<3, /*RESIZABLE=*/true> int_range_max;
+
 class vrange_visitor
 {
 public:
@@ -460,10 +508,6 @@ public:
 };
 
 typedef int_range<2> value_range;
-
-// This is an "infinite" precision irange for use in temporary
-// calculations.
-typedef int_range<255> int_range_max;
 
 // This is an "infinite" precision range object for use in temporary
 // calculations for any of the handled types.  The object can be
@@ -479,6 +523,7 @@ public:
   Value_Range (const Value_Range &);
   void set_type (tree type);
   vrange& operator= (const vrange &);
+  Value_Range& operator= (const Value_Range &);
   bool operator== (const Value_Range &r) const;
   bool operator!= (const Value_Range &r) const;
   operator vrange &();
@@ -497,6 +542,9 @@ public:
   bool contains_p (tree cst) const { return m_vrange->contains_p (cst); }
   bool singleton_p (tree *result = NULL) const
     { return m_vrange->singleton_p (result); }
+  void set_zero (tree type) { return m_vrange->set_zero (type); }
+  void set_nonzero (tree type) { return m_vrange->set_nonzero (type); }
+  bool nonzero_p () const { return m_vrange->nonzero_p (); }
   bool zero_p () const { return m_vrange->zero_p (); }
   wide_int lower_bound () const; // For irange/prange comparability.
   wide_int upper_bound () const; // For irange/prange comparability.
@@ -587,10 +635,39 @@ Value_Range::operator= (const vrange &r)
       m_frange = as_a <frange> (r);
       m_vrange = &m_frange;
     }
+  else if (is_a <unsupported_range> (r))
+    {
+      m_unsupported = as_a <unsupported_range> (r);
+      m_vrange = &m_unsupported;
+    }
   else
     gcc_unreachable ();
 
   return *m_vrange;
+}
+
+inline Value_Range &
+Value_Range::operator= (const Value_Range &r)
+{
+  if (r.m_vrange == &r.m_irange)
+    {
+      m_irange = r.m_irange;
+      m_vrange = &m_irange;
+    }
+  else if (r.m_vrange == &r.m_frange)
+    {
+      m_frange = r.m_frange;
+      m_vrange = &m_frange;
+    }
+  else if (r.m_vrange == &r.m_unsupported)
+    {
+      m_unsupported = r.m_unsupported;
+      m_vrange = &m_unsupported;
+    }
+  else
+    gcc_unreachable ();
+
+  return *this;
 }
 
 inline bool
@@ -757,8 +834,9 @@ gt_pch_nx (int_range<N> *x, gt_pointer_operator op, void *cookie)
 // Constructors for irange
 
 inline
-irange::irange (wide_int *base, unsigned nranges)
+irange::irange (wide_int *base, unsigned nranges, bool resizable)
   : vrange (VR_IRANGE),
+    m_resizable (resizable),
     m_max_ranges (nranges)
 {
   m_base = base;
@@ -767,52 +845,52 @@ irange::irange (wide_int *base, unsigned nranges)
 
 // Constructors for int_range<>.
 
-template<unsigned N>
+template<unsigned N, bool RESIZABLE>
 inline
-int_range<N>::int_range ()
-  : irange (m_ranges, N)
+int_range<N, RESIZABLE>::int_range ()
+  : irange (m_ranges, N, RESIZABLE)
 {
 }
 
-template<unsigned N>
-int_range<N>::int_range (const int_range &other)
-  : irange (m_ranges, N)
+template<unsigned N, bool RESIZABLE>
+int_range<N, RESIZABLE>::int_range (const int_range &other)
+  : irange (m_ranges, N, RESIZABLE)
 {
   irange::operator= (other);
 }
 
-template<unsigned N>
-int_range<N>::int_range (tree min, tree max, value_range_kind kind)
-  : irange (m_ranges, N)
+template<unsigned N, bool RESIZABLE>
+int_range<N, RESIZABLE>::int_range (tree min, tree max, value_range_kind kind)
+  : irange (m_ranges, N, RESIZABLE)
 {
   irange::set (min, max, kind);
 }
 
-template<unsigned N>
-int_range<N>::int_range (tree type)
-  : irange (m_ranges, N)
+template<unsigned N, bool RESIZABLE>
+int_range<N, RESIZABLE>::int_range (tree type)
+  : irange (m_ranges, N, RESIZABLE)
 {
   set_varying (type);
 }
 
-template<unsigned N>
-int_range<N>::int_range (tree type, const wide_int &wmin, const wide_int &wmax,
+template<unsigned N, bool RESIZABLE>
+int_range<N, RESIZABLE>::int_range (tree type, const wide_int &wmin, const wide_int &wmax,
 			 value_range_kind kind)
-  : irange (m_ranges, N)
+  : irange (m_ranges, N, RESIZABLE)
 {
   set (type, wmin, wmax, kind);
 }
 
-template<unsigned N>
-int_range<N>::int_range (const irange &other)
-  : irange (m_ranges, N)
+template<unsigned N, bool RESIZABLE>
+int_range<N, RESIZABLE>::int_range (const irange &other)
+  : irange (m_ranges, N, RESIZABLE)
 {
   irange::operator= (other);
 }
 
-template<unsigned N>
-int_range<N>&
-int_range<N>::operator= (const int_range &src)
+template<unsigned N, bool RESIZABLE>
+int_range<N, RESIZABLE>&
+int_range<N, RESIZABLE>::operator= (const int_range &src)
 {
   irange::operator= (src);
   return *this;
@@ -1144,17 +1222,18 @@ frange_val_is_max (const REAL_VALUE_TYPE &r, const_tree type)
   return real_identical (&max, &r);
 }
 
-// Build a signless NAN of type TYPE.
+// Build a NAN with a state of NAN.
 
 inline void
-frange::set_nan (tree type)
+frange::set_nan (tree type, const nan_state &nan)
 {
+  gcc_checking_assert (nan.pos_p () || nan.neg_p ());
   if (HONOR_NANS (type))
     {
       m_kind = VR_NAN;
       m_type = type;
-      m_pos_nan = true;
-      m_neg_nan = true;
+      m_neg_nan = nan.neg_p ();
+      m_pos_nan = nan.pos_p ();
       if (flag_checking)
 	verify_range ();
     }
@@ -1162,22 +1241,22 @@ frange::set_nan (tree type)
     set_undefined ();
 }
 
+// Build a signless NAN of type TYPE.
+
+inline void
+frange::set_nan (tree type)
+{
+  nan_state nan (true);
+  set_nan (type, nan);
+}
+
 // Build a NAN of type TYPE with SIGN.
 
 inline void
 frange::set_nan (tree type, bool sign)
 {
-  if (HONOR_NANS (type))
-    {
-      m_kind = VR_NAN;
-      m_type = type;
-      m_neg_nan = sign;
-      m_pos_nan = !sign;
-      if (flag_checking)
-	verify_range ();
-    }
-  else
-    set_undefined ();
+  nan_state nan (/*pos=*/!sign, /*neg=*/sign);
+  set_nan (type, nan);
 }
 
 // Return TRUE if range is known to be finite.
@@ -1294,5 +1373,8 @@ frange::nan_signbit_p (bool &signbit) const
 
 void frange_nextafter (enum machine_mode, REAL_VALUE_TYPE &,
 		       const REAL_VALUE_TYPE &);
+void frange_arithmetic (enum tree_code, tree, REAL_VALUE_TYPE &,
+			const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
+			const REAL_VALUE_TYPE &);
 
 #endif // GCC_VALUE_RANGE_H

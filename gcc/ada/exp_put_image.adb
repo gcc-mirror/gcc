@@ -814,7 +814,7 @@ package body Exp_Put_Image is
    --  Start of processing for Build_Record_Put_Image_Procedure
 
    begin
-      if (Ada_Version < Ada_2022)
+      if Ada_Version < Ada_2022
         or else not Enable_Put_Image (Btyp)
       then
          --  generate a very simple Put_Image implementation
@@ -1126,7 +1126,9 @@ package body Exp_Put_Image is
       --  Attribute names that will be mapped to the corresponding result types
       --  and functions.
 
-      Attribute_Name_Id : constant Name_Id := Attribute_Name (N);
+      Attribute_Name_Id : constant Name_Id :=
+        (if Attribute_Name (N) = Name_Img then Name_Image
+         else Attribute_Name (N));
 
       Result_Typ    : constant Entity_Id :=
         (case Image_Name_Id'(Attribute_Name_Id) is

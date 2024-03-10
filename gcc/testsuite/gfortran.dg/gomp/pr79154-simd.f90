@@ -8,7 +8,7 @@ end
 pure subroutine foo(a,b)
   integer, intent(out) :: a(5)
   integer, intent(in) :: b(5)
-  !$omp target teams distribute simd ! { dg-error "may not appear in PURE procedures" }
+  !$omp target teams distribute simd ! { dg-error "may not appear in a PURE procedure" }
   do i=1, 5
     a(i) = b(i)
   end do

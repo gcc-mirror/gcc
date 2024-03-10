@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (bic_1_s64_m_tied1, svint64_t,
 		z0 = svbic_m (p0, z0, 1))
 
 /*
-** bic_1_s64_m_untied: { xfail *-*-* }
+** bic_1_s64_m_untied:
 **	mov	(z[0-9]+\.d), #-2
 **	movprfx	z0, z1
 **	and	z0\.d, p0/m, z0\.d, \1
@@ -127,7 +127,7 @@ TEST_UNIFORM_ZX (bic_x0_s64_z_tied1, svint64_t, int64_t,
 		 z0 = svbic_z (p0, z0, x0))
 
 /*
-** bic_x0_s64_z_untied: { xfail *-*-* }
+** bic_x0_s64_z_untied:
 **	mov	(z[0-9]+\.d), x0
 **	movprfx	z0\.d, p0/z, z1\.d
 **	bic	z0\.d, p0/m, z0\.d, \1

@@ -711,7 +711,7 @@
 
 ;; Similarly, but include the stack pointer.  This is used
 ;; to prevent esp from being used as an index reg.
-(define_predicate "index_register_operand"
+(define_predicate "register_no_SP_operand"
   (match_operand 0 "register_operand")
 {
   if (SUBREG_P (op))
@@ -735,7 +735,7 @@
 (define_predicate "call_register_operand"
   (if_then_else (match_test "TARGET_64BIT")
     (match_operand 0 "register_operand")
-    (match_operand 0 "index_register_operand")))
+    (match_operand 0 "register_no_SP_operand")))
 
 ;; Return false if this is any eliminable register.  Otherwise general_operand.
 (define_predicate "general_no_elim_operand"

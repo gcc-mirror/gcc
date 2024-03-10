@@ -185,9 +185,9 @@ f (int N, float *a, float *b)
 
 #pragma acc wait (1.0) /* { dg-error "expression must be integral" } */
 
-#pragma acc wait 1 /* { dg-error "expected '#pragma acc' clause before numeric constant" } */
+#pragma acc wait 1 /* { dg-error "expected an OpenACC clause before numeric constant" } */
 
-#pragma acc wait N /* { dg-error "expected '#pragma acc' clause before 'N'" } */
+#pragma acc wait N /* { dg-error "expected an OpenACC clause before 'N'" } */
 
 #pragma acc wait async (1 2) /* { dg-error "expected '\\)' before numeric constant" } */
 

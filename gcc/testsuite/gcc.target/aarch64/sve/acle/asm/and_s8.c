@@ -43,7 +43,7 @@ TEST_UNIFORM_ZX (and_w0_s8_m_tied1, svint8_t, int8_t,
 		 z0 = svand_m (p0, z0, x0))
 
 /*
-** and_w0_s8_m_untied: { xfail *-*-* }
+** and_w0_s8_m_untied:
 **	mov	(z[0-9]+\.b), w0
 **	movprfx	z0, z1
 **	and	z0\.b, p0/m, z0\.b, \1
@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (and_1_s8_m_tied1, svint8_t,
 		z0 = svand_m (p0, z0, 1))
 
 /*
-** and_1_s8_m_untied: { xfail *-*-* }
+** and_1_s8_m_untied:
 **	mov	(z[0-9]+\.b), #1
 **	movprfx	z0, z1
 **	and	z0\.b, p0/m, z0\.b, \1

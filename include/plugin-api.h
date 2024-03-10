@@ -260,6 +260,13 @@ enum ld_plugin_status
 (*ld_plugin_claim_file_handler) (
   const struct ld_plugin_input_file *file, int *claimed);
 
+/* The plugin library's "claim file" handler, version 2.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_claim_file_handler_v2) (
+  const struct ld_plugin_input_file *file, int *claimed, int known_used);
+
 /* The plugin library's "all symbols read" handler.  */
 
 typedef
@@ -277,6 +284,13 @@ enum ld_plugin_status
 typedef
 enum ld_plugin_status
 (*ld_plugin_register_claim_file) (ld_plugin_claim_file_handler handler);
+
+/* The linker's interface for registering the "claim file" handler,
+   version 2.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_register_claim_file_v2) (ld_plugin_claim_file_handler_v2 handler);
 
 /* The linker's interface for registering the "all symbols read" handler.  */
 
@@ -553,6 +567,7 @@ enum ld_plugin_tag
   LDPT_GET_WRAP_SYMBOLS,
   LDPT_ADD_SYMBOLS_V2,
   LDPT_GET_API_VERSION,
+  LDPT_REGISTER_CLAIM_FILE_HOOK_V2
 };
 
 /* The plugin transfer vector.  */
@@ -565,6 +580,7 @@ struct ld_plugin_tv
     int tv_val;
     const char *tv_string;
     ld_plugin_register_claim_file tv_register_claim_file;
+    ld_plugin_register_claim_file_v2 tv_register_claim_file_v2;
     ld_plugin_register_all_symbols_read tv_register_all_symbols_read;
     ld_plugin_register_cleanup tv_register_cleanup;
     ld_plugin_add_symbols tv_add_symbols;

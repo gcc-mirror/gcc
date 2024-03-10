@@ -1,6 +1,6 @@
 /* { dg-do run } */
 
-int a = 3557301289, d;
+__INT32_TYPE__ a = 3557301289, d;
 signed char b, f;
 unsigned short c = 241;
 short e, g;

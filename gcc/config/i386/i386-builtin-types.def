@@ -73,7 +73,7 @@ DEF_PRIMITIVE_TYPE (BFLOAT16, ix86_bf16_type_node)
 DEF_PRIMITIVE_TYPE (FLOAT, float_type_node)
 DEF_PRIMITIVE_TYPE (DOUBLE, double_type_node)
 DEF_PRIMITIVE_TYPE (FLOAT80, float80_type_node)
-DEF_PRIMITIVE_TYPE (FLOAT128, float128_type_node)
+DEF_PRIMITIVE_TYPE (FLOAT128, float128t_type_node)
 DEF_PRIMITIVE_TYPE (CONST_STRING, const_string_type_node)
 
 # MMX vectors

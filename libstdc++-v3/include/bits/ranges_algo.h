@@ -1564,7 +1564,6 @@ namespace ranges
 
   inline constexpr __sample_fn sample{};
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   struct __shuffle_fn
   {
     template<random_access_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -1591,7 +1590,6 @@ namespace ranges
   };
 
   inline constexpr __shuffle_fn shuffle{};
-#endif
 
   struct __push_heap_fn
   {

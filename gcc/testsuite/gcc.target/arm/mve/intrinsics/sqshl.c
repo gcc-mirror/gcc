@@ -1,13 +1,28 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	sqshl	(?:ip|fp|r[0-9]+), #[0-9]+(?:	@.*|)
+**	...
+*/
 int32_t
-sqshl_imm (int32_t longval3)
+foo (int32_t value)
 {
-  return sqshl (longval3, 25);
+  return sqshl (value, 1);
 }
 
-/* { dg-final { scan-assembler "sqshl\\tr\[0-9\]+, #25" } } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

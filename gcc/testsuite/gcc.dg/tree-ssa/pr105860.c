@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O1" } */
+/* { dg-require-effective-target int32plus } */
 
 struct S1  {
         unsigned int _0;

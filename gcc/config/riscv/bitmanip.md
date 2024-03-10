@@ -47,10 +47,10 @@
 ; implicit sign-extensions.
 (define_split
   [(set (match_operand:DI 0 "register_operand")
-	(sign_extend:DI (div:SI (plus:SI (subreg:SI (ashift:DI (match_operand:DI 1 "register_operand")
-							       (match_operand:QI 2 "imm123_operand")) 0)
-						    (subreg:SI (match_operand:DI 3 "register_operand") 0))
-		(subreg:SI (match_operand:DI 4 "register_operand") 0))))
+	(sign_extend:DI (div:SI (plus:SI (ashift:SI (subreg:SI (match_operand:DI 1 "register_operand") 0)
+						    (match_operand:QI 2 "imm123_operand"))
+					 (subreg:SI (match_operand:DI 3 "register_operand") 0))
+				(subreg:SI (match_operand:DI 4 "register_operand") 0))))
    (clobber (match_operand:DI 5 "register_operand"))]
   "TARGET_64BIT && TARGET_ZBA"
    [(set (match_dup 5) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
@@ -246,11 +246,22 @@
 
 (define_insn "*<bitmanip_optab>disi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (sign_extend:DI
+        (any_extend:DI
           (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r"))))]
   "TARGET_64BIT && TARGET_ZBB"
   "<bitmanip_insn>w\t%0,%1"
   [(set_attr "type" "<bitmanip_insn>")
+   (set_attr "mode" "SI")])
+
+;; A SImode clz_ctz_pcnt may be extended to DImode via subreg.
+(define_insn "*<bitmanip_optab>disi2_sext"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (and:DI (subreg:DI
+          (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r")) 0)
+          (match_operand:DI 2 "const_int_operand")))]
+  "TARGET_64BIT && TARGET_ZBB && ((INTVAL (operands[2]) & 0x3f) == 0x3f)"
+  "<bitmanip_insn>w\t%0,%1"
+  [(set_attr "type" "bitmanip")
    (set_attr "mode" "SI")])
 
 (define_insn "*<bitmanip_optab>di2"
@@ -293,11 +304,11 @@
   [(set_attr "type" "bitmanip,load")
    (set_attr "mode" "HI")])
 
-(define_expand "rotr<mode>3"
-  [(set (match_operand:GPR 0 "register_operand")
-	(rotatert:GPR (match_operand:GPR 1 "register_operand")
+(define_expand "rotrdi3"
+  [(set (match_operand:DI 0 "register_operand")
+	(rotatert:DI (match_operand:DI 1 "register_operand")
 		     (match_operand:QI 2 "arith_operand")))]
-  "TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB"
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB)"
 {
   if (TARGET_XTHEADBB && !immediate_operand (operands[2], VOIDmode))
     FAIL;
@@ -311,6 +322,26 @@
   "ror%i2%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+(define_expand "rotrsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+       (rotatert:SI (match_operand:SI 1 "register_operand" "r")
+                    (match_operand:QI 2 "arith_operand" "rI")))]
+  "TARGET_ZBB || TARGET_ZBKB || TARGET_XTHEADBB"
+{
+  if (TARGET_XTHEADBB && !immediate_operand (operands[2], VOIDmode))
+    FAIL;
+  if (TARGET_64BIT && register_operand (operands[2], QImode))
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_rotrsi3_sext (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
+
 (define_insn "*rotrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(rotatert:DI (match_operand:DI 1 "register_operand" "r")
@@ -319,7 +350,7 @@
   "ror%i2\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
-(define_insn "*rotrsi3_sext"
+(define_insn "rotrsi3_sext"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
                                  (match_operand:QI 2 "arith_operand" "rI"))))]
@@ -327,13 +358,31 @@
   "ror%i2%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
-(define_insn "rotlsi3"
+(define_insn "*rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(rotate:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:QI 2 "register_operand" "r")))]
   "TARGET_ZBB || TARGET_ZBKB"
   "rol%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
+
+(define_expand "rotlsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+       (rotate:SI (match_operand:SI 1 "register_operand" "r")
+                  (match_operand:QI 2 "register_operand" "r")))]
+  "TARGET_ZBB || TARGET_ZBKB"
+{
+  if (TARGET_64BIT)
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_rotlsi3_sext (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
 
 (define_insn "rotldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -350,6 +399,42 @@
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "rolw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
+
+(define_insn_and_split "*<bitmanip_optab><GPR:mode>3_mask"
+  [(set (match_operand:GPR     0 "register_operand" "= r")
+        (bitmanip_rotate:GPR
+            (match_operand:GPR 1 "register_operand" "  r")
+            (match_operator 4 "subreg_lowpart_operator"
+             [(and:GPR2
+               (match_operand:GPR2 2 "register_operand"  "r")
+               (match_operand 3 "<GPR:shiftm1>" "<GPR:shiftm1p>"))])))]
+  "TARGET_ZBB || TARGET_ZBKB"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (bitmanip_rotate:GPR (match_dup 1)
+                             (match_dup 2)))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn_and_split "*<bitmanip_optab>si3_sext_mask"
+  [(set (match_operand:DI     0 "register_operand" "= r")
+  (sign_extend:DI (bitmanip_rotate:SI
+            (match_operand:SI 1 "register_operand" "  r")
+            (match_operator 4 "subreg_lowpart_operator"
+             [(and:GPR
+               (match_operand:GPR 2 "register_operand"  "r")
+               (match_operand 3 "const_si_mask_operand"))]))))]
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+  (sign_extend:DI (bitmanip_rotate:SI (match_dup 1)
+                           (match_dup 2))))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "DI")])
 
 ;; orc.b (or-combine) is added as an unspec for the benefit of the support
 ;; for optimized string functions (such as strcmp).
@@ -719,6 +804,29 @@
    operands[8] = GEN_INT (setbit);
    operands[9] = GEN_INT (clearbit);
 })
+
+;; IF_THEN_ELSE: test for (a & (1 << BIT_NO))
+(define_insn_and_split "*branch<X:mode>_bext"
+  [(set (pc)
+	(if_then_else
+	  (match_operator 1 "equality_operator"
+         [(zero_extract:X (match_operand:X 2 "register_operand" "r")
+                          (const_int 1)
+                          (zero_extend:X
+                            (match_operand:QI 3 "register_operand" "r")))
+	    (const_int 0)])
+	(label_ref (match_operand 0 "" ""))
+	(pc)))
+  (clobber (match_scratch:X 4 "=&r"))]
+  "TARGET_ZBS"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4) (zero_extract:X (match_dup 2)
+					(const_int 1)
+					(zero_extend:X (match_dup 3))))
+   (set (pc) (if_then_else (match_op_dup 1 [(match_dup 4) (const_int 0)])
+			   (label_ref (match_dup 0))
+			   (pc)))])
 
 ;; ZBKC or ZBC extension
 (define_insn "riscv_clmul_<mode>"

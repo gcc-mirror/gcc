@@ -37,11 +37,13 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <tuple>
-#include <exception>
-#include <type_traits>
-#include <bits/chrono.h>
-#include <bits/error_constants.h>
+#include <tuple>	      // std::tuple
+#include <type_traits>        // is_same_v
+#include <errno.h>	      // EAGAIN, EDEADLK
+#include <bits/chrono.h>      // duration, time_point, is_clock_v
+#include <bits/functexcept.h> // __throw_system_error
+#include <bits/invoke.h>      // __invoke
+#include <bits/move.h>	      // std::forward
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
 #if ! _GTHREAD_USE_MUTEX_TIMEDLOCK

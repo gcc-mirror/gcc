@@ -11,8 +11,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#if !defined(__APPLE__) && !defined(__DragonFly__)
+#if __has_include(<malloc.h>)
 #include <malloc.h>
+#endif
+#if __has_include(<sys/time.h>)
+#include <sys/time.h>
 #endif
 #include <string.h>
 #include <math.h>
@@ -1161,7 +1164,7 @@ real_t get_expected_result(const char * name)
     } else if (!strcmp(name, "s175")) {
 	return 32009.023438f;
     } else if (!strcmp(name, "s176")) {
-	return 32000.f;
+	return 32063.902344f;
     } else if (!strcmp(name, "s211")) {
 	return 63983.308594f;
     } else if (!strcmp(name, "s212")) {

@@ -1838,7 +1838,8 @@ BEGIN
          ELSE
             MetaError1('not expecting this function inside a constant expression {%1Dad}', func)
          END
-      END
+      END ;
+      RETURN( TRUE )
    END
 END WalkFunction ;
 

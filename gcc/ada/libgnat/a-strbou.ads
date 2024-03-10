@@ -1341,6 +1341,9 @@ package Ada.Strings.Bounded with SPARK_Mode is
             (for all K in 1 .. Length (Source) =>
                Element (Translate'Result, K) = Mapping (Element (Source, K))),
         Global => null;
+      pragma Annotate (GNATprove, False_Positive,
+                       "call via access-to-subprogram",
+                       "function Mapping must always terminate");
 
       procedure Translate
         (Source  : in out Bounded_String;
@@ -1352,6 +1355,9 @@ package Ada.Strings.Bounded with SPARK_Mode is
             (for all K in 1 .. Length (Source) =>
                Element (Source, K) = Mapping (Element (Source'Old, K))),
         Global => null;
+      pragma Annotate (GNATprove, False_Positive,
+                       "call via access-to-subprogram",
+                       "function Mapping must always terminate");
 
       ---------------------------------------
       -- String Transformation Subprograms --

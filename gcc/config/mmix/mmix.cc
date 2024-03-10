@@ -1262,7 +1262,7 @@ static void
 mmix_encode_section_info (tree decl, rtx rtl, int first)
 {
   /* Test for an external declaration, and do nothing if it is one.  */
-  if ((TREE_CODE (decl) == VAR_DECL
+  if ((VAR_P (decl)
        && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl)))
       || (TREE_CODE (decl) == FUNCTION_DECL && TREE_PUBLIC (decl)))
     ;
@@ -1291,7 +1291,7 @@ mmix_encode_section_info (tree decl, rtx rtl, int first)
      For now, functions and things we know or have been told are constant.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       || TREE_CONSTANT (decl)
-      || (TREE_CODE (decl) == VAR_DECL
+      || (VAR_P (decl)
 	  && TREE_READONLY (decl)
 	  && !TREE_SIDE_EFFECTS (decl)
 	  && (!DECL_INITIAL (decl)

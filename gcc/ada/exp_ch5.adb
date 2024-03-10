@@ -59,6 +59,7 @@ with Sem_Ch13;       use Sem_Ch13;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
+                     use Sem_Util.Storage_Model_Support;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
@@ -808,7 +809,7 @@ package body Exp_Ch5 is
          --  if there is a change of representation since obviously two arrays
          --  with different representations cannot possibly overlap.
 
-         if (not Crep) and L_Slice and R_Slice then
+         if not Crep and L_Slice and R_Slice then
             Act_L_Array := Get_Referenced_Object (Prefix (Act_Lhs));
             Act_R_Array := Get_Referenced_Object (Prefix (Act_Rhs));
 
@@ -2658,8 +2659,48 @@ package body Exp_Ch5 is
          Convert_Aggr_In_Assignment (N);
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
-
          return;
+      end if;
+
+      --  An assignment between nonnative storage models requires creating an
+      --  intermediate temporary on the host, which can potentially be large.
+
+      if Nkind (Lhs) = N_Explicit_Dereference
+        and then Has_Designated_Storage_Model_Aspect (Etype (Prefix (Lhs)))
+        and then Present (Storage_Model_Copy_To
+                           (Storage_Model_Object (Etype (Prefix (Lhs)))))
+        and then Nkind (Rhs) = N_Explicit_Dereference
+        and then Has_Designated_Storage_Model_Aspect (Etype (Prefix (Rhs)))
+        and then Present (Storage_Model_Copy_From
+                           (Storage_Model_Object (Etype (Prefix (Rhs)))))
+      then
+         declare
+            Assign_Code : List_Id;
+            Tmp         : Entity_Id;
+
+         begin
+            Assign_Code := New_List;
+
+            Tmp := Build_Temporary_On_Secondary_Stack (Loc, Typ, Assign_Code);
+
+            Append_To (Assign_Code,
+              Make_Assignment_Statement (Loc,
+                Name       =>
+                  Make_Explicit_Dereference (Loc,
+                    Prefix => New_Occurrence_Of (Tmp, Loc)),
+                Expression => Relocate_Node (Rhs)));
+
+            Append_To (Assign_Code,
+              Make_Assignment_Statement (Loc,
+                Name       => Relocate_Node (Lhs),
+                Expression =>
+                  Make_Explicit_Dereference (Loc,
+                    Prefix => New_Occurrence_Of (Tmp, Loc))));
+
+            Insert_Actions (N, Assign_Code);
+            Rewrite (N, Make_Null_Statement (Loc));
+            return;
+         end;
       end if;
 
       --  Apply discriminant check if required. If Lhs is an access type to a
@@ -2672,7 +2713,7 @@ package body Exp_Ch5 is
          --  Skip discriminant check if change of representation. Will be
          --  done when the change of representation is expanded out.
 
-         if not Crep then
+         if not Crep and then not Suppress_Assignment_Checks (N) then
             Apply_Discriminant_Check (Rhs, Etype (Lhs), Lhs);
          end if;
 
@@ -2712,7 +2753,9 @@ package body Exp_Ch5 is
 
             Set_Etype (Lhs, Ubt);
             Rewrite (Rhs, OK_Convert_To (Base_Type (Ubt), Rhs));
-            Apply_Discriminant_Check (Rhs, Ubt, Lhs);
+            if not Suppress_Assignment_Checks (N) then
+               Apply_Discriminant_Check (Rhs, Ubt, Lhs);
+            end if;
             Set_Etype (Lhs, Lt);
          end;
 
@@ -2732,12 +2775,16 @@ package body Exp_Ch5 is
          then
             Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
-            Apply_Discriminant_Check (Rhs, Typ, Lhs);
+            if not Suppress_Assignment_Checks (N) then
+               Apply_Discriminant_Check (Rhs, Typ, Lhs);
+            end if;
 
          elsif Is_Array_Type (Typ) and then Is_Constrained (Typ) then
             Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
-            Apply_Length_Check (Rhs, Typ);
+            if not Suppress_Assignment_Checks (N) then
+               Apply_Length_Check (Rhs, Typ);
+            end if;
          end if;
 
       --  In the access type case, we need the same discriminant check, and
@@ -2745,6 +2792,7 @@ package body Exp_Ch5 is
 
       elsif Is_Access_Type (Etype (Lhs))
         and then Is_Constrained (Designated_Type (Etype (Lhs)))
+        and then not Suppress_Assignment_Checks (N)
       then
          if Has_Discriminants (Designated_Type (Etype (Lhs))) then
 
@@ -3924,7 +3972,7 @@ package body Exp_Ch5 is
 
          Declarations : constant List_Id := New_List (Selector_Decl);
 
-      --  Start of processing for Expand_General_Case_Statment
+      --  Start of processing for Expand_General_Case_Statement
 
       begin
          if Present (Choice_Index_Decl) then
@@ -4079,11 +4127,15 @@ package body Exp_Ch5 is
 
          --  If there is only a single alternative, just replace it with the
          --  sequence of statements since obviously that is what is going to
-         --  be executed in all cases.
+         --  be executed in all cases, except if it is the node to be wrapped
+         --  by a transient scope, because this would cause the sequence of
+         --  statements to be leaked out of the transient scope.
 
          Len := List_Length (Alternatives (N));
 
-         if Len = 1 then
+         if Len = 1
+           and then not (Scope_Is_Transient and then Node_To_Be_Wrapped = N)
+         then
 
             --  We still need to evaluate the expression if it has any side
             --  effects.
@@ -4324,6 +4376,12 @@ package body Exp_Ch5 is
 
       Analyze (Init_Decl);
       Init_Name := Defining_Identifier (Init_Decl);
+      Reinit_Field_To_Zero (Init_Name, F_Has_Initial_Value,
+        Old_Ekind => (E_Variable => True, others => False));
+      Reinit_Field_To_Zero (Init_Name, F_Is_Elaboration_Checks_OK_Id);
+      Reinit_Field_To_Zero (Init_Name, F_Is_Elaboration_Warnings_OK_Id);
+      Reinit_Field_To_Zero (Init_Name, F_SPARK_Pragma);
+      Reinit_Field_To_Zero (Init_Name, F_SPARK_Pragma_Inherited);
       Mutate_Ekind (Init_Name, E_Loop_Parameter);
 
       --  The cursor was marked as a loop parameter to prevent user assignments
@@ -4689,7 +4747,6 @@ package body Exp_Ch5 is
         and then not Opt.Suppress_Control_Flow_Optimizations
         and then Nkind (N) = N_If_Statement
         and then No (Elsif_Parts (N))
-        and then Present (Else_Statements (N))
         and then List_Length (Then_Statements (N)) = 1
         and then List_Length (Else_Statements (N)) = 1
       then
@@ -5526,6 +5583,12 @@ package body Exp_Ch5 is
          Set_Assignment_OK (Cursor_Decl);
 
          Insert_Action (N, Cursor_Decl);
+         Reinit_Field_To_Zero (Cursor, F_Has_Initial_Value,
+           Old_Ekind => (E_Variable => True, others => False));
+         Reinit_Field_To_Zero (Cursor, F_Is_Elaboration_Checks_OK_Id);
+         Reinit_Field_To_Zero (Cursor, F_Is_Elaboration_Warnings_OK_Id);
+         Reinit_Field_To_Zero (Cursor, F_SPARK_Pragma);
+         Reinit_Field_To_Zero (Cursor, F_SPARK_Pragma_Inherited);
          Mutate_Ekind (Cursor, Id_Kind);
       end;
 

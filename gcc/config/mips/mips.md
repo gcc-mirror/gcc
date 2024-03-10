@@ -160,6 +160,8 @@
   ;; The `.insn' pseudo-op.
   UNSPEC_INSN_PSEUDO
   UNSPEC_JRHB
+
+  VUNSPEC_SPECULATION_BARRIER
 ])
 
 (define_constants
@@ -7455,6 +7457,16 @@
   mips_expand_conditional_move (operands);
   DONE;
 })
+
+(define_expand "speculation_barrier"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_SPECULATION_BARRIER)]
+  ""
+  "
+  mips_emit_speculation_barrier_function ();
+  DONE;
+  "
+)
+
 
 ;;
 ;;  ....................

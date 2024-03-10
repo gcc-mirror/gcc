@@ -1056,6 +1056,7 @@ static match
 char_len_param_value (gfc_expr **expr, bool *deferred)
 {
   match m;
+  gfc_expr *p;
 
   *expr = NULL;
   *deferred = false;
@@ -1081,10 +1082,10 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
   if (!gfc_expr_check_typed (*expr, gfc_current_ns, false))
     return MATCH_ERROR;
 
-  /* If gfortran gets an EXPR_OP, try to simplify it.  This catches things
-     like CHARACTER(([1])).   */
-  if ((*expr)->expr_type == EXPR_OP)
-    gfc_simplify_expr (*expr, 1);
+  /* Try to simplify the expression to catch things like CHARACTER(([1])).   */
+  p = gfc_copy_expr (*expr);
+  if (gfc_is_constant_expr (p) && gfc_simplify_expr (p, 1))
+    gfc_replace_expr (*expr, p);
 
   if ((*expr)->expr_type == EXPR_FUNCTION)
     {
@@ -2239,8 +2240,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	      && gfc_is_constant_expr (init)
 	      && (init->expr_type == EXPR_CONSTANT
 		  || init->expr_type == EXPR_STRUCTURE)
-	      && spec_size (sym->as, &size)
-	      && mpz_cmp_si (size, 0) > 0)
+	      && spec_size (sym->as, &size))
 	    {
 	      array = gfc_get_array_expr (init->ts.type, init->ts.kind,
 					  &init->where);
@@ -2698,7 +2698,7 @@ variable_decl (int elem)
 	}
 
       gfc_seen_div0 = false;
-      
+
       /* F2018:C830 (R816) An explicit-shape-spec whose bounds are not
 	 constant expressions shall appear only in a subprogram, derived
 	 type definition, BLOCK construct, or interface body.  */
@@ -2769,7 +2769,7 @@ variable_decl (int elem)
 	      if (e->expr_type != EXPR_CONSTANT)
 		{
 		  n = gfc_copy_expr (e);
-		  if (!gfc_simplify_expr (n, 1)  && gfc_seen_div0) 
+		  if (!gfc_simplify_expr (n, 1)  && gfc_seen_div0)
 		    {
 		      m = MATCH_ERROR;
 		      goto cleanup;
@@ -2784,12 +2784,12 @@ variable_decl (int elem)
 	      if (e->expr_type != EXPR_CONSTANT)
 		{
 		  n = gfc_copy_expr (e);
-		  if (!gfc_simplify_expr (n, 1)  && gfc_seen_div0) 
+		  if (!gfc_simplify_expr (n, 1)  && gfc_seen_div0)
 		    {
 		      m = MATCH_ERROR;
 		      goto cleanup;
 		    }
-		  
+
 		  if (n->expr_type == EXPR_CONSTANT)
 		    gfc_replace_expr (e, n);
 		  else
@@ -3367,6 +3367,7 @@ close_brackets:
       else
 	gfc_error ("Missing right parenthesis at %C");
       m = MATCH_ERROR;
+      goto no_match;
     }
   else
      /* All tests passed.  */
@@ -4704,6 +4705,9 @@ get_kind:
     }
 
   m = gfc_match_kind_spec (ts, false);
+  if (m == MATCH_ERROR)
+    return MATCH_ERROR;
+
   if (m == MATCH_NO && ts->type != BT_CHARACTER)
     {
       m = gfc_match_old_kind_spec (ts);
@@ -11637,8 +11641,9 @@ gfc_match_final_decl (void)
   block = gfc_state_stack->previous->sym;
   gcc_assert (block);
 
-  if (!gfc_state_stack->previous || !gfc_state_stack->previous->previous
-      || gfc_state_stack->previous->previous->state != COMP_MODULE)
+  if (gfc_state_stack->previous->previous
+      && gfc_state_stack->previous->previous->state != COMP_MODULE
+      && gfc_state_stack->previous->previous->state != COMP_SUBMODULE)
     {
       gfc_error ("Derived type declaration with FINAL at %C must be in the"
 		 " specification part of a MODULE");

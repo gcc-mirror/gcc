@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "ssa.h"
 #include "expmed.h"
 #include "optabs-tree.h"
@@ -61,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Return true if we have a useful VR_RANGE range for VAR, storing it
    in *MIN_VALUE and *MAX_VALUE if so.  Note the range in the dump files.  */
 
-static bool
+bool
 vect_get_range_info (tree var, wide_int *min_value, wide_int *max_value)
 {
   value_range vr;
@@ -560,21 +562,30 @@ vect_joust_widened_type (tree type, tree new_type, tree *common_type)
 
 static unsigned int
 vect_widened_op_tree (vec_info *vinfo, stmt_vec_info stmt_info, tree_code code,
-		      tree_code widened_code, bool shift_p,
+		      code_helper widened_code, bool shift_p,
 		      unsigned int max_nops,
 		      vect_unpromoted_value *unprom, tree *common_type,
 		      enum optab_subtype *subtype = NULL)
 {
   /* Check for an integer operation with the right code.  */
-  gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
-  if (!assign)
+  gimple* stmt = stmt_info->stmt;
+  if (!(is_gimple_assign (stmt) || is_gimple_call (stmt)))
     return 0;
 
-  tree_code rhs_code = gimple_assign_rhs_code (assign);
-  if (rhs_code != code && rhs_code != widened_code)
+  code_helper rhs_code;
+  if (is_gimple_assign (stmt))
+    rhs_code = gimple_assign_rhs_code (stmt);
+  else if (is_gimple_call (stmt))
+    rhs_code = gimple_call_combined_fn (stmt);
+  else
     return 0;
 
-  tree type = TREE_TYPE (gimple_assign_lhs (assign));
+  if (rhs_code != code
+      && rhs_code != widened_code)
+    return 0;
+
+  tree lhs = gimple_get_lhs (stmt);
+  tree type = TREE_TYPE (lhs);
   if (!INTEGRAL_TYPE_P (type))
     return 0;
 
@@ -587,7 +598,7 @@ vect_widened_op_tree (vec_info *vinfo, stmt_vec_info stmt_info, tree_code code,
     {
       vect_unpromoted_value *this_unprom = &unprom[next_op];
       unsigned int nops = 1;
-      tree op = gimple_op (assign, i + 1);
+      tree op = gimple_arg (stmt, i);
       if (i == 1 && TREE_CODE (op) == INTEGER_CST)
 	{
 	  /* We already have a common type from earlier operands.
@@ -1341,7 +1352,8 @@ vect_recog_sad_pattern (vec_info *vinfo,
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
   vect_unpromoted_value unprom[2];
-  if (!vect_widened_op_tree (vinfo, diff_stmt_vinfo, MINUS_EXPR, WIDEN_MINUS_EXPR,
+  if (!vect_widened_op_tree (vinfo, diff_stmt_vinfo, MINUS_EXPR,
+			     IFN_VEC_WIDEN_MINUS,
 			     false, 2, unprom, &half_type))
     return NULL;
 
@@ -1392,7 +1404,7 @@ vect_recog_sad_pattern (vec_info *vinfo,
 static gimple *
 vect_recog_widen_op_pattern (vec_info *vinfo,
 			     stmt_vec_info last_stmt_info, tree *type_out,
-			     tree_code orig_code, tree_code wide_code,
+			     tree_code orig_code, code_helper wide_code,
 			     bool shift_p, const char *name)
 {
   gimple *last_stmt = last_stmt_info->stmt;
@@ -1401,6 +1413,7 @@ vect_recog_widen_op_pattern (vec_info *vinfo,
   tree half_type;
   if (!vect_widened_op_tree (vinfo, last_stmt_info, orig_code, orig_code,
 			     shift_p, 2, unprom, &half_type))
+
     return NULL;
 
   /* Pattern detected.  */
@@ -1435,7 +1448,7 @@ vect_recog_widen_op_pattern (vec_info *vinfo,
       vecctype = get_vectype_for_scalar_type (vinfo, ctype);
     }
 
-  enum tree_code dummy_code;
+  code_helper dummy_code;
   int dummy_int;
   auto_vec<tree> dummy_vec;
   if (!vectype
@@ -1456,8 +1469,7 @@ vect_recog_widen_op_pattern (vec_info *vinfo,
 		       2, oprnd, half_type, unprom, vectype);
 
   tree var = vect_recog_temp_ssa_var (itype, NULL);
-  gimple *pattern_stmt = gimple_build_assign (var, wide_code,
-					      oprnd[0], oprnd[1]);
+  gimple *pattern_stmt = vect_gimple_build (var, wide_code, oprnd[0], oprnd[1]);
 
   if (vecctype != vecitype)
     pattern_stmt = vect_convert_output (vinfo, last_stmt_info, ctype,
@@ -1480,26 +1492,26 @@ vect_recog_widen_mult_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
 }
 
 /* Try to detect addition on widened inputs, converting PLUS_EXPR
-   to WIDEN_PLUS_EXPR.  See vect_recog_widen_op_pattern for details.  */
+   to IFN_VEC_WIDEN_PLUS.  See vect_recog_widen_op_pattern for details.  */
 
 static gimple *
 vect_recog_widen_plus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
 			       tree *type_out)
 {
   return vect_recog_widen_op_pattern (vinfo, last_stmt_info, type_out,
-				      PLUS_EXPR, WIDEN_PLUS_EXPR, false,
-				      "vect_recog_widen_plus_pattern");
+				      PLUS_EXPR, IFN_VEC_WIDEN_PLUS,
+				      false, "vect_recog_widen_plus_pattern");
 }
 
 /* Try to detect subtraction on widened inputs, converting MINUS_EXPR
-   to WIDEN_MINUS_EXPR.  See vect_recog_widen_op_pattern for details.  */
+   to IFN_VEC_WIDEN_MINUS.  See vect_recog_widen_op_pattern for details.  */
 static gimple *
 vect_recog_widen_minus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
 			       tree *type_out)
 {
   return vect_recog_widen_op_pattern (vinfo, last_stmt_info, type_out,
-				      MINUS_EXPR, WIDEN_MINUS_EXPR, false,
-				      "vect_recog_widen_minus_pattern");
+				      MINUS_EXPR, IFN_VEC_WIDEN_MINUS,
+				      false, "vect_recog_widen_minus_pattern");
 }
 
 /* Function vect_recog_ctz_ffs_pattern
@@ -3077,7 +3089,7 @@ vect_recog_average_pattern (vec_info *vinfo,
   vect_unpromoted_value unprom[3];
   tree new_type;
   unsigned int nops = vect_widened_op_tree (vinfo, plus_stmt_info, PLUS_EXPR,
-					    WIDEN_PLUS_EXPR, false, 3,
+					    IFN_VEC_WIDEN_PLUS, false, 3,
 					    unprom, &new_type);
   if (nops == 0)
     return NULL;
@@ -6468,6 +6480,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
   { vect_recog_mask_conversion_pattern, "mask_conversion" },
   { vect_recog_widen_plus_pattern, "widen_plus" },
   { vect_recog_widen_minus_pattern, "widen_minus" },
+  /* These must come after the double widening ones.  */
 };
 
 const unsigned int NUM_PATTERNS = ARRAY_SIZE (vect_vect_recog_func_ptrs);
@@ -6807,4 +6820,21 @@ vect_pattern_recog (vec_info *vinfo)
 
   /* After this no more add_stmt calls are allowed.  */
   vinfo->stmt_vec_info_ro = true;
+}
+
+/* Build a GIMPLE_ASSIGN or GIMPLE_CALL with the tree_code,
+   or internal_fn contained in ch, respectively.  */
+gimple *
+vect_gimple_build (tree lhs, code_helper ch, tree op0, tree op1)
+{
+  gcc_assert (op0 != NULL_TREE);
+  if (ch.is_tree_code ())
+    return gimple_build_assign (lhs, (tree_code) ch, op0, op1);
+
+  gcc_assert (ch.is_internal_fn ());
+  gimple* stmt = gimple_build_call_internal (as_internal_fn ((combined_fn) ch),
+					     op1 == NULL_TREE ? 1 : 2,
+					     op0, op1);
+  gimple_call_set_lhs (stmt, lhs);
+  return stmt;
 }

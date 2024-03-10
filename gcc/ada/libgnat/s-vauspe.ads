@@ -279,24 +279,50 @@ is
             Exponent_Unsigned_Ghost (Value * Base, Exp - 1, Base));
    --  Normal case: exponentiation without overflows
 
+   function Raw_Unsigned_Starts_As_Based_Ghost
+     (Str               : String;
+      Last_Num_Init, To : Integer)
+      return Boolean
+   is
+     (Last_Num_Init < To - 1
+      and then Str (Last_Num_Init + 1) in '#' | ':'
+      and then Str (Last_Num_Init + 2) in
+      '0' .. '9' | 'a' .. 'f' | 'A' .. 'F')
+   with Ghost,
+     Pre => Last_Num_Init in Str'Range
+     and then To in Str'Range;
+   --  Return True if Str starts as a based number
+
+   function Raw_Unsigned_Is_Based_Ghost
+     (Str            : String;
+      Last_Num_Init  : Integer;
+      Last_Num_Based : Integer;
+      To             : Integer)
+      return Boolean
+   is
+     (Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, To)
+      and then Last_Num_Based < To
+      and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1))
+   with Ghost,
+     Pre => Last_Num_Init in Str'Range
+     and then Last_Num_Based in Last_Num_Init .. Str'Last
+     and then To in Str'Range;
+   --  Return True if Str is a based number
+
    function Is_Raw_Unsigned_Format_Ghost (Str : String) return Boolean is
      (Is_Natural_Format_Ghost (Str)
       and then
         (declare
            Last_Num_Init   : constant Integer := Last_Number_Ghost (Str);
            Starts_As_Based : constant Boolean :=
-             Last_Num_Init < Str'Last - 1
-             and then Str (Last_Num_Init + 1) in '#' | ':'
-             and then Str (Last_Num_Init + 2) in
-               '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
+             Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, Str'Last);
            Last_Num_Based  : constant Integer :=
              (if Starts_As_Based
               then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. Str'Last))
               else Last_Num_Init);
            Is_Based        : constant Boolean :=
-             Starts_As_Based
-             and then Last_Num_Based < Str'Last
-             and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
+             Raw_Unsigned_Is_Based_Ghost
+               (Str, Last_Num_Init, Last_Num_Based, Str'Last);
            First_Exp       : constant Integer :=
              (if Is_Based then Last_Num_Based + 2 else Last_Num_Init + 1);
          begin
@@ -330,10 +356,7 @@ is
         Init_Val        : constant Uns_Option :=
           Scan_Based_Number_Ghost (Str, From, Last_Num_Init);
         Starts_As_Based : constant Boolean :=
-          Last_Num_Init < To - 1
-          and then Str (Last_Num_Init + 1) in '#' | ':'
-          and then Str (Last_Num_Init + 2) in
-          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
+          Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, To);
         Last_Num_Based  : constant Integer :=
           (if Starts_As_Based
            then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. To))
@@ -378,18 +401,13 @@ is
         Init_Val        : constant Uns_Option :=
           Scan_Based_Number_Ghost (Str, From, Last_Num_Init);
         Starts_As_Based : constant Boolean :=
-          Last_Num_Init < To - 1
-          and then Str (Last_Num_Init + 1) in '#' | ':'
-          and then Str (Last_Num_Init + 2) in
-          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
+          Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, To);
         Last_Num_Based  : constant Integer :=
           (if Starts_As_Based
            then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. To))
            else Last_Num_Init);
         Is_Based        : constant Boolean :=
-          Starts_As_Based
-          and then Last_Num_Based < To
-          and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
+          Raw_Unsigned_Is_Based_Ghost (Str, Last_Num_Init, Last_Num_Based, To);
         Based_Val       : constant Uns_Option :=
           (if Starts_As_Based and then not Init_Val.Overflow
            then Scan_Based_Number_Ghost
@@ -468,18 +486,13 @@ is
         Last_Num_Init   : constant Integer :=
           Last_Number_Ghost (Str (From .. To));
         Starts_As_Based : constant Boolean :=
-          Last_Num_Init < To - 1
-          and then Str (Last_Num_Init + 1) in '#' | ':'
-          and then Str (Last_Num_Init + 2) in
-          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
+          Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, To);
         Last_Num_Based  : constant Integer :=
           (if Starts_As_Based
            then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. To))
            else Last_Num_Init);
         Is_Based        : constant Boolean :=
-          Starts_As_Based
-          and then Last_Num_Based < To
-          and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
+          Raw_Unsigned_Is_Based_Ghost (Str, Last_Num_Init, Last_Num_Based, To);
         First_Exp       : constant Integer :=
           (if Is_Based then Last_Num_Based + 2 else Last_Num_Init + 1);
       begin
@@ -492,7 +505,8 @@ is
      Pre  => Str'Last /= Positive'Last
        and then From in Str'Range
        and then To in From .. Str'Last
-       and then Str (From) in '0' .. '9';
+       and then Str (From) in '0' .. '9',
+     Post => Raw_Unsigned_Last_Ghost'Result >= From;
    --  Ghost function that returns the position of the cursor once an unsigned
    --  number has been seen.
 

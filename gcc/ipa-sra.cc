@@ -1664,10 +1664,10 @@ type_prevails_p (tree old_type, tree new_type)
   if (TREE_CODE (old_type) != COMPLEX_TYPE
       && TREE_CODE (old_type) != VECTOR_TYPE
       && (TREE_CODE (new_type) == COMPLEX_TYPE
-	  || TREE_CODE (new_type) == VECTOR_TYPE))
+	  || VECTOR_TYPE_P (new_type)))
     return true;
   if ((TREE_CODE (old_type) == COMPLEX_TYPE
-       || TREE_CODE (old_type) == VECTOR_TYPE)
+       || VECTOR_TYPE_P (old_type))
       && TREE_CODE (new_type) != COMPLEX_TYPE
       && TREE_CODE (new_type) != VECTOR_TYPE)
     return false;
@@ -1754,7 +1754,7 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
       if (ctx == ISRA_CTX_ARG)
 	return;
       tree t = get_base_address (TREE_OPERAND (expr, 0));
-      if (TREE_CODE (t) == VAR_DECL && !TREE_STATIC (t))
+      if (VAR_P (t) && !TREE_STATIC (t))
 	loaded_decls->add (t);
       return;
     }
@@ -1780,7 +1780,7 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
 	return;
       deref = true;
     }
-  else if (TREE_CODE (base) == VAR_DECL
+  else if (VAR_P (base)
 	   && !TREE_STATIC (base)
 	   && (ctx == ISRA_CTX_ARG
 	       || ctx == ISRA_CTX_LOAD))
@@ -4081,11 +4081,11 @@ zap_useless_ipcp_results (const isra_func_summary *ifs, ipcp_transformation *ts)
   bool useful_vr = false;
   count = vec_safe_length (ts->m_vr);
   for (unsigned i = 0; i < count; i++)
-    if ((*ts->m_vr)[i].known)
+    if ((*ts->m_vr)[i].known_p ())
       {
 	const isra_param_desc *desc = &(*ifs->m_parameters)[i];
 	if (desc->locally_unused)
-	  (*ts->m_vr)[i].known = false;
+	  (*ts->m_vr)[i].set_unknown ();
 	else
 	  useful_vr = true;
       }

@@ -1196,7 +1196,7 @@ package body Ch5 is
            and then Start_Column /= Scopes (Scope.Last).Ecol
          then
             Error_Msg_Col := Scopes (Scope.Last).Ecol;
-            Error_Msg_SC ("(style) this token should be@");
+            Error_Msg_SC ("(style) this token should be@?l?");
          end if;
       end Check_If_Column;
 
@@ -1355,22 +1355,11 @@ package body Ch5 is
 
          return Cond;
 
-      --  Otherwise check for redundant parentheses but do not emit messages
-      --  about expressions that require parentheses (e.g. conditional,
-      --  quantified or declaration expressions).
+      --  Otherwise check for redundant parentheses
 
       else
-         if Style_Check
-           and then
-             Paren_Count (Cond) >
-               (if Nkind (Cond) in N_Case_Expression
-                                 | N_Expression_With_Actions
-                                 | N_If_Expression
-                                 | N_Quantified_Expression
-                then 1
-                else 0)
-         then
-            Style.Check_Xtra_Parens (First_Sloc (Cond));
+         if Style_Check then
+            Style.Check_Xtra_Parens (Cond);
          end if;
 
          --  And return the result
@@ -1395,6 +1384,7 @@ package body Ch5 is
 
    function P_Case_Statement return Node_Id is
       Case_Node         : Node_Id;
+      Expr              : Node_Id;
       Alternatives_List : List_Id;
       First_When_Loc    : Source_Ptr;
 
@@ -1409,7 +1399,14 @@ package body Ch5 is
       Scopes (Scope.Last).Node := Case_Node;
 
       Scan; -- past CASE
-      Set_Expression (Case_Node, P_Expression_No_Right_Paren);
+
+      Expr := P_Expression_No_Right_Paren;
+
+      if Style_Check then
+         Style.Check_Xtra_Parens (Expr);
+      end if;
+
+      Set_Expression (Case_Node, Expr);
       TF_Is;
 
       --  Prepare to parse case statement alternatives
@@ -2206,7 +2203,7 @@ package body Ch5 is
               and then Token_Is_At_Start_Of_Line
               and then Start_Column /= Error_Msg_Col
             then
-               Error_Msg_SC ("(style) BEGIN in wrong column, should be@");
+               Error_Msg_SC ("(style) BEGIN in wrong column, should be@?l?");
 
             else
                Scopes (Scope.Last).Ecol := Start_Column;
@@ -2244,7 +2241,7 @@ package body Ch5 is
             --  END, EOF, or a token which starts declarations.
 
             elsif Parent_Nkind = N_Package_Body
-              and then (Token in Tok_End | Tok_EOF | Token_Class_Declk)
+              and then Token in Tok_End | Tok_EOF | Token_Class_Declk
             then
                Set_Null_HSS (Parent);
 

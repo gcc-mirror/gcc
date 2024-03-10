@@ -27,10 +27,8 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
-with Opt;            use Opt;
 with Rtsfind;        use Rtsfind;
-with Sinfo;          use Sinfo;
-with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sem_Util;       use Sem_Util;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Tbuild;         use Tbuild;
@@ -151,18 +149,12 @@ package body Exp_Sel is
       Obj   : Entity_Id) return Entity_Id
    is
       K        : constant Entity_Id := Make_Temporary (Loc, 'K');
-      Tag_Node : Node_Id;
+      Tag_Node : constant Node_Id   :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => New_Copy_Tree (Obj),
+          Attribute_Name => Name_Tag);
 
    begin
-      if Tagged_Type_Expansion then
-         Tag_Node := Unchecked_Convert_To (RTE (RE_Tag), Obj);
-      else
-         Tag_Node :=
-           Make_Attribute_Reference (Loc,
-             Prefix         => Obj,
-             Attribute_Name => Name_Tag);
-      end if;
-
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => K,
@@ -172,6 +164,7 @@ package body Exp_Sel is
             Make_Function_Call (Loc,
               Name => New_Occurrence_Of (RTE (RE_Get_Tagged_Kind), Loc),
               Parameter_Associations => New_List (Tag_Node))));
+
       return K;
    end Build_K;
 
@@ -202,48 +195,18 @@ package body Exp_Sel is
       Obj      : Entity_Id;
       Call_Ent : Entity_Id) return Node_Id
    is
-      Typ : constant Entity_Id := Etype (Obj);
-
    begin
-      if Tagged_Type_Expansion then
-         return
-           Make_Assignment_Statement (Loc,
-             Name       => New_Occurrence_Of (S, Loc),
-             Expression =>
-               Make_Function_Call (Loc,
-                 Name => New_Occurrence_Of (RTE (RE_Get_Offset_Index), Loc),
-                 Parameter_Associations => New_List (
-                   Unchecked_Convert_To (RTE (RE_Tag), Obj),
-                   Make_Integer_Literal (Loc, DT_Position (Call_Ent)))));
-
-      --  VM targets
-
-      else
-         return
-           Make_Assignment_Statement (Loc,
-             Name       => New_Occurrence_Of (S, Loc),
-             Expression =>
-               Make_Function_Call (Loc,
-                 Name => New_Occurrence_Of (RTE (RE_Get_Offset_Index), Loc),
-
-                 Parameter_Associations => New_List (
-
-                     --  Obj_Typ
-
-                   Make_Attribute_Reference (Loc,
-                     Prefix => Obj,
-                     Attribute_Name => Name_Tag),
-
-                     --  Iface_Typ
-
-                   Make_Attribute_Reference (Loc,
-                     Prefix => New_Occurrence_Of (Typ, Loc),
-                     Attribute_Name => Name_Tag),
-
-                     --  Position
-
-                   Make_Integer_Literal (Loc, DT_Position (Call_Ent)))));
-      end if;
+      return
+        Make_Assignment_Statement (Loc,
+          Name       => New_Occurrence_Of (S, Loc),
+          Expression =>
+            Make_Function_Call (Loc,
+              Name => New_Occurrence_Of (RTE (RE_Get_Offset_Index), Loc),
+              Parameter_Associations => New_List (
+                Make_Attribute_Reference (Loc,
+                  Prefix => New_Copy_Tree (Obj),
+                  Attribute_Name => Name_Tag),
+                Make_Integer_Literal (Loc, DT_Position (Call_Ent)))));
    end Build_S_Assignment;
 
 end Exp_Sel;

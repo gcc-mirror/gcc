@@ -1713,7 +1713,7 @@ package body Ch6 is
 
          if Style.Mode_In_Check and then Token /= Tok_Out then
             Error_Msg_SP -- CODEFIX
-              ("(style) IN should be omitted");
+              ("(style) IN should be omitted?I?");
          end if;
 
          --  Since Ada 2005, formal objects can have an anonymous access type,

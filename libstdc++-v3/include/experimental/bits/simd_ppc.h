@@ -64,7 +64,7 @@ template <typename _Abi, typename>
 	__x = _Base::_S_bit_shift_left(__x, __y);
 	if constexpr (sizeof(_Tp) < sizeof(int))
 	  {
-	    if (__y >= sizeof(_Tp) * __CHAR_BIT__)
+	    if (__y >= int(sizeof(_Tp) * __CHAR_BIT__))
 	      return {};
 	  }
 	return __x;
@@ -130,7 +130,8 @@ template <typename _Abi, typename>
 	const auto __kv = __as_vector(__k);
 	if constexpr (__have_power10vec)
 	  {
-	    return vec_cntm(__to_intrin(__kv), 1);
+	    using _Intrin = __intrinsic_type16_t<make_unsigned_t<__int_for_sizeof_t<_Tp>>>;
+	    return vec_cntm(reinterpret_cast<_Intrin>(__kv), 1);
 	  }
 	else if constexpr (sizeof(_Tp) >= sizeof(int))
 	  {

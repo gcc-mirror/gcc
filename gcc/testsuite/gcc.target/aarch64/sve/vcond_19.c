@@ -25,22 +25,22 @@
 
 TEST_ALL (DEF_LOOP)
 
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, p[0-7]/m, #16384\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, p[0-7]/m, #15616\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, p[0-7]/m, #-15360\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, p[0-7]/m, #-16128\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h, p[0-7], z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, p[0-9]+/m, #16384\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, p[0-9]+/m, #15616\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, p[0-9]+/m, #-15360\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, p[0-9]+/m, #-16128\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h, p[0-9]+, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
 
-/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.s), p[0-7]/m, #2\.0(?:e[+]0)?\n} } } */
-/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.s), p[0-7]/m, #1\.25(?:e[+]0)?\n} } } */
-/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.s), p[0-7]/m, #-4\.0(?:e[+]0)?\n} } } */
-/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.s), p[0-7]/m, #-2\.5(?:e[+]0)?\n} } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.s, p[0-7], z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.s), p[0-9]+/m, #2\.0(?:e[+]0)?\n} } } */
+/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.s), p[0-9]+/m, #1\.25(?:e[+]0)?\n} } } */
+/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.s), p[0-9]+/m, #-4\.0(?:e[+]0)?\n} } } */
+/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.s), p[0-9]+/m, #-2\.5(?:e[+]0)?\n} } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.s, p[0-9]+, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
 
-/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.d), p[0-7]/m, #2\.0(?:e[+]0)?\n} } } */
-/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.d), p[0-7]/m, #1\.25(?:e[+]0)?\n} } } */
-/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.d), p[0-7]/m, #-4\.0(?:e[+]0)?\n} } } */
-/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.d), p[0-7]/m, #-2\.5(?:e[+]0)?\n} } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.d, p[0-7], z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */
+/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.d), p[0-9]+/m, #2\.0(?:e[+]0)?\n} } } */
+/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.d), p[0-9]+/m, #1\.25(?:e[+]0)?\n} } } */
+/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.d), p[0-9]+/m, #-4\.0(?:e[+]0)?\n} } } */
+/* { dg-final { scan-assembler {\tfmov\t(z[0-9]+\.d), p[0-9]+/m, #-2\.5(?:e[+]0)?\n} } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.d, p[0-9]+, z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */
 
 /* { dg-final { scan-assembler-not {\tmovprfx\t} } } */

@@ -1974,7 +1974,7 @@ process (see the *Installing a Library with Project Files* section of the
 When project files are not an option, it is also possible, but not recommended,
 to install the library so that the sources needed to use the library are on the
 Ada source path and the ALI files & libraries be on the Ada Object path (see
-:ref:`Search_Paths_and_the_Run-Time_Library_RTL`. Alternatively, the system
+:ref:`Search_Paths_and_the_Run-Time_Library_RTL`). Alternatively, the system
 administrator can place general-purpose libraries in the default compiler
 paths, by specifying the libraries' location in the configuration files
 :file:`ada_source_path` and :file:`ada_object_path`. These configuration files

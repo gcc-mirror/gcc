@@ -25,10 +25,10 @@
 
 with Ada.Unchecked_Conversion;
 with Aspects;        use Aspects;
-with Debug;          use Debug;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
+with Osint;
 with Output;         use Output;
 with Sinfo.Utils;    use Sinfo.Utils;
 with System.Storage_Elements;
@@ -948,11 +948,10 @@ package body Atree is
    procedure Check_Vanishing_Fields
      (Old_N : Node_Id; New_Kind : Node_Kind)
    is
+      --  If this fails, see comments in the spec of Mutate_Nkind and in
+      --  Check_Vanishing_Fields for entities below.
+
       Old_Kind : constant Node_Kind := Nkind (Old_N);
-
-      --  If this fails, it means you need to call Reinit_Field_To_Zero before
-      --  calling Mutate_Nkind.
-
    begin
       for J in Node_Field_Table (Old_Kind)'Range loop
          declare
@@ -979,42 +978,76 @@ package body Atree is
    procedure Check_Vanishing_Fields
      (Old_N : Entity_Id; New_Kind : Entity_Kind)
    is
+      --  If this fails, it means Mutate_Ekind is changing the Ekind from
+      --  Old_Kind to New_Kind, such that some field F exists in Old_Kind but
+      --  not in New_Kind, and F contains non-default information. The usual
+      --  solution is to call Reinit_Field_To_Zero before calling Mutate_Ekind.
+      --  Another solution is to change Gen_IL so that the new field DOES exist
+      --  in New_Kind. See also comments in the spec of Mutate_Ekind.
+
       Old_Kind : constant Entity_Kind := Ekind (Old_N);
 
-      --  If this fails, it means you need to call Reinit_Field_To_Zero before
-      --  calling Mutate_Ekind. But we have many cases where vanishing fields
-      --  are expected to reappear after converting to/from E_Void. Other cases
-      --  are more problematic; set a breakpoint on "(non-E_Void case)" below.
+      function Same_Node_To_Fetch_From
+        (N : Node_Or_Entity_Id; Field : Node_Or_Entity_Field)
+        return Boolean;
+      --  True if the field should be fetched from N. For most fields, this is
+      --  true. However, if the field is a "root type only" field, then this is
+      --  true only if N is the root type. If this is false, then we should not
+      --  do Reinit_Field_To_Zero, and we should not fail below, because the
+      --  field is not vanishing from the root type. Similar comments apply to
+      --  "base type only" and "implementation base type only" fields.
+      --
+      --  We need to ignore exceptions here, because in some cases,
+      --  Node_To_Fetch_From is being called before the relevant (root, base)
+      --  type has been set, so we fail some assertions.
+
+      function Same_Node_To_Fetch_From
+        (N : Node_Or_Entity_Id; Field : Node_Or_Entity_Field)
+        return Boolean is
+      begin
+         return N = Node_To_Fetch_From (N, Field);
+      exception
+         when others => return False; -- ignore the exception
+      end Same_Node_To_Fetch_From;
+
+   --  Start of processing for Check_Vanishing_Fields
 
    begin
       for J in Entity_Field_Table (Old_Kind)'Range loop
          declare
             F : constant Entity_Field := Entity_Field_Table (Old_Kind) (J);
          begin
-            if not Field_Checking.Field_Present (New_Kind, F) then
+            if not Same_Node_To_Fetch_From (Old_N, F) then
+               null; -- no check in this case
+            elsif not Field_Checking.Field_Present (New_Kind, F) then
                if not Field_Is_Initial_Zero (Old_N, F) then
+                  Write_Str ("# ");
+                  Write_Str (Osint.Get_First_Main_File_Name);
+                  Write_Str (": ");
                   Write_Str (Old_Kind'Img);
                   Write_Str (" --> ");
                   Write_Str (New_Kind'Img);
                   Write_Str (" Nonzero field ");
                   Write_Str (F'Img);
-                  Write_Str (" is vanishing for node ");
-                  Write_Int (Nat (Old_N));
-                  Write_Eol;
+                  Write_Str (" is vanishing ");
 
                   if New_Kind = E_Void or else Old_Kind = E_Void then
-                     Write_Line ("    (E_Void case)");
+                     Write_Line ("(E_Void case)");
                   else
-                     Write_Line ("    (non-E_Void case)");
+                     Write_Line ("(non-E_Void case)");
                   end if;
+
+                  Write_Str ("    ...mutating node ");
+                  Write_Int (Nat (Old_N));
+                  Write_Line ("");
+                  raise Program_Error;
                end if;
             end if;
          end;
       end loop;
    end Check_Vanishing_Fields;
 
-   Nkind_Offset : constant Field_Offset :=
-     Field_Descriptors (F_Nkind).Offset;
+   Nkind_Offset : constant Field_Offset := Field_Descriptors (F_Nkind).Offset;
 
    procedure Set_Node_Kind_Type is new Set_8_Bit_Field (Node_Kind) with Inline;
 
@@ -1036,6 +1069,8 @@ package body Atree is
       All_Node_Offsets : Node_Offsets.Table_Type renames
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
    begin
+      pragma Assert (Nkind (N) /= Val);
+
       pragma Debug (Check_Vanishing_Fields (N, Val));
 
       --  Grow the slots if necessary
@@ -1082,29 +1117,25 @@ package body Atree is
       Mutate_Nkind (N, Val, Old_Size => Size_In_Slots_Dynamic (N));
    end Mutate_Nkind;
 
-   Ekind_Offset : constant Field_Offset :=
-     Field_Descriptors (F_Ekind).Offset;
+   Ekind_Offset : constant Field_Offset := Field_Descriptors (F_Ekind).Offset;
 
    procedure Set_Entity_Kind_Type is new Set_8_Bit_Field (Entity_Kind)
      with Inline;
 
-   procedure Mutate_Ekind
-     (N : Entity_Id; Val : Entity_Kind)
-   is
+   procedure Mutate_Ekind (N : Entity_Id; Val : Entity_Kind) is
    begin
       if Ekind (N) = Val then
          return;
       end if;
 
-      if Debug_Flag_Underscore_V then
-         pragma Debug (Check_Vanishing_Fields (N, Val));
-      end if;
+      pragma Assert (Val /= E_Void);
+      pragma Debug (Check_Vanishing_Fields (N, Val));
 
       --  For now, we are allocating all entities with the same size, so we
       --  don't need to reallocate slots here.
 
       if Atree_Statistics_Enabled then
-         Set_Count (F_Nkind) := Set_Count (F_Ekind) + 1;
+         Set_Count (F_Ekind) := Set_Count (F_Ekind) + 1;
       end if;
 
       Set_Entity_Kind_Type (N, Ekind_Offset, Val);
@@ -1353,12 +1384,7 @@ package body Atree is
 
             E := First (List);
             while Present (E) loop
-               if Is_Entity (E) then
-                  Append (Copy_Entity (E), NL);
-               else
-                  Append (Copy_Separate_Tree (E), NL);
-               end if;
-
+               Append (Copy_Separate_Tree (E), NL);
                Next (E);
             end loop;
 
@@ -1378,7 +1404,7 @@ package body Atree is
             New_N := Union_Id (Copy_Separate_Tree (Node_Id (Field)));
 
             if Present (Node_Id (Field))
-              and then Parent (Node_Id (Field)) = Source
+              and then Is_Syntactic_Node (Source, Node_Id (Field))
             then
                Set_Parent (Node_Id (New_N), New_Id);
             end if;
@@ -1618,6 +1644,66 @@ package body Atree is
    begin
       return Nkind (N) in N_Entity;
    end Is_Entity;
+
+   -----------------------
+   -- Is_Syntactic_Node --
+   -----------------------
+
+   function Is_Syntactic_Node
+     (Source : Node_Id;
+      Field  : Node_Id)
+      return Boolean
+   is
+      function Has_More_Ids (N : Node_Id) return Boolean;
+      --  Return True when N has attribute More_Ids set to True
+
+      ------------------
+      -- Has_More_Ids --
+      ------------------
+
+      function Has_More_Ids (N : Node_Id) return Boolean is
+      begin
+         if Nkind (N) in N_Component_Declaration
+                       | N_Discriminant_Specification
+                       | N_Exception_Declaration
+                       | N_Formal_Object_Declaration
+                       | N_Number_Declaration
+                       | N_Object_Declaration
+                       | N_Parameter_Specification
+                       | N_Use_Package_Clause
+                       | N_Use_Type_Clause
+         then
+            return More_Ids (N);
+         else
+            return False;
+         end if;
+      end Has_More_Ids;
+
+   --  Start of processing for Is_Syntactic_Node
+
+   begin
+      if Parent (Field) = Source then
+         return True;
+
+      --  Perform the check using the last id in the syntactic chain
+
+      elsif Has_More_Ids (Source) then
+         declare
+            N : Node_Id := Source;
+
+         begin
+            while Present (N) and then More_Ids (N) loop
+               Next (N);
+            end loop;
+
+            pragma Assert (Prev_Ids (N));
+            return Parent (Field) = N;
+         end;
+
+      else
+         return False;
+      end if;
+   end Is_Syntactic_Node;
 
    ----------------
    -- Initialize --

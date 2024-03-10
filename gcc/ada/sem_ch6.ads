@@ -282,9 +282,6 @@ package Sem_Ch6 is
    --  during execution of the subprogram. By setting the actual subtype
    --  once, we avoid recomputing it unnecessarily.
 
-   procedure Set_Formal_Mode (Formal_Id : Entity_Id);
-   --  Set proper Ekind to reflect formal mode (in, out, in out)
-
    function Subtype_Conformant
      (New_Id                   : Entity_Id;
       Old_Id                   : Entity_Id;

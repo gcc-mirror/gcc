@@ -59,6 +59,7 @@ package Sem_Prag is
       Pragma_Effective_Reads              => True,
       Pragma_Effective_Writes             => True,
       Pragma_Elaborate_Body               => True,
+      Pragma_Exceptional_Cases            => True,
       Pragma_Export                       => True,
       Pragma_Extensions_Visible           => True,
       Pragma_Favor_Top_Level              => True,
@@ -109,6 +110,7 @@ package Sem_Prag is
       Pragma_Simple_Storage_Pool_Type     => True,
       Pragma_SPARK_Mode                   => True,
       Pragma_Storage_Size                 => True,
+      Pragma_Subprogram_Variant           => True,
       Pragma_Suppress                     => True,
       Pragma_Suppress_Debug_Info          => True,
       Pragma_Suppress_Initialization      => True,
@@ -138,6 +140,7 @@ package Sem_Prag is
       Pragma_Compile_Time_Error        => True,
       Pragma_Contract_Cases            => True,
       Pragma_Default_Initial_Condition => True,
+      Pragma_Exceptional_Cases         => True,
       Pragma_Initial_Condition         => True,
       Pragma_Invariant                 => True,
       Pragma_Loop_Invariant            => True,
@@ -207,27 +210,29 @@ package Sem_Prag is
    --  of subprogram bodies.
 
    Pragma_Significant_To_Subprograms : constant array (Pragma_Id) of Boolean :=
-     (Pragma_Contract_Cases    => True,
-      Pragma_Depends           => True,
-      Pragma_Ghost             => True,
-      Pragma_Global            => True,
-      Pragma_Inline            => True,
-      Pragma_Inline_Always     => True,
-      Pragma_Post              => True,
-      Pragma_Post_Class        => True,
-      Pragma_Postcondition     => True,
-      Pragma_Pre               => True,
-      Pragma_Pre_Class         => True,
-      Pragma_Precondition      => True,
-      Pragma_Pure              => True,
-      Pragma_Pure_Function     => True,
-      Pragma_Refined_Depends   => True,
-      Pragma_Refined_Global    => True,
-      Pragma_Refined_Post      => True,
-      Pragma_Refined_State     => True,
-      Pragma_Volatile          => True,
-      Pragma_Volatile_Function => True,
-      others                   => False);
+     (Pragma_Contract_Cases     => True,
+      Pragma_Depends            => True,
+      Pragma_Exceptional_Cases  => True,
+      Pragma_Ghost              => True,
+      Pragma_Global             => True,
+      Pragma_Inline             => True,
+      Pragma_Inline_Always      => True,
+      Pragma_Post               => True,
+      Pragma_Post_Class         => True,
+      Pragma_Postcondition      => True,
+      Pragma_Pre                => True,
+      Pragma_Pre_Class          => True,
+      Pragma_Precondition       => True,
+      Pragma_Pure               => True,
+      Pragma_Pure_Function      => True,
+      Pragma_Refined_Depends    => True,
+      Pragma_Refined_Global     => True,
+      Pragma_Refined_Post       => True,
+      Pragma_Refined_State      => True,
+      Pragma_Subprogram_Variant => True,
+      Pragma_Volatile           => True,
+      Pragma_Volatile_Function  => True,
+      others                    => False);
 
    -----------------
    -- Subprograms --
@@ -246,6 +251,13 @@ package Sem_Prag is
    procedure Analyze_Depends_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Depends. This routine is also
    --  capable of performing basic analysis of pragma Refined_Depends.
+
+   procedure Analyze_Exceptional_Cases_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of delayed pragma Exceptional_Cases. Freeze_Id is
+   --  the entity of [generic] package body or [generic] subprogram body which
+   --  caused "freezing" of the related contract where the pragma resides.
 
    procedure Analyze_External_Property_In_Decl_Part
      (N        : Node_Id;
@@ -435,6 +447,7 @@ package Sem_Prag is
    --  Subsidiary to the analysis of pragmas
    --    Contract_Cases
    --    Depends
+   --    Exceptional_Cases
    --    Extensions_Visible
    --    Global
    --    Initializes
@@ -451,6 +464,7 @@ package Sem_Prag is
    --    Refined_Global
    --    Refined_Post
    --    Refined_State
+   --    Subprogram_Variant
    --    Test_Case
    --    Volatile_Function
    --  as well as attributes 'Old and 'Result. Find the declaration of the

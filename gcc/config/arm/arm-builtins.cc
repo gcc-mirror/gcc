@@ -97,7 +97,7 @@ arm_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 /* T (T, unsigned immediate).  */
 static enum arm_type_qualifiers
 arm_sat_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_none, qualifier_unsigned_immediate };
+  = { qualifier_none, qualifier_none, qualifier_unsigned_immediate };
 #define SAT_BINOP_UNSIGNED_IMM_QUALIFIERS \
   (arm_sat_binop_imm_qualifiers)
 

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-profiling "-pg" } */
 /* { dg-options "-O2 -pg" } */
 
 int

@@ -39,7 +39,7 @@ float repl2 (float vary)
 
 /* phiopt1 confused by predictors.  */
 /* { dg-final { scan-tree-dump "vary.*MAX_EXPR.*0\\.0" "phiopt1" } } */
-/* { dg-final { scan-tree-dump "vary.*MIN_EXPR.*1\\.0" "phiopt1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "vary.*MIN_EXPR.*1\\.0" "phiopt1" } } */
 /* { dg-final { scan-tree-dump "vary.*MAX_EXPR.*0\\.0" "phiopt2"} } */
 /* { dg-final { scan-tree-dump "vary.*MIN_EXPR.*1\\.0" "phiopt2"} } */
 

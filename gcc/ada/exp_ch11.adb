@@ -1210,7 +1210,7 @@ package body Exp_Ch11 is
 
             declare
                Use_Test_And_Set_Flag : constant Boolean :=
-                 (not Global_No_Tasking)
+                 not Global_No_Tasking
                  and then RTE_Available (RE_Test_And_Set_Flag);
 
                Flag_Decl : Node_Id;

@@ -473,7 +473,7 @@ AC_CHECK_SIZEOF(dev_t)
 if test "$enable_largefile" != no; then
   case "$host, $build" in
     *-*-aix*,*|*,*-*-aix*)
-      if test "$ac_cv_sizeof_ino_t" == "4" -a "$ac_cv_sizeof_dev_t" == 4; then
+      if test "$ac_cv_sizeof_ino_t" = "4" -a "$ac_cv_sizeof_dev_t" = 4; then
 	AC_DEFINE(HOST_STAT_FOR_64BIT_INODES, stat64x,
 	  [Define which stat syscall is able to handle 64bit indodes.])
       fi;;

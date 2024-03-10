@@ -564,6 +564,13 @@ package body Exp_Prag is
          then
             null;
 
+         --  For Subprogram_Variant suppress the warning altogether, because
+         --  for mutually recursive subprograms with multiple variant clauses
+         --  some of the clauses might have expressions that are only meant for
+         --  verification and would always fail when executed.
+
+         elsif Nam = Name_Subprogram_Variant then
+            null;
          elsif Nam = Name_Assert then
             Error_Msg_N ("?.a?assertion will fail at run time", N);
          else
@@ -1970,6 +1977,47 @@ package body Exp_Prag is
 
       In_Assertion_Expr := In_Assertion_Expr - 1;
    end Expand_Pragma_Contract_Cases;
+
+   -------------------------------------
+   -- Expand_Pragma_Exceptional_Cases --
+   -------------------------------------
+
+   --  Aspect Exceptional_Cases shoule be expanded in the following manner:
+
+   --  Original declaration
+
+   --     procedure P (...) with
+   --        Exceptional_Cases =>
+   --           (Exp_1 => True,
+   --            Exp_2 => Post_4);
+
+   --  Expanded body
+
+   --     procedure P (...) is
+   --     begin
+   --        --  normal body of of P
+   --        declare
+   --        ...
+   --        end;
+   --
+   --     exception
+   --        when Exp1 =>
+   --           pragma Assert (True);
+   --           raise;
+   --        when E : Exp2 =>
+   --           pragma Assert (Post_4);
+   --           raise;
+   --        when others =>
+   --           pragma Assert (False);
+   --           raise;
+   --     end P;
+
+   procedure Expand_Pragma_Exceptional_Cases (Prag : Node_Id) is
+   begin
+      --  Currently we don't expand this pragma
+
+      Rewrite (Prag, Make_Null_Statement (Sloc (Prag)));
+   end Expand_Pragma_Exceptional_Cases;
 
    ---------------------------------------
    -- Expand_Pragma_Import_Or_Interface --

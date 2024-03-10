@@ -64,6 +64,6 @@ main (void)
 }
 
 /* { dg-final { scan-assembler-not "fmul\tv\[0-9\]*.*" } } */
-/* { dg-final { scan-assembler-times "fcvtzs\tv\[0-9\].4s, v\[0-9\].4s*.*#2" 1 } } */
-/* { dg-final { scan-assembler-times "fcvtzs\tv\[0-9\].4s, v\[0-9\].4s*.*#3" 1 } } */
-/* { dg-final { scan-assembler-times "fcvtzs\tv\[0-9\].4s, v\[0-9\].4s*.*#4" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzs\tv\[0-9\]+.4s, v\[0-9\]+.4s*.*#2" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzs\tv\[0-9\]+.4s, v\[0-9\]+.4s*.*#3" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzs\tv\[0-9\]+.4s, v\[0-9\]+.4s*.*#4" 1 } } */

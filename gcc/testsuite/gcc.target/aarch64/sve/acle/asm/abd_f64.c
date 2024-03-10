@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (abd_1_f64_m_tied1, svfloat64_t,
 		z0 = svabd_m (p0, z0, 1))
 
 /*
-** abd_1_f64_m_untied: { xfail *-*-* }
+** abd_1_f64_m_untied:
 **	fmov	(z[0-9]+\.d), #1\.0(?:e\+0)?
 **	movprfx	z0, z1
 **	fabd	z0\.d, p0/m, z0\.d, \1

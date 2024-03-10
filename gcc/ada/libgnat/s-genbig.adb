@@ -49,6 +49,10 @@ package body System.Generic_Bignums is
    --  Compose double digit value from two single digit values
 
    subtype LLI is Long_Long_Integer;
+   subtype LLLI is Long_Long_Long_Integer;
+
+   LLLI_Is_128 : constant Boolean := Long_Long_Long_Integer'Size = 128;
+   --  True if Long_Long_Long_Integer is 128-bit large
 
    One_Data : constant Digit_Vector (1 .. 1) := [1];
    --  Constant one
@@ -318,7 +322,7 @@ package body System.Generic_Bignums is
 
       elsif X.Len = 1 and then X.D (1) = 1 then
          return Normalize
-           (X.D, Neg => X.Neg and then ((Y.D (Y.Len) and 1) = 1));
+           (X.D, Neg => X.Neg and then (Y.D (Y.Len) and 1) = 1);
 
       --  If the absolute value of the base is greater than 1, then the
       --  exponent must not be bigger than one word, otherwise the result
@@ -694,14 +698,14 @@ package body System.Generic_Bignums is
       --  Lengths are different, that's decisive since no leading zeroes
 
       elsif X'Last /= Y'Last then
-         return (if (X'Last > Y'Last) xor X_Neg then GT else LT);
+         return (if X'Last > Y'Last xor X_Neg then GT else LT);
 
       --  Need to compare data
 
       else
          for J in X'Range loop
             if X (J) /= Y (J) then
-               return (if (X (J) > Y (J)) xor X_Neg then GT else LT);
+               return (if X (J) > Y (J) xor X_Neg then GT else LT);
             end if;
          end loop;
 
@@ -1041,27 +1045,91 @@ package body System.Generic_Bignums is
    -- From_Bignum --
    -----------------
 
-   function From_Bignum (X : Bignum) return Long_Long_Integer is
+   function From_Bignum (X : Bignum) return Long_Long_Long_Integer is
    begin
       if X.Len = 0 then
          return 0;
 
       elsif X.Len = 1 then
-         return (if X.Neg then -LLI (X.D (1)) else LLI (X.D (1)));
+         return (if X.Neg then -LLLI (X.D (1)) else LLLI (X.D (1)));
 
       elsif X.Len = 2 then
          declare
             Mag : constant DD := X.D (1) & X.D (2);
          begin
-            if X.Neg and then Mag <= 2 ** 63 then
-               return -LLI (Mag);
-            elsif Mag < 2 ** 63 then
-               return LLI (Mag);
+            if X.Neg and then (Mag <= 2 ** 63 or else LLLI_Is_128) then
+               return -LLLI (Mag);
+            elsif Mag < 2 ** 63 or else LLLI_Is_128 then
+               return LLLI (Mag);
+            end if;
+         end;
+
+      elsif X.Len = 3 and then LLLI_Is_128 then
+         declare
+            Hi  : constant SD := X.D (1);
+            Lo  : constant DD := X.D (2) & X.D (3);
+            Mag : constant Unsigned_128 :=
+                    Shift_Left (Unsigned_128 (Hi), 64) + Unsigned_128 (Lo);
+         begin
+            return (if X.Neg then -LLLI (Mag) else LLLI (Mag));
+         end;
+
+      elsif X.Len = 4 and then LLLI_Is_128 then
+         declare
+            Hi  : constant DD := X.D (1) & X.D (2);
+            Lo  : constant DD := X.D (3) & X.D (4);
+            Mag : constant Unsigned_128 :=
+                    Shift_Left (Unsigned_128 (Hi), 64) + Unsigned_128 (Lo);
+         begin
+            if X.Neg
+              and then (Hi < 2 ** 63 or else (Hi = 2 ** 63 and then Lo = 0))
+            then
+               return -LLLI (Mag);
+            elsif Hi < 2 ** 63 then
+               return LLLI (Mag);
             end if;
          end;
       end if;
 
       raise Constraint_Error with "expression value out of range";
+   end From_Bignum;
+
+   function From_Bignum (X : Bignum) return Long_Long_Integer is
+   begin
+      return Long_Long_Integer (Long_Long_Long_Integer'(From_Bignum (X)));
+   end From_Bignum;
+
+   function From_Bignum (X : Bignum) return Unsigned_128 is
+   begin
+      if X.Neg then
+         null;
+
+      elsif X.Len = 0 then
+         return 0;
+
+      elsif X.Len = 1 then
+         return Unsigned_128 (X.D (1));
+
+      elsif X.Len = 2 then
+         return Unsigned_128 (DD'(X.D (1) & X.D (2)));
+
+      elsif X.Len = 3 and then LLLI_Is_128 then
+         return
+           Shift_Left (Unsigned_128 (X.D (1)), 64) +
+             Unsigned_128 (DD'(X.D (2) & X.D (3)));
+
+      elsif X.Len = 4 and then LLLI_Is_128 then
+         return
+           Shift_Left (Unsigned_128 (DD'(X.D (1) & X.D (2))), 64) +
+             Unsigned_128 (DD'(X.D (3) & X.D (4)));
+      end if;
+
+      raise Constraint_Error with "expression value out of range";
+   end From_Bignum;
+
+   function From_Bignum (X : Bignum) return Unsigned_64 is
+   begin
+      return Unsigned_64 (Unsigned_128'(From_Bignum (X)));
    end From_Bignum;
 
    -------------------------
@@ -1161,29 +1229,27 @@ package body System.Generic_Bignums is
       elsif X = -2 ** 63 then
          return Allocate_Big_Integer ([2 ** 31, 0], True);
 
-      elsif Long_Long_Long_Integer'Size = 128
-        and then X = Long_Long_Long_Integer'First
-      then
+      elsif LLLI_Is_128 and then X = Long_Long_Long_Integer'First then
          return Allocate_Big_Integer ([2 ** 31, 0, 0, 0], True);
 
       --  Other negative numbers
 
       elsif X < 0 then
-         if Long_Long_Long_Integer'Size = 64 then
+         if LLLI_Is_128 then
+            return Convert_128 (-X, True);
+         else
             return Allocate_Big_Integer
                      ((SD ((-X) / Base), SD ((-X) mod Base)), True);
-         else
-            return Convert_128 (-X, True);
          end if;
 
       --  Positive numbers
 
       else
-         if Long_Long_Long_Integer'Size = 64 then
+         if LLLI_Is_128 then
+            return Convert_128 (X, False);
+         else
             return Allocate_Big_Integer
                      ((SD (X / Base), SD (X mod Base)), False);
-         else
-            return Convert_128 (X, False);
          end if;
       end if;
    end To_Bignum;
@@ -1285,7 +1351,7 @@ package body System.Generic_Bignums is
       function Image (Arg : Bignum) return String is
       begin
          if Big_LT (Arg, Big_Base'Unchecked_Access) then
-            return [Hex_Chars (Natural (From_Bignum (Arg)))];
+            return [Hex_Chars (Natural (LLI'(From_Bignum (Arg))))];
          else
             declare
                Div    : aliased Big_Integer;
@@ -1294,7 +1360,7 @@ package body System.Generic_Bignums is
 
             begin
                Div_Rem (Arg, Big_Base'Unchecked_Access, Div, Remain);
-               R := Natural (From_Bignum (To_Bignum (Remain)));
+               R := Natural (LLI'(From_Bignum (To_Bignum (Remain))));
                Free_Big_Integer (Remain);
 
                return S : constant String :=

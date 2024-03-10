@@ -1,11 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-fharden-conditional-branches -fharden-compares -fdump-tree-hardcbr -fdump-tree-hardcmp -ffat-lto-objects" } */
 
-int f(int i, int j) {
+int f(int i, int j, int k, int l) {
   if (i == 0)
-    return j != 0;
+    return (j != 0) + l;
   else
-    return i * j != 0;
+    return (i * j != 0) * k;
 }
 
 /* { dg-final { scan-tree-dump-times "Splitting edge" 2 "hardcbr" } } */

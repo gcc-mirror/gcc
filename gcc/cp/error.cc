@@ -639,8 +639,8 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_cv_qualifier_seq (pp, t);
       if (template_placeholder_p (t))
 	{
-	  t = TREE_TYPE (CLASS_PLACEHOLDER_TEMPLATE (t));
-	  pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
+	  tree tmpl = TREE_TYPE (CLASS_PLACEHOLDER_TEMPLATE (t));
+	  pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (tmpl));
 	  pp_string (pp, "<...auto...>");
 	}
       else if (TYPE_IDENTIFIER (t))
@@ -1140,7 +1140,7 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
 static void
 dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
 {
-  if (TREE_CODE (t) == VAR_DECL && DECL_NTTP_OBJECT_P (t))
+  if (VAR_P (t) && DECL_NTTP_OBJECT_P (t))
     return dump_expr (pp, DECL_INITIAL (t), flags);
 
   if (flags & TFF_DECL_SPECIFIERS)
@@ -2840,11 +2840,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case ALIGNOF_EXPR:
       if (TREE_CODE (t) == SIZEOF_EXPR)
 	pp_cxx_ws_string (pp, "sizeof");
+      else if (ALIGNOF_EXPR_STD_P (t))
+	pp_cxx_ws_string (pp, "alignof");
       else
-	{
-	  gcc_assert (TREE_CODE (t) == ALIGNOF_EXPR);
-	  pp_cxx_ws_string (pp, "__alignof__");
-	}
+	pp_cxx_ws_string (pp, "__alignof__");
       op = TREE_OPERAND (t, 0);
       if (PACK_EXPANSION_P (op))
 	{

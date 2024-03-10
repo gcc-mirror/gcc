@@ -5,6 +5,10 @@
 
 /* { dg-final { scan-assembler-times "\[\t \]0x6000004\[\t \]+\[^\n\]*btt_info" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0x86000003\[\t \]+\[^\n\]*btt_info" 1 } } */
+/* { dg-final { scan-assembler-times " ENUM_CONST 'QAD' idx=0" 1 } } */
+/* { dg-final { scan-assembler-times " ENUM_CONST 'QED' idx=1" 1 } } */
+/* { dg-final { scan-assembler-times " ENUM_CONST 'QOD' idx=2" 1 } } */
+/* { dg-final { scan-assembler-times " ENUM_CONST 'QUD' idx=3" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"QAD.0\"\[\t \]+\[^\n\]*btf_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"QED.0\"\[\t \]+\[^\n\]*btf_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"QOD.0\"\[\t \]+\[^\n\]*btf_string" 1 } } */

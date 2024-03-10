@@ -362,13 +362,6 @@ package body GNAT.Debug_Pools is
    --  These procedures are used as markers when computing the stacktraces,
    --  so that addresses in the debug pool itself are not reported to the user.
 
-   Code_Address_For_Allocate_End    : System.Address := System.Null_Address;
-   Code_Address_For_Deallocate_End  : System.Address;
-   Code_Address_For_Dereference_End : System.Address;
-   --  Taking the address of the above procedures will not work on some
-   --  architectures (HPUX for instance). Thus we do the same thing that
-   --  is done in a-except.adb, and get the address of labels instead.
-
    procedure Skip_Levels
      (Depth               : Natural;
       Trace               : Tracebacks_Array;
@@ -906,7 +899,7 @@ package body GNAT.Debug_Pools is
                Set_Handled;
             else
                Ptr.Valid (Offset / System.Storage_Unit) :=
-                 Ptr.Valid (Offset / System.Storage_Unit) and (not Bit);
+                 Ptr.Valid (Offset / System.Storage_Unit) and not Bit;
             end if;
          end if;
       end Set_Valid;
@@ -944,8 +937,6 @@ package body GNAT.Debug_Pools is
       pragma Unreferenced (Lock);
 
    begin
-      <<Allocate_Label>>
-
       if Disable then
          Storage_Address :=
            System.CRTL.malloc (System.CRTL.size_t (Size_In_Storage_Elements));
@@ -1022,8 +1013,8 @@ package body GNAT.Debug_Pools is
           (Pool                => Pool,
            Kind                => Alloc,
            Size                => Size_In_Storage_Elements,
-           Ignored_Frame_Start => Allocate_Label'Address,
-           Ignored_Frame_End   => Code_Address_For_Allocate_End);
+           Ignored_Frame_Start => Allocate'Code_Address,
+           Ignored_Frame_End   => Allocate_End'Code_Address);
 
       pragma Warnings (Off);
       --  Turn warning on alignment for convert call off. We know that in fact
@@ -1073,8 +1064,8 @@ package body GNAT.Debug_Pools is
          Put (Output_File (Pool),
               "), at ");
          Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
-                   Allocate_Label'Address,
-                   Code_Address_For_Deallocate_End);
+                   Allocate'Code_Address,
+                   Deallocate_End'Code_Address);
       end if;
 
       --  Update internal data
@@ -1106,11 +1097,7 @@ package body GNAT.Debug_Pools is
    --  is done in a-except, so that we can hide the traceback frames internal
    --  to this package
 
-   procedure Allocate_End is
-   begin
-      <<Allocate_End_Label>>
-      Code_Address_For_Allocate_End := Allocate_End_Label'Address;
-   end Allocate_End;
+   procedure Allocate_End is null;
 
    -------------------
    -- Set_Dead_Beef --
@@ -1476,8 +1463,6 @@ package body GNAT.Debug_Pools is
       Header_Block_Size_Was_Less_Than_0 : Boolean := True;
 
    begin
-      <<Deallocate_Label>>
-
       declare
          Lock : Scope_Lock;
          pragma Unreferenced (Lock);
@@ -1518,8 +1503,8 @@ package body GNAT.Debug_Pools is
                Put (Output_File (Pool), "), at ");
 
                Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
-                         Deallocate_Label'Address,
-                         Code_Address_For_Deallocate_End);
+                         Deallocate'Code_Address,
+                         Deallocate_End'Code_Address);
                Print_Traceback (Output_File (Pool),
                                 "   Memory was allocated at ",
                                 Header.Alloc_Traceback);
@@ -1569,8 +1554,8 @@ package body GNAT.Debug_Pools is
                  (Find_Or_Create_Traceback
                       (Pool, Dealloc,
                        Header.Block_Size,
-                       Deallocate_Label'Address,
-                       Code_Address_For_Deallocate_End)),
+                       Deallocate'Code_Address,
+                       Deallocate_End'Code_Address)),
                Next               => System.Null_Address,
                Block_Size         => -Header.Block_Size);
 
@@ -1608,8 +1593,8 @@ package body GNAT.Debug_Pools is
                Put (Output_File (Pool),
                     "error: Freeing Null_Address, at ");
                Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
-                         Deallocate_Label'Address,
-                         Code_Address_For_Deallocate_End);
+                         Deallocate'Code_Address,
+                         Deallocate_End'Code_Address);
                return;
             end if;
          end if;
@@ -1629,8 +1614,8 @@ package body GNAT.Debug_Pools is
             Put (Output_File (Pool),
                  "error: Freeing not allocated storage, at ");
             Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
-                      Deallocate_Label'Address,
-                      Code_Address_For_Deallocate_End);
+                      Deallocate'Code_Address,
+                      Deallocate_End'Code_Address);
          end if;
 
       elsif Header_Block_Size_Was_Less_Than_0 then
@@ -1640,8 +1625,8 @@ package body GNAT.Debug_Pools is
             Put (Output_File (Pool),
                  "error: Freeing already deallocated storage, at ");
             Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
-                      Deallocate_Label'Address,
-                      Code_Address_For_Deallocate_End);
+                      Deallocate'Code_Address,
+                      Deallocate_End'Code_Address);
             Print_Traceback (Output_File (Pool),
                              "   Memory already deallocated at ",
                             To_Traceback (Header.Dealloc_Traceback));
@@ -1661,11 +1646,7 @@ package body GNAT.Debug_Pools is
 
    --  This is making assumptions about code order that may be invalid ???
 
-   procedure Deallocate_End is
-   begin
-      <<Deallocate_End_Label>>
-      Code_Address_For_Deallocate_End := Deallocate_End_Label'Address;
-   end Deallocate_End;
+   procedure Deallocate_End is null;
 
    -----------------
    -- Dereference --
@@ -1690,8 +1671,6 @@ package body GNAT.Debug_Pools is
       --  now invalid pointer would appear as valid). Instead, we prefer
       --  optimum performance for dereferences.
 
-      <<Dereference_Label>>
-
       if not Valid then
          if Pool.Raise_Exceptions then
             raise Accessing_Not_Allocated_Storage;
@@ -1699,8 +1678,8 @@ package body GNAT.Debug_Pools is
             Put (Output_File (Pool),
                  "error: Accessing not allocated storage, at ");
             Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
-                      Dereference_Label'Address,
-                      Code_Address_For_Dereference_End);
+                      Deallocate'Code_Address,
+                      Dereference_End'Code_Address);
          end if;
 
       else
@@ -1714,8 +1693,8 @@ package body GNAT.Debug_Pools is
                     "error: Accessing deallocated storage, at ");
                Put_Line
                  (Output_File (Pool), Pool.Stack_Trace_Depth, null,
-                  Dereference_Label'Address,
-                  Code_Address_For_Dereference_End);
+                  Deallocate'Code_Address,
+                  Dereference_End'Code_Address);
                Print_Traceback (Output_File (Pool), "  First deallocation at ",
                                 To_Traceback (Header.Dealloc_Traceback));
                Print_Traceback (Output_File (Pool), "  Initial allocation at ",
@@ -1735,11 +1714,7 @@ package body GNAT.Debug_Pools is
 
    --  This is making assumptions about code order that may be invalid ???
 
-   procedure Dereference_End is
-   begin
-      <<Dereference_End_Label>>
-      Code_Address_For_Dereference_End := Dereference_End_Label'Address;
-   end Dereference_End;
+   procedure Dereference_End is null;
 
    ----------------
    -- Print_Info --
@@ -2512,10 +2487,4 @@ package body GNAT.Debug_Pools is
       Put_Line (Standard_Output, S);
    end Stdout_Put_Line;
 
---  Package initialization
-
-begin
-   Allocate_End;
-   Deallocate_End;
-   Dereference_End;
 end GNAT.Debug_Pools;

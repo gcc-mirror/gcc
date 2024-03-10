@@ -38,5 +38,6 @@ sub5 (unsigned int i)
 }
 /* { dg-final { scan-assembler-times "slli" 5 } } */
 /* { dg-final { scan-assembler-times "srli" 5 } } */
-/* { dg-final { scan-assembler-times "slliw" 1 } } */
-/* { dg-final { scan-assembler-times "srliw" 1 } } */
+/* { dg-final { scan-assembler-times ",40" 2 } } */ /* For sub5 test */
+/* { dg-final { scan-assembler-not "slliw" } } */
+/* { dg-final { scan-assembler-not "srliw" } } */

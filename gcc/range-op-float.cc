@@ -45,11 +45,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "value-relation.h"
 #include "range-op.h"
+#include "range-op-mixed.h"
 
 // Default definitions for floating point operators.
 
 bool
-range_operator_float::fold_range (frange &r, tree type,
+range_operator::fold_range (frange &r, tree type,
 				  const frange &op1, const frange &op2,
 				  relation_trio trio) const
 {
@@ -57,7 +58,7 @@ range_operator_float::fold_range (frange &r, tree type,
     return true;
   if (op1.known_isnan () || op2.known_isnan ())
     {
-      r.set_nan (op1.type ());
+      r.set_nan (type);
       return true;
     }
 
@@ -121,7 +122,7 @@ range_operator_float::fold_range (frange &r, tree type,
 // MAYBE_NAN is set to TRUE if, in addition to any result in LB or
 // UB, the final range has the possibility of a NAN.
 void
-range_operator_float::rv_fold (REAL_VALUE_TYPE &lb,
+range_operator::rv_fold (REAL_VALUE_TYPE &lb,
 			       REAL_VALUE_TYPE &ub,
 			       bool &maybe_nan,
 			       tree type ATTRIBUTE_UNUSED,
@@ -137,7 +138,7 @@ range_operator_float::rv_fold (REAL_VALUE_TYPE &lb,
 }
 
 bool
-range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
+range_operator::fold_range (irange &r ATTRIBUTE_UNUSED,
 				  tree type ATTRIBUTE_UNUSED,
 				  const frange &lh ATTRIBUTE_UNUSED,
 				  const irange &rh ATTRIBUTE_UNUSED,
@@ -147,7 +148,7 @@ range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
+range_operator::fold_range (irange &r ATTRIBUTE_UNUSED,
 				  tree type ATTRIBUTE_UNUSED,
 				  const frange &lh ATTRIBUTE_UNUSED,
 				  const frange &rh ATTRIBUTE_UNUSED,
@@ -157,7 +158,7 @@ range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::op1_range (frange &r ATTRIBUTE_UNUSED,
+range_operator::op1_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const frange &lhs ATTRIBUTE_UNUSED,
 				 const frange &op2 ATTRIBUTE_UNUSED,
@@ -167,7 +168,7 @@ range_operator_float::op1_range (frange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::op1_range (frange &r ATTRIBUTE_UNUSED,
+range_operator::op1_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const irange &lhs ATTRIBUTE_UNUSED,
 				 const frange &op2 ATTRIBUTE_UNUSED,
@@ -177,7 +178,7 @@ range_operator_float::op1_range (frange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::op2_range (frange &r ATTRIBUTE_UNUSED,
+range_operator::op2_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const frange &lhs ATTRIBUTE_UNUSED,
 				 const frange &op1 ATTRIBUTE_UNUSED,
@@ -187,7 +188,7 @@ range_operator_float::op2_range (frange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::op2_range (frange &r ATTRIBUTE_UNUSED,
+range_operator::op2_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const irange &lhs ATTRIBUTE_UNUSED,
 				 const frange &op1 ATTRIBUTE_UNUSED,
@@ -197,7 +198,7 @@ range_operator_float::op2_range (frange &r ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::lhs_op1_relation (const frange &lhs ATTRIBUTE_UNUSED,
+range_operator::lhs_op1_relation (const frange &lhs ATTRIBUTE_UNUSED,
 					const frange &op1 ATTRIBUTE_UNUSED,
 					const frange &op2 ATTRIBUTE_UNUSED,
 					relation_kind) const
@@ -206,7 +207,7 @@ range_operator_float::lhs_op1_relation (const frange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
+range_operator::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
 					const frange &op1 ATTRIBUTE_UNUSED,
 					const frange &op2 ATTRIBUTE_UNUSED,
 					relation_kind) const
@@ -215,7 +216,7 @@ range_operator_float::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
+range_operator::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
 					const frange &op1 ATTRIBUTE_UNUSED,
 					const frange &op2 ATTRIBUTE_UNUSED,
 					relation_kind) const
@@ -224,7 +225,7 @@ range_operator_float::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::lhs_op2_relation (const frange &lhs ATTRIBUTE_UNUSED,
+range_operator::lhs_op2_relation (const frange &lhs ATTRIBUTE_UNUSED,
 					const frange &op1 ATTRIBUTE_UNUSED,
 					const frange &op2 ATTRIBUTE_UNUSED,
 					relation_kind) const
@@ -233,13 +234,7 @@ range_operator_float::lhs_op2_relation (const frange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED) const
-{
-  return VREL_VARYING;
-}
-
-relation_kind
-range_operator_float::op1_op2_relation (const frange &lhs ATTRIBUTE_UNUSED) const
+range_operator::op1_op2_relation (const frange &lhs ATTRIBUTE_UNUSED) const
 {
   return VREL_VARYING;
 }
@@ -305,7 +300,7 @@ frange_nextafter (enum machine_mode mode,
 // SF/DFmode (when storing into memory from the 387 stack).  Maybe
 // this is ok as well though it is just occasionally more precise. ??
 
-static void
+void
 frange_arithmetic (enum tree_code code, tree type,
 		   REAL_VALUE_TYPE &result,
 		   const REAL_VALUE_TYPE &op1,
@@ -546,57 +541,42 @@ build_gt (frange &r, tree type, const frange &val)
 }
 
 
-class foperator_identity : public range_operator_float
+bool
+operator_identity::fold_range (frange &r, tree, const frange &op1,
+			       const frange &, relation_trio) const
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-public:
-  bool fold_range (frange &r, tree type ATTRIBUTE_UNUSED,
-		   const frange &op1, const frange &op2 ATTRIBUTE_UNUSED,
-		   relation_trio = TRIO_VARYING) const final override
-  {
-    r = op1;
-    return true;
-  }
-  bool op1_range (frange &r, tree type ATTRIBUTE_UNUSED,
-		  const frange &lhs, const frange &op2 ATTRIBUTE_UNUSED,
-		  relation_trio = TRIO_VARYING) const final override
-  {
-    r = lhs;
-    return true;
-  }
-public:
-} fop_identity;
-
-class foperator_equal : public range_operator_float
-{
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
-public:
-  bool fold_range (irange &r, tree type,
-		   const frange &op1, const frange &op2,
-		   relation_trio = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override
-  {
-    return equal_op1_op2_relation (lhs);
-  }
-  bool op1_range (frange &r, tree type,
-		  const irange &lhs, const frange &op2,
-		  relation_trio = TRIO_VARYING) const final override;
-  bool op2_range (frange &r, tree type,
-		  const irange &lhs, const frange &op1,
-		  relation_trio rel = TRIO_VARYING) const final override
-  {
-    return op1_range (r, type, lhs, op1, rel.swap_op1_op2 ());
-  }
-} fop_equal;
+  r = op1;
+  return true;
+}
 
 bool
-foperator_equal::fold_range (irange &r, tree type,
-			     const frange &op1, const frange &op2,
-			     relation_trio rel) const
+operator_identity::op1_range (frange &r, tree, const frange &lhs,
+			      const frange &, relation_trio) const
+{
+  r = lhs;
+  return true;
+}
+
+bool
+operator_cst::fold_range (frange &r, tree, const frange &op1,
+			  const frange &, relation_trio) const
+{
+  r = op1;
+  return true;
+}
+
+bool
+operator_equal::op2_range (frange &r, tree type,
+			   const irange &lhs, const frange &op1,
+			   relation_trio rel) const
+{
+  return op1_range (r, type, lhs, op1, rel.swap_op1_op2 ());
+}
+
+bool
+operator_equal::fold_range (irange &r, tree type,
+			    const frange &op1, const frange &op2,
+			    relation_trio rel) const
 {
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_EQ))
     return true;
@@ -649,7 +629,7 @@ foperator_equal::fold_range (irange &r, tree type,
 }
 
 bool
-foperator_equal::op1_range (frange &r, tree type,
+operator_equal::op1_range (frange &r, tree type,
 			    const irange &lhs,
 			    const frange &op2,
 			    relation_trio trio) const
@@ -697,28 +677,10 @@ foperator_equal::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_not_equal : public range_operator_float
-{
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op1_op2_relation;
-public:
-  bool fold_range (irange &r, tree type,
-		   const frange &op1, const frange &op2,
-		   relation_trio rel = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override
-  {
-    return not_equal_op1_op2_relation (lhs);
-  }
-  bool op1_range (frange &r, tree type,
-		  const irange &lhs, const frange &op2,
-		  relation_trio = TRIO_VARYING) const final override;
-} fop_not_equal;
-
 bool
-foperator_not_equal::fold_range (irange &r, tree type,
-				 const frange &op1, const frange &op2,
-				 relation_trio rel) const
+operator_not_equal::fold_range (irange &r, tree type,
+				const frange &op1, const frange &op2,
+				relation_trio rel) const
 {
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_NE))
     return true;
@@ -772,10 +734,10 @@ foperator_not_equal::fold_range (irange &r, tree type,
 }
 
 bool
-foperator_not_equal::op1_range (frange &r, tree type,
-				const irange &lhs,
-				const frange &op2,
-				relation_trio trio) const
+operator_not_equal::op1_range (frange &r, tree type,
+			       const irange &lhs,
+			       const frange &op2,
+			       relation_trio trio) const
 {
   relation_kind rel = trio.op1_op2 ();
   switch (get_bool_state (r, lhs, type))
@@ -819,32 +781,10 @@ foperator_not_equal::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_lt : public range_operator_float
-{
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
-public:
-  bool fold_range (irange &r, tree type,
-		   const frange &op1, const frange &op2,
-		   relation_trio = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override
-  {
-    return lt_op1_op2_relation (lhs);
-  }
-  bool op1_range (frange &r, tree type,
-		  const irange &lhs, const frange &op2,
-		  relation_trio = TRIO_VARYING) const final override;
-  bool op2_range (frange &r, tree type,
-		  const irange &lhs, const frange &op1,
-		  relation_trio = TRIO_VARYING) const final override;
-} fop_lt;
-
 bool
-foperator_lt::fold_range (irange &r, tree type,
-			  const frange &op1, const frange &op2,
-			  relation_trio rel) const
+operator_lt::fold_range (irange &r, tree type,
+			 const frange &op1, const frange &op2,
+			 relation_trio rel) const
 {
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_LT))
     return true;
@@ -862,11 +802,11 @@ foperator_lt::fold_range (irange &r, tree type,
 }
 
 bool
-foperator_lt::op1_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op2,
-			 relation_trio) const
+operator_lt::op1_range (frange &r,
+			tree type,
+			const irange &lhs,
+			const frange &op2,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -899,11 +839,11 @@ foperator_lt::op1_range (frange &r,
 }
 
 bool
-foperator_lt::op2_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op1,
-			 relation_trio) const
+operator_lt::op2_range (frange &r,
+			tree type,
+			const irange &lhs,
+			const frange &op1,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -935,32 +875,10 @@ foperator_lt::op2_range (frange &r,
   return true;
 }
 
-class foperator_le : public range_operator_float
-{
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
-public:
-  bool fold_range (irange &r, tree type,
-		   const frange &op1, const frange &op2,
-		   relation_trio rel = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override
-  {
-    return le_op1_op2_relation (lhs);
-  }
-  bool op1_range (frange &r, tree type,
-		  const irange &lhs, const frange &op2,
-		  relation_trio rel = TRIO_VARYING) const final override;
-  bool op2_range (frange &r, tree type,
-		  const irange &lhs, const frange &op1,
-		  relation_trio rel = TRIO_VARYING) const final override;
-} fop_le;
-
 bool
-foperator_le::fold_range (irange &r, tree type,
-			  const frange &op1, const frange &op2,
-			  relation_trio rel) const
+operator_le::fold_range (irange &r, tree type,
+			 const frange &op1, const frange &op2,
+			 relation_trio rel) const
 {
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_LE))
     return true;
@@ -978,11 +896,11 @@ foperator_le::fold_range (irange &r, tree type,
 }
 
 bool
-foperator_le::op1_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op2,
-			 relation_trio) const
+operator_le::op1_range (frange &r,
+			tree type,
+			const irange &lhs,
+			const frange &op2,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -1011,11 +929,11 @@ foperator_le::op1_range (frange &r,
 }
 
 bool
-foperator_le::op2_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op1,
-			 relation_trio) const
+operator_le::op2_range (frange &r,
+			tree type,
+			const irange &lhs,
+			const frange &op1,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -1045,32 +963,10 @@ foperator_le::op2_range (frange &r,
   return true;
 }
 
-class foperator_gt : public range_operator_float
-{
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
-public:
-  bool fold_range (irange &r, tree type,
-		   const frange &op1, const frange &op2,
-		   relation_trio = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override
-  {
-    return gt_op1_op2_relation (lhs);
-  }
-  bool op1_range (frange &r, tree type,
-		  const irange &lhs, const frange &op2,
-		  relation_trio = TRIO_VARYING) const final override;
-  bool op2_range (frange &r, tree type,
-		  const irange &lhs, const frange &op1,
-		  relation_trio = TRIO_VARYING) const final override;
-} fop_gt;
-
 bool
-foperator_gt::fold_range (irange &r, tree type,
-			  const frange &op1, const frange &op2,
-			  relation_trio rel) const
+operator_gt::fold_range (irange &r, tree type,
+			 const frange &op1, const frange &op2,
+			 relation_trio rel) const
 {
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_GT))
     return true;
@@ -1088,11 +984,11 @@ foperator_gt::fold_range (irange &r, tree type,
 }
 
 bool
-foperator_gt::op1_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op2,
-			 relation_trio) const
+operator_gt::op1_range (frange &r,
+			tree type,
+			const irange &lhs,
+			const frange &op2,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -1127,11 +1023,11 @@ foperator_gt::op1_range (frange &r,
 }
 
 bool
-foperator_gt::op2_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op1,
-			 relation_trio) const
+operator_gt::op2_range (frange &r,
+			tree type,
+			const irange &lhs,
+			const frange &op1,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -1165,32 +1061,10 @@ foperator_gt::op2_range (frange &r,
   return true;
 }
 
-class foperator_ge : public range_operator_float
-{
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
-public:
-  bool fold_range (irange &r, tree type,
-		   const frange &op1, const frange &op2,
-		   relation_trio = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override
-  {
-    return ge_op1_op2_relation (lhs);
-  }
-  bool op1_range (frange &r, tree type,
-		  const irange &lhs, const frange &op2,
-		  relation_trio = TRIO_VARYING) const final override;
-  bool op2_range (frange &r, tree type,
-		  const irange &lhs, const frange &op1,
-		  relation_trio = TRIO_VARYING) const final override;
-} fop_ge;
-
 bool
-foperator_ge::fold_range (irange &r, tree type,
-			  const frange &op1, const frange &op2,
-			  relation_trio rel) const
+operator_ge::fold_range (irange &r, tree type,
+			 const frange &op1, const frange &op2,
+			 relation_trio rel) const
 {
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_GE))
     return true;
@@ -1208,11 +1082,11 @@ foperator_ge::fold_range (irange &r, tree type,
 }
 
 bool
-foperator_ge::op1_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op2,
-			 relation_trio) const
+operator_ge::op1_range (frange &r,
+			tree type,
+			const irange &lhs,
+			const frange &op2,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -1243,10 +1117,10 @@ foperator_ge::op1_range (frange &r,
 }
 
 bool
-foperator_ge::op2_range (frange &r, tree type,
-			 const irange &lhs,
-			 const frange &op1,
-			 relation_trio) const
+operator_ge::op2_range (frange &r, tree type,
+			const irange &lhs,
+			const frange &op1,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -1278,11 +1152,11 @@ foperator_ge::op2_range (frange &r, tree type,
 
 // UNORDERED_EXPR comparison.
 
-class foperator_unordered : public range_operator_float
+class foperator_unordered : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1352,11 +1226,11 @@ foperator_unordered::op1_range (frange &r, tree type,
 
 // ORDERED_EXPR comparison.
 
-class foperator_ordered : public range_operator_float
+class foperator_ordered : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1421,69 +1295,53 @@ foperator_ordered::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_negate : public range_operator_float
+bool
+operator_negate::fold_range (frange &r, tree type,
+			     const frange &op1, const frange &op2,
+			     relation_trio) const
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-public:
-  bool fold_range (frange &r, tree type,
-		   const frange &op1, const frange &op2,
-		   relation_trio = TRIO_VARYING) const final override
-  {
-    if (empty_range_varying (r, type, op1, op2))
-      return true;
-    if (op1.known_isnan ())
-      {
-	bool sign;
-	if (op1.nan_signbit_p (sign))
-	  r.set_nan (type, !sign);
-	else
-	  r.set_nan (type);
-	return true;
-      }
-
-    REAL_VALUE_TYPE lh_lb = op1.lower_bound ();
-    REAL_VALUE_TYPE lh_ub = op1.upper_bound ();
-    lh_lb = real_value_negate (&lh_lb);
-    lh_ub = real_value_negate (&lh_ub);
-    r.set (type, lh_ub, lh_lb);
-    if (op1.maybe_isnan ())
-      {
-	bool sign;
-	if (op1.nan_signbit_p (sign))
-	  r.update_nan (!sign);
-	else
-	  r.update_nan ();
-      }
-    else
-      r.clear_nan ();
+  if (empty_range_varying (r, type, op1, op2))
     return true;
-  }
-  bool op1_range (frange &r, tree type,
-		  const frange &lhs, const frange &op2,
-		  relation_trio rel = TRIO_VARYING) const final override
-  {
-    return fold_range (r, type, lhs, op2, rel);
-  }
-} fop_negate;
+  if (op1.known_isnan ())
+    {
+      bool sign;
+      if (op1.nan_signbit_p (sign))
+	r.set_nan (type, !sign);
+      else
+	r.set_nan (type);
+      return true;
+    }
 
-class foperator_abs : public range_operator_float
-{
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-public:
-  bool fold_range (frange &r, tree type,
-		   const frange &op1, const frange &,
-		   relation_trio = TRIO_VARYING) const final override;
-  bool op1_range (frange &r, tree type,
-		  const frange &lhs, const frange &op2,
-		  relation_trio rel = TRIO_VARYING) const final override;
-} fop_abs;
+  REAL_VALUE_TYPE lh_lb = op1.lower_bound ();
+  REAL_VALUE_TYPE lh_ub = op1.upper_bound ();
+  lh_lb = real_value_negate (&lh_lb);
+  lh_ub = real_value_negate (&lh_ub);
+  r.set (type, lh_ub, lh_lb);
+  if (op1.maybe_isnan ())
+    {
+      bool sign;
+      if (op1.nan_signbit_p (sign))
+	r.update_nan (!sign);
+      else
+	r.update_nan ();
+    }
+  else
+    r.clear_nan ();
+  return true;
+}
 
 bool
-foperator_abs::fold_range (frange &r, tree type,
-			   const frange &op1, const frange &op2,
-			   relation_trio) const
+operator_negate::op1_range (frange &r, tree type,
+			    const frange &lhs, const frange &op2,
+			    relation_trio rel) const
+{
+  return fold_range (r, type, lhs, op2, rel);
+}
+
+bool
+operator_abs::fold_range (frange &r, tree type,
+			  const frange &op1, const frange &op2,
+			  relation_trio) const
 {
   if (empty_range_varying (r, type, op1, op2))
     return true;
@@ -1531,9 +1389,9 @@ foperator_abs::fold_range (frange &r, tree type,
 }
 
 bool
-foperator_abs::op1_range (frange &r, tree type,
-			  const frange &lhs, const frange &op2,
-			  relation_trio) const
+operator_abs::op1_range (frange &r, tree type,
+			 const frange &lhs, const frange &op2,
+			 relation_trio) const
 {
   if (empty_range_varying (r, type, lhs, op2))
     return true;
@@ -1566,11 +1424,11 @@ foperator_abs::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_unordered_lt : public range_operator_float
+class foperator_unordered_lt : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1587,7 +1445,8 @@ public:
       op1_no_nan.clear_nan ();
     if (op2.maybe_isnan ())
       op2_no_nan.clear_nan ();
-    if (!fop_lt.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
+    if (!range_op_handler (LT_EXPR).fold_range (r, type, op1_no_nan,
+						op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -1677,11 +1536,11 @@ foperator_unordered_lt::op2_range (frange &r, tree type,
   return true;
 }
 
-class foperator_unordered_le : public range_operator_float
+class foperator_unordered_le : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1698,7 +1557,8 @@ public:
       op1_no_nan.clear_nan ();
     if (op2.maybe_isnan ())
       op2_no_nan.clear_nan ();
-    if (!fop_le.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
+    if (!range_op_handler (LE_EXPR).fold_range (r, type, op1_no_nan,
+						op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -1784,11 +1644,11 @@ foperator_unordered_le::op2_range (frange &r,
   return true;
 }
 
-class foperator_unordered_gt : public range_operator_float
+class foperator_unordered_gt : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1805,7 +1665,8 @@ public:
       op1_no_nan.clear_nan ();
     if (op2.maybe_isnan ())
       op2_no_nan.clear_nan ();
-    if (!fop_gt.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
+    if (!range_op_handler (GT_EXPR).fold_range (r, type, op1_no_nan,
+						op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -1895,11 +1756,11 @@ foperator_unordered_gt::op2_range (frange &r,
   return true;
 }
 
-class foperator_unordered_ge : public range_operator_float
+class foperator_unordered_ge : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1916,7 +1777,8 @@ public:
       op1_no_nan.clear_nan ();
     if (op2.maybe_isnan ())
       op2_no_nan.clear_nan ();
-    if (!fop_ge.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
+    if (!range_op_handler (GE_EXPR).fold_range (r, type, op1_no_nan,
+						op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -2005,11 +1867,11 @@ foperator_unordered_ge::op2_range (frange &r, tree type,
   return true;
 }
 
-class foperator_unordered_equal : public range_operator_float
+class foperator_unordered_equal : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -2026,7 +1888,8 @@ public:
       op1_no_nan.clear_nan ();
     if (op2.maybe_isnan ())
       op2_no_nan.clear_nan ();
-    if (!fop_equal.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
+    if (!range_op_handler (EQ_EXPR).fold_range (r, type, op1_no_nan,
+						op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -2086,11 +1949,11 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_ltgt : public range_operator_float
+class foperator_ltgt : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -2107,7 +1970,8 @@ public:
       op1_no_nan.clear_nan ();
     if (op2.maybe_isnan ())
       op2_no_nan.clear_nan ();
-    if (!fop_not_equal.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
+    if (!range_op_handler (NE_EXPR).fold_range (r, type, op1_no_nan,
+						op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -2374,293 +2238,278 @@ float_widen_lhs_range (tree type, const frange &lhs)
   return ret;
 }
 
-class foperator_plus : public range_operator_float
+bool
+operator_plus::op1_range (frange &r, tree type, const frange &lhs,
+			  const frange &op2, relation_trio) const
 {
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-public:
-  virtual bool op1_range (frange &r, tree type,
-			  const frange &lhs,
-			  const frange &op2,
-			  relation_trio = TRIO_VARYING) const final override
-  {
-    if (lhs.undefined_p ())
-      return false;
-    range_op_handler minus (MINUS_EXPR, type);
-    if (!minus)
-      return false;
-    frange wlhs = float_widen_lhs_range (type, lhs);
-    return float_binary_op_range_finish (minus.fold_range (r, type, wlhs, op2),
-					 r, type, wlhs);
-  }
-  virtual bool op2_range (frange &r, tree type,
-			  const frange &lhs,
-			  const frange &op1,
-			  relation_trio = TRIO_VARYING) const final override
-  {
-    return op1_range (r, type, lhs, op1);
-  }
-private:
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
-		tree type,
-		const REAL_VALUE_TYPE &lh_lb,
-		const REAL_VALUE_TYPE &lh_ub,
-		const REAL_VALUE_TYPE &rh_lb,
-		const REAL_VALUE_TYPE &rh_ub,
-		relation_kind) const final override
-  {
-    frange_arithmetic (PLUS_EXPR, type, lb, lh_lb, rh_lb, dconstninf);
-    frange_arithmetic (PLUS_EXPR, type, ub, lh_ub, rh_ub, dconstinf);
+  if (lhs.undefined_p ())
+    return false;
+  range_op_handler minus (MINUS_EXPR, type);
+  if (!minus)
+    return false;
+  frange wlhs = float_widen_lhs_range (type, lhs);
+  return float_binary_op_range_finish (minus.fold_range (r, type, wlhs, op2),
+				       r, type, wlhs);
+}
 
-    // [-INF] + [+INF] = NAN
-    if (real_isinf (&lh_lb, true) && real_isinf (&rh_ub, false))
-      maybe_nan = true;
-    // [+INF] + [-INF] = NAN
-    else if (real_isinf (&lh_ub, false) && real_isinf (&rh_lb, true))
-      maybe_nan = true;
-    else
-      maybe_nan = false;
-  }
-} fop_plus;
-
-
-class foperator_minus : public range_operator_float
+bool
+operator_plus::op2_range (frange &r, tree type,
+			  const frange &lhs, const frange &op1,
+			  relation_trio) const
 {
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-public:
-  virtual bool op1_range (frange &r, tree type,
-			  const frange &lhs,
-			  const frange &op2,
-			  relation_trio = TRIO_VARYING) const final override
-  {
-    if (lhs.undefined_p ())
-      return false;
-    frange wlhs = float_widen_lhs_range (type, lhs);
-    return float_binary_op_range_finish (fop_plus.fold_range (r, type, wlhs,
-							      op2),
-					 r, type, wlhs);
-  }
-  virtual bool op2_range (frange &r, tree type,
-			  const frange &lhs,
-			  const frange &op1,
-			  relation_trio = TRIO_VARYING) const final override
-  {
-    if (lhs.undefined_p ())
-      return false;
-    frange wlhs = float_widen_lhs_range (type, lhs);
-    return float_binary_op_range_finish (fold_range (r, type, op1, wlhs),
-					 r, type, wlhs);
-  }
-private:
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
-		tree type,
-		const REAL_VALUE_TYPE &lh_lb,
-		const REAL_VALUE_TYPE &lh_ub,
-		const REAL_VALUE_TYPE &rh_lb,
-		const REAL_VALUE_TYPE &rh_ub,
-		relation_kind) const final override
-  {
-    frange_arithmetic (MINUS_EXPR, type, lb, lh_lb, rh_ub, dconstninf);
-    frange_arithmetic (MINUS_EXPR, type, ub, lh_ub, rh_lb, dconstinf);
+  return op1_range (r, type, lhs, op1);
+}
 
-    // [+INF] - [+INF] = NAN
-    if (real_isinf (&lh_ub, false) && real_isinf (&rh_ub, false))
-      maybe_nan = true;
-    // [-INF] - [-INF] = NAN
-    else if (real_isinf (&lh_lb, true) && real_isinf (&rh_lb, true))
-      maybe_nan = true;
-    else
-      maybe_nan = false;
-  }
-} fop_minus;
-
-
-class foperator_mult_div_base : public range_operator_float
+void
+operator_plus::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			bool &maybe_nan, tree type,
+			const REAL_VALUE_TYPE &lh_lb,
+			const REAL_VALUE_TYPE &lh_ub,
+			const REAL_VALUE_TYPE &rh_lb,
+			const REAL_VALUE_TYPE &rh_ub,
+			relation_kind) const
 {
-protected:
-  // Given CP[0] to CP[3] floating point values rounded to -INF,
-  // set LB to the smallest of them (treating -0 as smaller to +0).
-  // Given CP[4] to CP[7] floating point values rounded to +INF,
-  // set UB to the largest of them (treating -0 as smaller to +0).
-  static void find_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-			  const REAL_VALUE_TYPE (&cp)[8])
-  {
-    lb = cp[0];
-    ub = cp[4];
-    for (int i = 1; i < 4; ++i)
-      {
-	if (real_less (&cp[i], &lb)
-	    || (real_iszero (&lb) && real_isnegzero (&cp[i])))
-	  lb = cp[i];
-	if (real_less (&ub, &cp[i + 4])
-	    || (real_isnegzero (&ub) && real_iszero (&cp[i + 4])))
-	  ub = cp[i + 4];
-      }
-  }
-};
+  frange_arithmetic (PLUS_EXPR, type, lb, lh_lb, rh_lb, dconstninf);
+  frange_arithmetic (PLUS_EXPR, type, ub, lh_ub, rh_ub, dconstinf);
 
-
-class foperator_mult : public foperator_mult_div_base
-{
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-public:
-  virtual bool op1_range (frange &r, tree type,
-			  const frange &lhs,
-			  const frange &op2,
-			  relation_trio = TRIO_VARYING) const final override
-  {
-    if (lhs.undefined_p ())
-      return false;
-    range_op_handler rdiv (RDIV_EXPR, type);
-    if (!rdiv)
-      return false;
-    frange wlhs = float_widen_lhs_range (type, lhs);
-    bool ret = rdiv.fold_range (r, type, wlhs, op2);
-    if (ret == false)
-      return false;
-    if (wlhs.known_isnan () || op2.known_isnan () || op2.undefined_p ())
-      return float_binary_op_range_finish (ret, r, type, wlhs);
-    const REAL_VALUE_TYPE &lhs_lb = wlhs.lower_bound ();
-    const REAL_VALUE_TYPE &lhs_ub = wlhs.upper_bound ();
-    const REAL_VALUE_TYPE &op2_lb = op2.lower_bound ();
-    const REAL_VALUE_TYPE &op2_ub = op2.upper_bound ();
-    if ((contains_zero_p (lhs_lb, lhs_ub) && contains_zero_p (op2_lb, op2_ub))
-	|| ((real_isinf (&lhs_lb) || real_isinf (&lhs_ub))
-	    && (real_isinf (&op2_lb) || real_isinf (&op2_ub))))
-      {
-	// If both lhs and op2 could be zeros or both could be infinities,
-	// we don't know anything about op1 except maybe for the sign
-	// and perhaps if it can be NAN or not.
-	REAL_VALUE_TYPE lb, ub;
-	int signbit_known = signbit_known_p (lhs_lb, lhs_ub, op2_lb, op2_ub);
-	zero_to_inf_range (lb, ub, signbit_known);
-	r.set (type, lb, ub);
-      }
-    // Otherwise, if op2 is a singleton INF and lhs doesn't include INF,
-    // or if lhs must be zero and op2 doesn't include zero, it would be
-    // UNDEFINED, while rdiv.fold_range computes a zero or singleton INF
-    // range.  Those are supersets of UNDEFINED, so let's keep that way.
-    return float_binary_op_range_finish (ret, r, type, wlhs);
-  }
-  virtual bool op2_range (frange &r, tree type,
-			  const frange &lhs,
-			  const frange &op1,
-			  relation_trio = TRIO_VARYING) const final override
-  {
-    return op1_range (r, type, lhs, op1);
-  }
-private:
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
-		tree type,
-		const REAL_VALUE_TYPE &lh_lb,
-		const REAL_VALUE_TYPE &lh_ub,
-		const REAL_VALUE_TYPE &rh_lb,
-		const REAL_VALUE_TYPE &rh_ub,
-		relation_kind kind) const final override
-  {
-    bool is_square
-      = (kind == VREL_EQ
-	 && real_equal (&lh_lb, &rh_lb)
-	 && real_equal (&lh_ub, &rh_ub)
-	 && real_isneg (&lh_lb) == real_isneg (&rh_lb)
-	 && real_isneg (&lh_ub) == real_isneg (&rh_ub));
-
+  // [-INF] + [+INF] = NAN
+  if (real_isinf (&lh_lb, true) && real_isinf (&rh_ub, false))
+    maybe_nan = true;
+  // [+INF] + [-INF] = NAN
+  else if (real_isinf (&lh_ub, false) && real_isinf (&rh_lb, true))
+    maybe_nan = true;
+  else
     maybe_nan = false;
-    // x * x never produces a new NAN and we only multiply the same
-    // values, so the 0 * INF problematic cases never appear there.
-    if (!is_square)
-      {
-	// [+-0, +-0] * [+INF,+INF] (or [-INF,-INF] or swapped is a known NAN.
-	if ((zero_p (lh_lb, lh_ub) && singleton_inf_p (rh_lb, rh_ub))
-	    || (zero_p (rh_lb, rh_ub) && singleton_inf_p (lh_lb, lh_ub)))
-	  {
-	    real_nan (&lb, "", 0, TYPE_MODE (type));
-	    ub = lb;
-	    maybe_nan = true;
-	    return;
-	  }
-
-	// Otherwise, if one range includes zero and the other ends with +-INF,
-	// it is a maybe NAN.
-	if ((contains_zero_p (lh_lb, lh_ub)
-	     && (real_isinf (&rh_lb) || real_isinf (&rh_ub)))
-	    || (contains_zero_p (rh_lb, rh_ub)
-		&& (real_isinf (&lh_lb) || real_isinf (&lh_ub))))
-	  {
-	    maybe_nan = true;
-
-	    int signbit_known = signbit_known_p (lh_lb, lh_ub, rh_lb, rh_ub);
-
-	    // If one of the ranges that includes INF is singleton
-	    // and the other range includes zero, the resulting
-	    // range is INF and NAN, because the 0 * INF boundary
-	    // case will be NAN, but already nextafter (0, 1) * INF
-	    // is INF.
-	    if (singleton_inf_p (lh_lb, lh_ub)
-		|| singleton_inf_p (rh_lb, rh_ub))
-	      return inf_range (lb, ub, signbit_known);
-
-	    // If one of the multiplicands must be zero, the resulting
-	    // range is +-0 and NAN.
-	    if (zero_p (lh_lb, lh_ub) || zero_p (rh_lb, rh_ub))
-	      return zero_range (lb, ub, signbit_known);
-
-	    // Otherwise one of the multiplicands could be
-	    // [0.0, nextafter (0.0, 1.0)] and the [DBL_MAX, INF]
-	    // or similarly with different signs.  0.0 * DBL_MAX
-	    // is still 0.0, nextafter (0.0, 1.0) * INF is still INF,
-	    // so if the signs are always the same or always different,
-	    // result is [+0.0, +INF] or [-INF, -0.0], otherwise VARYING.
-	    return zero_to_inf_range (lb, ub, signbit_known);
-	  }
-      }
-
-    REAL_VALUE_TYPE cp[8];
-    // Do a cross-product.  At this point none of the multiplications
-    // should produce a NAN.
-    frange_arithmetic (MULT_EXPR, type, cp[0], lh_lb, rh_lb, dconstninf);
-    frange_arithmetic (MULT_EXPR, type, cp[4], lh_lb, rh_lb, dconstinf);
-    if (is_square)
-      {
-	// For x * x we can just do max (lh_lb * lh_lb, lh_ub * lh_ub)
-	// as maximum and -0.0 as minimum if 0.0 is in the range,
-	// otherwise min (lh_lb * lh_lb, lh_ub * lh_ub).
-	// -0.0 rather than 0.0 because VREL_EQ doesn't prove that
-	// x and y are bitwise equal, just that they compare equal.
-	if (contains_zero_p (lh_lb, lh_ub))
-	  {
-	    if (real_isneg (&lh_lb) == real_isneg (&lh_ub))
-	      cp[1] = dconst0;
-	    else
-	      cp[1] = dconstm0;
-	  }
-	else
-	  cp[1] = cp[0];
-	cp[2] = cp[0];
-	cp[5] = cp[4];
-	cp[6] = cp[4];
-      }
-    else
-      {
-	frange_arithmetic (MULT_EXPR, type, cp[1], lh_lb, rh_ub, dconstninf);
-	frange_arithmetic (MULT_EXPR, type, cp[5], lh_lb, rh_ub, dconstinf);
-	frange_arithmetic (MULT_EXPR, type, cp[2], lh_ub, rh_lb, dconstninf);
-	frange_arithmetic (MULT_EXPR, type, cp[6], lh_ub, rh_lb, dconstinf);
-      }
-    frange_arithmetic (MULT_EXPR, type, cp[3], lh_ub, rh_ub, dconstninf);
-    frange_arithmetic (MULT_EXPR, type, cp[7], lh_ub, rh_ub, dconstinf);
-
-    find_range (lb, ub, cp);
-  }
-} fop_mult;
+}
 
 
-class foperator_div : public foperator_mult_div_base
+bool
+operator_minus::op1_range (frange &r, tree type,
+			   const frange &lhs, const frange &op2,
+			   relation_trio) const
 {
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  if (lhs.undefined_p ())
+    return false;
+  frange wlhs = float_widen_lhs_range (type, lhs);
+  return float_binary_op_range_finish (
+	      range_op_handler (PLUS_EXPR).fold_range (r, type, wlhs, op2),
+	      r, type, wlhs);
+}
+
+bool
+operator_minus::op2_range (frange &r, tree type,
+			   const frange &lhs, const frange &op1,
+			   relation_trio) const
+{
+  if (lhs.undefined_p ())
+    return false;
+  frange wlhs = float_widen_lhs_range (type, lhs);
+  return float_binary_op_range_finish (fold_range (r, type, op1, wlhs),
+				       r, type, wlhs);
+}
+
+void
+operator_minus::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			 bool &maybe_nan, tree type,
+			 const REAL_VALUE_TYPE &lh_lb,
+			 const REAL_VALUE_TYPE &lh_ub,
+			 const REAL_VALUE_TYPE &rh_lb,
+			 const REAL_VALUE_TYPE &rh_ub,
+			 relation_kind) const
+{
+  frange_arithmetic (MINUS_EXPR, type, lb, lh_lb, rh_ub, dconstninf);
+  frange_arithmetic (MINUS_EXPR, type, ub, lh_ub, rh_lb, dconstinf);
+
+  // [+INF] - [+INF] = NAN
+  if (real_isinf (&lh_ub, false) && real_isinf (&rh_ub, false))
+    maybe_nan = true;
+  // [-INF] - [-INF] = NAN
+  else if (real_isinf (&lh_lb, true) && real_isinf (&rh_lb, true))
+    maybe_nan = true;
+  else
+    maybe_nan = false;
+}
+
+
+// Given CP[0] to CP[3] floating point values rounded to -INF,
+// set LB to the smallest of them (treating -0 as smaller to +0).
+// Given CP[4] to CP[7] floating point values rounded to +INF,
+// set UB to the largest of them (treating -0 as smaller to +0).
+
+static void
+find_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+	    const REAL_VALUE_TYPE (&cp)[8])
+{
+  lb = cp[0];
+  ub = cp[4];
+  for (int i = 1; i < 4; ++i)
+    {
+      if (real_less (&cp[i], &lb)
+	  || (real_iszero (&lb) && real_isnegzero (&cp[i])))
+	lb = cp[i];
+      if (real_less (&ub, &cp[i + 4])
+	  || (real_isnegzero (&ub) && real_iszero (&cp[i + 4])))
+	ub = cp[i + 4];
+    }
+}
+
+
+bool
+operator_mult::op1_range (frange &r, tree type,
+			  const frange &lhs, const frange &op2,
+			  relation_trio) const
+{
+  if (lhs.undefined_p ())
+    return false;
+  range_op_handler rdiv (RDIV_EXPR, type);
+  if (!rdiv)
+    return false;
+  frange wlhs = float_widen_lhs_range (type, lhs);
+  bool ret = rdiv.fold_range (r, type, wlhs, op2);
+  if (ret == false)
+    return false;
+  if (wlhs.known_isnan () || op2.known_isnan () || op2.undefined_p ())
+    return float_binary_op_range_finish (ret, r, type, wlhs);
+  const REAL_VALUE_TYPE &lhs_lb = wlhs.lower_bound ();
+  const REAL_VALUE_TYPE &lhs_ub = wlhs.upper_bound ();
+  const REAL_VALUE_TYPE &op2_lb = op2.lower_bound ();
+  const REAL_VALUE_TYPE &op2_ub = op2.upper_bound ();
+  if ((contains_zero_p (lhs_lb, lhs_ub) && contains_zero_p (op2_lb, op2_ub))
+      || ((real_isinf (&lhs_lb) || real_isinf (&lhs_ub))
+	  && (real_isinf (&op2_lb) || real_isinf (&op2_ub))))
+    {
+      // If both lhs and op2 could be zeros or both could be infinities,
+      // we don't know anything about op1 except maybe for the sign
+      // and perhaps if it can be NAN or not.
+      REAL_VALUE_TYPE lb, ub;
+      int signbit_known = signbit_known_p (lhs_lb, lhs_ub, op2_lb, op2_ub);
+      zero_to_inf_range (lb, ub, signbit_known);
+      r.set (type, lb, ub);
+    }
+  // Otherwise, if op2 is a singleton INF and lhs doesn't include INF,
+  // or if lhs must be zero and op2 doesn't include zero, it would be
+  // UNDEFINED, while rdiv.fold_range computes a zero or singleton INF
+  // range.  Those are supersets of UNDEFINED, so let's keep that way.
+  return float_binary_op_range_finish (ret, r, type, wlhs);
+}
+
+bool
+operator_mult::op2_range (frange &r, tree type,
+			  const frange &lhs, const frange &op1,
+			  relation_trio) const
+{
+  return op1_range (r, type, lhs, op1);
+}
+
+void
+operator_mult::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			bool &maybe_nan, tree type,
+			const REAL_VALUE_TYPE &lh_lb,
+			const REAL_VALUE_TYPE &lh_ub,
+			const REAL_VALUE_TYPE &rh_lb,
+			const REAL_VALUE_TYPE &rh_ub,
+			relation_kind kind) const
+{
+  bool is_square
+    = (kind == VREL_EQ
+       && real_equal (&lh_lb, &rh_lb)
+       && real_equal (&lh_ub, &rh_ub)
+       && real_isneg (&lh_lb) == real_isneg (&rh_lb)
+       && real_isneg (&lh_ub) == real_isneg (&rh_ub));
+
+  maybe_nan = false;
+  // x * x never produces a new NAN and we only multiply the same
+  // values, so the 0 * INF problematic cases never appear there.
+  if (!is_square)
+    {
+      // [+-0, +-0] * [+INF,+INF] (or [-INF,-INF] or swapped is a known NAN.
+      if ((zero_p (lh_lb, lh_ub) && singleton_inf_p (rh_lb, rh_ub))
+	  || (zero_p (rh_lb, rh_ub) && singleton_inf_p (lh_lb, lh_ub)))
+	{
+	  real_nan (&lb, "", 0, TYPE_MODE (type));
+	  ub = lb;
+	  maybe_nan = true;
+	  return;
+	}
+
+      // Otherwise, if one range includes zero and the other ends with +-INF,
+      // it is a maybe NAN.
+      if ((contains_zero_p (lh_lb, lh_ub)
+	   && (real_isinf (&rh_lb) || real_isinf (&rh_ub)))
+	  || (contains_zero_p (rh_lb, rh_ub)
+	      && (real_isinf (&lh_lb) || real_isinf (&lh_ub))))
+	{
+	  maybe_nan = true;
+
+	  int signbit_known = signbit_known_p (lh_lb, lh_ub, rh_lb, rh_ub);
+
+	  // If one of the ranges that includes INF is singleton
+	  // and the other range includes zero, the resulting
+	  // range is INF and NAN, because the 0 * INF boundary
+	  // case will be NAN, but already nextafter (0, 1) * INF
+	  // is INF.
+	  if (singleton_inf_p (lh_lb, lh_ub)
+	      || singleton_inf_p (rh_lb, rh_ub))
+	    return inf_range (lb, ub, signbit_known);
+
+	  // If one of the multiplicands must be zero, the resulting
+	  // range is +-0 and NAN.
+	  if (zero_p (lh_lb, lh_ub) || zero_p (rh_lb, rh_ub))
+	    return zero_range (lb, ub, signbit_known);
+
+	  // Otherwise one of the multiplicands could be
+	  // [0.0, nextafter (0.0, 1.0)] and the [DBL_MAX, INF]
+	  // or similarly with different signs.  0.0 * DBL_MAX
+	  // is still 0.0, nextafter (0.0, 1.0) * INF is still INF,
+	  // so if the signs are always the same or always different,
+	  // result is [+0.0, +INF] or [-INF, -0.0], otherwise VARYING.
+	  return zero_to_inf_range (lb, ub, signbit_known);
+	}
+    }
+
+  REAL_VALUE_TYPE cp[8];
+  // Do a cross-product.  At this point none of the multiplications
+  // should produce a NAN.
+  frange_arithmetic (MULT_EXPR, type, cp[0], lh_lb, rh_lb, dconstninf);
+  frange_arithmetic (MULT_EXPR, type, cp[4], lh_lb, rh_lb, dconstinf);
+  if (is_square)
+    {
+      // For x * x we can just do max (lh_lb * lh_lb, lh_ub * lh_ub)
+      // as maximum and -0.0 as minimum if 0.0 is in the range,
+      // otherwise min (lh_lb * lh_lb, lh_ub * lh_ub).
+      // -0.0 rather than 0.0 because VREL_EQ doesn't prove that
+      // x and y are bitwise equal, just that they compare equal.
+      if (contains_zero_p (lh_lb, lh_ub))
+	{
+	  if (real_isneg (&lh_lb) == real_isneg (&lh_ub))
+	    cp[1] = dconst0;
+	  else
+	    cp[1] = dconstm0;
+	}
+      else
+	cp[1] = cp[0];
+      cp[2] = cp[0];
+      cp[5] = cp[4];
+      cp[6] = cp[4];
+    }
+  else
+    {
+      frange_arithmetic (MULT_EXPR, type, cp[1], lh_lb, rh_ub, dconstninf);
+      frange_arithmetic (MULT_EXPR, type, cp[5], lh_lb, rh_ub, dconstinf);
+      frange_arithmetic (MULT_EXPR, type, cp[2], lh_ub, rh_lb, dconstninf);
+      frange_arithmetic (MULT_EXPR, type, cp[6], lh_ub, rh_lb, dconstinf);
+    }
+  frange_arithmetic (MULT_EXPR, type, cp[3], lh_ub, rh_ub, dconstninf);
+  frange_arithmetic (MULT_EXPR, type, cp[7], lh_ub, rh_ub, dconstinf);
+
+  find_range (lb, ub, cp);
+}
+
+
+class foperator_div : public range_operator
+{
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   virtual bool op1_range (frange &r, tree type,
 			  const frange &lhs,
@@ -2670,7 +2519,7 @@ public:
     if (lhs.undefined_p ())
       return false;
     frange wlhs = float_widen_lhs_range (type, lhs);
-    bool ret = fop_mult.fold_range (r, type, wlhs, op2);
+    bool ret = range_op_handler (MULT_EXPR).fold_range (r, type, wlhs, op2);
     if (!ret)
       return ret;
     if (wlhs.known_isnan () || op2.known_isnan () || op2.undefined_p ())
@@ -2813,28 +2662,12 @@ private:
   }
 } fop_div;
 
-// Instantiate a range_op_table for floating point operations.
-static floating_op_table global_floating_table;
 
-// Pointer to the float table so the dispatch code can access it.
-floating_op_table *floating_tree_table = &global_floating_table;
+// Initialize any float operators to the primary table
 
-floating_op_table::floating_op_table ()
+void
+range_op_table::initialize_float_ops ()
 {
-  set (SSA_NAME, fop_identity);
-  set (PAREN_EXPR, fop_identity);
-  set (OBJ_TYPE_REF, fop_identity);
-  set (REAL_CST, fop_identity);
-
-  // All the relational operators are expected to work, because the
-  // calculation of ranges on outgoing edges expect the handlers to be
-  // present.
-  set (EQ_EXPR, fop_equal);
-  set (NE_EXPR, fop_not_equal);
-  set (LT_EXPR, fop_lt);
-  set (LE_EXPR, fop_le);
-  set (GT_EXPR, fop_gt);
-  set (GE_EXPR, fop_ge);
   set (UNLE_EXPR, fop_unordered_le);
   set (UNLT_EXPR, fop_unordered_lt);
   set (UNGE_EXPR, fop_unordered_ge);
@@ -2843,31 +2676,7 @@ floating_op_table::floating_op_table ()
   set (ORDERED_EXPR, fop_ordered);
   set (UNORDERED_EXPR, fop_unordered);
   set (LTGT_EXPR, fop_ltgt);
-
-  set (ABS_EXPR, fop_abs);
-  set (NEGATE_EXPR, fop_negate);
-  set (PLUS_EXPR, fop_plus);
-  set (MINUS_EXPR, fop_minus);
-  set (MULT_EXPR, fop_mult);
   set (RDIV_EXPR, fop_div);
-}
-
-// Return a pointer to the range_operator_float instance, if there is
-// one associated with tree_code CODE.
-
-range_operator_float *
-floating_op_table::operator[] (enum tree_code code)
-{
-  return m_range_tree[code];
-}
-
-// Add OP to the handler table for CODE.
-
-void
-floating_op_table::set (enum tree_code code, range_operator_float &op)
-{
-  gcc_checking_assert (m_range_tree[code] == NULL);
-  m_range_tree[code] = &op;
 }
 
 #if CHECKING_P
@@ -2895,13 +2704,13 @@ range_op_float_tests ()
 
   // negate([-5, +10]) => [-10, 5]
   r0 = frange_float ("-5", "10");
-  fop_negate.fold_range (r, float_type_node, r0, trange);
+  range_op_handler (NEGATE_EXPR).fold_range (r, float_type_node, r0, trange);
   ASSERT_EQ (r, frange_float ("-10", "5"));
 
   // negate([0, 1] -NAN) => [-1, -0] +NAN
   r0 = frange_float ("0", "1");
   r0.update_nan (true);
-  fop_negate.fold_range (r, float_type_node, r0, trange);
+  range_op_handler (NEGATE_EXPR).fold_range (r, float_type_node, r0, trange);
   r1 = frange_float ("-1", "-0");
   r1.update_nan (false);
   ASSERT_EQ (r, r1);

@@ -1,3 +1,42 @@
+2023-06-02  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself as MIPS
+	port maintainer.
+	(Write After Approval): Remove myself.
+
+2023-05-30  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	* MAINTAINERS: Replace spaces with tabs.
+
+2023-05-27  Benjamin Priour  <vultkayn@gcc.gnu.org>
+
+	* MAINTAINERS: New entry.
+
+2023-05-18  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.tpl: Disable warnings as errors for STAGEautofeedback
+	* Makefile.in: Regenerate
+
+2023-05-17  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Disable warnings as errors for STAGEautofeedback
+
+2023-05-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Sort.
+
+2023-05-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* MAINTAINERS: Add myself.
+
+2023-05-10  Pan Li  <pan2.li@intel.com>
+
+	* MAINTAINERS: Add myself.
+
 2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Makefile.in: Define PROFILE_MERGER

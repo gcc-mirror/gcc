@@ -2092,7 +2092,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt) const
       {
 	gcc_assert (TREE_CODE (expr) == SSA_NAME
 		    || TREE_CODE (expr) == PARM_DECL
-		    || TREE_CODE (expr) == VAR_DECL
+		    || VAR_P (expr)
 		    || TREE_CODE (expr) == RESULT_DECL);
 
 	int stack_index = pv.m_stack_depth;
@@ -2355,30 +2355,7 @@ region_model::get_initial_value_for_global (const region *reg) const
      the initial value of REG can be taken from the initialization value
      of the decl.  */
   if (called_from_main_p () || TREE_READONLY (decl))
-    {
-      /* Attempt to get the initializer value for base_reg.  */
-      if (const svalue *base_reg_init
-	    = base_reg->get_svalue_for_initializer (m_mgr))
-	{
-	  if (reg == base_reg)
-	    return base_reg_init;
-	  else
-	    {
-	      /* Get the value for REG within base_reg_init.  */
-	      binding_cluster c (base_reg);
-	      c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init);
-	      const svalue *sval
-		= c.get_any_binding (m_mgr->get_store_manager (), reg);
-	      if (sval)
-		{
-		  if (reg->get_type ())
-		    sval = m_mgr->get_or_create_cast (reg->get_type (),
-						      sval);
-		  return sval;
-		}
-	    }
-	}
-    }
+    return reg->get_initial_value_at_main (m_mgr);
 
   /* Otherwise, return INIT_VAL(REG).  */
   return m_mgr->get_or_create_initial_value (reg);
@@ -2396,7 +2373,8 @@ region_model::get_store_value (const region *reg,
   if (reg->empty_p ())
     return m_mgr->get_or_create_unknown_svalue (reg->get_type ());
 
-  check_region_for_read (reg, ctxt);
+  if (check_region_for_read (reg, ctxt))
+    return m_mgr->get_or_create_unknown_svalue(reg->get_type());
 
   /* Special-case: handle var_decls in the constant pool.  */
   if (const decl_region *decl_reg = reg->dyn_cast_decl_region ())
@@ -2802,19 +2780,22 @@ region_model::get_string_size (const region *reg) const
 }
 
 /* If CTXT is non-NULL, use it to warn about any problems accessing REG,
-   using DIR to determine if this access is a read or write.  */
+   using DIR to determine if this access is a read or write.
+   Return TRUE if an UNKNOWN_SVALUE needs be created.  */
 
-void
+bool
 region_model::check_region_access (const region *reg,
 				   enum access_direction dir,
 				   region_model_context *ctxt) const
 {
   /* Fail gracefully if CTXT is NULL.  */
   if (!ctxt)
-    return;
+    return false;
 
+  bool need_unknown_sval = false;
   check_region_for_taint (reg, dir, ctxt);
-  check_region_bounds (reg, dir, ctxt);
+  if (!check_region_bounds (reg, dir, ctxt))
+    need_unknown_sval = true;
 
   switch (dir)
     {
@@ -2827,6 +2808,7 @@ region_model::check_region_access (const region *reg,
       check_for_writable_region (reg, ctxt);
       break;
     }
+  return need_unknown_sval;
 }
 
 /* If CTXT is non-NULL, use it to warn about any problems writing to REG.  */
@@ -2838,13 +2820,14 @@ region_model::check_region_for_write (const region *dest_reg,
   check_region_access (dest_reg, DIR_WRITE, ctxt);
 }
 
-/* If CTXT is non-NULL, use it to warn about any problems reading from REG.  */
+/* If CTXT is non-NULL, use it to warn about any problems reading from REG.
+  Returns TRUE if an unknown svalue needs be created.  */
 
-void
+bool
 region_model::check_region_for_read (const region *src_reg,
 				     region_model_context *ctxt) const
 {
-  check_region_access (src_reg, DIR_READ, ctxt);
+  return check_region_access (src_reg, DIR_READ, ctxt);
 }
 
 /* Concrete subclass for casts of pointers that lead to trailing bytes.  */
@@ -2972,7 +2955,7 @@ capacity_compatible_with_type (tree cst, tree pointee_size_tree)
 
    It works by visiting all svalues inside SVAL until it reaches
    atomic nodes.  From those, it goes back up again and adds each
-   node that might be a multiple of SIZE_CST to the RESULT_SET.  */
+   node that is not a multiple of SIZE_CST to the RESULT_SET.  */
 
 class size_visitor : public visitor
 {
@@ -2983,7 +2966,7 @@ public:
     m_root_sval->accept (this);
   }
 
-  bool get_result ()
+  bool is_dubious_capacity ()
   {
     return result_set.contains (m_root_sval);
   }
@@ -2993,22 +2976,10 @@ public:
     check_constant (sval->get_constant (), sval);
   }
 
-  void visit_unknown_svalue (const unknown_svalue *sval ATTRIBUTE_UNUSED)
-    final override
-  {
-    result_set.add (sval);
-  }
-
-  void visit_poisoned_svalue (const poisoned_svalue *sval ATTRIBUTE_UNUSED)
-    final override
-  {
-    result_set.add (sval);
-  }
-
   void visit_unaryop_svalue (const unaryop_svalue *sval) final override
   {
-    const svalue *arg = sval->get_arg ();
-    if (result_set.contains (arg))
+    if (CONVERT_EXPR_CODE_P (sval->get_op ())
+	  && result_set.contains (sval->get_arg ()))
       result_set.add (sval);
   }
 
@@ -3017,28 +2988,24 @@ public:
     const svalue *arg0 = sval->get_arg0 ();
     const svalue *arg1 = sval->get_arg1 ();
 
-    if (sval->get_op () == MULT_EXPR)
+    switch (sval->get_op ())
       {
-	if (result_set.contains (arg0) || result_set.contains (arg1))
-	  result_set.add (sval);
+	case MULT_EXPR:
+	  if (result_set.contains (arg0) && result_set.contains (arg1))
+	    result_set.add (sval);
+	  break;
+	case PLUS_EXPR:
+	case MINUS_EXPR:
+	  if (result_set.contains (arg0) || result_set.contains (arg1))
+	    result_set.add (sval);
+	  break;
+	default:
+	  break;
       }
-    else
-      {
-	if (result_set.contains (arg0) && result_set.contains (arg1))
-	  result_set.add (sval);
-      }
-  }
-
-  void visit_repeated_svalue (const repeated_svalue *sval) final override
-  {
-    sval->get_inner_svalue ()->accept (this);
-    if (result_set.contains (sval->get_inner_svalue ()))
-      result_set.add (sval);
   }
 
   void visit_unmergeable_svalue (const unmergeable_svalue *sval) final override
   {
-    sval->get_arg ()->accept (this);
     if (result_set.contains (sval->get_arg ()))
       result_set.add (sval);
   }
@@ -3048,33 +3015,30 @@ public:
     const svalue *base = sval->get_base_svalue ();
     const svalue *iter = sval->get_iter_svalue ();
 
-    if (result_set.contains (base) && result_set.contains (iter))
+    if (result_set.contains (base) || result_set.contains (iter))
       result_set.add (sval);
   }
 
-  void visit_conjured_svalue (const conjured_svalue *sval ATTRIBUTE_UNUSED)
-    final override
+  void visit_initial_svalue (const initial_svalue *sval) final override
   {
-    equiv_class_id id (-1);
+    equiv_class_id id = equiv_class_id::null ();
     if (m_cm->get_equiv_class_by_svalue (sval, &id))
       {
 	if (tree cst = id.get_obj (*m_cm).get_any_constant ())
 	  check_constant (cst, sval);
-	else
-	  result_set.add (sval);
+      }
+    else if (!m_cm->sval_constrained_p (sval))
+      {
+	result_set.add (sval);
       }
   }
 
-  void visit_asm_output_svalue (const asm_output_svalue *sval ATTRIBUTE_UNUSED)
-    final override
+  void visit_conjured_svalue (const conjured_svalue *sval) final override
   {
-    result_set.add (sval);
-  }
-
-  void visit_const_fn_result_svalue (const const_fn_result_svalue
-				      *sval ATTRIBUTE_UNUSED) final override
-  {
-    result_set.add (sval);
+    equiv_class_id id = equiv_class_id::null ();
+    if (m_cm->get_equiv_class_by_svalue (sval, &id))
+      if (tree cst = id.get_obj (*m_cm).get_any_constant ())
+	check_constant (cst, sval);
   }
 
 private:
@@ -3084,10 +3048,9 @@ private:
       {
       default:
 	/* Assume all unhandled operands are compatible.  */
-	result_set.add (sval);
 	break;
       case INTEGER_CST:
-	if (capacity_compatible_with_type (cst, m_size_cst))
+	if (!capacity_compatible_with_type (cst, m_size_cst))
 	  result_set.add (sval);
 	break;
       }
@@ -3210,7 +3173,7 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	if (!is_struct)
 	  {
 	    size_visitor v (pointee_size_tree, capacity, m_constraints);
-	    if (!v.get_result ())
+	    if (v.is_dubious_capacity ())
 	      {
 		tree expr = get_representative_tree (capacity);
 		ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg,

@@ -211,6 +211,19 @@ struct alu_def : public build_base
     b.append_name (predication_suffixes[instance.pred]);
     return b.finish_name ();
   }
+
+  bool check (function_checker &c) const override
+  {
+    /* Check whether rounding mode argument is a valid immediate.  */
+    if (c.base->has_rounding_mode_operand_p ())
+      {
+	if (!c.any_type_float_p ())
+	  return c.require_immediate (c.arg_num () - 2, VXRM_RNU, VXRM_ROD);
+	/* TODO: We will support floating-point intrinsic modeling
+	   rounding mode in the future.  */
+      }
+    return true;
+  }
 };
 
 /* widen_alu_def class. Handle vwadd/vwsub. Unlike
@@ -312,6 +325,19 @@ struct narrow_alu_def : public build_base
       return b.finish_name ();
     b.append_name (predication_suffixes[instance.pred]);
     return b.finish_name ();
+  }
+
+  bool check (function_checker &c) const override
+  {
+    /* Check whether rounding mode argument is a valid immediate.  */
+    if (c.base->has_rounding_mode_operand_p ())
+      {
+	if (!c.any_type_float_p ())
+	  return c.require_immediate (c.arg_num () - 2, VXRM_RNU, VXRM_ROD);
+	/* TODO: We will support floating-point intrinsic modeling
+	   rounding mode in the future.  */
+      }
+    return true;
   }
 };
 
@@ -524,9 +550,8 @@ struct fault_load_def : public build_base
   char *get_name (function_builder &b, const function_instance &instance,
 		  bool overloaded_p) const override
   {
-    if (overloaded_p)
-      if (instance.pred == PRED_TYPE_none || instance.pred == PRED_TYPE_mu)
-	return nullptr;
+    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
+      return nullptr;
     tree type = builtin_types[instance.type.index].vector;
     machine_mode mode = TYPE_MODE (type);
     int sew = GET_MODE_BITSIZE (GET_MODE_INNER (mode));

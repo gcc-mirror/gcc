@@ -2,6 +2,7 @@
    script.  */
 
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
+/* { dg-skip-if "" { "avr-*-*" } } */
 /* { dg-additional-options "-fanalyzer-call-summaries" } */
 /* { dg-additional-options "-Wno-analyzer-too-complex" } */
 

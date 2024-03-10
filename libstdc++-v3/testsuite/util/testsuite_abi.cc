@@ -234,6 +234,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("CXXABI_1.3.12");
       known_versions.push_back("CXXABI_1.3.13");
       known_versions.push_back("CXXABI_1.3.14");
+      known_versions.push_back("CXXABI_1.3.15");
       known_versions.push_back("CXXABI_IEEE128_1.3.13");
       known_versions.push_back("CXXABI_TM_1");
       known_versions.push_back("CXXABI_FLOAT128");
@@ -253,10 +254,7 @@ check_version(symbol& test, bool added)
 
       // Check that added symbols are added in the latest pre-release version.
       bool latestp = (test.version_name == "GLIBCXX_3.4.32"
-	  // XXX remove next 2 lines when baselines have been regenerated.
-		     || test.version_name == "GLIBCXX_IEEE128_3.4.31"
-		     || test.version_name == "GLIBCXX_LDBL_3.4.31"
-		     || test.version_name == "CXXABI_1.3.14"
+		     || test.version_name == "CXXABI_1.3.15"
 		     || test.version_name == "CXXABI_FLOAT128"
 		     || test.version_name == "CXXABI_TM_1");
       if (added && !latestp)

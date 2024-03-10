@@ -754,6 +754,9 @@ package Ada.Strings.Fixed with SPARK_Mode is
               = Mapping (Source (J))),
      Global         => null,
      Annotate       => (GNATprove, Always_Return);
+   pragma Annotate (GNATprove, False_Positive,
+                    "call via access-to-subprogram",
+                    "function Mapping must always terminate");
 
    function Translate
      (Source  : String;
@@ -796,6 +799,9 @@ package Ada.Strings.Fixed with SPARK_Mode is
        (for all J in Source'Range => Source (J) = Mapping (Source'Old (J))),
      Global   => null,
      Annotate => (GNATprove, Always_Return);
+   pragma Annotate (GNATprove, False_Positive,
+                    "call via access-to-subprogram",
+                    "function Mapping must always terminate");
 
    procedure Translate
      (Source  : in out String;

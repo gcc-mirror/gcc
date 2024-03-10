@@ -23,6 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include <assert.h>
 #include <math.h>
 
+#define BOOL_SIZE_LIST {1, 2, 4, 8, 16, 32, 64}
+#define EEW_SIZE_LIST {8, 16, 32, 64}
+#define LMUL1_LOG2 0
+
 std::string
 to_lmul (int lmul_log2)
 {
@@ -50,7 +54,7 @@ valid_type (unsigned sew, int lmul_log2, bool float_p)
     case 8:
       return lmul_log2 >= -3 && !float_p;
     case 16:
-      return lmul_log2 >= -2 && !float_p;
+      return lmul_log2 >= -2;
     case 32:
       return lmul_log2 >= -1;
     case 64:
@@ -67,6 +71,9 @@ valid_type (unsigned sew, int lmul_log2, unsigned nf, bool float_p)
     return false;
 
   if (nf > 8 || nf < 1)
+    return false;
+
+  if (sew == 16 && nf != 1 && float_p) // Disable FP16 tuple in temporarily.
     return false;
 
   switch (lmul_log2)
@@ -218,6 +225,17 @@ main (int argc, const char **argv)
       for (unsigned eew : {8, 16, 32, 64})
 	fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
 
+      for (unsigned boolsize : BOOL_SIZE_LIST)
+	fprintf (fp, "  /*BOOL%d_INTERPRET*/ INVALID,\n", boolsize);
+
+      for (unsigned eew : EEW_SIZE_LIST)
+	fprintf (fp, "  /*SIGNED_EEW%d_LMUL1_INTERPRET*/ %s,\n", eew,
+		 inttype (eew, LMUL1_LOG2, /* unsigned_p */false).c_str ());
+
+      for (unsigned eew : EEW_SIZE_LIST)
+	fprintf (fp, "  /*UNSIGNED_EEW%d_LMUL1_INTERPRET*/ %s,\n", eew,
+		 inttype (eew, LMUL1_LOG2, /* unsigned_p */true).c_str ());
+
       for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	{
 	  unsigned multiple_of_lmul = 1 << lmul_log2_offset;
@@ -297,6 +315,24 @@ main (int argc, const char **argv)
 			   inttype (eew, lmul_log2, unsigned_p).c_str ());
 	      }
 
+	    for (unsigned boolsize : BOOL_SIZE_LIST)
+	      {
+		std::stringstream mode;
+		mode << "vbool" << boolsize << "_t";
+
+		fprintf (fp, "  /*BOOL%d_INTERPRET*/ %s,\n", boolsize,
+			 nf == 1 && lmul_log2 == 0 ? mode.str ().c_str ()
+						   : "INVALID");
+	      }
+
+	    for (unsigned eew : EEW_SIZE_LIST)
+	      fprintf (fp, "  /*SIGNED_EEW%d_LMUL1_INTERPRET*/ INVALID,\n",
+		       eew);
+
+	    for (unsigned eew : EEW_SIZE_LIST)
+	      fprintf (fp, "  /*UNSIGNED_EEW%d_LMUL1_INTERPRET*/ INVALID,\n",
+		       eew);
+
 	    for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	      {
 		unsigned multiple_of_lmul = 1 << lmul_log2_offset;
@@ -309,7 +345,7 @@ main (int argc, const char **argv)
 	    fprintf (fp, ")\n");
 	  }
   // Build for vfloat
-  for (unsigned sew : {32, 64})
+  for (unsigned sew : {16, 32, 64})
     for (int lmul_log2 : {-3, -2, -1, 0, 1, 2, 3})
       for (unsigned nf : {1, 2, 3, 4, 5, 6, 7, 8})
 	{
@@ -355,6 +391,17 @@ main (int argc, const char **argv)
 		   floattype (sew * 2, /*lmul_log2*/ 0).c_str ());
 	  for (unsigned eew : {8, 16, 32, 64})
 	    fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
+
+	  for (unsigned boolsize : BOOL_SIZE_LIST)
+	    fprintf (fp, "  /*BOOL%d_INTERPRET*/ INVALID,\n", boolsize);
+
+	  for (unsigned eew : EEW_SIZE_LIST)
+	    fprintf (fp, "  /*SIGNED_EEW%d_LMUL1_INTERPRET*/ INVALID,\n", eew);
+
+	  for (unsigned eew : EEW_SIZE_LIST)
+	    fprintf (fp, "  /*UNSIGNED_EEW%d_LMUL1_INTERPRET*/ INVALID,\n",
+		     eew);
+
 	  for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	    {
 	      unsigned multiple_of_lmul = 1 << lmul_log2_offset;

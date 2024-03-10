@@ -65,6 +65,8 @@ int test_popcountll(unsigned long long x, unsigned long long y)
   return x ? __builtin_popcountll(y) : 0;
 }
 
-/* 4 types of functions, each with 3 types and there are 2 goto each */
-/* { dg-final { scan-tree-dump-times "goto " 24 "optimized" } } */
-
+/* 3 types of functions (not including parity), each with 3 types and there are 2 goto each */
+/* { dg-final { scan-tree-dump-times "goto " 18 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "x_..D. != 0" 12 "optimized" } } */
+/* parity case will be optimized to x!=0 & parity(y) . */
+/* { dg-final { scan-tree-dump-times " & " 3 "optimized" } } */

@@ -14,7 +14,7 @@ real_t s176(struct args_t * func_args)
     initialise_arrays(__func__);
 
     int m = LEN_1D/2;
-    for (int nl = 0; nl < 4*(iterations/LEN_1D); nl++) {
+    for (int nl = 0; nl < 4*(10*iterations/LEN_1D); nl++) {
         for (int j = 0; j < (LEN_1D/2); j++) {
             for (int i = 0; i < m; i++) {
                 a[i] += b[i+m-j-1] * c[j];
@@ -39,4 +39,4 @@ int main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" } } */

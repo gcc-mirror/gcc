@@ -998,10 +998,14 @@ PROCEDURE MakeRegInterface () : CARDINAL ;
                      sym, at position, i.
                      The string symbol will either be a register name or a constraint.
                      The object is an optional Modula-2 variable or constant symbol.
+                     read and write are the quadruple numbers representing any read
+                     or write operation.
 *)
 
-PROCEDURE PutRegInterface (sym: CARDINAL; i: CARDINAL;
-                           n: Name; string, object: CARDINAL) ;
+PROCEDURE PutRegInterface (tok: CARDINAL;
+                           sym: CARDINAL; i: CARDINAL;
+                           n: Name; string, object: CARDINAL;
+                           read, write: CARDINAL) ;
 
 
 (*
@@ -1010,7 +1014,8 @@ PROCEDURE PutRegInterface (sym: CARDINAL; i: CARDINAL;
 *)
 
 PROCEDURE GetRegInterface (sym: CARDINAL; i: CARDINAL;
-                           VAR n: Name; VAR string, object: CARDINAL) ;
+                           VAR tok: CARDINAL; VAR n: Name;
+                           VAR string, object: CARDINAL) ;
 
 
 (*

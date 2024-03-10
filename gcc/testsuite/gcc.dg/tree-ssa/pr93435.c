@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target size32plus } */
 
 typedef signed char int8_T;
 typedef int int32_T;

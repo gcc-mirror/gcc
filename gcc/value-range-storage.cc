@@ -205,20 +205,22 @@ vrange_storage::fits_p (const vrange &r) const
   return false;
 }
 
-// Return TRUE if the range in storage is equal to R.
+// Return TRUE if the range in storage is equal to R.  It is the
+// caller's responsibility to verify that the type of the range in
+// storage matches that of R.
 
 bool
-vrange_storage::equal_p (const vrange &r, tree type) const
+vrange_storage::equal_p (const vrange &r) const
 {
   if (is_a <irange> (r))
     {
       const irange_storage *s = static_cast <const irange_storage *> (this);
-      return s->equal_p (as_a <irange> (r), type);
+      return s->equal_p (as_a <irange> (r));
     }
   if (is_a <frange> (r))
     {
       const frange_storage *s = static_cast <const frange_storage *> (this);
-      return s->equal_p (as_a <frange> (r), type);
+      return s->equal_p (as_a <frange> (r));
     }
   gcc_unreachable ();
 }
@@ -374,21 +376,17 @@ irange_storage::get_irange (irange &r, tree type) const
 }
 
 bool
-irange_storage::equal_p (const irange &r, tree type) const
+irange_storage::equal_p (const irange &r) const
 {
   if (m_kind == VR_UNDEFINED || r.undefined_p ())
     return m_kind == r.m_kind;
   if (m_kind == VR_VARYING || r.varying_p ())
-    return m_kind == r.m_kind && types_compatible_p (r.type (), type);
-
-  tree rtype = r.type ();
-  if (!types_compatible_p (rtype, type))
-    return false;
+    return m_kind == r.m_kind;
 
   // ?? We could make this faster by doing the comparison in place,
   // without going through get_irange.
   int_range_max tmp;
-  get_irange (tmp, rtype);
+  get_irange (tmp, r.type ());
   return tmp == r;
 }
 
@@ -525,17 +523,13 @@ frange_storage::get_frange (frange &r, tree type) const
 }
 
 bool
-frange_storage::equal_p (const frange &r, tree type) const
+frange_storage::equal_p (const frange &r) const
 {
   if (r.undefined_p ())
     return m_kind == VR_UNDEFINED;
 
-  tree rtype = type;
-  if (!types_compatible_p (rtype, type))
-    return false;
-
   frange tmp;
-  get_frange (tmp, rtype);
+  get_frange (tmp, r.type ());
   return tmp == r;
 }
 

@@ -39,7 +39,7 @@ foo1 (uint32x4_t a, uint32_t b)
 }
 
 /*
-**foo2:
+**foo2: { xfail *-*-* }
 **	...
 **	vcmp.i32	eq, q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
 **	...

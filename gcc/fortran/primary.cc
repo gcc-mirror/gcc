@@ -109,10 +109,10 @@ get_kind (int *is_iso_c)
 /* Given a character and a radix, see if the character is a valid
    digit in that radix.  */
 
-int
+bool
 gfc_check_digit (char c, int radix)
 {
-  int r;
+  bool r;
 
   switch (radix)
     {
@@ -3188,10 +3188,11 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	goto cleanup;
 
       /* For a constant string constructor, make sure the length is
-	 correct; truncate of fill with blanks if needed.  */
+	 correct; truncate or fill with blanks if needed.  */
       if (this_comp->ts.type == BT_CHARACTER && !this_comp->attr.allocatable
 	  && this_comp->ts.u.cl && this_comp->ts.u.cl->length
 	  && this_comp->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && this_comp->ts.u.cl->length->ts.type == BT_INTEGER
 	  && actual->expr->ts.type == BT_CHARACTER
 	  && actual->expr->expr_type == EXPR_CONSTANT)
 	{

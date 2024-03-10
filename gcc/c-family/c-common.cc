@@ -1483,7 +1483,7 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 
       /* Warn for real constant that is not an exact integer converted
 	 to integer type.  */
-      if (TREE_CODE (expr_type) == REAL_TYPE
+      if (SCALAR_FLOAT_TYPE_P (expr_type)
 	  && TREE_CODE (type) == INTEGER_TYPE)
 	{
 	  if (!real_isinteger (TREE_REAL_CST_PTR (expr), TYPE_MODE (expr_type)))
@@ -1508,7 +1508,7 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 	  else
 	    give_warning = UNSAFE_OTHER;
 	}
-      else if (TREE_CODE (type) == REAL_TYPE)
+      else if (SCALAR_FLOAT_TYPE_P (type))
 	{
 	  /* Warn for an integer constant that does not fit into real type.  */
 	  if (TREE_CODE (expr_type) == INTEGER_TYPE)
@@ -1519,7 +1519,7 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 	    }
 	  /* Warn for a real constant that does not fit into a smaller
 	     real type.  */
-	  else if (TREE_CODE (expr_type) == REAL_TYPE
+	  else if (SCALAR_FLOAT_TYPE_P (expr_type)
 		   && TYPE_PRECISION (type) < TYPE_PRECISION (expr_type))
 	    {
 	      REAL_VALUE_TYPE a = TREE_REAL_CST (expr);
@@ -1579,7 +1579,7 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
   else
     {
       /* Warn for real types converted to integer types.  */
-      if (TREE_CODE (expr_type) == REAL_TYPE
+      if (SCALAR_FLOAT_TYPE_P (expr_type)
 	  && TREE_CODE (type) == INTEGER_TYPE)
 	give_warning = UNSAFE_REAL;
 
@@ -1651,7 +1651,7 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 	 all the range of values of the integer type cannot be
 	 represented by the real type.  */
       else if (TREE_CODE (expr_type) == INTEGER_TYPE
-	       && TREE_CODE (type) == REAL_TYPE)
+	       && SCALAR_FLOAT_TYPE_P (type))
 	{
 	  /* Don't warn about char y = 0xff; float x = (int) y;  */
 	  expr = get_unwidened (expr, 0);
@@ -1662,8 +1662,8 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 	}
 
       /* Warn for real types converted to smaller real types.  */
-      else if (TREE_CODE (expr_type) == REAL_TYPE
-	       && TREE_CODE (type) == REAL_TYPE
+      else if (SCALAR_FLOAT_TYPE_P (expr_type)
+	       && SCALAR_FLOAT_TYPE_P (type)
 	       && TYPE_PRECISION (type) < TYPE_PRECISION (expr_type))
 	give_warning = UNSAFE_REAL;
 
@@ -1677,13 +1677,13 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 	  tree to_type = TREE_TYPE (type);
 
 	  /* Warn for real types converted to integer types.  */
-	  if (TREE_CODE (from_type) == REAL_TYPE
+	  if (SCALAR_FLOAT_TYPE_P (from_type)
 	      && TREE_CODE (to_type) == INTEGER_TYPE)
 	    give_warning = UNSAFE_REAL;
 
 	  /* Warn for real types converted to smaller real types.  */
-	  else if (TREE_CODE (from_type) == REAL_TYPE
-		   && TREE_CODE (to_type) == REAL_TYPE
+	  else if (SCALAR_FLOAT_TYPE_P (from_type)
+		   && SCALAR_FLOAT_TYPE_P (to_type)
 		   && TYPE_PRECISION (to_type) < TYPE_PRECISION (from_type))
 	    give_warning = UNSAFE_REAL;
 
@@ -1706,7 +1706,7 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 		give_warning = UNSAFE_SIGN;
 	    }
 	  else if (TREE_CODE (from_type) == INTEGER_TYPE
-		   && TREE_CODE (to_type) == REAL_TYPE
+		   && SCALAR_FLOAT_TYPE_P (to_type)
 		   && !int_safely_convertible_to_real_p (from_type, to_type))
 	    give_warning = UNSAFE_OTHER;
 	}
@@ -2951,8 +2951,8 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
     unsignedp1 = TYPE_UNSIGNED (TREE_TYPE (op1));
 
   /* If one of the operands must be floated, we cannot optimize.  */
-  real1 = TREE_CODE (TREE_TYPE (primop0)) == REAL_TYPE;
-  real2 = TREE_CODE (TREE_TYPE (primop1)) == REAL_TYPE;
+  real1 = SCALAR_FLOAT_TYPE_P (TREE_TYPE (primop0));
+  real2 = SCALAR_FLOAT_TYPE_P (TREE_TYPE (primop1));
 
   /* If first arg is constant, swap the args (changing operation
      so value is preserved), for canonicalization.  Don't do this if
@@ -3283,7 +3283,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
   /* The result is a pointer of the same type that is being added.  */
   tree result_type = TREE_TYPE (ptrop);
 
-  if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
+  if (VOID_TYPE_P (TREE_TYPE (result_type)))
     {
       if (complain && warn_pointer_arith)
 	pedwarn (loc, OPT_Wpointer_arith,
@@ -3730,7 +3730,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       goto ret;
     }
 
-  if (TREE_CODE (TREE_TYPE (expr)) == FIXED_POINT_TYPE)
+  if (FIXED_POINT_TYPE_P (TREE_TYPE (expr)))
     {
       tree fixed_zero_node = build_fixed (TREE_TYPE (expr),
 					  FCONST0 (TYPE_MODE
@@ -8649,7 +8649,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	  }
 	else if (!integer_only_op
 		    /* Allow integer --> real conversion if safe.  */
-		 && (TREE_CODE (type0) == REAL_TYPE
+		 && (SCALAR_FLOAT_TYPE_P (type0)
 		     || TREE_CODE (type0) == INTEGER_TYPE)
 		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
 	  {

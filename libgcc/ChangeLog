@@ -1,3 +1,58 @@
+2023-06-07  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/109712
+	* unwind-dw2-fde-dip.c (find_fde_tail): Correct fast path for
+	parsing eh_frame.
+
+2023-06-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/i386/morestack.S: Use @init_array rather than
+	@progbits for section type of section .init_array.
+	* config/rs6000/morestack.S: Likewise.
+	* config/s390/morestack.S: Likewise.
+
+2023-06-05  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/lib1funcs.S: New file.
+	define __speculation_barrier and include mips16.S.
+	* config/mips/t-mips: define LIB1ASMSRC as mips/lib1funcs.S.
+	define LIB1ASMFUNCS as _speculation_barrier.
+	set version info for __speculation_barrier.
+	* config/mips/libgcc-mips.ver: New file.
+	* config/mips/t-mips16: don't define LIB1ASMSRC as mips16.S
+	included in lib1funcs.S now.
+
+2023-06-03  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	PR libgcc/109670
+	* unwind-dw2-fde.c: Fix radix sort buffer management.
+
+2023-06-03  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	PR libgcc/109685
+	* unwind-dw2-fde.c: Free sort array in atomic fast path.
+
+2023-05-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Arrange to set min Darwin OS versions from
+	the configured host version.
+	* config/darwin10-unwind-find-enc-func.c: Do not use current
+	headers, but declare the nexessary structures locally to the
+	versions in use for Mac OSX 10.6.
+	* config/t-darwin: Amend to handle configured min OS
+	versions.
+	* config/t-darwin-min-1: New.
+	* config/t-darwin-min-5: New.
+	* config/t-darwin-min-8: New.
+
+2023-05-15  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c: Fix assert in non-atomic path.
+
+2023-05-15  Sören Tempel  <soeren+git@soeren-tempel.net>
+
+	* unwind-dw2-fde.c: Accept empty ranges when deregistering frames.
+
 2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* config/riscv/atomic.c: Change LR.aq/SC.rl pairs into

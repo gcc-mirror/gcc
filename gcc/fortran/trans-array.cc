@@ -880,7 +880,7 @@ is_pointer_array (tree expr)
       || GFC_CLASS_TYPE_P (TREE_TYPE (expr)))
     return false;
 
-  if (TREE_CODE (expr) == VAR_DECL
+  if (VAR_P (expr)
       && GFC_DECL_PTR_ARRAY_P (expr))
     return true;
 
@@ -888,7 +888,7 @@ is_pointer_array (tree expr)
       && GFC_DECL_PTR_ARRAY_P (expr))
     return true;
 
-  if (TREE_CODE (expr) == INDIRECT_REF
+  if (INDIRECT_REF_P (expr)
       && GFC_DECL_PTR_ARRAY_P (TREE_OPERAND (expr, 0)))
     return true;
 
@@ -3803,7 +3803,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar,
     {
       if (TREE_CODE (info->descriptor) == COMPONENT_REF)
 	decl = info->descriptor;
-      else if (TREE_CODE (info->descriptor) == INDIRECT_REF)
+      else if (INDIRECT_REF_P (info->descriptor))
 	decl = TREE_OPERAND (info->descriptor, 0);
 
       if (decl == NULL_TREE)
@@ -4057,7 +4057,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
     {
       if (TREE_CODE (se->expr) == COMPONENT_REF)
 	decl = se->expr;
-      else if (TREE_CODE (se->expr) == INDIRECT_REF)
+      else if (INDIRECT_REF_P (se->expr))
 	decl = TREE_OPERAND (se->expr, 0);
       else
 	decl = se->expr;
@@ -4069,7 +4069,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
 	{
 	  decl = se->expr;
-	  if (TREE_CODE (decl) == INDIRECT_REF)
+	  if (INDIRECT_REF_P (decl))
 	    decl = TREE_OPERAND (decl, 0);
 	}
       else
@@ -4982,7 +4982,7 @@ done:
 /* Return true if both symbols could refer to the same data object.  Does
    not take account of aliasing due to equivalence statements.  */
 
-static int
+static bool
 symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym, bool lsym_pointer,
 		     bool lsym_target, bool rsym_pointer, bool rsym_target)
 {
@@ -7934,7 +7934,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  else
 	    tmp = se->string_length;
 
-	  if (expr->ts.deferred && VAR_P (expr->ts.u.cl->backend_decl))
+	  if (expr->ts.deferred && expr->ts.u.cl->backend_decl
+	      && VAR_P (expr->ts.u.cl->backend_decl))
 	    gfc_add_modify (&se->pre, expr->ts.u.cl->backend_decl, tmp);
 	  else
 	    expr->ts.u.cl->backend_decl = tmp;
@@ -7997,6 +7998,15 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 		  GFC_DECL_SAVED_DESCRIPTOR (parm) = classse.expr;
 		}
 	    }
+	}
+
+      if (expr->ts.type == BT_CHARACTER
+	  && VAR_P (TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (parm)))))
+	{
+	  tree elem_len = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (parm)));
+	  gfc_add_modify (&loop.pre, elem_len,
+			  fold_convert (TREE_TYPE (elem_len),
+			  gfc_get_array_span (desc, expr)));
 	}
 
       /* Set the span field.  */
@@ -11471,6 +11481,12 @@ gfc_walk_array_ref (gfc_ss * ss, gfc_expr * expr, gfc_ref * ref)
 	  break;
 
 	case AR_FULL:
+	  /* Assumed shape arrays from interface mapping need this fix.  */
+	  if (!ar->as && expr->symtree->n.sym->as)
+	    {
+	      ar->as = gfc_get_array_spec();
+	      *ar->as = *expr->symtree->n.sym->as;
+	    }
 	  newss = gfc_get_array_ss (ss, expr, ar->as->rank, GFC_SS_SECTION);
 	  newss->info->data.array.ref = ref;
 

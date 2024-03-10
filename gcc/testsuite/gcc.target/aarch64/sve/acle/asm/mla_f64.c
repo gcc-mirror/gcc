@@ -75,7 +75,7 @@ TEST_UNIFORM_Z (mla_2_f64_m_tied1, svfloat64_t,
 		z0 = svmla_m (p0, z0, z1, 2))
 
 /*
-** mla_2_f64_m_untied: { xfail *-*-* }
+** mla_2_f64_m_untied:
 **	fmov	(z[0-9]+\.d), #2\.0(?:e\+0)?
 **	movprfx	z0, z1
 **	fmla	z0\.d, p0/m, z2\.d, \1

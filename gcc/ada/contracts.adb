@@ -104,8 +104,9 @@ package body Contracts is
    procedure Expand_Subprogram_Contract (Body_Id : Entity_Id);
    --  Expand the contracts of a subprogram body and its correspoding spec (if
    --  any). This routine processes all [refined] pre- and postconditions as
-   --  well as Contract_Cases, Subprogram_Variant, invariants and predicates.
-   --  Body_Id denotes the entity of the subprogram body.
+   --  well as Contract_Cases, Exceptional_Cases, Subprogram_Variant,
+   --  invariants and predicates. Body_Id denotes the entity of the
+   --  subprogram body.
 
    procedure Preanalyze_Condition
      (Subp : Entity_Id;
@@ -222,11 +223,13 @@ package body Contracts is
       --    Attach_Handler
       --    Contract_Cases
       --    Depends
+      --    Exceptional_Cases
       --    Extensions_Visible
       --    Global
       --    Interrupt_Handler
       --    Postcondition
       --    Precondition
+      --    Subprogram_Variant
       --    Test_Case
       --    Volatile_Function
 
@@ -253,6 +256,7 @@ package body Contracts is
             Add_Classification;
 
          elsif Prag_Nam in Name_Contract_Cases
+                         | Name_Exceptional_Cases
                          | Name_Subprogram_Variant
                          | Name_Test_Case
          then
@@ -307,10 +311,13 @@ package body Contracts is
       --  The four volatility refinement pragmas are ok for all types.
       --  Part_Of is ok for task types and protected types.
       --  Depends and Global are ok for task types.
+      --
+      --  Precondition and Postcondition are added separately; they are allowed
+      --  for access-to-subprogram types.
 
       elsif Is_Type (Id) then
          declare
-            Is_OK : constant Boolean :=
+            Is_OK_Classification : constant Boolean :=
               Prag_Nam in Name_Async_Readers
                         | Name_Async_Writers
                         | Name_Effective_Reads
@@ -322,9 +329,16 @@ package body Contracts is
                                        | Name_Global)
               or else (Ekind (Id) = E_Protected_Type
                          and Prag_Nam = Name_Part_Of);
+
          begin
-            if Is_OK then
+            if Is_OK_Classification then
                Add_Classification;
+
+            elsif Ekind (Id) = E_Subprogram_Type
+                and then Prag_Nam in Name_Precondition
+                                   | Name_Postcondition
+            then
+               Add_Pre_Post_Condition;
             else
 
                --  The pragma is not a proper contract item
@@ -629,8 +643,9 @@ package body Contracts is
       end if;
 
       --  Deal with preconditions, [refined] postconditions, Contract_Cases,
-      --  Subprogram_Variant, invariants and predicates associated with body
-      --  and its spec. Do not expand the contract of subprogram body stubs.
+      --  Exceptional_Cases, Subprogram_Variant, invariants and predicates
+      --  associated with body and its spec. Do not expand the contract of
+      --  subprogram body stubs.
 
       if Nkind (Body_Decl) = N_Subprogram_Body then
          Expand_Subprogram_Contract (Body_Id);
@@ -650,7 +665,10 @@ package body Contracts is
       Freeze_Id : Entity_Id := Empty)
    is
       Items     : constant Node_Id := Contract (Subp_Id);
-      Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
+      Subp_Decl : constant Node_Id :=
+        (if Ekind (Subp_Id) = E_Subprogram_Type
+         then Associated_Node_For_Itype (Subp_Id)
+         else Unit_Declaration_Node (Subp_Id));
 
       Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
@@ -765,6 +783,9 @@ package body Contracts is
                else
                   Analyze_Contract_Cases_In_Decl_Part (Prag, Freeze_Id);
                end if;
+
+            elsif Prag_Nam = Name_Exceptional_Cases then
+               Analyze_Exceptional_Cases_In_Decl_Part (Prag);
 
             elsif Prag_Nam = Name_Subprogram_Variant then
                Analyze_Subprogram_Variant_In_Decl_Part (Prag);
@@ -1493,6 +1514,7 @@ package body Contracts is
       --  The stub acts as its own spec, the applicable pragmas are:
       --    Contract_Cases
       --    Depends
+      --    Exceptional_Cases
       --    Global
       --    Postcondition
       --    Precondition
@@ -1571,6 +1593,13 @@ package body Contracts is
    begin
       Check_Type_Or_Object_External_Properties
         (Type_Or_Obj_Id => Type_Id);
+
+      --  Analyze Pre/Post on access-to-subprogram type
+
+      if Ekind (Type_Id) in Access_Subprogram_Kind then
+         Analyze_Entry_Or_Subprogram_Contract
+           (Directly_Designated_Type (Type_Id));
+      end if;
    end Analyze_Type_Contract;
 
    ---------------------------------------
@@ -1631,7 +1660,7 @@ package body Contracts is
       --     return
       --        Result_Obj : constant Typ := _Wrapped_Statements
       --     do
-      --        <postconditions statments>
+      --        <postconditions statements>
       --     end return;
       --  end;
 
@@ -1649,7 +1678,7 @@ package body Contracts is
       --
       --  begin
       --     _Wrapped_Statements;
-      --     <postconditions statments>
+      --     <postconditions statements>
       --  end;
 
       --  Create Identifier
@@ -2829,6 +2858,9 @@ package body Contracts is
                            Subp_Id => Subp_Id,
                            Decls   => Decls,
                            Stmts   => Stmts);
+
+                     elsif Pragma_Name (Prag) = Name_Exceptional_Cases then
+                        Expand_Pragma_Exceptional_Cases (Prag);
 
                      elsif Pragma_Name (Prag) = Name_Subprogram_Variant then
                         Expand_Pragma_Subprogram_Variant
@@ -4818,9 +4850,6 @@ package body Contracts is
       --  Traverse Expr and clear the Controlling_Argument of calls to
       --  nonabstract functions.
 
-      procedure Remove_Formals (Id : Entity_Id);
-      --  Remove formals from homonym chains and make them not visible
-
       procedure Restore_Original_Selected_Component;
       --  Traverse Expr searching for dispatching calls to functions whose
       --  original node was a selected component, and replace them with
@@ -4870,21 +4899,6 @@ package body Contracts is
          Remove_Ctrl_Args (Expr);
       end Remove_Controlling_Arguments;
 
-      --------------------
-      -- Remove_Formals --
-      --------------------
-
-      procedure Remove_Formals (Id : Entity_Id) is
-         F : Entity_Id := First_Formal (Id);
-
-      begin
-         while Present (F) loop
-            Set_Is_Immediately_Visible (F, False);
-            Remove_Homonym (F);
-            Next_Formal (F);
-         end loop;
-      end Remove_Formals;
-
       -----------------------------------------
       -- Restore_Original_Selected_Component --
       -----------------------------------------
@@ -4926,8 +4940,11 @@ package body Contracts is
 
             begin
                if Par /= Parent_Node then
-                  pragma Assert (not Is_List_Member (Node));
-                  Set_Parent (Node, Parent_Node);
+                  if Is_List_Member (Node) then
+                     Set_List_Parent (List_Containing (Node), Parent_Node);
+                  else
+                     Set_Parent (Node, Parent_Node);
+                  end if;
                end if;
 
                return OK;
@@ -5003,8 +5020,7 @@ package body Contracts is
       Preanalyze_Spec_Expression (Expr, Standard_Boolean);
 
       Inside_Class_Condition_Preanalysis := False;
-      Remove_Formals (Subp);
-      Pop_Scope;
+      End_Scope;
 
       --  If this preanalyzed condition has occurrences of dispatching calls
       --  using the Object.Operation notation, during preanalysis such calls

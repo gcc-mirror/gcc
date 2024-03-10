@@ -13,8 +13,13 @@ TEST_UNIFORM_P (pnext_b8_tied1,
 
 /*
 ** pnext_b8_untied:
+** (
 **	mov	p0\.b, p1\.b
 **	pnext	p0\.b, p3, p0\.b
+** |
+**	pnext	p1\.b, p3, p1\.b
+**	mov	p0\.b, p1\.b
+** )
 **	ret
 */
 TEST_UNIFORM_P (pnext_b8_untied,

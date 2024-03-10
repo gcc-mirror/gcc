@@ -75,7 +75,7 @@ TEST_UNIFORM_Z (msb_2_f32_m_tied1, svfloat32_t,
 		z0 = svmsb_m (p0, z0, z1, 2))
 
 /*
-** msb_2_f32_m_untied: { xfail *-*-* }
+** msb_2_f32_m_untied:
 **	fmov	(z[0-9]+\.s), #2\.0(?:e\+0)?
 **	movprfx	z0, z1
 **	fmsb	z0\.s, p0/m, z2\.s, \1

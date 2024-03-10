@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -save-temps" } */
+/* { dg-options "-O3 -save-temps -fdump-tree-vect-details" } */
 #include <stdint.h>
 #include <string.h>
 
@@ -86,6 +86,8 @@ main()
     return 0;
 }
 
+/* { dg-final { scan-tree-dump "add new stmt.*VEC_WIDEN_MINUS_LO" "vect"   } } */
+/* { dg-final { scan-tree-dump "add new stmt.*VEC_WIDEN_MINUS_HI" "vect"   } } */
 /* { dg-final { scan-assembler-times {\tusubl\t} 1} } */
 /* { dg-final { scan-assembler-times {\tusubl2\t} 1} } */
 /* { dg-final { scan-assembler-times {\tssubl\t} 1} } */

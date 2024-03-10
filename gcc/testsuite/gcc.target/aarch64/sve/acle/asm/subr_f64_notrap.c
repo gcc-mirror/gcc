@@ -103,7 +103,7 @@ TEST_UNIFORM_Z (subr_m1_f64_m_tied1, svfloat64_t,
 		z0 = svsubr_m (p0, z0, -1))
 
 /*
-** subr_m1_f64_m_untied: { xfail *-*-* }
+** subr_m1_f64_m_untied:
 **	fmov	(z[0-9]+\.d), #-1\.0(?:e\+0)?
 **	movprfx	z0, z1
 **	fsubr	z0\.d, p0/m, z0\.d, \1

@@ -1,1 +1,4 @@
+set FLOCK {@FLOCK@}
 set GCC_UNDER_TEST {@CC@}
+set GXX_UNDER_TEST {@CXX@}
+set GFORTRAN_UNDER_TEST {@FC@}

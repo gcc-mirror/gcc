@@ -65,29 +65,32 @@ package body Ada.Exceptions is
    --  from C clients using the given external name, even though they are not
    --  technically visible in the Ada sense.
 
-   function Code_Address_For_AAA return System.Address;
-   function Code_Address_For_ZZZ return System.Address;
-   --  Return start and end of procedures in this package
+   procedure AAA;
+   procedure ZZZ;
+   --  Start and end of procedures in this package
    --
-   --  These procedures are used to provide exclusion bounds in
-   --  calls to Call_Chain at exception raise points from this unit. The
-   --  purpose is to arrange for the exception tracebacks not to include
-   --  frames from subprograms involved in the raise process, as these are
-   --  meaningless from the user's standpoint.
+   --  These procedures are used to provide exclusion bounds in calls to
+   --  Call_Chain at exception raise points from this unit. The purpose is
+   --  to arrange for the exception tracebacks not to include frames from
+   --  subprograms involved in the raise process, as these are meaningless
+   --  from the user's standpoint.
    --
    --  For these bounds to be meaningful, we need to ensure that the object
-   --  code for the subprograms involved in processing a raise is located
-   --  after the object code Code_Address_For_AAA and before the object
-   --  code Code_Address_For_ZZZ. This will indeed be the case as long as
-   --  the following rules are respected:
+   --  code for the subprograms involved in processing a raise is located after
+   --  the object code AAA and before the object code ZZZ. This will indeed be
+   --  the case as long as the following rules are respected:
    --
    --  1) The bodies of the subprograms involved in processing a raise
-   --     are located after the body of Code_Address_For_AAA and before the
-   --     body of Code_Address_For_ZZZ.
+   --     are located after the body of AAA and before the body of ZZZ.
    --
    --  2) No pragma Inline applies to any of these subprograms, as this
    --     could delay the corresponding assembly output until the end of
    --     the unit.
+   --
+   --  To obtain the address of AAA and ZZZ, use the Code_Address attribute
+   --  instead of the Address attribute as the latter will return the address
+   --  of a stub or descriptor on some platforms. This include IA-64,
+   --  PowerPC/AIX, big-endian PowerPC64 and HPUX.
 
    procedure Call_Chain (Excep : EOA);
    --  Store up to Max_Tracebacks in Excep, corresponding to the current
@@ -771,24 +774,15 @@ package body Ada.Exceptions is
    Rmsg_36 : constant String := "stream operation not allowed"     & NUL;
    Rmsg_37 : constant String := "build-in-place mismatch"          & NUL;
 
-   --------------------------
-   -- Code_Address_For_AAA --
-   --------------------------
+   ---------
+   -- AAA --
+   ---------
 
    --  This function gives us the start of the PC range for addresses within
    --  the exception unit itself. We hope that gigi/gcc keep all the procedures
    --  in their original order.
 
-   function Code_Address_For_AAA return System.Address is
-   begin
-      --  We are using a label instead of Code_Address_For_AAA'Address because
-      --  on some platforms the latter does not yield the address we want, but
-      --  the address of a stub or of a descriptor instead. This is the case at
-      --  least on PA-HPUX.
-
-      <<Start_Of_AAA>>
-      return Start_Of_AAA'Address;
-   end Code_Address_For_AAA;
+   procedure AAA is null;
 
    ----------------
    -- Call_Chain --
@@ -1816,18 +1810,14 @@ package body Ada.Exceptions is
       return W (1 .. L);
    end Wide_Wide_Exception_Name;
 
-   --------------------------
-   -- Code_Address_For_ZZZ --
-   --------------------------
+   ---------
+   -- ZZZ --
+   ---------
 
    --  This function gives us the end of the PC range for addresses
    --  within the exception unit itself. We hope that gigi/gcc keeps all the
    --  procedures in their original order.
 
-   function Code_Address_For_ZZZ return System.Address is
-   begin
-      <<Start_Of_ZZZ>>
-      return Start_Of_ZZZ'Address;
-   end Code_Address_For_ZZZ;
+   procedure ZZZ is null;
 
 end Ada.Exceptions;

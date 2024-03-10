@@ -7555,7 +7555,7 @@
       && !arm_const_double_rtx (operands[1])
       && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1])))
     {
-      rtx clobreg = gen_reg_rtx (DFmode);
+      rtx clobreg = gen_reg_rtx (DImode);
       emit_insn (gen_no_literal_pool_df_immediate (operands[0], operands[1],
 						   clobreg));
       DONE;
@@ -12180,7 +12180,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "type" "clz")])
 
-(define_insn "rbitsi2"
+(define_insn "arm_rbit"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec:SI [(match_operand:SI 1 "s_register_operand" "r")] UNSPEC_RBIT))]
   "TARGET_32BIT && arm_arch_thumb2"
@@ -12200,7 +12200,7 @@
   "&& reload_completed"
   [(const_int 0)]
   "
-  emit_insn (gen_rbitsi2 (operands[0], operands[1]));
+  emit_insn (gen_arm_rbit (operands[0], operands[1]));
   emit_insn (gen_clzsi2 (operands[0], operands[0]));
   DONE;
 ")
@@ -12564,7 +12564,7 @@
 ;; operations within an IOR/AND RTX, therefore we have two patterns matching
 ;; each valid permutation.
 
-(define_insn "arm_rev16si2"
+(define_insn "arm_rev16si2_alt1"
   [(set (match_operand:SI 0 "register_operand" "=l,l,r")
         (ior:SI (and:SI (ashift:SI (match_operand:SI 1 "register_operand" "l,l,r")
                                    (const_int 8))
@@ -12581,7 +12581,7 @@
    (set_attr "type" "rev")]
 )
 
-(define_insn "arm_rev16si2_alt"
+(define_insn "*arm_rev16si2_alt2"
   [(set (match_operand:SI 0 "register_operand" "=l,l,r")
         (ior:SI (and:SI (lshiftrt:SI (match_operand:SI 1 "register_operand" "l,l,r")
                                      (const_int 8))
@@ -12596,6 +12596,18 @@
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
    (set_attr "type" "rev")]
+)
+
+(define_expand "arm_rev16si2"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(bswap:SI (match_operand:SI 1 "s_register_operand")))]
+  "arm_arch6"
+  {
+    rtx left = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff00), SImode);
+    rtx right = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff), SImode);
+    emit_insn (gen_arm_rev16si2_alt1 (operands[0], operands[1], right, left));
+    DONE;
+  }
 )
 
 (define_expand "bswaphi2"

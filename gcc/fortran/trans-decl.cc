@@ -483,7 +483,7 @@ gfc_set_decl_assembler_name (tree decl, tree name)
 
 /* Returns true if a variable of specified size should go on the stack.  */
 
-int
+bool
 gfc_can_put_var_on_stack (tree size)
 {
   unsigned HOST_WIDE_INT low;
@@ -558,7 +558,7 @@ gfc_finish_decl (tree decl)
     return;
 
   if (DECL_SIZE (decl) == NULL_TREE
-      && TYPE_SIZE (TREE_TYPE (decl)) != NULL_TREE)
+      && COMPLETE_TYPE_P (TREE_TYPE (decl)))
     layout_decl (decl, 0);
 
   /* A few consistency checks.  */
@@ -1827,6 +1827,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Add attributes to variables.  Functions are handled elsewhere.  */
   attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
   decl_attributes (&decl, attributes, 0);
+  if (sym->ts.deferred && VAR_P (length))
+    decl_attributes (&length, attributes, 0);
 
   /* Symbols from modules should have their assembler names mangled.
      This is done here rather than in gfc_finish_var_decl because it
@@ -1889,7 +1891,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       length = fold_convert (gfc_charlen_type_node, length);
       gfc_finish_var_decl (length, sym);
       if (!sym->attr.associate_var
-	  && TREE_CODE (length) == VAR_DECL
+	  && VAR_P (length)
 	  && sym->value && sym->value->expr_type != EXPR_NULL
 	  && sym->value->ts.u.cl->length)
 	{

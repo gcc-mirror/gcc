@@ -15,3 +15,4 @@ unsigned int foo2(unsigned int rs1, unsigned int rs2)
 
 /* { dg-final { scan-assembler-times "rol" 2 } } */
 /* { dg-final { scan-assembler-times "ror" 2 } } */
+/* { dg-final { scan-assembler-not {and} { target { no-opts "-O0" } } } } */

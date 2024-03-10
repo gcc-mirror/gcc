@@ -117,7 +117,7 @@
 (define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TF "DI")])
 
 ; bitmanip mode attribute
-(define_mode_attr shiftm1 [(SI "const31_operand") (DI "const63_operand")])
+(define_mode_attr shiftm1 [(SI "const_si_mask_operand") (DI "const_di_mask_operand")])
 (define_mode_attr shiftm1p [(SI "DsS") (DI "DsD")])
 
 ;; -------------------------------------------------------------------
@@ -174,6 +174,8 @@
 
 (define_code_iterator clz_ctz_pcnt [clz ctz popcount])
 
+(define_code_iterator bitmanip_rotate [rotate rotatert])
+
 ;; -------------------------------------------------------------------
 ;; Code Attributes
 ;; -------------------------------------------------------------------
@@ -223,7 +225,9 @@
 			 (ss_minus "sssub")
 			 (us_minus "ussub")
 			 (sign_extend "extend")
-			 (zero_extend "zero_extend")])
+			 (zero_extend "zero_extend")
+			 (fix "fix_trunc")
+			 (unsigned_fix "fixuns_trunc")])
 
 ;; <or_optab> code attributes
 (define_code_attr or_optab [(ior "ior")
@@ -271,7 +275,9 @@
 				  (umax "umax")
 				  (clz "clz")
 				  (ctz "ctz")
-				  (popcount "popcount")])
+				  (popcount "popcount")
+				  (rotate "rotl")
+				  (rotatert "rotr")])
 (define_code_attr bitmanip_insn [(smin "min")
 				 (smax "max")
 				 (umin "minu")

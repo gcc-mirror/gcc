@@ -178,7 +178,7 @@ tree_is_indexable (tree t)
 	   && lto_variably_modified_type_p (DECL_CONTEXT (t)))
     return false;
   else
-    return (TYPE_P (t) || DECL_P (t) || TREE_CODE (t) == SSA_NAME);
+    return (IS_TYPE_OR_DECL_P (t) || TREE_CODE (t) == SSA_NAME);
 }
 
 
@@ -346,7 +346,7 @@ void
 lto_output_var_decl_ref (struct lto_out_decl_state *decl_state,
 			 struct lto_output_stream * obs, tree decl)
 {
-  gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_checking_assert (VAR_P (decl));
   streamer_write_uhwi_stream
      (obs, lto_get_index (&decl_state->streams[LTO_DECL_STREAM],
 			  decl));
@@ -1078,8 +1078,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       else if (RECORD_OR_UNION_TYPE_P (expr))
 	for (tree t = TYPE_FIELDS (expr); t; t = TREE_CHAIN (t))
 	  DFS_follow_tree_edge (t);
-      else if (TREE_CODE (expr) == FUNCTION_TYPE
-	       || TREE_CODE (expr) == METHOD_TYPE)
+      else if (FUNC_OR_METHOD_TYPE_P (expr))
 	DFS_follow_tree_edge (TYPE_ARG_TYPES (expr));
 
       if (!POINTER_TYPE_P (expr))
@@ -2626,7 +2625,7 @@ wrap_refs (tree *tp, int *ws, void *)
 {
   tree t = *tp;
   if (handled_component_p (t)
-      && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL
+      && VAR_P (TREE_OPERAND (t, 0))
       && TREE_PUBLIC (TREE_OPERAND (t, 0)))
     {
       tree decl = TREE_OPERAND (t, 0);
@@ -3064,7 +3063,7 @@ write_symbol_extension_info (tree t)
        ? GCCST_VARIABLE : GCCST_FUNCTION);
   lto_write_data (&c, 1);
   unsigned char section_kind = 0;
-  if (TREE_CODE (t) == VAR_DECL)
+  if (VAR_P (t))
     {
       section *s = get_variable_section (t, false);
       if (s->common.flags & SECTION_BSS)

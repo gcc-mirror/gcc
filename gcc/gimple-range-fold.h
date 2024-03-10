@@ -37,9 +37,14 @@ bool fold_range (vrange &v, gimple *s, edge on_edge, range_query *q = NULL);
 
 // These routines the operands to be specified when manually folding.
 // Any excess queries will be drawn from the current range_query.
-bool fold_range (vrange &r, gimple *s, vrange &r1);
-bool fold_range (vrange &r, gimple *s, vrange &r1, vrange &r2);
-bool fold_range (vrange &r, gimple *s, unsigned num_elements, vrange **vector);
+bool fold_range (vrange &r, gimple *s, vrange &r1, range_query *q = NULL);
+bool fold_range (vrange &r, gimple *s, vrange &r1, vrange &r2,
+		 range_query *q = NULL);
+bool fold_range (vrange &r, gimple *s, unsigned num_elements, vrange **vector,
+		 range_query *q = NULL);
+
+// This routine will return a relation trio for stmt S.
+relation_trio fold_relations (gimple *s, range_query *q = NULL);
 
 // Return the type of range which statement S calculates.  If the type is
 // unsupported or no type can be determined, return NULL_TREE.

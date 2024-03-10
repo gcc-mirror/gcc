@@ -410,7 +410,7 @@ vint8mf8_t var_10 = __riscv_vsra_vv_i8mf8_mu(var_53, var_11, var_13, var_54, 1);
 vint8mf8_t var_1 = __riscv_vmax_vx_i8mf8_mu(var_72, var_10, var_10, var_9, 1);
 // 5, 1
 
-vint8mf8_t var_0 = __riscv_vssra_vx_i8mf8(var_1, var_85, 1);
+vint8mf8_t var_0 = __riscv_vssra_vx_i8mf8(var_1, var_85, 0, 1);
 // 5
 
 vbool64_t var_2 = __riscv_vmsbc_vx_i8mf8_b64(var_0, var_3, 1);

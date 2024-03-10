@@ -72,10 +72,16 @@
 
 #define SET_XNACK_ON(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_XNACK_V4) \
 				 | EF_AMDGPU_FEATURE_XNACK_ON_V4)
+#define SET_XNACK_ANY(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_XNACK_V4) \
+				  | EF_AMDGPU_FEATURE_XNACK_ANY_V4)
 #define SET_XNACK_OFF(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_XNACK_V4) \
 				  | EF_AMDGPU_FEATURE_XNACK_OFF_V4)
-#define TEST_XNACK(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) \
-			 == EF_AMDGPU_FEATURE_XNACK_ON_V4)
+#define TEST_XNACK_ANY(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) \
+			     == EF_AMDGPU_FEATURE_XNACK_ANY_V4)
+#define TEST_XNACK_ON(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) \
+			    == EF_AMDGPU_FEATURE_XNACK_ON_V4)
+#define TEST_XNACK_OFF(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) \
+			     == EF_AMDGPU_FEATURE_XNACK_OFF_V4)
 
 #define SET_SRAM_ECC_ON(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_SRAMECC_V4) \
 				    | EF_AMDGPU_FEATURE_SRAMECC_ON_V4)
@@ -907,9 +913,11 @@ main (int argc, char **argv)
 	fPIC = true;
       else if (strcmp (argv[i], "-fpic") == 0)
 	fpic = true;
-      else if (strcmp (argv[i], "-mxnack") == 0)
+      else if (strcmp (argv[i], "-mxnack=on") == 0)
 	SET_XNACK_ON (elf_flags);
-      else if (strcmp (argv[i], "-mno-xnack") == 0)
+      else if (strcmp (argv[i], "-mxnack=any") == 0)
+	SET_XNACK_ANY (elf_flags);
+      else if (strcmp (argv[i], "-mxnack=off") == 0)
 	SET_XNACK_OFF (elf_flags);
       else if (strcmp (argv[i], "-msram-ecc=on") == 0)
 	SET_SRAM_ECC_ON (elf_flags);
@@ -1073,8 +1081,9 @@ main (int argc, char **argv)
       obstack_ptr_grow (&ld_argv_obstack, gcn_s2_name);
       obstack_ptr_grow (&ld_argv_obstack, "-lgomp");
       obstack_ptr_grow (&ld_argv_obstack,
-			(TEST_XNACK (elf_flags)
-			 ? "-mxnack" : "-mno-xnack"));
+			(TEST_XNACK_ON (elf_flags) ? "-mxnack=on"
+			 : TEST_XNACK_ANY (elf_flags) ? "-mxnack=any"
+			 : "-mxnack=off"));
       obstack_ptr_grow (&ld_argv_obstack,
 			(TEST_SRAM_ECC_ON (elf_flags) ? "-msram-ecc=on"
 			 : TEST_SRAM_ECC_ANY (elf_flags) ? "-msram-ecc=any"

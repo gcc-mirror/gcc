@@ -4042,7 +4042,7 @@ node_template_info (tree decl, int &use)
 	}
     }
   else if (DECL_LANG_SPECIFIC (decl)
-	   && (TREE_CODE (decl) == VAR_DECL
+	   && (VAR_P (decl)
 	       || TREE_CODE (decl) == TYPE_DECL
 	       || TREE_CODE (decl) == FUNCTION_DECL
 	       || TREE_CODE (decl) == FIELD_DECL
@@ -5151,7 +5151,7 @@ trees_out::start (tree t, bool code_streamed)
   switch (TREE_CODE (t))
     {
     default:
-      if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_vl_exp)
+      if (VL_EXP_CLASS_P (t))
 	u (VL_EXP_OPERAND_LENGTH (t));
       break;
 
@@ -8551,7 +8551,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	{
 	tinfo:
 	  /* A typeinfo, tt_tinfo_typedef or tt_tinfo_var.  */
-	  bool is_var = TREE_CODE (decl) == VAR_DECL;
+	  bool is_var = VAR_P (decl);
 	  tree type = TREE_TYPE (decl);
 	  unsigned ix = get_pseudo_tinfo_index (type);
 	  if (streaming_p ())
@@ -8651,7 +8651,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
      Mostly things that can be defined outside of their (original
      declaration) context.  */
   gcc_checking_assert (TREE_CODE (decl) == TEMPLATE_DECL
-		       || TREE_CODE (decl) == VAR_DECL
+		       || VAR_P (decl)
 		       || TREE_CODE (decl) == FUNCTION_DECL
 		       || TREE_CODE (decl) == TYPE_DECL
 		       || TREE_CODE (decl) == USING_DECL
@@ -11702,7 +11702,7 @@ bool
 trees_in::read_var_def (tree decl, tree maybe_template)
 {
   /* Do not mark the virtual table entries as used.  */
-  bool vtable = TREE_CODE (decl) == VAR_DECL && DECL_VTABLE_OR_VTT_P (decl);
+  bool vtable = VAR_P (decl) && DECL_VTABLE_OR_VTT_P (decl);
   unused += vtable;
   tree init = tree_node ();
   tree dyn_init = init ? NULL_TREE : tree_node ();
@@ -18776,7 +18776,7 @@ void
 set_instantiating_module (tree decl)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
-	      || TREE_CODE (decl) == VAR_DECL
+	      || VAR_P (decl)
 	      || TREE_CODE (decl) == TYPE_DECL
 	      || TREE_CODE (decl) == CONCEPT_DECL
 	      || TREE_CODE (decl) == TEMPLATE_DECL

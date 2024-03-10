@@ -24,9 +24,10 @@ struct X {
 };
 
 void b() {
-  goto bar; // { dg-message "" } jump from here
-  X x; // { dg-message "" } jump crosses initialization
- bar: // { dg-error "" } jump to here
+  // This was ill-formed until DR 2256.
+  goto bar;
+  X x;
+ bar:
   ;
 }
 

@@ -499,8 +499,8 @@ optimize_mode_switching (void)
   bool need_commit = false;
   static const int num_modes[] = NUM_MODES_FOR_MODE_SWITCHING;
 #define N_ENTITIES ARRAY_SIZE (num_modes)
-  int entity_map[N_ENTITIES];
-  struct bb_info *bb_info[N_ENTITIES];
+  int entity_map[N_ENTITIES] = {};
+  struct bb_info *bb_info[N_ENTITIES] = {};
   int i, j;
   int n_entities = 0;
   int max_num_modes = 0;

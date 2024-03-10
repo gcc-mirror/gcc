@@ -37,6 +37,7 @@ proc check_guality {args} {
 }
 
 dg-init
+torture-init
 
 global GDB
 if ![info exists ::env(GUALITY_GDB_NAME)] {
@@ -69,7 +70,6 @@ global DG_TORTURE_OPTIONS
 set guality_dg_torture_options [guality_minimal_options $DG_TORTURE_OPTIONS]
 set guality_dg_torture_options [guality_transform_options $guality_dg_torture_options]
 set guality_lto_torture_options [guality_transform_options $LTO_TORTURE_OPTIONS]
-torture-init
 set-torture-options \
     $guality_dg_torture_options \
     [list {}] \

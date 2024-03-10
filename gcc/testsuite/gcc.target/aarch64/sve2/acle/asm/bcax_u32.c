@@ -99,7 +99,7 @@ TEST_UNIFORM_Z (bcax_11_u32_tied2, svuint32_t,
 		z0 = svbcax (z1, z0, 11))
 
 /*
-** bcax_11_u32_untied: { xfail *-*-*}
+** bcax_11_u32_untied:
 **	mov	(z[0-9]+)\.s, #11
 **	movprfx	z0, z1
 **	bcax	z0\.d, z0\.d, (z2\.d, \1\.d|\1\.d, z2\.d)

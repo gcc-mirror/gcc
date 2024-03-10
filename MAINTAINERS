@@ -91,7 +91,7 @@ m68k port		Andreas Schwab		<schwab@linux-m68k.org>
 m68k-motorola-sysv port	Philippe De Muyter	<phdm@macqel.be>
 mcore port		Nick Clifton		<nickc@redhat.com>
 microblaze		Michael Eager		<eager@eagercon.com>
-mips port		Matthew Fortune		<mfortune@gmail.com>
+mips port		YunQiang Su		<yunqiang.su@cipunited.com>
 mmix port		Hans-Peter Nilsson	<hp@bitrange.com>
 mn10300 port		Jeff Law		<jeffreyalaw@gmail.com>
 mn10300 port		Alexandre Oliva		<aoliva@gcc.gnu.org>
@@ -521,6 +521,7 @@ Marc Lehmann					<pcg@goof.com>
 James Lemke					<jim@lemke.org>
 Ilya Leoshkevich				<iii@linux.ibm.com>
 Kriang Lerdsuwanakij				<lerdsuwa@users.sourceforge.net>
+Pan Li						<pan2.li@intel.com>
 Renlin Li					<renlin.li@arm.com>
 Xinliang David Li				<davidxl@google.com>
 Chen Liqin					<liqin.gcc@gmail.com>
@@ -584,6 +585,7 @@ Patrick O'Neill					<patrick@rivosinc.com>
 Braden Obrzut					<admin@maniacsvault.net>
 Andrea Ornstein					<andrea.ornstein@st.com>
 Maxim Ostapenko					<m.ostapenko@samsung.com>
+Jeevitha Palanisamy				<jeevitha@linux.ibm.com>
 Patrick Palka					<ppalka@gcc.gnu.org>
 Srinath Parvathaneni				<srinath.parvathaneni@arm.com>
 Devang Patel					<dpatel@apple.com>
@@ -600,6 +602,7 @@ Antoniu Pop					<antoniu.pop@gmail.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Vidya Praveen					<vidyapraveen@arm.com>
 Thomas Preud'homme				<thomas.preudhomme@celest.fr>
+Benjamin Priour					<priour.be@gmail.com>
 Vladimir Prus					<vladimir@codesourcery.com>
 Hafiz Abid Qadeer				<abidh@codesourcery.com>
 Yao Qi						<yao@codesourcery.com>
@@ -650,7 +653,6 @@ Basile Starynkevitch				<basile@starynkevitch.net>
 Jakub Staszak					<kuba@et.pl>
 Graham Stott					<graham.stott@btinternet.com>
 Jeff Sturm					<jsturm@gcc.gnu.org>
-YunQiang Su					<yunqiang.su@cipunited.com>
 Robert Suchanek					<rsuchy84@gmail.com>
 Andrew Sutton					<andrew.n.sutton@gmail.com>
 Gabriele Svelto					<gabriele.svelto@st.com>
@@ -715,6 +717,7 @@ Dennis Zhang					<dennis.zhang@arm.com>
 Yufeng Zhang					<yufeng.zhang@arm.com>
 Qing Zhao					<qing.zhao@oracle.com>
 Shujing Zhao					<pearly.zhao@oracle.com>
+Juzhe Zhong					<juzhe.zhong@rivai.ai>
 Jon Ziegler					<jonz@apple.com>
 Roman Zippel					<zippel@linux-m68k.org>
 Josef Zlomek					<josef.zlomek@email.cz>

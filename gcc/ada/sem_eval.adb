@@ -1523,7 +1523,7 @@ package body Sem_Eval is
             Determine_Range (R, ROK, RLo, RHi, Assume_Valid);
 
             if LOK and ROK then
-               Single := (LLo = LHi) and then (RLo = RHi);
+               Single := LLo = LHi and then RLo = RHi;
 
                if LHi < RLo then
                   if Single and Assume_Valid then
@@ -3076,7 +3076,7 @@ package body Sem_Eval is
 
          else
             Fold_Uint
-              (N, Test ((Result = Match) xor (Nkind (N) = N_Not_In)), True);
+              (N, Test (Result = Match xor Nkind (N) = N_Not_In), True);
             Warn_On_Known_Condition (N);
          end if;
       end if;
@@ -5416,8 +5416,9 @@ package body Sem_Eval is
                return Expr_Value_R (Lo) > Expr_Value_R (Hi);
             end if;
          end;
+
       else
-         return False;
+         return Compile_Time_Compare (Lo, Hi, Assume_Valid => False) = GT;
       end if;
    end Is_Null_Range;
 
@@ -6028,10 +6029,11 @@ package body Sem_Eval is
                return Expr_Value_R (Lo) <= Expr_Value_R (Hi);
             end if;
          end;
-      else
-         return False;
-      end if;
 
+      else
+         return
+           Compile_Time_Compare (Lo, Hi, Assume_Valid => False) in Compare_LE;
+      end if;
    end Not_Null_Range;
 
    -------------
@@ -6644,7 +6646,7 @@ package body Sem_Eval is
          --  setting Is_Constrained right for Itypes.
 
          if Is_Numeric_Type (T1)
-           and then (Is_Constrained (T1) /= Is_Constrained (T2))
+           and then Is_Constrained (T1) /= Is_Constrained (T2)
            and then (Scope (T1) = Standard_Standard
                       or else Comes_From_Source (T1))
            and then (Scope (T2) = Standard_Standard
@@ -6658,7 +6660,7 @@ package body Sem_Eval is
 
          elsif Is_Generic_Type (T1)
            and then Is_Generic_Type (T2)
-           and then (Is_Constrained (T1) /= Is_Constrained (T2))
+           and then Is_Constrained (T1) /= Is_Constrained (T2)
          then
             return False;
          end if;
@@ -7611,7 +7613,7 @@ package body Sem_Eval is
                Error_Msg_NE
                  ("!& is not a static subtype (RM 4.9(26))", N, E);
 
-            else
+            elsif E /= Any_Id then
                Error_Msg_NE
                  ("!& is not static constant or named number "
                   & "(RM 4.9(5))", N, E);

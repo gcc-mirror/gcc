@@ -227,6 +227,7 @@ such as the AVR and the ARM).
 * Linking::               Linking options in more detail.
 * Elementary data types:: Data types supported by GNU Modula-2.
 * Standard procedures::   Permanently accessible base procedures.
+* High procedure function:: Behavior of the high procedure function.
 * Dialect::               GNU Modula-2 supported dialects.
 * Exceptions::            Exception implementation
 * Semantic checking::     How to detect run time problems at compile time.
@@ -829,7 +830,7 @@ exported from the @code{SYSTEM} module.
 @xref{The PIM system module, , ,gm2}.
 @xref{The ISO system module, , ,gm2}.
 
-@node Standard procedures, Dialect, Elementary data types, Using
+@node Standard procedures, High procedure function, Elementary data types, Using
 @section Permanently accessible base procedures.
 
 This section describes the procedures and functions which are
@@ -986,7 +987,7 @@ PROCEDURE HALT ;
              foo('hello')
           END
 
-          will cause the local variable c to contain the value 4
+          will cause the local variable c to contain the value 5
 *)
 
 @findex HIGH
@@ -1228,7 +1229,99 @@ PROCEDURE ODD (v: <any whole number type>) : BOOLEAN ;
 PROCEDURE RE (c: <any complex type>) : <floating point type> ;
 @end example
 
-@node Dialect, Exceptions, Standard procedures, Using
+@node High procedure function, Dialect, Standard procedures, Using
+
+@section Behavior of the high procedure function
+
+This section describes the behavior of the standard procedure function
+@code{HIGH} and it includes a table of parameters with the expected
+return result.  The standard procedure function will return the last
+accessible indice of an @code{ARRAY}.  If the parameter to @code{HIGH}
+is a static array then the result will be a @code{CARDINAL} value
+matching the upper bound in the @code{ARRAY} declaration.
+
+The section also describes the behavior of a string literal actual
+parameter and how it relates to @code{HIGH}.
+The PIM2, PIM3, PIM4 and ISO standard is silent on the issue of
+whether a @code{nul} is present in an @code{ARRAY} @code{OF}
+@code{CHAR} actual parameter.
+
+If the first parameter to @code{HIGH} is an unbounded @code{ARRAY} the
+return value from @code{HIGH} will be the last accessible element in
+the array.  If a constant string literal is passed as an actual
+parameter then it will be @code{nul} terminated.  The table and
+example code below describe the effect of passing an actual parameter
+and the expected @code{HIGH} value.
+
+@example
+MODULE example1 ;
+
+PROCEDURE test (a: ARRAY OF CHAR) ;
+VAR
+   x: CARDINAL ;
+BEGIN
+   x := HIGH (a) ;
+   ...
+END test ;
+
+
+BEGIN
+   test ('') ;
+   test ('1') ;
+   test ('12') ;
+   test ('123') ;
+END example1.
+
+
+Actual parameter | HIGH (a) | a[HIGH (a)] = nul
+===============================================
+ ''              | 0        | TRUE
+ '1'             | 1        | TRUE
+ '12'            | 2        | TRUE
+ '123'           | 3        | TRUE
+@end example
+
+A constant string literal will be passed to an @code{ARRAY} @code{OF}
+@code{CHAR} with an appended @code{nul} @code{CHAR}.  Thus if the
+constant string literal @code{''} is passed as an actual parameter (in
+example1) then the result from @code{HIGH(a)} will be @code{0}.
+
+@example
+MODULE example2 ;
+
+PROCEDURE test (a: ARRAY OF CHAR) ;
+VAR
+   x: CARDINAL ;
+BEGIN
+   x := HIGH (a) ;
+   ...
+END test ;
+
+VAR
+   str0: ARRAY [0..0] OF CHAR ;
+   str1: ARRAY [0..1] OF CHAR ;
+   str2: ARRAY [0..2] OF CHAR ;
+   str3: ARRAY [0..3] OF CHAR ;
+BEGIN
+   str0 := 'a' ;   (* No room for the nul terminator.  *)
+   test (str0) ;
+   str1 := 'ab' ;  (* No room for the nul terminator.  *)
+   test (str1) ;
+   str2 := 'ab' ;  (* Terminated with a nul.  *)
+   test (str2) ;
+   str2 := 'abc' ; (* Terminated with a nul.  *)
+   test (str3) ;
+END example2.
+
+Actual parameter | HIGH (a) | a[HIGH (a)] = nul
+===============================================
+ str0            | 0        | FALSE
+ str1            | 1        | FALSE
+ atr2            | 2        | TRUE
+ str3            | 3        | TRUE
+@end example
+
+@node Dialect, Exceptions, High procedure function, Using
 @section GNU Modula-2 supported dialects
 
 This section describes the dialects understood by GNU Modula-2.

@@ -1502,6 +1502,7 @@ namespace ip
     operator<<(basic_ostream<_CharT, _Traits>& __os, const network_v6& __net)
     { return __os << __net.to_string(); }
 
+#if defined IPPROTO_TCP || defined  IPPROTO_UDP
   /// An IP endpoint.
   template<typename _InternetProtocol>
     class basic_endpoint
@@ -2187,6 +2188,7 @@ namespace ip
       __ec = std::make_error_code(errc::operation_not_supported);
 #endif
     }
+#endif // IPPROTO_TCP || IPPROTO_UDP
 
   /** The name of the local host.
    * @{

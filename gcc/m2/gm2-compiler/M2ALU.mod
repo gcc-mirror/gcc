@@ -40,7 +40,7 @@ FROM M2Debug IMPORT Assert ;
 FROM Storage IMPORT ALLOCATE ;
 FROM StringConvert IMPORT ostoi, bstoi, stoi, hstoi ;
 FROM M2GCCDeclare IMPORT GetTypeMin, GetTypeMax, CompletelyResolved, DeclareConstant ;
-FROM M2GenGCC IMPORT DoCopyString, StringToChar ;
+FROM M2GenGCC IMPORT PrepareCopyString, StringToChar ;
 FROM M2Bitset IMPORT Bitset ;
 FROM SymbolConversion IMPORT Mod2Gcc, GccKnowsAbout ;
 FROM M2Printf IMPORT printf0, printf2 ;
@@ -4528,8 +4528,13 @@ BEGIN
    IF IsConstString(init) AND IsArray(SkipType(GetType(field))) AND
       (SkipTypeAndSubrange(GetType(GetType(field)))=Char)
    THEN
-      DoCopyString(tokenno, nBytes, initT, GetType(field), init) ;
-      RETURN( initT )
+      IF NOT PrepareCopyString (tokenno, nBytes, initT, init, GetType (field))
+      THEN
+         MetaErrorT2 (tokenno,
+                      'string constant {%1Ea} is too large to be assigned to the {%2d} {%2a}',
+                      init, field)
+      END ;
+      RETURN initT
    ELSE
       RETURN( ConvertConstantAndCheck(TokenToLocation(tokenno), Mod2Gcc(GetType(field)), Mod2Gcc(init)) )
    END

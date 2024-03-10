@@ -59,7 +59,7 @@ FROM SymbolTable IMPORT NulSym,
                         MakeSubrange,
                         MakeVar, MakeType, PutType,
                         MakeModuleCtor,
-                        PutMode, PutDeclared,
+                        PutMode, PutDeclared, GetParameterShadowVar,
                         PutFieldEnumeration, PutSubrange, PutVar, PutConst,
                         PutConstSet, PutConstructor,
                         IsDefImp, IsType, IsRecord, IsRecordField, IsPointer,
@@ -1820,14 +1820,15 @@ BEGIN
                (* different parameter names *)
                FailParameter('',
                              'the parameter has been declared with a different name',
-                             OperandT(pi), ParamTotal+i, ProcSym)
+                             OperandT (pi), ParamTotal+i, ProcSym)
             END
          ELSE
-            IF GetSymName(ParamI)=NulName
+            IF GetSymName (ParamI) = NulName
             THEN
-               PutParamName (OperandTok (pi), ProcSym, ParamTotal+i, OperandT(pi))
+               PutParamName (OperandTok (pi), ProcSym, ParamTotal+i, OperandT (pi))
             END
          END ;
+         PutDeclared (OperandTok (pi), GetParameterShadowVar (ParamI)) ;
          IF Unbounded
          THEN
             (* GetType(ParamI) yields an UnboundedSym or a PartialUnboundedSym,

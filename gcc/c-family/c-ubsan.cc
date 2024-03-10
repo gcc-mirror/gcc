@@ -57,7 +57,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
       && sanitize_flags_p (SANITIZE_DIVIDE))
     t = fold_build2 (EQ_EXPR, boolean_type_node,
 		     op1, build_int_cst (type, 0));
-  else if (TREE_CODE (type) == REAL_TYPE
+  else if (SCALAR_FLOAT_TYPE_P (type)
 	   && sanitize_flags_p (SANITIZE_FLOAT_DIVIDE))
     {
       t = fold_build2 (EQ_EXPR, boolean_type_node,

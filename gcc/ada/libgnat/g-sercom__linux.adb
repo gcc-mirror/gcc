@@ -304,7 +304,7 @@ package body GNAT.Serial_Communications is
          Current.c_cc (VMIN)  := char'Val (0);
          Current.c_cc (VTIME) := char'Val (Natural (Timeout * 10));
 
-         Current.c_lflag := Current.c_lflag or (not ICANON);
+         Current.c_lflag := Current.c_lflag or not ICANON;
       end if;
 
       Res := cfsetispeed (Current'Address, C_Data_Rate (Rate));

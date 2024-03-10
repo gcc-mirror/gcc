@@ -603,9 +603,15 @@ TEST_UNIFORM_Z (dup_127_s64_z, svint64_t,
 
 /*
 ** dup_128_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #128
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #128
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_128_s64_z, svint64_t,
@@ -624,9 +630,15 @@ TEST_UNIFORM_Z (dup_253_s64_z, svint64_t,
 
 /*
 ** dup_254_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #254
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #254
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_254_s64_z, svint64_t,
@@ -635,9 +647,15 @@ TEST_UNIFORM_Z (dup_254_s64_z, svint64_t,
 
 /*
 ** dup_255_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #255
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #255
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_255_s64_z, svint64_t,
@@ -688,9 +706,15 @@ TEST_UNIFORM_Z (dup_7ffd_s64_z, svint64_t,
 
 /*
 ** dup_7ffe_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #32766
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #32766
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_7ffe_s64_z, svint64_t,
@@ -699,9 +723,15 @@ TEST_UNIFORM_Z (dup_7ffe_s64_z, svint64_t,
 
 /*
 ** dup_7fff_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #32767
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #32767
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_7fff_s64_z, svint64_t,
@@ -728,9 +758,15 @@ TEST_UNIFORM_Z (dup_m128_s64_z, svint64_t,
 
 /*
 ** dup_m129_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #-129
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #-129
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_m129_s64_z, svint64_t,
@@ -749,9 +785,15 @@ TEST_UNIFORM_Z (dup_m254_s64_z, svint64_t,
 
 /*
 ** dup_m255_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #-255
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #-255
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_m255_s64_z, svint64_t,
@@ -769,9 +811,15 @@ TEST_UNIFORM_Z (dup_m256_s64_z, svint64_t,
 
 /*
 ** dup_m257_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #-257
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #-257
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_m257_s64_z, svint64_t,
@@ -808,9 +856,15 @@ TEST_UNIFORM_Z (dup_m7f00_s64_z, svint64_t,
 
 /*
 ** dup_m7f01_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #-32513
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #-32513
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_m7f01_s64_z, svint64_t,
@@ -829,9 +883,15 @@ TEST_UNIFORM_Z (dup_m7ffe_s64_z, svint64_t,
 
 /*
 ** dup_m7fff_s64_z:
+** (
 **	mov	(z[0-9]+)\.b, #0
 **	mov	(z[0-9]+\.d), #-32767
 **	sel	z0\.d, p0, \2, \1\.d
+** |
+**	mov	(z[0-9]+\.d), #-32767
+**	mov	(z[0-9]+)\.b, #0
+**	sel	z0\.d, p0, \3, \4\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (dup_m7fff_s64_z, svint64_t,

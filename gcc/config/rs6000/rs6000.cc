@@ -8059,7 +8059,7 @@ rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
 {
   if (how != align_opt)
     {
-      if (TREE_CODE (type) == VECTOR_TYPE && align < 128)
+      if (VECTOR_TYPE_P (type) && align < 128)
 	align = 128;
     }
 
@@ -8209,7 +8209,8 @@ darwin_rs6000_special_round_type_align (tree type, unsigned int computed,
       type = TREE_TYPE (type);
   } while (AGGREGATE_TYPE_P (type));
 
-  if (! AGGREGATE_TYPE_P (type) && type != error_mark_node)
+  if (type != error_mark_node && ! AGGREGATE_TYPE_P (type)
+      && ! TYPE_PACKED (type) && maximum_field_alignment == 0)
     align = MAX (align, TYPE_ALIGN (type));
 
   return align;
@@ -10289,6 +10290,13 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
       if (ud1 != 0)
 	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
+  else if (ud4 == 0xffff && ud3 == 0xffff && !(ud2 & 0x8000) && ud1 == 0)
+    {
+      /* lis; xoris */
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      emit_move_insn (temp, GEN_INT (sext_hwi ((ud2 | 0x8000) << 16, 32)));
+      emit_move_insn (dest, gen_rtx_XOR (DImode, temp, GEN_INT (0x80000000)));
+    }
   else if (ud4 == 0xffff && ud3 == 0xffff && (ud1 & 0x8000))
     {
       /* li; xoris */
@@ -10385,19 +10393,34 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
     }
   else
     {
-      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      if (can_create_pseudo_p ())
+	{
+	  /* lis HIGH,UD4 ; ori HIGH,UD3 ;
+	     lis LOW,UD2 ; ori LOW,UD1 ; rldimi LOW,HIGH,32,0.  */
+	  rtx high = gen_reg_rtx (DImode);
+	  rtx low = gen_reg_rtx (DImode);
+	  HOST_WIDE_INT num = (ud2 << 16) | ud1;
+	  rs6000_emit_set_long_const (low, sext_hwi (num, 32));
+	  num = (ud4 << 16) | ud3;
+	  rs6000_emit_set_long_const (high, sext_hwi (num, 32));
+	  emit_insn (gen_rotldi3_insert_3 (dest, high, GEN_INT (32), low,
+					   GEN_INT (0xffffffff)));
+	}
+      else
+	{
+	  /* lis DEST,UD4 ; ori DEST,UD3 ; rotl DEST,32 ;
+	     oris DEST,UD2 ; ori DEST,UD1.  */
+	  emit_move_insn (dest, GEN_INT (sext_hwi (ud4 << 16, 32)));
+	  if (ud3 != 0)
+	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud3)));
 
-      emit_move_insn (temp, GEN_INT (sext_hwi (ud4 << 16, 32)));
-      if (ud3 != 0)
-	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud3)));
-
-      emit_move_insn (ud2 != 0 || ud1 != 0 ? temp : dest,
-		      gen_rtx_ASHIFT (DImode, temp, GEN_INT (32)));
-      if (ud2 != 0)
-	emit_move_insn (ud1 != 0 ? temp : dest,
-			gen_rtx_IOR (DImode, temp, GEN_INT (ud2 << 16)));
-      if (ud1 != 0)
-	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
+	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
+	  if (ud2 != 0)
+	    emit_move_insn (dest,
+			    gen_rtx_IOR (DImode, dest, GEN_INT (ud2 << 16)));
+	  if (ud1 != 0)
+	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+	}
     }
 }
 
@@ -17299,7 +17322,7 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
       if (DECIMAL_FLOAT_MODE_P (GET_MODE (x)))
 	REAL_VALUE_TO_TARGET_DECIMAL128 (*CONST_DOUBLE_REAL_VALUE (x), k);
       else
-	REAL_VALUE_TO_TARGET_LONG_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), k);
+	real_to_target (k, CONST_DOUBLE_REAL_VALUE (x), GET_MODE (x));
 
       if (TARGET_64BIT)
 	{
@@ -20382,8 +20405,7 @@ static void
 rs6000_set_default_type_attributes (tree type)
 {
   if (rs6000_default_long_calls
-      && (TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE))
+      && FUNC_OR_METHOD_TYPE_P (type))
     TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("longcall"),
 					NULL_TREE,
 					TYPE_ATTRIBUTES (type));
@@ -20625,7 +20647,7 @@ rs6000_elf_in_small_data_p (const_tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return false;
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl))
+  if (VAR_P (decl) && DECL_SECTION_NAME (decl))
     {
       const char *section = DECL_SECTION_NAME (decl);
       if (compare_section_name (section, ".sdata")
@@ -21349,7 +21371,7 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 }
 
 #define IN_NAMED_SECTION(DECL) \
-  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
+  ((TREE_CODE (DECL) == FUNCTION_DECL || VAR_P (DECL)) \
    && DECL_SECTION_NAME (DECL) != NULL)
 
 static section *
@@ -21840,7 +21862,7 @@ rs6000_xcoff_encode_section_info (tree decl, rtx rtl, int first)
 
   flags = SYMBOL_REF_FLAGS (symbol);
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+  if (VAR_P (decl) && DECL_THREAD_LOCAL_P (decl))
     flags &= ~SYMBOL_FLAG_HAS_BLOCK_INFO;
 
   SYMBOL_REF_FLAGS (symbol) = flags;
@@ -23721,7 +23743,7 @@ rs6000_function_value (const_tree valtype,
   /* VSX is a superset of Altivec and adds V2DImode/V2DFmode.  Since the same
      return register is used in both cases, and we won't see V2DImode/V2DFmode
      for pure altivec, combine the two cases.  */
-  else if ((TREE_CODE (valtype) == VECTOR_TYPE || VECTOR_ALIGNMENT_P (mode))
+  else if ((VECTOR_TYPE_P (valtype) || VECTOR_ALIGNMENT_P (mode))
 	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI
 	   && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
     regno = ALTIVEC_ARG_RETURN;
@@ -24101,7 +24123,7 @@ invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, const
 {
   return (!rs6000_darwin64_abi
 	  && typelist == 0
-          && TREE_CODE (TREE_TYPE (val)) == VECTOR_TYPE
+	  && VECTOR_TYPE_P (TREE_TYPE (val))
           && (funcdecl == NULL_TREE
               || (TREE_CODE (funcdecl) == FUNCTION_DECL
                   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))
@@ -28762,7 +28784,6 @@ vec_const_128bit_to_bytes (rtx op,
 
   info->all_words_same
     = (info->words[0] == info->words[1]
-       && info->words[0] == info->words[1]
        && info->words[0] == info->words[2]
        && info->words[0] == info->words[3]);
 

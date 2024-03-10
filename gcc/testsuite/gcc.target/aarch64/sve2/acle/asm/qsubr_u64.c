@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (qsubr_1_u64_m_tied1, svuint64_t,
 		z0 = svqsubr_m (p0, z0, 1))
 
 /*
-** qsubr_1_u64_m_untied: { xfail *-*-* }
+** qsubr_1_u64_m_untied:
 **	mov	(z[0-9]+\.d), #1
 **	movprfx	z0, z1
 **	uqsubr	z0\.d, p0/m, z0\.d, \1

@@ -24,5 +24,5 @@ int bar (struct st *s)
   foo (&s->b);
 }
 
-/* { dg-final { scan-ipa-dump "Setting nonnull for 0" "cp" } } */
+/* { dg-final { scan-ipa-dump "Setting value range.* \\\[1, \\+INF\\\]" "cp" } } */
 /* { dg-final { scan-tree-dump-times "if" 1 "vrp1" } } */

@@ -332,7 +332,7 @@ gfc_build_addr_expr (tree type, tree t)
   else
     natural_type = build_pointer_type (base_type);
 
-  if (TREE_CODE (t) == INDIRECT_REF)
+  if (INDIRECT_REF_P (t))
     {
       if (!type)
 	type = natural_type;
@@ -365,7 +365,7 @@ get_array_span (tree type, tree decl)
   if (TREE_CODE (decl) == COMPONENT_REF
       && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
     return gfc_conv_descriptor_span_get (decl);
-  else if (TREE_CODE (decl) == INDIRECT_REF
+  else if (INDIRECT_REF_P (decl)
 	   && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
     return gfc_conv_descriptor_span_get (decl);
 
@@ -2453,6 +2453,8 @@ trans_code (gfc_code * code, tree cond)
 	  res = gfc_trans_dt_end (code);
 	  break;
 
+	case EXEC_OMP_ALLOCATE:
+	case EXEC_OMP_ALLOCATORS:
 	case EXEC_OMP_ASSUME:
 	case EXEC_OMP_ATOMIC:
 	case EXEC_OMP_BARRIER:

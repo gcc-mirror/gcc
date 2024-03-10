@@ -150,7 +150,7 @@ auto_simd_check_stmt (gimple *stmt, tree outer)
 static bool
 plausible_type_for_simd_clone (tree t)
 {
-  if (TREE_CODE (t) == VOID_TYPE)
+  if (VOID_TYPE_P (t))
     return true;
   else if (RECORD_OR_UNION_TYPE_P (t) || !is_a <scalar_mode> (TYPE_MODE (t)))
     /* Small record/union types may fit into a scalar mode, but are

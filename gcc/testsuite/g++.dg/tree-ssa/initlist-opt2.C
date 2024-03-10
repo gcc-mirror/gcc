@@ -4,6 +4,8 @@
 
 // Test that we do range-initialization from const char *.
 // { dg-final { scan-tree-dump {_M_range_initialize<const char\* const\*>} "gimple" } }
+// And that the backing array is static.
+// { dg-final { scan-tree-dump {static const char.*72} "gimple" } }
 
 #include <string>
 #include <vector>

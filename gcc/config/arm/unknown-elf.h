@@ -51,7 +51,7 @@
 
 /* Return a nonzero value if DECL has a section attribute.  */
 #define IN_NAMED_SECTION_P(DECL)					\
-  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL)	\
+  ((TREE_CODE (DECL) == FUNCTION_DECL || VAR_P (DECL))	\
    && DECL_SECTION_NAME (DECL) != NULL)
 
 #undef  ASM_OUTPUT_ALIGNED_BSS

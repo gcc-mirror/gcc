@@ -18,4 +18,4 @@ void foo(int32_t *in1, int32_t *in2, int32_t *in3, int32_t *out, size_t n, int c
   }
 }
 
-/* { dg-final { scan-assembler-times {vsetvli} 3 { target { no-opts "-O0" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli} 2 { target { no-opts "-O0" no-opts "-g" no-opts "-funroll-loops" } } } } */

@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (sub_1_s64_m_tied1, svint64_t,
 		z0 = svsub_m (p0, z0, 1))
 
 /*
-** sub_1_s64_m_untied: { xfail *-*-* }
+** sub_1_s64_m_untied:
 **	mov	(z[0-9]+)\.b, #-1
 **	movprfx	z0, z1
 **	add	z0\.d, p0/m, z0\.d, \1\.d

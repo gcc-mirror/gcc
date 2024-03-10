@@ -6904,7 +6904,7 @@ function_arg_slotno (const struct sparc_args *cum, machine_mode mode,
      their mode, depending upon whether VIS instructions are enabled.  */
   if (type && VECTOR_TYPE_P (type))
     {
-      if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
+      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (type)))
 	{
 	  /* The SPARC port defines no floating-point vector modes.  */
 	  gcc_assert (mode == BLKmode);

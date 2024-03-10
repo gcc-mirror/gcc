@@ -1863,8 +1863,8 @@ class StdAtomicPrinter:
 
 class StdFormatArgsPrinter:
     "Print a std::basic_format_args"
-    # TODO: add printer for basic_format_arg<C> and print out children
-    # TODO: add printer for basic_format_args<C>::_Store<Args...>
+    # TODO: add printer for basic_format_arg<Context> and print out children.
+    # TODO: add printer for __format::_ArgStore<Context, Args...>.
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -1930,7 +1930,10 @@ class StdChronoDurationPrinter:
         return "[{}/{}]s".format(num, den)
 
     def to_string(self):
-        return "std::chrono::duration = { %d%s }" % (self.val['__r'], self._suffix())
+        r = self.val['__r']
+        if r.type.strip_typedefs().code == gdb.TYPE_CODE_FLT:
+            r = "%g" % r
+        return "std::chrono::duration = {{ {}{} }}".format(r, self._suffix())
 
 
 class StdChronoTimePointPrinter:
@@ -1947,19 +1950,19 @@ class StdChronoTimePointPrinter:
                 or name == 'std::chrono::system_clock':
             return ('std::chrono::sys_time', 0)
         # XXX need to remove leap seconds from utc, gps, and tai
-        #if name == 'std::chrono::utc_clock':
-        #    return ('std::chrono::utc_time', 0)
-        #if name == 'std::chrono::gps_clock':
-        #    return ('std::chrono::gps_clock time_point', 315964809)
-        #if name == 'std::chrono::tai_clock':
-        #    return ('std::chrono::tai_clock time_point', -378691210)
+        if name == 'std::chrono::utc_clock':
+            return ('std::chrono::utc_time', None) # XXX
+        if name == 'std::chrono::gps_clock':
+            return ('std::chrono::gps_time', None) # XXX 315964809
+        if name == 'std::chrono::tai_clock':
+            return ('std::chrono::tai_time', None) # XXX -378691210
         if name == 'std::filesystem::__file_clock':
             return ('std::chrono::file_time', 6437664000)
         if name == 'std::chrono::local_t':
             return ('std::chrono::local_time', 0)
         return ('{} time_point'.format(name), None)
 
-    def to_string(self):
+    def to_string(self, abbrev = False):
         clock, offset = self._clock()
         d = self.val['__d']
         r = d['__r']
@@ -1970,11 +1973,14 @@ class StdChronoTimePointPrinter:
             num, den = printer._ratio()
             secs = (r * num / den) + offset
             try:
-                dt = datetime.fromtimestamp(secs, _utc_timezone)
+                dt = datetime.datetime.fromtimestamp(secs, _utc_timezone)
                 time = ' [{:%Y-%m-%d %H:%M:%S}]'.format(dt)
             except:
                 pass
-        return '%s = {%d%s%s}' % (clock, r, suffix, time)
+        s = '%d%s%s' % (r, suffix, time)
+        if abbrev:
+            return s
+        return '%s = { %s }' % (clock, s)
 
 class StdChronoZonedTimePrinter:
     "Print a std::chrono::zoned_time"
@@ -1984,9 +1990,11 @@ class StdChronoZonedTimePrinter:
         self.val = val
 
     def to_string(self):
-        zone = self.val['_M_zone'].dereference()
+        zone = self.val['_M_zone'].dereference()['_M_name']
         time = self.val['_M_tp']
-        return 'std::chrono::zoned_time = {{{} {}}}'.format(zone, time)
+        printer = StdChronoTimePointPrinter(time.type.name, time)
+        time = printer.to_string(True)
+        return 'std::chrono::zoned_time = {{ {} {} }}'.format(zone, time)
 
 
 months = [None, 'January', 'February', 'March', 'April', 'May', 'June',
@@ -2037,13 +2045,13 @@ class StdChronoCalendarPrinter:
         if typ == 'std::chrono::year_month_day_last':
             return '{}/{}'.format(y, val['_M_mdl'])
         if typ == 'std::chrono::year_month_weekday':
-            return '{}/{}'.format(y, m, val['_M_wdi'])
+            return '{}/{}/{}'.format(y, m, val['_M_wdi'])
         if typ == 'std::chrono::year_month_weekday_last':
-            return '{}/{}'.format(y, m, val['_M_wdl'])
+            return '{}/{}/{}'.format(y, m, val['_M_wdl'])
         if typ.startswith('std::chrono::hh_mm_ss'):
             fract = ''
             if val['fractional_width'] != 0:
-                fract = '.{:0{}d}'.format(int(val['_M_ss']['__r']),
+                fract = '.{:0{}d}'.format(int(val['_M_ss']['_M_r']),
                                           int(val['fractional_width']))
             h = int(val['_M_h']['__r'])
             m = int(val['_M_m']['__r'])
@@ -2060,7 +2068,7 @@ class StdChronoTimeZonePrinter:
         self.val = val
 
     def to_string(self):
-        str = '%s %s' % (self.typename, self.val['_M_name'])
+        str = '%s = %s' % (self.typename, self.val['_M_name'])
         if self.typename.endswith("_link"):
             str += ' -> %s' % (self.val['_M_target'])
         return str

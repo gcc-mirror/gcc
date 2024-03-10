@@ -3027,7 +3027,7 @@ m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
   unsigned addr;
   /* See if we need to make #pragma address variables volatile.  */
 
-  if (TREE_CODE (node) == VAR_DECL)
+  if (VAR_P (node))
     {
       const char *name = IDENTIFIER_POINTER (DECL_NAME (node));
       if (m32c_get_pragma_address  (name, &addr))

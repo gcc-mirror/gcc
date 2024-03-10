@@ -6,8 +6,8 @@ typedef long v2di  __attribute__((vector_size (16)));
 
 /*
 ** foo:
-**	ptrue	p0.b, all
-**	mul	z0.d, p0/m, z0.d, z1.d
+**	ptrue	(p[0-7]).b, all
+**	mul	z0.d, \1/m, z0.d, z1.d
 **	ret
 */
 

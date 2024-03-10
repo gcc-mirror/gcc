@@ -2071,7 +2071,145 @@ __glibcxx_float_n(128)
     };
 #endif
 
+#endif // C++23
+
+#if defined(_GLIBCXX_USE_FLOAT128)
+// We either need Q literal suffixes, or IEEE double.
+#if ! defined(__STRICT_ANSI__) || defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+  __extension__
+  template<>
+    struct numeric_limits<__float128>
+    {
+      static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
+
+      static _GLIBCXX_CONSTEXPR __float128
+      min() _GLIBCXX_USE_NOEXCEPT
+      {
+#ifdef __STRICT_ANSI__
+	// 0x1.0p-30 * 0x1.0p-16352
+	return double(9.3132257461547852e-10) * _S_1pm16352();
+#else
+	return __extension__ 0x1.0p-16382Q;
 #endif
+      }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      max() _GLIBCXX_USE_NOEXCEPT
+      {
+#ifdef __STRICT_ANSI__
+	// (0x1.fffffffffffffp+127 + 0x0.fffffffffffffp+75 + 0x0.ffp+23)
+	// * 0x1.0p16256
+	return (__float128(double(3.4028236692093843e+38))
+		  + double(3.7778931862957153e+22) + double(8.35584e+6))
+		 * _S_1p16256();
+#else
+	return __extension__ 0x1.ffffffffffffffffffffffffffffp+16383Q;
+#endif
+      }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      lowest() _GLIBCXX_USE_NOEXCEPT
+      { return -max(); }
+
+      static _GLIBCXX_USE_CONSTEXPR int digits = 113;
+      static _GLIBCXX_USE_CONSTEXPR int digits10 = 33;
+#if __cplusplus >= 201103L
+      static constexpr int max_digits10 = 35;
+#endif
+      static _GLIBCXX_USE_CONSTEXPR bool is_signed = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_integer = false;
+      static _GLIBCXX_USE_CONSTEXPR bool is_exact = false;
+      static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
+
+      static _GLIBCXX_CONSTEXPR __float128
+      epsilon() _GLIBCXX_USE_NOEXCEPT
+      { return double(1.9259299443872359e-34); }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5; }
+
+      static _GLIBCXX_USE_CONSTEXPR int min_exponent = -16381;
+      static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = -4931;
+      static _GLIBCXX_USE_CONSTEXPR int max_exponent = 16384;
+      static _GLIBCXX_USE_CONSTEXPR int max_exponent10 = 4932;
+
+      static _GLIBCXX_USE_CONSTEXPR bool has_infinity = 1;
+      static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = 1;
+#if __has_builtin(__builtin_nansq) \
+    || (__has_builtin(__builtin_bit_cast) && __has_builtin(__builtin_nansf128))
+      static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = true;
+#else
+      static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
+#endif
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
+	= denorm_present;
+      static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
+
+      static _GLIBCXX_CONSTEXPR __float128
+      infinity() _GLIBCXX_USE_NOEXCEPT
+      { return __builtin_huge_val(); }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return __builtin_nan(""); }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT
+      {
+#if __has_builtin(__builtin_nansq)
+	return __builtin_nansq("");
+#elif __has_builtin(__builtin_bit_cast) && __has_builtin(__builtin_nansf128)
+	return __builtin_bit_cast(__float128, __builtin_nansf128(""));
+#else
+	return quiet_NaN();
+#endif
+      }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      denorm_min() _GLIBCXX_USE_NOEXCEPT
+      {
+#if defined(__STRICT_ANSI__) || defined(__INTEL_COMPILER)
+	// 0x1.0p-142 * 0x1.0p-16352
+	return double(1.7936620343357659e-43) * _S_1pm16352();
+#else
+	return __extension__ 0x1.0p-16494Q;
+#endif
+      }
+
+      static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = has_signaling_NaN;
+      static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
+
+      static _GLIBCXX_USE_CONSTEXPR bool traps = false;
+      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
+	= round_to_nearest;
+
+#if defined(__STRICT_ANSI__) || defined(__INTEL_COMPILER)
+    private:
+      static _GLIBCXX_CONSTEXPR __float128
+      _S_4p(__float128 __v) _GLIBCXX_USE_NOEXCEPT
+      { return __v * __v * __v * __v; }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      _S_1pm4088() _GLIBCXX_USE_NOEXCEPT
+      { return _S_4p(/* 0x1.0p-1022 */ double(2.2250738585072014e-308)); }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      _S_1pm16352() _GLIBCXX_USE_NOEXCEPT
+      { return _S_4p(_S_1pm4088()); }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      _S_1p4064() _GLIBCXX_USE_NOEXCEPT
+      { return _S_4p(/* 0x1.0p+1016 */ double(7.0222388080559215e+305)); }
+
+      static _GLIBCXX_CONSTEXPR __float128
+      _S_1p16256() _GLIBCXX_USE_NOEXCEPT
+      { return _S_4p(_S_1p4064()); }
+#endif
+    };
+#endif // !__STRICT_ANSI__ || DOUBLE_IS_IEEE_BINARY64
+#endif // _GLIBCXX_USE_FLOAT128
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

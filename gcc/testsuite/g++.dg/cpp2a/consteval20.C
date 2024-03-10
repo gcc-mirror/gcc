@@ -11,12 +11,12 @@ int
 bar ()
 {
   auto c = &S::foo;			// { dg-error "taking address of an immediate function" }
-  constexpr auto d = &S::foo;		// { dg-error "taking address of an immediate function" }
+  constexpr auto d = &S::foo;		// { dg-error "constant evaluation returns address of immediate function" }
   static auto e = &S::foo;		// { dg-error "taking address of an immediate function" }
   return (s.*&S::foo) ();		// { dg-error "taking address of an immediate function" }
 }
 
-constexpr auto a = &S::foo;		// { dg-error "taking address of an immediate function" }
+constexpr auto a = &S::foo;		// { dg-error "constant evaluation returns address of immediate function" }
 auto b = &S::foo;			// { dg-error "taking address of an immediate function" }
 
 consteval int

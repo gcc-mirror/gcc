@@ -464,9 +464,9 @@ package body Exp_Ch2 is
             --  disable if either variable or its type have sync disabled.
 
             else
-               Set := (not Atomic_Synchronization_Disabled (E))
+               Set := not Atomic_Synchronization_Disabled (E)
                         and then
-                      (not Atomic_Synchronization_Disabled (Etype (E)));
+                      not Atomic_Synchronization_Disabled (Etype (E));
             end if;
 
             --  Set flag if required

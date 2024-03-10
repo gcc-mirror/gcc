@@ -810,7 +810,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	  /* enum = enum, enum = int, enum = float, (enum)pointer are all
 	     errors.  */
 	  if (((INTEGRAL_OR_ENUMERATION_TYPE_P (intype)
-		|| TREE_CODE (intype) == REAL_TYPE)
+		|| SCALAR_FLOAT_TYPE_P (intype))
 	       && ! (convtype & CONV_STATIC))
 	      || TYPE_PTR_P (intype))
 	    {

@@ -1067,6 +1067,21 @@ public:
 	gcc_assert (underlying != NULL);
 
 	t->ctype = build_variant_type_copy (build_ctype (underlying));
+
+	/* When the size of the declared enum base type doesn't match the target
+	   C type that this enum is being used as a placeholder for, we can't
+	   use the generated underlying type as it'll conflict with all sizes
+	   the front-end has computed during semantic.  */
+	if (TYPE_SIZE (t->ctype) != TYPE_SIZE (basetype))
+	  {
+	    warning_at (make_location_t (t->sym->loc),
+			OPT_Wmismatched_special_enum,
+			"size of %qs (%wd) differ from its declared size (%wd)",
+			t->sym->ident->toChars (), int_size_in_bytes (t->ctype),
+			int_size_in_bytes (basetype));
+	    t->ctype = basetype;
+	  }
+
 	build_type_decl (t->ctype, t->sym);
       }
     else if (t->sym->ident == NULL
