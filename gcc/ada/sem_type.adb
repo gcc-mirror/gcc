@@ -884,6 +884,16 @@ package body Sem_Type is
             end;
          end if;
 
+      --  This test may seem to be redundant with the above one, but it catches
+      --  peculiar cases where a private type declared in a package is used in
+      --  a generic construct declared in another package, and the body of the
+      --  former package contains an instantiation of the generic construct on
+      --  an object whose type is a subtype of the private type; in this case,
+      --  the subtype is not private but the type is private in the instance.
+
+      elsif Is_Subtype_Of (T1 => T2, T2 => T1) then
+         return True;
+
       --  Literals are compatible with types in a given "class"
 
       elsif     (T2 = Universal_Integer and then Is_Integer_Type (T1))
@@ -1161,20 +1171,20 @@ package body Sem_Type is
       then
          return True;
 
-      --  In instances, or with types exported from instantiations, check
-      --  whether a partial and a full view match. Verify that types are
-      --  legal, to prevent cascaded errors.
+      --  With types exported from instantiations, check whether a partial and
+      --  a full view match. Verify that types are legal, to prevent cascaded
+      --  errors.
 
       elsif Is_Private_Type (T1)
-        and then (In_Instance
-                   or else (Is_Type (T2) and then Is_Generic_Actual_Type (T2)))
+        and then Is_Type (T2)
+        and then Is_Generic_Actual_Type (T2)
         and then Full_View_Covers (T1, T2)
       then
          return True;
 
       elsif Is_Private_Type (T2)
-        and then (In_Instance
-                   or else (Is_Type (T1) and then Is_Generic_Actual_Type (T1)))
+        and then Is_Type (T1)
+        and then Is_Generic_Actual_Type (T1)
         and then Full_View_Covers (T2, T1)
       then
          return True;
@@ -3457,9 +3467,10 @@ package body Sem_Type is
       then
          return T2;
 
-      --  In instances, also check private views the same way as Covers
+      --  With types exported from instantiation, also check private views the
+      --  same way as Covers
 
-      elsif Is_Private_Type (T1) and then In_Instance then
+      elsif Is_Private_Type (T1) and then Is_Generic_Actual_Type (T2) then
          if Present (Full_View (T1)) then
             return Specific_Type (Full_View (T1), T2);
 
@@ -3467,7 +3478,7 @@ package body Sem_Type is
             return Specific_Type (Underlying_Full_View (T1), T2);
          end if;
 
-      elsif Is_Private_Type (T2) and then In_Instance then
+      elsif Is_Private_Type (T2) and then Is_Generic_Actual_Type (T1) then
          if Present (Full_View (T2)) then
             return Specific_Type (T1, Full_View (T2));
 

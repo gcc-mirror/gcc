@@ -1095,6 +1095,10 @@ avr_option_override (void)
       flag_omit_frame_pointer = 0;
     }
 
+  /* Disable flag_delete_null_pointer_checks if zero is a valid address. */
+  if (targetm.addr_space.zero_address_valid (ADDR_SPACE_GENERIC))
+    flag_delete_null_pointer_checks = 0;
+
   if (flag_pic == 1)
     warning (OPT_fpic, "%<-fpic%> is not supported");
   if (flag_pic == 2)
@@ -10501,6 +10505,16 @@ avr_addr_space_diagnose_usage (addr_space_t as, location_t loc)
   (void) avr_addr_space_supported_p (as, loc);
 }
 
+/* Implement `TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID. Zero is a valid
+   address in all address spaces. Even in ADDR_SPACE_FLASH1 etc..,
+   a zero address is valid and means 0x<RAMPZ val>0000, where RAMPZ is
+   set to the appropriate segment value. */
+
+static bool
+avr_addr_space_zero_address_valid (addr_space_t)
+{
+  return true;
+}
 
 /* Look if DECL shall be placed in program memory space by
    means of attribute `progmem' or some address-space qualifier.
@@ -15254,6 +15268,9 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 
 #undef  TARGET_ADDR_SPACE_DIAGNOSE_USAGE
 #define TARGET_ADDR_SPACE_DIAGNOSE_USAGE avr_addr_space_diagnose_usage
+
+#undef  TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
+#define TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID avr_addr_space_zero_address_valid
 
 #undef  TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P avr_mode_dependent_address_p

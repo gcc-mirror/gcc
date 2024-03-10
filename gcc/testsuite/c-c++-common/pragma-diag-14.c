@@ -5,5 +5,5 @@
    location was not tracked properly with -E or -save-temps; check that it works
    now.  */
 
-#define X /* { dg-warning "-:-Wunused-macros" } */
+#define X /* { dg-warning "-Wunused-macros" } */
 #pragma GCC diagnostic ignored "-Wunused-macros"

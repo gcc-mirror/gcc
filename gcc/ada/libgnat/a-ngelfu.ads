@@ -37,10 +37,10 @@ generic
    type Float_Type is digits <>;
 
 package Ada.Numerics.Generic_Elementary_Functions with
-  SPARK_Mode => On
+  SPARK_Mode => On,
+  Always_Terminates
 is
    pragma Pure;
-   pragma Annotate (GNATprove, Always_Return, Generic_Elementary_Functions);
 
    --  Preconditions in this unit are meant for analysis only, not for run-time
    --  checking, so that the expected exceptions are raised when calling

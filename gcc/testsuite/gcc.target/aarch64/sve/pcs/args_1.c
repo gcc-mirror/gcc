@@ -31,11 +31,13 @@ callee_pred (__SVBool_t p0, __SVBool_t p1, __SVBool_t p2, __SVBool_t p3,
 /*
 ** caller_pred:
 **	...
+**	mov	x0, sp
 **	ptrue	(p[0-9]+)\.b, vl5
-**	str	\1, \[x0\]
+**	str	\1, \[(?:x0|sp)\]
 **	...
+**	mov	x1, sp
 **	ptrue	(p[0-9]+)\.h, vl6
-**	str	\2, \[x1\]
+**	str	\2, \[(?:x1|sp)\]
 **	ptrue	p3\.d, vl4
 **	ptrue	p2\.s, vl3
 **	ptrue	p1\.h, vl2

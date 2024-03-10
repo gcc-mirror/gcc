@@ -15247,8 +15247,9 @@ with the following options: @code{-fno-unsafe-math-optimizations
 @table @asis
 @item @emph{Standard}:
 OpenMP Application Program Interface v4.5,
-OpenMP Application Program Interface v5.0 (partially supported) and
-OpenMP Application Program Interface v5.1 (partially supported).
+OpenMP Application Program Interface v5.0 (partially supported),
+OpenMP Application Program Interface v5.1 (partially supported) and
+OpenMP Application Program Interface v5.2 (partially supported).
 @end table
 
 The OpenMP Fortran runtime library routines are provided both in
@@ -15262,9 +15263,13 @@ below.
 
 For details refer to the actual
 @uref{https://www.openmp.org/wp-content/uploads/openmp-4.5.pdf,
-OpenMP Application Program Interface v4.5} and
+OpenMP Application Program Interface v4.5},
 @uref{https://www.openmp.org/wp-content/uploads/OpenMP-API-Specification-5.0.pdf,
-OpenMP Application Program Interface v5.0}.
+OpenMP Application Program Interface v5.0},
+@uref{https://www.openmp.org/wp-content/uploads/OpenMP-API-Specification-5-1.pdf,
+OpenMP Application Program Interface v5.1} and
+@uref{https://www.openmp.org/wp-content/uploads/OpenMP-API-Specification-5-2.pdf,
+OpenMP Application Program Interface v5.2}.
 
 @code{OMP_LIB_KINDS} provides the following scalar default-integer
 named constants:
@@ -15294,6 +15299,13 @@ The following derived type:
 @table @asis
 @item @code{omp_alloctrait}
 @end table
+
+The following scalar default-integer named constants:
+@table @asis
+@item @code{omp_initial_device}
+@item @code{omp_invalid_device}
+@end table
+
 
 The following scalar integer named constants of the
 kind @code{omp_sched_kind}:

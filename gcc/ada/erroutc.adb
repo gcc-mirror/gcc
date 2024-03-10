@@ -959,6 +959,7 @@ package body Erroutc is
       end if;
 
       Has_Double_Exclam  := False;
+      Has_Error_Code     := False;
       Has_Insertion_Line := False;
 
       --  Loop through message looking for relevant insertion sequences
@@ -1011,6 +1012,15 @@ package body Erroutc is
          elsif Msg (J) = '|' then
             Is_Serious_Error := False;
             J := J + 1;
+
+         --  Error code ([] insertion)
+
+         elsif Msg (J) = '['
+           and then J < Msg'Last
+           and then Msg (J + 1) = ']'
+         then
+            Has_Error_Code := True;
+            J := J + 2;
 
          else
             J := J + 1;
@@ -1155,6 +1165,42 @@ package body Erroutc is
          Msg_Buffer (Msglen) := C;
       end if;
    end Set_Msg_Char;
+
+   ----------------------------
+   -- Set_Msg_Insertion_Code --
+   ----------------------------
+
+   procedure Set_Msg_Insertion_Code is
+      H : constant array (Nat range 0 .. 9) of Character := "0123456789";
+      P10 : constant array (Natural range 0 .. 3) of Nat :=
+        (10 ** 0,
+         10 ** 1,
+         10 ** 2,
+         10 ** 3);
+
+      Code_Len : constant Natural :=
+        (case Error_Msg_Code is
+           when    0         => 0,
+           when    1 ..    9 => 1,
+           when   10 ..   99 => 2,
+           when  100 ..  999 => 3,
+           when 1000 .. 9999 => 4);
+      Code_Rest  : Nat := Error_Msg_Code;
+      Code_Digit : Nat;
+
+   begin
+      Set_Msg_Char ('E');
+
+      for J in 1 .. Error_Msg_Code_Digits - Code_Len loop
+         Set_Msg_Char ('0');
+      end loop;
+
+      for J in 1 .. Code_Len loop
+         Code_Digit := Code_Rest / P10 (Code_Len - J);
+         Set_Msg_Char (H (Code_Digit));
+         Code_Rest := Code_Rest - Code_Digit * P10 (Code_Len - J);
+      end loop;
+   end Set_Msg_Insertion_Code;
 
    ---------------------------------
    -- Set_Msg_Insertion_File_Name --

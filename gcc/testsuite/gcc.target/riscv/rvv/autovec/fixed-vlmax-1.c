@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32 -mpreferred-stack-boundary=3 -fno-schedule-insns -fno-schedule-insns2 -O3 --param riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32 -mpreferred-stack-boundary=3 -fno-schedule-insns -fno-schedule-insns2 -O3 --param riscv-autovec-preference=fixed-vlmax -Wno-psabi" } */
 
 #include "riscv_vector.h"
 

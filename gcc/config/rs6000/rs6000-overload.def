@@ -4515,6 +4515,18 @@
     VSIEQP
   _Float128 __builtin_vec_scalar_insert_exp (_Float128, unsigned long long);
     VSIEQPF
+  _Float128 __builtin_vec_scalar_insert_exp (vuq, vull);
+    VSIEQPV
+
+[VEC_VSEEV, scalar_extract_exp_to_vec, \
+            __builtin_vec_scalar_extract_exp_to_vector]
+  vull __builtin_vec_scalar_extract_exp_to_vector (_Float128);
+    VSEEQPV
+
+[VEC_VSESV, scalar_extract_sig_to_vec, \
+            __builtin_vec_scalar_extract_sig_to_vector]
+  vuq __builtin_vec_scalar_extract_sig_to_vector (_Float128);
+    VSESQPV
 
 [VEC_VSTDC, scalar_test_data_class, __builtin_vec_scalar_test_data_class]
   unsigned int __builtin_vec_scalar_test_data_class (float, const int);

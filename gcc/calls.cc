@@ -94,11 +94,11 @@ struct arg_data
   /* Number of bytes to put in registers.  0 means put the whole arg
      in registers.  Also 0 if not passed in registers.  */
   int partial;
-  /* Nonzero if argument must be passed on stack.
+  /* True if argument must be passed on stack.
      Note that some arguments may be passed on the stack
-     even though pass_on_stack is zero, just because FUNCTION_ARG says so.
+     even though pass_on_stack is false, just because FUNCTION_ARG says so.
      pass_on_stack identifies arguments that *cannot* go in registers.  */
-  int pass_on_stack;
+  bool pass_on_stack;
   /* Some fields packaged up for locate_and_pad_parm.  */
   struct locate_and_pad_arg_data locate;
   /* Location on the stack at which parameter should be stored.  The store
@@ -150,19 +150,19 @@ static unsigned HOST_WIDE_INT stored_args_watermark;
 static int stack_arg_under_construction;
 
 static void precompute_register_parameters (int, struct arg_data *, int *);
-static int store_one_arg (struct arg_data *, rtx, int, int, int);
+static bool store_one_arg (struct arg_data *, rtx, int, int, int);
 static void store_unaligned_arguments_into_pseudos (struct arg_data *, int);
-static int finalize_must_preallocate (int, int, struct arg_data *,
-				      struct args_size *);
+static bool finalize_must_preallocate (bool, int, struct arg_data *,
+				       struct args_size *);
 static void precompute_arguments (int, struct arg_data *);
 static void compute_argument_addresses (struct arg_data *, rtx, int);
 static rtx rtx_for_function_call (tree, tree);
 static void load_register_parameters (struct arg_data *, int, rtx *, int,
-				      int, int *);
+				      int, bool *);
 static int special_function_p (const_tree, int);
-static int check_sibcall_argument_overlap_1 (rtx);
-static int check_sibcall_argument_overlap (rtx_insn *, struct arg_data *, int);
-
+static bool check_sibcall_argument_overlap_1 (rtx);
+static bool check_sibcall_argument_overlap (rtx_insn *, struct arg_data *,
+					    bool);
 static tree split_complex_types (tree);
 
 #ifdef REG_PARM_STACK_SPACE
@@ -383,7 +383,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 {
   rtx rounded_stack_size_rtx = gen_int_mode (rounded_stack_size, Pmode);
   rtx call, funmem, pat;
-  int already_popped = 0;
+  bool already_popped = false;
   poly_int64 n_popped = 0;
 
   /* Sibling call patterns never pop arguments (no sibcall(_value)_pop
@@ -461,7 +461,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	pat = targetm.gen_call_pop (funmem, rounded_stack_size_rtx,
 				    next_arg_reg, n_pop);
 
-      already_popped = 1;
+      already_popped = true;
     }
   else
     {
@@ -666,14 +666,17 @@ decl_return_flags (tree fndecl)
   return 0;
 }
 
-/* Return nonzero when FNDECL represents a call to setjmp.  */
+/* Return true when FNDECL represents a call to setjmp.  */
 
-int
+bool
 setjmp_call_p (const_tree fndecl)
 {
   if (DECL_IS_RETURNS_TWICE (fndecl))
-    return ECF_RETURNS_TWICE;
-  return special_function_p (fndecl, 0) & ECF_RETURNS_TWICE;
+    return true;
+  if (special_function_p (fndecl, 0) & ECF_RETURNS_TWICE)
+    return true;
+
+  return false;
 }
 
 
@@ -1266,8 +1269,11 @@ maybe_complain_about_tail_call (tree call_expr, const char *reason)
    OLD_STACK_LEVEL is a pointer to an rtx which olds the old stack level
    and may be modified by this routine.
 
-   OLD_PENDING_ADJ, MUST_PREALLOCATE and FLAGS are pointers to integer
-   flags which may be modified by this routine.
+   OLD_PENDING_ADJ and FLAGS are pointers to integer flags which
+   may be modified by this routine.
+
+   MUST_PREALLOCATE is a pointer to bool which may be
+   modified by this routine.
 
    MAY_TAILCALL is cleared if we encounter an invisible pass-by-reference
    that requires allocation of stack space.
@@ -1286,7 +1292,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 				 int reg_parm_stack_space,
 				 rtx *old_stack_level,
 				 poly_int64_pod *old_pending_adj,
-				 int *must_preallocate, int *ecf_flags,
+				 bool *must_preallocate, int *ecf_flags,
 				 bool *may_tailcall, bool call_from_thunk_p)
 {
   CUMULATIVE_ARGS *args_so_far_pnt = get_cumulative_args (args_so_far);
@@ -1359,7 +1365,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 args[i].partial is nonzero if part but not all is passed in registers,
 	 and the exact value says how many bytes are passed in registers.
 
-	 args[i].pass_on_stack is nonzero if the argument must at least be
+	 args[i].pass_on_stack is true if the argument must at least be
 	 computed on the stack.  It may then be loaded back into registers
 	 if args[i].reg is nonzero.
 
@@ -1517,7 +1523,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 by the PARALLEL, but also to pass it in the stack.  */
       if (args[i].reg && GET_CODE (args[i].reg) == PARALLEL
 	  && XEXP (XVECEXP (args[i].reg, 0, 0), 0) == 0)
-	args[i].pass_on_stack = 1;
+	args[i].pass_on_stack = true;
 
       /* If this is an addressable type, we must preallocate the stack
 	 since we must evaluate the object into its final location.
@@ -1526,7 +1532,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 to preallocate.  */
       if (TREE_ADDRESSABLE (type)
 	  || (args[i].pass_on_stack && args[i].reg != 0))
-	*must_preallocate = 1;
+	*must_preallocate = true;
 
       /* Compute the stack-size of this argument.  */
       if (args[i].reg == 0 || args[i].partial != 0
@@ -1713,8 +1719,8 @@ precompute_arguments (int num_actuals, struct arg_data *args)
    arguments to a function call in NUM_ACTUALS, ARGS and ARGS_SIZE,
    compute and return the final value for MUST_PREALLOCATE.  */
 
-static int
-finalize_must_preallocate (int must_preallocate, int num_actuals,
+static bool
+finalize_must_preallocate (bool must_preallocate, int num_actuals,
 			   struct arg_data *args, struct args_size *args_size)
 {
   /* See if we have or want to preallocate stack space.
@@ -1738,16 +1744,16 @@ finalize_must_preallocate (int must_preallocate, int num_actuals,
 
   if (! must_preallocate)
     {
-      int partial_seen = 0;
+      bool partial_seen = false;
       poly_int64 copy_to_evaluate_size = 0;
       int i;
 
       for (i = 0; i < num_actuals && ! must_preallocate; i++)
 	{
 	  if (args[i].partial > 0 && ! args[i].pass_on_stack)
-	    partial_seen = 1;
+	    partial_seen = true;
 	  else if (partial_seen && args[i].reg == 0)
-	    must_preallocate = 1;
+	    must_preallocate = true;
 
 	  if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode
 	      && (TREE_CODE (args[i].tree_value) == CALL_EXPR
@@ -1760,7 +1766,7 @@ finalize_must_preallocate (int must_preallocate, int num_actuals,
 
       if (maybe_ne (args_size->constant, 0)
 	  && maybe_ge (copy_to_evaluate_size * 2, args_size->constant))
-	must_preallocate = 1;
+	must_preallocate = true;
     }
   return must_preallocate;
 }
@@ -2091,7 +2097,7 @@ mem_might_overlap_already_clobbered_arg_p (rtx addr, poly_uint64 size)
 static void
 load_register_parameters (struct arg_data *args, int num_actuals,
 			  rtx *call_fusage, int flags, int is_sibcall,
-			  int *sibcall_failure)
+			  bool *sibcall_failure)
 {
   int i, j;
 
@@ -2216,7 +2222,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		  && const_size != 0
 		  && (mem_might_overlap_already_clobbered_arg_p
 		      (XEXP (args[i].value, 0), const_size)))
-		*sibcall_failure = 1;
+		*sibcall_failure = true;
 
 	      if (const_size % UNITS_PER_WORD == 0
 		  || MEM_ALIGN (mem) % BITS_PER_WORD == 0)
@@ -2264,8 +2270,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	     possible that it did a load from an argument slot that was
 	     already clobbered.  */
 	  if (is_sibcall
-	      && check_sibcall_argument_overlap (before_arg, &args[i], 0))
-	    *sibcall_failure = 1;
+	      && check_sibcall_argument_overlap (before_arg, &args[i], false))
+	    *sibcall_failure = true;
 
 	  /* Handle calls that pass values in multiple non-contiguous
 	     locations.  The Irix 6 ABI has examples of this.  */
@@ -2348,10 +2354,10 @@ combine_pending_stack_adjustment_and_call (poly_int64_pod *adjustment_out,
 /* Scan X expression if it does not dereference any argument slots
    we already clobbered by tail call arguments (as noted in stored_args_map
    bitmap).
-   Return nonzero if X expression dereferences such argument slots,
-   zero otherwise.  */
+   Return true if X expression dereferences such argument slots,
+   false otherwise.  */
 
-static int
+static bool
 check_sibcall_argument_overlap_1 (rtx x)
 {
   RTX_CODE code;
@@ -2359,13 +2365,13 @@ check_sibcall_argument_overlap_1 (rtx x)
   const char *fmt;
 
   if (x == NULL_RTX)
-    return 0;
+    return false;
 
   code = GET_CODE (x);
 
   /* We need not check the operands of the CALL expression itself.  */
   if (code == CALL)
-    return 0;
+    return false;
 
   if (code == MEM)
     return (mem_might_overlap_already_clobbered_arg_p
@@ -2378,28 +2384,28 @@ check_sibcall_argument_overlap_1 (rtx x)
       if (*fmt == 'e')
 	{
 	  if (check_sibcall_argument_overlap_1 (XEXP (x, i)))
-	    return 1;
+	    return true;
 	}
       else if (*fmt == 'E')
 	{
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    if (check_sibcall_argument_overlap_1 (XVECEXP (x, i, j)))
-	      return 1;
+	      return true;
 	}
     }
-  return 0;
+  return false;
 }
 
 /* Scan sequence after INSN if it does not dereference any argument slots
    we already clobbered by tail call arguments (as noted in stored_args_map
    bitmap).  If MARK_STORED_ARGS_MAP, add stack slots for ARG to
-   stored_args_map bitmap afterwards (when ARG is a register MARK_STORED_ARGS_MAP
-   should be 0).  Return nonzero if sequence after INSN dereferences such argument
-   slots, zero otherwise.  */
+   stored_args_map bitmap afterwards (when ARG is a register
+   MARK_STORED_ARGS_MAP should be false).  Return true if sequence after
+   INSN dereferences such argument slots, false otherwise.  */
 
-static int
+static bool
 check_sibcall_argument_overlap (rtx_insn *insn, struct arg_data *arg,
-				int mark_stored_args_map)
+				bool mark_stored_args_map)
 {
   poly_uint64 low, high;
   unsigned HOST_WIDE_INT const_low, const_high;
@@ -2659,9 +2665,9 @@ expand_call (tree exp, rtx target, int ignore)
      or if we are using the non-reentrant PCC calling convention
      or expecting the value in registers.  */
   poly_int64 struct_value_size = 0;
-  /* Nonzero if called function returns an aggregate in memory PCC style,
+  /* True if called function returns an aggregate in memory PCC style,
      by returning the address of where to find it.  */
-  int pcc_struct_value = 0;
+  bool pcc_struct_value = false;
   rtx struct_value = 0;
 
   /* Number of actual parameters in this call, including struct value addr.  */
@@ -2687,15 +2693,13 @@ expand_call (tree exp, rtx target, int ignore)
   cumulative_args_t args_so_far;
   /* Nonzero if a reg parm has been scanned.  */
   int reg_parm_seen;
-  /* Nonzero if this is an indirect function call.  */
 
-  /* Nonzero if we must avoid push-insns in the args for this call.
+  /* True if we must avoid push-insns in the args for this call.
      If stack space is allocated for register parameters, but not by the
      caller, then it is preallocated in the fixed part of the stack frame.
      So the entire argument block must then be preallocated (i.e., we
      ignore PUSH_ROUNDING in that case).  */
-
-  int must_preallocate = !targetm.calls.push_argument (0);
+  bool must_preallocate = !targetm.calls.push_argument (0);
 
   /* Size of the stack reserved for parameter registers.  */
   int reg_parm_stack_space = 0;
@@ -2805,7 +2809,7 @@ expand_call (tree exp, rtx target, int ignore)
 
   if (! OUTGOING_REG_PARM_STACK_SPACE ((!fndecl ? fntype : TREE_TYPE (fndecl)))
       && reg_parm_stack_space > 0 && targetm.calls.push_argument (0))
-    must_preallocate = 1;
+    must_preallocate = true;
 
   /* Set up a place to return a structure.  */
 
@@ -2817,7 +2821,7 @@ expand_call (tree exp, rtx target, int ignore)
 
 #ifdef PCC_STATIC_STRUCT_RETURN
       {
-	pcc_struct_value = 1;
+	pcc_struct_value = true;
       }
 #else /* not PCC_STATIC_STRUCT_RETURN */
       {
@@ -2989,7 +2993,7 @@ expand_call (tree exp, rtx target, int ignore)
 				   &try_tail_call, CALL_FROM_THUNK_P (exp));
 
   if (args_size.var)
-    must_preallocate = 1;
+    must_preallocate = true;
 
   /* Now make final decision about preallocating stack space.  */
   must_preallocate = finalize_must_preallocate (must_preallocate,
@@ -3114,7 +3118,7 @@ expand_call (tree exp, rtx target, int ignore)
      initial RTL generation is complete.  */
   for (pass = try_tail_call ? 0 : 1; pass < 2; pass++)
     {
-      int sibcall_failure = 0;
+      bool sibcall_failure = false;
       bool normal_failure = false;
       /* We want to emit any pending stack adjustments before the tail
 	 recursion "call".  That way we know any adjustment after the tail
@@ -3500,7 +3504,7 @@ expand_call (tree exp, rtx target, int ignore)
 	          sorry ("passing too large argument on stack");
 		  /* Don't worry about stack clean-up.  */
 		  if (pass == 0)
-		    sibcall_failure = 1;
+		    sibcall_failure = true;
 		  else
 		    normal_failure = true;
 		  continue;
@@ -3511,8 +3515,8 @@ expand_call (tree exp, rtx target, int ignore)
 				 reg_parm_stack_space)
 		  || (pass == 0
 		      && check_sibcall_argument_overlap (before_arg,
-							 &args[i], 1)))
-		sibcall_failure = 1;
+							 &args[i], true)))
+		sibcall_failure = true;
 	      }
 
 	  if (args[i].stack)
@@ -3542,7 +3546,7 @@ expand_call (tree exp, rtx target, int ignore)
 		stack and registers work.  Play it safe and bail out.  */
 	      if (ARGS_GROW_DOWNWARD && !STACK_GROWS_DOWNWARD)
 		{
-		  sibcall_failure = 1;
+		  sibcall_failure = true;
 		  break;
 		}
 
@@ -3551,8 +3555,8 @@ expand_call (tree exp, rtx target, int ignore)
 				 reg_parm_stack_space)
 		  || (pass == 0
 		      && check_sibcall_argument_overlap (before_arg,
-							 &args[i], 1)))
-		sibcall_failure = 1;
+							 &args[i], true)))
+		sibcall_failure = true;
 	    }
 
       bool any_regs = false;
@@ -3596,7 +3600,7 @@ expand_call (tree exp, rtx target, int ignore)
 	 passed in registers.  */
       if (OUTGOING_REG_PARM_STACK_SPACE ((!fndecl ? fntype : TREE_TYPE (fndecl)))
           && !ACCUMULATE_OUTGOING_ARGS
-	  && must_preallocate == 0 && reg_parm_stack_space > 0)
+	  && !must_preallocate && reg_parm_stack_space > 0)
 	anti_adjust_stack (GEN_INT (reg_parm_stack_space));
 
       /* Pass the function the address in which to return a
@@ -3682,8 +3686,8 @@ expand_call (tree exp, rtx target, int ignore)
 	 of the argument setup we probably clobbered our call address.
 	 In that case we can't do sibcalls.  */
       if (pass == 0
-	  && check_sibcall_argument_overlap (after_args, 0, 0))
-	sibcall_failure = 1;
+	  && check_sibcall_argument_overlap (after_args, 0, false))
+	sibcall_failure = true;
 
       /* If a non-BLKmode value is returned at the most significant end
 	 of a register, shift the register right by the appropriate amount
@@ -3697,7 +3701,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  && targetm.calls.return_in_msb (rettype))
 	{
 	  if (shift_return_value (TYPE_MODE (rettype), false, valreg))
-	    sibcall_failure = 1;
+	    sibcall_failure = true;
 	  valreg = gen_rtx_REG (TYPE_MODE (rettype), REGNO (valreg));
 	}
 
@@ -3839,7 +3843,7 @@ expand_call (tree exp, rtx target, int ignore)
 		 Since it is emitted after the call insn, sibcall
 		 optimization cannot be performed in that case.  */
 	      if (MEM_P (target))
-		sibcall_failure = 1;
+		sibcall_failure = true;
 	    }
 	}
       else
@@ -3891,7 +3895,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
 	  stack_usage_map = initial_stack_usage_map;
 	  stack_usage_watermark = initial_stack_usage_watermark;
-	  sibcall_failure = 1;
+	  sibcall_failure = true;
 	}
       else if (ACCUMULATE_OUTGOING_ARGS && pass)
 	{
@@ -4129,7 +4133,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   rtx call_fusage = 0;
   rtx mem_value = 0;
   rtx valreg;
-  int pcc_struct_value = 0;
+  bool pcc_struct_value = false;
   poly_int64 struct_value_size = 0;
   int flags;
   int reg_parm_stack_space = 0;
@@ -4198,7 +4202,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  rtx pointer_reg
 	    = hard_function_value (build_pointer_type (tfom), 0, 0, 0);
 	  mem_value = gen_rtx_MEM (outmode, pointer_reg);
-	  pcc_struct_value = 1;
+	  pcc_struct_value = true;
 	  if (value == 0)
 	    value = gen_reg_rtx (outmode);
 #else /* not PCC_STATIC_STRUCT_RETURN */
@@ -4883,10 +4887,10 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
    FNDECL is the declaration of the function we are calling.
 
-   Return nonzero if this arg should cause sibcall failure,
-   zero otherwise.  */
+   Return true if this arg should cause sibcall failure,
+   false otherwise.  */
 
-static int
+static bool
 store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	       int variable_size ATTRIBUTE_UNUSED, int reg_parm_stack_space)
 {
@@ -4895,10 +4899,10 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
   int partial = 0;
   poly_int64 used = 0;
   poly_int64 lower_bound = 0, upper_bound = 0;
-  int sibcall_failure = 0;
+  bool sibcall_failure = false;
 
   if (TREE_CODE (pval) == ERROR_MARK)
-    return 1;
+    return true;
 
   /* Push a new temporary level for any temporaries we make for
      this argument.  */
@@ -4998,13 +5002,13 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 
 	 For scalar function arguments stack_usage_map is sufficient to
 	 determine which stack slots must be saved and restored.  Scalar
-	 arguments in general have pass_on_stack == 0.
+	 arguments in general have pass_on_stack == false.
 
 	 If this argument is initialized by a function which takes the
 	 address of the argument (a C++ constructor or a C function
 	 returning a BLKmode structure), then stack_usage_map is
 	 insufficient and expand_call must push the stack around the
-	 function call.  Such arguments have pass_on_stack == 1.
+	 function call.  Such arguments have pass_on_stack == true.
 
 	 Note that it is always safe to set stack_arg_under_construction,
 	 but this generates suboptimal code if set when not needed.  */
@@ -5034,7 +5038,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
       && MEM_P (arg->value)
       && mem_might_overlap_already_clobbered_arg_p (XEXP (arg->value, 0),
 						    arg->locate.size.constant))
-    sibcall_failure = 1;
+    sibcall_failure = true;
 
   /* Don't allow anything left on stack from computation
      of argument to alloca.  */
@@ -5097,7 +5101,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 			      argblock, ARGS_SIZE_RTX (arg->locate.offset),
 			      reg_parm_stack_space,
 			      ARGS_SIZE_RTX (arg->locate.alignment_pad), true))
-	sibcall_failure = 1;
+	sibcall_failure = true;
 
       /* Unless this is a partially-in-register argument, the argument is now
 	 in the stack.  */
@@ -5184,17 +5188,17 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 		     this by making sure that the incoming size is the
 		     same as the outgoing size.  */
 		  if (maybe_ne (arg->locate.size.constant, size_val))
-		    sibcall_failure = 1;
+		    sibcall_failure = true;
 		}
 	      else if (maybe_in_range_p (arg->locate.offset.constant,
 					 i, size_val))
-		sibcall_failure = 1;
+		sibcall_failure = true;
 	      /* Use arg->locate.size.constant instead of size_rtx
 		 because we only care about the part of the argument
 		 on the stack.  */
 	      else if (maybe_in_range_p (i, arg->locate.offset.constant,
 					 arg->locate.size.constant))
-		sibcall_failure = 1;
+		sibcall_failure = true;
 	    }
 	}
 

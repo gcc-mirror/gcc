@@ -62,7 +62,7 @@ generic
 package System.Value_I_Spec with
    Ghost,
    SPARK_Mode,
-   Annotate => (GNATprove, Always_Return)
+   Always_Terminates
 is
    pragma Preelaborate;
    use all type Uns_Params.Uns_Option;

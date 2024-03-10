@@ -1612,6 +1612,14 @@ Alphabetical List of All Switches
   Save result of preprocessing in a text file.
 
 
+.. index:: -gnateH  (gcc)
+
+:switch:`-gnateH`
+  Set the threshold from which the RM 13.5.1(13.3/2) clause applies to 64.
+  This is useful only on 64-bit plaforms where this threshold is 128, but
+  used to be 64 in earlier versions of the compiler.
+
+
 .. index:: -gnatei  (gcc)
 
 :switch:`-gnatei{nnn}`

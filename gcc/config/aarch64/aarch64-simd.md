@@ -7327,6 +7327,36 @@
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
+;; A common usecase of 64-bit ADDP is to have both operands come from the same
+;; 128-bit vector and produce the pairwise addition results in the lower half.
+;; Split into the 128-bit ADDP form and extract the low half.
+(define_insn_and_split "*aarch64_addp_same_reg<mode>"
+  [(set (match_operand:<VHALF> 0 "register_operand" "=w")
+	(plus:<VHALF>
+	  (vec_select:<VHALF>
+	    (match_operand:VQ_I 1 "register_operand" "w")
+	    (match_operand:VQ_I 2 "vect_par_cnst_even_or_odd_half"))
+	  (vec_select:<VHALF>
+	    (match_dup 1)
+	    (match_operand:VQ_I 3 "vect_par_cnst_even_or_odd_half"))))]
+  "TARGET_SIMD && !rtx_equal_p (operands[2], operands[3])"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    rtx scratch;
+    if (can_create_pseudo_p ())
+      scratch = gen_reg_rtx (<MODE>mode);
+    else
+      scratch = lowpart_subreg (<MODE>mode, operands[0], <VHALF>mode);
+
+    emit_insn (gen_aarch64_addp<mode>_insn (scratch, operands[1], operands[1],
+					    operands[2], operands[3]));
+    emit_move_insn (operands[0], gen_lowpart (<VHALF>mode, scratch));
+    DONE;
+  }
+)
+
 (define_expand "aarch64_addp<mode>"
   [(match_operand:VDQ_I 0 "register_operand")
    (match_operand:VDQ_I 1 "register_operand")

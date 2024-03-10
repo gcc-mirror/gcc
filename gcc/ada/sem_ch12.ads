@@ -204,7 +204,9 @@ package Sem_Ch12 is
    --  the current view after instantiation. The processing is driven by the
    --  current private status of the type of the node, and Has_Private_View,
    --  a flag that is set at the point of generic compilation. If view and
-   --  flag are inconsistent then the type is updated appropriately.
+   --  flag are inconsistent then the type is updated appropriately. A second
+   --  flag Has_Secondary_Private_View is used to update a second type related
+   --  to this type if need be.
    --
    --  This subprogram is used in Check_Generic_Actuals and Copy_Generic_Node,
    --  and is exported here for the purpose of front-end inlining (see Exp_Ch6.

@@ -9254,9 +9254,10 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   gcc_assert (sym->ts.type != BT_UNKNOWN);
 
   /* See if this is a valid association-to-variable.  */
-  sym->assoc->variable = (target->expr_type == EXPR_VARIABLE
-			  && !parentheses
-			  && !gfc_has_vector_subscript (target));
+  sym->assoc->variable = ((target->expr_type == EXPR_VARIABLE
+			   && !parentheses
+			   && !gfc_has_vector_subscript (target))
+			  || gfc_is_ptr_fcn (target));
 
   /* Finally resolve if this is an array or not.  */
   if (sym->attr.dimension && target->rank == 0)

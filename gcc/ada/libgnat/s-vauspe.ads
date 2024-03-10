@@ -53,7 +53,7 @@ generic
 package System.Value_U_Spec with
    Ghost,
    SPARK_Mode,
-   Annotate => (GNATprove, Always_Return)
+   Always_Terminates
 is
    pragma Preelaborate;
 

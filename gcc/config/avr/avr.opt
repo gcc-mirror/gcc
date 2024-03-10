@@ -27,7 +27,7 @@ Target RejectNegative Joined Var(avr_mmcu) MissingArgError(missing device or arc
 -mmcu=MCU	Select the target MCU.
 
 mgas-isr-prologues
-Target Var(avr_gasisr_prologues) UInteger Init(0)
+Target Var(avr_gasisr_prologues) UInteger Init(0) Optimization 
 Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues.
 
 mn-flash=
@@ -65,7 +65,7 @@ Target Joined RejectNegative UInteger Var(avr_branch_cost) Init(0)
 Set the branch costs for conditional branch instructions.  Reasonable values are small, non-negative integers.  The default branch cost is 0.
 
 mmain-is-OS_task
-Target Mask(MAIN_IS_OS_TASK)
+Target Mask(MAIN_IS_OS_TASK) Optimization
 Treat main as if it had attribute OS_task.
 
 morder1

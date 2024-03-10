@@ -4690,6 +4690,16 @@ package body Sem_Ch3 is
          elsif No (E) and then Is_Null_Record_Type (T) then
             null;
 
+         --  If there is an address clause for this object, do not generate a
+         --  predicate check here. It will be generated later, at the freezng
+         --  point. It would be wrong to generate references to the object
+         --  here, before the address has been determined.
+
+         elsif Has_Aspect (Id, Aspect_Address)
+           or else Present (Following_Address_Clause (N))
+         then
+            null;
+
          --  Do not generate a predicate check if the initialization expression
          --  is a type conversion whose target subtype statically matches the
          --  object's subtype because the conversion has been subjected to the
@@ -4709,7 +4719,6 @@ package body Sem_Ch3 is
             declare
                Check : constant Node_Id :=
                          Make_Predicate_Check (T, New_Occurrence_Of (Id, Loc));
-
             begin
                if No (Next_Decl) then
                   Append_To (List_Containing (N), Check);
@@ -5540,7 +5549,7 @@ package body Sem_Ch3 is
       --  avoided here, when the created subtype declaration is analyzed. (See
       --  Build_Derived_Types)
 
-      --  This also happens when the full view of a private type is derived
+      --  This also happens when the full view of a private type is a derived
       --  type with constraints. In this case the entity has been introduced
       --  in the private declaration.
 
@@ -8669,7 +8678,7 @@ package body Sem_Ch3 is
 
    --  5. FIRST TRANSFORMATION FOR DERIVED RECORDS
    --
-   --  Regardless of whether we dealing with a tagged or untagged type
+   --  Regardless of whether we are dealing with a tagged or untagged type
    --  we will transform all derived type declarations of the form
    --
    --               type T is new R (...) [with ...];
@@ -9037,9 +9046,16 @@ package body Sem_Ch3 is
    --  Start of processing for Build_Derived_Record_Type
 
    begin
+      --  If the parent type is a private extension with discriminants, we
+      --  need to have an unconstrained type on which to apply the inherited
+      --  constraint, so we get to the full view. However, this means that the
+      --  derived type and its implicit base type created below will not point
+      --  to the same view of their respective parent type and, thus, special
+      --  glue code like Exp_Ch7.Convert_View is needed to bridge this gap.
+
       if Ekind (Parent_Type) = E_Record_Type_With_Private
-        and then Present (Full_View (Parent_Type))
         and then Has_Discriminants (Parent_Type)
+        and then Present (Full_View (Parent_Type))
       then
          Parent_Base := Base_Type (Full_View (Parent_Type));
       else
@@ -9054,6 +9070,36 @@ package body Sem_Ch3 is
 
       if Ekind (Parent_Base) = E_Record_Subtype then
          Parent_Base := Base_Type (Parent_Base);
+      end if;
+
+      --  If the parent base is a private type and only its full view has
+      --  discriminants, use the full view's base type.
+
+      --  This can happen when we are deriving from a subtype of a derived type
+      --  of a private type derived from a discriminated type with known
+      --  discriminant:
+      --
+      --  package Pkg;
+      --     type Root_Type(I: Positive) is record
+      --       ...
+      --     end record;
+      --     type Bounded_Root_Type is private;
+      --  private
+      --     type Bounded_Root_Type is new Root_Type(10);
+      --  end Pkg;
+      --
+      --  package Pkg2 is
+      --     type Constrained_Root_Type is new Pkg.Bounded_Root_Type;
+      --  end Pkg2;
+      --  subtype Sub_Base is Pkg2.Constrained_Root_Type;
+      --  type New_Der_Type is new Sub_Base;
+
+      if Is_Private_Type (Parent_Base)
+        and then Present (Full_View (Parent_Base))
+        and then not Has_Discriminants (Parent_Base)
+        and then Has_Discriminants (Full_View (Parent_Base))
+      then
+         Parent_Base := Base_Type (Full_View (Parent_Base));
       end if;
 
       --  AI05-0115: if this is a derivation from a private type in some
@@ -9287,7 +9333,7 @@ package body Sem_Ch3 is
             Is_Completion => False, Derive_Subps => False);
 
          --  ??? This needs re-examination to determine whether the
-         --  above call can simply be replaced by a call to Analyze.
+         --  following call can simply be replaced by a call to Analyze.
 
          Set_Analyzed (New_Decl);
 

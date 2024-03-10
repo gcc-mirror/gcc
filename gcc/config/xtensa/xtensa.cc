@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "tree-pass.h"
 #include "print-rtl.h"
+#include <math.h>
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -131,7 +132,6 @@ static bool xtensa_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int xtensa_insn_cost (rtx_insn *, bool);
 static int xtensa_register_move_cost (machine_mode, reg_class_t,
 				      reg_class_t);
-static int xtensa_memory_move_cost (machine_mode, reg_class_t, bool);
 static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (const_tree, const_tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
@@ -213,8 +213,6 @@ static rtx xtensa_delegitimize_address (rtx);
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST xtensa_register_move_cost
-#undef TARGET_MEMORY_MOVE_COST
-#define TARGET_MEMORY_MOVE_COST xtensa_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xtensa_rtx_costs
 #undef TARGET_INSN_COST
@@ -1070,7 +1068,7 @@ xtensa_constantsynth_2insn (rtx dst, HOST_WIDE_INT srcval,
 {
   HOST_WIDE_INT imm = INT_MAX;
   rtx x = NULL_RTX;
-  int shift;
+  int shift, sqr;
 
   gcc_assert (REG_P (dst));
 
@@ -1080,7 +1078,6 @@ xtensa_constantsynth_2insn (rtx dst, HOST_WIDE_INT srcval,
       imm = -1;
       x = gen_lshrsi3 (dst, dst, GEN_INT (32 - shift));
     }
-
 
   shift = ctz_hwi (srcval);
   if ((!x || (TARGET_DENSITY && ! IN_RANGE (imm, -32, 95)))
@@ -1106,6 +1103,14 @@ xtensa_constantsynth_2insn (rtx dst, HOST_WIDE_INT srcval,
 	imm0 -= 256, imm1 += 256;
       imm = imm0;
       x = gen_addsi3 (dst, dst, GEN_INT (imm1));
+    }
+
+  sqr = (int) floorf (sqrtf (srcval));
+  if (TARGET_MUL32 && optimize_size
+      && !x && IN_RANGE (srcval, 0, (2047 * 2047)) && sqr * sqr == srcval)
+    {
+      imm = sqr;
+      x = gen_mulsi3 (dst, dst, dst);
     }
 
   if (!x)
@@ -4354,16 +4359,6 @@ xtensa_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
     return 3;
   else
     return 10;
-}
-
-/* Worker function for TARGET_MEMORY_MOVE_COST.  */
-
-static int
-xtensa_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
-			 reg_class_t rclass ATTRIBUTE_UNUSED,
-			 bool in ATTRIBUTE_UNUSED)
-{
-  return 4;
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete

@@ -8410,21 +8410,14 @@ package body Sem_Ch6 is
            Ctype <= Mode_Conformant
              or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
 
-      elsif Is_Private_Type (Type_2)
-        and then In_Instance
-        and then Present (Full_View (Type_2))
-        and then Base_Types_Match (Type_1, Full_View (Type_2))
-      then
-         return
-           Ctype <= Mode_Conformant
-             or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
-
-      --  Another confusion between views in a nested instance with an
-      --  actual private type whose full view is not in scope.
+      --  The subtype declared for the formal type in an instantiation and the
+      --  actual type are conforming. Note that testing Is_Generic_Actual_Type
+      --  here is not sufficient because the flag is only set in the bodies of
+      --  instances, which is too late for formal subprograms.
 
       elsif Ekind (Type_2) = E_Private_Subtype
-        and then In_Instance
         and then Etype (Type_2) = Type_1
+        and then Present (Generic_Parent_Type (Declaration_Node (Type_2)))
       then
          return True;
 

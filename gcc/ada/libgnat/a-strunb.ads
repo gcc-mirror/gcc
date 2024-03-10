@@ -54,10 +54,10 @@ private with Ada.Strings.Text_Buffers;
 
 package Ada.Strings.Unbounded with
   SPARK_Mode,
-  Initial_Condition => Length (Null_Unbounded_String) = 0
+  Initial_Condition => Length (Null_Unbounded_String) = 0,
+  Always_Terminates
 is
    pragma Preelaborate;
-   pragma Annotate (GNATprove, Always_Return, Unbounded);
 
    type Unbounded_String is private with
      Default_Initial_Condition => Length (Unbounded_String) = 0;

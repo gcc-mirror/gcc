@@ -494,18 +494,48 @@ DEF_RVV_TYPE (vuint64m8_t, 16, __rvv_uint64m8_t, uint64, VNx16DI, VNx8DI, VOID, 
 /* LMUL = 1/4.  */
 DEF_RVV_TYPE (vfloat16mf4_t, 18, __rvv_float16mf4_t, float16, VNx2HF, VNx1HF, VOID,
 	      _f16mf4, _f16, _e16mf4)
+/* Define tuple types for SEW = 16, LMUL = MF4. */
+DEF_RVV_TUPLE_TYPE (vfloat16mf4x2_t, 20, __rvv_float16mf4x2_t, vfloat16mf4_t, float, 2, _f16mf4x2)
+DEF_RVV_TUPLE_TYPE (vfloat16mf4x3_t, 20, __rvv_float16mf4x3_t, vfloat16mf4_t, float, 3, _f16mf4x3)
+DEF_RVV_TUPLE_TYPE (vfloat16mf4x4_t, 20, __rvv_float16mf4x4_t, vfloat16mf4_t, float, 4, _f16mf4x4)
+DEF_RVV_TUPLE_TYPE (vfloat16mf4x5_t, 20, __rvv_float16mf4x5_t, vfloat16mf4_t, float, 5, _f16mf4x5)
+DEF_RVV_TUPLE_TYPE (vfloat16mf4x6_t, 20, __rvv_float16mf4x6_t, vfloat16mf4_t, float, 6, _f16mf4x6)
+DEF_RVV_TUPLE_TYPE (vfloat16mf4x7_t, 20, __rvv_float16mf4x7_t, vfloat16mf4_t, float, 7, _f16mf4x7)
+DEF_RVV_TUPLE_TYPE (vfloat16mf4x8_t, 20, __rvv_float16mf4x8_t, vfloat16mf4_t, float, 8, _f16mf4x8)
 /* LMUL = 1/2.  */
 DEF_RVV_TYPE (vfloat16mf2_t, 18, __rvv_float16mf2_t, float16, VNx4HF, VNx2HF, VNx1HF,
 	      _f16mf2, _f16, _e16mf2)
+/* Define tuple types for SEW = 16, LMUL = MF2. */
+DEF_RVV_TUPLE_TYPE (vfloat16mf2x2_t, 20, __rvv_float16mf2x2_t, vfloat16mf2_t, float, 2, _f16mf2x2)
+DEF_RVV_TUPLE_TYPE (vfloat16mf2x3_t, 20, __rvv_float16mf2x3_t, vfloat16mf2_t, float, 3, _f16mf2x3)
+DEF_RVV_TUPLE_TYPE (vfloat16mf2x4_t, 20, __rvv_float16mf2x4_t, vfloat16mf2_t, float, 4, _f16mf2x4)
+DEF_RVV_TUPLE_TYPE (vfloat16mf2x5_t, 20, __rvv_float16mf2x5_t, vfloat16mf2_t, float, 5, _f16mf2x5)
+DEF_RVV_TUPLE_TYPE (vfloat16mf2x6_t, 20, __rvv_float16mf2x6_t, vfloat16mf2_t, float, 6, _f16mf2x6)
+DEF_RVV_TUPLE_TYPE (vfloat16mf2x7_t, 20, __rvv_float16mf2x7_t, vfloat16mf2_t, float, 7, _f16mf2x7)
+DEF_RVV_TUPLE_TYPE (vfloat16mf2x8_t, 20, __rvv_float16mf2x8_t, vfloat16mf2_t, float, 8, _f16mf2x8)
 /* LMUL = 1.  */
 DEF_RVV_TYPE (vfloat16m1_t, 17, __rvv_float16m1_t, float16, VNx8HF, VNx4HF, VNx2HF,
 	      _f16m1, _f16, _e16m1)
+/* Define tuple types for SEW = 16, LMUL = M1. */
+DEF_RVV_TUPLE_TYPE (vfloat16m1x2_t, 19, __rvv_float16m1x2_t, vfloat16m1_t, float, 2, _f16m1x2)
+DEF_RVV_TUPLE_TYPE (vfloat16m1x3_t, 19, __rvv_float16m1x3_t, vfloat16m1_t, float, 3, _f16m1x3)
+DEF_RVV_TUPLE_TYPE (vfloat16m1x4_t, 19, __rvv_float16m1x4_t, vfloat16m1_t, float, 4, _f16m1x4)
+DEF_RVV_TUPLE_TYPE (vfloat16m1x5_t, 19, __rvv_float16m1x5_t, vfloat16m1_t, float, 5, _f16m1x5)
+DEF_RVV_TUPLE_TYPE (vfloat16m1x6_t, 19, __rvv_float16m1x6_t, vfloat16m1_t, float, 6, _f16m1x6)
+DEF_RVV_TUPLE_TYPE (vfloat16m1x7_t, 19, __rvv_float16m1x7_t, vfloat16m1_t, float, 7, _f16m1x7)
+DEF_RVV_TUPLE_TYPE (vfloat16m1x8_t, 19, __rvv_float16m1x8_t, vfloat16m1_t, float, 8, _f16m1x8)
 /* LMUL = 2.  */
 DEF_RVV_TYPE (vfloat16m2_t, 17, __rvv_float16m2_t, float16, VNx16HF, VNx8HF, VNx4HF,
 	      _f16m2, _f16, _e16m2)
+/* Define tuple types for SEW = 16, LMUL = M2. */
+DEF_RVV_TUPLE_TYPE (vfloat16m2x2_t, 19, __rvv_float16m2x2_t, vfloat16m2_t, float, 2, _f16m2x2)
+DEF_RVV_TUPLE_TYPE (vfloat16m2x3_t, 19, __rvv_float16m2x3_t, vfloat16m2_t, float, 3, _f16m2x3)
+DEF_RVV_TUPLE_TYPE (vfloat16m2x4_t, 19, __rvv_float16m2x4_t, vfloat16m2_t, float, 4, _f16m2x4)
 /* LMUL = 4.  */
 DEF_RVV_TYPE (vfloat16m4_t, 17, __rvv_float16m4_t, float16, VNx32HF, VNx16HF, VNx8HF,
 	      _f16m4, _f16, _e16m4)
+/* Define tuple types for SEW = 16, LMUL = M4. */
+DEF_RVV_TUPLE_TYPE (vfloat16m4x2_t, 19, __rvv_float16m4x2_t, vfloat16m4_t, float, 2, _f16m4x2)
 /* LMUL = 8.  */
 DEF_RVV_TYPE (vfloat16m8_t, 16, __rvv_float16m8_t, float16, VNx64HF, VNx32HF, VNx16HF,
 	      _f16m8, _f16, _e16m8)

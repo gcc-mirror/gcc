@@ -521,7 +521,8 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 		  return;
 		}
 	    }
-	  else if (GET_MODE_SIZE (mode) >= 16)
+	  else if (CONST_WIDE_INT_P (op1)
+		   && GET_MODE_SIZE (mode) >= 16)
 	    {
 	      rtx tmp = ix86_convert_const_wide_int_to_broadcast
 		(GET_MODE (op0), op1);
@@ -696,8 +697,9 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       return;
     }
 
-  /* Special case TImode to V1TImode conversions, via V2DI.  */
-  if (mode == V1TImode
+  /* Special case TImode to 128-bit vector conversions via V2DI.  */
+  if (VECTOR_MODE_P (mode)
+      && GET_MODE_SIZE (mode) == 16
       && SUBREG_P (op1)
       && GET_MODE (SUBREG_REG (op1)) == TImode
       && TARGET_64BIT && TARGET_SSE
@@ -709,7 +711,7 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       emit_move_insn (lo, gen_lowpart (DImode, SUBREG_REG (op1)));
       emit_move_insn (hi, gen_highpart (DImode, SUBREG_REG (op1)));
       emit_insn (gen_vec_concatv2di (tmp, lo, hi));
-      emit_move_insn (op0, gen_lowpart (V1TImode, tmp));
+      emit_move_insn (op0, gen_lowpart (mode, tmp));
       return;
     }
 
@@ -1019,6 +1021,7 @@ ix86_split_mmx_pack (rtx operands[], enum rtx_code code)
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   rtx op2 = operands[2];
+  rtx src;
 
   machine_mode dmode = GET_MODE (op0);
   machine_mode smode = GET_MODE (op1);
@@ -1042,11 +1045,20 @@ ix86_split_mmx_pack (rtx operands[], enum rtx_code code)
   op1 = lowpart_subreg (sse_smode, op1, GET_MODE (op1));
   op2 = lowpart_subreg (sse_smode, op2, GET_MODE (op2));
 
-  op1 = gen_rtx_fmt_e (code, sse_half_dmode, op1);
-  op2 = gen_rtx_fmt_e (code, sse_half_dmode, op2);
-  rtx insn = gen_rtx_SET (dest, gen_rtx_VEC_CONCAT (sse_dmode,
-						    op1, op2));
-  emit_insn (insn);
+  /* paskusdw/packuswb does unsigned saturation of a signed source
+     which is different from generic us_truncate RTX.  */
+  if (code == US_TRUNCATE)
+    src = gen_rtx_UNSPEC (sse_dmode,
+			  gen_rtvec (2, op1, op2),
+			  UNSPEC_US_TRUNCATE);
+  else
+    {
+      op1 = gen_rtx_fmt_e (code, sse_half_dmode, op1);
+      op2 = gen_rtx_fmt_e (code, sse_half_dmode, op2);
+      src = gen_rtx_VEC_CONCAT (sse_dmode, op1, op2);
+    }
+
+  emit_move_insn (dest, src);
 
   ix86_move_vector_high_sse_to_mmx (op0);
 }
@@ -2266,7 +2278,7 @@ ix86_expand_copysign (rtx operands[])
   else
     dest = NULL_RTX;
   op1 = lowpart_subreg (vmode, force_reg (mode, operands[2]), mode);
-  mask = ix86_build_signbit_mask (vmode, 0, 0);
+  mask = ix86_build_signbit_mask (vmode, TARGET_AVX512F && mode != HFmode, 0);
 
   if (CONST_DOUBLE_P (operands[1]))
     {
@@ -12644,6 +12656,21 @@ ix86_check_builtin_isa_match (unsigned int fcode,
   return (bisa & isa) == bisa && (bisa2 & isa2) == bisa2;
 }
 
+/* Emit instructions to set the carry flag from ARG.  */
+
+void
+ix86_expand_carry (rtx arg)
+{
+  if (!CONST_INT_P (arg) || arg == const0_rtx)
+    {
+      arg = convert_to_mode (QImode, arg, 1);
+      arg = copy_to_mode_reg (QImode, arg);
+      emit_insn (gen_addqi3_cconly_overflow (arg, constm1_rtx));
+    }
+  else
+    emit_insn (gen_x86_stc ());
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -13975,14 +14002,7 @@ rdseed_step:
       else
 	{
 	  /* Generate CF from input operand.  */
-	  if (!CONST_INT_P (op1))
-	    {
-	      op1 = convert_to_mode (QImode, op1, 1);
-	      op1 = copy_to_mode_reg (QImode, op1);
-	      emit_insn (gen_addqi3_cconly_overflow (op1, constm1_rtx));
-	    }
-	  else
-	    emit_insn (gen_x86_stc ());
+	  ix86_expand_carry (op1);
 
 	  /* Generate instruction that consumes CF.  */
 	  op1 = gen_rtx_REG (CCCmode, FLAGS_REG);

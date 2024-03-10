@@ -1086,6 +1086,8 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
   p = gfc_copy_expr (*expr);
   if (gfc_is_constant_expr (p) && gfc_simplify_expr (p, 1))
     gfc_replace_expr (*expr, p);
+  else
+    gfc_free_expr (p);
 
   if ((*expr)->expr_type == EXPR_FUNCTION)
     {

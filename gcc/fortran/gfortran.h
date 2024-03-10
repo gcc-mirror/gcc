@@ -3659,6 +3659,7 @@ bool gfc_is_constant_expr (gfc_expr *);
 bool gfc_simplify_expr (gfc_expr *, int);
 bool gfc_try_simplify_expr (gfc_expr *, int);
 bool gfc_has_vector_index (gfc_expr *);
+bool gfc_is_ptr_fcn (gfc_expr *);
 
 gfc_expr *gfc_get_expr (void);
 gfc_expr *gfc_get_array_expr (bt type, int kind, locus *);

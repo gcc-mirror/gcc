@@ -3337,27 +3337,43 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Used in signed and unsigned truncations with saturation.
-(define_code_iterator any_s_truncate [ss_truncate us_truncate])
-;; Instruction suffix for truncations with saturation.
-(define_code_attr s_trunsuffix [(ss_truncate "s") (us_truncate "u")])
-
-(define_insn_and_split "mmx_pack<s_trunsuffix>swb"
+(define_insn_and_split "mmx_packsswb"
   [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
 	(vec_concat:V8QI
-	  (any_s_truncate:V4QI
+	  (ss_truncate:V4QI
 	    (match_operand:V4HI 1 "register_operand" "0,0,Yw"))
-	  (any_s_truncate:V4QI
+	  (ss_truncate:V4QI
 	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw"))))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
-   pack<s_trunsuffix>swb\t{%2, %0|%0, %2}
+   packsswb\t{%2, %0|%0, %2}
    #
    #"
   "&& reload_completed
    && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
-  "ix86_split_mmx_pack (operands, <any_s_truncate:CODE>); DONE;"
+  "ix86_split_mmx_pack (operands, SS_TRUNCATE); DONE;"
+  [(set_attr "mmx_isa" "native,sse_noavx,avx")
+   (set_attr "type" "mmxshft,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
+
+;; This instruction does unsigned saturation of signed source
+;; and is different from generic us_truncate RTX.
+(define_insn_and_split "mmx_packuswb"
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
+	(unspec:V8QI
+	  [(match_operand:V4HI 1 "register_operand" "0,0,Yw")
+	   (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw")]
+	  UNSPEC_US_TRUNCATE))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   packuswb\t{%2, %0|%0, %2}
+   #
+   #"
+  "&& reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
+  [(const_int 0)]
+  "ix86_split_mmx_pack (operands, US_TRUNCATE); DONE;"
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
    (set_attr "type" "mmxshft,sselog,sselog")
    (set_attr "mode" "DI,TI,TI")])
@@ -3384,11 +3400,10 @@
 
 (define_insn_and_split "mmx_packusdw"
   [(set (match_operand:V4HI 0 "register_operand" "=Yr,*x,Yw")
-	(vec_concat:V4HI
-	  (us_truncate:V2HI
-	    (match_operand:V2SI 1 "register_operand" "0,0,Yw"))
-	  (us_truncate:V2HI
-	    (match_operand:V2SI 2 "register_operand" "Yr,*x,Yw"))))]
+	(unspec:V4HI
+	  [(match_operand:V2SI 1 "register_operand" "0,0,Yw")
+	   (match_operand:V2SI 2 "register_operand" "Yr,*x,Yw")]
+	   UNSPEC_US_TRUNCATE))]
   "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
   "#"
   "&& reload_completed"

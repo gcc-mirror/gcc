@@ -13,6 +13,9 @@
  TEST_TYPE(int8_t)					\
  TEST_TYPE(int16_t)					\
  TEST_TYPE(int32_t)					\
- TEST_TYPE(int64_t)
+ TEST_TYPE(int64_t)					\
+ TEST_TYPE(_Float16)					\
+ TEST_TYPE(float)					\
+ TEST_TYPE(double)					\
 
 TEST_ALL()

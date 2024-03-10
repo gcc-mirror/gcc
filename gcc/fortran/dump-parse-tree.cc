@@ -1374,7 +1374,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	}
       if (list_type == OMP_LIST_ALLOCATE)
 	{
-	  if (n->expr)
+	  if (n->u2.allocator)
 	    {
 	      fputs ("allocator(", dumpfile);
 	      show_expr (n->u2.allocator);
@@ -1388,9 +1388,12 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	      show_expr (n->u.align);
 	      fputc (')', dumpfile);
 	    }
-	  if (n->expr || n->u.align)
+	  if (n->u2.allocator || n->u.align)
 	    fputc (':', dumpfile);
-	  fputs (n->sym->name, dumpfile);
+	  if (n->expr)
+	    show_expr (n->expr);
+	  else
+	    fputs (n->sym->name, dumpfile);
 	  if (n->next)
 	    fputs (") ALLOCATE(", dumpfile);
 	  continue;

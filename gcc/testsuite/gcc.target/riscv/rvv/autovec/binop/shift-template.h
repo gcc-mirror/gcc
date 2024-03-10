@@ -16,14 +16,17 @@
       dst[i] = a[i] >> b[i];					\
   }
 
-/* *int8_t not autovec currently. */
 #define TEST_ALL()	\
+ TEST1_TYPE(int8_t)	\
+ TEST1_TYPE(uint8_t)	\
  TEST1_TYPE(int16_t)	\
  TEST1_TYPE(uint16_t)	\
  TEST1_TYPE(int32_t)	\
  TEST1_TYPE(uint32_t)	\
  TEST1_TYPE(int64_t)	\
  TEST1_TYPE(uint64_t)   \
+ TEST2_TYPE(int8_t)	\
+ TEST2_TYPE(uint8_t)	\
  TEST2_TYPE(int16_t)	\
  TEST2_TYPE(uint16_t)	\
  TEST2_TYPE(int32_t)	\

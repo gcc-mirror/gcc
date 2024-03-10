@@ -688,26 +688,27 @@ output_added_clobbers_hard_reg_p (void)
 {
   struct clobber_pat *clobber;
   struct clobber_ent *ent;
-  int clobber_p, used;
+  int clobber_p;
+  bool used;
 
-  printf ("\n\nint\nadded_clobbers_hard_reg_p (int insn_code_number)\n");
+  printf ("\n\nbool\nadded_clobbers_hard_reg_p (int insn_code_number)\n");
   printf ("{\n");
   printf ("  switch (insn_code_number)\n");
   printf ("    {\n");
 
   for (clobber_p = 0; clobber_p <= 1; clobber_p++)
     {
-      used = 0;
+      used = false;
       for (clobber = clobber_list; clobber; clobber = clobber->next)
 	if (clobber->has_hard_reg == clobber_p)
 	  for (ent = clobber->insns; ent; ent = ent->next)
 	    {
 	      printf ("    case %d:\n", ent->code_number);
-	      used++;
+	      used = true;
 	    }
 
       if (used)
-	printf ("      return %d;\n\n", clobber_p);
+	printf ("      return %s;\n\n", clobber_p ? "true" : "false");
     }
 
   printf ("    default:\n");

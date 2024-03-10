@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "stor-layout.h"
 #include "tree-ssa-loop.h"
+#include "tree-cfg.h"
 
 /* This pass propagates indirect loads through the PHI node for its
    address to make the load source possibly non-addressable and to
@@ -153,6 +154,8 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
       print_gimple_stmt (dump_file, use_stmt, 0);
     }
 
+  gphi *vphi = get_virtual_phi (bb);
+
   /* Add PHI arguments for each edge inserting loads of the
      addressable operands.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -190,9 +193,20 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 	{
 	  tree rhs = gimple_assign_rhs1 (use_stmt);
 	  gcc_assert (TREE_CODE (old_arg) == ADDR_EXPR);
+	  tree vuse = NULL_TREE;
 	  if (TREE_CODE (res) == SSA_NAME)
-	    new_var = make_ssa_name (TREE_TYPE (rhs));
+	    {
+	      new_var = make_ssa_name (TREE_TYPE (rhs));
+	      if (vphi)
+		vuse = PHI_ARG_DEF_FROM_EDGE (vphi, e);
+	      else
+		vuse = gimple_vuse (use_stmt);
+	    }
 	  else
+	    /* For the aggregate copy case updating virtual operands
+	       we'd have to possibly insert a virtual PHI and we have
+	       to split the existing VUSE lifetime.  Leave that to
+	       the generic SSA updating.  */
 	    new_var = unshare_expr (res);
 	  if (!is_gimple_min_invariant (old_arg))
 	    old_arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
@@ -203,6 +217,8 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 						  old_arg,
 						  TREE_OPERAND (rhs, 1)));
 	  gimple_set_location (tmp, locus);
+	  if (vuse)
+	    gimple_set_vuse (tmp, vuse);
 
 	  gsi_insert_on_edge (e, tmp);
 	  update_stmt (tmp);
@@ -476,6 +492,7 @@ public:
   {}
 
   /* opt_pass methods: */
+  opt_pass * clone () final override { return new pass_phiprop (m_ctxt); }
   bool gate (function *) final override { return flag_tree_phiprop; }
   unsigned int execute (function *) final override;
 

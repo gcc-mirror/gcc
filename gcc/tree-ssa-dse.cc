@@ -1118,7 +1118,26 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
       if (defs.is_empty ())
 	{
 	  if (ref_may_alias_global_p (ref, false))
-	    return DSE_STORE_LIVE;
+	    {
+	      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (defvar));
+	      /* Assume that BUILT_IN_UNREACHABLE and BUILT_IN_UNREACHABLE_TRAP
+		 do not need to keep (global) memory side-effects live.
+		 We do not have virtual operands on BUILT_IN_UNREACHABLE
+		 but we can do poor mans reachability when the last
+		 definition we want to elide is in the block that ends
+		 in such a call.  */
+	      if (EDGE_COUNT (def_bb->succs) == 0)
+		if (gcall *last = dyn_cast <gcall *> (*gsi_last_bb (def_bb)))
+		  if (gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE)
+		      || gimple_call_builtin_p (last,
+						BUILT_IN_UNREACHABLE_TRAP))
+		    {
+		      if (by_clobber_p)
+			*by_clobber_p = false;
+		      return DSE_STORE_DEAD;
+		    }
+	      return DSE_STORE_LIVE;
+	    }
 
 	  if (by_clobber_p)
 	    *by_clobber_p = false;

@@ -2831,7 +2831,8 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	 when x is NaN, infinite, or finite and nonzero.  They aren't
 	 when x is -0 and the rounding mode is not towards -infinity,
 	 since (-0) + 0 is then 0.  */
-      if (!HONOR_SIGNED_ZEROS (mode) && trueop1 == CONST0_RTX (mode))
+      if (!HONOR_SIGNED_ZEROS (mode) && !HONOR_SNANS (mode)
+	  && trueop1 == CONST0_RTX (mode))
 	return op0;
 
       /* ((-a) + b) -> (b - a) and similarly for (a + (-b)).  These
@@ -4860,6 +4861,17 @@ simplify_ashift:
 	    return simplify_gen_binary (VEC_SELECT, mode, XEXP (trueop0, 0),
 					gen_rtx_PARALLEL (VOIDmode, vec));
 	  }
+	/* (vec_concat:
+	     (subreg_lowpart:N OP)
+	     (vec_select:N OP P))  -->  OP when P selects the high half
+	    of the OP.  */
+	if (GET_CODE (trueop0) == SUBREG
+	    && subreg_lowpart_p (trueop0)
+	    && GET_CODE (trueop1) == VEC_SELECT
+	    && SUBREG_REG (trueop0) == XEXP (trueop1, 0)
+	    && !side_effects_p (XEXP (trueop1, 0))
+	    && vec_series_highpart_p (op1_mode, mode, XEXP (trueop1, 1)))
+	  return XEXP (trueop1, 0);
       }
       return 0;
 

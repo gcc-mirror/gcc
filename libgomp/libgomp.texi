@@ -384,7 +384,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{declare mapper} with iterator and @code{present} modifiers
       @tab N @tab
 @item If a matching mapped list item is not found in the data environment, the
-      pointer retains its original value @tab N @tab
+      pointer retains its original value @tab Y @tab
 @item New @code{enter} clause as alias for @code{to} on declare target directive
       @tab Y @tab
 @item Deprecation of @code{to} clause on declare target directive @tab N @tab

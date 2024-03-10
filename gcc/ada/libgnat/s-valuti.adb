@@ -123,6 +123,7 @@ is
       while F < L and then S (F) = ' ' loop
          pragma Loop_Invariant (F in S'First .. L - 1);
          pragma Loop_Invariant (for all J in S'First .. F => S (J) = ' ');
+         pragma Loop_Variant (Increases => F);
          F := F + 1;
       end loop;
 
@@ -139,6 +140,7 @@ is
       while S (L) = ' ' loop
          pragma Loop_Invariant (L in F + 1 .. S'Last);
          pragma Loop_Invariant (for all J in L .. S'Last => S (J) = ' ');
+         pragma Loop_Variant (Decreases => L);
          L := L - 1;
       end loop;
 

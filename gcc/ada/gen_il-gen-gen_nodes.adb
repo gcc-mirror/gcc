@@ -170,13 +170,15 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Selector_Name, Node_Id, Default_Empty),
         Sm (Atomic_Sync_Required, Flag),
         Sm (Has_Private_View, Flag),
+        Sm (Has_Secondary_Private_View, Flag),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
         Sm (Is_Elaboration_Warnings_OK_Node, Flag),
         Sm (Is_SPARK_Mode_On_Node, Flag),
         Sm (Redundant_Use, Flag)));
 
    Ab (N_Direct_Name, N_Has_Entity,
-       (Sm (Has_Private_View, Flag)));
+       (Sm (Has_Private_View, Flag),
+        Sm (Has_Secondary_Private_View, Flag)));
 
    Cc (N_Identifier, N_Direct_Name,
        (Sy (Chars, Name_Id, Default_No_Name),
@@ -197,7 +199,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Ab (N_Op, N_Has_Entity,
        (Sm (Do_Overflow_Check, Flag),
-        Sm (Has_Private_View, Flag)));
+        Sm (Has_Private_View, Flag),
+        Sm (Has_Secondary_Private_View, Flag)));
 
    Ab (N_Binary_Op, N_Op);
 

@@ -15316,9 +15316,10 @@ package body Sem_Elab is
 
             if Earlier_In_Extended_Unit (FNode, Region) then
                Error_Msg_Node_2 := Prim;
+               Error_Msg_Code := GEC_Type_Early_Call_Region;
                Error_Msg_NE
                  ("first freezing point of type & must appear within early "
-                  & "call region of primitive body & (SPARK RM 7.7(8))",
+                  & "call region of primitive body '[[]']",
                   Typ_Decl, Typ);
 
                Error_Msg_Sloc := Sloc (Region);

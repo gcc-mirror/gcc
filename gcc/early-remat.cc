@@ -504,20 +504,20 @@ private:
 
 early_remat *early_remat::er;
 
-/* rtx_equal_p_cb callback that treats any two SCRATCHes as equal.
+/* rtx_equal_p callback that treats any two SCRATCHes as equal.
    This allows us to compare two copies of a pattern, even though their
    SCRATCHes are always distinct.  */
 
-static int
+static bool
 scratch_equal (const_rtx *x, const_rtx *y, rtx *nx, rtx *ny)
 {
   if (GET_CODE (*x) == SCRATCH && GET_CODE (*y) == SCRATCH)
     {
       *nx = const0_rtx;
       *ny = const0_rtx;
-      return 1;
+      return true;
     }
-  return 0;
+  return false;
 }
 
 /* Hash callback functions for remat_candidate.  */
@@ -534,10 +534,8 @@ remat_candidate_hasher::equal (const remat_candidate *cand1,
 {
   return (cand1->regno == cand2->regno
 	  && cand1->constant_p == cand2->constant_p
-	  && (cand1->constant_p
-	      ? rtx_equal_p (cand1->remat_rtx, cand2->remat_rtx)
-	      : rtx_equal_p_cb (cand1->remat_rtx, cand2->remat_rtx,
-				scratch_equal))
+	  && rtx_equal_p (cand1->remat_rtx, cand2->remat_rtx,
+			  cand1->constant_p ? NULL : scratch_equal)
 	  && (!cand1->uses || bitmap_equal_p (cand1->uses, cand2->uses)));
 }
 

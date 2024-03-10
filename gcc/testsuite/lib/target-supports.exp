@@ -686,7 +686,8 @@ proc check_effective_target_keeps_null_pointer_checks { } {
     if [target_info exists keeps_null_pointer_checks] {
       return 1
     }
-    if { [istarget msp430-*-*] } {
+    if { [istarget msp430-*-*]
+         || [istarget avr-*-*] } {
 	return 1;   
     }
     return 0
@@ -1803,6 +1804,55 @@ proc check_effective_target_riscv_vector { } {
        #endif
     }]
 }
+
+# Return 1 if the we can build a vector example with proper -march flags
+# and the current target can execute it, 0 otherwise.  Cache the result.
+
+proc check_effective_target_riscv_vector_hw { } {
+
+    return [check_runtime riscv_vector_hw32 {
+        int main (void)
+        {
+            asm ("vsetivli zero,8,e16,m1,ta,ma");
+            asm ("vadd.vv v8,v8,v16" : : : "v8");
+            return 0;
+        }
+    } "-march=rv32gcv -mabi=ilp32d"] || [check_runtime riscv_vector_hw64 {
+        int main (void)
+        {
+            asm ("vsetivli zero,8,e16,m1,ta,ma");
+            asm ("vadd.vv v8,v8,v16" : : : "v8");
+            return 0;
+        }
+    } "-march=rv64gcv -mabi=lp64d"]
+}
+
+# Return 1 if the we can build a Zvfh vector example with proper -march flags
+# and the current target can execute it, 0 otherwise.  Cache the result.
+
+proc check_effective_target_riscv_zvfh_hw { } {
+    if ![check_effective_target_riscv_vector_hw] then {
+        return 0
+    }
+
+    return [check_runtime riscv_zvfh_hw32 {
+        int main (void)
+        {
+            asm ("vsetivli zero,8,e16,m1,ta,ma");
+            asm ("vfadd.vv v8,v8,v16" : : : "v8");
+            return 0;
+        }
+    } "-march=rv32gcv_zvfh -mabi=ilp32d"]
+    || [check_runtime riscv_zvfh_hw64 {
+        int main (void)
+        {
+            asm ("vsetivli zero,8,e16,m1,ta,ma");
+            asm ("vfadd.vv v8,v8,v16" : : : "v8");
+            return 0;
+        }
+    } "-march=rv64gcv_zvfh -mabi=lp64d"]
+}
+
 
 # Return 1 if the target is RV32, 0 otherwise.  Cache the result.
 
@@ -8443,8 +8493,9 @@ proc check_effective_target_vect_long_mult { } {
 
 proc check_effective_target_vect_int_mod { } {
     return [check_cached_effective_target_indexed vect_int_mod {
-      expr { [istarget powerpc*-*-*]
-	     && [check_effective_target_has_arch_pwr10] }}]
+      expr { ([istarget powerpc*-*-*]
+	      && [check_effective_target_has_arch_pwr10])
+             || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector even/odd elements extraction, 0 otherwise.
@@ -11577,7 +11628,8 @@ proc check_effective_target_divmod { } {
     #TODO: Add checks for all targets that have either hardware divmod insn
     # or define libfunc for divmod.
     if { [istarget arm*-*-*]
-	 || [istarget i?86-*-*] || [istarget x86_64-*-*] } {
+	 || [istarget i?86-*-*] || [istarget x86_64-*-*]
+         || [istarget amdgcn-*-*] } {
 	return 1
     }
     return 0

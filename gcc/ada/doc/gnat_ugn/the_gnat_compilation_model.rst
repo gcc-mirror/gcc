@@ -4493,6 +4493,53 @@ finalizing the Ada run-time system along the way:
        return 0;
      }
 
+.. _Partition_Wide_Settings:
+
+Partition-Wide Settings
+-----------------------
+
+When building a mixed-language application it is important to be aware that
+Ada enforces some partition-wide settings that may implicitly impact the
+behavior of the other languages.
+
+This is the case of certain signals that are reserved to the
+implementation to implement proper Ada semantics (such as the behavior
+of ``abort`` statements).
+
+It means that the Ada part of the application may override signal handlers
+that were previously installed by either the system or by other user code.
+
+If your application requires that either system or user signals be preserved
+then you need to instruct the Ada part not to install its own signal handler.
+This is done using ``pragma Interrupt_State`` that provides a general
+mechanism for overriding such uses of interrupts.
+
+The set of interrupts for which the Ada run-time library sets a specific signal
+handler is the following:
+
+* Ada.Interrupts.Names.SIGSEGV
+* Ada.Interrupts.Names.SIGBUS
+* Ada.Interrupts.Names.SIGFPE
+* Ada.Interrupts.Names.SIGILL
+* Ada.Interrupts.Names.SIGABRT
+
+The run-time library can be instructed not to install its signal handler for a
+particular signal by using the configuration pragma ``Interrupt_State`` in the
+Ada code. For example:
+
+.. code-block:: ada
+
+   pragma Interrupt_State (Ada.Interrupts.Names.SIGSEGV, System);
+   pragma Interrupt_State (Ada.Interrupts.Names.SIGBUS,  System);
+   pragma Interrupt_State (Ada.Interrupts.Names.SIGFPE,  System);
+   pragma Interrupt_State (Ada.Interrupts.Names.SIGILL,  System);
+   pragma Interrupt_State (Ada.Interrupts.Names.SIGABRT, System);
+
+Obviously, if the Ada run-time system cannot set these handlers it comes with the
+drawback of not fully preserving Ada semantics. ``SIGSEGV``, ``SIGBUS``, ``SIGFPE``
+and ``SIGILL`` are used to raise corresponding Ada exceptions in the application,
+while ``SIGABRT`` is used to asynchronously abort an action or a task.
+
 .. _Generating_Ada_Bindings_for_C_and_C++_headers:
 
 Generating Ada Bindings for C and C++ headers

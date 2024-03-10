@@ -2139,11 +2139,14 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  tree ctree = gfc_get_class_from_expr (se.expr);
 	  tmp = TREE_TYPE (sym->backend_decl);
 
-	  /* Coarray scalar component expressions can emerge from
-	     the front end as array elements of the _data field.  */
+	  /* F2018:19.5.1.6 "If a selector has the POINTER attribute,
+	     it shall be associated; the associate name is associated
+	     with the target of the pointer and does not have the
+	     POINTER attribute."  */
 	  if (sym->ts.type == BT_CLASS
-	      && e->ts.type == BT_CLASS && e->rank == 0
-	      && !GFC_CLASS_TYPE_P (TREE_TYPE (se.expr)) && ctree)
+	      && e->ts.type == BT_CLASS && e->rank == 0 && ctree
+	      && (!GFC_CLASS_TYPE_P (TREE_TYPE (se.expr))
+		  || CLASS_DATA (e)->attr.class_pointer))
 	    {
 	      tree stmp;
 	      tree dtmp;
@@ -2153,10 +2156,10 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	      ctree = gfc_create_var (dtmp, "class");
 
 	      stmp = gfc_class_data_get (se.expr);
-	      gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (stmp)));
-
-	      /* Set the fields of the target class variable.  */
-	      stmp = gfc_conv_descriptor_data_get (stmp);
+	      /* Coarray scalar component expressions can emerge from
+		 the front end as array elements of the _data field.  */
+	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (stmp)))
+		stmp = gfc_conv_descriptor_data_get (stmp);
 	      dtmp = gfc_class_data_get (ctree);
 	      stmp = fold_convert (TREE_TYPE (dtmp), stmp);
 	      gfc_add_modify (&se.pre, dtmp, stmp);
@@ -2170,6 +2173,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 		  dtmp = gfc_class_len_get (ctree);
 		  stmp = fold_convert (TREE_TYPE (dtmp), stmp);
 		  gfc_add_modify (&se.pre, dtmp, stmp);
+		  need_len_assign = false;
 		}
 	      se.expr = ctree;
 	    }

@@ -1,3 +1,8 @@
+2023-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* configure.ac (--enable-host-shared): Don't set PICFLAG here.

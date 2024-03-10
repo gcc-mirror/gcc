@@ -12,11 +12,6 @@ int test (void *ptr)
   WRAPPED_FREE (ptr); /* { dg-message "in expansion of macro 'WRAPPED_FREE'" } */
   WRAPPED_FREE (ptr); /* { dg-message "in expansion of macro 'WRAPPED_FREE'" } */
 
-  /* Erase the spans indicating the header file
-     (to avoid embedding path assumptions).  */
-  /* { dg-regexp "\[^|\]+/malloc-macro.h:\[0-9\]+:\[0-9\]+:" } */
-  /* { dg-regexp "\[^|\]+/malloc-macro.h:\[0-9\]+:\[0-9\]+:" } */
-
   /* { dg-begin-multiline-output "" }
    NN | #define WRAPPED_FREE(PTR) free(PTR)
       |                           ^~~~~~~~~

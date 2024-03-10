@@ -9,5 +9,5 @@
    because the location of the macro definition is incorrectly set.  This is a
    separate issue, will resolve it in a later patch.  */
 
-#define X /* { dg-warning "-:-Wunused-macros" } */
+#define X /* { dg-warning "-Wunused-macros" } */
 #pragma GCC diagnostic ignored "-Wunused-macros"

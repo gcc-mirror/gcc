@@ -1,5 +1,5 @@
 /* { dg-do run { target aarch64_sve_hw } } */
-/* { dg-options "-O0 -fstack-clash-protection -g" } */
+/* { dg-options "-O0 -fstack-clash-protection -fno-cprop-registers -fdisable-rtl-combine -g" } */
 
 #include <arm_sve.h>
 #include <stdarg.h>

@@ -6,7 +6,7 @@
 typedef int v4si __attribute__ ((vector_size (16)));
 
 v4si
-fun (v4si a) {  return a; }  /* { dg-bogus "the scalable vector type" } */
+fun (v4si a) {  return a; }  /* { dg-bogus "the vector type" } */
 
 void
 bar ()

@@ -744,7 +744,10 @@ insert_vsetvl (enum emit_type emit_type, rtx_insn *rinsn,
   if (vlmax_avl_p (info.get_avl ()))
     {
       gcc_assert (has_vtype_op (rinsn) || vsetvl_insn_p (rinsn));
-      rtx vl_op = info.get_avl_reg_rtx ();
+      /* For user vsetvli a5, zero, we should use get_vl to get the VL
+	 operand "a5".  */
+      rtx vl_op
+	= vsetvl_insn_p (rinsn) ? get_vl (rinsn) : info.get_avl_reg_rtx ();
       gcc_assert (!vlmax_avl_p (vl_op));
       emit_vsetvl_insn (VSETVL_NORMAL, emit_type, info, vl_op, rinsn);
       return VSETVL_NORMAL;

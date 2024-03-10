@@ -412,13 +412,14 @@ int currently_expanding_to_rtl;
 
 
 
-/* Same as rtx_equal_p, but call CB on each pair of rtx if CB is not NULL.
-   When the callback returns true, we continue with the new pair.
-   Whenever changing this function check if rtx_equal_p below doesn't need
-   changing as well.  */
+/* Return true if X and Y are identical-looking rtx's.
+   This is the Lisp function EQUAL for rtx arguments.
 
-int
-rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
+   Call CB on each pair of rtx if CB is not NULL.
+   When the callback returns true, we continue with the new pair.  */
+
+bool
+rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 {
   int i;
   int j;
@@ -427,29 +428,29 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
   rtx nx, ny;
 
   if (x == y)
-    return 1;
+    return true;
   if (x == 0 || y == 0)
-    return 0;
+    return false;
 
   /* Invoke the callback first.  */
   if (cb != NULL
       && ((*cb) (&x, &y, &nx, &ny)))
-    return rtx_equal_p_cb (nx, ny, cb);
+    return rtx_equal_p (nx, ny, cb);
 
   code = GET_CODE (x);
   /* Rtx's of different codes cannot be equal.  */
   if (code != GET_CODE (y))
-    return 0;
+    return false;
 
   /* (MULT:SI x y) and (MULT:HI x y) are NOT equivalent.
      (REG:SI x) and (REG:HI x) are NOT equivalent.  */
 
   if (GET_MODE (x) != GET_MODE (y))
-    return 0;
+    return false;
 
   /* MEMs referring to different address space are not equivalent.  */
   if (code == MEM && MEM_ADDR_SPACE (x) != MEM_ADDR_SPACE (y))
-    return 0;
+    return false;
 
   /* Some RTL can be compared nonrecursively.  */
   switch (code)
@@ -467,7 +468,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
     case VALUE:
     case SCRATCH:
     CASE_CONST_UNIQUE:
-      return 0;
+      return false;
 
     case CONST_VECTOR:
       if (!same_vector_encodings_p (x, y))
@@ -483,7 +484,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 	     == DEBUG_PARAMETER_REF_DECL (y);
 
     case ENTRY_VALUE:
-      return rtx_equal_p_cb (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y), cb);
+      return rtx_equal_p (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y), cb);
 
     default:
       break;
@@ -499,7 +500,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 	{
 	case 'w':
 	  if (XWINT (x, i) != XWINT (y, i))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'n':
@@ -512,31 +513,30 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 		  && XINT (x, i) == XINT (y, i))
 		break;
 #endif
-	      return 0;
+	      return false;
 	    }
 	  break;
 
 	case 'p':
 	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'V':
 	case 'E':
 	  /* Two vectors must have the same length.  */
 	  if (XVECLEN (x, i) != XVECLEN (y, i))
-	    return 0;
+	    return false;
 
 	  /* And the corresponding elements must match.  */
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (rtx_equal_p_cb (XVECEXP (x, i, j),
-                                XVECEXP (y, i, j), cb) == 0)
-	      return 0;
+	    if (!rtx_equal_p (XVECEXP (x, i, j), XVECEXP (y, i, j), cb))
+	      return false;
 	  break;
 
 	case 'e':
-	  if (rtx_equal_p_cb (XEXP (x, i), XEXP (y, i), cb) == 0)
-	    return 0;
+	  if (!rtx_equal_p (XEXP (x, i), XEXP (y, i), cb))
+	    return false;
 	  break;
 
 	case 'S':
@@ -544,7 +544,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 	  if ((XSTR (x, i) || XSTR (y, i))
 	      && (! XSTR (x, i) || ! XSTR (y, i)
 		  || strcmp (XSTR (x, i), XSTR (y, i))))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'u':
@@ -562,153 +562,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 	  gcc_unreachable ();
 	}
     }
-  return 1;
-}
-
-/* Return 1 if X and Y are identical-looking rtx's.
-   This is the Lisp function EQUAL for rtx arguments.
-   Whenever changing this function check if rtx_equal_p_cb above doesn't need
-   changing as well.  */
-
-int
-rtx_equal_p (const_rtx x, const_rtx y)
-{
-  int i;
-  int j;
-  enum rtx_code code;
-  const char *fmt;
-
-  if (x == y)
-    return 1;
-  if (x == 0 || y == 0)
-    return 0;
-
-  code = GET_CODE (x);
-  /* Rtx's of different codes cannot be equal.  */
-  if (code != GET_CODE (y))
-    return 0;
-
-  /* (MULT:SI x y) and (MULT:HI x y) are NOT equivalent.
-     (REG:SI x) and (REG:HI x) are NOT equivalent.  */
-
-  if (GET_MODE (x) != GET_MODE (y))
-    return 0;
-
-  /* MEMs referring to different address space are not equivalent.  */
-  if (code == MEM && MEM_ADDR_SPACE (x) != MEM_ADDR_SPACE (y))
-    return 0;
-
-  /* Some RTL can be compared nonrecursively.  */
-  switch (code)
-    {
-    case REG:
-      return (REGNO (x) == REGNO (y));
-
-    case LABEL_REF:
-      return label_ref_label (x) == label_ref_label (y);
-
-    case SYMBOL_REF:
-      return XSTR (x, 0) == XSTR (y, 0);
-
-    case DEBUG_EXPR:
-    case VALUE:
-    case SCRATCH:
-    CASE_CONST_UNIQUE:
-      return 0;
-
-    case CONST_VECTOR:
-      if (!same_vector_encodings_p (x, y))
-	return false;
-      break;
-
-    case DEBUG_IMPLICIT_PTR:
-      return DEBUG_IMPLICIT_PTR_DECL (x)
-	     == DEBUG_IMPLICIT_PTR_DECL (y);
-
-    case DEBUG_PARAMETER_REF:
-      return DEBUG_PARAMETER_REF_DECL (x)
-	     == DEBUG_PARAMETER_REF_DECL (y);
-
-    case ENTRY_VALUE:
-      return rtx_equal_p (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y));
-
-    default:
-      break;
-    }
-
-  /* Compare the elements.  If any pair of corresponding elements
-     fail to match, return 0 for the whole thing.  */
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      switch (fmt[i])
-	{
-	case 'w':
-	  if (XWINT (x, i) != XWINT (y, i))
-	    return 0;
-	  break;
-
-	case 'n':
-	case 'i':
-	  if (XINT (x, i) != XINT (y, i))
-	    {
-#ifndef GENERATOR_FILE
-	      if (((code == ASM_OPERANDS && i == 6)
-		   || (code == ASM_INPUT && i == 1))
-		  && XINT (x, i) == XINT (y, i))
-		break;
-#endif
-	      return 0;
-	    }
-	  break;
-
-	case 'p':
-	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
-	    return 0;
-	  break;
-
-	case 'V':
-	case 'E':
-	  /* Two vectors must have the same length.  */
-	  if (XVECLEN (x, i) != XVECLEN (y, i))
-	    return 0;
-
-	  /* And the corresponding elements must match.  */
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (rtx_equal_p (XVECEXP (x, i, j),  XVECEXP (y, i, j)) == 0)
-	      return 0;
-	  break;
-
-	case 'e':
-	  if (rtx_equal_p (XEXP (x, i), XEXP (y, i)) == 0)
-	    return 0;
-	  break;
-
-	case 'S':
-	case 's':
-	  if ((XSTR (x, i) || XSTR (y, i))
-	      && (! XSTR (x, i) || ! XSTR (y, i)
-		  || strcmp (XSTR (x, i), XSTR (y, i))))
-	    return 0;
-	  break;
-
-	case 'u':
-	  /* These are just backpointers, so they don't matter.  */
-	  break;
-
-	case '0':
-	case 't':
-	  break;
-
-	  /* It is believed that rtx's at this level will never
-	     contain anything but integers and other rtx's,
-	     except for within LABEL_REFs and SYMBOL_REFs.  */
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  return 1;
+  return true;
 }
 
 /* Return true if all elements of VEC are equal.  */

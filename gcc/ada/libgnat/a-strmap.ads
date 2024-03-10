@@ -48,13 +48,12 @@ pragma Assertion_Policy (Pre   => Ignore,
 
 with Ada.Characters.Latin_1;
 
-package Ada.Strings.Maps
-  with SPARK_Mode
+package Ada.Strings.Maps with
+  SPARK_Mode,
+  Always_Terminates
 is
    pragma Pure;
    --  In accordance with Ada 2005 AI-362
-
-   pragma Annotate (GNATprove, Always_Return, Maps);
 
    --------------------------------
    -- Character Set Declarations --

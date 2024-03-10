@@ -1875,6 +1875,15 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  && !(sym->attr.use_assoc && !intrinsic_array_parameter)))
     gfc_defer_symbol_init (sym);
 
+  /* Set the vptr of unlimited polymorphic pointer variables so that
+     they do not cause segfaults in select type, when the selector
+     is an intrinsic type.  Arrays are captured above.  */
+  if (sym->ts.type == BT_CLASS && UNLIMITED_POLY (sym)
+      && CLASS_DATA (sym)->attr.class_pointer
+      && !CLASS_DATA (sym)->attr.dimension && !sym->attr.dummy
+      && sym->attr.flavor == FL_VARIABLE && !sym->assoc)
+    gfc_defer_symbol_init (sym);
+
   if (sym->ts.type == BT_CHARACTER
       && sym->attr.allocatable
       && !sym->attr.dimension
@@ -1905,6 +1914,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       else
 	gcc_assert (!sym->value || sym->value->expr_type == EXPR_NULL);
     }
+
 
   gfc_finish_var_decl (decl, sym);
 
@@ -4651,6 +4661,29 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 							   NULL));
       if (sym->assoc)
 	continue;
+
+      /* Set the vptr of unlimited polymorphic pointer variables so that
+	 they do not cause segfaults in select type, when the selector
+	 is an intrinsic type.  */
+      if (sym->ts.type == BT_CLASS && UNLIMITED_POLY (sym)
+	  && sym->attr.flavor == FL_VARIABLE && !sym->assoc
+	  && !sym->attr.dummy && CLASS_DATA (sym)->attr.class_pointer)
+	{
+	  gfc_symbol *vtab;
+	  gfc_init_block (&tmpblock);
+	  vtab = gfc_find_vtab (&sym->ts);
+	  if (!vtab->backend_decl)
+	    {
+	      if (!vtab->attr.referenced)
+		gfc_set_sym_referenced (vtab);
+	      gfc_get_symbol_decl (vtab);
+	    }
+	  tmp = gfc_class_vptr_get (sym->backend_decl);
+	  gfc_add_modify (&tmpblock, tmp,
+			  gfc_build_addr_expr (TREE_TYPE (tmp),
+					       vtab->backend_decl));
+	  gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), NULL);
+	}
 
       if (sym->ts.type == BT_DERIVED
 	  && sym->ts.u.derived

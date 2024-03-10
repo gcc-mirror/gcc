@@ -426,7 +426,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_constructible_v<_Tp, _Tp&>);
       if constexpr (is_constructible_v<_Tp, _Tp&>)
 	{
-	  if constexpr (is_trivial_v<_Tp> && _Nm != 0)
+	  if constexpr (is_trivial_v<_Tp>)
 	    {
 	      array<remove_cv_t<_Tp>, _Nm> __arr;
 	      if (!__is_constant_evaluated() && _Nm != 0)
@@ -462,7 +462,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__builtin_memcpy(__arr.data(), __a, sizeof(__a));
 	      else
 		for (size_t __i = 0; __i < _Nm; ++__i)
-		  __arr._M_elems[__i] = std::move(__a[__i]);
+		  __arr._M_elems[__i] = __a[__i];
 	      return __arr;
 	    }
 	  else

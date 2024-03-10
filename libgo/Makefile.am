@@ -462,6 +462,7 @@ runtime_files = \
 	runtime/go-memclr.c \
 	runtime/go-memmove.c \
 	runtime/go-memequal.c \
+	runtime/go-mmap.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-nosys.c \

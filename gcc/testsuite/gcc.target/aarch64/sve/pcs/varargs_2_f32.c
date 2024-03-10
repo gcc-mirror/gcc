@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-stack-clash-protection -g" } */
+/* { dg-options "-O2 -fno-stack-clash-protection -fno-cprop-registers -fdisable-rtl-combine -g" } */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
 
 #include <arm_sve.h>

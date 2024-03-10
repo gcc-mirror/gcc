@@ -88,6 +88,8 @@ along with GCC; see the file COPYING3.  If not see
 	  /* pass_build_ealias is a dummy pass that ensures that we
 	     execute TODO_rebuild_alias at this point.  */
 	  NEXT_PASS (pass_build_ealias);
+	  /* Do phiprop before FRE so we optimize std::min and std::max well.  */
+	  NEXT_PASS (pass_phiprop);
 	  NEXT_PASS (pass_fre, true /* may_iterate */);
 	  NEXT_PASS (pass_early_vrp);
 	  NEXT_PASS (pass_merge_phi);

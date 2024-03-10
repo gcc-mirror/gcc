@@ -426,7 +426,9 @@ package body Sem_Ch13 is
 
    procedure Adjust_Record_For_Reverse_Bit_Order (R : Entity_Id) is
       Max_Machine_Scalar_Size : constant Uint :=
-                                  UI_From_Int (System_Max_Integer_Size);
+        UI_From_Int (if Reverse_Bit_Order_Threshold >= 0
+                     then Reverse_Bit_Order_Threshold
+                     else System_Max_Integer_Size);
       --  We use this as the maximum machine scalar size
 
       SSU : constant Uint := UI_From_Int (System_Storage_Unit);

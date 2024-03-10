@@ -295,10 +295,20 @@ def SplitAttributesFromSummaryLine(line):
   return (attrs, line)
 
 
-def IsInterestingResult(line):
+def IsInterestingResult(result_set, line):
   """Return True if line is one of the summary lines we care about."""
   (_, line) = SplitAttributesFromSummaryLine(line)
-  return bool(_VALID_TEST_RESULTS_REX.match(line))
+  valid_result = bool(_VALID_TEST_RESULTS_REX.match(line))
+
+  # If there's no tool defined it means that either the results section hasn't
+  # started yet, or it is already over.
+  if valid_result and result_set.current_tool is None:
+    if _OPTIONS.verbosity >= 3:
+      print(f'WARNING: Result "{line}" found outside sum file boundaries.',
+            file=sys.stderr)
+    return False
+
+  return valid_result
 
 
 def IsToolLine(line):
@@ -354,7 +364,7 @@ def ParseManifestWorker(result_set, manifest_path):
       result_set.remove(result_set.MakeTestResult(GetNegativeResult(line)))
     elif IsInclude(line):
       ParseManifestWorker(result_set, GetIncludeFile(line, manifest_path))
-    elif IsInterestingResult(line):
+    elif IsInterestingResult(result_set, line):
       result = result_set.MakeTestResult(line)
       if result.HasExpired():
         # Ignore expired manifest entries.
@@ -391,7 +401,7 @@ def ParseSummary(sum_fname):
   ordinal=0
   sum_file = open(sum_fname, encoding='latin-1', mode='r')
   for line in sum_file:
-    if IsInterestingResult(line):
+    if IsInterestingResult(result_set, line):
       result = result_set.MakeTestResult(line, ordinal)
       ordinal += 1
       if result.HasExpired():

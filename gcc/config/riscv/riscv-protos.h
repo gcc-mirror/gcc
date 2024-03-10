@@ -146,6 +146,7 @@ enum insn_type
   RVV_TERNOP = 5,
   RVV_WIDEN_TERNOP = 4,
   RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
+  RVV_SLIDE_OP = 4,      /* Dest, VUNDEF, source and offset.  */
 };
 enum vlmul_type
 {
@@ -184,12 +185,17 @@ bool legitimize_move (rtx, rtx);
 void emit_vlmax_vsetvl (machine_mode, rtx);
 void emit_hard_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_insn (unsigned, int, rtx *, rtx = 0);
+void emit_vlmax_fp_insn (unsigned, int, rtx *, rtx = 0);
 void emit_vlmax_ternary_insn (unsigned, int, rtx *, rtx = 0);
 void emit_nonvlmax_insn (unsigned, int, rtx *, rtx);
+void emit_vlmax_slide_insn (unsigned, rtx *);
+void emit_nonvlmax_slide_tu_insn (unsigned, rtx *, rtx);
 void emit_vlmax_merge_insn (unsigned, int, rtx *);
 void emit_vlmax_cmp_insn (unsigned, rtx *);
 void emit_vlmax_cmp_mu_insn (unsigned, rtx *);
 void emit_vlmax_masked_mu_insn (unsigned, int, rtx *);
+void emit_scalar_move_insn (unsigned, rtx *);
+void emit_nonvlmax_integer_move_insn (unsigned, rtx *, rtx);
 enum vlmul_type get_vlmul (machine_mode);
 unsigned int get_ratio (machine_mode);
 unsigned int get_nf (machine_mode);
@@ -247,19 +253,21 @@ void expand_vec_init (rtx, rtx);
 void expand_vcond (rtx *);
 void expand_vec_perm (rtx, rtx, rtx, rtx);
 void expand_select_vl (rtx *);
+
 /* Rounding mode bitfield for fixed point VXRM.  */
-enum vxrm_field_enum
+enum fixed_point_rounding_mode
 {
   VXRM_RNU,
   VXRM_RNE,
   VXRM_RDN,
   VXRM_ROD
 };
+
 /* Rounding mode bitfield for floating point FRM.  The value of enum comes
    from the below link.
    https://github.com/riscv/riscv-isa-manual/blob/main/src/f-st-ext.adoc#floating-point-control-and-status-register
  */
-enum frm_field_enum
+enum floating_point_rounding_mode
 {
   FRM_RNE = 0, /* Aka 0b000.  */
   FRM_RTZ = 1, /* Aka 0b001.  */

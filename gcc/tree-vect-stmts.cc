@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "regs.h"
 #include "attribs.h"
+#include "optabs-libfuncs.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -3692,7 +3693,8 @@ vectorizable_call (vec_info *vinfo,
 		      unsigned int vec_num = vec_oprnds0.length ();
 		      /* Always true for SLP.  */
 		      gcc_assert (ncopies == 1);
-		      vargs[varg++] = vect_get_loop_mask (gsi, masks, vec_num,
+		      vargs[varg++] = vect_get_loop_mask (loop_vinfo,
+							  gsi, masks, vec_num,
 							  vectype_out, i);
 		    }
 		  size_t k;
@@ -3733,7 +3735,8 @@ vectorizable_call (vec_info *vinfo,
 			  unsigned int vec_num = vec_oprnds0.length ();
 			  /* Always true for SLP.  */
 			  gcc_assert (ncopies == 1);
-			  tree mask = vect_get_loop_mask (gsi, masks, vec_num,
+			  tree mask = vect_get_loop_mask (loop_vinfo,
+							  gsi, masks, vec_num,
 							  vectype_out, i);
 			  vargs[mask_opno] = prepare_vec_mask
 			    (loop_vinfo, TREE_TYPE (mask), mask,
@@ -3758,7 +3761,7 @@ vectorizable_call (vec_info *vinfo,
 
 	  int varg = 0;
 	  if (masked_loop_p && reduc_idx >= 0)
-	    vargs[varg++] = vect_get_loop_mask (gsi, masks, ncopies,
+	    vargs[varg++] = vect_get_loop_mask (loop_vinfo, gsi, masks, ncopies,
 						vectype_out, j);
 	  for (i = 0; i < nargs; i++)
 	    {
@@ -3777,7 +3780,7 @@ vectorizable_call (vec_info *vinfo,
 
 	  if (mask_opno >= 0 && masked_loop_p)
 	    {
-	      tree mask = vect_get_loop_mask (gsi, masks, ncopies,
+	      tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks, ncopies,
 					      vectype_out, j);
 	      vargs[mask_opno]
 		= prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
@@ -5038,7 +5041,7 @@ vectorizable_conversion (vec_info *vinfo,
   tree scalar_dest;
   tree op0, op1 = NULL_TREE;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  tree_code tc1;
+  tree_code tc1, tc2;
   code_helper code, code1, code2;
   code_helper codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
   tree new_temp;
@@ -5246,6 +5249,57 @@ vectorizable_conversion (vec_info *vinfo,
 	code1 = tc1;
 	break;
       }
+
+      /* For conversions between float and smaller integer types try whether we
+	 can use intermediate signed integer types to support the
+	 conversion.  */
+      if ((code == FLOAT_EXPR
+	   && GET_MODE_SIZE (lhs_mode) > GET_MODE_SIZE (rhs_mode))
+	  || (code == FIX_TRUNC_EXPR
+	      && GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode)))
+	{
+	  bool float_expr_p = code == FLOAT_EXPR;
+	  scalar_mode imode = float_expr_p ? rhs_mode : lhs_mode;
+	  fltsz = GET_MODE_SIZE (float_expr_p ? lhs_mode : rhs_mode);
+	  code1 = float_expr_p ? code : NOP_EXPR;
+	  codecvt1 = float_expr_p ? NOP_EXPR : code;
+	  FOR_EACH_2XWIDER_MODE (rhs_mode_iter, imode)
+	    {
+	      imode = rhs_mode_iter.require ();
+	      if (GET_MODE_SIZE (imode) > fltsz)
+		break;
+
+	      cvt_type
+		= build_nonstandard_integer_type (GET_MODE_BITSIZE (imode),
+						  0);
+	      cvt_type = get_vectype_for_scalar_type (vinfo, cvt_type,
+						      slp_node);
+	      /* This should only happened for SLP as long as loop vectorizer
+		 only supports same-sized vector.  */
+	      if (cvt_type == NULL_TREE
+		  || maybe_ne (TYPE_VECTOR_SUBPARTS (cvt_type), nunits_in)
+		  || !supportable_convert_operation ((tree_code) code1,
+						     vectype_out,
+						     cvt_type, &tc1)
+		  || !supportable_convert_operation ((tree_code) codecvt1,
+						     cvt_type,
+						     vectype_in, &tc2))
+		continue;
+
+	      found_mode = true;
+	      break;
+	    }
+
+	  if (found_mode)
+	    {
+	      multi_step_cvt++;
+	      interm_types.safe_push (cvt_type);
+	      cvt_type = NULL_TREE;
+	      code1 = tc1;
+	      codecvt1 = tc2;
+	      break;
+	    }
+	}
       /* FALLTHRU */
     unsupported:
       if (dump_enabled_p ())
@@ -5510,7 +5564,18 @@ vectorizable_conversion (vec_info *vinfo,
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	{
 	  /* Arguments are ready, create the new vector stmt.  */
-	  gimple *new_stmt = vect_gimple_build (vec_dest, code1, vop0);
+	  gimple* new_stmt;
+	  if (multi_step_cvt)
+	    {
+	      gcc_assert (multi_step_cvt == 1);
+	      new_stmt = vect_gimple_build (vec_dest, codecvt1, vop0);
+	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      gimple_assign_set_lhs (new_stmt, new_temp);
+	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      vop0 = new_temp;
+	      vec_dest = vec_dsts[0];
+	    }
+	  new_stmt = vect_gimple_build (vec_dest, code1, vop0);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
@@ -6528,8 +6593,8 @@ vectorizable_operation (vec_info *vinfo,
                              "no optab.\n");
 	  return false;
 	}
-      target_support_p = (optab_handler (optab, vec_mode)
-			  != CODE_FOR_nothing);
+      target_support_p = (optab_handler (optab, vec_mode) != CODE_FOR_nothing
+			  || optab_libfunc (optab, vec_mode));
     }
 
   bool using_emulated_vectors_p = vect_emulated_vector_p (vectype);
@@ -6823,8 +6888,8 @@ vectorizable_operation (vec_info *vinfo,
 	}
       else if (masked_loop_p && mask_out_inactive)
 	{
-	  tree mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
-					  vectype, i);
+	  tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
+					  vec_num * ncopies, vectype, i);
 	  auto_vec<tree> vops (5);
 	  vops.quick_push (mask);
 	  vops.quick_push (vop0);
@@ -6865,8 +6930,8 @@ vectorizable_operation (vec_info *vinfo,
 	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op0,
 								 ncopies}))
 		{
-		  mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
-					     vectype, i);
+		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
+					     vec_num * ncopies, vectype, i);
 
 		  vop0 = prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
 					   vop0, gsi);
@@ -6875,8 +6940,8 @@ vectorizable_operation (vec_info *vinfo,
 	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op1,
 								 ncopies }))
 		{
-		  mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
-					     vectype, i);
+		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
+					     vec_num * ncopies, vectype, i);
 
 		  vop1 = prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
 					   vop1, gsi);
@@ -8760,8 +8825,8 @@ vectorizable_store (vec_info *vinfo,
 
 	  tree final_mask = NULL;
 	  if (loop_masks)
-	    final_mask = vect_get_loop_mask (gsi, loop_masks, ncopies,
-					     vectype, j);
+	    final_mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
+					     ncopies, vectype, j);
 	  if (vec_mask)
 	    final_mask = prepare_vec_mask (loop_vinfo, mask_vectype,
 					   final_mask, vec_mask, gsi);
@@ -8814,7 +8879,7 @@ vectorizable_store (vec_info *vinfo,
 
 	      tree final_mask = NULL_TREE;
 	      if (loop_masks)
-		final_mask = vect_get_loop_mask (gsi, loop_masks,
+		final_mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
 						 vec_num * ncopies,
 						 vectype, vec_num * j + i);
 	      if (vec_mask)
@@ -10133,8 +10198,8 @@ vectorizable_load (vec_info *vinfo,
 
 	  tree final_mask = NULL_TREE;
 	  if (loop_masks)
-	    final_mask = vect_get_loop_mask (gsi, loop_masks, ncopies,
-					     vectype, j);
+	    final_mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
+					     ncopies, vectype, j);
 	  if (vec_mask)
 	    final_mask = prepare_vec_mask (loop_vinfo, mask_vectype,
 					   final_mask, vec_mask, gsi);
@@ -10184,7 +10249,7 @@ vectorizable_load (vec_info *vinfo,
 	      tree final_mask = NULL_TREE;
 	      if (loop_masks
 		  && memory_access_type != VMAT_INVARIANT)
-		final_mask = vect_get_loop_mask (gsi, loop_masks,
+		final_mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
 						 vec_num * ncopies,
 						 vectype, vec_num * j + i);
 	      if (vec_mask)
@@ -11208,7 +11273,7 @@ vectorizable_condition (vec_info *vinfo,
 	  if (masks)
 	    {
 	      tree loop_mask
-		= vect_get_loop_mask (gsi, masks, vec_num * ncopies,
+		= vect_get_loop_mask (loop_vinfo, gsi, masks, vec_num * ncopies,
 				      vectype, i);
 	      tree tmp2 = make_ssa_name (vec_cmp_type);
 	      gassign *g

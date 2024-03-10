@@ -1040,11 +1040,12 @@ package body Contracts is
             --  appear at the library level (SPARK RM 7.1.3(3), C.6(6)).
 
             if not Is_Library_Level_Entity (Type_Or_Obj_Id) then
+               Error_Msg_Code := GEC_Volatile_At_Library_Level;
                Error_Msg_N
                  ("effectively volatile "
                     & Decl_Kind
-                    & " & must be declared at library level "
-                    & "(SPARK RM 7.1.3(3))", Type_Or_Obj_Id);
+                    & " & must be declared at library level '[[]']",
+                    Type_Or_Obj_Id);
 
             --  An object of a discriminated type cannot be effectively
             --  volatile except for protected objects (SPARK RM 7.1.3(5)).

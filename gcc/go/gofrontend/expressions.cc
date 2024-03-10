@@ -18307,6 +18307,16 @@ Slice_value_expression::do_traverse(Traverse* traverse)
   return TRAVERSE_CONTINUE;
 }
 
+// Determine type of a slice value.
+
+void
+Slice_value_expression::do_determine_type(const Type_context*)
+{
+  this->valmem_->determine_type_no_context();
+  this->len_->determine_type_no_context();
+  this->cap_->determine_type_no_context();
+}
+
 Expression*
 Slice_value_expression::do_copy()
 {

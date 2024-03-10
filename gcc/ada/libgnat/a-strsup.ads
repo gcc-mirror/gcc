@@ -51,9 +51,11 @@ with Ada.Strings.Maps; use type Ada.Strings.Maps.Character_Mapping_Function;
 with Ada.Strings.Search;
 with Ada.Strings.Text_Buffers;
 
-package Ada.Strings.Superbounded with SPARK_Mode is
+package Ada.Strings.Superbounded with
+  SPARK_Mode,
+  Always_Terminates
+is
    pragma Preelaborate;
-   pragma Annotate (GNATprove, Always_Return, Superbounded);
 
    --  Type Bounded_String in Ada.Strings.Bounded.Generic_Bounded_Length is
    --  derived from Super_String, with the constraint of the maximum length.

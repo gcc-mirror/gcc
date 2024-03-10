@@ -102,37 +102,43 @@
 
 ;; Non-extending loads.
 (define_insn "@aarch64_gather_ldnt<mode>"
-  [(set (match_operand:SVE_FULL_SD 0 "register_operand" "=w, w")
+  [(set (match_operand:SVE_FULL_SD 0 "register_operand")
 	(unspec:SVE_FULL_SD
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (match_operand:DI 2 "aarch64_reg_or_zero" "Z, r")
-	   (match_operand:<V_INT_EQUIV> 3 "register_operand" "w, w")
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (match_operand:DI 2 "aarch64_reg_or_zero")
+	   (match_operand:<V_INT_EQUIV> 3 "register_operand")
 	   (mem:BLK (scratch))]
 	  UNSPEC_LDNT1_GATHER))]
   "TARGET_SVE2"
-  "@
-   ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>]
-   ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>, %2]"
+  {@ [cons: =0, 1, 2, 3]
+     [&w, Upl, Z, w    ] ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>]
+     [?w, Upl, Z, 0    ] ^
+     [&w, Upl, r, w    ] ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>, %2]
+     [?w, Upl, r, 0    ] ^
+  }
 )
 
 ;; Extending loads.
 (define_insn_and_rewrite "@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode><SVE_PARTIAL_I:mode>"
-  [(set (match_operand:SVE_FULL_SDI 0 "register_operand" "=w, w")
+  [(set (match_operand:SVE_FULL_SDI 0 "register_operand")
 	(unspec:SVE_FULL_SDI
-	  [(match_operand:<SVE_FULL_SDI:VPRED> 4 "general_operand" "UplDnm, UplDnm")
+	  [(match_operand:<SVE_FULL_SDI:VPRED> 4 "general_operand")
 	   (ANY_EXTEND:SVE_FULL_SDI
 	     (unspec:SVE_PARTIAL_I
-	       [(match_operand:<SVE_FULL_SDI:VPRED> 1 "register_operand" "Upl, Upl")
-		(match_operand:DI 2 "aarch64_reg_or_zero" "Z, r")
-		(match_operand:<SVE_FULL_SDI:V_INT_EQUIV> 3 "register_operand" "w, w")
+	       [(match_operand:<SVE_FULL_SDI:VPRED> 1 "register_operand")
+		(match_operand:DI 2 "aarch64_reg_or_zero")
+		(match_operand:<SVE_FULL_SDI:V_INT_EQUIV> 3 "register_operand")
 		(mem:BLK (scratch))]
 	       UNSPEC_LDNT1_GATHER))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2
    && (~<SVE_FULL_SDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
-  "@
-   ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>]
-   ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>, %2]"
+  {@ [cons: =0, 1, 2, 3, 4]
+     [&w, Upl, Z, w, UplDnm] ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>]
+     [?w, Upl, Z, 0, UplDnm] ^
+     [&w, Upl, r, w, UplDnm] ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>, %2]
+     [?w, Upl, r, 0, UplDnm] ^
+  }
   "&& !CONSTANT_P (operands[4])"
   {
     operands[4] = CONSTM1_RTX (<SVE_FULL_SDI:VPRED>mode);

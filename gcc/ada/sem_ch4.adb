@@ -4913,16 +4913,6 @@ package body Sem_Ch4 is
       --  the discriminant values for a discriminant constraint)
       --  are unprefixed discriminant names.
 
-      procedure Find_Component_In_Instance (Rec : Entity_Id);
-      --  In an instance, a component of a private extension may not be visible
-      --  while it was visible in the generic. Search candidate scope for a
-      --  component with the proper identifier. This is only done if all other
-      --  searches have failed. If a match is found, the Etype of both N and
-      --  Sel are set from this component, and the entity of Sel is set to
-      --  reference this component. If no match is found, Entity (Sel) remains
-      --  unset. For a derived type that is an actual of the instance, the
-      --  desired component may be found in any ancestor.
-
       function Has_Mode_Conformant_Spec (Comp : Entity_Id) return Boolean;
       --  It is known that the parent of N denotes a subprogram call. Comp
       --  is an overloadable component of the concurrent type of the prefix.
@@ -4940,6 +4930,14 @@ package body Sem_Ch4 is
       --  interpretation is a procedure with synchronization kind By_Protected
       --  _Procedure, and collect all its interpretations (since it may be an
       --  overloaded interface primitive); otherwise return False.
+
+      function Try_Selected_Component_In_Instance
+        (Typ : Entity_Id) return Boolean;
+      --  If Typ is the actual for a formal derived type, or a derived type
+      --  thereof, the component inherited from the generic parent may not
+      --  be visible in the actual, but the selected component is legal. Climb
+      --  up the derivation chain of the generic parent type and return True if
+      --  we find the proper ancestor type; otherwise return False.
 
       ------------------------------------------------------
       -- Constraint_Has_Unprefixed_Discriminant_Reference --
@@ -4989,49 +4987,6 @@ package body Sem_Ch4 is
 
          return False;
       end Constraint_Has_Unprefixed_Discriminant_Reference;
-
-      --------------------------------
-      -- Find_Component_In_Instance --
-      --------------------------------
-
-      procedure Find_Component_In_Instance (Rec : Entity_Id) is
-         Comp : Entity_Id;
-         Typ  : Entity_Id;
-
-      begin
-         Typ := Rec;
-         while Present (Typ) loop
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-               if Chars (Comp) = Chars (Sel) then
-                  Set_Entity_With_Checks (Sel, Comp);
-                  Set_Etype (Sel, Etype (Comp));
-                  Set_Etype (N,   Etype (Comp));
-                  return;
-               end if;
-
-               Next_Component (Comp);
-            end loop;
-
-            --  If not found, the component may be declared in the parent
-            --  type or its full view, if any.
-
-            if Is_Derived_Type (Typ) then
-               Typ := Etype (Typ);
-
-               if Is_Private_Type (Typ) then
-                  Typ := Full_View (Typ);
-               end if;
-
-            else
-               return;
-            end if;
-         end loop;
-
-         --  If we fall through, no match, so no changes made
-
-         return;
-      end Find_Component_In_Instance;
 
       ------------------------------
       -- Has_Mode_Conformant_Spec --
@@ -5169,6 +5124,122 @@ package body Sem_Ch4 is
 
          return Present (Candidate);
       end Try_By_Protected_Procedure_Prefixed_View;
+
+      ----------------------------------------
+      -- Try_Selected_Component_In_Instance --
+      ----------------------------------------
+
+      function Try_Selected_Component_In_Instance
+        (Typ : Entity_Id) return Boolean
+      is
+         procedure Find_Component_In_Instance (Rec : Entity_Id);
+         --  In an instance, a component of a private extension may not be
+         --  visible while it was visible in the generic. Search candidate
+         --  scope for a component with the proper identifier. If a match is
+         --  found, the Etype of both N and Sel are set from this component,
+         --  and the entity of Sel is set to reference this component. If no
+         --  match is found, Entity (Sel) remains unset. For a derived type
+         --  that is an actual of the instance, the desired component may be
+         --  found in any ancestor.
+
+         --------------------------------
+         -- Find_Component_In_Instance --
+         --------------------------------
+
+         procedure Find_Component_In_Instance (Rec : Entity_Id) is
+            Comp : Entity_Id;
+            Typ  : Entity_Id;
+
+         begin
+            Typ := Rec;
+            while Present (Typ) loop
+               Comp := First_Component (Typ);
+               while Present (Comp) loop
+                  if Chars (Comp) = Chars (Sel) then
+                     Set_Entity_With_Checks (Sel, Comp);
+                     Set_Etype (Sel, Etype (Comp));
+                     Set_Etype (N,   Etype (Comp));
+                     return;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+
+               --  If not found, the component may be declared in the parent
+               --  type or its full view, if any.
+
+               if Is_Derived_Type (Typ) then
+                  Typ := Etype (Typ);
+
+                  if Is_Private_Type (Typ) then
+                     Typ := Full_View (Typ);
+                  end if;
+
+               else
+                  return;
+               end if;
+            end loop;
+
+            --  If we fall through, no match, so no changes made
+
+            return;
+         end Find_Component_In_Instance;
+
+         --  Local variables
+
+         Par : Entity_Id;
+
+      --  Start of processing for Try_Selected_Component_In_Instance
+
+      begin
+         pragma Assert (In_Instance and then Is_Tagged_Type (Typ));
+         pragma Assert (Etype (N) = Any_Type);
+
+         --  Climb up derivation chain to generic actual subtype
+
+         Par := Typ;
+         while not Is_Generic_Actual_Type (Par) loop
+            if Ekind (Par) = E_Record_Type then
+               Par := Parent_Subtype (Par);
+               exit when No (Par);
+            else
+               exit when Par = Etype (Par);
+               Par := Etype (Par);
+            end if;
+         end loop;
+
+         if Present (Par) and then Is_Generic_Actual_Type (Par) then
+
+            --  Now look for component in ancestor types
+
+            Par := Generic_Parent_Type (Declaration_Node (Par));
+            loop
+               Find_Component_In_Instance (Par);
+               exit when Present (Entity (Sel))
+                 or else Par = Etype (Par);
+               Par := Etype (Par);
+            end loop;
+
+         --  Another special case: the type is an extension of a private
+         --  type T, either is an actual in an instance or is immediately
+         --  visible, and we are in the body of the instance, which means
+         --  the generic body had a full view of the type declaration for
+         --  T or some ancestor that defines the component in question.
+         --  This happens because Is_Visible_Component returned False on
+         --  this component, as T or the ancestor is still private since
+         --  the Has_Private_View mechanism is bypassed because T or the
+         --  ancestor is not directly referenced in the generic body.
+
+         elsif Is_Derived_Type (Typ)
+           and then (Used_As_Generic_Actual (Typ)
+                      or else Is_Immediately_Visible (Typ))
+           and then In_Instance_Body
+         then
+            Find_Component_In_Instance (Parent_Subtype (Typ));
+         end if;
+
+         return Etype (N) /= Any_Type;
+      end Try_Selected_Component_In_Instance;
 
    --  Start of processing for Analyze_Selected_Component
 
@@ -5521,6 +5592,22 @@ package body Sem_Ch4 is
                end if;
 
             elsif Try_By_Protected_Procedure_Prefixed_View then
+               return;
+
+            --  If the prefix type is the actual for a formal derived type,
+            --  or a derived type thereof, the component inherited from the
+            --  generic parent may not be visible in the actual, but the
+            --  selected component is legal. This case must be handled before
+            --  trying the object.operation notation to avoid reporting
+            --  spurious errors, but must be skipped when Is_Prefixed_Call has
+            --  been set (because that means that this node was resolved to an
+            --  Object.Operation call when the generic unit was analyzed).
+
+            elsif In_Instance
+              and then not Is_Prefixed_Call (N)
+              and then Is_Tagged_Type (Prefix_Type)
+              and then Try_Selected_Component_In_Instance (Type_To_Use)
+            then
                return;
 
             elsif Try_Object_Operation (N) then
@@ -5883,64 +5970,22 @@ package body Sem_Ch4 is
          --  Similarly, if this is the actual for a formal derived type, or
          --  a derived type thereof, the component inherited from the generic
          --  parent may not be visible in the actual, but the selected
-         --  component is legal. Climb up the derivation chain of the generic
-         --  parent type until we find the proper ancestor type.
+         --  component is legal.
 
          elsif In_Instance and then Is_Tagged_Type (Prefix_Type) then
-            declare
-               Par : Entity_Id := Prefix_Type;
-            begin
-               --  Climb up derivation chain to generic actual subtype
 
-               while not Is_Generic_Actual_Type (Par) loop
-                  if Ekind (Par) = E_Record_Type then
-                     Par := Parent_Subtype (Par);
-                     exit when No (Par);
-                  else
-                     exit when Par = Etype (Par);
-                     Par := Etype (Par);
-                  end if;
-               end loop;
+            --  Climb up the derivation chain of the generic parent type until
+            --  we find the proper ancestor type.
 
-               if Present (Par) and then Is_Generic_Actual_Type (Par) then
-
-                  --  Now look for component in ancestor types
-
-                  Par := Generic_Parent_Type (Declaration_Node (Par));
-                  loop
-                     Find_Component_In_Instance (Par);
-                     exit when Present (Entity (Sel))
-                       or else Par = Etype (Par);
-                     Par := Etype (Par);
-                  end loop;
-
-               --  Another special case: the type is an extension of a private
-               --  type T, either is an actual in an instance or is immediately
-               --  visible, and we are in the body of the instance, which means
-               --  the generic body had a full view of the type declaration for
-               --  T or some ancestor that defines the component in question.
-               --  This happens because Is_Visible_Component returned False on
-               --  this component, as T or the ancestor is still private since
-               --  the Has_Private_View mechanism is bypassed because T or the
-               --  ancestor is not directly referenced in the generic body.
-
-               elsif Is_Derived_Type (Type_To_Use)
-                 and then (Used_As_Generic_Actual (Type_To_Use)
-                            or else Is_Immediately_Visible (Type_To_Use))
-                 and then In_Instance_Body
-               then
-                  Find_Component_In_Instance (Parent_Subtype (Type_To_Use));
-               end if;
-            end;
+            if Try_Selected_Component_In_Instance (Type_To_Use) then
+               return;
 
             --  The search above must have eventually succeeded, since the
             --  selected component was legal in the generic.
 
-            if No (Entity (Sel)) then
+            else
                raise Program_Error;
             end if;
-
-            return;
 
          --  Component not found, specialize error message when appropriate
 

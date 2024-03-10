@@ -389,21 +389,23 @@ package Sinfo is
    --  abbreviations are used:
 
    --    "plus fields for binary operator"
-   --       Chars                     Name_Id for the operator
-   --       Left_Opnd                 left operand expression
-   --       Right_Opnd                right operand expression
-   --       Entity                    defining entity for operator
-   --       Associated_Node           for generic processing
-   --       Do_Overflow_Check         set if overflow check needed
-   --       Has_Private_View          set in generic units.
+   --       Chars                       Name_Id for the operator
+   --       Left_Opnd                   left operand expression
+   --       Right_Opnd                  right operand expression
+   --       Entity                      defining entity for operator
+   --       Associated_Node             for generic processing
+   --       Do_Overflow_Check           set if overflow check needed
+   --       Has_Private_View            set in generic units
+   --       Has_Secondary_Private_View  set in generic units
 
    --    "plus fields for unary operator"
-   --       Chars                     Name_Id for the operator
-   --       Right_Opnd                right operand expression
-   --       Entity                    defining entity for operator
-   --       Associated_Node           for generic processing
-   --       Do_Overflow_Check         set if overflow check needed
-   --       Has_Private_View          set in generic units.
+   --       Chars                       Name_Id for the operator
+   --       Right_Opnd                  right operand expression
+   --       Entity                      defining entity for operator
+   --       Associated_Node             for generic processing
+   --       Do_Overflow_Check           set if overflow check needed
+   --       Has_Private_View            set in generic units
+   --       Has_Secondary_Private_View  set in generic units
 
    --    "plus fields for expression"
    --       Paren_Count               number of parentheses levels
@@ -1456,6 +1458,13 @@ package Sinfo is
    --  Has_Relative_Deadline_Pragma
    --    A flag present in N_Subprogram_Body and N_Task_Definition nodes to
    --    flag the presence of a pragma Relative_Deadline.
+
+   --  Has_Secondary_Private_View
+   --    A flag present in generic nodes that have an entity, to indicate that
+   --    the node is either of an access type whose Designated_Type is private
+   --    or of an array type whose Component_Type is private. Used to exchange
+   --    private and full declarations if the visibility at instantiation is
+   --    different from the visibility at generic definition.
 
    --  Has_Self_Reference
    --    Present in N_Aggregate and N_Extension_Aggregate. Indicates that one
@@ -2522,6 +2531,7 @@ package Sinfo is
       --  Is_SPARK_Mode_On_Node
       --  Is_Elaboration_Warnings_OK_Node
       --  Has_Private_View (set in generic units)
+      --  Has_Secondary_Private_View (set in generic units)
       --  Redundant_Use
       --  Atomic_Sync_Required
       --  plus fields for expression
@@ -2605,6 +2615,7 @@ package Sinfo is
       --  Entity
       --  Associated_Node
       --  Has_Private_View (set in generic units)
+      --  Has_Secondary_Private_View (set in generic units)
       --  plus fields for expression
 
       --  Note: the Entity field will be missing (set to Empty) for character
@@ -5388,6 +5399,7 @@ package Sinfo is
       --  Associated_Node Note this is shared with Entity
       --  Etype
       --  Has_Private_View (set in generic units)
+      --  Has_Secondary_Private_View (set in generic units)
 
       --  Note: the Strval field may be set to No_String for generated
       --  operator symbols that are known not to be string literals
@@ -8030,6 +8042,7 @@ package Sinfo is
       --  Is_SPARK_Mode_On_Node
       --  Is_Elaboration_Warnings_OK_Node
       --  Has_Private_View (set in generic units)
+      --  Has_Secondary_Private_View (set in generic units)
       --  Redundant_Use
       --  Atomic_Sync_Required
       --  plus fields for expression

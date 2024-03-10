@@ -46,7 +46,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! mips_msa } } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { mips_msa } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { ! mips_msa } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { mips_msa } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! { mips_msa || amdgcn-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { mips_msa || amdgcn-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { ! { mips_msa || amdgcn-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { mips_msa || amdgcn-*-* } } } } */

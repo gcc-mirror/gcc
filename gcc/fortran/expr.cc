@@ -812,6 +812,16 @@ gfc_has_vector_index (gfc_expr *e)
 }
 
 
+bool
+gfc_is_ptr_fcn (gfc_expr *e)
+{
+  return e != NULL && e->expr_type == EXPR_FUNCTION
+	      && (gfc_expr_attr (e).pointer
+		  || (e->ts.type == BT_CLASS
+		      && CLASS_DATA (e)->attr.class_pointer));
+}
+
+
 /* Copy a shape array.  */
 
 mpz_t *
@@ -6469,6 +6479,22 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 			   name, &e->where, context);
 	    }
 	  return false;
+	}
+      else if (context && gfc_is_ptr_fcn (assoc->target))
+	{
+	  if (!gfc_notify_std (GFC_STD_F2018, "%qs at %L associated to "
+			       "pointer function target being used in a "
+			       "variable definition context (%s)", name,
+			       &e->where, context))
+	    return false;
+	  else if (gfc_has_vector_index (e))
+	    {
+	      gfc_error ("%qs at %L associated to vector-indexed target"
+			 " cannot be used in a variable definition"
+			 " context (%s)",
+			 name, &e->where, context);
+	      return false;
+	    }
 	}
 
       /* Target must be allowed to appear in a variable definition context.  */

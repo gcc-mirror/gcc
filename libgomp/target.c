@@ -1153,7 +1153,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  if (!n)
 	    {
 	      tgt->list[i].key = NULL;
-	      tgt->list[i].offset = OFFSET_POINTER;
+	      tgt->list[i].offset = OFFSET_INLINED;
 	      continue;
 	    }
 	}

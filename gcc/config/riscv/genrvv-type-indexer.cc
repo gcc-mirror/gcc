@@ -73,9 +73,6 @@ valid_type (unsigned sew, int lmul_log2, unsigned nf, bool float_p)
   if (nf > 8 || nf < 1)
     return false;
 
-  if (sew == 16 && nf != 1 && float_p) // Disable FP16 tuple in temporarily.
-    return false;
-
   switch (lmul_log2)
     {
     case 1:

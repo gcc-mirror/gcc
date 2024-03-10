@@ -394,13 +394,9 @@ package body Exp_Ch7 is
    --  Check recursively whether a loop or block contains a subprogram that
    --  may need an activation record.
 
-   function Convert_View
-     (Proc : Entity_Id;
-      Arg  : Node_Id;
-      Ind  : Pos := 1) return Node_Id;
+   function Convert_View (Proc : Entity_Id; Arg  : Node_Id) return Node_Id;
    --  Proc is one of the Initialize/Adjust/Finalize operations, and Arg is the
-   --  argument being passed to it. Ind indicates which formal of procedure
-   --  Proc we are trying to match. This function will, if necessary, generate
+   --  argument being passed to it. This function will, if necessary, generate
    --  a conversion between the partial and full view of Arg to match the type
    --  of the formal of Proc, or force a conversion to the class-wide type in
    --  the case where the operation is abstract.
@@ -4402,22 +4398,12 @@ package body Exp_Ch7 is
    -- Convert_View --
    ------------------
 
-   function Convert_View
-     (Proc : Entity_Id;
-      Arg  : Node_Id;
-      Ind  : Pos := 1) return Node_Id
-   is
-      Fent : Entity_Id := First_Entity (Proc);
-      Ftyp : Entity_Id;
+   function Convert_View (Proc : Entity_Id; Arg  : Node_Id) return Node_Id is
+      Ftyp : constant Entity_Id := Etype (First_Formal (Proc));
+
       Atyp : Entity_Id;
 
    begin
-      for J in 2 .. Ind loop
-         Next_Entity (Fent);
-      end loop;
-
-      Ftyp := Etype (Fent);
-
       if Nkind (Arg) in N_Type_Conversion | N_Unchecked_Type_Conversion then
          Atyp := Entity (Subtype_Mark (Arg));
       else
@@ -4427,11 +4413,13 @@ package body Exp_Ch7 is
       if Is_Abstract_Subprogram (Proc) and then Is_Tagged_Type (Ftyp) then
          return Unchecked_Convert_To (Class_Wide_Type (Ftyp), Arg);
 
-      elsif Ftyp /= Atyp
-        and then Present (Atyp)
-        and then (Is_Private_Type (Ftyp) or else Is_Private_Type (Atyp))
-        and then Base_Type (Underlying_Type (Atyp)) =
-                 Base_Type (Underlying_Type (Ftyp))
+      elsif Present (Atyp)
+        and then Atyp /= Ftyp
+        and then (Is_Private_Type (Ftyp)
+                   or else Is_Private_Type (Atyp)
+                   or else Is_Private_Type (Base_Type (Atyp)))
+        and then Implementation_Base_Type (Atyp) =
+                 Implementation_Base_Type (Ftyp)
       then
          return Unchecked_Convert_To (Ftyp, Arg);
 

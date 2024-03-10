@@ -4,7 +4,7 @@
 #include "riscv_vector.h"
 
 void
-fun (vint32m1_t a) { } /* { dg-warning "the scalable vector type" } */
+fun (vint32m1_t a) { } /* { dg-warning "the vector type" } */
 
 void
 bar ()

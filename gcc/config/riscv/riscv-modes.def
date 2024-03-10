@@ -220,6 +220,7 @@ ADJUST_ALIGNMENT (VNx1QI, 1);
 #define RVV_TUPLE_MODES(NBYTES, NSUBPARTS, VB, VH, VS, VD)                     \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, QI, NBYTES, 1);             \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, HI, NBYTES / 2, 1);         \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, FLOAT, HF, NBYTES / 2, 1);       \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, SI, NBYTES / 4, 1);         \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, FLOAT, SF, NBYTES / 4, 1);       \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, DI, NBYTES / 8, 1);         \
@@ -236,6 +237,9 @@ ADJUST_ALIGNMENT (VNx1QI, 1);
   ADJUST_NUNITS (VNx##NSUBPARTS##x##VD##DI,                                    \
 		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x##VD##DI##mode,       \
 					VD * NSUBPARTS));                      \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x##VH##HF,                                    \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x##VH##HF##mode,       \
+					VH * NSUBPARTS));                      \
   ADJUST_NUNITS (VNx##NSUBPARTS##x##VS##SF,                                    \
 		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x##VS##SF##mode,       \
 					VS * NSUBPARTS));                      \
@@ -247,6 +251,7 @@ ADJUST_ALIGNMENT (VNx1QI, 1);
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VH##HI, 2);                             \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VS##SI, 4);                             \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VD##DI, 8);                             \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VH##HF, 2);                             \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VS##SF, 4);                             \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VD##DF, 8);
 
@@ -275,10 +280,12 @@ RVV_TUPLE_MODES (64, 2, 64, 32, 16, 8)
 #define RVV_TUPLE_PARTIAL_MODES(NSUBPARTS)                                     \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, QI, 1, 1);                  \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, HI, 1, 1);                  \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, FLOAT, HF, 1, 1);                \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, SI, 1, 1);                  \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, FLOAT, SF, 1, 1);                \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, QI, 2, 1);                  \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, HI, 2, 1);                  \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, FLOAT, HF, 2, 1);                \
   VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, QI, 4, 1);                  \
                                                                                \
   ADJUST_NUNITS (VNx##NSUBPARTS##x1QI,                                         \
@@ -286,6 +293,9 @@ RVV_TUPLE_MODES (64, 2, 64, 32, 16, 8)
 					NSUBPARTS));                           \
   ADJUST_NUNITS (VNx##NSUBPARTS##x1HI,                                         \
 		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x1HI##mode,            \
+					NSUBPARTS));                           \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x1HF,                                         \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x1HF##mode,            \
 					NSUBPARTS));                           \
   ADJUST_NUNITS (VNx##NSUBPARTS##x1SI,                                         \
 		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x1SI##mode,            \
@@ -299,15 +309,20 @@ RVV_TUPLE_MODES (64, 2, 64, 32, 16, 8)
   ADJUST_NUNITS (VNx##NSUBPARTS##x2HI,                                         \
 		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x2HI##mode,            \
 					2 * NSUBPARTS));                       \
+ADJUST_NUNITS (VNx##NSUBPARTS##x2HF,                                         \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x2HF##mode,            \
+					2 * NSUBPARTS));                       \
   ADJUST_NUNITS (VNx##NSUBPARTS##x4QI,                                         \
 		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x4QI##mode,            \
 					4 * NSUBPARTS));                       \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x1QI, 1);                                  \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x1HI, 2);                                  \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x1HF, 2);                                  \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x1SI, 4);                                  \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x1SF, 4);                                  \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x2QI, 1);                                  \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x2HI, 2);                                  \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x2HF, 2);                                  \
   ADJUST_ALIGNMENT (VNx##NSUBPARTS##x4QI, 1);
 
 RVV_TUPLE_PARTIAL_MODES (2)

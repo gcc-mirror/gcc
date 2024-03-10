@@ -1,3 +1,9 @@
+2023-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/107583
+	* c-parser.cc (c_parser_declspecs): Add hints to "unknown type
+	name" error.
+
 2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_clause_map): Reword error message for

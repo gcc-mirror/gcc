@@ -1342,6 +1342,11 @@ package Opt is
    --  GNATPREP
    --  Set to True if -C switch used.
 
+   Reverse_Bit_Order_Threshold : Int := -1;
+   --  GNAT
+   --  Set to the threshold from which the RM 13.5.1(13.3/2) clause applies,
+   --  or -1 if the size of the largest machine scalar is to be used.
+
    RTS_Lib_Path_Name : String_Ptr := null;
    RTS_Src_Path_Name : String_Ptr := null;
    --  GNAT

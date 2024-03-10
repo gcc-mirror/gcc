@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_vector } } } */
-/* { dg-additional-options "-std=c99 -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-additional-options "-std=c99 -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax -ffast-math" } */
 
 #include "vneg-template.h"
 
@@ -13,7 +13,7 @@
   {                             		\
     a##TYPE[i] = i - 127;             		\
   }                             		\
-  vneg_##TYPE (a##TYPE, a##TYPE, SZ);	\
+  vneg_##TYPE (a##TYPE, a##TYPE, SZ);		\
   for (int i = 0; i < SZ; i++)			\
     assert (a##TYPE[i] == -(i - 127));
 
@@ -21,7 +21,9 @@
  RUN(int8_t)	                                \
  RUN(int16_t)	                                \
  RUN(int32_t)	                                \
- RUN(int64_t)
+ RUN(int64_t)					\
+ RUN(float)	                                \
+ RUN(double)					\
 
 int main ()
 {

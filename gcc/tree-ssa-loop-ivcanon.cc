@@ -1520,15 +1520,16 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	    }
 	  BITMAP_FREE (fathers);
 
+	  /* Clean up the information about numbers of iterations, since
+	     complete unrolling might have invalidated it.  */
+	  scev_reset ();
+
 	  /* This will take care of removing completely unrolled loops
 	     from the loop structures so we can continue unrolling now
 	     innermost loops.  */
 	  if (cleanup_tree_cfg ())
 	    update_ssa (TODO_update_ssa_only_virtuals);
 
-	  /* Clean up the information about numbers of iterations, since
-	     complete unrolling might have invalidated it.  */
-	  scev_reset ();
 	  if (flag_checking && loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	    verify_loop_closed_ssa (true);
 	}

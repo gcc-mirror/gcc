@@ -5778,16 +5778,9 @@ ipcp_get_parm_bits (tree parm, tree *value, widest_int *mask)
   if (!ts || vec_safe_length (ts->bits) == 0)
     return false;
 
-  int i = 0;
-  for (tree p = DECL_ARGUMENTS (current_function_decl);
-       p != parm; p = DECL_CHAIN (p))
-    {
-      i++;
-      /* Ignore static chain.  */
-      if (!p)
-	return false;
-    }
-
+  int i = ts->get_param_index (current_function_decl, parm);
+  if (i < 0)
+    return false;
   clone_info *cinfo = clone_info::get (cnode);
   if (cinfo && cinfo->param_adjustments)
     {
@@ -5804,16 +5797,12 @@ ipcp_get_parm_bits (tree parm, tree *value, widest_int *mask)
   return true;
 }
 
-
-/* Update bits info of formal parameters as described in
-   ipcp_transformation.  */
+/* Update bits info of formal parameters of NODE as described in TS.  */
 
 static void
-ipcp_update_bits (struct cgraph_node *node)
+ipcp_update_bits (struct cgraph_node *node, ipcp_transformation *ts)
 {
-  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
-
-  if (!ts || vec_safe_length (ts->bits) == 0)
+  if (vec_safe_is_empty (ts->bits))
     return;
   vec<ipa_bits *, va_gc> &bits = *ts->bits;
   unsigned count = bits.length ();
@@ -5915,14 +5904,12 @@ ipcp_update_bits (struct cgraph_node *node)
     }
 }
 
-/* Update value range of formal parameters as described in
-   ipcp_transformation.  */
+/* Update value range of formal parameters of NODE as described in TS.  */
 
 static void
-ipcp_update_vr (struct cgraph_node *node)
+ipcp_update_vr (struct cgraph_node *node, ipcp_transformation *ts)
 {
-  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
-  if (!ts || vec_safe_length (ts->m_vr) == 0)
+  if (vec_safe_is_empty (ts->m_vr))
     return;
   const vec<ipa_vr, va_gc> &vr = *ts->m_vr;
   unsigned count = vr.length ();
@@ -5998,10 +5985,17 @@ ipcp_transform_function (struct cgraph_node *node)
     fprintf (dump_file, "Modification phase of node %s\n",
 	     node->dump_name ());
 
-  ipcp_update_bits (node);
-  ipcp_update_vr (node);
   ipcp_transformation *ts = ipcp_get_transformation_summary (node);
-  if (!ts || vec_safe_is_empty (ts->m_agg_values))
+  if (!ts
+      || (vec_safe_is_empty (ts->m_agg_values)
+	  && vec_safe_is_empty (ts->bits)
+	  && vec_safe_is_empty (ts->m_vr)))
+    return 0;
+
+  ts->maybe_create_parm_idx_map (cfun->decl);
+  ipcp_update_bits (node, ts);
+  ipcp_update_vr (node, ts);
+  if (vec_safe_is_empty (ts->m_agg_values))
       return 0;
   param_count = count_formal_params (node->decl);
   if (param_count == 0)

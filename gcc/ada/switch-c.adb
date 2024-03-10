@@ -635,6 +635,12 @@ package body Switch.C is
                      Generate_Processed_File := True;
                      Ptr := Ptr + 1;
 
+                  --  -gnateH (set reverse Bit_Order threshold to 64)
+
+                  when 'H' =>
+                     Reverse_Bit_Order_Threshold := 64;
+                     Ptr := Ptr + 1;
+
                   --  -gnatei (max number of instantiations)
 
                   when 'i' =>

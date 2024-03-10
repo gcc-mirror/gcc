@@ -364,6 +364,11 @@ proc gcc-dg-prune { system text } {
     # Always remember to clear it in .exp file after executed all tests.
     global dg_runtest_extra_prunes
 
+    # Call into multiline.exp to handle any multiline output directives.
+    # This is done before the check for blank lines so that multiline
+    # output directives can have blank lines within them.
+    set text [handle-multiline-outputs $text]
+
     # Complain about blank lines in the output (PR other/69006)
     global allow_blank_lines
     if { !$allow_blank_lines } {
