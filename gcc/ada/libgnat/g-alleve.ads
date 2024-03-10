@@ -313,22 +313,62 @@ private
    ---------------------------------------
 
    --  We simply use the natural array definitions corresponding to each
-   --  user-level vector type.
+   --  user-level vector type. We need to put pragma Universal_Aliasing
+   --  on these types because the common operations are implemented by
+   --  means of Unchecked_Conversion betwwen different representations.
 
-   type LL_VUI is new VUI_View;
-   type LL_VSI is new VSI_View;
-   type LL_VBI is new VBI_View;
-
-   type LL_VUS is new VUS_View;
-   type LL_VSS is new VSS_View;
-   type LL_VBS is new VBS_View;
+   --------------------------
+   -- char Core Components --
+   --------------------------
 
    type LL_VUC is new VUC_View;
+   pragma Universal_Aliasing (LL_VUC);
+
    type LL_VSC is new VSC_View;
+   pragma Universal_Aliasing (LL_VSC);
+
    type LL_VBC is new VBC_View;
+   pragma Universal_Aliasing (LL_VBC);
+
+   ---------------------------
+   -- short Core Components --
+   ---------------------------
+
+   type LL_VUS is new VUS_View;
+   pragma Universal_Aliasing (LL_VUS);
+
+   type LL_VSS is new VSS_View;
+   pragma Universal_Aliasing (LL_VSS);
+
+   type LL_VBS is new VBS_View;
+   pragma Universal_Aliasing (LL_VBS);
+
+   -------------------------
+   -- int Core Components --
+   -------------------------
+
+   type LL_VUI is new VUI_View;
+   pragma Universal_Aliasing (LL_VUI);
+
+   type LL_VSI is new VSI_View;
+   pragma Universal_Aliasing (LL_VSI);
+
+   type LL_VBI is new VBI_View;
+   pragma Universal_Aliasing (LL_VBI);
+
+   ---------------------------
+   -- Float Core Components --
+   ---------------------------
 
    type LL_VF is new VF_View;
+   pragma Universal_Aliasing (LL_VF);
+
+   ---------------------------
+   -- pixel Core Components --
+   ---------------------------
+
    type LL_VP is new VP_View;
+   pragma Universal_Aliasing (LL_VP);
 
    ------------------------------------
    -- Low level functional interface --

@@ -598,6 +598,14 @@ package body Exp_Pakd is
          Set_Associated_Node_For_Itype (PAT, Typ);
          Set_Original_Array_Type       (PAT, Typ);
 
+         --  In the case of a constrained array type, also set fields on the
+         --  implicit base type built during the analysis of its declaration.
+
+         if Ekind (PAT) = E_Array_Subtype then
+            Set_Is_Packed_Array_Impl_Type (Etype (PAT), True);
+            Set_Original_Array_Type       (Etype (PAT), Base_Type (Typ));
+         end if;
+
          --  Propagate representation aspects
 
          Set_Is_Atomic               (PAT, Is_Atomic                (Typ));
@@ -818,7 +826,7 @@ package body Exp_Pakd is
                    Subtype_Marks => Indexes,
                    Component_Definition =>
                      Make_Component_Definition (Loc,
-                       Aliased_Present    => False,
+                       Aliased_Present    => Has_Aliased_Components (Typ),
                        Subtype_Indication =>
                           New_Occurrence_Of (Ctyp, Loc)));
 
@@ -828,7 +836,7 @@ package body Exp_Pakd is
                     Discrete_Subtype_Definitions => Indexes,
                     Component_Definition =>
                       Make_Component_Definition (Loc,
-                        Aliased_Present    => False,
+                        Aliased_Present    => Has_Aliased_Components (Typ),
                         Subtype_Indication =>
                           New_Occurrence_Of (Ctyp, Loc)));
             end if;

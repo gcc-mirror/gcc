@@ -84,4 +84,7 @@ private
    for Stream_Element_Array'Read use Read_SEA;
    for Stream_Element_Array'Write use Write_SEA;
 
+   pragma Universal_Aliasing (Stream_Element);
+   --  This type is used to stream any other type
+
 end Ada.Streams;
