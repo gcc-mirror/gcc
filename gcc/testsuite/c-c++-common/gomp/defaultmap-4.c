@@ -20,5 +20,5 @@ foo (void)
       c[i] = a[i] + b[i];
 }
 
-/* { dg-final { scan-tree-dump "pragma omp target.*defaultmap\\(present:aggregate\\) map\\(present,alloc:c \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\) map\\(present,alloc:b \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\) map\\(present,alloc:a \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "pragma omp target.*defaultmap\\(present:aggregate\\) map\\(present,alloc:b \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\) map\\(present,alloc:a \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\) map\\(from:c \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "pragma omp target.*defaultmap\\(present:aggregate\\) map\\(force_present:c \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\) map\\(force_present:b \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\) map\\(force_present:a \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "pragma omp target.*defaultmap\\(present:aggregate\\) map\\(force_present:b \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\) map\\(force_present:a \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\) map\\(from:c \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */

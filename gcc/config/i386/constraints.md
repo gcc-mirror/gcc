@@ -162,7 +162,9 @@
 ;;  g  GOT memory operand.
 ;;  m  Vector memory operand
 ;;  c  Constant memory operand
+;;  k  TLS address that allows insn using non-integer registers
 ;;  n  Memory operand without REX prefix
+;;  r  Broadcast memory operand
 ;;  s  Sibcall memory operand, not valid for TARGET_X32
 ;;  w  Call memory operand, not valid for TARGET_X32
 ;;  z  Constant call address operand.

@@ -491,7 +491,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		  value_range res;
 		  if (!op->val[0])
 		    {
-		      range_op_handler handler (op->code, op->type);
+		      range_op_handler handler (op->code);
 		      if (!handler
 			  || !res.supports_type_p (op->type)
 			  || !handler.fold_range (res, op->type, vr,
@@ -501,7 +501,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		  else if (!op->val[1])
 		    {
 		      value_range op0;
-		      range_op_handler handler (op->code, op->type);
+		      range_op_handler handler (op->code);
 
 		      ipa_range_set_and_normalize (op0, op->val[0]);
 
@@ -520,7 +520,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		{
 		  value_range res;
 		  value_range val_vr;
-		  range_op_handler handler (c->code, boolean_type_node);
+		  range_op_handler handler (c->code);
 
 		  ipa_range_set_and_normalize (val_vr, c->val);
 

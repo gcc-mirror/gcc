@@ -72,6 +72,10 @@ public:
 			   const frange &lh,
 			   const frange &rh,
 			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (frange &r, tree type,
+			   const irange &lh,
+			   const irange &rh,
+			   relation_trio = TRIO_VARYING) const;
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
@@ -185,9 +189,9 @@ class range_op_handler
 {
 public:
   range_op_handler ();
-  range_op_handler (enum tree_code code, tree type);
-  range_op_handler (enum tree_code code);
-  inline operator bool () const { return m_operator != NULL; }
+  range_op_handler (unsigned);
+  operator bool () const;
+  range_operator *range_op () const;
 
   bool fold_range (vrange &r, tree type,
 		   const vrange &lh,
@@ -213,7 +217,6 @@ public:
 protected:
   unsigned dispatch_kind (const vrange &lhs, const vrange &op1,
 			  const vrange& op2) const;
-  void set_op_handler (enum tree_code code, tree type);
   range_operator *m_operator;
 };
 
@@ -226,9 +229,8 @@ range_cast (vrange &r, tree type)
   Value_Range tmp (r);
   Value_Range varying (type);
   varying.set_varying (type);
-  range_op_handler op (CONVERT_EXPR, type);
   // Call op_convert, if it fails, the result is varying.
-  if (!op || !op.fold_range (r, type, tmp, varying))
+  if (!range_op_handler (CONVERT_EXPR).fold_range (r, type, tmp, varying))
     {
       r.set_varying (type);
       return false;
@@ -249,9 +251,8 @@ range_cast (Value_Range &r, tree type)
   // Ensure we are in the correct mode for the call to fold.
   r.set_type (type);
 
-  range_op_handler op (CONVERT_EXPR, type);
   // Call op_convert, if it fails, the result is varying.
-  if (!op || !op.fold_range (r, type, tmp, varying))
+  if (!range_op_handler (CONVERT_EXPR).fold_range (r, type, tmp, varying))
     {
       r.set_varying (type);
       return false;
@@ -265,60 +266,37 @@ extern void wi_set_zero_nonzero_bits (tree type,
 				      wide_int &maybe_nonzero,
 				      wide_int &mustbe_nonzero);
 
+// These are extra operators that do not fit in the normal scheme of things.
+// Add them to the end of the tree-code vector, and provide a name for
+// each allowing for easy access when required.
+
+#define OP_WIDEN_MULT_SIGNED	((unsigned) MAX_TREE_CODES)
+#define OP_WIDEN_MULT_UNSIGNED	((unsigned) MAX_TREE_CODES + 1)
+#define OP_WIDEN_PLUS_SIGNED	((unsigned) MAX_TREE_CODES + 2)
+#define OP_WIDEN_PLUS_UNSIGNED	((unsigned) MAX_TREE_CODES + 3)
+#define RANGE_OP_TABLE_SIZE	((unsigned) MAX_TREE_CODES + 4)
+
 // This implements the range operator tables as local objects.
 
 class range_op_table
 {
 public:
-  range_operator *operator[] (enum tree_code code);
-  void set (enum tree_code code, range_operator &op);
+  range_op_table ();
+  inline range_operator *operator[] (unsigned code)
+    {
+      gcc_checking_assert (code < RANGE_OP_TABLE_SIZE);
+      return m_range_tree[code];
+    }
 protected:
-  range_operator *m_range_tree[MAX_TREE_CODES];
+  inline void set (unsigned code, range_operator &op)
+    {
+      gcc_checking_assert (code < RANGE_OP_TABLE_SIZE);
+      gcc_checking_assert (m_range_tree[code] == NULL);
+      m_range_tree[code] = &op;
+    }
+  range_operator *m_range_tree[RANGE_OP_TABLE_SIZE];
   void initialize_integral_ops ();
   void initialize_pointer_ops ();
   void initialize_float_ops ();
 };
-
-
-// Return a pointer to the range_operator instance, if there is one
-// associated with tree_code CODE.
-
-inline range_operator *
-range_op_table::operator[] (enum tree_code code)
-{
-  gcc_checking_assert (code > 0 && code < MAX_TREE_CODES);
-  return m_range_tree[code];
-}
-
-// Add OP to the handler table for CODE.
-
-inline void
-range_op_table::set (enum tree_code code, range_operator &op)
-{
-  gcc_checking_assert (m_range_tree[code] == NULL);
-  m_range_tree[code] = &op;
-}
-
-// This holds the range op tables
-
-class integral_table : public range_op_table
-{
-public:
-  integral_table ();
-};
-extern integral_table integral_tree_table;
-
-// Instantiate a range op table for pointer operations.
-
-class pointer_table : public range_op_table
-{
-public:
-  pointer_table ();
-};
-extern pointer_table pointer_tree_table;
-
-extern range_operator *ptr_op_widen_mult_signed;
-extern range_operator *ptr_op_widen_mult_unsigned;
-extern range_operator *ptr_op_widen_plus_signed;
-extern range_operator *ptr_op_widen_plus_unsigned;
 #endif // GCC_RANGE_OP_H

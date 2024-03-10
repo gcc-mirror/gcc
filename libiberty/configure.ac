@@ -233,8 +233,8 @@ case "${enable_shared}" in
   *) shared=yes ;;
 esac
 
-# ...unless --enable-host-shared was passed from top-level config:
-if [[ "${enable_host_shared}" = "yes" ]]; then
+# ...unless --enable-host-{shared,pie} was passed from top-level config:
+if [[ "${enable_host_shared}" = "yes" ]] || [[ "${enable_host_pie}" = "yes" ]]; then
   shared=yes
 fi
 

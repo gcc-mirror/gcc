@@ -269,6 +269,16 @@ package body Exp_Prag is
       end;
    end Expand_Pragma_Abort_Defer;
 
+   -------------------------------------
+   -- Expand_Pragma_Always_Terminates --
+   -------------------------------------
+
+   procedure Expand_Pragma_Always_Terminates (Prag : Node_Id) is
+      pragma Unreferenced (Prag);
+   begin
+      null;
+   end Expand_Pragma_Always_Terminates;
+
    --------------------------
    -- Expand_Pragma_Check --
    --------------------------

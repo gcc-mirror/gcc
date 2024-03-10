@@ -6249,6 +6249,12 @@ loongarch_option_override_internal (struct gcc_options *opts)
       && !opts->x_optimize_size)
     opts->x_flag_prefetch_loop_arrays = 1;
 
+  if (opts->x_flag_align_functions && !opts->x_str_align_functions)
+    opts->x_str_align_functions = loongarch_cpu_align[LARCH_ACTUAL_TUNE].function;
+
+  if (opts->x_flag_align_labels && !opts->x_str_align_labels)
+    opts->x_str_align_labels = loongarch_cpu_align[LARCH_ACTUAL_TUNE].label;
+
   if (TARGET_DIRECT_EXTERN_ACCESS && flag_shlib)
     error ("%qs cannot be used for compiling a shared library",
 	   "-mdirect-extern-access");

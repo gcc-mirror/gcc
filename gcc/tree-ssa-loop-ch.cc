@@ -642,6 +642,7 @@ ch_base::copy_headers (function *fun)
 	       if (stmt_can_terminate_bb_p (gsi_stmt (bsi)))
 		 precise = false;
 	   }
+	  free (bbs);
 	}
       if (precise
 	  && get_max_loop_iterations_int (loop) == 1)

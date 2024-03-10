@@ -1333,7 +1333,7 @@
 
 (define_insn "mov<mode>_internal"
   [(set (match_operand:VMOVE 0 "nonimmediate_operand"
-	 "=v,v ,v,v ,m")
+	 "=v,v ,x,v ,m")
 	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"
 	 " C,<sseconstm1>,BH,vm,v"))]
   "TARGET_SSE
@@ -25922,9 +25922,9 @@
   "TARGET_AVX512F"
 {
   /*  There is no DF broadcast (in AVX-512*) to 128b register.
-      Mimic it with integer variant.  */
+      Mimic it with vmovddup, just like vec_dupv2df<mask_name> does.  */
   if (<MODE>mode == V2DFmode)
-    return "vpbroadcastq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}";
+    return "vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}";
 
   return "v<sseintprefix>broadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %<iptr>1}";
 }

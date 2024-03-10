@@ -2755,7 +2755,7 @@ package body Exp_Disp is
       Def_Id : constant Entity_Id  :=
                  Make_Defining_Identifier (Loc,
                    Name_uDisp_Asynchronous_Select);
-      Params : constant List_Id    := New_List;
+      Params : List_Id;
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
@@ -2770,7 +2770,7 @@ package body Exp_Disp is
 
       Set_Warnings_Off (B_Id);
 
-      Append_List_To (Params, New_List (
+      Params := New_List (
 
         Make_Parameter_Specification (Loc,
           Defining_Identifier => Make_Defining_Identifier (Loc, Name_uT),
@@ -2795,7 +2795,7 @@ package body Exp_Disp is
         Make_Parameter_Specification (Loc,
           Defining_Identifier => Make_Defining_Identifier (Loc, Name_uF),
           Parameter_Type      => New_Occurrence_Of (Standard_Boolean, Loc),
-          Out_Present         => True)));
+          Out_Present         => True));
 
       return
         Make_Procedure_Specification (Loc,

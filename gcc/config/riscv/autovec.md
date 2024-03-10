@@ -155,9 +155,9 @@
     (any_shift:VI
      (match_operand:VI 1 "register_operand"    " vr")
      (match_operand:<VEL> 2 "csr_operand"      " rK")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   operands[2] = gen_lowpart (Pmode, operands[2]);
@@ -180,9 +180,9 @@
     (any_shift:VI
      (match_operand:VI 1 "register_operand"     " vr,vr")
      (match_operand:VI 2 "vector_shift_operand" " vr,vk")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
@@ -205,9 +205,9 @@
   [(set (match_operand:VB 0 "register_operand"                 "=vr")
 	(any_bitwise:VB (match_operand:VB 1 "register_operand" " vr")
 			(match_operand:VB 2 "register_operand" " vr")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
   {
     insn_code icode = code_for_pred (<CODE>, <MODE>mode);
@@ -227,9 +227,9 @@
 (define_insn_and_split "one_cmpl<mode>2"
   [(set (match_operand:VB 0 "register_operand"         "=vr")
 	(not:VB (match_operand:VB 1 "register_operand" " vr")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
   {
     insn_code icode = code_for_pred_not (<MODE>mode);
@@ -366,9 +366,9 @@
   [(set (match_operand:VWEXTI 0 "register_operand" "=&vr")
     (any_extend:VWEXTI
      (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand" "vr")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   insn_code icode = code_for_pred_vf2 (<CODE>, <MODE>mode);
@@ -409,9 +409,9 @@
   [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand" "=vr")
     (truncate:<V_DOUBLE_TRUNC>
      (match_operand:VWEXTI 1 "register_operand"              " vr")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   insn_code icode = code_for_pred_trunc (<MODE>mode);

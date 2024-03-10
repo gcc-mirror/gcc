@@ -20,7 +20,7 @@ program main
     ! { dg-output "CheCKpOInT(\n|\r\n|\r).*" }
 
     ! b has not been allocated, so this should result in an error.
-    ! { dg-output "libgomp: present clause: not present on the device \\\(0x\[0-9a-f\]+, \[0-9\]+\\\)" { target offload_device_nonshared_as } }
+    ! { dg-output "libgomp: present clause: not present on the device \\(addr: 0x\[0-9a-f\]+, size: \[0-9\]+ \\(0x\[0-9a-f\]+\\), dev: \[0-9\]+\\\)" { target offload_device_nonshared_as } }
     ! { dg-shouldfail "present error triggered" { offload_device_nonshared_as } }
     !$omp target map (present, to: b)
       do i = 1, N

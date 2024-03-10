@@ -3686,6 +3686,7 @@ package body Sem_Case is
                            if not Is_Discrete_Type (E)
                              or else not Has_Static_Predicate (E)
                              or else Has_Dynamic_Predicate_Aspect (E)
+                             or else Has_Ghost_Predicate_Aspect (E)
                            then
                               Bad_Predicated_Subtype_Use
                                 ("cannot use subtype& with non-static "

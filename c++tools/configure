@@ -627,7 +627,8 @@ get_gcc_base_ver
 EGREP
 GREP
 CXXCPP
-PIEFLAG
+LD_PICFLAG
+PICFLAG
 MAINTAINER
 CXX_AUX_TOOLS
 AUTOHEADER
@@ -700,6 +701,7 @@ enable_c___tools
 enable_maintainer_mode
 enable_checking
 enable_default_pie
+enable_host_pie
 with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
@@ -1333,6 +1335,7 @@ Optional Features:
                           only specific categories of checks. Categories are:
                           yes,no,all,none,release.
   --enable-default-pie    enable Position Independent Executable as default
+  --enable-host-pie       build host code as PIE
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2990,10 +2993,18 @@ fi
 # Check whether --enable-default-pie was given.
 # Check whether --enable-default-pie was given.
 if test "${enable_default_pie+set}" = set; then :
-  enableval=$enable_default_pie; PIEFLAG=-fPIE
+  enableval=$enable_default_pie; PICFLAG=-fPIE
 else
-  PIEFLAG=
+  PICFLAG=
 fi
+
+
+# Enable --enable-host-pie
+# Check whether --enable-host-pie was given.
+if test "${enable_host_pie+set}" = set; then :
+  enableval=$enable_host_pie; PICFLAG=-fPIE; LD_PICFLAG=-pie
+fi
+
 
 
 

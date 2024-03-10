@@ -303,4 +303,6 @@ th_mempair_output_move (rtx[4], bool, machine_mode, RTX_CODE);
 #endif
 
 extern bool riscv_use_divmod_expander (void);
+void riscv_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
+
 #endif /* ! GCC_RISCV_PROTOS_H */

@@ -439,6 +439,7 @@ package Einfo.Utils is
    --  node, otherwise Empty is returned. The following contract pragmas that
    --  appear in N_Contract nodes are also handled by this routine:
    --    Abstract_State
+   --    Always_Terminates
    --    Async_Readers
    --    Async_Writers
    --    Attach_Handler

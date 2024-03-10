@@ -43,6 +43,9 @@ package System.Storage_Elements is
    --  this unit Pure instead of Preelaborable; see RM 13.7.1(15). In Ada 2005,
    --  this is Pure in any case (AI-362).
 
+   pragma No_Elaboration_Code_All;
+   --  Allow the use of that restriction in units that WITH this unit
+
    pragma Annotate (GNATprove, Always_Return, Storage_Elements);
 
    type Storage_Offset is range -Memory_Size / 2 .. Memory_Size / 2 - 1;

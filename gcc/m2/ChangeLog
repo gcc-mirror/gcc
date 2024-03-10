@@ -1,3 +1,56 @@
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* Make-lang.in: New var, GM2_PICFLAGS.  Use it.
+
+2023-06-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (check-format-error): New rule.
+	* gm2-compiler/M2MetaError.mod (op): Add calls InternalError if
+	digits are detected.
+	* gm2-compiler/M2Quads.mod (BuildForToByDo): Bugfix to format
+	specifier.
+	(BuildLengthFunction): Bugfix to format	specifiers.
+	(BuildOddFunction): Bugfix to format specifiers.
+	(BuildAbsFunction): Bugfix to format specifiers.
+	(BuildCapFunction): Bugfix to format specifiers.
+	(BuildChrFunction): Bugfix to format specifiers.
+	(BuildOrdFunction): Bugfix to format specifiers.
+	(BuildMakeAdrFunction): Bugfix to format specifiers.
+	(BuildSizeFunction): Bugfix to format specifiers.
+	(BuildBitSizeFunction): Bugfix to format specifiers.
+	* tools-src/checkmeta.py: New file.
+
+2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110189
+	* gm2-compiler/M2Quads.mod (BuildAbsFunction): Replace abort
+	format specifier.
+	(BuildValFunction): Replace abort format specifier.
+	(BuildCastFunction): Replace abort format specifier.
+	(BuildMinFunction): Replace abort format specifier.
+	(BuildMaxFunction): Replace abort format specifier.
+	(BuildTruncFunction): Replace abort format specifier.
+	* gm2-compiler/P3Build.bnf (Pass1): Remove.
+	(Pass2): Remove.
+	(Pass3): Remove.
+	(Expect): Add Pass1.
+	(AsmStatement): Remove Pass3.
+	(AsmOperands): Remove Pass3.
+	(AsmOperandSpec): Remove Pass3.
+	(AsmInputElement): Remove Pass3.
+	(AsmOutputElement): Remove Pass3.
+	(AsmTrashList): Remove Pass3.
+
+2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110126
+	* gm2-compiler/M2Quads.def (BuildAsmElement): Remove
+	trash parameter.
+	(BuildAsmTrash): New procedure.
+	* gm2-compiler/M2Quads.mod (BuildAsmTrash): New procedure.
+	(BuildAsmElement): Remove trash parameter.
+	* gm2-compiler/P3Build.bnf (AsmTrashList): Rewrite.
+
 2023-06-08  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110126

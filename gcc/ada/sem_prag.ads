@@ -38,6 +38,7 @@ package Sem_Prag is
    Aspect_Specifying_Pragma : constant array (Pragma_Id) of Boolean :=
      (Pragma_Abstract_State               => True,
       Pragma_All_Calls_Remote             => True,
+      Pragma_Always_Terminates            => True,
       Pragma_Annotate                     => True,
       Pragma_Async_Readers                => True,
       Pragma_Async_Writers                => True,
@@ -133,7 +134,8 @@ package Sem_Prag is
    --  expression.
 
    Assertion_Expression_Pragma : constant array (Pragma_Id) of Boolean :=
-     (Pragma_Assert                    => True,
+     (Pragma_Always_Terminates         => True,
+      Pragma_Assert                    => True,
       Pragma_Assert_And_Cut            => True,
       Pragma_Assume                    => True,
       Pragma_Check                     => True,
@@ -210,7 +212,8 @@ package Sem_Prag is
    --  of subprogram bodies.
 
    Pragma_Significant_To_Subprograms : constant array (Pragma_Id) of Boolean :=
-     (Pragma_Contract_Cases     => True,
+     (Pragma_Always_Terminates  => True,
+      Pragma_Contract_Cases     => True,
       Pragma_Depends            => True,
       Pragma_Exceptional_Cases  => True,
       Pragma_Ghost              => True,
@@ -240,6 +243,13 @@ package Sem_Prag is
 
    procedure Analyze_Pragma (N : Node_Id);
    --  Analyze procedure for pragma reference node N
+
+   procedure Analyze_Always_Terminates_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of delayed pragma Always_Terminates. Freeze_Id is
+   --  the entity of [generic] package body or [generic] subprogram body which
+   --  caused "freezing" of the related contract where the pragma resides.
 
    procedure Analyze_Contract_Cases_In_Decl_Part
      (N         : Node_Id;
@@ -445,6 +455,7 @@ package Sem_Prag is
      (Prag      : Node_Id;
       Do_Checks : Boolean := False) return Node_Id;
    --  Subsidiary to the analysis of pragmas
+   --    Always_Terminates
    --    Contract_Cases
    --    Depends
    --    Exceptional_Cases

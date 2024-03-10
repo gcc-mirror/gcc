@@ -399,10 +399,17 @@ rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern) const
 {
   unsigned HOST_WIDE_INT mask = 0;
   unsigned HOST_WIDE_INT base_mask = (1ULL << index_in_pattern);
+  /* Here we construct a mask pattern that will later be broadcast
+     to a vector register.  The maximum broadcast size for vmv.v.x/vmv.s.x
+     is determined by the length of a vector element (ELEN) and not by
+     XLEN so make sure we do not exceed it.  One example is -march=zve32*
+     which mandates ELEN == 32 but can be combined with -march=rv64
+     with XLEN == 64.  */
+  unsigned int elen = TARGET_VECTOR_ELEN_64 ? 64 : 32;
 
-  gcc_assert (BITS_PER_WORD % npatterns () == 0);
+  gcc_assert (elen % npatterns () == 0);
 
-  int limit = BITS_PER_WORD / npatterns ();
+  int limit = elen / npatterns ();
 
   for (int i = 0; i < limit; i++)
     mask |= base_mask << (i * npatterns ());
@@ -457,6 +464,9 @@ rvv_builder::single_step_npatterns_p () const
      { 2, 2, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 16, 16, 16, 16, ... }
    E.g. NPATTERNS = 8:
      { 2, 2, 2, 2, 2, 2, 2, 2, 8, 8, 8, 8, 8, 8, 8, 8, ... }
+   We only check ele[0] ~ ele[NPATTERNS - 1] whether they are the same.
+   We don't need to check the elements[n] with n >= NPATTERNS since
+   they don't belong to the same pattern.
 */
 bool
 rvv_builder::npatterns_all_equal_p () const
@@ -836,6 +846,47 @@ emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
   emit_vlmax_masked_mu_insn (icode, RVV_BINOP_MU, ops);
 }
 
+/* According to RVV ISA spec (16.5.1. Synthesizing vdecompress):
+   https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc
+
+  There is no inverse vdecompress provided, as this operation can be readily
+  synthesized using iota and a masked vrgather:
+
+      Desired functionality of 'vdecompress'
+	7 6 5 4 3 2 1 0     # vid
+
+	      e d c b a     # packed vector of 5 elements
+	1 0 0 1 1 1 0 1     # mask vector of 8 elements
+	p q r s t u v w     # destination register before vdecompress
+
+	e q r d c b v a     # result of vdecompress
+       # v0 holds mask
+       # v1 holds packed data
+       # v11 holds input expanded vector and result
+       viota.m v10, v0                 # Calc iota from mask in v0
+       vrgather.vv v11, v1, v10, v0.t  # Expand into destination
+     p q r s t u v w  # v11 destination register
+	   e d c b a  # v1 source vector
+     1 0 0 1 1 1 0 1  # v0 mask vector
+
+     4 4 4 3 2 1 1 0  # v10 result of viota.m
+     e q r d c b v a  # v11 destination after vrgather using viota.m under mask
+*/
+static void
+emit_vlmax_decompress_insn (rtx target, rtx op0, rtx op1, rtx mask)
+{
+  machine_mode data_mode = GET_MODE (target);
+  machine_mode sel_mode = related_int_vector_mode (data_mode).require ();
+  if (GET_MODE_INNER (data_mode) == QImode)
+    sel_mode = get_vector_mode (HImode, GET_MODE_NUNITS (data_mode)).require ();
+
+  rtx sel = gen_reg_rtx (sel_mode);
+  rtx iota_ops[] = {sel, mask};
+  emit_vlmax_insn (code_for_pred_iota (sel_mode), RVV_UNOP, iota_ops);
+  emit_vlmax_gather_insn (target, op0, sel);
+  emit_vlmax_masked_gather_mu_insn (target, op1, sel, mask);
+}
+
 /* Emit merge instruction.  */
 
 static machine_mode
@@ -1210,7 +1261,6 @@ struct mode_vtype_group
   ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;                     \
   vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
   ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
-#include "riscv-vector-switch.def"
 #define TUPLE_ENTRY(MODE, REQUIREMENT, SUBPART_MODE, NF, VLMUL_FOR_MIN_VLEN32, \
 		    RATIO_FOR_MIN_VLEN32, VLMUL_FOR_MIN_VLEN64,                \
 		    RATIO_FOR_MIN_VLEN64, VLMUL_FOR_MIN_VLEN128,               \
@@ -1224,6 +1274,8 @@ struct mode_vtype_group
   vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
   ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
 #include "riscv-vector-switch.def"
+#undef ENTRY
+#undef TUPLE_ENTRY
   }
 };
 
@@ -1883,7 +1935,7 @@ expand_vector_init_merge_repeating_sequence (rtx target,
       rtx mask = gen_reg_rtx (mask_mode);
       rtx dup = gen_reg_rtx (dup_mode);
 
-      if (full_nelts <= BITS_PER_WORD) /* vmv.s.x.  */
+      if (full_nelts <= builder.inner_bits_size ()) /* vmv.s.x.  */
 	{
 	  rtx ops[] = {dup, gen_scalar_move_mask (dup_mask_mode),
 	    RVV_VUNDEF (dup_mode), merge_mask};
@@ -1893,7 +1945,8 @@ expand_vector_init_merge_repeating_sequence (rtx target,
       else /* vmv.v.x.  */
 	{
 	  rtx ops[] = {dup, force_reg (GET_MODE_INNER (dup_mode), merge_mask)};
-	  rtx vl = gen_int_mode (CEIL (full_nelts, BITS_PER_WORD), Pmode);
+	  rtx vl = gen_int_mode (CEIL (full_nelts, builder.inner_bits_size ()),
+				 Pmode);
 	  emit_nonvlmax_integer_move_insn (code_for_pred_broadcast (dup_mode),
 					   ops, vl);
 	}
@@ -2337,6 +2390,125 @@ struct expand_vec_perm_d
   bool testing_p;
 };
 
+/* Recognize the patterns that we can use merge operation to shuffle the
+   vectors. The value of Each element (index i) in selector can only be
+   either i or nunits + i.  We will check the pattern is actually monotonic.
+
+   E.g.
+   v = VEC_PERM_EXPR (v0, v1, selector),
+   selector = { 0, nunits + 1, 2, nunits + 3, 4, nunits + 5, ...  }
+
+   We can transform such pattern into:
+
+   v = vcond_mask (v0, v1, mask),
+   mask = { 0, 1, 0, 1, 0, 1, ... }.  */
+
+static bool
+shuffle_merge_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  machine_mode sel_mode = related_int_vector_mode (vmode).require ();
+  int n_patterns = d->perm.encoding ().npatterns ();
+  poly_int64 vec_len = d->perm.length ();
+
+  for (int i = 0; i < n_patterns; ++i)
+    if (!known_eq (d->perm[i], i) && !known_eq (d->perm[i], vec_len + i))
+      return false;
+
+  /* Check the pattern is monotonic here, otherwise, return false.  */
+  for (int i = n_patterns; i < n_patterns * 2; i++)
+    if (!d->perm.series_p (i, n_patterns, i, n_patterns)
+	&& !d->perm.series_p (i, n_patterns, vec_len + i, n_patterns))
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  machine_mode mask_mode = get_mask_mode (vmode).require ();
+  rtx mask = gen_reg_rtx (mask_mode);
+
+  rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
+
+  /* MASK = SELECTOR < NUNTIS ? 1 : 0.  */
+  rtx x = gen_int_mode (vec_len, GET_MODE_INNER (sel_mode));
+  insn_code icode = code_for_pred_cmp_scalar (sel_mode);
+  rtx cmp = gen_rtx_fmt_ee (LTU, mask_mode, sel, x);
+  rtx ops[] = {mask, cmp, sel, x};
+  emit_vlmax_cmp_insn (icode, ops);
+
+  /* TARGET = MASK ? OP0 : OP1.  */
+  emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op0, d->op1, mask));
+  return true;
+}
+
+/* Recognize decompress patterns:
+
+   1. VEC_PERM_EXPR op0 and op1
+      with isel = { 0, nunits, 1, nunits + 1, ... }.
+      Decompress op0 and op1 vector with the mask = { 0, 1, 0, 1, ... }.
+
+   2. VEC_PERM_EXPR op0 and op1
+      with isel = { 1/2 nunits, 3/2 nunits, 1/2 nunits+1, 3/2 nunits+1,... }.
+      Slide down op0 and op1 with OFFSET = 1/2 nunits.
+      Decompress op0 and op1 vector with the mask = { 0, 1, 0, 1, ... }.
+*/
+static bool
+shuffle_decompress_patterns (struct expand_vec_perm_d *d)
+{
+  poly_uint64 nelt = d->perm.length ();
+  machine_mode mask_mode = get_mask_mode (d->vmode).require ();
+
+  /* For constant size indices, we dont't need to handle it here.
+     Just leave it to vec_perm<mode>.  */
+  if (d->perm.length ().is_constant ())
+    return false;
+
+  poly_uint64 first = d->perm[0];
+  if ((maybe_ne (first, 0U) && maybe_ne (first * 2, nelt))
+      || !d->perm.series_p (0, 2, first, 1)
+      || !d->perm.series_p (1, 2, first + nelt, 1))
+    return false;
+
+  /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
+     Otherwise, it could overflow the index range.  */
+  machine_mode sel_mode = related_int_vector_mode (d->vmode).require ();
+  if (GET_MODE_INNER (d->vmode) == QImode
+      && !get_vector_mode (HImode, nelt).exists (&sel_mode))
+    return false;
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  rtx op0, op1;
+  if (known_eq (first, 0U))
+    {
+      op0 = d->op0;
+      op1 = d->op1;
+    }
+  else
+    {
+      op0 = gen_reg_rtx (d->vmode);
+      op1 = gen_reg_rtx (d->vmode);
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, d->vmode);
+      rtx ops0[] = {op0, d->op0, gen_int_mode (first, Pmode)};
+      rtx ops1[] = {op1, d->op1, gen_int_mode (first, Pmode)};
+      emit_vlmax_insn (icode, RVV_BINOP, ops0);
+      emit_vlmax_insn (icode, RVV_BINOP, ops1);
+    }
+  /* Generate { 0, 1, .... } mask.  */
+  rtx vid = gen_reg_rtx (sel_mode);
+  rtx vid_repeat = gen_reg_rtx (sel_mode);
+  emit_insn (gen_vec_series (sel_mode, vid, const0_rtx, const1_rtx));
+  rtx and_ops[] = {vid_repeat, vid, const1_rtx};
+  emit_vlmax_insn (code_for_pred_scalar (AND, sel_mode), RVV_BINOP, and_ops);
+  rtx const_vec = gen_const_vector_dup (sel_mode, 1);
+  rtx mask = gen_reg_rtx (mask_mode);
+  expand_vec_cmp (mask, EQ, vid_repeat, const_vec);
+  emit_vlmax_decompress_insn (d->target, op0, op1, mask);
+  return true;
+}
+
 /* Recognize the pattern that can be shuffled by generic approach.  */
 
 static bool
@@ -2369,6 +2541,8 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* This function recognizes and supports different permutation patterns
+   and enable VLA SLP auto-vectorization.  */
 static bool
 expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
@@ -2388,6 +2562,10 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     {
       if (d->vmode == d->op_mode)
 	{
+	  if (shuffle_merge_patterns (d))
+	    return true;
+	  if (shuffle_decompress_patterns (d))
+	    return true;
 	  if (shuffle_generic_patterns (d))
 	    return true;
 	  return false;
@@ -2398,6 +2576,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
+/* This function implements TARGET_VECTORIZE_VEC_PERM_CONST by using RVV
+ * instructions.  */
 bool
 expand_vec_perm_const (machine_mode vmode, machine_mode op_mode, rtx target,
 		       rtx op0, rtx op1, const vec_perm_indices &sel)

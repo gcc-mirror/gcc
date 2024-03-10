@@ -12800,10 +12800,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_ALWAYS_TO:
 	  case GOMP_MAP_ALWAYS_FROM:
 	  case GOMP_MAP_ALWAYS_TOFROM:
-	  case GOMP_MAP_PRESENT_ALLOC:
-	  case GOMP_MAP_PRESENT_FROM:
-	  case GOMP_MAP_PRESENT_TO:
-	  case GOMP_MAP_PRESENT_TOFROM:
+	  case GOMP_MAP_FORCE_PRESENT:
 	  case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	  case GOMP_MAP_ALWAYS_PRESENT_TO:
 	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
@@ -12822,7 +12819,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FORCE_TO:
 	  case GOMP_MAP_FORCE_FROM:
 	  case GOMP_MAP_FORCE_TOFROM:
-	  case GOMP_MAP_FORCE_PRESENT:
 	  case GOMP_MAP_FORCE_DEVICEPTR:
 	  case GOMP_MAP_DEVICE_RESIDENT:
 	  case GOMP_MAP_LINK:
@@ -13349,10 +13345,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    case GOMP_MAP_ALWAYS_TO:
 		    case GOMP_MAP_ALWAYS_FROM:
 		    case GOMP_MAP_ALWAYS_TOFROM:
-		    case GOMP_MAP_PRESENT_ALLOC:
-		    case GOMP_MAP_PRESENT_TO:
-		    case GOMP_MAP_PRESENT_FROM:
-		    case GOMP_MAP_PRESENT_TOFROM:
 		    case GOMP_MAP_ALWAYS_PRESENT_TO:
 		    case GOMP_MAP_ALWAYS_PRESENT_FROM:
 		    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
@@ -13397,13 +13389,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      case OMP_CLAUSE_TO:
 		tkind
 		  = (OMP_CLAUSE_MOTION_PRESENT (c)
-		     ? GOMP_MAP_PRESENT_TO : GOMP_MAP_TO);
+		     ? GOMP_MAP_ALWAYS_PRESENT_TO : GOMP_MAP_TO);
 		tkind_zero = tkind;
 		break;
 	      case OMP_CLAUSE_FROM:
 		tkind
 		  = (OMP_CLAUSE_MOTION_PRESENT (c)
-		     ? GOMP_MAP_PRESENT_FROM : GOMP_MAP_FROM);
+		     ? GOMP_MAP_ALWAYS_PRESENT_FROM : GOMP_MAP_FROM);
 		tkind_zero = tkind;
 		break;
 	      default:

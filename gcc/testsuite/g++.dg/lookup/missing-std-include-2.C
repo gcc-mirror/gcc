@@ -16,10 +16,10 @@ namespace std
 void test (void)
 {
   std::string s ("hello world"); // { dg-error ".string. is not a member of .std." }
-  // { dg-message ".std::string. is defined in header .<string>.; did you forget to .#include <string>.?" "" { target *-*-* } .-1 }
+  // { dg-message ".std::string. is defined in header .<string>.; this is probably fixable by adding .#include <string>." "" { target *-*-* } .-1 }
 
   std::cout << 10; // { dg-error ".cout. is not a member of .std." }
-  // { dg-message ".std::cout. is defined in header .<iostream>.; did you forget to .#include <iostream>.?" "" { target *-*-* } .-1 }
+  // { dg-message ".std::cout. is defined in header .<iostream>.; this is probably fixable by adding .#include <iostream>." "" { target *-*-* } .-1 }
 }
 
 /* Same again, to test idempotency of the added "#include" fix-it.  */
@@ -27,10 +27,10 @@ void test (void)
 void test_2 (void)
 {
   std::string s ("hello again"); // { dg-error ".string. is not a member of .std." }
-  // { dg-message ".std::string. is defined in header .<string>.; did you forget to .#include <string>.?" "" { target *-*-* } .-1 }
+  // { dg-message ".std::string. is defined in header .<string>.; this is probably fixable by adding .#include <string>." "" { target *-*-* } .-1 }
 
   std::cout << 10; // { dg-error ".cout. is not a member of .std." }
-  // { dg-message ".std::cout. is defined in header .<iostream>.; did you forget to .#include <iostream>.?" "" { target *-*-* } .-1 }
+  // { dg-message ".std::cout. is defined in header .<iostream>.; this is probably fixable by adding .#include <iostream>." "" { target *-*-* } .-1 }
 }
 
 /* Verify the output from -fdiagnostics-generate-patch.

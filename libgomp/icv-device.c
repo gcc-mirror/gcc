@@ -27,6 +27,7 @@
    expected to replace.  */
 
 #include "libgomp.h"
+#include <limits.h>
 
 void
 omp_set_default_device (int device_num)
@@ -41,6 +42,9 @@ int
 omp_get_default_device (void)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
+  if (icv->default_device_var == INT_MIN)
+    /* This implies OMP_TARGET_OFFLOAD=mandatory.  */
+    gomp_init_targets_once ();
   return icv->default_device_var;
 }
 

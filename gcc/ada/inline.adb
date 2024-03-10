@@ -312,6 +312,7 @@ package body Inline is
    --  Remove all aspects and/or pragmas that have no meaning in inlined body
    --  Body_Decl. The analysis of these items is performed on the non-inlined
    --  body. The items currently removed are:
+   --    Always_Terminates
    --    Contract_Cases
    --    Global
    --    Depends
@@ -5225,7 +5226,8 @@ package body Inline is
             end if;
 
             if Present (Item_Id)
-              and then Chars (Item_Id) in Name_Contract_Cases
+              and then Chars (Item_Id) in Name_Always_Terminates
+                                        | Name_Contract_Cases
                                         | Name_Global
                                         | Name_Depends
                                         | Name_Exceptional_Cases

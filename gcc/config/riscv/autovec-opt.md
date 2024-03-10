@@ -37,9 +37,9 @@
 	      (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand" "   vr,   vr"))
 	    (match_operand:VWEXTI 3 "register_operand"             "   vr,   vr"))
 	  (match_operand:VWEXTI 2 "vector_merge_operand"           "   vu,    0")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
   {
     insn_code icode = code_for_pred_vf2 (<CODE>, <MODE>mode);
@@ -132,9 +132,9 @@
 	(bitmanip_bitwise:VB
 	  (not:VB (match_operand:VB 2 "register_operand" " vr"))
 	  (match_operand:VB 1 "register_operand"         " vr")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
   {
     insn_code icode = code_for_pred_not (<CODE>, <MODE>mode);
@@ -159,9 +159,9 @@
 	  (any_bitwise:VB
 	    (match_operand:VB 1 "register_operand" " vr")
 	    (match_operand:VB 2 "register_operand" " vr"))))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
   {
     insn_code icode = code_for_pred_n (<CODE>, <MODE>mode);
@@ -346,9 +346,9 @@
         (match_operand:VWEXTI 1 "register_operand"                 " vr,vr")
 	(any_extend:VWEXTI
           (match_operand:<V_DOUBLE_TRUNC> 2 "vector_shift_operand" " vr,vk")))))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   insn_code icode = code_for_pred_narrow (<any_shiftrt:CODE>, <MODE>mode);
@@ -364,9 +364,9 @@
       (any_shiftrt:VWEXTI
         (match_operand:VWEXTI 1 "register_operand"           " vr")
 	(match_operand:<VEL> 2 "csr_operand"                 " rK"))))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   operands[2] = gen_lowpart (Pmode, operands[2]);

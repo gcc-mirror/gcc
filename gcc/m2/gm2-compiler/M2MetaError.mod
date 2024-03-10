@@ -1529,7 +1529,11 @@ BEGIN
             DEC (eb.ini) |
       'u':  eb.quotes := FALSE |
       ':':  ifNonNulThen (eb, sym) ;
-            DEC (eb.ini)
+            DEC (eb.ini) |
+      '1':  InternalError ('incorrect format spec, expecting %1 rather than % spec 1') |
+      '2':  InternalError ('incorrect format spec, expecting %2 rather than % spec 2') |
+      '3':  InternalError ('incorrect format spec, expecting %3 rather than % spec 3') |
+      '4':  InternalError ('incorrect format spec, expecting %4 rather than % spec 4')
 
       ELSE
          InternalFormat (eb, 'expecting one of [akqtdnpsuCDEFKNOPQRSTUWXYZ:<>%]', __LINE__)

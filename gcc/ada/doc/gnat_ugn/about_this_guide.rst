@@ -38,17 +38,17 @@ This guide contains the following chapters:
   using the GNU make utility with GNAT.
 
 * :ref:`GNAT_Utility_Programs` explains the various utility programs that
-  are included in the GNAT environment
+  are included in the GNAT environment.
 
 * :ref:`GNAT_and_Program_Execution` covers a number of topics related to
-  running, debugging, and tuning the performace of programs developed
-  with GNAT
+  running, debugging, and tuning the performance of programs developed
+  with GNAT.
 
 Appendices cover several additional topics:
 
 * :ref:`Platform_Specific_Information` describes the different run-time
   library implementations and also presents information on how to use
-  GNAT on several specific platforms
+  GNAT on several specific platforms.
 
 * :ref:`Example_of_Binder_Output_File` shows the source code for the binder
   output file for a sample program.

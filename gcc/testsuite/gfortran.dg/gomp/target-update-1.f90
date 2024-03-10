@@ -10,4 +10,4 @@ program main
   !$omp target update to(c) to(present: a) from(d) from(present: b) to(e)
 end program
 
-! { dg-final { scan-tree-dump "#pragma omp target update to\\(c \\\[len: \[0-9\]+\\\]\\) to\\(present:a \\\[len: \[0-9\]+\\\]\\) to\\(e \\\[len: \[0-9\]+\\\]\\) from\\(present:b \\\[len: \[0-9\]+\\\]\\) from\\(d \\\[len: \[0-9\]+\\\]\\)" "gimple" } }
+! { dg-final { scan-tree-dump "#pragma omp target update to\\(c \\\[len: \[0-9\]+\\\]\\) to\\(present:a \\\[len: \[0-9\]+\\\]\\) to\\(e \\\[len: \[0-9\]+\\\]\\) from\\(d \\\[len: \[0-9\]+\\\]\\) from\\(present:b \\\[len: \[0-9\]+\\\]\\)" "gimple" } }

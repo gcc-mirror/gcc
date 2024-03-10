@@ -139,7 +139,7 @@ struct unswitch_predicate
     count = EDGE_SUCC (bb, 0)->count ().max (EDGE_SUCC (bb, 1)->count ());
     if (irange::supports_p (TREE_TYPE (lhs)))
       {
-	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
+	auto range_op = range_op_handler (code);
 	int_range<2> rhs_range (TREE_TYPE (rhs));
 	if (CONSTANT_CLASS_P (rhs))
 	  {

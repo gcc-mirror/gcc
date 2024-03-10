@@ -89,7 +89,20 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} " \
 		 "%{" SPEC_PTHREAD1 ":-D_REENTRANT} " \
-		 "%{" SPEC_PTHREAD2 ": } "
+		 "%{" SPEC_PTHREAD2 ": } " \
+		 "%{mcrtdll=crtdll*:-U__MSVCRT__ -D__CRTDLL__} " \
+		 "%{mcrtdll=msvcrt10*:-D__MSVCRT_VERSION__=0x100} " \
+		 "%{mcrtdll=msvcrt20*:-D__MSVCRT_VERSION__=0x200} " \
+		 "%{mcrtdll=msvcrt40*:-D__MSVCRT_VERSION__=0x400} " \
+		 "%{mcrtdll=msvcrt-os*:-D__MSVCRT_VERSION__=0x700} " \
+		 "%{mcrtdll=msvcr70*:-D__MSVCRT_VERSION__=0x700} " \
+		 "%{mcrtdll=msvcr71*:-D__MSVCRT_VERSION__=0x701} " \
+		 "%{mcrtdll=msvcr80*:-D__MSVCRT_VERSION__=0x800} " \
+		 "%{mcrtdll=msvcr90*:-D__MSVCRT_VERSION__=0x900} " \
+		 "%{mcrtdll=msvcr100*:-D__MSVCRT_VERSION__=0xA00} " \
+		 "%{mcrtdll=msvcr110*:-D__MSVCRT_VERSION__=0xB00} " \
+		 "%{mcrtdll=msvcr120*:-D__MSVCRT_VERSION__=0xC00} " \
+		 "%{mcrtdll=ucrt*:-D_UCRT} "
 
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
@@ -184,11 +197,18 @@ along with GCC; see the file COPYING3.  If not see
 #define REAL_LIBGCC_SPEC \
   "%{mthreads:-lmingwthrd} -lmingw32 \
    " SHARED_LIBGCC_SPEC " \
-   -lmoldname -lmingwex -lmsvcrt -lkernel32 " MCFGTHREAD_SPEC
+   %{mcrtdll=crtdll*:-lcoldname} %{!mcrtdll=crtdll*:-lmoldname} \
+   -lmingwex %{!mcrtdll=*:-lmsvcrt} %{mcrtdll=*:-l%*} \
+   -lkernel32 " MCFGTHREAD_SPEC
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
-  %{!shared:%{!mdll:crt2%O%s}} %{pg:gcrt2%O%s} \
+#define STARTFILE_SPEC " \
+  %{shared|mdll:%{mcrtdll=crtdll*:dllcrt1%O%s}} \
+  %{shared|mdll:%{!mcrtdll=crtdll*:dllcrt2%O%s}} \
+  %{!shared:%{!mdll:%{mcrtdll=crtdll*:crt1%O%s}}} \
+  %{!shared:%{!mdll:%{!mcrtdll=crtdll*:crt2%O%s}}} \
+  %{pg:%{mcrtdll=crtdll*:gcrt1%O%s}} \
+  %{pg:%{!mcrtdll=crtdll*:gcrt2%O%s}} \
   crtbegin.o%s \
   %{fvtable-verify=none:%s; \
     fvtable-verify=preinit:vtv_start.o%s; \

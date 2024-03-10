@@ -31,6 +31,10 @@ package Exp_Prag is
 
    procedure Expand_N_Pragma (N : Node_Id);
 
+   procedure Expand_Pragma_Always_Terminates (Prag : Node_Id);
+   --  This routine only exists for consistency with other pragmas, since
+   --  Always_Terminates has no meaningful expansion.
+
    procedure Expand_Pragma_Contract_Cases
      (CCs     : Node_Id;
       Subp_Id : Entity_Id;

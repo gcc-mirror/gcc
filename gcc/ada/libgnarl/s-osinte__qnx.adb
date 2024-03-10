@@ -87,7 +87,7 @@ package body System.OS_Interface is
      (Prio : System.Any_Priority) return Interfaces.C.int
    is
    begin
-      return Interfaces.C.int (Prio) + 1;
+      return Interfaces.C.int (Prio);
    end To_Target_Priority;
 
    -----------------

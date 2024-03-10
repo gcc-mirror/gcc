@@ -1297,4 +1297,9 @@ extern poly_uint16 aarch64_sve_vg;
 #define REG_ALLOC_ORDER {}
 #define ADJUST_REG_ALLOC_ORDER aarch64_adjust_reg_alloc_order ()
 
+#define AARCH64_VALID_SHRN_OP(T,S)			\
+((T) == TRUNCATE					\
+ || ((T) == US_TRUNCATE && (S) == LSHIFTRT)		\
+ || ((T) == SS_TRUNCATE && (S) == ASHIFTRT))
+
 #endif /* GCC_AARCH64_H */

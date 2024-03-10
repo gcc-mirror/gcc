@@ -144,7 +144,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsAutoPushOn, PushAutoOn, PushAutoOff, PopAuto,
                  PushInConstExpression, PopInConstExpression,
                  IsInConstExpression,
-                 MustCheckOverflow, BuildAsmElement ;
+                 MustCheckOverflow, BuildAsmElement, BuildAsmTrash ;
 
 
 TYPE
@@ -2734,7 +2734,29 @@ PROCEDURE IsInConstExpression () : BOOLEAN ;
                         |------------------|       |------------------|
 *)
 
-PROCEDURE BuildAsmElement (input, output, trash: BOOLEAN) ;
+PROCEDURE BuildAsmElement (input, output: BOOLEAN) ;
+
+
+(*
+   BuildAsmTrash - the stack is expected to contain:
+
+
+                        Entry                      Exit
+                        =====                      ====
+
+                 Ptr ->
+                        +------------------+
+                        | expr | tokpos    |
+                        |------------------|       +------------------+
+                        | CurrentInterface |       | CurrentInterface |
+                        |------------------|       |------------------|
+                        | CurrentAsm       |       | CurrentAsm       |
+                        |------------------|       |------------------|
+                        | n                |       | n                |
+                        |------------------|       |------------------|
+*)
+
+PROCEDURE BuildAsmTrash ;
 
 
 END M2Quads.

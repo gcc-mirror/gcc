@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O2" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O2 -Wno-psabi" } */
 typedef int a;
 using c = float;
 template < typename > using e = int;

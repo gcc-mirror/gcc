@@ -72,6 +72,18 @@ loongarch_cpu_cache[N_TUNE_TYPES] = {
   },
 };
 
+struct loongarch_align
+loongarch_cpu_align[N_TUNE_TYPES] = {
+  [CPU_LOONGARCH64] = {
+    .function = "32",
+    .label = "16",
+  },
+  [CPU_LA464] = {
+    .function = "32",
+    .label = "16",
+  },
+};
+
 /* The following properties cannot be looked up directly using "cpucfg".
  So it is necessary to provide a default value for "unknown native"
  tune targets (i.e. -mtune=native while PRID does not correspond to

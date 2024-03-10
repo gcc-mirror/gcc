@@ -20,11 +20,9 @@
     whole point of abstract interfaces.  If we change the implementation,
     you won't notice.)
   </p><p>
-    Probably the only times you'll be interested in demangling at runtime
-    are when you're seeing <code class="code">typeid</code> strings in RTTI, or when
-    you're handling the runtime-support exception classes.  For example:
+    Probably the only time you'll be interested in demangling at runtime
+    is when you're seeing <code class="code">typeid</code> strings in RTTI.  For example:
   </p><pre class="programlisting">
-#include &lt;exception&gt;
 #include &lt;iostream&gt;
 #include &lt;cstdlib&gt;
 #include &lt;cxxabi.h&gt;

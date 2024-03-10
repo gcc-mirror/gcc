@@ -7531,8 +7531,11 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	  }
 
 	/* Inform later passes that the old value is dead.  */
-	if (!cleared && !vector && REG_P (target))
-	  emit_move_insn (target, CONST0_RTX (mode));
+	if (!cleared && !vector && REG_P (target) && maybe_gt (n_elts, 1u))
+	  {
+	    emit_move_insn (target, CONST0_RTX (mode));
+	    cleared = 1;
+	  }
 
         if (MEM_P (target))
 	  alias = MEM_ALIAS_SET (target);

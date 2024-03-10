@@ -138,6 +138,10 @@ gomp_get_num_devices (void)
 static struct gomp_device_descr *
 resolve_device (int device_id, bool remapped)
 {
+  /* Get number of devices and thus ensure that 'gomp_init_targets_once' was
+     called, which must be done before using default_device_var.  */
+  int num_devices = gomp_get_num_devices ();
+
   if (remapped && device_id == GOMP_DEVICE_ICV)
     {
       struct gomp_task_icv *icv = gomp_icv (false);
@@ -150,7 +154,11 @@ resolve_device (int device_id, bool remapped)
       if (device_id == (remapped ? GOMP_DEVICE_HOST_FALLBACK
 				 : omp_initial_device))
 	return NULL;
-      if (device_id == omp_invalid_device)
+      if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
+	  && num_devices == 0)
+	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
+		    "but only the host device is available");
+      else if (device_id == omp_invalid_device)
 	gomp_fatal ("omp_invalid_device encountered");
       else if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY)
 	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
@@ -158,10 +166,10 @@ resolve_device (int device_id, bool remapped)
 
       return NULL;
     }
-  else if (device_id >= gomp_get_num_devices ())
+  else if (device_id >= num_devices)
     {
       if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
-	  && device_id != num_devices_openmp)
+	  && device_id != num_devices)
 	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
 		    "but device not found");
 
@@ -358,8 +366,8 @@ gomp_to_device_kind_p (int kind)
     case GOMP_MAP_FORCE_ALLOC:
     case GOMP_MAP_FORCE_FROM:
     case GOMP_MAP_ALWAYS_FROM:
-    case GOMP_MAP_PRESENT_FROM:
     case GOMP_MAP_ALWAYS_PRESENT_FROM:
+    case GOMP_MAP_FORCE_PRESENT:
       return false;
     default:
       return true;
@@ -1699,36 +1707,28 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    i = j - 1;
 		    break;
 		  case GOMP_MAP_FORCE_PRESENT:
+		  case GOMP_MAP_ALWAYS_PRESENT_TO:
+		  case GOMP_MAP_ALWAYS_PRESENT_FROM:
+		  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 		    {
 		      /* We already looked up the memory region above and it
 			 was missing.  */
 		      size_t size = k->host_end - k->host_start;
 		      gomp_mutex_unlock (&devicep->lock);
 #ifdef HAVE_INTTYPES_H
-		      gomp_fatal ("present clause: !acc_is_present (%p, "
-				  "%"PRIu64" (0x%"PRIx64"))",
-				  (void *) k->host_start,
-				  (uint64_t) size, (uint64_t) size);
+		      gomp_fatal ("present clause: not present on the device "
+				  "(addr: %p, size: %"PRIu64" (0x%"PRIx64"), "
+				  "dev: %d)", (void *) k->host_start,
+				  (uint64_t) size, (uint64_t) size,
+				  devicep->target_id);
 #else
-		      gomp_fatal ("present clause: !acc_is_present (%p, "
-				  "%lu (0x%lx))", (void *) k->host_start,
-				  (unsigned long) size, (unsigned long) size);
+		      gomp_fatal ("present clause: not present on the device "
+				  "(addr: %p, size: %lu (0x%lx), dev: %d)",
+				  (void *) k->host_start,
+				  (unsigned long) size, (unsigned long) size,
+				  devicep->target_id);
 #endif
 		    }
-		    break;
-		  case GOMP_MAP_PRESENT_ALLOC:
-		  case GOMP_MAP_PRESENT_TO:
-		  case GOMP_MAP_PRESENT_FROM:
-		  case GOMP_MAP_PRESENT_TOFROM:
-		  case GOMP_MAP_ALWAYS_PRESENT_TO:
-		  case GOMP_MAP_ALWAYS_PRESENT_FROM:
-		  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
-		    /* We already looked up the memory region above and it
-		       was missing.  */
-		    gomp_mutex_unlock (&devicep->lock);
-		    gomp_fatal ("present clause: not present on the device "
-				"(%p, %d)",
-				(void *) k->host_start, devicep->target_id);
 		    break;
 		  case GOMP_MAP_FORCE_DEVICEPTR:
 		    assert (k->host_end - k->host_start == sizeof (void *));
@@ -2149,9 +2149,18 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
 		/* We already looked up the memory region above and it
 		   was missing.  */
 		gomp_mutex_unlock (&devicep->lock);
+#ifdef HAVE_INTTYPES_H
 		gomp_fatal ("present clause: not present on the device "
-			    "(%p, %d)",
-			    (void *) hostaddrs[i], devicep->target_id);
+			    "(addr: %p, size: %"PRIu64" (0x%"PRIx64"), "
+			    "dev: %d)", (void *) hostaddrs[i],
+			    (uint64_t) sizes[i], (uint64_t) sizes[i],
+			    devicep->target_id);
+#else
+		gomp_fatal ("present clause: not present on the device "
+			    "(addr: %p, size: %lu (0x%lx), dev: %d)",
+			    (void *) hostaddrs[i], (unsigned long) sizes[i],
+			    (unsigned long) sizes[i], devicep->target_id);
+#endif
 	      }
 	  }
       }
@@ -3465,9 +3474,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	      case GOMP_MAP_FORCE_TOFROM:
 	      case GOMP_MAP_ALWAYS_TO:
 	      case GOMP_MAP_ALWAYS_TOFROM:
-	      case GOMP_MAP_PRESENT_FROM:
-	      case GOMP_MAP_PRESENT_TO:
-	      case GOMP_MAP_PRESENT_TOFROM:
+	      case GOMP_MAP_FORCE_PRESENT:
 	      case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	      case GOMP_MAP_ALWAYS_PRESENT_TO:
 	      case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
@@ -3710,8 +3717,6 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	      case GOMP_MAP_FORCE_TOFROM:
 	      case GOMP_MAP_ALWAYS_FROM:
 	      case GOMP_MAP_ALWAYS_TOFROM:
-	      case GOMP_MAP_PRESENT_FROM:
-	      case GOMP_MAP_PRESENT_TOFROM:
 	      case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	      case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 		copy = true;
@@ -5186,6 +5191,15 @@ gomp_target_init (void)
 	 takes a copy of the pointer argument) must be delayed until now.  */
       if (devs[i].capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)
 	goacc_register (&devs[i]);
+    }
+  if (gomp_global_icv.default_device_var == INT_MIN)
+    {
+       /* This implies OMP_TARGET_OFFLOAD=mandatory.  */
+       struct gomp_icv_list *none;
+       none = gomp_get_initial_icv_item (GOMP_DEVICE_NUM_FOR_NO_SUFFIX);
+       gomp_global_icv.default_device_var = (num_devs_openmp
+					     ? 0 : omp_invalid_device);
+       none->icvs.default_device_var = gomp_global_icv.default_device_var;
     }
 
   num_devices = num_devs;

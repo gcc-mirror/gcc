@@ -110,10 +110,6 @@ package Get_Targ is
 
    --  Other subprograms
 
-   function Get_Max_Unaligned_Field return Pos;
-   --  Returns the maximum supported size in bits for a field that is
-   --  not aligned on a storage unit boundary.
-
    type C_String is array (0 .. 255) of aliased Character;
    pragma Convention (C, C_String);
 

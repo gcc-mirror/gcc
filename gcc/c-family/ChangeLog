@@ -1,3 +1,10 @@
+2023-06-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84890
+	* known-headers.cc
+	(suggest_missing_header::~suggest_missing_header): Reword note to
+	avoid negative tone of "forgetting".
+
 2023-06-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58487

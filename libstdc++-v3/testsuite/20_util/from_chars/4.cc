@@ -18,7 +18,7 @@
 // <charconv> is supported in C++14 as a GNU extension
 // { dg-do run { target c++14 } }
 // { dg-add-options ieee }
-// { dg-additional-options "-DSKIP_LONG_DOUBLE" { target aarch64-*-vxworks* x86_64-*-vxworks* } }
+// { dg-additional-options "-DSKIP_LONG_DOUBLE" { target aarch64-*-rtems* aarch64-*-vxworks* x86_64-*-vxworks* } }
 
 #include <charconv>
 #include <string>

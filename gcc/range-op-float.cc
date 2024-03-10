@@ -158,6 +158,16 @@ range_operator::fold_range (irange &r ATTRIBUTE_UNUSED,
 }
 
 bool
+range_operator::fold_range (frange &r ATTRIBUTE_UNUSED,
+			    tree type ATTRIBUTE_UNUSED,
+			    const irange &lh ATTRIBUTE_UNUSED,
+			    const irange &rh ATTRIBUTE_UNUSED,
+			    relation_trio) const
+{
+  return false;
+}
+
+bool
 range_operator::op1_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const frange &lhs ATTRIBUTE_UNUSED,
@@ -250,7 +260,7 @@ maybe_isnan (const frange &op1, const frange &op2)
 // Floating version of relop_early_resolve that takes into account NAN
 // and -ffinite-math-only.
 
-inline bool
+static inline bool
 frelop_early_resolve (irange &r, tree type,
 		      const frange &op1, const frange &op2,
 		      relation_trio rel, relation_kind my_rel)
@@ -267,7 +277,7 @@ frelop_early_resolve (irange &r, tree type,
 
 // Set VALUE to its next real value, or INF if the operation overflows.
 
-inline void
+void
 frange_nextafter (enum machine_mode mode,
 		  REAL_VALUE_TYPE &value,
 		  const REAL_VALUE_TYPE &inf)
@@ -2244,7 +2254,7 @@ operator_plus::op1_range (frange &r, tree type, const frange &lhs,
 {
   if (lhs.undefined_p ())
     return false;
-  range_op_handler minus (MINUS_EXPR, type);
+  range_op_handler minus (MINUS_EXPR);
   if (!minus)
     return false;
   frange wlhs = float_widen_lhs_range (type, lhs);
@@ -2361,7 +2371,7 @@ operator_mult::op1_range (frange &r, tree type,
 {
   if (lhs.undefined_p ())
     return false;
-  range_op_handler rdiv (RDIV_EXPR, type);
+  range_op_handler rdiv (RDIV_EXPR);
   if (!rdiv)
     return false;
   frange wlhs = float_widen_lhs_range (type, lhs);
@@ -2687,7 +2697,7 @@ namespace selftest
 
 // Build an frange from string endpoints.
 
-inline frange
+static inline frange
 frange_float (const char *lb, const char *ub, tree type = float_type_node)
 {
   REAL_VALUE_TYPE min, max;
@@ -2716,7 +2726,7 @@ range_op_float_tests ()
   ASSERT_EQ (r, r1);
 
   // [-INF,+INF] + [-INF,+INF] could be a NAN.
-  range_op_handler plus (PLUS_EXPR, float_type_node);
+  range_op_handler plus (PLUS_EXPR);
   r0.set_varying (float_type_node);
   r1.set_varying (float_type_node);
   r0.clear_nan ();

@@ -72,6 +72,7 @@ package Aspects is
       Aspect_Address,
       Aspect_Aggregate,
       Aspect_Alignment,
+      Aspect_Always_Terminates,             -- GNAT
       Aspect_Annotate,                      -- GNAT
       Aspect_Async_Readers,                 -- GNAT
       Aspect_Async_Writers,                 -- GNAT
@@ -101,6 +102,7 @@ package Aspects is
       Aspect_External_Name,
       Aspect_External_Tag,
       Aspect_Ghost,                         -- GNAT
+      Aspect_Ghost_Predicate,               -- GNAT
       Aspect_Global,                        -- GNAT
       Aspect_GNAT_Annotate,                 -- GNAT
       Aspect_Implicit_Dereference,
@@ -260,6 +262,7 @@ package Aspects is
 
    Implementation_Defined_Aspect : constant array (Aspect_Id) of Boolean :=
      (Aspect_Abstract_State             => True,
+      Aspect_Always_Terminates          => True,
       Aspect_Annotate                   => True,
       Aspect_Async_Readers              => True,
       Aspect_Async_Writers              => True,
@@ -274,6 +277,7 @@ package Aspects is
       Aspect_Extensions_Visible         => True,
       Aspect_Favor_Top_Level            => True,
       Aspect_Ghost                      => True,
+      Aspect_Ghost_Predicate            => True,
       Aspect_Global                     => True,
       Aspect_GNAT_Annotate              => True,
       Aspect_Inline_Always              => True,
@@ -368,6 +372,7 @@ package Aspects is
       Aspect_Address                    => Expression,
       Aspect_Aggregate                  => Expression,
       Aspect_Alignment                  => Expression,
+      Aspect_Always_Terminates          => Optional_Expression,
       Aspect_Annotate                   => Expression,
       Aspect_Async_Readers              => Optional_Expression,
       Aspect_Async_Writers              => Optional_Expression,
@@ -397,6 +402,7 @@ package Aspects is
       Aspect_External_Name              => Expression,
       Aspect_External_Tag               => Expression,
       Aspect_Ghost                      => Optional_Expression,
+      Aspect_Ghost_Predicate            => Expression,
       Aspect_Global                     => Expression,
       Aspect_GNAT_Annotate              => Expression,
       Aspect_Implicit_Dereference       => Name,
@@ -474,6 +480,7 @@ package Aspects is
       Aspect_Address                      => True,
       Aspect_Aggregate                    => False,
       Aspect_Alignment                    => True,
+      Aspect_Always_Terminates            => False,
       Aspect_Annotate                     => False,
       Aspect_Async_Readers                => False,
       Aspect_Async_Writers                => False,
@@ -506,8 +513,9 @@ package Aspects is
       Aspect_External_Name                => False,
       Aspect_External_Tag                 => False,
       Aspect_Ghost                        => False,
+      Aspect_Ghost_Predicate              => False,
       Aspect_Global                       => False,
-      Aspect_GNAT_Annotate               => False,
+      Aspect_GNAT_Annotate                => False,
       Aspect_Implicit_Dereference         => False,
       Aspect_Initial_Condition            => False,
       Aspect_Initializes                  => False,
@@ -626,6 +634,7 @@ package Aspects is
       Aspect_Aggregate                    => Name_Aggregate,
       Aspect_Alignment                    => Name_Alignment,
       Aspect_All_Calls_Remote             => Name_All_Calls_Remote,
+      Aspect_Always_Terminates            => Name_Always_Terminates,
       Aspect_Annotate                     => Name_Annotate,
       Aspect_Async_Readers                => Name_Async_Readers,
       Aspect_Async_Writers                => Name_Async_Writers,
@@ -667,6 +676,7 @@ package Aspects is
       Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
       Aspect_Full_Access_Only             => Name_Full_Access_Only,
       Aspect_Ghost                        => Name_Ghost,
+      Aspect_Ghost_Predicate              => Name_Ghost_Predicate,
       Aspect_Global                       => Name_Global,
       Aspect_GNAT_Annotate                => Name_GNAT_Annotate,
       Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
@@ -912,6 +922,7 @@ package Aspects is
       Aspect_External_Name                => Always_Delay,
       Aspect_External_Tag                 => Always_Delay,
       Aspect_Favor_Top_Level              => Always_Delay,
+      Aspect_Ghost_Predicate              => Always_Delay,
       Aspect_Implicit_Dereference         => Always_Delay,
       Aspect_Independent                  => Always_Delay,
       Aspect_Independent_Components       => Always_Delay,
@@ -974,6 +985,7 @@ package Aspects is
       Aspect_Write                        => Always_Delay,
 
       Aspect_Abstract_State               => Never_Delay,
+      Aspect_Always_Terminates            => Never_Delay,
       Aspect_Annotate                     => Never_Delay,
       Aspect_Async_Readers                => Never_Delay,
       Aspect_Async_Writers                => Never_Delay,

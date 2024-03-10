@@ -3253,13 +3253,6 @@ package body Sem_Ch3 is
             when N_Derived_Type_Definition =>
                Derived_Type_Declaration (T, N, T /= Def_Id);
 
-               --  Inherit predicates from parent, and protect against illegal
-               --  derivations.
-
-               if Is_Type (T) and then Has_Predicates (T) then
-                  Set_Has_Predicates (Def_Id);
-               end if;
-
                --  Save the scenario for examination by the ABE Processing
                --  phase.
 
@@ -3659,9 +3652,11 @@ package body Sem_Ch3 is
 
       if not Is_Overloaded (E) then
          T := Etype (E);
-         if Has_Dynamic_Predicate_Aspect (T) then
+         if Has_Dynamic_Predicate_Aspect (T)
+           or else Has_Ghost_Predicate_Aspect (T)
+         then
             Error_Msg_N
-              ("subtype has dynamic predicate, "
+              ("subtype has non-static predicate, "
                & "not allowed in number declaration", N);
          end if;
 
@@ -10122,15 +10117,9 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  We similarly inherit predicates. Note that for scalar derived types
-      --  the predicate is inherited from the first subtype, and not from its
-      --  (anonymous) base type.
+      --  We similarly inherit predicates
 
-      if Has_Predicates (Parent_Type)
-        or else Has_Predicates (First_Subtype (Parent_Type))
-      then
-         Set_Has_Predicates (Derived_Type);
-      end if;
+      Inherit_Predicate_Flags (Derived_Type, Parent_Type, Only_Flags => True);
 
       --  The derived type inherits representation clauses from the parent
       --  type, and from any interfaces.

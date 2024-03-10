@@ -68,6 +68,14 @@ if test $TARGET = twoprocess; then
 		  [Define if testing and fixing are done by separate process])
 fi
 
+# Enable --enable-host-pie.
+AC_ARG_ENABLE(host-pie,
+[AS_HELP_STRING([--enable-host-pie],
+       [build host code as PIE])],
+[PICFLAG=-fPIE; LD_PICFLAG=-pie], [])
+AC_SUBST(PICFLAG)
+AC_SUBST(LD_PICFLAG)
+
 case $host in
 	vax-dec-bsd* )
 		AC_DEFINE(exit, xexit, [Define to xexit if the host system does not support atexit])

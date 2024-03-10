@@ -32,7 +32,7 @@ void test_nowarn_int (int n)
 inline void
 dealloc_long (long *p)
 {
-  __builtin_free (p);         // { dg-warning "'__builtin_free|void __builtin_free\\(void\\*\\)' called on pointer 'p|<unknown>' with nonzero offset" }
+  __builtin_free (p);         // { dg-warning "'(__builtin_free|void __builtin_free\\(void\\*\\))' called on pointer '(p|<unknown>)' with nonzero offset" }
 }
 
 __attribute__ ((malloc (dealloc_long)))

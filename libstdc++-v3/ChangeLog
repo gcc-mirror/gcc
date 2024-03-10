@@ -1,3 +1,9 @@
+2023-06-14  Jonny Grant  <jg@jguk.org>
+
+	* doc/xml/manual/extensions.xml: Remove demangle exception
+	description and include.
+	* doc/html/manual/ext_demangling.html: Regenerate.
+
 2023-06-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/27_io/basic_istream/ignore/wchar_t/94749.cc (main)

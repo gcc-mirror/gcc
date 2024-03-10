@@ -476,6 +476,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Has_Dispatch_Table, Flag,
             Pre => "Is_Tagged_Type (N)"),
         Sm (Has_Dynamic_Predicate_Aspect, Flag),
+        Sm (Has_Ghost_Predicate_Aspect, Flag),
         Sm (Has_Inheritable_Invariants, Flag, Base_Type_Only),
         Sm (Has_Inherited_DIC, Flag, Base_Type_Only),
         Sm (Has_Inherited_Invariants, Flag, Base_Type_Only),

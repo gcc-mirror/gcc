@@ -2776,6 +2776,44 @@ expand_MUL_OVERFLOW (internal_fn, gcall *stmt)
   expand_arith_overflow (MULT_EXPR, stmt);
 }
 
+/* Expand UADDC STMT.  */
+
+static void
+expand_UADDC (internal_fn ifn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree arg1 = gimple_call_arg (stmt, 0);
+  tree arg2 = gimple_call_arg (stmt, 1);
+  tree arg3 = gimple_call_arg (stmt, 2);
+  tree type = TREE_TYPE (arg1);
+  machine_mode mode = TYPE_MODE (type);
+  insn_code icode = optab_handler (ifn == IFN_UADDC
+				   ? uaddc5_optab : usubc5_optab, mode);
+  rtx op1 = expand_normal (arg1);
+  rtx op2 = expand_normal (arg2);
+  rtx op3 = expand_normal (arg3);
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx re = gen_reg_rtx (mode);
+  rtx im = gen_reg_rtx (mode);
+  class expand_operand ops[5];
+  create_output_operand (&ops[0], re, mode);
+  create_output_operand (&ops[1], im, mode);
+  create_input_operand (&ops[2], op1, mode);
+  create_input_operand (&ops[3], op2, mode);
+  create_input_operand (&ops[4], op3, mode);
+  expand_insn (icode, 5, ops);
+  write_complex_part (target, re, false, false);
+  write_complex_part (target, im, true, false);
+}
+
+/* Expand USUBC STMT.  */
+
+static void
+expand_USUBC (internal_fn ifn, gcall *stmt)
+{
+  expand_UADDC (ifn, stmt);
+}
+
 /* This should get folded in tree-vectorizer.cc.  */
 
 static void
@@ -4049,6 +4087,7 @@ commutative_ternary_fn_p (internal_fn fn)
     case IFN_FMS:
     case IFN_FNMA:
     case IFN_FNMS:
+    case IFN_UADDC:
       return true;
 
     default:

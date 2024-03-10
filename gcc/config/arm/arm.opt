@@ -230,7 +230,16 @@ EnumValue
 Enum(arm_tp_type) String(auto) Value(TP_AUTO)
 
 EnumValue
-Enum(arm_tp_type) String(cp15) Value(TP_CP15)
+Enum(arm_tp_type) String(tpidrurw) Value(TP_TPIDRURW)
+
+EnumValue
+Enum(arm_tp_type) String(cp15) Value(TP_TPIDRURO)
+
+EnumValue
+Enum(arm_tp_type) String(tpidruro) Value(TP_TPIDRURO)
+
+EnumValue
+Enum(arm_tp_type) String(tpidrprw) Value(TP_TPIDRPRW)
 
 mtpcs-frame
 Target Mask(TPCS_FRAME)

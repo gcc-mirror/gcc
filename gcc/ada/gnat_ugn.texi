@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , May 09, 2023
+GNAT User's Guide for Native Platforms , Jun 01, 2023
 
 AdaCore
 
@@ -590,12 +590,12 @@ using the GNU make utility with GNAT.
 
 @item 
 @ref{b,,GNAT Utility Programs} explains the various utility programs that
-are included in the GNAT environment
+are included in the GNAT environment.
 
 @item 
 @ref{c,,GNAT and Program Execution} covers a number of topics related to
-running, debugging, and tuning the performace of programs developed
-with GNAT
+running, debugging, and tuning the performance of programs developed
+with GNAT.
 @end itemize
 
 Appendices cover several additional topics:
@@ -606,7 +606,7 @@ Appendices cover several additional topics:
 @item 
 @ref{d,,Platform-Specific Information} describes the different run-time
 library implementations and also presents information on how to use
-GNAT on several specific platforms
+GNAT on several specific platforms.
 
 @item 
 @ref{e,,Example of Binder Output File} shows the source code for the binder
@@ -1288,7 +1288,7 @@ lowercase equivalence.
 @item `ISO 8859-15 (Latin-9)'
 
 ISO 8859-15 (Latin-9) letters allowed in identifiers, with uppercase and
-lowercase equivalence
+lowercase equivalence.
 @end table
 
 @geindex code page 437 (IBM PC)
@@ -3231,8 +3231,8 @@ default, that contains calls to the elaboration procedures of those
 compilation unit that require them, followed by
 a call to the main program. This Ada program is compiled to generate the
 object file for the main program. The name of
-the Ada file is @code{b~xxx}.adb` (with the corresponding spec
-@code{b~xxx}.ads`) where @code{xxx} is the name of the
+the Ada file is @code{b~xxx.adb} (with the corresponding spec
+@code{b~xxx.ads}) where @code{xxx} is the name of the
 main program unit.
 
 Finally, the linker is used to build the resulting executable program,
@@ -5366,7 +5366,7 @@ elaboration of the GNAT components. Consult the documentation of the other
 Ada compiler for further details on elaboration.
 
 However, it is not possible to mix the tasking run time of GNAT and
-HP Ada 83, All the tasking operations must either be entirely within
+HP Ada 83, all the tasking operations must either be entirely within
 GNAT compiled sections of the program, or entirely within HP Ada 83
 compiled sections of the program.
 @end table
@@ -5537,24 +5537,20 @@ The corresponding operator declaration must have parameters and result type
 that have the same root numeric type (for example, all three are long_float
 types). This simplifies the definition of operations that use type checking
 to perform dimensional checks:
-@end itemize
 
 @example
-  type Distance is new Long_Float;
-  type Time     is new Long_Float;
-  type Velocity is new Long_Float;
-  function "/" (D : Distance; T : Time)
-    return Velocity;
-  pragma Import (Intrinsic, "/");
+type Distance is new Long_Float;
+type Time     is new Long_Float;
+type Velocity is new Long_Float;
+function "/" (D : Distance; T : Time)
+  return Velocity;
+pragma Import (Intrinsic, "/");
+@end example
 
 This common idiom is often programmed with a generic definition and an
 explicit body. The pragma makes it simpler to introduce such declarations.
 It incurs no overhead in compilation time or code size, because it is
 implemented as a single machine instruction.
-@end example
-
-
-@itemize *
 
 @item 
 General subprogram entities. This is used  to bind an Ada subprogram
@@ -5724,7 +5720,10 @@ $ gnatmake ada_unit -largs file1.o file2.o --LINK=g++
 
 @item 
 Using GNAT and G++ from two different GCC installations: If both
-compilers are on the :envvar`PATH`, the previous method may be used. It is
+compilers are on the 
+@geindex PATH
+@geindex environment variable; PATH
+@code{PATH}, the previous method may be used. It is
 important to note that environment variables such as
 @geindex C_INCLUDE_PATH
 @geindex environment variable; C_INCLUDE_PATH

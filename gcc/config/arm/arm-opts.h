@@ -61,7 +61,9 @@ enum float_abi_type
 enum arm_tp_type {
   TP_AUTO,
   TP_SOFT,
-  TP_CP15
+  TP_TPIDRURW,
+  TP_TPIDRURO,
+  TP_TPIDRPRW
 };
 
 /* Which TLS scheme to use.  */
