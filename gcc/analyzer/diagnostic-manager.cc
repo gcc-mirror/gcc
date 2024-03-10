@@ -1421,7 +1421,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   auto_diagnostic_group d;
   auto_cfun sentinel (sd.m_snode->m_fun);
-  if (sd.m_d->emit (&rich_loc))
+  if (sd.m_d->emit (&rich_loc, get_logger ()))
     {
       sd.emit_any_notes ();
 

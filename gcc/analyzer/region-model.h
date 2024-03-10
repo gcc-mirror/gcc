@@ -490,6 +490,7 @@ class region_model
 				  region_model_context *ctxt) const;
 
   void check_region_for_write (const region *dest_reg,
+			       const svalue *sval_hint,
 			       region_model_context *ctxt) const;
 
 private:
@@ -555,6 +556,7 @@ private:
 				  region_model_context *ctxt) const;
   bool check_region_access (const region *reg,
 			    enum access_direction dir,
+			    const svalue *sval_hint,
 			    region_model_context *ctxt) const;
   bool check_region_for_read (const region *src_reg,
 			      region_model_context *ctxt) const;
@@ -567,8 +569,10 @@ private:
 			      const svalue *num_bytes_sval,
 			      const svalue *capacity,
 			      enum access_direction dir,
+			      const svalue *sval_hint,
 			      region_model_context *ctxt) const;
   bool check_region_bounds (const region *reg, enum access_direction dir,
+			    const svalue *sval_hint,
 			    region_model_context *ctxt) const;
 
   void check_call_args (const call_details &cd) const;

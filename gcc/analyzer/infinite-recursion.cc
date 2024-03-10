@@ -95,7 +95,7 @@ public:
     return OPT_Wanalyzer_infinite_recursion;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     /* "CWE-674: Uncontrolled Recursion".  */
     diagnostic_metadata m;

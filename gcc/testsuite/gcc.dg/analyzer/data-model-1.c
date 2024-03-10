@@ -240,8 +240,8 @@ void test_16 (void)
   __analyzer_eval (strlen (msg) == 11); /* { dg-warning "TRUE" } */
 
   /* Out-of-bounds.  */
-  __analyzer_eval (msg[100] == 'e'); /* { dg-warning "UNKNOWN" } */
-  // TODO: some kind of warning for the out-of-bounds access
+  __analyzer_eval (msg[100] == 'e'); /* { dg-warning "UNKNOWN" "eval result" } */
+  /* { dg-warning "buffer over-read" "out-of-bounds" { target *-*-* } .-1 } */
 }
 
 static const char *__attribute__((noinline))

@@ -183,6 +183,7 @@ public:
   bool involves_p (const svalue *sval) const;
 
   region_offset get_offset (region_model_manager *mgr) const;
+  region_offset get_next_offset (region_model_manager *mgr) const;
 
   /* Attempt to get the size of this region as a concrete number of bytes.
      If successful, return true and write the size to *OUT.

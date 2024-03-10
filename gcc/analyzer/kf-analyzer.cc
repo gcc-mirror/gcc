@@ -255,7 +255,7 @@ public:
     return 0;
   }
 
-  bool emit (rich_location *richloc) final override
+  bool emit (rich_location *richloc, logger *) final override
   {
     inform (richloc, "path");
     return true;

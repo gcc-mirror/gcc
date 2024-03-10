@@ -465,7 +465,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     /*CWE-775: Missing Release of File Descriptor or Handle after Effective
       Lifetime
@@ -550,7 +550,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     bool warned;
     switch (m_fd_dir)
@@ -612,7 +612,7 @@ public:
     return OPT_Wanalyzer_fd_double_close;
   }
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     // CWE-1341: Multiple Releases of Same Resource or Handle
@@ -677,7 +677,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     bool warned;
     warned = warning_at (rich_loc, get_controlling_option (),
@@ -748,7 +748,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     bool warned;
     warned = warning_at (rich_loc, get_controlling_option (),
@@ -859,7 +859,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     /* CWE-666: Operation on Resource in Wrong Phase of Lifetime.  */
     diagnostic_metadata m;
@@ -1019,7 +1019,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     switch (m_expected_type)
       {

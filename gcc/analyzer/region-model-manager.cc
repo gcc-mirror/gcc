@@ -230,10 +230,11 @@ region_model_manager::get_or_create_constant_svalue (tree cst_expr)
    for VAL of type TYPE, creating it if necessary.  */
 
 const svalue *
-region_model_manager::get_or_create_int_cst (tree type, poly_int64 val)
+region_model_manager::get_or_create_int_cst (tree type,
+					     const poly_wide_int_ref &cst)
 {
   gcc_assert (type);
-  tree tree_cst = build_int_cst (type, val);
+  tree tree_cst = wide_int_to_tree (type, cst);
   return get_or_create_constant_svalue (tree_cst);
 }
 
@@ -612,7 +613,7 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
 	  return get_or_create_constant_svalue (result);
     }
 
-  if (FLOAT_TYPE_P (type)
+  if ((type && FLOAT_TYPE_P (type))
       || (arg0->get_type () && FLOAT_TYPE_P (arg0->get_type ()))
       || (arg1->get_type () && FLOAT_TYPE_P (arg1->get_type ())))
     return NULL;
@@ -634,6 +635,11 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       /* (0 - VAL) -> -VAL.  */
       if (cst0 && zerop (cst0))
 	return get_or_create_unaryop (type, NEGATE_EXPR, arg1);
+      /* (X + Y) - X -> Y.  */
+      if (const binop_svalue *binop = arg0->dyn_cast_binop_svalue ())
+	if (binop->get_op () == PLUS_EXPR)
+	  if (binop->get_arg0 () == arg1)
+	    return get_or_create_cast (type, binop->get_arg1 ());
       break;
     case MULT_EXPR:
       /* (VAL * 0).  */
@@ -726,10 +732,7 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
   if (cst1 && associative_tree_code (op))
     if (const binop_svalue *binop = arg0->dyn_cast_binop_svalue ())
       if (binop->get_op () == op
-	  && binop->get_arg1 ()->maybe_get_constant ()
-	  && type == binop->get_type ()
-	  && type == binop->get_arg0 ()->get_type ()
-	  && type == binop->get_arg1 ()->get_type ())
+	  && binop->get_arg1 ()->maybe_get_constant ())
 	return get_or_create_binop
 	  (type, op, binop->get_arg0 (),
 	   get_or_create_binop (type, op,
@@ -747,6 +750,21 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
 	    (type, op, binop->get_arg0 (),
 	     get_or_create_binop (size_type_node, op,
 				  binop->get_arg1 (), arg1));
+
+  /* Distribute multiplication by a constant through addition/subtraction:
+     (X + Y) * CST => (X * CST) + (Y * CST).  */
+  if (cst1 && op == MULT_EXPR)
+    if (const binop_svalue *binop = arg0->dyn_cast_binop_svalue ())
+      if (binop->get_op () == PLUS_EXPR
+	  || binop->get_op () == MINUS_EXPR)
+	{
+	  return get_or_create_binop
+	    (type, binop->get_op (),
+	     get_or_create_binop (type, op,
+				  binop->get_arg0 (), arg1),
+	     get_or_create_binop (type, op,
+				  binop->get_arg1 (), arg1));
+	}
 
   /* etc.  */
 

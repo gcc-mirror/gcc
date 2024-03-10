@@ -10234,6 +10234,18 @@ ix86_expand_sse_ptest (const struct builtin_description *d, tree exp,
   machine_mode mode1 = insn_data[d->icode].operand[1].mode;
   enum rtx_code comparison = d->comparison;
 
+  /* ptest reg, reg sets the carry flag.  */
+  if (comparison == LTU
+      && (d->code == IX86_BUILTIN_PTESTC
+	  || d->code == IX86_BUILTIN_PTESTC256)
+      && rtx_equal_p (op0, op1))
+    {
+      if (!target)
+	target = gen_reg_rtx (SImode);
+      emit_move_insn (target, const1_rtx);
+      return target;
+    }
+
   if (VECTOR_MODE_P (mode0))
     op0 = safe_vector_operand (op0, mode0);
   if (VECTOR_MODE_P (mode1))

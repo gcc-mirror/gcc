@@ -176,7 +176,7 @@ public:
     return OPT_Wanalyzer_double_fclose;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     /* CWE-1341: Multiple Releases of Same Resource or Handle.  */
@@ -224,7 +224,7 @@ public:
     return OPT_Wanalyzer_file_leak;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     /* CWE-775: "Missing Release of File Descriptor or Handle after

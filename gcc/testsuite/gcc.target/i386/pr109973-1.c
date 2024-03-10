@@ -10,4 +10,4 @@ foo (__m256i x, __m256i y)
   return __builtin_ia32_ptestc256 (a, a);
 }
 
-/* { dg-final { scan-assembler "vpand" } } */
+/* { dg-final { scan-assembler "movl\[ \\t]*\\\$1, %eax" } } */

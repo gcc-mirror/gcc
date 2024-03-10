@@ -553,7 +553,9 @@ kf_memset::impl_call_pre (const call_details &cd) const
   const region *sized_dest_reg = mgr->get_sized_region (dest_reg,
 							NULL_TREE,
 							num_bytes_sval);
-  model->check_region_for_write (sized_dest_reg, cd.get_ctxt ());
+  model->check_region_for_write (sized_dest_reg,
+				 nullptr,
+				 cd.get_ctxt ());
   model->fill_region (sized_dest_reg, fill_value_u8);
 }
 
@@ -587,7 +589,7 @@ public:
     return OPT_Wanalyzer_putenv_of_auto_var;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
