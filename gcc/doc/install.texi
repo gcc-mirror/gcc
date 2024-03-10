@@ -253,6 +253,11 @@ name of the package depends on your distro) or you must build GCC as a
 @option{--disable-multilib}.  Otherwise, you may encounter an error such as
 @samp{fatal error: gnu/stubs-32.h: No such file}
 
+@item Python
+If you configure a RISC-V compiler with the option @option{--with-arch} and
+the specified architecture string is non-canonical, then you will need
+@command{python} installed on the build system.
+
 @item @anchor{GNAT-prerequisite}GNAT
 
 In order to build GNAT, the Ada compiler, you need a working GNAT
