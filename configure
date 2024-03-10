@@ -622,6 +622,7 @@ CXX_FOR_TARGET
 CC_FOR_TARGET
 RANLIB_PLUGIN_OPTION
 AR_PLUGIN_OPTION
+PKG_CONFIG_PATH
 GDCFLAGS
 READELF
 OTOOL
@@ -800,12 +801,16 @@ ac_user_opts='
 enable_option_checking
 with_build_libsubdir
 with_system_zlib
+with_zstd
 enable_as_accelerator_for
 enable_offload_targets
 enable_offload_defaulted
 enable_gold
 enable_ld
+enable_gprofng
 enable_compressed_debug_sections
+enable_default_compressed_debug_sections_algorithm
+enable_year2038
 enable_libquadmath
 enable_libquadmath_support
 enable_libada
@@ -1542,9 +1547,14 @@ Optional Features:
 
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
   --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
+  --enable-gprofng[=ARG]  build gprofng [ARG={yes,no}]
   --enable-compressed-debug-sections={all,gas,gold,ld,none}
                           Enable compressed debug sections for gas, gold or ld
                           by default
+  --enable-default-compressed-debug-sections-algorithm={zlib,zstd}
+                          Default compression algorithm for
+                          --enable-compressed-debug-sections.
+  --enable-year2038       enable support for timestamps past the year 2038
   --disable-libquadmath   do not build libquadmath directory
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
@@ -1589,6 +1599,8 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
   --with-system-zlib      use installed libz
+  --with-zstd             Support zstd compressed debug sections
+                          (default=auto)
   --with-mpc=PATH         specify prefix directory for installed MPC package.
                           Equivalent to --with-mpc-include=PATH/include plus
                           --with-mpc-lib=PATH/lib
@@ -2963,6 +2975,13 @@ if test x$with_system_readline = xyes ; then
   noconfigdirs="$noconfigdirs readline"
 fi
 
+
+# Check whether --with-zstd was given.
+if test "${with_zstd+set}" = set; then :
+  withval=$with_zstd;
+fi
+
+
 # some tools are so dependent upon X11 that if we're not building with X,
 # it's not even worth trying to configure, much less build, that tool.
 
@@ -3073,7 +3092,7 @@ case "${ENABLE_GOLD}" in
       # Check for target supported by gold.
       case "${target}" in
         i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* \
-        | aarch64*-*-* | mips*-*-* | s390*-*-* | loongarch*-*-*)
+        | aarch64*-*-* | tilegx*-*-* | mips*-*-* | s390*-*-* | loongarch*-*-*)
 	  configdirs="$configdirs gold"
 	  if test x${ENABLE_GOLD} = xdefault; then
 	    default_ld=gold
@@ -3118,6 +3137,22 @@ $as_echo "$as_me: WARNING: neither ld nor gold are enabled" >&2;}
     ;;
 esac
 
+# Check whether --enable-gprofng was given.
+if test "${enable_gprofng+set}" = set; then :
+  enableval=$enable_gprofng; enable_gprofng=$enableval
+else
+  enable_gprofng=yes
+fi
+
+if test "$enable_gprofng" = "yes"; then
+  case "${target}" in
+    x86_64-*-linux* | i?86-*-linux* | aarch64-*-linux*)
+    configdirs="$configdirs gprofng"
+    ;;
+  esac
+fi
+
+
 # PR gas/19109
 # Decide the default method for compressing debug sections.
 # Provide a configure time option to override our default.
@@ -3130,6 +3165,15 @@ if test "${enable_compressed_debug_sections+set}" = set; then :
 
 else
   enable_compressed_debug_sections=
+fi
+
+
+# Select default compression algorithm.
+# Check whether --enable-default_compressed_debug_sections_algorithm was given.
+if test "${enable_default_compressed_debug_sections_algorithm+set}" = set; then :
+  enableval=$enable_default_compressed_debug_sections_algorithm;
+else
+  default_compressed_debug_sections_algorithm=
 fi
 
 
@@ -3154,6 +3198,20 @@ case "${host}" in
     ;;
 esac
 
+# Default to --disable-year2038 until we can handle differences between
+# projects that use gnulib (which understands year 2038) and projects that
+# do not (like BFD).
+# Check whether --enable-year2038 was given.
+if test "${enable_year2038+set}" = set; then :
+  enableval=$enable_year2038; ENABLE_YEAR2038=$enableval
+else
+  ENABLE_YEAR2038=no
+fi
+
+enable_year2038=
+if test "${ENABLE_YEAR2038}" = "no" ; then
+  enable_year2038=no
+fi
 
 # Check whether --enable-libquadmath was given.
 if test "${enable_libquadmath+set}" = set; then :
@@ -3526,6 +3584,11 @@ case "${target}" in
   hppa*64*-*-hpux*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
+  hppa*-hp-hpux11*)
+    ;;
+  hppa*-*-hpux*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   ia64*-*-*vms*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
@@ -3832,8 +3895,13 @@ case "${target}" in
   h8500-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
+  hppa1.1-*-osf* | hppa1.1-*-bsd* )
+    ;;
   hppa*64*-*-hpux*)
     noconfigdirs="$noconfigdirs gdb"
+    ;;
+  hppa*-*-hpux11*)
+    noconfigdirs="$noconfigdirs gdb ld"
     ;;
   hppa*64*-*-linux*)
     ;;
@@ -3987,6 +4055,9 @@ case "${target}" in
     fi
     ;;
   tic6x-*-*)
+    noconfigdirs="$noconfigdirs sim"
+    ;;
+  tilepro*-*-* | tilegx*-*-*)
     noconfigdirs="$noconfigdirs sim"
     ;;
   v810-*-*)
@@ -10183,8 +10254,14 @@ if test "$silent" = yes; then
   baseargs="$baseargs --silent"
   tbaseargs="$tbaseargs --silent"
 fi
+
 baseargs="$baseargs --disable-option-checking"
 tbaseargs="$tbaseargs --disable-option-checking"
+
+if test "$enable_year2038" = no; then
+  baseargs="$baseargs --disable-year2038"
+  tbaseargs="$tbaseargs --disable-year2038"
+fi
 
 # Record and document user additions to sub configure arguments.
 
@@ -12962,6 +13039,7 @@ fi
 
 
 GDCFLAGS=${GDCFLAGS-${CFLAGS}}
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -plugin option" >&5
 $as_echo_n "checking for -plugin option... " >&6; }

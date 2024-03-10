@@ -255,6 +255,9 @@ if test x$with_system_readline = xyes ; then
   noconfigdirs="$noconfigdirs readline"
 fi
 
+AC_ARG_WITH(zstd,
+[AS_HELP_STRING([--with-zstd], [Support zstd compressed debug sections (default=auto)])])
+
 # some tools are so dependent upon X11 that if we're not building with X, 
 # it's not even worth trying to configure, much less build, that tool.
 
@@ -361,7 +364,7 @@ case "${ENABLE_GOLD}" in
       # Check for target supported by gold.
       case "${target}" in
         i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* \
-        | aarch64*-*-* | mips*-*-* | s390*-*-* | loongarch*-*-*)
+        | aarch64*-*-* | tilegx*-*-* | mips*-*-* | s390*-*-* | loongarch*-*-*)
 	  configdirs="$configdirs gold"
 	  if test x${ENABLE_GOLD} = xdefault; then
 	    default_ld=gold
@@ -403,6 +406,20 @@ case "${ENABLE_LD}" in
     ;;
 esac
 
+AC_ARG_ENABLE(gprofng,
+[AS_HELP_STRING([[--enable-gprofng[=ARG]]],
+		[build gprofng @<:@ARG={yes,no}@:>@])],
+enable_gprofng=$enableval,
+enable_gprofng=yes)
+if test "$enable_gprofng" = "yes"; then
+  case "${target}" in
+    x86_64-*-linux* | i?86-*-linux* | aarch64-*-linux*)
+    configdirs="$configdirs gprofng"
+    ;;
+  esac
+fi
+
+
 # PR gas/19109
 # Decide the default method for compressing debug sections.
 # Provide a configure time option to override our default.
@@ -415,6 +432,12 @@ AC_ARG_ENABLE(compressed_debug_sections,
     AC_MSG_ERROR([no program with compressed debug sections specified])
   fi
 ], [enable_compressed_debug_sections=])
+
+# Select default compression algorithm.
+AC_ARG_ENABLE(default_compressed_debug_sections_algorithm,
+[AS_HELP_STRING([--enable-default-compressed-debug-sections-algorithm={zlib,zstd}],
+		[Default compression algorithm for --enable-compressed-debug-sections.])],
+[], [default_compressed_debug_sections_algorithm=])
 
 # Configure extra directories which are host specific
 
@@ -437,6 +460,18 @@ case "${host}" in
     ;;
 esac
 
+# Default to --disable-year2038 until we can handle differences between
+# projects that use gnulib (which understands year 2038) and projects that
+# do not (like BFD).
+AC_ARG_ENABLE(year2038,
+AS_HELP_STRING([--enable-year2038],
+  [enable support for timestamps past the year 2038]),
+ENABLE_YEAR2038=$enableval,
+ENABLE_YEAR2038=no)
+enable_year2038=
+if test "${ENABLE_YEAR2038}" = "no" ; then
+  enable_year2038=no
+fi
 
 AC_ARG_ENABLE(libquadmath,
 AS_HELP_STRING([--disable-libquadmath],
@@ -779,6 +814,11 @@ case "${target}" in
   hppa*64*-*-hpux*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
+  hppa*-hp-hpux11*)
+    ;;
+  hppa*-*-hpux*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   ia64*-*-*vms*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
@@ -1082,8 +1122,13 @@ case "${target}" in
   h8500-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
+  hppa1.1-*-osf* | hppa1.1-*-bsd* )
+    ;;
   hppa*64*-*-hpux*)
     noconfigdirs="$noconfigdirs gdb"
+    ;;
+  hppa*-*-hpux11*)
+    noconfigdirs="$noconfigdirs gdb ld"
     ;;
   hppa*64*-*-linux*)
     ;;
@@ -1237,6 +1282,9 @@ case "${target}" in
     fi
     ;;
   tic6x-*-*)
+    noconfigdirs="$noconfigdirs sim"
+    ;;
+  tilepro*-*-* | tilegx*-*-*)
     noconfigdirs="$noconfigdirs sim"
     ;;
   v810-*-*)
@@ -3325,8 +3373,14 @@ if test "$silent" = yes; then
   baseargs="$baseargs --silent"
   tbaseargs="$tbaseargs --silent"
 fi
+
 baseargs="$baseargs --disable-option-checking"
 tbaseargs="$tbaseargs --disable-option-checking"
+
+if test "$enable_year2038" = no; then
+  baseargs="$baseargs --disable-year2038"
+  tbaseargs="$tbaseargs --disable-year2038"
+fi
 
 # Record and document user additions to sub configure arguments.
 AC_ARG_VAR([build_configargs],
@@ -3676,6 +3730,7 @@ AC_SUBST(CXXFLAGS)
 AC_SUBST(GDC)
 AC_SUBST(GDCFLAGS)
 GDCFLAGS=${GDCFLAGS-${CFLAGS}}
+AC_SUBST(PKG_CONFIG_PATH)
 
 GCC_PLUGIN_OPTION(PLUGIN_OPTION)
 AR_PLUGIN_OPTION=
