@@ -46,6 +46,7 @@ compilation is specified by a string called a "spec".  */
 #include "spellcheck.h"
 #include "opts-jobserver.h"
 #include "common/common-target.h"
+#include "diagnostic-text-art.h"
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
@@ -4343,6 +4344,11 @@ driver_handle_option (struct gcc_options *opts,
 					 (enum diagnostics_output_format)value);
 	  break;
 	}
+
+    case OPT_fdiagnostics_text_art_charset_:
+      diagnostics_text_art_charset_init (dc,
+					 (enum diagnostic_text_art_charset)value);
+      break;
 
     case OPT_Wa_:
       {
