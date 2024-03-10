@@ -3,12 +3,12 @@
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
 #include <stdint-gcc.h>
 
-int64_t foo1(int64_t rs1, int64_t rs2)
+uint64_t foo1(uint64_t rs1, uint64_t rs2)
 {
     return __builtin_riscv_clmul(rs1, rs2);
 }
 
-int64_t foo2(int64_t rs1, int64_t rs2)
+uint64_t foo2(uint64_t rs1, uint64_t rs2)
 {
     return __builtin_riscv_clmulh(rs1, rs2);
 }

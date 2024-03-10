@@ -10,6 +10,4 @@ unsigned f(_Bool a)
 }
 
 /* There should be no cast to int at all. */
-/* Forwprop1 does not remove all of the statements. */
-/* { dg-final { scan-tree-dump-not "\\\(int\\\)" "forwprop1" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-not "\\\(int\\\)" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "\\\(int\\\)" "forwprop1" } } */

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++20 -fno-lifetime-dse -O0" }
+// { dg-options "-fno-lifetime-dse -O0" }
 // { dg-do run { target c++20 } }
 // { dg-require-effective-target hosted }
 

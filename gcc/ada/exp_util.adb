@@ -30,7 +30,6 @@ with Checks;         use Checks;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
-with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Exp_Aggr;       use Exp_Aggr;
@@ -3324,7 +3323,13 @@ package body Exp_Util is
                   --  if it has invariants of its own or inherits class-wide
                   --  invariants from parent or interface types.
 
-                  pragma Assert (Present (Proc_Id));
+                  --  However, given that the invariant procedure is built by
+                  --  the expander, it is not available compiling generic units
+                  --  or when the sources have errors, since expansion is then
+                  --  disabled.
+
+                  pragma Assert (Present (Proc_Id)
+                    or else not Expander_Active);
 
                   --  Generate:
                   --    <Comp_Typ>Invariant (T (_object).<Comp_Id>);
@@ -3333,7 +3338,9 @@ package body Exp_Util is
                   --  assertions are disabled or Assertion_Policy Ignore is in
                   --  effect.
 
-                  if not Has_Null_Body (Proc_Id) then
+                  if Present (Proc_Id)
+                    and then not Has_Null_Body (Proc_Id)
+                  then
                      Append_New_To (Comp_Checks,
                        Make_Procedure_Call_Statement (Loc,
                          Name                   =>
@@ -4982,12 +4989,15 @@ package body Exp_Util is
          return False;
 
       --  If we know that we have a small (at most the maximum integer size)
-      --  record or bit-packed array, then everything is fine, since the back
-      --  end can handle these cases correctly, except if a slice is involved.
+      --  bit-packed array or record without variant part, then everything is
+      --  fine, since the back end can handle these cases correctly, except if
+      --  a slice is involved.
 
       elsif Known_Esize (Comp)
         and then Esize (Comp) <= System_Max_Integer_Size
-        and then (Is_Record_Type (UT) or else Is_Bit_Packed_Array (UT))
+        and then (Is_Bit_Packed_Array (UT)
+                   or else (Is_Record_Type (UT)
+                             and then not Has_Variant_Part (UT)))
         and then not For_Slice
       then
          return False;
@@ -8399,65 +8409,73 @@ package body Exp_Util is
 
          Call := Unqual_Conv (Call);
 
+         --  We search for a formal with a matching suffix. We can't search
+         --  for the full name, because of the code at the end of Sem_Ch6.-
+         --  Create_Extra_Formals, which copies the Extra_Formals over to
+         --  the Alias of an instance, which will cause the formals to have
+         --  "incorrect" names. See also Exp_Ch6.Build_In_Place_Formal.
+
          if Is_Build_In_Place_Function_Call (Call) then
             declare
                Caller_Allocation_Val : constant Uint :=
                  UI_From_Int (BIP_Allocation_Form'Pos (Caller_Allocation));
+               Access_Suffix         : constant String :=
+                 BIP_Formal_Suffix (BIP_Object_Access);
+               Alloc_Suffix          : constant String :=
+                 BIP_Formal_Suffix (BIP_Alloc_Form);
 
-               Access_Nam : Name_Id := No_Name;
+               function Has_Suffix (Name, Suffix : String) return Boolean;
+               --  Return True if Name has suffix Suffix
+
+               ----------------
+               -- Has_Suffix --
+               ----------------
+
+               function Has_Suffix (Name, Suffix : String) return Boolean is
+                  Len : constant Natural := Suffix'Length;
+
+               begin
+                  return Name'Length > Len
+                    and then Name (Name'Last - Len + 1 .. Name'Last) = Suffix;
+               end Has_Suffix;
+
                Access_OK  : Boolean := False;
-               Actual     : Node_Id;
-               Alloc_Nam  : Name_Id := No_Name;
                Alloc_OK   : Boolean := True;
-               Formal     : Node_Id;
-               Func_Id    : Entity_Id;
                Param      : Node_Id;
 
             begin
                --  Examine all parameter associations of the function call
 
                Param := First (Parameter_Associations (Call));
+
                while Present (Param) loop
                   if Nkind (Param) = N_Parameter_Association
                     and then Nkind (Selector_Name (Param)) = N_Identifier
                   then
-                     Actual := Explicit_Actual_Parameter (Param);
-                     Formal := Selector_Name (Param);
+                     declare
+                        Actual : constant Node_Id
+                          := Explicit_Actual_Parameter (Param);
+                        Formal : constant Node_Id
+                          := Selector_Name (Param);
+                        Name   : constant String
+                          := Get_Name_String (Chars (Formal));
 
-                     --  Construct the names of formals BIPaccess and BIPalloc
-                     --  using the function name retrieved from an arbitrary
-                     --  formal.
+                     begin
+                        --  A nonnull BIPaccess has been found
 
-                     if Access_Nam = No_Name
-                       and then Alloc_Nam = No_Name
-                       and then Present (Entity (Formal))
-                     then
-                        Func_Id := Scope (Entity (Formal));
+                        if Has_Suffix (Name, Access_Suffix)
+                          and then Nkind (Actual) /= N_Null
+                        then
+                           Access_OK := True;
 
-                        Access_Nam :=
-                          New_External_Name (Chars (Func_Id),
-                            BIP_Formal_Suffix (BIP_Object_Access));
+                        --  A BIPalloc has been found
 
-                        Alloc_Nam :=
-                          New_External_Name (Chars (Func_Id),
-                            BIP_Formal_Suffix (BIP_Alloc_Form));
-                     end if;
-
-                     --  A nonnull BIPaccess has been found
-
-                     if Chars (Formal) = Access_Nam
-                       and then Nkind (Actual) /= N_Null
-                     then
-                        Access_OK := True;
-                     end if;
-
-                     --  A BIPalloc has been found
-
-                     if Chars (Formal) = Alloc_Nam
-                       and then Nkind (Actual) = N_Integer_Literal
-                     then
-                        Alloc_OK := Intval (Actual) = Caller_Allocation_Val;
-                     end if;
+                        elsif Has_Suffix (Name, Alloc_Suffix)
+                          and then Nkind (Actual) = N_Integer_Literal
+                        then
+                           Alloc_OK := Intval (Actual) = Caller_Allocation_Val;
+                        end if;
+                     end;
                   end if;
 
                   Next (Param);
@@ -8674,7 +8692,7 @@ package body Exp_Util is
             --  first parameter is the transient. Such a call appears as:
 
             --     It : Access_To_Constant_Reference_Type :=
-            --            Constant_Indexing (Tran_Id.all, ...)'reference;
+            --            Constant_Indexing (Trans_Id.all, ...)'reference;
 
             Stmt := First_Stmt;
             while Present (Stmt) loop
@@ -8759,7 +8777,7 @@ package body Exp_Util is
             --  first parameter is the transient. Such a call appears as:
 
             --     It : Access_To_CW_Iterator :=
-            --            Iterate (Tran_Id.all, ...)'reference;
+            --            Iterate (Trans_Id.all, ...)'reference;
 
             Stmt := First_Stmt;
             while Present (Stmt) loop
@@ -9385,6 +9403,135 @@ package body Exp_Util is
         and then Has_Controlling_Result (Id);
    end Is_Secondary_Stack_Thunk;
 
+   ----------------------------
+   -- Is_Statically_Disabled --
+   ----------------------------
+
+   function Is_Statically_Disabled
+     (N             : Node_Id;
+      Value         : Boolean;
+      Include_Valid : Boolean)
+      return Boolean
+   is
+      function Is_Discrete_Literal (N : Node_Id) return Boolean;
+      --  Returns whether N is an integer, character or enumeration literal
+
+      -------------------------
+      -- Is_Discrete_Literal --
+      -------------------------
+
+      function Is_Discrete_Literal (N : Node_Id) return Boolean is
+        (Nkind (N) in N_Integer_Literal | N_Character_Literal
+          or else (Nkind (N) in N_Identifier | N_Expanded_Name
+                    and then Ekind (Entity (N)) = E_Enumeration_Literal));
+
+      Expr_N : constant Node_Id :=
+        (if Is_Static_Expression (N)
+           and then Entity (N) in Standard_True | Standard_False
+           and then Is_Rewrite_Substitution (N)
+         then Original_Node (N)
+         else N);
+
+   --  Start of processing for Is_Statically_Disabled
+
+   begin
+      --  A "statically disabled" condition which evaluates to Value is either:
+
+      case Nkind (Expr_N) is
+
+         --  an AND or AND THEN operator when:
+         --  - Value is True and both operands are statically disabled
+         --    conditions evaluated to True.
+         --  - Value is False and at least one operand is a statically disabled
+         --    condition evaluated to False.
+
+         when N_Op_And | N_And_Then =>
+            return
+              (if Value then
+                 (Is_Statically_Disabled
+                    (Left_Opnd (Expr_N), Value, Include_Valid)
+                  and then Is_Statically_Disabled
+                    (Right_Opnd (Expr_N), Value, Include_Valid))
+               else
+                 (Is_Statically_Disabled
+                    (Left_Opnd (Expr_N), Value, Include_Valid)
+                  or else Is_Statically_Disabled
+                    (Right_Opnd (Expr_N), Value, Include_Valid)));
+
+         --  an OR or OR ELSE operator when:
+         --  - Value is True and at least one operand is a statically disabled
+         --    condition evaluated to True.
+         --  - Value is False and both operands are statically disabled
+         --    conditions evaluated to False.
+
+         when N_Op_Or | N_Or_Else =>
+            return
+              (if Value then
+                 (Is_Statically_Disabled
+                    (Left_Opnd (Expr_N), Value, Include_Valid)
+                  or else Is_Statically_Disabled
+                    (Right_Opnd (Expr_N), Value, Include_Valid))
+               else
+                 (Is_Statically_Disabled
+                    (Left_Opnd (Expr_N), Value, Include_Valid)
+                  and then Is_Statically_Disabled
+                    (Right_Opnd (Expr_N), Value, Include_Valid)));
+
+         --  a NOT operator when the right operand is a statically disabled
+         --  condition evaluated to the negation of Value.
+
+         when N_Op_Not =>
+            return Is_Statically_Disabled
+              (Right_Opnd (Expr_N), not Value, Include_Valid);
+
+         --  a static constant when it is of a boolean type with aspect
+         --  Warnings Off.
+
+         when N_Identifier | N_Expanded_Name =>
+            return Is_Static_Expression (Expr_N)
+              and then Value = Is_True (Expr_Value (Expr_N))
+              and then Ekind (Entity (Expr_N)) = E_Constant
+              and then Has_Warnings_Off (Entity (Expr_N));
+
+         --  a relational_operator where one operand is a static constant with
+         --  aspect Warnings Off and the other operand is a literal of the
+         --  corresponding type.
+
+         when N_Op_Compare =>
+            declare
+               Left  : constant Node_Id := Left_Opnd (Expr_N);
+               Right : constant Node_Id := Right_Opnd (Expr_N);
+            begin
+               return
+                 Is_Static_Expression (N)
+                   and then Value = Is_True (Expr_Value (N))
+                   and then
+                     ((Is_Discrete_Literal (Right)
+                         and then Nkind (Left) in N_Identifier
+                                                | N_Expanded_Name
+                         and then Ekind (Entity (Left)) = E_Constant
+                         and then Has_Warnings_Off (Entity (Left)))
+                      or else
+                        (Is_Discrete_Literal (Left)
+                           and then Nkind (Right) in N_Identifier
+                                                   | N_Expanded_Name
+                           and then Ekind (Entity (Right)) = E_Constant
+                           and then Has_Warnings_Off (Entity (Right))));
+            end;
+
+         --  a reference to 'Valid or 'Valid_Scalar if Include_Valid is True
+
+         when N_Attribute_Reference =>
+            return Include_Valid
+              and then Get_Attribute_Id (Attribute_Name (Expr_N)) in
+                Attribute_Valid | Attribute_Valid_Scalars
+              and then Value;
+
+         when others =>
+            return False;
+      end case;
+   end Is_Statically_Disabled;
+
    --------------------------------
    -- Is_Uninitialized_Aggregate --
    --------------------------------
@@ -9561,8 +9708,11 @@ package body Exp_Util is
             --  if/case statement and either
             --    a) we are in an instance and the condition/selector
             --       has a statically known value; or
-            --    b) the condition/selector is a simple identifier and
-            --       warnings off is set for this identifier.
+            --    b) the selector of a case statement is a simple identifier
+            --       and warnings off is set for this identifier; or
+            --    c) the condition of an if statement is a "statically
+            --       disabled" condition which evaluates to False as described
+            --       in section 7.3.2 of SPARK User's Guide.
             --  Dead code is common and reasonable in instances, so we don't
             --  want a warning in that case.
 
@@ -9571,18 +9721,28 @@ package body Exp_Util is
             begin
                if Nkind (Parent (N)) = N_If_Statement then
                   C := Condition (Parent (N));
-               elsif Nkind (Parent (N)) = N_Case_Statement_Alternative then
-                  C := Expression (Parent (Parent (N)));
-               end if;
 
-               if Present (C) then
-                  if (In_Instance and Compile_Time_Known_Value (C))
-                    or else (Nkind (C) = N_Identifier
-                             and then Present (Entity (C))
-                             and then Has_Warnings_Off (Entity (C)))
+                  if Is_Statically_Disabled
+                    (C, Value => False, Include_Valid => False)
                   then
                      W := False;
                   end if;
+
+               elsif Nkind (Parent (N)) = N_Case_Statement_Alternative then
+                  C := Expression (Parent (Parent (N)));
+
+                  if Nkind (C) = N_Identifier
+                    and then Present (Entity (C))
+                    and then Has_Warnings_Off (Entity (C))
+                  then
+                     W := False;
+                  end if;
+               end if;
+
+               if Present (C)
+                 and then (In_Instance and Compile_Time_Known_Value (C))
+               then
+                  W := False;
                end if;
             end;
 

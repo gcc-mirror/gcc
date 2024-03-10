@@ -1944,7 +1944,27 @@ typedef struct gfc_symbol
      according to the Fortran standard.  */
   unsigned pass_as_value:1;
 
+  /* Reference counter, used for memory management.
+
+     Some symbols may be present in more than one namespace, for example
+     function and subroutine symbols are present both in the outer namespace and
+     the procedure body namespace.  Freeing symbols with the namespaces they are
+     in would result in double free for those symbols.  This field counts
+     references and is used to delay the memory release until the last reference
+     to the symbol is removed.
+
+     Not every symbol pointer is accounted for reference counting.  Fields
+     gfc_symtree::n::sym are, and gfc_finalizer::proc_sym as well.  But most of
+     them (dummy arguments, generic list elements, etc) are "weak" pointers;
+     the reference count isn't updated when they are assigned, and they are
+     ignored when the surrounding structure memory is released.  This is not a
+     problem because there is always a namespace as surrounding context and
+     symbols have a name they can be referred with in that context, so the
+     namespace keeps the symbol from being freed, keeping the pointer valid.
+     When the namespace ceases to exist, and the symbols with it, the other
+     structures referencing symbols cease to exist as well.  */
   int refs;
+
   struct gfc_namespace *ns;	/* namespace containing this symbol */
 
   tree backend_decl;
@@ -3514,7 +3534,7 @@ gfc_symtree *gfc_get_unique_symtree (gfc_namespace *);
 gfc_user_op *gfc_get_uop (const char *);
 gfc_user_op *gfc_find_uop (const char *, gfc_namespace *);
 void gfc_free_symbol (gfc_symbol *&);
-void gfc_release_symbol (gfc_symbol *&);
+bool gfc_release_symbol (gfc_symbol *&);
 gfc_symbol *gfc_new_symbol (const char *, gfc_namespace *);
 gfc_symtree* gfc_find_symtree_in_proc (const char *, gfc_namespace *);
 int gfc_find_symbol (const char *, gfc_namespace *, int, gfc_symbol **);

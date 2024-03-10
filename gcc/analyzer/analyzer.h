@@ -90,6 +90,7 @@ class reachable_regions;
 class bounded_ranges;
 class bounded_ranges_manager;
 
+struct pending_location;
 class pending_diagnostic;
 class pending_note;
 struct event_loc_info;

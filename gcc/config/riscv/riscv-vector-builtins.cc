@@ -873,6 +873,10 @@ static CONSTEXPR const rvv_arg_type_info tuple_vset_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_size),
      rvv_arg_type_info (RVV_BASE_tuple_subpart), rvv_arg_type_info_end};
 
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info tuple_vcreate_args[]
+  = {rvv_arg_type_info (RVV_BASE_tuple_subpart), rvv_arg_type_info_end};
+
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
   = {PRED_TYPE_none, NUM_PRED_TYPES};
@@ -2496,6 +2500,14 @@ static CONSTEXPR const rvv_op_info tuple_v_scalar_const_ptr_size_ptr_ops
      OP_TYPE_v,				  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      scalar_const_ptr_size_ptr_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vcreate_tuple_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     tuple_vcreate_args /* Args */};
 
 /* A list of all RVV base function types.  */
 static CONSTEXPR const function_type_info function_types[] = {

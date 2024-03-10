@@ -74,6 +74,7 @@
   (ior (match_operand 0 "const_0_operand")
        (match_operand 0 "register_operand")))
 
+;; ZCMP predicates
 (define_predicate "stack_push_up_to_ra_operand"
   (and (match_code "const_int")
        (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 1)")))
@@ -170,13 +171,12 @@
   (and (match_code "const_int")
        (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 13)")))
 
-;; ZCMP predicates
 (define_predicate "a0a1_reg_operand"
-  (and (match_operand 0 "register_operand")
+  (and (match_code "reg")
        (match_test "IN_RANGE (REGNO (op), A0_REGNUM, A1_REGNUM)")))
 
 (define_predicate "zcmp_mv_sreg_operand"
-  (and (match_operand 0 "register_operand")
+  (and (match_code "reg")
        (match_test "TARGET_RVE ? IN_RANGE (REGNO (op), S0_REGNUM, S1_REGNUM)
                     : IN_RANGE (REGNO (op), S0_REGNUM, S1_REGNUM)
                     || IN_RANGE (REGNO (op), S2_REGNUM, S7_REGNUM)")))

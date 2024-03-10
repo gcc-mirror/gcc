@@ -1683,7 +1683,6 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	if (next)
 	  {
 	    if (next != error_mark_node
-		&& ! seen_error () // Improves error-recovery on anew5.C.
 		&& (initializer_constant_valid_p (next, TREE_TYPE (next))
 		    != null_pointer_node))
 	      {

@@ -567,7 +567,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@libm2iso_la_M2FLAGS = \
 @BUILD_ISOLIB_TRUE@  -fm2-pathname=m2iso -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso \
 @BUILD_ISOLIB_TRUE@  -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
-@BUILD_ISOLIB_TRUE@  -fiso -fextended-opaque -fm2-g -g -Wreturn-type -fcase -fm2-prefix=m2iso
+@BUILD_ISOLIB_TRUE@  -fiso -fextended-opaque -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2iso
 
 @BUILD_ISOLIB_TRUE@@TARGET_DARWIN_FALSE@libm2iso_la_link_flags = 
 @BUILD_ISOLIB_TRUE@@TARGET_DARWIN_TRUE@libm2iso_la_link_flags = -Wl,-undefined,dynamic_lookup

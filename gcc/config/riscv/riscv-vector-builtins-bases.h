@@ -267,6 +267,7 @@ extern const function_base *const vlmul_ext;
 extern const function_base *const vlmul_trunc;
 extern const function_base *const vset;
 extern const function_base *const vget;
+extern const function_base *const vcreate;
 extern const function_base *const read_vl;
 extern const function_base *const vleff;
 extern const function_base *const vlenb;

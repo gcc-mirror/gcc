@@ -113,6 +113,10 @@ public:
       return NULL;
   }
   meaning get_meaning () const override;
+  diagnostic_thread_id_t get_thread_id () const final override
+  {
+    return 0;
+  }
 
   /* Additional functionality.  */
 

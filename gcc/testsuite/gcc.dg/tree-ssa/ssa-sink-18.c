@@ -198,7 +198,9 @@ compute_on_bytes (uint8_t *in_data, int in_len, uint8_t *out_data, int out_len)
     exits after gimple loop optimizations, which generates instructions executed
     each iteration in loop, but the results are used outside of loop:
     With -m64,
-    "Sinking _367 = (uint8_t *) _320;
+    "Sinking op_230 = op_244 + 2;
+    from bb 63 to bb 94
+    Sinking _367 = (uint8_t *) _320;
     from bb 31 to bb 90
     Sinking _320 = _321 + ivtmp.25_326;
     from bb 31 to bb 90
@@ -213,4 +215,4 @@ compute_on_bytes (uint8_t *in_data, int in_len, uint8_t *out_data, int out_len)
     base+index addressing modes, so the ip[len] address computation can't be
     made from the IV computation above.  */
 
- /* { dg-final { scan-tree-dump-times "Sunk statements: 4" 1 "sink2" { target lp64 xfail { riscv64-*-* } } } } */
+ /* { dg-final { scan-tree-dump-times "Sunk statements: 5" 1 "sink2" { target lp64 xfail { riscv64-*-* } } } } */

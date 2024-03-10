@@ -26,7 +26,6 @@
 with Atree;          use Atree;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
-with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
@@ -9301,7 +9300,7 @@ package body Sem_Ch8 is
 
    procedure Pop_Scope is
       SST : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
-      S   : constant Entity_Id := SST.Entity;
+      S   : constant Scope_Kind_Id := SST.Entity;
 
    begin
       if Debug_Flag_E then
@@ -9363,7 +9362,7 @@ package body Sem_Ch8 is
    -- Push_Scope --
    ----------------
 
-   procedure Push_Scope (S : Entity_Id) is
+   procedure Push_Scope (S : Scope_Kind_Id) is
       E : constant Entity_Id := Scope (S);
 
       function Component_Alignment_Default return Component_Alignment_Kind;

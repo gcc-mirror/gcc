@@ -626,6 +626,7 @@ extern unsigned int start_underspecified_init (location_t, tree);
 extern void finish_underspecified_init (tree, unsigned int);
 extern void push_scope (void);
 extern tree pop_scope (void);
+extern void c_mark_decl_jump_unsafe_in_current_scope ();
 extern void c_bindings_start_stmt_expr (struct c_spot_bindings *);
 extern void c_bindings_end_stmt_expr (struct c_spot_bindings *);
 

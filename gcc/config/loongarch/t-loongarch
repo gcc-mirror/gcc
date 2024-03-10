@@ -16,7 +16,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TM_H += $(srcdir)/config/loongarch/loongarch-driver.h
+TM_H += loongarch-multilib.h $(srcdir)/config/loongarch/loongarch-driver.h
 OPTIONS_H_EXTRA += $(srcdir)/config/loongarch/loongarch-def.h \
 		   $(srcdir)/config/loongarch/loongarch-tune.h
 

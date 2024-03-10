@@ -368,4 +368,6 @@ inline void gt_ggc_mx (unsigned long int) { }
 inline void gt_ggc_mx (long long int) { }
 inline void gt_ggc_mx (unsigned long long int) { }
 
+extern void ggc_common_finalize ();
+
 #endif

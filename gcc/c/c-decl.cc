@@ -681,6 +681,11 @@ decl_jump_unsafe (tree decl)
   if (VAR_P (decl) && C_DECL_COMPOUND_LITERAL_P (decl))
     return false;
 
+  if (flag_openmp
+      && VAR_P (decl)
+      && lookup_attribute ("omp allocate", DECL_ATTRIBUTES (decl)))
+    return true;
+
   /* Always warn about crossing variably modified types.  */
   if ((VAR_P (decl) || TREE_CODE (decl) == TYPE_DECL)
       && c_type_variably_modified_p (TREE_TYPE (decl)))
@@ -722,6 +727,15 @@ c_print_identifier (FILE *file, tree node, int indent)
     }
 
   c_binding_oracle = save;
+}
+
+/* Establish that the scope contains declarations that are sensitive to
+   jumps that cross a binding.  Together with decl_jump_unsafe, this is
+   used to diagnose such jumps.  */
+void
+c_mark_decl_jump_unsafe_in_current_scope ()
+{
+  current_scope->has_jump_unsafe_decl = 1;
 }
 
 /* Establish a binding between NAME, an IDENTIFIER_NODE, and DECL,
@@ -3974,6 +3988,9 @@ warn_about_goto (location_t goto_loc, tree label, tree decl)
   if (c_type_variably_modified_p (TREE_TYPE (decl)))
     error_at (goto_loc,
 	      "jump into scope of identifier with variably modified type");
+  else if (flag_openmp
+	   && lookup_attribute ("omp allocate", DECL_ATTRIBUTES (decl)))
+    error_at (goto_loc, "jump skips OpenMP %<allocate%> allocation");
   else
     if (!warning_at (goto_loc, OPT_Wjump_misses_init,
 		     "jump skips variable initialization"))
@@ -4251,6 +4268,15 @@ c_check_switch_jump_warnings (struct c_spot_bindings *switch_bindings,
 		  error_at (case_loc,
 			    ("switch jumps into scope of identifier with "
 			     "variably modified type"));
+		  emitted = true;
+		}
+	      else if (flag_openmp
+		       && lookup_attribute ("omp allocate",
+					    DECL_ATTRIBUTES (b->decl)))
+		{
+		  saw_error = true;
+		  error_at (case_loc,
+			    "switch jumps over OpenMP %<allocate%> allocation");
 		  emitted = true;
 		}
 	      else

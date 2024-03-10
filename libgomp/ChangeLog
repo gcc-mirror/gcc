@@ -1,3 +1,25 @@
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR testsuite/91884
+	PR testsuite/109951
+	* configure.ac: Revert earlier changes, instead
+	'AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)'.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* testsuite/lib/libgomp.exp (libgomp_init): Remove
+	"Fix up '-funconfigured-libstdc++-v3' in 'GXX_UNDER_TEST'" code.
+	If '--with-build-sysroot=[...]' was specified, use it for
+	build-tree testing.
+	* testsuite/libgomp-site-extra.exp.in (GCC_UNDER_TEST)
+	(GXX_UNDER_TEST, GFORTRAN_UNDER_TEST): Don't set.
+	(SYSROOT_CFLAGS_FOR_TARGET): Set.
+	* testsuite/libgomp.c++/c++.exp (lang_source_re)
+	(lang_include_flags): Set for build-tree testing.
+	* testsuite/libgomp.oacc-c++/c++.exp (lang_source_re)
+	(lang_include_flags): Likewise.
+
 2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (Memory Management Routines): New; add documentation for

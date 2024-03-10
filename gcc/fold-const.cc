@@ -5565,7 +5565,12 @@ range_check_type (tree etype)
       else
 	return NULL_TREE;
     }
-  else if (POINTER_TYPE_P (etype) || TREE_CODE (etype) == OFFSET_TYPE)
+  else if (POINTER_TYPE_P (etype)
+	   || TREE_CODE (etype) == OFFSET_TYPE
+	   /* Right now all BITINT_TYPEs satisfy
+	      (unsigned) max + 1 == (unsigned) min, so no need to verify
+	      that like for INTEGER_TYPEs.  */
+	   || TREE_CODE (etype) == BITINT_TYPE)
     etype = unsigned_type_for (etype);
   return etype;
 }

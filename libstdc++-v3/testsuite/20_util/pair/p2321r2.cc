@@ -1,5 +1,4 @@
 // Verify P2321R2 "zip" enhancements to std::pair.
-// { dg-options "-std=gnu++23" }
 // { dg-do run { target c++23 } }
 
 #include <utility>

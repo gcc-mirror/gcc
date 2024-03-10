@@ -1,6 +1,5 @@
-// { dg-options "-std=gnu++2a -pthread" }
-// { dg-do run { target c++2a } }
-// { dg-require-effective-target pthread }
+// { dg-do run { target c++20 } }
+// { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-gthreads "" }
 // { dg-add-options libatomic }
 

@@ -541,7 +541,8 @@ pru-*-*)
 	;;
 riscv*)
 	cpu_type=riscv
-	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o riscv-v.o riscv-vsetvl.o riscv-vector-costs.o"
+	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o riscv-string.o"
+	extra_objs="${extra_objs} riscv-v.o riscv-vsetvl.o riscv-vector-costs.o"
 	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o"
 	extra_objs="${extra_objs} thead.o"
 	d_target_objs="riscv-d.o"
@@ -2525,7 +2526,7 @@ loongarch*-*-linux*)
 	tm_file="elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file}"
 	tm_file="${tm_file} loongarch/gnu-user.h loongarch/linux.h"
 	extra_options="${extra_options} linux-android.opt"
-	tmake_file="${tmake_file} loongarch/t-linux"
+	tmake_file="${tmake_file} loongarch/t-multilib loongarch/t-linux"
 	gnu_ld=yes
 	gas=yes
 
@@ -2537,7 +2538,7 @@ loongarch*-*-linux*)
 loongarch*-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file}"
 	tm_file="${tm_file} loongarch/elf.h loongarch/linux.h"
-	tmake_file="${tmake_file} loongarch/t-linux"
+	tmake_file="${tmake_file} loongarch/t-multilib loongarch/t-linux"
 	gnu_ld=yes
 	gas=yes
 
@@ -5214,7 +5215,7 @@ case "${target}" in
 		loongarch_multilib_list_sane=no
 
 		# This one goes to TM_MULTILIB_CONFIG, for use in t-linux.
-		loongarch_multilib_list_make=""
+		loongarch_multilib_list_make="${abi_base},"
 
 		# This one goes to tm_defines, for use in loongarch-driver.c.
 		loongarch_multilib_list_c=""

@@ -1223,8 +1223,9 @@ PROCEDURE FromModuleGetSym (tok: CARDINAL;
 
 
 (*
-   GetNth - returns the n th symbol in the list of father Sym.
-            Sym may be a Module, DefImp, Procedure or Record symbol.
+   GetNth - returns the n th symbol in the list associated with the scope
+            of Sym.  Sym may be a Module, DefImp, Procedure, Record or
+            Enumeration symbol.
 *)
 
 PROCEDURE GetNth (Sym: CARDINAL; n: CARDINAL) : CARDINAL ;
@@ -2426,7 +2427,9 @@ PROCEDURE ForeachParamSymDo (Sym: CARDINAL; P: PerformOperation) ;
 
 (*
    ForeachFieldEnumerationDo - for each field in enumeration, Sym,
-                               do procedure, P.
+                               do procedure, P.  Each call to P contains
+                               an enumeration field, the order is alphabetical.
+                               Use ForeachLocalSymDo for declaration order.
 *)
 
 PROCEDURE ForeachFieldEnumerationDo (Sym: CARDINAL; P: PerformOperation) ;

@@ -475,7 +475,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_LOGLIB_TRUE@ -fm2-pathname=m2log -I$(GM2_SRC)/gm2-libs-log \
 @BUILD_LOGLIB_TRUE@ -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
 @BUILD_LOGLIB_TRUE@ -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
-@BUILD_LOGLIB_TRUE@ -Wreturn-type -fcase -fm2-prefix=m2log
+@BUILD_LOGLIB_TRUE@ -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2log
 
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_FALSE@libm2log_la_link_flags = 
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_TRUE@libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup

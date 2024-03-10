@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_WINDOWED_ABI	xtensa_windowed_abi
 #define TARGET_DEBUG		XCHAL_HAVE_DEBUG
 #define TARGET_L32R		XCHAL_HAVE_L32R
+#define TARGET_SALT		(XTENSA_MARCH_EARLIEST >= 260000)
 
 #define TARGET_DEFAULT (MASK_SERIALIZE_VOLATILE)
 

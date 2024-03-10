@@ -277,6 +277,10 @@ Wall
 Modula-2
 ; Documented in c.opt
 
+Wcase-enum
+Modula-2
+turns on case statement label compile time checking when using an expression of an enum type.
+
 Wpedantic
 Modula-2
 ; Documented in common.opt

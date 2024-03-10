@@ -562,7 +562,11 @@ inline namespace v1
 	}
       };
 
+#ifdef _GLIBCXX_HAS_GTHREADS
     atomic<count_type>		_M_work_count;
+#else
+    count_type			_M_work_count;
+#endif
     mutable execution_context::mutex_type		_M_mtx;
     queue<function<void()>>	_M_op;
     bool			_M_stopped = false;

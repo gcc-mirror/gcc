@@ -55,6 +55,7 @@ FROM M2Printf IMPORT printf0, printf1 ;
 FROM M2Debug IMPORT Assert ;
 FROM P2SymBuild IMPORT BuildString, BuildNumber ;
 FROM M2MetaError IMPORT MetaErrorT0 ;
+FROM M2CaseList IMPORT ElseCase ;
 
 FROM M2Reserved IMPORT tokToTok, toktype,
                        NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,
@@ -1207,6 +1208,7 @@ CaseEndStatement := "END"                                                  % Bui
                                                                            % BuildCaseEnd %
                     | "ELSE"                                               % BuildStmtNote (-1) %
                                                                            % BuildCaseElse %
+                                                                           % ElseCase (NulSym) %
                            StatementSequence                               % BuildStmtNote (0) %
 			                     "END"
                                                                            % BuildCaseEnd %

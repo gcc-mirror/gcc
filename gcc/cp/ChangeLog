@@ -1,3 +1,14 @@
+2023-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111357
+	* pt.cc (expand_integer_pack): Convert argument to int.
+
+2023-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107198
+	* typeck2.cc (process_init_constructor_array): Use VEC_INIT_EXPR
+	regardless of seen_error.
+
 2023-09-08  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99599

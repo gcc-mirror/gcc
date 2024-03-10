@@ -29,4 +29,3 @@
 TEST_ALL (VEC_PERM)
 
 /* { dg-final { scan-assembler-times {viota.m} 2 } } */
-/* { dg-final { scan-assembler-not {vmv\.v\.i} } } */

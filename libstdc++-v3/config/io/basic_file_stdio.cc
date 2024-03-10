@@ -66,6 +66,11 @@
 
 #include <limits> // For <off_t>::max() and min() and <streamsize>::max()
 
+#if _GLIBCXX_USE__GET_OSFHANDLE
+# include <stdint.h> // For intptr_t
+# include <io.h>     // For _get_osfhandle
+#endif
+
 namespace
 {
   // Map ios_base::openmode flags to a string for use in fopen().
@@ -458,6 +463,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
     return 0;
+  }
+
+  __basic_file<char>::native_handle_type
+  __basic_file<char>::native_handle() const noexcept
+  {
+#ifdef _GLIBCXX_USE_STDIO_PURE
+    return _M_cfile;
+#elif _GLIBCXX_USE__GET_OSFHANDLE
+    const intptr_t handle = _M_cfile ? _get_osfhandle(fileno(_M_cfile)) : -1;
+    return reinterpret_cast<native_handle>(handle);
+#else
+    return fileno(_M_cfile);
+#endif
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION

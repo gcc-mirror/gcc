@@ -4064,9 +4064,6 @@ loop:
   accept_statement (st);
   prog_unit = gfc_new_block;
   prog_unit->formal_ns = gfc_current_ns;
-  if (prog_unit == prog_unit->formal_ns->proc_name
-      && prog_unit->ns != prog_unit->formal_ns)
-    prog_unit->refs++;
 
 decl:
   /* Read data declaration statements.  */

@@ -12344,8 +12344,8 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       assemble_name (asm_out_file, buf);
       break;
 
-    case CONST_INT:
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+    CASE_CONST_SCALAR_INT:
+      output_addr_const (file, x);
       break;
 
     case CONST:

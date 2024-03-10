@@ -27,7 +27,6 @@ with Atree;          use Atree;
 with Debug;          use Debug;
 with Debug_A;        use Debug_A;
 with Einfo;          use Einfo;
-with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Exp_SPARK;      use Exp_SPARK;

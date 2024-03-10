@@ -35,6 +35,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !__GNUG__.  */
 #endif /* !m2expr_c.  */
 
+
+EXTERN char m2expr_CSTIntToChar (tree t);
+EXTERN char *m2expr_CSTIntToString (tree t);
 EXTERN bool m2expr_StrToWideInt (location_t location, const char *str, unsigned int base,
 				 widest_int &wval, bool issueError);
 EXTERN void m2expr_BuildBinaryForeachWordDo (

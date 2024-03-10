@@ -45,6 +45,7 @@ extern const function_shape *const vundefined;
 extern const function_shape *const misc;
 extern const function_shape *const vset;
 extern const function_shape *const vget;
+extern const function_shape *const vcreate;
 extern const function_shape *const read_vl;
 extern const function_shape *const fault_load;
 extern const function_shape *const vlenb;

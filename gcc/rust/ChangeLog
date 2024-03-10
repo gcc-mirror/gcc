@@ -1,3 +1,16 @@
+2023-09-11  Parthib  <94271200+Parthib314@users.noreply.github.com>
+
+	* Make-lang.in: Removed rust-gcc-diagnostics object file.
+	* rust-diagnostics.cc (rust_be_get_quotechars): Added from original file.
+		(rust_be_internal_error_at): Likewise.
+		(rust_be_error_at): Likewise.
+		(class rust_error_code_rule): Likewise.
+		(rust_be_warning_at): Likewise.
+		(rust_be_fatal_error): Likewise.
+		(rust_be_inform): Likewise.
+		(rust_be_debug_p): Likewise.
+	* rust-gcc-diagnostics.cc: Removed.
+
 2023-09-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* rust-diagnostics.cc (rust_error_at): New overload.

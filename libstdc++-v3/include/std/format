@@ -3437,7 +3437,13 @@ namespace __format
 
       template<typename _Ctx, typename... _Argz>
 	friend auto
-	std::make_format_args(_Argz&&...) noexcept;
+#if _GLIBCXX_INLINE_VERSION
+	// Needed for PR c++/59526
+	std::__8::
+#else
+	std::
+#endif
+	make_format_args(_Argz&&...) noexcept;
 
       // For a sufficiently small number of arguments we only store values.
       // basic_format_args can get the types from the _Args pack.

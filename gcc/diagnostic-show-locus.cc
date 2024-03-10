@@ -367,7 +367,8 @@ class layout
  public:
   layout (diagnostic_context *context,
 	  rich_location *richloc,
-	  diagnostic_t diagnostic_kind);
+	  diagnostic_t diagnostic_kind,
+	  pretty_printer *pp = nullptr);
 
   bool maybe_add_location_range (const location_range *loc_range,
 				 unsigned original_idx,
@@ -1183,9 +1184,10 @@ make_policy (const diagnostic_context &dc,
 
 layout::layout (diagnostic_context * context,
 		rich_location *richloc,
-		diagnostic_t diagnostic_kind)
+		diagnostic_t diagnostic_kind,
+		pretty_printer *pp)
 : m_context (context),
-  m_pp (context->printer),
+  m_pp (pp ? pp : context->printer),
   m_policy (make_policy (*context, *richloc)),
   m_primary_loc (richloc->get_range (0)->m_loc),
   m_exploc (richloc->get_expanded_location (0), m_policy,
@@ -2825,12 +2827,14 @@ gcc_rich_location::add_location_if_nearby (location_t loc,
 }
 
 /* Print the physical source code corresponding to the location of
-   this diagnostic, with additional annotations.  */
+   this diagnostic, with additional annotations.
+   If PP is non-null, then use it rather than CONTEXT's printer.  */
 
 void
 diagnostic_show_locus (diagnostic_context * context,
 		       rich_location *richloc,
-		       diagnostic_t diagnostic_kind)
+		       diagnostic_t diagnostic_kind,
+		       pretty_printer *pp)
 {
   location_t loc = richloc->get_loc ();
   /* Do nothing if source-printing has been disabled.  */
@@ -2851,7 +2855,7 @@ diagnostic_show_locus (diagnostic_context * context,
 
   context->last_location = loc;
 
-  layout layout (context, richloc, diagnostic_kind);
+  layout layout (context, richloc, diagnostic_kind, pp);
   for (int line_span_idx = 0; line_span_idx < layout.get_num_line_spans ();
        line_span_idx++)
     {

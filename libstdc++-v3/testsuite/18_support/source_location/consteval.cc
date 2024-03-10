@@ -18,8 +18,7 @@
 // Example from C++ Standard Working Draft N4842, November 2019 Mailing
 // Adapted for testing.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 #include <source_location>
 #include <string_view>
@@ -119,7 +118,7 @@ int main ()
     member_defaulted_sl.member.file_name());
   constexpr std::string_view member_defaulted_sl_fn_name(
     member_defaulted_sl.member.function_name());
-  static_assert(member_defaulted_sl.member.line() == 36);
+  static_assert(member_defaulted_sl.member.line() == 35);
   // closing paren of constructor declaration
   static_assert(member_defaulted_sl.member.column() == 25);
   static_assert(member_defaulted_sl_fn_name.ends_with("s::s(int)"sv));

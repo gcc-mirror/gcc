@@ -4637,7 +4637,7 @@
   [(set_attr "type" "logics_shift_imm")]
 )
 
-(define_insn "*<LOGICAL:optab>_<SHIFT:optab><mode>3"
+(define_insn "<LOGICAL:optab>_<SHIFT:optab><mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(LOGICAL:GPI (SHIFT:GPI
 		      (match_operand:GPI 1 "register_operand" "r")

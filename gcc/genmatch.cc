@@ -4891,6 +4891,8 @@ parser::parse_result (operand *result, predicate_id *matcher)
 		    ife->trueexpr = parse_result (result, matcher);
 		  else
 		    ife->trueexpr = parse_op ();
+		  if (peek ()->type == CPP_OPEN_PAREN)
+		    fatal_at (peek(), "if inside switch cannot have an else");
 		  eat_token (CPP_CLOSE_PAREN);
 		}
 	      else

@@ -19,8 +19,7 @@
 
 // Test wide character inserters defined as deleted by P1423.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 #include <ostream>
 

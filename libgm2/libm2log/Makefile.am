@@ -136,7 +136,7 @@ libm2log_la_M2FLAGS = \
  -fm2-pathname=m2log -I$(GM2_SRC)/gm2-libs-log \
  -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
  -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
- -Wreturn-type -fcase -fm2-prefix=m2log
+ -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2log
 if TARGET_DARWIN
 libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
 else

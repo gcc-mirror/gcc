@@ -23,6 +23,39 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "loongarch-str.h"
 
+#ifndef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC ""
+#endif
+
+#ifndef SUBTARGET_CC1_SPEC
+#define SUBTARGET_CC1_SPEC ""
+#endif
+
+#ifndef SUBTARGET_ASM_SPEC
+#define SUBTARGET_ASM_SPEC ""
+#endif
+
+#define EXTRA_SPECS \
+  {"early_self_spec", ""}, \
+  {"subtarget_cc1_spec", SUBTARGET_CC1_SPEC}, \
+  {"subtarget_cpp_spec", SUBTARGET_CPP_SPEC}, \
+  {"subtarget_asm_spec", SUBTARGET_ASM_SPEC},
+
+
+#undef CPP_SPEC
+#define CPP_SPEC \
+  "%(subtarget_cpp_spec)"
+
+#undef CC1_SPEC
+#define CC1_SPEC \
+  "%{G*} %{,ada:-gnatea %{mabi=*} -gnatez} " \
+  "%(subtarget_cc1_spec)"
+
+#undef ASM_SPEC
+#define ASM_SPEC \
+  "%{mabi=*} %(subtarget_asm_spec)"
+
+
 extern const char*
 la_driver_init (int argc, const char **argv);
 
@@ -45,7 +78,16 @@ driver_get_normalized_m_opts (int argc, const char **argv);
 #define LA_SET_PARM_SPEC(NAME) \
   " %{m" OPTSTR_##NAME  "=*: %:set_m_parm(" OPTSTR_##NAME " %*)}" \
 
+/* For MLIB_SELF_SPECS.  */
+#include "loongarch-multilib.h"
+
+#ifndef MLIB_SELF_SPECS
+#define MLIB_SELF_SPECS ""
+#endif
+
 #define DRIVER_HANDLE_MACHINE_OPTIONS \
+  " %(early_self_spec)", \
+  MLIB_SELF_SPECS \
   " %:driver_init()" \
   " %{c|S|E|nostdlib: %:set_no_link()}" \
   " %{nostartfiles: %{nodefaultlibs: %:set_no_link()}}" \

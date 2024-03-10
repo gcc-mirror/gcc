@@ -25,6 +25,10 @@ if { $blddir != "" } {
     verbose -log "GXX_UNDER_TEST not defined, will not execute c++ tests"
     return
 }
+if { $blddir != "" } {
+    set lang_source_re {^.*\.[cC]$}
+    set lang_include_flags [exec sh ${blddir}/../libstdc++-v3/scripts/testsuite_flags --build-includes]
+}
 lappend ALWAYS_CFLAGS "compiler=$GXX_UNDER_TEST"
 
 # Initialize dg.
@@ -121,6 +125,8 @@ foreach offload_target [concat [split $offload_targets ","] "disable"] {
 unset offload_target
 
 if { $blddir != "" } {
+    unset lang_source_re
+    unset lang_include_flags
     unset libstdc++_library_path
     unset lang_library_paths
 }

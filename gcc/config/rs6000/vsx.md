@@ -5846,11 +5846,22 @@
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Count Trailing Zero Least-Significant Bits Byte
-(define_insn "vctzlsbb_<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+(define_insn "*vctzlsbb_zext_<mode>"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
 	(unspec:SI
 	 [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
-	 UNSPEC_VCTZLSBB))]
+	 UNSPEC_VCTZLSBB)))]
+  "TARGET_P9_VECTOR"
+  "vctzlsbb %0,%1"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Count Trailing Zero Least-Significant Bits Byte
+(define_insn "vctzlsbb_<mode>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI
+         [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
+         UNSPEC_VCTZLSBB))]
   "TARGET_P9_VECTOR"
   "vctzlsbb %0,%1"
   [(set_attr "type" "vecsimple")])

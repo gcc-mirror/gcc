@@ -244,8 +244,8 @@ enum insn_flags : unsigned int
   /* Means INSN need two operands to do the operation.  */
   TERNARY_OP_P = 1 << 13,
 
-  /* flags for get mask mode from the index number. default from dest operand.  */
-  MASK_MODE_FROM_OP1_P = 1 << 14,
+  /* flags for get vtype mode from the index number. default from dest operand.  */
+  VTYPE_MODE_FROM_OP1_P = 1 << 14,
 
   /* flags for the floating-point rounding mode.  */
   /* Means INSN has FRM operand and the value is FRM_DYN.  */
@@ -321,7 +321,7 @@ enum insn_type : unsigned int
 
   /* For vcpop.m, no merge operand, no tail and mask policy operands.  */
   CPOP_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | UNARY_OP_P
-	    | MASK_MODE_FROM_OP1_P,
+	    | VTYPE_MODE_FROM_OP1_P,
 
   /* For mask instrunctions, no tail and mask policy operands.  */
   UNARY_MASK_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
@@ -336,10 +336,10 @@ enum insn_type : unsigned int
   = HAS_DEST_P | HAS_MERGE_P | TDEFAULT_POLICY_P | BINARY_OP_P,
 
   /* For vreduce, no mask policy operand. */
-  REDUCE_OP = __NORMAL_OP_TA | BINARY_OP_P | MASK_MODE_FROM_OP1_P,
-  REDUCE_OP_FRM_DYN = REDUCE_OP | FRM_DYN_P | MASK_MODE_FROM_OP1_P,
+  REDUCE_OP = __NORMAL_OP_TA | BINARY_OP_P | VTYPE_MODE_FROM_OP1_P,
+  REDUCE_OP_FRM_DYN = REDUCE_OP | FRM_DYN_P | VTYPE_MODE_FROM_OP1_P,
   REDUCE_OP_M_FRM_DYN
-  = __MASK_OP_TA | BINARY_OP_P | FRM_DYN_P | MASK_MODE_FROM_OP1_P,
+  = __MASK_OP_TA | BINARY_OP_P | FRM_DYN_P | VTYPE_MODE_FROM_OP1_P,
 
   /* For vmv.s.x/vfmv.s.f.  */
   SCALAR_MOVE_OP = HAS_DEST_P | HAS_MASK_P | USE_ONE_TRUE_MASK_P | HAS_MERGE_P
@@ -414,12 +414,6 @@ enum mask_policy
 /* Return true if VALUE is agnostic or any policy.  */
 #define IS_AGNOSTIC(VALUE) (bool) (VALUE & 0x1 || (VALUE >> 1 & 0x1))
 
-enum class reduction_type
-{
-  UNORDERED,
-  FOLD_LEFT,
-  MASK_LEN_FOLD_LEFT,
-};
 enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
@@ -433,8 +427,7 @@ void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void expand_cond_len_unop (unsigned, rtx *);
 void expand_cond_len_binop (unsigned, rtx *);
-void expand_reduction (rtx_code, rtx *, rtx,
-		       reduction_type = reduction_type::UNORDERED);
+void expand_reduction (unsigned, unsigned, rtx *, rtx);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
@@ -516,6 +509,10 @@ const unsigned int RISCV_BUILTIN_SHIFT = 1;
 
 /* Mask that selects the riscv_builtin_class part of a function code.  */
 const unsigned int RISCV_BUILTIN_CLASS = (1 << RISCV_BUILTIN_SHIFT) - 1;
+
+/* Routines implemented in riscv-string.cc.  */
+extern bool riscv_expand_strcmp (rtx, rtx, rtx, rtx, rtx);
+extern bool riscv_expand_strlen (rtx, rtx, rtx, rtx);
 
 /* Routines implemented in thead.cc.  */
 extern bool th_mempair_operands_p (rtx[4], bool, machine_mode);

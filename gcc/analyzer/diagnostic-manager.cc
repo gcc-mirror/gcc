@@ -516,7 +516,7 @@ process_worklist_item (feasible_worklist *worklist,
 	}
 
       feasibility_state succ_state (fnode->get_state ());
-      rejected_constraint *rc = NULL;
+      std::unique_ptr<rejected_constraint> rc;
       if (succ_state.maybe_update_for_edge (logger, succ_eedge, &rc))
 	{
 	  gcc_assert (rc == NULL);
@@ -560,7 +560,7 @@ process_worklist_item (feasible_worklist *worklist,
 	  gcc_assert (rc);
 	  fg->add_feasibility_problem (fnode,
 				       succ_eedge,
-				       rc);
+				       std::move (rc));
 
 	  /* Give up if there have been too many infeasible edges.  */
 	  if (fg->get_num_infeasible ()
@@ -664,30 +664,27 @@ epath_finder::dump_feasible_path (const exploded_node *target_enode,
 
 /* class saved_diagnostic.  */
 
-/* saved_diagnostic's ctor.
-   Take ownership of D and STMT_FINDER.  */
+/* saved_diagnostic's ctor.  */
 
 saved_diagnostic::saved_diagnostic (const state_machine *sm,
-				    const exploded_node *enode,
-				    const supernode *snode, const gimple *stmt,
-				    const stmt_finder *stmt_finder,
+				    const pending_location &ploc,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
 				    std::unique_ptr<pending_diagnostic> d,
 				    unsigned idx)
-: m_sm (sm), m_enode (enode), m_snode (snode), m_stmt (stmt),
- /* stmt_finder could be on-stack; we want our own copy that can
-    outlive that.  */
-  m_stmt_finder (stmt_finder ? stmt_finder->clone () : NULL),
+: m_sm (sm), m_enode (ploc.m_enode), m_snode (ploc.m_snode),
+  m_stmt (ploc.m_stmt),
+  /* stmt_finder could be on-stack; we want our own copy that can
+     outlive that.  */
+  m_stmt_finder (ploc.m_finder ? ploc.m_finder->clone () : NULL),
+  m_loc (ploc.m_loc),
   m_var (var), m_sval (sval), m_state (state),
   m_d (std::move (d)), m_trailing_eedge (NULL),
   m_idx (idx),
   m_best_epath (NULL), m_problem (NULL),
   m_notes ()
 {
-  gcc_assert (m_stmt || m_stmt_finder);
-
   /* We must have an enode in order to be able to look for paths
      through the exploded_graph to this diagnostic.  */
   gcc_assert (m_enode);
@@ -706,6 +703,7 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 	  && m_snode == other.m_snode
 	  && m_stmt == other.m_stmt
 	  /* We don't compare m_stmt_finder.  */
+	  && m_loc == other.m_loc
 	  && pending_diagnostic::same_tree_p (m_var, other.m_var)
 	  && m_state == other.m_state
 	  && m_d->equal_p (*other.m_d)
@@ -835,8 +833,8 @@ saved_diagnostic::dump_as_dot_node (pretty_printer *pp) const
 
 /* Use PF to find the best exploded_path for this saved_diagnostic,
    and store it in m_best_epath.
-   If m_stmt is still NULL, use m_stmt_finder on the epath to populate
-   m_stmt.
+   If we don't have a specific location in m_loc and m_stmt is still NULL,
+   use m_stmt_finder on the epath to populate m_stmt.
    Return true if a best path was found.  */
 
 bool
@@ -855,12 +853,15 @@ saved_diagnostic::calc_best_epath (epath_finder *pf)
     return false;
 
   gcc_assert (m_best_epath);
-  if (m_stmt == NULL)
+  if (m_loc == UNKNOWN_LOCATION)
     {
-      gcc_assert (m_stmt_finder);
-      m_stmt = m_stmt_finder->find_stmt (*m_best_epath);
+      if (m_stmt == NULL)
+	{
+	  gcc_assert (m_stmt_finder);
+	  m_stmt = m_stmt_finder->find_stmt (*m_best_epath);
+	}
+      gcc_assert (m_stmt);
     }
-  gcc_assert (m_stmt);
 
   return true;
 }
@@ -966,6 +967,14 @@ compatible_epath_p (const exploded_path *lhs_path,
       /* A superedge was found for only one of the two paths.  */
       return false;
     }
+
+  /* A superedge was found for only one of the two paths.  */
+  if (lhs_eedge_idx >= 0 || rhs_eedge_idx >= 0)
+    return false;
+
+  /* Both paths were drained up entirely.
+     No discriminant was found.  */
+  return true;
 }
 
 
@@ -1094,9 +1103,7 @@ diagnostic_manager::diagnostic_manager (logger *logger, engine *eng,
 
 bool
 diagnostic_manager::add_diagnostic (const state_machine *sm,
-				    exploded_node *enode,
-				    const supernode *snode, const gimple *stmt,
-				    const stmt_finder *finder,
+				    const pending_location &ploc,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
@@ -1106,15 +1113,16 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
 
   /* We must have an enode in order to be able to look for paths
      through the exploded_graph to the diagnostic.  */
-  gcc_assert (enode);
+  gcc_assert (ploc.m_enode);
 
   /* If this warning is ultimately going to be rejected by a -Wno-analyzer-*
      flag, reject it now.
      We can only do this for diagnostics where we already know the stmt,
      and thus can determine the emission location.  */
-  if (stmt)
+  if (ploc.m_stmt)
     {
-      location_t loc = get_emission_location (stmt, snode->m_fun, *d);
+      location_t loc
+	= get_emission_location (ploc.m_stmt, ploc.m_snode->m_fun, *d);
       int option = d->get_controlling_option ();
       if (!warning_enabled_at (loc, option))
 	{
@@ -1127,14 +1135,14 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
     }
 
   saved_diagnostic *sd
-    = new saved_diagnostic (sm, enode, snode, stmt, finder, var, sval,
-			    state, std::move (d), m_saved_diagnostics.length ());
+    = new saved_diagnostic (sm, ploc, var, sval, state, std::move (d),
+			    m_saved_diagnostics.length ());
   m_saved_diagnostics.safe_push (sd);
-  enode->add_diagnostic (sd);
+  ploc.m_enode->add_diagnostic (sd);
   if (get_logger ())
     log ("adding saved diagnostic %i at SN %i to EN %i: %qs",
 	 sd->get_index (),
-	 snode->m_index, enode->m_index, sd->m_d->get_kind ());
+	 ploc.m_snode->m_index, ploc.m_enode->m_index, sd->m_d->get_kind ());
   return true;
 }
 
@@ -1143,14 +1151,11 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
    Take ownership of D (or delete it).  */
 
 bool
-diagnostic_manager::add_diagnostic (exploded_node *enode,
-				    const supernode *snode, const gimple *stmt,
-				    const stmt_finder *finder,
+diagnostic_manager::add_diagnostic (const pending_location &ploc,
 				    std::unique_ptr<pending_diagnostic> d)
 {
-  gcc_assert (enode);
-  return add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE,
-			 NULL, 0, std::move (d));
+  gcc_assert (ploc.m_enode);
+  return add_diagnostic (NULL, ploc, NULL_TREE, NULL, 0, std::move (d));
 }
 
 /* Add PN to the most recent saved_diagnostic.  */
@@ -1210,9 +1215,9 @@ class dedupe_key
 {
 public:
   dedupe_key (const saved_diagnostic &sd)
-  : m_sd (sd), m_stmt (sd.m_stmt)
+  : m_sd (sd), m_stmt (sd.m_stmt), m_loc (sd.m_loc)
   {
-    gcc_assert (m_stmt);
+    gcc_assert (m_stmt || m_loc != UNKNOWN_LOCATION);
   }
 
   hashval_t hash () const
@@ -1225,11 +1230,15 @@ public:
   bool operator== (const dedupe_key &other) const
   {
     return (m_sd == other.m_sd
-	    && m_stmt == other.m_stmt);
+	    && m_stmt == other.m_stmt
+	    && m_loc == other.m_loc);
   }
 
   location_t get_location () const
   {
+    if (m_loc != UNKNOWN_LOCATION)
+      return m_loc;
+    gcc_assert (m_stmt);
     return m_stmt->location;
   }
 
@@ -1258,6 +1267,7 @@ public:
 
   const saved_diagnostic &m_sd;
   const gimple *m_stmt;
+  location_t m_loc;
 };
 
 /* Traits for use by dedupe_winners.  */
@@ -1541,8 +1551,9 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   emission_path.prepare_for_emission (sd.m_d.get ());
 
-  location_t loc
-    = get_emission_location (sd.m_stmt, sd.m_snode->m_fun, *sd.m_d);
+  location_t loc = sd.m_loc;
+  if (loc == UNKNOWN_LOCATION)
+    loc = get_emission_location (sd.m_stmt, sd.m_snode->m_fun, *sd.m_d);
 
   /* Allow the pending_diagnostic to fix up the locations of events.  */
   emission_path.fixup_locations (sd.m_d.get ());

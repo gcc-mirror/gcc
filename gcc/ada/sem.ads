@@ -201,6 +201,7 @@
 --  called Preanalyze_And_Resolve and is in Sem_Res.
 
 with Alloc;
+with Einfo.Entities; use Einfo.Entities;
 with Opt;    use Opt;
 with Table;
 with Types;  use Types;
@@ -485,7 +486,7 @@ package Sem is
    --  configuration file.
 
    type Scope_Stack_Entry is record
-      Entity : Entity_Id;
+      Entity : Scope_Kind_Id;
       --  Entity representing the scope
 
       Last_Subprogram_Name : String_Ptr;

@@ -913,6 +913,8 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
 LDFLAGS=$LDFLAGS_hold])
 AM_CONDITIONAL(HAVE_STATIC_LINK, test "$libgo_cv_ld_static" = yes)
 
+AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)
+
 AC_CACHE_SAVE
 
 if test ${multilib} = yes; then

@@ -806,7 +806,7 @@ PROCEDURE InitDesExpr (des: CARDINAL) ;
 VAR
    e: exprNode ;
 BEGIN
-   NEW(e) ;
+   NEW (e) ;
    WITH e^ DO
       tag := designator ;
       CASE tag OF
@@ -819,6 +819,8 @@ BEGIN
                       left := NIL
                    END
 
+      ELSE
+         InternalError ('expecting designator')
       END
    END ;
    PushAddress (exprStack, e)
@@ -1168,6 +1170,8 @@ BEGIN
                     third := more
                  END
 
+      ELSE
+         InternalError ('expecting function')
       END
    END ;
    PushAddress (exprStack, n)
@@ -1194,6 +1198,8 @@ BEGIN
                    expr := e
                  END
 
+      ELSE
+         InternalError ('expecting convert')
       END
    END ;
    PushAddress(exprStack, n)
@@ -1208,7 +1214,7 @@ PROCEDURE InitLeaf (m: constType; s, t: CARDINAL) ;
 VAR
    l: exprNode ;
 BEGIN
-   NEW(l) ;
+   NEW (l) ;
    WITH l^ DO
       tag := leaf ;
       CASE tag OF
@@ -1219,9 +1225,11 @@ BEGIN
                 sym := s
              END
 
+      ELSE
+         InternalError ('expecting leaf')
       END
    END ;
-   PushAddress(exprStack, l)
+   PushAddress (exprStack, l)
 END InitLeaf ;
 
 
@@ -1513,9 +1521,9 @@ PROCEDURE InitBinary (m: constType; t: CARDINAL; o: Name) ;
 VAR
    l, r, b: exprNode ;
 BEGIN
-   r := PopAddress(exprStack) ;
-   l := PopAddress(exprStack) ;
-   NEW(b) ;
+   r := PopAddress (exprStack) ;
+   l := PopAddress (exprStack) ;
+   NEW (b) ;
    WITH b^ DO
       tag := binary ;
       CASE tag OF
@@ -1527,9 +1535,11 @@ BEGIN
                   right := r ;
                   op := o
                END
+      ELSE
+         InternalError ('expecting binary')
       END
    END ;
-   PushAddress(exprStack, b)
+   PushAddress (exprStack, b)
 END InitBinary ;
 
 
@@ -1541,10 +1551,10 @@ PROCEDURE BuildRelationConst ;
 VAR
    op: Name ;
 BEGIN
-   PopT(op) ;
+   PopT (op) ;
    IF inDesignator
    THEN
-      InitBinary(boolean, Boolean, op)
+      InitBinary (boolean, Boolean, op)
    END
 END BuildRelationConst ;
 
@@ -1557,10 +1567,10 @@ PROCEDURE BuildBinaryConst ;
 VAR
    op: Name ;
 BEGIN
-   PopT(op) ;
+   PopT (op) ;
    IF inDesignator
    THEN
-      InitBinary(unknown, NulSym, op)
+      InitBinary (unknown, NulSym, op)
    END
 END BuildBinaryConst ;
 
@@ -1586,6 +1596,8 @@ BEGIN
                  op := o
               END
 
+      ELSE
+         InternalError ('expecting unary')
       END
    END ;
    PushAddress(exprStack, b)

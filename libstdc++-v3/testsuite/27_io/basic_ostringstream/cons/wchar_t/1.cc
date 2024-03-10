@@ -17,8 +17,7 @@
 
 // C++20 29.8.4.2  basic_ostringstream constructors  [ostringstream.cons]
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 // { dg-require-effective-target cxx11_abi }
 
 #include <sstream>

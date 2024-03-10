@@ -1193,7 +1193,8 @@ BEGIN
    UninitVariableChecking := value ;
    PedanticCast := value ;
    PedanticParamNames := value ;
-   StyleChecking := value
+   StyleChecking := value ;
+   CaseEnumChecking := value
 END SetWall ;
 
 
@@ -1405,6 +1406,16 @@ BEGIN
 END SetUninitVariableChecking ;
 
 
+(*
+   SetCaseEnumChecking - sets the CaseEnumChecking to value.
+*)
+
+PROCEDURE SetCaseEnumChecking (value: BOOLEAN) ;
+BEGIN
+   CaseEnumChecking := value
+END SetCaseEnumChecking ;
+
+
 BEGIN
    cflag                             := FALSE ;  (* -c.  *)
    RuntimeModuleOverride             := InitString (DefaultRuntimeModuleOverride) ;
@@ -1477,6 +1488,7 @@ BEGIN
    DumpDir                           := NIL ;
    UninitVariableChecking            := FALSE ;
    UninitVariableConditionalChecking := FALSE ;
+   CaseEnumChecking                  := FALSE ;
    M2Prefix                          := InitString ('') ;
    M2PathName                        := InitString ('')
 END M2Options.

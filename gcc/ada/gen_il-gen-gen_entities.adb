@@ -1423,4 +1423,31 @@ begin -- Gen_IL.Gen.Gen_Entities
              E_Subprogram_Body,
              E_Subprogram_Type));
 
+   --  Entities that represent scopes. These can be on the scope stack,
+   --  and Scope_Depth can be queried. These are the kinds that have
+   --  the Scope_Depth_Value attribute, plus Record_Kind, which has
+   --  a synthesized Scope_Depth.
+
+   Union (Scope_Kind,
+          Children =>
+            (E_Void,
+             E_Private_Type,
+             E_Private_Subtype,
+             E_Limited_Private_Type,
+             E_Limited_Private_Subtype,
+             Concurrent_Kind,
+             Subprogram_Kind,
+             E_Entry,
+             E_Entry_Family,
+             E_Block,
+             Generic_Unit_Kind,
+             E_Loop,
+             E_Return_Statement,
+             E_Package,
+             E_Package_Body,
+             E_Subprogram_Body,
+             Record_Kind,
+             E_Incomplete_Type,
+             E_Subprogram_Type));
+
 end Gen_IL.Gen.Gen_Entities;

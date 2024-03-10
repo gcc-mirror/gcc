@@ -63,6 +63,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     friend bool
     operator==(const to_chars_result&, const to_chars_result&) = default;
 #endif
+#if __cplusplus > 202302L
+    constexpr explicit operator bool() const noexcept { return ec == errc{}; }
+#endif
   };
 
   /// Result type of std::from_chars
@@ -74,6 +77,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
     friend bool
     operator==(const from_chars_result&, const from_chars_result&) = default;
+#endif
+#if __cplusplus > 202302L
+    constexpr explicit operator bool() const noexcept { return ec == errc{}; }
 #endif
   };
 

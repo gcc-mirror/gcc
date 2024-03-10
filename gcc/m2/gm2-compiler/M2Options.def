@@ -70,7 +70,7 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  IndexChecking, RangeChecking,
                  ReturnChecking, CaseElseChecking,
                  AutoInit,
-                 VariantValueChecking,
+                 VariantValueChecking, CaseEnumChecking,
                  UnusedVariableChecking, UnusedParameterChecking,
                  UninitVariableChecking, SetUninitVariableChecking,
                  UninitVariableConditionalChecking,
@@ -97,7 +97,7 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SetGenModuleList, GetGenModuleFilename, SharedFlag,
                  SetB, GetB, SetMD, GetMD, SetMMD, GetMMD, SetObj, GetObj,
                  GetMQ, SetMQ, SetM2Prefix, GetM2Prefix,
-                 SetM2PathName, GetM2PathName ;
+                 SetM2PathName, GetM2PathName, SetCaseEnumChecking ;
 
 
 VAR
@@ -149,6 +149,8 @@ VAR
    VariantValueChecking,         (* Should we check all values are present   *)
                                  (* in a variant record?  True for ISO and   *)
                                  (* false for PIM.                           *)
+   CaseEnumChecking,             (* Should the compiler check for missing    *)
+                                 (* enumeration labels in a case statement?  *)
    Quiet,                        (* -fquiet option specified.                *)
    LineDirectives,               (* Should compiler understand preprocessor  *)
                                  (* # linenumber "filename" markers?         *)
@@ -934,6 +936,13 @@ PROCEDURE SetShared (value: BOOLEAN) ;
 *)
 
 PROCEDURE SetUninitVariableChecking (value: BOOLEAN; arg: ADDRESS) : INTEGER ;
+
+
+(*
+   SetCaseEnumChecking - sets the CaseEnumChecking to value.
+*)
+
+PROCEDURE SetCaseEnumChecking (value: BOOLEAN) ;
 
 
 (*

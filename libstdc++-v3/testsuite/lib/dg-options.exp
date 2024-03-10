@@ -352,6 +352,13 @@ proc add_options_for_using-deprecated { flags } {
     return "$flags -U_GLIBCXX_USE_DEPRECATED -D_GLIBCXX_USE_DEPRECATED=1"
 }
 
+# Add options for strict -std=c++NN dialects.
+# This is a dummy option that does nothing, but it causes v3-dg-runtest
+# to alter its behaviour.
+proc add_options_for_strict_std { flags } {
+    return $flags
+}
+
 # Like dg-options, but adds to the default options rather than replacing them.
 
 proc dg-additional-options { args } {
@@ -372,4 +379,12 @@ proc dg-additional-options { args } {
     } else {
         eval lappend extra-tool-flags [lindex $args 1]
     }
+}
+
+set v3_additional_files ""
+
+# Process a { dg-additional-files "filelist" } directive in the test.
+proc dg-additional-files { line filelist } {
+    global v3_additional_files
+    set v3_additional_files $filelist
 }

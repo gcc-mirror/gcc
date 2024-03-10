@@ -1,3 +1,139 @@
+2023-09-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2CaseList.mod (NewRanges): Add block
+	comment.
+	(NewSet): Add block comment.
+	(DisplayRanges): Add block comment.
+	(IncludeElement): Add block comment.
+	(IncludeElements): Add block comment.
+	(appendString): Add block comment.
+	(appendEnum): Add block comment.
+	(appendTree): Add block comment.
+	(SubrangeErrors): Add block comment.
+
+2023-09-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2CaseList.mod (appendString): New procedure.
+	(appendEnum): Re-implement.
+	(NoOfSetElements): New procedure function.
+	(isPrintableChar): New procedure function.
+	(appendTree): New procedure.
+	(SubrangeErrors): New procedure.
+	(EmitMissingRangeErrors): Call SubrangeErrors if appropriate.
+	* gm2-compiler/M2SymInit.mod (SetFieldInitializedNo): Avoid
+	using a temporary variable once.
+	(IsLocalVar): Comment out.
+	(RecordContainsVarient): Remove fieldtype.
+	(GenerateNoteFlow): Remove lst parameter.
+	(CheckDeferredRecordAccess): Remove lst parameter.
+	(CheckUnary): Remove lst parameter.  Remove procSym.
+	(CheckBinary): Remove lst parameter.  Remove procSym.
+	(CheckIndrX): Remove lst parameter.  Remove procSym.
+	(CheckXIndr): Remove bblst and procSym parameters.
+	(CheckRecordField): Remove procSym, op1tok, op2tok and op2.
+	(CheckBecomes): Remove procSym and bblst.
+	(CheckComparison): Remove procSym and bblst.
+	(CheckAddr): Remove procSym parameter.
+	* gm2-gcc/m2expr.cc (m2expr_CSTIntToString): New function.
+	(m2expr_CSTIntToChar): New function.
+	* gm2-gcc/m2expr.def (CSTIntToString): New procedure function
+	declaration.
+	(CSTIntToChar): New procedure function declaration.
+	* gm2-gcc/m2expr.h (m2expr_CSTIntToChar): New prototype.
+	(m2expr_CSTIntToString): New prototype.
+
+2023-09-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (GM2_FLAGS): Add -Wcase-enum.
+	(GM2_ISO_FLAGS): Add -Wcase-enum.
+	* gm2-compiler/M2CaseList.mod (EnumerateErrors): Issue
+	singular or plural start text prior to the enum list.
+	Remove unused parameter tokenno.
+	(EmitMissingRangeErrors): New procedure.
+	(MissingCaseBounds): Call EmitMissingRangeErrors.
+	(MissingCaseStatementBounds): Call EmitMissingRangeErrors.
+	* gm2-libs-iso/TextIO.mod: Fix spacing.
+
+2023-09-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2CaseList.def (PushCase): Rename parameters
+	r to rec and v to va.  Add expr parameter.
+	(MissingCaseStatementBounds): New procedure function.
+	* gm2-compiler/M2CaseList.mod (RangePair): Add expression.
+	(PushCase): Rename parameters r to rec and v to va.  Add
+	expr parameter.
+	(RemoveRange): New procedure function.
+	(SubBitRange): Detect the case when the range in the set matches
+	lo..hi.
+	(CheckLowHigh): New procedure.
+	(ExcludeCaseRanges): Rename parameter c to cd.  Rename local
+	variables q to cl and r to rp.
+	(High): Remove.
+	(Low): Remove.
+	(DoEnumValues): Remove.
+	(IncludeElement): New procedure.
+	(IncludeElements): New procedure.
+	(ErrorRangeEnum): New procedure.
+	(ErrorRange): Remove.
+	(ErrorRanges): Remove.
+	(appendEnum): New procedure.
+	(appendStr): New procedure.
+	(EnumerateErrors): New procedure.
+	(MissingCaseBounds): Re-implement.
+	(InRangeList): Remove.
+	(MissingCaseStatementBounds): New procedure function.
+	(checkTypes): Re-format.
+	(inRange): Re-format.
+	(TypeCaseBounds): Re-format.
+	* gm2-compiler/M2Error.mod (GetAnnounceScope): Add noscope to
+	case label list.
+	* gm2-compiler/M2GCCDeclare.mod: Replace ForeachFieldEnumerationDo
+	with ForeachLocalSymDo.
+	* gm2-compiler/M2Options.def (SetCaseEnumChecking): New procedure.
+	(CaseEnumChecking): New variable.
+	* gm2-compiler/M2Options.mod (SetCaseEnumChecking): New procedure.
+	(Module initialization): set CaseEnumChecking to FALSE.
+	* gm2-compiler/M2Quads.def (QuadOperator): Alphabetically ordered.
+	* gm2-compiler/M2Quads.mod (IsBackReferenceConditional): Add else
+	clause.
+	(BuildCaseStart): Pass selector expression to InitCaseBounds.
+	(CheckUninitializedVariablesAreUsed): Remove.
+	(IsInlineWithinBlock): Remove.
+	(AsmStatementsInBlock): Remove.
+	(CheckVariablesInBlock): Remove commented code.
+	(BeginVarient): Pass NulSym to InitCaseBounds.
+	* gm2-compiler/M2Range.mod (FoldCaseBounds): New local variable
+	errorGenerated.  Add call to MissingCaseStatementBounds.
+	* gm2-compiler/P3Build.bnf (CaseEndStatement): Call ElseCase.
+	* gm2-compiler/PCSymBuild.mod (InitDesExpr): Add else clause.
+	(InitFunction): Add else clause.
+	(InitConvert): Add else clause.
+	(InitLeaf): Add else clause.
+	(InitBinary): Add else clause.
+	(InitUnary): Add else clause.
+	* gm2-compiler/SymbolTable.def (GetNth): Re-write comment.
+	(ForeachFieldEnumerationDo): Re-write comment stating alphabetical
+	traversal.
+	* gm2-compiler/SymbolTable.mod (GetNth): Re-write comment.
+	Add case label for EnumerationSym and call GetItemFromList.
+	(ForeachFieldEnumerationDo): Re-write comment stating alphabetical
+	traversal.
+	(SymEnumeration): Add ListOfFields used for declaration order.
+	(MakeEnumeration): Initialize ListOfFields.
+	(PutFieldEnumeration): Include Field in ListOfFields.
+	* gm2-gcc/m2options.h (M2Options_SetCaseEnumChecking): New
+	function.
+	* gm2-lang.cc (gm2_langhook_handle_option): Add
+	OPT_Wcase_enum case and call M2Options_SetCaseEnumChecking.
+	* lang.opt (Wcase-enum): Add.
+
+2023-09-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111330
+	* gm2-compiler/M2SymInit.mod (CheckReadBeforeInitQuad): Add
+	case labels LogicalDiffOp, DummyOp, OptParamOp and
+	InitAddressOp.
+
 2023-08-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111085

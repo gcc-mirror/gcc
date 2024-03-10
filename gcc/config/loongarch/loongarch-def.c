@@ -85,7 +85,7 @@ loongarch_cpu_align[N_TUNE_TYPES] = {
     .int_mult_di	= COSTS_N_INSNS (1),	\
     .int_div_si		= COSTS_N_INSNS (4),	\
     .int_div_di		= COSTS_N_INSNS (6),	\
-    .branch_cost	= 2,			\
+    .branch_cost	= 6,			\
     .memory_latency	= 4
 
 /* The following properties cannot be looked up directly using "cpucfg".
@@ -118,7 +118,7 @@ loongarch_rtx_cost_optimize_size = {
     .int_mult_di      = 4,
     .int_div_si	      = 4,
     .int_div_di	      = 4,
-    .branch_cost      = 2,
+    .branch_cost      = 6,
     .memory_latency   = 4,
 };
 

@@ -3822,4 +3822,13 @@ make_pass_dwarf2_frame (gcc::context *ctxt)
   return new pass_dwarf2_frame (ctxt);
 }
 
+void dwarf2cfi_cc_finalize ()
+{
+  add_cfi_insn = NULL;
+  add_cfi_vec = NULL;
+  cur_trace = NULL;
+  cur_row = NULL;
+  cur_cfa = NULL;
+}
+
 #include "gt-dwarf2cfi.h"

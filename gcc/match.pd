@@ -931,8 +931,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        bool overflowed = true;
        value_range vr0, vr1;
        if (INTEGRAL_TYPE_P (type)
-	   && get_global_range_query ()->range_of_expr (vr0, @0)
-	   && get_global_range_query ()->range_of_expr (vr1, @1)
+	   && get_range_query (cfun)->range_of_expr (vr0, @0)
+	   && get_range_query (cfun)->range_of_expr (vr1, @1)
 	   && !vr0.varying_p () && !vr0.undefined_p ()
 	   && !vr1.varying_p () && !vr1.undefined_p ())
 	 {
@@ -975,6 +975,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* "X+(N*M)" doesn't overflow.  */
        && range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr3)
        && get_range_query (cfun)->range_of_expr (vr4, @4)
+       && !vr4.undefined_p ()
        /* "X+N*M" is not with opposite sign as "X".  */
        && (TYPE_UNSIGNED (type)
 	   || (vr0.nonnegative_p () && vr4.nonnegative_p ())
@@ -995,6 +996,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* "X - (N*M)" doesn't overflow.  */
        && range_op_handler (MINUS_EXPR).overflow_free_p (vr0, vr3)
        && get_range_query (cfun)->range_of_expr (vr4, @4)
+       && !vr4.undefined_p ()
        /* "X-N*M" is not with opposite sign as "X".  */
        && (TYPE_UNSIGNED (type)
 	   || (vr0.nonnegative_p () && vr4.nonnegative_p ())
@@ -1025,6 +1027,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  /* "X+C" doesn't overflow.  */
 	  && range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr1)
 	  && get_range_query (cfun)->range_of_expr (vr3, @3)
+	  && !vr3.undefined_p ()
 	  /* "X+C" and "X" are not of opposite sign.  */
 	  && (TYPE_UNSIGNED (type)
 	      || (vr0.nonnegative_p () && vr3.nonnegative_p ())
@@ -1483,14 +1486,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
  (simplify
-  (cmp (trunc_mod @0 @1) @1)
+  (cmp:c (trunc_mod @0 @1) @1)
   (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
    { constant_boolean_node (cmp == LT_EXPR, type); })))
-(for cmp (gt le)
- (simplify
-  (cmp @1 (trunc_mod @0 @1))
-  (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
-   { constant_boolean_node (cmp == GT_EXPR, type); })))
 
 /* x | ~0 -> ~0  */
 (simplify
@@ -2182,6 +2180,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type)
       && (TYPE_UNSIGNED (type)
 	  || TYPE_PRECISION (type) > 1))))
+
+/* (a&1) is always [0,1] too. This is useful again when
+   the range is not known. */
+(match zero_one_valued_p
+ (bit_and:c@0 @1 zero_one_valued_p))
+
+/* A conversion from an zero_one_valued_p is still a [0,1].
+   This is useful when the range of a variable is not known */
+(match zero_one_valued_p
+ (convert@0 zero_one_valued_p))
 
 /* Transform { 0 or 1 } * { 0 or 1 } into { 0 or 1 } & { 0 or 1 }.  */
 (simplify
@@ -2972,10 +2980,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    && operand_equal_p (@1, @2)))
     (with
      {
+      bool one_before = false;
+      bool one_after = false;
       int cmp = 0;
       if (TREE_CODE (@1) == INTEGER_CST
 	  && TREE_CODE (@2) == INTEGER_CST)
-	cmp = tree_int_cst_compare (@1, @2);
+	{
+	  cmp = tree_int_cst_compare (@1, @2);
+	  if (cmp < 0
+	      && wi::to_wide (@1) == wi::to_wide (@2) - 1)
+	    one_before = true;
+	  if (cmp > 0
+	      && wi::to_wide (@1) == wi::to_wide (@2) + 1)
+	    one_after = true;
+	}
       bool val;
       switch (code2)
 	 {
@@ -2999,6 +3017,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (code1 == NE_EXPR
            && code2 == LE_EXPR
 	   && cmp == 0)
+       (lt @0 @1))
+      /* (a != (b+1)) & (a > b) -> a > (b+1) */
+      (if (code1 == NE_EXPR
+           && code2 == GT_EXPR
+	   && one_after)
+       (gt @0 @1))
+      /* (a != (b-1)) & (a < b) -> a < (b-1) */
+      (if (code1 == NE_EXPR
+           && code2 == LT_EXPR
+	   && one_before)
        (lt @0 @1))
      )
     )
@@ -3071,10 +3099,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    && operand_equal_p (@1, @2)))
     (with
      {
+      bool one_before = false;
+      bool one_after = false;
       int cmp = 0;
       if (TREE_CODE (@1) == INTEGER_CST
 	  && TREE_CODE (@2) == INTEGER_CST)
-	cmp = tree_int_cst_compare (@1, @2);
+	{
+	  cmp = tree_int_cst_compare (@1, @2);
+	  if (cmp < 0
+	      && wi::to_wide (@1) == wi::to_wide (@2) - 1)
+	    one_before = true;
+	  if (cmp > 0
+	      && wi::to_wide (@1) == wi::to_wide (@2) + 1)
+	    one_after = true;
+	}
       bool val;
       switch (code2)
 	{
@@ -3098,6 +3136,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (code1 == EQ_EXPR
            && code2 == LT_EXPR
 	   && cmp == 0)
+       (le @0 @1))
+      /* (a == (b-1)) | (a >= b) -> a >= (b-1) */
+      (if (code1 == EQ_EXPR
+           && code2 == GE_EXPR
+	   && one_before)
+       (ge @0 @1))
+      /* (a == (b+1)) | (a <= b) -> a <= (b-1) */
+      (if (code1 == EQ_EXPR
+           && code2 == LE_EXPR
+	   && one_after)
        (le @0 @1))
      )
     )
@@ -3153,6 +3201,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && (code2 == LT_EXPR || code2 == LE_EXPR))
       { constant_boolean_node (true, type); })
      ))))))
+
+/* Optimize (a CMP b) ^ (a CMP b)  */
+/* Optimize (a CMP b) != (a CMP b)  */
+(for op (bit_xor ne)
+ (for cmp1 (lt lt lt le le le)
+      cmp2 (gt eq ne ge eq ne)
+      rcmp (ne le gt ne lt ge)
+  (simplify
+   (op:c (cmp1:c @0 @1) (cmp2:c @0 @1))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
+    (rcmp @0 @1)))))
+
+/* Optimize (a CMP b) == (a CMP b)  */
+(for cmp1 (lt lt lt le le le)
+     cmp2 (gt eq ne ge eq ne)
+     rcmp (eq gt le eq ge lt)
+ (simplify
+  (eq:c (cmp1:c @0 @1) (cmp2:c @0 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
+    (rcmp @0 @1))))
 
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
@@ -3900,9 +3968,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (maxmin @0 (bit_not @1))))
 
 /* MIN (X, Y) == X -> X <= Y  */
-(for minmax (min min max max)
-     cmp    (eq  ne  eq  ne )
-     out    (le  gt  ge  lt )
+/* MIN (X, Y) < X -> X > Y  */
+/* MIN (X, Y) >= X -> X <= Y  */
+(for minmax (min min min min max max max max)
+     cmp    (eq  ne  lt  ge  eq  ne  gt  le )
+     out    (le  gt  gt  le  ge  lt  lt  ge )
  (simplify
   (cmp:c (minmax:c @0 @1) @0)
   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0)))
@@ -3927,13 +3997,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (wi::lt_p (wi::to_wide (@1), wi::to_wide (@2),
 		  TYPE_SIGN (TREE_TYPE (@0))))
     (cmp @0 @2)))))
-/* MIN (X, C1) < C2 -> X < C2 || C1 < C2  */
-(for minmax (min     min     max     max     min     min     max     max    )
-     cmp    (lt      le      gt      ge      gt      ge      lt      le     )
-     comb   (bit_ior bit_ior bit_ior bit_ior bit_and bit_and bit_and bit_and)
- (simplify
-  (cmp (minmax @0 INTEGER_CST@1) INTEGER_CST@2)
-  (comb (cmp @0 @2) (cmp @1 @2))))
 
 /* X <= MAX(X, Y) -> true
    X > MAX(X, Y) -> false 
@@ -3944,6 +4007,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp:c @0 (minmax:c @0 @1))
   { constant_boolean_node (cmp == GE_EXPR || cmp == LE_EXPR, type); } ))
+
+/* MIN (X, C1) < C2 -> X < C2 || C1 < C2  */
+(for minmax (min     min     max     max     min     min     max     max    )
+     cmp    (lt      le      gt      ge      gt      ge      lt      le     )
+     comb   (bit_ior bit_ior bit_ior bit_ior bit_and bit_and bit_and bit_and)
+ (simplify
+  (cmp (minmax @0 INTEGER_CST@1) INTEGER_CST@2)
+  (comb (cmp @0 @2) (cmp @1 @2))))
 
 /* Undo fancy ways of writing max/min or other ?: expressions, like
    a - ((a - b) & -(a < b))  and  a - (a - b) * (a < b) into (a < b) ? b : a.
@@ -4145,8 +4216,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* `(1 >> X) != 0` -> `X == 0` */
  /* `(1 >> X) == 0` -> `X != 0` */
  (simplify
-  (cmp (rshift integer_onep @0) integer_zerop)
-   (icmp @0 { build_zero_cst (TREE_TYPE (@0)); })))
+  (cmp (rshift integer_onep@1 @0) integer_zerop)
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+    (icmp @0 { build_zero_cst (TREE_TYPE (@0)); }))))
 
 /* (CST1 << A) == CST2 -> A == ctz (CST2) - ctz (CST1)
    (CST1 << A) != CST2 -> A != ctz (CST2) - ctz (CST1)
@@ -5084,6 +5156,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  )
 )
 
+/* `(a == CST) & a` can be simplified to `0` or `(a == CST)` depending
+   on the first bit of the CST.  */
+(simplify
+ (bit_and:c (convert@2 (eq @0 INTEGER_CST@1)) (convert? @0))
+ (if ((wi::to_wide (@1) & 1) != 0)
+  @2
+  { build_zero_cst (type); }))
+
 /* Optimize
    # x_5 in range [cst1, cst2] where cst2 = cst1 + 1
    x_5 ? cstN ? cst4 : cst3
@@ -5417,7 +5497,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for minmax (min max)
  (for cmp (lt le gt ge ne)
   (simplify
-   (cond (cmp @1 @3) (minmax:c @1 @4) (minmax:c @2 @4))
+   (cond (cmp:c @1 @3) (minmax:c @1 @4) (minmax:c @2 @4))
    (with
     {
       tree_code code = minmax_from_comparison (cmp, @1, @2, @1, @3);

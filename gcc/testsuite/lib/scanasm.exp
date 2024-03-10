@@ -777,33 +777,73 @@ proc scan-lto-assembler { args } {
     dg-scan "scan-lto-assembler" 1 $testcase $output_file $args
 }
 
-# Read assembly file FILENAME and store a mapping from function names
-# to function bodies in array RESULT.  FILENAME has already been uploaded
-# locally where necessary and is known to exist.
 
-proc parse_function_bodies { filename result } {
-    upvar $result up_result
+# Set up CONFIG for check-function-bodies.
+
+proc configure_check-function-bodies { config } {
+    upvar $config up_config
 
     # Regexp for the start of a function definition (name in \1).
-    set label {^([a-zA-Z_]\S+):$}
+    if { [istarget nvptx*-*-*] } {
+	set up_config(start) {^// BEGIN(?: GLOBAL|) FUNCTION DEF: ([a-zA-Z_]\S+)$}
+    } else {
+	set up_config(start) {^([a-zA-Z_]\S+):$}
+    }
 
     # Regexp for the end of a function definition.
-    set terminator {^\s*\.size}
-
+    if { [istarget nvptx*-*-*] } {
+	set up_config(end) {^\}$}
+    } else {
+	set up_config(end) {^\s*\.size}
+    }
+ 
     # Regexp for lines that aren't interesting.
-    set fluff {^\s*(?:\.|//|@|$)}
+    if { [istarget nvptx*-*-*] } {
+	# Skip lines beginning with '//' comments ('-fverbose-asm', for
+	# example).
+	set up_config(fluff) {^\s*(?://)}
+    } else {
+	# Skip lines beginning with labels ('.L[...]:') or other directives
+	# ('.align', '.cfi_startproc', '.quad [...]', '.text', etc.), '//' or
+	# '@' comments ('-fverbose-asm' or ARM-style, for example), or empty
+	# lines.
+	set up_config(fluff) {^\s*(?:\.|//|@|$)}
+    }
+
+    # Regexp for expected output lines prefix.
+    if { [istarget nvptx*-*-*] } {
+	# Certain instructions (such as predicable ones) are emitted with
+	# additional whitespace prefixed.  On the other hand, labels don't get
+	# any whitespace prefixed, and we'd like to be able to match these,
+	# too.  We thereare expect any amount of whitespace here.
+	set up_config(line_prefix) {\t*}
+    } else {
+	set up_config(line_prefix) {\t}
+    }
+}
+
+# Per CONFIG, read assembly file FILENAME and store a mapping from function
+# names to function bodies in array RESULT.  FILENAME has already been uploaded
+# locally where necessary and is known to exist.
+
+proc parse_function_bodies { config filename result } {
+    upvar $config up_config
+    upvar $result up_result
 
     set fd [open $filename r]
     set in_function 0
     while { [gets $fd line] >= 0 } {
-	if { [regexp $label $line dummy function_name] } {
+	if { [regexp $up_config(start) $line dummy function_name] } {
 	    set in_function 1
 	    set function_body ""
 	} elseif { $in_function } {
-	    if { [regexp $terminator $line] } {
+	    if { [regexp $up_config(end) $line] } {
+		verbose "parse_function_bodies: $function_name:\n$function_body"
 		set up_result($function_name) $function_body
 		set in_function 0
-	    } elseif { ![regexp $fluff $line] } {
+	    } elseif { [regexp $up_config(fluff) $line] } {
+		verbose "parse_function_bodies: $function_name: ignoring fluff line: $line"
+	    } else {
 		append function_body $line "\n"
 	    }
 	}
@@ -893,13 +933,18 @@ proc check-function-bodies { args } {
 	set terminator "*/"
     }
     set terminator_len [string length $terminator]
+    # Regexp for the start of a function definition in expected output lines
+    # (name in \1).  This may be different from '$config(start)'.
+    set start_expected {^(\S+):$}
+
+    configure_check-function-bodies config
 
     set have_bodies 0
     if { [is_remote host] } {
 	remote_upload host "$filename"
     }
     if { [file exists $output_filename] } {
-	parse_function_bodies $output_filename functions
+	parse_function_bodies config $output_filename functions
 	set have_bodies 1
     } else {
 	verbose -log "$testcase: output file does not exist"
@@ -907,7 +952,6 @@ proc check-function-bodies { args } {
 
     set count 0
     set function_regexp ""
-    set label {^(\S+):$}
 
     set lineno 1
     set fd [open $input_filename r]
@@ -922,7 +966,7 @@ proc check-function-bodies { args } {
 		} else {
 		    set selector "P"
 		}
-		if { ![regexp $label $line dummy function_name] } {
+		if { ![regexp $start_expected $line dummy function_name] } {
 		    close $fd
 		    error "check-function-bodies: line $lineno does not have a function label"
 		}
@@ -937,7 +981,7 @@ proc check-function-bodies { args } {
 	    } elseif { [string equal $line "..."] } {
 		append function_regexp ".*"
 	    } else {
-		append function_regexp "\t" $line "\n"
+		append function_regexp $config(line_prefix) $line "\n"
 	    }
 	} elseif { [string equal -length $terminator_len $line $terminator] } {
 	    if { ![string equal $selector "N"] } {

@@ -1533,7 +1533,7 @@ public:
 };
 
 /* Implements reduction instructions.  */
-template<rtx_code CODE>
+template<unsigned UNSPEC>
 class reducop : public function_base
 {
 public:
@@ -1541,28 +1541,12 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (
-      code_for_pred_reduc (CODE, e.vector_mode (), e.ret_mode ()));
-  }
-};
-
-/* Implements widen reduction instructions.  */
-template<int UNSPEC>
-class widen_reducop : public function_base
-{
-public:
-  bool apply_mask_policy_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    return e.use_exact_insn (code_for_pred_widen_reduc_plus (UNSPEC,
-							     e.vector_mode (),
-							     e.ret_mode ()));
+    return e.use_exact_insn (code_for_pred (UNSPEC, e.vector_mode ()));
   }
 };
 
 /* Implements floating-point reduction instructions.  */
-template<int UNSPEC, enum frm_op_type FRM_OP = NO_FRM >
+template<unsigned UNSPEC, enum frm_op_type FRM_OP = NO_FRM>
 class freducop : public function_base
 {
 public:
@@ -1575,28 +1559,7 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (
-      code_for_pred_reduc_plus (UNSPEC, e.vector_mode (), e.ret_mode ()));
-  }
-};
-
-/* Implements widening floating-point reduction instructions.  */
-template<int UNSPEC, enum frm_op_type FRM_OP = NO_FRM>
-class widen_freducop : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override
-  {
-    return FRM_OP == HAS_FRM;
-  }
-
-  bool apply_mask_policy_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    return e.use_exact_insn (code_for_pred_widen_reduc_plus (UNSPEC,
-							     e.vector_mode (),
-							     e.ret_mode ()));
+    return e.use_exact_insn (code_for_pred (UNSPEC, e.vector_mode ()));
   }
 };
 
@@ -1821,6 +1784,44 @@ public:
     rtx subreg
       = simplify_gen_subreg (GET_MODE (e.target), src, GET_MODE (src), offset);
     return subreg;
+  }
+};
+
+class vcreate : public function_base
+{
+public:
+  gimple *fold (gimple_folder &f) const override
+  {
+    unsigned int nargs = gimple_call_num_args (f.call);
+    tree lhs_type = TREE_TYPE (f.lhs);
+
+    /* Replace the call with a clobber of the result (to prevent it from
+       becoming upwards exposed) followed by stores into each individual
+       vector of tuple.
+
+       The fold routines expect the replacement statement to have the
+       same lhs as the original call, so return the clobber statement
+       rather than the final vector store.  */
+    gassign *clobber = gimple_build_assign (f.lhs, build_clobber (lhs_type));
+
+    for (unsigned int i = nargs; i-- > 0; )
+      {
+	tree rhs_vector = gimple_call_arg (f.call, i);
+	tree field = tuple_type_field (TREE_TYPE (f.lhs));
+	tree lhs_array = build3 (COMPONENT_REF, TREE_TYPE (field),
+				 unshare_expr (f.lhs), field, NULL_TREE);
+	tree lhs_vector = build4 (ARRAY_REF, TREE_TYPE (rhs_vector),
+				  lhs_array, size_int (i),
+				  NULL_TREE, NULL_TREE);
+	gassign *assign = gimple_build_assign (lhs_vector, rhs_vector);
+	gsi_insert_after (f.gsi, assign, GSI_SAME_STMT);
+      }
+    return clobber;
+  }
+
+  rtx expand (function_expander &) const override
+  {
+    gcc_unreachable ();
   }
 };
 
@@ -2246,26 +2247,26 @@ static CONSTEXPR const vfncvt_rtz_x<UNSIGNED_FIX> vfncvt_rtz_xu_obj;
 static CONSTEXPR const vfncvt_f<NO_FRM> vfncvt_f_obj;
 static CONSTEXPR const vfncvt_f<HAS_FRM> vfncvt_f_frm_obj;
 static CONSTEXPR const vfncvt_rod_f vfncvt_rod_f_obj;
-static CONSTEXPR const reducop<PLUS> vredsum_obj;
-static CONSTEXPR const reducop<UMAX> vredmaxu_obj;
-static CONSTEXPR const reducop<SMAX> vredmax_obj;
-static CONSTEXPR const reducop<UMIN> vredminu_obj;
-static CONSTEXPR const reducop<SMIN> vredmin_obj;
-static CONSTEXPR const reducop<AND> vredand_obj;
-static CONSTEXPR const reducop<IOR> vredor_obj;
-static CONSTEXPR const reducop<XOR> vredxor_obj;
-static CONSTEXPR const widen_reducop<UNSPEC_WREDUC_SUM> vwredsum_obj;
-static CONSTEXPR const widen_reducop<UNSPEC_WREDUC_USUM> vwredsumu_obj;
-static CONSTEXPR const freducop<UNSPEC_UNORDERED> vfredusum_obj;
-static CONSTEXPR const freducop<UNSPEC_UNORDERED, HAS_FRM> vfredusum_frm_obj;
-static CONSTEXPR const freducop<UNSPEC_ORDERED> vfredosum_obj;
-static CONSTEXPR const freducop<UNSPEC_ORDERED, HAS_FRM> vfredosum_frm_obj;
-static CONSTEXPR const reducop<SMAX> vfredmax_obj;
-static CONSTEXPR const reducop<SMIN> vfredmin_obj;
-static CONSTEXPR const widen_freducop<UNSPEC_UNORDERED> vfwredusum_obj;
-static CONSTEXPR const widen_freducop<UNSPEC_UNORDERED, HAS_FRM> vfwredusum_frm_obj;
-static CONSTEXPR const widen_freducop<UNSPEC_ORDERED> vfwredosum_obj;
-static CONSTEXPR const widen_freducop<UNSPEC_ORDERED, HAS_FRM> vfwredosum_frm_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_SUM> vredsum_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_MAXU> vredmaxu_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_MAX> vredmax_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_MINU> vredminu_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_MIN> vredmin_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_AND> vredand_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_OR> vredor_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_XOR> vredxor_obj;
+static CONSTEXPR const reducop<UNSPEC_WREDUC_SUM> vwredsum_obj;
+static CONSTEXPR const reducop<UNSPEC_WREDUC_SUMU> vwredsumu_obj;
+static CONSTEXPR const freducop<UNSPEC_REDUC_SUM_UNORDERED> vfredusum_obj;
+static CONSTEXPR const freducop<UNSPEC_REDUC_SUM_UNORDERED, HAS_FRM> vfredusum_frm_obj;
+static CONSTEXPR const freducop<UNSPEC_REDUC_SUM_ORDERED> vfredosum_obj;
+static CONSTEXPR const freducop<UNSPEC_REDUC_SUM_ORDERED, HAS_FRM> vfredosum_frm_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_MAX> vfredmax_obj;
+static CONSTEXPR const reducop<UNSPEC_REDUC_MIN> vfredmin_obj;
+static CONSTEXPR const freducop<UNSPEC_WREDUC_SUM_UNORDERED> vfwredusum_obj;
+static CONSTEXPR const freducop<UNSPEC_WREDUC_SUM_UNORDERED, HAS_FRM> vfwredusum_frm_obj;
+static CONSTEXPR const freducop<UNSPEC_WREDUC_SUM_ORDERED> vfwredosum_obj;
+static CONSTEXPR const freducop<UNSPEC_WREDUC_SUM_ORDERED, HAS_FRM> vfwredosum_frm_obj;
 static CONSTEXPR const vmv vmv_x_obj;
 static CONSTEXPR const vmv_s vmv_s_obj;
 static CONSTEXPR const vmv vfmv_f_obj;
@@ -2285,6 +2286,7 @@ static CONSTEXPR const vlmul_ext vlmul_ext_obj;
 static CONSTEXPR const vlmul_trunc vlmul_trunc_obj;
 static CONSTEXPR const vset vset_obj;
 static CONSTEXPR const vget vget_obj;
+static CONSTEXPR const vcreate vcreate_obj;
 static CONSTEXPR const read_vl read_vl_obj;
 static CONSTEXPR const vleff vleff_obj;
 static CONSTEXPR const vlenb vlenb_obj;
@@ -2546,6 +2548,7 @@ BASE (vlmul_ext)
 BASE (vlmul_trunc)
 BASE (vset)
 BASE (vget)
+BASE (vcreate)
 BASE (read_vl)
 BASE (vleff)
 BASE (vlenb)

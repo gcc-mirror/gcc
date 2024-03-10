@@ -1,3 +1,18 @@
+2023-09-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2cor/Makefile.am (libm2cor_la_M2FLAGS): Add
+	-Wcase-enum.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am (libm2iso_la_M2FLAGS): Add
+	-Wcase-enum.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.am (libm2log_la_M2FLAGS): Add
+	-Wcase-enum.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2pim/Makefile.am (libm2pim_la_M2FLAGS): Add
+	-Wcase-enum.
+	* libm2pim/Makefile.in: Regenerate.
+
 2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110779

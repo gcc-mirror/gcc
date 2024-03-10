@@ -70,7 +70,8 @@ riscv-vsetvl.o: $(srcdir)/config/riscv/riscv-vsetvl.cc \
 riscv-vector-costs.o: $(srcdir)/config/riscv/riscv-vector-costs.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TARGET_H) $(FUNCTION_H) \
   $(TREE_H) basic-block.h $(RTL_H) gimple.h targhooks.h cfgloop.h \
-  fold-const.h $(TM_P_H) tree-vectorizer.h \
+  fold-const.h $(TM_P_H) tree-vectorizer.h gimple-iterator.h bitmap.h \
+  ssa.h backend.h \
   $(srcdir)/config/riscv/riscv-vector-costs.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-vector-costs.cc
@@ -88,6 +89,12 @@ riscv-shorten-memrefs.o: $(srcdir)/config/riscv/riscv-shorten-memrefs.cc \
 riscv-selftests.o: $(srcdir)/config/riscv/riscv-selftests.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) output.h \
   $(C_COMMON_H) $(TARGET_H) $(OPTABS_H) $(EXPR_H) $(INSN_ATTR_H) $(EMIT_RTL_H)
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+riscv-string.o: $(srcdir)/config/riscv/riscv-string.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) backend.h $(RTL_H) \
+  memmodel.h $(EMIT_RTL_H) poly-int.h output.h
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

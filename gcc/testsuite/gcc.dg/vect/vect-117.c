@@ -61,4 +61,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "possible dependence between data-refs" 0 "vect" } } */
 
-/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" { target { lp64 } } } } */

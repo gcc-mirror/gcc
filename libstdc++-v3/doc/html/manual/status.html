@@ -1325,10 +1325,10 @@ or any notes about the implementation.
       </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_type_identity &gt;= 201806L</code> (since 9.4, see Note 1) </td></tr><tr><td align="left">  <code class="code">unwrap_ref_decay</code> and <code class="code">unwrap_reference</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0318r1.pdf" target="_top">
         P0318R1 </a>
-      </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_unwrap_ref &gt;= 201811L</code> (since 9.4, see Note 1) </td></tr><tr bgcolor="#B0B0B0"><td align="left">  Improving Completeness Requirements for Type Traits </td><td align="left">
+      </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_unwrap_ref &gt;= 201811L</code> (since 9.4, see Note 1) </td></tr><tr><td align="left">  Improving Completeness Requirements for Type Traits </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1285r0.pdf" target="_top">
         P1285R0 </a>
-      </td><td align="center"> Partial </td><td align="left"> </td></tr><tr><td align="left">  Missing feature test macros </td><td align="left">
+      </td><td align="center"> — </td><td align="left"> Most misuses are diagnosed, but not all. </td></tr><tr><td align="left">  Missing feature test macros </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1353r0.html" target="_top">
         P1353R0 </a>
       </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr><td align="left"> Making std::underlying_type SFINAE-friendly </td><td align="left">
@@ -1411,18 +1411,18 @@ or any notes about the implementation.
       </td><td align="center"> 10.1 </td><td align="left"> </td></tr><tr><td align="left"> Ranges Design Cleanup </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1252r2.pdf" target="_top">
         P1252R2 </a>
-      </td><td align="center"> 10.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Avoid template bloat for <code class="code">safe_ranges</code> in combination with ‘subrange-y’ view adaptors.</td><td align="left">
+      </td><td align="center"> 10.1 </td><td align="left"> </td></tr><tr><td align="left"> Avoid template bloat for <code class="code">safe_ranges</code> in combination with ‘subrange-y’ view adaptors.</td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1739r4.html" target="_top">
         P1739R4 </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Time, dates, calendars, time zones</strong></span>
-      </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Extending chrono to Calendars and Time Zones </td><td align="left">
+      </td></tr><tr><td align="left">  Extending chrono to Calendars and Time Zones </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0355r7.html" target="_top">
         P0355R7 </a>
-      </td><td align="left"> </td><td align="left"> <code class="code">__cpp_lib_chrono &gt;= 201803L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Miscellaneous minor fixes for chrono </td><td align="left">
+      </td><td align="left"> 14.1 (see Note 2) </td><td align="left"> <code class="code">__cpp_lib_chrono &gt;= 201803L</code> </td></tr><tr><td align="left"> Miscellaneous minor fixes for chrono </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1466r3.html" target="_top">
         P1466R3 </a>
-      </td><td align="left"> </td><td align="left"> <code class="code">__cpp_lib_chrono &gt;= 201907L</code> </td></tr><tr><td align="left">  <code class="code">&lt;chrono&gt;</code> <code class="code">zero()</code>, <code class="code">min()</code>, and <code class="code">max()</code> should be <code class="code">noexcept</code> </td><td align="left">
+      </td><td align="left"> 11.1 (see Note 2) </td><td align="left"> <code class="code">__cpp_lib_chrono &gt;= 201907L</code> </td></tr><tr><td align="left">  <code class="code">&lt;chrono&gt;</code> <code class="code">zero()</code>, <code class="code">min()</code>, and <code class="code">max()</code> should be <code class="code">noexcept</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0972r0.pdf" target="_top">
         P0972R0 </a>
       </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr><td colspan="4" align="left">
@@ -1449,28 +1449,28 @@ or any notes about the implementation.
       </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_char8_t &gt;= 201811L</code> </td></tr><tr><td align="left">  <code class="code">char8_t</code> backward compatibility remediation </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1423r3.html" target="_top">
         P1423R3 </a>
-      </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_char8_t &gt;= 201907L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Text formatting </td><td align="left">
+      </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_char8_t &gt;= 201907L</code> </td></tr><tr><td align="left"> Text formatting </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0645r10.html" target="_top">
         P0645R10 </a>
-      </td><td align="center"> </td><td align="left">
+      </td><td align="center"> 13.1 </td><td align="left">
         <code class="code">__cpp_lib_format &gt;= 201907L</code>
-      </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Integration of chrono with text formatting </td><td align="left">
+      </td></tr><tr><td align="left"> Integration of chrono with text formatting </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1361r2.pdf" target="_top">
         P1361R2 </a>
-      </td><td align="center"> </td><td align="left">
+      </td><td align="center"> 13.1 </td><td align="left">
         <code class="code">__cpp_lib_format &gt;= 201907L</code>
-      </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Printf corner cases in <code class="code">std::format</code> </td><td align="left">
+      </td></tr><tr><td align="left"> Printf corner cases in <code class="code">std::format</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1652r1.html" target="_top">
         P1652R1 </a>
-      </td><td align="center"> </td><td align="left">
+      </td><td align="center"> 13.1 </td><td align="left">
         <code class="code">__cpp_lib_format &gt;= 201907L</code>
       </td></tr><tr><td align="left">  String Prefix and Suffix Checking </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0457r2.html" target="_top">
         P0457R2 </a>
-      </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_starts_ends_with &gt;= 201711L</code> (since 9.4, see Note 1) </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Update The Reference To The Unicode Standard </td><td align="left">
+      </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_starts_ends_with &gt;= 201711L</code> (since 9.4, see Note 1) </td></tr><tr><td align="left">  Update The Reference To The Unicode Standard </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1025r1.html" target="_top">
         P1025R1 </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> —</td><td align="left"> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Containers</strong></span>
       </td></tr><tr><td align="left"> span: bounds-safe views for sequences of objects </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0122r7.pdf" target="_top">
@@ -1492,10 +1492,10 @@ or any notes about the implementation.
       </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_to_array &gt;= 201907L</code> </td></tr><tr><td align="left">  Checking for Existence of an Element in Associative Containers </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0458r2.html" target="_top">
         P0458R2 </a>
-      </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Comparing Unordered Containers </td><td align="left">
+      </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr><td align="left">  Comparing Unordered Containers </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0809r0.pdf" target="_top">
         P0809R0 </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">  Heterogeneous lookup for unordered containers </td><td align="left">
+      </td><td align="center"> — </td><td align="left"> </td></tr><tr><td align="left">  Heterogeneous lookup for unordered containers </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0919r3.html" target="_top">
         P0919R3 </a>
       </td><td align="center"> 11.1 </td><td align="left"> <code class="code">__cpp_lib_generic_unordered_lookup &gt;= 201811</code> </td></tr><tr><td align="left"> Refinement Proposal for P0919 </td><td align="left">
@@ -1570,7 +1570,7 @@ or any notes about the implementation.
       </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Thou Shalt Not Specialize std Function Templates! </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0551r3.pdf" target="_top">
         P0551R3 </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">  Bit-casting object representations </td><td align="left">
+      </td><td align="center"> </td><td align="left">These changes will not be implemented.</td></tr><tr><td align="left">  Bit-casting object representations </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0476r2.html" target="_top">
         P0476R2 </a>
       </td><td align="center"> 11.1 </td><td align="left"> <code class="code">__cpp_lib_bit_cast &gt;= 201806L</code> </td></tr><tr><td align="left">  Integral power-of-2 operations </td><td align="left">
@@ -1591,10 +1591,10 @@ or any notes about the implementation.
       </td><td align="center"> — </td><td align="left"> </td></tr><tr><td align="left">  Add <code class="code">shift</code> to <code class="code">&lt;algorithm&gt;</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0769r2.pdf" target="_top">
         P0769R2 </a>
-      </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_shift &gt;= 201806L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Standard Library Specification in a Concepts and Contracts World </td><td align="left">
+      </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_shift &gt;= 201806L</code> </td></tr><tr><td align="left">  Standard Library Specification in a Concepts and Contracts World </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0788r3.pdf" target="_top">
         P0788R3 </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">  <code class="code">explicit(bool)</code> </td><td align="left">
+      </td><td align="center"> — </td><td align="left"> </td></tr><tr><td align="left">  <code class="code">explicit(bool)</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0892r2.html" target="_top">
         P0892R2 </a>
       </td><td align="center"> — </td><td align="left"> </td></tr><tr><td align="left">  Eradicating unnecessarily explicit default constructors from the standard library </td><td align="left">
@@ -1630,10 +1630,10 @@ or any notes about the implementation.
       </td><td align="center"> 7.1 </td><td align="left"> </td></tr><tr><td align="left">  Editorial Guidance for merging P0019r8 and P0528r3 </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1123r0.html" target="_top">
         P1123R0 </a>
-      </td><td align="center"> — </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Cleaning up Clause 20 </td><td align="left">
+      </td><td align="center"> — </td><td align="left"> </td></tr><tr><td align="left">  Cleaning up Clause 20 </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1148r0.pdf" target="_top">
         P1148R0 </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Completing the Rebase of Library Fundamentals, Version 3, Working Draft </td><td align="left">
+      </td><td align="center"> — </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Completing the Rebase of Library Fundamentals, Version 3, Working Draft </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1210r0.html" target="_top">
         P1210R0 </a>
       </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">  Alternative Wording for P0907R4 Signed Integers are Two's Complement </td><td align="left">
@@ -1669,13 +1669,13 @@ or any notes about the implementation.
       </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1463r1.pdf" target="_top">
         P1463R1 </a>
-      </td><td align="center"> 10.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+      </td><td align="center"> 10.1 </td><td align="left"> </td></tr><tr><td align="left">
         Mandating the Standard Library:
         Clause 22 - Iterators library
       </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1464r1.pdf" target="_top">
         P1464R1 </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left"> Make <code class="code">create_directory()</code> Intuitive </td><td align="left">
+      </td><td align="center"> — </td><td align="left"> </td></tr><tr><td align="left"> Make <code class="code">create_directory()</code> Intuitive </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1164r1.pdf" target="_top">
         P1164R1
   </a>
@@ -1711,6 +1711,10 @@ or any notes about the implementation.
 Note 1: This feature is supported in older releases but the
 <code class="code">__cpp_lib</code> macro is not defined to the right value
 (or not defined at all) until the version shown in parentheses.
+</p><p>
+Note 2: The C++20 calendar types are supported since 11.1,
+time zones and UTC are supported since 13.1,
+and <code class="function">chrono::parse</code> is supported since 14.1.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="status.iso.2023"></a>C++ 2023</h3></div></div></div><p>
 In this implementation the <code class="literal">-std=gnu++23</code> or
 <code class="literal">-std=c++23</code> flag must be used to enable language
@@ -1780,11 +1784,88 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1659r3.html" target="_top">
         P1659R3
         </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_ranges_starts_ends_with &gt;= 202106L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">zip</code> </td><td align="left">
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_ranges_starts_ends_with &gt;= 202106L</code> </td></tr><tr><td align="left"> <code class="code">zip</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2321r2.html" target="_top">
         P2321R2
         </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_ranges_zip &gt;= 202110L</code> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_zip &gt;= 202110L</code> </td></tr><tr><td align="left"> <code class="code">views::repeat</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2474r2.html" target="_top">
+        P2474R2
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_repeat &gt;= 202207L</code> </td></tr><tr><td align="left"> <code class="code">views::enumerate</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2164r9.pdf" target="_top">
+        P2164R9
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_enumerate &gt;= 202302L</code> </td></tr><tr><td align="left"> <code class="code">views::join_with</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2441r2.html" target="_top">
+        P2441R2
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_join_with &gt;= 202202L</code> </td></tr><tr><td align="left">
+	Windowing range adaptors: <code class="code">views::chunk</code>
+	and <code class="code">views::slide</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2442r2.html" target="_top">
+        P2442R2
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_slide &gt;= 202202L</code> </td></tr><tr><td align="left"> <code class="code">views::chunk_by</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2443r1.html" target="_top">
+        P2443R1
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_chunk_by &gt;= 202202L</code> </td></tr><tr><td align="left"> <code class="code">views::stride</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1899r3.html" target="_top">
+        P1899R3
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_stride &gt;= 202207L</code> </td></tr><tr><td align="left"> <code class="code">views::cartesian_product</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2374r4.html" target="_top">
+        P2374R4
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_cartesian_product &gt;= 202207L</code> </td></tr><tr><td align="left"> Empty Product for certain Views </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2540r1.html" target="_top">
+        P2540R1
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_cartesian_product &gt;= 202207L</code> </td></tr><tr><td align="left"> <code class="code">views::as_rvalue</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2446r2.html" target="_top">
+        P2446R2
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_as_rvalue &gt;= 202207L</code> </td></tr><tr><td align="left">
+	<code class="code">cbegin</code> should always return a constant iterator
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2278r4.html" target="_top">
+        P2278R4
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_as_const &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">ranges::to</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1206r7.pdf" target="_top">
+        P1206R7
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_ranges_to_container &gt;= 202202L</code> </td></tr><tr><td align="left"> Pipe support for user-defined range adaptors </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2387r3.html" target="_top">
+        P2387R3
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left">
+	<code class="code">__cpp_lib_bind_pack &gt;= 202202L</code>,
+	<code class="code">__cpp_lib_ranges &gt;= 202202L</code>
+      </td></tr><tr bgcolor="#B0B0B0"><td align="left">
+	<code class="code">ranges::iota</code>, <code class="code">ranges::shift_left</code>,
+        and <code class="code">ranges::shift_right</code>
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2440r1.html" target="_top">
+        P2440R1
+        </a>
+      </td><td align="center"> 13.1 (<code class="code">ranges::iota</code>) </td><td align="left">
+	<code class="code">__cpp_lib_ranges_iota &gt;= 202202L</code>,
+	<code class="code">__cpp_lib_shift &gt;= 202202L</code>
+      </td></tr><tr><td align="left"> <code class="code">ranges::find_last</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1223r5.pdf" target="_top">
+        P1223R5
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_find_last &gt;= 202207L</code> </td></tr><tr><td align="left"> <code class="code">ranges::contains</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2302r4.html" target="_top">
+        P2302R4
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_contains &gt;= 202207L</code> </td></tr><tr><td align="left"> <code class="code">ranges::fold</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2322r6.html" target="_top">
+        P2322R6
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_fold &gt;= 202207L</code> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Compile-time programming</strong></span>
       </td></tr><tr><td align="left"> A proposal for a type trait to detect scoped enumerations </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1048r1.pdf" target="_top">
@@ -1818,11 +1899,11 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1413r3.pdf" target="_top">
         P1413R3
         </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> A type trait to detect reference binding to temporary </td><td align="left">
+      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#B0B0B0"><td align="left"> A type trait to detect reference binding to temporary </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2255r2.html" target="_top">
         P2255R2
         </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_reference_from_temporary &gt;= 202202L</code> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> 13.1 (missing changes to <code class="code">std::tuple</code> </td><td align="left"> <code class="code">__cpp_lib_reference_from_temporary &gt;= 202202L</code> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Strings and text</strong></span>
       </td></tr><tr><td align="left"> string contains function </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html" target="_top">
@@ -1854,7 +1935,101 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2077r3.html" target="_top">
         P2077R3
         </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_associative_heterogeneous_erasure &gt;= 202110L</code> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_associative_heterogeneous_erasure &gt;= 202110L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">&lt;flat_map&gt;</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0429r9.pdf" target="_top">
+        P0429R9
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_flat_map &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">&lt;flat_set&gt;</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1222r4.pdf" target="_top">
+        P1222R4
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_flat_set &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">mdspan</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html" target="_top">
+        P0009R18
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_mdspan &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+	<code class="code">index_type</code> &amp; <code class="code">size_type</code>
+	in <code class="code">mdspan</code>
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2599r2.pdf" target="_top">
+        P2599R2
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_mdspan &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+	<code class="code">mdspan</code>: rename <code class="code">pointer</code> and
+	<code class="code">contiguous</code>
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2604r0.html" target="_top">
+        P2604R0
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_mdspan &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Add the missing <code class="code">empty</code> to <code class="code">mdspan</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2613r1.html" target="_top">
+        P2613R1
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_mdspan &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+	<code class="code">layout_stride</code> static extents default constructor fix
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2763r1.html" target="_top">
+        P2763R1
+        </a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td colspan="4" align="left">
+        <span class="bold"><strong>Strings and text</strong></span>
+      </td></tr><tr><td align="left"> std::format improvements </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html" target="_top">
+        P2216R3
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_format &gt;= 202106L</code> </td></tr><tr><td align="left">
+	Add support for <code class="code">std::generator</code>-like types to
+	<code class="code">std::format</code>
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2418r2.html" target="_top">
+        P2418R2
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_format &gt;= 202110L</code> </td></tr><tr><td align="left">
+	Expose <code class="code">std::<span class="emphasis"><em>basic-format-string</em></span>&lt;charT, Args...&gt;</code>
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2508r1.html" target="_top">
+        P2508R1
+        </a>
+      </td><td align="center"> 13.1 (feature test macro not defined)</td><td align="left"> <code class="code">__cpp_lib_format &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+	Clarify handling of encodings in localized formatting of chrono types
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2419r2.html" target="_top">
+        P2419R2
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_format &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Formatting Ranges </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html" target="_top">
+        P2286R8
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_format_ranges &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Improve default container formatting </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2585r1.html" target="_top">
+        P2585R1
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_format_ranges &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Formatted output </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html" target="_top">
+        P2093R14
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_print &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+	Should the output of std::print to a terminal be synchronized with
+	the underlying stream?
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2539r3.html" target="_top">
+        P2539R3
+        </a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">
+	Formatting <code class="code">thread::id</code> and <code class="code">stacktrace</code>
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2693r1.pdf" target="_top">
+        P2693R1
+        </a>
+      </td><td align="center"> 14.1 </td><td align="left"> <code class="code">__cpp_lib_formatters &gt;= 202302L</code> </td></tr><tr><td align="left">
+	Add Constexpr Modifiers to Functions <code class="code">to_chars</code> and
+	<code class="code">from_chars</code> for Integral Types in
+	<code class="code">&lt;charconv&gt;</code> Header
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2291r3.pdf" target="_top">
+        P2291R3
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_constexpr_charconv &gt;= 202207L</code> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Miscellaneous</strong></span>
       </td></tr><tr><td align="left"> Inheriting from <code class="code">std::variant</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2162r2.html" target="_top">
@@ -1876,11 +2051,21 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0323r12.html" target="_top">
         P0323R12
         </a>
-      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_expected &gt;= 202202L</code> </td></tr><tr><td align="left"> Monadic operations for std::optional </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_expected &gt;= 202202L</code> </td></tr><tr><td align="left"> Monadic operations for std::expected </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2505r5.html" target="_top">
+        P2505R5
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_expected &gt;= 202211L</code> </td></tr><tr><td align="left"> Monadic operations for std::optional </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0798r8.html" target="_top">
         P0798R8
         </a>
-      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_optional &gt;= 202110L</code> </td></tr><tr><td align="left"> <code class="code">move_only_function</code> </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_optional &gt;= 202110L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+	Compatibility between <code class="code">tuple</code>, <code class="code">pair</code>
+	and <span class="emphasis"><em>tuple-like</em></span> objects </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2165r4.pdf" target="_top">
+        P2165R4
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_tuple_like &gt;= 202207L</code> </td></tr><tr><td align="left"> <code class="code">move_only_function</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0288r9.html" target="_top">
         P0288R9
         </a>
@@ -1900,7 +2085,15 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2401r0.html" target="_top">
         P2401R0
         </a>
-      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left"> Support C atomics in C++ </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left"> A more constexpr bitset </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2417r2.pdf" target="_top">
+        P2417R2
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_constexpr_bitset &gt;= 202207L</code> </td></tr><tr><td align="left"> Extended floating-point types and standard names </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1467r9.html" target="_top">
+        P1467R9
+        </a>
+      </td><td align="center"> 13.1 </td><td align="left"> </td></tr><tr><td align="left"> Support C atomics in C++ </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0943r6.html" target="_top">
         P0943R6
         </a>

@@ -33,6 +33,8 @@ with Output;         use Output;
 with Sinfo.Utils;    use Sinfo.Utils;
 with System.Storage_Elements;
 
+with GNAT.Table;
+
 package body Atree is
 
    ---------------
@@ -900,10 +902,7 @@ package body Atree is
    function Get_Field_Value
      (N : Node_Id; Field : Node_Or_Entity_Field) return Field_Size_32_Bit
    is
-      pragma Assert
-        (if Field /= F_Scope_Depth_Value then -- ???Temporarily disable check
-           Field_Checking.Field_Present (N, Field));
-      --  Assert partially disabled because it fails in rare cases
+      pragma Assert (Field_Checking.Field_Present (N, Field));
       Desc : Field_Descriptor renames Field_Descriptors (Field);
       NN : constant Node_Or_Entity_Id := Node_To_Fetch_From (N, Field);
 
@@ -2889,6 +2888,34 @@ package body Atree is
       Node_Counts : array (Node_Kind) of Count := (others => 0);
       Entity_Counts : array (Entity_Kind) of Count := (others => 0);
 
+      --  We put the Node_Kinds and Entity_Kinds into a table just because
+      --  GNAT.Table has a handy sort procedure. We're sorting in decreasing
+      --  order of Node_Counts, for printing.
+
+      package Node_Kind_Table is new GNAT.Table
+        (Table_Component_Type => Node_Kind,
+         Table_Index_Type     => Pos,
+         Table_Low_Bound      => Pos'First,
+         Table_Initial        => 8,
+         Table_Increment      => 100
+        );
+      function Higher_Count (X, Y : Node_Kind) return Boolean is
+        (Node_Counts (X) > Node_Counts (Y));
+      procedure Sort_Node_Kind_Table is new
+        Node_Kind_Table.Sort_Table (Lt => Higher_Count);
+
+      package Entity_Kind_Table is new GNAT.Table
+        (Table_Component_Type => Entity_Kind,
+         Table_Index_Type     => Pos,
+         Table_Low_Bound      => Pos'First,
+         Table_Initial        => 8,
+         Table_Increment      => 100
+        );
+      function Higher_Count (X, Y : Entity_Kind) return Boolean is
+        (Entity_Counts (X) > Entity_Counts (Y));
+      procedure Sort_Entity_Kind_Table is new
+        Entity_Kind_Table.Sort_Table (Lt => Higher_Count);
+
       All_Node_Offsets : Node_Offsets.Table_Type renames
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
    begin
@@ -2896,6 +2923,8 @@ package body Atree is
       Write_Line (" nodes (including entities)");
       Write_Int (Int (Slots.Last));
       Write_Line (" non-header slots");
+
+      --  Count up the number of each kind of node and entity
 
       for N in All_Node_Offsets'Range loop
          declare
@@ -2910,44 +2939,95 @@ package body Atree is
          end;
       end loop;
 
+      --  Copy kinds to tables, and sort:
+
       for K in Node_Kind loop
-         declare
-            Count : constant Nat_64 := Node_Counts (K);
-         begin
-            Write_Int_64 (Count);
-            Write_Ratio (Count, Int_64 (Node_Offsets.Last));
-            Write_Str (" ");
-            Write_Str (Node_Kind'Image (K));
-            Write_Str (" ");
-            Write_Int (Int (Sinfo.Nodes.Size (K)));
-            Write_Str (" slots");
-            Write_Eol;
-         end;
+         Node_Kind_Table.Append (K);
       end loop;
+      Sort_Node_Kind_Table;
 
       for K in Entity_Kind loop
-         declare
-            Count : constant Nat_64 := Entity_Counts (K);
-         begin
-            Write_Int_64 (Count);
-            Write_Ratio (Count, Int_64 (Node_Offsets.Last));
-            Write_Str (" ");
-            Write_Str (Entity_Kind'Image (K));
-            Write_Str (" ");
-            Write_Int (Int (Einfo.Entities.Size (K)));
-            Write_Str (" slots");
-            Write_Eol;
-         end;
+         Entity_Kind_Table.Append (K);
       end loop;
+      Sort_Entity_Kind_Table;
+
+      --  Print out the counts for each kind in decreasing order. Exit the loop
+      --  if we see a zero count, because all the rest must be zero, and the
+      --  zero ones are boring.
+
+      declare
+         use Node_Kind_Table;
+         --  Note: the full qualification of First below is needed for
+         --  bootstrap builds.
+         Table : Table_Type renames Node_Kind_Table.Table
+           (Node_Kind_Table.First .. Last);
+      begin
+         for J in Table'Range loop
+            declare
+               K : constant Node_Kind := Table (J);
+               Count : constant Nat_64 := Node_Counts (K);
+            begin
+               exit when Count = 0; -- skip the rest
+
+               Write_Int_64 (Count);
+               Write_Ratio (Count, Int_64 (Node_Offsets.Last));
+               Write_Str (" ");
+               Write_Str (Node_Kind'Image (K));
+               Write_Str (" ");
+               Write_Int (Int (Sinfo.Nodes.Size (K)));
+               Write_Str (" slots");
+               Write_Eol;
+            end;
+         end loop;
+      end;
+
+      declare
+         use Entity_Kind_Table;
+         --  Note: the full qualification of First below is needed for
+         --  bootstrap builds.
+         Table : Table_Type renames Entity_Kind_Table.Table
+           (Entity_Kind_Table.First .. Last);
+      begin
+         for J in Table'Range loop
+            declare
+               K : constant Entity_Kind := Table (J);
+               Count : constant Nat_64 := Entity_Counts (K);
+            begin
+               exit when Count = 0; -- skip the rest
+
+               Write_Int_64 (Count);
+               Write_Ratio (Count, Int_64 (Node_Offsets.Last));
+               Write_Str (" ");
+               Write_Str (Entity_Kind'Image (K));
+               Write_Str (" ");
+               Write_Int (Int (Einfo.Entities.Size (K)));
+               Write_Str (" slots");
+               Write_Eol;
+            end;
+         end loop;
+      end;
    end Print_Node_Statistics;
 
    procedure Print_Field_Statistics is
       Total, G_Total, S_Total : Call_Count := 0;
+
+      --  Use a table for sorting, as done in Print_Node_Statistics.
+
+      package Field_Table is new GNAT.Table
+        (Table_Component_Type => Node_Or_Entity_Field,
+         Table_Index_Type     => Pos,
+         Table_Low_Bound      => Pos'First,
+         Table_Initial        => 8,
+         Table_Increment      => 100
+        );
+      function Higher_Count (X, Y : Node_Or_Entity_Field) return Boolean is
+        (Get_Count (X) + Set_Count (X) > Get_Count (Y) + Set_Count (Y));
+      procedure Sort_Field_Table is new
+        Field_Table.Sort_Table (Lt => Higher_Count);
    begin
       Write_Int_64 (Get_Original_Node_Count);
       Write_Str (" + ");
       Write_Int_64 (Set_Original_Node_Count);
-      Write_Eol;
       Write_Line (" Original_Node_Count getter and setter calls");
       Write_Eol;
 
@@ -2970,32 +3050,55 @@ package body Atree is
       Write_Int_64 (S_Total);
       Write_Line (" total getter and setter calls");
 
-      for Field in Node_Or_Entity_Field loop
-         declare
-            G : constant Call_Count := Get_Count (Field);
-            S : constant Call_Count := Set_Count (Field);
-            GS : constant Call_Count := G + S;
+      --  Copy fields to the table, and sort:
 
-            Desc : Field_Descriptor renames Field_Descriptors (Field);
-            Slot : constant Field_Offset :=
-              (Field_Size (Desc.Kind) * Desc.Offset) / Slot_Size;
-
-         begin
-            Write_Int_64 (GS);
-            Write_Ratio (GS, Total);
-            Write_Str (" = ");
-            Write_Int_64 (G);
-            Write_Str (" + ");
-            Write_Int_64 (S);
-            Write_Str (" ");
-            Write_Str (Node_Or_Entity_Field'Image (Field));
-            Write_Str (" in slot ");
-            Write_Int (Int (Slot));
-            Write_Str (" size ");
-            Write_Int (Int (Field_Size (Desc.Kind)));
-            Write_Eol;
-         end;
+      for F in Node_Or_Entity_Field loop
+         Field_Table.Append (F);
       end loop;
+      Sort_Field_Table;
+
+      --  Print out the counts for each field in decreasing order of
+      --  getter+setter sum. As in Print_Node_Statistics, exit the loop
+      --  if we see a zero sum.
+
+      declare
+         use Field_Table;
+         --  Note: the full qualification of First below is needed for
+         --  bootstrap builds.
+         Table : Table_Type renames
+           Field_Table.Table (Field_Table.First .. Last);
+      begin
+         for J in Table'Range loop
+            declare
+               Field : constant Node_Or_Entity_Field := Table (J);
+
+               G : constant Call_Count := Get_Count (Field);
+               S : constant Call_Count := Set_Count (Field);
+               GS : constant Call_Count := G + S;
+
+               Desc : Field_Descriptor renames Field_Descriptors (Field);
+               Slot : constant Field_Offset :=
+                 (Field_Size (Desc.Kind) * Desc.Offset) / Slot_Size;
+
+            begin
+               exit when GS = 0; -- skip the rest
+
+               Write_Int_64 (GS);
+               Write_Ratio (GS, Total);
+               Write_Str (" = ");
+               Write_Int_64 (G);
+               Write_Str (" + ");
+               Write_Int_64 (S);
+               Write_Str (" ");
+               Write_Str (Node_Or_Entity_Field'Image (Field));
+               Write_Str (" in slot ");
+               Write_Int (Int (Slot));
+               Write_Str (" size ");
+               Write_Int (Int (Field_Size (Desc.Kind)));
+               Write_Eol;
+            end;
+         end loop;
+      end;
    end Print_Field_Statistics;
 
    procedure Print_Statistics is
@@ -3003,6 +3106,7 @@ package body Atree is
       Write_Eol;
       Write_Eol;
       Print_Node_Statistics;
+      Write_Eol;
       Print_Field_Statistics;
    end Print_Statistics;
 

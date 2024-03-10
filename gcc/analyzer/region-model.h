@@ -331,7 +331,7 @@ class region_model
   bool maybe_update_for_edge (const superedge &edge,
 			      const gimple *last_stmt,
 			      region_model_context *ctxt,
-			      rejected_constraint **out);
+			      std::unique_ptr<rejected_constraint> *out);
 
   void update_for_gcall (const gcall *call_stmt,
                          region_model_context *ctxt,
@@ -406,7 +406,7 @@ class region_model
 		       region_model_context *ctxt);
   bool add_constraint (tree lhs, enum tree_code op, tree rhs,
 		       region_model_context *ctxt,
-		       rejected_constraint **out);
+		       std::unique_ptr<rejected_constraint> *out);
 
 	const region *
 	get_or_create_region_for_heap_alloc (const svalue *size_in_bytes,
@@ -584,17 +584,17 @@ private:
   bool apply_constraints_for_gcond (const cfg_superedge &edge,
 				    const gcond *cond_stmt,
 				    region_model_context *ctxt,
-				    rejected_constraint **out);
+				    std::unique_ptr<rejected_constraint> *out);
   bool apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 				      const gswitch *switch_stmt,
 				      region_model_context *ctxt,
-				      rejected_constraint **out);
+				      std::unique_ptr<rejected_constraint> *out);
   bool apply_constraints_for_ggoto (const cfg_superedge &edge,
 				    const ggoto *goto_stmt,
 				    region_model_context *ctxt);
   bool apply_constraints_for_exception (const gimple *last_stmt,
 					region_model_context *ctxt,
-					rejected_constraint **out);
+					std::unique_ptr<rejected_constraint> *out);
 
   int poison_any_pointers_to_descendents (const region *reg,
 					  enum poison_kind pkind);

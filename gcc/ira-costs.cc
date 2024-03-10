@@ -1947,15 +1947,8 @@ find_costs_and_classes (FILE *dump_file)
 	    }
 	  if (i >= first_moveable_pseudo && i < last_moveable_pseudo)
 	    i_mem_cost = 0;
-	  else if (equiv_savings < 0)
-	    i_mem_cost = -equiv_savings;
-	  else if (equiv_savings > 0)
-	    {
-	      i_mem_cost = 0;
-	      for (k = cost_classes_ptr->num - 1; k >= 0; k--)
-		i_costs[k] += equiv_savings;
-	    }
-
+	  else
+	    i_mem_cost -= equiv_savings;
 	  best_cost = (1 << (HOST_BITS_PER_INT - 2)) - 1;
 	  best = ALL_REGS;
 	  alt_class = NO_REGS;

@@ -1327,13 +1327,13 @@ requirements of the license of GCC.
   <?dbhtml filename="setup.html"?>
 
 
-   <para>To transform libstdc++ sources into installed include files
+   <para>Transforming libstdc++ sources into installed include files
    and properly built binaries useful for linking to other software is
-   a multi-step process. Steps include getting the sources,
-   configuring and building the sources, testing, and installation.
+   done as part of building GCC. Building libstdc++ separately from the
+   rest of GCC is not supported.
    </para>
 
-   <para>The general outline of commands is something like:
+   <para>The general outline of commands to build GCC is something like:
    </para>
 
    <programlisting>

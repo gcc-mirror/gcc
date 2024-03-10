@@ -3347,6 +3347,8 @@ extern rtx_note *emit_note_after (enum insn_note, rtx_insn *);
 extern rtx_insn *emit_insn (rtx);
 extern rtx_insn *emit_debug_insn (rtx);
 extern rtx_insn *emit_jump_insn (rtx);
+extern rtx_insn *emit_likely_jump_insn (rtx);
+extern rtx_insn *emit_unlikely_jump_insn (rtx);
 extern rtx_insn *emit_call_insn (rtx);
 extern rtx_code_label *emit_label (rtx);
 extern rtx_jump_table_data *emit_jump_table_data (rtx);

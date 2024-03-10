@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // PR libstdc++/109772 Memory layout optimization of chrono::hh_mm_ss is wrong

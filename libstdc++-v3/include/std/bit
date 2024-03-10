@@ -33,6 +33,7 @@
 
 #if __cplusplus >= 201402L
 
+#include <concepts> // for std::integral
 #include <type_traits>
 
 #if _GLIBCXX_HOSTED || __has_include(<ext/numeric_traits.h>)
@@ -103,9 +104,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @return         An object of the same type, with the bytes reversed.
    * @since C++23
    */
-  template<typename _Tp>
+  template<integral _Tp>
     [[nodiscard]]
-    constexpr enable_if_t<is_integral<_Tp>::value, _Tp>
+    constexpr _Tp
     byteswap(_Tp __value) noexcept
     {
       if constexpr (sizeof(_Tp) == 1)
@@ -378,54 +379,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __cpp_lib_bitops // C++ >= 20
 
   /// @cond undocumented
-  template<typename _Tp, typename _Up = _Tp>
-    using _If_is_unsigned_integer
-      = enable_if_t<__is_unsigned_integer<_Tp>::value, _Up>;
+  template<typename _Tp>
+    concept __unsigned_integer = __is_unsigned_integer<_Tp>::value;
   /// @endcond
 
   // [bit.rot], rotating
 
   /// Rotate `x` to the left by `s` bits.
-  template<typename _Tp>
-    [[nodiscard]] constexpr _If_is_unsigned_integer<_Tp>
+  template<__unsigned_integer _Tp>
+    [[nodiscard]] constexpr _Tp
     rotl(_Tp __x, int __s) noexcept
     { return std::__rotl(__x, __s); }
 
   /// Rotate `x` to the right by `s` bits.
-  template<typename _Tp>
-    [[nodiscard]] constexpr _If_is_unsigned_integer<_Tp>
+  template<__unsigned_integer _Tp>
+    [[nodiscard]] constexpr _Tp
     rotr(_Tp __x, int __s) noexcept
     { return std::__rotr(__x, __s); }
 
   // [bit.count], counting
 
   /// The number of contiguous zero bits, starting from the highest bit.
-  template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp, int>
+  template<__unsigned_integer _Tp>
+    constexpr int
     countl_zero(_Tp __x) noexcept
     { return std::__countl_zero(__x); }
 
   /// The number of contiguous one bits, starting from the highest bit.
-  template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp, int>
+  template<__unsigned_integer _Tp>
+    constexpr int
     countl_one(_Tp __x) noexcept
     { return std::__countl_one(__x); }
 
   /// The number of contiguous zero bits, starting from the lowest bit.
-  template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp, int>
+  template<__unsigned_integer _Tp>
+    constexpr int
     countr_zero(_Tp __x) noexcept
     { return std::__countr_zero(__x); }
 
   /// The number of contiguous one bits, starting from the lowest bit.
-  template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp, int>
+  template<__unsigned_integer _Tp>
+    constexpr int
     countr_one(_Tp __x) noexcept
     { return std::__countr_one(__x); }
 
   /// The number of bits set in `x`.
-  template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp, int>
+  template<__unsigned_integer _Tp>
+    constexpr int
     popcount(_Tp __x) noexcept
     { return std::__popcount(__x); }
 #endif // __cpp_lib_bitops
@@ -434,28 +434,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // [bit.pow.two], integral powers of 2
 
   /// True if `x` is a power of two, false otherwise.
-  template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp, bool>
+  template<__unsigned_integer _Tp>
+    constexpr bool
     has_single_bit(_Tp __x) noexcept
     { return std::__has_single_bit(__x); }
 
   /// The smallest power-of-two not less than `x`.
-  template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp>
+  template<__unsigned_integer _Tp>
+    constexpr _Tp
     bit_ceil(_Tp __x) noexcept
     { return std::__bit_ceil(__x); }
 
   /// The largest power-of-two not greater than `x`.
-  template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp>
+  template<__unsigned_integer _Tp>
+    constexpr _Tp
     bit_floor(_Tp __x) noexcept
     { return std::__bit_floor(__x); }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 3656. Inconsistent bit operations returning a count
   /// The smallest integer greater than the base-2 logarithm of `x`.
-  template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp, int>
+  template<__unsigned_integer _Tp>
+    constexpr int
     bit_width(_Tp __x) noexcept
     { return std::__bit_width(__x); }
 #endif // defined (__cpp_lib_int_pow2)

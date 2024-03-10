@@ -1,3 +1,1060 @@
+2023-09-17  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/20040204-1.c: Remove xfail.
+
+2023-09-17  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
+
+	* g++.target/powerpc/altivec-19.C: New testcase.
+
+2023-09-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111391
+	* gcc.target/riscv/rvv/autovec/partial/slp-9.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/pr111391-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr111391-2.c: New test.
+
+2023-09-16  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/zknh-sha256.c: Moved to...
+	* gcc.target/riscv/zknh-sha256-64.c: ...here.  Test RV64.
+	* gcc.target/riscv/zknh-sha256-32.c: New test for RV32.
+	* gcc.target/riscv/zksh64.c: Change the type.
+	* gcc.target/riscv/zksed64.c: Ditto.
+
+2023-09-16  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/zbc32.c: Make signed type to unsigned.
+	* gcc.target/riscv/zbc64.c: Ditto.
+	* gcc.target/riscv/zbkb32.c: Ditto.
+	* gcc.target/riscv/zbkb64.c: Ditto.
+	* gcc.target/riscv/zbkc32.c: Ditto.
+	* gcc.target/riscv/zbkc64.c: Ditto.
+	* gcc.target/riscv/zbkx32.c: Ditto.
+	* gcc.target/riscv/zbkx64.c: Ditto.
+	* gcc.target/riscv/zknd32.c: Ditto.
+	* gcc.target/riscv/zknd64.c: Ditto.
+	* gcc.target/riscv/zkne32.c: Ditto.
+	* gcc.target/riscv/zkne64.c: Ditto.
+	* gcc.target/riscv/zknh-sha256.c: Ditto.
+	* gcc.target/riscv/zknh-sha512-32.c: Ditto.
+	* gcc.target/riscv/zknh-sha512-64.c: Ditto.
+	* gcc.target/riscv/zksed32.c: Ditto.
+	* gcc.target/riscv/zksed64.c: Ditto.
+	* gcc.target/riscv/zksh32.c: Ditto.
+	* gcc.target/riscv/zksh64.c: Ditto.
+
+2023-09-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: New macro.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sgnjx-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sgnjx-2.c: New test.
+
+2023-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/volatile-1.c: New test.
+
+2023-09-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/30802
+	* gfortran.dg/bounds_check_fail_6.f90: New test.
+
+2023-09-15  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/bool-13.c: Update testcase as we now do
+	the MIN/MAX during forwprop1.
+
+2023-09-15  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111414
+	* gcc.c-torture/compile/pr111414-1.c: New test.
+
+2023-09-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/111407
+	* gcc.dg/pr111407.c: New test.
+
+2023-09-15  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/wredsum_vlmax.c: New test.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-35.c: Block SLP check for vect_strided5 targets.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-34.c: Block check for vect_strided5.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-34-big-array.c: Block SLP check for vect_strided5.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-16.c: Block vect_strided6.
+	* lib/target-supports.exp: Add strided type.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-1.c: Add vect_stried5.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/Wstringop-overflow-47.c: Add riscv.
+
+2023-09-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/111411
+	* gcc.dg/rtl/aarch64/pr111411.c: New test.
+
+2023-09-15  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111381
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_order-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_order-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_order_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_order_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_run-1.c: New test.
+
+2023-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-inline-events.c:
+	New test.
+	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-sarif.c: New
+	test.
+	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-separate-events.c:
+	New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c: Add support for
+	generating multithreaded paths.
+	* gcc.dg/plugin/plugin.exp: Add the new tests.
+
+2023-09-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/case/fail/subrangecase.mod: Replace 19
+	with 17.
+	* gm2/switches/case/fail/subrangecase2.mod: Ditto.
+	* gm2/switches/case/fail/subrangecase3.mod: Ditto.
+	* gm2/switches/case/fail/subrangecase4.mod: Ditto.
+	* gm2/switches/case/pass/subrangecase.mod: Ditto.
+	* gm2/switches/case/pass/subrangecase2.mod: Ditto.
+	* gm2/switches/case/pass/subrangecase3.mod: Ditto.
+	* gm2/switches/case/pass/subrangecase4.mod: Ditto.
+	* gm2/switches/case/fail/calendar.mod: New test.
+
+2023-09-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/case/fail/subrangecase.mod: New test.
+	* gm2/switches/case/fail/subrangecase2.mod: New test.
+	* gm2/switches/case/fail/subrangecase3.mod: New test.
+	* gm2/switches/case/fail/subrangecase4.mod: New test.
+	* gm2/switches/case/fail/subrangecase5.mod: New test.
+	* gm2/switches/case/fail/subrangecase6.mod: New test.
+	* gm2/switches/case/pass/subrangecase.mod: New test.
+	* gm2/switches/case/pass/subrangecase2.mod: New test.
+	* gm2/switches/case/pass/subrangecase3.mod: New test.
+	* gm2/switches/case/pass/subrangecase4.mod: New test.
+
+2023-09-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_15.c: New test.
+
+2023-09-14  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	* gcc.dg/pr21643.c: Update test now that match does
+	the combing of the comparisons.
+	* gcc.dg/tree-ssa/cmpbit-5.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-35.c: New test.
+
+2023-09-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add VLS tests.
+	* gcc.target/riscv/rvv/autovec/vls/cmp-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cmp-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cmp-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cmp-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cmp-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cmp-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mask-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mask-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mask-3.c: New test.
+
+2023-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111294
+	* gcc.dg/tree-ssa/evrp10.c: Adjust.
+	* gcc.dg/tree-ssa/evrp6.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-31.c: Likewise.
+	* gcc.dg/tree-ssa/neg-cast-3.c: Likewise.
+
+2023-09-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/ld1rq_1.c: New test.
+
+2023-09-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111395
+	* gcc.target/riscv/rvv/fortran/pr111395.f90: New test.
+	* gcc.target/riscv/rvv/rvv-fortran.exp: New test.
+
+2023-09-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/cmov_ii.c: New test.
+
+2023-09-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/111334
+	* gcc.target/loongarch/pr111334.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvssran.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrani.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrarn.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrarni.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrln.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrlni.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrlrn.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrlrni.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvpackev.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpackod.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpickev.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpickod.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpickve.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpickve2gr.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvreplgr2vr.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvreplve.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvreplve0.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvreplvei.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvshuf4i_b.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvshuf_b.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvext2xv-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvext2xv-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvexth-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvexth-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvextrins.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvilvh.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvilvl.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvinsgr2vr.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvinsve0.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvprem.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpremi.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_saf_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_seq_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_sle_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_slt_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_sne_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_sor_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_sun_s.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_caf_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_ceq_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_cle_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_clt_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_cne_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_cor_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_cun_s.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvabsd-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvabsd-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvavg-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvavg-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvavgr-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvavgr-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbsll_v.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbsrl_v.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvneg.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsat-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsat-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvfnmadd_d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfnmadd_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfrstp.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfrstpi.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvhsubw-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvhsubw-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvld.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmsub.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvrotr.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvrotri.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvst.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvseq.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvseqi.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsle-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsle-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslei-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslei-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslt-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslt-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslti-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslti-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcvt.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcvth.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvffint-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvffint-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvffinth.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfrint_d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfrint_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvftint-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvftint-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvftint-3.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvftintl.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvfadd_d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfadd_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfclass_d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfclass_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvflogb_d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvflogb_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmadd_d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmadd_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmax_d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmax_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmaxa_d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmaxa_s.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfsqrt_d.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfsqrt_s.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvldrepl.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvstelm.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-builtin.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitclr.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitclri.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitrev.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitrevi.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitsel.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitseli.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitset.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitseti.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvclo.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvclz.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpcnt.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvextl-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvextl-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsra.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrai.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsran.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrani.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrar.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrari.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrarn.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrarni.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvsll.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslli.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsllwil-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsllwil-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrl.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrli.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrln.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlni.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlr.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlri.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlrn.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlrni.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvand.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvandi.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvandn.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvnor.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvnori.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvor.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvori.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvorn.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvxor.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvxori.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvldi.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmskgez.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmskltz.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmsknz.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmuh-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmuh-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsigncov.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvmax-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmax-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaxi-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaxi-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmin-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmin-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmini-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmini-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvdiv-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvdiv-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmod-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmod-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmul.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwev-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwev-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwev-3.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwod-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwod-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwod-3.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvssub-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssub-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsub.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubi.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubwev-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubwev-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubwod-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubwod-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvhaddw-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvhaddw-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmadd.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwev-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwev-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwev-3.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwod-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwod-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwod-3.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvadd.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvadda.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddi.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwev-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwev-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwev-3.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwod-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwod-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwod-3.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsadd-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsadd-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vfmadd_d.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmadd_s.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfnmadd_d.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfnmadd_s.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vld.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vst.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vand.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vandi.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vandn.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vnor.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vnori.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vor.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vori.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vorn.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vxor.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vxori.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vbsll.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vbsrl.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vextrins.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vilvh.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vilvl.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vinsgr2vr.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vpackev.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vpackod.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vpickev.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vpickod.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vpickve2gr.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vpremi.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vreplgr2vr.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vreplve.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vreplvei.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vshuf.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vshuf4i.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_caf.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_ceq.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_cle.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_clt.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_cne.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_cor.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_cun.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_saf.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_seq.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_sle.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_slt.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_sne.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_sor.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_sun.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vfrstp.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfrstpi.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vseq.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vseqi.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsle-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsle-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vslei-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vslei-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vslt-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vslt-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vslti-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vslti-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vfadd_d.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfadd_s.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfclass_d.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfclass_s.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vflogb_d.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vflogb_s.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmax_d.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmax_s.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmaxa_d.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmaxa_s.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfsqrt_d.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfsqrt_s.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vbitclr.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitclri.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitrev.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitrevi.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitsel.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitseli.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitset.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitseti.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vclo.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vclz.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vpcnt.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vssran.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrani.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrarn.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrarni.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrln.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrlni.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrlrn.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrlrni.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vrotr.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vrotri.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsra.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrai.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsran.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrani.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrar.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrari.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrarn.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrarni.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vsll.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vslli.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsllwil-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsllwil-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrl.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrli.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrln.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlni.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlr.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlri.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlrn.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlrni.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vdiv-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vdiv-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmod-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmod-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vabsd-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vabsd-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmskgez.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmskltz.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmsknz.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsigncov.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vexth-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vexth-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vextl-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vextl-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vldi.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vneg.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsat-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsat-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vmax-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmax-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaxi-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaxi-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmin-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmin-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmini-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmini-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vavg-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vavg-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vavgr-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vavgr-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vmuh-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmuh-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmul.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwev-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwev-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwev-3.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwod-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwod-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwod-3.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vsadd-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsadd-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vhsubw-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vhsubw-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmsub.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vssub-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vssub-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsub.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubi.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubwev-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubwev-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubwod-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubwod-2.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vadd.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vadda.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddi.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwev-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwev-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwev-3.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwod-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwod-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwod-3.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vhaddw-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vhaddw-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmadd.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwev-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwev-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwev-3.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwod-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwod-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwod-3.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vfcvt-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcvt-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vffint-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vffint-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vffint-3.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfrint_d.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vfrint_s.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vftint-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vftint-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vftint-3.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vftint-4.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-builtin.c: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/loongarch-vector.exp: New test.
+	* gcc.target/loongarch/vector/simd_correctness_check.h: New test.
+
+2023-09-14  Xiaolong Chen  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/strict-align.c: New test.
+
+2023-09-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add more def.
+	* gcc.target/riscv/rvv/autovec/vls/extract-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/extract-2.c: New test.
+
+2023-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111364
+	* gcc.c-torture/execute/minmaxcmp-1.c: New test.
+	* gcc.dg/tree-ssa/minmaxcmp-2.c: New test.
+	* gcc.dg/pr96708-negative.c: Update testcase.
+	* gcc.dg/pr96708-positive.c: Add comment about `return 0`.
+
+2023-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111387
+	* gcc.dg/torture/pr111387.c: New testcase.
+
+2023-09-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_mulh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_mulh-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_mulh_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_mulh_run-2.c: New test.
+
+2023-09-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift_run-3.c: New test.
+
+2023-09-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-zvfh-run.c: New test.
+
+2023-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111397
+	* gcc.dg/uninit-pr111397.c: New testcase.
+
+2023-09-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/111362
+	* gcc.target/riscv/rvv/base/no-honor-frm-1.c: New test.
+
+2023-09-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vector-abi-9.c: Removed.
+
+2023-09-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/111303
+	* gcc.dg/pr111303.c: New test.
+
+2023-09-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Enable vect_int for RVV.
+
+2023-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111357
+	* g++.dg/ext/integer-pack7.C: New test.
+
+2023-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107198
+	* g++.dg/eh/no-exceptions1.C: New test.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-protector-8.c: New test.
+	* gcc.target/aarch64/stack-protector-9.c: Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/stack_clash_3.c: Avoid redundant probes.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-check-prologue-17.c: Expect the probe
+	to be at offset 1024 rather than offset 0.
+	* gcc.target/aarch64/stack-check-prologue-18.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-19.c: Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-check-prologue-18.c: New test.
+	* gcc.target/aarch64/stack-check-prologue-19.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-20.c: Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-check-prologue-17.c: New test.
+
+2023-09-12  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/107881
+	* gcc.c-torture/execute/pr107881-1.c: New test.
+	* gcc.dg/tree-ssa/cmpeq-4.c: New test.
+	* gcc.dg/tree-ssa/cmpxor-1.c: New test.
+
+2023-09-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul-mixed-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-4.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-5.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-6.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-7.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-4.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-5.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-6.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-4.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-5.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-6.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-7.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-8.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-10.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-4.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-5.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-6.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-7.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-8.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-9.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/rvv-costmodel-vect.exp: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-9.c: New file.
+
+2023-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111338
+	* gcc.dg/bitint-37.c: New test.
+
+2023-09-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/case/fail/missingclause.mod: New test.
+	* gm2/switches/case/fail/switches-case-fail.exp: New test.
+	* gm2/switches/case/pass/enumcase.mod: New test.
+	* gm2/switches/case/pass/enumcase2.mod: New test.
+	* gm2/switches/case/pass/switches-case-pass.exp: New test.
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_stack_size): For
+	nvptx target, stack size limits are relevant for execution only.
+
+2023-09-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-strcmp.c: New test.
+	* gcc.target/riscv/zbb-strcmp-disabled-2.c: New test.
+	* gcc.target/riscv/zbb-strcmp-disabled.c: New test.
+	* gcc.target/riscv/zbb-strcmp-unaligned.c: New test.
+	* gcc.target/riscv/zbb-strcmp.c: New test.
+	* gcc.target/riscv/zbb-strcmp-limit.c: New file.
+
+2023-09-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-strlen-unaligned.c: New test.
+	* gcc.target/riscv/xtheadbb-strlen.c: New test.
+	* gcc.target/riscv/zbb-strlen-disabled-2.c: New test.
+	* gcc.target/riscv/zbb-strlen-disabled.c: New test.
+	* gcc.target/riscv/zbb-strlen-unaligned.c: New test.
+	* gcc.target/riscv/zbb-strlen.c: New test.
+
+2023-09-12  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-1.c: Add vrem op.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-3.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-1.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-2.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-3.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-4.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-5.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-9.c: New test.
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/scanasm.exp (configure_check-function-bodies): New proc.
+	(parse_function_bodies, check-function-bodies): Use it.
+
+2023-09-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/110996
+	* gfortran.dg/pr110996.f90: New test.
+
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-5.c: Fix testcase; make some
+	dg-messages for 'sorry' as c++, only.
+	* c-c++-common/gomp/directive-1.c: Make a 'sorry' c++ only.
+	* c-c++-common/gomp/allocate-9.c: New test.
+	* c-c++-common/gomp/allocate-11.c: New test.
+	* c-c++-common/gomp/allocate-12.c: New test.
+	* c-c++-common/gomp/allocate-14.c: New test.
+	* c-c++-common/gomp/allocate-15.c: New test.
+	* c-c++-common/gomp/allocate-16.c: New test.
+
+2023-09-12  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/tuple_create.c: New test.
+
+2023-09-12  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/rv32e_zcmp.c: remove -fno-shrink-wrap-separate
+	* gcc.target/riscv/rv32i_zcmp.c: likewise
+	* gcc.target/riscv/zcmp_push_fpr.c: likewise
+	* gcc.target/riscv/zcmp_stack_alignment.c: likewise
+	* gcc.target/riscv/zcmp_shrink_wrap_separate.c: New test.
+	* gcc.target/riscv/zcmp_shrink_wrap_separate2.c: New test.
+
+2023-09-11  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111348
+	* gcc.dg/tree-ssa/minmax-26.c: New test.
+
+2023-09-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111340
+	* gcc.target/i386/pr111340.c: New test.
+
+2023-09-11  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111349
+	* gcc.dg/tree-ssa/minmax-25.c: New test.
+
+2023-09-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111311
+	* gcc.target/riscv/rvv/autovec/partial/slp-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/partial/slp-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-17.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/compress-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/compress-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/compress-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/compress-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/compress-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/compress-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/merge-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/merge-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/merge-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/merge-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/merge-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/merge-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/merge-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/perm-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/perm-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/perm-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/perm-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/perm-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/perm-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/perm-7.c: New test.
+
+2023-09-11  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111346
+	* gcc.dg/tree-ssa/minmaxcmp-1.c: New test.
+
+2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr111306.c: New test.
+
 2023-09-10  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/111331

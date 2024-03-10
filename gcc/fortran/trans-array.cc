@@ -3452,7 +3452,8 @@ gfc_conv_array_ubound (tree descriptor, int dim)
 
 static tree
 trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
-			 locus * where, bool check_upper)
+			 locus * where, bool check_upper,
+			 const char *compname = NULL)
 {
   tree fault;
   tree tmp_lo, tmp_up;
@@ -3473,6 +3474,10 @@ trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
 
   if (VAR_P (descriptor))
     name = IDENTIFIER_POINTER (DECL_NAME (descriptor));
+
+  /* Use given (array component) name.  */
+  if (compname)
+    name = compname;
 
   /* If upper bound is present, include both bounds in the error message.  */
   if (check_upper)
@@ -3521,6 +3526,64 @@ trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
     }
 
   return index;
+}
+
+
+/* Generate code for bounds checking for elemental dimensions.  */
+
+static void
+array_bound_check_elemental (gfc_se * se, gfc_ss * ss, gfc_expr * expr)
+{
+  gfc_array_ref *ar;
+  gfc_ref *ref;
+  gfc_symbol *sym;
+  char *var_name = NULL;
+  size_t len;
+  int dim;
+
+  if (expr->expr_type == EXPR_VARIABLE)
+    {
+      sym = expr->symtree->n.sym;
+      len = strlen (sym->name) + 1;
+
+      for (ref = expr->ref; ref; ref = ref->next)
+	if (ref->type == REF_COMPONENT)
+	  len += 2 + strlen (ref->u.c.component->name);
+
+      var_name = XALLOCAVEC (char, len);
+      strcpy (var_name, sym->name);
+
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	  /* Append component name.  */
+	  if (ref->type == REF_COMPONENT)
+	    {
+	      strcat (var_name, "%%");
+	      strcat (var_name, ref->u.c.component->name);
+	      continue;
+	    }
+
+	  if (ref->type == REF_ARRAY && ref->u.ar.dimen > 0)
+	    {
+	      ar = &ref->u.ar;
+	      for (dim = 0; dim < ar->dimen; dim++)
+		{
+		  if (ar->dimen_type[dim] == DIMEN_ELEMENT)
+		    {
+		      gfc_se indexse;
+		      gfc_init_se (&indexse, NULL);
+		      gfc_conv_expr_type (&indexse, ar->start[dim],
+					  gfc_array_index_type);
+		      trans_array_bound_check (se, ss, indexse.expr, dim,
+					       &ar->where,
+					       ar->as->type != AS_ASSUMED_SIZE
+					       || dim < ar->dimen - 1,
+					       var_name);
+		    }
+		}
+	    }
+	}
+    }
 }
 
 
@@ -7822,6 +7885,10 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
   /* Setup the scalarizing loops and bounds.  */
   gfc_conv_ss_startstride (&loop);
+
+  /* Add bounds-checking for elemental dimensions.  */
+  if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS) && !expr->no_bounds_check)
+    array_bound_check_elemental (se, ss, expr);
 
   if (need_tmp)
     {

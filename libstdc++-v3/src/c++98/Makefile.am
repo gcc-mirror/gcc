@@ -81,14 +81,10 @@ endif
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
 host_sources_extra = \
-	basic_file.cc c++locale.cc \
-	${inst_sources} ${parallel_sources}
+	c++locale.cc
 
 c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CLOCALE_CC) ./$@ || true
-
-basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
 
 if ENABLE_DUAL_ABI
 cxx11_abi_sources = \
@@ -130,9 +126,7 @@ sources = \
 	list_associated.cc \
 	list_associated-2.cc \
 	locale.cc \
-	locale_init.cc \
 	locale_facets.cc \
-	localename.cc \
 	math_stubs_float.cc \
 	math_stubs_long_double.cc \
 	stdexcept.cc \
@@ -144,7 +138,9 @@ sources = \
 	valarray.cc \
 	${cxx11_abi_sources} \
 	${host_sources} \
-	${host_sources_extra}
+	${host_sources_extra} \
+	${inst_sources} \
+	${parallel_sources}
 
 vpath % $(top_srcdir)/src/c++98
 
@@ -180,16 +176,6 @@ numeric_members_cow.lo: numeric_members_cow.cc
 numeric_members_cow.o: numeric_members_cow.cc
 	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 endif
-
-# XXX TODO move locale_init.cc and localename.cc to src/c++11
-locale_init.lo: locale_init.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
-locale_init.o: locale_init.cc
-	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
-localename.lo: localename.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
-localename.o: localename.cc
-	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.

@@ -509,7 +509,8 @@ extern void diagnostic_finish (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *, location_t);
 extern void diagnostic_show_locus (diagnostic_context *,
 				   rich_location *richloc,
-				   diagnostic_t diagnostic_kind);
+				   diagnostic_t diagnostic_kind,
+				   pretty_printer *pp = nullptr);
 extern void diagnostic_show_any_path (diagnostic_context *, diagnostic_info *);
 
 /* Because we read source files a second time after the frontend did it the

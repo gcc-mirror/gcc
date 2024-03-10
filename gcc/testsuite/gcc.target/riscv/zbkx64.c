@@ -4,12 +4,12 @@
 
 #include <stdint-gcc.h>
 
-int64_t foo1(int64_t rs1, int64_t rs2)
+uint64_t foo1(uint64_t rs1, uint64_t rs2)
 {
     return __builtin_riscv_xperm8(rs1, rs2);
 }
 
-int64_t foo2(int64_t rs1, int64_t rs2)
+uint64_t foo2(uint64_t rs1, uint64_t rs2)
 {
     return __builtin_riscv_xperm4(rs1, rs2);
 }

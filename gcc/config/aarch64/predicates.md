@@ -732,10 +732,6 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_sve_ld1r_operand")))
 
-(define_predicate "aarch64_sve_dup_ld1rq_operand"
-  (ior (match_operand 0 "register_operand")
-       (match_operand 0 "aarch64_sve_ld1rq_operand")))
-
 (define_predicate "aarch64_sve_ptrue_svpattern_immediate"
   (and (match_code "const")
        (match_test "aarch64_sve_ptrue_svpattern_p (op, NULL)")))

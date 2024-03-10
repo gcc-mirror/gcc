@@ -994,41 +994,63 @@ xtensa_expand_scc (rtx operands[4], machine_mode cmp_mode)
   rtx cmp;
   rtx one_tmp, zero_tmp;
   rtx (*gen_fn) (rtx, rtx, rtx, rtx, rtx);
-  enum rtx_code code = GET_CODE (operands[1]);
 
-  if (cmp_mode == SImode && CONST_INT_P (operands[3])
-      && (code == EQ || code == NE))
-    switch (INTVAL (operands[3]))
-      {
-      case 0:
-	if (TARGET_MINMAX)
-	  {
-	    one_tmp = force_reg (SImode, const1_rtx);
-	    emit_insn (gen_uminsi3 (dest, operands[2], one_tmp));
-	    if (code == EQ)
-	      emit_insn (gen_xorsi3 (dest, dest, one_tmp));
-	    return 1;
-	  }
-	break;
-      case -2147483648:
-	if (TARGET_ABS)
-	  {
-	    emit_insn (gen_abssi2 (dest, operands[2]));
-	    if (code == EQ)
-	      emit_insn (gen_lshrsi3 (dest, dest, GEN_INT (31)));
-	    else
-	      {
-		emit_insn (gen_ashrsi3 (dest, dest, GEN_INT (31)));
-		emit_insn (gen_addsi3 (dest, dest, const1_rtx));
-	      }
-	    return 1;
-	  }
-	break;
-      default:
-	break;
-      }
+  if (cmp_mode == SImode && TARGET_SALT)
+    {
+      rtx a = operands[2], b = force_reg (SImode, operands[3]);
+      enum rtx_code code = GET_CODE (operands[1]);
+      bool invert_res = false;
 
-  if (! (cmp = gen_conditional_move (code, cmp_mode,
+      switch (code)
+	{
+	case GE:
+	case GEU:
+	  invert_res = true;
+	  break;
+	case GT:
+	case GTU:
+	  std::swap (a, b);
+	  break;
+	case LE:
+	case LEU:
+	  invert_res = true;
+	  std::swap (a, b);
+	  break;
+	default:
+	  break;
+	}
+
+      switch (code)
+	{
+	case GE:
+	case GT:
+	case LE:
+	case LT:
+	  emit_insn (gen_salt (dest, a, b));
+	  if (!invert_res)
+	    return 1;
+	  break;
+	case GEU:
+	case GTU:
+	case LEU:
+	case LTU:
+	  emit_insn (gen_saltu (dest, a, b));
+	  if (!invert_res)
+	    return 1;
+	  break;
+	default:
+	  break;
+	}
+
+      if (invert_res)
+	{
+	  emit_insn (gen_negsi2 (dest, dest));
+	  emit_insn (gen_addsi3 (dest, dest, const1_rtx));
+	  return 1;
+	}
+    }
+
+  if (! (cmp = gen_conditional_move (GET_CODE (operands[1]), cmp_mode,
 				     operands[2], operands[3])))
     return 0;
 

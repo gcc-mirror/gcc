@@ -250,36 +250,47 @@
 
 ;; ZKNH - SHA256
 
-(define_insn "riscv_sha256sig0_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")]
-                  UNSPEC_SHA_256_SIG0))]
-  "TARGET_ZKNH"
-  "sha256sig0\t%0,%1"
+(define_int_iterator SHA256_OP [
+  UNSPEC_SHA_256_SIG0 UNSPEC_SHA_256_SIG1
+  UNSPEC_SHA_256_SUM0 UNSPEC_SHA_256_SUM1])
+(define_int_attr sha256_op [
+  (UNSPEC_SHA_256_SIG0 "sha256sig0") (UNSPEC_SHA_256_SIG1 "sha256sig1")
+  (UNSPEC_SHA_256_SUM0 "sha256sum0") (UNSPEC_SHA_256_SUM1 "sha256sum1")])
+
+(define_insn "*riscv_<sha256_op>_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")]
+                   SHA256_OP))]
+  "TARGET_ZKNH && !TARGET_64BIT"
+  "<sha256_op>\t%0,%1"
   [(set_attr "type" "crypto")])
 
-(define_insn "riscv_sha256sig1_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")]
-                  UNSPEC_SHA_256_SIG1))]
-  "TARGET_ZKNH"
-  "sha256sig1\t%0,%1"
+(define_insn "riscv_<sha256_op>_di_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (sign_extend:DI
+             (unspec:SI [(match_operand:SI 1 "register_operand" "r")]
+                        SHA256_OP)))]
+  "TARGET_ZKNH && TARGET_64BIT"
+  "<sha256_op>\t%0,%1"
   [(set_attr "type" "crypto")])
 
-(define_insn "riscv_sha256sum0_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")]
-                  UNSPEC_SHA_256_SUM0))]
+(define_expand "riscv_<sha256_op>_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")]
+                   SHA256_OP))]
   "TARGET_ZKNH"
-  "sha256sum0\t%0,%1"
-  [(set_attr "type" "crypto")])
-
-(define_insn "riscv_sha256sum1_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")]
-                  UNSPEC_SHA_256_SUM1))]
-  "TARGET_ZKNH"
-  "sha256sum1\t%0,%1"
+  {
+    if (TARGET_64BIT)
+      {
+        rtx t = gen_reg_rtx (DImode);
+        emit_insn (gen_riscv_<sha256_op>_di_extended (t, operands[1]));
+        t = gen_lowpart (SImode, t);
+        SUBREG_PROMOTED_VAR_P (t) = 1;
+        SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+        emit_move_insn (operands[0], t);
+        DONE;
+      }
+  }
   [(set_attr "type" "crypto")])
 
 ;; ZKNH - SHA512
@@ -372,40 +383,88 @@
 
  ;; ZKSH
 
-(define_insn "riscv_sm3p0_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")]
-                  UNSPEC_SM3_P0))]
-  "TARGET_ZKSH"
-  "sm3p0\t%0,%1"
+(define_int_iterator SM3_OP [UNSPEC_SM3_P0 UNSPEC_SM3_P1])
+(define_int_attr sm3_op [(UNSPEC_SM3_P0 "sm3p0") (UNSPEC_SM3_P1 "sm3p1")])
+
+(define_insn "*riscv_<sm3_op>_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")]
+                   SM3_OP))]
+  "TARGET_ZKSH && !TARGET_64BIT"
+  "<sm3_op>\t%0,%1"
   [(set_attr "type" "crypto")])
 
-(define_insn "riscv_sm3p1_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")]
-                  UNSPEC_SM3_P1))]
+(define_insn "riscv_<sm3_op>_di_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (sign_extend:DI
+             (unspec:SI [(match_operand:SI 1 "register_operand" "r")]
+                        SM3_OP)))]
+  "TARGET_ZKSH && TARGET_64BIT"
+  "<sm3_op>\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+(define_expand "riscv_<sm3_op>_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")]
+                   SM3_OP))]
   "TARGET_ZKSH"
-  "sm3p1\t%0,%1"
+  {
+    if (TARGET_64BIT)
+      {
+        rtx t = gen_reg_rtx (DImode);
+        emit_insn (gen_riscv_<sm3_op>_di_extended (t, operands[1]));
+        t = gen_lowpart (SImode, t);
+        SUBREG_PROMOTED_VAR_P (t) = 1;
+        SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+        emit_move_insn (operands[0], t);
+        DONE;
+      }
+  }
   [(set_attr "type" "crypto")])
 
 ;; ZKSED
 
-(define_insn "riscv_sm4ed_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")
-                  (match_operand:X 2 "register_operand" "r")
-                  (match_operand:SI 3 "register_operand" "D03")]
-                  UNSPEC_SM4_ED))]
-  "TARGET_ZKSED"
-  "sm4ed\t%0,%1,%2,%3"
+(define_int_iterator SM4_OP [UNSPEC_SM4_ED UNSPEC_SM4_KS])
+(define_int_attr sm4_op [(UNSPEC_SM4_ED "sm4ed") (UNSPEC_SM4_KS "sm4ks")])
+
+(define_insn "*riscv_<sm4_op>_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                   (match_operand:SI 2 "register_operand" "r")
+                   (match_operand:SI 3 "register_operand" "D03")]
+                   SM4_OP))]
+  "TARGET_ZKSED && !TARGET_64BIT"
+  "<sm4_op>\t%0,%1,%2,%3"
   [(set_attr "type" "crypto")])
 
-(define_insn "riscv_sm4ks_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")
-                  (match_operand:X 2 "register_operand" "r")
-                  (match_operand:SI 3 "register_operand" "D03")]
-                  UNSPEC_SM4_KS))]
+(define_insn "riscv_<sm4_op>_di_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (sign_extend:DI
+             (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                        (match_operand:SI 2 "register_operand" "r")
+                        (match_operand:SI 3 "register_operand" "D03")]
+                        SM4_OP)))]
+  "TARGET_ZKSED && TARGET_64BIT"
+  "<sm4_op>\t%0,%1,%2,%3"
+  [(set_attr "type" "crypto")])
+
+(define_expand "riscv_<sm4_op>_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                   (match_operand:SI 2 "register_operand" "r")
+                   (match_operand:SI 3 "register_operand" "D03")]
+                   SM4_OP))]
   "TARGET_ZKSED"
-  "sm4ks\t%0,%1,%2,%3"
+  {
+    if (TARGET_64BIT)
+      {
+        rtx t = gen_reg_rtx (DImode);
+        emit_insn (gen_riscv_<sm4_op>_di_extended (t, operands[1], operands[2], operands[3]));
+        t = gen_lowpart (SImode, t);
+        SUBREG_PROMOTED_VAR_P (t) = 1;
+        SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+        emit_move_insn (operands[0], t);
+        DONE;
+      }
+  }
   [(set_attr "type" "crypto")])

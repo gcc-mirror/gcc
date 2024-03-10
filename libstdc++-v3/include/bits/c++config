@@ -854,7 +854,15 @@ namespace __gnu_cxx
 # define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
 #endif
 
-#undef _GLIBCXX_HAS_BUILTIN
+// Returns 1 if _GLIBCXX_DO_NOT_USE_BUILTIN_TRAITS is not defined and the
+// compiler has a corresponding built-in type trait, 0 otherwise.
+// _GLIBCXX_DO_NOT_USE_BUILTIN_TRAITS can be defined to disable the use of
+// built-in traits.
+#ifndef _GLIBCXX_DO_NOT_USE_BUILTIN_TRAITS
+# define _GLIBCXX_USE_BUILTIN_TRAIT(BT) _GLIBCXX_HAS_BUILTIN(BT)
+#else
+# define _GLIBCXX_USE_BUILTIN_TRAIT(BT) 0
+#endif
 
 // Mark code that should be ignored by the compiler, but seen by Doxygen.
 #define _GLIBCXX_DOXYGEN_ONLY(X)

@@ -56,16 +56,6 @@ with Tbuild;         use Tbuild;
 
 package body Accessibility is
 
-   function Needs_Result_Accessibility_Level_Param
-     (Func_Id  : Entity_Id;
-      Func_Typ : Entity_Id) return Boolean;
-   --  Subsidiary of functions Needs_Result_Accessibility_Extra_Formal and
-   --  Needs_Result_Accessibility_Level_Param. Return True if the function
-   --  needs an implicit parameter to identify the accessibility level of
-   --  the function result "determined by the point of call". Func_Typ is
-   --  the function return type; this function returns False if Func_Typ is
-   --  Empty.
-
    ---------------------------
    -- Accessibility_Message --
    ---------------------------
@@ -129,8 +119,9 @@ package body Accessibility is
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
-      function Accessibility_Level (Expr : Node_Id) return Node_Id
-        is (Accessibility_Level (Expr, Level, In_Return_Context));
+      function Accessibility_Level (Expr : Node_Id) return Node_Id is
+        (Accessibility_Level
+          (Expr, Level, In_Return_Context, Allow_Alt_Model));
       --  Renaming of the enclosing function to facilitate recursive calls
 
       function Make_Level_Literal (Level : Uint) return Node_Id;
@@ -174,7 +165,19 @@ package body Accessibility is
             Ent := Defining_Entity_Or_Empty (Node_Par);
 
             if Present (Ent) then
-               Encl_Scop := Find_Enclosing_Scope (Ent);
+               --  X'Old is nested within the current subprogram, so we do not
+               --  want Find_Enclosing_Scope of that subprogram. If this is an
+               --  allocator, then we're looking for the innermost master of
+               --  the call, so again we do not want Find_Enclosing_Scope.
+
+               if (Nkind (N) = N_Attribute_Reference
+                    and then Attribute_Name (N) = Name_Old)
+                 or else Nkind (N) = N_Allocator
+               then
+                  Encl_Scop := Ent;
+               else
+                  Encl_Scop := Find_Enclosing_Scope (Ent);
+               end if;
 
                --  Ignore transient scopes made during expansion while also
                --  taking into account certain expansions - like iterators
@@ -187,17 +190,13 @@ package body Accessibility is
                then
                   --  Note that in some rare cases the scope depth may not be
                   --  set, for example, when we are in the middle of analyzing
-                  --  a type and the enclosing scope is said type. So, instead,
-                  --  continue to move up the parent chain since the scope
-                  --  depth of the type's parent is the same as that of the
-                  --  type.
+                  --  a type and the enclosing scope is said type. In that case
+                  --  simply return zero for the outermost scope.
 
-                  if not Scope_Depth_Set (Encl_Scop) then
-                     pragma Assert (Nkind (Parent (Encl_Scop))
-                                     = N_Full_Type_Declaration);
+                  if Scope_Depth_Set (Encl_Scop) then
+                     return Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
                   else
-                     return
-                       Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
+                     return Uint_0;
                   end if;
                end if;
 
@@ -434,7 +433,7 @@ package body Accessibility is
          when N_Aggregate =>
             return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
 
-         --  The accessibility level is that of the access type, except for an
+         --  The accessibility level is that of the access type, except for
          --  anonymous allocators which have special rules defined in RM 3.10.2
          --  (14/3).
 
@@ -482,6 +481,7 @@ package body Accessibility is
                  and then Present (Get_Dynamic_Accessibility (Entity (Pre)))
                  and then Level = Dynamic_Level
                then
+                  pragma Assert (Is_Anonymous_Access_Type (Etype (Pre)));
                   return New_Occurrence_Of
                            (Get_Dynamic_Accessibility (Entity (Pre)), Loc);
 
@@ -1902,34 +1902,6 @@ package body Accessibility is
                and then Is_Explicitly_Aliased (Entity (Prefix (Exp)));
    end Is_Special_Aliased_Formal_Access;
 
-   ---------------------------------------------
-   -- Needs_Result_Accessibility_Extra_Formal --
-   ---------------------------------------------
-
-   function Needs_Result_Accessibility_Extra_Formal
-     (Func_Id : Entity_Id) return Boolean
-   is
-      Func_Typ : Entity_Id;
-
-   begin
-      if Present (Underlying_Type (Etype (Func_Id))) then
-         Func_Typ := Underlying_Type (Etype (Func_Id));
-
-      --  Case of a function returning a private type which is not completed
-      --  yet. The support for this case is required because this function is
-      --  called to create the extra formals of dispatching primitives, and
-      --  they may be frozen before we see the full-view of their returned
-      --  private type.
-
-      else
-         --  Temporarily restore previous behavior
-         --  Func_Typ := Etype (Func_Id);
-         Func_Typ := Empty;
-      end if;
-
-      return Needs_Result_Accessibility_Level_Param (Func_Id, Func_Typ);
-   end Needs_Result_Accessibility_Extra_Formal;
-
    --------------------------------------
    -- Needs_Result_Accessibility_Level --
    --------------------------------------
@@ -1939,18 +1911,6 @@ package body Accessibility is
    is
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
-   begin
-      return Needs_Result_Accessibility_Level_Param (Func_Id, Func_Typ);
-   end Needs_Result_Accessibility_Level;
-
-   --------------------------------------------
-   -- Needs_Result_Accessibility_Level_Param --
-   --------------------------------------------
-
-   function Needs_Result_Accessibility_Level_Param
-     (Func_Id  : Entity_Id;
-      Func_Typ : Entity_Id) return Boolean
-   is
       function Has_Unconstrained_Access_Discriminant_Component
         (Comp_Typ : Entity_Id) return Boolean;
       --  Returns True if any component of the type has an unconstrained access
@@ -2002,7 +1962,7 @@ package body Accessibility is
       --  Flag used to temporarily disable a "True" result for tagged types.
       --  See comments further below for details.
 
-   --  Start of processing for Needs_Result_Accessibility_Level_Param
+   --  Start of processing for Needs_Result_Accessibility_Level
 
    begin
       --  False if completion unavailable, which can happen when we are
@@ -2078,7 +2038,7 @@ package body Accessibility is
       else
          return False;
       end if;
-   end Needs_Result_Accessibility_Level_Param;
+   end Needs_Result_Accessibility_Level;
 
    ------------------------------------------
    -- Prefix_With_Safe_Accessibility_Level --

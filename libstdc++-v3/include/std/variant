@@ -1123,7 +1123,6 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
       return std::get<__n>(__v);
     }
@@ -1134,7 +1133,6 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
       return std::get<__n>(std::move(__v));
     }
@@ -1145,7 +1143,6 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
       return std::get<__n>(__v);
     }
@@ -1156,7 +1153,6 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
       return std::get<__n>(std::move(__v));
     }
@@ -1336,9 +1332,6 @@ namespace __variant
   template<typename... _Types>
     class variant
     : private __detail::__variant::_Variant_base<_Types...>,
-      private _Enable_default_constructor<
-	__detail::__variant::_Traits<_Types...>::_S_default_ctor,
-	  variant<_Types...>>,
       private _Enable_copy_move<
 	__detail::__variant::_Traits<_Types...>::_S_copy_ctor,
 	__detail::__variant::_Traits<_Types...>::_S_copy_assign,
@@ -1359,10 +1352,6 @@ namespace __variant
 		    "variant must have no void alternative");
 
       using _Base = __detail::__variant::_Variant_base<_Types...>;
-      using _Default_ctor_enabler =
-	_Enable_default_constructor<
-	  __detail::__variant::_Traits<_Types...>::_S_default_ctor,
-	    variant<_Types...>>;
 
       template<typename _Tp>
 	static constexpr bool __not_self
@@ -1400,7 +1389,16 @@ namespace __variant
 	  = !__is_in_place_tag<__remove_cvref_t<_Tp>>::value;
 
     public:
-      variant() = default;
+#if __cpp_concepts
+      variant() requires is_default_constructible_v<__to_type<0>> = default;
+#else
+      template<typename _Tp0 = __to_type<0>,
+	       typename = enable_if_t<is_default_constructible_v<_Tp0>>>
+	constexpr
+	variant() noexcept(is_nothrow_default_constructible_v<__to_type<0>>)
+	{ }
+#endif
+
       variant(const variant& __rhs) = default;
       variant(variant&&) = default;
       variant& operator=(const variant&) = default;
@@ -1445,8 +1443,7 @@ namespace __variant
 	       typename = enable_if_t<is_constructible_v<_Tp, _Args...>>>
 	constexpr explicit
 	variant(in_place_index_t<_Np>, _Args&&... __args)
-	: _Base(in_place_index<_Np>, std::forward<_Args>(__args)...),
-	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+	: _Base(in_place_index<_Np>, std::forward<_Args>(__args)...)
 	{ }
 
       template<size_t _Np, typename _Up, typename... _Args,
@@ -1457,8 +1454,7 @@ namespace __variant
 	constexpr explicit
 	variant(in_place_index_t<_Np>, initializer_list<_Up> __il,
 		_Args&&... __args)
-	: _Base(in_place_index<_Np>, __il, std::forward<_Args>(__args)...),
-	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+	: _Base(in_place_index<_Np>, __il, std::forward<_Args>(__args)...)
 	{ }
 
       template<typename _Tp>

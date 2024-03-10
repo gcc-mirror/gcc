@@ -40,7 +40,7 @@
     else
       gcc_unreachable ();
   }
-)
+[(set_attr "type" "zicond")])
 
 (define_insn "*czero.<nez>.<GPR:mode><X:mode>"
   [(set (match_operand:GPR 0 "register_operand"                     "=r")
@@ -57,7 +57,7 @@
     else
       gcc_unreachable ();
   }
-)
+[(set_attr "type" "zicond")])
 
 ;; Special optimization under eq/ne in primitive semantics
 (define_insn "*czero.eqz.<GPR:mode><X:mode>.opt1"
@@ -75,7 +75,7 @@
     else
       gcc_unreachable ();
   }
-)
+[(set_attr "type" "zicond")])
 
 (define_insn "*czero.nez.<GPR:mode><X:mode>.opt2"
   [(set (match_operand:GPR 0 "register_operand"                   "=r")
@@ -92,7 +92,7 @@
     else
       gcc_unreachable ();
   }
-)
+[(set_attr "type" "zicond")])
 
 ;; Combine creates this form in some cases (particularly the coremark
 ;; CRC loop).

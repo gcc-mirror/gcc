@@ -82,6 +82,9 @@
 
   ;; the calling convention of callee
   UNSPEC_CALLEE_CC
+
+  ;; String unspecs
+  UNSPEC_STRLEN
 ])
 
 (define_c_enum "unspecv" [
@@ -316,6 +319,9 @@
 ;; condmove	conditional moves
 ;; cbo    cache block instructions
 ;; crypto cryptography instructions
+;; pushpop    zc push and pop instructions
+;; mvpair    zc move pair instructions
+;; zicond    zicond instructions
 ;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
 ;; rdvlenb     vector byte length vlenb csrr read
 ;; rdvl        vector length vl csrr read
@@ -425,8 +431,8 @@
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,trap,ghost,bitmanip,
    rotate,clmul,min,max,minu,maxu,clz,ctz,cpop,
-   atomic,condmove,cbo,crypto,rdvlenb,rdvl,wrvxrm,wrfrm,rdfrm,vsetvl,
-   vlde,vste,vldm,vstm,vlds,vsts,
+   atomic,condmove,cbo,crypto,pushpop,mvpair,zicond,rdvlenb,rdvl,wrvxrm,wrfrm,
+   rdfrm,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
    vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
@@ -2225,6 +2231,7 @@
   "TARGET_HARD_FLOAT && !TARGET_64BIT && TARGET_ZFA"
   "fmv.x.w\t%0,%1"
   [(set_attr "move_type" "fmove")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 
@@ -2237,6 +2244,7 @@
   "TARGET_HARD_FLOAT && !TARGET_64BIT && TARGET_ZFA"
   "fmvh.x.d\t%0,%1"
   [(set_attr "move_type" "fmove")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_insn "movdfsisi3_rv32"
@@ -2249,6 +2257,7 @@
   "TARGET_HARD_FLOAT && !TARGET_64BIT && TARGET_ZFA"
   "fmvp.d.x\t%0,%2,%1"
   [(set_attr "move_type" "fmove")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_split
@@ -2855,7 +2864,7 @@
   [(set_attr "type" "slt")
    (set_attr "mode" "<X:MODE>")])
 
-(define_insn "*slt<u>_<X:mode><GPR:mode>"
+(define_insn "@slt<u>_<X:mode><GPR:mode>3"
   [(set (match_operand:GPR           0 "register_operand" "= r")
 	(any_lt:GPR (match_operand:X 1 "register_operand" "  r")
 		    (match_operand:X 2 "arith_operand"    " rI")))]
@@ -3500,6 +3509,73 @@
 		   (sign_extend:SI (match_operand:HI 2 "register_operand")))))]
   "TARGET_XTHEADMAC"
 )
+
+;; String compare with length insn.
+;; Argument 0 is the target (result)
+;; Argument 1 is the source1
+;; Argument 2 is the source2
+;; Argument 3 is the length
+;; Argument 4 is the alignment
+
+(define_expand "cmpstrnsi"
+  [(parallel [(set (match_operand:SI 0)
+	      (compare:SI (match_operand:BLK 1)
+			  (match_operand:BLK 2)))
+	      (use (match_operand:SI 3))
+	      (use (match_operand:SI 4))])]
+  "riscv_inline_strncmp && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+{
+  if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
+                           operands[3], operands[4]))
+    DONE;
+  else
+    FAIL;
+})
+
+;; String compare insn.
+;; Argument 0 is the target (result)
+;; Argument 1 is the source1
+;; Argument 2 is the source2
+;; Argument 3 is the alignment
+
+(define_expand "cmpstrsi"
+  [(parallel [(set (match_operand:SI 0)
+	      (compare:SI (match_operand:BLK 1)
+			  (match_operand:BLK 2)))
+	      (use (match_operand:SI 3))])]
+  "riscv_inline_strcmp && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+{
+  if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
+                           NULL_RTX, operands[3]))
+    DONE;
+  else
+    FAIL;
+})
+
+;; Search character in string (generalization of strlen).
+;; Argument 0 is the resulting offset
+;; Argument 1 is the string
+;; Argument 2 is the search character
+;; Argument 3 is the alignment
+
+(define_expand "strlen<mode>"
+  [(set (match_operand:X 0 "register_operand")
+	(unspec:X [(match_operand:BLK 1 "general_operand")
+		     (match_operand:SI 2 "const_int_operand")
+		     (match_operand:SI 3 "const_int_operand")]
+		  UNSPEC_STRLEN))]
+  "riscv_inline_strlen && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+{
+  rtx search_char = operands[2];
+
+  if (search_char != const0_rtx)
+    FAIL;
+
+  if (riscv_expand_strlen (operands[0], operands[1], operands[2], operands[3]))
+    DONE;
+  else
+    FAIL;
+})
 
 (include "bitmanip.md")
 (include "crypto.md")

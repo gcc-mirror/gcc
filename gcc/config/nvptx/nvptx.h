@@ -338,6 +338,11 @@ struct GTY(()) machine_function
 #define ASM_OUTPUT_DEF_FROM_DECLS(STREAM, NAME, VALUE)	\
   nvptx_asm_output_def_from_decls (STREAM, NAME, VALUE)
 
+/* ..., but also override other macros to avoid 'gcc/defaults.h'-initialization
+   due to that dummy 'ASM_OUTPUT_DEF'.  */
+#define TARGET_USE_LOCAL_THUNK_ALIAS_P(DECL) TARGET_SUPPORTS_ALIASES
+#define TARGET_SUPPORTS_ALIASES (nvptx_alias != 0)
+
 #define NO_DOT_IN_LABEL
 #define ASM_COMMENT_START "//"
 

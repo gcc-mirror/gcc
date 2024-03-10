@@ -177,6 +177,7 @@ package Gen_IL.Types is
       Record_Kind,
       Record_Field_Kind,
       Scalar_Kind,
+      Scope_Kind,
       Signed_Integer_Kind,
       Subprogram_Type_Or_Kind,
       Subprogram_Kind,

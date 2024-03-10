@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "cfgloop.h"
 #include "cfgrtl.h"
+#include "shrink-wrap.h"
 #include "sel-sched.h"
 #include "sched-int.h"
 #include "fold-const.h"
@@ -395,6 +396,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   false,					/* use_divmod_expansion */
 };
 
+static bool riscv_avoid_shrink_wrapping_separate ();
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 static void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
@@ -2508,6 +2510,70 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
        the offset should not exceed 4GiB in general.  */
 	  rtx tmp = gen_reg_rtx (mode);
 	  riscv_legitimize_poly_move (mode, dest, tmp, src);
+	}
+      return true;
+    }
+  /* Expand
+       (set (reg:DI target) (subreg:DI (reg:V8QI reg) 0))
+     Expand this data movement instead of simply forbid it since
+     we can improve the code generation for this following scenario
+     by RVV auto-vectorization:
+       (set (reg:V8QI 149) (vec_duplicate:V8QI (reg:QI))
+       (set (reg:DI target) (subreg:DI (reg:V8QI reg) 0))
+     Since RVV mode and scalar mode are in different REG_CLASS,
+     we need to explicitly move data from V_REGS to GR_REGS by scalar move.  */
+  if (SUBREG_P (src) && riscv_v_ext_mode_p (GET_MODE (SUBREG_REG (src))))
+    {
+      machine_mode vmode = GET_MODE (SUBREG_REG (src));
+      unsigned int mode_size = GET_MODE_SIZE (mode).to_constant ();
+      unsigned int vmode_size = GET_MODE_SIZE (vmode).to_constant ();
+      unsigned int nunits = vmode_size / mode_size;
+      scalar_mode smode = as_a<scalar_mode> (mode);
+      unsigned int index = SUBREG_BYTE (src).to_constant () / mode_size;
+      unsigned int num = smode == DImode && !TARGET_VECTOR_ELEN_64 ? 2 : 1;
+
+      if (num == 2)
+	{
+	  /* If we want to extract 64bit value but ELEN < 64,
+	     we use RVV vector mode with EEW = 32 to extract
+	     the highpart and lowpart.  */
+	  smode = SImode;
+	  nunits = nunits * 2;
+	}
+      vmode = riscv_vector::get_vector_mode (smode, nunits).require ();
+      enum insn_code icode
+	= convert_optab_handler (vec_extract_optab, vmode, smode);
+      gcc_assert (icode != CODE_FOR_nothing);
+      rtx v = gen_lowpart (vmode, SUBREG_REG (src));
+
+      for (unsigned int i = 0; i < num; i++)
+	{
+	  class expand_operand ops[3];
+	  rtx result;
+	  if (num == 1)
+	    result = dest;
+	  else if (i == 0)
+	    result = gen_lowpart (smode, dest);
+	  else
+	    result = gen_reg_rtx (smode);
+	  create_output_operand (&ops[0], result, smode);
+	  ops[0].target = 1;
+	  create_input_operand (&ops[1], v, vmode);
+	  create_integer_operand (&ops[2], index + i);
+	  expand_insn (icode, 3, ops);
+	  if (ops[0].value != result)
+	    emit_move_insn (result, ops[0].value);
+
+	  if (i == 1)
+	    {
+	      rtx tmp
+		= expand_binop (Pmode, ashl_optab, gen_lowpart (Pmode, result),
+				gen_int_mode (32, Pmode), NULL_RTX, 0,
+				OPTAB_DIRECT);
+	      rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, dest, NULL_RTX, 0,
+				       OPTAB_DIRECT);
+	      emit_move_insn (dest, tmp2);
+	    }
 	}
       return true;
     }
@@ -5842,7 +5908,9 @@ riscv_avoid_multi_push (const struct riscv_frame_info *frame)
 {
   if (!TARGET_ZCMP || crtl->calls_eh_return || frame_pointer_needed
       || cfun->machine->interrupt_handler_p || cfun->machine->varargs_size != 0
-      || crtl->args.pretend_args_size != 0 || flag_shrink_wrap_separate
+      || crtl->args.pretend_args_size != 0
+      || (use_shrink_wrapping_separate ()
+	  && !riscv_avoid_shrink_wrapping_separate ())
       || (frame->mask & ~MULTI_PUSH_GPR_MASK))
     return true;
 
@@ -7230,6 +7298,17 @@ riscv_epilogue_uses (unsigned int regno)
   return false;
 }
 
+static bool
+riscv_avoid_shrink_wrapping_separate ()
+{
+  if (riscv_use_save_libcall (&cfun->machine->frame)
+      || cfun->machine->interrupt_handler_p
+      || !cfun->machine->frame.gp_sp_offset.is_constant ())
+    return true;
+
+  return false;
+}
+
 /* Implement TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS.  */
 
 static sbitmap
@@ -7239,9 +7318,7 @@ riscv_get_separate_components (void)
   sbitmap components = sbitmap_alloc (FIRST_PSEUDO_REGISTER);
   bitmap_clear (components);
 
-  if (riscv_use_save_libcall (&cfun->machine->frame)
-      || cfun->machine->interrupt_handler_p
-      || !cfun->machine->frame.gp_sp_offset.is_constant ())
+  if (riscv_avoid_shrink_wrapping_separate ())
     return components;
 
   offset = cfun->machine->frame.gp_sp_offset.to_constant ();
@@ -7708,11 +7785,9 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
   if (get_attr_type (insn) == TYPE_GHOST)
     return 0;
 
-#if 0
   /* If we ever encounter an insn with an unknown type, trip
      an assert so we can find and fix this problem.  */
   gcc_assert (get_attr_type (insn) != TYPE_UNKNOWN);
-#endif
 
   return more - 1;
 }
@@ -9162,7 +9237,7 @@ riscv_emit_frm_mode_set (int mode, int prev_mode)
       rtx frm = gen_int_mode (mode, SImode);
 
       if (mode == riscv_vector::FRM_DYN_CALL
-	&& prev_mode != riscv_vector::FRM_DYN)
+	&& prev_mode != riscv_vector::FRM_DYN && STATIC_FRM_P (cfun))
 	/* No need to emit when prev mode is DYN already.  */
 	emit_insn (gen_fsrmsi_restore_volatile (backup_reg));
       else if (mode == riscv_vector::FRM_DYN_EXIT && STATIC_FRM_P (cfun)
