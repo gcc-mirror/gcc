@@ -32,7 +32,7 @@ m4_ifndef([_GCC_AUTOCONF_VERSION],
   [m4_define([_GCC_AUTOCONF_VERSION], [2.69])])
 
 dnl Test for the exact version when AC_INIT is expanded.
-dnl This allows to update the tree in steps (for testing)
+dnl This allows one to update the tree in steps (for testing)
 dnl by putting
 dnl   m4_define([_GCC_AUTOCONF_VERSION], [X.Y])
 dnl in configure.ac before AC_INIT,
