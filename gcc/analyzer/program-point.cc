@@ -426,9 +426,22 @@ program_point::on_edge (exploded_graph &eg,
       {
 	const cfg_superedge *cfg_sedge = as_a <const cfg_superedge *> (succ);
 
-	/* Reject abnormal edges; we special-case setjmp/longjmp.  */
 	if (cfg_sedge->get_flags () & EDGE_ABNORMAL)
-	  return false;
+	  {
+	    const supernode *src_snode = cfg_sedge->m_src;
+	    if (gimple *last_stmt = src_snode->get_last_stmt ())
+	      if (last_stmt->code == GIMPLE_GOTO)
+		{
+		  /* For the program_point aspect here, consider all
+		     out-edges from goto stmts to be valid; we'll
+		     consider state separately.  */
+		  return true;
+		}
+
+	    /* Reject other kinds of abnormal edges;
+	       we special-case setjmp/longjmp.  */
+	    return false;
+	  }
       }
       break;
 

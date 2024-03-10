@@ -1,6 +1,5 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
-// { dg-require-gthreads "" }
 
 // Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //

@@ -829,6 +829,19 @@ supernode::get_stmt_index (const gimple *stmt) const
   gcc_unreachable ();
 }
 
+/* Get any label_decl for this supernode, or NULL_TREE if there isn't one.  */
+
+tree
+supernode::get_label () const
+{
+  if (m_stmts.length () == 0)
+    return NULL_TREE;
+  const glabel *label_stmt = dyn_cast<const glabel *> (m_stmts[0]);
+  if (!label_stmt)
+    return NULL_TREE;
+  return gimple_label_label (label_stmt);
+}
+
 /* Get a string for PK.  */
 
 static const char *

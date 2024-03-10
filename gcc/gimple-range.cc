@@ -351,10 +351,14 @@ gimple_ranger::prefill_name (vrange &r, tree name)
   if (!gimple_range_op_handler::supported_p (stmt) && !is_a<gphi *> (stmt))
     return;
 
-  bool current;
   // If this op has not been processed yet, then push it on the stack
-  if (!m_cache.get_global_range (r, name, current))
-    m_stmt_list.safe_push (name);
+  if (!m_cache.get_global_range (r, name))
+    {
+      bool current;
+      // Set the global cache value and mark as alway_current.
+      m_cache.get_global_range (r, name, current);
+      m_stmt_list.safe_push (name);
+    }
 }
 
 // This routine will seed the global cache with most of the dependencies of

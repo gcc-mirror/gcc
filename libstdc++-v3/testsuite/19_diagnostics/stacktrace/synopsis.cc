@@ -35,6 +35,9 @@ namespace std
     ostream&
     operator<<(ostream& os, const basic_stacktrace<Allocator>& st);
 
+  template<> struct formatter<stacktrace_entry>;
+  template<class Allocator> struct formatter<basic_stacktrace<Allocator>>;
+
   namespace pmr {
     using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;
   }

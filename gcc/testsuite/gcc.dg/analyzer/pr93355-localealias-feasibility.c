@@ -4,6 +4,10 @@
 
 /* { dg-do "compile" } */
 
+/* C only: C++ exceptions cause another fopen leak warning to be emitted at line 54.
+   Therefore this test has been duplicated as
+   c-c++-common/analyzer/pr93355-localealias-feasibility-noexcept.c  */
+
 /* Handle aliases for locale names.
    Copyright (C) 1995-1999, 2000-2001, 2003 Free Software Foundation, Inc.
 
@@ -22,10 +26,10 @@
    Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301,
    USA.  */
 
-/* Minimal version of system headers.  */
 
+#include "../../gcc.dg/analyzer/analyzer-decls.h"
+/* Minimal version of system headers.  */
 typedef __SIZE_TYPE__ size_t;
-#define NULL ((void *)0)
 
 typedef struct _IO_FILE FILE;
 extern FILE *fopen (const char *__restrict __filename,

@@ -3942,7 +3942,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for minmax (min     min     max     max     )
      cmp    (ge      lt      le      gt      )
  (simplify
-  (cmp @0 (minmax:c @0 @1))
+  (cmp:c @0 (minmax:c @0 @1))
   { constant_boolean_node (cmp == GE_EXPR || cmp == LE_EXPR, type); } ))
 
 /* Undo fancy ways of writing max/min or other ?: expressions, like
@@ -5431,18 +5431,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for cmp    (gt  ge  lt  le)
      minmax (min min max max)
  (simplify
-  (cond (cmp @0 @1) (minmax:c@2 @0 @3) @4)
+  (cond (cmp:c @0 @1) (minmax:c@2 @0 @3) @4)
    (with
     {
       tree_code code = minmax_from_comparison (cmp, @0, @1, @0, @4);
     }
     (if ((cmp == LT_EXPR || cmp == LE_EXPR)
 	 && code == MIN_EXPR
-         && integer_nonzerop (fold_build2 (LE_EXPR, boolean_type_node, @3, @1)))
+         && integer_nonzerop (fold_build2 (LE_EXPR, boolean_type_node, @3, @4)))
      (min @2 @4)
      (if ((cmp == GT_EXPR || cmp == GE_EXPR)
 	  && code == MAX_EXPR
-          && integer_nonzerop (fold_build2 (GE_EXPR, boolean_type_node, @3, @1)))
+          && integer_nonzerop (fold_build2 (GE_EXPR, boolean_type_node, @3, @4)))
       (max @2 @4))))))
 
 #if GIMPLE

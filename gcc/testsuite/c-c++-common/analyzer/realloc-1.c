@@ -2,7 +2,7 @@
 
 typedef __SIZE_TYPE__ size_t;
 
-#define NULL ((void *)0)
+#include "../../gcc.dg/analyzer/analyzer-decls.h"
 
 extern void *malloc (size_t __size)
   __attribute__ ((__nothrow__ , __leaf__))

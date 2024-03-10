@@ -2698,7 +2698,7 @@ gomp_unload_device (struct gomp_device_descr *devicep)
   if (devicep->state == GOMP_DEVICE_INITIALIZED)
     {
       unsigned i;
-      
+
       /* Unload from device all images registered at the moment.  */
       for (i = 0; i < num_offload_images; i++)
 	{

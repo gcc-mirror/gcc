@@ -283,7 +283,7 @@
   [(set_attr "type" "bitmanip,load")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*extend<SHORT:mode><SUPERQI:mode>2_zbb"
+(define_insn "*extend<SHORT:mode><SUPERQI:mode>2_bitmanip"
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
@@ -293,17 +293,6 @@
    l<SHORT:size>\t%0,%1"
   [(set_attr "type" "bitmanip,load")
    (set_attr "mode" "<SUPERQI:MODE>")])
-
-(define_insn "*zero_extendhi<GPR:mode>2_zbb"
-  [(set (match_operand:GPR    0 "register_operand"     "=r,r")
-	(zero_extend:GPR
-	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_ZBB"
-  "@
-   zext.h\t%0,%1
-   lhu\t%0,%1"
-  [(set_attr "type" "bitmanip,load")
-   (set_attr "mode" "HI")])
 
 (define_expand "rotrdi3"
   [(set (match_operand:DI 0 "register_operand")

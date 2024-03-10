@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "pretty-print.h"
 
 /*
  * public printing routines.
@@ -138,3 +139,14 @@ print_hex (const wide_int_ref &wi, FILE *file)
   fputs (buf, file);
 }
 
+/* Print larger precision wide_int.  Not defined as inline in a header
+   together with pp_wide_int because XALLOCAVEC will make it uninlinable.  */
+
+void
+pp_wide_int_large (pretty_printer *pp, const wide_int_ref &w, signop sgn)
+{
+  unsigned int prec = w.get_precision ();
+  char *buf = XALLOCAVEC (char, (prec + 3) / 4 + 3);
+  print_dec (w, buf, sgn);
+  pp_string (pp, buf);
+}

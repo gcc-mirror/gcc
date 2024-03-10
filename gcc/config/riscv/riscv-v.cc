@@ -2647,7 +2647,8 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
 
 	    For index = { 0, 2, 5, 6}, we need to slide op1 up before
 	    we apply compress approach.  */
-  bool need_slideup_p = maybe_ne (d->perm[vlen - 1], 2 * vec_len - 1);
+  bool need_slideup_p = maybe_ne (d->perm[vlen - 1], 2 * vec_len - 1)
+			&& !const_vec_duplicate_p (d->op1);
 
   /* If we leave it directly be handled by general gather,
      the code sequence will be:
@@ -2792,14 +2793,9 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
   if (!pow2p_hwi (d->perm.encoding().npatterns ()))
     return false;
 
-  /* For constant size indices, we dont't need to handle it here.
-     Just leave it to vec_perm<mode>.  */
-  if (d->perm.length ().is_constant ())
-    return false;
-
   /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
      Otherwise, it could overflow the index range.  */
-  if (GET_MODE_INNER (d->vmode) == QImode
+  if (!nunits.is_constant () && GET_MODE_INNER (d->vmode) == QImode
       && !get_vector_mode (HImode, nunits).exists (&sel_mode))
     return false;
 
@@ -2808,7 +2804,12 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
     return true;
 
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
-  expand_vec_perm (d->target, d->op0, d->op1, force_reg (sel_mode, sel));
+  /* 'mov<mode>' generte interleave vector.  */
+  if (!nunits.is_constant ())
+    sel = force_reg (sel_mode, sel);
+  /* Some FIXED-VLMAX/VLS vector permutation situations call targethook
+     instead of expand vec_perm<mode>, we handle it directly.  */
+  expand_vec_perm (d->target, d->op0, d->op1, sel);
   return true;
 }
 
@@ -3387,52 +3388,26 @@ expand_fold_extract_last (rtx *ops)
   emit_label (end_label);
 }
 
-hash_set<basic_block>
-get_all_predecessors (basic_block bb)
+/* Return true if the LMUL of comparison less than or equal to one.  */
+bool
+cmp_lmul_le_one (machine_mode mode)
 {
-  hash_set<basic_block> blocks;
-  auto_vec<basic_block> work_list;
-  hash_set<basic_block> visited_list;
-  work_list.safe_push (bb);
-
-  while (!work_list.is_empty ())
-    {
-      basic_block new_bb = work_list.pop ();
-      visited_list.add (new_bb);
-      edge e;
-      edge_iterator ei;
-      FOR_EACH_EDGE (e, ei, new_bb->preds)
-	{
-	  if (!visited_list.contains (e->src))
-	    work_list.safe_push (e->src);
-	  blocks.add (e->src);
-	}
-    }
-  return blocks;
+  if (riscv_v_ext_vector_mode_p (mode))
+    return known_le (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR);
+  else if (riscv_v_ext_vls_mode_p (mode))
+    return known_le (GET_MODE_BITSIZE (mode), TARGET_MIN_VLEN);
+  return false;
 }
 
-hash_set<basic_block>
-get_all_successors (basic_block bb)
+/* Return true if the LMUL of comparison greater than one.  */
+bool
+cmp_lmul_gt_one (machine_mode mode)
 {
-  hash_set<basic_block> blocks;
-  auto_vec<basic_block> work_list;
-  hash_set<basic_block> visited_list;
-  work_list.safe_push (bb);
-
-  while (!work_list.is_empty ())
-    {
-      basic_block new_bb = work_list.pop ();
-      visited_list.add (new_bb);
-      edge e;
-      edge_iterator ei;
-      FOR_EACH_EDGE (e, ei, new_bb->succs)
-	{
-	  if (!visited_list.contains (e->dest))
-	    work_list.safe_push (e->dest);
-	  blocks.add (e->dest);
-	}
-    }
-  return blocks;
+  if (riscv_v_ext_vector_mode_p (mode))
+    return known_gt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR);
+  else if (riscv_v_ext_vls_mode_p (mode))
+    return known_gt (GET_MODE_BITSIZE (mode), TARGET_MIN_VLEN);
+  return false;
 }
 
 } // namespace riscv_vector

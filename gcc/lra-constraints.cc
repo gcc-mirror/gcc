@@ -1462,6 +1462,9 @@ static int goal_alt_matches[MAX_RECOG_OPERANDS];
 static int goal_alt_dont_inherit_ops_num;
 /* Numbers of operands whose reload pseudos should not be inherited.  */
 static int goal_alt_dont_inherit_ops[MAX_RECOG_OPERANDS];
+/* True if we should try only this alternative for the next constraint sub-pass
+   to speed up the sub-pass.  */
+static bool goal_reuse_alt_p;
 /* True if the insn commutative operands should be swapped.  */
 static bool goal_alt_swapped;
 /* The chosen insn alternative.	 */
@@ -2130,6 +2133,7 @@ process_alt_operands (int only_alternative)
   int curr_alt_dont_inherit_ops_num;
   /* Numbers of operands whose reload pseudos should not be inherited.	*/
   int curr_alt_dont_inherit_ops[MAX_RECOG_OPERANDS];
+  bool curr_reuse_alt_p;
   /* True if output stack pointer reload should be generated for the current
      alternative.  */
   bool curr_alt_out_sp_reload_p;
@@ -2217,6 +2221,7 @@ process_alt_operands (int only_alternative)
       reject += static_reject;
       early_clobbered_regs_num = 0;
       curr_alt_out_sp_reload_p = false;
+      curr_reuse_alt_p = true;
       
       for (nop = 0; nop < n_operands; nop++)
 	{
@@ -2574,7 +2579,10 @@ process_alt_operands (int only_alternative)
 		      if (satisfies_memory_constraint_p (op, cn))
 			win = true;
 		      else if (spilled_pseudo_p (op))
-			win = true;
+			{
+			  curr_reuse_alt_p = false;
+			  win = true;
+			}
 		      break;
 		    }
 		  break;
@@ -3318,6 +3326,7 @@ process_alt_operands (int only_alternative)
 	      goal_alt_offmemok[nop] = curr_alt_offmemok[nop];
 	    }
 	  goal_alt_dont_inherit_ops_num = curr_alt_dont_inherit_ops_num;
+	  goal_reuse_alt_p = curr_reuse_alt_p;
 	  for (nop = 0; nop < curr_alt_dont_inherit_ops_num; nop++)
 	    goal_alt_dont_inherit_ops[nop] = curr_alt_dont_inherit_ops[nop];
 	  goal_alt_swapped = curr_swapped;
@@ -4399,7 +4408,8 @@ curr_insn_transform (bool check_only_p)
     }
 
   lra_assert (goal_alt_number >= 0);
-  lra_set_used_insn_alternative (curr_insn, goal_alt_number);
+  lra_set_used_insn_alternative (curr_insn, goal_reuse_alt_p
+				 ? goal_alt_number : LRA_UNKNOWN_ALT);
 
   if (lra_dump_file != NULL)
     {

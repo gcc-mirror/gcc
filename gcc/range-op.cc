@@ -915,7 +915,7 @@ operator_equal::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_NE;
 
   // TRUE = op1 == op2 indicates EQ_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_EQ;
   return VREL_VARYING;
 }
@@ -1017,7 +1017,7 @@ operator_not_equal::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_EQ;
 
   // TRUE = op1 != op2  indicates NE_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_NE;
   return VREL_VARYING;
 }
@@ -1178,7 +1178,7 @@ operator_lt::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_GE;
 
   // TRUE = op1 < op2 indicates LT_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_LT;
   return VREL_VARYING;
 }
@@ -1279,7 +1279,7 @@ operator_le::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_GT;
 
   // TRUE = op1 <= op2 indicates LE_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_LE;
   return VREL_VARYING;
 }
@@ -2957,7 +2957,7 @@ operator_cast::op1_range (irange &r, tree type,
 	{
 	  // If the LHS is not a pointer nor a singleton, then it is
 	  // either VARYING or non-zero.
-	  if (!contains_zero_p (lhs))
+	  if (!lhs.undefined_p () && !contains_zero_p (lhs))
 	    r.set_nonzero (type);
 	  else
 	    r.set_varying (type);
@@ -3368,10 +3368,10 @@ operator_bitwise_and::wi_fold (irange &r, tree type,
 static void
 set_nonzero_range_from_mask (irange &r, tree type, const irange &lhs)
 {
-  if (!contains_zero_p (lhs))
-    r = range_nonzero (type);
-  else
+  if (lhs.undefined_p () || contains_zero_p (lhs))
     r.set_varying (type);
+  else
+    r.set_nonzero (type);
 }
 
 /* Find out smallest RES where RES > VAL && (RES & MASK) == RES, if any
@@ -3798,7 +3798,7 @@ operator_bitwise_xor::op1_range (irange &r, tree type,
 	  else if (op2.zero_p ())
 	    r = range_true (type);
 	  // See get_bool_state for the rationale
-	  else if (contains_zero_p (op2))
+	  else if (op2.undefined_p () || contains_zero_p (op2))
 	    r = range_true_and_false (type);
 	  else
 	    r = range_false (type);
@@ -4335,10 +4335,10 @@ operator_addr_expr::fold_range (irange &r, tree type,
   // Return a non-null pointer of the LHS type (passed in op2).
   if (lh.zero_p ())
     r = range_zero (type);
-  else if (!contains_zero_p (lh))
-    r = range_nonzero (type);
-  else
+  else if (lh.undefined_p () || contains_zero_p (lh))
     r.set_varying (type);
+  else
+    r.set_nonzero (type);
   return true;
 }
 
@@ -4348,14 +4348,14 @@ operator_addr_expr::op1_range (irange &r, tree type,
 			       const irange &op2,
 			       relation_trio) const
 {
-   if (empty_range_varying (r, type, lhs, op2))
+  if (empty_range_varying (r, type, lhs, op2))
     return true;
 
   // Return a non-null pointer of the LHS type (passed in op2), but only
   // if we cant overflow, eitherwise a no-zero offset could wrap to zero.
   // See PR 111009.
-  if (!contains_zero_p (lhs) && TYPE_OVERFLOW_UNDEFINED (type))
-    r = range_nonzero (type);
+  if (!lhs.undefined_p () && !contains_zero_p (lhs) && TYPE_OVERFLOW_UNDEFINED (type))
+    r.set_nonzero (type);
   else
     r.set_varying (type);
   return true;

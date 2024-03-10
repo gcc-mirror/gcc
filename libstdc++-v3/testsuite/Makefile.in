@@ -663,7 +663,7 @@ $(check_DEJAGNU_normal_targets): check-DEJAGNUnormal%: normal%/site.exp
 
 # Run the testsuite in normal mode.
 check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
-	$(if $*,@)AR="$(AR)"; export AR; \
+	@$(if $*,@)AR="$(AR)"; export AR; \
 	RANLIB="$(RANLIB)"; export RANLIB; \
 	if [ -z "$*" ] && [ -n "$(filter -j%, $(MFLAGS))" ]; then \
 	  rm -rf normal-parallel || true; \

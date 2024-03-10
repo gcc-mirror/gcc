@@ -55,4 +55,4 @@ DEF_OP_VV (shift, 512, int64_t, <<)
 
 /* { dg-final { scan-assembler-times {vsll\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 41 } } */
 /* TODO: Ideally, we should make sure there is no "csrr vlenb". However, we still have 'csrr vlenb' for some cases since we don't support VLS mode conversion which are needed by division.  */
-/* { dg-final { scan-assembler-times {csrr} 18 } } */
+/* { dg-final { scan-assembler-not {csrr} } } */

@@ -315,7 +315,10 @@ esac
 # Set any OS-dependent and CPU-dependent bits.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host}" in
-  *-*-linux* | *-*-uclinux*)
+ loongarch*)
+    tmake_file="cpu/loongarch/t-loongarch"
+    ;;
+ *-*-linux* | *-*-uclinux*)
     case "${host_cpu}" in
       i[567]86)
         abi_baseline_pair=i486-linux-gnu

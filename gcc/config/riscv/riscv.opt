@@ -295,7 +295,7 @@ EnumValue
 Enum(riscv_autovec_preference) String(fixed-vlmax) Value(RVV_FIXED_VLMAX)
 
 -param=riscv-autovec-preference=
-Target RejectNegative Joined Enum(riscv_autovec_preference) Var(riscv_autovec_preference) Init(NO_AUTOVEC)
+Target RejectNegative Joined Enum(riscv_autovec_preference) Var(riscv_autovec_preference) Init(RVV_SCALABLE)
 -param=riscv-autovec-preference=<string>	Set the preference of auto-vectorization in the RISC-V port.
 
 Enum

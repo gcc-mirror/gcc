@@ -1,14 +1,19 @@
+/* C only: C++ exceptions double the fopen leak warnings.
+   Therefore this test has been duplicated as
+   c-c++-common/analyzer/file-pr58237-noexcept.c  */
+
 typedef struct FILE   FILE;
 
 FILE* fopen (const char*, const char*);
 int   fclose (FILE*);
 char *fgets (char *, int, FILE *);
 
-#define NULL ((void *)0)
+#include "analyzer-decls.h"
 
 void f0(const char *str)
 {
   FILE * fp = fopen(str, "r"); /* { dg-message "opened here" } */
+  // ideally warning should be located at the end of the function
   char buf[10];
   fgets(buf, 10, fp);
 } /* { dg-warning "leak of FILE 'fp'" } */
@@ -16,6 +21,7 @@ void f0(const char *str)
 void f1(const char *str)
 {
   FILE * fp = fopen(str, "r"); /* { dg-message "opened here" } */
+  // ideally warning should be located at the end of the function
   char buf[10];
 
   while (fgets(buf, 10, fp) != NULL)
@@ -27,6 +33,7 @@ void f1(const char *str)
 void f2(const char *str, int flag)
 {
   FILE * fp = fopen(str, "r"); /* { dg-message "opened here" } */
+  // ideally warning should be located at the end of the function
   char buf[10];
 
   while (fgets(buf, 10, fp) != NULL)
@@ -65,7 +72,7 @@ void f4(const char *str)
   fclose(fp);
 }
 
-void main(int argc, const char * argv[])
+int main(int argc, const char * argv[])
 {
   FILE * fp = fopen(argv[0], "r");
   char buf[10];

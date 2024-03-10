@@ -1181,6 +1181,9 @@ typedef struct {
    least twice.  */
 #define LARCH_MAX_MOVE_OPS_STRAIGHT (LARCH_MAX_MOVE_OPS_PER_LOOP_ITER * 2)
 
+#define LARCH_MAX_MOVE_PER_INSN \
+  (ISA_HAS_LASX ? 32 : (ISA_HAS_LSX ? 16 : UNITS_PER_WORD))
+
 /* The base cost of a memcpy call, for MOVE_RATIO and friends.  These
    values were determined experimentally by benchmarking with CSiBE.
 */

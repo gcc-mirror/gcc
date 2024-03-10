@@ -783,7 +783,7 @@ operator_equal::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_NE;
 
   // TRUE = op1 == op2 indicates EQ_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_EQ;
   return VREL_VARYING;
 }
@@ -915,7 +915,7 @@ operator_not_equal::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_EQ;
 
   // TRUE = op1 != op2  indicates NE_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_NE;
   return VREL_VARYING;
 }
@@ -1037,7 +1037,7 @@ operator_lt::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_GE;
 
   // TRUE = op1 < op2 indicates LT_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_LT;
   return VREL_VARYING;
 }
@@ -1144,7 +1144,7 @@ operator_le::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_GT;
 
   // TRUE = op1 <= op2 indicates LE_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_LE;
   return VREL_VARYING;
 }
@@ -2206,21 +2206,6 @@ public:
 		   const frange &op1, const frange &op2,
 		   relation_trio trio = TRIO_VARYING) const final override
   {
-    relation_kind rel = trio.op1_op2 ();
-
-    // VREL_EQ is really VREL_(UN)EQ because we could have a NAN in
-    // the operands, but since LTGT_EXPR is really a NE_EXPR without
-    // the NAN, VREL_EQ & LTGT_EXPR is an impossibility.
-    if (rel == VREL_EQ)
-      {
-	r = range_false (type);
-	return true;
-      }
-    // ...otherwise pretend we're trying to resolve a NE_EXPR and
-    // everything will "just work".
-    if (frelop_early_resolve (r, type, op1, op2, trio, VREL_NE))
-      return true;
-
     if (op1.known_isnan () || op2.known_isnan ())
       {
 	r = range_false (type);

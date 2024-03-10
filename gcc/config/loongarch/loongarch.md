@@ -750,15 +750,6 @@
   [(set_attr "type" "imul")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "mulsidi3_64bit"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		 (sign_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
-  "TARGET_64BIT"
-  "mulw.d.w\t%0,%1,%2"
-  [(set_attr "type" "imul")
-   (set_attr "mode" "DI")])
-
 (define_insn "*mulsi3_extended"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
@@ -787,14 +778,14 @@
   emit_insn (gen_muldi3 (low, operands[1], operands[2]));
 
   rtx high = gen_reg_rtx (DImode);
-  emit_insn (gen_<u>muldi3_highpart (high, operands[1], operands[2]));
+  emit_insn (gen_<su>muldi3_highpart (high, operands[1], operands[2]));
 
   emit_move_insn (gen_lowpart (DImode, operands[0]), low);
   emit_move_insn (gen_highpart (DImode, operands[0]), high);
   DONE;
 })
 
-(define_insn "<u>muldi3_highpart"
+(define_insn "<su>muldi3_highpart"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(truncate:DI
 	  (lshiftrt:TI
@@ -809,22 +800,34 @@
    (set_attr "mode" "DI")])
 
 (define_expand "<u>mulsidi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand")
 	(mult:DI (any_extend:DI
-		   (match_operand:SI 1 "register_operand" " r"))
+		   (match_operand:SI 1 "register_operand"))
 		 (any_extend:DI
-		   (match_operand:SI 2 "register_operand" " r"))))]
-  "!TARGET_64BIT"
+		   (match_operand:SI 2 "register_operand"))))]
+  ""
 {
-  rtx temp = gen_reg_rtx (SImode);
-  emit_insn (gen_mulsi3 (temp, operands[1], operands[2]));
-  emit_insn (gen_<u>mulsi3_highpart (loongarch_subword (operands[0], true),
-				     operands[1], operands[2]));
-  emit_insn (gen_movsi (loongarch_subword (operands[0], false), temp));
-  DONE;
+  if (!TARGET_64BIT)
+  {
+    rtx temp = gen_reg_rtx (SImode);
+    emit_insn (gen_mulsi3 (temp, operands[1], operands[2]));
+    emit_insn (gen_<su>mulsi3_highpart (loongarch_subword (operands[0], true),
+				       operands[1], operands[2]));
+    emit_insn (gen_movsi (loongarch_subword (operands[0], false), temp));
+    DONE;
+  }
 })
 
-(define_insn "<u>mulsi3_highpart"
+(define_insn "<u>mulsidi3_64bit"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(mult:DI (any_extend:DI (match_operand:SI 1 "register_operand" "r"))
+		 (any_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
+  "TARGET_64BIT"
+  "mulw.d.w<u>\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "DI")])
+
+(define_insn "<su>mulsi3_highpart"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(truncate:SI
 	  (lshiftrt:DI
@@ -833,10 +836,27 @@
 		     (any_extend:DI
 		       (match_operand:SI 2 "register_operand" " r")))
 	    (const_int 32))))]
-  "!TARGET_64BIT"
+  ""
   "mulh.w<u>\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
+
+;; Under the LoongArch architecture, the mulh.w[u] instruction performs
+;; sign extension by default, so the sign extension instruction can be
+;; eliminated.
+(define_peephole
+  [(set (match_operand:SI 0 "register_operand")
+	(truncate:SI
+	  (lshiftrt:DI
+	    (mult:DI (any_extend:DI
+		       (match_operand:SI 1 "register_operand"))
+		     (any_extend:DI
+		       (match_operand:SI 2 "register_operand")))
+	    (const_int 32))))
+   (set (match_operand:DI 3 "register_operand")
+	(sign_extend:DI (match_dup 0)))]
+   "TARGET_64BIT && REGNO (operands[0]) == REGNO (operands[3])"
+   "mulh.w<u>\t%0,%1,%2")
 
 ;;
 ;;  ....................

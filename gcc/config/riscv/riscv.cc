@@ -4414,7 +4414,7 @@ riscv_pass_in_vector_p (const_tree type)
 {
   static int warned = 0;
 
-  if (type && riscv_v_ext_mode_p (TYPE_MODE (type)) && !warned)
+  if (type && riscv_vector::lookup_vector_type_attribute (type) && !warned)
     {
       warning (OPT_Wpsabi,
 	       "ABI for the vector type is currently in experimental stage and "
@@ -5387,7 +5387,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	   1. If the operand is VECTOR REG, we print 'v'(vnsrl.wv).
 	   2. If the operand is CONST_INT/CONST_VECTOR, we print 'i'(vnsrl.wi).
 	   3. If the operand is SCALAR REG, we print 'x'(vnsrl.wx).  */
-	if (riscv_v_ext_vector_mode_p (mode))
+	if (riscv_v_ext_mode_p (mode))
 	  {
 	    if (REG_P (op))
 	      asm_fprintf (file, "v");
@@ -7548,7 +7548,7 @@ riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
   /* For VLS modes, we allocate registers according to TARGET_MIN_VLEN.  */
   if (riscv_v_ext_vls_mode_p (mode))
     {
-      int size = GET_MODE_SIZE (mode).to_constant ();
+      int size = GET_MODE_BITSIZE (mode).to_constant ();
       if (size < TARGET_MIN_VLEN)
 	return 1;
       else
@@ -9473,7 +9473,7 @@ riscv_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 				rtx target, rtx op0, rtx op1,
 				const vec_perm_indices &sel)
 {
-  if (TARGET_VECTOR && riscv_v_ext_vector_mode_p (vmode))
+  if (TARGET_VECTOR && riscv_v_ext_mode_p (vmode))
     return riscv_vector::expand_vec_perm_const (vmode, op_mode, target, op0,
 						op1, sel);
 
