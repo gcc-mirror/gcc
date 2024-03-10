@@ -114,6 +114,18 @@ dnl to call AC_CHECK_PROG.
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 
+GCC_PLUGIN_OPTION(PLUGIN_OPTION)
+if test -n "$PLUGIN_OPTION"; then
+  if $AR --help 2>&1 | grep -q "\--plugin"; then
+    AR_PLUGIN_OPTION="$PLUGIN_OPTION"
+    AC_SUBST(AR_PLUGIN_OPTION)
+  fi
+  if $RANLIB --help 2>&1 | grep -q "\--plugin"; then
+    RANLIB_PLUGIN_OPTION="$PLUGIN_OPTION"
+    AC_SUBST(RANLIB_PLUGIN_OPTION)
+  fi
+fi
+
 dnl When switching to automake, replace the following with AM_ENABLE_MULTILIB.
 # Add --enable-multilib to configure.
 # Default to --enable-multilib
