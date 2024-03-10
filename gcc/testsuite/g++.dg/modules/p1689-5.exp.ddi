@@ -1,0 +1,14 @@
+{
+    "rules": [
+        {
+            "primary-output": "p1689-5.o",
+            "requires": [
+                {
+                    "logical-name": "bar"
+                }
+            ]
+        }
+    ],
+    "version": 0,
+    "revision": 0
+}

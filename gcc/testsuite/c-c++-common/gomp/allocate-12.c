@@ -17,7 +17,6 @@ f ()
   omp_allocator_handle_t my_allocator;
   int n = 5;  /* { dg-note "to be allocated variable declared here" } */
   my_allocator = omp_default_mem_alloc; /* { dg-note "modified here" } */
-  /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive" "" { target *-*-* } .-2 } */
   #pragma omp allocate(n) allocator(my_allocator)  /* { dg-error "variable 'my_allocator' used in the 'allocator' clause must not be modified between declaration of 'n' and its 'allocate' directive" } */
   n = 7;
   return n;
@@ -28,7 +27,6 @@ int
 g ()
 {
   int n = 5;  /* { dg-note "to be allocated variable declared here" } */
-  /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive" "" { target *-*-* } .-1 } */
   omp_allocator_handle_t my_allocator = omp_low_lat_mem_alloc;  /* { dg-note "declared here" } */
   #pragma omp allocate(n) allocator(my_allocator)  /* { dg-error "variable 'my_allocator' used in the 'allocator' clause must be declared before 'n'" } */
   n = 7;
@@ -42,7 +40,6 @@ h ()
      see gomp/allocate-10.c.  */
   omp_allocator_handle_t my_allocator;
   int n = 5;
-  /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive" "" { target *-*-* } .-1 } */
   #pragma omp allocate(n) allocator(my_allocator)
   n = 7;
   return n;

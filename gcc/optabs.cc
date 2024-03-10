@@ -8102,6 +8102,16 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
 	  goto input;
 	}
       break;
+
+    case EXPAND_UNDEFINED_INPUT:
+      /* See if the predicate accepts a SCRATCH rtx, which in this context
+	 indicates an undefined value.  Use an uninitialized register if not. */
+      if (!insn_operand_matches (icode, opno, op->value))
+	{
+	  op->value = gen_reg_rtx (op->mode);
+	  goto input;
+	}
+      return true;
     }
   return insn_operand_matches (icode, opno, op->value);
 }
@@ -8140,7 +8150,8 @@ can_reuse_operands_p (enum insn_code icode,
   switch (op1->type)
     {
     case EXPAND_OUTPUT:
-      /* Outputs must remain distinct.  */
+    case EXPAND_UNDEFINED_INPUT:
+      /* Outputs and undefined intputs must remain distinct.  */
       return false;
 
     case EXPAND_FIXED:

@@ -11044,17 +11044,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    scalar_int_mode limb_mode
 	      = as_a <scalar_int_mode> (info.limb_mode);
 	    unsigned int limb_prec = GET_MODE_PRECISION (limb_mode);
-	    if (prec > limb_prec)
+	    if (prec > limb_prec && prec > MAX_FIXED_MODE_SIZE)
 	      {
-		scalar_int_mode arith_mode
-		  = (targetm.scalar_mode_supported_p (TImode)
-		     ? TImode : DImode);
-		if (prec > GET_MODE_PRECISION (arith_mode))
-		  {
-		    /* Emit large/huge _BitInt INTEGER_CSTs into memory.  */
-		    exp = tree_output_constant_def (exp);
-		    return expand_expr (exp, target, VOIDmode, modifier);
-		  }
+		/* Emit large/huge _BitInt INTEGER_CSTs into memory.  */
+		exp = tree_output_constant_def (exp);
+		return expand_expr (exp, target, VOIDmode, modifier);
 	      }
 	  }
 

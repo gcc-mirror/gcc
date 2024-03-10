@@ -22164,7 +22164,9 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	    *total = rs6000_cost->divsi;
 	}
       /* Add in shift and subtract for MOD unless we have a mod instruction. */
-      if (!TARGET_MODULO && (code == MOD || code == UMOD))
+      if ((!TARGET_MODULO
+	   || (RS6000_DISABLE_SCALAR_MODULO && SCALAR_INT_MODE_P (mode)))
+	 && (code == MOD || code == UMOD))
 	*total += COSTS_N_INSNS (2);
       return false;
 

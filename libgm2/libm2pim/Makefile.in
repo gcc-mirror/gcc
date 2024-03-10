@@ -457,6 +457,7 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
+        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 
@@ -532,11 +533,16 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 
 @BUILD_PIMLIB_TRUE@libm2pimdir = libm2pim
 @BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
-@BUILD_PIMLIB_TRUE@libm2pim_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
+@BUILD_PIMLIB_TRUE@libm2pim_la_CFLAGS = \
+@BUILD_PIMLIB_TRUE@  -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
+@BUILD_PIMLIB_TRUE@  -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso \
+@BUILD_PIMLIB_TRUE@  $(TARGET_LONGDOUBLE_ABI)
+
 @BUILD_PIMLIB_TRUE@libm2pim_la_M2FLAGS = \
 @BUILD_PIMLIB_TRUE@  -fm2-pathname=m2pim -I. -I$(GM2_SRC)/gm2-libs \
 @BUILD_PIMLIB_TRUE@  -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
-@BUILD_PIMLIB_TRUE@  -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2pim
+@BUILD_PIMLIB_TRUE@  -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2pim \
+@BUILD_PIMLIB_TRUE@  $(TARGET_LONGDOUBLE_ABI)
 
 @BUILD_PIMLIB_TRUE@@TARGET_DARWIN_FALSE@libm2pim_la_link_flags = 
 @BUILD_PIMLIB_TRUE@@TARGET_DARWIN_TRUE@libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup
@@ -882,10 +888,13 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_PIMLIB_TRUE@             "$(GM2_FOR_TARGET)" $@
 
 @BUILD_PIMLIB_TRUE@.mod.lo: SYSTEM.def
-@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2pim_la_M2FLAGS) $< -o $@
+@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+@BUILD_PIMLIB_TRUE@                   --mode=compile $(GM2_FOR_TARGET) \
+@BUILD_PIMLIB_TRUE@                   -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2pim_la_M2FLAGS) $< -o $@
 
 @BUILD_PIMLIB_TRUE@.cc.lo:
-@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2pim_la_CFLAGS) $< -o $@
+@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) \
+@BUILD_PIMLIB_TRUE@                   $(CXXFLAGS) $(LIBCFLAGS) $(libm2pim_la_CFLAGS) $< -o $@
 
 @BUILD_PIMLIB_TRUE@install-data-local: force
 @BUILD_PIMLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

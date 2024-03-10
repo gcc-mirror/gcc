@@ -221,6 +221,9 @@ proc gm2_target_compile_default { source dest type options } {
     if [istarget *-*-solaris2*] {
        lappend options "ldflags=-lnsl -lsocket"
     }
+    if [istarget "powerpc-*-*"] {
+       lappend options "-mabi=ieeelongdouble"
+    }
 
     lappend options "timeout=[timeout_value]"
     lappend options "compiler=$GCC_UNDER_TEST"
@@ -239,6 +242,7 @@ proc gm2_target_compile { source dest type options } {
 
     return [gm2_target_compile_${gm2_compile_method} $source $dest $type $options]
 }
+
 
 #
 #  gm2_link_lib - allows tests to specify link libraries.
@@ -281,6 +285,9 @@ proc gm2_link_flags { paths } {
     set shlib_ext [get_shlib_extension]
     verbose "shared lib extension: $shlib_ext"
 
+    if [istarget "powerpc-*-*"] {
+       lappend flags "-mabi=ieeelongdouble"
+    }
     if { $gccpath == "" } {
       global tool_root_dir
 

@@ -2211,6 +2211,25 @@ autovectorize_vector_modes (vector_modes *modes, bool)
   return VECT_COMPARE_COSTS;
 }
 
+/* Return true if we can find the related MODE according to default LMUL. */
+static bool
+can_find_related_mode_p (machine_mode vector_mode, scalar_mode element_mode,
+			 poly_uint64 *nunits)
+{
+  if (!autovec_use_vlmax_p ())
+    return false;
+  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
+  if (riscv_v_ext_vector_mode_p (vector_mode)
+      && multiple_p (BYTES_PER_RISCV_VECTOR * lmul,
+		     GET_MODE_SIZE (element_mode), nunits))
+    return true;
+  if (riscv_v_ext_vls_mode_p (vector_mode)
+      && multiple_p (TARGET_MIN_VLEN * lmul, GET_MODE_SIZE (element_mode),
+		     nunits))
+    return true;
+  return false;
+}
+
 /* If the given VECTOR_MODE is an RVV mode,  first get the largest number
    of units that fit into a full vector at the given ELEMENT_MODE.
    We will have the vectorizer call us with a successively decreasing
@@ -2222,10 +2241,7 @@ vectorize_related_mode (machine_mode vector_mode, scalar_mode element_mode,
 {
   /* TODO: We will support RVV VLS auto-vectorization mode in the future. */
   poly_uint64 min_units;
-  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
-  if (autovec_use_vlmax_p () && riscv_v_ext_vector_mode_p (vector_mode)
-      && multiple_p (BYTES_PER_RISCV_VECTOR * lmul,
-		     GET_MODE_SIZE (element_mode), &min_units))
+  if (can_find_related_mode_p (vector_mode, element_mode, &min_units))
     {
       machine_mode rvv_mode;
       if (maybe_ne (nunits, 0U))
@@ -3008,6 +3024,13 @@ expand_cond_len_op (unsigned icode, insn_flags op_type, rtx *ops, rtx len)
     emit_nonvlmax_insn (icode, insn_flags, ops, len);
 }
 
+/* Return RVV_VUNDEF if the ELSE value is scratch rtx.  */
+static rtx
+get_else_operand (rtx op)
+{
+  return GET_CODE (op) == SCRATCH ? RVV_VUNDEF (GET_MODE (op)) : op;
+}
+
 /* Expand unary ops COND_LEN_*.  */
 void
 expand_cond_len_unop (unsigned icode, rtx *ops)
@@ -3015,7 +3038,7 @@ expand_cond_len_unop (unsigned icode, rtx *ops)
   rtx dest = ops[0];
   rtx mask = ops[1];
   rtx src = ops[2];
-  rtx merge = ops[3];
+  rtx merge = get_else_operand (ops[3]);
   rtx len = ops[4];
 
   rtx cond_ops[] = {dest, mask, merge, src};
@@ -3030,7 +3053,7 @@ expand_cond_len_binop (unsigned icode, rtx *ops)
   rtx mask = ops[1];
   rtx src1 = ops[2];
   rtx src2 = ops[3];
-  rtx merge = ops[4];
+  rtx merge = get_else_operand (ops[4]);
   rtx len = ops[5];
 
   rtx cond_ops[] = {dest, mask, merge, src1, src2};
@@ -3202,7 +3225,7 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
   rtx src1 = ops[2];
   rtx src2 = ops[3];
   rtx src3 = ops[4];
-  rtx merge = ops[5];
+  rtx merge = get_else_operand (ops[5]);
   rtx len = ops[6];
 
   rtx cond_ops[] = {dest, mask, src1, src2, src3, merge};
@@ -3246,15 +3269,15 @@ expand_reduction (unsigned unspec, unsigned insn_flags, rtx *ops, rtx init)
 /* Prepare ops for ternary operations.
    It can be called before or after RA.  */
 void
-prepare_ternary_operands (rtx *ops, bool split_p)
+prepare_ternary_operands (rtx *ops)
 {
   machine_mode mode = GET_MODE (ops[0]);
 
-  if (split_p
-      || (!rtx_equal_p (ops[2], ops[5])
-	  && !rtx_equal_p (ops[3], ops[5])
-	  && !rtx_equal_p (ops[4], ops[5])
-	  && riscv_get_v_regno_alignment (mode) == 8))
+  if (!rtx_equal_p (ops[5], RVV_VUNDEF (mode))
+      && (VECTOR_MODE_P (GET_MODE (ops[2]))
+	  && !rtx_equal_p (ops[2], ops[5]))
+      && !rtx_equal_p (ops[3], ops[5])
+      && !rtx_equal_p (ops[4], ops[5]))
     {
       /* RA will fail to find vector REG and report ICE, so we pre-merge
 	 the ops for LMUL = 8.  */
@@ -3279,6 +3302,8 @@ prepare_ternary_operands (rtx *ops, bool split_p)
       /* TODO: ??? Maybe we could support splitting FMA (a, 4, b)
 	 into PLUS (ASHIFT (a, 2), b) according to uarchs.  */
     }
+  gcc_assert (rtx_equal_p (ops[5], RVV_VUNDEF (mode))
+	      || rtx_equal_p (ops[5], ops[2]) || rtx_equal_p (ops[5], ops[4]));
 }
 
 /* Expand VEC_MASK_LEN_{LOAD_LANES,STORE_LANES}.  */

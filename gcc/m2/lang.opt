@@ -30,6 +30,10 @@
 Language
 Modula-2
 
+Wcase-enum
+Modula-2
+turns on case statement label compile time checking when using an expression of an enum type.
+
 Wpedantic-param-names
 Modula-2
 compiler checks to force definition module procedure parameter names with their implementation module counterpart
@@ -45,6 +49,14 @@ inform user which parameters will be passed by reference
 Wstyle
 Modula-2
 extra compile time semantic checking, typically tries to catch poor programming style
+
+Wuninit-variable-checking
+Modula-2
+turns on compile time analysis in the first basic block of a procedure detecting access to uninitialized data.
+
+Wuninit-variable-checking=
+Modula-2 Joined
+turns on compile time analysis to detect access to uninitialized variables, the checking can be specified by: known,cond,all.
 
 fauto-init
 Modula-2
@@ -277,10 +289,6 @@ Wall
 Modula-2
 ; Documented in c.opt
 
-Wcase-enum
-Modula-2
-turns on case statement label compile time checking when using an expression of an enum type.
-
 Wpedantic
 Modula-2
 ; Documented in common.opt
@@ -296,14 +304,6 @@ Modula-2
 Wunused-parameter
 Modula-2
 ; Documented in c.opt
-
-Wuninit-variable-checking
-Modula-2
-turns on compile time analysis in the first basic block of a procedure detecting access to uninitialized data.
-
-Wuninit-variable-checking=
-Modula-2 Joined
-turns on compile time analysis to detect access to uninitialized variables, the checking can be specified by: known,cond,all.
 
 B
 Modula-2

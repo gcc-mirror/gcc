@@ -113,7 +113,6 @@ static rtx expand_builtin_apply_args (void);
 static rtx expand_builtin_apply_args_1 (void);
 static rtx expand_builtin_apply (rtx, rtx, rtx);
 static void expand_builtin_return (rtx);
-static enum type_class type_to_class (tree);
 static rtx expand_builtin_classify_type (tree);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_ternary (tree, rtx, rtx);
@@ -1853,7 +1852,7 @@ expand_builtin_return (rtx result)
 
 /* Used by expand_builtin_classify_type and fold_builtin_classify_type.  */
 
-static enum type_class
+int
 type_to_class (tree type)
 {
   switch (TREE_CODE (type))

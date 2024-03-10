@@ -1,3 +1,176 @@
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_postfix_expression): Parse
+	__builtin_classify_type call with typename as argument.
+	* pt.cc (tsubst_copy_and_build): Handle __builtin_classify_type
+	with dependent typename as argument.
+
+2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111471
+	* cxx-pretty-print.cc (cxx_pretty_printer::expression)
+	<case VAR_DECL>: Handle class NTTP objects by printing
+	their type and value.
+	<case VIEW_CONVERT_EXPR>: Strip const VIEW_CONVERT_EXPR
+	wrappers for class NTTPs.
+	(pp_cxx_template_argument_list): Don't handle class NTTP
+	objects here.
+
+2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (tsubst_function_decl): Don't bother computing 'argvec'
+	when 'lambda_fntype' is set.
+	(tsubst_template_decl): Make sure we return a TEMPLATE_DECL
+	during specialization lookup.  In the non-class non-function
+	template case, use tsubst_decl directly with use_spec_table=false,
+	update DECL_TI_ARGS and call register_specialization like
+	tsubst_decl would have done if use_spec_table=true.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* parser.h (struct cp_lexer): Add in_omp_decl_attribute member.
+	* cp-tree.h (cp_maybe_parse_omp_decl): Declare.
+	* parser.cc (cp_parser_handle_statement_omp_attributes): Diagnose
+	omp::decl attribute on statements.  Adjust diagnostic wording for
+	omp::decl.
+	(cp_parser_omp_directive_args): Add DECL_P argument, set TREE_PUBLIC
+	to it on the DEFERRED_PARSE tree.
+	(cp_parser_omp_sequence_args): Adjust caller.
+	(cp_parser_std_attribute): Handle omp::decl attribute.
+	(cp_parser_omp_var_list): If parser->lexer->in_omp_decl_attribute
+	don't expect any arguments, instead create clause or TREE_LIST for
+	that decl.
+	(cp_parser_late_parsing_omp_declare_simd): Adjust diagnostic wording
+	for omp::decl.
+	(cp_maybe_parse_omp_decl): New function.
+	(cp_parser_omp_declare_target): If
+	parser->lexer->in_omp_decl_attribute and first token isn't name or
+	comma invoke cp_parser_omp_var_list.
+	* decl2.cc (cplus_decl_attributes): Adjust diagnostic wording for
+	omp::decl.  Handle omp::decl on declarations.
+	* name-lookup.cc (finish_using_directive): Adjust diagnostic wording
+	for omp::decl.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* mapper-client.cc, mapper-client.h (open_module_client): Accept
+	dependency tracking and track module mapper files as
+	dependencies.
+	* module.cc (make_mapper, get_mapper): Pass the dependency
+	tracking class down.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* module.cc (do_import): Report imported CMI files as
+	dependencies.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* module.cc (preprocessed_module): Pass whether the module is
+	exported to dependency tracking.
+
+2023-09-19  Javier Martinez  <javier.martinez.bugzilla@gmail.com>
+
+	* class.cc (propagate_class_warmth_attribute): New function.
+	(check_bases_and_members): propagate hot and cold attributes
+	to all FUNCTION_DECL when the record is marked hot or cold.
+	* cp-tree.h (maybe_propagate_warmth_attributes): New function.
+	* decl2.cc (maybe_propagate_warmth_attributes): New function.
+	* method.cc (lazily_declare_fn): propagate hot and cold
+	attributes to lazily declared functions when the record is
+	marked hot or cold.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	* ptree.cc (cxx_print_type): Remove TYPE_LANG_SPECIFIC
+	test guarding TYPE_TEMPLATE_INFO.
+
+2023-09-19  Jason Merrill  <jason@redhat.com>
+
+	DR 2799
+	* class.cc (add_implicit_default_ctor): Split out...
+	(add_implicitly_declared_members): ...from here.
+	Also call it when inheriting a default ctor.
+
+2023-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (build_over_call): Set ADDR_EXPR_DENOTES_CALL_P.  Don't handle
+	immediate_invocation_p here.
+	* constexpr.cc (cxx_eval_call_expression): Use mce_true for
+	DECL_IMMEDIATE_FUNCTION_P.
+	(cxx_eval_conditional_expression): Call cp_fold_immediate.
+	* cp-gimplify.cc (enum fold_flags): Add ff_fold_immediate.
+	(maybe_replace_decl): Make static.
+	(cp_fold_r): Expand immediate invocations.
+	(cp_fold_immediate_r): New.
+	(cp_fold_immediate): New.
+	* cp-tree.h (ADDR_EXPR_DENOTES_CALL_P): Define.
+	(cp_fold_immediate): Declare.
+	* tree.cc (bot_replace): Don't handle immediate invocations here.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111419
+	* cvt.cc (convert_to_void) <case INDIRECT_REF>: Only call
+	complete_type if the type is volatile.
+	<case VAR_DECL>: Likewise.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99631
+	* semantics.cc (finish_decltype_type): For an NTTP object,
+	return its type modulo cv-quals.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89231
+	* pt.cc (try_class_unification): Strengthen TI_TEMPLATE equality
+	test by not calling most_general_template.  Only unify the
+	innermost levels of template arguments.
+	(unify) <case CLASS_TYPE>: Only unify the innermost levels of
+	template arguments, and only if the template is primary.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/63198
+	PR c++/18474
+	* semantics.cc (maybe_convert_cond): Look through implicit
+	INDIRECT_REF when deciding whether to issue a -Wparentheses
+	warning, and consider templated assignment expressions as well.
+	(finish_parenthesized_expr): Look through implicit INDIRECT_REF
+	when suppressing -Wparentheses warning.
+	* typeck.cc (build_x_modify_expr): Check simple assignments
+	ahead time too, not just compound assignments.  Give the second
+	operand of MODOP_EXPR a non-null type so that it's not considered
+	always instantiation-dependent.  Don't call suppress_warning.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108347
+	* pt.cc (unify): Return unify_success for identical dependent
+	DECL_P 'arg' and 'parm'.
+	<case CONST_DECL>: Remove handling.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (add_template_candidate_real): Check arity even
+	when there are no explicit template arguments.  Combine the
+	two adjacent '!obj' tests into one.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (register_specialization): Remove now-unnecessary
+	early exit for FUNCTION_DECL partial instantiation.
+	(tsubst_template_decl): Pass use_spec_table=false to
+	tsubst_function_decl.  Set DECL_TI_ARGS of a non-lambda
+	FUNCTION_DECL specialization to the full set of arguments.
+	Simplify register_specialization call accordingly.
+
+2023-09-18  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (check_subobject_offset): Use similar_type_p.
+
 2023-09-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/111357

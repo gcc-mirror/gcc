@@ -1,3 +1,24 @@
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_postfix_expression_after_primary): Parse
+	__builtin_classify_type call with typename as argument.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR c/111468
+	* gimple-parser.cc (c_parser_gimple_binary_expression): Handle __LTGT.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR c/111468
+	* gimple-parser.cc (c_parser_gimple_binary_expression): Add
+	return type argument.
+	(c_parser_gimple_statement): Adjust.
+	(c_parser_gimple_paren_condition): Likewise.
+	(c_parser_gimple_binary_expression): Use passed in return type,
+	add support for - as POINTER_DIFF_EXPR, __UN{LT,LE,GT,GE,EQ},
+	__UNORDERED and __ORDERED.
+
 2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.cc (struct c_omp_loc_tree): New.

@@ -3150,13 +3150,15 @@ improve_allocation (void)
   int j, k, n, hregno, conflict_hregno, base_cost, class_size, word, nwords;
   int check, spill_cost, min_cost, nregs, conflict_nregs, r, best;
   bool try_p;
-  enum reg_class aclass;
+  enum reg_class aclass, rclass;
   machine_mode mode;
   int *allocno_costs;
   int costs[FIRST_PSEUDO_REGISTER];
   HARD_REG_SET conflicting_regs[2], profitable_hard_regs;
   ira_allocno_t a;
   bitmap_iterator bi;
+  int saved_nregs;
+  int add_cost;
 
   /* Don't bother to optimize the code with static chain pointer and
      non-local goto in order not to spill the chain pointer
@@ -3194,6 +3196,7 @@ improve_allocation (void)
 					      conflicting_regs,
 					      &profitable_hard_regs);
       class_size = ira_class_hard_regs_num[aclass];
+      mode = ALLOCNO_MODE (a);
       /* Set up cost improvement for usage of each profitable hard
 	 register for allocno A.  */
       for (j = 0; j < class_size; j++)
@@ -3207,6 +3210,22 @@ improve_allocation (void)
 	  costs[hregno] = (allocno_costs == NULL
 			   ? ALLOCNO_UPDATED_CLASS_COST (a) : allocno_costs[k]);
 	  costs[hregno] -= allocno_copy_cost_saving (a, hregno);
+
+	  if ((saved_nregs = calculate_saved_nregs (hregno, mode)) != 0)
+	  {
+	    /* We need to save/restore the hard register in
+	       epilogue/prologue.  Therefore we increase the cost.
+	       Since the prolog is placed in the entry BB, the frequency
+	       of the entry BB is considered while computing the cost.  */
+	    rclass = REGNO_REG_CLASS (hregno);
+	    add_cost = ((ira_memory_move_cost[mode][rclass][0]
+			 + ira_memory_move_cost[mode][rclass][1])
+			* saved_nregs / hard_regno_nregs (hregno,
+							  mode) - 1)
+		       * REG_FREQ_FROM_BB (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+	    costs[hregno] += add_cost;
+	  }
+
 	  costs[hregno] -= base_cost;
 	  if (costs[hregno] < 0)
 	    try_p = true;

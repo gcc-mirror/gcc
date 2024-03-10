@@ -719,6 +719,12 @@ decl_attributes (tree *node, tree attributes, int flags,
 	      if (ns == NULL_TREE || !cxx11_attr_p)
 		warning (OPT_Wattributes, "%qE attribute directive ignored",
 			 name);
+	      else if ((flag_openmp || flag_openmp_simd)
+		       && is_attribute_p ("omp", ns)
+		       && is_attribute_p ("directive", name)
+		       && (VAR_P (*node)
+			   || TREE_CODE (*node) == FUNCTION_DECL))
+		continue;
 	      else
 		warning (OPT_Wattributes,
 			 "%<%E::%E%> scoped attribute directive ignored",

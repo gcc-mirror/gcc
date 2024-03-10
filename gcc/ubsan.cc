@@ -136,13 +136,10 @@ ubsan_encode_value (tree t, enum ubsan_encode_value_phase phase)
 	}
       else
 	{
-	  scalar_int_mode arith_mode
-	    = (targetm.scalar_mode_supported_p (TImode) ? TImode : DImode);
-	  if (TYPE_PRECISION (type) > GET_MODE_PRECISION (arith_mode))
+	  if (TYPE_PRECISION (type) > MAX_FIXED_MODE_SIZE)
 	    return build_zero_cst (pointer_sized_int_node);
-	  type
-	    = build_nonstandard_integer_type (GET_MODE_PRECISION (arith_mode),
-					      TYPE_UNSIGNED (type));
+	  type = build_nonstandard_integer_type (MAX_FIXED_MODE_SIZE,
+	  					 TYPE_UNSIGNED (type));
 	  t = fold_build1 (NOP_EXPR, type, t);
 	}
     }
@@ -381,14 +378,9 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
     {
       /* Temporary hack for -fsanitize=shift with _BitInt(129) and more.
 	 libubsan crashes if it is not TK_Integer type.  */
-      if (TREE_CODE (type) == BITINT_TYPE)
-	{
-	  scalar_int_mode arith_mode
-	    = (targetm.scalar_mode_supported_p (TImode)
-	       ? TImode : DImode);
-	  if (TYPE_PRECISION (type) > GET_MODE_PRECISION (arith_mode))
-	    type3 = build_qualified_type (type, TYPE_QUAL_CONST);
-	}
+      if (TREE_CODE (type) == BITINT_TYPE
+	  && TYPE_PRECISION (type) > MAX_FIXED_MODE_SIZE)
+	type3 = build_qualified_type (type, TYPE_QUAL_CONST);
       if (type3 == type)
 	pstyle = UBSAN_PRINT_NORMAL;
     }
@@ -523,16 +515,10 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
       tkind = 0x0000;
       break;
     case BITINT_TYPE:
-      {
-	/* FIXME: libubsan right now only supports _BitInts which
-	   fit into DImode or TImode.  */
-	scalar_int_mode arith_mode = (targetm.scalar_mode_supported_p (TImode)
-				      ? TImode : DImode);
-	if (TYPE_PRECISION (eltype) <= GET_MODE_PRECISION (arith_mode))
-	  tkind = 0x0000;
-	else
-	  tkind = 0xffff;
-      }
+      if (TYPE_PRECISION (eltype) <= MAX_FIXED_MODE_SIZE)
+	tkind = 0x0000;
+      else
+	tkind = 0xffff;
       break;
     case REAL_TYPE:
       /* FIXME: libubsan right now only supports float, double and
@@ -553,9 +539,7 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   if (pstyle == UBSAN_PRINT_FORCE_INT)
     {
       tkind = 0x0000;
-      scalar_int_mode arith_mode = (targetm.scalar_mode_supported_p (TImode)
-				    ? TImode : DImode);
-      tree t = lang_hooks.types.type_for_mode (arith_mode,
+      tree t = build_nonstandard_integer_type (MAX_FIXED_MODE_SIZE,
 					       TYPE_UNSIGNED (eltype));
       tinfo = get_ubsan_type_info_for_type (t);
     }

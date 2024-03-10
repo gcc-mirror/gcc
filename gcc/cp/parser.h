@@ -107,6 +107,10 @@ struct GTY (()) cp_lexer {
   /* The next lexer in a linked list of lexers.  */
   struct cp_lexer *next;
 
+  /* Set for omp::decl attribute parsing to the decl to which it
+     appertains.  */
+  tree in_omp_decl_attribute;
+
   /* True if we should output debugging information.  */
   bool debugging_p;
 

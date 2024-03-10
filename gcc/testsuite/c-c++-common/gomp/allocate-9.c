@@ -86,8 +86,6 @@ int g()
 /* { dg-note "declared here" "" { target c } .-8 } */
 /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-2 } */
     return c2+a2+b2;
-  /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive" "" { target c } .-5 } */
-  /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive" "" { target c } .-12 } */
   }
 }
 

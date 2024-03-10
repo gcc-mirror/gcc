@@ -1,3 +1,29 @@
+2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1 Impl.): Mark 'omp allocate' as
+	implemented for C only.
+	* testsuite/libgomp.c/allocate-4.c: New test.
+	* testsuite/libgomp.c/allocate-5.c: New test.
+	* testsuite/libgomp.c/allocate-6.c: New test.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* libgomp.texi: Mark decl attribute was added to the C++ attribute
+	syntax as implemented.
+
+2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/111413
+	* env.c (initialize_env): Don't dereference environ if it is NULL.
+	Reindent.
+
+2023-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111294
+	* team.c (gomp_team_start): Assert alloca size to avoid false
+	positive alloc-size diagnostic.
+
 2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

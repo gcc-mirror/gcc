@@ -1121,6 +1121,15 @@ cxx_pretty_printer::expression (tree t)
       t = OVL_FIRST (t);
       /* FALLTHRU */
     case VAR_DECL:
+      if (DECL_NTTP_OBJECT_P (t))
+	{
+	  /* Print the type followed by the CONSTRUCTOR value of the
+	     NTTP object.  */
+	  simple_type_specifier (cv_unqualified (TREE_TYPE (t)));
+	  expression (DECL_INITIAL (t));
+	  break;
+	}
+      /* FALLTHRU */
     case PARM_DECL:
     case FIELD_DECL:
     case CONST_DECL:
@@ -1261,6 +1270,14 @@ cxx_pretty_printer::expression (tree t)
       pp_cxx_right_paren (this);
       break;
 
+    case VIEW_CONVERT_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == TEMPLATE_PARM_INDEX)
+	{
+	  /* Strip const VIEW_CONVERT_EXPR wrappers for class NTTPs.  */
+	  expression (TREE_OPERAND (t, 0));
+	  break;
+	}
+      /* FALLTHRU */
     default:
       c_pretty_printer::expression (t);
       break;
@@ -1966,8 +1983,6 @@ pp_cxx_template_argument_list (cxx_pretty_printer *pp, tree t)
 	  if (TYPE_P (arg) || (TREE_CODE (arg) == TEMPLATE_DECL
 			       && TYPE_P (DECL_TEMPLATE_RESULT (arg))))
 	    pp->type_id (arg);
-	  else if (VAR_P (arg) && DECL_NTTP_OBJECT_P (arg))
-	    pp->expression (DECL_INITIAL (arg));
 	  else
 	    pp->expression (arg);
 	}

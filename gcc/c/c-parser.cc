@@ -11606,6 +11606,29 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	    literal_zero_mask = 0;
 	    if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	      exprlist = NULL;
+	    else if (TREE_CODE (expr.value) == FUNCTION_DECL
+		     && fndecl_built_in_p (expr.value, BUILT_IN_CLASSIFY_TYPE)
+		     && c_parser_next_tokens_start_typename (parser,
+							     cla_prefer_id))
+	      {
+		/* __builtin_classify_type (type)  */
+		c_inhibit_evaluation_warnings++;
+		in_alignof++;
+		struct c_type_name *type = c_parser_type_name (parser);
+		c_inhibit_evaluation_warnings--;
+		in_alignof--;
+		struct c_typespec ret;
+		ret.expr = NULL_TREE;
+		ret.spec = error_mark_node;
+		ret.expr_const_operands = false;
+		if (type != NULL)
+		  ret.spec = groktypename (type, &ret.expr,
+					   &ret.expr_const_operands);
+		parens.skip_until_found_close (parser);
+		expr.value = build_int_cst (integer_type_node,
+					    type_to_class (ret.spec));
+		break;
+	      }
 	    else
 	      exprlist = c_parser_expr_list (parser, true, false, &origtypes,
 					     sizeof_arg_loc, sizeof_arg,

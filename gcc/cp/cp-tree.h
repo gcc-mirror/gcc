@@ -4784,6 +4784,11 @@ get_vec_init_expr (tree t)
 #define PTRMEM_OK_P(NODE) \
   TREE_LANG_FLAG_0 (TREE_CHECK3 ((NODE), ADDR_EXPR, OFFSET_REF, SCOPE_REF))
 
+/* True if this ADDR_EXPR denotes a function call; that is, it's
+   fn() rather than &fn.  */
+#define ADDR_EXPR_DENOTES_CALL_P(NODE) \
+  (ADDR_EXPR_CHECK(NODE)->base.protected_flag)
+
 /* Get the POINTER_TYPE to the METHOD_TYPE associated with this
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
    before using this macro.  */
@@ -6580,6 +6585,24 @@ extern int class_dump_id;
 extern int module_dump_id;
 extern int raw_dump_id;
 
+/* Whether the current context is manifestly constant-evaluated.
+   Used by the constexpr machinery to control folding of
+   __builtin_is_constant_evaluated.  */
+
+enum class mce_value
+{
+  /* Unknown, so treat __builtin_is_constant_evaluated as non-constant.  */
+  mce_unknown = 0,
+  /* Fold it to true.  */
+  mce_true = 1,
+  /* Fold it to false.  Primarily used during cp_fold_function and
+     cp_fully_fold_init.  */
+  mce_false = -1,
+};
+constexpr mce_value mce_unknown = mce_value::mce_unknown;
+constexpr mce_value mce_true = mce_value::mce_true;
+constexpr mce_value mce_false = mce_value::mce_false;
+
 /* in call.cc */
 extern bool check_dtor_name			(tree, tree);
 int magic_varargs_p				(tree);
@@ -7035,6 +7058,7 @@ extern int parm_index                           (tree);
 extern tree vtv_start_verification_constructor_init_function (void);
 extern tree vtv_finish_verification_constructor_init_function (tree);
 extern void cp_check_const_attributes (tree);
+extern void maybe_propagate_warmth_attributes (tree, tree);
 
 /* in error.cc */
 extern const char *type_as_string		(tree, int);
@@ -7317,6 +7341,7 @@ extern tree cp_convert_range_for (tree, tree, tree, cp_decomp *, bool,
 extern void cp_convert_omp_range_for (tree &, tree &, tree &,
 				      tree &, tree &, tree &, tree &, tree &);
 extern void cp_finish_omp_range_for (tree, tree);
+extern bool cp_maybe_parse_omp_decl (tree, tree);
 extern bool parsing_nsdmi (void);
 extern bool parsing_function_declarator ();
 extern bool parsing_default_capturing_generic_lambda_in_template (void);
@@ -8354,6 +8379,7 @@ extern tree process_stmt_assume_attribute	(tree, tree, location_t);
 extern bool simple_empty_class_p		(tree, tree, tree_code);
 extern tree fold_builtin_source_location	(const_tree);
 extern tree get_source_location_impl_type	();
+extern bool cp_fold_immediate			(tree *, mce_value);
 
 /* in name-lookup.cc */
 extern tree strip_using_decl                    (tree);
@@ -8514,24 +8540,6 @@ struct GTY((for_user)) constexpr_fundef {
   tree parms;
   tree result;
 };
-
-/* Whether the current context is manifestly constant-evaluated.
-   Used by the constexpr machinery to control folding of
-   __builtin_is_constant_evaluated.  */
-
-enum class mce_value
-{
-  /* Unknown, so treat __builtin_is_constant_evaluated as non-constant.  */
-  mce_unknown = 0,
-  /* Fold it to true.  */
-  mce_true = 1,
-  /* Fold it to false.  Primarily used during cp_fold_function and
-     cp_fully_fold_init.  */
-  mce_false = -1,
-};
-constexpr mce_value mce_unknown = mce_value::mce_unknown;
-constexpr mce_value mce_true = mce_value::mce_true;
-constexpr mce_value mce_false = mce_value::mce_false;
 
 extern void fini_constexpr			(void);
 extern bool literal_type_p                      (tree);

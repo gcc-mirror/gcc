@@ -352,6 +352,10 @@ static RTint_Vector FindPendingVector (unsigned int vec)
 
 static void AddFd (Selective_SetOfFd *set, int *max, int fd)
 {
+  if (fd < 0)
+    {
+      return ;
+    }
   (*max) = Max (fd, (*max));
   if ((*set) == NULL)
     {
@@ -928,6 +932,7 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
 {
   bool found;
   int result;
+  Selective_Timeval zero;
   Selective_Timeval after;
   Selective_Timeval b4;
   Selective_Timeval timeval;
@@ -995,13 +1000,13 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
         {
           Selective_SetTime (timeval, 0, 0);
         }
-      if (((untilInterrupt && (inSet == NULL)) && (outSet == NULL)) && ! found)
+      if ((untilInterrupt && (((inSet == NULL) && (outSet == NULL)) || (maxFd == -1))) && ! found)
         {
-          M2RTS_Halt ((const char *) "deadlock found, no more processes to run and no interrupts active", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "Listen", 6, 728);
+          M2RTS_Halt ((const char *) "deadlock found, no more processes to run and no interrupts active", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "Listen", 6, 733);
         }
       /* printf('}
       ') ;  */
-      if (((! found && (maxFd == -1)) && (inSet == NULL)) && (outSet == NULL))
+      if (! found && (maxFd == -1))
         {
           /* no file descriptors to be selected upon.  */
           timeval = Selective_KillTime (timeval);
@@ -1012,6 +1017,7 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
         {
           Selective_GetTime (timeval, &sec, &micro);
           Assertion_Assert (micro < Microseconds);
+          zero = Selective_InitTime (0, 0);
           b4 = Selective_InitTime (0, 0);
           after = Selective_InitTime (0, 0);
           result = Selective_GetTimeOfDay (b4);
@@ -1028,28 +1034,65 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
               {
                 libc_printf ((const char *) "select (.., .., .., %u.%06u)\\n", 30, sec, micro);
               }
-            result = RTco_select (maxFd+1, inSet, outSet, NULL, timeval);
+            if (maxFd < 0)
+              {
+                result = RTco_select (0, NULL, NULL, NULL, timeval);
+              }
+            else
+              {
+                result = RTco_select (maxFd+1, inSet, outSet, NULL, timeval);
+              }
             if (result == -1)
               {
-                libc_perror ((const char *) "select", 6);
-                result = RTco_select (maxFd+1, inSet, outSet, NULL, NULL);
-                if (result == -1)
+                if (Debugging)
                   {
-                    libc_perror ((const char *) "select timeout argument is faulty", 33);
+                    libc_perror ((const char *) "select failed : ", 16);
                   }
-                result = RTco_select (maxFd+1, inSet, NULL, NULL, timeval);
-                if (result == -1)
+                result = RTco_select (maxFd+1, inSet, outSet, NULL, zero);
+                if (result != -1)
                   {
-                    libc_perror ((const char *) "select output fd argument is faulty", 35);
-                  }
-                result = RTco_select (maxFd+1, NULL, outSet, NULL, timeval);
-                if (result == -1)
-                  {
-                    libc_perror ((const char *) "select input fd argument is faulty", 34);
+                    Selective_GetTime (timeval, &sec, &micro);
+                    if (Debugging)
+                      {
+                        libc_printf ((const char *) "(nfds : %d timeval: %u.%06u) : \\n", 33, maxFd, sec, micro);
+                      }
+                    libc_perror ((const char *) "select timeout argument was faulty : ", 37);
                   }
                 else
                   {
-                    libc_perror ((const char *) "select maxFD+1 argument is faulty", 33);
+                    result = RTco_select (maxFd+1, inSet, NULL, NULL, timeval);
+                    if (result != -1)
+                      {
+                        libc_perror ((const char *) "select output fd argument was faulty : ", 39);
+                      }
+                    else
+                      {
+                        result = RTco_select (maxFd+1, NULL, outSet, NULL, timeval);
+                        if (result != -1)
+                          {
+                            libc_perror ((const char *) "select input fd argument was faulty : ", 38);
+                          }
+                        else
+                          {
+                            if (maxFd == -1)
+                              {
+                                /* avoid dangling else.  */
+                                result = RTco_select (0, NULL, NULL, NULL, timeval);
+                                if (result == -1)
+                                  {
+                                    if (Debugging)
+                                      {
+                                        libc_perror ((const char *) "select does not accept nfds == 0 ", 33);
+                                      }
+                                    result = 0;
+                                  }
+                              }
+                            else
+                              {
+                                libc_perror ((const char *) "select maxFD+1 argument was faulty : ", 37);
+                              }
+                          }
+                      }
                   }
               }
           } while (! (result != -1));
@@ -1059,6 +1102,10 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
       if (timeval != NULL)
         {
           timeval = Selective_KillTime (timeval);
+        }
+      if (zero != NULL)
+        {
+          zero = Selective_KillTime (zero);
         }
       if (after != NULL)
         {

@@ -1,3 +1,24 @@
+2023-09-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/61474
+	* files.cc (_cpp_find_file): Set DONT_READ to TRUE for fake
+	include files.
+	(_cpp_fake_include): Pass a unique cpp_dir* address so
+	the fake file will not be found when looked up for real.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* include/cpplib.h: Add cpp_fdeps_format enum.
+	(cpp_options): Add fdeps_format field
+	(cpp_finish): Add structured dependency fdeps_stream parameter.
+	* include/mkdeps.h (deps_add_module_target): Add flag for
+	whether a module is exported or not.
+	(fdeps_add_target): Add function.
+	(deps_write_p1689r5): Add function.
+	* init.cc (cpp_finish): Add new preprocessor parameter used for C++
+	module tracking.
+	* mkdeps.cc (mkdeps): Implement P1689R5 output.
+
 2023-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/102989

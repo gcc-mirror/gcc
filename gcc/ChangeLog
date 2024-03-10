@@ -1,3 +1,518 @@
+2023-09-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_cache::merge_range): Change meaning
+	of the return value.
+	(ssa_cache::dump): Don't print GLOBAL RANGE header.
+	(ssa_lazy_cache::merge_range): Adjust return value meaning.
+	(ranger_cache::dump): Print GLOBAL RANGE header.
+
+2023-09-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_unordered_ge::fold_range): Remove
+	special casing.
+	(foperator_unordered_gt::fold_range): Same.
+	(foperator_unordered_lt::fold_range): Same.
+	(foperator_unordered_le::fold_range): Same.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.h (type_to_class): Declare.
+	* builtins.cc (type_to_class): No longer static.  Return
+	int rather than enum.
+	* doc/extend.texi (__builtin_classify_type): Document.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110751
+	* internal-fn.cc (expand_fn_using_insn): Support undefined rtx value.
+	* optabs.cc (maybe_legitimize_operand): Ditto.
+	(can_reuse_operands_p): Ditto.
+	* optabs.h (enum expand_operand_type): Ditto.
+	(create_undefined_input_operand): Ditto.
+
+2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_bind_expr): Call GOMP_alloc/free for
+	'omp allocate' variables; move stack cleanup after other
+	cleanup.
+	(omp_notice_variable): Process original decl when decl
+	of the value-expression for a 'omp allocate' variable is passed.
+	* omp-low.cc (scan_omp_1_op): Handle 'omp allocate' variables
+
+2023-09-20  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	support simplifying vector int not only scalar int.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Extend VLS floating-point.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vector_insn_info::operator==): Fix bug.
+
+2023-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h:
+	(SUBTARGET_DRIVER_SELF_SPECS): Move handling of 'shared' into the same
+	specs as 'dynamiclib'. (STARTFILE_SPEC): Handle 'shared'.
+
+2023-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111489
+	* params.opt (-param uninit-max-chain-len=): Raise default to 8.
+
+2023-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111489
+	* doc/invoke.texi (--param uninit-max-chain-len): Document.
+	(--param uninit-max-num-chains): Likewise.
+	* params.opt (-param=uninit-max-chain-len=): New.
+	(-param=uninit-max-num-chains=): Likewise.
+	* gimple-predicate-analysis.cc (MAX_NUM_CHAINS): Define to
+	param_uninit_max_num_chains.
+	(MAX_CHAIN_LEN): Define to param_uninit_max_chain_len.
+	(uninit_analysis::init_use_preds): Avoid VLA.
+	(uninit_analysis::init_from_phi_def): Likewise.
+	(compute_control_dep_chain): Avoid using MAX_CHAIN_LEN in
+	template parameter.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* match.pd ((x << c) >> c): Use MAX_FIXED_MODE_SIZE instead of
+	GET_MODE_PRECISION of TImode or DImode depending on whether
+	TImode is supported scalar mode.
+	* gimple-lower-bitint.cc (bitint_precision_kind): Likewise.
+	* expr.cc (expand_expr_real_1): Likewise.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt): Likewise.
+	* ubsan.cc (ubsan_encode_value, ubsan_type_descriptor): Likewise.
+
+2023-09-20  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*<optab>not<mode>): Move and rename.
+	(*n<optab><mode>): Ditto.
+	(*v<any_shiftrt:optab><any_extend:optab>trunc<mode>): Ditto.
+	(*<any_shiftrt:optab>trunc<mode>): Ditto.
+	(*narrow_<any_shiftrt:optab><any_extend:optab><mode>): Ditto.
+	(*narrow_<any_shiftrt:optab><mode>_scalar): Ditto.
+	(*single_widen_mult<any_extend:su><mode>): Ditto.
+	(*single_widen_mul<any_extend:su><mode>): Ditto.
+	(*single_widen_mult<mode>): Ditto.
+	(*single_widen_mul<mode>): Ditto.
+	(*dual_widen_fma<mode>): Ditto.
+	(*dual_widen_fma<su><mode>): Ditto.
+	(*single_widen_fma<mode>): Ditto.
+	(*single_widen_fma<su><mode>): Ditto.
+	(*dual_fma<mode>): Ditto.
+	(*single_fma<mode>): Ditto.
+	(*dual_fnma<mode>): Ditto.
+	(*dual_widen_fnma<mode>): Ditto.
+	(*single_fnma<mode>): Ditto.
+	(*single_widen_fnma<mode>): Ditto.
+	(*dual_fms<mode>): Ditto.
+	(*dual_widen_fms<mode>): Ditto.
+	(*single_fms<mode>): Ditto.
+	(*single_widen_fms<mode>): Ditto.
+	(*dual_fnms<mode>): Ditto.
+	(*dual_widen_fnms<mode>): Ditto.
+	(*single_fnms<mode>): Ditto.
+	(*single_widen_fnms<mode>): Ditto.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* attribs.cc (decl_attributes): Don't warn on omp::directive attribute
+	on vars or function decls if -fopenmp or -fopenmp-simd.
+
+2023-09-20  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111488
+	* config/riscv/autovec-opt.md: Add missed operand.
+
+2023-09-20  Omar Sandoval  <osandov@osandov.com>
+
+	PR debug/111409
+	* dwarf2out.cc (output_macinfo): Don't call optimize_macinfo_range if
+	dwarf_split_debug_info.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (can_find_related_mode_p): New function.
+	(vectorize_related_mode): Add VLS related modes.
+	* config/riscv/vector-iterators.md: Extend VLS modes.
+
+2023-09-20  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/110071
+	* ira-color.cc (improve_allocation): Consider cost of callee
+	save registers.
+
+2023-09-20  mengqinggang  <mengqinggang@loongson.cn>
+	    Xi Ruoyao  <xry111@xry111.site>
+
+	* configure: Regenerate.
+	* configure.ac: Checking assembler for -mno-relax support.
+	Disable relaxation when probing leb128 support.
+
+2023-09-20  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config.in: Regenerate.
+	* config/loongarch/genopts/loongarch.opt.in: Add compilation option
+	mrelax. And set the initial value of explicit-relocs according to the
+	detection status.
+	* config/loongarch/gnu-user.h: When compiling with -mno-relax, pass the
+	--no-relax option to the linker.
+	* config/loongarch/loongarch-driver.h (ASM_SPEC): When compiling with
+	-mno-relax, pass the -mno-relax option to the assembler.
+	* config/loongarch/loongarch-opts.h (HAVE_AS_MRELAX_OPTION): Define macro.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add detection of support for binutils relax function.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* doc/invoke.texi: Document -fdeps-format=, -fdeps-file=, and
+	-fdeps-target= flags.
+	* gcc.cc: add defaults for -fdeps-target= and -fdeps-file= when
+	only -fdeps-format= is specified.
+	* json.h: Add a TODO item to refactor out to share with
+	`libcpp/mkdeps.cc`.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* gcc.cc (join_spec_func): Add a spec function to join all
+	arguments.
+
+2023-09-19  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_legitimize_const_move): Eliminate
+	src_op_0 var to avoid rtl check error.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (frelop_early_resolve): Clean-up and remove
+	special casing.
+	(operator_not_equal::fold_range): Handle VREL_EQ.
+	(operator_lt::fold_range): Remove special casing for VREL_EQ.
+	(operator_gt::fold_range): Same.
+	(foperator_unordered_equal::fold_range): Same.
+
+2023-09-19  Javier Martinez  <javier.martinez.bugzilla@gmail.com>
+
+	* doc/extend.texi: Document attributes hot, cold on C++ types.
+
+2023-09-19  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_rtx_costs): Check whether the
+	modulo instruction is disabled.
+	* config/rs6000/rs6000.h (RS6000_DISABLE_SCALAR_MODULO): New.
+	* config/rs6000/rs6000.md (mod<mode>3, *mod<mode>3): Check it.
+	(define_expand umod<mode>3): New.
+	(define_insn umod<mode>3): Rename to *umod<mode>3 and check if the modulo
+	instruction is disabled.
+	(umodti3, modti3): Check if the modulo instruction is disabled.
+
+2023-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (fdebug-builtins): Correct description.
+
+2023-09-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/iq2000/predicates.md (uns_arith_constant): New predicate.
+	* config/iq2000/iq2000.md (rotrsi3): Use it.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (operator_lt::op1_range): Remove known_isnan check.
+	(operator_lt::op2_range): Same.
+	(operator_le::op1_range): Same.
+	(operator_le::op2_range): Same.
+	(operator_gt::op1_range): Same.
+	(operator_gt::op2_range): Same.
+	(operator_ge::op1_range): Same.
+	(operator_ge::op2_range): Same.
+	(foperator_unordered_lt::op1_range): Same.
+	(foperator_unordered_lt::op2_range): Same.
+	(foperator_unordered_le::op1_range): Same.
+	(foperator_unordered_le::op2_range): Same.
+	(foperator_unordered_gt::op1_range): Same.
+	(foperator_unordered_gt::op2_range): Same.
+	(foperator_unordered_ge::op1_range): Same.
+	(foperator_unordered_ge::op2_range): Same.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (frange::update_nan): New.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (operator_not_equal::op2_range): New.
+	* range-op-mixed.h: Add operator_not_equal::op2_range.
+
+2023-09-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110080
+	PR tree-optimization/110249
+	* tree-vrp.cc (remove_unreachable::final_p): New.
+	(remove_unreachable::maybe_register): Rename from
+	maybe_register_block and call early or final routine.
+	(fully_replaceable): New.
+	(remove_unreachable::handle_early): New.
+	(remove_unreachable::remove_and_update_globals): Remove
+	non-final processing.
+	(rvrp_folder::rvrp_folder): Add final flag to constructor.
+	(rvrp_folder::post_fold_bb): Remove unreachable registration.
+	(rvrp_folder::pre_fold_stmt): Move unreachable processing to here.
+	(execute_ranger_vrp): Adjust some call parameters.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR c/111468
+	* tree-pretty-print.h (op_symbol_code): Add defaulted flags
+	argument.
+	* tree-pretty-print.cc (op_symbol): Likewise.
+	(op_symbol_code): Print TDF_GIMPLE variant if requested.
+	* gimple-pretty-print.cc (dump_binary_rhs): Pass flags to
+	op_symbol_code.
+	(dump_gimple_cond): Likewise.
+
+2023-09-19  Thomas Schwinge  <thomas@codesourcery.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	* tree-streamer.h (bp_unpack_machine_mode): If
+	'ib->file_data->mode_table' not available, apply 1-to-1 mapping.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_can_change_mode_class): Block unordered VLA and VLS modes.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS modes.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111465
+	* tree-ssa-threadupdate.cc (fwd_jt_path_registry::thread_block_1):
+	Cancel the path when a EDGE_NO_COPY_SRC_BLOCK became non-empty.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS floating-point modes.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* match.pd ((x << c) >> c): Don't call build_nonstandard_integer_type
+	nor check type_has_mode_precision_p for width larger than [TD]Imode
+	precision.
+	(a ? CST1 : CST2): Don't use build_nonstandard_type, just convert
+	to type.  Use boolean_true_node instead of
+	constant_boolean_node (true, boolean_type_node).  Formatting fixes.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Add VLS modes.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (build_bitint_type): Assert precision is not 0, or
+	for signed types 1.
+	(signed_or_unsigned_type_for): Return INTEGER_TYPE for signed variant
+	of unsigned _BitInt(1).
+
+2023-09-19  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*<optab>_fma<mode>):
+	Removed old combine patterns.
+	(*single_<optab>mult_plus<mode>): Ditto.
+	(*double_<optab>mult_plus<mode>): Ditto.
+	(*sign_zero_extend_fma): Ditto.
+	(*zero_sign_extend_fma): Ditto.
+	(*double_widen_fma<mode>): Ditto.
+	(*single_widen_fma<mode>): Ditto.
+	(*double_widen_fnma<mode>): Ditto.
+	(*single_widen_fnma<mode>): Ditto.
+	(*double_widen_fms<mode>): Ditto.
+	(*single_widen_fms<mode>): Ditto.
+	(*double_widen_fnms<mode>): Ditto.
+	(*single_widen_fnms<mode>): Ditto.
+	(*reduc_plus_scal_<mode>): Adjust name.
+	(*widen_reduc_plus_scal_<mode>): Adjust name.
+	(*dual_widen_fma<mode>): New combine pattern.
+	(*dual_widen_fmasu<mode>): Ditto.
+	(*dual_widen_fmaus<mode>): Ditto.
+	(*dual_fma<mode>): Ditto.
+	(*single_fma<mode>): Ditto.
+	(*dual_fnma<mode>): Ditto.
+	(*single_fnma<mode>): Ditto.
+	(*dual_fms<mode>): Ditto.
+	(*single_fms<mode>): Ditto.
+	(*dual_fnms<mode>): Ditto.
+	(*single_fnms<mode>): Ditto.
+	* config/riscv/autovec.md (fma<mode>4):
+	Reafctor fma pattern.
+	(*fma<VI:mode><P:mode>): Removed.
+	(fnma<mode>4): Reafctor.
+	(*fnma<VI:mode><P:mode>): Removed.
+	(*fma<VF:mode><P:mode>):  Removed.
+	(*fnma<VF:mode><P:mode>):  Removed.
+	(fms<mode>4):  Reafctor.
+	(*fms<VF:mode><P:mode>):  Removed.
+	(fnms<mode>4): Reafctor.
+	(*fnms<VF:mode><P:mode>): Removed.
+	* config/riscv/riscv-protos.h (prepare_ternary_operands):
+	Adjust prototype.
+	* config/riscv/riscv-v.cc (prepare_ternary_operands): Refactor.
+	* config/riscv/vector.md (*pred_mul_plus<mode>_undef): New pattern.
+	(*pred_mul_plus<mode>): Removed.
+	(*pred_mul_plus<mode>_scalar): Removed.
+	(*pred_mul_plus<mode>_extended_scalar): Removed.
+	(*pred_minus_mul<mode>_undef):  New pattern.
+	(*pred_minus_mul<mode>): Removed.
+	(*pred_minus_mul<mode>_scalar): Removed.
+	(*pred_minus_mul<mode>_extended_scalar): Removed.
+	(*pred_mul_<optab><mode>_undef):  New pattern.
+	(*pred_mul_<optab><mode>): Removed.
+	(*pred_mul_<optab><mode>_scalar): Removed.
+	(*pred_mul_neg_<optab><mode>_undef):  New pattern.
+	(*pred_mul_neg_<optab><mode>): Removed.
+	(*pred_mul_neg_<optab><mode>_scalar): Removed.
+
+2023-09-19  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* config/riscv/riscv-vector-builtins.cc
+	(builtin_decl, expand_builtin): Replace SVE with RVV.
+
+2023-09-19  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* config/riscv/t-riscv: Add dependencies for riscv-builtins.cc,
+	riscv-cmo.def and riscv-scalar-crypto.def.
+
+2023-09-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Extend to vls mode.
+
+2023-09-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Bugfix.
+	* config/riscv/riscv-protos.h (SCALAR_MOVE_MERGED_OP): New enum.
+
+2023-09-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111442
+	* match.pd (zero_one_valued_p): Have the bit_and match not be
+	recursive.
+
+2023-09-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111435
+	* match.pd (zero_one_valued_p): Don't do recursion
+	on converts.
+
+2023-09-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-protos.h (enum darwin_external_toolchain): New.
+	* config/darwin.cc (DSYMUTIL_VERSION): New.
+	(darwin_override_options): Choose the default debug DWARF version
+	depending on the configured dsymutil version.
+
+2023-09-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle explict disable of stdlib option, set
+	defaults for Darwin.
+
+2023-09-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111431
+	* match.pd (`(a == CST) & a`): New pattern.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-selftests.cc (run_broadcast_selftests): Adapt selftests.
+	* config/riscv/vector.md (@vec_duplicate<mode>): Remove.
+
+2023-09-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/105928
+	* config/aarch64/aarch64.cc (aarch64_internal_mov_immediate)
+	Add support for immediates using shifted ORR/BIC.
+	(aarch64_split_dimode_const_store): Apply if we save one instruction.
+	* config/aarch64/aarch64.md (<LOGICAL:optab>_<SHIFT:optab><mode>3):
+	Make pattern global.
+
+2023-09-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-cores.def (neoverse-n1): Place before ares.
+	(neoverse-v1): Place before zeus.
+	(neoverse-v2): Place before demeter.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Add VLS modes.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vlmul_for_greatest_sew_second_ratio): New function.
+	* config/riscv/riscv-vsetvl.def (DEF_SEW_LMUL_FUSE_RULE): Fix bug.
+
+2023-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111294
+	* tree-ssa-threadbackward.cc (back_threader_profitability::m_name):
+	Remove
+	(back_threader::find_paths_to_names): Adjust.
+	(back_threader::maybe_thread_block): Likewise.
+	(back_threader_profitability::possibly_profitable_path_p): Remove
+	code applying extra costs to copies PHIs.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS modes.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md (mov<mode>): New pattern.
+	(*mov<mode>_mem_to_mem): Ditto.
+	(*mov<mode>): Ditto.
+	(@mov<VLS_AVL_REG:mode><P:mode>_lra): Ditto.
+	(*mov<VLS_AVL_REG:mode><P:mode>_lra): Ditto.
+	(*mov<mode>_vls): Ditto.
+	(movmisalign<mode>): Ditto.
+	(@vec_duplicate<mode>): Ditto.
+	* config/riscv/autovec-vls.md: Removed.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111153
+	* config/riscv/autovec.md: Add VLS modes.
+
+2023-09-18  Jason Merrill  <jason@redhat.com>
+
+	* doc/gty.texi: Add discussion of cache vs. deletable.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-vls.md (<optab><mode>3): Deleted.
+	(copysign<mode>3): Ditto.
+	(xorsign<mode>3): Ditto.
+	(<optab><mode>2): Ditto.
+	* config/riscv/autovec.md: Extend VLS modes.
+
+2023-09-18  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR middle-end/111303
+	* match.pd ((t * 2) / 2): Update pattern.
+
 2023-09-17  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
 
 	* config/rs6000/vsx.md (*vctzlsbb_zext_<mode>): New define_insn.

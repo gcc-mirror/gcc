@@ -1,3 +1,27 @@
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* c-omp.cc (c_omp_directives): Add commented out groupprivate
+	directive entry.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* c-opts.cc (c_common_handle_option): Add fdeps_file variable and
+	-fdeps-format=, -fdeps-file=, and -fdeps-target= parsing.
+	* c.opt: Add -fdeps-format=, -fdeps-file=, and -fdeps-target=
+	flags.
+
+2023-09-19  Javier Martinez  <javier.martinez.bugzilla@gmail.com>
+
+	* c-attribs.cc (handle_hot_attribute): remove warning on
+	RECORD_TYPE and UNION_TYPE when in c_dialect_xx.
+	(handle_cold_attribute): Likewise.
+
+2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (c_common_signed_or_unsigned_type): Return INTEGER_TYPE
+	for signed variant of unsigned _BitInt(1).
+
 2023-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/102989

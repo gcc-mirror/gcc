@@ -3969,12 +3969,12 @@ static GTY(()) vec<tree, va_gc> *partial_specializations;
 /* Our module mapper (created lazily).  */
 module_client *mapper;
 
-static module_client *make_mapper (location_t loc);
-inline module_client *get_mapper (location_t loc)
+static module_client *make_mapper (location_t loc, class mkdeps *deps);
+inline module_client *get_mapper (location_t loc, class mkdeps *deps)
 {
   auto *res = mapper;
   if (!res)
-    res = make_mapper (loc);
+    res = make_mapper (loc, deps);
   return res;
 }
 
@@ -14033,7 +14033,7 @@ get_module (const char *ptr)
 /* Create a new mapper connecting to OPTION.  */
 
 module_client *
-make_mapper (location_t loc)
+make_mapper (location_t loc, class mkdeps *deps)
 {
   timevar_start (TV_MODULE_MAPPER);
   const char *option = module_mapper_name;
@@ -14041,7 +14041,7 @@ make_mapper (location_t loc)
     option = getenv ("CXX_MODULE_MAPPER");
 
   mapper = module_client::open_module_client
-    (loc, option, &set_cmi_repo,
+    (loc, option, deps, &set_cmi_repo,
      (save_decoded_options[0].opt_index == OPT_SPECIAL_program_name)
      && save_decoded_options[0].arg != progname
      ? save_decoded_options[0].arg : nullptr);
@@ -18968,6 +18968,9 @@ module_state::do_import (cpp_reader *reader, bool outermost)
       dump () && dump ("CMI is %s", file);
       if (note_module_cmi_yes || inform_cmi_p)
 	inform (loc, "reading CMI %qs", file);
+      /* Add the CMI file to the dependency tracking. */
+      if (cpp_get_deps (reader))
+	deps_add_dep (cpp_get_deps (reader), file);
       fd = open (file, O_RDONLY | O_CLOEXEC | O_BINARY);
       e = errno;
     }
@@ -19503,7 +19506,7 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   dump.push (NULL);
 
   dump () && dump ("Checking include translation '%s'", path);
-  auto *mapper = get_mapper (cpp_main_loc (reader));
+  auto *mapper = get_mapper (cpp_main_loc (reader), cpp_get_deps (reader));
 
   size_t len = strlen (path);
   path = canonicalize_header_name (NULL, loc, true, path, len);
@@ -19619,7 +19622,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 static void
 name_pending_imports (cpp_reader *reader)
 {
-  auto *mapper = get_mapper (cpp_main_loc (reader));
+  auto *mapper = get_mapper (cpp_main_loc (reader), cpp_get_deps (reader));
 
   if (!vec_safe_length (pending_imports))
     /* Not doing anything.  */
@@ -19834,7 +19837,8 @@ preprocessed_module (cpp_reader *reader)
 		  && (module->is_interface () || module->is_partition ()))
 		deps_add_module_target (deps, module->get_flatname (),
 					maybe_add_cmi_prefix (module->filename),
-					module->is_header());
+					module->is_header (),
+					module->is_exported ());
 	      else
 		deps_add_module_dep (deps, module->get_flatname ());
 	    }
@@ -20088,7 +20092,7 @@ init_modules (cpp_reader *reader)
 
   if (!flag_module_lazy)
     /* Get the mapper now, if we're not being lazy.  */
-    get_mapper (cpp_main_loc (reader));
+    get_mapper (cpp_main_loc (reader), cpp_get_deps (reader));
 
   if (!flag_preprocess_only)
     {
@@ -20298,7 +20302,7 @@ late_finish_module (cpp_reader *reader,  module_processing_cookie *cookie,
 
   if (!errorcount)
     {
-      auto *mapper = get_mapper (cpp_main_loc (reader));
+      auto *mapper = get_mapper (cpp_main_loc (reader), cpp_get_deps (reader));
       mapper->ModuleCompiled (state->get_flatname ());
     }
   else if (cookie->cmi_name)

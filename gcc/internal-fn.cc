@@ -247,6 +247,10 @@ expand_fn_using_insn (gcall *stmt, insn_code icode, unsigned int noutputs,
 	create_convert_operand_from (&ops[opno], rhs_rtx,
 				     TYPE_MODE (rhs_type),
 				     TYPE_UNSIGNED (rhs_type));
+      else if (TREE_CODE (rhs) == SSA_NAME
+	       && SSA_NAME_IS_DEFAULT_DEF (rhs)
+	       && VAR_P (SSA_NAME_VAR (rhs)))
+	create_undefined_input_operand (&ops[opno], TYPE_MODE (rhs_type));
       else
 	create_input_operand (&ops[opno], rhs_rtx, TYPE_MODE (rhs_type));
       opno += 1;

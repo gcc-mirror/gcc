@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "selftest.h"
 #include "target.h"
+#include "builtins.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -14370,7 +14371,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 
       /* Calculate the complete set of arguments used to
 	 specialize R.  */
-      if (use_spec_table)
+      if (use_spec_table && !lambda_fntype)
 	{
 	  argvec = tsubst_template_args (DECL_TI_ARGS
 					 (DECL_TEMPLATE_RESULT
@@ -14380,14 +14381,11 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	    return error_mark_node;
 
 	  /* Check to see if we already have this specialization.  */
-	  if (!lambda_fntype)
-	    {
-	      hash = spec_hasher::hash (gen_tmpl, argvec);
-	      if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
-		/* The spec for these args might be a partial instantiation of the
-		   template, but here what we want is the FUNCTION_DECL.  */
-		return STRIP_TEMPLATE (spec);
-	    }
+	  hash = spec_hasher::hash (gen_tmpl, argvec);
+	  if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
+	    /* The spec for these args might be a partial instantiation of the
+	       template, but here what we want is the FUNCTION_DECL.  */
+	    return STRIP_TEMPLATE (spec);
 	}
       else
 	argvec = args;
@@ -14704,6 +14702,8 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
 	    /* Type partial instantiations are stored as the type by
 	       lookup_template_class_1, not here as the template.  */
 	    spec = CLASSTYPE_TI_TEMPLATE (spec);
+	  else if (TREE_CODE (spec) != TEMPLATE_DECL)
+	    spec = DECL_TI_TEMPLATE (spec);
 	  return spec;
 	}
     }
@@ -14754,7 +14754,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
 	inner = tsubst_aggr_type (inner, args, complain,
 				  in_decl, /*entering*/1);
       else
-	inner = tsubst (inner, args, complain, in_decl);
+	inner = tsubst_decl (inner, args, complain, /*use_spec_table=*/false);
     }
   --processing_template_decl;
   if (inner == error_mark_node)
@@ -14780,12 +14780,11 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
     }
   else
     {
-      if (TREE_CODE (inner) == FUNCTION_DECL)
-	/* Set DECL_TI_ARGS to the full set of template arguments, which
-	   tsubst_function_decl didn't do due to use_spec_table=false.  */
-	DECL_TI_ARGS (inner) = full_args;
-
       DECL_TI_TEMPLATE (inner) = r;
+      /* Set DECL_TI_ARGS to the full set of template arguments,
+	 which tsubst_function_decl / tsubst_decl didn't do due to
+	 use_spec_table=false.  */
+      DECL_TI_ARGS (inner) = full_args;
       DECL_TI_ARGS (r) = DECL_TI_ARGS (inner);
     }
 
@@ -14813,9 +14812,17 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   if (PRIMARY_TEMPLATE_P (t))
     DECL_PRIMARY_TEMPLATE (r) = r;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL && !lambda_fntype)
-    /* Record this non-type partial instantiation.  */
-    register_specialization (r, t, full_args, false, hash);
+  if (!lambda_fntype && !class_p)
+    {
+      /* Record this non-type partial instantiation.  */
+      /* FIXME we'd like to always register the TEMPLATE_DECL, or always
+	 the DECL_TEMPLATE_RESULT, but it seems the modules code relies
+	 on this current behavior.  */
+      if (TREE_CODE (inner) == FUNCTION_DECL)
+	register_specialization (r, t, full_args, false, hash);
+      else
+	register_specialization (inner, t, full_args, false, hash);
+    }
 
   return r;
 }
@@ -21031,6 +21038,25 @@ tsubst_copy_and_build (tree t,
 					    /*done=*/false,
 					    /*address_p=*/false);
 	  }
+	else if (CALL_EXPR_STATIC_CHAIN (t)
+		 && TREE_CODE (function) == FUNCTION_DECL
+		 && fndecl_built_in_p (function, BUILT_IN_CLASSIFY_TYPE))
+	  {
+	    tree type = tsubst (CALL_EXPR_STATIC_CHAIN (t), args, complain,
+				in_decl);
+	    if (dependent_type_p (type))
+	      {
+		ret = build_vl_exp (CALL_EXPR, 4);
+		CALL_EXPR_FN (ret) = function;
+		CALL_EXPR_STATIC_CHAIN (ret) = type;
+		CALL_EXPR_ARG (ret, 0)
+		  = build_min (SIZEOF_EXPR, size_type_node, type);
+		TREE_TYPE (ret) = integer_type_node;
+	      }
+	    else
+	      ret = build_int_cst (integer_type_node, type_to_class (type));
+	    RETURN (ret);
+	  }
 	else if (koenig_p
 		 && (identifier_p (function)
 		     || (TREE_CODE (function) == TEMPLATE_ID_EXPR
@@ -23990,8 +24016,7 @@ try_class_unification (tree tparms, tree targs, tree parm, tree arg,
     return NULL_TREE;
   else if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
     /* Matches anything.  */;
-  else if (most_general_template (CLASSTYPE_TI_TEMPLATE (arg))
-	   != most_general_template (CLASSTYPE_TI_TEMPLATE (parm)))
+  else if (CLASSTYPE_TI_TEMPLATE (arg) != CLASSTYPE_TI_TEMPLATE (parm))
     return NULL_TREE;
 
   /* We need to make a new template argument vector for the call to
@@ -24032,8 +24057,10 @@ try_class_unification (tree tparms, tree targs, tree parm, tree arg,
   if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
     err = unify_bound_ttp_args (tparms, targs, parm, arg, explain_p);
   else
-    err = unify (tparms, targs, CLASSTYPE_TI_ARGS (parm),
-		 CLASSTYPE_TI_ARGS (arg), UNIFY_ALLOW_NONE, explain_p);
+    err = unify (tparms, targs,
+		 INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (parm)),
+		 INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (arg)),
+		 UNIFY_ALLOW_NONE, explain_p);
 
   return err ? NULL_TREE : arg;
 }
@@ -24559,7 +24586,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
      even if ARG == PARM, since we won't record unifications for the
      template parameters.  We might need them if we're trying to
      figure out which of two things is more specialized.  */
-  if (arg == parm && !uses_template_parms (parm))
+  if (arg == parm
+      && (DECL_P (parm) || !uses_template_parms (parm)))
     return unify_success (explain_p);
 
   /* Handle init lists early, so the rest of the function can assume
@@ -25158,8 +25186,13 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	    /* There's no chance of unification succeeding.  */
 	    return unify_type_mismatch (explain_p, parm, arg);
 
-	  return unify (tparms, targs, CLASSTYPE_TI_ARGS (parm),
-			CLASSTYPE_TI_ARGS (t), UNIFY_ALLOW_NONE, explain_p);
+	  if (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))
+	    return unify (tparms, targs,
+			  INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (parm)),
+			  INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (t)),
+			  UNIFY_ALLOW_NONE, explain_p);
+	  else
+	    return unify_success (explain_p);
 	}
       else if (!same_type_ignoring_top_level_qualifiers_p (parm, arg))
 	return unify_type_mismatch (explain_p, parm, arg);
@@ -25278,11 +25311,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 		    strict, explain_p);
 
     case CONST_DECL:
-      if (DECL_TEMPLATE_PARM_P (parm))
-	return unify (tparms, targs, DECL_INITIAL (parm), arg, strict, explain_p);
-      if (arg != scalar_constant_value (parm))
-	return unify_template_argument_mismatch (explain_p, parm, arg);
-      return unify_success (explain_p);
+      /* CONST_DECL should already have been folded to its DECL_INITIAL.  */
+      gcc_unreachable ();
 
     case FIELD_DECL:
     case TEMPLATE_DECL:

@@ -3592,6 +3592,12 @@ lazily_declare_fn (special_function_kind sfk, tree type)
     /* Create appropriate clones.  */
     clone_cdtor (fn, /*update_methods=*/true);
 
+  /* Classes, structs or unions TYPE marked with hotness attributes propagate
+     the attribute to all methods.  This is typically done in
+     check_bases_and_members, but we must also inject them here for deferred
+     lazily-declared functions.  */
+  maybe_propagate_warmth_attributes (fn, type);
+
   return fn;
 }
 

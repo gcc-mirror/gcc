@@ -2874,7 +2874,10 @@ improving code locality of non-cold parts of program.  The paths leading
 to calls of cold functions within code are marked as unlikely by the branch
 prediction mechanism.  It is thus useful to mark functions used to handle
 unlikely conditions, such as @code{perror}, as cold to improve optimization
-of hot functions that do call marked functions in rare occasions.
+of hot functions that do call marked functions in rare occasions.  In C++,
+the @code{cold} attribute can be applied to types with the effect of being
+propagated to member functions.  See
+@ref{C++ Attributes}.
 
 When profile feedback is available, via @option{-fprofile-use}, cold functions
 are automatically detected and this attribute is ignored.
@@ -3293,7 +3296,9 @@ The @code{hot} attribute on a function is used to inform the compiler that
 the function is a hot spot of the compiled program.  The function is
 optimized more aggressively and on many targets it is placed into a special
 subsection of the text section so all hot functions appear close together,
-improving locality.
+improving locality.  In C++, the @code{hot} attribute can be applied to types
+with the effect of being propagated to member functions.  See
+@ref{C++ Attributes}.
 
 When profile feedback is available, via @option{-fprofile-use}, hot functions
 are automatically detected and this attribute is ignored.
@@ -14555,6 +14560,30 @@ need not be a constant.  @xref{Object Size Checking}, for a detailed
 description of the function.
 @enddefbuiltin
 
+@defbuiltin{int __builtin_classify_type (@var{arg})}
+@defbuiltinx{int __builtin_classify_type (@var{type})}
+The @code{__builtin_classify_type} returns a small integer with a category
+of @var{arg} argument's type, like void type, integer type, enumeral type,
+boolean type, pointer type, reference type, offset type, real type, complex
+type, function type, method type, record type, union type, array type,
+string type, etc.  When the argument is an expression, for
+backwards compatibility reason the argument is promoted like arguments
+passed to @code{...} in varargs function, so some classes are never returned
+in certain languages.  Alternatively, the argument of the built-in
+function can be a typename, such as the @code{typeof} specifier.
+
+@smallexample
+int a[2];
+__builtin_classify_type (a) == __builtin_classify_type (int[5]);
+__builtin_classify_type (a) == __builtin_classify_type (void*);
+__builtin_classify_type (typeof (a)) == __builtin_classify_type (int[5]);
+@end smallexample
+
+The first comparison will never be true, as @var{a} is implicitly converted
+to pointer.  The last two comparisons will be true as they classify
+pointers in the second case and arrays in the last case.
+@enddefbuiltin
+
 @defbuiltin{double __builtin_huge_val (void)}
 Returns a positive infinity, if supported by the floating-point format,
 else @code{DBL_MAX}.  This function is suitable for implementing the
@@ -25604,6 +25633,34 @@ control a resource, such as @code{std::lock_guard}.
 
 This attribute is also accepted in C, but it is unnecessary because C
 does not have constructors or destructors.
+
+@cindex @code{cold} type attribute
+@item cold
+
+In addition to functions and labels, GNU C++ allows the @code{cold}
+attribute to be used on C++ classes, structs, or unions.  Applying
+the @code{cold} attribute on a type has the effect of treating every
+member function of the type, including implicit special member
+functions, as cold.  If a member function is marked with the
+@code{hot} function attribute, the @code{hot} attribute takes
+precedence and the @code{cold} attribute is not propagated.
+
+For the effects of the @code{cold} attribute on functions, see
+@ref{Common Function Attributes}.
+
+@cindex @code{hot} type attribute
+@item hot
+
+In addition to functions and labels, GNU C++ allows the @code{hot}
+attribute to be used on C++ classes, structs, or unions.  Applying
+the @code{hot} attribute on a type has the effect of treating every
+member function of the type, including implicit special member
+functions, as hot.  If a member function is marked with the
+@code{cold} function attribute, the @code{cold} attribute takes
+precedence and the @code{hot} attribute is not propagated.
+
+For the effects of the @code{hot} attribute on functions, see
+@ref{Common Function Attributes}.
 
 @end table
 

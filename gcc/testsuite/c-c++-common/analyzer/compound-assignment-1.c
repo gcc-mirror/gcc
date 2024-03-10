@@ -68,5 +68,8 @@ called_by_test_5b (void)
 
 void test_5b (void)
 {
-  called_by_test_5b ();
-} /* { dg-warning "leak of '<anonymous>.ptr_wrapper::ptr'" "" { target c++ } } */
+  called_by_test_5b (); }
+/* { dg-warning "leak of '<anonymous>.ptr_wrapper::ptr'" "" { target c++ } .-1 } */
+/* The closing } above is intentionally on the same line as the call, because
+   otherwise the exact line of the diagnostics depends on whether the
+   called_by_test_5b () call satisfies aggregate_value_p or not.  */

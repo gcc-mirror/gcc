@@ -118,7 +118,10 @@ bp_unpack_machine_mode (struct bitpack_d *bp)
   lto_input_block *ib = (class lto_input_block *) bp->stream;
   int last = 1 << ib->file_data->mode_bits;
   unsigned ix = bp_unpack_enum (bp, machine_mode, last);
-  return (machine_mode) ib->file_data->mode_table[ix];
+  if (ib->file_data->mode_table)
+    return (machine_mode) ib->file_data->mode_table[ix];
+  else
+    return (machine_mode) ix;
 }
 
 #endif  /* GCC_TREE_STREAMER_H  */

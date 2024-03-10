@@ -141,9 +141,8 @@ cxx_print_decl (FILE *file, tree node, int indent)
 void
 cxx_print_type (FILE *file, tree node, int indent)
 {
-  if (TYPE_LANG_SPECIFIC (node)
-      && TYPE_TEMPLATE_INFO (node))
-    print_node (file, "template-info", TYPE_TEMPLATE_INFO (node), indent + 4);
+  if (tree ti = TYPE_TEMPLATE_INFO (node))
+    print_node (file, "template-info", ti, indent + 4);
 
   switch (TREE_CODE (node))
     {

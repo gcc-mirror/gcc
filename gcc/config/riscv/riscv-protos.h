@@ -345,6 +345,10 @@ enum insn_type : unsigned int
   SCALAR_MOVE_OP = HAS_DEST_P | HAS_MASK_P | USE_ONE_TRUE_MASK_P | HAS_MERGE_P
 		   | USE_VUNDEF_MERGE_P | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P
 		   | UNARY_OP_P,
+
+  SCALAR_MOVE_MERGED_OP = HAS_DEST_P | HAS_MASK_P | USE_ONE_TRUE_MASK_P
+			  | HAS_MERGE_P | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P
+			  | UNARY_OP_P,
 };
 
 enum vlmul_type
@@ -455,7 +459,7 @@ void expand_select_vl (rtx *);
 void expand_load_store (rtx *, bool);
 void expand_gather_scatter (rtx *, bool);
 void expand_cond_len_ternop (unsigned, rtx *);
-void prepare_ternary_operands (rtx *, bool = false);
+void prepare_ternary_operands (rtx *);
 void expand_lanes_load_store (rtx *, bool);
 void expand_fold_extract_last (rtx *);
 

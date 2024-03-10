@@ -452,10 +452,10 @@ const struct attribute_spec c_common_attribute_table[] =
   { "alloc_size",	      1, 2, false, true, true, false,
 			      handle_alloc_size_attribute,
 	                      attr_alloc_exclusions },
-  { "cold",                   0, 0, true,  false, false, false,
+  { "cold",		      0, 0, false,  false, false, false,
 			      handle_cold_attribute,
 	                      attr_cold_hot_exclusions },
-  { "hot",                    0, 0, true,  false, false, false,
+  { "hot",		      0, 0, false,  false, false, false,
 			      handle_hot_attribute,
 	                      attr_cold_hot_exclusions },
   { "no_address_safety_analysis",
@@ -1110,6 +1110,29 @@ handle_hot_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     {
       /* Attribute hot processing is done later with lookup_attribute.  */
     }
+  else if ((TREE_CODE (*node) == RECORD_TYPE
+	    || TREE_CODE (*node) == UNION_TYPE)
+	   && c_dialect_cxx ()
+	   && (flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+    {
+      /* Check conflict here as decl_attributes will otherwise only catch
+	 it late at the function when the attribute is used on a class.  */
+      tree cold_attr = lookup_attribute ("cold", TYPE_ATTRIBUTES (*node));
+      if (cold_attr)
+	{
+	  warning (OPT_Wattributes, "ignoring attribute %qE because it "
+		   "conflicts with attribute %qs", name, "cold");
+	  *no_add_attrs = true;
+	}
+    }
+  else if (flags & ((int) ATTR_FLAG_FUNCTION_NEXT
+		    | (int) ATTR_FLAG_DECL_NEXT))
+    {
+	/* Avoid applying the attribute to a function return type when
+	   used as:  void __attribute ((hot)) foo (void).  It will be
+	   passed to the function.  */
+	*no_add_attrs = true;
+    }
   else
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
@@ -1130,6 +1153,29 @@ handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       || TREE_CODE (*node) == LABEL_DECL)
     {
       /* Attribute cold processing is done later with lookup_attribute.  */
+    }
+  else if ((TREE_CODE (*node) == RECORD_TYPE
+	    || TREE_CODE (*node) == UNION_TYPE)
+	   && c_dialect_cxx ()
+	   && (flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+    {
+      /* Check conflict here as decl_attributes will otherwise only catch
+	 it late at the function when the attribute is used on a class.  */
+      tree hot_attr = lookup_attribute ("hot", TYPE_ATTRIBUTES (*node));
+      if (hot_attr)
+	{
+	  warning (OPT_Wattributes, "ignoring attribute %qE because it "
+		   "conflicts with attribute %qs", name, "hot");
+	  *no_add_attrs = true;
+	}
+    }
+  else if (flags & ((int) ATTR_FLAG_FUNCTION_NEXT
+		    | (int) ATTR_FLAG_DECL_NEXT))
+    {
+	/* Avoid applying the attribute to a function return type when
+	   used as:  void __attribute ((cold)) foo (void).  It will be
+	   passed to the function.  */
+	*no_add_attrs = true;
     }
   else
     {

@@ -256,6 +256,18 @@ MT
 C ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
 -MT <target>	Add a target that does not require quoting.
 
+fdeps-format=
+C ObjC C++ ObjC++ NoDriverArg Joined MissingArgError(missing format after %qs)
+Structured format for output dependency information.  Supported (\"p1689r5\").
+
+fdeps-file=
+C ObjC C++ ObjC++ NoDriverArg Joined MissingArgError(missing output path after %qs)
+File for output dependency information.
+
+fdeps-target=
+C ObjC C++ ObjC++ NoDriverArg Joined MissingArgError(missing path after %qs)
+-fdeps-target=obj.o Output file for the compile step.
+
 P
 C ObjC C++ ObjC++
 Do not generate #line directives.

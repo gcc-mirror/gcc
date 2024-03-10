@@ -5,21 +5,21 @@ consteval int bar (int i) { if (i != 1) throw 1; return 0; }	// { dg-error "is n
 
 constexpr int a = bar (1);
 constexpr int b = bar (2);		// { dg-message "in 'constexpr' expansion of" }
-constexpr int c = 0 ? bar (3) : 1;	// { dg-message "in 'constexpr' expansion of" }
+constexpr int c = 0 ? bar (3) : 1;
 const int d = bar (4);			// { dg-message "in 'constexpr' expansion of" }
-const int e = 0 ? bar (5) : 1;		// { dg-message "in 'constexpr' expansion of" }
+const int e = 0 ? bar (5) : 1;
 int f = bar (1);
 int g = bar (6);			// { dg-message "in 'constexpr' expansion of" }
-int h = 0 ? bar (7) : 1;		// { dg-message "in 'constexpr' expansion of" }
+int h = 0 ? bar (7) : 1;
 
 void
 foo ()
 {
   constexpr int a = bar (1);
   constexpr int b = bar (2);		// { dg-message "in 'constexpr' expansion of" }
-  constexpr int c = 0 ? bar (3) : 1;	// { dg-message "in 'constexpr' expansion of" }
+  constexpr int c = 0 ? bar (3) : 1;
   const int d = bar (4);		// { dg-message "in 'constexpr' expansion of" }
-  const int e = 0 ? bar (5) : 1;	// { dg-message "in 'constexpr' expansion of" }
+  const int e = 0 ? bar (5) : 1;
   int f = bar (1);
   int g = bar (6);			// { dg-message "in 'constexpr' expansion of" }
   int h = 0 ? bar (7) : 1;		// { dg-message "in 'constexpr' expansion of" }
@@ -33,13 +33,13 @@ foo ()
   else
     bar (12);				// { dg-message "in 'constexpr' expansion of" }
   if constexpr (0)
-    bar (13);				// { dg-message "in 'constexpr' expansion of" }
+    bar (13);
   else
     bar (14);				// { dg-message "in 'constexpr' expansion of" }
   if constexpr (1)
     bar (15);				// { dg-message "in 'constexpr' expansion of" }
   else
-    bar (16);				// { dg-message "in 'constexpr' expansion of" }
+    bar (16);
 }
 
 consteval int
@@ -77,22 +77,25 @@ template <typename T>
 void
 qux ()
 {
+  // Used to give errors errors here, but not since we moved consteval
+  // function folding to cp_fold_r which isn't called on uninstantiated
+  // templates.
   if (0)
-    bar (2);				// { dg-message "in 'constexpr' expansion of" }
+    bar (2);
   else
-    bar (3);				// { dg-message "in 'constexpr' expansion of" }
+    bar (3);
   if (1)
-    bar (4);				// { dg-message "in 'constexpr' expansion of" }
+    bar (4);
   else
-    bar (5);				// { dg-message "in 'constexpr' expansion of" }
+    bar (5);
   if constexpr (0)
-    bar (6);				// { dg-message "in 'constexpr' expansion of" }
+    bar (6);
   else
-    bar (7);				// { dg-message "in 'constexpr' expansion of" }
+    bar (7);
   if constexpr (1)
-    bar (8);				// { dg-message "in 'constexpr' expansion of" }
+    bar (8);
   else
-    bar (9);				// { dg-message "in 'constexpr' expansion of" }
+    bar (9);
   if (0)
     bar ((T) 2);
   else

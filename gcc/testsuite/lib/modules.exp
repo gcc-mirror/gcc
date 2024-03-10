@@ -1,0 +1,100 @@
+#   Copyright (C) 1997-2022 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Verify various kinds of gcov output: line counts, branch percentages,
+# and call return percentages.  None of this is language-specific.
+
+load_lib "target-supports.exp"
+
+#
+# clean-p1689-file -- delete a working file the compiler creates for p1689
+#
+# TESTCASE is the name of the test.
+# SUFFIX is file suffix
+
+proc clean-p1689-file { testcase suffix } {
+    set basename [file tail $testcase]
+    set base [file rootname $basename]
+    remote_file host delete $base.$suffix
+}
+
+#
+# clean-p1689 -- delete the working files the compiler creates for p1689
+#
+# TESTCASE is the name of the test.
+#
+proc clean-p1689 { testcase } {
+    clean-p1689-file $testcase "d"
+    clean-p1689-file $testcase "ddi"
+}
+
+# Call by dg-final to check a P1689 dependency file
+
+proc run-check-p1689-valid { depfile template } {
+    global srcdir subdir
+    # Extract the test file name from the arguments.
+    set testcase [file rootname [file tail $depfile]]
+
+    verbose "Running P1689 validation for $testcase in $srcdir/$subdir" 2
+    set testcase [remote_download host $testcase]
+
+    set pytest_script "test-p1689.py"
+    if { ![check_effective_target_recent_python3] } {
+      unsupported "$pytest_script python3 is missing"
+      return
+    }
+
+    verbose "running script" 1
+    spawn -noecho python3 $srcdir/$subdir/$pytest_script --all --actual $depfile --expect $srcdir/$subdir/$template
+
+    expect {
+      -re "ERROR: (\[^\r\n\]*)" {
+       fail $expect_out(0,string)
+       exp_continue
+      }
+    }
+
+    clean-p1689 $testcase
+}
+
+proc run-check-module-dep { depfile flag expected } {
+    global srcdir subdir
+    # Extract the test file name from the arguments.
+    set testcase [file rootname [file tail $depfile]]
+
+    verbose "Verifying dependencies for $testcase in $srcdir/$subdir" 2
+    set testcase [remote_download host $testcase]
+
+    set pytest_script "test-depfile.py"
+    if { ![check_effective_target_recent_python3] } {
+      unsupported "$pytest_script python3 is missing"
+      return
+    }
+
+    verbose "running script test-depfile.py" 1
+    spawn -noecho python3 $srcdir/$subdir/$pytest_script --all --depfile $depfile $flag $expected
+
+    expect {
+      -re "ERROR: (\[^\r\n\]*)" {
+       fail $expect_out(0,string)
+       exp_continue
+      }
+    }
+}
+
+proc run-check-module-dep-expect-input { depfile expected } {
+    run-check-module-dep $depfile "--expect-input" $expected
+}

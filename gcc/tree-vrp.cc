@@ -56,11 +56,17 @@ along with GCC; see the file COPYING3.  If not see
 // This class is utilized by VRP and ranger to remove __builtin_unreachable
 // calls, and reflect any resulting global ranges.
 //
-// maybe_register_block () is called on basic blocks, and if that block
-// matches the pattern of one branch being a builtin_unreachable, register
-// the resulting executable edge in a list.
+// maybe_register() is called on condition statements , and if that
+// matches the pattern of one branch being a builtin_unreachable, either check
+// for early removal or register the resulting executable edge in a list.
 //
-// After all blocks have been processed, remove_and_update_globals() will
+// During early/non-final processing, we check to see if ALL exports from the
+// block can be safely updated with a new global value.  If they can, then
+// we rewrite the condition and update those values immediately.  Otherwise
+// the unreachable condition is left in the IL until the final pass.
+//
+// During final processing, after all blocks have been registered,
+// remove_and_update_globals() will
 // - check all exports from registered blocks
 // - ensure the cache entry of each export is set with the appropriate range
 // - rewrite the conditions to take the executable edge
@@ -71,23 +77,25 @@ along with GCC; see the file COPYING3.  If not see
 
 class remove_unreachable {
 public:
-  remove_unreachable (gimple_ranger &r) : m_ranger (r) { m_list.create (30); }
+  remove_unreachable (gimple_ranger &r, bool all) : m_ranger (r), final_p (all)
+    { m_list.create (30); }
   ~remove_unreachable () { m_list.release (); }
-  void maybe_register_block (basic_block bb);
-  bool remove_and_update_globals (bool final_p);
+  void handle_early (gimple *s, edge e);
+  void maybe_register (gimple *s);
+  bool remove_and_update_globals ();
   vec<std::pair<int, int> > m_list;
   gimple_ranger &m_ranger;
+  bool final_p;
 };
 
 // Check if block BB has a __builtin_unreachable () call on one arm, and
 // register the executable edge if so.
 
 void
-remove_unreachable::maybe_register_block (basic_block bb)
+remove_unreachable::maybe_register (gimple *s)
 {
-  gimple *s = gimple_outgoing_range_stmt_p (bb);
-  if (!s || gimple_code (s) != GIMPLE_COND)
-    return;
+  gcc_checking_assert  (gimple_code (s) == GIMPLE_COND);
+  basic_block bb = gimple_bb (s);
 
   edge e0 = EDGE_SUCC (bb, 0);
   basic_block bb0 = e0->dest;
@@ -102,21 +110,150 @@ remove_unreachable::maybe_register_block (basic_block bb)
   if (un0 == un1)
     return;
 
-  if (un0)
-    m_list.safe_push (std::make_pair (e1->src->index, e1->dest->index));
+  // Constant expressions are ignored.
+  if (TREE_CODE (gimple_cond_lhs (s)) != SSA_NAME
+      && TREE_CODE (gimple_cond_rhs (s)) != SSA_NAME)
+    return;
+
+  edge e = un0 ? e1 : e0;
+
+  if (!final_p)
+    handle_early (s, e);
   else
-    m_list.safe_push (std::make_pair (e0->src->index, e0->dest->index));
+    m_list.safe_push (std::make_pair (e->src->index, e->dest->index));
 }
+
+// Return true if all uses of NAME are dominated by by block BB.  1 use
+// is allowed in block BB, This is one we hope to remove.
+// ie
+//  _2 = _1 & 7;
+//  if (_2 != 0)
+//    goto <bb 3>; [0.00%]
+//  Any additional use of _1 or _2 in this block invalidates early replacement.
+
+static bool
+fully_replaceable (tree name, basic_block bb)
+{
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  bool saw_in_bb = false;
+
+  // If a name loads from memory, we may lose information used in
+  // commoning opportunities later.  See tree-ssa/ssa-pre-34.c.
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  if (gimple_vuse (def_stmt))
+    return false;
+
+  FOR_EACH_IMM_USE_FAST (use_p, iter, name)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+      // Ignore debug stmts and the branch.
+      if (is_gimple_debug (use_stmt))
+	continue;
+      basic_block use_bb = gimple_bb (use_stmt);
+      // Only one use in the block allowed to avoid complicated cases.
+      if (use_bb == bb)
+	{
+	  if (saw_in_bb)
+	    return false;
+	  else
+	    saw_in_bb = true;
+	}
+      else if (!dominated_by_p (CDI_DOMINATORS, use_bb, bb))
+	return false;
+    }
+  return true;
+}
+
+// This routine is called to check builtin_unreachable calls during any
+// time before final removal.  The only way we can be sure it does not
+// provide any additional information is to expect that we can update the
+// global values of all exports from a block.   This means the branch
+// to the unreachable call must dominate all uses of those ssa-names, with
+// the exception that there can be a single use in the block containing
+// the branch. IF the name used in the branch is defined in the block, it may
+// contain the name of something else that will be an export.  And likewise
+// that may also use another name that is an export etc.
+//
+// As long as there is only a single use, we can be sure that there are no other
+// side effects (like being passed to a call, or stored to a global, etc.
+// This means we will miss cases where there are 2 or more uses that have
+// no interveneing statements that may had side effects, but it catches most
+// of the caes we care about, and prevents expensive in depth analysis.
+//
+// Ranger will still reflect the proper ranges at other places in these missed
+// cases, we simply will not remove/set globals early.
+
+void
+remove_unreachable::handle_early (gimple *s, edge e)
+{
+  bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;
+  bool rhs_p = TREE_CODE (gimple_cond_rhs (s)) == SSA_NAME;
+  // Do not remove __builtin_unreachable if it confers a relation, or
+  // that relation may be lost in subsequent passes.
+  if (lhs_p && rhs_p)
+    return;
+  // Do not remove addresses early. ie if (x == &y)
+  if (lhs_p && TREE_CODE (gimple_cond_rhs (s)) == ADDR_EXPR)
+    return;
+
+  gcc_checking_assert (gimple_outgoing_range_stmt_p (e->src) == s);
+  gcc_checking_assert (!final_p);
+
+  // Check if every export use is dominated by this branch.
+  tree name;
+  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+    {
+      if (!fully_replaceable (name, e->src))
+	return;
+    }
+
+  // Set the global value for each.
+  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+    {
+      Value_Range r (TREE_TYPE (name));
+      m_ranger.range_on_entry (r, e->dest, name);
+      // Nothing at this late stage we can do if the write fails.
+      if (!set_range_info (name, r))
+	continue;
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Global Exported (via early unreachable): ");
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fprintf (dump_file, " = ");
+	  gimple_range_global (r, name);
+	  r.dump (dump_file);
+	  fputc ('\n', dump_file);
+	}
+    }
+
+  tree ssa = lhs_p ? gimple_cond_lhs (s) : gimple_cond_rhs (s);
+
+  // Rewrite the condition.
+  if (e->flags & EDGE_TRUE_VALUE)
+    gimple_cond_make_true (as_a<gcond *> (s));
+  else
+    gimple_cond_make_false (as_a<gcond *> (s));
+  update_stmt (s);
+
+  // If the name on S is defined in this block, see if there is DCE work to do.
+  if (gimple_bb (SSA_NAME_DEF_STMT (ssa)) == e->src)
+    {
+      auto_bitmap dce;
+      bitmap_set_bit (dce, SSA_NAME_VERSION (ssa));
+      simple_dce_from_worklist (dce);
+    }
+}
+
 
 // Process the edges in the list, change the conditions and removing any
 // dead code feeding those conditions.  Calculate the range of any
 // names that may have been exported from those blocks, and determine if
 // there is any updates to their global ranges..
-// FINAL_P indicates all builtin_unreachable calls should be removed.
 // Return true if any builtin_unreachables/globals eliminated/updated.
 
 bool
-remove_unreachable::remove_and_update_globals (bool final_p)
+remove_unreachable::remove_and_update_globals ()
 {
   if (m_list.length () == 0)
     return false;
@@ -140,19 +277,7 @@ remove_unreachable::remove_and_update_globals (bool final_p)
       edge e = find_edge (src, dest);
       gimple *s = gimple_outgoing_range_stmt_p (e->src);
       gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
-      bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;
-      bool rhs_p = TREE_CODE (gimple_cond_rhs (s)) == SSA_NAME;
-      // Do not remove __builtin_unreachable if it confers a relation, or
-      // that relation will be lost in subsequent passes.  Unless its the
-      // final pass.
-      if (!final_p && lhs_p && rhs_p)
-	continue;
-      // If this is already a constant condition, don't look either
-      if (!lhs_p && !rhs_p)
-	continue;
-      // Do not remove addresses early. ie if (x == &y)
-      if (!final_p && lhs_p && TREE_CODE (gimple_cond_rhs (s)) == ADDR_EXPR)
-	continue;
+
       bool dominate_exit_p = true;
       FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
 	{
@@ -827,9 +952,10 @@ class rvrp_folder : public substitute_and_fold_engine
 {
 public:
 
-  rvrp_folder (gimple_ranger *r) : substitute_and_fold_engine (),
-				   m_unreachable (*r),
-				   m_simplifier (r, r->non_executable_edge_flag)
+  rvrp_folder (gimple_ranger *r, bool all)
+    : substitute_and_fold_engine (),
+      m_unreachable (*r, all),
+      m_simplifier (r, r->non_executable_edge_flag)
   {
     m_ranger = r;
     m_pta = new pointer_equiv_analyzer (m_ranger);
@@ -883,8 +1009,6 @@ public:
   void post_fold_bb (basic_block bb) override
   {
     m_pta->leave (bb);
-    if (cfun->after_inlining)
-      m_unreachable.maybe_register_block (bb);
   }
 
   void pre_fold_stmt (gimple *stmt) override
@@ -893,7 +1017,12 @@ public:
     // If this is the last stmt and there are inferred ranges, reparse the
     // block for transitive inferred ranges that occur earlier in the block.
     if (stmt == m_last_bb_stmt)
-      m_ranger->register_transitive_inferred_ranges (gimple_bb (stmt));
+      {
+	m_ranger->register_transitive_inferred_ranges (gimple_bb (stmt));
+	// Also check for builtin_unreachable calls.
+	if (cfun->after_inlining && gimple_code (stmt) == GIMPLE_COND)
+	  m_unreachable.maybe_register (stmt);
+      }
   }
 
   bool fold_stmt (gimple_stmt_iterator *gsi) override
@@ -928,11 +1057,11 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
 
   set_all_edges_as_executable (fun);
   gimple_ranger *ranger = enable_ranger (fun, false);
-  rvrp_folder folder (ranger);
+  rvrp_folder folder (ranger, final_p);
   phi_analysis_initialize (ranger->const_query ());
   folder.substitute_and_fold ();
   // Remove tagged builtin-unreachable and maybe update globals.
-  folder.m_unreachable.remove_and_update_globals (final_p);
+  folder.m_unreachable.remove_and_update_globals ();
   if (dump_file && (dump_flags & TDF_DETAILS))
     ranger->dump (dump_file);
 

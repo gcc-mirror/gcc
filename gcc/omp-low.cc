@@ -3951,6 +3951,7 @@ scan_omp_1_op (tree *tp, int *walk_subtrees, void *data)
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   omp_context *ctx = (omp_context *) wi->info;
   tree t = *tp;
+  tree tmp;
 
   switch (TREE_CODE (t))
     {
@@ -3960,11 +3961,36 @@ scan_omp_1_op (tree *tp, int *walk_subtrees, void *data)
     case RESULT_DECL:
       if (ctx)
 	{
+	  tmp = NULL_TREE;
+	  if (TREE_CODE (t) == VAR_DECL
+	      && (tmp = lookup_attribute ("omp allocate var",
+					  DECL_ATTRIBUTES (t))) != NULL_TREE)
+	    t = TREE_VALUE (TREE_VALUE (tmp));
 	  tree repl = remap_decl (t, &ctx->cb);
 	  gcc_checking_assert (TREE_CODE (repl) != ERROR_MARK);
-	  *tp = repl;
+	  if (tmp != NULL_TREE  && t != repl)
+	    *tp = build_fold_addr_expr (repl);
+	  else if (tmp == NULL_TREE)
+	    *tp = repl;
 	}
       break;
+
+    case INDIRECT_REF:
+    case MEM_REF:
+      if (ctx
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL
+	  && ((tmp = lookup_attribute ("omp allocate var",
+				       DECL_ATTRIBUTES (TREE_OPERAND (t, 0))))
+	       != NULL_TREE))
+	{
+	  tmp = TREE_VALUE (TREE_VALUE (tmp));
+	  tree repl = remap_decl (tmp, &ctx->cb);
+	  gcc_checking_assert (TREE_CODE (repl) != ERROR_MARK);
+	  if (tmp != repl)
+	    *tp = repl;
+	  break;
+	}
+      gcc_fallthrough ();
 
     default:
       if (ctx && TYPE_P (t))

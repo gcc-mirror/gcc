@@ -156,5 +156,6 @@ extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
 extern bool builtin_with_linkage_p (tree);
+extern int type_to_class (tree);
 
 #endif /* GCC_BUILTINS_H */

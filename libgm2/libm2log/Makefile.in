@@ -433,6 +433,7 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
+        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 
@@ -475,7 +476,8 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_LOGLIB_TRUE@ -fm2-pathname=m2log -I$(GM2_SRC)/gm2-libs-log \
 @BUILD_LOGLIB_TRUE@ -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
 @BUILD_LOGLIB_TRUE@ -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
-@BUILD_LOGLIB_TRUE@ -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2log
+@BUILD_LOGLIB_TRUE@ -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2log \
+@BUILD_LOGLIB_TRUE@ $(TARGET_LONGDOUBLE_ABI)
 
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_FALSE@libm2log_la_link_flags = 
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_TRUE@libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
@@ -784,7 +786,9 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_LOGLIB_TRUE@	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) SYSTEM.def
 
 @BUILD_LOGLIB_TRUE@.mod.lo:
-@BUILD_LOGLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2log_la_M2FLAGS) $< -o $@
+@BUILD_LOGLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+@BUILD_LOGLIB_TRUE@                   $(GM2_FOR_TARGET) -c \
+@BUILD_LOGLIB_TRUE@                   $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2log_la_M2FLAGS) $< -o $@
 
 @BUILD_LOGLIB_TRUE@install-data-local: force
 @BUILD_LOGLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

@@ -3135,6 +3135,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  unsigned save_heap_alloc_count = ctx->global->heap_vars.length ();
 	  unsigned save_heap_dealloc_count = ctx->global->heap_dealloc_count;
 
+	  /* Make sure we fold std::is_constant_evaluated to true in an
+	     immediate function.  */
+	  if (DECL_IMMEDIATE_FUNCTION_P (fun))
+	    call_ctx.manifestly_const_eval = mce_true;
+
 	  /* If this is a constexpr destructor, the object's const and volatile
 	     semantics are no longer in effect; see [class.dtor]p5.  */
 	  if (new_obj && DECL_DESTRUCTOR_P (fun))
@@ -3807,8 +3812,7 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 }
 
 /* Subroutine of cxx_eval_constant_expression.
-   Attempt to evaluate condition expressions.  Dead branches are not
-   looked into.  */
+   Attempt to evaluate condition expressions.  */
 
 static tree
 cxx_eval_conditional_expression (const constexpr_ctx *ctx, tree t,
@@ -3837,12 +3841,25 @@ cxx_eval_conditional_expression (const constexpr_ctx *ctx, tree t,
 				   boolean_type_node);
     }
   /* Don't VERIFY_CONSTANT the other operands.  */
-  if (integer_zerop (val))
+  const bool zero_p = integer_zerop (val);
+  if (zero_p)
     val = TREE_OPERAND (t, 2);
   else
     val = TREE_OPERAND (t, 1);
   if (TREE_CODE (t) == IF_STMT && !val)
     val = void_node;
+
+  /* P2564: a subexpression of a manifestly constant-evaluated expression
+     or conversion is an immediate function context.  */
+  if (ctx->manifestly_const_eval != mce_true
+      && !in_immediate_context ()
+      && cp_fold_immediate (&TREE_OPERAND (t, zero_p ? 1 : 2),
+			    ctx->manifestly_const_eval))
+    {
+      *non_constant_p = true;
+      return t;
+    }
+
   /* A TARGET_EXPR may be nested inside another TARGET_EXPR, but still
      serve as the initializer for the same object as the outer TARGET_EXPR,
      as in

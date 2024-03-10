@@ -1,3 +1,7 @@
+2023-09-18  Fei Gao  <gaofei@eswincomputing.com>
+
+	* MAINTAINERS: Add myself.
+
 2023-09-15  Yang Yujie  <yangyujie@loongson.cn>
 
 	* config-ml.in: Remove unneeded loongarch clause.

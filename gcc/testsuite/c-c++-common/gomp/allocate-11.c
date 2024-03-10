@@ -10,7 +10,6 @@ f (int i)
   switch (i)  /* { dg-note "switch starts here" } */
     {
       int j;  /* { dg-note "'j' declared here" } */
-      /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive" "" { target *-*-* } .-1 } */
       #pragma omp allocate(j)
     case 42:  /* { dg-error "switch jumps over OpenMP 'allocate' allocation" } */
       bar ();
@@ -30,9 +29,7 @@ h (int i2)
   return 5;
 
   int k2;  /* { dg-note "'k2' declared here" } */
-  /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive" "" { target *-*-* } .-1 } */
   int j2 = 4;  /* { dg-note "'j2' declared here" } */
-  /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive" "" { target *-*-* } .-1 } */
   #pragma omp allocate(k2, j2)
 label:  /* { dg-note "label 'label' defined here" } */
   k2 = 4;

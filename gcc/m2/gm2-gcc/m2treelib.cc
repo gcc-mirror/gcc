@@ -188,7 +188,6 @@ m2treelib_DoCall0 (location_t location, tree rettype, tree funcptr)
   tree *argarray = XALLOCAVEC (tree, 1);
 
   argarray[0] = NULL_TREE;
-
   return build_call_array_loc (location, rettype, funcptr, 0, argarray);
 }
 
@@ -200,7 +199,6 @@ m2treelib_DoCall1 (location_t location, tree rettype, tree funcptr, tree arg0)
   tree *argarray = XALLOCAVEC (tree, 1);
 
   argarray[0] = arg0;
-
   return build_call_array_loc (location, rettype, funcptr, 1, argarray);
 }
 
@@ -214,7 +212,6 @@ m2treelib_DoCall2 (location_t location, tree rettype, tree funcptr, tree arg0,
 
   argarray[0] = arg0;
   argarray[1] = arg1;
-
   return build_call_array_loc (location, rettype, funcptr, 2, argarray);
 }
 
@@ -229,7 +226,6 @@ m2treelib_DoCall3 (location_t location, tree rettype, tree funcptr, tree arg0,
   argarray[0] = arg0;
   argarray[1] = arg1;
   argarray[2] = arg2;
-
   return build_call_array_loc (location, rettype, funcptr, 3, argarray);
 }
 
@@ -377,12 +373,12 @@ m2treelib_get_set_address_if_var (location_t location, tree op, bool is_lvalue,
     return m2treelib_get_set_address (location, op, is_lvalue);
 }
 
-/* add_stmt - t is a statement.  Add it to the statement-tree.  */
+/* add_stmt add stmt to the statement-tree.  */
 
 tree
-add_stmt (location_t location, tree t)
+add_stmt (location_t location, tree stmt)
 {
-  return m2block_add_stmt (location, t);
+  return m2block_add_stmt (location, stmt);
 }
 
 /* taken from gcc/c-semantics.cc.  */

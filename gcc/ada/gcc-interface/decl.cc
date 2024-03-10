@@ -2551,6 +2551,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		  else
 		    gnu_min = gnu_orig_min;
 
+		  if (DECL_P (gnu_min)
+		      && DECL_INITIAL (gnu_min) != NULL_TREE
+		      && (TREE_CODE (gnu_min) != INTEGER_CST
+			  || TREE_OVERFLOW (gnu_min)))
+		    {
+		      tree tmp = max_value (DECL_INITIAL(gnu_min), false);
+		      if (TREE_CODE (tmp) == INTEGER_CST
+			  && !TREE_OVERFLOW (tmp))
+			gnu_min = tmp;
+		    }
+
 		  if (TREE_CODE (gnu_min) != INTEGER_CST
 		      || TREE_OVERFLOW (gnu_min))
 		    gnu_min = TYPE_MIN_VALUE (TREE_TYPE (gnu_min));
@@ -2559,6 +2570,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    gnu_max = gnu_base_orig_max;
 		  else
 		    gnu_max = gnu_orig_max;
+
+		  if (DECL_P (gnu_max)
+		      && DECL_INITIAL (gnu_max) != NULL_TREE
+		      && (TREE_CODE (gnu_max) != INTEGER_CST
+			  || TREE_OVERFLOW (gnu_max)))
+		    {
+		      tree tmp = max_value (DECL_INITIAL(gnu_max), true);
+		      if (TREE_CODE (tmp) == INTEGER_CST
+			  && !TREE_OVERFLOW (tmp))
+			gnu_max = tmp;
+		    }
 
 		  if (TREE_CODE (gnu_max) != INTEGER_CST
 		      || TREE_OVERFLOW (gnu_max))

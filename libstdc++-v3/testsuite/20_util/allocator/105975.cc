@@ -13,6 +13,6 @@ consteval bool test_pr105957()
   a.deallocate(p, n);
   return true;
 }
-static_assert( test_pr105957() );
+static_assert( test_pr105957() ); // { dg-error "non-constant" }
 
 // { dg-error "throw_bad_array_new_length" "" { target *-*-* } 0 }

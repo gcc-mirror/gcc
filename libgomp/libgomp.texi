@@ -225,7 +225,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Predefined memory spaces, memory allocators, allocator traits
       @tab Y @tab See also @ref{Memory allocation}
 @item Memory management routines @tab Y @tab
-@item @code{allocate} directive @tab N @tab
+@item @code{allocate} directive @tab P @tab Only C, only stack variables
 @item @code{allocate} clause @tab P @tab Initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause @tab Y @tab
@@ -296,7 +296,8 @@ The OpenMP 4.5 specification is fully supported.
 @item Loop transformation constructs @tab N @tab
 @item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
       clauses of the @code{taskloop} construct @tab Y @tab
-@item @code{align} clause in @code{allocate} directive @tab N @tab
+@item @code{align} clause in @code{allocate} directive @tab P
+      @tab Only C (and only stack variables)
 @item @code{align} modifier in @code{allocate} clause @tab Y @tab
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
 @item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
@@ -444,7 +445,7 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @item Features deprecated in versions 5.2, 5.1 and 5.0 were removed
       @tab N/A @tab Backward compatibility
 @item The @code{decl} attribute was added to the C++ attribute syntax
-      @tab N @tab
+      @tab Y @tab
 @item @code{_ALL} suffix to the device-scope environment variables
       @tab P @tab Host device number wrongly accepted
 @item For Fortran, @emph{locator list} can be also function reference with

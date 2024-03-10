@@ -29,6 +29,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2tree.h"
 #include "m2treelib.h"
 #include "m2type.h"
+#include "m2configure.h"
+
+#undef DEBUGGING
 
 #define GM2
 #define GM2_BUG_REPORT                                                        \
@@ -107,6 +110,19 @@ typedef enum {
   BT_FN_DOUBLE_DOUBLE_DOUBLE,
 } builtin_prototype;
 
+typedef enum
+{
+  bf_true,
+  bf_false,
+  bf_extension_lib,
+  bf_default_lib,
+  bf_gcc,
+  bf_c99,
+  bf_c99_c90res,
+  bf_extension_lib_floatn,
+  bf_c99_compl,
+} bf_category;
+
 struct builtin_function_entry
 {
   const char *name;
@@ -116,6 +132,7 @@ struct builtin_function_entry
   const char *library_name;
   tree function_node;
   tree return_node;
+  bf_category function_avail;
 };
 
 /* Entries are added by examining gcc/builtins.def and copying those
@@ -123,255 +140,248 @@ struct builtin_function_entry
 
 static struct builtin_function_entry list_of_builtins[] = {
   { "__builtin_alloca", BT_FN_PTR_SIZE, BUILT_IN_ALLOCA, BUILT_IN_NORMAL,
-    "alloca", NULL, NULL },
+    "alloca", NULL, NULL, bf_extension_lib },
   { "__builtin_memcpy", BT_FN_TRAD_PTR_PTR_CONST_PTR_SIZE, BUILT_IN_MEMCPY,
-    BUILT_IN_NORMAL, "memcpy", NULL, NULL },
-
+    BUILT_IN_NORMAL, "memcpy", NULL, NULL, bf_default_lib },
   { "__builtin_isfinite", BT_FN_INT_DOUBLE, BUILT_IN_ISFINITE, BUILT_IN_NORMAL,
-    "isfinite", NULL, NULL },
-
+    "isfinite", NULL, NULL, bf_gcc },
   { "__builtin_sinf", BT_FN_FLOAT_FLOAT, BUILT_IN_SINF, BUILT_IN_NORMAL,
-    "sinf", NULL, NULL },
+    "sinf", NULL, NULL, bf_c99_c90res },
   { "__builtin_sin", BT_FN_DOUBLE_DOUBLE, BUILT_IN_SIN, BUILT_IN_NORMAL, "sin",
-    NULL, NULL },
+    NULL, NULL, bf_c99_c90res },
   { "__builtin_sinl", BT_FN_LONG_DOUBLE_LONG_DOUBLE, BUILT_IN_SINL,
-    BUILT_IN_NORMAL, "sinl", NULL, NULL },
+    BUILT_IN_NORMAL, "sinl", NULL, NULL, bf_c99_c90res },
   { "__builtin_cosf", BT_FN_FLOAT_FLOAT, BUILT_IN_SINF, BUILT_IN_NORMAL,
-    "cosf", NULL, NULL },
+    "cosf", NULL, NULL, bf_c99_c90res },
   { "__builtin_cos", BT_FN_DOUBLE_DOUBLE, BUILT_IN_COS, BUILT_IN_NORMAL, "cos",
-    NULL, NULL },
+    NULL, NULL, bf_c99_c90res },
   { "__builtin_cosl", BT_FN_LONG_DOUBLE_LONG_DOUBLE, BUILT_IN_COSL,
-    BUILT_IN_NORMAL, "cosl", NULL, NULL },
+    BUILT_IN_NORMAL, "cosl", NULL, NULL, bf_c99_c90res },
   { "__builtin_sqrtf", BT_FN_FLOAT_FLOAT, BUILT_IN_SQRTF, BUILT_IN_NORMAL,
-    "sqrtf", NULL, NULL },
+    "sqrtf", NULL, NULL, bf_c99_c90res },
   { "__builtin_sqrt", BT_FN_DOUBLE_DOUBLE, BUILT_IN_SQRT, BUILT_IN_NORMAL,
-    "sqrt", NULL, NULL },
+    "sqrt", NULL, NULL, bf_default_lib },
   { "__builtin_sqrtl", BT_FN_LONG_DOUBLE_LONG_DOUBLE, BUILT_IN_SQRTL,
-    BUILT_IN_NORMAL, "sqrtl", NULL, NULL },
+    BUILT_IN_NORMAL, "sqrtl", NULL, NULL, bf_c99_c90res },
   { "__builtin_fabsf", BT_FN_FLOAT_FLOAT, BUILT_IN_FABSF, BUILT_IN_NORMAL,
-    "fabsf", NULL, NULL },
+    "fabsf", NULL, NULL, bf_c99_c90res },
   { "__builtin_fabs", BT_FN_DOUBLE_DOUBLE, BUILT_IN_FABS, BUILT_IN_NORMAL,
-    "fabs", NULL, NULL },
+    "fabs", NULL, NULL, bf_default_lib },
   { "__builtin_fabsl", BT_FN_LONG_DOUBLE_LONG_DOUBLE, BUILT_IN_FABSL,
-    BUILT_IN_NORMAL, "fabsl", NULL, NULL },
+    BUILT_IN_NORMAL, "fabsl", NULL, NULL, bf_c99_c90res },
   { "__builtin_logf", BT_FN_FLOAT_FLOAT, BUILT_IN_LOGF, BUILT_IN_NORMAL,
-    "logf", NULL, NULL },
+    "logf", NULL, NULL, bf_c99_c90res },
   { "__builtin_log", BT_FN_DOUBLE_DOUBLE, BUILT_IN_LOG, BUILT_IN_NORMAL, "log",
-    NULL, NULL },
+    NULL, NULL, bf_extension_lib_floatn },
   { "__builtin_logl", BT_FN_LONG_DOUBLE_LONG_DOUBLE, BUILT_IN_LOGL,
-    BUILT_IN_NORMAL, "logl", NULL, NULL },
+    BUILT_IN_NORMAL, "logl", NULL, NULL, bf_c99_c90res },
   { "__builtin_expf", BT_FN_FLOAT_FLOAT, BUILT_IN_EXPF, BUILT_IN_NORMAL,
-    "expf", NULL, NULL },
+    "expf", NULL, NULL, bf_c99_c90res },
   { "__builtin_exp", BT_FN_DOUBLE_DOUBLE, BUILT_IN_EXP, BUILT_IN_NORMAL, "exp",
-    NULL, NULL },
+    NULL, NULL, bf_extension_lib_floatn },
   { "__builtin_expl", BT_FN_LONG_DOUBLE_LONG_DOUBLE, BUILT_IN_EXPL,
-    BUILT_IN_NORMAL, "expl", NULL, NULL },
+    BUILT_IN_NORMAL, "expl", NULL, NULL, bf_c99_c90res },
   { "__builtin_log10f", BT_FN_FLOAT_FLOAT, BUILT_IN_LOG10F, BUILT_IN_NORMAL,
-    "log10f", NULL, NULL },
+    "log10f", NULL, NULL, bf_c99_c90res },
   { "__builtin_log10", BT_FN_DOUBLE_DOUBLE, BUILT_IN_LOG10, BUILT_IN_NORMAL,
-    "log10", NULL, NULL },
+    "log10", NULL, NULL, bf_default_lib },
   { "__builtin_log10l", BT_FN_LONG_DOUBLE_LONG_DOUBLE, BUILT_IN_LOG10L,
-    BUILT_IN_NORMAL, "log10l", NULL, NULL },
+    BUILT_IN_NORMAL, "log10l", NULL, NULL, bf_c99_c90res },
   { "__builtin_ilogbf", BT_FN_INT_FLOAT, BUILT_IN_ILOGBF, BUILT_IN_NORMAL,
-    "ilogbf", NULL, NULL },
+    "ilogbf", NULL, NULL, bf_c99 },
   { "__builtin_ilogb", BT_FN_INT_DOUBLE, BUILT_IN_ILOGB, BUILT_IN_NORMAL,
-    "ilogb", NULL, NULL },
+    "ilogb", NULL, NULL, bf_c99 },
   { "__builtin_ilogbl", BT_FN_INT_LONG_DOUBLE, BUILT_IN_ILOGBL,
-    BUILT_IN_NORMAL, "ilogbl", NULL, NULL },
+    BUILT_IN_NORMAL, "ilogbl", NULL, NULL, bf_c99 },
 
   { "__builtin_atan2f", BT_FN_FLOAT_FLOAT_FLOAT, BUILT_IN_ATAN2F,
-    BUILT_IN_NORMAL, "atan2f", NULL, NULL },
+    BUILT_IN_NORMAL, "atan2f", NULL, NULL, bf_c99_c90res },
   { "__builtin_atan2", BT_FN_DOUBLE_DOUBLE_DOUBLE, BUILT_IN_ATAN2,
-    BUILT_IN_NORMAL, "atan2", NULL, NULL },
+    BUILT_IN_NORMAL, "atan2", NULL, NULL, bf_default_lib },
   { "__builtin_atan2l", BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLE,
-    BUILT_IN_ATAN2L, BUILT_IN_NORMAL, "atan2l", NULL, NULL },
+    BUILT_IN_ATAN2L, BUILT_IN_NORMAL, "atan2l", NULL, NULL, bf_c99_c90res },
 
   { "__builtin_signbit", BT_FN_INT_DOUBLE, BUILT_IN_SIGNBIT, BUILT_IN_NORMAL,
-    "signbit", NULL, NULL },
+    "signbit", NULL, NULL, bf_extension_lib },
   { "__builtin_signbitf", BT_FN_INT_FLOAT, BUILT_IN_SIGNBITF, BUILT_IN_NORMAL,
-    "signbitf", NULL, NULL },
+    "signbitf", NULL, NULL, bf_extension_lib },
   { "__builtin_signbitl", BT_FN_INT_LONG_DOUBLE, BUILT_IN_SIGNBITL,
-    BUILT_IN_NORMAL, "signbitl", NULL, NULL },
+    BUILT_IN_NORMAL, "signbitl", NULL, NULL, bf_extension_lib },
   { "__builtin_modf", BT_FN_DOUBLE_DOUBLE_DOUBLEPTR, BUILT_IN_MODF,
-    BUILT_IN_NORMAL, "modf", NULL, NULL },
+    BUILT_IN_NORMAL, "modf", NULL, NULL, bf_default_lib },
   { "__builtin_modff", BT_FN_FLOAT_FLOAT_FLOATPTR, BUILT_IN_MODFF,
-    BUILT_IN_NORMAL, "modff", NULL, NULL },
+    BUILT_IN_NORMAL, "modff", NULL, NULL, bf_c99_c90res },
   { "__builtin_modfl", BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLEPTR,
-    BUILT_IN_MODFL, BUILT_IN_NORMAL, "modfl", NULL, NULL },
+    BUILT_IN_MODFL, BUILT_IN_NORMAL, "modfl", NULL, NULL, bf_c99_c90res },
   { "__builtin_nextafter", BT_FN_DOUBLE_DOUBLE_DOUBLE, BUILT_IN_NEXTAFTER,
-    BUILT_IN_NORMAL, "nextafter", NULL, NULL },
+    BUILT_IN_NORMAL, "nextafter", NULL, NULL, bf_c99 },
   { "__builtin_nextafterf", BT_FN_FLOAT_FLOAT_FLOAT, BUILT_IN_NEXTAFTERF,
-    BUILT_IN_NORMAL, "nextafterf", NULL, NULL },
+    BUILT_IN_NORMAL, "nextafterf", NULL, NULL, bf_c99 },
   { "__builtin_nextafterl", BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLE,
-    BUILT_IN_NEXTAFTERL, BUILT_IN_NORMAL, "nextafterl", NULL, NULL },
+    BUILT_IN_NEXTAFTERL, BUILT_IN_NORMAL, "nextafterl", NULL, NULL, bf_c99 },
   { "__builtin_nexttoward", BT_FN_DOUBLE_DOUBLE_LONG_DOUBLE,
-    BUILT_IN_NEXTTOWARD, BUILT_IN_NORMAL, "nexttoward", NULL, NULL },
+    BUILT_IN_NEXTTOWARD, BUILT_IN_NORMAL, "nexttoward", NULL, NULL, bf_c99 },
   { "__builtin_nexttowardf", BT_FN_FLOAT_FLOAT_LONG_DOUBLE,
-    BUILT_IN_NEXTTOWARDF, BUILT_IN_NORMAL, "nexttowardf", NULL, NULL },
+    BUILT_IN_NEXTTOWARDF, BUILT_IN_NORMAL, "nexttowardf", NULL, NULL, bf_c99 },
   { "__builtin_nexttowardl", BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLE,
-    BUILT_IN_NEXTTOWARDL, BUILT_IN_NORMAL, "nexttowardl", NULL, NULL },
+    BUILT_IN_NEXTTOWARDL, BUILT_IN_NORMAL, "nexttowardl", NULL, NULL, bf_c99 },
   { "__builtin_scalbln", BT_FN_DOUBLE_DOUBLE_LONG, BUILT_IN_SCALBLN,
-    BUILT_IN_NORMAL, "scalbln", NULL, NULL },
+    BUILT_IN_NORMAL, "scalbln", NULL, NULL, bf_extension_lib },
   { "__builtin_scalblnf", BT_FN_FLOAT_FLOAT_LONG, BUILT_IN_SCALBLNF,
-    BUILT_IN_NORMAL, "scalblnf", NULL, NULL },
+    BUILT_IN_NORMAL, "scalblnf", NULL, NULL, bf_extension_lib },
   { "__builtin_scalblnl", BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG,
-    BUILT_IN_SCALBLNL, BUILT_IN_NORMAL, "scalblnl", NULL, NULL },
+    BUILT_IN_SCALBLNL, BUILT_IN_NORMAL, "scalblnl", NULL, NULL, bf_extension_lib },
   { "__builtin_scalbn", BT_FN_DOUBLE_DOUBLE_INT, BUILT_IN_SCALBN,
-    BUILT_IN_NORMAL, "scalbln", NULL, NULL },
+    BUILT_IN_NORMAL, "scalbln", NULL, NULL, bf_extension_lib },
   { "__builtin_scalbnf", BT_FN_FLOAT_FLOAT_INT, BUILT_IN_SCALBNF,
-    BUILT_IN_NORMAL, "scalblnf", NULL, NULL },
+    BUILT_IN_NORMAL, "scalblnf", NULL, NULL, bf_extension_lib },
   { "__builtin_scalbnl", BT_FN_LONG_DOUBLE_LONG_DOUBLE_INT, BUILT_IN_SCALBNL,
-    BUILT_IN_NORMAL, "scalblnl", NULL, NULL },
+    BUILT_IN_NORMAL, "scalblnl", NULL, NULL, bf_extension_lib },
 
   /* Complex intrinsic functions.  */
   { "__builtin_cabs", BT_FN_DOUBLE_DCOMPLEX, BUILT_IN_CABS, BUILT_IN_NORMAL,
-    "cabs", NULL, NULL },
+    "cabs", NULL, NULL, bf_c99_compl },
   { "__builtin_cabsf", BT_FN_FLOAT_FCOMPLEX, BUILT_IN_CABSF, BUILT_IN_NORMAL,
-    "cabsf", NULL, NULL },
+    "cabsf", NULL, NULL, bf_c99_compl },
   { "__builtin_cabsl", BT_FN_LONG_DOUBLE_LDCOMPLEX, BUILT_IN_CABSL,
-    BUILT_IN_NORMAL, "cabsl", NULL, NULL },
+    BUILT_IN_NORMAL, "cabsl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_carg", BT_FN_DOUBLE_DCOMPLEX, BUILT_IN_CABS, BUILT_IN_NORMAL,
-    "carg", NULL, NULL },
+    "carg", NULL, NULL, bf_c99_compl },
   { "__builtin_cargf", BT_FN_FLOAT_FCOMPLEX, BUILT_IN_CABSF, BUILT_IN_NORMAL,
-    "cargf", NULL, NULL },
+    "cargf", NULL, NULL, bf_c99_compl },
   { "__builtin_cargl", BT_FN_LONG_DOUBLE_LDCOMPLEX, BUILT_IN_CABSL,
-    BUILT_IN_NORMAL, "cargl", NULL, NULL },
+    BUILT_IN_NORMAL, "cargl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_conj", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CONJ, BUILT_IN_NORMAL,
-    "carg", NULL, NULL },
+    "carg", NULL, NULL, bf_c99_compl },
   { "__builtin_conjf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CONJF,
-    BUILT_IN_NORMAL, "conjf", NULL, NULL },
+    BUILT_IN_NORMAL, "conjf", NULL, NULL, bf_c99_compl },
   { "__builtin_conjl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CONJL,
-    BUILT_IN_NORMAL, "conjl", NULL, NULL },
+    BUILT_IN_NORMAL, "conjl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_cpow", BT_FN_DCOMPLEX_DOUBLE_DCOMPLEX, BUILT_IN_CPOW,
-    BUILT_IN_NORMAL, "cpow", NULL, NULL },
+    BUILT_IN_NORMAL, "cpow", NULL, NULL, bf_c99_compl },
   { "__builtin_cpowf", BT_FN_FCOMPLEX_FLOAT_FCOMPLEX, BUILT_IN_CPOWF,
-    BUILT_IN_NORMAL, "cpowf", NULL, NULL },
+    BUILT_IN_NORMAL, "cpowf", NULL, NULL, bf_c99_compl },
   { "__builtin_cpowl", BT_FN_LDCOMPLEX_LONG_DOUBLE_LDCOMPLEX, BUILT_IN_CPOWL,
-    BUILT_IN_NORMAL, "cpowl", NULL, NULL },
+    BUILT_IN_NORMAL, "cpowl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_csqrt", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CSQRT,
-    BUILT_IN_NORMAL, "csqrt", NULL, NULL },
+    BUILT_IN_NORMAL, "csqrt", NULL, NULL, bf_c99_compl },
   { "__builtin_csqrtf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CSQRTF,
-    BUILT_IN_NORMAL, "csqrtf", NULL, NULL },
+    BUILT_IN_NORMAL, "csqrtf", NULL, NULL, bf_c99_compl },
   { "__builtin_csqrtl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CSQRTL,
-    BUILT_IN_NORMAL, "csqrtl", NULL, NULL },
+    BUILT_IN_NORMAL, "csqrtl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_cexp", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CEXP, BUILT_IN_NORMAL,
-    "cexp", NULL, NULL },
+    "cexp", NULL, NULL, bf_c99_compl },
   { "__builtin_cexpf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CEXPF,
-    BUILT_IN_NORMAL, "cexpf", NULL, NULL },
+    BUILT_IN_NORMAL, "cexpf", NULL, NULL, bf_c99_compl },
   { "__builtin_cexpl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CEXPL,
-    BUILT_IN_NORMAL, "cexpl", NULL, NULL },
+    BUILT_IN_NORMAL, "cexpl", NULL, NULL, bf_c99_compl },
 
-  { "__builtin_cln", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CLOG, BUILT_IN_NORMAL,
-    "cln", NULL, NULL },
-  { "__builtin_clnf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CLOGF, BUILT_IN_NORMAL,
-    "clnf", NULL, NULL },
-  { "__builtin_clnl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CLOGL,
-    BUILT_IN_NORMAL, "clnl", NULL, NULL },
+  { "__builtin_clog", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CLOG, BUILT_IN_NORMAL,
+    "clog", NULL, NULL, bf_c99_compl },
+  { "__builtin_clogf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CLOGF, BUILT_IN_NORMAL,
+    "clogf", NULL, NULL, bf_c99_compl },
+  { "__builtin_clogl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CLOGL,
+    BUILT_IN_NORMAL, "clogl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_csin", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CSIN, BUILT_IN_NORMAL,
-    "csin", NULL, NULL },
+    "csin", NULL, NULL, bf_c99_compl },
   { "__builtin_csinf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CSINF,
-    BUILT_IN_NORMAL, "csinf", NULL, NULL },
+    BUILT_IN_NORMAL, "csinf", NULL, NULL, bf_c99_compl },
   { "__builtin_csinl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CSINL,
-    BUILT_IN_NORMAL, "csinl", NULL, NULL },
+    BUILT_IN_NORMAL, "csinl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_ccos", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CCOS, BUILT_IN_NORMAL,
-    "ccos", NULL, NULL },
+    "ccos", NULL, NULL, bf_c99_compl },
   { "__builtin_ccosf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CCOSF,
-    BUILT_IN_NORMAL, "ccosf", NULL, NULL },
+    BUILT_IN_NORMAL, "ccosf", NULL, NULL, bf_c99_compl },
   { "__builtin_ccosl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CCOSL,
-    BUILT_IN_NORMAL, "ccosl", NULL, NULL },
+    BUILT_IN_NORMAL, "ccosl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_ctan", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CTAN, BUILT_IN_NORMAL,
-    "ctan", NULL, NULL },
+    "ctan", NULL, NULL, bf_c99_compl },
   { "__builtin_ctanf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CTANF,
-    BUILT_IN_NORMAL, "ctanf", NULL, NULL },
+    BUILT_IN_NORMAL, "ctanf", NULL, NULL, bf_c99_compl },
   { "__builtin_ctanl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CTANL,
-    BUILT_IN_NORMAL, "ctanl", NULL, NULL },
+    BUILT_IN_NORMAL, "ctanl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_casin", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CASIN,
-    BUILT_IN_NORMAL, "casin", NULL, NULL },
+    BUILT_IN_NORMAL, "casin", NULL, NULL, bf_c99_compl },
   { "__builtin_casinf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CASINF,
-    BUILT_IN_NORMAL, "casinf", NULL, NULL },
+    BUILT_IN_NORMAL, "casinf", NULL, NULL, bf_c99_compl },
   { "__builtin_casinl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CASINL,
-    BUILT_IN_NORMAL, "casinl", NULL, NULL },
+    BUILT_IN_NORMAL, "casinl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_cacos", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CACOS,
-    BUILT_IN_NORMAL, "cacos", NULL, NULL },
+    BUILT_IN_NORMAL, "cacos", NULL, NULL, bf_c99_compl },
   { "__builtin_cacosf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CACOSF,
-    BUILT_IN_NORMAL, "cacosf", NULL, NULL },
+    BUILT_IN_NORMAL, "cacosf", NULL, NULL, bf_c99_compl },
   { "__builtin_cacosl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CACOSL,
-    BUILT_IN_NORMAL, "cacosl", NULL, NULL },
+    BUILT_IN_NORMAL, "cacosl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_catan", BT_FN_DCOMPLEX_DCOMPLEX, BUILT_IN_CATAN,
-    BUILT_IN_NORMAL, "catan", NULL, NULL },
+    BUILT_IN_NORMAL, "catan", NULL, NULL, bf_c99_compl },
   { "__builtin_catanf", BT_FN_FCOMPLEX_FCOMPLEX, BUILT_IN_CATANF,
-    BUILT_IN_NORMAL, "catanf", NULL, NULL },
+    BUILT_IN_NORMAL, "catanf", NULL, NULL, bf_c99_compl },
   { "__builtin_catanl", BT_FN_LDCOMPLEX_LDCOMPLEX, BUILT_IN_CATANL,
-    BUILT_IN_NORMAL, "catanl", NULL, NULL },
+    BUILT_IN_NORMAL, "catanl", NULL, NULL, bf_c99_compl },
 
   { "__builtin_huge_val", BT_FN_DOUBLE, BUILT_IN_HUGE_VAL, BUILT_IN_NORMAL,
-    "huge_val", NULL, NULL },
+    "huge_val", NULL, NULL, bf_gcc },
   { "__builtin_huge_valf", BT_FN_FLOAT, BUILT_IN_HUGE_VALF, BUILT_IN_NORMAL,
-    "huge_valf", NULL, NULL },
+    "huge_valf", NULL, NULL, bf_gcc },
   { "__builtin_huge_vall", BT_FN_LONG_DOUBLE, BUILT_IN_HUGE_VALL,
-    BUILT_IN_NORMAL, "huge_vall", NULL, NULL },
+    BUILT_IN_NORMAL, "huge_vall", NULL, NULL, bf_gcc },
 
   { "__builtin_index", BT_FN_STRING_CONST_STRING_INT, BUILT_IN_INDEX,
-    BUILT_IN_NORMAL, "index", NULL, NULL },
+    BUILT_IN_NORMAL, "index", NULL, NULL, bf_extension_lib },
   { "__builtin_rindex", BT_FN_STRING_CONST_STRING_INT, BUILT_IN_RINDEX,
-    BUILT_IN_NORMAL, "rindex", NULL, NULL },
+    BUILT_IN_NORMAL, "rindex", NULL, NULL, bf_extension_lib },
   { "__builtin_memcmp", BT_FN_INT_CONST_PTR_CONST_PTR_SIZE, BUILT_IN_MEMCMP,
-    BUILT_IN_NORMAL, "memcmp", NULL, NULL },
+    BUILT_IN_NORMAL, "memcmp", NULL, NULL, bf_default_lib },
   { "__builtin_memmove", BT_FN_TRAD_PTR_PTR_CONST_PTR_SIZE, BUILT_IN_MEMMOVE,
-    BUILT_IN_NORMAL, "memmove", NULL, NULL },
+    BUILT_IN_NORMAL, "memmove", NULL, NULL, bf_default_lib },
   { "__builtin_memset", BT_FN_TRAD_PTR_PTR_INT_SIZE, BUILT_IN_MEMSET,
-    BUILT_IN_NORMAL, "memset", NULL, NULL },
+    BUILT_IN_NORMAL, "memset", NULL, NULL, bf_default_lib },
   { "__builtin_strcat", BT_FN_STRING_STRING_CONST_STRING, BUILT_IN_STRCAT,
-    BUILT_IN_NORMAL, "strcat", NULL, NULL },
+    BUILT_IN_NORMAL, "strcat", NULL, NULL, bf_default_lib },
   { "__builtin_strncat", BT_FN_STRING_STRING_CONST_STRING_SIZE,
-    BUILT_IN_STRNCAT, BUILT_IN_NORMAL, "strncat", NULL, NULL },
+    BUILT_IN_STRNCAT, BUILT_IN_NORMAL, "strncat", NULL, NULL, bf_default_lib },
   { "__builtin_strcpy", BT_FN_STRING_STRING_CONST_STRING, BUILT_IN_STRCPY,
-    BUILT_IN_NORMAL, "strcpy", NULL, NULL },
+    BUILT_IN_NORMAL, "strcpy", NULL, NULL, bf_default_lib },
   { "__builtin_strncpy", BT_FN_STRING_STRING_CONST_STRING_SIZE,
-    BUILT_IN_STRNCPY, BUILT_IN_NORMAL, "strncpy", NULL, NULL },
+    BUILT_IN_STRNCPY, BUILT_IN_NORMAL, "strncpy", NULL, NULL, bf_default_lib },
   { "__builtin_strcmp", BT_FN_INT_CONST_STRING_CONST_STRING, BUILT_IN_STRCMP,
-    BUILT_IN_NORMAL, "strcmp", NULL, NULL },
+    BUILT_IN_NORMAL, "strcmp", NULL, NULL, bf_default_lib },
   { "__builtin_strncmp", BT_FN_INT_CONST_STRING_CONST_STRING_SIZE,
-    BUILT_IN_STRNCMP, BUILT_IN_NORMAL, "strncmp", NULL, NULL },
+    BUILT_IN_STRNCMP, BUILT_IN_NORMAL, "strncmp", NULL, NULL, bf_default_lib },
   { "__builtin_strlen", BT_FN_INT_CONST_STRING, BUILT_IN_STRLEN,
-    BUILT_IN_NORMAL, "strlen", NULL, NULL },
+    BUILT_IN_NORMAL, "strlen", NULL, NULL, bf_default_lib },
   { "__builtin_strstr", BT_FN_STRING_CONST_STRING_CONST_STRING,
-    BUILT_IN_STRSTR, BUILT_IN_NORMAL, "strstr", NULL, NULL },
+    BUILT_IN_STRSTR, BUILT_IN_NORMAL, "strstr", NULL, NULL, bf_default_lib },
   { "__builtin_strpbrk", BT_FN_STRING_CONST_STRING_CONST_STRING,
-    BUILT_IN_STRPBRK, BUILT_IN_NORMAL, "strpbrk", NULL, NULL },
+    BUILT_IN_STRPBRK, BUILT_IN_NORMAL, "strpbrk", NULL, NULL, bf_default_lib },
   { "__builtin_strspn", BT_FN_SIZE_CONST_STRING_CONST_STRING, BUILT_IN_STRSPN,
-    BUILT_IN_NORMAL, "strspn", NULL, NULL },
+    BUILT_IN_NORMAL, "strspn", NULL, NULL, bf_default_lib },
   { "__builtin_strcspn", BT_FN_SIZE_CONST_STRING_CONST_STRING,
-    BUILT_IN_STRCSPN, BUILT_IN_NORMAL, "strcspn", NULL, NULL },
+    BUILT_IN_STRCSPN, BUILT_IN_NORMAL, "strcspn", NULL, NULL, bf_default_lib },
   { "__builtin_strchr", BT_FN_STRING_CONST_STRING_INT, BUILT_IN_STRCHR,
-    BUILT_IN_NORMAL, "strchr", NULL, NULL },
+    BUILT_IN_NORMAL, "strchr", NULL, NULL, bf_default_lib },
   { "__builtin_strrchr", BT_FN_STRING_CONST_STRING_INT, BUILT_IN_STRCHR,
-    BUILT_IN_NORMAL, "strrchr", NULL, NULL },
-  //{ "__builtin_constant_p", BT_FN_INT_VAR, BUILT_IN_CONSTANT_P,
-  //BUILT_IN_NORMAL, "constant_p", NULL, NULL},
+    BUILT_IN_NORMAL, "strrchr", NULL, NULL, bf_default_lib },
   { "__builtin_frame_address", BT_FN_PTR_UNSIGNED, BUILT_IN_FRAME_ADDRESS,
-    BUILT_IN_NORMAL, "frame_address", NULL, NULL },
+    BUILT_IN_NORMAL, "frame_address", NULL, NULL, bf_gcc },
   { "__builtin_return_address", BT_FN_PTR_UNSIGNED, BUILT_IN_RETURN_ADDRESS,
-    BUILT_IN_NORMAL, "return_address", NULL, NULL },
-  //{ "__builtin_aggregate_incoming_address", BT_FN_PTR_VAR,
-  //BUILT_IN_AGGREGATE_INCOMING_ADDRESS, BUILT_IN_NORMAL,
-  //"aggregate_incoming_address", NULL, NULL},
+    BUILT_IN_NORMAL, "return_address", NULL, NULL, bf_gcc },
   { "__builtin_longjmp", BT_FN_VOID_PTR_INT, BUILT_IN_LONGJMP, BUILT_IN_NORMAL,
-    "longjmp", NULL, NULL },
+    "longjmp", NULL, NULL, bf_gcc },
   { "__builtin_setjmp", BT_FN_INT_PTR, BUILT_IN_SETJMP, BUILT_IN_NORMAL,
-    "setjmp", NULL, NULL },
-  { NULL, BT_FN_NONE, 0, NOT_BUILT_IN, "", NULL, NULL }
+    "setjmp", NULL, NULL, bf_gcc },
+  { NULL, BT_FN_NONE, 0, NOT_BUILT_IN, "", NULL, NULL, bf_false}
 };
 
 struct builtin_type_info
@@ -396,6 +406,7 @@ static GTY (()) tree double_ftype_double;
 static GTY (()) tree ldouble_ftype_ldouble;
 static GTY (()) tree gm2_alloca_node;
 static GTY (()) tree gm2_memcpy_node;
+static GTY (()) tree gm2_memset_node;
 static GTY (()) tree gm2_isfinite_node;
 static GTY (()) tree gm2_huge_valf_node;
 static GTY (()) tree gm2_huge_val_node;
@@ -771,13 +782,34 @@ donModes (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
   return m2decl_BuildIntegerConstant (1);
 }
 
-/* BuiltInMemCopy - copy n bytes of memory efficiently from address
+/* BuiltinMemCopy - copy n bytes of memory efficiently from address
    src to dest.  */
 
 tree
-m2builtins_BuiltInMemCopy (location_t location, tree dest, tree src, tree n)
+m2builtins_BuiltinMemCopy (location_t location, tree dest, tree src, tree n)
 {
   return DoBuiltinMemCopy (location, dest, src, n);
+}
+
+
+static tree
+DoBuiltinMemSet (location_t location, tree ptr, tree bytevalue, tree nbytes)
+{
+  tree functype = TREE_TYPE (gm2_memset_node);
+  tree funcptr
+      = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_memset_node);
+  tree call
+      = m2treelib_DoCall3 (location, ptr_type_node, funcptr, ptr, bytevalue, nbytes);
+  return call;
+}
+
+/* BuiltinMemSet set copy n bytes of memory efficiently from address
+   src to dest.  */
+
+tree
+m2builtins_BuiltinMemSet (location_t location, tree ptr, tree bytevalue, tree nbytes)
+{
+  return DoBuiltinMemSet (location, ptr, bytevalue, nbytes);
 }
 
 /* BuiltInAlloca - given an expression, n, allocate, n, bytes on the
@@ -798,6 +830,65 @@ m2builtins_BuiltInIsfinite (location_t location, tree expression)
   return DoBuiltinIsfinite (location, expression);
 }
 
+
+/* do_target_support_exists returns true if the builting function
+   is supported by the target.  */
+
+static
+bool
+do_target_support_exists (struct builtin_function_entry *fe)
+{
+  tree type = TREE_TYPE (fe->function_node);
+
+  switch (fe->function_avail)
+    {
+    case bf_true:
+      return true;
+    case bf_false:
+      return false;
+    case bf_extension_lib:
+      return true;
+    case bf_default_lib:
+      return true;
+    case bf_gcc:
+      return true;
+    case bf_c99:
+      return targetm.libc_has_function (function_c99_misc, type);
+    case bf_c99_c90res:
+      return targetm.libc_has_function (function_c99_misc, type);
+    case bf_extension_lib_floatn:
+      return true;
+    default:
+      gcc_unreachable ();
+    }
+  return false;
+}
+
+
+static
+bool
+target_support_exists (struct builtin_function_entry *fe)
+{
+#if defined(DEBUGGING)
+  printf ("target_support_exists (%s): ", fe->library_name);
+#endif
+  if (do_target_support_exists (fe))
+    {
+#if defined(DEBUGGING)
+      printf ("yes\n");
+#endif
+      return true;
+    }
+  else
+    {
+#if defined(DEBUGGING)
+      printf ("no\n");
+#endif
+      return false;
+    }
+}
+
+
 /* BuiltinExists - returns TRUE if the builtin function, name, exists
    for this target architecture.  */
 
@@ -808,10 +899,12 @@ m2builtins_BuiltinExists (char *name)
 
   for (fe = &list_of_builtins[0]; fe->name != NULL; fe++)
     if (strcmp (name, fe->name) == 0)
-      return TRUE;
+      return true;
+      // return target_support_exists (fe);
 
-  return FALSE;
+  return false;
 }
+
 
 /* BuildBuiltinTree - returns a Tree containing the builtin function,
    name.  */
@@ -820,23 +913,23 @@ tree
 m2builtins_BuildBuiltinTree (location_t location, char *name)
 {
   struct builtin_function_entry *fe;
-  tree t;
+  tree call;
 
   m2statement_SetLastFunction (NULL_TREE);
+
   for (fe = &list_of_builtins[0]; fe->name != NULL; fe++)
-    if (strcmp (name, fe->name) == 0)
+    if ((strcmp (name, fe->name) == 0) && target_support_exists (fe))
       {
         tree functype = TREE_TYPE (fe->function_node);
         tree funcptr = build1 (ADDR_EXPR, build_pointer_type (functype),
                                fe->function_node);
-
-        m2statement_SetLastFunction (m2treelib_DoCall (
-            location, fe->return_node, funcptr, m2statement_GetParamList ()));
+	call = m2treelib_DoCall (
+	   location, fe->return_node, funcptr, m2statement_GetParamList ());
+        m2statement_SetLastFunction (call);
         m2statement_SetParamList (NULL_TREE);
-        t = m2statement_GetLastFunction ();
         if (fe->return_node == void_type_node)
           m2statement_SetLastFunction (NULL_TREE);
-        return t;
+        return call;
       }
 
   m2statement_SetParamList (NULL_TREE);
@@ -938,7 +1031,7 @@ create_function_prototype (location_t location,
       break;
     case BT_FN_LONG_DOUBLE:
       ftype = ldouble_ftype_void;
-      fe->return_node = long_double_type_node;
+      fe->return_node = m2type_GetM2LongRealType ();
       break;
     case BT_FN_FLOAT_FLOAT:
       ftype = float_ftype_float;
@@ -950,7 +1043,7 @@ create_function_prototype (location_t location,
       break;
     case BT_FN_LONG_DOUBLE_LONG_DOUBLE:
       ftype = ldouble_ftype_ldouble;
-      fe->return_node = long_double_type_node;
+      fe->return_node = m2type_GetM2LongRealType ();
       break;
     case BT_FN_STRING_CONST_STRING_INT:
       ftype = build_function_type (
@@ -1032,7 +1125,7 @@ create_function_prototype (location_t location,
     case BT_FN_INT_LONG_DOUBLE:
       ftype = build_function_type (
           integer_type_node,
-          tree_cons (NULL_TREE, long_double_type_node, endlink));
+          tree_cons (NULL_TREE, m2type_GetM2LongRealType (), endlink));
       fe->return_node = integer_type_node;
       break;
     case BT_FN_FLOAT_FCOMPLEX:
@@ -1049,9 +1142,9 @@ create_function_prototype (location_t location,
       break;
     case BT_FN_LONG_DOUBLE_LDCOMPLEX:
       ftype = build_function_type (
-          long_double_type_node,
-          tree_cons (NULL_TREE, complex_long_double_type_node, endlink));
-      fe->return_node = long_double_type_node;
+          m2type_GetM2LongRealType (),
+          tree_cons (NULL_TREE, m2type_GetM2LongComplexType (), endlink));
+      fe->return_node = m2type_GetM2LongRealType ();
       break;
     case BT_FN_FCOMPLEX_FCOMPLEX:
       ftype = build_function_type (
@@ -1067,9 +1160,9 @@ create_function_prototype (location_t location,
       break;
     case BT_FN_LDCOMPLEX_LDCOMPLEX:
       ftype = build_function_type (
-          complex_long_double_type_node,
-          tree_cons (NULL_TREE, complex_long_double_type_node, endlink));
-      fe->return_node = complex_long_double_type_node;
+          m2type_GetM2LongComplexType (),
+          tree_cons (NULL_TREE, m2type_GetM2LongComplexType (), endlink));
+      fe->return_node = m2type_GetM2LongComplexType ();
       break;
     case BT_FN_DCOMPLEX_DOUBLE_DCOMPLEX:
       ftype = build_function_type (
@@ -1087,10 +1180,10 @@ create_function_prototype (location_t location,
       break;
     case BT_FN_LDCOMPLEX_LONG_DOUBLE_LDCOMPLEX:
       ftype = build_function_type (
-          complex_long_double_type_node,
-          tree_cons (NULL_TREE, complex_long_double_type_node,
-                     tree_cons (NULL_TREE, long_double_type_node, endlink)));
-      fe->return_node = complex_long_double_type_node;
+          m2type_GetM2LongComplexType (),
+          tree_cons (NULL_TREE, m2type_GetM2LongComplexType (),
+                     tree_cons (NULL_TREE, m2type_GetM2LongRealType (), endlink)));
+      fe->return_node = m2type_GetM2LongComplexType ();
       break;
     case BT_FN_FLOAT_FLOAT_FLOATPTR:
       ftype = build_function_type (
@@ -1108,32 +1201,32 @@ create_function_prototype (location_t location,
       break;
     case BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLEPTR:
       ftype = build_function_type (
-          long_double_type_node,
+          m2type_GetM2LongRealType (),
           tree_cons (
-              NULL_TREE, long_double_type_node,
+              NULL_TREE, m2type_GetM2LongRealType (),
               tree_cons (NULL_TREE, long_doubleptr_type_node, endlink)));
-      fe->return_node = long_double_type_node;
+      fe->return_node = m2type_GetM2LongRealType ();
       break;
     case BT_FN_FLOAT_FLOAT_LONG_DOUBLE:
       ftype = build_function_type (
           float_type_node,
           tree_cons (NULL_TREE, float_type_node,
-                     tree_cons (NULL_TREE, long_double_type_node, endlink)));
+                     tree_cons (NULL_TREE, m2type_GetM2LongRealType (), endlink)));
       fe->return_node = float_type_node;
       break;
     case BT_FN_DOUBLE_DOUBLE_LONG_DOUBLE:
       ftype = build_function_type (
           double_type_node,
           tree_cons (NULL_TREE, double_type_node,
-                     tree_cons (NULL_TREE, long_double_type_node, endlink)));
+                     tree_cons (NULL_TREE, m2type_GetM2LongRealType (), endlink)));
       fe->return_node = double_type_node;
       break;
     case BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLE:
       ftype = build_function_type (
-          long_double_type_node,
-          tree_cons (NULL_TREE, long_double_type_node,
-                     tree_cons (NULL_TREE, long_double_type_node, endlink)));
-      fe->return_node = long_double_type_node;
+          m2type_GetM2LongRealType (),
+          tree_cons (NULL_TREE, m2type_GetM2LongRealType (),
+                     tree_cons (NULL_TREE, m2type_GetM2LongRealType (), endlink)));
+      fe->return_node = m2type_GetM2LongRealType ();
       break;
     case BT_FN_FLOAT_FLOAT_LONG:
       ftype = build_function_type (
@@ -1151,10 +1244,10 @@ create_function_prototype (location_t location,
       break;
     case BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG:
       ftype = build_function_type (
-          long_double_type_node,
-          tree_cons (NULL_TREE, long_double_type_node,
+          m2type_GetM2LongRealType (),
+          tree_cons (NULL_TREE, m2type_GetM2LongRealType (),
                      tree_cons (NULL_TREE, long_integer_type_node, endlink)));
-      fe->return_node = long_double_type_node;
+      fe->return_node = m2type_GetM2LongRealType ();
       break;
     case BT_FN_FLOAT_FLOAT_INT:
       ftype = build_function_type (
@@ -1172,10 +1265,10 @@ create_function_prototype (location_t location,
       break;
     case BT_FN_LONG_DOUBLE_LONG_DOUBLE_INT:
       ftype = build_function_type (
-          long_double_type_node,
-          tree_cons (NULL_TREE, long_double_type_node,
+          m2type_GetM2LongRealType (),
+          tree_cons (NULL_TREE, m2type_GetM2LongRealType (),
                      tree_cons (NULL_TREE, integer_type_node, endlink)));
-      fe->return_node = long_double_type_node;
+      fe->return_node = m2type_GetM2LongRealType ();
       break;
     case BT_FN_FLOAT_FLOAT_FLOAT:
       ftype = build_function_type (
@@ -1264,9 +1357,9 @@ m2builtins_init (location_t location)
   float_ftype_void = build_function_type (float_type_node, math_endlink);
   double_ftype_void = build_function_type (double_type_node, math_endlink);
   ldouble_ftype_void
-      = build_function_type (long_double_type_node, math_endlink);
+      = build_function_type (m2type_GetM2LongRealType (), math_endlink);
 
-  long_doubleptr_type_node = build_pointer_type (long_double_type_node);
+  long_doubleptr_type_node = build_pointer_type (m2type_GetM2LongRealType ());
   doubleptr_type_node = build_pointer_type (double_type_node);
   floatptr_type_node = build_pointer_type (float_type_node);
 
@@ -1277,8 +1370,8 @@ m2builtins_init (location_t location)
       double_type_node, tree_cons (NULL_TREE, double_type_node, math_endlink));
 
   ldouble_ftype_ldouble = build_function_type (
-      long_double_type_node,
-      tree_cons (NULL_TREE, long_double_type_node, endlink));
+      m2type_GetM2LongRealType (),
+      tree_cons (NULL_TREE, m2type_GetM2LongRealType (), endlink));
 
   builtin_ftype_int_var = build_function_type (
       integer_type_node, tree_cons (NULL_TREE, double_type_node, endlink));
@@ -1306,6 +1399,7 @@ m2builtins_init (location_t location)
 
   gm2_alloca_node = find_builtin_tree ("__builtin_alloca");
   gm2_memcpy_node = find_builtin_tree ("__builtin_memcpy");
+  gm2_memset_node = find_builtin_tree ("__builtin_memset");
   gm2_huge_valf_node = find_builtin_tree ("__builtin_huge_valf");
   gm2_huge_val_node = find_builtin_tree ("__builtin_huge_val");
   gm2_huge_vall_node = find_builtin_tree ("__builtin_huge_vall");

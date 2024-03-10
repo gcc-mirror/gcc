@@ -4093,7 +4093,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		}
 	    }
 	}
-      else if (SCALAR_INT_MODE_P (mode))
+      else if (SCALAR_INT_MODE_P (mode) || GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
 	{
 	  /* 0/x is 0 (or x&0 if x has side-effects).  */
 	  if (trueop0 == CONST0_RTX (mode)
@@ -4111,7 +4111,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		return tem;
 	    }
 	  /* x/-1 is -x.  */
-	  if (trueop1 == constm1_rtx)
+	  if (trueop1 == CONSTM1_RTX (mode))
 	    {
 	      rtx x = rtl_hooks.gen_lowpart_no_emit (mode, op0);
 	      if (x)

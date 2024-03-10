@@ -2484,7 +2484,7 @@ package body Contracts is
                --  declarations of the package containing the type, or in the
                --  visible declaration of a child unit of that package.
 
-               else
+               elsif Is_List_Member (Subp_Decl) then
                   declare
                      Decls      : constant List_Id   :=
                                     List_Containing (Subp_Decl);
@@ -2507,6 +2507,29 @@ package body Contracts is
                                Decls = Visible_Declarations
                                  (Specification
                                    (Unit_Declaration_Node (Subp_Scope))));
+                  end;
+
+               --  Determine whether the subprogram is a child subprogram of
+               --  of the package containing the type.
+
+               else
+                  pragma Assert
+                    (Nkind (Parent (Subp_Decl)) = N_Compilation_Unit);
+
+                  declare
+                     Subp_Scope : constant Entity_Id :=
+                                    Scope (Defining_Entity (Subp_Decl));
+                     Typ_Scope  : constant Entity_Id := Scope (Typ);
+
+                  begin
+                     return
+                       Ekind (Subp_Scope) = E_Package
+                         and then
+                           (Typ_Scope = Subp_Scope
+                              or else
+                                (Is_Child_Unit (Subp_Scope)
+                                   and then Is_Ancestor_Package
+                                              (Typ_Scope, Subp_Scope)));
                   end;
                end if;
             end Has_Public_Visibility_Of_Subprogram;

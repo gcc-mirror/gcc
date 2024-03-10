@@ -7179,6 +7179,8 @@ build_bitint_type (unsigned HOST_WIDE_INT precision, int unsignedp)
 {
   tree itype, ret;
 
+  gcc_checking_assert (precision >= 1 + !unsignedp);
+
   if (unsignedp)
     unsignedp = MAX_INT_CACHED_PREC + 1;
 
@@ -11096,7 +11098,7 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
   else
     return NULL_TREE;
 
-  if (TREE_CODE (type) == BITINT_TYPE)
+  if (TREE_CODE (type) == BITINT_TYPE && (unsignedp || bits > 1))
     return build_bitint_type (bits, unsignedp);
   return build_nonstandard_integer_type (bits, unsignedp);
 }

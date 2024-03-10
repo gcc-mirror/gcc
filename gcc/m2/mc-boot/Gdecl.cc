@@ -2517,6 +2517,12 @@ extern "C" DynamicStrings_String DynamicStrings_ConCatChar (DynamicStrings_Strin
 extern "C" DynamicStrings_String DynamicStrings_Assign (DynamicStrings_String a, DynamicStrings_String b);
 
 /*
+   ReplaceChar - returns string s after it has changed all occurances of from to to.
+*/
+
+extern "C" DynamicStrings_String DynamicStrings_ReplaceChar (DynamicStrings_String s, char from, char to);
+
+/*
    Dup - duplicate a String, s, returning the copy of s.
 */
 
@@ -2750,6 +2756,9 @@ extern "C" void mcOptions_writeGPLheader (FIO_File f);
 extern "C" void mcOptions_setSuppressNoReturn (bool value);
 extern "C" bool mcOptions_getSuppressNoReturn (void);
 extern "C" bool mcOptions_useBool (void);
+extern "C" DynamicStrings_String mcOptions_getCRealType (void);
+extern "C" DynamicStrings_String mcOptions_getCLongRealType (void);
+extern "C" DynamicStrings_String mcOptions_getCShortRealType (void);
 extern "C" DynamicStrings_String FormatStrings_Sprintf0 (DynamicStrings_String fmt);
 extern "C" DynamicStrings_String FormatStrings_Sprintf1 (DynamicStrings_String fmt, const unsigned char *w_, unsigned int _w_high);
 extern "C" DynamicStrings_String FormatStrings_Sprintf2 (DynamicStrings_String fmt, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high);
@@ -5344,6 +5353,12 @@ static void doSizeC (mcPretty_pretty p, decl_node n);
 */
 
 static void doConvertC (mcPretty_pretty p, decl_node n, const char *conversion_, unsigned int _conversion_high);
+
+/*
+   doConvertSC -
+*/
+
+static void doConvertSC (mcPretty_pretty p, decl_node n, DynamicStrings_String conversion);
 
 /*
    getFuncFromExpr -
@@ -10544,19 +10559,19 @@ static void doExprC (mcPretty_pretty p, decl_node n)
         break;
 
       case decl_float:
-        doConvertC (p, n, (const char *) "(double)", 8);
+        doConvertSC (p, n, mcOptions_getCRealType ());
         break;
 
       case decl_trunc:
-        doConvertC (p, n, (const char *) "(int)", 5);
+        doConvertC (p, n, (const char *) "int", 3);
         break;
 
       case decl_ord:
-        doConvertC (p, n, (const char *) "(unsigned int)", 14);
+        doConvertC (p, n, (const char *) "unsigned int", 12);
         break;
 
       case decl_chr:
-        doConvertC (p, n, (const char *) "(char)", 6);
+        doConvertC (p, n, (const char *) "char", 4);
         break;
 
       case decl_cap:
@@ -12615,15 +12630,15 @@ static void doBaseC (mcPretty_pretty p, decl_node n)
         break;
 
       case decl_real:
-        outText (p, (const char *) "double", 6);
+        outTextS (p, mcOptions_getCRealType ());
         break;
 
       case decl_longreal:
-        outText (p, (const char *) "long double", 11);
+        outTextS (p, mcOptions_getCLongRealType ());
         break;
 
       case decl_shortreal:
-        outText (p, (const char *) "float", 5);
+        outTextS (p, mcOptions_getCShortRealType ());
         break;
 
       case decl_bitset:
@@ -16311,15 +16326,29 @@ static void doSizeC (mcPretty_pretty p, decl_node n)
 
 static void doConvertC (mcPretty_pretty p, decl_node n, const char *conversion_, unsigned int _conversion_high)
 {
+  DynamicStrings_String s;
   char conversion[_conversion_high+1];
 
   /* make a local copy of each unbounded array.  */
   memcpy (conversion, conversion_, _conversion_high+1);
 
+  s = DynamicStrings_InitString ((const char *) conversion, _conversion_high);
+  doConvertSC (p, n, s);
+  s = DynamicStrings_KillString (s);
+}
+
+
+/*
+   doConvertSC -
+*/
+
+static void doConvertSC (mcPretty_pretty p, decl_node n, DynamicStrings_String conversion)
+{
   mcDebug_assert (isUnary (n));
   mcPretty_setNeedSpace (p);
-  outText (p, (const char *) "(", 1);
-  outText (p, (const char *) conversion, _conversion_high);
+  outText (p, (const char *) "((", 2);
+  outTextS (p, conversion);
+  outText (p, (const char *) ")", 1);
   mcPretty_setNeedSpace (p);
   outText (p, (const char *) "(", 1);
   doExprC (p, n->unaryF.arg);

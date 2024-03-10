@@ -37,6 +37,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2treelib.h"
 #include "m2type.h"
 #include "m2options.h"
+#include "m2configure.h"
 
 #define USE_BOOLEAN
 static int broken_set_debugging_info = true;
@@ -935,7 +936,6 @@ build_set_type (tree domain, tree range_type, int allow_void, int ispacked)
   TREE_TYPE (type) = range_type;
   TYPE_DOMAIN (type) = domain;
   TYPE_PACKED (type) = ispacked;
-
   return type;
 }
 
@@ -1104,7 +1104,6 @@ build_m2_specific_size_type (location_t location, enum tree_code base,
           TYPE_UNSIGNED (c) = true;
         }
     }
-
   return c;
 }
 
@@ -1153,7 +1152,6 @@ finish_build_pointer_type (tree t, tree to_type, enum machine_mode mode,
   /* Lay out the type.  */
   /* layout_type (t);  */
   layout_type (t);
-
   return t;
 }
 
@@ -1344,7 +1342,6 @@ m2type_BuildVariableArrayAndDeclare (location_t location, tree elementtype,
   gm2_finish_decl (location, indextype);
   gm2_finish_decl (location, arraytype);
   add_stmt (location, build_stmt (location, DECL_EXPR, decl));
-
   return decl;
 }
 
@@ -1443,7 +1440,6 @@ build_m2_short_real_node (void)
   c = make_node (REAL_TYPE);
   TYPE_PRECISION (c) = FLOAT_TYPE_SIZE;
   layout_type (c);
-
   return c;
 }
 
@@ -1457,7 +1453,6 @@ build_m2_real_node (void)
   c = make_node (REAL_TYPE);
   TYPE_PRECISION (c) = DOUBLE_TYPE_SIZE;
   layout_type (c);
-
   return c;
 }
 
@@ -1468,10 +1463,17 @@ build_m2_long_real_node (void)
 
   /* Define `LONGREAL'.  */
 
-  c = make_node (REAL_TYPE);
-  TYPE_PRECISION (c) = LONG_DOUBLE_TYPE_SIZE;
-  layout_type (c);
+  if (m2configure_M2CLongRealFloat128 ())
+    c = float128_type_node;
+  else if (m2configure_M2CLongRealIBM128 ())
+    {
+      c = make_node (REAL_TYPE);
+      TYPE_PRECISION (c) = LONG_DOUBLE_TYPE_SIZE;
+    }
+  else
+    c = long_double_type_node;
 
+  layout_type (c);
   return c;
 }
 
@@ -1487,7 +1489,6 @@ build_m2_ztype_node (void)
   else
     ztype_node = gm2_type_for_size (64, 0);
   layout_type (ztype_node);
-
   return ztype_node;
 }
 
@@ -1500,7 +1501,6 @@ build_m2_long_int_node (void)
 
   c = make_signed_type (LONG_LONG_TYPE_SIZE);
   layout_type (c);
-
   return c;
 }
 
@@ -1513,7 +1513,6 @@ build_m2_long_card_node (void)
 
   c = make_unsigned_type (LONG_LONG_TYPE_SIZE);
   layout_type (c);
-
   return c;
 }
 
@@ -1526,7 +1525,6 @@ build_m2_short_int_node (void)
 
   c = make_signed_type (SHORT_TYPE_SIZE);
   layout_type (c);
-
   return c;
 }
 
@@ -1539,7 +1537,6 @@ build_m2_short_card_node (void)
 
   c = make_unsigned_type (SHORT_TYPE_SIZE);
   layout_type (c);
-
   return c;
 }
 
@@ -1556,7 +1553,6 @@ build_m2_iso_loc_node (void)
 
   fixup_unsigned_type (c);
   TYPE_UNSIGNED (c) = 1;
-
   return c;
 }
 
@@ -1754,6 +1750,16 @@ build_m2_boolean (location_t location)
   TYPE_NAME (boolean_type_node) = typedecl;
 }
 
+
+/* Return true if real types a and b are the same.  */
+
+bool
+m2type_SameRealType (tree a, tree b)
+{
+  return ((a == b)
+	  || (TYPE_PRECISION (a) == TYPE_PRECISION (b)));
+}
+
 /* InitBaseTypes create the Modula-2 base types.  */
 
 void
@@ -1797,7 +1803,7 @@ m2type_InitBaseTypes (location_t location)
   m2_complex_type_node = build_m2_complex_type_node ();
   m2_long_complex_type_node = build_m2_long_complex_type_node ();
   m2_short_complex_type_node = build_m2_short_complex_type_node ();
-  m2_c_type_node = build_m2_long_complex_type_node ();
+  m2_c_type_node = m2_long_complex_type_node;
   m2_complex32_type_node = build_m2_complex32_type_node ();
   m2_complex64_type_node = build_m2_complex64_type_node ();
   m2_complex96_type_node = build_m2_complex96_type_node ();
@@ -2575,7 +2581,8 @@ gm2_start_struct (location_t location, enum tree_code code, char *name)
   else
     id = get_identifier (name);
 
-  TYPE_PACKED (s) = false; /* This maybe set true later if necessary.  */
+  /* This maybe set true later if necessary.  */
+  TYPE_PACKED (s) = false;
 
   m2block_pushDecl (build_decl (location, TYPE_DECL, id, s));
   return s;
@@ -2814,7 +2821,6 @@ m2type_SetAlignment (tree node, tree align)
     error ("requested alignment is too large");
   else if (is_type)
     {
-
       /* If we have a TYPE_DECL, then copy the type, so that we don't
          accidentally modify a builtin type.  See pushdecl.  */
       if (decl && TREE_TYPE (decl) != error_mark_node

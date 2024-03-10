@@ -17,6 +17,15 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+;; Return 1 if OP can be used as an operand where a 16-bit
+;; unsigned integer is needed.
+
+(define_predicate "uns_arith_constant"
+  (match_code "const_int")
+{
+  return SMALL_INT_UNSIGNED (op);
+})
+
 ;; Return 1 if OP can be used as an operand where a register or 16-bit
 ;; unsigned integer is needed.
 

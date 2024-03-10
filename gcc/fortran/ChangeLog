@@ -1,3 +1,10 @@
+2023-09-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/70231
+	* trans-array.cc (trans_array_constructor): In absence of a typespec,
+	use string length determined by get_array_ctor_strlen() to reasonably
+	initialize auxiliary variable for bounds-checking.
+
 2023-09-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/30802

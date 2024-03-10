@@ -1644,7 +1644,7 @@ PROCEDURE CheckBuildFunction () : BOOLEAN ;
 
 *)
 
-PROCEDURE BuildFunctionCall ;
+PROCEDURE BuildFunctionCall (ConstExpr: BOOLEAN) ;
 
 
 (*

@@ -72,6 +72,9 @@ static bool extendedOpaque;
 static bool internalDebugging;
 static bool verbose;
 static bool quiet;
+static DynamicStrings_String CReal;
+static DynamicStrings_String CLongReal;
+static DynamicStrings_String CShortReal;
 static DynamicStrings_String projectContents;
 static DynamicStrings_String summaryContents;
 static DynamicStrings_String contributedContents;
@@ -192,6 +195,27 @@ extern "C" bool mcOptions_getSuppressNoReturn (void);
 extern "C" bool mcOptions_useBool (void);
 
 /*
+   getCRealType - returns the string representing the REAL type
+                  used by C.  By default this is "double".
+*/
+
+extern "C" DynamicStrings_String mcOptions_getCRealType (void);
+
+/*
+   getCLongRealType - returns the string representing the REAL type
+                      used by C.  By default this is "long double".
+*/
+
+extern "C" DynamicStrings_String mcOptions_getCLongRealType (void);
+
+/*
+   getCShortRealType - returns the string representing the REAL type
+                       used by C.  By default this is "float".
+*/
+
+extern "C" DynamicStrings_String mcOptions_getCShortRealType (void);
+
+/*
    getYear - return the year.
 */
 
@@ -298,6 +322,34 @@ static void setHPrefix (DynamicStrings_String s);
 */
 
 static void setIgnoreFQ (bool value);
+
+/*
+   toCType - returns a new string which has all occurences of '-'
+             replaced by ' '.
+*/
+
+static DynamicStrings_String toCType (DynamicStrings_String namedType);
+
+/*
+   setCReal - assigns CReal to namedType after it has been transformed by
+              toCType.
+*/
+
+static void setCReal (DynamicStrings_String namedType);
+
+/*
+   setCShortReal - assigns CShortReal to namedType after it has been
+                   transformed by toCType.
+*/
+
+static void setCShortReal (DynamicStrings_String namedType);
+
+/*
+   setCLongReal - assigns CLongReal to namedType after it has been
+                  transformed by toCType.
+*/
+
+static void setCLongReal (DynamicStrings_String namedType);
 
 /*
    optionIs - returns TRUE if the first len (right) characters
@@ -675,6 +727,52 @@ static void setIgnoreFQ (bool value)
 
 
 /*
+   toCType - returns a new string which has all occurences of '-'
+             replaced by ' '.
+*/
+
+static DynamicStrings_String toCType (DynamicStrings_String namedType)
+{
+  return DynamicStrings_ReplaceChar (DynamicStrings_Dup (namedType), '-', ' ');
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   setCReal - assigns CReal to namedType after it has been transformed by
+              toCType.
+*/
+
+static void setCReal (DynamicStrings_String namedType)
+{
+  CReal = toCType (namedType);
+}
+
+
+/*
+   setCShortReal - assigns CShortReal to namedType after it has been
+                   transformed by toCType.
+*/
+
+static void setCShortReal (DynamicStrings_String namedType)
+{
+  CShortReal = toCType (namedType);
+}
+
+
+/*
+   setCLongReal - assigns CLongReal to namedType after it has been
+                  transformed by toCType.
+*/
+
+static void setCLongReal (DynamicStrings_String namedType)
+{
+  CLongReal = toCType (namedType);
+}
+
+
+/*
    optionIs - returns TRUE if the first len (right) characters
               match left.
 */
@@ -850,6 +948,21 @@ static void handleOption (DynamicStrings_String arg)
     {
       /* avoid dangling else.  */
       suppressNoReturn = true;
+    }
+  else if (optionIs ((const char *) "--real=", 7, arg))
+    {
+      /* avoid dangling else.  */
+      setCReal (DynamicStrings_Slice (arg, 7, 0));
+    }
+  else if (optionIs ((const char *) "--longreal=", 11, arg))
+    {
+      /* avoid dangling else.  */
+      setCLongReal (DynamicStrings_Slice (arg, 11, 0));
+    }
+  else if (optionIs ((const char *) "--shortreal=", 12, arg))
+    {
+      /* avoid dangling else.  */
+      setCShortReal (DynamicStrings_Slice (arg, 12, 0));
     }
 }
 
@@ -1106,6 +1219,45 @@ extern "C" bool mcOptions_useBool (void)
   __builtin_unreachable ();
 }
 
+
+/*
+   getCRealType - returns the string representing the REAL type
+                  used by C.  By default this is "double".
+*/
+
+extern "C" DynamicStrings_String mcOptions_getCRealType (void)
+{
+  return CReal;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   getCLongRealType - returns the string representing the REAL type
+                      used by C.  By default this is "long double".
+*/
+
+extern "C" DynamicStrings_String mcOptions_getCLongRealType (void)
+{
+  return CLongReal;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   getCShortRealType - returns the string representing the REAL type
+                       used by C.  By default this is "float".
+*/
+
+extern "C" DynamicStrings_String mcOptions_getCShortRealType (void)
+{
+  return CShortReal;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
 extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   langC = true;
@@ -1136,6 +1288,9 @@ extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc,__attribute
   summaryContents = DynamicStrings_InitString ((const char *) "", 0);
   contributedContents = DynamicStrings_InitString ((const char *) "", 0);
   projectContents = DynamicStrings_InitString ((const char *) "GNU Modula-2", 12);
+  CReal = DynamicStrings_InitString ((const char *) "double", 6);
+  CLongReal = DynamicStrings_InitString ((const char *) "long double", 11);
+  CShortReal = DynamicStrings_InitString ((const char *) "float", 5);
 }
 
 extern "C" void _M2_mcOptions_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])

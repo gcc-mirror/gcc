@@ -188,6 +188,12 @@ extern "C" DynamicStrings_String DynamicStrings_ConCatChar (DynamicStrings_Strin
 extern "C" DynamicStrings_String DynamicStrings_Assign (DynamicStrings_String a, DynamicStrings_String b);
 
 /*
+   ReplaceChar - returns string s after it has changed all occurances of from to to.
+*/
+
+extern "C" DynamicStrings_String DynamicStrings_ReplaceChar (DynamicStrings_String s, char from, char to);
+
+/*
    Dup - duplicate a String, s, returning the copy of s.
 */
 
@@ -1816,6 +1822,35 @@ extern "C" DynamicStrings_String DynamicStrings_Assign (DynamicStrings_String a,
 
 
 /*
+   ReplaceChar - returns string s after it has changed all occurances of from to to.
+*/
+
+extern "C" DynamicStrings_String DynamicStrings_ReplaceChar (DynamicStrings_String s, char from, char to)
+{
+  DynamicStrings_String t;
+  unsigned int i;
+
+  t = s;
+  while (t != NULL)
+    {
+      i = 0;
+      while (i < t->contents.len)
+        {
+          if (t->contents.buf.array[i] == from)
+            {
+              t->contents.buf.array[i] = to;
+            }
+          i += 1;
+        }
+      t = t->contents.next;
+    }
+  return s;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    Dup - duplicate a String, s, returning the copy of s.
 */
 
@@ -1828,7 +1863,7 @@ extern "C" DynamicStrings_String DynamicStrings_Dup (DynamicStrings_String s)
   s = DynamicStrings_Assign (DynamicStrings_InitString ((const char *) "", 0), s);
   if (TraceOn)
     {
-      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1173, (const char *) "Dup", 3);
+      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1198, (const char *) "Dup", 3);
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1850,7 +1885,7 @@ extern "C" DynamicStrings_String DynamicStrings_Add (DynamicStrings_String a, Dy
   a = DynamicStrings_ConCat (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "", 0), a), b);
   if (TraceOn)
     {
-      a = AssignDebug (a, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1193, (const char *) "Add", 3);
+      a = AssignDebug (a, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1218, (const char *) "Add", 3);
     }
   return a;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1915,7 +1950,7 @@ extern "C" bool DynamicStrings_EqualCharStar (DynamicStrings_String s, void * a)
   t = DynamicStrings_InitStringCharStar (a);
   if (TraceOn)
     {
-      t = AssignDebug (t, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1250, (const char *) "EqualCharStar", 13);
+      t = AssignDebug (t, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1275, (const char *) "EqualCharStar", 13);
     }
   t = AddToGarbage (t, s);
   if (DynamicStrings_Equal (t, s))
@@ -1953,7 +1988,7 @@ extern "C" bool DynamicStrings_EqualArray (DynamicStrings_String s, const char *
   t = DynamicStrings_InitString ((const char *) a, _a_high);
   if (TraceOn)
     {
-      t = AssignDebug (t, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1280, (const char *) "EqualArray", 10);
+      t = AssignDebug (t, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1305, (const char *) "EqualArray", 10);
     }
   t = AddToGarbage (t, s);
   if (DynamicStrings_Equal (t, s))
@@ -1991,7 +2026,7 @@ extern "C" DynamicStrings_String DynamicStrings_Mult (DynamicStrings_String s, u
     }
   if (TraceOn)
     {
-      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1312, (const char *) "Mult", 4);
+      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1337, (const char *) "Mult", 4);
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -2070,7 +2105,7 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
                       AddDebugInfo (t->contents.next);
                       if (TraceOn)
                         {
-                          t->contents.next = AssignDebug (t->contents.next, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1380, (const char *) "Slice", 5);
+                          t->contents.next = AssignDebug (t->contents.next, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1405, (const char *) "Slice", 5);
                         }
                     }
                   t = t->contents.next;
@@ -2088,7 +2123,7 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
     }
   if (TraceOn)
     {
-      d = AssignDebug (d, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1397, (const char *) "Slice", 5);
+      d = AssignDebug (d, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1422, (const char *) "Slice", 5);
     }
   return d;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -2216,7 +2251,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveComment (DynamicStrings_St
     }
   if (TraceOn)
     {
-      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1509, (const char *) "RemoveComment", 13);
+      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1534, (const char *) "RemoveComment", 13);
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -2241,7 +2276,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveWhitePrefix (DynamicString
   s = DynamicStrings_Slice (s, (int ) (i), 0);
   if (TraceOn)
     {
-      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1621, (const char *) "RemoveWhitePrefix", 17);
+      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1646, (const char *) "RemoveWhitePrefix", 17);
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -2266,7 +2301,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveWhitePostfix (DynamicStrin
   s = DynamicStrings_Slice (s, 0, i+1);
   if (TraceOn)
     {
-      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1643, (const char *) "RemoveWhitePostfix", 18);
+      s = AssignDebug (s, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 1668, (const char *) "RemoveWhitePostfix", 18);
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */

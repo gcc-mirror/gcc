@@ -64,8 +64,6 @@ static bool type_streaming_finished = false;
 
 GTY(()) tree first_personality_decl;
 
-GTY(()) const unsigned char *lto_mode_identity_table;
-
 /* Returns a hash code for P.  */
 
 static hashval_t
@@ -2277,7 +2275,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
 #ifdef ACCEL_COMPILER
   lto_input_mode_table (file_data);
 #else
-  file_data->mode_table = lto_mode_identity_table;
+  file_data->mode_table = NULL;
   file_data->mode_bits = ceil_log2 (MAX_MACHINE_MODE);
 #endif
 
@@ -3118,13 +3116,6 @@ lto_fe_init (void)
   memset (&lto_stats, 0, sizeof (lto_stats));
   bitmap_obstack_initialize (NULL);
   gimple_register_cfg_hooks ();
-#ifndef ACCEL_COMPILER
-  unsigned char *table
-    = ggc_vec_alloc<unsigned char> (MAX_MACHINE_MODE);
-  for (int m = 0; m < MAX_MACHINE_MODE; m++)
-    table[m] = m;
-  lto_mode_identity_table = table;
-#endif
 }
 
 #include "gt-lto-lto-common.h"

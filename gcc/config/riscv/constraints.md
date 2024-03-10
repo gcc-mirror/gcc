@@ -45,6 +45,26 @@
   (and (match_code "const_int")
        (match_test "ival == 0")))
 
+(define_constraint "c01"
+  "Constant value 1."
+  (and (match_code "const_int")
+       (match_test "ival == 1")))
+
+(define_constraint "c02"
+  "Constant value 2"
+  (and (match_code "const_int")
+       (match_test "ival == 2")))
+
+(define_constraint "c04"
+  "Constant value 4"
+  (and (match_code "const_int")
+       (match_test "ival == 4")))
+
+(define_constraint "c08"
+  "Constant value 8"
+  (and (match_code "const_int")
+       (match_test "ival == 8")))
+
 (define_constraint "K"
   "A 5-bit unsigned immediate for CSR access instructions."
   (and (match_code "const_int")

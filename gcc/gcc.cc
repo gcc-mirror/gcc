@@ -447,6 +447,7 @@ static const char *greater_than_spec_func (int, const char **);
 static const char *debug_level_greater_than_spec_func (int, const char **);
 static const char *dwarf_version_greater_than_spec_func (int, const char **);
 static const char *find_fortran_preinclude_file (int, const char **);
+static const char *join_spec_func (int, const char **);
 static char *convert_white_space (char *);
 static char *quote_spec (char *);
 static char *quote_spec_arg (char *);
@@ -1235,7 +1236,9 @@ static const char *cpp_unique_options =
  %{remap} %{%:debug-level-gt(2):-dD}\
  %{!iplugindir*:%{fplugin*:%:find-plugindir()}}\
  %{H} %C %{D*&U*&A*} %{i*} %Z %i\
- %{E|M|MM:%W{o*}}";
+ %{E|M|MM:%W{o*}}\
+ %{fdeps-format=*:%{!fdeps-file=*:-fdeps-file=%:join(%{!o:%b.ddi}%{o*:%.ddi%*})}}\
+ %{fdeps-format=*:%{!fdeps-target=*:-fdeps-target=%:join(%{!o:%b.o}%{o*:%.o%*})}}";
 
 /* This contains cpp options which are common with cc1_options and are passed
    only when preprocessing only to avoid duplication.  We pass the cc1 spec
@@ -1772,6 +1775,7 @@ static const struct spec_function static_spec_functions[] =
   { "debug-level-gt",		debug_level_greater_than_spec_func },
   { "dwarf-version-gt",		dwarf_version_greater_than_spec_func },
   { "fortran-preinclude-file",	find_fortran_preinclude_file},
+  { "join",			join_spec_func},
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -10973,6 +10977,27 @@ find_fortran_preinclude_file (int argc, const char **argv)
 
   path_prefix_reset (&prefixes);
   return result;
+}
+
+/* The function takes any number of arguments and joins them together.
+
+   This seems to be necessary to build "-fjoined=foo.b" from "-fseparate foo.a"
+   with a %{fseparate*:-fjoined=%.b$*} rule without adding undesired spaces:
+   when doing $* replacement we first replace $* with the rest of the switch
+   (in this case ""), and then add any arguments as arguments after the result,
+   resulting in "-fjoined= foo.b".  Using this function with e.g.
+   %{fseparate*:-fjoined=%:join(%.b$*)} gets multiple words as separate argv
+   elements instead of separated by spaces, and we paste them together.  */
+
+static const char *
+join_spec_func (int argc, const char **argv)
+{
+  if (argc == 1)
+    return argv[0];
+  for (int i = 0; i < argc; ++i)
+    obstack_grow (&obstack, argv[i], strlen (argv[i]));
+  obstack_1grow (&obstack, '\0');
+  return XOBFINISH (&obstack, const char *);
 }
 
 /* If any character in ORIG fits QUOTE_P (_, P), reallocate the string

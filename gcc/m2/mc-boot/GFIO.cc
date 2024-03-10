@@ -195,7 +195,7 @@ extern "C" void FIO_FlushBuffer (FIO_File f);
 extern "C" unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * dest);
 
 /*
-   ReadAny - reads HIGH(a) bytes into, a. All input
+   ReadAny - reads HIGH (a) + 1 bytes into, a.  All input
              is fully buffered, unlike ReadNBytes and thus is more
              suited to small reads.
 */
@@ -213,7 +213,7 @@ extern "C" void FIO_ReadAny (FIO_File f, unsigned char *a, unsigned int _a_high)
 extern "C" unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void * src);
 
 /*
-   WriteAny - writes HIGH(a) bytes onto, file, f. All output
+   WriteAny - writes HIGH (a) + 1 bytes onto, file, f.  All output
               is fully buffered, unlike WriteNBytes and thus is more
               suited to small writes.
 */
@@ -410,7 +410,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes);
                   Useful when performing small reads.
 */
 
-static int BufferedRead (FIO_File f, unsigned int nBytes, void * a);
+static int BufferedRead (FIO_File f, unsigned int nBytes, void * dest);
 
 /*
    HandleEscape - translates 
@@ -473,7 +473,7 @@ static void SetEndOfLine (FIO_File f, char ch);
                    Useful when performing small writes.
 */
 
-static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a);
+static int BufferedWrite (FIO_File f, unsigned int nBytes, void * src);
 
 /*
    PreInitialize - preinitialize the file descriptor.
@@ -809,11 +809,11 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
                   Useful when performing small reads.
 */
 
-static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
+static int BufferedRead (FIO_File f, unsigned int nBytes, void * dest)
 {
   typedef unsigned char *BufferedRead__T3;
 
-  void * t;
+  void * src;
   int total;
   int n;
   BufferedRead__T3 p;
@@ -835,7 +835,7 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
                       if (nBytes == 1)
                         {
                           /* too expensive to call memcpy for 1 character  */
-                          p = static_cast<BufferedRead__T3> (a);
+                          p = static_cast<BufferedRead__T3> (dest);
                           (*p) = static_cast<unsigned char> ((*fd->buffer->contents).array[fd->buffer->position]);
                           fd->buffer->left -= 1;  /* remove consumed byte  */
                           fd->buffer->position += 1;  /* move onwards n byte  */
@@ -845,13 +845,13 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
                       else
                         {
                           n = Min (fd->buffer->left, nBytes);
-                          t = fd->buffer->address;
-                          t = reinterpret_cast<void *> (reinterpret_cast<char *> (t)+fd->buffer->position);
-                          p = static_cast<BufferedRead__T3> (libc_memcpy (a, t, static_cast<size_t> (n)));
+                          src = fd->buffer->address;
+                          src = reinterpret_cast<void *> (reinterpret_cast<char *> (src)+fd->buffer->position);
+                          p = static_cast<BufferedRead__T3> (libc_memcpy (dest, src, static_cast<size_t> (n)));
                           fd->buffer->left -= n;  /* remove consumed bytes  */
                           fd->buffer->position += n;  /* move onwards n bytes  */
                           /* move onwards ready for direct reads  */
-                          a = reinterpret_cast<void *> (reinterpret_cast<char *> (a)+n);
+                          dest = reinterpret_cast<void *> (reinterpret_cast<char *> (dest)+n);
                           nBytes -= n;  /* reduce the amount for future direct  */
                           /* read  */
                           total += n;
@@ -1236,11 +1236,11 @@ static void SetEndOfLine (FIO_File f, char ch)
                    Useful when performing small writes.
 */
 
-static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
+static int BufferedWrite (FIO_File f, unsigned int nBytes, void * src)
 {
   typedef unsigned char *BufferedWrite__T5;
 
-  void * t;
+  void * dest;
   int total;
   int n;
   BufferedWrite__T5 p;
@@ -1262,7 +1262,7 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
                       if (nBytes == 1)
                         {
                           /* too expensive to call memcpy for 1 character  */
-                          p = static_cast<BufferedWrite__T5> (a);
+                          p = static_cast<BufferedWrite__T5> (src);
                           (*fd->buffer->contents).array[fd->buffer->position] = static_cast<char> ((*p));
                           fd->buffer->left -= 1;  /* reduce space  */
                           fd->buffer->position += 1;  /* move onwards n byte  */
@@ -1272,13 +1272,13 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
                       else
                         {
                           n = Min (fd->buffer->left, nBytes);
-                          t = fd->buffer->address;
-                          t = reinterpret_cast<void *> (reinterpret_cast<char *> (t)+fd->buffer->position);
-                          p = static_cast<BufferedWrite__T5> (libc_memcpy (a, t, static_cast<size_t> ((unsigned int ) (n))));
+                          dest = fd->buffer->address;
+                          dest = reinterpret_cast<void *> (reinterpret_cast<char *> (dest)+fd->buffer->position);
+                          p = static_cast<BufferedWrite__T5> (libc_memcpy (dest, src, static_cast<size_t> ((unsigned int ) (n))));
                           fd->buffer->left -= n;  /* remove consumed bytes  */
                           fd->buffer->position += n;  /* move onwards n bytes  */
                           /* move ready for further writes  */
-                          a = reinterpret_cast<void *> (reinterpret_cast<char *> (a)+n);
+                          src = reinterpret_cast<void *> (reinterpret_cast<char *> (src)+n);
                           nBytes -= n;  /* reduce the amount for future writes  */
                           total += n;  /* reduce the amount for future writes  */
                         }
@@ -1686,7 +1686,7 @@ extern "C" unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * 
 
 
 /*
-   ReadAny - reads HIGH(a) bytes into, a. All input
+   ReadAny - reads HIGH (a) + 1 bytes into, a.  All input
              is fully buffered, unlike ReadNBytes and thus is more
              suited to small reads.
 */
@@ -1694,7 +1694,7 @@ extern "C" unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * 
 extern "C" void FIO_ReadAny (FIO_File f, unsigned char *a, unsigned int _a_high)
 {
   CheckAccess (f, FIO_openedforread, false);
-  if ((BufferedRead (f, _a_high, a)) == ((int ) (_a_high)))
+  if ((BufferedRead (f, _a_high+1, a)) == ((int ) (_a_high+1)))
     {
       SetEndOfLine (f, static_cast<char> (a[_a_high]));
     }
@@ -1745,7 +1745,7 @@ extern "C" unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void *
 
 
 /*
-   WriteAny - writes HIGH(a) bytes onto, file, f. All output
+   WriteAny - writes HIGH (a) + 1 bytes onto, file, f.  All output
               is fully buffered, unlike WriteNBytes and thus is more
               suited to small writes.
 */
@@ -1753,7 +1753,7 @@ extern "C" unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void *
 extern "C" void FIO_WriteAny (FIO_File f, unsigned char *a, unsigned int _a_high)
 {
   CheckAccess (f, FIO_openedforwrite, true);
-  if ((BufferedWrite (f, _a_high, a)) == ((int ) (_a_high)))
+  if ((BufferedWrite (f, _a_high+1, a)) == ((int ) (_a_high+1)))
     {}  /* empty.  */
 }
 

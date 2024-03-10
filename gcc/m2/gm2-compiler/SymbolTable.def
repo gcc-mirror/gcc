@@ -266,6 +266,7 @@ EXPORT QUALIFIED NulSym,
                  IsDefLink,
                  IsModLink,
                  IsModuleBuiltin,
+                 IsProcedureBuiltinAvailable,
 
                  ForeachProcedureDo,
                  ProcedureParametersDefined,
@@ -3665,6 +3666,14 @@ PROCEDURE GetParameterHeapVar (ParSym: CARDINAL) : CARDINAL ;
 *)
 
 PROCEDURE PutProcedureParameterHeapVars (sym: CARDINAL) ;
+
+
+(*
+   IsProcedureBuiltinAvailable - return TRUE if procedure is available as a builtin
+                                 for the target architecture.
+*)
+
+PROCEDURE IsProcedureBuiltinAvailable (procedure: CARDINAL) : BOOLEAN ;
 
 
 END SymbolTable.

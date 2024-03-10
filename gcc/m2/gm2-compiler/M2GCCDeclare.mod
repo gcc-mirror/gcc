@@ -2458,7 +2458,7 @@ BEGIN
       p := NoOfParam(Sym) ;
       i := p ;
       WHILE i>0 DO
-         (* note we dont use GetNthParam as we want the parameter that is seen by
+         (* Note we dont use GetNthParam as we want the parameter that is seen by
             the procedure block remember that this is treated exactly the same as
             a variable, just its position on the activation record is special (ie
             a parameter).  *)

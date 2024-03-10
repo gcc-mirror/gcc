@@ -2739,7 +2739,9 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
       || TYPE_UNSIGNED (type) == unsignedp)
     return type;
 
-  if (TREE_CODE (type) == BITINT_TYPE)
+  if (TREE_CODE (type) == BITINT_TYPE
+      /* signed _BitInt(1) is invalid, avoid creating that.  */
+      && (unsignedp || TYPE_PRECISION (type) > 1))
     return build_bitint_type (TYPE_PRECISION (type), unsignedp);
 
 #define TYPE_OK(node)							    \

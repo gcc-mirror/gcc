@@ -8,7 +8,7 @@ void
 f ()
 {
 
-  int var;  /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive, used for 'var', not yet supported" } */
+  int var;
   #pragma omp allocate(var)
   var = 5;
 }
@@ -21,7 +21,7 @@ h ()
    #pragma omp parallel
     #pragma omp serial
      {
-       int var2[5];  /* { dg-message "sorry, unimplemented: OpenMP 'allocate' directive, used for 'var2', not yet supported" } */
+       int var2[5];
        #pragma omp allocate(var2)
        var2[0] = 7;
      }

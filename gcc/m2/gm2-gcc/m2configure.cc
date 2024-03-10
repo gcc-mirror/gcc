@@ -99,3 +99,51 @@ m2configure_FullPathCPP (void)
     }
   return NULL;
 }
+
+/* Return true if M2C_LONGREAL_FLOAT128 is defined.  */
+
+bool
+m2configure_M2CLongRealFloat128 (void)
+{
+#if defined(M2C_LONGREAL_FLOAT128)
+  return true;
+#else
+  return false;
+#endif
+}
+
+/* Return true if M2C_LONGREAL_IBM128 is defined.  */
+
+bool
+m2configure_M2CLongRealIBM128 (void)
+{
+#if defined(M2C_LONGREAL_IBM128)
+  return true;
+#else
+  return false;
+#endif
+}
+
+/* Return true if M2C_LONGREAL_LONGDOUBLE is defined.  */
+
+bool
+m2configure_M2CLongRealLongDouble (void)
+{
+#if defined(M2C_LONGREAL_LONGDOUBLE)
+  return true;
+#else
+  return false;
+#endif
+}
+
+/* Return true if the target is ppc64le.  */
+
+bool
+m2configure_M2CLongRealLongDoublePPC64LE (void)
+{
+#if defined(M2C_LONGREAL_PPC64LE)
+  return true;
+#else
+  return false;
+#endif
+}

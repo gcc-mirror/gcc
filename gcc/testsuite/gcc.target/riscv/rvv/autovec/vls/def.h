@@ -210,7 +210,7 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b)                    \
   {                                                                            \
     for (int i = 0; i < NUM; ++i)                                              \
-      a[i] = OP b[i];                                                          \
+      a[i] = OP (b[i]);                                                        \
   }
 
 #define DEF_CALL_VV(PREFIX, NUM, TYPE, CALL)                                   \
@@ -438,4 +438,83 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   {                                                                            \
     TYPE1 v = {__VA_ARGS__};                                                   \
     *(TYPE1 *) out = v;                                                        \
+  }
+
+#define DEF_VEC_SET_IMM_INDEX(PREFIX, VECTOR, TYPE, INDEX)                     \
+  VECTOR __attribute__ ((noinline, noclone))                                   \
+  PREFIX##_##VECTOR##_##INDEX (VECTOR v, TYPE a)                               \
+  {                                                                            \
+    v[INDEX] = a;                                                              \
+                                                                               \
+    return v;                                                                  \
+  }
+
+#define DEF_VEC_SET_SCALAR_INDEX(PREFIX, VECTOR, TYPE)                         \
+  VECTOR __attribute__ ((noinline, noclone))                                   \
+  PREFIX##_##VECTOR##_##TYPE (VECTOR v, TYPE a, unsigned index)                \
+  {                                                                            \
+    v[index] = a;                                                              \
+                                                                               \
+    return v;                                                                  \
+  }
+
+#define DEF_FMA_VV(PREFIX, NUM, TYPE)                                          \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c,  \
+			TYPE *restrict d)                                      \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] * c[i] + d[i];                                               \
+  }
+
+#define DEF_FNMA_VV(PREFIX, NUM, TYPE)                                         \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c,  \
+			TYPE *restrict d)                                      \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = d[i] - b[i] * c[i];                                               \
+  }
+
+#define DEF_FMS_VV(PREFIX, NUM, TYPE)                                          \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c,  \
+			TYPE *restrict d)                                      \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] * c[i] - d[i];                                               \
+  }
+
+#define DEF_FNMS_VV(PREFIX, NUM, TYPE)                                         \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c,  \
+			TYPE *restrict d)                                      \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = -(b[i] * c[i]) - d[i];                                            \
+  }
+
+#define DEF_CONVERT(PREFIX, TYPE1, TYPE2, NUM)                                 \
+  __attribute__ ((                                                             \
+    noipa)) void PREFIX##_##TYPE1##TYPE2##_##NUM (TYPE2 *__restrict dst,       \
+						  TYPE1 *__restrict a)         \
+  {                                                                            \
+    for (int i = 0; i < NUM; i++)                                              \
+      dst[i] = (TYPE2) a[i];                                                   \
+  }
+
+#define DEF_AVG_FLOOR(TYPE, TYPE2, NUM)                                        \
+  __attribute__ ((noipa)) void vavg_##TYPE##_##TYPE2##NUM (                    \
+    TYPE *__restrict dst, TYPE *__restrict a, TYPE *__restrict b, int n)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; i++)                                              \
+      dst[i] = ((TYPE2) a[i] + b[i]) >> 1;                                     \
+  }
+
+#define DEF_AVG_CEIL(TYPE, TYPE2, NUM)                                         \
+  __attribute__ ((noipa)) void vavg2_##TYPE##_##TYPE2##NUM (                   \
+    TYPE *__restrict dst, TYPE *__restrict a, TYPE *__restrict b, int n)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; i++)                                              \
+      dst[i] = ((TYPE2) a[i] + b[i] + 1) >> 1;                                 \
   }

@@ -70,6 +70,14 @@
   (and (match_code "const_int,const_wide_int,const_vector")
        (match_test "op == CONST1_RTX (GET_MODE (op))")))
 
+(define_predicate "const_1_or_2_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 2")))
+
+(define_predicate "const_1_or_4_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 4")))
+
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "const_0_operand")
        (match_operand 0 "register_operand")))
@@ -444,6 +452,10 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "vector_undef_operand")))
 
+(define_predicate "autovec_else_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "scratch_operand")))
+
 (define_predicate "vector_arith_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_vector")
@@ -462,14 +474,6 @@
 (define_predicate "vector_perm_operand"
   (ior (match_operand 0 "register_operand")
        (match_code "const_vector")))
-
-(define_predicate "vector_gs_scale_operand_16"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) == 1 || INTVAL (op) == 2")))
-
-(define_predicate "vector_gs_scale_operand_32"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) == 1 || INTVAL (op) == 4")))
 
 (define_predicate "vector_gs_scale_operand_64"
   (and (match_code "const_int")
@@ -513,6 +517,24 @@
 (define_special_predicate "pmode_reg_or_0_operand"
   (ior (match_operand 0 "const_0_operand")
        (match_operand 0 "pmode_register_operand")))
+
+;; [1, 2, 4, 8] means strided load/store with stride == element width
+(define_special_predicate "vector_eew8_stride_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) == 1 || INTVAL (op) == 0"))))
+(define_special_predicate "vector_eew16_stride_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) == 2 || INTVAL (op) == 0"))))
+(define_special_predicate "vector_eew32_stride_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) == 4 || INTVAL (op) == 0"))))
+(define_special_predicate "vector_eew64_stride_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) == 8 || INTVAL (op) == 0"))))
 
 ;; A special predicate that doesn't match a particular mode.
 (define_special_predicate "vector_any_register_operand"
