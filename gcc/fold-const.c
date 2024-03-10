@@ -6171,7 +6171,6 @@ static tree
 merge_truthop_with_opposite_arm (location_t loc, tree op, tree cmpop,
 				 bool rhs_only)
 {
-  tree type = TREE_TYPE (cmpop);
   enum tree_code code = TREE_CODE (cmpop);
   enum tree_code truthop_code = TREE_CODE (op);
   tree lhs = TREE_OPERAND (op, 0);
@@ -6186,6 +6185,8 @@ merge_truthop_with_opposite_arm (location_t loc, tree op, tree cmpop,
 
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return NULL_TREE;
+
+  tree type = TREE_TYPE (TREE_OPERAND (cmpop, 0));
 
   if (rhs_code == truthop_code)
     {
