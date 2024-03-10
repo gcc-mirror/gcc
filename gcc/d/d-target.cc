@@ -575,31 +575,16 @@ Target::supportsLinkerDirective (void) const
 }
 
 /* Decides whether an `in' parameter of the specified POD type PARAM_TYPE is to
-   be passed by reference or by valie.  This is used only when compiling with
+   be passed by reference or by value.  This is used only when compiling with
    `-fpreview=in' enabled.  */
 
 bool
 Target::preferPassByRef (Type *param_type)
 {
-  if (param_type->size () == SIZE_INVALID)
+  /* See note in Target::isReturnOnStack.  */
+  Type *tb = param_type->toBasetype ();
+  if (tb->size () == SIZE_INVALID)
     return false;
 
-  tree type = build_ctype (param_type);
-
-  /* Prefer a `ref' if the type is an aggregate, and its size is greater than
-     its alignment.  */
-  if (AGGREGATE_TYPE_P (type)
-      && (!valid_constant_size_p (TYPE_SIZE_UNIT (type))
-	  || compare_tree_int (TYPE_SIZE_UNIT (type), TYPE_ALIGN (type)) > 0))
-    return true;
-
-  /* If the back-end is always going to pass this by invisible reference.  */
-  if (pass_by_reference (NULL, function_arg_info (type, true)))
-    return true;
-
-  /* If returning the parameter means the caller will do RVO.  */
-  if (targetm.calls.return_in_memory (type, NULL_TREE))
-    return true;
-
-  return false;
+  return (tb->ty == TY::Tstruct || tb->ty == TY::Tsarray);
 }
