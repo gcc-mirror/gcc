@@ -2119,6 +2119,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
     case E_Array_Type:
       {
+	const Entity_Id OAT = Original_Array_Type (gnat_entity);
 	const Entity_Id PAT = Packed_Array_Impl_Type (gnat_entity);
 	const bool convention_fortran_p
 	  = (Convention (gnat_entity) == Convention_Fortran);
@@ -2392,14 +2393,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      set_typeless_storage_on_aggregate_type (tem);
 	  }
 
-	/* If this is a packed type implemented specially, then process the
-	   implementation type so it is elaborated in the proper scope.  */
-	if (Present (PAT))
-	  gnat_to_gnu_entity (PAT, NULL_TREE, false);
-
-	/* Otherwise, if an alignment is specified, use it if valid and, if
-	   the alignment was requested with an explicit clause, state so.  */
-	else if (Known_Alignment (gnat_entity))
+	/* If an alignment is specified for an array that is not a packed type
+	   implemented specially, use the alignment if it is valid and, if it
+	   was requested with an explicit clause, preserve the information.  */
+	if (Known_Alignment (gnat_entity) && No (PAT))
 	  {
 	    SET_TYPE_ALIGN (tem,
 			    validate_alignment (Alignment (gnat_entity),
@@ -2418,7 +2415,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	TYPE_BIT_PACKED_ARRAY_TYPE_P (tem)
 	  = (Is_Packed_Array_Impl_Type (gnat_entity)
-	     ? Is_Bit_Packed_Array (Original_Array_Type (gnat_entity))
+	     ? Is_Bit_Packed_Array (OAT)
 	     : Is_Bit_Packed_Array (gnat_entity));
 
 	if (Treat_As_Volatile (gnat_entity))
@@ -2447,8 +2444,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  TYPE_ARRAY_MAX_SIZE (tem) = gnu_max_size;
 
 	/* See the above description for the rationale.  */
-	create_type_decl (create_concat_name (gnat_entity, "XUA"), tem,
-			  artificial_p, debug_info_p, gnat_entity);
+	tree gnu_tmp_decl
+	  = create_type_decl (create_concat_name (gnat_entity, "XUA"), tem,
+			      artificial_p, debug_info_p, gnat_entity);
 	TYPE_CONTEXT (tem) = gnu_fat_type;
 	TYPE_CONTEXT (TYPE_POINTER_TO (tem)) = gnu_fat_type;
 
@@ -2475,6 +2473,25 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	TYPE_REFERENCE_TO (gnu_type) = gnu_fat_type;
 	SET_TYPE_MODE (gnu_type, BLKmode);
 	SET_TYPE_ALIGN (gnu_type, TYPE_ALIGN (tem));
+
+	/* If this is a packed type implemented specially, then process the
+	   implementation type so it is elaborated in the proper scope.  */
+	if (Present (PAT))
+	  {
+	    /* Save the XUA type as our equivalent temporarily for the call
+	       to gnat_to_gnu_type on the OAT below.  */
+	    save_gnu_tree (gnat_entity, gnu_tmp_decl, false);
+	    gnat_to_gnu_entity (PAT, NULL_TREE, false);
+	    save_gnu_tree (gnat_entity, NULL_TREE, false);
+	  }
+
+	/* If this is precisely the implementation type and it has the same
+	   component as the original type (which happens for peculiar index
+	   types), copy the alias set from the latter; this ensures that all
+	   implementation types built on the fly have the same alias set.  */
+        if (Is_Packed_Array_Impl_Type (gnat_entity)
+	    && Component_Type (gnat_entity) == Component_Type (OAT))
+	  relate_alias_sets (gnu_type, gnat_to_gnu_type (OAT), ALIAS_SET_COPY);
       }
       break;
 
@@ -4763,8 +4780,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		  && align_clause))
 	    TYPE_USER_ALIGN (gnu_type) = 1;
 
-	  /* Record whether a pragma Universal_Aliasing was specified.  */
-	  if (Universal_Aliasing (gnat_entity) && !TYPE_IS_DUMMY_P (gnu_type))
+	  /* Record whether a pragma Universal_Aliasing was specified.  Also
+	     consider that it is always present on interface types because,
+	     while they are abstract tagged types and thus no object of these
+	     types exists anywhere, they are used to access objects of types
+	     that implement them.  */
+	  if ((Universal_Aliasing (gnat_entity) || Is_Interface (gnat_entity))
+	      && !TYPE_IS_DUMMY_P (gnu_type))
 	    {
 	      /* Set TYPE_TYPELESS_STORAGE if this is an aggregate type and
 		 TYPE_UNIVERSAL_ALIASING_P otherwise, since the former is not

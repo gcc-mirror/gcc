@@ -254,8 +254,8 @@ static tree emit_check (tree, tree, int, Node_Id);
 static tree build_unary_op_trapv (enum tree_code, tree, tree, Node_Id);
 static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
 static tree convert_with_check (Entity_Id, tree, bool, bool, Node_Id);
-static bool addressable_p (tree gnu_expr, tree gnu_type = NULL_TREE,
-			   Node_Id gnat_expr = Empty);
+static bool addressable_p (tree, tree);
+static bool aliasable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree pos_to_constructor (Node_Id, tree);
 static void validate_unchecked_conversion (Node_Id);
@@ -4850,6 +4850,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       tree gnu_formal_type = gnat_to_gnu_type (gnat_formal_type);
       tree gnu_formal = present_gnu_tree (gnat_formal)
 			? get_gnu_tree (gnat_formal) : NULL_TREE;
+      tree gnu_actual_type = gnat_to_gnu_type (Etype (gnat_actual));
       const bool in_param = (Ekind (gnat_formal) == E_In_Parameter);
       const bool is_true_formal_parm
 	= gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL;
@@ -4865,8 +4866,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	 We do it in the In case too, except for a formal passed by reference
 	 and an actual which is an unchecked conversion to an elementary type
 	 or constrained composite type because it itself can cause the actual
-	 to be misaligned or the strict aliasing rules to be violated and the
-	 addressability test needs to be applied to the real object.  */
+	 to be misaligned and the addressability test needs to be applied to
+	 the real object.  */
       const bool suppress_type_conversion
 	= ((Nkind (gnat_actual) == N_Unchecked_Type_Conversion
 	    && (!in_param
@@ -4878,6 +4879,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       Node_Id gnat_name = suppress_type_conversion
 			  ? Expression (gnat_actual) : gnat_actual;
       tree gnu_name = gnat_to_gnu (gnat_name), gnu_name_type;
+      bool aliasing = false;
 
       /* If it's possible we may need to use this expression twice, make sure
 	 that any side-effects are handled via SAVE_EXPRs; likewise if we need
@@ -4893,10 +4895,14 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
       /* If we are passing a non-addressable parameter by reference, pass the
 	 address of a copy.  In the In Out or Out case, set up to copy back
-	 out after the call.  */
+	 out after the call.  Moreover, in the case of a conversion, if we
+	 are passing a non-aliasable parameter, also pass the address of a
+	 copy to avoid breaking strict aliasing rules.  */
       if (is_by_ref_formal_parm
 	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
-	  && !addressable_p (gnu_name, gnu_name_type, gnat_name))
+	  && (!addressable_p (gnu_name, gnu_name_type)
+	      || (node_is_type_conversion (gnat_actual)
+		  && (aliasing = !aliasable_p (gnu_name, gnu_actual_type)))))
 	{
 	  tree gnu_orig = gnu_name, gnu_temp, gnu_stmt;
 
@@ -4921,6 +4927,37 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  else if (DECL_FORCED_BY_REF_P (gnu_formal))
 	    post_error ("misaligned actual cannot be passed by reference??",
 			gnat_actual);
+
+	  /* If the copy needs to be made because of aliasing considerations,
+	     issue a warning because this was historically not necessary.  */
+	  else if (aliasing)
+	    {
+	      if (Nkind (gnat_actual) == N_Unchecked_Type_Conversion)
+		{
+		  post_error
+		    ("unchecked conversion implemented by copy??",
+		     gnat_actual);
+		  post_error
+		    ("\\?use pragma Universal_Aliasing on either type",
+		     gnat_actual);
+		  post_error
+		    ("\\?to enable RM 13.9(12) implementation permission",
+		     gnat_actual);
+		}
+
+	      else
+		{
+		  post_error
+		    ("value conversion implemented by copy??",
+		     gnat_actual);
+		  post_error
+		    ("\\?use pair of types with same root type",
+		     gnat_actual);
+		  post_error
+		    ("\\?to avoid new object in RM 4.6(58.5/5)",
+		     gnat_actual);
+		}
+	    }
 
 	  /* If the actual type of the object is already the nominal type,
 	     we have nothing to do, except if the size is self-referential
@@ -4951,6 +4988,17 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		       && smaller_form_type_p (gnu_name_type,
 					       TREE_TYPE (gnu_name))))
 	    gnu_name = convert (gnu_name_type, gnu_name);
+
+	  /* If the temporary is created  because of aliasing considerations,
+	     it must be in the target type of the (unchecked) conversion.  */
+	  if (aliasing)
+	    {
+	      if (Nkind (gnat_actual) == N_Unchecked_Type_Conversion)
+		gnu_name = unchecked_convert (gnu_actual_type, gnu_name,
+					      No_Truncation (gnat_actual));
+	      else
+		gnu_name = convert (gnu_actual_type, gnu_name);
+	    }
 
 	  /* If this is an In Out or Out parameter and we're returning a value,
 	     we need to create a temporary for the return value because we must
@@ -5011,6 +5059,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	}
 
       /* Start from the real object and build the actual.  */
+      tree gnu_unpadded_actual_type = get_unpadded_type (Etype (gnat_actual));
       tree gnu_actual = gnu_name;
 
       /* If atomic access is required for an In or In Out actual parameter,
@@ -5025,8 +5074,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	 So do it here for the part we will use as an input, if any.  */
       if (Ekind (gnat_formal) != E_Out_Parameter
 	  && TYPE_IS_PADDING_P (TREE_TYPE (gnu_actual)))
-	gnu_actual
-	  = convert (get_unpadded_type (Etype (gnat_actual)), gnu_actual);
+	gnu_actual = convert (gnu_unpadded_actual_type, gnu_actual);
 
       /* Put back the conversion we suppressed above in the computation of the
 	 real object.  And even if we didn't suppress any conversion there, we
@@ -5036,12 +5084,11 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	 pointer to it, but that's OK when the formal is passed by reference.
 	 We also do not put back a conversion between an actual and a formal
 	 that are unconstrained array types to avoid creating local bounds.  */
-      tree gnu_actual_type = get_unpadded_type (Etype (gnat_actual));
-      if (TYPE_IS_DUMMY_P (gnu_actual_type))
+      if (TYPE_IS_DUMMY_P (gnu_unpadded_actual_type))
 	gcc_assert (is_true_formal_parm && DECL_BY_REF_P (gnu_formal));
       else if (suppress_type_conversion
 	       && Nkind (gnat_actual) == N_Unchecked_Type_Conversion)
-	gnu_actual = unchecked_convert (gnu_actual_type, gnu_actual,
+	gnu_actual = unchecked_convert (gnu_unpadded_actual_type, gnu_actual,
 				        No_Truncation (gnat_actual));
       else if ((TREE_CODE (TREE_TYPE (gnu_actual)) == UNCONSTRAINED_ARRAY_TYPE
 		|| (TREE_CODE (TREE_TYPE (gnu_actual)) == RECORD_TYPE
@@ -5049,7 +5096,16 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	       && TREE_CODE (gnu_formal_type) == UNCONSTRAINED_ARRAY_TYPE)
 	;
       else
-	gnu_actual = convert (gnu_actual_type, gnu_actual);
+	gnu_actual = convert (gnu_unpadded_actual_type, gnu_actual);
+
+      /* If the formal parameter is passed by reference, check that building
+	 the address of the actual parameter below will not end up violating
+	 strict aliasing rules; that's the case for a VIEW_CONVERT_EXPR when
+	 the source and target types may not alias each other.  */
+      if (is_by_ref_formal_parm
+	  && TREE_CODE (gnu_actual) == VIEW_CONVERT_EXPR
+	  && (flag_checking || flag_strict_aliasing))
+	gcc_assert (aliasable_p (gnu_actual, gnu_actual_type));
 
       gigi_checking_assert (!Do_Range_Check (gnat_actual));
 
@@ -5065,8 +5121,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
 	      /* If we have a padded type, be sure we've removed padding.  */
 	      if (TYPE_IS_PADDING_P (TREE_TYPE (gnu_actual)))
-		gnu_actual = convert (get_unpadded_type (Etype (gnat_actual)),
-				      gnu_actual);
+		gnu_actual = convert (gnu_unpadded_actual_type, gnu_actual);
 
 	      /* If it is the constructed subtype of an array allocated with
 		 its bounds, the type of the actual includes the template,
@@ -5076,7 +5131,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      if (TREE_CODE (TREE_TYPE (gnu_actual)) == RECORD_TYPE
 		  && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (gnu_actual))
 		  && Is_Constr_Array_Subt_With_Bounds (Etype (gnat_actual)))
-		gnu_actual = convert (gnu_actual_type, gnu_actual);
+		gnu_actual = convert (gnu_unpadded_actual_type, gnu_actual);
 	    }
 
 	  /* There is no need to convert the actual to the formal's type before
@@ -5087,7 +5142,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      /* Put back the conversion we suppressed above for In Out or Out
 		 parameters, since it may set the bounds of the actual.  */
 	      if (!in_param && suppress_type_conversion)
-		gnu_actual = convert (gnu_actual_type, gnu_actual);
+		gnu_actual = convert (gnu_unpadded_actual_type, gnu_actual);
 	      gnu_actual = convert (gnu_formal_type, gnu_actual);
 	    }
 
@@ -10065,12 +10120,11 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
   return convert (gnu_type, gnu_result);
 }
 
-/* Return true if GNU_EXPR can be directly addressed.  This is the case
+/* Return true if GNU_EXPR may be directly addressed.  This is the case
    unless it is an expression involving computation or if it involves a
    reference to a bitfield or to an object not sufficiently aligned for
    its type.  If GNU_TYPE is non-null, return true only if GNU_EXPR can
-   be directly addressed as an object of this type.  GNAT_EXPR is the
-   GNAT expression that has been translated into GNU_EXPR.
+   be directly addressed as an object of this type.
 
    *** Notes on addressability issues in the Ada compiler ***
 
@@ -10127,7 +10181,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
    generated to connect everything together.  */
 
 static bool
-addressable_p (tree gnu_expr, tree gnu_type, Node_Id gnat_expr)
+addressable_p (tree gnu_expr, tree gnu_type)
 {
   /* For an integral type, the size of the actual type of the object may not
      be greater than that of the expected type, otherwise an indirect access
@@ -10193,8 +10247,8 @@ addressable_p (tree gnu_expr, tree gnu_type, Node_Id gnat_expr)
     case COND_EXPR:
       /* We accept &COND_EXPR as soon as both operands are addressable and
 	 expect the outcome to be the address of the selected operand.  */
-      return (addressable_p (TREE_OPERAND (gnu_expr, 1))
-	      && addressable_p (TREE_OPERAND (gnu_expr, 2)));
+      return (addressable_p (TREE_OPERAND (gnu_expr, 1), NULL_TREE)
+	      && addressable_p (TREE_OPERAND (gnu_expr, 2), NULL_TREE));
 
     case COMPONENT_REF:
       return (((!DECL_BIT_FIELD (TREE_OPERAND (gnu_expr, 1))
@@ -10209,40 +10263,22 @@ addressable_p (tree gnu_expr, tree gnu_type, Node_Id gnat_expr)
 		       >= TYPE_ALIGN (TREE_TYPE (gnu_expr))))
 	       /* The field of a padding record is always addressable.  */
 	       || TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
-	      && addressable_p (TREE_OPERAND (gnu_expr, 0)));
+	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
 
     case ARRAY_REF:  case ARRAY_RANGE_REF:
     case REALPART_EXPR:  case IMAGPART_EXPR:
     case NOP_EXPR:
-      return addressable_p (TREE_OPERAND (gnu_expr, 0));
+      return addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE);
 
     case CONVERT_EXPR:
       return (AGGREGATE_TYPE_P (TREE_TYPE (gnu_expr))
-	      && addressable_p (TREE_OPERAND (gnu_expr, 0)));
+	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
 
     case VIEW_CONVERT_EXPR:
       {
-	tree inner_type = TREE_TYPE (TREE_OPERAND (gnu_expr, 0));
+	/* This is addressable only if a copy need not be made downstream.  */
 	tree type = TREE_TYPE (gnu_expr);
-	alias_set_type inner_set, set;
-
-	/* Taking the address of a VIEW_CONVERT_EXPR of an expression violates
-	   strict aliasing rules if the source and target types are unrelated.
-	   This would happen in an Ada program that itself does *not* contain
-	   such a violation, through type punning done by means of an instance
-	   of Unchecked_Conversion.  Detect this case and force a temporary to
-	   prevent the violation from occurring, which is always allowed by
-	   the semantics of function calls in Ada, unless the source type or
-	   the target type have alias set 0, i.e. may alias anything.  */
-	if (Present (gnat_expr)
-	    && Nkind (gnat_expr) == N_Unchecked_Type_Conversion
-	    && Nkind (Original_Node (gnat_expr)) == N_Function_Call
-	    && (inner_set = get_alias_set (inner_type)) != 0
-	    && (set = get_alias_set (type)) != 0
-	    && inner_set != set)
-	  return false;
-
-	/* Otherwise this is addressable if we can avoid a copy.  */
+	tree inner_type = TREE_TYPE (TREE_OPERAND (gnu_expr, 0));
 	return (((TYPE_MODE (type) == TYPE_MODE (inner_type)
 		  && (!STRICT_ALIGNMENT
 		      || TYPE_ALIGN (type) <= TYPE_ALIGN (inner_type)
@@ -10254,12 +10290,51 @@ addressable_p (tree gnu_expr, tree gnu_type, Node_Id gnat_expr)
 			 || TYPE_ALIGN (inner_type) >= BIGGEST_ALIGNMENT
 			 || TYPE_ALIGN_OK (type)
 			 || TYPE_ALIGN_OK (inner_type))))
-		&& addressable_p (TREE_OPERAND (gnu_expr, 0)));
+		&& addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
       }
 
     default:
       return false;
     }
+}
+
+/* Return true if GNU_EXPR may be aliased by an object of GNU_TYPE in the
+   context of by-reference parameter passing.  This is the case when the
+   object (ultimately) referenced through GNU_EXPR has a type whose alias
+   set is either effectively 0, or equal to, or a subset of the alias set
+   of GNU_TYPE.
+
+   When the predicate returns true, it is possible to take the address of
+   GNU_EXPR without violating strict aliasing rules.  When it does not, no
+   such guarantee holds, so a temporary with GNU_TYPE needs to be created
+   and its address passed instead (provided that this be legal of course).  */
+
+static bool
+aliasable_p (tree gnu_expr, tree gnu_type)
+{
+  /* This is the source of the possible violation: taking the address of an
+     object in a type that does not correspond to its declared type.  */
+  if (TREE_CODE (gnu_expr) == VIEW_CONVERT_EXPR)
+    gnu_expr = TREE_OPERAND (gnu_expr, 0);
+
+  /* Work around get_deref_alias_set and alias_set_subset_of being disabled
+     when flag_strict_aliasing is 0.  */
+  const bool saved_flag_strict_aliasing = flag_strict_aliasing;
+
+  flag_strict_aliasing = 1;
+
+  /* Call get_deref_alias_set to catch ref-all and void* pointers.  */
+  const alias_set_type set1
+    = TREE_CODE (gnu_expr) == INDIRECT_REF
+      ? get_deref_alias_set (TREE_OPERAND (gnu_expr, 0))
+      : get_alias_set (TREE_TYPE (gnu_expr));
+  const alias_set_type set2 = get_alias_set (gnu_type);
+
+  bool ret = set1 == 0 || set1 == set2 || alias_set_subset_of (set1, set2);
+
+  flag_strict_aliasing = saved_flag_strict_aliasing;
+
+  return ret;
 }
 
 /* Do the processing for the declaration of a GNAT_ENTITY, a type or subtype.
