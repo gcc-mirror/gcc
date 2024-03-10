@@ -1275,12 +1275,15 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       if (AGGREGATE_TYPE_P (t1))
 	compare_values (TYPE_TYPELESS_STORAGE);
       compare_values (TYPE_EMPTY_P);
-      compare_values (TYPE_NO_NAMED_ARGS_STDARG_P);
+      if (FUNC_OR_METHOD_TYPE_P (t1))
+	compare_values (TYPE_NO_NAMED_ARGS_STDARG_P);
+      if (RECORD_OR_UNION_TYPE_P (t1))
+	compare_values (TYPE_INCLUDES_FLEXARRAY);
       compare_values (TYPE_PACKED);
       compare_values (TYPE_RESTRICT);
       compare_values (TYPE_USER_ALIGN);
       compare_values (TYPE_READONLY);
-      compare_values (TYPE_PRECISION);
+      compare_values (TYPE_PRECISION_RAW);
       compare_values (TYPE_ALIGN);
       /* Do not compare TYPE_ALIAS_SET.  Doing so introduce ordering issues
 	 with calls to get_alias_set which may initialize it for streamed
@@ -1880,7 +1883,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   uint32_t num_decl_states;
 
   lto_input_block ib_main ((const char *) data + main_offset,
-			   header->main_size, decl_data->mode_table);
+			   header->main_size, decl_data);
 
   data_in = lto_data_in_create (decl_data, (const char *) data + string_offset,
 				header->string_size, resolutions);
@@ -2275,6 +2278,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
   lto_input_mode_table (file_data);
 #else
   file_data->mode_table = lto_mode_identity_table;
+  file_data->mode_bits = ceil_log2 (MAX_MACHINE_MODE);
 #endif
 
   data = lto_get_summary_section_data (file_data, LTO_section_decls, &len);

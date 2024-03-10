@@ -340,6 +340,9 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
       gimple *def_stmt;
       tree vuse;
 
+      if (!dom_info_available_p (cfun, CDI_POST_DOMINATORS))
+	calculate_dominance_info (CDI_POST_DOMINATORS);
+
       /* Only replace loads in blocks that post-dominate the PHI node.  That
          makes sure we don't end up speculating loads.  */
       if (!dominated_by_p (CDI_POST_DOMINATORS,
@@ -485,7 +488,7 @@ const pass_data pass_data_phiprop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_update_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_phiprop : public gimple_opt_pass
@@ -513,7 +516,6 @@ pass_phiprop::execute (function *fun)
   size_t n;
 
   calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   n = num_ssa_names;
   phivn = XCNEWVEC (struct phiprop_d, n);
@@ -539,7 +541,7 @@ pass_phiprop::execute (function *fun)
 
   free_dominance_info (CDI_POST_DOMINATORS);
 
-  return 0;
+  return did_something ? TODO_update_ssa_only_virtuals : 0;
 }
 
 } // anon namespace

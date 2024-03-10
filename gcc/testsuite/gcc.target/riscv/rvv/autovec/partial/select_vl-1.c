@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d --param riscv-autovec-preference=scalable -fno-vect-cost-model -fno-tree-loop-distribute-patterns -fdump-tree-optimized-details" } */
+/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d --param riscv-autovec-preference=scalable -fno-vect-cost-model -fno-tree-loop-distribute-patterns -fdump-tree-optimized-details" } */
 
 #include <stdint-gcc.h>
 
@@ -20,7 +20,10 @@
   TEST_TYPE (uint32_t)                                                         \
   TEST_TYPE (int64_t)                                                          \
   TEST_TYPE (uint64_t)                                                         \
+  TEST_TYPE (_Float16)                                                         \
   TEST_TYPE (float)                                                            \
   TEST_TYPE (double)
 
 TEST_ALL ()
+
+/* { dg-final { scan-tree-dump-times "\.SELECT_VL" 11 "optimized" } } */

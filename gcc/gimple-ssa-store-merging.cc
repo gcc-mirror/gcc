@@ -650,10 +650,13 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
 
 	  /* Convert.  */
 	  n->type = TREE_TYPE (rhs1);
+	  if (!verify_symbolic_number_p (n, stmt))
+	    return NULL;
+
 	  if (!n->base_addr)
 	    n->range = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
 
-	  return verify_symbolic_number_p (n, stmt) ? stmt : NULL;
+	  return stmt;
 	}
 
       return NULL;

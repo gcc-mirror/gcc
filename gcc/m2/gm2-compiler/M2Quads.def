@@ -129,13 +129,13 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
 
                  GetQuad, GetFirstQuad, GetNextQuad, PutQuad,
                  SubQuad, EraseQuad, GetRealQuad,
-                 GetQuadtok, GetQuadOtok,
+                 GetQuadtok, GetQuadOtok, PutQuadOtok,
                  GetQuadOp, GetM2OperatorDesc,
                  CountQuads,
                  GetLastFileQuad,
                  GetLastQuadNo,
                  QuadToLineNo, QuadToTokenNo,
-                 VariableAnalysis, LoopAnalysis, ForLoopAnalysis,
+                 LoopAnalysis, ForLoopAnalysis,
                  AddVarientFieldToList, AddRecordToList,
                  AddVarientToList,
                  AddVarientRange, AddVarientEquality,
@@ -477,7 +477,21 @@ PROCEDURE GetQuadOtok (QuadNo: CARDINAL;
                        VAR tok: CARDINAL;
                        VAR Op: QuadOperator;
                        VAR Oper1, Oper2, Oper3: CARDINAL;
+                       VAR overflowChecking: BOOLEAN ;
                        VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
+
+
+(*
+   PutQuadOtok - alters a quadruple QuadNo with Op, Oper1, Oper2, Oper3, and
+                 sets a boolean to determinine whether overflow should be checked.
+*)
+
+PROCEDURE PutQuadOtok (QuadNo: CARDINAL;
+                       tok: CARDINAL;
+                       Op: QuadOperator;
+                       Oper1, Oper2, Oper3: CARDINAL;
+                       overflowChecking: BOOLEAN ;
+                       Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 
 
 (*
@@ -2571,16 +2585,6 @@ PROCEDURE PushLineNo ;
 *)
 
 PROCEDURE BuildStmtNote (offset: INTEGER) ;
-
-
-(*
-   VariableAnalysis - checks to see whether a variable is:
-
-                      read without being initialized or
-                      written over when it is a non var parameter
-*)
-
-PROCEDURE VariableAnalysis (Start, End: CARDINAL) ;
 
 
 (*

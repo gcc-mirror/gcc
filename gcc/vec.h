@@ -1390,6 +1390,13 @@ gt_pch_nx (vec<T, A, vl_embed> *v)
     gt_pch_nx ((*v)[i]);
 }
 
+template<typename T>
+void
+gt_pch_nx (vec<T, va_gc_atomic, vl_embed> *)
+{
+  /* No pointers to note.  */
+}
+
 template<typename T, typename A>
 void
 gt_pch_nx (vec<T *, A, vl_embed> *v, gt_pointer_operator op, void *cookie)
@@ -1405,6 +1412,13 @@ gt_pch_nx (vec<T, A, vl_embed> *v, gt_pointer_operator op, void *cookie)
   extern void gt_pch_nx (T *, gt_pointer_operator, void *);
   for (unsigned i = 0; i < v->length (); i++)
     gt_pch_nx (&((*v)[i]), op, cookie);
+}
+
+template<typename T>
+void
+gt_pch_nx (vec<T, va_gc_atomic, vl_embed> *, gt_pointer_operator, void *)
+{
+  /* No pointers to note.  */
 }
 
 
@@ -2286,12 +2300,12 @@ public:
   array_slice (vec<OtherT> &v)
     : m_base (v.address ()), m_size (v.length ()) {}
 
-  template<typename OtherT>
-  array_slice (const vec<OtherT, va_gc> *v)
+  template<typename OtherT, typename A>
+  array_slice (const vec<OtherT, A, vl_embed> *v)
     : m_base (v ? v->address () : nullptr), m_size (v ? v->length () : 0) {}
 
-  template<typename OtherT>
-  array_slice (vec<OtherT, va_gc> *v)
+  template<typename OtherT, typename A>
+  array_slice (vec<OtherT, A, vl_embed> *v)
     : m_base (v ? v->address () : nullptr), m_size (v ? v->length () : 0) {}
 
   iterator begin () { return m_base; }

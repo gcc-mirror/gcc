@@ -1,3 +1,150 @@
+2023-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array): Adjust comment above the
+	calls to Possible_Bit_Aligned_Component on the LHS and RHS. Do not
+	call Is_Possibly_Unaligned_Slice in the slice case.
+	* exp_util.ads (Component_May_Be_Bit_Aligned): Add For_Slice
+	boolean parameter.
+	(Possible_Bit_Aligned_Component): Likewise.
+	* exp_util.adb (Component_May_Be_Bit_Aligned): Do not return False
+	for the slice of a small record or bit-packed array component.
+	(Possible_Bit_Aligned_Component): Pass For_Slice in recursive
+	calls, except in the slice case where True is passed, as well as
+	in call to Component_May_Be_Bit_Aligned.
+
+2023-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.ads (Expand_Unchecked_Union_Equality): Only take a
+	single parameter.
+	* exp_ch4.adb (Expand_Unchecked_Union_Equality): Add guard against
+	repeated invocation on the same node.
+	* exp_ch6.adb (Expand_Call): Only pass a single actual parameter
+	in the call to Expand_Unchecked_Union_Equality.
+
+2023-07-04  Viljar Indus  <indus@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	add No_Use_Of_Attribute & No_Use_Of_Pragma restrictions.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2023-07-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_disp.adb (Inherited_Subprograms): Add parameter to filter
+	out results.
+	* sem_disp.ads: Likewise.
+
+2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.ads (Build_Variant_Record_Equality): Add Spec_Id as second
+	parameter.
+	* exp_ch3.adb (Build_Variant_Record_Equality): For unchecked union
+	types, build the additional parameters as extra formal parameters.
+	(Expand_Freeze_Record_Type.Build_Variant_Record_Equality): Pass
+	Empty as Spec_Id in call to Build_Variant_Record_Equality.
+	* exp_ch4.ads (Expand_Unchecked_Union_Equality): New procedure.
+	* exp_ch4.adb (Expand_Composite_Equality): In the presence of a
+	function implementing composite equality, do not special case the
+	unchecked union types, and only convert the operands if the base
+	types are not the same like in Build_Equality_Call.
+	(Build_Equality_Call): Do not special case the unchecked union types
+	and relocate the operands only once.
+	(Expand_N_Op_Eq): Do not special case the unchecked union types.
+	(Expand_Unchecked_Union_Equality): New procedure implementing the
+	specific expansion of calls to the predefined equality function.
+	* exp_ch6.adb (Is_Unchecked_Union_Equality): New predicate.
+	(Expand_Call): Call Is_Unchecked_Union_Equality to determine whether
+	to call Expand_Unchecked_Union_Equality or Expand_Call_Helper.
+	* exp_ch8.adb (Build_Body_For_Renaming): Set Has_Delayed_Freeze flag
+	earlier on Id and pass Id in call to Build_Variant_Record_Equality.
+
+2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Untagged_Equality): Rename into...
+	(Build_Untagged_Record_Equality): ...this.
+	(Expand_Freeze_Record_Type): Adjust to above renaming and invoke
+	the procedure also for discriminated types without a variant part.
+
+2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Has_Inferable_Discriminants): In the case of a
+	component with a per-object constraint, also return true if the
+	enclosing object is not of an unchecked union type.
+	In the default case, remove a useless call to Base_Type.
+
+2023-06-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc-interface/decl.cc (gt_pch_nx): Remove overloads for Entity_Id.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (LIBIBERTY): Fix condition.
+	(TOOLS_LIBS): Add @LD_PICFLAG@.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Subprogram_Body_to_gnu): Add guard to the
+	code turning the type of the RESULT_DECL into a reference type.
+	(maybe_make_gnu_thunk): Use a more precise guard in the same case.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Case_Statement_to_gnu): Rename boolean
+	constant and use From_Conditional_Expression flag for its value.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* debug.adb (d.L): Remove documentation.
+	* exp_ch4.adb (Expand_N_Case_Expression): In the not-by-copy case,
+	do not wrap the case statement in an Expression_With_Actions node.
+	(Expand_N_If_Expression): Do not test
+	Back_End_Handles_Limited_Types
+	* gnat1drv.adb (Adjust_Global_Switches): Do not set it.
+	* opt.ads (Back_End_Handles_Limited_Types): Delete.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Actuals): Check the component type
+	of constants and variables of an array type.
+	(Copy_Generic_Node): Fix bogus handling of iterator
+	specifications.
+
+2023-06-27  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-textio.ads (Get_Line): Use Relaxed_Initialization on
+	the Item parameter of Get_Line.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Quantified_Expression): Revert the latest
+	change as it is subsumed by the machinery in Sem_Ch5.
+	* sem_ch5.adb (Prepare_Iterator_Loop): Also wrap the loop
+	statement in a block in the name contains a function call that
+	returns on the secondary stack.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Scope_Within_Body_Or_Same): New predicate.
+	(Check_Actual_Type): Take into account packages nested in bodies
+	to compute the enclosing scope by means of
+	Scope_Within_Body_Or_Same.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Check_Private_View): Also check the type of
+	visible discriminants in record and concurrent types.
+
+2023-06-27  Viljar Indus  <indus@adacore.com>
+
+	* sprint.adb (Print_Node_Actual): Print homogeneous N_Aggregate
+	nodes with brackets.
+
+2023-06-27  Viljar Indus  <indus@adacore.com>
+
+	* exp_aggr.adb (Expand_N_Aggregate): Ensure that container
+	aggregate expressions do not get expanded as records but instead
+	as container aggregates.
+
 2023-06-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: Pass

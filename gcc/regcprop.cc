@@ -423,7 +423,7 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
      It's unclear if we need to do the same for other special registers.  */
   if (regno == STACK_POINTER_REGNUM)
     {
-      if (orig_mode == new_mode)
+      if (orig_mode == new_mode && new_mode == GET_MODE (stack_pointer_rtx))
 	return stack_pointer_rtx;
       else
 	return NULL_RTX;
@@ -449,6 +449,31 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
 	return gen_raw_REG (new_mode, regno);
     }
   return NULL_RTX;
+}
+
+/* Helper function to copy attributes when replacing OLD_REG with NEW_REG.
+   If the changes required for NEW_REG are invalid return NULL_RTX, otherwise
+   return NEW_REG.  This is intended to be used with maybe_mode_change.  */
+
+static rtx
+maybe_copy_reg_attrs (rtx new_reg, rtx old_reg)
+{
+  if (new_reg != stack_pointer_rtx)
+    {
+      /* NEW_REG is assumed to be a register copy resulting from
+	 maybe_mode_change.  */
+      ORIGINAL_REGNO (new_reg) = ORIGINAL_REGNO (old_reg);
+      REG_ATTRS (new_reg) = REG_ATTRS (old_reg);
+      REG_POINTER (new_reg) = REG_POINTER (old_reg);
+    }
+  else if (REG_POINTER (new_reg) != REG_POINTER (old_reg))
+    {
+      /* Only a single instance of STACK_POINTER_RTX must exist and we cannot
+	 modify it.  Allow propagation if REG_POINTER for OLD_REG matches and
+	 don't touch ORIGINAL_REGNO and REG_ATTRS.  */
+      return NULL_RTX;
+    }
+  return new_reg;
 }
 
 /* Find the oldest copy of the value contained in REGNO that is in
@@ -486,12 +511,7 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
 
       new_rtx = maybe_mode_change (oldmode, vd->e[regno].mode, mode, i, regno);
       if (new_rtx)
-	{
-	  ORIGINAL_REGNO (new_rtx) = ORIGINAL_REGNO (reg);
-	  REG_ATTRS (new_rtx) = REG_ATTRS (reg);
-	  REG_POINTER (new_rtx) = REG_POINTER (reg);
-	  return new_rtx;
-	}
+	return maybe_copy_reg_attrs (new_rtx, reg);
     }
 
   return NULL_RTX;
@@ -965,15 +985,15 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
 		  if (validate_change (insn, &SET_SRC (set), new_rtx, 0))
 		    {
-		      ORIGINAL_REGNO (new_rtx) = ORIGINAL_REGNO (src);
-		      REG_ATTRS (new_rtx) = REG_ATTRS (src);
-		      REG_POINTER (new_rtx) = REG_POINTER (src);
-		      if (dump_file)
-			fprintf (dump_file,
-				 "insn %u: replaced reg %u with %u\n",
-				 INSN_UID (insn), regno, REGNO (new_rtx));
-		      changed = true;
-		      goto did_replacement;
+		      if (maybe_copy_reg_attrs (new_rtx, src))
+			{
+			  if (dump_file)
+			    fprintf (dump_file,
+				     "insn %u: replaced reg %u with %u\n",
+				     INSN_UID (insn), regno, REGNO (new_rtx));
+			  changed = true;
+			  goto did_replacement;
+			}
 		    }
 		  /* We need to re-extract as validate_change clobbers
 		     recog_data.  */

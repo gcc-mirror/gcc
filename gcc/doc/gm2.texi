@@ -659,6 +659,11 @@ zero.
 @item -fwholevalue
 generate code to detect whole number overflow and underflow.
 
+@item -Wuninit-variable-checking
+issue a warning if a variable is used before it is initialized.
+The checking only occurs in the first basic block in each procedure.
+It does not check parameters, array types or set types.
+
 @c the following warning options are complete but need to be
 @c regression tested against all other front ends
 @c to ensure the options do not conflict.
@@ -1451,6 +1456,127 @@ It is highly advised to run the optimizer (@samp{-O2} or @samp{-O3})
 with @samp{-fsoft-check-all} so that the compiler is able to run the
 optimizer and perform variable and flow analysis before the semantic
 plugin is invoked.
+
+The @samp{-Wuninit-variable-checking} can be used to identify
+uninitialized variables within the first basic block in a procedure.
+The checking is limited to variables so long as they are
+not an array or set or a variant record.
+
+The following example detects whether a sub component within a record
+is uninitialized.
+
+@example
+MODULE testlarge2 ;
+
+TYPE
+   color = RECORD
+              r, g, b: CARDINAL ;
+           END ;
+
+   pixel = RECORD
+              fg, bg: color ;
+           END ;
+
+PROCEDURE test ;
+VAR
+   p: pixel ;
+BEGIN
+   p.fg.r := 1 ;
+   p.fg.g := 2 ;
+   p.fg.g := 3 ;   (* Deliberate typo should be p.fg.b.  *)
+   p.bg := p.fg ;  (* Accessing an uninitialized field.  *)
+END test ;
+
+BEGIN
+   test
+END testlarge2.
+@end example
+
+@example
+$ gm2 -c -Wuninit-variable-checking testlarge2.mod
+testlarge2.mod:19:13: warning: In procedure ‘test’: attempting to
+access expression before it has been initialized
+   19 |    p.bg := p.fg ;  (* Accessing an uninitialized field.  *)
+      |            ~^~~
+@end example
+
+The following example detects if an individual field is uninitialized.
+
+@example
+MODULE testwithnoptr ;
+
+TYPE
+   Vec =  RECORD
+             x, y: CARDINAL ;
+          END ;
+
+PROCEDURE test ;
+VAR
+   p: Vec ;
+BEGIN
+   WITH p DO
+      x := 1 ;
+      x := 2   (* Deliberate typo, user meant y.  *)
+   END ;
+   IF p.y = 2
+   THEN
+   END
+END test ;
+
+BEGIN
+   test
+END testwithnoptr.
+@end example
+
+The following example detects a record is uninitialized via a
+pointer variable in a @samp{WITH} block.
+
+@example
+$ gm2 -g -c -Wuninit-variable-checking testwithnoptr.mod
+testwithnoptr.mod:21:8: warning: In procedure ‘test’: attempting to
+access expression before it has been initialized
+   21 |    IF p.y = 2
+      |       ~^~
+@end example
+
+@example
+MODULE testwithptr ;
+
+FROM SYSTEM IMPORT ADR ;
+
+TYPE
+   PtrToVec = POINTER TO Vec ;
+   Vec = RECORD
+            x, y: CARDINAL ;
+         END ;
+
+PROCEDURE test ;
+VAR
+   p: PtrToVec ;
+   v: Vec ;
+BEGIN
+   p := ADR (v) ;
+   WITH p^ DO
+      x := 1 ;
+      x := 2   (* Deliberate typo, user meant y.  *)
+   END ;
+   IF p^.y = 2
+   THEN
+   END
+END test ;
+
+BEGIN
+   test
+END testwithptr.
+@end example
+
+@example
+gm2 -c -Wuninit-variable-checking testwithptr.mod
+testwithptr.mod:26:9: warning: In procedure ‘test’: attempting to
+access expression before it has been initialized
+   26 |    IF p^.y = 2
+      |       ~~^~
+@end example
 
 @node Extensions, Type compatibility, Semantic checking, Using
 @section GNU Modula-2 language extensions

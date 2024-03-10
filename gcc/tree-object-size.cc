@@ -633,11 +633,32 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 		    v = NULL_TREE;
 		    break;
 		  case COMPONENT_REF:
-		    if (TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE)
+		    /* When the ref is not to an aggregate type, i.e, an array,
+		       a record or a union, it will not have flexible size,
+		       compute the object size directly.  */
+		    if (!AGGREGATE_TYPE_P (TREE_TYPE (v)))
 		      {
 			v = NULL_TREE;
 			break;
 		      }
+		    /* if the ref is to a record or union type, but the type
+		       does not include a flexible array recursively, compute
+		       the object size directly.  */
+		    if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (v)))
+		      {
+			if (!TYPE_INCLUDES_FLEXARRAY (TREE_TYPE (v)))
+			  {
+			    v = NULL_TREE;
+			    break;
+			  }
+			else
+			  {
+			    v = TREE_OPERAND (v, 0);
+			    break;
+			  }
+		      }
+		    /* Now the ref is to an array type.  */
+		    gcc_assert (TREE_CODE (TREE_TYPE (v)) == ARRAY_TYPE);
 		    is_flexible_array_mem_ref = array_ref_flexible_size_p (v);
 		    while (v != pt_var && TREE_CODE (v) == COMPONENT_REF)
 		      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))

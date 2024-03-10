@@ -7001,11 +7001,11 @@ package body Sem_Ch12 is
       --  The enclosing scope of the generic unit
 
       procedure Check_Actual_Type (Typ : Entity_Id);
-      --  If the type of the actual is a private type declared in the
-      --  enclosing scope of the generic unit, but not a derived type
-      --  of a private type declared elsewhere, the body of the generic
-      --  sees the full view of the type (because it has to appear in
-      --  the corresponding package body). If the type is private now,
+      --  If the type of the actual is a private type declared in the enclosing
+      --  scope of the generic, either directly or through packages nested in
+      --  bodies, but not a derived type of a private type declared elsewhere,
+      --  then the body of the generic sees the full view of the type because
+      --  it has to appear in the package body. If the type is private now then
       --  exchange views to restore the proper visibility in the instance.
 
       -----------------------
@@ -7015,16 +7015,48 @@ package body Sem_Ch12 is
       procedure Check_Actual_Type (Typ : Entity_Id) is
          Btyp : constant Entity_Id := Base_Type (Typ);
 
+         function Scope_Within_Body_Or_Same
+           (Inner : Entity_Id;
+            Outer : Entity_Id) return Boolean;
+         --  Determine whether scope Inner is within the body of scope Outer
+         --  or is Outer itself.
+
+         -------------------------------
+         -- Scope_Within_Body_Or_Same --
+         -------------------------------
+
+         function Scope_Within_Body_Or_Same
+           (Inner : Entity_Id;
+            Outer : Entity_Id) return Boolean
+         is
+            Curr : Entity_Id := Inner;
+
+         begin
+            while Curr /= Standard_Standard loop
+               if Curr = Outer then
+                  return True;
+
+               elsif Is_Package_Body_Entity (Curr) then
+                  Curr := Scope (Curr);
+
+               else
+                  exit;
+               end if;
+            end loop;
+
+            return False;
+         end Scope_Within_Body_Or_Same;
+
       begin
          --  The exchange is only needed if the generic is defined
          --  within a package which is not a common ancestor of the
          --  scope of the instance, and is not already in scope.
 
          if Is_Private_Type (Btyp)
-           and then Scope (Btyp) = Parent_Scope
            and then not Has_Private_Ancestor (Btyp)
            and then Ekind (Parent_Scope) in E_Package | E_Generic_Package
-           and then Scope (Instance) /= Parent_Scope
+           and then Scope_Within_Body_Or_Same (Parent_Scope, Scope (Btyp))
+           and then Parent_Scope /= Scope (Instance)
            and then not Is_Child_Unit (Gen_Id)
          then
             Switch_View (Btyp);
@@ -7160,10 +7192,15 @@ package body Sem_Ch12 is
             Set_Is_Hidden (E, False);
          end if;
 
-         --  Check directly the type of the actual objects
+         --  Check directly the type of the actual objects, including the
+         --  component type for array types.
 
          if Ekind (E) in E_Constant | E_Variable then
             Check_Actual_Type (Etype (E));
+
+            if Is_Array_Type (Etype (E)) then
+               Check_Actual_Type (Component_Type (Etype (E)));
+            end if;
 
          --  As well as the type of formal parameters of actual subprograms
 
@@ -7710,6 +7747,9 @@ package body Sem_Ch12 is
             Prepend_Elmt (Typ, Exchanged_Views);
             Exchange_Declarations (Etype (Get_Associated_Node (N)));
 
+         --  Check that the available views of Typ match their respective flag.
+         --  Note that the type of a visible discriminant is never private.
+
          else
             Check_Private_Type (Typ, Has_Private_View (N));
 
@@ -7720,6 +7760,20 @@ package body Sem_Ch12 is
             elsif Is_Array_Type (Typ) then
                Check_Private_Type
                  (Component_Type (Typ), Has_Secondary_Private_View (N));
+
+            elsif (Is_Record_Type (Typ) or else Is_Concurrent_Type (Typ))
+              and then Has_Discriminants (Typ)
+            then
+               declare
+                  Disc : Entity_Id;
+
+               begin
+                  Disc := First_Discriminant (Typ);
+                  while Present (Disc) loop
+                     Check_Private_Type (Etype (Disc), False);
+                     Next_Discriminant (Disc);
+                  end loop;
+               end;
             end if;
          end if;
       end if;
@@ -8471,13 +8525,12 @@ package body Sem_Ch12 is
             Copy_Descendants;
          end;
 
-      --  Iterator and loop parameter specifications do not have an identifier
-      --  denoting the index type, so we must locate it through the expression
-      --  to check whether the views are consistent.
+      --  Loop parameter specifications do not have an identifier denoting the
+      --  index type, so we must locate it through the defining identifier to
+      --  check whether the views are consistent.
 
-      elsif Nkind (N) in N_Iterator_Specification
-                       | N_Loop_Parameter_Specification
-         and then Instantiating
+      elsif Nkind (N) = N_Loop_Parameter_Specification
+        and then Instantiating
       then
          declare
             Id : constant Entity_Id :=

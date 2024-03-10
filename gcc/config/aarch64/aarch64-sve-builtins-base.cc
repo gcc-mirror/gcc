@@ -817,6 +817,52 @@ public:
 
 class svdupq_impl : public quiet<function_base>
 {
+private:
+  gimple *
+  fold_nonconst_dupq (gimple_folder &f) const
+  {
+    /* Lower lhs = svdupq (arg0, arg1, ..., argN} into:
+       tmp = {arg0, arg1, ..., arg<N-1>}
+       lhs = VEC_PERM_EXPR (tmp, tmp, {0, 1, 2, N-1, ...})  */
+
+    if (f.type_suffix (0).bool_p
+	|| BYTES_BIG_ENDIAN)
+      return NULL;
+
+    tree lhs = gimple_call_lhs (f.call);
+    tree lhs_type = TREE_TYPE (lhs);
+    tree elt_type = TREE_TYPE (lhs_type);
+    scalar_mode elt_mode = SCALAR_TYPE_MODE (elt_type);
+    machine_mode vq_mode = aarch64_vq_mode (elt_mode).require ();
+    tree vq_type = build_vector_type_for_mode (elt_type, vq_mode);
+
+    unsigned nargs = gimple_call_num_args (f.call);
+    vec<constructor_elt, va_gc> *v;
+    vec_alloc (v, nargs);
+    for (unsigned i = 0; i < nargs; i++)
+      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, gimple_call_arg (f.call, i));
+    tree vec = build_constructor (vq_type, v);
+    tree tmp = make_ssa_name_fn (cfun, vq_type, 0);
+    gimple *g = gimple_build_assign (tmp, vec);
+
+    gimple_seq stmts = NULL;
+    gimple_seq_add_stmt_without_update (&stmts, g);
+
+    poly_uint64 lhs_len = TYPE_VECTOR_SUBPARTS (lhs_type);
+    vec_perm_builder sel (lhs_len, nargs, 1);
+    for (unsigned i = 0; i < nargs; i++)
+      sel.quick_push (i);
+
+    vec_perm_indices indices (sel, 1, nargs);
+    tree mask_type = build_vector_type (ssizetype, lhs_len);
+    tree mask = vec_perm_indices_to_tree (mask_type, indices);
+
+    gimple *g2 = gimple_build_assign (lhs, VEC_PERM_EXPR, tmp, tmp, mask);
+    gimple_seq_add_stmt_without_update (&stmts, g2);
+    gsi_replace_with_seq (f.gsi, stmts, false);
+    return g2;
+  }
+
 public:
   gimple *
   fold (gimple_folder &f) const override
@@ -832,7 +878,7 @@ public:
       {
 	tree elt = gimple_call_arg (f.call, i);
 	if (!CONSTANT_CLASS_P (elt))
-	  return NULL;
+	  return fold_nonconst_dupq (f);
 	builder.quick_push (elt);
 	for (unsigned int j = 1; j < factor; ++j)
 	  builder.quick_push (build_zero_cst (TREE_TYPE (vec_type)));

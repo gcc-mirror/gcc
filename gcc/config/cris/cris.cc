@@ -375,7 +375,6 @@ cris_postdbr_cmpelim ()
   for (insn = get_insns (); insn; insn = next)
     {
       rtx_insn *outer_insn = insn;
-      rtx pat = PATTERN (insn);
 
       next = NEXT_INSN (outer_insn);
 
@@ -389,6 +388,7 @@ cris_postdbr_cmpelim ()
 
       if (!NONDEBUG_INSN_P (insn))
 	continue;
+      rtx pat = PATTERN (insn);
 
       /* Consider filled delay slots; there might be a comparison there.
 	 It's only the second insn in a sequence that is interesting.  */

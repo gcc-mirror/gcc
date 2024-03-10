@@ -121,6 +121,11 @@ test_format_spec()
   // Invalid presentation types for strings.
   VERIFY( ! is_format_string_for("{:S}", "str") );
   VERIFY( ! is_format_string_for("{:d}", "str") );
+
+  // Maximum integer value supported for widths and precisions is USHRT_MAX.
+  VERIFY( is_format_string_for("{:65535}", 1) );
+  VERIFY( ! is_format_string_for("{:65536}", 1) );
+  VERIFY( ! is_format_string_for("{:9999999}", 1) );
 }
 
 int main()

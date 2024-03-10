@@ -1291,13 +1291,26 @@ gori_compute::compute_operand1_and_operand2_range (vrange &r,
 {
   Value_Range op_range (TREE_TYPE (name));
 
-  // Calculate a good a range for op2.  Since op1 == op2, this will
-  // have already included whatever the actual range of name is.
-  if (!compute_operand2_range (op_range, handler, lhs, name, src, rel))
+  // If op1 is in the def chain of op2, we'll do the work twice to evalaute
+  // op1.  This can result in an exponential time calculation.
+  // Instead just evaluate op2, which will eventualy get to op1.
+  if (in_chain_p (handler.operand1 (), handler.operand2 ()))
+    return compute_operand2_range (r, handler, lhs, name, src, rel);
+
+  // Likewise if op2 is in the def chain of op1.
+  if (in_chain_p (handler.operand2 (), handler.operand1 ()))
+    return compute_operand1_range (r, handler, lhs, name, src, rel);
+
+  // Calculate a good a range through op2.
+  if (!compute_operand2_range (r, handler, lhs, name, src, rel))
     return false;
 
+  // If op1 == op2 there is again no need to go further.
+  if (handler.operand1 () == handler.operand2 ())
+    return true;
+
   // Now get the range thru op1.
-  if (!compute_operand1_range (r, handler, lhs, name, src, rel))
+  if (!compute_operand1_range (op_range, handler, lhs, name, src, rel))
     return false;
 
   // Both operands have to be simultaneously true, so perform an intersection.

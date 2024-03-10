@@ -550,6 +550,9 @@ GLIBCXX_ZONEINFO_DIR
 # For src/c++11/shared_ptr.cc alignment.
 GLIBCXX_CHECK_ALIGNAS_CACHELINE
 
+# For using init_priority in ios_init.cc
+GLIBCXX_CHECK_INIT_PRIORITY
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough

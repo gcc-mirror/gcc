@@ -109,7 +109,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         PutConstructor, PutConstructorFrom,
                         PutDeclared,
                         MakeComponentRecord, MakeComponentRef,
-                        IsSubscript,
+                        IsSubscript, IsComponent,
                         IsTemporary,
                         IsAModula2Type,
                         PutLeftValueFrontBackType,
@@ -210,6 +210,7 @@ FROM M2Options IMPORT NilChecking,
                       Pedantic, CompilerDebugging, GenerateDebugging,
                       GenerateLineDebug, Exceptions,
                       Profiling, Coding, Optimizing,
+                      UninitVariableChecking,
                       ScaffoldDynamic, ScaffoldStatic, cflag,
                       ScaffoldMain, SharedFlag, WholeProgram,
                       GetRuntimeModuleOverride ;
@@ -262,15 +263,14 @@ IMPORT M2Error ;
 CONST
    DebugStackOn = TRUE ;
    DebugVarients = FALSE ;
-   BreakAtQuad = 133 ;
+   BreakAtQuad = 53 ;
    DebugTokPos = FALSE ;
 
 TYPE
-   ConstructorFrame = POINTER TO constructorFrame ;
-   constructorFrame = RECORD
-                         type : CARDINAL ;
-                         index: CARDINAL ;
-                      END ;
+   ConstructorFrame = POINTER TO RECORD
+                                    type : CARDINAL ;
+                                    index: CARDINAL ;
+                                 END ;
 
    BoolFrame = POINTER TO RECORD
                              TrueExit  : CARDINAL ;
@@ -1127,7 +1127,7 @@ PROCEDURE GetQuadtok (QuadNo: CARDINAL;
 VAR
    f: QuadFrame ;
 BEGIN
-   f := GetQF(QuadNo) ;
+   f := GetQF (QuadNo) ;
    LastQuadNo := QuadNo ;
    WITH f^ DO
       Op := Operator ;
@@ -1149,11 +1149,12 @@ PROCEDURE GetQuadOtok (QuadNo: CARDINAL;
                        VAR tok: CARDINAL;
                        VAR Op: QuadOperator;
                        VAR Oper1, Oper2, Oper3: CARDINAL;
+                       VAR overflowChecking: BOOLEAN ;
                        VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 VAR
    f: QuadFrame ;
 BEGIN
-   f := GetQF(QuadNo) ;
+   f := GetQF (QuadNo) ;
    LastQuadNo := QuadNo ;
    WITH f^ DO
       Op := Operator ;
@@ -1163,9 +1164,48 @@ BEGIN
       Op1Pos := op1pos ;
       Op2Pos := op2pos ;
       Op3Pos := op3pos ;
-      tok := TokenNo
+      tok := TokenNo ;
+      overflowChecking := CheckOverflow
    END
 END GetQuadOtok ;
+
+
+(*
+   PutQuadOtok - alters a quadruple QuadNo with Op, Oper1, Oper2, Oper3, and
+                 sets a boolean to determinine whether overflow should be checked.
+*)
+
+PROCEDURE PutQuadOtok (QuadNo: CARDINAL;
+                       tok: CARDINAL;
+                       Op: QuadOperator;
+                       Oper1, Oper2, Oper3: CARDINAL;
+                       overflowChecking: BOOLEAN ;
+                       Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   IF QuadNo = BreakAtQuad
+   THEN
+      stop
+   END ;
+   IF QuadrupleGeneration
+   THEN
+      EraseQuad (QuadNo) ;
+      AddQuadInformation (QuadNo, Op, Oper1, Oper2, Oper3) ;
+      f := GetQF (QuadNo) ;
+      WITH f^ DO
+         Operator      := Op ;
+         Operand1      := Oper1 ;
+         Operand2      := Oper2 ;
+         Operand3      := Oper3 ;
+         CheckOverflow := overflowChecking ;
+         op1pos        := Op1Pos ;
+         op2pos        := Op2Pos ;
+         op3pos        := Op3Pos ;
+         TokenNo       := tok
+      END
+   END
+END PutQuadOtok ;
 
 
 (*
@@ -3118,7 +3158,7 @@ PROCEDURE MarkArrayWritten (Array: CARDINAL) ;
 BEGIN
    IF (Array#NulSym) AND IsVarAParam(Array)
    THEN
-      PutVarWritten(Array, TRUE)
+      PutVarWritten (Array, TRUE)
    END
 END MarkArrayWritten ;
 
@@ -3157,9 +3197,9 @@ END MarkAsRead ;
 
 PROCEDURE MarkAsWrite (sym: CARDINAL) ;
 BEGIN
-   IF (sym#NulSym) AND IsVar(sym)
+   IF (sym # NulSym) AND IsVar (sym)
    THEN
-      PutWriteQuad(sym, RightValue, NextQuad)
+      PutWriteQuad (sym, RightValue, NextQuad)
    END
 END MarkAsWrite ;
 
@@ -3171,14 +3211,14 @@ END MarkAsWrite ;
 
 PROCEDURE doVal (type, expr: CARDINAL) : CARDINAL ;
 BEGIN
-   IF (NOT IsConst(expr)) AND (SkipType(type)#GetDType(expr))
+   IF (NOT IsConst (expr)) AND (SkipType (type) # GetDType (expr))
    THEN
-      PushTF(Convert, NulSym) ;
-      PushT(SkipType(type)) ;
-      PushT(expr) ;
-      PushT(2) ;          (* Two parameters *)
+      PushTF (Convert, NulSym) ;
+      PushT (SkipType(type)) ;
+      PushT (expr) ;
+      PushT (2) ;          (* Two parameters *)
       BuildConvertFunction ;
-      PopT(expr)
+      PopT (expr)
    END ;
    RETURN( expr )
 END doVal ;
@@ -5952,12 +5992,15 @@ VAR
 BEGIN
    IF GetDType(des)=GetDType(exp)
    THEN
-      GenQuadO (tok, IndrXOp, des, GetSType(des), exp, TRUE)
+      GenQuadOtok (tok, IndrXOp, des, GetSType (des), exp, TRUE,
+                   tok, tok, tok)
    ELSE
       t := MakeTemporary (tok, RightValue) ;
       PutVar (t, GetSType (exp)) ;
-      GenQuadO (tok, IndrXOp, t, GetSType (exp), exp, TRUE) ;
-      GenQuadO (tok, BecomesOp, des, NulSym, doVal (GetSType(des), t), TRUE)
+      GenQuadOtok (tok, IndrXOp, t, GetSType (exp), exp, TRUE,
+                   tok, tok, tok) ;
+      GenQuadOtok (tok, BecomesOp, des, NulSym, doVal (GetSType(des), t), TRUE,
+                   tok, UnknownTokenNo, tok)
    END
 END doIndrX ;
 
@@ -5986,7 +6029,8 @@ BEGIN
          *)
          t := MakeTemporary (tok, RightValue) ;
          PutVar (t, type) ;
-         GenQuadO (tok, BecomesOp, t, NulSym, doVal(type, Sym), TRUE) ;
+         GenQuadOtok (tok, BecomesOp, t, NulSym, doVal (type, Sym), TRUE,
+                      tok, tok, tok) ;
          RETURN t
       END
    ELSE
@@ -6022,13 +6066,15 @@ BEGIN
          *)
          t := MakeTemporary (tok, with) ;
          PutVar (t, type) ;
-         GenQuadO (tok, BecomesOp, t, NulSym, Sym, TRUE) ;
+         GenQuadOtok (tok, BecomesOp, t, NulSym, Sym, TRUE,
+                      tok, UnknownTokenNo, tok) ;
          RETURN t
       END
    ELSE
       t := MakeTemporary (tok, with) ;
       PutVar (t, type) ;
-      GenQuadO (tok, AddrOp, t, NulSym, Sym, TRUE) ;
+      GenQuadOtok (tok, AddrOp, t, NulSym, Sym, TRUE,
+                   tok, UnknownTokenNo, tok) ;
       RETURN t
    END
 END MakeLeftValue ;
@@ -6998,13 +7044,13 @@ BEGIN
    IF IsExpressionCompatible (dtype, etype)
    THEN
       (* the easy case simulate a straightforward macro *)
-      PushTF(des, dtype) ;
-      PushT(tok) ;
-      PushTF(expr, etype) ;
-      doBuildBinaryOp(FALSE, TRUE)
+      PushTF (des, dtype) ;
+      PushT (tok) ;
+      PushTF (expr, etype) ;
+      doBuildBinaryOp (FALSE, TRUE)
    ELSE
-      IF (IsOrdinalType(dtype) OR (dtype=Address) OR IsPointer(dtype)) AND
-         (IsOrdinalType(etype) OR (etype=Address) OR IsPointer(etype))
+      IF (IsOrdinalType (dtype) OR (dtype = Address) OR IsPointer (dtype)) AND
+         (IsOrdinalType (etype) OR (etype = Address) OR IsPointer (etype))
       THEN
          PushTF (des, dtype) ;
          PushT (tok) ;
@@ -10502,72 +10548,6 @@ END BuildProcedureEnd ;
 
 
 (*
-   CheckReadBeforeInitialized -
-*)
-
-PROCEDURE CheckReadBeforeInitialized (ProcSym: CARDINAL; End: CARDINAL) ;
-VAR
-   s1, s2              : String ;
-   i, n, ParamNo,
-   ReadStart, ReadEnd,
-   WriteStart, WriteEnd: CARDINAL ;
-BEGIN
-   ParamNo := NoOfParam(ProcSym) ;
-   i := 1 ;
-   REPEAT
-      n := GetNth(ProcSym, i) ;
-      IF (n#NulSym) AND (NOT IsTemporary(n))
-      THEN
-         GetReadQuads(n, RightValue, ReadStart, ReadEnd) ;
-         GetWriteQuads(n, RightValue, WriteStart, WriteEnd) ;
-         IF i>ParamNo
-         THEN
-            (* n is a not a parameter thus we can check *)
-            IF (ReadStart>0) AND (ReadStart<End)
-            THEN
-               (* it is read in the first basic block *)
-               IF ReadStart<WriteStart
-               THEN
-                  (* read before written, this is a problem which must be fixed *)
-                  s1 := Mark(InitStringCharStar(KeyToCharStar(GetSymName(n)))) ;
-                  s2 := Mark(InitStringCharStar(KeyToCharStar(GetSymName(ProcSym)))) ;
-                  ErrorStringAt2(Sprintf2(Mark(InitString('reading from a variable (%s) before it is initialized in procedure (%s)')),
-                                          s1, s2),
-                                 GetDeclaredMod(n), GetDeclaredMod(n))
-               END
-            END
-         END
-      END ;
-      INC(i)
-   UNTIL n=NulSym
-END CheckReadBeforeInitialized ;
-
-
-(*
-   VariableAnalysis - checks to see whether a variable is:
-
-                      read before it has been initialized
-*)
-
-PROCEDURE VariableAnalysis (Start, End: CARDINAL) ;
-VAR
-   Op           : QuadOperator ;
-   Op1, Op2, Op3: CARDINAL ;
-BEGIN
-   IF Pedantic
-   THEN
-      GetQuad(Start, Op, Op1, Op2, Op3) ;
-      CASE Op OF
-
-      NewLocalVarOp:  CheckReadBeforeInitialized(Op3, End)
-
-      ELSE
-      END
-   END
-END VariableAnalysis ;
-
-
-(*
    IsNeverAltered - returns TRUE if variable, sym, is never altered
                     between quadruples: Start..End
 *)
@@ -10576,8 +10556,8 @@ PROCEDURE IsNeverAltered (sym: CARDINAL; Start, End: CARDINAL) : BOOLEAN ;
 VAR
    WriteStart, WriteEnd: CARDINAL ;
 BEGIN
-   GetWriteLimitQuads(sym, GetMode(sym), Start, End, WriteStart, WriteEnd) ;
-   RETURN( (WriteStart=0) AND (WriteEnd=0) )
+   GetWriteLimitQuads (sym, GetMode (sym), Start, End, WriteStart, WriteEnd) ;
+   RETURN( (WriteStart = 0) AND (WriteEnd = 0) )
 END IsNeverAltered ;
 
 
@@ -10592,8 +10572,8 @@ VAR
    LeftFixed,
    RightFixed   : BOOLEAN ;
 BEGIN
-   GetQuad(q, op, op1, op2, op3) ;
-   IF op=GotoOp
+   GetQuad (q, op, op1, op2, op3) ;
+   IF op = GotoOp
    THEN
       RETURN( FALSE )
    ELSE
@@ -10844,6 +10824,7 @@ END AsmStatementsInBlock ;
 PROCEDURE CheckVariablesInBlock (BlockSym: CARDINAL) ;
 BEGIN
    CheckVariablesAndParameterTypesInBlock (BlockSym) ;
+   (*
    IF UnusedVariableChecking OR UnusedParameterChecking
    THEN
       IF (NOT AsmStatementsInBlock (BlockSym))
@@ -10851,6 +10832,7 @@ BEGIN
          CheckUninitializedVariablesAreUsed (BlockSym)
       END
    END
+   *)
 END CheckVariablesInBlock ;
 
 
@@ -11429,6 +11411,19 @@ END BuildDynamicArray ;
 
 
 (*
+   DebugLocation -
+*)
+
+PROCEDURE DebugLocation (tok: CARDINAL; message: ARRAY OF CHAR) ;
+BEGIN
+   IF DebugTokPos
+   THEN
+      WarnStringAt (InitString (message), tok)
+   END
+END DebugLocation ;
+
+
+(*
    BuildDesignatorPointer - Builds a pointer reference.
                             The Stack is expected to contain:
 
@@ -11451,6 +11446,8 @@ VAR
    Sym2, Type2: CARDINAL ;
 BEGIN
    PopTFrwtok (Sym1, Type1, rw, exprtok) ;
+   DebugLocation (exprtok, "expression") ;
+
    Type1 := SkipType (Type1) ;
    IF Type1 = NulSym
    THEN
@@ -11473,15 +11470,16 @@ BEGIN
       THEN
          rw := NulSym ;
          PutLeftValueFrontBackType (Sym2, Type2, Type1) ;
-         GenQuad (IndrXOp, Sym2, Type1, Sym1)            (* Sym2 := *Sym1 *)
+         GenQuadO (ptrtok, IndrXOp, Sym2, Type1, Sym1, FALSE)    (* Sym2 := *Sym1 *)
       ELSE
          PutLeftValueFrontBackType (Sym2, Type2, NulSym) ;
-         GenQuad (BecomesOp, Sym2, NulSym, Sym1)         (* Sym2 :=  Sym1 *)
+         GenQuadO (ptrtok, BecomesOp, Sym2, NulSym, Sym1, FALSE) (* Sym2 :=  Sym1 *)
       END ;
       PutVarPointerCheck (Sym2, TRUE) ;       (* we should check this for *)
                                      (* Sym2 later on (pointer via NIL)   *)
       combinedtok := MakeVirtualTok (exprtok, exprtok, ptrtok) ;
-      PushTFrwtok (Sym2, Type2, rw, combinedtok)
+      PushTFrwtok (Sym2, Type2, rw, combinedtok) ;
+      DebugLocation (combinedtok, "pointer expression")
    ELSE
       MetaError2 ('{%1ad} is not a pointer type but a {%2d}', Sym1, Type1)
    END
@@ -11505,23 +11503,26 @@ VAR
    Sym, Type,
    Ref      : CARDINAL ;
 BEGIN
+   DebugLocation (withtok, "with") ;
    BuildStmtNoteTok (withTok) ;
    DisplayStack ;
    PopTFtok (Sym, Type, tok) ;
+   DebugLocation (tok, "expression") ;
    Type := SkipType (Type) ;
 
    Ref := MakeTemporary (tok, LeftValue) ;
    PutVar (Ref, Type) ;
    IF GetMode (Sym) = LeftValue
    THEN
-      (* copy LeftValue *)
+      (* Copy LeftValue.  *)
       GenQuadO (tok, BecomesOp, Ref, NulSym, Sym, TRUE)
    ELSE
-      (* calculate the address of Sym *)
+      (* Calculate the address of Sym.  *)
       GenQuadO (tok, AddrOp, Ref, NulSym, Sym, TRUE)
    END ;
 
    PushWith (Sym, Type, Ref, tok) ;
+   DebugLocation (tok, "with ref") ;
    IF Type = NulSym
    THEN
       MetaError1 ('{%1Ea} {%1d} has a no type, the {%kWITH} statement requires a variable or parameter of a {%kRECORD} type',
@@ -11562,9 +11563,9 @@ BEGIN
    IF Pedantic
    THEN
       n := NoOfItemsInStackAddress(WithStack) ;
-      i := 1 ;  (* top of the stack *)
+      i := 1 ;  (* Top of the stack.  *)
       WHILE i <= n DO
-         (* Search for other declarations of the with using Type *)
+         (* Search for other declarations of the with using Type.  *)
          f := PeepAddress(WithStack, i) ;
          IF f^.RecordSym=Type
          THEN
@@ -12454,7 +12455,7 @@ VAR
    leftpos, rightpos  : CARDINAL ;
    value              : CARDINAL ;
 BEGIN
-   Operator := OperandT(2) ;
+   Operator := OperandT (2) ;
    IF Operator = OrTok
    THEN
       CheckBooleanId ;
@@ -12874,6 +12875,7 @@ VAR
    t,
    rightType, leftType,
    right, left        : CARDINAL ;
+   s                  : String ;
 BEGIN
    IF CompilerDebugging
    THEN
@@ -12926,7 +12928,23 @@ BEGIN
          left := t
       END ;
       combinedTok := MakeVirtualTok (optokpos, leftpos, rightpos) ;
-      GenQuadO (combinedTok, MakeOp (Op), left, right, 0, FALSE) ;  (* True  Exit *)
+
+      IF DebugTokPos
+      THEN
+         s := InitStringCharStar (KeyToCharStar (GetTokenName (Op))) ;
+         WarnStringAt (s, optokpos) ;
+         s := InitString ('left') ;
+         WarnStringAt (s, leftpos) ;
+         s := InitString ('right') ;
+         WarnStringAt (s, rightpos) ;
+         s := InitString ('caret') ;
+         WarnStringAt (s, optokpos) ;
+         s := InitString ('combined') ;
+         WarnStringAt (s, combinedTok)
+      END ;
+
+      GenQuadOtok (combinedTok, MakeOp (Op), left, right, 0, FALSE,
+                   leftpos, rightpos, UnknownTokenNo) ;  (* True  Exit *)
       GenQuadO (combinedTok, GotoOp, NulSym, NulSym, 0, FALSE) ;  (* False Exit *)
       PushBool (NextQuad-2, NextQuad-1)
    END

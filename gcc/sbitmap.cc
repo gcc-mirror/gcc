@@ -187,7 +187,7 @@ bitmap_copy (sbitmap dst, const_sbitmap src)
 }
 
 /* Determine if a == b.  */
-int
+bool
 bitmap_equal_p (const_sbitmap a, const_sbitmap b)
 {
   bitmap_check_sizes (a, b);

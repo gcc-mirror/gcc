@@ -6392,6 +6392,35 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  else
 		    {
 		    gfc_conv_expr (&parmse, e);
+
+		    /* ABI: actual arguments to CHARACTER(len=1),VALUE
+		       dummy arguments are actually passed by value.
+		       Strings are truncated to length 1.
+		       The BIND(C) case is handled elsewhere.  */
+		    if (fsym->ts.type == BT_CHARACTER
+			&& !fsym->ts.is_c_interop
+			&& fsym->ts.u.cl->length->expr_type == EXPR_CONSTANT
+			&& fsym->ts.u.cl->length->ts.type == BT_INTEGER
+			&& (mpz_cmp_ui
+			    (fsym->ts.u.cl->length->value.integer, 1) == 0))
+		      {
+			if (e->expr_type != EXPR_CONSTANT)
+			  {
+			    tree slen1 = build_int_cst (gfc_charlen_type_node, 1);
+			    gfc_conv_string_parameter (&parmse);
+			    parmse.expr = gfc_string_to_single_character (slen1,
+									  parmse.expr,
+									  e->ts.kind);
+			    /* Truncate resulting string to length 1.  */
+			    parmse.string_length = slen1;
+			  }
+			else if (e->value.character.length > 1)
+			  {
+			    e->value.character.length = 1;
+			    gfc_conv_expr (&parmse, e);
+			  }
+		      }
+
 		    if (fsym->attr.optional
 			&& fsym->ts.type != BT_CLASS
 			&& fsym->ts.type != BT_DERIVED)
@@ -8781,6 +8810,7 @@ alloc_scalar_allocatable_subcomponent (stmtblock_t *block, tree comp,
   tree size;
   tree size_in_bytes;
   tree lhs_cl_size = NULL_TREE;
+  gfc_se se;
 
   if (!comp)
     return;
@@ -8815,16 +8845,30 @@ alloc_scalar_allocatable_subcomponent (stmtblock_t *block, tree comp,
     }
   else if (cm->ts.type == BT_CLASS)
     {
-      gcc_assert (expr2->ts.type == BT_CLASS || expr2->ts.type == BT_DERIVED);
-      if (expr2->ts.type == BT_DERIVED)
+      if (expr2->ts.type != BT_CLASS)
 	{
-	  tmp = gfc_get_symbol_decl (expr2->ts.u.derived);
-	  size = TYPE_SIZE_UNIT (tmp);
+	  if (expr2->ts.type == BT_CHARACTER)
+	    {
+	      gfc_init_se (&se, NULL);
+	      gfc_conv_expr (&se, expr2);
+	      size = build_int_cst (gfc_charlen_type_node, expr2->ts.kind);
+	      size = fold_build2_loc (input_location, MULT_EXPR,
+				      gfc_charlen_type_node,
+				      se.string_length, size);
+	      size = fold_convert (size_type_node, size);
+	    }
+	  else
+	    {
+	      if (expr2->ts.type == BT_DERIVED)
+		tmp = gfc_get_symbol_decl (expr2->ts.u.derived);
+	      else
+		tmp = gfc_typenode_for_spec (&expr2->ts);
+	      size = TYPE_SIZE_UNIT (tmp);
+	    }
 	}
       else
 	{
 	  gfc_expr *e2vtab;
-	  gfc_se se;
 	  e2vtab = gfc_find_and_cut_at_last_class_ref (expr2);
 	  gfc_add_vptr_component (e2vtab);
 	  gfc_add_size_component (e2vtab);
@@ -8975,6 +9019,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
     {
       gfc_init_se (&se, NULL);
       gfc_conv_expr (&se, expr);
+      tree size;
 
       /* Take care about non-array allocatable components here.  The alloc_*
 	 routine below is motivated by the alloc_scalar_allocatable_for_
@@ -8990,7 +9035,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
 	  && expr->symtree->n.sym->attr.dummy)
 	se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
 
-      if (cm->ts.type == BT_CLASS && expr->ts.type == BT_DERIVED)
+      if (cm->ts.type == BT_CLASS)
 	{
 	  tmp = gfc_class_data_get (dest);
 	  tmp = build_fold_indirect_ref_loc (input_location, tmp);
@@ -9005,13 +9050,42 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
       /* For deferred strings insert a memcpy.  */
       if (cm->ts.type == BT_CHARACTER && cm->ts.deferred)
 	{
-	  tree size;
 	  gcc_assert (se.string_length || expr->ts.u.cl->backend_decl);
 	  size = size_of_string_in_bytes (cm->ts.kind, se.string_length
 						? se.string_length
 						: expr->ts.u.cl->backend_decl);
 	  tmp = gfc_build_memcpy_call (tmp, se.expr, size);
 	  gfc_add_expr_to_block (&block, tmp);
+	}
+      else if (cm->ts.type == BT_CLASS)
+	{
+	  /* Fix the expression for memcpy.  */
+	  if (expr->expr_type != EXPR_VARIABLE)
+	    se.expr = gfc_evaluate_now (se.expr, &block);
+
+	  if (expr->ts.type == BT_CHARACTER)
+	    {
+	      size = build_int_cst (gfc_charlen_type_node, expr->ts.kind);
+	      size = fold_build2_loc (input_location, MULT_EXPR,
+				      gfc_charlen_type_node,
+				      se.string_length, size);
+	      size = fold_convert (size_type_node, size);
+	    }
+	  else
+	    size = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&expr->ts));
+
+	  /* Now copy the expression to the constructor component _data.  */
+	  gfc_add_expr_to_block (&block,
+				 gfc_build_memcpy_call (tmp, se.expr, size));
+
+	  /* Fill the unlimited polymorphic _len field.  */
+	  if (UNLIMITED_POLY (cm) && expr->ts.type == BT_CHARACTER)
+	    {
+	      tmp = gfc_class_len_get (gfc_get_class_from_expr (tmp));
+	      gfc_add_modify (&block, tmp,
+			      fold_convert (TREE_TYPE (tmp),
+			      se.string_length));
+	    }
 	}
       else
 	gfc_add_modify (&block, tmp,

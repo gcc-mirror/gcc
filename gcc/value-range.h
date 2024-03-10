@@ -1002,6 +1002,8 @@ irange::normalize_kind ()
       else if (m_kind == VR_ANTI_RANGE)
 	set_undefined ();
     }
+  if (flag_checking)
+    verify_range ();
 }
 
 inline bool

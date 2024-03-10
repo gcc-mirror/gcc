@@ -574,7 +574,7 @@ unittest
 private template arraySortWrapper(T, alias fn)
 {
     pragma(mangle, "arraySortWrapper_" ~ T.mangleof ~ "_" ~ fn.mangleof)
-    extern(C) int arraySortWrapper(scope const void* e1, scope const void* e2) nothrow
+    extern(C) int arraySortWrapper(scope const void* e1, scope const void* e2)
     {
         return fn(cast(const(T*))e1, cast(const(T*))e2);
     }

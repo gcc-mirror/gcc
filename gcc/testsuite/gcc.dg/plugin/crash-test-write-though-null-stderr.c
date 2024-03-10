@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-fno-report-bug" } */
 
 extern void inject_write_through_null (void);
 

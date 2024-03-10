@@ -47,7 +47,8 @@ host_modules= { module= fixincludes; bootstrap=true;
 host_modules= { module= flex; no_check_cross= true; };
 host_modules= { module= gas; bootstrap=true; };
 host_modules= { module= gcc; bootstrap=true; 
-		extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
+		extra_make_flags="$(EXTRA_GCC_FLAGS)";
+		extra_configure_flags='@gcc_host_pie@'; };
 host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
 		// Work around in-tree gmp configure bug with missing flex.
 		extra_configure_flags='--disable-shared LEX="touch lex.yy.c" @host_libs_picflag@';

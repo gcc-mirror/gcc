@@ -33,7 +33,9 @@ void i (V *v1, V *v2){
   *v2 = (c1-*v2)+c2;
 }
 
-/* { dg-final { scan-tree-dump-not "\\\+" "forwprop1"} } */
+/* { dg-final { scan-tree-dump-times "\\\+" 1 "forwprop1"} } */
 /* { dg-final { scan-tree-dump "{ 0, 4 }" "forwprop1"} } */
 /* { dg-final { scan-tree-dump "{ 37, -5 }" "forwprop1"} } */
+/* { dg-final { scan-tree-dump "{ 27, 23 }" "forwprop1"} } */
+/* { dg-final { scan-tree-dump "{ 37, 3 }" "forwprop1"} } */
 

@@ -4508,7 +4508,7 @@ extern rtx canon_condition (rtx);
 extern void simplify_using_condition (rtx, rtx *, bitmap);
 
 /* In final.cc  */
-extern unsigned int compute_alignments (void);
+extern void compute_alignments (void);
 extern void update_alignments (vec<rtx> &);
 extern int asm_str_count (const char *templ);
 

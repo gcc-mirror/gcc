@@ -293,6 +293,10 @@ Wunused-parameter
 Modula-2
 ; Documented in c.opt
 
+Wuninit-variable-checking
+Modula-2
+turns on compile time analysis in the first basic block of a procedure detecting access to uninitialized data.
+
 B
 Modula-2
 ; Documented in c.opt

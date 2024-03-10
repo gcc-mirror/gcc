@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
    message module.  */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "version.h"

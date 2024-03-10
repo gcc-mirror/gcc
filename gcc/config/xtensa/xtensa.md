@@ -522,7 +522,7 @@
 	(smax:SI (smin:SI (match_operand:SI 1 "register_operand" "r")
 			  (match_operand:SI 2 "const_int_operand" "i"))
 		 (match_operand:SI 3 "const_int_operand" "i")))]
-  "TARGET_CLAMPS
+  "TARGET_MINMAX && TARGET_CLAMPS
    && xtensa_match_CLAMPS_imms_p (operands[3], operands[2])"
   "#"
   "&& 1"
@@ -540,7 +540,7 @@
 	(smin:SI (smax:SI (match_operand:SI 1 "register_operand" "r")
 			  (match_operand:SI 2 "const_int_operand" "i"))
 		 (match_operand:SI 3 "const_int_operand" "i")))]
-  "TARGET_CLAMPS
+  "TARGET_MINMAX && TARGET_CLAMPS
    && xtensa_match_CLAMPS_imms_p (operands[2], operands[3])"
 {
   static char result[64];
@@ -3191,7 +3191,7 @@
 
 (define_insn_and_split "*eqne_INT_MIN"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(match_operator 2 "boolean_operator"
+	(match_operator:SI 2 "boolean_operator"
 		[(match_operand:SI 1 "register_operand" "r")
 		 (const_int -2147483648)]))]
   "TARGET_ABS"
@@ -3240,15 +3240,14 @@
    (set (match_dup 3)
 	(match_dup 7))]
 {
-  uint32_t check = 0;
+  HARD_REG_SET regs;
   int i;
+  CLEAR_HARD_REG_SET (regs);
   for (i = 0; i <= 3; ++i)
-    {
-      uint32_t mask = (uint32_t)1 << REGNO (operands[i]);
-      if (check & mask)
-	FAIL;
-      check |= mask;
-    }
+    if (TEST_HARD_REG_BIT (regs, REGNO (operands[i])))
+      FAIL;
+    else
+      SET_HARD_REG_BIT (regs, REGNO (operands[i]));
   operands[6] = gen_rtx_MEM (SFmode, XEXP (operands[6], 0));
   operands[7] = gen_rtx_MEM (SFmode, XEXP (operands[7], 0));
 })

@@ -264,7 +264,17 @@ pass_nrv::execute (function *fun)
 	      data.modified = 0;
 	      walk_gimple_op (stmt, finalize_nrv_r, &wi);
 	      if (data.modified)
-		update_stmt (stmt);
+		{
+		  /* If this is a CLOBBER of VAR, remove it.  */
+		  if (gimple_clobber_p (stmt))
+		    {
+		      unlink_stmt_vdef (stmt);
+		      gsi_remove (&gsi, true);
+		      release_defs (stmt);
+		      continue;
+		    }
+		  update_stmt (stmt);
+		}
 	      gsi_next (&gsi);
 	    }
 	}

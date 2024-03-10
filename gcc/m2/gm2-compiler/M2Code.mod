@@ -42,8 +42,10 @@ FROM NameKey IMPORT Name ;
 FROM M2Batch IMPORT ForeachSourceModuleDo ;
 
 FROM M2Quads IMPORT CountQuads, GetFirstQuad, DisplayQuadList, DisplayQuadRange,
-                    BackPatchSubrangesAndOptParam, VariableAnalysis,
+                    BackPatchSubrangesAndOptParam,
                     LoopAnalysis, ForLoopAnalysis, GetQuad, QuadOperator ;
+
+FROM M2SymInit IMPORT VariableAnalysis ;
 
 FROM M2Pass IMPORT SetPassToNoPass, SetPassToCodeGeneration ;
 

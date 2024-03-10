@@ -355,7 +355,10 @@ EXPORT QUALIFIED NulSym,
                  PopOffset,
                  PopSumOfParamSize,
                  DisplayTrees,
-		 DebugLineNumbers ;
+		 DebugLineNumbers,
+                 VarCheckReadInit, VarInitState, PutVarInitialized,
+                 PutVarFieldInitialized, GetVarFieldInitialized,
+                 PrintInitialized ;
 
 
 (*
@@ -3556,6 +3559,53 @@ PROCEDURE IsModuleBuiltin (sym: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE PutModuleBuiltin (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   VarCheckReadInit - returns TRUE if sym has been initialized.
+*)
+
+PROCEDURE VarCheckReadInit (sym: CARDINAL; mode: ModeOfAddr) : BOOLEAN ;
+
+
+(*
+   VarInitState - initializes the init state for variable sym.
+*)
+
+PROCEDURE VarInitState (sym: CARDINAL) ;
+
+
+(*
+   PutVarInitialized - set sym as initialized.
+*)
+
+PROCEDURE PutVarInitialized (sym: CARDINAL; mode: ModeOfAddr) ;
+
+
+(*
+   PutVarFieldInitialized - records that field has been initialized with
+                            variable sym.  TRUE is returned if the field
+                            is detected and changed to initialized.
+*)
+
+PROCEDURE PutVarFieldInitialized (sym: CARDINAL; mode: ModeOfAddr;
+                                  fieldlist: List) : BOOLEAN ;
+
+
+(*
+   GetVarFieldInitialized - return TRUE if fieldlist has been initialized
+                            within variable sym.
+*)
+
+PROCEDURE GetVarFieldInitialized (sym: CARDINAL; mode: ModeOfAddr;
+                                  fieldlist: List) : BOOLEAN ;
+
+
+(*
+   PrintInitialized - display variable sym initialization state.
+*)
+
+PROCEDURE PrintInitialized (sym: CARDINAL) ;
 
 
 END SymbolTable.

@@ -393,6 +393,10 @@ class Gogo
   set_c_header(const std::string& s)
   { this->c_header_ = s; }
 
+  // Read an importcfg file.
+  void
+  read_importcfg(const char* filename);
+
   // Read an embedcfg file.
   void
   read_embedcfg(const char* filename);
@@ -1126,6 +1130,10 @@ class Gogo
   static size_t
   special_name_pos(const std::string& name);
 
+  // Read a file into memory.
+  static bool
+  read_file(const char* filename, Location loc, std::string* data);
+
  private:
   // During parsing, we keep a stack of functions.  Each function on
   // the stack is one that we are currently parsing.  For each
@@ -1295,6 +1303,10 @@ class Gogo
   std::string relative_import_path_;
   // The C header file to write, from the -fgo-c-header option.
   std::string c_header_;
+  // Mapping from imports in the source file to the real import paths.
+  Unordered_map(std::string, std::string) import_map_;
+  // Mapping from import paths to files to read.
+  Unordered_map(std::string, std::string) package_file_;
   // Patterns from an embedcfg file.
   Embed_patterns embed_patterns_;
   // Mapping from file to full path from an embedcfg file.

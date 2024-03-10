@@ -34,6 +34,130 @@ go_add_search_path(const char* path)
   search_path.push_back(std::string(path));
 }
 
+// Read an importcfg file.
+
+void
+Gogo::read_importcfg(const char* filename)
+{
+  std::string data;
+  if (!Gogo::read_file(filename, Linemap::unknown_location(), &data))
+    return;
+  const char* p = data.data();
+  const char* pend = p + data.length();
+  int lineno = 0;
+  const char *pnext = NULL;
+  for (; p < pend; p = pnext)
+    {
+      // Line numbers start at 1.
+      lineno++;
+
+      // Find end of line.
+      const char* pnl = static_cast<const char*>(memchr(p, '\n', pend - p));
+      if (pnl != NULL)
+	pnext = pnl + 1;
+      else
+	{
+	  pnl = pend;
+	  pnext = pnl;
+	}
+
+      // Trim leading spaces.
+      while (p < pnl)
+	{
+	  unsigned int rune;
+	  int rune_len = Lex::fetch_char(p, &rune);
+	  if (rune_len == 0)
+	    {
+	      go_error_at(Linemap::unknown_location(),
+			  "%s:%d: invalid character in importcfg file",
+			  filename, lineno);
+	      return;
+	    }
+	  if (!Lex::is_unicode_space(rune))
+	    break;
+	  p += rune_len;
+	}
+
+      // Trim trailing spaces.
+      while (pnl > p)
+	{
+	  size_t start = pnl - p - 1;
+	  unsigned int rune = (unsigned char)p[start];
+	  int rune_len = 1;
+	  if (rune > 0x7f)
+	    {
+	      for (start--; start > 0; start--)
+		{
+		  unsigned char c = p[start];
+		  if ((c & 0xc0) != 0x80)
+		    break;
+		}
+	      rune_len = Lex::fetch_char(p + start, &rune);
+	      if (static_cast<size_t>(rune_len) != (pnl - p) - start)
+		{
+		  go_error_at(Linemap::unknown_location(),
+			      "%s:%d: invalid character in importcfg file",
+			      filename, lineno);
+		  return;
+		}
+	    }
+	  if (!Lex::is_unicode_space(rune))
+	    break;
+	  pnl -= rune_len;
+	}
+
+      // Skip empty lines and comment lines.
+      if (p == pnl || *p == '#')
+	continue;
+
+      size_t verb_len;
+      const char* psp = static_cast<const char*>(memchr(p, ' ', pnl - p));
+      if (psp == NULL)
+	verb_len = pnl - p;
+      else
+	verb_len = psp - p;
+
+      bool importmap = false;
+      bool packagefile = false;
+      if (strncmp(p, "importmap", verb_len) == 0)
+	importmap = true;
+      else if (strncmp(p, "packagefile", verb_len) == 0)
+	packagefile = true;
+      else
+	{
+	  go_error_at(Linemap::unknown_location(),
+		      "%s:%d: unknown directive in importcfg file",
+		      filename, lineno);
+	  return;
+	}
+
+      const char* peq;
+      if (psp == NULL)
+	peq = NULL;
+      else
+	{
+	  psp++;
+	  peq = static_cast<const char*>(memchr(psp, '=', pnl - psp));
+	}
+      if (peq == NULL || peq + 1 == pnl)
+	{
+	  go_error_at(Linemap::unknown_location(),
+		      "%s:%d: invalid syntax in importcfg file",
+		      filename, lineno);
+	  return;
+	}
+
+      std::string first(psp, peq - psp);
+      std::string second(peq + 1, pnl - (peq + 1));
+      if (importmap)
+	this->import_map_[first] = second;
+      else if (packagefile)
+	this->package_file_[first] = second;
+      else
+	go_unreachable();
+    }
+}
+
 // Find import data.  This searches the file system for FILENAME and
 // returns a pointer to a Stream object to read the data that it
 // exports.  If the file is not found, it returns NULL.

@@ -767,6 +767,13 @@ No_Unchecked_Deallocation
 [RM J.13] This restriction ensures at compile time that there are no semantic
 dependences on the predefined generic procedure Unchecked_Deallocation.
 
+No_Use_Of_Attribute
+-------------------
+.. index:: No_Use_Of_Attribute
+
+[RM 13.12.1] This is a standard Ada 2012 restriction that is GNAT defined in
+earlier versions of Ada.
+
 No_Use_Of_Entity
 ----------------
 .. index:: No_Use_Of_Entity
@@ -779,6 +786,13 @@ to the entity given in the form ::
 where ``Name`` is the fully qualified entity, for example ::
 
    No_Use_Of_Entity => Ada.Text_IO.Put_Line
+
+No_Use_Of_Pragma
+----------------
+.. index:: No_Use_Of_Pragma
+
+[RM 13.12.1] This is a standard Ada 2012 restriction that is GNAT defined in
+earlier versions of Ada.
 
 Pure_Barriers
 -------------

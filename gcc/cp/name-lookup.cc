@@ -6796,7 +6796,7 @@ maybe_suggest_missing_std_header (location_t location, tree name)
    for NAME within SCOPE at LOCATION, or an empty name_hint if this isn't
    applicable.  */
 
-static name_hint
+name_hint
 maybe_suggest_missing_header (location_t location, tree name, tree scope)
 {
   if (scope == NULL_TREE)

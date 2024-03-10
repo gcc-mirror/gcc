@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"
+#include "attribs.h"
 
 /* Prototypes.  */
 
@@ -446,6 +447,29 @@ maybe_thunk_body (tree fn, bool force)
   return 1;
 }
 
+/* Copy most attributes from ATTRS, omitting attributes that can really only
+   apply to a single decl.  */
+
+tree
+clone_attrs (tree attrs)
+{
+  tree new_attrs = NULL_TREE;
+  tree *p = &new_attrs;
+
+  for (tree a = attrs; a; a = TREE_CHAIN (a))
+    {
+      tree aname = get_attribute_name (a);
+      if (is_attribute_namespace_p ("", a)
+	  && (is_attribute_p ("alias", aname)
+	      || is_attribute_p ("ifunc", aname)))
+	continue;
+      *p = copy_node (a);
+      p = &TREE_CHAIN (*p);
+    }
+  *p = NULL_TREE;
+  return new_attrs;
+}
+
 /* FN is a function that has a complete body.  Clone the body as
    necessary.  Returns nonzero if there's no longer any need to
    process the main body.  */
@@ -503,7 +527,7 @@ maybe_clone_body (tree fn)
       DECL_VISIBILITY (clone) = DECL_VISIBILITY (fn);
       DECL_VISIBILITY_SPECIFIED (clone) = DECL_VISIBILITY_SPECIFIED (fn);
       DECL_DLLIMPORT_P (clone) = DECL_DLLIMPORT_P (fn);
-      DECL_ATTRIBUTES (clone) = copy_list (DECL_ATTRIBUTES (fn));
+      DECL_ATTRIBUTES (clone) = clone_attrs (DECL_ATTRIBUTES (fn));
       DECL_DISREGARD_INLINE_LIMITS (clone) = DECL_DISREGARD_INLINE_LIMITS (fn);
       set_decl_section_name (clone, fn);
 

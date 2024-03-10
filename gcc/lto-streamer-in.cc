@@ -1629,11 +1629,11 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
       /* Set up the struct function.  */
       from = data_in->reader_cache->nodes.length ();
       lto_input_block ib_main (data + main_offset, header->main_size,
-			       file_data->mode_table);
+			       file_data);
       if (TREE_CODE (node->decl) == FUNCTION_DECL)
 	{
 	  lto_input_block ib_cfg (data + cfg_offset, header->cfg_size,
-				  file_data->mode_table);
+				  file_data);
 	  input_function (fn_decl, data_in, &ib_main, &ib_cfg,
 			  dyn_cast <cgraph_node *>(node));
 	}
@@ -1954,7 +1954,7 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
   string_offset = sizeof (*header) + header->main_size;
 
   lto_input_block ib (data + sizeof (*header), header->main_size,
-		      file_data->mode_table);
+		      file_data);
 
   data_in = lto_data_in_create (file_data, data + string_offset,
 			      header->string_size, vNULL);
@@ -1985,8 +1985,6 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
     internal_error ("cannot read LTO mode table from %s",
 		    file_data->file_name);
 
-  unsigned char *table = ggc_cleared_vec_alloc<unsigned char> (1 << 8);
-  file_data->mode_table = table;
   const struct lto_simple_header_with_strings *header
     = (const struct lto_simple_header_with_strings *) data;
   int string_offset;
@@ -1998,16 +1996,22 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 				header->string_size, vNULL);
   bitpack_d bp = streamer_read_bitpack (&ib);
 
+  unsigned mode_bits = bp_unpack_value (&bp, 5);
+  unsigned char *table = ggc_cleared_vec_alloc<unsigned char> (1 << mode_bits);
+
+  file_data->mode_table = table;
+  file_data->mode_bits = mode_bits;
+
   table[VOIDmode] = VOIDmode;
   table[BLKmode] = BLKmode;
   unsigned int m;
-  while ((m = bp_unpack_value (&bp, 8)) != VOIDmode)
+  while ((m = bp_unpack_value (&bp, mode_bits)) != VOIDmode)
     {
       enum mode_class mclass
 	= bp_unpack_enum (&bp, mode_class, MAX_MODE_CLASS);
       poly_uint16 size = bp_unpack_poly_value (&bp, 16);
       poly_uint16 prec = bp_unpack_poly_value (&bp, 16);
-      machine_mode inner = (machine_mode) bp_unpack_value (&bp, 8);
+      machine_mode inner = (machine_mode) bp_unpack_value (&bp, mode_bits);
       poly_uint16 nunits = bp_unpack_poly_value (&bp, 16);
       unsigned int ibit = 0, fbit = 0;
       unsigned int real_fmt_len = 0;

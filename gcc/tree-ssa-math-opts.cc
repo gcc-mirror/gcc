@@ -4861,11 +4861,14 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
   gsi_remove (&gsi2, true);
   /* Replace the re2 statement with __real__ of the newly added
      .UADDC/.USUBC call.  */
-  gsi2 = gsi_for_stmt (re2);
-  tree rlhs = gimple_assign_lhs (re2);
-  g = gimple_build_assign (rlhs, REALPART_EXPR,
-			   build1 (REALPART_EXPR, TREE_TYPE (rlhs), nlhs));
-  gsi_replace (&gsi2, g, true);
+  if (re2)
+    {
+      gsi2 = gsi_for_stmt (re2);
+      tree rlhs = gimple_assign_lhs (re2);
+      g = gimple_build_assign (rlhs, REALPART_EXPR,
+			       build1 (REALPART_EXPR, TREE_TYPE (rlhs), nlhs));
+      gsi_replace (&gsi2, g, true);
+    }
   if (rhs[2])
     {
       /* If this is the arg1 + arg2 + (ovf1 + ovf2) or
@@ -4995,8 +4998,8 @@ divmod_candidate_p (gassign *stmt)
       if (integer_pow2p (op2))
 	return false;
 
-      if (TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT
-	  && TYPE_PRECISION (type) <= BITS_PER_WORD)
+      if (element_precision (type) <= HOST_BITS_PER_WIDE_INT
+	  && element_precision (type) <= BITS_PER_WORD)
 	return false;
 
       /* If the divisor is not power of 2 and the precision wider than

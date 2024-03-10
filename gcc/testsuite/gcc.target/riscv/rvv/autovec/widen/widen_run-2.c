@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_vector } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable" } */
+/* { dg-additional-options "--param=riscv-autovec-preference=scalable -ffast-math" } */
 
 #include <assert.h>
 #include "widen-2.c"
@@ -25,7 +25,8 @@
   RUN (int32_t, int16_t, -32768)                                               \
   RUN (uint32_t, uint16_t, 65535)                                              \
   RUN (int64_t, int32_t, -2147483648)                                          \
-  RUN (uint64_t, uint32_t, 4294967295)
+  RUN (uint64_t, uint32_t, 4294967295)                                         \
+  RUN (double, float, -2147483648)
 
 int
 main ()

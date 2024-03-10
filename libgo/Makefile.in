@@ -885,6 +885,7 @@ toolexeclibgounicode_DATA = \
 # Some internal packages are needed to bootstrap the gc toolchain.
 toolexeclibgointernaldir = $(toolexeclibgodir)/internal
 toolexeclibgointernal_DATA = \
+	internal/lazyregexp.gox \
 	internal/reflectlite.gox \
 	internal/unsafeheader.gox
 

@@ -1400,7 +1400,11 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       if (option_strings[IX86_FUNCTION_SPECIFIC_TUNE])
 	opts->x_ix86_tune_string
 	  = ggc_strdup (option_strings[IX86_FUNCTION_SPECIFIC_TUNE]);
-      else if (orig_tune_defaulted)
+      /* If we have explicit arch string and no tune string specified, set
+	 tune_string to NULL and later it will be overriden by arch_string
+	 so target clones can get proper optimization.  */
+      else if (option_strings[IX86_FUNCTION_SPECIFIC_ARCH]
+	       || orig_tune_defaulted)
 	opts->x_ix86_tune_string = NULL;
 
       /* If fpmath= is not set, and we now have sse2 on 32-bit, use it.  */
@@ -2727,7 +2731,9 @@ ix86_option_override_internal (bool main_args_p,
     sorry ("%<-mcall-ms2sysv-xlogues%> isn%'t currently supported with SEH");
 
   if (!(opts_set->x_target_flags & MASK_VZEROUPPER)
-      && TARGET_EMIT_VZEROUPPER)
+      && TARGET_EMIT_VZEROUPPER
+      && flag_expensive_optimizations
+      && !optimize_size)
     opts->x_target_flags |= MASK_VZEROUPPER;
   if (!(opts_set->x_target_flags & MASK_STV))
     opts->x_target_flags |= MASK_STV;

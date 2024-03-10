@@ -88,7 +88,7 @@ static unsigned nr_statistics_hashes;
    statistics.  */
 
 static stats_counter_table_type *
-curr_statistics_hash (void)
+curr_statistics_hash (bool alloc = true)
 {
   unsigned idx;
 
@@ -98,6 +98,9 @@ curr_statistics_hash (void)
   if (idx < nr_statistics_hashes
       && statistics_hashes[idx])
     return statistics_hashes[idx];
+
+  if (!alloc)
+    return nullptr;
 
   if (idx >= nr_statistics_hashes)
     {
@@ -202,23 +205,27 @@ statistics_fini_pass (void)
   if (current_pass->static_pass_number == -1)
     return;
 
+  stats_counter_table_type *stat_hash = curr_statistics_hash (false);
+
   if (dump_file
       && dump_flags & TDF_STATS)
     {
       fprintf (dump_file, "\n");
       fprintf (dump_file, "Pass statistics of \"%s\": ", current_pass->name);
       fprintf (dump_file, "----------------\n");
-      curr_statistics_hash ()
-	->traverse_noresize <void *, statistics_fini_pass_1> (NULL);
+      if (stat_hash)
+	stat_hash->traverse_noresize <void *, statistics_fini_pass_1> (NULL);
       fprintf (dump_file, "\n");
     }
+
+  if (!stat_hash)
+    return;
+
   if (statistics_dump_file
       && !(statistics_dump_flags & TDF_STATS
 	   || statistics_dump_flags & TDF_DETAILS))
-    curr_statistics_hash ()
-      ->traverse_noresize <void *, statistics_fini_pass_2> (NULL);
-  curr_statistics_hash ()
-    ->traverse_noresize <void *, statistics_fini_pass_3> (NULL);
+    stat_hash->traverse_noresize <void *, statistics_fini_pass_2> (NULL);
+  stat_hash->traverse_noresize <void *, statistics_fini_pass_3> (NULL);
 }
 
 /* Helper for printing summary information.  */

@@ -107,8 +107,12 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 	}
     }
 
+    # A very old version of gdb will not have the type_printers
+    # global.  Some organizations may ship a gdb that has some default
+    # type printers, so accept any list output as indication that the
+    # global exists.
     set do_whatis_tests [gdb_batch_check "python print(gdb.type_printers)" \
-			   "\\\[\\\]"]
+			   "\\\[.+"]
     if {!$do_whatis_tests} {
 	send_log "skipping 'whatis' tests - gdb too old"
     }

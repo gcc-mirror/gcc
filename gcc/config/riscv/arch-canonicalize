@@ -68,6 +68,13 @@ IMPLIED_EXT = {
   "zvl16384b" : ["zvl8192b"],
   "zvl32768b" : ["zvl16384b"],
   "zvl65536b" : ["zvl32768b"],
+
+  "zvkn" : ["zvkned", "zvknhb", "zvbb", "zvkt"],
+  "zvknc" : ["zvkn", "zvbc"],
+  "zvkng" : ["zvkn", "zvkg"],
+  "zvks" : ["zvksed", "zvksh", "zvbb", "zvkt"],
+  "zvksc" : ["zvks", "zvbc"],
+  "zvksg" : ["zvks", "zvkg"],
 }
 
 def arch_canonicalize(arch, isa_spec):

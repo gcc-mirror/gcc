@@ -291,6 +291,10 @@ fdump-d-original
 D
 Display the frontend AST after parsing and semantic passes.
 
+fexceptions
+D
+; Documented in common.opt
+
 fextern-std=
 D Joined RejectNegative Enum(extern_stdcpp) Var(flag_extern_stdcpp)
 -fextern-std=<standard>	Set C++ name mangling compatibility with <standard>.

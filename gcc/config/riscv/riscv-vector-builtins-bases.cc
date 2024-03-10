@@ -281,6 +281,29 @@ public:
   }
 };
 
+/* Implements below instructions for now.
+   - vfadd
+*/
+template<rtx_code CODE>
+class binop_frm : public function_base
+{
+public:
+  bool has_rounding_mode_operand_p () const override { return true; }
+
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vf:
+	return e.use_exact_insn (code_for_pred_scalar (CODE, e.vector_mode ()));
+      case OP_TYPE_vv:
+	return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 /* Implements vrsub.  */
 class vrsub : public function_base
 {
@@ -390,8 +413,12 @@ public:
 	return e.use_exact_insn (
 	  code_for_pred_dual_widen_scalar (CODE, e.vector_mode ()));
       case OP_TYPE_wv:
-	return e.use_exact_insn (
-	  code_for_pred_single_widen (CODE, e.vector_mode ()));
+	if (CODE == PLUS)
+	  return e.use_exact_insn (
+	    code_for_pred_single_widen_add (e.vector_mode ()));
+	else
+	  return e.use_exact_insn (
+	    code_for_pred_single_widen_sub (e.vector_mode ()));
       case OP_TYPE_wf:
 	return e.use_exact_insn (
 	  code_for_pred_single_widen_scalar (CODE, e.vector_mode ()));
@@ -1212,7 +1239,7 @@ public:
   }
 };
 
-/* Implements vfsqrt7/vfrec7/vfclass/vfsgnj/vfsgnjn/vfsgnjx.  */
+/* Implements vfsqrt7/vfrec7/vfclass/vfsgnj/vfsgnjx.  */
 template<int UNSPEC>
 class float_misc : public function_base
 {
@@ -1223,6 +1250,20 @@ public:
       return e.use_exact_insn (code_for_pred_scalar (UNSPEC, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv || e.op_info->op == OP_TYPE_v)
       return e.use_exact_insn (code_for_pred (UNSPEC, e.vector_mode ()));
+    gcc_unreachable ();
+  }
+};
+
+/* Implements vfsgnjn.  */
+class vfsgnjn : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    if (e.op_info->op == OP_TYPE_vf)
+      return e.use_exact_insn (code_for_pred_ncopysign_scalar (e.vector_mode ()));
+    if (e.op_info->op == OP_TYPE_vv)
+      return e.use_exact_insn (code_for_pred_ncopysign (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1567,7 +1608,7 @@ public:
   {
     tree arg = CALL_EXPR_ARG (e.exp, 0);
     rtx src = expand_normal (arg);
-    emit_insn (gen_rtx_SET (gen_lowpart (e.vector_mode (), e.target), src));
+    emit_move_insn (gen_lowpart (e.vector_mode (), e.target), src);
     return e.target;
   }
 };
@@ -2006,6 +2047,7 @@ static CONSTEXPR const viota viota_obj;
 static CONSTEXPR const vid vid_obj;
 static CONSTEXPR const binop<PLUS> vfadd_obj;
 static CONSTEXPR const binop<MINUS> vfsub_obj;
+static CONSTEXPR const binop_frm<PLUS> vfadd_frm_obj;
 static CONSTEXPR const reverse_binop<MINUS> vfrsub_obj;
 static CONSTEXPR const widen_binop<PLUS> vfwadd_obj;
 static CONSTEXPR const widen_binop<MINUS> vfwsub_obj;
@@ -2031,7 +2073,7 @@ static CONSTEXPR const float_misc<UNSPEC_VFREC7> vfrec7_obj;
 static CONSTEXPR const binop<SMIN> vfmin_obj;
 static CONSTEXPR const binop<SMAX> vfmax_obj;
 static CONSTEXPR const float_misc<UNSPEC_VCOPYSIGN> vfsgnj_obj;
-static CONSTEXPR const float_misc<UNSPEC_VNCOPYSIGN> vfsgnjn_obj;
+static CONSTEXPR const vfsgnjn vfsgnjn_obj;
 static CONSTEXPR const float_misc<UNSPEC_VXORSIGN> vfsgnjx_obj;
 static CONSTEXPR const unop<NEG> vfneg_obj;
 static CONSTEXPR const unop<ABS> vfabs_obj;
@@ -2231,6 +2273,7 @@ BASE (vmsof)
 BASE (viota)
 BASE (vid)
 BASE (vfadd)
+BASE (vfadd_frm)
 BASE (vfsub)
 BASE (vfrsub)
 BASE (vfwadd)

@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-mavx512f -mno-avx512vl -mprefer-vector-width=512 -O2" } */
 /* { dg-final { scan-assembler-times "vpternlog\[dq\]\[ \\t\]+\\\$(?:216|228|0xd8|0xe4)," 5 } } */
 

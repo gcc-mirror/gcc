@@ -12,4 +12,5 @@ void k(S*x){
   *x = (S)(y + __INT_MAX__);
 }
 
+/* { dg-final { scan-tree-dump "4294967294" "optimized" { target int32plus } } } */
 /* { dg-final { scan-tree-dump-not "2147483647" "optimized" } } */

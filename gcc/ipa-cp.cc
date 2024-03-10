@@ -1936,6 +1936,21 @@ ipa_vr_operation_and_type_effects (vrange &dst_vr,
 	  && !dst_vr.undefined_p ());
 }
 
+/* Same as above, but the SRC_VR argument is an IPA_VR which must
+   first be extracted onto a vrange.  */
+
+static bool
+ipa_vr_operation_and_type_effects (vrange &dst_vr,
+				   const ipa_vr &src_vr,
+				   enum tree_code operation,
+				   tree dst_type, tree src_type)
+{
+  Value_Range tmp;
+  src_vr.get_vrange (tmp);
+  return ipa_vr_operation_and_type_effects (dst_vr, tmp, operation,
+					    dst_type, src_type);
+}
+
 /* Determine range of JFUNC given that INFO describes the caller node or
    the one it is inlined to, CS is the call graph edge corresponding to JFUNC
    and PARM_TYPE of the parameter.  */
@@ -6279,8 +6294,7 @@ decide_whether_version_node (struct cgraph_node *node)
 	    {
 	      /* If some values generated for self-recursive calls with
 		 arithmetic jump functions fall outside of the known
-		 value_range for the parameter, we can skip them.  VR interface
-		 supports this only for integers now.  */
+		 range for the parameter, we can skip them.  */
 	      if (TREE_CODE (val->value) == INTEGER_CST
 		  && !plats->m_value_range.bottom_p ()
 		  && !ipa_range_contains_p (plats->m_value_range.m_vr,

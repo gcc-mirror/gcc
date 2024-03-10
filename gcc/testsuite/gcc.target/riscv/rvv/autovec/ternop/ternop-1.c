@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d --param=riscv-autovec-preference=scalable" } */
+/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d --param=riscv-autovec-preference=scalable -ffast-math" } */
 
 #include <stdint-gcc.h>
 
@@ -20,9 +20,13 @@
   TEST_TYPE (int32_t)                                                          \
   TEST_TYPE (uint32_t)                                                         \
   TEST_TYPE (int64_t)                                                          \
-  TEST_TYPE (uint64_t)
+  TEST_TYPE (uint64_t)                                                         \
+  TEST_TYPE (_Float16)                                                         \
+  TEST_TYPE (float)                                                            \
+  TEST_TYPE (double)
 
 TEST_ALL ()
 
 /* { dg-final { scan-assembler-times {\tvmadd\.vv} 8 } } */
+/* { dg-final { scan-assembler-times {\tvfmadd\.vv} 3 } } */
 /* { dg-final { scan-assembler-not {\tvmv} } } */

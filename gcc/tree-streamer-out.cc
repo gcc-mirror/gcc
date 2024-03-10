@@ -355,8 +355,11 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   if (AGGREGATE_TYPE_P (expr))
     bp_pack_value (bp, TYPE_TYPELESS_STORAGE (expr), 1);
   bp_pack_value (bp, TYPE_EMPTY_P (expr), 1);
-  bp_pack_value (bp, TYPE_NO_NAMED_ARGS_STDARG_P (expr), 1);
-  bp_pack_var_len_unsigned (bp, TYPE_PRECISION (expr));
+  if (FUNC_OR_METHOD_TYPE_P (expr))
+    bp_pack_value (bp, TYPE_NO_NAMED_ARGS_STDARG_P (expr), 1);
+  if (RECORD_OR_UNION_TYPE_P (expr))
+    bp_pack_value (bp, TYPE_INCLUDES_FLEXARRAY (expr), 1);
+  bp_pack_var_len_unsigned (bp, TYPE_PRECISION_RAW (expr));
   bp_pack_var_len_unsigned (bp, TYPE_ALIGN (expr));
 }
 

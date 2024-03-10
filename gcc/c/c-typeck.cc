@@ -3385,8 +3385,6 @@ convert_argument (location_t ploc, tree function, tree fundecl,
      conversions.  */
   if (warn_traditional_conversion || warn_traditional)
     {
-      unsigned int formal_prec = TYPE_PRECISION (type);
-
       if (INTEGRAL_TYPE_P (type)
 	  && SCALAR_FLOAT_TYPE_P (valtype))
 	warning_at (ploc, OPT_Wtraditional_conversion,
@@ -3429,6 +3427,8 @@ convert_argument (location_t ploc, tree function, tree fundecl,
       else if (SCALAR_FLOAT_TYPE_P (type)
 	       && SCALAR_FLOAT_TYPE_P (valtype))
 	{
+	  unsigned int formal_prec = TYPE_PRECISION (type);
+
 	  /* Warn if any argument is passed as `float',
 	     since without a prototype it would be `double'.  */
 	  if (formal_prec == TYPE_PRECISION (float_type_node)
@@ -3472,6 +3472,7 @@ convert_argument (location_t ploc, tree function, tree fundecl,
 	       && INTEGRAL_TYPE_P (type)
 	       && INTEGRAL_TYPE_P (valtype))
 	{
+	  unsigned int formal_prec = TYPE_PRECISION (type);
 	  tree would_have_been = default_conversion (val);
 	  tree type1 = TREE_TYPE (would_have_been);
 

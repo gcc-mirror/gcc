@@ -172,7 +172,7 @@ struct FieldState
     unsigned fieldAlign;
     unsigned bitOffset;
 
-    bool inFlight;
+    d_bool inFlight;
 };
 
 struct DsymbolAttributes;
@@ -189,7 +189,7 @@ public:
 private:
     DsymbolAttributes* atts;
 public:
-    bool errors;                // this symbol failed to pass semantic()
+    d_bool errors;                // this symbol failed to pass semantic()
     PASS semanticRun;
     unsigned short localNum;        // perturb mangled name to avoid collisions with those in FuncDeclaration.localsymtab
     static Dsymbol *create(Identifier *);

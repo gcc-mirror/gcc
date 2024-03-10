@@ -2274,148 +2274,28 @@ package body Exp_Ch4 is
          Eq_Op := TSS (Full_Type, TSS_Composite_Equality);
 
          if Present (Eq_Op) then
-            if Etype (First_Formal (Eq_Op)) /= Full_Type then
+            declare
+               Op_Typ : constant Entity_Id := Etype (First_Formal (Eq_Op));
 
-               --  Inherited equality from parent type. Convert the actuals to
-               --  match signature of operation.
+               L_Exp, R_Exp : Node_Id;
 
-               declare
-                  T : constant Entity_Id := Etype (First_Formal (Eq_Op));
+            begin
+               --  Adjust operands if necessary to comparison type
 
-               begin
-                  return
-                    Make_Function_Call (Loc,
-                      Name                   => New_Occurrence_Of (Eq_Op, Loc),
-                      Parameter_Associations => New_List (
-                        OK_Convert_To (T, Lhs),
-                        OK_Convert_To (T, Rhs)));
-               end;
-
-            else
-               --  Comparison between Unchecked_Union components
-
-               if Is_Unchecked_Union (Full_Type) then
-                  declare
-                     Lhs_Type      : Node_Id := Full_Type;
-                     Rhs_Type      : Node_Id := Full_Type;
-                     Lhs_Discr_Val : Node_Id;
-                     Rhs_Discr_Val : Node_Id;
-
-                  begin
-                     --  Lhs subtype
-
-                     if Nkind (Lhs) = N_Selected_Component then
-                        Lhs_Type := Etype (Entity (Selector_Name (Lhs)));
-                     end if;
-
-                     --  Rhs subtype
-
-                     if Nkind (Rhs) = N_Selected_Component then
-                        Rhs_Type := Etype (Entity (Selector_Name (Rhs)));
-                     end if;
-
-                     --  Lhs of the composite equality
-
-                     if Is_Constrained (Lhs_Type) then
-
-                        --  Since the enclosing record type can never be an
-                        --  Unchecked_Union (this code is executed for records
-                        --  that do not have variants), we may reference its
-                        --  discriminant(s).
-
-                        if Nkind (Lhs) = N_Selected_Component
-                          and then Has_Per_Object_Constraint
-                                     (Entity (Selector_Name (Lhs)))
-                        then
-                           Lhs_Discr_Val :=
-                             Make_Selected_Component (Loc,
-                               Prefix        => Prefix (Lhs),
-                               Selector_Name =>
-                                 New_Copy
-                                   (Get_Discriminant_Value
-                                      (First_Discriminant (Lhs_Type),
-                                       Lhs_Type,
-                                       Stored_Constraint (Lhs_Type))));
-
-                        else
-                           Lhs_Discr_Val :=
-                             New_Copy
-                               (Get_Discriminant_Value
-                                  (First_Discriminant (Lhs_Type),
-                                   Lhs_Type,
-                                   Stored_Constraint (Lhs_Type)));
-
-                        end if;
-                     else
-                        --  It is not possible to infer the discriminant since
-                        --  the subtype is not constrained.
-
-                        return
-                          Make_Raise_Program_Error (Loc,
-                            Reason => PE_Unchecked_Union_Restriction);
-                     end if;
-
-                     --  Rhs of the composite equality
-
-                     if Is_Constrained (Rhs_Type) then
-                        if Nkind (Rhs) = N_Selected_Component
-                          and then Has_Per_Object_Constraint
-                                     (Entity (Selector_Name (Rhs)))
-                        then
-                           Rhs_Discr_Val :=
-                             Make_Selected_Component (Loc,
-                               Prefix        => Prefix (Rhs),
-                               Selector_Name =>
-                                 New_Copy
-                                   (Get_Discriminant_Value
-                                      (First_Discriminant (Rhs_Type),
-                                       Rhs_Type,
-                                       Stored_Constraint (Rhs_Type))));
-
-                        else
-                           Rhs_Discr_Val :=
-                             New_Copy
-                               (Get_Discriminant_Value
-                                  (First_Discriminant (Rhs_Type),
-                                   Rhs_Type,
-                                   Stored_Constraint (Rhs_Type)));
-
-                        end if;
-                     else
-                        return
-                          Make_Raise_Program_Error (Loc,
-                            Reason => PE_Unchecked_Union_Restriction);
-                     end if;
-
-                     --  Call the TSS equality function with the inferred
-                     --  discriminant values.
-
-                     return
-                       Make_Function_Call (Loc,
-                         Name => New_Occurrence_Of (Eq_Op, Loc),
-                         Parameter_Associations => New_List (
-                           Lhs,
-                           Rhs,
-                           Lhs_Discr_Val,
-                           Rhs_Discr_Val));
-                  end;
-
-               --  All cases other than comparing Unchecked_Union types
+               if Base_Type (Full_Type) /= Base_Type (Op_Typ) then
+                  L_Exp := OK_Convert_To (Op_Typ, Lhs);
+                  R_Exp := OK_Convert_To (Op_Typ, Rhs);
 
                else
-                  declare
-                     T : constant Entity_Id := Etype (First_Formal (Eq_Op));
-                  begin
-                     return
-                       Make_Function_Call (Loc,
-                         Name                   =>
-                           New_Occurrence_Of (Eq_Op, Loc),
-                         Parameter_Associations => New_List (
-                           OK_Convert_To (T, Lhs),
-                           OK_Convert_To (T, Rhs)));
-                  end;
+                  L_Exp := Relocate_Node (Lhs);
+                  R_Exp := Relocate_Node (Rhs);
                end if;
-            end if;
+
+               return
+                 Make_Function_Call (Loc,
+                   Name                   => New_Occurrence_Of (Eq_Op, Loc),
+                   Parameter_Associations => New_List (L_Exp, R_Exp));
+            end;
 
          --  Equality composes in Ada 2012 for untagged record types. It also
          --  composes for bounded strings, because they are part of the
@@ -5306,7 +5186,6 @@ package body Exp_Ch4 is
       Alt        : Node_Id;
       Case_Stmt  : Node_Id;
       Decl       : Node_Id;
-      Expr       : Node_Id;
       Target     : Entity_Id := Empty;
       Target_Typ : Entity_Id;
 
@@ -5361,7 +5240,6 @@ package body Exp_Ch4 is
 
       --  In all other cases expand into
 
-      --    do
       --       type Ptr_Typ is access all Typ;
       --       Target : Ptr_Typ;
       --       case X is
@@ -5371,7 +5249,8 @@ package body Exp_Ch4 is
       --             Target := BX'Unrestricted_Access;
       --          ...
       --       end case;
-      --    in Target.all end;
+
+      --  and replace the case expression by a reference to Target.all.
 
       --  This approach avoids extra copies of potentially large objects. It
       --  also allows handling of values of limited or unconstrained types.
@@ -5514,20 +5393,21 @@ package body Exp_Ch4 is
                Prepend_List (Actions (Alt), Stmts);
             end if;
 
-            --  Finalize any transient objects on exit from the alternative.
-            --  This is done only in the return optimization case because
-            --  otherwise the case expression is converted into an expression
-            --  with actions which already contains this form of processing.
-
-            if Optimize_Return_Stmt then
-               Process_If_Case_Statements (N, Stmts);
-            end if;
-
             Append_To
               (Alternatives (Case_Stmt),
                Make_Case_Statement_Alternative (Sloc (Alt),
                  Discrete_Choices => Discrete_Choices (Alt),
                  Statements       => Stmts));
+
+            --  Finalize any transient objects on exit from the alternative.
+            --  This needs to be done only when the case expression is _not_
+            --  later converted into an expression with actions, which already
+            --  contains this form of processing, and after Stmts is attached
+            --  to the Alternatives list above (for Safe_To_Capture_Value).
+
+            if Optimize_Return_Stmt or else not Is_Copy_Type (Typ) then
+               Process_If_Case_Statements (N, Stmts);
+            end if;
          end;
 
          Next (Alt);
@@ -5539,29 +5419,23 @@ package body Exp_Ch4 is
          Rewrite (Par, Case_Stmt);
          Analyze (Par);
 
-      --  Otherwise convert the case expression into an expression with actions
+      --  Otherwise rewrite the case expression itself
 
       else
          Append_To (Acts, Case_Stmt);
 
          if Is_Copy_Type (Typ) then
-            Expr := New_Occurrence_Of (Target, Loc);
+            Rewrite (N,
+              Make_Expression_With_Actions (Loc,
+                Expression => New_Occurrence_Of (Target, Loc),
+                Actions    => Acts));
 
          else
-            Expr :=
+            Insert_Actions (N, Acts);
+            Rewrite (N,
               Make_Explicit_Dereference (Loc,
-                Prefix => New_Occurrence_Of (Target, Loc));
+                Prefix => New_Occurrence_Of (Target, Loc)));
          end if;
-
-         --  Generate:
-         --    do
-         --       ...
-         --    in Target[.all] end;
-
-         Rewrite (N,
-           Make_Expression_With_Actions (Loc,
-             Expression => Expr,
-             Actions    => Acts));
 
          Analyze_And_Resolve (N, Typ);
       end if;
@@ -5937,9 +5811,8 @@ package body Exp_Ch4 is
 
          Set_From_Conditional_Expression (New_If);
 
-      --  If the type is limited, and the back end does not handle limited
-      --  types, then we expand as follows to avoid the possibility of
-      --  improper copying.
+      --  If the type is by reference, then we expand as follows to avoid the
+      --  possibility of improper copying.
 
       --      type Ptr is access all Typ;
       --      Cnn : Ptr;
@@ -5953,12 +5826,7 @@ package body Exp_Ch4 is
 
       --  and replace the if expression by a reference to Cnn.all.
 
-      --  This special case can be skipped if the back end handles limited
-      --  types properly and ensures that no incorrect copies are made.
-
-      elsif Is_By_Reference_Type (Typ)
-        and then not Back_End_Handles_Limited_Types
-      then
+      elsif Is_By_Reference_Type (Typ) then
          --  When the "then" or "else" expressions involve controlled function
          --  calls, generated temporaries are chained on the corresponding list
          --  of actions. These temporaries need to be finalized after the if
@@ -8124,241 +7992,28 @@ package body Exp_Ch4 is
       -------------------------
 
       procedure Build_Equality_Call (Eq : Entity_Id) is
-         Op_Type : constant Entity_Id := Etype (First_Formal (Eq));
-         L_Exp   : Node_Id            := Relocate_Node (Lhs);
-         R_Exp   : Node_Id            := Relocate_Node (Rhs);
+         Op_Typ : constant Entity_Id := Etype (First_Formal (Eq));
+
+         L_Exp, R_Exp : Node_Id;
 
       begin
          --  Adjust operands if necessary to comparison type
 
-         if Base_Type (Op_Type) /= Base_Type (A_Typ)
+         if Base_Type (A_Typ) /= Base_Type (Op_Typ)
            and then not Is_Class_Wide_Type (A_Typ)
          then
-            L_Exp := OK_Convert_To (Op_Type, L_Exp);
-            R_Exp := OK_Convert_To (Op_Type, R_Exp);
-         end if;
-
-         --  If we have an Unchecked_Union, we need to add the inferred
-         --  discriminant values as actuals in the function call. At this
-         --  point, the expansion has determined that both operands have
-         --  inferable discriminants.
-
-         if Is_Unchecked_Union (Op_Type) then
-            declare
-               Lhs_Type : constant Entity_Id := Etype (L_Exp);
-               Rhs_Type : constant Entity_Id := Etype (R_Exp);
-
-               Lhs_Discr_Vals : Elist_Id;
-               --  List of inferred discriminant values for left operand.
-
-               Rhs_Discr_Vals : Elist_Id;
-               --  List of inferred discriminant values for right operand.
-
-               Discr : Entity_Id;
-
-            begin
-               Lhs_Discr_Vals := New_Elmt_List;
-               Rhs_Discr_Vals := New_Elmt_List;
-
-               --  Per-object constrained selected components require special
-               --  attention. If the enclosing scope of the component is an
-               --  Unchecked_Union, we cannot reference its discriminants
-               --  directly. This is why we use the extra parameters of the
-               --  equality function of the enclosing Unchecked_Union.
-
-               --  type UU_Type (Discr : Integer := 0) is
-               --     . . .
-               --  end record;
-               --  pragma Unchecked_Union (UU_Type);
-
-               --  1. Unchecked_Union enclosing record:
-
-               --     type Enclosing_UU_Type (Discr : Integer := 0) is record
-               --        . . .
-               --        Comp : UU_Type (Discr);
-               --        . . .
-               --     end Enclosing_UU_Type;
-               --     pragma Unchecked_Union (Enclosing_UU_Type);
-
-               --     Obj1 : Enclosing_UU_Type;
-               --     Obj2 : Enclosing_UU_Type (1);
-
-               --     [. . .] Obj1 = Obj2 [. . .]
-
-               --     Generated code:
-
-               --     if not (uu_typeEQ (obj1.comp, obj2.comp, a, b)) then
-
-               --  A and B are the formal parameters of the equality function
-               --  of Enclosing_UU_Type. The function always has two extra
-               --  formals to capture the inferred discriminant values for
-               --  each discriminant of the type.
-
-               --  2. Non-Unchecked_Union enclosing record:
-
-               --     type
-               --       Enclosing_Non_UU_Type (Discr : Integer := 0)
-               --     is record
-               --        . . .
-               --        Comp : UU_Type (Discr);
-               --        . . .
-               --     end Enclosing_Non_UU_Type;
-
-               --     Obj1 : Enclosing_Non_UU_Type;
-               --     Obj2 : Enclosing_Non_UU_Type (1);
-
-               --     ... Obj1 = Obj2 ...
-
-               --     Generated code:
-
-               --     if not (uu_typeEQ (obj1.comp, obj2.comp,
-               --                        obj1.discr, obj2.discr)) then
-
-               --  In this case we can directly reference the discriminants of
-               --  the enclosing record.
-
-               --  Process left operand of equality
-
-               if Nkind (Lhs) = N_Selected_Component
-                 and then
-                   Has_Per_Object_Constraint (Entity (Selector_Name (Lhs)))
-               then
-                  --  If enclosing record is an Unchecked_Union, use formals
-                  --  corresponding to each discriminant. The name of the
-                  --  formal is that of the discriminant, with added suffix,
-                  --  see Exp_Ch3.Build_Record_Equality for details.
-
-                  if Is_Unchecked_Union (Scope (Entity (Selector_Name (Lhs))))
-                  then
-                     Discr :=
-                       First_Discriminant
-                         (Scope (Entity (Selector_Name (Lhs))));
-                     while Present (Discr) loop
-                        Append_Elmt
-                          (Make_Identifier (Loc,
-                             Chars => New_External_Name (Chars (Discr), 'A')),
-                           To => Lhs_Discr_Vals);
-                        Next_Discriminant (Discr);
-                     end loop;
-
-                  --  If enclosing record is of a non-Unchecked_Union type, it
-                  --  is possible to reference its discriminants directly.
-
-                  else
-                     Discr := First_Discriminant (Lhs_Type);
-                     while Present (Discr) loop
-                        Append_Elmt
-                          (Make_Selected_Component (Loc,
-                             Prefix        => Prefix (Lhs),
-                             Selector_Name =>
-                               New_Copy
-                                 (Get_Discriminant_Value (Discr,
-                                     Lhs_Type,
-                                     Stored_Constraint (Lhs_Type)))),
-                           To => Lhs_Discr_Vals);
-                        Next_Discriminant (Discr);
-                     end loop;
-                  end if;
-
-               --  Otherwise operand is on object with a constrained type.
-               --  Infer the discriminant values from the constraint.
-
-               else
-                  Discr := First_Discriminant (Lhs_Type);
-                  while Present (Discr) loop
-                     Append_Elmt
-                       (New_Copy
-                          (Get_Discriminant_Value (Discr,
-                             Lhs_Type,
-                             Stored_Constraint (Lhs_Type))),
-                        To => Lhs_Discr_Vals);
-                     Next_Discriminant (Discr);
-                  end loop;
-               end if;
-
-               --  Similar processing for right operand of equality
-
-               if Nkind (Rhs) = N_Selected_Component
-                 and then
-                   Has_Per_Object_Constraint (Entity (Selector_Name (Rhs)))
-               then
-                  if Is_Unchecked_Union
-                       (Scope (Entity (Selector_Name (Rhs))))
-                  then
-                     Discr :=
-                       First_Discriminant
-                         (Scope (Entity (Selector_Name (Rhs))));
-                     while Present (Discr) loop
-                        Append_Elmt
-                          (Make_Identifier (Loc,
-                             Chars => New_External_Name (Chars (Discr), 'B')),
-                           To => Rhs_Discr_Vals);
-                        Next_Discriminant (Discr);
-                     end loop;
-
-                  else
-                     Discr := First_Discriminant (Rhs_Type);
-                     while Present (Discr) loop
-                        Append_Elmt
-                          (Make_Selected_Component (Loc,
-                             Prefix        => Prefix (Rhs),
-                             Selector_Name =>
-                               New_Copy (Get_Discriminant_Value
-                                           (Discr,
-                                            Rhs_Type,
-                                            Stored_Constraint (Rhs_Type)))),
-                           To => Rhs_Discr_Vals);
-                        Next_Discriminant (Discr);
-                     end loop;
-                  end if;
-
-               else
-                  Discr := First_Discriminant (Rhs_Type);
-                  while Present (Discr) loop
-                     Append_Elmt
-                       (New_Copy (Get_Discriminant_Value
-                                    (Discr,
-                                     Rhs_Type,
-                                     Stored_Constraint (Rhs_Type))),
-                        To => Rhs_Discr_Vals);
-                     Next_Discriminant (Discr);
-                  end loop;
-               end if;
-
-               --  Now merge the list of discriminant values so that values
-               --  of corresponding discriminants are adjacent.
-
-               declare
-                  Params : List_Id;
-                  L_Elmt : Elmt_Id;
-                  R_Elmt : Elmt_Id;
-
-               begin
-                  Params := New_List (L_Exp, R_Exp);
-                  L_Elmt := First_Elmt (Lhs_Discr_Vals);
-                  R_Elmt := First_Elmt (Rhs_Discr_Vals);
-                  while Present (L_Elmt) loop
-                     Append_To (Params, Node (L_Elmt));
-                     Append_To (Params, Node (R_Elmt));
-                     Next_Elmt (L_Elmt);
-                     Next_Elmt (R_Elmt);
-                  end loop;
-
-                  Rewrite (N,
-                    Make_Function_Call (Loc,
-                      Name                   => New_Occurrence_Of (Eq, Loc),
-                      Parameter_Associations => Params));
-               end;
-            end;
-
-         --  Normal case, not an unchecked union
+            L_Exp := OK_Convert_To (Op_Typ, Lhs);
+            R_Exp := OK_Convert_To (Op_Typ, Rhs);
 
          else
-            Rewrite (N,
-              Make_Function_Call (Loc,
-                Name                   => New_Occurrence_Of (Eq, Loc),
-                Parameter_Associations => New_List (L_Exp, R_Exp)));
+            L_Exp := Relocate_Node (Lhs);
+            R_Exp := Relocate_Node (Rhs);
          end if;
+
+         Rewrite (N,
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Eq, Loc),
+             Parameter_Associations => New_List (L_Exp, R_Exp)));
 
          Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
       end Build_Equality_Call;
@@ -8733,62 +8388,18 @@ package body Exp_Ch4 is
 
          --  Ada 2005 (AI-216): Program_Error is raised when evaluating the
          --  predefined equality operator for a type which has a subcomponent
-         --  of an Unchecked_Union type whose nominal subtype is unconstrained.
+         --  of an unchecked union type whose nominal subtype is unconstrained.
 
          elsif Has_Unconstrained_UU_Component (Typl) then
             Insert_Action (N,
               Make_Raise_Program_Error (Loc,
                 Reason => PE_Unchecked_Union_Restriction));
 
-            --  Prevent Gigi from generating incorrect code by rewriting the
-            --  equality as a standard False. (is this documented somewhere???)
-
             Rewrite (N,
               New_Occurrence_Of (Standard_False, Loc));
 
-         elsif Is_Unchecked_Union (Typl) then
-
-            --  If we can infer the discriminants of the operands, we make a
-            --  call to the TSS equality function.
-
-            if Has_Inferable_Discriminants (Lhs)
-                 and then
-               Has_Inferable_Discriminants (Rhs)
-            then
-               Build_Equality_Call
-                 (TSS (Root_Type (Typl), TSS_Composite_Equality));
-
-            else
-               --  Ada 2005 (AI-216): Program_Error is raised when evaluating
-               --  the predefined equality operator for an Unchecked_Union type
-               --  if either of the operands lack inferable discriminants.
-
-               Insert_Action (N,
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Unchecked_Union_Restriction));
-
-               --  Emit a warning on source equalities only, otherwise the
-               --  message may appear out of place due to internal use. The
-               --  warning is unconditional because it is required by the
-               --  language.
-
-               if Comes_From_Source (N) then
-                  Error_Msg_N
-                    ("Unchecked_Union discriminants cannot be determined??",
-                     N);
-                  Error_Msg_N
-                    ("\Program_Error will be raised for equality operation??",
-                     N);
-               end if;
-
-               --  Prevent Gigi from generating incorrect code by rewriting
-               --  the equality as a standard False (documented where???).
-
-               Rewrite (N,
-                 New_Occurrence_Of (Standard_False, Loc));
-            end if;
-
-         --  If a type support function is present (for complex cases), use it
+         --  If a type support function is present, e.g. if there is a variant
+         --  part, including an unchecked union type, use it.
 
          elsif Present (TSS (Root_Type (Typl), TSS_Composite_Equality)) then
             Build_Equality_Call
@@ -11115,32 +10726,6 @@ package body Exp_Ch4 is
 
          Freeze_Before (P, Etype (Var));
       end;
-
-      --  For an expression of the form "for all/some X of F(...) => ...",
-      --  where F(...) is a function call that returns on the secondary stack,
-      --  we need to mark an enclosing scope as Uses_Sec_Stack. We must do
-      --  this before expansion, which can obscure the tree. Note that we
-      --  might be inside another quantified expression. Skip blocks and
-      --  loops that were generated by expansion.
-
-      if Present (Iterator_Specification (N))
-        and then Nkind (Name (Iterator_Specification (N))) = N_Function_Call
-        and then Needs_Secondary_Stack
-                   (Etype (Name (Iterator_Specification (N))))
-      then
-         declare
-            Source_Scope : Entity_Id := Current_Scope;
-         begin
-            while Ekind (Source_Scope) in E_Block | E_Loop
-              and then not Comes_From_Source (Source_Scope)
-            loop
-               Source_Scope := Scope (Source_Scope);
-            end loop;
-
-            Set_Uses_Sec_Stack (Source_Scope);
-            Check_Restriction (No_Secondary_Stack, N);
-         end;
-      end if;
 
       --  Create the declaration of the flag which tracks the status of the
       --  quantified expression. Generate:
@@ -13568,6 +13153,251 @@ package body Exp_Ch4 is
 
       Adjust_Result_Type (N, Typ);
    end Expand_Short_Circuit_Operator;
+
+   -------------------------------------
+   -- Expand_Unchecked_Union_Equality --
+   -------------------------------------
+
+   procedure Expand_Unchecked_Union_Equality (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      Eq  : constant Entity_Id  := Entity (Name (N));
+      Lhs : constant Node_Id    := First_Actual (N);
+      Rhs : constant Node_Id    := Next_Actual (Lhs);
+
+      function Get_Discr_Values (Op : Node_Id; Lhs : Boolean) return Elist_Id;
+      --  Return the list of inferred discriminant values for Op
+
+      ----------------------
+      -- Get_Discr_Values --
+      ----------------------
+
+      function Get_Discr_Values (Op : Node_Id; Lhs : Boolean) return Elist_Id
+      is
+         Typ    : constant Entity_Id := Etype (Op);
+         Values : constant Elist_Id  := New_Elmt_List;
+
+         function Get_Extra_Formal (Nam : Name_Id) return Entity_Id;
+         --  Return the extra formal Nam from the current scope, which must be
+         --  an equality function for an unchecked union type.
+
+         ----------------------
+         -- Get_Extra_Formal --
+         ----------------------
+
+         function Get_Extra_Formal (Nam : Name_Id) return Entity_Id is
+            Func : constant Entity_Id := Current_Scope;
+
+            Formal : Entity_Id;
+
+         begin
+            pragma Assert (Ekind (Func) = E_Function);
+
+            Formal := Extra_Formals (Func);
+            while Present (Formal) loop
+               if Chars (Formal) = Nam then
+                  return Formal;
+               end if;
+
+               Formal := Extra_Formal (Formal);
+            end loop;
+
+            --  An extra formal of the proper name must be found
+
+            raise Program_Error;
+         end Get_Extra_Formal;
+
+         --  Local variables
+
+         Discr  : Entity_Id;
+
+      --  Start of processing for Get_Discr_Values
+
+      begin
+         --  Per-object constrained selected components require special
+         --  attention. If the enclosing scope of the component is an
+         --  Unchecked_Union, we cannot reference its discriminants
+         --  directly. This is why we use the extra parameters of the
+         --  equality function of the enclosing Unchecked_Union.
+
+         --  type UU_Type (Discr : Integer := 0) is
+         --     . . .
+         --  end record;
+         --  pragma Unchecked_Union (UU_Type);
+
+         --  1. Unchecked_Union enclosing record:
+
+         --     type Enclosing_UU_Type (Discr : Integer := 0) is record
+         --        . . .
+         --        Comp : UU_Type (Discr);
+         --        . . .
+         --     end Enclosing_UU_Type;
+         --     pragma Unchecked_Union (Enclosing_UU_Type);
+
+         --     Obj1 : Enclosing_UU_Type;
+         --     Obj2 : Enclosing_UU_Type (1);
+
+         --     [. . .] Obj1 = Obj2 [. . .]
+
+         --     Generated code:
+
+         --     if not (uu_typeEQ (obj1.comp, obj2.comp, a, b)) then
+
+         --  A and B are the formal parameters of the equality function
+         --  of Enclosing_UU_Type. The function always has two extra
+         --  formals to capture the inferred discriminant values for
+         --  each discriminant of the type.
+
+         --  2. Non-Unchecked_Union enclosing record:
+
+         --     type
+         --       Enclosing_Non_UU_Type (Discr : Integer := 0)
+         --     is record
+         --        . . .
+         --        Comp : UU_Type (Discr);
+         --        . . .
+         --     end Enclosing_Non_UU_Type;
+
+         --     Obj1 : Enclosing_Non_UU_Type;
+         --     Obj2 : Enclosing_Non_UU_Type (1);
+
+         --     ... Obj1 = Obj2 ...
+
+         --     Generated code:
+
+         --     if not (uu_typeEQ (obj1.comp, obj2.comp,
+         --                        obj1.discr, obj2.discr)) then
+
+         --  In this case we can directly reference the discriminants of
+         --  the enclosing record.
+
+         if Nkind (Op) = N_Selected_Component
+           and then Has_Per_Object_Constraint (Entity (Selector_Name (Op)))
+         then
+            --  If enclosing record is an Unchecked_Union, use formals
+            --  corresponding to each discriminant. The name of the
+            --  formal is that of the discriminant, with added suffix,
+            --  see Exp_Ch3.Build_Variant_Record_Equality for details.
+
+            if Is_Unchecked_Union (Scope (Entity (Selector_Name (Op)))) then
+               Discr :=
+                 First_Discriminant
+                   (Scope (Entity (Selector_Name (Op))));
+               while Present (Discr) loop
+                  Append_Elmt
+                    (New_Occurrence_Of
+                      (Get_Extra_Formal
+                        (New_External_Name
+                          (Chars (Discr), (if Lhs then 'A' else 'B'))), Loc),
+                     To => Values);
+                  Next_Discriminant (Discr);
+               end loop;
+
+            --  If enclosing record is of a non-Unchecked_Union type, it
+            --  is possible to reference its discriminants directly.
+
+            else
+               Discr := First_Discriminant (Typ);
+               while Present (Discr) loop
+                  Append_Elmt
+                    (Make_Selected_Component (Loc,
+                       Prefix        => Prefix (Op),
+                       Selector_Name =>
+                         New_Copy
+                           (Get_Discriminant_Value (Discr,
+                               Typ,
+                               Stored_Constraint (Typ)))),
+                     To => Values);
+                  Next_Discriminant (Discr);
+               end loop;
+            end if;
+
+         --  Otherwise operand is on object with a constrained type.
+         --  Infer the discriminant values from the constraint.
+
+         else
+            Discr := First_Discriminant (Typ);
+            while Present (Discr) loop
+               Append_Elmt
+                 (New_Copy
+                    (Get_Discriminant_Value (Discr,
+                       Typ,
+                       Stored_Constraint (Typ))),
+                  To => Values);
+               Next_Discriminant (Discr);
+            end loop;
+         end if;
+
+         return Values;
+      end Get_Discr_Values;
+
+   --  Start of processing for Expand_Unchecked_Union_Equality
+
+   begin
+      --  Guard against repeated invocation on the same node
+
+      if Present (Next_Actual (Rhs)) then
+         return;
+      end if;
+
+      --  If we can infer the discriminants of the operands, make a call to Eq
+
+      if Has_Inferable_Discriminants (Lhs)
+           and then
+         Has_Inferable_Discriminants (Rhs)
+      then
+         declare
+            Lhs_Values : constant Elist_Id := Get_Discr_Values (Lhs, True);
+            Rhs_Values : constant Elist_Id := Get_Discr_Values (Rhs, False);
+
+            Formal : Entity_Id;
+            L_Elmt : Elmt_Id;
+            R_Elmt : Elmt_Id;
+
+         begin
+            --  Add the inferred discriminant values as extra actuals
+
+            Formal := Extra_Formals (Eq);
+            L_Elmt := First_Elmt (Lhs_Values);
+            R_Elmt := First_Elmt (Rhs_Values);
+
+            while Present (L_Elmt) loop
+               Analyze_And_Resolve (Node (L_Elmt), Etype (Formal));
+               Add_Extra_Actual_To_Call (N, Formal, Node (L_Elmt));
+
+               Formal := Extra_Formal (Formal);
+
+               Analyze_And_Resolve (Node (R_Elmt), Etype (Formal));
+               Add_Extra_Actual_To_Call (N, Formal, Node (R_Elmt));
+
+               Formal := Extra_Formal (Formal);
+               Next_Elmt (L_Elmt);
+               Next_Elmt (R_Elmt);
+            end loop;
+         end;
+
+      --  Ada 2005 (AI-216): Program_Error is raised when evaluating
+      --  the predefined equality operator for an Unchecked_Union type
+      --  if either of the operands lack inferable discriminants.
+
+      else
+         Insert_Action (N,
+           Make_Raise_Program_Error (Loc,
+             Reason => PE_Unchecked_Union_Restriction));
+
+         --  Give a warning on source equalities only, otherwise the message
+         --  may appear out of place due to internal use. It is unconditional
+         --  because it is required by the language.
+
+         if Comes_From_Source (Original_Node (N)) then
+            Error_Msg_N
+              ("Unchecked_Union discriminants cannot be determined??", N);
+            Error_Msg_N
+              ("\Program_Error will be raised for equality operation??", N);
+         end if;
+
+         Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+      end if;
+   end Expand_Unchecked_Union_Equality;
 
    ------------------------------------
    -- Fixup_Universal_Fixed_Operation --

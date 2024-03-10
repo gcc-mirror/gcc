@@ -1586,7 +1586,10 @@ public:
         if (hgs.hdrgen)
         {
             // if the return type is missing (e.g. ref functions or auto)
-            if (!tf.next || f.storage_class & STC.auto_)
+            // https://issues.dlang.org/show_bug.cgi?id=20090
+            // constructors are an exception: they don't have an explicit return
+            // type but we still don't output the body.
+            if ((!f.isCtorDeclaration() && !tf.next) || f.storage_class & STC.auto_)
             {
                 hgs.autoMember++;
                 bodyToBuffer(f);

@@ -234,6 +234,7 @@ extern bool internal_load_fn_p (internal_fn);
 extern bool internal_store_fn_p (internal_fn);
 extern bool internal_gather_scatter_fn_p (internal_fn);
 extern int internal_fn_mask_index (internal_fn);
+extern int internal_fn_len_index (internal_fn);
 extern int internal_fn_stored_value_index (internal_fn);
 extern bool internal_gather_scatter_fn_supported_p (internal_fn, tree,
 						    tree, tree, int);

@@ -29,8 +29,7 @@ qux ()
 {
   return z<A<int>>=0;		// { dg-error "'>>=' should be '>> =' to terminate a template argument list" "" { target c++11 } }
 }				// { dg-error "'>>=' should be '> > =' to terminate a template argument list" "" { target c++98_only } .-1 }
-				// { dg-error "parse error in template argument list" "" { target *-*-* } .-2 }
-				// { dg-error "template argument 1 is invalid" "" { target *-*-* } .-3 }
+				// { dg-error "template argument 1 is invalid" "" { target *-*-* } .-2 }
 
 void
 quux ()

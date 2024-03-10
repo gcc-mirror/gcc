@@ -1,3 +1,8 @@
+2023-06-22  Paul E. Murphy  <murphyp@linux.ibm.com>
+
+	* rust-object-export.cc [TARGET_AIX]: Rename and update usage to
+	TARGET_AIX_OS.
+
 2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* parse/rust-parse-impl.h

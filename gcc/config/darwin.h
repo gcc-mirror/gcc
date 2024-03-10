@@ -217,8 +217,7 @@ extern GTY(()) int darwin_ms_struct;
   "%{image_base*:-Xlinker -image_base -Xlinker %*} %<image_base*",	\
   "%{init*:-Xlinker -init -Xlinker %*} %<init*",			\
   "%{multi_module:-Xlinker -multi_module} %<multi_module",		\
-  "%{multiply_defined*:-Xlinker -multiply_defined -Xlinker %*} \
-     %<multiply_defined* ",						\
+  "%{multiply_defined*:-Xlinker -multiply_defined -Xlinker %*} ",	\
   "%{multiplydefinedunused*:\
      -Xlinker -multiply_defined_unused -Xlinker %*} \
      %<multiplydefinedunused* ",					\
@@ -294,7 +293,7 @@ extern GTY(()) int darwin_ms_struct;
    %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) }"
 
 #define DARWIN_CC1_SPEC							\
-  "%<dynamic %<dynamiclib %<force_cpusubtype_ALL "
+  "%<dynamic %<dynamiclib %<force_cpusubtype_ALL %<multiply_defined* "
 
 #define SUBSUBTARGET_OVERRIDE_OPTIONS					\
   do {									\

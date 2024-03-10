@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512fp16 -mavx512vl -O2 -mavx512dq" } */
+/* { dg-options "-mavx512fp16 -mavx512vl -O2 -mavx512dq -fno-trapping-math" } */
 /* { dg-final { scan-assembler-times {(?n)vcvttp[dsh]2[dqw]} 5 } } */
 /* { dg-final { scan-assembler-times {(?n)vcvt[dqw]*2p[dsh]} 5 } } */
 

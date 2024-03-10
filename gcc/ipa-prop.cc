@@ -109,53 +109,53 @@ struct ipa_bit_ggc_hash_traits : public ggc_cache_remove <ipa_bits *>
 /* Hash table for avoid repeated allocations of equal ipa_bits.  */
 static GTY ((cache)) hash_table<ipa_bit_ggc_hash_traits> *ipa_bits_hash_table;
 
-/* Traits for a hash table for reusing value_ranges used for IPA.  Note that
-   the equiv bitmap is not hashed and is expected to be NULL.  */
+/* Traits for a hash table for reusing ranges.  */
 
-struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
+struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <ipa_vr *>
 {
-  typedef value_range *value_type;
-  typedef value_range *compare_type;
+  typedef ipa_vr *value_type;
+  typedef const vrange *compare_type;
   static hashval_t
-  hash (const value_range *p)
+  hash (const ipa_vr *p)
     {
-      tree min, max;
-      value_range_kind kind = get_legacy_range (*p, min, max);
-      inchash::hash hstate (kind);
-      inchash::add_expr (min, hstate);
-      inchash::add_expr (max, hstate);
+      // This never get called, except in the verification code, as
+      // ipa_get_value_range() calculates the hash itself.  This
+      // function is mostly here for completness' sake.
+      Value_Range vr;
+      p->get_vrange (vr);
+      inchash::hash hstate;
+      add_vrange (vr, hstate);
       return hstate.end ();
     }
   static bool
-  equal (const value_range *a, const value_range *b)
+  equal (const ipa_vr *a, const vrange *b)
     {
-      return (types_compatible_p (a->type (), b->type ())
-	      && *a == *b);
+      return a->equal_p (*b);
     }
   static const bool empty_zero_p = true;
   static void
-  mark_empty (value_range *&p)
+  mark_empty (ipa_vr *&p)
     {
       p = NULL;
     }
   static bool
-  is_empty (const value_range *p)
+  is_empty (const ipa_vr *p)
     {
       return p == NULL;
     }
   static bool
-  is_deleted (const value_range *p)
+  is_deleted (const ipa_vr *p)
     {
-      return p == reinterpret_cast<const value_range *> (1);
+      return p == reinterpret_cast<const ipa_vr *> (1);
     }
   static void
-  mark_deleted (value_range *&p)
+  mark_deleted (ipa_vr *&p)
     {
-      p = reinterpret_cast<value_range *> (1);
+      p = reinterpret_cast<ipa_vr *> (1);
     }
 };
 
-/* Hash table for avoid repeated allocations of equal value_ranges.  */
+/* Hash table for avoid repeated allocations of equal ranges.  */
 static GTY ((cache)) hash_table<ipa_vr_ggc_hash_traits> *ipa_vr_hash_table;
 
 /* Holders of ipa cgraph hooks: */
@@ -264,6 +264,22 @@ ipa_vr::dump (FILE *out) const
   else
     fprintf (out, "NO RANGE");
 }
+
+// These stubs are because we use an ipa_vr in a hash_traits and
+// hash-traits.h defines an extern of gt_ggc_mx (T &) instead of
+// picking up the gt_ggc_mx (T *) version.
+void
+gt_pch_nx (ipa_vr *&x)
+{
+  return gt_pch_nx ((ipa_vr *) x);
+}
+
+void
+gt_ggc_mx (ipa_vr *&x)
+{
+  return gt_ggc_mx ((ipa_vr *) x);
+}
+
 
 /* Return true if DECL_FUNCTION_SPECIFIC_OPTIMIZATION of the decl associated
    with NODE should prevent us from analyzing it for the purposes of IPA-CP.  */
@@ -2284,53 +2300,39 @@ ipa_set_jfunc_bits (ipa_jump_func *jf, const widest_int &value,
   jf->bits = ipa_get_ipa_bits_for_value (value, mask);
 }
 
-/* Return a pointer to a value_range just like *TMP, but either find it in
-   ipa_vr_hash_table or allocate it in GC memory.  TMP->equiv must be NULL.  */
+/* Return a pointer to an ipa_vr just like TMP, but either find it in
+   ipa_vr_hash_table or allocate it in GC memory.  */
 
-static value_range *
-ipa_get_value_range (value_range *tmp)
+static ipa_vr *
+ipa_get_value_range (const vrange &tmp)
 {
-  value_range **slot = ipa_vr_hash_table->find_slot (tmp, INSERT);
+  inchash::hash hstate;
+  inchash::add_vrange (tmp, hstate);
+  hashval_t hash = hstate.end ();
+  ipa_vr **slot = ipa_vr_hash_table->find_slot_with_hash (&tmp, hash, INSERT);
   if (*slot)
     return *slot;
 
-  value_range *vr = new (ggc_alloc<value_range> ()) value_range;
-  *vr = *tmp;
+  ipa_vr *vr = new (ggc_alloc<ipa_vr> ()) ipa_vr (tmp);
   *slot = vr;
-
   return vr;
 }
 
-/* Return a pointer to a value range consisting of TYPE, MIN, MAX and an empty
-   equiv set. Use hash table in order to avoid creating multiple same copies of
-   value_ranges.  */
-
-static value_range *
-ipa_get_value_range (enum value_range_kind kind, tree min, tree max)
-{
-  value_range tmp (TREE_TYPE (min),
-		   wi::to_wide (min), wi::to_wide (max), kind);
-  return ipa_get_value_range (&tmp);
-}
-
-/* Assign to JF a pointer to a value_range structure with TYPE, MIN and MAX and
-   a NULL equiv bitmap.  Use hash table in order to avoid creating multiple
-   same value_range structures.  */
-
-static void
-ipa_set_jfunc_vr (ipa_jump_func *jf, enum value_range_kind type,
-		  tree min, tree max)
-{
-  jf->m_vr = ipa_get_value_range (type, min, max);
-}
-
-/* Assign to JF a pointer to a value_range just like TMP but either fetch a
+/* Assign to JF a pointer to a range just like TMP but either fetch a
    copy from ipa_vr_hash_table or allocate a new on in GC memory.  */
 
 static void
-ipa_set_jfunc_vr (ipa_jump_func *jf, value_range *tmp)
+ipa_set_jfunc_vr (ipa_jump_func *jf, const vrange &tmp)
 {
   jf->m_vr = ipa_get_value_range (tmp);
+}
+
+static void
+ipa_set_jfunc_vr (ipa_jump_func *jf, const ipa_vr &vr)
+{
+  Value_Range tmp;
+  vr.get_vrange (tmp);
+  ipa_set_jfunc_vr (jf, tmp);
 }
 
 /* Compute jump function for all arguments of callsite CS and insert the
@@ -2346,7 +2348,6 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
   gcall *call = cs->call_stmt;
   int n, arg_num = gimple_call_num_args (call);
   bool useful_context = false;
-  value_range vr;
 
   if (arg_num == 0 || args->jump_functions)
     return;
@@ -2377,6 +2378,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    useful_context = true;
 	}
 
+      Value_Range vr (TREE_TYPE (arg));
       if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	{
 	  bool addr_nonzero = false;
@@ -2384,7 +2386,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      && get_range_query (cfun)->range_of_expr (vr, arg)
+	      && get_range_query (cfun)->range_of_expr (vr, arg, cs->call_stmt)
 	      && vr.nonzero_p ())
 	    addr_nonzero = true;
 	  else if (tree_single_nonzero_warnv_p (arg, &strict_overflow))
@@ -2392,8 +2394,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
 	  if (addr_nonzero)
 	    {
-	      tree z = build_int_cst (TREE_TYPE (arg), 0);
-	      ipa_set_jfunc_vr (jfunc, VR_ANTI_RANGE, z, z);
+	      vr.set_nonzero (TREE_TYPE (arg));
+	      ipa_set_jfunc_vr (jfunc, vr);
 	    }
 	  else
 	    gcc_assert (!jfunc->m_vr);
@@ -2402,18 +2404,17 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	{
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      /* Limit the ranger query to integral types as the rest
-		 of this file uses value_range's, which only hold
-		 integers and pointers.  */
+	      && Value_Range::supports_type_p (TREE_TYPE (arg))
+	      && Value_Range::supports_type_p (param_type)
 	      && irange::supports_p (TREE_TYPE (arg))
 	      && irange::supports_p (param_type)
-	      && get_range_query (cfun)->range_of_expr (vr, arg)
+	      && get_range_query (cfun)->range_of_expr (vr, arg, cs->call_stmt)
 	      && !vr.undefined_p ())
 	    {
-	      value_range resvr = vr;
+	      Value_Range resvr (vr);
 	      range_cast (resvr, param_type);
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
-		ipa_set_jfunc_vr (jfunc, &resvr);
+		ipa_set_jfunc_vr (jfunc, resvr);
 	      else
 		gcc_assert (!jfunc->m_vr);
 	    }
@@ -3189,7 +3190,9 @@ ipa_analyze_node (struct cgraph_node *node)
       bi->cg_edges.safe_push (cs);
     }
 
+  enable_ranger (cfun, false);
   analysis_dom_walker (&fbi).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  disable_ranger (cfun);
 
   ipa_release_body_info (&fbi);
   free_dominance_info (CDI_DOMINATORS);
@@ -4865,16 +4868,12 @@ ipa_write_jump_function (struct output_block *ob,
       streamer_write_widest_int (ob, jump_func->bits->value);
       streamer_write_widest_int (ob, jump_func->bits->mask);
     }
-  bp_pack_value (&bp, !!jump_func->m_vr, 1);
-  streamer_write_bitpack (&bp);
   if (jump_func->m_vr)
+    jump_func->m_vr->streamer_write (ob);
+  else
     {
-      tree min, max;
-      value_range_kind kind = get_legacy_range (*jump_func->m_vr, min, max);
-      streamer_write_enum (ob->main_stream, value_rang_type,
-			   VR_LAST, kind);
-      stream_write_tree (ob, min, true);
-      stream_write_tree (ob, max, true);
+      bp_pack_value (&bp, false, 1);
+      streamer_write_bitpack (&bp);
     }
 }
 
@@ -5002,21 +5001,17 @@ ipa_read_jump_function (class lto_input_block *ib,
       widest_int value = streamer_read_widest_int (ib);
       widest_int mask = streamer_read_widest_int (ib);
       if (prevails)
-        ipa_set_jfunc_bits (jump_func, value, mask);
+	ipa_set_jfunc_bits (jump_func, value, mask);
     }
   else
     jump_func->bits = NULL;
 
-  struct bitpack_d vr_bp = streamer_read_bitpack (ib);
-  bool vr_known = bp_unpack_value (&vr_bp, 1);
-  if (vr_known)
+  ipa_vr vr;
+  vr.streamer_read (ib, data_in);
+  if (vr.known_p ())
     {
-      enum value_range_kind type = streamer_read_enum (ib, value_range_kind,
-						       VR_LAST);
-      tree min = stream_read_tree (ib, data_in);
-      tree max = stream_read_tree (ib, data_in);
       if (prevails)
-        ipa_set_jfunc_vr (jump_func, type, min, max);
+	ipa_set_jfunc_vr (jump_func, vr);
     }
   else
     jump_func->m_vr = NULL;
@@ -5337,7 +5332,7 @@ ipa_prop_read_section (struct lto_file_decl_data *file_data, const char *data,
   unsigned int count;
 
   lto_input_block ib_main ((const char *) data + main_offset,
-			   header->main_size, file_data->mode_table);
+			   header->main_size, file_data);
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
@@ -5561,7 +5556,7 @@ read_replacements_section (struct lto_file_decl_data *file_data,
   unsigned int count;
 
   lto_input_block ib_main ((const char *) data + main_offset,
-			   header->main_size, file_data->mode_table);
+			   header->main_size, file_data);
 
   data_in = lto_data_in_create (file_data, (const char *) data + string_offset,
 				header->string_size, vNULL);

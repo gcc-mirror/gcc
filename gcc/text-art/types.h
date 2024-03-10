@@ -21,10 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TEXT_ART_TYPES_H
 #define GCC_TEXT_ART_TYPES_H
 
+/* This header uses std::vector, but <vector> can't be directly
+   included due to issues with macros.  Hence it must be included from
+   system.h by defining INCLUDE_MEMORY in any source file using it.  */
+
+#ifndef INCLUDE_VECTOR
+# error "You must define INCLUDE_VECTOR before including system.h to use text-art/types.h"
+#endif
+
 #include "cpplib.h"
 #include "pretty-print.h"
-#include <vector>
-#include <string>
 
 namespace text_art {
 

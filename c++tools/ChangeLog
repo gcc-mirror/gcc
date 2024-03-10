@@ -1,3 +1,8 @@
+2023-06-22  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-bind-now): New check.
+	* configure: Regenerate.
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* Makefile.in: Rename PIEFLAG to PICFLAG.  Set LD_PICFLAG.  Use it.

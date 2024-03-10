@@ -21,11 +21,11 @@ struct OutBuffer
 private:
     DArray<unsigned char> data;
     d_size_t offset;
-    bool notlinehead;
+    d_bool notlinehead;
     void *fileMapping;  // pointer to a file mapping object not used on the C++ side
 public:
-    bool doindent;
-    bool spaces;
+    d_bool doindent;
+    d_bool spaces;
     int level;
 
     OutBuffer()

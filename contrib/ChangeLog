@@ -1,3 +1,9 @@
+2023-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* unicode/gen-box-drawing-chars.py: New file.
+	* unicode/gen-combining-chars.py: New file.
+	* unicode/gen-printable-chars.py: New file.
+
 2023-06-17  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
 
 	* testsuite-management/validate_failures.py (IsInterestingResult):

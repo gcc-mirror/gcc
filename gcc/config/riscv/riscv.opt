@@ -224,6 +224,12 @@ TargetVariable
 int riscv_zvl_flags
 
 TargetVariable
+int riscv_zvb_subext
+
+TargetVariable
+int riscv_zvk_subext
+
+TargetVariable
 int riscv_zicmo_subext
 
 TargetVariable

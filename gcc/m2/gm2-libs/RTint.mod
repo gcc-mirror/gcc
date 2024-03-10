@@ -441,6 +441,10 @@ END ExcludeVector ;
 
 PROCEDURE AddFd (VAR set: SetOfFd; VAR max: INTEGER; fd: INTEGER) ;
 BEGIN
+   IF (fd<0)
+   THEN
+      RETURN
+   END ;
    max := Max (fd, max) ;
    IF set = NIL
    THEN
@@ -667,6 +671,7 @@ PROCEDURE Listen (untilInterrupt: BOOLEAN;
 VAR
    found  : BOOLEAN ;
    result : INTEGER ;
+   zero,
    after,
    b4,
    timeval: Timeval ;
@@ -722,14 +727,14 @@ BEGIN
       THEN
          SetTime (timeval, 0, 0)
       END ;
-      IF untilInterrupt AND (inSet=NIL) AND (outSet=NIL) AND (NOT found)
+      IF untilInterrupt AND (((inSet=NIL) AND (outSet=NIL)) OR (maxFd=-1)) AND (NOT found)
       THEN
          Halt ('deadlock found, no more processes to run and no interrupts active',
                __FILE__, __FUNCTION__, __LINE__)
       END ;
       (* printf('timeval = 0x%x\n', timeval) ; *)
       (* printf('}\n') ; *)
-      IF (NOT found) AND (maxFd=-1) AND (inSet=NIL) AND (outSet=NIL)
+      IF (NOT found) AND (maxFd=-1)
       THEN
          (* no file descriptors to be selected upon.  *)
          timeval := KillTime (timeval) ;
@@ -738,6 +743,7 @@ BEGIN
       ELSE
          GetTime (timeval, sec, micro) ;
          Assert (micro < Microseconds) ;
+         zero := InitTime (0, 0) ;
          b4 := InitTime (0, 0) ;
          after := InitTime (0, 0) ;
          result := GetTimeOfDay (b4) ;
@@ -754,26 +760,54 @@ BEGIN
             THEN
                printf ("select (.., .., .., %u.%06u)\n", sec, micro)
             END ;
-            result := select (maxFd+1, inSet, outSet, NIL, timeval) ;
+            IF maxFd<0
+            THEN
+               result := select (0, NIL, NIL, NIL, timeval)
+            ELSE
+               result := select (maxFd+1, inSet, outSet, NIL, timeval)
+            END ;
             IF result=-1
             THEN
-               perror ("select") ;
-               result := select (maxFd+1, inSet, outSet, NIL, NIL) ;
-               IF result=-1
+               IF Debugging
                THEN
-                  perror ("select timeout argument is faulty")
+                  perror ("select failed : ") ;
                END ;
-               result := select (maxFd+1, inSet, NIL, NIL, timeval) ;
-               IF result=-1
+               result := select (maxFd+1, inSet, outSet, NIL, zero) ;
+               IF result#-1
                THEN
-                  perror ("select output fd argument is faulty")
-               END ;
-               result := select (maxFd+1, NIL, outSet, NIL, timeval) ;
-               IF result=-1
-               THEN
-                  perror ("select input fd argument is faulty")
+                   GetTime (timeval, sec, micro) ;
+                   IF Debugging
+                   THEN
+                     printf ("(nfds : %d timeval: %u.%06u) : \n", maxFd, sec, micro) ;
+                   END ;
+                   perror ("select timeout argument was faulty : ")
                ELSE
-                  perror ("select maxFD+1 argument is faulty")
+                  result := select (maxFd+1, inSet, NIL, NIL, timeval) ;
+                  IF result#-1
+                  THEN
+                     perror ("select output fd argument was faulty : ")
+                  ELSE
+                     result := select (maxFd+1, NIL, outSet, NIL, timeval) ;
+                     IF result#-1
+                     THEN
+                        perror ("select input fd argument was faulty : ")
+                     ELSE
+                        IF maxFd=-1
+                        THEN
+                           result := select (0, NIL, NIL, NIL, timeval) ;
+                           IF result=-1
+                           THEN
+                              IF Debugging
+                              THEN
+                                 perror ("select does not accept nfds == 0 ") ;
+                              END ;
+                              result := 0
+                           END
+                        ELSE
+                           perror ("select maxFD+1 argument was faulty : ") ;
+                        END
+                     END
+                  END
                END
             END
          UNTIL result#-1
@@ -784,6 +818,10 @@ BEGIN
       IF timeval#NIL
       THEN
          timeval := KillTime (timeval)
+      END ;
+      IF zero#NIL
+      THEN
+         zero := KillTime (zero)
       END ;
       IF after#NIL
       THEN

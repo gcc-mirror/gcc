@@ -200,10 +200,10 @@ extern rtx sign_expand_binop (machine_mode, optab, optab, rtx, rtx,
 			      rtx, int, enum optab_methods);
 
 /* Generate code to perform an operation on one operand with two results.  */
-extern int expand_twoval_unop (optab, rtx, rtx, rtx, int);
+extern bool expand_twoval_unop (optab, rtx, rtx, rtx, int);
 
 /* Generate code to perform an operation on two operands with two results.  */
-extern int expand_twoval_binop (optab, rtx, rtx, rtx, rtx, int);
+extern bool expand_twoval_binop (optab, rtx, rtx, rtx, rtx, int);
 
 /* Generate code to perform an operation on two operands with two
    results, using a library function.  */
@@ -243,8 +243,8 @@ enum can_compare_purpose
 
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */
-extern int can_compare_p (enum rtx_code, machine_mode,
-			  enum can_compare_purpose);
+extern bool can_compare_p (enum rtx_code, machine_mode,
+			   enum can_compare_purpose);
 
 /* Return whether the backend can emit a vector comparison (vec_cmp/vec_cmpu)
    for code CODE, comparing operands of mode VALUE_MODE and producing a result
@@ -298,12 +298,12 @@ rtx emit_conditional_add (rtx, enum rtx_code, rtx, rtx, machine_mode,
    Likewise for subtraction and for just copying.  */
 extern rtx_insn *gen_add2_insn (rtx, rtx);
 extern rtx_insn *gen_add3_insn (rtx, rtx, rtx);
-extern int have_add2_insn (rtx, rtx);
+extern bool have_add2_insn (rtx, rtx);
 extern rtx_insn *gen_addptr3_insn (rtx, rtx, rtx);
-extern int have_addptr3_insn (rtx, rtx, rtx);
+extern bool have_addptr3_insn (rtx, rtx, rtx);
 extern rtx_insn *gen_sub2_insn (rtx, rtx);
 extern rtx_insn *gen_sub3_insn (rtx, rtx, rtx);
-extern int have_sub2_insn (rtx, rtx);
+extern bool have_sub2_insn (rtx, rtx);
 
 /* Generate the body of an insn to extend Y (with mode MFROM)
    into X (with mode MTO).  Do zero-extension if UNSIGNEDP is nonzero.  */
@@ -323,7 +323,7 @@ extern bool expand_sfix_optab (rtx, rtx, convert_optab);
 
 /* Report whether the machine description contains an insn which can
    perform the operation described by CODE and MODE.  */
-extern int have_insn_for (enum rtx_code, machine_mode);
+extern bool have_insn_for (enum rtx_code, machine_mode);
 
 /* Generate a conditional trap instruction.  */
 extern rtx_insn *gen_cond_trap (enum rtx_code, rtx, rtx, rtx);

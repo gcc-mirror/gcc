@@ -107,7 +107,7 @@ struct GTY(()) machine_function
   bool epilogue_done;
   bool inhibit_logues_a1_adjusts;
   rtx last_logues_a9_content;
-  HOST_WIDE_INT eliminated_callee_saved_bmp;
+  HARD_REG_SET eliminated_callee_saved;
 };
 
 static void xtensa_option_override (void);
@@ -2649,11 +2649,8 @@ xtensa_emit_add_imm (rtx dst, rtx src, HOST_WIDE_INT imm, rtx scratch,
 bool
 xtensa_match_CLAMPS_imms_p (rtx cst_max, rtx cst_min)
 {
-  int max, min;
-
-  return IN_RANGE (max = exact_log2 (-INTVAL (cst_max)), 7, 22)
-	 && IN_RANGE (min = exact_log2 (INTVAL (cst_min) + 1), 7, 22)
-	 && max == min;
+  return IN_RANGE (exact_log2 (-INTVAL (cst_max)), 7, 22)
+	 && (INTVAL (cst_max) + INTVAL (cst_min)) == -1;
 }
 
 
@@ -3589,7 +3586,8 @@ xtensa_expand_prologue (void)
 		df_insn_rescan (insnS);
 		SET_SRC (PATTERN (insnR)) = copy_rtx (mem);
 		df_insn_rescan (insnR);
-		cfun->machine->eliminated_callee_saved_bmp |= 1 << regno;
+		SET_HARD_REG_BIT (cfun->machine->eliminated_callee_saved,
+				  regno);
 	      }
 	    else
 	      {
@@ -3693,8 +3691,8 @@ xtensa_expand_epilogue (bool sibcall_p)
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	if (xtensa_call_save_reg(regno))
 	  {
-	    if (! (cfun->machine->eliminated_callee_saved_bmp
-		   & (1 << regno)))
+	    if (! TEST_HARD_REG_BIT (cfun->machine->eliminated_callee_saved,
+				     regno))
 	      {
 		rtx x = gen_rtx_PLUS (Pmode,
 				      stack_pointer_rtx, GEN_INT (offset));

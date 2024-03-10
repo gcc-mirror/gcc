@@ -1,3 +1,24 @@
+2023-06-30  Rishi Raj  <rishiraj45035@gmail.com>
+
+	* MAINTAINERS: Added myself to Write After Approval and DCO
+
+2023-06-29  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Remove -gtoggle for STAGEautoprofile
+	* Makefile.tpl: Remove -gtoggle for STAGEautoprofile
+
+2023-06-25  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* MAINTAINERS: Add Lehua Ding to write after approval
+
+2023-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.def: Pass the enable-host-pie value to GCC configure.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Adjust the logic for shared and PIE host flags to
+	ensure that PIE is passed for hosts that require it.
+
 2023-06-16  YunQiang Su  <yunqiang.su@cipunited.com>
 
 	* MAINTAINERS (Write After Approval): move Matthew Fortune

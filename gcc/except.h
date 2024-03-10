@@ -66,7 +66,7 @@ enum eh_region_type
 /* A landing pad for a given exception region.  Any transfer of control
    from the EH runtime to the function happens at a landing pad.  */
 
-struct GTY(()) eh_landing_pad_d
+struct GTY((chain_next("%h.next_lp"))) eh_landing_pad_d
 {
   /* The linked list of all landing pads associated with the region.  */
   struct eh_landing_pad_d *next_lp;

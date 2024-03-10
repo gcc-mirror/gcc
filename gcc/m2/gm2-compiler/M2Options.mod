@@ -1190,6 +1190,7 @@ PROCEDURE SetWall (value: BOOLEAN) ;
 BEGIN
    UnusedVariableChecking  := value ;
    UnusedParameterChecking := value ;
+   UninitVariableChecking := value ;
    PedanticCast := value ;
    PedanticParamNames := value ;
    StyleChecking := value
@@ -1225,6 +1226,7 @@ PROCEDURE GetSaveTempsDir () : String ;
 BEGIN
    RETURN SaveTempsDir
 END GetSaveTempsDir ;
+
 
 (*
    SetDumpDir - Set the dump dir.
@@ -1363,6 +1365,17 @@ BEGIN
 END SetShared ;
 
 
+(*
+   SetUninitVariableChecking - sets the UninitVariableChecking flag to value.
+*)
+
+PROCEDURE SetUninitVariableChecking (value: BOOLEAN) ;
+BEGIN
+   UninitVariableChecking := value
+END SetUninitVariableChecking ;
+
+
+
 BEGIN
    cflag                        := FALSE ;  (* -c.  *)
    RuntimeModuleOverride        := InitString (DefaultRuntimeModuleOverride) ;
@@ -1433,6 +1446,7 @@ BEGIN
    MQarg                        := NIL ;
    SaveTempsDir                 := NIL ;
    DumpDir                      := NIL ;
+   UninitVariableChecking       := FALSE ;
    M2Prefix                     := InitString ('') ;
    M2PathName                   := InitString ('')
 END M2Options.

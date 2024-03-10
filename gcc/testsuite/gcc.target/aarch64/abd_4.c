@@ -9,22 +9,20 @@
 
 TEST1(signed, int)
 
-TEST2(signed, char, short)
-TEST2(signed, char, int)
-TEST2(signed, short, int)
+TEST3(signed, int, char, int)
+TEST3(signed, int, short, int)
 
-TEST3(signed, char, short, int)
+/* { dg-final { scan-assembler-times "sabd\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.4s" 7 } } */
+/* { dg-final { scan-assembler-times "sabd\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h, v\[0-9\]+\.8h" 0 } } */
+/* { dg-final { scan-assembler-times "sabd\\tv\[0-9\]+\.16b, v\[0-9\]+\.16b, v\[0-9\]+\.16b" 0 } } */
 
-TEST2(unsigned, char, short)
-TEST2(unsigned, char, int)
-TEST2(unsigned, short, int)
+/* { dg-final { scan-assembler-times "uabd\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.4s" 0 } } */
+/* { dg-final { scan-assembler-times "uabd\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h, v\[0-9\]+\.8h" 0 } } */
+/* { dg-final { scan-assembler-times "uabd\\tv\[0-9\]+\.16b, v\[0-9\]+\.16b, v\[0-9\]+\.16b" 0:w
+ } } */
 
-TEST3(unsigned, char, short, int)
-
-/* { dg-final { scan-assembler-times "sabd\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.4s" 1 } } */
-/* { dg-final { scan-assembler-times "sabd\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h, v\[0-9\]+\.8h" 3 } } */
-/* { dg-final { scan-assembler-times "sabd\\tv\[0-9\]+\.16b, v\[0-9\]+\.16b, v\[0-9\]+\.16b" 2 } } */
-/* { dg-final { scan-assembler-times "uabd\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h, v\[0-9\]+\.8h" 3 } } */
-/* { dg-final { scan-assembler-times "uabd\\tv\[0-9\]+\.16b, v\[0-9\]+\.16b, v\[0-9\]+\.16b" 2 } } */
-
+/* { dg-final { scan-assembler-not {\tsabdl\t} } } */
+/* { dg-final { scan-assembler-not {\tsabdl2\t} } } */
+/* { dg-final { scan-assembler-not {\tuabdl\t} } } */
+/* { dg-final { scan-assembler-not {\tuabdl2\t} } } */
 /* { dg-final { scan-assembler-not {\tabs\t} } } */

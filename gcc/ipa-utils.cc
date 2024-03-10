@@ -323,13 +323,6 @@ ipa_reverse_postorder (struct cgraph_node **order)
 		      edge = stack[stack_size].edge;
 		      node2 = edge->caller;
 		      stack[stack_size].edge = edge->next_caller;
-		      /* Break possible cycles involving always-inline
-			 functions by ignoring edges from always-inline
-			 functions to non-always-inline functions.  */
-		      if (DECL_DISREGARD_INLINE_LIMITS (edge->caller->decl)
-			  && !DECL_DISREGARD_INLINE_LIMITS
-			    (edge->callee->function_symbol ()->decl))
-			node2 = NULL;
 		    }
 		  for (; stack[stack_size].node->iterate_referring (
 						       stack[stack_size].ref,

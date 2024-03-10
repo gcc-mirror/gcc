@@ -450,6 +450,12 @@ consume_until_comma_or_eos ()
 	parse_error ("unexpected end of file while scanning for ',' or ';'");
 	return false;
 
+      case '=':
+	advance ();
+	if (token () == '{')
+	  consume_balanced ('{', '}');
+	break;
+
       default:
 	advance ();
 	break;

@@ -18,10 +18,10 @@ namespace std
 {
 // Type trait
 using __pstl::execution::is_execution_policy;
-#if _PSTL_CPP14_VARIABLE_TEMPLATES_PRESENT
-#    if __INTEL_COMPILER
-template <class T>
-constexpr bool is_execution_policy_v = is_execution_policy<T>::value;
+#if defined(_PSTL_CPP14_VARIABLE_TEMPLATES_PRESENT)
+#    if defined(__INTEL_COMPILER)
+template <class _Tp>
+constexpr bool is_execution_policy_v = is_execution_policy<_Tp>::value;
 #    else
 using __pstl::execution::is_execution_policy_v;
 #    endif

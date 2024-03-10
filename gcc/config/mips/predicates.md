@@ -114,6 +114,12 @@
 	    (not (match_test "TARGET_MIPS16")))
        (match_operand 0 "register_operand")))
 
+(define_predicate "reg_or_0_operand_mips16e2"
+  (ior (and (match_operand 0 "const_0_operand")
+	    (ior (not (match_test "TARGET_MIPS16"))
+				  (match_test "ISA_HAS_MIPS16E2")))
+       (match_operand 0 "register_operand")))
+
 (define_predicate "const_1_operand"
   (and (match_code "const_int,const_double,const_vector")
        (match_test "op == CONST1_RTX (GET_MODE (op))")))
@@ -164,6 +170,10 @@
   (and (match_code "const_int")
        (match_test "UINTVAL (op) == 0xffffffff")))
 
+(define_predicate "bit_clear_operand"
+  (and (match_code "const_int")
+       (match_test "mips_bit_clear_p (mode, INTVAL (op))")))
+
 (define_predicate "and_load_operand"
   (ior (match_operand 0 "qi_mask_operand")
        (match_operand 0 "hi_mask_operand")
@@ -178,8 +188,15 @@
   (ior (match_operand 0 "register_operand")
        (and (not (match_test "TARGET_MIPS16"))
 	    (match_operand 0 "const_uns_arith_operand"))
+       (and (match_test "ISA_HAS_MIPS16E2")
+	    (match_operand 0 "const_uns_arith_operand")
+	    (not (match_operand 0 "hi_mask_operand"))
+	    (not (match_operand 0 "qi_mask_operand")))
+       (and (match_test "ISA_HAS_MIPS16E2")
+	    (match_operand 0 "const_uns_arith_operand"))
        (match_operand 0 "low_bitmask_operand")
-       (match_operand 0 "si_mask_operand")))
+       (match_operand 0 "si_mask_operand")
+       (match_operand 0 "bit_clear_operand")))
 
 (define_predicate "and_operand"
   (ior (match_operand 0 "and_load_operand")
@@ -369,7 +386,7 @@
 {
   /* When generating mips16 code, TARGET_LEGITIMATE_CONSTANT_P rejects
      CONST_INTs that can't be loaded using simple insns.  */
-  if (TARGET_MIPS16)
+  if (TARGET_MIPS16 && !TARGET_MIPS16E2)
     return false;
 
   /* Don't handle multi-word moves this way; we don't want to introduce

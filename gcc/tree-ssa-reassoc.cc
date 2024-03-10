@@ -5471,37 +5471,62 @@ get_reassociation_width (int ops_num, enum tree_code opc,
   return width;
 }
 
+#define SPECIAL_BIASED_END_STMT 0 /* It is the end stmt of all ops.  */
+#define BIASED_END_STMT 1 /* It is the end stmt of normal or biased ops.  */
+#define NORMAL_END_STMT 2 /* It is the end stmt of normal ops.  */
+
 /* Rewrite statements with dependency chain with regard the chance to generate
    FMA.
    For the chain with FMA: Try to keep fma opportunity as much as possible.
    For the chain without FMA: Putting the computation in rank order and trying
    to allow operations to be executed in parallel.
    E.g.
-   e + f + g + a * b + c * d;
+   e + f + a * b + c * d;
 
-   ssa1 = e + f;
-   ssa2 = g + a * b;
-   ssa3 = ssa1 + c * d;
-   ssa4 = ssa2 + ssa3;
+   ssa1 = e + a * b;
+   ssa2 = f + c * d;
+   ssa3 = ssa1 + ssa2;
 
    This reassociation approach preserves the chance of fma generation as much
-   as possible.  */
+   as possible.
+
+   Another thing is to avoid adding loop-carried ops to long chains, otherwise
+   the whole chain will have dependencies across the loop iteration.  Just keep
+   loop-carried ops in a separate chain.
+   E.g.
+   x_1 = phi (x_0, x_2)
+   y_1 = phi (y_0, y_2)
+
+   a + b + c + d + e + x1 + y1
+
+   SSA1 = a + b;
+   SSA2 = c + d;
+   SSA3 = SSA1 + e;
+   SSA4 = SSA3 + SSA2;
+   SSA5 = x1 + y1;
+   SSA6 = SSA4 + SSA5;
+ */
 static void
 rewrite_expr_tree_parallel (gassign *stmt, int width, bool has_fma,
-					 const vec<operand_entry *> &ops)
+			    const vec<operand_entry *> &ops)
 {
   enum tree_code opcode = gimple_assign_rhs_code (stmt);
   int op_num = ops.length ();
+  int op_normal_num = op_num;
   gcc_assert (op_num > 0);
   int stmt_num = op_num - 1;
   gimple **stmts = XALLOCAVEC (gimple *, stmt_num);
-  int op_index = op_num - 1;
-  int width_count = width;
   int i = 0, j = 0;
   tree tmp_op[2], op1;
   operand_entry *oe;
   gimple *stmt1 = NULL;
   tree last_rhs1 = gimple_assign_rhs1 (stmt);
+  int last_rhs1_stmt_index = 0, last_rhs2_stmt_index = 0;
+  int width_active = 0, width_count = 0;
+  bool has_biased = false, ops_changed = false;
+  auto_vec<operand_entry *> ops_normal;
+  auto_vec<operand_entry *> ops_biased;
+  vec<operand_entry *> *ops1;
 
   /* We start expression rewriting from the top statements.
      So, in this loop we create a full list of statements
@@ -5510,83 +5535,160 @@ rewrite_expr_tree_parallel (gassign *stmt, int width, bool has_fma,
   for (i = stmt_num - 2; i >= 0; i--)
     stmts[i] = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmts[i+1]));
 
-  /* Width should not be larger than op_num / 2, since we can not create
-     more parallel dependency chains that exceeds such value.  */
-  width = width <= op_num / 2 ? width : op_num / 2;
-
-  /* Build parallel dependency chain according to width.  */
-  for (i = 0; i < width; i++)
+  /* Avoid adding loop-carried ops to long chains, first filter out the
+     loop-carried.  But we need to make sure that the length of the remainder
+     is not less than 4, which is the smallest ops length we can break the
+     dependency.  */
+  FOR_EACH_VEC_ELT (ops, i, oe)
     {
-      /* If the chain has FAM, we do not swap two operands.  */
-      if (op_index > 1 && !has_fma)
-	swap_ops_for_binary_stmt (ops, op_index - 2);
-
-      for (j = 0; j < 2; j++)
+      if (TREE_CODE (oe->op) == SSA_NAME
+	  && bitmap_bit_p (biased_names, SSA_NAME_VERSION (oe->op))
+	  && op_normal_num > 4)
 	{
-	  gcc_assert (op_index >= 0);
-	  oe = ops[op_index--];
-	  tmp_op[j] = oe->op;
-	  /* If the stmt that defines operand has to be inserted, insert it
-	     before the use.  */
-	  stmt1 = oe->stmt_to_insert;
-	  if (stmt1)
-	    insert_stmt_before_use (stmts[i], stmt1);
-	  stmt1 = NULL;
+	  ops_biased.safe_push (oe);
+	  has_biased = true;
+	  op_normal_num --;
 	}
-      stmts[i] = build_and_add_sum (TREE_TYPE (last_rhs1),
-				    tmp_op[1],
-				    tmp_op[0],
-				    opcode);
-      gimple_set_visited (stmts[i], true);
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, " into ");
-	  print_gimple_stmt (dump_file, stmts[i], 0);
-	}
+      else
+	ops_normal.safe_push (oe);
     }
 
-  for (i = width; i < stmt_num; i++)
+  /* Width should not be larger than ops length / 2, since we can not create
+     more parallel dependency chains that exceeds such value.  */
+  int width_normal = op_normal_num / 2;
+  int width_biased = (op_num - op_normal_num) / 2;
+  width_normal = width <= width_normal ? width : width_normal;
+  width_biased = width <= width_biased ? width : width_biased;
+
+  ops1 = &ops_normal;
+  width_count = width_active = width_normal;
+
+  /* Build parallel dependency chain according to width.  */
+  for (i = 0; i < stmt_num; i++)
     {
-      /* We keep original statement only for the last one.  All others are
-	 recreated.  */
-      if ( op_index < 0)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  if (width_count == 2)
-	    {
+	  fprintf (dump_file, "Transforming ");
+	  print_gimple_stmt (dump_file, stmts[i], 0);
+	}
 
-	      /* We keep original statement only for the last one.  All
-		 others are recreated.  */
-	      gimple_assign_set_rhs1 (stmts[i], gimple_assign_lhs (stmts[i-1]));
-	      gimple_assign_set_rhs2 (stmts[i], gimple_assign_lhs (stmts[i-2]));
-	      update_stmt (stmts[i]);
-	    }
-	  else
-	    {
+      /* When the work of normal ops is over, but the loop is not over,
+	 continue to do biased ops.  */
+      if (width_count == 0 && ops1 == &ops_normal)
+	{
+	  ops1 = &ops_biased;
+	  width_count = width_active = width_biased;
+	  ops_changed = true;
+	}
 
-	      stmts[i] =
-		build_and_add_sum (TREE_TYPE (last_rhs1),
-				   gimple_assign_lhs (stmts[i-width_count]),
-				   gimple_assign_lhs (stmts[i-width_count+1]),
-				   opcode);
-	      gimple_set_visited (stmts[i], true);
-	      width_count--;
+      /* Swap the operands if no FMA in the chain.  */
+      if (ops1->length () > 2 && !has_fma)
+	swap_ops_for_binary_stmt (*ops1, ops1->length () - 3);
+
+      if (i < width_active
+	  || (ops_changed && i <= (last_rhs1_stmt_index + width_active)))
+	{
+	  for (j = 0; j < 2; j++)
+	    {
+	      oe = ops1->pop ();
+	      tmp_op[j] = oe->op;
+	      /* If the stmt that defines operand has to be inserted, insert it
+		 before the use.  */
+	      stmt1 = oe->stmt_to_insert;
+	      if (stmt1)
+		insert_stmt_before_use (stmts[i], stmt1);
+	      stmt1 = NULL;
 	    }
+	  stmts[i] = build_and_add_sum (TREE_TYPE (last_rhs1),
+					tmp_op[1],
+					tmp_op[0],
+					opcode);
+	  gimple_set_visited (stmts[i], true);
+
 	}
       else
 	{
-	  /* Attach the rest of the ops to the parallel dependency chain.  */
-	  oe = ops[op_index--];
-	  op1 = oe->op;
-	  stmt1 = oe->stmt_to_insert;
-	  if (stmt1)
-	    insert_stmt_before_use (stmts[i], stmt1);
-	  stmt1 = NULL;
-	  stmts[i] = build_and_add_sum (TREE_TYPE (last_rhs1),
-					gimple_assign_lhs (stmts[i-width]),
-					op1,
-					opcode);
-	  gimple_set_visited (stmts[i], true);
+	  /* We keep original statement only for the last one.  All others are
+	     recreated.  */
+	  if (!ops1->length ())
+	    {
+	      /* For biased length equal to 2.  */
+	      if (width_count == BIASED_END_STMT && !last_rhs2_stmt_index)
+		last_rhs2_stmt_index = i - 1;
+
+	      /* When width_count == 2 and there is no biased, just finish.  */
+	      if (width_count == NORMAL_END_STMT && !has_biased)
+		{
+		  last_rhs1_stmt_index = i - 1;
+		  last_rhs2_stmt_index = i - 2;
+		}
+	      if (last_rhs1_stmt_index && (last_rhs2_stmt_index || !has_biased))
+		{
+		  /* We keep original statement only for the last one.  All
+		     others are recreated.  */
+		  gimple_assign_set_rhs1 (stmts[i], gimple_assign_lhs
+					  (stmts[last_rhs1_stmt_index]));
+		  gimple_assign_set_rhs2 (stmts[i], gimple_assign_lhs
+					  (stmts[last_rhs2_stmt_index]));
+		  update_stmt (stmts[i]);
+		}
+	      else
+		{
+		  stmts[i] =
+		    build_and_add_sum (TREE_TYPE (last_rhs1),
+				       gimple_assign_lhs (stmts[i-width_count]),
+				       gimple_assign_lhs
+				       (stmts[i-width_count+1]),
+				       opcode);
+		  gimple_set_visited (stmts[i], true);
+		  width_count--;
+
+		  /* It is the end of normal or biased ops.
+		     last_rhs1_stmt_index used to record the last stmt index
+		     for normal ops.  last_rhs2_stmt_index used to record the
+		     last stmt index for biased ops.  */
+		  if (width_count == BIASED_END_STMT)
+		    {
+		      gcc_assert (has_biased);
+		      if (ops_biased.length ())
+			last_rhs1_stmt_index = i;
+		      else
+			last_rhs2_stmt_index = i;
+		      width_count--;
+		    }
+		}
+	    }
+	  else
+	    {
+	      /* Attach the rest ops to the parallel dependency chain.  */
+	      oe = ops1->pop ();
+	      op1 = oe->op;
+	      stmt1 = oe->stmt_to_insert;
+	      if (stmt1)
+		insert_stmt_before_use (stmts[i], stmt1);
+	      stmt1 = NULL;
+
+	      /* For only one biased ops.  */
+	      if (width_count == SPECIAL_BIASED_END_STMT)
+		{
+		  /* We keep original statement only for the last one.  All
+		     others are recreated.  */
+		  gcc_assert (has_biased);
+		  gimple_assign_set_rhs1 (stmts[i], gimple_assign_lhs
+					  (stmts[last_rhs1_stmt_index]));
+		  gimple_assign_set_rhs2 (stmts[i], op1);
+		  update_stmt (stmts[i]);
+		}
+	      else
+		{
+		  stmts[i] = build_and_add_sum (TREE_TYPE (last_rhs1),
+						gimple_assign_lhs
+						(stmts[i-width_active]),
+						op1,
+						opcode);
+		  gimple_set_visited (stmts[i], true);
+		}
+	    }
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5595,6 +5697,7 @@ rewrite_expr_tree_parallel (gassign *stmt, int width, bool has_fma,
 	  print_gimple_stmt (dump_file, stmts[i], 0);
 	}
     }
+
   remove_visited_stmt_chain (last_rhs1);
 }
 

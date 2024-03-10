@@ -523,24 +523,28 @@ is
       Item : out String;
       Last : out Natural)
    with
-     Pre               => Is_Open (File) and then Mode (File) = In_File,
-     Post              =>
+     Relaxed_Initialization => Item,
+     Pre                    => Is_Open (File) and then Mode (File) = In_File,
+     Post                   =>
        (if Item'Length > 0 then Last in Item'First - 1 .. Item'Last
-        else Last = Item'First - 1),
-     Global            => (In_Out => File_System),
-     Exceptional_Cases => (End_Error => Item'Length'Old > 0);
+        else Last = Item'First - 1)
+       and (for all I in Item'First .. Last => Item (I)'Initialized),
+     Global                 => (In_Out => File_System),
+     Exceptional_Cases      => (End_Error => Item'Length'Old > 0);
 
    procedure Get_Line
      (Item : out String;
       Last : out Natural)
    with
-     Post              =>
+     Relaxed_Initialization => Item,
+     Post                   =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length
        and (if Item'Length > 0 then Last in Item'First - 1 .. Item'Last
-            else Last = Item'First - 1),
-     Global            => (In_Out => File_System),
-     Exceptional_Cases => (End_Error => Item'Length'Old > 0);
+            else Last = Item'First - 1)
+       and (for all I in Item'First .. Last => Item (I)'Initialized),
+     Global                => (In_Out => File_System),
+     Exceptional_Cases     => (End_Error => Item'Length'Old > 0);
 
    function Get_Line (File : File_Type) return String with SPARK_Mode => Off;
    pragma Ada_05 (Get_Line);

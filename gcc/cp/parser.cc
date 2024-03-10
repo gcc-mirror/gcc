@@ -18525,7 +18525,7 @@ cp_parser_template_id (cp_parser *parser,
     }
   else if (variable_template_p (templ))
     {
-      template_id = lookup_template_variable (templ, arguments);
+      template_id = lookup_template_variable (templ, arguments, tf_warning_or_error);
       if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)
 	SET_EXPR_LOCATION (template_id, combined_loc);
     }
@@ -34352,9 +34352,9 @@ specialization_of (tree type)
 
   /* Determine the template or its partial specialization to which TYPE
      corresponds.  */
-  if (tree spec = most_specialized_partial_spec (type, tf_none))
-    if (spec != error_mark_node)
-      ret = TREE_TYPE (TREE_VALUE (spec));
+  if (tree ti = most_specialized_partial_spec (type, tf_none))
+    if (ti != error_mark_node)
+      ret = TREE_TYPE (TI_TEMPLATE (ti));
 
   if (ret == type)
     ret = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (type);

@@ -11,34 +11,48 @@ ref shared(int) f(return shared ref int y)
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=20908
+struct S
+{
+    int i = 2;
+}
+
+union U
+{
+    int i = 1;
+    bool b;
+}
+
 void test20908()
 {
-  // shared locals (or struct members) should be able to be initialised:
-  shared int x;
+    // shared locals (or struct members) should be able to be initialised:
+    shared int x;
 
-  ref shared(int) fun()
-  {
-    static shared(int) val;
+    ref shared(int) fun()
+    {
+        static shared(int) val;
 
-    // return by reference
-    return val;
-  }
+        // return by reference
+        return val;
+    }
 
-  ref shared(int) fun2()
-  {
-    static shared(int)* val;
+    ref shared(int) fun2()
+    {
+        static shared(int)* val;
 
-    // transfer pointer to reference
-    return *val;
-  }
+        // transfer pointer to reference
+        return *val;
+    }
 
-  ref shared(int) fun3()
-  {
-    static shared(int)*** val;
+    ref shared(int) fun3()
+    {
+        static shared(int)*** val;
 
-    // Multiple indirections
-    return ***val;
-  }
+        // Multiple indirections
+        return ***val;
+    }
+
+    shared S s;
+    shared U u;
 }
 
 // Simple tests for `DotVarExp`
@@ -129,4 +143,16 @@ class Class {}
 void main()
 {
     auto b = new shared Class();
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23790
+bool cas(shared bool*, bool, bool) { return true; }
+
+struct Argh
+{
+    bool locked;
+    void lock() shared
+    {
+        while(!cas(&locked, false, true)) {}
+    }
 }

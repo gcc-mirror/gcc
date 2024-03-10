@@ -574,7 +574,7 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
       && (TREE_CODE (type0) == ERROR_MARK
 	  || TREE_CODE (type1) == ERROR_MARK
 	  || TYPE_UNSIGNED (type0) != TYPE_UNSIGNED (type1)
-	  || TYPE_PRECISION (type0) != TYPE_PRECISION (type1)
+	  || element_precision (type0) != element_precision (type1)
 	  || TYPE_MODE (type0) != TYPE_MODE (type1)))
     return false;
 

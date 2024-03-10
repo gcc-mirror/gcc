@@ -2664,14 +2664,19 @@ class Lexer
         eSink.error(loc, format, args);
     }
 
-    final void deprecation(const(char)* format)
+    void deprecation(T...)(const ref Loc loc, const(char)* format, T args)
     {
-        eSink.deprecation(token.loc, format);
+        eSink.deprecation(loc, format, args);
     }
 
-    final void deprecationSupplemental(const(char)* format)
+    void deprecation(T...)(const(char)* format, T args)
     {
-        eSink.deprecationSupplemental(token.loc, format);
+        eSink.deprecation(token.loc, format, args);
+    }
+
+    void deprecationSupplemental(T...)(const(char)* format, T args)
+    {
+        eSink.deprecationSupplemental(token.loc, format, args);
     }
 
     /***************************************
@@ -2695,12 +2700,21 @@ class Lexer
             else
             {
                 const locx = loc();
-                eSink.warning(locx, "C preprocessor directive `#%s` is not supported", n.ident.toChars());
+                // @@@DEPRECATED_2.103@@@
+                // Turn into an error in 2.113
+                if (inTokenStringConstant)
+                    deprecation(locx, "token string requires valid D tokens, not `#%s`", n.ident.toChars());
+                else
+                    error(locx, "C preprocessor directive `#%s` is not supported", n.ident.toChars());
             }
         }
         else if (n.value == TOK.if_)
         {
-            error("C preprocessor directive `#if` is not supported, use `version` or `static if`");
+            const locx = loc();
+            if (inTokenStringConstant)
+                error(locx, "token string requires valid D tokens, not `#if`");
+            else
+                error(locx, "C preprocessor directive `#if` is not supported, use `version` or `static if`");
         }
         return false;
     }

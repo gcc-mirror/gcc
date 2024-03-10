@@ -12,4 +12,4 @@ foo1 (int8x16_t value)
   return b;
 }
 
-/* { dg-final { scan-assembler "\.fpu fpv5-sp-d16" }  } */
+/* { dg-final { scan-assembler "\.fpu fpv5(-sp|)-d16" }  } */

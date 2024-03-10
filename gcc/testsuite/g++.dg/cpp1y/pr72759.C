@@ -14,5 +14,5 @@ template <> struct SpecPerType<Specializer> {
 };
 template <unsigned X> void Specializer::A<X>::InnerMemberFn() {
   using Spec = SpecPerType<Specializer>;
-  Spec ErrorSite = Spec::SpecMbrFnPtr<SpecMbrFnPtr>;  // { dg-error "not declared" }
+  Spec ErrorSite = Spec::SpecMbrFnPtr<SpecMbrFnPtr>;  // { dg-error "not declared|invalid" }
 }

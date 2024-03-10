@@ -344,14 +344,14 @@ public:
   /* Special constructor for the string table, it abuses this to
      do random access but use the uhwi decoder.  */
   lto_input_block (const char *data_, unsigned int p_, unsigned int len_,
-		   const unsigned char *mode_table_)
-      : data (data_), mode_table (mode_table_), p (p_), len (len_) {}
+		   const lto_file_decl_data *file_data_)
+      : data (data_), file_data (file_data_), p (p_), len (len_) {}
   lto_input_block (const char *data_, unsigned int len_,
-		   const unsigned char *mode_table_)
-      : data (data_), mode_table (mode_table_), p (0), len (len_) {}
+		   const lto_file_decl_data *file_data_)
+      : data (data_), file_data (file_data_), p (0), len (len_) {}
 
   const char *data;
-  const unsigned char *mode_table;
+  const lto_file_decl_data *file_data;
   unsigned int p;
   unsigned int len;
 };
@@ -604,6 +604,8 @@ struct GTY(()) lto_file_decl_data
   int order_base;
 
   int unit_base;
+
+  unsigned mode_bits;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;

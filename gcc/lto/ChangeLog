@@ -1,3 +1,28 @@
+2023-07-04  Pan Li  <pan2.li@intel.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-common.cc (lto_file_finalize) [!ACCEL_COMPILER]: Initialize
+	'file_data->mode_bits'.
+
+2023-07-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-common.cc (lto_read_decls): Adjust.
+
+2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
+
+	* lto-common.cc (compare_tree_sccs_1): Compare bit
+	TYPE_NO_NAMED_ARGS_STDARG_P or TYPE_INCLUDES_FLEXARRAY properly
+	for its corresponding type.
+
+2023-06-29  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Pass correct stage lto when processing
+	profile data collected while building target libraries
+
+2023-06-28  Richard Biener  <rguenther@suse.de>
+
+	* lto-common.cc (compare_tree_sccs_1): Use TYPE_PRECISION_RAW.
+
 2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* lto-common.cc (lto_maybe_register_decl): Use _P defines from tree.h.

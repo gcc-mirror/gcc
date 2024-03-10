@@ -807,7 +807,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    (...) prototype, where arguments can be accessed with va_start and
    va_arg), as opposed to an unprototyped function.  */
 #define TYPE_NO_NAMED_ARGS_STDARG_P(NODE) \
-  (TYPE_CHECK (NODE)->type_common.no_named_args_stdarg_p)
+  (FUNC_OR_METHOD_CHECK (NODE)->type_common.no_named_args_stdarg_p)
+
+/* True if this RECORD_TYPE or UNION_TYPE includes a flexible array member
+   as the last field recursively.  */
+#define TYPE_INCLUDES_FLEXARRAY(NODE) \
+  (RECORD_OR_UNION_CHECK (NODE)->type_common.no_named_args_stdarg_p)
 
 /* In an IDENTIFIER_NODE, this means that assemble_name was called with
    this string as an argument.  */
@@ -819,7 +824,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TYPE_REF_CAN_ALIAS_ALL(NODE) \
   (PTR_OR_REF_CHECK (NODE)->base.static_flag)
 
-/* In an INTEGER_CST, REAL_CST, COMPLEX_CST, or VECTOR_CST, this means
+/* In an INTEGER_CST, REAL_CST, or COMPLEX_CST, this means
    there was an overflow in folding.  */
 
 #define TREE_OVERFLOW(NODE) (CST_CHECK (NODE)->base.public_flag)
@@ -2191,7 +2196,9 @@ class auto_suppress_location_wrappers
 #define TYPE_SIZE_UNIT(NODE) (TYPE_CHECK (NODE)->type_common.size_unit)
 #define TYPE_POINTER_TO(NODE) (TYPE_CHECK (NODE)->type_common.pointer_to)
 #define TYPE_REFERENCE_TO(NODE) (TYPE_CHECK (NODE)->type_common.reference_to)
-#define TYPE_PRECISION(NODE) (TYPE_CHECK (NODE)->type_common.precision)
+#define TYPE_PRECISION(NODE) \
+  (TREE_NOT_CHECK (TYPE_CHECK (NODE), VECTOR_TYPE)->type_common.precision)
+#define TYPE_PRECISION_RAW(NODE) (TYPE_CHECK (NODE)->type_common.precision)
 #define TYPE_NAME(NODE) (TYPE_CHECK (NODE)->type_common.name)
 #define TYPE_NEXT_VARIANT(NODE) (TYPE_CHECK (NODE)->type_common.next_variant)
 #define TYPE_MAIN_VARIANT(NODE) (TYPE_CHECK (NODE)->type_common.main_variant)
@@ -4803,7 +4810,7 @@ extern bool vec_member (const_tree, vec<tree, va_gc> *);
 extern tree chain_index (int, tree);
 
 /* Arguments may be null.  */
-extern int tree_int_cst_equal (const_tree, const_tree);
+extern bool tree_int_cst_equal (const_tree, const_tree);
 
 /* The following predicates are safe to call with a null argument.  */
 extern bool tree_fits_shwi_p (const_tree) ATTRIBUTE_PURE;
@@ -5411,7 +5418,7 @@ extern bool operation_can_overflow (enum tree_code);
 extern bool operation_no_trapping_overflow (tree, enum tree_code);
 extern tree upper_bound_in_type (tree, tree);
 extern tree lower_bound_in_type (tree, tree);
-extern int operand_equal_for_phi_arg_p (const_tree, const_tree);
+extern bool operand_equal_for_phi_arg_p (const_tree, const_tree);
 extern tree create_artificial_label (location_t);
 extern const char *get_name (tree);
 extern bool stdarg_p (const_tree);
@@ -5655,7 +5662,7 @@ extern tree component_ref_size (tree, special_array_member * = NULL);
 
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);
-extern int tree_map_base_marked_p (const void *);
+extern bool tree_map_base_marked_p (const void *);
 extern void DEBUG_FUNCTION verify_type (const_tree t);
 extern bool gimple_canonical_types_compatible_p (const_tree, const_tree,
 						 bool trust_type_canonical = true);

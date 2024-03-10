@@ -163,17 +163,6 @@ struct GTY((for_user)) tree_entity_vec_map
   vec<Entity_Id, va_gc_atomic> *to;
 };
 
-void
-gt_pch_nx (Entity_Id &)
-{
-}
-
-void
-gt_pch_nx (Entity_Id *x, gt_pointer_operator op, void *cookie)
-{
-  op (x, NULL, cookie);
-}
-
 struct dummy_type_hasher : ggc_cache_ptr_hash<tree_entity_vec_map>
 {
   static inline hashval_t

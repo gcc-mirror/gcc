@@ -14489,8 +14489,9 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	 modes wider than 256 bits.  It's only safe to issue a
 	 vzeroupper if all SSE registers are clobbered.  */
       const function_abi &abi = insn_callee_abi (insn);
-      if (!hard_reg_set_subset_p (reg_class_contents[SSE_REGS],
-				  abi.mode_clobbers (V4DImode)))
+      if (vzeroupper_pattern (PATTERN (insn), VOIDmode)
+	  || !hard_reg_set_subset_p (reg_class_contents[SSE_REGS],
+				     abi.mode_clobbers (V4DImode)))
 	return AVX_U128_ANY;
 
       return AVX_U128_CLEAN;
@@ -21178,6 +21179,32 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case IOR:
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  /* (ior (not ...) ...) can be a single insn in AVX512.  */
+	  if (GET_CODE (XEXP (x, 0)) == NOT && TARGET_AVX512F
+	      && (GET_MODE_SIZE (mode) == 64
+		  || (TARGET_AVX512VL
+		      && (GET_MODE_SIZE (mode) == 32
+			  || GET_MODE_SIZE (mode) == 16))))
+	    {
+	      rtx right = GET_CODE (XEXP (x, 1)) != NOT
+			  ? XEXP (x, 1) : XEXP (XEXP (x, 1), 0);
+
+	      *total = ix86_vec_cost (mode, cost->sse_op)
+		       + rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (right, mode, outer_code, opno, speed);
+	      return true;
+	    }
+	  *total = ix86_vec_cost (mode, cost->sse_op);
+	}
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	*total = cost->add * 2;
+      else
+	*total = cost->add;
+      return false;
+
     case XOR:
       if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
 	*total = ix86_vec_cost (mode, cost->sse_op);
@@ -21198,11 +21225,20 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  /* pandn is a single instruction.  */
 	  if (GET_CODE (XEXP (x, 0)) == NOT)
 	    {
+	      rtx right = XEXP (x, 1);
+
+	      /* (and (not ...) (not ...)) can be a single insn in AVX512.  */
+	      if (GET_CODE (right) == NOT && TARGET_AVX512F
+		  && (GET_MODE_SIZE (mode) == 64
+		      || (TARGET_AVX512VL
+			  && (GET_MODE_SIZE (mode) == 32
+			      || GET_MODE_SIZE (mode) == 16))))
+		right = XEXP (right, 0);
+
 	      *total = ix86_vec_cost (mode, cost->sse_op)
 		       + rtx_cost (XEXP (XEXP (x, 0), 0), mode,
 				   outer_code, opno, speed)
-		       + rtx_cost (XEXP (x, 1), mode,
-				   outer_code, opno, speed);
+		       + rtx_cost (right, mode, outer_code, opno, speed);
 	      return true;
 	    }
 	  else if (GET_CODE (XEXP (x, 1)) == NOT)
@@ -21260,8 +21296,25 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
     case NOT:
       if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-	// vnot is pxor -1.
-	*total = ix86_vec_cost (mode, cost->sse_op) + 1;
+	{
+	  /* (not (xor ...)) can be a single insn in AVX512.  */
+	  if (GET_CODE (XEXP (x, 0)) == XOR && TARGET_AVX512F
+	      && (GET_MODE_SIZE (mode) == 64
+		  || (TARGET_AVX512VL
+		      && (GET_MODE_SIZE (mode) == 32
+			  || GET_MODE_SIZE (mode) == 16))))
+	    {
+	      *total = ix86_vec_cost (mode, cost->sse_op)
+		       + rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (XEXP (XEXP (x, 0), 1), mode,
+				   outer_code, opno, speed);
+	      return true;
+	    }
+
+	  // vnot is pxor -1.
+	  *total = ix86_vec_cost (mode, cost->sse_op) + 1;
+	}
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	*total = cost->add * 2;
       else
@@ -22718,6 +22771,35 @@ x86_emit_floatuns (rtx operands[2])
 
   emit_label (donelab);
 }
+
+/* Return the diagnostic message string if conversion from FROMTYPE to
+   TOTYPE is not allowed, NULL otherwise.
+   Currently it's used to warn for silent implicit conversion between __bf16
+   and short, since __bfloat16 is refined as real __bf16 instead of short
+   since GCC13.  */
+
+static const char *
+ix86_invalid_conversion (const_tree fromtype, const_tree totype)
+{
+  if (element_mode (fromtype) != element_mode (totype)
+      && (TARGET_AVX512BF16 || TARGET_AVXNECONVERT))
+    {
+      /* Warn for silent implicit conversion where user may expect
+	 a bitcast.  */
+      if ((TYPE_MODE (fromtype) == BFmode
+	   && TYPE_MODE (totype) == HImode)
+	  || (TYPE_MODE (totype) == BFmode
+	      && TYPE_MODE (fromtype) == HImode))
+	warning (0, "%<__bfloat16%> is redefined from typedef %<short%> "
+		"to real %<__bf16%> since GCC V13, be careful of "
+		 "implicit conversion between %<__bf16%> and %<short%>; "
+		 "a explicit bitcast may be needed here");
+    }
+
+  /* Conversion allowed.  */
+  return NULL;
+}
+
 
 /* Target hook for scalar_mode_supported_p.  */
 static bool
@@ -25008,6 +25090,9 @@ ix86_run_selftests (void)
 #  undef TARGET_MERGE_DECL_ATTRIBUTES
 #  define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
 #endif
+
+#undef TARGET_INVALID_CONVERSION
+#define TARGET_INVALID_CONVERSION ix86_invalid_conversion
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES ix86_comp_type_attributes

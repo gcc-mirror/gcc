@@ -50,9 +50,6 @@
   [
    ;; Stack frame deallocation barrier.
    CRIS_UNSPEC_FRAME_DEALLOC
-
-   ;; Swap all 32 bits of the operand; 31 <=> 0, 30 <=> 1...
-   CRIS_UNSPEC_SWAP_BITS
   ])
 
 ;; Register numbers.
@@ -2177,8 +2174,7 @@
 
 (define_insn "cris_swap_bits"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "0")]
-		   CRIS_UNSPEC_SWAP_BITS))
+	(bitreverse:SI (match_operand:SI 1 "register_operand" "0")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
   "TARGET_HAS_SWAP"
   "swapwbr %0"
@@ -2193,8 +2189,7 @@
 	  (match_operand:SI 1 "register_operand"))
      (clobber (reg:CC CRIS_CC0_REGNUM))])
    (parallel
-    [(set (match_dup 2)
-	  (unspec:SI [(match_dup 2)] CRIS_UNSPEC_SWAP_BITS))
+    [(set (match_dup 2) (bitreverse:SI (match_dup 2)))
      (clobber (reg:CC CRIS_CC0_REGNUM))])
    (parallel
     [(set (match_operand:SI 0 "register_operand")

@@ -220,6 +220,7 @@ static tree enclosing_instantiation_of (tree tctx);
 static void instantiate_body (tree pattern, tree args, tree d, bool nested);
 static tree maybe_dependent_member_ref (tree, tree, tsubst_flags_t, tree);
 static void mark_template_arguments_used (tree, tree);
+static bool uses_outer_template_parms (tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -4540,12 +4541,7 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
   if (TEMPLATE_PARM_DESCENDANTS (index) == NULL_TREE
       || (TEMPLATE_PARM_LEVEL (TEMPLATE_PARM_DESCENDANTS (index))
 	  != TEMPLATE_PARM_LEVEL (index) - levels)
-      || !(TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
-	   ? (comp_template_parms
-	      (DECL_TEMPLATE_PARMS (TYPE_NAME (type)),
-	       DECL_TEMPLATE_PARMS (TEMPLATE_PARM_DECL
-				    (TEMPLATE_PARM_DESCENDANTS (index)))))
-	   : same_type_p (type, TREE_TYPE (TEMPLATE_PARM_DESCENDANTS (index)))))
+      || !same_type_p (type, TREE_TYPE (TEMPLATE_PARM_DESCENDANTS (index))))
     {
       tree orig_decl = TEMPLATE_PARM_DECL (index);
 
@@ -4707,6 +4703,10 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
     }
   DECL_ARTIFICIAL (decl) = 1;
   SET_DECL_TEMPLATE_PARM_P (decl);
+
+  if (TREE_CODE (parm) == TEMPLATE_DECL
+      && !uses_outer_template_parms (parm))
+    TEMPLATE_TEMPLATE_PARM_SIMPLE_P (TREE_TYPE (parm)) = true;
 
   /* Build requirements for the type/template parameter.
      This must be done after SET_DECL_TEMPLATE_PARM_P or
@@ -5410,6 +5410,9 @@ process_partial_specialization (tree decl)
     = tree_cons (specargs, tmpl,
                  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
   TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
+  /* Link the DECL_TEMPLATE_RESULT back to the partial TEMPLATE_DECL.  */
+  gcc_checking_assert (!TI_PARTIAL_INFO (tinfo));
+  TI_PARTIAL_INFO (tinfo) = build_template_info (tmpl, NULL_TREE);
 
   for (inst = DECL_TEMPLATE_INSTANTIATIONS (maintmpl); inst;
        inst = TREE_CHAIN (inst))
@@ -5420,16 +5423,17 @@ process_partial_specialization (tree decl)
 	     && CLASSTYPE_IMPLICIT_INSTANTIATION (instance))
 	  : DECL_TEMPLATE_INSTANTIATION (instance))
 	{
-	  tree spec = most_specialized_partial_spec (instance, tf_none);
+	  tree partial_ti = most_specialized_partial_spec (instance, tf_none,
+							   /*rechecking=*/true);
 	  tree inst_decl = (DECL_P (instance)
 			    ? instance : TYPE_NAME (instance));
-	  if (!spec)
+	  if (!partial_ti)
 	    /* OK */;
-	  else if (spec == error_mark_node)
+	  else if (partial_ti == error_mark_node)
 	    permerror (input_location,
 		       "declaration of %qD ambiguates earlier template "
 		       "instantiation for %qD", decl, inst_decl);
-	  else if (TREE_VALUE (spec) == tmpl)
+	  else if (TI_TEMPLATE (partial_ti) == tmpl)
 	    permerror (input_location,
 		       "partial specialization of %qD after instantiation "
 		       "of %qD", decl, inst_decl);
@@ -10335,10 +10339,15 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 /* Return a TEMPLATE_ID_EXPR for the given variable template and ARGLIST.  */
 
 tree
-lookup_template_variable (tree templ, tree arglist)
+lookup_template_variable (tree templ, tree arglist, tsubst_flags_t complain)
 {
   if (flag_concepts && variable_concept_p (templ))
     return build_concept_check (templ, arglist, tf_none);
+
+  tree parms = DECL_INNERMOST_TEMPLATE_PARMS (templ);
+  arglist = coerce_template_parms (parms, arglist, templ, complain);
+  if (arglist == error_mark_node)
+    return error_mark_node;
 
   /* The type of the expression is NULL_TREE since the template-id could refer
      to an explicit or partial specialization. */
@@ -10359,11 +10368,6 @@ finish_template_variable (tree var, tsubst_flags_t complain)
   if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (templ)) != 1
       || any_dependent_template_arguments_p (arglist))
     return var;
-
-  tree parms = DECL_TEMPLATE_PARMS (templ);
-  arglist = coerce_template_parms (parms, arglist, templ, complain);
-  if (arglist == error_mark_node)
-    return error_mark_node;
 
   if (flag_concepts && !constraints_satisfied_p (templ, arglist))
     {
@@ -10386,7 +10390,9 @@ tree
 lookup_and_finish_template_variable (tree templ, tree targs,
 				     tsubst_flags_t complain)
 {
-  tree var = lookup_template_variable (templ, targs);
+  tree var = lookup_template_variable (templ, targs, complain);
+  if (var == error_mark_node)
+    return error_mark_node;
   /* We may be called while doing a partial substitution, but the
      type of the variable template may be auto, in which case we
      will call do_auto_deduction in mark_used (which clears tf_partial)
@@ -10967,7 +10973,11 @@ uses_template_parms_level (tree t, int level)
 static bool
 uses_outer_template_parms (tree decl)
 {
-  int depth = template_class_depth (CP_DECL_CONTEXT (decl));
+  int depth;
+  if (DECL_TEMPLATE_TEMPLATE_PARM_P (decl))
+    depth = TEMPLATE_TYPE_LEVEL (TREE_TYPE (decl)) - 1;
+  else
+    depth = template_class_depth (CP_DECL_CONTEXT (decl));
   if (depth == 0)
     return false;
   if (for_each_template_parm (TREE_TYPE (decl), template_parm_outer_level,
@@ -12105,8 +12115,8 @@ instantiate_class_template (tree type)
 
 	 and supposing that we are instantiating S<int*>, ARGS will
 	 presently be {int*} -- but we need {int}.  */
-      pattern = TREE_TYPE (t);
-      args = TREE_PURPOSE (t);
+      pattern = TREE_TYPE (TI_TEMPLATE (t));
+      args = TI_ARGS (t);
     }
   else
     {
@@ -16213,14 +16223,15 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		t = TYPE_MAIN_VARIANT (t);
 	      }
 
-	    if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
-		&& (arg = TEMPLATE_TYPE_PARM_INDEX (t),
-		    r = TEMPLATE_PARM_DESCENDANTS (arg))
-		&& (TEMPLATE_PARM_LEVEL (r)
-		    == TEMPLATE_PARM_LEVEL (arg) - levels))
-	      /* Cache the simple case of lowering a type parameter.  */
-	      r = TREE_TYPE (r);
-	    else
+	    if (tree d = TEMPLATE_TYPE_DESCENDANTS (t))
+	      if (TEMPLATE_PARM_LEVEL (d) == TEMPLATE_TYPE_LEVEL (t) - levels
+		  && (code == TEMPLATE_TYPE_PARM
+		      || TEMPLATE_TEMPLATE_PARM_SIMPLE_P (t)))
+		/* Cache lowering a type parameter or a simple template
+		   template parameter.  */
+		r = TREE_TYPE (d);
+
+	    if (!r)
 	      {
 		r = copy_type (t);
 		TEMPLATE_TYPE_PARM_INDEX (r)
@@ -16231,7 +16242,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		TYPE_POINTER_TO (r) = NULL_TREE;
 		TYPE_REFERENCE_TO (r) = NULL_TREE;
 
-                if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+		if (code == TEMPLATE_TYPE_PARM)
 		  if (tree ci = PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t))
 		    /* Propagate constraints on placeholders since they are
 		       only instantiated during satisfaction.  */
@@ -17766,7 +17777,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  targs = tsubst_template_args (targs, args, complain, in_decl);
 
 	if (variable_template_p (tmpl))
-	  return lookup_template_variable (tmpl, targs);
+	  return lookup_template_variable (tmpl, targs, complain);
 	else
 	  return lookup_template_function (tmpl, targs);
       }
@@ -22078,20 +22089,21 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 
   tree pattern = DECL_TEMPLATE_RESULT (gen_tmpl);
 
+  tree partial_ti = NULL_TREE;
   fndecl = NULL_TREE;
   if (VAR_P (pattern))
     {
       /* We need to determine if we're using a partial or explicit
 	 specialization now, because the type of the variable could be
 	 different.  */
-      tree tid = lookup_template_variable (tmpl, targ_ptr);
-      tree elt = most_specialized_partial_spec (tid, complain);
-      if (elt == error_mark_node)
+      tree tid = build2 (TEMPLATE_ID_EXPR, NULL_TREE, tmpl, targ_ptr);
+      partial_ti = most_specialized_partial_spec (tid, complain);
+      if (partial_ti == error_mark_node)
 	pattern = error_mark_node;
-      else if (elt)
+      else if (partial_ti)
 	{
-	  tree partial_tmpl = TREE_VALUE (elt);
-	  tree partial_args = TREE_PURPOSE (elt);
+	  tree partial_tmpl = TI_TEMPLATE (partial_ti);
+	  tree partial_args = TI_ARGS (partial_ti);
 	  tree partial_pat = DECL_TEMPLATE_RESULT (partial_tmpl);
 	  fndecl = tsubst (partial_pat, partial_args, complain, gen_tmpl);
 	}
@@ -22114,6 +22126,10 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
   DECL_TI_ARGS (fndecl) = targ_ptr;
+  if (VAR_P (pattern))
+    /* Now that we we've formed this variable template specialization,
+       remember the result of most_specialized_partial_spec for it.  */
+    TI_PARTIAL_INFO (DECL_TEMPLATE_INFO (fndecl)) = partial_ti;
 
   set_instantiating_module (fndecl);
 
@@ -25980,10 +25996,12 @@ most_general_template (tree decl)
 
 /* Return the most specialized of the template partial specializations
    which can produce TARGET, a specialization of some class or variable
-   template.  The value returned is actually a TREE_LIST; the TREE_VALUE is
-   a TEMPLATE_DECL node corresponding to the partial specialization, while
-   the TREE_PURPOSE is the set of template arguments that must be
-   substituted into the template pattern in order to generate TARGET.
+   template.  The value returned is a TEMPLATE_INFO; the TI_TEMPLATE is a
+   TEMPLATE_DECL node corresponding to the partial specialization, while
+   the TI_ARGS is the set of template arguments that must be substituted
+   into the template pattern in order to generate TARGET.  The result is
+   cached in the TI_PARTIAL_INFO of the corresponding TEMPLATE_INFO unless
+   RECHECKING is true.
 
    If the choice of partial specialization is ambiguous, a diagnostic
    is issued, and the error_mark_node is returned.  If there are no
@@ -25991,12 +26009,14 @@ most_general_template (tree decl)
    returned, indicating that the primary template should be used.  */
 
 tree
-most_specialized_partial_spec (tree target, tsubst_flags_t complain)
+most_specialized_partial_spec (tree target, tsubst_flags_t complain,
+			       bool rechecking /* = false */)
 {
+  tree tinfo = NULL_TREE;
   tree tmpl, args, decl;
   if (TYPE_P (target))
     {
-      tree tinfo = CLASSTYPE_TEMPLATE_INFO (target);
+      tinfo = CLASSTYPE_TEMPLATE_INFO (target);
       tmpl = TI_TEMPLATE (tinfo);
       args = TI_ARGS (tinfo);
       decl = TYPE_NAME (target);
@@ -26009,13 +26029,21 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
     }
   else if (VAR_P (target))
     {
-      tree tinfo = DECL_TEMPLATE_INFO (target);
+      tinfo = DECL_TEMPLATE_INFO (target);
       tmpl = TI_TEMPLATE (tinfo);
       args = TI_ARGS (tinfo);
       decl = target;
     }
   else
     gcc_unreachable ();
+
+  if (!PRIMARY_TEMPLATE_P (tmpl))
+    return NULL_TREE;
+
+  if (!rechecking
+      && tinfo
+      && (VAR_P (target) || COMPLETE_TYPE_P (target)))
+    return TI_PARTIAL_INFO (tinfo);
 
   tree main_tmpl = most_general_template (tmpl);
   tree specs = DECL_TEMPLATE_SPECIALIZATIONS (main_tmpl);
@@ -26066,10 +26094,7 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
 
 	  /* Keep the candidate only if its constraints are satisfied.  */
 	  if (constraints_satisfied_p (ospec_tmpl, spec_args))
-            {
-	      list = tree_cons (spec_args, ospec_tmpl, list);
-              TREE_TYPE (list) = TREE_TYPE (t);
-            }
+	    list = tree_cons (spec_args, ospec_tmpl, list);
 	}
     }
 
@@ -26131,7 +26156,10 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
       return error_mark_node;
     }
 
-  return champ;
+  tree result = build_template_info (TREE_VALUE (champ), TREE_PURPOSE (champ));
+  if (!rechecking && tinfo)
+    TI_PARTIAL_INFO (tinfo) = result;
+  return result;
 }
 
 /* Explicitly instantiate DECL.  */
@@ -27023,11 +27051,11 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   if (variable_template_specialization_p (d))
     {
       /* Look up an explicit specialization, if any.  */
-      tree elt = most_specialized_partial_spec (d, tf_warning_or_error);
-      if (elt && elt != error_mark_node)
+      tree partial_ti = most_specialized_partial_spec (d, tf_warning_or_error);
+      if (partial_ti && partial_ti != error_mark_node)
 	{
-	  td = TREE_VALUE (elt);
-	  args = TREE_PURPOSE (elt);
+	  td = TI_TEMPLATE (partial_ti);
+	  args = TI_ARGS (partial_ti);
 	}
     }
 

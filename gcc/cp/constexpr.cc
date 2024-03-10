@@ -7681,6 +7681,17 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    && !is_std_construct_at (ctx->call)
 	    && !is_std_allocator_allocate (ctx->call))
 	  {
+	    /* P2738 (C++26): a conversion from a prvalue P of type "pointer to
+	       cv void" to a pointer-to-object type T unless P points to an
+	       object whose type is similar to T.  */
+	    if (cxx_dialect > cxx23)
+	      if (tree ob
+		  = cxx_fold_indirect_ref (ctx, loc, TREE_TYPE (type), op))
+		{
+		  r = build1 (ADDR_EXPR, type, ob);
+		  break;
+		}
+
 	    /* Likewise, don't error when casting from void* when OP is
 	       &heap uninit and similar.  */
 	    tree sop = tree_strip_nop_conversions (op);

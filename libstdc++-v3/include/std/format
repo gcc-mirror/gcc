@@ -269,39 +269,26 @@ namespace __format
       if (__first == __last)
 	__builtin_unreachable();
 
-      // TODO: use this loop unconditionally?
-      // Most integers used for arg-id, width or precision will be small.
-      if (is_constant_evaluated())
-	{
-	  auto __next = __first;
-	  unsigned short __val = 0;
-	  while (__next != __last && '0' <= *__next && *__next <= '9')
-	    {
-	      __val = (__val * 10) + (*__next - '0'); // TODO check overflow?
-	      ++__next;
-	    }
-	  if (__next == __first)
-	    return {0, nullptr};
-	  return {__val, __next};
-	}
-
-      unsigned short __val = 0;
       if constexpr (is_same_v<_CharT, char>)
 	{
-	  auto [ptr, ec] = std::from_chars(__first, __last, __val);
-	  if (ec == errc{})
-	    return {__val, ptr};
-	  return {0, nullptr};
+	  const auto __start = __first;
+	  unsigned short __val = 0;
+	  // N.B. std::from_chars is not constexpr in C++20.
+	  if (__detail::__from_chars_alnum<true>(__first, __last, __val, 10)
+		&& __first != __start) [[likely]]
+	    return {__val, __first};
 	}
       else
 	{
+	  unsigned short __val = 0;
 	  constexpr int __n = 32;
 	  char __buf[__n]{};
-	  for (int __i = 0; __i < __n && __first != __last; ++__i)
+	  for (int __i = 0; __i < __n && (__first + __i) != __last; ++__i)
 	    __buf[__i] = __first[__i];
 	  auto [__v, __ptr] = __format::__parse_integer(__buf, __buf + __n);
 	  return {__v, __first + (__ptr - __buf)};
 	}
+      return {0, nullptr};
     }
 
   template<typename _CharT>
@@ -2118,7 +2105,7 @@ namespace __format
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(const void* __v, basic_format_context<_Out, _CharT>& __fc) const
 	{
-	  auto __u = reinterpret_cast<__UINT64_TYPE__>(__v);
+	  auto __u = reinterpret_cast<__UINTPTR_TYPE__>(__v);
 	  char __buf[2 + sizeof(__v) * 2];
 	  auto [__ptr, __ec] = std::to_chars(__buf + 2, std::end(__buf),
 					     __u, 16);

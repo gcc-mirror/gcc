@@ -417,7 +417,7 @@ static void run_test_of_comparison(gcc_jit_context *ctxt,
 			 const char *expected)
 {
   gcc_jit_type *vec_type =
-    gcc_jit_type_get_vector (type, 4);
+    gcc_jit_type_get_vector (type, 2);
 
   CHECK_STRING_VALUE (
     make_test_of_comparison (ctxt,
@@ -560,17 +560,17 @@ verify_comparisons (gcc_jit_result *result)
   CHECK_VALUE (test_COMPARISON_GE_on_int (1, 2), 0);
   CHECK_VALUE (test_COMPARISON_GE_on_int (2, 1), 1);
 
-  typedef int __vector __attribute__ ((__vector_size__ (sizeof(int) * 2)));
-  typedef __vector (*test_vec_fn) (__vector, __vector);
+  typedef int v2si __attribute__ ((__vector_size__ (sizeof(int) * 2)));
+  typedef v2si (*test_vec_fn) (v2si, v2si);
 
-  __vector zero_zero = {0, 0};
-  __vector zero_one = {0, 1};
-  __vector one_zero = {1, 0};
+  v2si zero_zero = {0, 0};
+  v2si zero_one = {0, 1};
+  v2si one_zero = {1, 0};
 
-  __vector true_true = {-1, -1};
-  __vector false_true = {0, -1};
-  __vector true_false = {-1, 0};
-  __vector false_false = {0, 0};
+  v2si true_true = {-1, -1};
+  v2si false_true = {0, -1};
+  v2si true_false = {-1, 0};
+  v2si false_false = {0, 0};
 
   test_vec_fn test_COMPARISON_EQ_on_vec_int =
     (test_vec_fn)gcc_jit_result_get_code (result,
@@ -615,7 +615,7 @@ verify_comparisons (gcc_jit_result *result)
   CHECK_VECTOR_VALUE (2, test_COMPARISON_GE_on_vec_int (zero_one, one_zero), false_true);
 
   typedef float __vector_f __attribute__ ((__vector_size__ (sizeof(float) * 2)));
-  typedef __vector (*test_vec_f_fn) (__vector_f, __vector_f);
+  typedef v2si (*test_vec_f_fn) (__vector_f, __vector_f);
 
   __vector_f zero_zero_f = {0, 0};
   __vector_f zero_one_f = {0, 1};

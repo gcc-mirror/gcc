@@ -9267,6 +9267,26 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       /* Set DECL_NOT_FLEXARRAY flag for FIELD_DECL x.  */
       DECL_NOT_FLEXARRAY (x) = !is_flexible_array_member_p (is_last_field, x);
 
+      /* Set TYPE_INCLUDES_FLEXARRAY for the context of x, t.
+	 when x is an array and is the last field.  */
+      if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE)
+	TYPE_INCLUDES_FLEXARRAY (t)
+	  = is_last_field && flexible_array_member_type_p (TREE_TYPE (x));
+      /* Recursively set TYPE_INCLUDES_FLEXARRAY for the context of x, t
+	 when x is an union or record and is the last field.  */
+      else if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
+	TYPE_INCLUDES_FLEXARRAY (t)
+	  = is_last_field && TYPE_INCLUDES_FLEXARRAY (TREE_TYPE (x));
+
+      if (warn_flex_array_member_not_at_end
+	  && !is_last_field
+	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (x))
+	  && TYPE_INCLUDES_FLEXARRAY (TREE_TYPE (x)))
+	warning_at (DECL_SOURCE_LOCATION (x),
+		    OPT_Wflex_array_member_not_at_end,
+		    "structure containing a flexible array member"
+		    " is not at the end of another structure");
+
       if (DECL_NAME (x)
 	  || RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
 	saw_named_field = true;

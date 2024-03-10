@@ -2550,7 +2550,7 @@
 }
   [(set_attr "type" "vecperm")])
 
-(define_insn "*altivec_vupkhs<VU_char>_direct"
+(define_insn "altivec_vupkhs<VU_char>_direct"
   [(set (match_operand:VP 0 "register_operand" "=v")
 	(unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
 		     UNSPEC_VUNPACK_HI_SIGN_DIRECT))]

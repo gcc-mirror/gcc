@@ -694,6 +694,12 @@
   return num_insns > 1;
 })
 
+;; Return true if the operand is a constant that can be loaded with a vspltisw
+;; instruction and then a vupkhsw instruction.
+
+(define_predicate "vspltisw_vupkhsw_constant_split"
+  (and (match_code "const_vector")
+       (match_test "vspltisw_vupkhsw_constant_p (op, mode)")))
 
 ;; Return 1 if the operand is constant that can loaded directly with a XXSPLTIB
 ;; instruction.
@@ -740,6 +746,11 @@
 
       if (TARGET_P9_VECTOR
           && xxspltib_constant_p (op, mode, &num_insns, &value))
+	return true;
+
+      /* V2DI constant within RANGE (-16, 15) can be synthesized with a
+	 vspltisw and a vupkhsw.  */
+      if (vspltisw_vupkhsw_constant_p (op, mode, &value))
 	return true;
 
       return easy_altivec_constant (op, mode);
@@ -1123,20 +1134,6 @@
   if (!CONST_INT_P (offset))
     return true;
   return INTVAL (offset) % 4 == 0;
-})
-
-;; Return 1 if the operand is a memory operand that has a valid address for
-;; a DS-form instruction. I.e. the address has to be either just a register,
-;; or register + const where the two low order bits of const are zero.
-(define_predicate "ds_form_mem_operand"
-  (match_code "subreg,mem")
-{
-  if (!any_memory_operand (op, mode))
-    return false;
-
-  rtx addr = XEXP (op, 0);
-
-  return address_to_insn_form (addr, mode, NON_PREFIXED_DS) == INSN_FORM_DS;
 })
 
 ;; Return 1 if the operand, used inside a MEM, is a SYMBOL_REF.

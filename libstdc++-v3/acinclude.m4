@@ -5160,7 +5160,7 @@ dnl
       linux*)
 	GCC_TRY_COMPILE_OR_LINK(
 	  [#include <unistd.h>],
-	  [copy_file_range(1, nullptr, 2, nullptr, 1, 0);],
+	  [copy_file_range(1, (loff_t*)nullptr, 2, (loff_t*)nullptr, 1, 0);],
 	  [glibcxx_cv_copy_file_range=yes],
 	  [glibcxx_cv_copy_file_range=no])
 	;;
@@ -5676,6 +5676,33 @@ AC_DEFUN([GLIBCXX_CHECK_ALIGNAS_CACHELINE], [
        std::hardware_destructive_interference_size.])
   fi
   AC_MSG_RESULT($ac_alignas_cacheline)
+
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check whether iostream initialization should be done in the library,
+dnl using the init_priority attribute.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE if GCC supports the init_priority
+dnl    attribute for the target.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_INIT_PRIORITY], [
+AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_MSG_CHECKING([whether init_priority attribute is supported])
+  AC_TRY_COMPILE(, [
+  #if ! __has_attribute(init_priority)
+  #error init_priority not supported
+  #endif
+		 ], [ac_init_priority=yes], [ac_init_priority=no])
+  if test "$ac_init_priority" = yes; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE, 1,
+      [Define if init_priority should be used for iostream initialization.])
+  fi
+  AC_MSG_RESULT($ac_init_priority)
 
   AC_LANG_RESTORE
 ])

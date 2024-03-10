@@ -528,6 +528,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    5: CLASS_TYPE_P (in RECORD_TYPE and UNION_TYPE)
       ENUM_FIXED_UNDERLYING_TYPE_P (in ENUMERAL_TYPE)
       AUTO_IS_DECLTYPE (in TEMPLATE_TYPE_PARM)
+      TEMPLATE_TEMPLATE_PARM_SIMPLE_P (in TEMPLATE_TEMPLATE_PARM)
    6: TYPE_DEPENDENT_P_VALID
 
    Usage of DECL_LANG_FLAG_?:
@@ -1564,6 +1565,7 @@ struct GTY(()) tree_template_info {
   struct tree_base base;
   tree tmpl;
   tree args;
+  tree partial;
   vec<deferred_access_check, va_gc> *deferred_access_checks;
 };
 
@@ -3755,6 +3757,14 @@ struct GTY(()) lang_decl {
   ((struct tree_template_info*)TEMPLATE_INFO_CHECK (NODE))->args
 #define TI_PENDING_TEMPLATE_FLAG(NODE) \
   TREE_LANG_FLAG_1 (TEMPLATE_INFO_CHECK (NODE))
+
+/* For a class or variable template specialization, this contains the
+   TEMPLATE_INFO result of most_specialized_partial_spec, i.e. the selected
+   partial template specialization and arguments relative to it.  */
+#define TI_PARTIAL_INFO(NODE) \
+  (gcc_checking_assert (PRIMARY_TEMPLATE_P (TI_TEMPLATE (NODE))), \
+   ((struct tree_template_info*)NODE)->partial)
+
 /* For a given TREE_VEC containing a template argument list,
    this property contains the number of arguments that are not
    defaulted.  */
@@ -6004,7 +6014,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 	((template_parm_index*)TEMPLATE_PARM_INDEX_CHECK (NODE))
 #define TEMPLATE_PARM_IDX(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->index)
 #define TEMPLATE_PARM_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->level)
-#define TEMPLATE_PARM_DESCENDANTS(NODE) (TREE_CHAIN (NODE))
+#define TEMPLATE_PARM_DESCENDANTS(NODE) (TREE_CHAIN (TEMPLATE_PARM_INDEX_CHECK (NODE)))
 #define TEMPLATE_PARM_ORIG_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->orig_level)
 #define TEMPLATE_PARM_DECL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->decl)
 #define TEMPLATE_PARM_PARAMETER_PACK(NODE) \
@@ -6022,6 +6032,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
   (TEMPLATE_PARM_LEVEL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 #define TEMPLATE_TYPE_ORIG_LEVEL(NODE) \
   (TEMPLATE_PARM_ORIG_LEVEL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
+#define TEMPLATE_TYPE_DESCENDANTS(NODE) \
+  (TEMPLATE_PARM_DESCENDANTS (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 #define TEMPLATE_TYPE_DECL(NODE) \
   (TEMPLATE_PARM_DECL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 #define TEMPLATE_TYPE_PARAMETER_PACK(NODE) \
@@ -6030,6 +6042,11 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 /* For a C++17 class deduction placeholder, the template it represents.  */
 #define CLASS_PLACEHOLDER_TEMPLATE(NODE) \
   (DECL_INITIAL (TYPE_NAME (TEMPLATE_TYPE_PARM_CHECK (NODE))))
+
+/* True iff the template parameters of this TEMPLATE_TEMPLATE_PARM don't
+   use any outer template parameters.  */
+#define TEMPLATE_TEMPLATE_PARM_SIMPLE_P(NODE) \
+  (TYPE_LANG_FLAG_5 (TEMPLATE_TEMPLATE_PARM_CHECK (NODE)))
 
 /* Contexts in which auto deduction occurs. These flags are
    used to control diagnostics in do_auto_deduction.  */
@@ -7282,6 +7299,7 @@ extern void module_preprocess_options (cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
 /* In optimize.cc */
+extern tree clone_attrs				(tree);
 extern bool maybe_clone_body			(tree);
 
 /* In parser.cc */
@@ -7357,7 +7375,7 @@ extern bool redeclare_class_template		(tree, tree, tree);
 extern tree lookup_template_class		(tree, tree, tree, tree,
 						 int, tsubst_flags_t);
 extern tree lookup_template_function		(tree, tree);
-extern tree lookup_template_variable		(tree, tree);
+extern tree lookup_template_variable		(tree, tree, tsubst_flags_t);
 extern bool uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool uses_outer_template_parms_in_constraints (tree);
@@ -7397,7 +7415,7 @@ extern bool comp_template_args			(tree, tree, tree * = NULL,
 extern int template_args_equal                  (tree, tree, bool = false);
 extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
-extern tree most_specialized_partial_spec       (tree, tsubst_flags_t);
+extern tree most_specialized_partial_spec       (tree, tsubst_flags_t, bool = false);
 extern void print_candidates			(tree);
 extern void instantiate_pending_templates	(int);
 extern tree tsubst_default_argument		(tree, int, tree, tree,

@@ -12,6 +12,7 @@ void ao() {
       [](auto j) {
 	using as = typename C<j>::q;
 	if constexpr (m<ar, as>) {}
+	// { dg-bogus "'i' is not captured" "PR107437" { xfail { *-*-* } } .-1 }
       }(g());
   }(g());
 }

@@ -5866,6 +5866,9 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
   only_used = zero_regs_type & ONLY_USED;
   only_arg = zero_regs_type & ONLY_ARG;
 
+  if ((zero_regs_type & LEAFY_MODE) && leaf_function_p ())
+    only_used = true;
+
   /* For each of the hard registers, we should zero it if:
 	    1. it is a call-used register;
 	and 2. it is not a fixed register;

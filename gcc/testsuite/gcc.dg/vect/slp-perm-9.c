@@ -3,11 +3,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#if VECTOR_BITS > 512
 #define N (VECTOR_BITS * 6 / 16)
-#else
-#define N 200
-#endif
 
 void __attribute__((noinline))
 foo (unsigned short *__restrict__ pInput, unsigned short *__restrict__ pOutput)

@@ -630,8 +630,11 @@ empty_bb_or_one_feeding_into_p (basic_block bb,
       || gimple_has_side_effects (stmt_to_move))
     return false;
 
-  if (gimple_uses_undefined_value_p (stmt_to_move))
-    return false;
+  ssa_op_iter it;
+  tree use;
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt_to_move, it, SSA_OP_USE)
+    if (ssa_name_maybe_undef_p (use))
+      return false;
 
   /* Allow assignments but allow some builtin/internal calls.
      As const calls don't match any of the above, yet they could
@@ -781,6 +784,13 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       arg_true = arg1;
       arg_false = arg0;
     }
+
+  /* Do not make conditional undefs unconditional.  */
+  if ((TREE_CODE (arg_true) == SSA_NAME
+       && ssa_name_maybe_undef_p (arg_true))
+      || (TREE_CODE (arg_false) == SSA_NAME
+	  && ssa_name_maybe_undef_p (arg_false)))
+    return false;
 
   tree type = TREE_TYPE (gimple_phi_result (phi));
   result = gimple_simplify_phiopt (early_p, type, stmt,
@@ -3967,6 +3977,7 @@ pass_phiopt::execute (function *)
   bool cfgchanged = false;
 
   calculate_dominance_info (CDI_DOMINATORS);
+  mark_ssa_maybe_undefs ();
 
   /* Search every basic block for COND_EXPR we may be able to optimize.
 

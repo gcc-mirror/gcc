@@ -189,6 +189,7 @@ class general_scalar_chain : public scalar_chain
   void convert_insn (rtx_insn *insn) final override;
   void convert_op (rtx *op, rtx_insn *insn) final override;
   int vector_const_cost (rtx exp);
+  rtx convert_rotate (enum rtx_code, rtx op0, rtx op1, rtx_insn *insn);
 };
 
 class timode_scalar_chain : public scalar_chain

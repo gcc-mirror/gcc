@@ -7,7 +7,7 @@ fail_compilation/fail19948.d(15): Error: function `fail19948.func(const(X))` is 
 fail_compilation/fail19948.d(15):        cannot pass argument `X()` of type `fail19948.main.X` to parameter `const(fail19948.X)`
 ---
 */
-
+// DISABLED: win32
 struct X {}
 void main()
 {

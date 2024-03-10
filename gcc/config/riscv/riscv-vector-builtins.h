@@ -442,6 +442,8 @@ public:
   bool check (void);
 
   bool require_immediate (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT) const;
+  bool require_immediate_range_or (unsigned int, HOST_WIDE_INT,
+				   HOST_WIDE_INT, HOST_WIDE_INT) const;
 
 private:
   bool require_immediate_range (unsigned int, HOST_WIDE_INT,
@@ -449,6 +451,8 @@ private:
   void report_non_ice (unsigned int) const;
   void report_out_of_range (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT,
 			    HOST_WIDE_INT) const;
+  void report_out_of_range_and_not (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT,
+				    HOST_WIDE_INT, HOST_WIDE_INT) const;
 
   /* The type of the resolved function.  */
   tree m_fntype;
