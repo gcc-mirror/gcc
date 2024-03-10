@@ -175,7 +175,7 @@ init_internal_fns ()
 #define len_store_direct { 3, 3, false }
 #define mask_len_store_direct { 4, 5, false }
 #define vec_set_direct { 3, 3, false }
-#define vec_extract_direct { 3, 3, false }
+#define vec_extract_direct { 0, -1, false }
 #define unary_direct { 0, 0, true }
 #define unary_convert_direct { -1, 0, true }
 #define binary_direct { 0, 0, true }
@@ -188,6 +188,7 @@ init_internal_fns ()
 #define cond_len_ternary_direct { 1, 1, true }
 #define while_direct { 0, 2, false }
 #define fold_extract_direct { 2, 2, false }
+#define fold_len_extract_direct { 2, 2, false }
 #define fold_left_direct { 1, 1, false }
 #define mask_fold_left_direct { 1, 1, false }
 #define mask_len_fold_left_direct { 1, 1, false }
@@ -2931,7 +2932,8 @@ expand_partial_load_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab)
   type = TREE_TYPE (lhs);
   rhs = expand_call_mem_ref (type, stmt, 0);
 
-  if (optab == vec_mask_load_lanes_optab)
+  if (optab == vec_mask_load_lanes_optab
+      || optab == vec_mask_len_load_lanes_optab)
     icode = get_multi_vector_move (type, optab);
   else if (optab == len_load_optab)
     icode = direct_optab_handler (optab, TYPE_MODE (type));
@@ -2973,7 +2975,8 @@ expand_partial_store_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab
   type = TREE_TYPE (rhs);
   lhs = expand_call_mem_ref (type, stmt, 0);
 
-  if (optab == vec_mask_store_lanes_optab)
+  if (optab == vec_mask_store_lanes_optab
+      || optab == vec_mask_len_store_lanes_optab)
     icode = get_multi_vector_move (type, optab);
   else if (optab == len_store_optab)
     icode = direct_optab_handler (optab, TYPE_MODE (type));
@@ -3119,43 +3122,6 @@ expand_vec_set_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
       if (maybe_expand_insn (icode, 3, ops))
 	{
 	  emit_move_insn (target, temp);
-	  return;
-	}
-    }
-  gcc_unreachable ();
-}
-
-/* Expand VEC_EXTRACT optab internal function.  */
-
-static void
-expand_vec_extract_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
-{
-  tree lhs = gimple_call_lhs (stmt);
-  tree op0 = gimple_call_arg (stmt, 0);
-  tree op1 = gimple_call_arg (stmt, 1);
-
-  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-
-  machine_mode outermode = TYPE_MODE (TREE_TYPE (op0));
-  machine_mode extract_mode = TYPE_MODE (TREE_TYPE (lhs));
-
-  rtx src = expand_normal (op0);
-  rtx pos = expand_normal (op1);
-
-  class expand_operand ops[3];
-  enum insn_code icode = convert_optab_handler (optab, outermode,
-						extract_mode);
-
-  if (icode != CODE_FOR_nothing)
-    {
-      create_output_operand (&ops[0], target, extract_mode);
-      create_input_operand (&ops[1], src, outermode);
-      create_convert_operand_from (&ops[2], pos,
-				   TYPE_MODE (TREE_TYPE (op1)), true);
-      if (maybe_expand_insn (icode, 3, ops))
-	{
-	  if (!rtx_equal_p (target, ops[0].value))
-	    emit_move_insn (target, ops[0].value);
 	  return;
 	}
     }
@@ -3898,6 +3864,9 @@ expand_convert_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab,
 #define expand_fold_extract_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
+#define expand_fold_len_extract_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 5)
+
 #define expand_fold_left_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
@@ -3914,6 +3883,9 @@ expand_convert_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab,
 
 #define expand_unary_convert_optab_fn(FN, STMT, OPTAB) \
   expand_convert_optab_fn (FN, STMT, OPTAB, 1)
+
+#define expand_vec_extract_optab_fn(FN, STMT, OPTAB) \
+  expand_convert_optab_fn (FN, STMT, OPTAB, 2)
 
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
@@ -4012,12 +3984,13 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_len_store_optab_supported_p convert_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
+#define direct_fold_len_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_mask_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_mask_len_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_check_ptrs_optab_supported_p direct_optab_supported_p
 #define direct_vec_set_optab_supported_p direct_optab_supported_p
-#define direct_vec_extract_optab_supported_p direct_optab_supported_p
+#define direct_vec_extract_optab_supported_p convert_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 
@@ -4443,6 +4416,30 @@ get_conditional_internal_fn (internal_fn fn)
     }
 }
 
+/* If there exists an internal function like IFN that operates on vectors,
+   but with additional length and bias parameters, return the internal_fn
+   for that function, otherwise return IFN_LAST.  */
+internal_fn
+get_len_internal_fn (internal_fn fn)
+{
+  switch (fn)
+    {
+#undef DEF_INTERNAL_COND_FN
+#undef DEF_INTERNAL_SIGNED_COND_FN
+#define DEF_INTERNAL_COND_FN(NAME, ...)                                        \
+  case IFN_COND_##NAME:                                                        \
+    return IFN_COND_LEN_##NAME;
+#define DEF_INTERNAL_SIGNED_COND_FN(NAME, ...)                                 \
+  case IFN_COND_##NAME:                                                        \
+    return IFN_COND_LEN_##NAME;
+#include "internal-fn.def"
+#undef DEF_INTERNAL_COND_FN
+#undef DEF_INTERNAL_SIGNED_COND_FN
+    default:
+      return IFN_LAST;
+    }
+}
+
 /* If IFN implements the conditional form of an unconditional internal
    function, return that unconditional function, otherwise return IFN_LAST.  */
 
@@ -4451,8 +4448,11 @@ get_unconditional_internal_fn (internal_fn ifn)
 {
   switch (ifn)
     {
-#define CASE(NAME) case IFN_COND_##NAME: return IFN_##NAME;
-      FOR_EACH_COND_FN_PAIR(CASE)
+#define CASE(NAME)                                                             \
+    case IFN_COND_##NAME:                                                      \
+    case IFN_COND_LEN_##NAME:                                                  \
+      return IFN_##NAME;
+FOR_EACH_COND_FN_PAIR (CASE)
 #undef CASE
     default:
       return IFN_LAST;
@@ -4552,6 +4552,7 @@ internal_load_fn_p (internal_fn fn)
     case IFN_MASK_LOAD:
     case IFN_LOAD_LANES:
     case IFN_MASK_LOAD_LANES:
+    case IFN_MASK_LEN_LOAD_LANES:
     case IFN_GATHER_LOAD:
     case IFN_MASK_GATHER_LOAD:
     case IFN_MASK_LEN_GATHER_LOAD:
@@ -4574,6 +4575,7 @@ internal_store_fn_p (internal_fn fn)
     case IFN_MASK_STORE:
     case IFN_STORE_LANES:
     case IFN_MASK_STORE_LANES:
+    case IFN_MASK_LEN_STORE_LANES:
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
     case IFN_MASK_LEN_SCATTER_STORE:
@@ -4646,6 +4648,8 @@ internal_fn_len_index (internal_fn fn)
     case IFN_COND_LEN_NEG:
     case IFN_MASK_LEN_LOAD:
     case IFN_MASK_LEN_STORE:
+    case IFN_MASK_LEN_LOAD_LANES:
+    case IFN_MASK_LEN_STORE_LANES:
       return 3;
 
     default:
@@ -4663,8 +4667,10 @@ internal_fn_mask_index (internal_fn fn)
     {
     case IFN_MASK_LOAD:
     case IFN_MASK_LOAD_LANES:
+    case IFN_MASK_LEN_LOAD_LANES:
     case IFN_MASK_STORE:
     case IFN_MASK_STORE_LANES:
+    case IFN_MASK_LEN_STORE_LANES:
     case IFN_MASK_LEN_LOAD:
     case IFN_MASK_LEN_STORE:
       return 2;
@@ -4700,6 +4706,7 @@ internal_fn_stored_value_index (internal_fn fn)
       return 4;
 
     case IFN_MASK_LEN_STORE:
+    case IFN_MASK_LEN_STORE_LANES:
       return 5;
 
     default:

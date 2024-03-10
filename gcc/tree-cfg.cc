@@ -5684,12 +5684,48 @@ gimple_verify_flow_info (void)
 	error ("fallthru to exit from bb %d", e->src->index);
 	err = true;
       }
+  if (cfun->cfg->full_profile
+      && !ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.initialized_p ())
+    {
+      error ("entry block count not initialized");
+      err = true;
+    }
+  if (cfun->cfg->full_profile
+      && !EXIT_BLOCK_PTR_FOR_FN (cfun)->count.initialized_p ())
+    {
+      error ("exit block count not initialized");
+      err = true;
+    }
+  if (cfun->cfg->full_profile
+      && !single_succ_edge
+	      (ENTRY_BLOCK_PTR_FOR_FN (cfun))->probability.initialized_p ())
+    {
+      error ("probability of edge from entry block not initialized");
+      err = true;
+    }
+
 
   FOR_EACH_BB_FN (bb, cfun)
     {
       bool found_ctrl_stmt = false;
 
       stmt = NULL;
+
+      if (cfun->cfg->full_profile)
+        {
+	  if (!bb->count.initialized_p ())
+	    {
+	      error ("count of bb %d not initialized", bb->index);
+	      err = true;
+	    }
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (!e->probability.initialized_p ())
+	      {
+		error ("probability of edge %d->%d not initialized",
+		       bb->index, e->dest->index);
+		err = true;
+	      }
+        }
 
       /* Skip labels on the start of basic block.  */
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -7734,11 +7770,14 @@ fold_loop_internal_call (gimple *g, tree value)
 		 test.  This should not happen as the guarded code should
 		 start with pre-header.  */
 	      gcc_assert (single_pred_edge (taken_edge->dest));
-	      taken_edge->dest->count
-		= taken_edge->dest->count.apply_scale (new_count,
-						       old_count);
-	      scale_strictly_dominated_blocks (taken_edge->dest,
-					       new_count, old_count);
+	      if (old_count.nonzero_p ())
+		{
+		  taken_edge->dest->count
+		    = taken_edge->dest->count.apply_scale (new_count,
+							   old_count);
+		  scale_strictly_dominated_blocks (taken_edge->dest,
+						   new_count, old_count);
+		}
 	    }
 	}
     }
@@ -8565,7 +8604,7 @@ print_loop_info (FILE *file, const class loop *loop, const char *prefix)
       fprintf (file, "\n%siterations by profile: %f (%s%s) entry count:", prefix,
 	       iterations.to_double (), reliable ? "reliable" : "unreliable",
 	       maybe_flat_loop_profile (loop) ? ", maybe flat" : "");
-      loop_count_in (loop).dump (dump_file, cfun);
+      loop_count_in (loop).dump (file, cfun);
     }
 
 }

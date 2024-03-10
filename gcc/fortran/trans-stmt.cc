@@ -2334,6 +2334,7 @@ gfc_trans_block_construct (gfc_code* code)
   tree exit_label;
   stmtblock_t body;
   gfc_association_list *ass;
+  tree translated_body;
 
   ns = code->ext.block.ns;
   gcc_assert (ns);
@@ -2352,7 +2353,11 @@ gfc_trans_block_construct (gfc_code* code)
 
   finish_oacc_declare (ns, sym, true);
 
-  gfc_add_expr_to_block (&body, gfc_trans_code (ns->code));
+  translated_body = gfc_trans_code (ns->code);
+  if (ns->omp_structured_block)
+    translated_body = build1 (OMP_STRUCTURED_BLOCK, void_type_node,
+			      translated_body);
+  gfc_add_expr_to_block (&body, translated_body);
   gfc_add_expr_to_block (&body, build1_v (LABEL_EXPR, exit_label));
 
   /* Finish everything.  */

@@ -530,13 +530,13 @@ match_real_constant (gfc_expr **result, int signflag)
   seen_dp = 0;
   seen_digits = 0;
   exp_char = ' ';
-  negate = FALSE;
+  negate = false;
 
   c = gfc_next_ascii_char ();
   if (signflag && (c == '+' || c == '-'))
     {
       if (c == '-')
-	negate = TRUE;
+	negate = true;
 
       gfc_gobble_whitespace ();
       c = gfc_next_ascii_char ();

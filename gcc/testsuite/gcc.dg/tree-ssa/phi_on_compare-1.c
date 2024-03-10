@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-dom2" } */
+/* { dg-options "-Ofast -fdump-tree-dom2 -fdump-tree-optimized-details-blocks" } */
 
 void g (int);
 void g1 (int);
@@ -33,3 +33,4 @@ f (long a, long b, long c, long d, long x)
    optimization in the backward threader before killing the forward
    threader.  Similarly for the other phi_on_compare-*.c tests.  */
 /* { dg-final { scan-tree-dump-times "Removing basic block" 1 "dom2" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

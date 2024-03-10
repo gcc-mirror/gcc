@@ -11,8 +11,14 @@
 #define TEST_ALL()                                                             \
   TEST (double, int32_t)                                                       \
   TEST (double, uint32_t)                                                      \
+  TEST (double, int16_t)                                                       \
+  TEST (double, uint16_t)                                                      \
+  TEST (double, int8_t)                                                        \
+  TEST (double, uint8_t)                                                       \
   TEST (float, int16_t)							       \
   TEST (float, uint16_t)						       \
+  TEST (float, int8_t)							       \
+  TEST (float, uint8_t)							       \
   TEST (_Float16, int8_t)						       \
   TEST (_Float16, uint8_t)						       \
 

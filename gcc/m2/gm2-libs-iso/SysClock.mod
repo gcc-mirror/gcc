@@ -173,6 +173,26 @@ BEGIN
 END ExtractDate ;
 
 
+(*
+   EpochTime - assigns all fields of userData to 0 or FALSE.
+*)
+
+PROCEDURE EpochTime (VAR userData: DateTime) ;
+BEGIN
+   WITH userData DO
+      second := 0 ;
+      minute :=  0 ;
+      hour := 0 ;
+      year := 0 ;
+      month := 0 ;
+      day := 0 ;
+      fractions := 0 ;
+      zone := 0 ;
+      summerTimeFlag := FALSE
+   END
+END EpochTime ;
+
+
 PROCEDURE GetClock (VAR userData: DateTime) ;
 (* Assigns local date and time of the day to userData *)
 VAR
@@ -185,28 +205,32 @@ BEGIN
       ts := InitTimespec () ;
       IF GetTimeRealtime (ts) = 0
       THEN
-         GetTimespec (ts, sec, nano) ;
-         offset := timezone () ;
-         IF Debugging
+         IF GetTimespec (ts, sec, nano) = 1
          THEN
-            printf ("getclock = %ld\n", sec)
-         END ;
-         sec := VAL (LONGINT, sec) + offset ;
-         IF Debugging
-         THEN
-            printf ("getclock = %ld\n", sec)
-         END ;
-         WITH userData DO
-            second := VAL (Sec, DivMod (sec, MAX (Sec) + 1)) ;
-            minute := VAL (Min, DivMod (sec, MAX (Min) + 1)) ;
-            hour := VAL (Hour, DivMod (sec, MAX (Hour) + 1)) ;
-            ExtractDate (sec, year, month, day) ;
-            fractions := nano DIV ((1000 * 1000 * 1000) DIV maxSecondParts) ;
-            zone := - (offset DIV 60) ;
-            summerTimeFlag := (isdst () = 1)
+            offset := timezone () ;
+            IF Debugging
+            THEN
+               printf ("getclock = %ld\n", sec)
+            END ;
+            sec := VAL (LONGINT, sec) + offset ;
+            IF Debugging
+            THEN
+               printf ("getclock = %ld\n", sec)
+            END ;
+            WITH userData DO
+               second := VAL (Sec, DivMod (sec, MAX (Sec) + 1)) ;
+               minute := VAL (Min, DivMod (sec, MAX (Min) + 1)) ;
+               hour := VAL (Hour, DivMod (sec, MAX (Hour) + 1)) ;
+               ExtractDate (sec, year, month, day) ;
+               fractions := nano DIV ((1000 * 1000 * 1000) DIV maxSecondParts) ;
+               zone := - (offset DIV 60) ;
+               summerTimeFlag := (isdst () = 1)
+            END
+         ELSE
+            EpochTime (userData)
          END
       ELSE
-         HALT
+         EpochTime (userData)
       END ;
       ts := KillTimespec (ts)
    END
@@ -306,10 +330,11 @@ BEGIN
                            userData.month, userData.year) ;
       offset := timezone () ;
       sec := VAL (LONGINT, sec) - offset ;
-      SetTimespec (ts, sec, nano) ;
-      IF SetTimeRealtime (ts) # 0
+      IF SetTimespec (ts, sec, nano) = 1
       THEN
-         HALT
+         IF SetTimeRealtime (ts) = 0
+         THEN
+         END
       END ;
       ts := KillTimespec (ts)
    END

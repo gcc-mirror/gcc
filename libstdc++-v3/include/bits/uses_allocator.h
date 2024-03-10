@@ -168,7 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++14
 
   template<typename _Tp, typename... _Args>
-    void __uses_allocator_construct_impl(__uses_alloc0 __a, _Tp* __ptr,
+    void __uses_allocator_construct_impl(__uses_alloc0, _Tp* __ptr,
 					 _Args&&... __args)
     { ::new ((void*)__ptr) _Tp(std::forward<_Args>(__args)...); }
 

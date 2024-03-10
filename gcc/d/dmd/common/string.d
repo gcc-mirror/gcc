@@ -48,7 +48,7 @@ struct SmallBuffer(Element)
         }
         else
         {
-            assert(len < sizeof.max / Element.sizeof);
+            assert(len < sizeof.max / (2 * Element.sizeof));
             _extent = (cast(typeof(_extent.ptr)) malloc(len * Element.sizeof))[0 .. len];
             _extent.ptr || assert(0, "Out of memory.");
             needsFree = true;

@@ -190,10 +190,10 @@ add_new_plugin (const char* plugin_name)
 #if defined(__MINGW32__)
       static const char plugin_ext[] = ".dll";
 #elif defined(__APPLE__)
-      /* Mac OS has two types of libraries: dynamic libraries (.dylib) and
+      /* macOS has two types of libraries: dynamic libraries (.dylib) and
          plugins (.bundle). Both can be used with dlopen()/dlsym() but the
          former cannot be linked at build time (i.e., with the -lfoo linker
-         option). A GCC plugin is therefore probably a Mac OS plugin but their
+         option). A GCC plugin is therefore probably a macOS plugin but their
          use seems to be quite rare and the .bundle extension is more of a
          recommendation rather than the rule. This raises the questions of how
          well they are supported by tools (e.g., libtool). So to avoid

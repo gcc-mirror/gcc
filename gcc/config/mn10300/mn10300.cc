@@ -1932,7 +1932,8 @@ mn10300_legitimate_pic_operand_p (rtx x)
    function record_unscaled_index_insn_codes.  */
 
 static bool
-mn10300_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+mn10300_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+			      code_helper = ERROR_MARK)
 {
   rtx base, index;
 

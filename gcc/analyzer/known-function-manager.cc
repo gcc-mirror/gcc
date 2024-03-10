@@ -137,6 +137,13 @@ known_function_manager::get_normal_builtin (enum built_in_function name) const
   return m_combined_fns_arr[name];
 }
 
+const known_function *
+known_function_manager::
+get_normal_builtin (const builtin_known_function *builtin_kf) const
+{
+  return get_normal_builtin (builtin_kf->builtin_code ());
+}
+
 /* Get any known_function matching IDENTIFIER, without type-checking.
    Return NULL if there isn't one.  */
 

@@ -1689,3 +1689,6 @@ X::operator Z<int><int>()::y
 
 _ZZN1XIfEcv1ZIT_EIiEEvE1y
 X<float>::operator Z<int><int>()::y
+
+_ZN1SILi1EEF3barIiEEiR4Base
+int S<1>::bar[friend]<int>(Base&)

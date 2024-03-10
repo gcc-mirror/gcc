@@ -319,7 +319,7 @@ DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
 			/*RATIO*/ DEMAND_TRUE, /*GE_SEW*/ DEMAND_FALSE,
 			/*NEW_DEMAND_SEW*/ true,
 			/*NEW_DEMAND_LMUL*/ false,
-			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_RATIO*/ true,
 			/*NEW_DEMAND_GE_SEW*/ true, first_sew,
 			vlmul_for_first_sew_second_ratio, second_ratio)
 DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,

@@ -122,7 +122,7 @@ AVAIL (clmul_zbkc32_or_zbc32, (TARGET_ZBKC || TARGET_ZBC) && !TARGET_64BIT)
 AVAIL (clmul_zbkc64_or_zbc64, (TARGET_ZBKC || TARGET_ZBC) && TARGET_64BIT)
 AVAIL (clmulr_zbc32, TARGET_ZBC && !TARGET_64BIT)
 AVAIL (clmulr_zbc64, TARGET_ZBC && TARGET_64BIT)
-AVAIL (always,     (!0))
+AVAIL (hint_pause, (!0))
 
 /* Construct a riscv_builtin_description from the given arguments.
 
@@ -179,7 +179,7 @@ static const struct riscv_builtin_description riscv_builtins[] = {
 
   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float),
-  DIRECT_NO_TARGET_BUILTIN (pause, RISCV_VOID_FTYPE, always),
+  RISCV_BUILTIN (pause, "pause", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE, hint_pause),
 };
 
 /* Index I is the function declaration for riscv_builtins[I], or null if the

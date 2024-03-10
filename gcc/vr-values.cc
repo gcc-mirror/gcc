@@ -1139,6 +1139,87 @@ simplify_using_ranges::simplify_cond_using_ranges_1 (gcond *stmt)
   if (fold_cond (stmt))
     return true;
 
+  if (simplify_compare_using_ranges_1 (cond_code, op0, op1, stmt))
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Simplified relational ");
+	  print_gimple_stmt (dump_file, stmt, 0);
+	  fprintf (dump_file, " into ");
+	}
+
+      gimple_cond_set_code (stmt, cond_code);
+      gimple_cond_set_lhs (stmt, op0);
+      gimple_cond_set_rhs (stmt, op1);
+
+      update_stmt (stmt);
+
+       if (dump_file)
+	{
+	  print_gimple_stmt (dump_file, stmt, 0);
+	  fprintf (dump_file, "\n");
+	}
+      return true;
+    }
+  return false;
+}
+
+/* Like simplify_cond_using_ranges_1 but for assignments rather
+   than GIMPLE_COND. */
+
+bool
+simplify_using_ranges::simplify_compare_assign_using_ranges_1
+					(gimple_stmt_iterator *gsi,
+					 gimple *stmt)
+{
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  tree op0 = gimple_assign_rhs1 (stmt);
+  tree op1 = gimple_assign_rhs2 (stmt);
+  gcc_assert (TREE_CODE_CLASS (code) == tcc_comparison);
+  bool happened = false;
+
+  if (simplify_compare_using_ranges_1 (code, op0, op1, stmt))
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Simplified relational ");
+	  print_gimple_stmt (dump_file, stmt, 0);
+	  fprintf (dump_file, " into ");
+	}
+
+      gimple_assign_set_rhs_code (stmt, code);
+      gimple_assign_set_rhs1 (stmt, op0);
+      gimple_assign_set_rhs2 (stmt, op1);
+
+      update_stmt (stmt);
+
+       if (dump_file)
+	{
+	  print_gimple_stmt (dump_file, stmt, 0);
+	  fprintf (dump_file, "\n");
+	}
+      happened = true;
+    }
+
+  /* Transform EQ_EXPR, NE_EXPR into BIT_XOR_EXPR or identity
+     if the RHS is zero or one, and the LHS are known to be boolean
+     values.  */
+  if ((code == EQ_EXPR || code == NE_EXPR)
+      && INTEGRAL_TYPE_P (TREE_TYPE (op0))
+      && simplify_truth_ops_using_ranges (gsi, stmt))
+    happened = true;
+
+  return happened;
+}
+
+/* Try to simplify OP0 COND_CODE OP1 using a relational operator to an
+   equality test if the range information indicates only one value can
+   satisfy the original conditional.   */
+
+bool
+simplify_using_ranges::simplify_compare_using_ranges_1 (tree_code &cond_code, tree &op0, tree &op1, gimple *stmt)
+{
+  bool happened = false;
   if (cond_code != NE_EXPR
       && cond_code != EQ_EXPR
       && TREE_CODE (op0) == SSA_NAME
@@ -1157,26 +1238,9 @@ simplify_using_ranges::simplify_cond_using_ranges_1 (gcond *stmt)
 	  tree new_tree = test_for_singularity (cond_code, op0, op1, &vr);
 	  if (new_tree)
 	    {
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Simplified relational ");
-		  print_gimple_stmt (dump_file, stmt, 0);
-		  fprintf (dump_file, " into ");
-		}
-
-	      gimple_cond_set_code (stmt, EQ_EXPR);
-	      gimple_cond_set_lhs (stmt, op0);
-	      gimple_cond_set_rhs (stmt, new_tree);
-
-	      update_stmt (stmt);
-
-	      if (dump_file)
-		{
-		  print_gimple_stmt (dump_file, stmt, 0);
-		  fprintf (dump_file, "\n");
-		}
-
-	      return true;
+	      cond_code = EQ_EXPR;
+	      op1 = new_tree;
+	      happened = true;
 	    }
 
 	  /* Try again after inverting the condition.  We only deal
@@ -1187,45 +1251,25 @@ simplify_using_ranges::simplify_cond_using_ranges_1 (gcond *stmt)
 			op0, op1, &vr);
 	  if (new_tree)
 	    {
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Simplified relational ");
-		  print_gimple_stmt (dump_file, stmt, 0);
-		  fprintf (dump_file, " into ");
-		}
-
-	      gimple_cond_set_code (stmt, NE_EXPR);
-	      gimple_cond_set_lhs (stmt, op0);
-	      gimple_cond_set_rhs (stmt, new_tree);
-
-	      update_stmt (stmt);
-
-	      if (dump_file)
-		{
-		  print_gimple_stmt (dump_file, stmt, 0);
-		  fprintf (dump_file, "\n");
-		}
-
-	      return true;
+	      cond_code = NE_EXPR;
+	      op1 = new_tree;
+	      happened = true;
 	    }
 	}
     }
   // Try to simplify casted conditions.
-  return simplify_casted_cond (stmt);
+  if (simplify_casted_compare (cond_code, op0, op1))
+    happened = true;
+  return happened;
 }
 
-/* STMT is a conditional at the end of a basic block.
-
-   If the conditional is of the form SSA_NAME op constant and the SSA_NAME
-   was set via a type conversion, try to replace the SSA_NAME with the RHS
-   of the type conversion.  Doing so makes the conversion dead which helps
-   subsequent passes.  */
+/* Simplify OP0 code OP1 when OP1 is a constant and OP0 was a SSA_NAME
+   defined by a type conversion. Replacing OP0 with RHS of the type conversion.
+   Doing so makes the conversion dead which helps subsequent passes.  */
 
 bool
-simplify_using_ranges::simplify_casted_cond (gcond *stmt)
+simplify_using_ranges::simplify_casted_compare (tree_code &, tree &op0, tree &op1)
 {
-  tree op0 = gimple_cond_lhs (stmt);
-  tree op1 = gimple_cond_rhs (stmt);
 
   /* If we have a comparison of an SSA_NAME (OP0) against a constant,
      see if OP0 was set by a type conversion where the source of
@@ -1274,9 +1318,8 @@ simplify_using_ranges::simplify_casted_cond (gcond *stmt)
 	      && int_fits_type_p (op1, TREE_TYPE (innerop)))
 	    {
 	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
-	      gimple_cond_set_lhs (stmt, innerop);
-	      gimple_cond_set_rhs (stmt, newconst);
-	      update_stmt (stmt);
+	      op0 = innerop;
+	      op1 = newconst;
 	      return true;
 	    }
 	}
@@ -1880,16 +1923,11 @@ simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 	    }
 	}
 
+      if (TREE_CODE_CLASS (rhs_code) == tcc_comparison)
+	return simplify_compare_assign_using_ranges_1 (gsi, stmt);
+
       switch (rhs_code)
 	{
-	case EQ_EXPR:
-	case NE_EXPR:
-          /* Transform EQ_EXPR, NE_EXPR into BIT_XOR_EXPR or identity
-	     if the RHS is zero or one, and the LHS are known to be boolean
-	     values.  */
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_truth_ops_using_ranges (gsi, stmt);
-	  break;
 
       /* Transform TRUNC_DIV_EXPR and TRUNC_MOD_EXPR into RSHIFT_EXPR
 	 and BIT_AND_EXPR respectively if the first operand is greater

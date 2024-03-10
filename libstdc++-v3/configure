@@ -73156,7 +73156,7 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build libbacktrace support" >&5
 $as_echo_n "checking whether to build libbacktrace support... " >&6; }
   if test "$enable_libstdcxx_backtrace" = "auto"; then
-    enable_libstdcxx_backtrace=no
+    enable_libstdcxx_backtrace=yes
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_backtrace" >&5
 $as_echo "$enable_libstdcxx_backtrace" >&6; }

@@ -48,6 +48,14 @@
 #include <bits/c++config.h>
 #include <bits/stl_function.h> // std::equal_to, std::unary_function etc.
 
+#define __glibcxx_want_invoke
+#define __glibcxx_want_constexpr_functional
+#define __glibcxx_want_invoke_r
+#define __glibcxx_want_bind_front
+#define __glibcxx_want_not_fn
+#define __glibcxx_want_boyer_moore_searcher
+#include <bits/version.h>
+
 #if __cplusplus >= 201103L
 
 #include <tuple>
@@ -86,13 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<int _Num> struct _Placeholder { };
 
-#if __cplusplus >= 201103L
-
-#if __cplusplus >= 201703L
-# define __cpp_lib_invoke 201411L
-# if __cplusplus > 201703L
-#  define __cpp_lib_constexpr_functional 201907L
-# endif
+#ifdef __cpp_lib_invoke // C++ >= 17
 
   /** Invoke a callable object.
    *
@@ -113,9 +115,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__invoke(std::forward<_Callable>(__fn),
 			   std::forward<_Args>(__args)...);
     }
+#endif
 
-#if __cplusplus > 202002L
-# define __cpp_lib_invoke_r 202106L
+#ifdef __cpp_lib_invoke_r // C++ >= 23
 
   /** Invoke a callable object and convert the result to `_Res`.
    *
@@ -133,11 +135,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__invoke_r<_Res>(std::forward<_Callable>(__fn),
 				   std::forward<_Args>(__args)...);
     }
-#endif // C++23
-#endif // C++17
+#endif // __cpp_lib_invoke_r
 
   /// @cond undocumented
 
+#if __cplusplus >= 201103L
   template<typename _MemFunPtr,
 	   bool __is_mem_fn = is_member_function_pointer<_MemFunPtr>::value>
     class _Mem_fn_base
@@ -910,8 +912,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  std::forward<_BoundArgs>(__args)...);
     }
 
-#if __cplusplus > 201703L
-#define __cpp_lib_bind_front 201907L
+#ifdef __cpp_lib_bind_front // C++ >= 20
 
   template<typename _Fd, typename... _BoundArgs>
     struct _Bind_front
@@ -1077,7 +1078,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Bind_front_t<_Fn, _Args...>(0, std::forward<_Fn>(__fn),
 					  std::forward<_Args>(__args)...);
     }
-#endif // C++20
+#endif // __cpp_lib_bind_front
 
 #if __cplusplus >= 201402L
   /// Generalized negator.
@@ -1147,9 +1148,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_byte_like<byte, equal_to<void>>
     : true_type { };
+#endif
 
   // [func.not_fn] Function template not_fn
-#define __cpp_lib_not_fn 201603L
+#ifdef __cpp_lib_not_fn // C++ >= 17
   /** Wrap a function object to create one that negates its result.
    *
    * The function template `std::not_fn` creates a "forwarding call wrapper",
@@ -1170,7 +1172,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return _Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn), 0};
     }
+#endif
 
+#if __cplusplus >= 201703L
   // Searchers
 
   template<typename _ForwardIterator1, typename _BinaryPredicate = equal_to<>>
@@ -1203,8 +1207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       tuple<_ForwardIterator1, _ForwardIterator1, _BinaryPredicate> _M_m;
     };
 
-#if _GLIBCXX_HOSTED
-#define __cpp_lib_boyer_moore_searcher 201603L
+#ifdef __cpp_lib_boyer_moore_searcher // C++ >= 17 && HOSTED
 
   template<typename _Key, typename _Tp, typename _Hash, typename _Pred>
     struct __boyer_moore_map_base
@@ -1448,7 +1451,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return std::make_pair(__last, __last);
     }
-#endif // HOSTED
+#endif // __cpp_lib_boyer_moore_searcher
 
 #endif // C++17
 #endif // C++14

@@ -3,5 +3,7 @@
 
 #include "ternop-1.c"
 
-/* { dg-final { scan-assembler-not {\tvmv} } } */
+/* TODO: we don't have undefine IR for COND_LEN_* operations,
+    which will produce redundant move instructions here.
+    Will add assembler-not check of 'vmv' instructions in the future.  */
 /* { dg-final { scan-tree-dump-times "COND_LEN_FMA" 3 "optimized" } } */

@@ -1722,7 +1722,7 @@
 	  (minus:SI
 	    (match_operand:SI      4 "register_operand"   "  1, 1")
 	    (match_operand:SI      5 "rx_compare_operand" " rQ,rQ"))
-	  (geu:SI (match_dup 2) (match_dup 3))))
+	  (gtu:SI (match_dup 3) (match_dup 2))))
    (clobber (reg:CC CC_REG))]
   ""
   "#"

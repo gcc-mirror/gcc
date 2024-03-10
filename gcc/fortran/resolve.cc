@@ -959,6 +959,10 @@ cleanup:
 }
 
 
+/* Forward declaration.  */
+static bool is_non_constant_shape_array (gfc_symbol *sym);
+
+
 /* Resolve common variables.  */
 static void
 resolve_common_vars (gfc_common_head *common_block, bool named_common)
@@ -1006,6 +1010,15 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
       if (UNLIMITED_POLY (csym))
 	gfc_error_now ("%qs at %L cannot appear in COMMON "
 		       "[F2008:C5100]", csym->name, &csym->declared_at);
+
+      if (csym->attr.dimension && is_non_constant_shape_array (csym))
+	{
+	  gfc_error_now ("Automatic object %qs at %L cannot appear in "
+			 "COMMON at %L", csym->name, &csym->declared_at,
+			 &common_block->where);
+	  /* Avoid confusing follow-on error.  */
+	  csym->error = 1;
+	}
 
       if (csym->ts.type != BT_DERIVED)
 	continue;
@@ -1396,11 +1409,14 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	 the one of the structure, ensure this if the lengths are known at
  	 compile time and when we are dealing with PARAMETER or structure
 	 constructors.  */
-      if (cons->expr->ts.type == BT_CHARACTER && comp->ts.u.cl
-	  && comp->ts.u.cl->length
+      if (cons->expr->ts.type == BT_CHARACTER
+	  && comp->ts.type == BT_CHARACTER
+	  && comp->ts.u.cl && comp->ts.u.cl->length
 	  && comp->ts.u.cl->length->expr_type == EXPR_CONSTANT
 	  && cons->expr->ts.u.cl && cons->expr->ts.u.cl->length
 	  && cons->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && cons->expr->ts.u.cl->length->ts.type == BT_INTEGER
+	  && comp->ts.u.cl->length->ts.type == BT_INTEGER
 	  && mpz_cmp (cons->expr->ts.u.cl->length->value.integer,
 		      comp->ts.u.cl->length->value.integer) != 0)
 	{
@@ -16609,7 +16625,7 @@ resolve_symbol (gfc_symbol *sym)
   /* Resolve array specifier. Check as well some constraints
      on COMMON blocks.  */
 
-  check_constant = sym->attr.in_common && !sym->attr.pointer;
+  check_constant = sym->attr.in_common && !sym->attr.pointer && !sym->error;
 
   /* Set the formal_arg_flag so that check_conflict will not throw
      an error for host associated variables in the specification
@@ -16762,6 +16778,7 @@ check_data_variable (gfc_data_variable *var, locus *where)
   ar_type mark = AR_UNKNOWN;
   int i;
   mpz_t section_index[GFC_MAX_DIMENSIONS];
+  int vector_offset[GFC_MAX_DIMENSIONS];
   gfc_ref *ref;
   gfc_array_ref *ar;
   gfc_symbol *sym;
@@ -16885,7 +16902,7 @@ check_data_variable (gfc_data_variable *var, locus *where)
 	case AR_SECTION:
 	  ar = &ref->u.ar;
 	  /* Get the start position of array section.  */
-	  gfc_get_section_index (ar, section_index, &offset);
+	  gfc_get_section_index (ar, section_index, &offset, vector_offset);
 	  mark = AR_SECTION;
 	  break;
 
@@ -16968,7 +16985,7 @@ check_data_variable (gfc_data_variable *var, locus *where)
 	  /* Modify the array section indexes and recalculate the offset
 	     for next element.  */
 	  else if (mark == AR_SECTION)
-	    gfc_advance_section (section_index, ar, &offset);
+	    gfc_advance_section (section_index, ar, &offset, vector_offset);
 	}
     }
 
@@ -17966,7 +17983,10 @@ resolve_types (gfc_namespace *ns)
 
   for (n = ns->contained; n; n = n->sibling)
     {
-      if (gfc_pure (ns->proc_name) && !gfc_pure (n->proc_name))
+      /* Exclude final wrappers with the test for the artificial attribute.  */
+      if (gfc_pure (ns->proc_name)
+	  && !gfc_pure (n->proc_name)
+	  && !n->proc_name->attr.artificial)
 	gfc_error ("Contained procedure %qs at %L of a PURE procedure must "
 		   "also be PURE", n->proc_name->name,
 		   &n->proc_name->declared_at);

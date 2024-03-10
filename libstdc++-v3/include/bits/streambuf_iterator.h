@@ -223,7 +223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201703L && __cpp_lib_concepts
       [[nodiscard]]
       friend bool
-      operator==(const istreambuf_iterator& __i, default_sentinel_t __s)
+      operator==(const istreambuf_iterator& __i, default_sentinel_t)
       { return __i._M_at_eof(); }
 #endif
     };

@@ -1287,6 +1287,15 @@ DEFTREECODE (OMP_SCAN, "omp_scan", tcc_statement, 2)
    Operand 0: OMP_SECTION_BODY: Section body.  */
 DEFTREECODE (OMP_SECTION, "omp_section", tcc_statement, 1)
 
+/* OpenMP structured block sequences that don't correspond to the body
+   another directive.  This is used for code fragments within the body
+   of a directive that are separately required to be structured block
+   sequence; in particular, for intervening code sequences in
+   imperfectly-nested loops.
+   Operand 0: BODY: contains the statement(s) within the structured block
+   sequence.  */
+DEFTREECODE (OMP_STRUCTURED_BLOCK, "omp_structured_block", tcc_statement, 1)
+
 /* OpenMP - #pragma omp master
    Operand 0: OMP_MASTER_BODY: Master section body.  */
 DEFTREECODE (OMP_MASTER, "omp_master", tcc_statement, 1)

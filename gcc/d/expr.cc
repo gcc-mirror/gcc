@@ -695,7 +695,7 @@ public:
   {
     /* This error is only emitted during the code generation pass because
        concatentation is allowed in CTFE.  */
-    if (global.params.betterC)
+    if (!global.params.useGC)
       {
 	error_at (make_location_t (e->loc),
 		  "array concatenation of expression %qs requires the GC and "

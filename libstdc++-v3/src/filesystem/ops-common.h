@@ -700,8 +700,10 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
     std::wstring buf;
     do
       {
-	buf.resize(len);
-	len = GetTempPathW(buf.size(), buf.data());
+	buf.__resize_and_overwrite(len, [&len](wchar_t* p, unsigned n) {
+	  len = GetTempPathW(n, p);
+	  return len > n ? 0 : len;
+	});
       }
     while (len > buf.size());
 
@@ -710,7 +712,6 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
     else
       ec.clear();
 
-    buf.resize(len);
     return buf;
   }
 #else

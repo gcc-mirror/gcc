@@ -75,12 +75,32 @@ namespace __gnu_test
       counter& cntr = get();
       cntr._M_increments = cntr._M_decrements = 0;
     }
+
+    struct scope
+    {
+      scope() : _M_count(counter::count())
+      { counter::get()._M_count = 0; }
+      ~scope()
+      { counter::get()._M_count = _M_count; }
+
+    private:
+      std::size_t _M_count;
+
+#if __cplusplus >= 201103L
+      scope(const scope&) = delete;
+      scope& operator=(const scope&) = delete;
+#else
+      scope(const scope&);
+      scope& operator=(const scope&);
+#endif
+    };
   };
 
   template<typename Alloc, bool uses_global_new>
     bool
     check_new(Alloc a = Alloc())
     {
+      __gnu_test::counter::scope s;
       __gnu_test::counter::exceptions(false);
       (void) a.allocate(10);
       const bool __b((__gnu_test::counter::count() > 0) == uses_global_new);

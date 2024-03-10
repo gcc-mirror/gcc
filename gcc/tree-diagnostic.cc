@@ -377,5 +377,6 @@ tree_diagnostics_defaults (diagnostic_context *context)
   context->print_path = default_tree_diagnostic_path_printer;
   context->make_json_for_path = default_tree_make_json_for_path;
   context->set_locations_cb = set_inlining_locations;
+  delete context->m_client_data_hooks;
   context->m_client_data_hooks = make_compiler_data_hooks ();
 }

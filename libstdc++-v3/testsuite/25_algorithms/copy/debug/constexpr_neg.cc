@@ -34,6 +34,7 @@ test1()
 }
 
 static_assert(test1()); // { dg-error "non-constant condition" }
+// { dg-error "builtin_unreachable" "" { target *-*-* } 0 }
 
 constexpr bool
 test2()
@@ -46,8 +47,5 @@ test2()
   return out6 == ma0.begin() + 18;
 }
 
-static_assert(test2()); // { dg-error "is outside the bounds" }
-
-// { dg-prune-output "in 'constexpr' expansion" }
-// { dg-prune-output "builtin_unreachable" }
-// { dg-prune-output "non-constant condition" }
+static_assert(test2()); // { dg-error "non-constant condition" }
+// { dg-error "is outside the bounds" "" { target *-*-* } 0 }

@@ -31,8 +31,10 @@
 
 #pragma GCC system_header
 
-#if __cplusplus > 202002L && __cpp_concepts >= 202002L
+#define __glibcxx_want_expected
+#include <bits/version.h>
 
+#ifdef __cpp_lib_expected // C++ >= 23 && __cpp_concepts >= 202002L
 #include <initializer_list>
 #include <bits/exception.h>	// exception
 #include <bits/invoke.h>	// __invoke
@@ -49,8 +51,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @since C++23
    * @{
    */
-
-#define __cpp_lib_expected 202211L
 
   /// Discriminated union that holds an expected value or an error value.
   /**
@@ -1815,5 +1815,5 @@ namespace __expected
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // C++23
+#endif // __cpp_lib_expected
 #endif // _GLIBCXX_EXPECTED

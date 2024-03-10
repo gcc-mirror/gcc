@@ -313,7 +313,8 @@ static tree ia64_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool ia64_scalar_mode_supported_p (scalar_mode mode);
 static bool ia64_vector_mode_supported_p (machine_mode mode);
 static bool ia64_legitimate_constant_p (machine_mode, rtx);
-static bool ia64_legitimate_address_p (machine_mode, rtx, bool);
+static bool ia64_legitimate_address_p (machine_mode, rtx, bool,
+				       code_helper = ERROR_MARK);
 static bool ia64_cannot_force_const_mem (machine_mode, rtx);
 static const char *ia64_mangle_type (const_tree);
 static const char *ia64_invalid_conversion (const_tree, const_tree);
@@ -1024,8 +1025,8 @@ ia64_legitimate_address_disp (const_rtx reg, const_rtx disp, bool strict)
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 
 static bool
-ia64_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
-			   rtx x, bool strict)
+ia64_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
+			   bool strict, code_helper)
 {
   if (ia64_legitimate_address_reg (x, strict))
     return true;

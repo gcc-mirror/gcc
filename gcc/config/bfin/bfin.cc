@@ -2718,7 +2718,8 @@ bfin_valid_reg_p (unsigned int regno, int strict, machine_mode mode,
 */
 
 static bool
-bfin_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+bfin_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+			   code_helper = ERROR_MARK)
 {
   switch (GET_CODE (x)) {
   case REG:

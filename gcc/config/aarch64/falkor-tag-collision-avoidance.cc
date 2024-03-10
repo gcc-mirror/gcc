@@ -740,7 +740,7 @@ dump_insn_list (const rtx &t, const insn_info_list_t &insn_info,
 		void *unused ATTRIBUTE_UNUSED)
 {
   gcc_assert (dump_file);
-  fprintf (dump_file, "Tag 0x%lx ::\n", INTVAL (t));
+  fprintf (dump_file, "Tag 0x" HOST_WIDE_INT_PRINT_HEX_PURE " ::\n", INTVAL (t));
 
   for (unsigned i = 0; i < insn_info.length (); i++)
     dump_insn_slim (dump_file, insn_info[i]->insn);

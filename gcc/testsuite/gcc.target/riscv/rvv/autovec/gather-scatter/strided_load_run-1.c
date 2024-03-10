@@ -1,4 +1,5 @@
 /* { dg-do run { target { riscv_vector } } } */
+/* { dg-additional-options "-mcmodel=medany" } */
 
 #include "strided_load-1.c"
 #include <assert.h>
@@ -6,6 +7,12 @@
 int
 main (void)
 {
+  /* FIXME: The purpose of this assembly is to ensure that the vtype register is
+     initialized befor instructions such as vmv1r.v are executed. Otherwise you
+     will get illegal instruction errors when running with spike+pk. This is an
+     interim solution for reduce unnecessary failures and a unified solution
+     will come later. */
+  asm volatile("vsetivli x0, 0, e8, m1, ta, ma");
 #define RUN_LOOP(DATA_TYPE, BITS)                                              \
   DATA_TYPE dest_##DATA_TYPE##_##BITS[(BITS - 3) * (BITS + 13)];               \
   DATA_TYPE dest2_##DATA_TYPE##_##BITS[(BITS - 3) * (BITS + 13)];              \

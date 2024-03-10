@@ -97,10 +97,110 @@ test_format()
   }
 }
 
+void
+test_parse()
+{
+  using namespace std::chrono;
+  seconds s;
+  milliseconds ms;
+  microseconds us;
+
+  std::istringstream is("   2023-07-24 13:05");
+  VERIFY( is >> parse(" %Y-%m-%d %H:%M", s) );
+  VERIFY( is.good() );
+  VERIFY( s == 13h + 5min );
+
+  s = 999s;
+
+  is.clear();
+  is.str("Thursday July 2023");
+  VERIFY( !(is >> parse("%a %b %C%y", s)) );
+  VERIFY( ! is.eof() );
+  VERIFY( s == 999s );
+
+  is.clear();
+  is.str("27");
+  VERIFY( is >> parse("%j", s) );
+  VERIFY( is.eof() );
+  VERIFY( s == 24h * 27 );
+
+  is.clear();
+  is.str("027");
+  VERIFY( is >> parse("%j", s) );
+  VERIFY( ! is.eof() );
+  VERIFY( s == 24h * 27 );
+
+  is.clear();
+  is.str("0027");
+  VERIFY( is >> parse("%j", s) ); // defaults to %3j
+  VERIFY( is.get() == '7' );
+  VERIFY( s == 24h * 2 );
+
+  is.clear();
+  is.str("1234");
+  VERIFY( is >> parse("%2j", s) );
+  VERIFY( is.get() == '3' );
+  VERIFY( s == 24h * 12 );
+
+  is.clear();
+  is.str("001234");
+  VERIFY( is >> parse("%4j", s) );
+  VERIFY( is.get() == '3' );
+  VERIFY( s == 24h * 12 );
+
+  is.clear();
+  is.str("1234");
+  VERIFY( is >> parse("%4j", s) );
+  VERIFY( ! is.eof() );
+  VERIFY( s == 24h * 1234 );
+
+  is.clear();
+  is.str("125");
+  VERIFY( is >> parse("%S", s) );
+  VERIFY( s == 12s );
+  VERIFY( is.get() == '5' );
+
+  is.clear();
+  is.str("0.125");
+  VERIFY( is >> parse("%S", s) );
+  VERIFY( s == 0s );
+  VERIFY( is.get() == '.' );
+
+  is.clear();
+  is.str("0.125");
+  VERIFY( is >> parse("%S", ms) );
+  VERIFY( ms == 125ms );
+  VERIFY( ! is.eof() );
+
+  is.clear();
+  is.str("00.125");
+  VERIFY( is >> parse("%S", ms) );
+  VERIFY( ms == 125ms );
+  VERIFY( ! is.eof() );
+
+  is.clear();
+  is.str("012.345");
+  VERIFY( is >> parse("%S", ms) );
+  VERIFY( ms == 1000ms );
+  VERIFY( is.get() == '2' );
+
+  is.clear();
+  is.str("0.1256");
+  VERIFY( is >> parse("%S", ms) );
+  VERIFY( ms == 125ms );
+  VERIFY( is.get() == '6' );
+
+  is.clear();
+  is.str("0.0009765");
+  VERIFY( is >> parse("%S", us) );
+  VERIFY( us == 976us );
+  VERIFY( is.get() == '5' );
+}
+
 int main()
 {
   test01();
   test02();
   test_format();
-  // TODO: test_parse();
+  test_parse();
 }

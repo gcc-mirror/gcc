@@ -269,6 +269,7 @@ test03()
 int
 main()
 {
+  __gnu_test::counter::scope s;
   test01();
   test02();
   test11();

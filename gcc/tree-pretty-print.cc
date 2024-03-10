@@ -1248,6 +1248,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	{
 	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED:
 	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALL:
+	  pp_string (pp, ":all");
+	  break;
 	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR:
 	  pp_string (pp, ":scalar");
 	  break;
@@ -1900,6 +1903,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case TREE_VEC:
       {
 	size_t i;
+	pp_left_brace (pp);
 	if (TREE_VEC_LENGTH (node) > 0)
 	  {
 	    size_t len = TREE_VEC_LENGTH (node);
@@ -1913,6 +1917,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	    dump_generic_node (pp, TREE_VEC_ELT (node, len - 1), spc,
 			       flags, false);
 	  }
+	pp_right_brace (pp);
       }
       break;
 
@@ -2482,14 +2487,16 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       if (op_prio (op0) < op_prio (node))
 	pp_right_paren (pp);
       pp_string (pp, str);
-      dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
-      op0 = component_ref_field_offset (node);
-      if (op0 && TREE_CODE (op0) != INTEGER_CST)
-	{
-	  pp_string (pp, "{off: ");
-	      dump_generic_node (pp, op0, spc, flags, false);
+      op1 = TREE_OPERAND (node, 1);
+      dump_generic_node (pp, op1, spc, flags, false);
+      if (DECL_P (op1)) /* Not always a decl in the C++ FE.  */
+	if (tree off = component_ref_field_offset (node))
+	  if (TREE_CODE (off) != INTEGER_CST)
+	    {
+	      pp_string (pp, "{off: ");
+	      dump_generic_node (pp, off, spc, flags, false);
 	      pp_right_brace (pp);
-	}
+	    }
       break;
 
     case BIT_FIELD_REF:
@@ -3739,6 +3746,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_SECTION:
       pp_string (pp, "#pragma omp section");
+      goto dump_omp_body;
+
+    case OMP_STRUCTURED_BLOCK:
+      pp_string (pp, "#pragma omp __structured_block");
       goto dump_omp_body;
 
     case OMP_SCAN:

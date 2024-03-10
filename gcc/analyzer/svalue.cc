@@ -970,6 +970,8 @@ poison_kind_to_str (enum poison_kind kind)
       return "uninit";
     case POISON_KIND_FREED:
       return "freed";
+    case POISON_KIND_DELETED:
+      return "deleted";
     case POISON_KIND_POPPED_STACK:
       return "popped stack";
     }

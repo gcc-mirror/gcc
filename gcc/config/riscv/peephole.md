@@ -38,3 +38,31 @@
 {
   operands[5] = GEN_INT (INTVAL (operands[2]) - INTVAL (operands[5]));
 })
+
+;; ZCMP
+(define_peephole2
+  [(set (match_operand:X 0 "a0a1_reg_operand")
+        (match_operand:X 1 "zcmp_mv_sreg_operand"))
+   (set (match_operand:X 2 "a0a1_reg_operand")
+        (match_operand:X 3 "zcmp_mv_sreg_operand"))]
+  "TARGET_ZCMP
+   && (REGNO (operands[2]) != REGNO (operands[0]))"
+  [(parallel [(set (match_dup 0)
+                   (match_dup 1))
+              (set (match_dup 2)
+                   (match_dup 3))])]
+)
+
+(define_peephole2
+  [(set (match_operand:X 0 "zcmp_mv_sreg_operand")
+        (match_operand:X 1 "a0a1_reg_operand"))
+   (set (match_operand:X 2 "zcmp_mv_sreg_operand")
+        (match_operand:X 3 "a0a1_reg_operand"))]
+  "TARGET_ZCMP
+   && (REGNO (operands[0]) != REGNO (operands[2]))
+   && (REGNO (operands[1]) != REGNO (operands[3]))"
+  [(parallel [(set (match_dup 0)
+                   (match_dup 1))
+              (set (match_dup 2)
+                   (match_dup 3))])]
+)

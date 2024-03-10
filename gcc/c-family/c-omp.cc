@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "langhooks.h"
 #include "bitmap.h"
+#include "tree-iterator.h"
 
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of
@@ -1726,6 +1727,156 @@ c_omp_check_loop_iv_exprs (location_t stmt_loc, enum tree_code code,
 		     c_omp_check_loop_iv_r, &data, NULL, lh);
     }
   return !data.fail;
+}
+
+
+/* Helper function for c_omp_check_loop_binding_exprs: look for a binding
+   of DECL in BODY.  Only traverse things that might be containers for
+   intervening code in an OMP loop.  Returns the BIND_EXPR or DECL_EXPR
+   if found, otherwise null.  */
+
+static tree
+find_binding_in_body (tree decl, tree body)
+{
+  if (!body)
+    return NULL_TREE;
+
+  switch (TREE_CODE (body))
+    {
+    case BIND_EXPR:
+      for (tree b = BIND_EXPR_VARS (body); b; b = DECL_CHAIN (b))
+	if (b == decl)
+	  return body;
+      return find_binding_in_body (decl, BIND_EXPR_BODY (body));
+
+    case DECL_EXPR:
+      if (DECL_EXPR_DECL (body) == decl)
+	return body;
+      return NULL_TREE;
+
+    case STATEMENT_LIST:
+      for (tree_stmt_iterator si = tsi_start (body); !tsi_end_p (si);
+	   tsi_next (&si))
+	{
+	  tree b = find_binding_in_body (decl, tsi_stmt (si));
+	  if (b)
+	    return b;
+	}
+      return NULL_TREE;
+
+    case OMP_STRUCTURED_BLOCK:
+      return find_binding_in_body (decl, OMP_BODY (body));
+
+    default:
+      return NULL_TREE;
+    }
+}
+
+/* Traversal function for check_loop_binding_expr, to diagnose
+   errors when a binding made in intervening code is referenced outside
+   of the loop.  Returns non-null if such a reference is found.  DATA points
+   to the tree containing the loop body.  */
+
+static tree
+check_loop_binding_expr_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
+			   void *data)
+{
+  tree body = *(tree *)data;
+
+  if (DECL_P (*tp) && find_binding_in_body (*tp, body))
+    return *tp;
+  return NULL_TREE;
+}
+
+/* Helper macro used below.  */
+
+#define LOCATION_OR(loc1, loc2) \
+  ((loc1) != UNKNOWN_LOCATION ? (loc1) : (loc2))
+
+/* Check a single expression EXPR for references to variables bound in
+   intervening code in BODY.  Return true if ok, otherwise give an error
+   referencing CONTEXT and return false.  Use LOC for the error message
+   if EXPR doesn't have one.  */
+static bool
+check_loop_binding_expr (tree expr, tree body, const char *context,
+			 location_t loc)
+{
+  tree bad = walk_tree (&expr, check_loop_binding_expr_r, (void *)&body, NULL);
+
+  if (bad)
+    {
+      location_t eloc = EXPR_LOCATION (expr);
+      error_at (LOCATION_OR (eloc, loc),
+		"variable %qD used %s is bound "
+		"in intervening code", bad, context);
+      return false;
+    }
+  return true;
+}
+
+/* STMT is an OMP_FOR construct.  Check all of the iteration variable,
+   initializer, end condition, and increment for bindings inside the
+   loop body.  If ORIG_INITS is provided, check those elements too.
+   Return true if OK, false otherwise.  */
+bool
+c_omp_check_loop_binding_exprs (tree stmt, vec<tree> *orig_inits)
+{
+  bool ok = true;
+  location_t loc = EXPR_LOCATION (stmt);
+  tree body = OMP_FOR_BODY (stmt);
+  int orig_init_length = orig_inits ? orig_inits->length () : 0;
+
+  for (int i = 1; i < TREE_VEC_LENGTH (OMP_FOR_INIT (stmt)); i++)
+    {
+      tree init = TREE_VEC_ELT (OMP_FOR_INIT (stmt), i);
+      tree cond = TREE_VEC_ELT (OMP_FOR_COND (stmt), i);
+      tree incr = TREE_VEC_ELT (OMP_FOR_INCR (stmt), i);
+      gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
+      tree decl = TREE_OPERAND (init, 0);
+      tree orig_init = i < orig_init_length ? (*orig_inits)[i] : NULL_TREE;
+      tree e;
+      location_t eloc;
+
+      e = TREE_OPERAND (init, 1);
+      eloc = LOCATION_OR (EXPR_LOCATION (init), loc);
+      if (!check_loop_binding_expr (decl, body, "as loop variable", eloc))
+	ok = false;
+      if (!check_loop_binding_expr (e, body, "in initializer", eloc))
+	ok = false;
+      if (orig_init
+	  && !check_loop_binding_expr (orig_init, body,
+				       "in initializer", eloc))
+	ok = false;
+
+      /* INCR and/or COND may be null if this is a template with a
+	 class iterator.  */
+      if (cond)
+	{
+	  eloc = LOCATION_OR (EXPR_LOCATION (cond), loc);
+	  if (COMPARISON_CLASS_P (cond) && TREE_OPERAND (cond, 0) == decl)
+	    e = TREE_OPERAND (cond, 1);
+	  else if (COMPARISON_CLASS_P (cond) && TREE_OPERAND (cond, 1) == decl)
+	    e = TREE_OPERAND (cond, 0);
+	  else
+	    e = cond;
+	  if (!check_loop_binding_expr (e, body, "in end test", eloc))
+	    ok = false;
+	}
+
+      if (incr)
+	{
+	  eloc = LOCATION_OR (EXPR_LOCATION (incr), loc);
+	  /* INCR should be either a MODIFY_EXPR or pre/post
+	     increment/decrement.  We don't have to check the latter
+	     since there are no operands besides the iteration variable.  */
+	  if (TREE_CODE (incr) == MODIFY_EXPR
+	      && !check_loop_binding_expr (TREE_OPERAND (incr, 1), body,
+					   "in increment expression", eloc))
+	    ok = false;
+	}
+    }
+
+  return ok;
 }
 
 /* This function splits clauses for OpenACC combined loop

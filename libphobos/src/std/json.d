@@ -6,6 +6,10 @@ Implements functionality to read and write JavaScript Object Notation values.
 JavaScript Object Notation is a lightweight data interchange format commonly used in web services and configuration files.
 It's easy for humans to read and write, and it's easy for machines to parse and generate.
 
+$(RED Warning: While $(LREF JSONValue) is fine for small-scale use, at the range of hundreds of megabytes it is
+known to cause and exacerbate GC problems. If you encounter problems, try replacing it with a stream parser. See
+also $(LINK https://forum.dlang.org/post/dzfyaxypmkdrpakmycjv@forum.dlang.org).)
+
 Copyright: Copyright Jeremie Pelletier 2008 - 2009.
 License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors:   Jeremie Pelletier, David Herberth

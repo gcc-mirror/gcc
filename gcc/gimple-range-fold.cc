@@ -953,7 +953,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
-		  fprintf (dump_file, "   Loops range found for ");
+		  fprintf (dump_file, "Loops range found for ");
 		  print_generic_expr (dump_file, phi_def, TDF_SLIM);
 		  fprintf (dump_file, ": ");
 		  loop_range.dump (dump_file);
@@ -975,9 +975,9 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file, "   PHI group range found for ");
+	      fprintf (dump_file, "PHI GROUP query for ");
 	      print_generic_expr (dump_file, phi_def, TDF_SLIM);
-	      fprintf (dump_file, ": ");
+	      fprintf (dump_file, " found : ");
 	      g->range ().dump (dump_file);
 	      fprintf (dump_file, " and adjusted original range from :");
 	      r.dump (dump_file);

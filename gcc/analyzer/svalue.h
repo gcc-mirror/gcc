@@ -350,6 +350,9 @@ enum poison_kind
   /* For use to describe freed memory.  */
   POISON_KIND_FREED,
 
+  /* For use to describe deleted memory.  */
+  POISON_KIND_DELETED,
+
   /* For use on pointers to regions within popped stack frames.  */
   POISON_KIND_POPPED_STACK
 };

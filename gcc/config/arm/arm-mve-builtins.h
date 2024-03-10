@@ -146,6 +146,7 @@ enum type_class_index
   TYPE_float,
   TYPE_signed,
   TYPE_unsigned,
+  TYPE_poly,
   NUM_TYPE_CLASSES
 };
 
@@ -221,7 +222,9 @@ struct type_suffix_info
   unsigned int unsigned_p : 1;
   /* True if the suffix is for a floating-point type.  */
   unsigned int float_p : 1;
-  unsigned int spare : 13;
+  /* True if the suffix is for a polynomial type.  */
+  unsigned int poly_p : 1;
+  unsigned int spare : 12;
 
   /* The associated vector or predicate mode.  */
   machine_mode vector_mode : 16;

@@ -119,22 +119,32 @@ else
 
 package auto previewErrorFunc(bool isDeprecated, FeatureState featureState) @safe @nogc pure nothrow
 {
-    if (featureState == FeatureState.enabled)
-        return &error;
-    else if (featureState == FeatureState.disabled || isDeprecated)
-        return &noop;
-    else
-        return &deprecation;
+    with (FeatureState) final switch (featureState)
+    {
+        case enabled:
+            return &error;
+
+        case disabled:
+            return &noop;
+
+        case default_:
+            return isDeprecated ? &noop : &deprecation;
+    }
 }
 
 package auto previewSupplementalFunc(bool isDeprecated, FeatureState featureState) @safe @nogc pure nothrow
 {
-    if (featureState == FeatureState.enabled)
-        return &errorSupplemental;
-    else if (featureState == FeatureState.disabled || isDeprecated)
-        return &noop;
-    else
-        return &deprecationSupplemental;
+    with (FeatureState) final switch (featureState)
+    {
+        case enabled:
+            return &errorSupplemental;
+
+        case disabled:
+            return &noop;
+
+        case default_:
+            return isDeprecated ? &noop : &deprecationSupplemental;
+    }
 }
 
 

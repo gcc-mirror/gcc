@@ -1,3 +1,30 @@
+2023-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109751
+	* cp-demangle.c (d_make_comp): Handle DEMANGLE_COMPONENT_FRIEND.
+	(d_count_templates_scopes): Likewise.
+	(d_print_comp_inner): Likewise.
+	(d_unqualified_name): Handle member-like friend mangling.
+	* testsuite/demangle-expected: Add test.
+
+2023-08-07  John Ericson  <git@JohnEricson.me>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.in (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	(configure_deps): Depend on ../config/gcc-plugin.m4.
+	* configure.ac: AC_SUBST AR_PLUGIN_OPTION and
+	RANLIB_PLUGIN_OPTION.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* configure.ac: Also set shared when enable_host_pie.

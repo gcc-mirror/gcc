@@ -38,6 +38,12 @@
 # include <bits/c++0x_warning.h>
 #else
 
+#define __glibcxx_want_atomic_is_always_lock_free
+#define __glibcxx_want_atomic_float
+#define __glibcxx_want_atomic_ref
+#define __glibcxx_want_atomic_lock_free_type_aliases
+#include <bits/version.h>
+
 #include <bits/atomic_base.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -48,10 +54,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @addtogroup atomics
    * @{
    */
-
-#if __cplusplus >= 201703L
-# define __cpp_lib_atomic_is_always_lock_free 201603L
-#endif
 
   template<typename _Tp>
     struct atomic;
@@ -95,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     is_lock_free() const volatile noexcept { return _M_base.is_lock_free(); }
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
     static constexpr bool is_always_lock_free = ATOMIC_BOOL_LOCK_FREE == 2;
 #endif
 
@@ -268,7 +270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    reinterpret_cast<void *>(-_S_alignment));
       }
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free
 	= __atomic_always_lock_free(sizeof(_M_i), 0);
 #endif
@@ -386,23 +388,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
 
-#if __cpp_lib_atomic_wait
-    void
-    wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
-    {
-      std::__atomic_wait_address_v(&_M_i, __old,
-			 [__m, this] { return this->load(__m); });
-    }
+#if __cpp_lib_atomic_wait // C++ >= 20
+      void
+      wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
+      {
+	std::__atomic_wait_address_v(&_M_i, __old,
+			   [__m, this] { return this->load(__m); });
+      }
 
-    // TODO add const volatile overload
+      // TODO add const volatile overload
 
-    void
-    notify_one() noexcept
-    { std::__atomic_notify_address(&_M_i, false); }
+      void
+      notify_one() noexcept
+      { std::__atomic_notify_address(&_M_i, false); }
 
-    void
-    notify_all() noexcept
-    { std::__atomic_notify_address(&_M_i, true); }
+      void
+      notify_all() noexcept
+      { std::__atomic_notify_address(&_M_i, true); }
 #endif // __cpp_lib_atomic_wait
 
     };
@@ -557,7 +559,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       is_lock_free() const volatile noexcept
       { return _M_b.is_lock_free(); }
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free
 	= ATOMIC_POINTER_LOCK_FREE == 2;
 #endif
@@ -720,7 +722,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_CHAR_LOCK_FREE == 2;
 #endif
     };
@@ -743,7 +745,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_CHAR_LOCK_FREE == 2;
 #endif
     };
@@ -766,7 +768,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_CHAR_LOCK_FREE == 2;
 #endif
     };
@@ -789,7 +791,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_SHORT_LOCK_FREE == 2;
 #endif
     };
@@ -812,7 +814,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_SHORT_LOCK_FREE == 2;
 #endif
     };
@@ -835,7 +837,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_INT_LOCK_FREE == 2;
 #endif
     };
@@ -858,7 +860,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_INT_LOCK_FREE == 2;
 #endif
     };
@@ -881,7 +883,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_LONG_LOCK_FREE == 2;
 #endif
     };
@@ -904,7 +906,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_LONG_LOCK_FREE == 2;
 #endif
     };
@@ -927,7 +929,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_LLONG_LOCK_FREE == 2;
 #endif
     };
@@ -950,7 +952,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_LLONG_LOCK_FREE == 2;
 #endif
     };
@@ -973,7 +975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free = ATOMIC_WCHAR_T_LOCK_FREE == 2;
 #endif
     };
@@ -997,7 +999,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus > 201402L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free
 	= ATOMIC_CHAR8_T_LOCK_FREE == 2;
 #endif
@@ -1022,7 +1024,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free
 	= ATOMIC_CHAR16_T_LOCK_FREE == 2;
 #endif
@@ -1046,7 +1048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::operator __integral_type;
       using __base_type::operator=;
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_atomic_is_always_lock_free // C++ >= 17
       static constexpr bool is_always_lock_free
 	= ATOMIC_CHAR32_T_LOCK_FREE == 2;
 #endif
@@ -1614,8 +1616,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     __atomic_val_t<_ITp> __i) noexcept
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
 
-#if __cplusplus > 201703L
-#define __cpp_lib_atomic_float 201711L
+#ifdef __cpp_lib_atomic_float
   template<>
     struct atomic<float> : __atomic_float<float>
     {
@@ -1745,9 +1746,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __atomic_float<__gnu_cxx::__bfloat16_t>::operator=;
     };
 #endif
+#endif // __cpp_lib_atomic_float
 
-#define __cpp_lib_atomic_ref 201806L
-
+#ifdef __cpp_lib_atomic_ref
   /// Class template to provide atomic operations on a non-atomic variable.
   template<typename _Tp>
     struct atomic_ref : __atomic_ref<_Tp>
@@ -1762,25 +1763,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __atomic_ref<_Tp>::operator=;
     };
+#endif // __cpp_lib_atomic_ref
 
-#define __cpp_lib_atomic_lock_free_type_aliases 201907L
-#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
+#ifdef __cpp_lib_atomic_lock_free_type_aliases
+# ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
   using atomic_signed_lock_free
     = atomic<make_signed_t<__detail::__platform_wait_t>>;
   using atomic_unsigned_lock_free
     = atomic<make_unsigned_t<__detail::__platform_wait_t>>;
-#elif ATOMIC_INT_LOCK_FREE || !(ATOMIC_LONG_LOCK_FREE || ATOMIC_CHAR_LOCK_FREE)
+# elif ATOMIC_INT_LOCK_FREE || !(ATOMIC_LONG_LOCK_FREE || ATOMIC_CHAR_LOCK_FREE)
   using atomic_signed_lock_free = atomic<signed int>;
   using atomic_unsigned_lock_free = atomic<unsigned int>;
-#elif ATOMIC_LONG_LOCK_FREE
+# elif ATOMIC_LONG_LOCK_FREE
   using atomic_signed_lock_free = atomic<signed long>;
   using atomic_unsigned_lock_free = atomic<unsigned long>;
-#elif ATOMIC_CHAR_LOCK_FREE
+# elif ATOMIC_CHAR_LOCK_FREE
   using atomic_signed_lock_free = atomic<signed char>;
   using atomic_unsigned_lock_free = atomic<unsigned char>;
+# else
+# error "libstdc++ bug: no lock-free atomics but they were emitted in <version>"
+# endif
 #endif
-
-#endif // C++2a
 
   /// @} group atomics
 

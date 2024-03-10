@@ -43,13 +43,14 @@ static void formalize_init_expr (gfc_expr *);
 
 /* Calculate the array element offset.  */
 
-static void
+static bool
 get_array_index (gfc_array_ref *ar, mpz_t *offset)
 {
   gfc_expr *e;
   int i;
   mpz_t delta;
   mpz_t tmp;
+  bool ok = true;
 
   mpz_init (tmp);
   mpz_set_si (*offset, 0);
@@ -59,13 +60,42 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
       e = gfc_copy_expr (ar->start[i]);
       gfc_simplify_expr (e, 1);
 
-      if ((gfc_is_constant_expr (ar->as->lower[i]) == 0)
-	  || (gfc_is_constant_expr (ar->as->upper[i]) == 0)
-	  || (gfc_is_constant_expr (e) == 0))
-	gfc_error ("non-constant array in DATA statement %L", &ar->where);
+      if (!gfc_is_constant_expr (ar->as->lower[i])
+	  || !gfc_is_constant_expr (ar->as->upper[i])
+	  || !gfc_is_constant_expr (e))
+	{
+	  gfc_error ("non-constant array in DATA statement %L", &ar->where);
+	  ok = false;
+	  break;
+	}
 
       mpz_set (tmp, e->value.integer);
       gfc_free_expr (e);
+
+      /* Overindexing is only allowed as a legacy extension.  */
+      if (mpz_cmp (tmp, ar->as->lower[i]->value.integer) < 0
+	  && !gfc_notify_std (GFC_STD_LEGACY,
+			      "Subscript at %L below array lower bound "
+			      "(%ld < %ld) in dimension %d", &ar->c_where[i],
+			      mpz_get_si (tmp),
+			      mpz_get_si (ar->as->lower[i]->value.integer),
+			      i+1))
+	{
+	  ok = false;
+	  break;
+	}
+      if (mpz_cmp (tmp, ar->as->upper[i]->value.integer) > 0
+	  && !gfc_notify_std (GFC_STD_LEGACY,
+			      "Subscript at %L above array upper bound "
+			      "(%ld > %ld) in dimension %d", &ar->c_where[i],
+			      mpz_get_si (tmp),
+			      mpz_get_si (ar->as->upper[i]->value.integer),
+			      i+1))
+	{
+	  ok = false;
+	  break;
+	}
+
       mpz_sub (tmp, tmp, ar->as->lower[i]->value.integer);
       mpz_mul (tmp, tmp, delta);
       mpz_add (*offset, tmp, *offset);
@@ -77,6 +107,8 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
     }
   mpz_clear (delta);
   mpz_clear (tmp);
+
+  return ok;
 }
 
 /* Find if there is a constructor which component is equal to COM.
@@ -298,7 +330,10 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	    }
 
 	  if (ref->u.ar.type == AR_ELEMENT)
-	    get_array_index (&ref->u.ar, &offset);
+	    {
+	      if (!get_array_index (&ref->u.ar, &offset))
+		goto abort;
+	    }
 	  else
 	    mpz_set (offset, index);
 
@@ -634,65 +669,102 @@ abort:
 
 void
 gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
-		     mpz_t *offset_ret)
+		     mpz_t *offset_ret, int *vector_offset)
 {
   int i;
   mpz_t delta;
   mpz_t tmp;
   bool forwards;
   int cmp;
-  gfc_expr *start, *end, *stride;
+  gfc_expr *start, *end, *stride, *elem;
+  gfc_constructor_base base;
 
   for (i = 0; i < ar->dimen; i++)
     {
-      if (ar->dimen_type[i] != DIMEN_RANGE)
-	continue;
+      bool advance = false;
 
-      if (ar->stride[i])
+      switch (ar->dimen_type[i])
 	{
-	  stride = gfc_copy_expr(ar->stride[i]);
-	  if(!gfc_simplify_expr(stride, 1))
-	    gfc_internal_error("Simplification error");
-	  mpz_add (section_index[i], section_index[i],
-		   stride->value.integer);
-	  if (mpz_cmp_si (stride->value.integer, 0) >= 0)
-	    forwards = true;
-	  else
-	    forwards = false;
-	  gfc_free_expr(stride);
-	}
-      else
-	{
-	  mpz_add_ui (section_index[i], section_index[i], 1);
-	  forwards = true;
-	}
+	case DIMEN_ELEMENT:
+	  /* Loop to advance the next index.  */
+	  advance = true;
+	  break;
 
-      if (ar->end[i])
-        {
-	  end = gfc_copy_expr(ar->end[i]);
-	  if(!gfc_simplify_expr(end, 1))
-	    gfc_internal_error("Simplification error");
-	  cmp = mpz_cmp (section_index[i], end->value.integer);
-	  gfc_free_expr(end);
-	}
-      else
-	cmp = mpz_cmp (section_index[i], ar->as->upper[i]->value.integer);
-
-      if ((cmp > 0 && forwards) || (cmp < 0 && !forwards))
-	{
-	  /* Reset index to start, then loop to advance the next index.  */
-	  if (ar->start[i])
+	case DIMEN_RANGE:
+	  if (ar->stride[i])
 	    {
-	      start = gfc_copy_expr(ar->start[i]);
-	      if(!gfc_simplify_expr(start, 1))
-	        gfc_internal_error("Simplification error");
-	      mpz_set (section_index[i], start->value.integer);
-	      gfc_free_expr(start);
+	      stride = gfc_copy_expr(ar->stride[i]);
+	      if(!gfc_simplify_expr(stride, 1))
+		gfc_internal_error("Simplification error");
+	      mpz_add (section_index[i], section_index[i],
+		       stride->value.integer);
+	      if (mpz_cmp_si (stride->value.integer, 0) >= 0)
+		forwards = true;
+	      else
+		forwards = false;
+	      gfc_free_expr(stride);
 	    }
 	  else
-	    mpz_set (section_index[i], ar->as->lower[i]->value.integer);
+	    {
+	      mpz_add_ui (section_index[i], section_index[i], 1);
+	      forwards = true;
+	    }
+
+	  if (ar->end[i])
+	    {
+	      end = gfc_copy_expr(ar->end[i]);
+	      if(!gfc_simplify_expr(end, 1))
+		gfc_internal_error("Simplification error");
+	      cmp = mpz_cmp (section_index[i], end->value.integer);
+	      gfc_free_expr(end);
+	    }
+	  else
+	    cmp = mpz_cmp (section_index[i], ar->as->upper[i]->value.integer);
+
+	  if ((cmp > 0 && forwards) || (cmp < 0 && !forwards))
+	    {
+	      /* Reset index to start, then loop to advance the next index.  */
+	      if (ar->start[i])
+		{
+		  start = gfc_copy_expr(ar->start[i]);
+		  if(!gfc_simplify_expr(start, 1))
+		    gfc_internal_error("Simplification error");
+		  mpz_set (section_index[i], start->value.integer);
+		  gfc_free_expr(start);
+		}
+	      else
+		mpz_set (section_index[i], ar->as->lower[i]->value.integer);
+	      advance = true;
+	    }
+	  break;
+
+	case DIMEN_VECTOR:
+	  vector_offset[i]++;
+	  base = ar->start[i]->value.constructor;
+	  elem = gfc_constructor_lookup_expr (base, vector_offset[i]);
+
+	  if (elem == NULL)
+	    {
+	      /* Reset to first vector element and advance the next index.  */
+	      vector_offset[i] = 0;
+	      elem = gfc_constructor_lookup_expr (base, 0);
+	      advance = true;
+	    }
+	  if (elem)
+	    {
+	      start = gfc_copy_expr (elem);
+	      if (!gfc_simplify_expr (start, 1))
+		gfc_internal_error ("Simplification error");
+	      mpz_set (section_index[i], start->value.integer);
+	      gfc_free_expr (start);
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
-      else
+
+      if (!advance)
 	break;
     }
 
@@ -793,12 +865,14 @@ gfc_formalize_init_value (gfc_symbol *sym)
    offset.  */
 
 void
-gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset)
+gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset,
+		       int *vector_offset)
 {
   int i;
   mpz_t delta;
   mpz_t tmp;
-  gfc_expr *start;
+  gfc_expr *start, *elem;
+  gfc_constructor_base base;
 
   mpz_set_si (*offset, 0);
   mpz_init (tmp);
@@ -810,28 +884,34 @@ gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset)
 	{
 	case DIMEN_ELEMENT:
 	case DIMEN_RANGE:
-	  if (ar->start[i])
-	    {
-	      start = gfc_copy_expr(ar->start[i]);
-	      if(!gfc_simplify_expr(start, 1))
-	        gfc_internal_error("Simplification error");
-	      mpz_sub (tmp, start->value.integer,
-		       ar->as->lower[i]->value.integer);
-	      mpz_mul (tmp, tmp, delta);
-	      mpz_add (*offset, tmp, *offset);
-	      mpz_set (section_index[i], start->value.integer);
-	      gfc_free_expr(start);
-	    }
-	  else
-	      mpz_set (section_index[i], ar->as->lower[i]->value.integer);
+	  elem = ar->start[i];
 	  break;
 
 	case DIMEN_VECTOR:
-	  gfc_internal_error ("TODO: Vector sections in data statements");
+	  vector_offset[i] = 0;
+	  base = ar->start[i]->value.constructor;
+	  elem = gfc_constructor_lookup_expr (base, vector_offset[i]);
+	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
+
+      if (elem)
+	{
+	  start = gfc_copy_expr (elem);
+	  if (!gfc_simplify_expr (start, 1))
+	    gfc_internal_error ("Simplification error");
+	  mpz_sub (tmp, start->value.integer,
+		   ar->as->lower[i]->value.integer);
+	  mpz_mul (tmp, tmp, delta);
+	  mpz_add (*offset, tmp, *offset);
+	  mpz_set (section_index[i], start->value.integer);
+	  gfc_free_expr (start);
+	}
+      else
+	/* Fallback for empty section or constructor.  */
+	mpz_set (section_index[i], ar->as->lower[i]->value.integer);
 
       mpz_sub (tmp, ar->as->upper[i]->value.integer,
 	       ar->as->lower[i]->value.integer);

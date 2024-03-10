@@ -1515,7 +1515,7 @@ Gael Thomas for @code{VMClassLoader} boot packages support suggestions.
 
 @item
 Andreas Tobler for Darwin and Solaris testing and fixing, @code{Qt4}
-support for Darwin/OS X, @code{Graphics2D} support, @code{gtk+}
+support for Darwin / macOS, @code{Graphics2D} support, @code{gtk+}
 updates.
 
 @item

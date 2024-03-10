@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
    - mask_load: currently just maskload
    - load_lanes: currently just vec_load_lanes
    - mask_load_lanes: currently just vec_mask_load_lanes
+   - mask_len_load_lanes: currently just vec_mask_len_load_lanes
    - gather_load: used for {mask_,mask_len_,}gather_load
    - len_load: currently just len_load
    - mask_len_load: currently just mask_len_load
@@ -57,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
    - mask_store: currently just maskstore
    - store_lanes: currently just vec_store_lanes
    - mask_store_lanes: currently just vec_mask_store_lanes
+   - mask_len_store_lanes: currently just vec_mask_len_store_lanes
    - scatter_store: used for {mask_,mask_len_,}scatter_store
    - len_store: currently just len_store
    - mask_len_store: currently just mask_len_store
@@ -69,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
      lround<srcmode><dstmode>2.
 
    - cond_binary: a conditional binary optab, such as cond_add<mode>
+   - cond_unary: a conditional unary optab, such as cond_neg<mode>
    - cond_ternary: a conditional ternary optab, such as cond_fma_rev<mode>
 
    - fold_left: for scalar = FN (scalar, vector), keyed off the vector mode
@@ -188,6 +191,8 @@ DEF_INTERNAL_OPTAB_FN (MASK_LOAD, ECF_PURE, maskload, mask_load)
 DEF_INTERNAL_OPTAB_FN (LOAD_LANES, ECF_CONST, vec_load_lanes, load_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_LOAD_LANES, ECF_PURE,
 		       vec_mask_load_lanes, mask_load_lanes)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_LOAD_LANES, ECF_PURE,
+		       vec_mask_len_load_lanes, mask_load_lanes)
 
 DEF_INTERNAL_OPTAB_FN (GATHER_LOAD, ECF_PURE, gather_load, gather_load)
 DEF_INTERNAL_OPTAB_FN (MASK_GATHER_LOAD, ECF_PURE,
@@ -208,14 +213,18 @@ DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_STORE_LANES, 0,
 		       vec_mask_store_lanes, mask_store_lanes)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_STORE_LANES, 0,
+		       vec_mask_len_store_lanes, mask_store_lanes)
 
-DEF_INTERNAL_OPTAB_FN (VCOND, 0, vcond, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCONDU, 0, vcondu, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCONDEQ, 0, vcondeq, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCOND_MASK, 0, vcond_mask, vec_cond_mask)
+DEF_INTERNAL_OPTAB_FN (VCOND, ECF_CONST | ECF_NOTHROW, vcond, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCONDU, ECF_CONST | ECF_NOTHROW, vcondu, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCONDEQ, ECF_CONST | ECF_NOTHROW, vcondeq, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCOND_MASK, ECF_CONST | ECF_NOTHROW,
+		       vcond_mask, vec_cond_mask)
 
-DEF_INTERNAL_OPTAB_FN (VEC_SET, 0, vec_set, vec_set)
-DEF_INTERNAL_OPTAB_FN (VEC_EXTRACT, 0, vec_extract, vec_extract)
+DEF_INTERNAL_OPTAB_FN (VEC_SET, ECF_CONST | ECF_NOTHROW, vec_set, vec_set)
+DEF_INTERNAL_OPTAB_FN (VEC_EXTRACT, ECF_CONST | ECF_NOTHROW,
+		       vec_extract, vec_extract)
 
 DEF_INTERNAL_OPTAB_FN (LEN_STORE, 0, len_store, len_store)
 DEF_INTERNAL_OPTAB_FN (MASK_LEN_STORE, 0, mask_len_store, mask_len_store)
@@ -274,6 +283,7 @@ DEF_INTERNAL_COND_FN (FNMA, ECF_CONST, fnma, ternary)
 DEF_INTERNAL_COND_FN (FNMS, ECF_CONST, fnms, ternary)
 
 DEF_INTERNAL_COND_FN (NEG, ECF_CONST, neg, unary)
+DEF_INTERNAL_COND_FN (NOT, ECF_CONST, one_cmpl, unary)
 
 DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
 
@@ -301,6 +311,9 @@ DEF_INTERNAL_OPTAB_FN (EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 /* Same, but return the first argument if no elements are active.  */
 DEF_INTERNAL_OPTAB_FN (FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 		       fold_extract_last, fold_extract)
+
+DEF_INTERNAL_OPTAB_FN (LEN_FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
+		       len_fold_extract_last, fold_len_extract)
 
 DEF_INTERNAL_OPTAB_FN (FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
 		       fold_left_plus, fold_left)

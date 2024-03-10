@@ -45,14 +45,9 @@
 #include <bits/error_constants.h> // for std::errc
 #include <ext/numeric_traits.h>
 
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
-    && __SIZE_WIDTH__ >= 32 && _GLIBCXX_HOSTED
-# define __cpp_lib_to_chars 201611L
-#endif
-
-#if __cplusplus > 202002L
-# define __cpp_lib_constexpr_charconv 202207L
-#endif
+#define __glibcxx_want_to_chars
+#define __glibcxx_want_constexpr_charconv
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -242,7 +237,7 @@ namespace __detail
       static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
 
       to_chars_result __res;
-      unsigned __len;
+      unsigned __len = 0;
 
       if _GLIBCXX17_CONSTEXPR (__gnu_cxx::__int_traits<_Tp>::__digits <= 16)
 	{

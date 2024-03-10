@@ -5744,9 +5744,9 @@ check_access (gfc_access specific_access, gfc_access default_access)
     return true;
 
   if (specific_access == ACCESS_PUBLIC)
-    return TRUE;
+    return true;
   if (specific_access == ACCESS_PRIVATE)
-    return FALSE;
+    return false;
 
   if (flag_module_private)
     return default_access == ACCESS_PUBLIC;

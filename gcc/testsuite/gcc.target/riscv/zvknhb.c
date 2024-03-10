@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv32gc_zvknhb" { target { rv32 } } } */
 
 #ifndef __riscv_zvknhb
-#error Feature macro not defined
+#error "Feature macro not defined"
 #endif
 
 int

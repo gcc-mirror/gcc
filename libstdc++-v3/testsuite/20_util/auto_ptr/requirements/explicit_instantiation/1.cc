@@ -1,4 +1,6 @@
 // { dg-do compile }
+// { dg-add-options using-deprecated }
+// { dg-warning "auto_ptr. is deprecated" "" { target c++11 } 0 }
 
 // Copyright (C) 2007-2023 Free Software Foundation, Inc.
 //
@@ -18,9 +20,7 @@
 // <http://www.gnu.org/licenses/>.
 
 
-// This file tests explicit instantiation of library containers.
-
-// { dg-options "-std=c++98" }
+// This file tests explicit instantiation of library templates.
 
 #include <memory>
 

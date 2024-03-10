@@ -1528,6 +1528,23 @@ if (isInputRange!Range && !isInfinite!Range &&
     assert([S(5), S(6)].extremum!"a.value" == S(5));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24027
+@safe nothrow unittest
+{
+    class A
+    {
+        int a;
+        this(int a)
+        {
+            this.a = a;
+        }
+    }
+
+    auto test = new A(5);
+    A[] arr = [test];
+    assert(maxElement!"a.a"(arr) is test);
+}
+
 // find
 /**
 Finds an individual element in an $(REF_ALTTEXT input range, isInputRange, std,range,primitives).

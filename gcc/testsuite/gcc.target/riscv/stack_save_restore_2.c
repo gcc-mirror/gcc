@@ -8,15 +8,15 @@ float getf();
 /*
 ** bar:
 **	call	t0,__riscv_save_(3|4)
-**	addi	sp,sp,-2032
+**	addi	sp,sp,-[0-9]+
 **	...
-**	li	t0,-12288
+**	li	t0,-[0-9]+
 **	add	sp,sp,t0
 **	...
-**	li	t0,12288
+**	li	t0,[0-9]+
 **	add	sp,sp,t0
 **	...
-**	addi	sp,sp,2032
+**	addi	sp,sp,[0-9]+
 **	tail	__riscv_restore_(3|4)
 */
 int bar()

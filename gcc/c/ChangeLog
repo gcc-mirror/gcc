@@ -1,3 +1,57 @@
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (struct c_parser): Add omp_for_parse_state field.
+	(struct omp_for_parse_data): New.
+	(check_omp_intervening_code): New.
+	(add_structured_block_stmt): New.
+	(c_parser_compound_statement_nostart): Recognize intervening code,
+	nested loops, and other things that need special handling in
+	OpenMP loop constructs.
+	(c_parser_while_statement): Error on loop in intervening code.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_postfix_expression_after_primary): Error on calls to
+	the OpenMP runtime in intervening code.
+	(c_parser_pragma): Error on OpenMP pragmas in intervening code.
+	(c_parser_omp_loop_nest): New.
+	(c_parser_omp_for_loop): Rewrite to use recursive descent, calling
+	c_parser_omp_loop_nest to do the heavy lifting.
+
+2023-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-parser.cc (c_parser_std_attribute): Conditionally allow
+	two colons to be used in place of ::.
+	(c_parser_std_attribute_list): New function, split out from...
+	(c_parser_std_attribute_specifier): ...here.  Allow the attribute-list
+	to start with __extension__.  When it does, also allow two colons
+	to be used in place of ::.
+
+2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_defaultmap): Parse
+	'all' as category.
+
+2023-08-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR c/106537
+	* c-typeck.cc (build_binary_op): Warning on comparing distinct
+	pointer types only when -Wcompare-distinct-pointer-types.
+
+2023-08-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.cc (OACC_DATA_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_DEFAULT.
+
+2023-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_typeof_specifier): Handle
+	__typeof_unqual and __typeof_unqual__ as !is_std.
+
+2023-08-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/84510
+	* c-typeck.cc (build_c_cast): Add warning.
+
 2023-08-05  Martin Uecker  <uecker@tugraz.at>
 
 	* c-parser.cc (c_parser_generic_selection): Inhibit evaluation

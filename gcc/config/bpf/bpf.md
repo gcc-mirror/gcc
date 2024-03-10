@@ -115,6 +115,19 @@
   "{ja\t0|goto 0}"
   [(set_attr "type" "alu")])
 
+;;;; Stack usage
+
+(define_expand "allocate_stack"
+  [(match_operand:DI 0 "general_operand" "")
+   (match_operand:DI 1 "general_operand" "")]
+  ""
+  "
+{
+  error (\"BPF does not support dynamic stack allocation\");
+  emit_insn (gen_nop ());
+  DONE;
+}")
+
 ;;;; Arithmetic/Logical
 
 ;; The arithmetic and logic operations below are defined for SI and DI
@@ -150,8 +163,8 @@
 
 ;;; Negation
 (define_insn "neg<AM:mode>2"
-  [(set (match_operand:AM         0 "register_operand"   "=r,r")
-        (neg:AM (match_operand:AM 1 "reg_or_imm_operand" " 0,I")))]
+  [(set (match_operand:AM         0 "register_operand" "=r")
+        (neg:AM (match_operand:AM 1 "register_operand" " 0")))]
   ""
   "{neg<msuffix>\t%0|%w0 = -%w1}"
   [(set_attr "type" "<mtype>")])
@@ -336,13 +349,6 @@
    {movs\t%0,%1,8|%0 = (s8) %1}
    {ldxsb\t%0,%1|%0 = *(s8 *) (%1)}"
   [(set_attr "type" "alu,ldx")])
-
-(define_insn "extendsisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (sign_extend:SI (match_operand:SI 1 "register_operand" "r")))]
-  "bpf_has_smov"
-  "{movs32\t%0,%1,32|%w0 = (s32) %w1}"
-  [(set_attr "type" "alu")])
 
 (define_insn "extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")

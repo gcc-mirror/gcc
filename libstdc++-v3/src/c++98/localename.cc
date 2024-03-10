@@ -36,24 +36,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using namespace __gnu_cxx;
 
+  static inline bool
+  is_C_locale(const char* s)
+  {
+    switch (s[0])
+    {
+    case 'C':
+      return s[1] == '\0';
+    case 'P':
+      return !std::strcmp(s+1, "OSIX");
+    default:
+      return false;
+    }
+  }
+
   locale::locale(const char* __s) : _M_impl(0)
   {
     if (__s)
       {
 	_S_initialize();
-	if (std::strcmp(__s, "C") == 0 || std::strcmp(__s, "POSIX") == 0)
+	if (is_C_locale(__s))
 	  (_M_impl = _S_classic)->_M_add_reference();
-	else if (std::strcmp(__s, "") != 0)
+	else if (*__s)
 	  _M_impl = new _Impl(__s, 1);
 	else
 	  {
 	    // Get it from the environment.
 	    char* __env = std::getenv("LC_ALL");
 	    // If LC_ALL is set we are done.
-	    if (__env && std::strcmp(__env, "") != 0)
+	    if (__env && *__env)
 	      {
-		if (std::strcmp(__env, "C") == 0
-		    || std::strcmp(__env, "POSIX") == 0)
+		if (is_C_locale(__env))
 		  (_M_impl = _S_classic)->_M_add_reference();
 		else
 		  _M_impl = new _Impl(__env, 1);
@@ -63,9 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		// LANG may set a default different from "C".
 		string __lang;
 		__env = std::getenv("LANG");
-		if (!__env || std::strcmp(__env, "") == 0
-		    || std::strcmp(__env, "C") == 0
-		    || std::strcmp(__env, "POSIX") == 0)
+		if (!__env || !*__env || is_C_locale(__env))
 		  __lang = "C";
 		else
 		  __lang = __env;
@@ -77,17 +88,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  for (; __i < _S_categories_size; ++__i)
 		    {
 		      __env = std::getenv(_S_categories[__i]);
-		      if (__env && std::strcmp(__env, "") != 0
-			  && std::strcmp(__env, "C") != 0
-			  && std::strcmp(__env, "POSIX") != 0)
+		      if (__env && *__env && !is_C_locale(__env))
 			break;
 		    }
 		else
 		  for (; __i < _S_categories_size; ++__i)
 		    {
 		      __env = std::getenv(_S_categories[__i]);
-		      if (__env && std::strcmp(__env, "") != 0
-			  && __lang != __env)
+		      if (__env && *__env && __lang != __env)
 			break;
 		    }
 
@@ -113,14 +121,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      {
 			__env = std::getenv(_S_categories[__i]);
 			__str += _S_categories[__i];
-			if (!__env || std::strcmp(__env, "") == 0)
+			if (!__env || !*__env)
 			  {
 			    __str += '=';
 			    __str += __lang;
 			    __str += ';';
 			  }
-			else if (std::strcmp(__env, "C") == 0
-				 || std::strcmp(__env, "POSIX") == 0)
+			else if (is_C_locale(__env))
 			  __str += "=C;";
 			else
 			  {

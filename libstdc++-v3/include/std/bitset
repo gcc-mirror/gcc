@@ -58,6 +58,9 @@
 # include <bits/functional_hash.h>
 #endif
 
+#define __glibcxx_want_constexpr_bitset
+#include <bits/version.h>
+
 #define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * __SIZEOF_LONG__)
 #define _GLIBCXX_BITSET_WORDS(__n) \
   ((__n) / _GLIBCXX_BITSET_BITS_PER_WORD + \
@@ -68,10 +71,6 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
-
-#if __cplusplus > 202002L && _GLIBCXX_HOSTED
-# define __cpp_lib_constexpr_bitset 202202L
-#endif
 
   /**
    *  Base class, general case.  It is a class invariant that _Nw will be

@@ -1175,6 +1175,7 @@ check_function_format (const_tree fn, tree attrs, int nargs,
   tree a;
 
   tree atname = get_identifier ("format");
+  bool skipped_default_format = false;
 
   /* See if this function has any format attributes.  */
   for (a = attrs; a; a = TREE_CHAIN (a))
@@ -1185,6 +1186,38 @@ check_function_format (const_tree fn, tree attrs, int nargs,
 	  function_format_info info;
 	  decode_format_attr (fn, atname, TREE_VALUE (a), &info,
 			      /*validated=*/true);
+
+	  /* Mingw32 targets have traditionally used ms_printf format for the
+	     printf function, and this format is built in GCC. But nowadays,
+	     if mingw-w64 is configured to target UCRT, the printf function
+	     uses the gnu_printf format (specified in the stdio.h header). This
+	     causes GCC to check both formats, which means that GCC would
+	     warn twice about the same issue when both formats are violated,
+	     e.g. for %lu used to print long long unsigned.
+
+	     Hence, if there is a built-in attribute specifier and at least
+	     one another, we skip the built-in one. See PR 95130 (but note that
+	     GCC ms_printf already supports %llu) and PR 92292.  */
+
+	  if (!skipped_default_format
+	      && fn
+	      && TREE_CODE (fn) == FUNCTION_DECL
+	      && fndecl_built_in_p (fn, BUILT_IN_NORMAL)
+	      && (tree_to_uhwi (TREE_PURPOSE (TREE_VALUE (a)))
+	          & (int) ATTR_FLAG_BUILT_IN))
+	    {
+	      tree aa;
+	      for (aa = attrs; aa; aa = TREE_CHAIN (aa))
+		if (a != aa
+		    && is_attribute_p ("format", get_attribute_name (aa)))
+		  {
+		    skipped_default_format = true;
+		    break;
+		  }
+	       if (skipped_default_format)
+		 continue;
+	    }
+
 	  if (warn_format)
 	    {
 	      /* FIXME: Rewrite all the internal functions in this file
@@ -2292,13 +2325,13 @@ read_any_format_width (tree &params,
     {
       /* Possibly read a numeric width.  If the width is zero,
 	 we complain if appropriate.  */
-      int non_zero_width_char = FALSE;
-      int found_width = FALSE;
+      int non_zero_width_char = false;
+      int found_width = false;
       while (ISDIGIT (*format_chars))
 	{
-	  found_width = TRUE;
+	  found_width = true;
 	  if (*format_chars != '0')
-	    non_zero_width_char = TRUE;
+	    non_zero_width_char = true;
 	  ++format_chars;
 	}
       if (found_width && !non_zero_width_char &&
@@ -5189,6 +5222,9 @@ handle_format_attribute (tree node[3], tree atname, tree args,
   /* Canonicalize name of format function.  */
   if (TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
     TREE_VALUE (args) = canonicalize_attr_name (TREE_VALUE (args));
+
+  /* record the flags for check_function_format */
+  TREE_PURPOSE (args) = build_int_cst (unsigned_type_node, flags);
 
   if (!decode_format_attr (fndecl ? fndecl : type, atname, args, &info,
 			   /* validated_p = */false))

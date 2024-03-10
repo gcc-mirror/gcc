@@ -30,7 +30,10 @@
 
 #include <bits/c++config.h>
 
-#if __cplusplus > 202002L && _GLIBCXX_HAVE_STACKTRACE
+#define __glibcxx_want_stacktrace
+#include <bits/version.h>
+
+#ifdef __cpp_lib_stacktrace // C++ >= 23 && hosted && HAVE_STACKTRACE
 #include <compare>
 #include <new>
 #include <string>
@@ -82,8 +85,6 @@ namespace __cxxabiv1
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#define __cpp_lib_stacktrace 202011L
 
   // [stacktrace.entry], class stacktrace_entry
   class stacktrace_entry
@@ -800,6 +801,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // C++23
-
+#endif // __cpp_lib_stacktrace
 #endif /* _GLIBCXX_STACKTRACE */

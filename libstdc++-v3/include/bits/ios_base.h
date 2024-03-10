@@ -46,6 +46,9 @@
 # include <system_error>
 #endif
 
+#define __glibcxx_want_ios_noreplace
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -473,8 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     static const openmode __noreplace =	_S_noreplace;
 
-#if __cplusplus >= 202100L
-#define __cpp_lib_ios_noreplace 202207L
+#ifdef __cpp_lib_ios_noreplace // C++ >= 23 && HOSTED
     /// Open a file in exclusive mode.
     static const openmode noreplace =	_S_noreplace;
 #endif

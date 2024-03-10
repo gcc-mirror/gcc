@@ -1,7 +1,10 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-do compile } */
-/* { dg-additional-options "-fdump-tree-optimized" } */
+/* Disable BB vectorization, we now can cover the whole loop with that
+   when the target supports .REDUC_PLUS for integers, we don't have a
+   good target selector for this.  */
+/* { dg-additional-options "-fdump-tree-optimized -fno-tree-slp-vectorize" } */
 
 int
 foo (int integral, int decimal, int power_ten)

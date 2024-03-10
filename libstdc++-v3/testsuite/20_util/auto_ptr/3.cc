@@ -15,9 +15,10 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.4.5 Template class auto_ptr [lib.auto.ptr]
+// C++03 20.4.5 Template class auto_ptr [lib.auto.ptr]
 
-// { dg-options "-std=c++98" }
+// { dg-add-options using-deprecated }
+// { dg-warning "auto_ptr. is deprecated" "" { target c++11 } 0 }
 
 #include <memory>
 #include <testsuite_hooks.h>

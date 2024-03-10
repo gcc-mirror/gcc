@@ -39,6 +39,13 @@
 #include <bits/ranges_util.h>
 #include <bits/uniform_int_dist.h> // concept uniform_random_bit_generator
 
+#define __glibcxx_want_ranges_contains
+#define __glibcxx_want_ranges_find_last
+#define __glibcxx_want_ranges_fold
+#define __glibcxx_want_ranges_iota
+#define __glibcxx_want_shift
+#include <bits/version.h>
+
 #if __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -3465,10 +3472,7 @@ namespace ranges
 
   inline constexpr __prev_permutation_fn prev_permutation{};
 
-#if __cplusplus > 202002L
-
-#define __cpp_lib_ranges_contains 202207L
-
+#if __cpp_lib_ranges_contains >= 202207L // C++ >= 23
   struct __contains_fn
   {
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -3522,7 +3526,9 @@ namespace ranges
 
   inline constexpr __contains_subrange_fn contains_subrange{};
 
-#define __cpp_lib_ranges_iota 202202L
+#endif // __cpp_lib_ranges_contains
+
+#if __cpp_lib_ranges_iota >= 202202L // C++ >= 23
 
   template<typename _Out, typename _Tp>
     struct out_value_result
@@ -3572,7 +3578,9 @@ namespace ranges
 
   inline constexpr __iota_fn iota{};
 
-#define __cpp_lib_ranges_find_last 202207L
+#endif // __cpp_lib_ranges_iota
+
+#if __cpp_lib_ranges_find_last >= 202207L // C++ >= 23
 
   struct __find_last_fn
   {
@@ -3700,7 +3708,9 @@ namespace ranges
 
   inline constexpr __find_last_if_not_fn find_last_if_not{};
 
-#define __cpp_lib_ranges_fold 202207L
+#endif // __cpp_lib_ranges_find_last
+
+#if __cpp_lib_ranges_fold >= 202207L // C++ >= 23
 
   template<typename _Iter, typename _Tp>
     struct in_value_result
@@ -3947,10 +3957,9 @@ namespace ranges
   };
 
   inline constexpr __fold_right_last_fn fold_right_last{};
-#endif // C++23
+#endif // __cpp_lib_ranges_fold
 } // namespace ranges
 
-#define __cpp_lib_shift 201806L
   template<typename _ForwardIterator>
     constexpr _ForwardIterator
     shift_left(_ForwardIterator __first, _ForwardIterator __last,

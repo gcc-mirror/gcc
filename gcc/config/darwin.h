@@ -1,4 +1,4 @@
-/* Target definitions for Darwin (Mac OS X) systems.
+/* Target definitions for Darwin (macOS) systems.
    Copyright (C) 1989-2023 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CONFIG_DARWIN_H
 
 /* The definitions in this file are common to all processor types
-   running Darwin, which is the kernel for Mac OS X.  Darwin is
+   running Darwin, which is the kernel for macOS.  Darwin is
    basically a BSD user layer laid over a Mach kernel, then evolved
    for many years (at NeXT) in parallel with other Unix systems.  So
    while the runtime is a somewhat idiosyncratic Mach-based thing,
@@ -1089,7 +1089,7 @@ enum machopic_addr_class {
 
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \
-  (((CODE) == 2 && (GLOBAL) == 1) \
+  (((CODE) == 2 && (GLOBAL) == 1) || ((CODE) == 0 && (GLOBAL) == 1) \
    ? (DW_EH_PE_pcrel | DW_EH_PE_indirect | DW_EH_PE_sdata4) : \
      ((CODE) == 1 || (GLOBAL) == 0) ? DW_EH_PE_pcrel : DW_EH_PE_absptr)
 

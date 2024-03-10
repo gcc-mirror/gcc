@@ -1007,6 +1007,8 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
   tree va_list_tree = get_va_list_diag_arg (cd.get_arg_tree (0));
   ap_sval = model->check_for_poison (ap_sval, va_list_tree, ap_reg, ctxt);
 
+  cd.set_any_lhs_with_defaults ();
+
   if (const region *impl_reg = ap_sval->maybe_get_region ())
     {
       const svalue *old_impl_sval = model->get_store_value (impl_reg, ctxt);

@@ -7,6 +7,7 @@ static int vl = 0x5545515;
 
 void f (int8_t * restrict in, int8_t * restrict out, int n, int cond)
 {
+  vl = vl + 101;
   for (size_t i = 0; i < n; i++)
     {
       vint8mf8_t v = __riscv_vle8_v_i8mf8 (in + i + 300, vl);

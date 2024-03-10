@@ -21,6 +21,7 @@
 #include <list>
 #include <testsuite_api.h>
 
+// { dg-options "-std=gnu++98" }
 // { dg-do compile { target c++98_only } }
 
 // N.B. Since C++11 we cannot instantiate with T == NonDefaultConstructible

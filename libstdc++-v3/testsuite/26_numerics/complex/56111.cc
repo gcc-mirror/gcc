@@ -1,5 +1,5 @@
-// { dg-do compile }
 // { dg-options "-std=c++98" }
+// { dg-do compile { target c++98_only } }
 
 // Copyright (C) 2013-2023 Free Software Foundation, Inc.
 //

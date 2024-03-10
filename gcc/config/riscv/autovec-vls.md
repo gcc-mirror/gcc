@@ -68,6 +68,7 @@
       }
     DONE;
   }
+  [(set_attr "type" "vmov")]
 )
 
 (define_insn_and_split "*mov<mode>"
@@ -89,6 +90,7 @@
     gcc_assert (ok_p);
     DONE;
   }
+  [(set_attr "type" "vmov")]
 )
 
 (define_expand "mov<mode>"
@@ -127,10 +129,12 @@
       emit_move_insn (operands[2], gen_int_mode (GET_MODE_NUNITS (<VLS_AVL_REG:MODE>mode),
 						 Pmode));
       riscv_vector::emit_nonvlmax_insn (code_for_pred_mov (<VLS_AVL_REG:MODE>mode),
-					riscv_vector::RVV_UNOP, operands, operands[2]);
+					 riscv_vector::UNARY_OP, operands, operands[2]);
     }
   DONE;
-})
+}
+  [(set_attr "type" "vmov")]
+)
 
 (define_insn "*mov<mode>_vls"
   [(set (match_operand:VLS 0 "register_operand" "=vr")
@@ -139,6 +143,25 @@
   "vmv%m1r.v\t%0,%1"
   [(set_attr "type" "vmov")
    (set_attr "mode" "<MODE>")])
+
+(define_expand "movmisalign<mode>"
+  [(set (match_operand:VLS 0 "nonimmediate_operand")
+	(match_operand:VLS 1 "general_operand"))]
+  "TARGET_VECTOR"
+  {
+    /* To support misalign data movement, we should use
+       minimum element alignment load/store.  */
+    unsigned int size = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode));
+    poly_int64 nunits = GET_MODE_NUNITS (<MODE>mode) * size;
+    machine_mode mode = riscv_vector::get_vector_mode (QImode, nunits).require ();
+    operands[0] = gen_lowpart (mode, operands[0]);
+    operands[1] = gen_lowpart (mode, operands[1]);
+    if (MEM_P (operands[0]) && !register_operand (operands[1], mode))
+      operands[1] = force_reg (mode, operands[1]);
+    riscv_vector::emit_vlmax_insn (code_for_pred_mov (mode), riscv_vector::UNARY_OP, operands);
+    DONE;
+  }
+)
 
 ;; -----------------------------------------------------------------
 ;; ---- Duplicate Operations
@@ -154,7 +177,103 @@
   [(const_int 0)]
   {
     riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
-                                   riscv_vector::RVV_UNOP, operands);
+                                   riscv_vector::UNARY_OP, operands);
     DONE;
   }
+  [(set_attr "type" "vector")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Binary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vadd.vv/vsub.vv/...
+;; - vadd.vi/vsub.vi/...
+;; -------------------------------------------------------------------------
+
+(define_insn_and_split "<optab><mode>3"
+  [(set (match_operand:VLSI 0 "register_operand")
+    (any_int_binop_no_shift:VLSI
+     (match_operand:VLSI 1 "<binop_rhs1_predicate>")
+     (match_operand:VLSI 2 "<binop_rhs2_predicate>")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
+				  riscv_vector::BINARY_OP, operands);
+  DONE;
+}
+[(set_attr "type" "vector")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Binary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfadd.vv/vfsub.vv/vfmul.vv/vfdiv.vv
+;; - vfadd.vf/vfsub.vf/vfmul.vf/vfdiv.vf
+;; -------------------------------------------------------------------------
+(define_insn_and_split "<optab><mode>3"
+  [(set (match_operand:VLSF 0 "register_operand")
+    (any_float_binop:VLSF
+     (match_operand:VLSF 1 "<binop_rhs1_predicate>")
+     (match_operand:VLSF 2 "<binop_rhs2_predicate>")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
+				 riscv_vector::BINARY_OP_FRM_DYN, operands);
+  DONE;
+}
+[(set_attr "type" "vector")]
+)
+
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfmin.vv/vfmax.vv
+;; - vfmin.vf/vfmax.vf
+;; - fmax/fmaxf in math.h
+;; -------------------------------------------------------------------------
+(define_insn_and_split "<optab><mode>3"
+  [(set (match_operand:VLSF 0 "register_operand")
+    (any_float_binop_nofrm:VLSF
+     (match_operand:VLSF 1 "<binop_rhs1_predicate>")
+     (match_operand:VLSF 2 "<binop_rhs2_predicate>")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
+				 riscv_vector::BINARY_OP, operands);
+  DONE;
+}
+[(set_attr "type" "vector")]
+)
+
+;; -------------------------------------------------------------------------------
+;; ---- [INT] Unary operations
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - vneg.v/vnot.v
+;; -------------------------------------------------------------------------------
+
+(define_insn_and_split "<optab><mode>2"
+  [(set (match_operand:VLSI 0 "register_operand")
+    (any_int_unop:VLSI
+     (match_operand:VLSI 1 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
+  DONE;
+}
+[(set_attr "type" "vector")]
 )

@@ -256,6 +256,11 @@ loongarch_init_builtins (void)
   unsigned int i;
   tree type;
 
+  /* Register the type float128_type_node as a built-in type and
+     give it an alias "__float128".  */
+  (*lang_hooks.types.register_builtin_type) (float128_type_node,
+					    "__float128");
+
   /* Iterate through all of the bdesc arrays, initializing all of the
      builtin functions.  */
   for (i = 0; i < ARRAY_SIZE (loongarch_builtins); i++)

@@ -7,7 +7,7 @@ namespace std {
 
 struct A1 { int i,j; } a1;
 template<> struct std::tuple_size<A1> {  };
-void f1() { auto [ x ] = a1; }	// { dg-error "is not an integral constant expression" }
+void f1() { auto [ x ] = a1; }	// { dg-error "only 1 name provided" }
 
 struct A2 { int i,j; } a2;
 template<> struct std::tuple_size<A2> { enum { value = 5 }; };

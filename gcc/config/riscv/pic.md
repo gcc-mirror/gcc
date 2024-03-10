@@ -43,17 +43,17 @@
   "<SUBX:load>u\t%0,%1"
   [(set (attr "length") (const_int 8))])
 
-;; We can support ANYF loads into X register if there is no double support
+;; We can support ANYLSF loads into X register if there is no double support
 ;; or if the target is 64-bit.
 
-(define_insn "*local_pic_load<ANYF:mode>"
-  [(set (match_operand:ANYF 0 "register_operand" "=f,*r")
-	(mem:ANYF (match_operand 1 "absolute_symbolic_operand" "")))
+(define_insn "*local_pic_load<ANYLSF:mode>"
+  [(set (match_operand:ANYLSF 0 "register_operand" "=f,*r")
+	(mem:ANYLSF (match_operand 1 "absolute_symbolic_operand" "")))
    (clobber (match_scratch:P 2 "=r,X"))]
   "TARGET_HARD_FLOAT && USE_LOAD_ADDRESS_MACRO (operands[1])
    && (!TARGET_DOUBLE_FLOAT || TARGET_64BIT)"
   "@
-   <ANYF:load>\t%0,%1,%2
+   <ANYLSF:load>\t%0,%1,%2
    <softload>\t%0,%1"
   [(set (attr "length") (const_int 8))])
 
@@ -61,13 +61,13 @@
 ;; supported.  ld is not valid in that case.  Punt for now.  Maybe add a split
 ;; for this later.
 
-(define_insn "*local_pic_load_32d<ANYF:mode>"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(mem:ANYF (match_operand 1 "absolute_symbolic_operand" "")))
+(define_insn "*local_pic_load_32d<ANYLSF:mode>"
+  [(set (match_operand:ANYLSF 0 "register_operand" "=f")
+	(mem:ANYLSF (match_operand 1 "absolute_symbolic_operand" "")))
    (clobber (match_scratch:P 2 "=r"))]
   "TARGET_HARD_FLOAT && USE_LOAD_ADDRESS_MACRO (operands[1])
    && (TARGET_DOUBLE_FLOAT && !TARGET_64BIT)"
-  "<ANYF:load>\t%0,%1,%2"
+  "<ANYLSF:load>\t%0,%1,%2"
   [(set (attr "length") (const_int 8))])
 
 (define_insn "*local_pic_load_sf<mode>"
@@ -88,14 +88,14 @@
   "<ANYI:store>\t%z1,%0,%2"
   [(set (attr "length") (const_int 8))])
 
-(define_insn "*local_pic_store<ANYF:mode>"
-  [(set (mem:ANYF (match_operand 0 "absolute_symbolic_operand" ""))
-	(match_operand:ANYF 1 "register_operand" "f,*r"))
+(define_insn "*local_pic_store<ANYLSF:mode>"
+  [(set (mem:ANYLSF (match_operand 0 "absolute_symbolic_operand" ""))
+	(match_operand:ANYLSF 1 "register_operand" "f,*r"))
    (clobber (match_scratch:P 2 "=r,&r"))]
   "TARGET_HARD_FLOAT && USE_LOAD_ADDRESS_MACRO (operands[0])
    && (!TARGET_DOUBLE_FLOAT || TARGET_64BIT)"
   "@
-   <ANYF:store>\t%1,%0,%2
+   <ANYLSF:store>\t%1,%0,%2
    <softstore>\t%1,%0,%2"
   [(set (attr "length") (const_int 8))])
 
@@ -103,13 +103,13 @@
 ;; supported.  sd is not valid in that case.  Punt for now.  Maybe add a split
 ;; for this later.
 
-(define_insn "*local_pic_store_32d<ANYF:mode>"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(mem:ANYF (match_operand 1 "absolute_symbolic_operand" "")))
+(define_insn "*local_pic_store_32d<ANYLSF:mode>"
+  [(set (match_operand:ANYLSF 0 "register_operand" "=f")
+	(mem:ANYLSF (match_operand 1 "absolute_symbolic_operand" "")))
    (clobber (match_scratch:P 2 "=r"))]
   "TARGET_HARD_FLOAT && USE_LOAD_ADDRESS_MACRO (operands[1])
    && (TARGET_DOUBLE_FLOAT && !TARGET_64BIT)"
-  "<ANYF:store>\t%1,%0,%2"
+  "<ANYLSF:store>\t%1,%0,%2"
   [(set (attr "length") (const_int 8))])
 
 (define_insn "*local_pic_store_sf<SOFTF:mode>"

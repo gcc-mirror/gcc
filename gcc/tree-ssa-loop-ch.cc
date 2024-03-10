@@ -176,7 +176,7 @@ enum ch_decision
   ch_impossible,
   /* We can copy it if it enables wins.  */
   ch_possible,
-  /* We can "cop" it if it enables wins and doing
+  /* We can "copy" it if it enables wins and doing
      so will introduce no new code.  */
   ch_possible_zero_cost,
   /* We want to copy.  */
@@ -464,7 +464,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
      TODO: Even if duplication costs some size we may opt to do so in case
      exit probability is significant enough (do partial peeling).  */
   if (static_exit)
-    return code_size_cost ? ch_possible_zero_cost : ch_win;
+    return !code_size_cost ? ch_possible_zero_cost : ch_possible;
 
   /* We was not able to prove that conditional will be eliminated.  */
   int insns = estimate_num_insns (last, &eni_size_weights);
@@ -824,6 +824,7 @@ ch_base::copy_headers (function *fun)
       int last_win_nheaders = 0;
       bool last_win_invariant_exit = false;
       ch_decision ret;
+      auto_vec <ch_decision, 32> decision;
       hash_set <edge> *invariant_exits = new hash_set <edge>;
       hash_set <edge> *static_exits = new hash_set <edge>;
       while ((ret = should_duplicate_loop_header_p (header, loop, ranger,
@@ -833,26 +834,13 @@ ch_base::copy_headers (function *fun)
 	     != ch_impossible)
 	{
 	  nheaders++;
+	  decision.safe_push (ret);
 	  if (ret >= ch_win)
 	    {
 	      last_win_nheaders = nheaders;
 	      last_win_invariant_exit = (ret == ch_win_invariant_exit);
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "    Duplicating bb %i is a win\n",
-			 header->index);
-	    }
-	  /* Duplicate BB if has zero cost but be sure it will not
-	     imply duplication of other BBs.  */
-	  else if (ret == ch_possible_zero_cost
-		   && (last_win_nheaders == nheaders - 1
-		       || (last_win_nheaders == nheaders - 2
-			   && last_win_invariant_exit)))
-	    {
-	      last_win_nheaders = nheaders;
-	      last_win_invariant_exit = false;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file,
-			 "    Duplicating bb %i is a win; it has zero cost\n",
 			 header->index);
 	    }
 	  else
@@ -883,6 +871,16 @@ ch_base::copy_headers (function *fun)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
 		     "    Duplicating header BB to obtain do-while loop\n");
+	}
+      /* "Duplicate" all BBs with zero cost following last basic blocks we
+	 decided to copy.  */
+      while (last_win_nheaders < (int)decision.length ()
+	     && decision[last_win_nheaders] == ch_possible_zero_cost)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "    Duplicating extra bb is a win; it has zero cost\n");
+	  last_win_nheaders++;
 	}
 
       if (last_win_nheaders)

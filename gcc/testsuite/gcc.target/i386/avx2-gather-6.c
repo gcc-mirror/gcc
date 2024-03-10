@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mavx2 -fno-common -fdump-tree-vect-details -mtune=skylake -fno-split-loops" } */
+/* { dg-options "-O3 -mavx2 -fno-common -fdump-tree-vect-details  -mtune=haswell -fno-split-loops" } */
 
 #include "avx2-gather-5.c"
 

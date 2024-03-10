@@ -5,9 +5,6 @@
 
 /* { dg-final { scan-assembler-times {\tvadd\.vv} 16 } } */
 /* { dg-final { scan-assembler-times {\tvadd\.vi} 8 } } */
-/* { dg-final { scan-assembler-times {\tvfadd\.vv} 7 } } */
-/* There are 2 MINUS operations.  */
-/* { dg-final { scan-assembler-times {\tvfsub\.vv} 2 } } */
+/* { dg-final { scan-assembler-times {\tvfadd\.vv} 9 } } */
 
-/* { dg-final { scan-tree-dump-times "\.COND_LEN_ADD" 7 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\.COND_LEN_SUB" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.COND_LEN_ADD" 9 "optimized" } } */

@@ -22,52 +22,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "target.h"
 #include "rtl.h"
-#include "regs.h"
-#include "insn-config.h"
-#include "insn-attr.h"
-#include "recog.h"
 #include "output.h"
-#include "alias.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "attribs.h"
-#include "varasm.h"
-#include "stor-layout.h"
-#include "calls.h"
 #include "function.h"
-#include "explow.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
-#include "reload.h"
-#include "tm_p.h"
-#include "target.h"
-#include "basic-block.h"
 #include "expr.h"
-#include "optabs.h"
-#include "bitmap.h"
-#include "df.h"
-#include "c-family/c-common.h"
 #include "diagnostic.h"
-#include "builtins.h"
-#include "predict.h"
 #include "langhooks.h"
-#include "flags.h"
-
-#include "cfg.h"
+#include "basic-block.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-pass.h"
-#include "tree-iterator.h"
-
-#include "context.h"
-#include "pass_manager.h"
-
-#include "gimplify.h"
-#include "gimplify-me.h"
-
 #include "plugin.h"
 
 #include "ctfc.h"
@@ -159,37 +130,41 @@ along with GCC; see the file COPYING3.  If not see
     as a builtin.  */
 
 
-struct cr_builtins
+struct GTY(()) cr_builtins
 {
   tree type;
   tree expr;
   tree default_value;
   rtx rtx_default_value;
-  enum btf_core_reloc_kind kind; /* Recovered from proper argument.  */
+  enum btf_core_reloc_kind kind;
   enum bpf_builtins orig_builtin_code;
   tree orig_arg_expr;
 };
+typedef struct cr_builtins *cr_builtins_ref;
 
 #define CORE_BUILTINS_DATA_EMPTY \
   { NULL_TREE, NULL_TREE, NULL_TREE, NULL_RTX, BPF_RELO_INVALID, \
     BPF_BUILTIN_UNUSED, NULL }
 
 /* Vector definition and its access function.  */
-vec<struct cr_builtins> builtins_data;
+static GTY(()) vec<cr_builtins_ref, va_gc> *builtins_data = NULL;
 
 static inline int
 allocate_builtin_data ()
 {
-  struct cr_builtins data = CORE_BUILTINS_DATA_EMPTY;
-  int ret = builtins_data.length ();
-  builtins_data.safe_push (data);
+  if (builtins_data == NULL)
+    vec_alloc (builtins_data, 1);
+
+  cr_builtins_ref data = ggc_cleared_alloc<struct cr_builtins> ();
+  int ret = builtins_data->length ();
+  vec_safe_push (builtins_data, data);
   return ret;
 }
 
 static inline struct cr_builtins *
 get_builtin_data (int index)
 {
-  return &builtins_data[index];
+  return (*builtins_data)[index];
 }
 
 typedef bool
@@ -200,11 +175,12 @@ search_builtin_data (builtin_local_data_compare_fn callback,
 		     struct cr_builtins *elem)
 {
   unsigned int i;
-  for (i = 0; i < builtins_data.length (); i++)
-    if ((callback != NULL && (callback) (elem, &builtins_data[i]))
-       || (callback == NULL
-	   && (builtins_data[i].orig_arg_expr == elem->orig_arg_expr)))
-      return (int) i;
+  if (builtins_data != NULL)
+    for (i = 0; i < builtins_data->length (); i++)
+      if ((callback != NULL && (callback) (elem, (*builtins_data)[i]))
+	  || (callback == NULL
+	      && ((*builtins_data)[i]->orig_arg_expr == elem->orig_arg_expr)))
+	return (int) i;
 
   return -1;
 }
@@ -1392,3 +1368,5 @@ bpf_replace_core_move_operands (rtx *operands)
 	  }
       }
 }
+
+#include "gt-core-builtins.h"

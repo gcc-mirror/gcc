@@ -4044,8 +4044,9 @@ conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
       gfc_typespec ts;
       gfc_clear_ts (&ts);
 
-      *expr = gfc_get_int_expr (gfc_default_character_kind, NULL,
-				(*expr)->value.character.string[0]);
+      gfc_expr *tmp = gfc_get_int_expr (gfc_default_character_kind, NULL,
+					(*expr)->value.character.string[0]);
+      gfc_replace_expr (*expr, tmp);
     }
   else if (se != NULL && (*expr)->expr_type == EXPR_VARIABLE)
     {
@@ -6451,30 +6452,24 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 		    /* ABI: actual arguments to CHARACTER(len=1),VALUE
 		       dummy arguments are actually passed by value.
-		       Strings are truncated to length 1.
-		       The BIND(C) case is handled elsewhere.  */
-		    if (fsym->ts.type == BT_CHARACTER
-			&& !fsym->ts.is_c_interop
-			&& fsym->ts.u.cl->length->expr_type == EXPR_CONSTANT
-			&& fsym->ts.u.cl->length->ts.type == BT_INTEGER
-			&& (mpz_cmp_ui
-			    (fsym->ts.u.cl->length->value.integer, 1) == 0))
+		       Strings are truncated to length 1.  */
+		    if (gfc_length_one_character_type_p (&fsym->ts))
 		      {
-			if (e->expr_type != EXPR_CONSTANT)
-			  {
-			    tree slen1 = build_int_cst (gfc_charlen_type_node, 1);
-			    gfc_conv_string_parameter (&parmse);
-			    parmse.expr = gfc_string_to_single_character (slen1,
-									  parmse.expr,
-									  e->ts.kind);
-			    /* Truncate resulting string to length 1.  */
-			    parmse.string_length = slen1;
-			  }
-			else if (e->value.character.length > 1)
+			if (e->expr_type == EXPR_CONSTANT
+			    && e->value.character.length > 1)
 			  {
 			    e->value.character.length = 1;
 			    gfc_conv_expr (&parmse, e);
 			  }
+
+			tree slen1 = build_int_cst (gfc_charlen_type_node, 1);
+			gfc_conv_string_parameter (&parmse);
+			parmse.expr
+			    = gfc_string_to_single_character (slen1,
+							      parmse.expr,
+							      e->ts.kind);
+			/* Truncate resulting string to length 1.  */
+			parmse.string_length = slen1;
 		      }
 
 		    if (fsym->attr.optional
@@ -10615,6 +10610,13 @@ gfc_conv_string_parameter (gfc_se * se)
 {
   tree type;
 
+  if (TREE_CODE (TREE_TYPE (se->expr)) == INTEGER_TYPE
+      && integer_onep (se->string_length))
+    {
+      se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
+      return;
+    }
+
   if (TREE_CODE (se->expr) == STRING_CST)
     {
       type = TREE_TYPE (TREE_TYPE (se->expr));
@@ -11169,7 +11171,8 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   if (expr1->ts.type == BT_DERIVED
 	&& expr1->ts.u.derived->attr.alloc_comp)
     {
-      tmp = gfc_deallocate_alloc_comp_no_caf (expr1->ts.u.derived, se.expr,
+      tmp = build_fold_indirect_ref_loc (input_location, se.expr);
+      tmp = gfc_deallocate_alloc_comp_no_caf (expr1->ts.u.derived, tmp,
 					      expr1->rank);
       gfc_add_expr_to_block (&se.pre, tmp);
     }

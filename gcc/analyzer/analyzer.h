@@ -128,6 +128,10 @@ struct interesting_t;
 
 class feasible_node;
 
+class known_function;
+  class builtin_known_function;
+  class internal_known_function;
+
 /* Forward decls of functions.  */
 
 extern void dump_tree (pretty_printer *pp, tree t);
@@ -279,6 +283,24 @@ public:
   {
     return;
   }
+
+  virtual const builtin_known_function *
+  dyn_cast_builtin_kf () const { return NULL; }
+};
+
+/* Subclass of known_function for builtin functions.  */
+
+class builtin_known_function : public known_function
+{
+public:
+  virtual enum built_in_function builtin_code () const = 0;
+  tree builtin_decl () const {
+    gcc_assert (builtin_code () < END_BUILTINS);
+    return builtin_info[builtin_code ()].decl;
+  }
+
+  const builtin_known_function *
+  dyn_cast_builtin_kf () const final override { return this; }
 };
 
 /* Subclass of known_function for IFN_* functions.  */
@@ -291,6 +313,16 @@ public:
     /* Types are assumed to be correct.  */
     return true;
   }
+};
+
+/* Abstract subclass of known_function that merely sets the return
+   value of the function (based on function attributes), and assumes
+   it has no side-effects.  */
+
+class pure_known_function_with_default_return : public known_function
+{
+public:
+  void impl_call_pre (const call_details &cd) const override;
 };
 
 extern void register_known_functions (known_function_manager &mgr);
@@ -391,6 +423,7 @@ extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);
+extern bool is_placement_new_p (const gcall *call);
 
 extern const char *get_user_facing_name (const gcall *call);
 

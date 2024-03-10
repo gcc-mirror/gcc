@@ -4131,6 +4131,7 @@ pass_profile::execute (function *fun)
     scev_initialize ();
 
   tree_estimate_probability (false);
+  cfun->cfg->full_profile = true;
 
   if (nb_loops > 1)
     scev_finalize ();

@@ -91,8 +91,8 @@ PROCEDURE __BUILTIN__ nextafter (x, y: REAL) : REAL ;
 PROCEDURE __BUILTIN__ nextafterf (x, y: SHORTREAL) : SHORTREAL ;
 PROCEDURE __BUILTIN__ nextafterl (x, y: LONGREAL) : LONGREAL ;
 
-PROCEDURE __BUILTIN__ nexttoward (x, y: REAL) : LONGREAL ;
-PROCEDURE __BUILTIN__ nexttowardf (x, y: SHORTREAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ nexttoward (x: REAL; y: LONGREAL) : REAL ;
+PROCEDURE __BUILTIN__ nexttowardf (x: SHORTREAL; y: LONGREAL) : SHORTREAL ;
 PROCEDURE __BUILTIN__ nexttowardl (x, y: LONGREAL) : LONGREAL ;
 
 PROCEDURE __BUILTIN__ scalbln (x: REAL; n: LONGINT) : REAL ;

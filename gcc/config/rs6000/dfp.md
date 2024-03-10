@@ -271,7 +271,8 @@
    UNSPEC_DIEX
    UNSPEC_DSCLI
    UNSPEC_DTSTSFI
-   UNSPEC_DSCRI])
+   UNSPEC_DSCRI
+   UNSPEC_DQUAN])
 
 (define_code_iterator DFP_TEST [eq lt gt unordered])
 
@@ -393,5 +394,27 @@
 		     UNSPEC_DSCRI))]
   "TARGET_DFP"
   "dscri<q> %0,%1,%2"
+  [(set_attr "type" "dfp")
+   (set_attr "size" "<bits>")])
+
+(define_insn "dfp_dqua_<mode>"
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+        (unspec:DDTD [(match_operand:DDTD 1 "gpc_reg_operand" "d")
+		      (match_operand:DDTD 2 "gpc_reg_operand" "d")
+		      (match_operand:SI 3 "const_0_to_3_operand" "n")]
+                     UNSPEC_DQUAN))]
+  "TARGET_DFP"
+  "dqua<q> %0,%1,%2,%3"
+  [(set_attr "type" "dfp")
+   (set_attr "size" "<bits>")])
+
+(define_insn "dfp_dquai_<mode>"
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+        (unspec:DDTD [(match_operand:SI 1 "s5bit_cint_operand" "n")
+		      (match_operand:DDTD 2 "gpc_reg_operand" "d")
+		      (match_operand:SI 3 "const_0_to_3_operand" "n")]
+                     UNSPEC_DQUAN))]
+  "TARGET_DFP"
+  "dquai<q> %1,%0,%2,%3"
   [(set_attr "type" "dfp")
    (set_attr "size" "<bits>")])

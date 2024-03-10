@@ -186,7 +186,7 @@ ASM_MISA_SPEC
 #define PARM_BOUNDARY BITS_PER_WORD
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY (TARGET_RVC ? 16 : 32)
+#define FUNCTION_BOUNDARY ((TARGET_RVC || TARGET_ZCA) ? 16 : 32)
 
 /* The smallest supported stack boundary the calling convention supports.  */
 #define STACK_BOUNDARY \
@@ -419,6 +419,29 @@ ASM_MISA_SPEC
 #define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
   gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
+
+#define RETURN_ADDR_MASK (1 << RETURN_ADDR_REGNUM)
+#define S0_MASK (1 << S0_REGNUM)
+#define S1_MASK (1 << S1_REGNUM)
+#define S2_MASK (1 << S2_REGNUM)
+#define S3_MASK (1 << S3_REGNUM)
+#define S4_MASK (1 << S4_REGNUM)
+#define S5_MASK (1 << S5_REGNUM)
+#define S6_MASK (1 << S6_REGNUM)
+#define S7_MASK (1 << S7_REGNUM)
+#define S8_MASK (1 << S8_REGNUM)
+#define S9_MASK (1 << S9_REGNUM)
+#define S10_MASK (1 << S10_REGNUM)
+#define S11_MASK (1 << S11_REGNUM)
+
+#define MULTI_PUSH_GPR_MASK                                                    \
+  (RETURN_ADDR_MASK | S0_MASK | S1_MASK | S2_MASK | S3_MASK | S4_MASK          \
+   | S5_MASK | S6_MASK | S7_MASK | S8_MASK | S9_MASK | S10_MASK | S11_MASK)
+#define ZCMP_MAX_SPIMM 3
+#define ZCMP_SP_INC_STEP 16
+#define ZCMP_INVALID_S0S10_SREGS_COUNTS 11
+#define ZCMP_S0S11_SREGS_COUNTS 12
+#define ZCMP_MAX_GRP_SLOTS 13
 
 #define MCOUNT_NAME "_mcount"
 
@@ -654,6 +677,8 @@ enum reg_class
 #define CALLEE_SAVED_REG_NUMBER(REGNO)			\
   ((REGNO) >= 8 && (REGNO) <= 9 ? (REGNO) - 8 :		\
    (REGNO) >= 18 && (REGNO) <= 27 ? (REGNO) - 16 : -1)
+
+#define CALLEE_SAVED_FREG_NUMBER(REGNO) CALLEE_SAVED_REG_NUMBER (REGNO - 32)
 
 #define LIBCALL_VALUE(MODE) \
   riscv_function_value (NULL_TREE, NULL_TREE, MODE)
@@ -1036,6 +1061,7 @@ while (0)
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_slow_unaligned_access_p;
+extern bool riscv_user_wants_strict_align;
 extern unsigned riscv_stack_boundary;
 extern unsigned riscv_bytes_per_vector_chunk;
 extern poly_uint16 riscv_vector_chunks;
@@ -1120,6 +1146,6 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 
 /* Mode switching (Lazy code motion) for RVV rounding mode instructions.  */
 #define OPTIMIZE_MODE_SWITCHING(ENTITY) (TARGET_VECTOR)
-#define NUM_MODES_FOR_MODE_SWITCHING {VXRM_MODE_NONE, FRM_MODE_NONE}
+#define NUM_MODES_FOR_MODE_SWITCHING {VXRM_MODE_NONE, riscv_vector::FRM_NONE}
 
 #endif /* ! GCC_RISCV_H */

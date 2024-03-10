@@ -11040,7 +11040,8 @@ ix86_validate_address_register (rtx op)
    be recognized.  */
 
 static bool
-ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
+ix86_legitimate_address_p (machine_mode, rtx addr, bool strict,
+			   code_helper = ERROR_MARK)
 {
   struct ix86_address parts;
   rtx base, index, disp;
@@ -19192,7 +19193,7 @@ ix86_vectorize_builtin_scatter (const_tree vectype,
       ? !TARGET_USE_SCATTER_2PARTS
       : (known_eq (TYPE_VECTOR_SUBPARTS (vectype), 4u)
 	 ? !TARGET_USE_SCATTER_4PARTS
-	 : !TARGET_USE_SCATTER))
+	 : !TARGET_USE_SCATTER_8PARTS))
     return NULL_TREE;
 
   if ((TREE_CODE (index_type) != INTEGER_TYPE
@@ -22888,9 +22889,9 @@ ix86_invalid_conversion (const_tree fromtype, const_tree totype)
 	  || (TYPE_MODE (totype) == BFmode
 	      && TYPE_MODE (fromtype) == HImode))
 	warning (0, "%<__bfloat16%> is redefined from typedef %<short%> "
-		"to real %<__bf16%> since GCC V13, be careful of "
+		"to real %<__bf16%> since GCC 13.1, be careful of "
 		 "implicit conversion between %<__bf16%> and %<short%>; "
-		 "a explicit bitcast may be needed here");
+		 "an explicit bitcast may be needed here");
     }
 
   /* Conversion allowed.  */

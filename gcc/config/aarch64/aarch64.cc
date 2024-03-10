@@ -84,6 +84,7 @@
 #include "aarch64-feature-deps.h"
 #include "config/arm/aarch-common.h"
 #include "config/arm/aarch-common-protos.h"
+#include "ssa.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -11182,7 +11183,8 @@ aarch64_classify_symbolic_expression (rtx x)
 /* Return TRUE if X is a legitimate address for accessing memory in
    mode MODE.  */
 static bool
-aarch64_legitimate_address_hook_p (machine_mode mode, rtx x, bool strict_p)
+aarch64_legitimate_address_hook_p (machine_mode mode, rtx x, bool strict_p,
+				   code_helper = ERROR_MARK)
 {
   struct aarch64_address_info addr;
 
@@ -16410,20 +16412,20 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
   if (code != PLUS_EXPR && code != MINUS_EXPR)
     return false;
 
-  for (int i = 1; i < 3; ++i)
+  auto is_mul_result = [&](int i)
     {
       tree rhs = gimple_op (assign, i);
       /* ??? Should we try to check for a single use as well?  */
       if (TREE_CODE (rhs) != SSA_NAME)
-	continue;
+	return false;
 
       stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
       if (!def_stmt_info
 	  || STMT_VINFO_DEF_TYPE (def_stmt_info) != vect_internal_def)
-	continue;
+	return false;
       gassign *rhs_assign = dyn_cast<gassign *> (def_stmt_info->stmt);
       if (!rhs_assign || gimple_assign_rhs_code (rhs_assign) != MULT_EXPR)
-	continue;
+	return false;
 
       if (vec_flags & VEC_ADVSIMD)
 	{
@@ -16443,8 +16445,19 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
 
       return true;
-    }
-  return false;
+    };
+
+  if (code == MINUS_EXPR && (vec_flags & VEC_ADVSIMD))
+    /* Advanced SIMD doesn't have FNMADD/FNMSUB/FNMLA/FNMLS, so the
+       multiplication must be on the second operand (to form an FMLS).
+       But if both operands are multiplications and the second operand
+       is used more than once, we'll instead negate the second operand
+       and use it as an accumulator for the first operand.  */
+    return (is_mul_result (2)
+	    && (has_single_use (gimple_assign_rhs2 (assign))
+		|| !is_mul_result (1)));
+
+  return is_mul_result (1) || is_mul_result (2);
 }
 
 /* Return true if STMT_INFO is the second part of a two-statement boolean AND
@@ -25665,7 +25678,7 @@ aarch64_asan_shadow_offset (void)
 
 static rtx
 aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
-			int code, tree treeop0, tree treeop1)
+			rtx_code code, tree treeop0, tree treeop1)
 {
   machine_mode op_mode, cmp_mode, cc_mode = CCmode;
   rtx op0, op1;
@@ -25739,7 +25752,8 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
 
 static rtx
 aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
-		       int cmp_code, tree treeop0, tree treeop1, int bit_code)
+		       rtx_code cmp_code, tree treeop0, tree treeop1,
+		       rtx_code bit_code)
 {
   rtx op0, op1, target;
   machine_mode op_mode, cmp_mode, cc_mode = CCmode;

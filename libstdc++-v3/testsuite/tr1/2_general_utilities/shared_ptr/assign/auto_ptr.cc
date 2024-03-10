@@ -17,7 +17,8 @@
 
 // TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
-// { dg-options "-std=c++98" }
+// { dg-add-options using-deprecated }
+// { dg-warning "auto_ptr. is deprecated" "" { target c++11 } 0 }
 
 #include <tr1/memory>
 #include <testsuite_hooks.h>

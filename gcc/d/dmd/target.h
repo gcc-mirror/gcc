@@ -156,7 +156,7 @@ struct Target
 
     DString architectureName;    // name of the platform architecture (e.g. X86_64)
     CPU cpu;                // CPU instruction set to target
-    d_bool is64bit;           // generate 64 bit code for x86_64; true by default for 64 bit dmd
+    d_bool isX86_64;          // generate 64 bit code for x86_64; true by default for 64 bit dmd
     d_bool isLP64;            // pointers are 64 bits
 
     // Environmental

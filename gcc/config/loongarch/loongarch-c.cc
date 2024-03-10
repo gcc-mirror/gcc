@@ -99,6 +99,17 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   else
     builtin_define ("__loongarch_frlen=0");
 
+  /* Add support for FLOAT128_TYPE on the LoongArch architecture.  */
+  builtin_define ("__FLOAT128_TYPE__");
+
+  /* Map the old _Float128 'q' builtins into the new 'f128' builtins.  */
+  builtin_define ("__builtin_fabsq=__builtin_fabsf128");
+  builtin_define ("__builtin_copysignq=__builtin_copysignf128");
+  builtin_define ("__builtin_nanq=__builtin_nanf128");
+  builtin_define ("__builtin_nansq=__builtin_nansf128");
+  builtin_define ("__builtin_infq=__builtin_inff128");
+  builtin_define ("__builtin_huge_valq=__builtin_huge_valf128");
+
   /* Native Data Sizes.  */
   builtin_define_with_int_value ("_LOONGARCH_SZINT", INT_TYPE_SIZE);
   builtin_define_with_int_value ("_LOONGARCH_SZLONG", LONG_TYPE_SIZE);

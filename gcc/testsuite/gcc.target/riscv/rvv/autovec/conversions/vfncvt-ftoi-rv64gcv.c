@@ -1,7 +1,9 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-std=c99 -fno-vect-cost-model -march=rv64gcv_zvfh -mabi=lp64d --param=riscv-autovec-preference=scalable" } */
+/* { dg-additional-options "-std=c99 -fno-vect-cost-model -march=rv64gcv_zvfh -mabi=lp64d -fno-trapping-math --param=riscv-autovec-preference=scalable" } */
 
 #include "vfncvt-ftoi-template.h"
 
-/* { dg-final { scan-assembler-times {\tvfncvt\.rtz\.x\.f\.w} 3 } } */
+/* The vectorizer only performs int -> float conversions with
+   intermediate types with -fno-trapping-math.  */
+/* { dg-final { scan-assembler-times {\tvfncvt\.rtz\.x\.f\.w} 9 } } */
 /* { dg-final { scan-assembler-times {\tvfncvt\.rtz\.xu\.f\.w} 3 } } */

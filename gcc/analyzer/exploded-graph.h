@@ -56,8 +56,10 @@ class impl_region_model_context : public region_model_context
 			     uncertainty_t *uncertainty,
 			     logger *logger = NULL);
 
-  bool warn (std::unique_ptr<pending_diagnostic> d) final override;
+  bool warn (std::unique_ptr<pending_diagnostic> d,
+	     const stmt_finder *custom_finder = NULL) final override;
   void add_note (std::unique_ptr<pending_note> pn) final override;
+  void add_event (std::unique_ptr<checker_event> event) final override;
   void on_svalue_leak (const svalue *) override;
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) final override;
@@ -106,6 +108,7 @@ class impl_region_model_context : public region_model_context
 			 std::unique_ptr<sm_context> *out_sm_context) override;
 
   const gimple *get_stmt () const override { return m_stmt; }
+  const exploded_graph *get_eg () const override { return m_eg; }
 
   exploded_graph *m_eg;
   log_user m_logger;

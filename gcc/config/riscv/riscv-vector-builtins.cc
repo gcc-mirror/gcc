@@ -3471,7 +3471,14 @@ function_expander::function_expander (const function_instance &instance,
     exp (exp_in), target (target_in), opno (0)
 {
   if (!function_returns_void_p ())
-    create_output_operand (&m_ops[opno++], target, TYPE_MODE (TREE_TYPE (exp)));
+    {
+      if (target != NULL_RTX && MEM_P (target))
+	/* Since there is no intrinsic where target is a mem operand, it
+	   should be converted to reg if it is a mem operand.  */
+	target = force_reg (GET_MODE (target), target);
+      create_output_operand (&m_ops[opno++], target,
+			     TYPE_MODE (TREE_TYPE (exp)));
+    }
 }
 
 /* Take argument ARGNO from EXP's argument list and convert it into
@@ -3730,17 +3737,29 @@ function_expander::use_ternop_insn (bool vd_accum_p, insn_code icode)
     }
 
   for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
-    add_input_operand (argno);
+    {
+      if (base->has_rounding_mode_operand_p ()
+	  && argno == call_expr_nargs (exp) - 2)
+	{
+	  /* Since the rounding mode argument position is not consistent with
+	     the instruction pattern, we need to skip rounding mode argument
+	     here.  */
+	  continue;
+	}
+      add_input_operand (argno);
+    }
 
   add_input_operand (Pmode, get_tail_policy_for_pred (pred));
   add_input_operand (Pmode, get_mask_policy_for_pred (pred));
   add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
 
-  /* TODO: Currently, we don't support intrinsic that is modeling rounding mode.
-     We add default rounding mode for the intrinsics that didn't model rounding
-     mode yet.  */
+  if (base->has_rounding_mode_operand_p ())
+    add_input_operand (call_expr_nargs (exp) - 2);
+
+  /* The RVV floating-point only support dynamic rounding mode in the
+     FRM register.  */
   if (opno != insn_data[icode].n_generator_args)
-    add_input_operand (Pmode, const0_rtx);
+    add_input_operand (Pmode, gen_int_mode (riscv_vector::FRM_DYN, Pmode));
 
   return generate_insn (icode);
 }
@@ -3759,17 +3778,29 @@ function_expander::use_widen_ternop_insn (insn_code icode)
     add_all_one_mask_operand (mask_mode ());
 
   for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
-    add_input_operand (argno);
+    {
+      if (base->has_rounding_mode_operand_p ()
+	  && argno == call_expr_nargs (exp) - 2)
+	{
+	  /* Since the rounding mode argument position is not consistent with
+	     the instruction pattern, we need to skip rounding mode argument
+	     here.  */
+	  continue;
+	}
+      add_input_operand (argno);
+    }
 
   add_input_operand (Pmode, get_tail_policy_for_pred (pred));
   add_input_operand (Pmode, get_mask_policy_for_pred (pred));
   add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
 
-  /* TODO: Currently, we don't support intrinsic that is modeling rounding mode.
-     We add default rounding mode for the intrinsics that didn't model rounding
-     mode yet.  */
+  if (base->has_rounding_mode_operand_p ())
+    add_input_operand (call_expr_nargs (exp) - 2);
+
+  /* The RVV floating-point only support dynamic rounding mode in the
+     FRM register.  */
   if (opno != insn_data[icode].n_generator_args)
-    add_input_operand (Pmode, const0_rtx);
+    add_input_operand (Pmode, gen_int_mode (riscv_vector::FRM_DYN, Pmode));
 
   return generate_insn (icode);
 }

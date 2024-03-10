@@ -14,8 +14,8 @@ nothrow:
 @safe:
 @nogc:
 
-alias I = long;
-alias U = ulong;
+private alias I = long;
+private alias U = ulong;
 enum Ubits = uint(U.sizeof * 8);
 
 version (DigitalMars)
@@ -36,6 +36,10 @@ else
     else             private enum Cent_alignment = (size_t.sizeof * 2);
 }
 
+/**
+ * 128 bit integer type.
+ * See_also: $(REF Int128, std,int128).
+ */
 align(Cent_alignment) struct Cent
 {
     version (LittleEndian)

@@ -76,10 +76,6 @@ struct GTY(()) machine_function
 {
   /* Number of bytes saved on the stack for local variables.  */
   int local_vars_size;
-
-  /* Number of bytes saved on the stack for callee-saved
-     registers.  */
-  int callee_saved_reg_size;
 };
 
 /* Handle an attribute requiring a FUNCTION_DECL;
@@ -157,6 +153,10 @@ static const struct attribute_spec bpf_attribute_table[] =
     struct/union/array should be recorded.  */
  { "preserve_access_index", 0, -1, false, true, false, true,
    bpf_handle_preserve_access_index_attribute, NULL },
+
+ /* Support for `naked' function attribute.  */
+ { "naked", 0, 1, false, false, false, false,
+   bpf_handle_fndecl_attribute, NULL },
 
  /* The last attribute spec is set to be NULL.  */
  { NULL,	0,  0, false, false, false, false, NULL, NULL }
@@ -339,6 +339,21 @@ bpf_function_value_regno_p (const unsigned int regno)
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P bpf_function_value_regno_p
 
+
+/* Determine whether to warn about lack of return statement in a
+   function.  */
+
+static bool
+bpf_warn_func_return (tree decl)
+{
+  /* Naked functions are implemented entirely in assembly, including
+     the return instructions.  */
+  return lookup_attribute ("naked", DECL_ATTRIBUTES (decl)) == NULL_TREE;
+}
+
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN bpf_warn_func_return
+
 /* Compute the size of the function's stack frame, including the local
    area and the register-save area.  */
 
@@ -346,7 +361,7 @@ static void
 bpf_compute_frame_layout (void)
 {
   int stack_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
-  int padding_locals, regno;
+  int padding_locals;
 
   /* Set the space used in the stack by local variables.  This is
      rounded up to respect the minimum stack alignment.  */
@@ -358,23 +373,9 @@ bpf_compute_frame_layout (void)
 
   cfun->machine->local_vars_size += padding_locals;
 
-  if (TARGET_XBPF)
-    {
-      /* Set the space used in the stack by callee-saved used
-	 registers in the current function.  There is no need to round
-	 up, since the registers are all 8 bytes wide.  */
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if ((df_regs_ever_live_p (regno)
-	     && !call_used_or_fixed_reg_p (regno))
-	    || (cfun->calls_alloca
-		&& regno == STACK_POINTER_REGNUM))
-	  cfun->machine->callee_saved_reg_size += 8;
-    }
-
   /* Check that the total size of the frame doesn't exceed the limit
      imposed by eBPF.  */
-  if ((cfun->machine->local_vars_size
-       + cfun->machine->callee_saved_reg_size) > bpf_frame_limit)
+  if (cfun->machine->local_vars_size > bpf_frame_limit)
     {
       static int stack_limit_exceeded = 0;
 
@@ -393,69 +394,22 @@ bpf_compute_frame_layout (void)
 void
 bpf_expand_prologue (void)
 {
-  HOST_WIDE_INT size;
-
-  size = (cfun->machine->local_vars_size
-	  + cfun->machine->callee_saved_reg_size);
-
   /* The BPF "hardware" provides a fresh new set of registers for each
      called function, some of which are initialized to the values of
      the arguments passed in the first five registers.  In doing so,
-     it saves the values of the registers of the caller, and restored
+     it saves the values of the registers of the caller, and restores
      them upon returning.  Therefore, there is no need to save the
-     callee-saved registers here.  What is worse, the kernel
-     implementation refuses to run programs in which registers are
-     referred before being initialized.  */
-  if (TARGET_XBPF)
-    {
-      int regno;
-      int fp_offset = -cfun->machine->local_vars_size;
+     callee-saved registers here.  In fact, the kernel implementation
+     refuses to run programs in which registers are referred before
+     being initialized.  */
 
-      /* Save callee-saved hard registes.  The register-save-area
-	 starts right after the local variables.  */
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	{
-	  if ((df_regs_ever_live_p (regno)
-	       && !call_used_or_fixed_reg_p (regno))
-	      || (cfun->calls_alloca
-		  && regno == STACK_POINTER_REGNUM))
-	    {
-	      rtx mem;
+  /* BPF does not support functions that allocate stack space
+     dynamically.  This should have been checked already and an error
+     emitted.  */
+  gcc_assert (!cfun->calls_alloca);
 
-	      if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
-		/* This has been already reported as an error in
-		   bpf_compute_frame_layout. */
-		break;
-	      else
-		{
-		  mem = gen_frame_mem (DImode,
-				       plus_constant (DImode,
-						      hard_frame_pointer_rtx,
-						      fp_offset - 8));
-		  emit_move_insn (mem, gen_rtx_REG (DImode, regno));
-		  fp_offset -= 8;
-		}
-	    }
-	}
-    }
-
-  /* Set the stack pointer, if the function allocates space
-     dynamically.  Note that the value of %sp should be directly
-     derived from %fp, for the kernel verifier to track it as a stack
-     accessor.  */
-  if (cfun->calls_alloca)
-    {
-      emit_move_insn (stack_pointer_rtx,
-                      hard_frame_pointer_rtx);
-
-      if (size > 0)
-	{
-	  emit_insn (gen_rtx_SET (stack_pointer_rtx,
-                                  gen_rtx_PLUS (Pmode,
-                                                stack_pointer_rtx,
-                                                GEN_INT (-size))));
-	}
-    }
+  /* If we ever need to have a proper prologue here, please mind the
+     `naked' function attribute.  */
 }
 
 /* Expand to the instructions in a function epilogue.  This function
@@ -466,37 +420,9 @@ bpf_expand_epilogue (void)
 {
   /* See note in bpf_expand_prologue for an explanation on why we are
      not restoring callee-saved registers in BPF.  */
-  if (TARGET_XBPF)
-    {
-      int regno;
-      int fp_offset = -cfun->machine->local_vars_size;
 
-      /* Restore callee-saved hard registes from the stack.  */
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	{
-	  if ((df_regs_ever_live_p (regno)
-	       && !call_used_or_fixed_reg_p (regno))
-	      || (cfun->calls_alloca
-		  && regno == STACK_POINTER_REGNUM))
-	    {
-	      rtx mem;
-
-	      if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
-		/* This has been already reported as an error in
-		   bpf_compute_frame_layout. */
-		break;
-	      else
-		{
-		  mem = gen_frame_mem (DImode,
-				       plus_constant (DImode,
-						      hard_frame_pointer_rtx,
-						      fp_offset - 8));
-		  emit_move_insn (gen_rtx_REG (DImode, regno), mem);
-		  fp_offset -= 8;
-		}
-	    }
-	}
-    }
+  /* If we ever need to do anything else than just generating a return
+     instruction here, please mind the `naked' function attribute.  */
 
   emit_jump_insn (gen_exit ());
 }
@@ -543,11 +469,10 @@ bpf_initial_elimination_offset (int from, int to)
 {
   HOST_WIDE_INT ret;
 
-  if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    ret = (cfun->machine->local_vars_size
-	   + cfun->machine->callee_saved_reg_size);
-  else if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
     ret = 0;
+  else if (from == STACK_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+    ret = -(cfun->machine->local_vars_size);
   else
     gcc_unreachable ();
 
@@ -625,7 +550,8 @@ bpf_address_base_p (rtx x, bool strict)
 static bool
 bpf_legitimate_address_p (machine_mode mode,
 			  rtx x,
-			  bool strict)
+			  bool strict,
+			  code_helper = ERROR_MARK)
 {
   switch (GET_CODE (x))
     {
@@ -731,7 +657,14 @@ bpf_function_arg_advance (cumulative_args_t ca,
   unsigned num_words = CEIL (num_bytes, UNITS_PER_WORD);
 
   if (*cum <= 5 && *cum + num_words > 5)
-    error ("too many function arguments for eBPF");
+    {
+      /* Too many arguments for BPF.  However, if the function is
+         gonna be inline for sure, we let it pass.  Otherwise, issue
+         an error.  */
+      if (!lookup_attribute ("always_inline",
+                             DECL_ATTRIBUTES (cfun->decl)))
+        error ("too many function arguments for eBPF");
+    }
 
   *cum += num_words;
 }
@@ -845,7 +778,7 @@ bpf_print_register (FILE *file, rtx op, int code)
     fprintf (file, "%s", reg_names[REGNO (op)]);
   else
     {
-      if (code == 'w' && GET_MODE (op) == SImode)
+      if (code == 'w' && GET_MODE_SIZE (GET_MODE (op)) <= 4)
 	{
 	  if (REGNO (op) == BPF_FP)
 	    fprintf (file, "w10");

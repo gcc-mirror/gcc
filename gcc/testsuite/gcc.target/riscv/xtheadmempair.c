@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv64gc_xtheadmempair" { target { rv64 } } } */
 
 #ifndef __riscv_xtheadmempair
-#error Feature macro not defined
+#error "Feature macro not defined"
 #endif
 
 int

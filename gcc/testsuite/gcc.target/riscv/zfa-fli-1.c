@@ -1,0 +1,24 @@
+/* { dg-do compile } */
+/* { dg-options "-march=rv64imfd_zfa -mabi=lp64d"  { target { rv64 } } } */
+/* { dg-options "-march=rv32imfd_zfa -mabi=ilp32d" { target { rv32 } } } */
+/* { dg-skip-if "" { *-*-* } {"-O0" "-O1" "-Os" "-Og" "-Oz"} } */
+
+#ifndef __riscv_zfa
+#error Feature macro not defined
+#endif
+
+double
+foo_positive_d (double a)
+{
+  /* Use 3 FLI FP constants.  */
+  return (2.5 * a - 1.0) / 0.875;
+}
+
+float
+foo_positive_s (float a)
+{
+  return ((float) 2.5 * a - (float) 1.0) / (float) 0.875;
+}
+
+/* { dg-final { scan-assembler-times "fli\\.s\t" 3 } } */
+/* { dg-final { scan-assembler-times "fli\\.d\t" 3 } } */

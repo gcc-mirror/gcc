@@ -36,11 +36,10 @@
 #include <bits/hash_bytes.h>
 #endif
 
-#pragma GCC visibility push(default)
+#define __glibcxx_want_constexpr_typeinfo
+#include <bits/version.h>
 
-#if __cplusplus >= 202100L
-# define __cpp_lib_constexpr_typeinfo 202106L
-#endif
+#pragma GCC visibility push(default)
 
 extern "C++" {
 

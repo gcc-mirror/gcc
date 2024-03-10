@@ -1089,7 +1089,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (flag_concepts)
         {
-	  if (cxx_dialect >= cxx20)
+	  if (cxx_dialect >= cxx20 || !flag_concepts_ts)
 	    cpp_define (pfile, "__cpp_concepts=202002L");
           else
             cpp_define (pfile, "__cpp_concepts=201507L");

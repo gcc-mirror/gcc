@@ -64,3 +64,31 @@ void test_6 (int st, const char *str)
   error (st, errno, "test: %s", str);
   __analyzer_eval (st == 0); /* { dg-warning "TRUE" } */
 }
+
+char *test_error_unterminated (int st)
+{
+  char fmt[3] = "abc";
+  error (st, errno, fmt); /* { dg-warning "stack-based buffer over-read" } */
+  /* { dg-message "while looking for null terminator for argument 3 \\('&fmt'\\) of 'error'..." "event" { target *-*-* } .-1 } */
+}
+
+char *test_error_at_line_unterminated (int st, int errno)
+{
+  char fmt[3] = "abc";
+  error_at_line (st, errno, __FILE__, __LINE__, fmt); /* { dg-warning "stack-based buffer over-read" } */
+  /* { dg-message "while looking for null terminator for argument 5 \\('&fmt'\\) of 'error_at_line'..." "event" { target *-*-* } .-1 } */
+}
+
+char *test_error_uninitialized (int st, int errno)
+{
+  char fmt[16];
+  error (st, errno, fmt); /* { dg-warning "use of uninitialized value 'fmt\\\[0\\\]'" } */
+  /* { dg-message "while looking for null terminator for argument 3 \\('&fmt'\\) of 'error'..." "event" { target *-*-* } .-1 } */
+}
+
+char *test_error_at_line_uninitialized (int st, int errno)
+{
+  char fmt[16];
+  error_at_line (st, errno, __FILE__, __LINE__, fmt); /* { dg-warning "use of uninitialized value 'fmt\\\[0\\\]'" } */
+  /* { dg-message "while looking for null terminator for argument 5 \\('&fmt'\\) of 'error_at_line'..." "event" { target *-*-* } .-1 } */
+}

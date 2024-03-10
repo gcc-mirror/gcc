@@ -2019,7 +2019,8 @@ extern (C++) class FuncDeclaration : Declaration
         overloadApply(cast() this, (Dsymbol s)
         {
             auto f = s.isFuncDeclaration();
-            if (!f)
+            auto td = s.isTemplateDeclaration();
+            if (!f && !td)
                 return 0;
             if (result)
             {
@@ -2243,7 +2244,7 @@ extern (C++) class FuncDeclaration : Declaration
             if (global.gag)     // need not report supplemental errors
                 return true;
         }
-        else if (global.params.betterC)
+        else if (!global.params.useGC)
         {
             error("is `-betterC` yet allocates closure for `%s()` with the GC", toChars());
             if (global.gag)     // need not report supplemental errors
@@ -4605,16 +4606,15 @@ bool setUnsafe(Scope* sc,
 bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg,
     RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
 {
-    if (fs == FeatureState.disabled)
+    with (FeatureState) final switch (fs)
     {
+      case disabled:
         return false;
-    }
-    else if (fs == FeatureState.enabled)
-    {
+
+      case enabled:
         return sc.setUnsafe(gag, loc, msg, arg0, arg1, arg2);
-    }
-    else
-    {
+
+      case default_:
         if (!sc.func)
             return false;
         if (sc.func.isSafeBypassingInference())

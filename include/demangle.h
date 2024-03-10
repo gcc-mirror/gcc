@@ -448,6 +448,8 @@ enum demangle_component_type
   DEMANGLE_COMPONENT_TRANSACTION_SAFE,
   /* A cloned function.  */
   DEMANGLE_COMPONENT_CLONE,
+  /* A member-like friend function.  */
+  DEMANGLE_COMPONENT_FRIEND,
   DEMANGLE_COMPONENT_NOEXCEPT,
   DEMANGLE_COMPONENT_THROW_SPEC,
 

@@ -522,14 +522,15 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	       r2 != NULL;
 	       r2 = r2->start_next)
 	    {
-	      if (r2->regno >= lra_constraint_new_regno_start
+	      if (live_pseudos_reg_renumber[r2->regno] < 0
+		  && r2->regno >= lra_constraint_new_regno_start
 		  && lra_reg_info[r2->regno].preferred_hard_regno1 >= 0
-		  && live_pseudos_reg_renumber[r2->regno] < 0
 		  && rclass_intersect_p[regno_allocno_class_array[r2->regno]])
 		sparseset_set_bit (conflict_reload_and_inheritance_pseudos,
 				   r2->regno);
-	      if (live_pseudos_reg_renumber[r2->regno] >= 0
-		  && rclass_intersect_p[regno_allocno_class_array[r2->regno]])
+	      else if (live_pseudos_reg_renumber[r2->regno] >= 0
+		       && rclass_intersect_p
+			    [regno_allocno_class_array[r2->regno]])
 		sparseset_set_bit (live_range_hard_reg_pseudos, r2->regno);
 	    }
 	}

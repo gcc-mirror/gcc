@@ -35,13 +35,13 @@ namespace arm_mve
   {
 
     extern const function_shape *const binary;
-    extern const function_shape *const binary_lshift;
-    extern const function_shape *const binary_lshift_r;
     extern const function_shape *const binary_acc_int32;
     extern const function_shape *const binary_acc_int64;
     extern const function_shape *const binary_acca_int32;
     extern const function_shape *const binary_acca_int64;
     extern const function_shape *const binary_imm32;
+    extern const function_shape *const binary_lshift;
+    extern const function_shape *const binary_lshift_r;
     extern const function_shape *const binary_lshift_unsigned;
     extern const function_shape *const binary_maxamina;
     extern const function_shape *const binary_maxavminav;
@@ -54,8 +54,10 @@ namespace arm_mve
     extern const function_shape *const binary_rshift;
     extern const function_shape *const binary_rshift_narrow;
     extern const function_shape *const binary_rshift_narrow_unsigned;
+    extern const function_shape *const binary_widen;
     extern const function_shape *const binary_widen_n;
     extern const function_shape *const binary_widen_opt_n;
+    extern const function_shape *const binary_widen_poly;
     extern const function_shape *const cmp;
     extern const function_shape *const create;
     extern const function_shape *const inherent;

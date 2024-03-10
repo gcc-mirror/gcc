@@ -1334,6 +1334,7 @@ enum gfc_omp_defaultmap
 enum gfc_omp_defaultmap_category
 {
   OMP_DEFAULTMAP_CAT_UNCATEGORIZED,
+  OMP_DEFAULTMAP_CAT_ALL,
   OMP_DEFAULTMAP_CAT_SCALAR,
   OMP_DEFAULTMAP_CAT_AGGREGATE,
   OMP_DEFAULTMAP_CAT_ALLOCATABLE,
@@ -2236,6 +2237,9 @@ typedef struct gfc_namespace
   /* OpenMP requires. */
   unsigned omp_requires:6;
   unsigned omp_target_seen:1;
+
+  /* Set to 1 if this is an implicit OMP structured block.  */
+  unsigned omp_structured_block:1;
 }
 gfc_namespace;
 
@@ -3182,6 +3186,21 @@ gfc_finalizer;
 
 /************************ Function prototypes *************************/
 
+
+/* Returns true if the type specified in TS is a character type whose length
+   is the constant one.  Otherwise returns false.  */
+
+inline bool
+gfc_length_one_character_type_p (gfc_typespec *ts)
+{
+  return ts->type == BT_CHARACTER
+	 && ts->u.cl
+	 && ts->u.cl->length
+	 && ts->u.cl->length->expr_type == EXPR_CONSTANT
+	 && ts->u.cl->length->ts.type == BT_INTEGER
+	 && mpz_cmp_ui (ts->u.cl->length->value.integer, 1) == 0;
+}
+
 /* decl.cc */
 bool gfc_in_match_data (void);
 match gfc_match_char_spec (gfc_typespec *);
@@ -3809,6 +3828,7 @@ bool gfc_ref_dimen_size (gfc_array_ref *, int dimen, mpz_t *, mpz_t *);
 
 /* interface.cc -- FIXME: some of these should be in symbol.cc */
 void gfc_free_interface (gfc_interface *);
+void gfc_drop_interface_elements_before (gfc_interface **, gfc_interface *);
 bool gfc_compare_derived_types (gfc_symbol *, gfc_symbol *);
 bool gfc_compare_types (gfc_typespec *, gfc_typespec *);
 bool gfc_check_dummy_characteristics (gfc_symbol *, gfc_symbol *,
@@ -3828,7 +3848,7 @@ void gfc_free_formal_arglist (gfc_formal_arglist *);
 bool gfc_extend_assign (gfc_code *, gfc_namespace *);
 bool gfc_check_new_interface (gfc_interface *, gfc_symbol *, locus);
 bool gfc_add_interface (gfc_symbol *);
-gfc_interface *gfc_current_interface_head (void);
+gfc_interface *&gfc_current_interface_head (void);
 void gfc_set_current_interface_head (gfc_interface *);
 gfc_symtree* gfc_find_sym_in_symtree (gfc_symbol*);
 bool gfc_arglist_matches_symbol (gfc_actual_arglist**, gfc_symbol*);

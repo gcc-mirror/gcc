@@ -86,8 +86,11 @@ class copy_across_boundary_fn : public known_function
 
     if (tree cst = num_bytes_sval->maybe_get_constant ())
       if (zerop (cst))
-	/* No-op.  */
-	return;
+	{
+	  /* No-op.  */
+	  model->update_for_zero_return (cd, true);
+	  return;
+	}
 
     const region *sized_src_reg = mgr->get_sized_region (src_reg,
 							 NULL_TREE,

@@ -3556,7 +3556,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
      */
     private void tryLowerToNewItem(NewExp ne)
     {
-        if (global.params.betterC || !sc.needsCodegen())
+        if (!global.params.useGC || !sc.needsCodegen())
             return;
 
         auto hook = global.params.tracegc ? Id._d_newitemTTrace : Id._d_newitemT;
@@ -11069,7 +11069,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         /* `_d_arraycatnTX` canot be used with `-betterC`, but `CatExp`s may be
          * used with `-betterC`, but only during CTFE.
          */
-        if (global.params.betterC || !sc.needsCodegen())
+        if (!global.params.useGC || !sc.needsCodegen())
             return;
 
         if (auto ce = exp.isCatExp())

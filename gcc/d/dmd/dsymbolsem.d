@@ -1459,9 +1459,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 if (sym)
                 {
                     import dmd.access : symbolIsVisible;
-                    if (!symbolIsVisible(sc, sym))
+                    if (!symbolIsVisible(sc, sym) && !sym.errors)
+                    {
                         imp.mod.error(imp.loc, "member `%s` is not visible from module `%s`",
                             imp.names[i].toChars(), sc._module.toChars());
+                        sym.errors = true;
+                    }
                     ad.dsymbolSemantic(sc);
                     // If the import declaration is in non-root module,
                     // analysis of the aliased symbol is deferred.
@@ -2231,11 +2234,14 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (!(sc.flags & SCOPE.Cfile))  // C enum remains incomplete until members are done
             ed.semanticRun = PASS.semanticdone;
 
-        // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
-        // Deprecated in 2.100
-        // Make an error in 2.110
-        if (sc.stc & STC.scope_)
-            deprecation(ed.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
+        version (none)
+        {
+            // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+            // Deprecated in 2.100
+            // Make an error in 2.110
+            if (sc.stc & STC.scope_)
+                deprecation(ed.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
+        }
 
         Scope* sce;
         if (ed.isAnonymous())
@@ -3176,6 +3182,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             funcdecl.skipCodegen = true;
 
         funcdecl._linkage = sc.linkage;
+        if (sc.flags & SCOPE.Cfile && funcdecl.isFuncLiteralDeclaration())
+            funcdecl._linkage = LINK.d; // so they are uniquely mangled
+
         if (auto fld = funcdecl.isFuncLiteralDeclaration())
         {
             if (fld.treq)
@@ -3460,77 +3469,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (funcdecl.isAbstract() && funcdecl.isFinalFunc())
             funcdecl.error("cannot be both `final` and `abstract`");
-        version (none)
-        {
-            if (funcdecl.isAbstract() && funcdecl.fbody)
-                funcdecl.error("`abstract` functions cannot have bodies");
-        }
-
-        version (none)
-        {
-            if (funcdecl.isStaticConstructor() || funcdecl.isStaticDestructor())
-            {
-                if (!funcdecl.isStatic() || funcdecl.type.nextOf().ty != Tvoid)
-                    funcdecl.error("static constructors / destructors must be `static void`");
-                if (f.arguments && f.arguments.length)
-                    funcdecl.error("static constructors / destructors must have empty parameter list");
-                // BUG: check for invalid storage classes
-            }
-        }
 
         if (funcdecl.printf || funcdecl.scanf)
         {
-            /* printf/scanf-like functions must be of the form:
-             *    extern (C/C++) T printf([parameters...], const(char)* format, ...);
-             * or:
-             *    extern (C/C++) T vprintf([parameters...], const(char)* format, va_list);
-             */
-
-            static bool isPointerToChar(Parameter p)
-            {
-                if (auto tptr = p.type.isTypePointer())
-                {
-                    return tptr.next.ty == Tchar;
-                }
-                return false;
-            }
-
-            bool isVa_list(Parameter p)
-            {
-                return p.type.equals(target.va_listType(funcdecl.loc, sc));
-            }
-
-            const nparams = f.parameterList.length;
-            if ((f.linkage == LINK.c || f.linkage == LINK.cpp) &&
-
-                (f.parameterList.varargs == VarArg.variadic &&
-                 nparams >= 1 &&
-                 isPointerToChar(f.parameterList[nparams - 1]) ||
-
-                 f.parameterList.varargs == VarArg.none &&
-                 nparams >= 2 &&
-                 isPointerToChar(f.parameterList[nparams - 2]) &&
-                 isVa_list(f.parameterList[nparams - 1])
-                )
-               )
-            {
-                // the signature is valid for printf/scanf, no error
-            }
-            else
-            {
-                const p = (funcdecl.printf ? Id.printf : Id.scanf).toChars();
-                if (f.parameterList.varargs == VarArg.variadic)
-                {
-                    funcdecl.error("`pragma(%s)` functions must be `extern(C) %s %s([parameters...], const(char)*, ...)`"
-                                   ~ " not `%s`",
-                        p, f.next.toChars(), funcdecl.toChars(), funcdecl.type.toChars());
-                }
-                else
-                {
-                    funcdecl.error("`pragma(%s)` functions must be `extern(C) %s %s([parameters...], const(char)*, va_list)`",
-                        p, f.next.toChars(), funcdecl.toChars());
-                }
-            }
+            checkPrintfScanfSignature(funcdecl, f, sc);
         }
 
         if (auto id = parent.isInterfaceDeclaration())
@@ -4869,11 +4811,14 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             sd.deferred.semantic3(sc);
         }
 
-        // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
-        // Deprecated in 2.100
-        // Make an error in 2.110
-        if (sd.storage_class & STC.scope_)
-            deprecation(sd.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
+        version (none)
+        {
+            // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+            // Deprecated in 2.100
+            // Make an error in 2.110
+            if (sd.storage_class & STC.scope_)
+                deprecation(sd.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
+        }
         //printf("-StructDeclaration::semantic(this=%p, '%s', sizeok = %d)\n", sd, sd.toPrettyChars(), sd.sizeok);
     }
 
@@ -5538,12 +5483,15 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         }
         //printf("-ClassDeclaration.dsymbolSemantic(%s), type = %p, sizeok = %d, this = %p\n", toChars(), type, sizeok, this);
 
-        // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
-        // Deprecated in 2.100
-        // Make an error in 2.110
-        // Don't forget to remove code at https://github.com/dlang/dmd/blob/b2f8274ba76358607fc3297a1e9f361480f9bcf9/src/dmd/dsymbolsem.d#L1032-L1036
-        if (cldec.storage_class & STC.scope_)
-            deprecation(cldec.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
+        version (none)
+        {
+            // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+            // Deprecated in 2.100
+            // Make an error in 2.110
+            // Don't forget to remove code at https://github.com/dlang/dmd/blob/b2f8274ba76358607fc3297a1e9f361480f9bcf9/src/dmd/dsymbolsem.d#L1032-L1036
+            if (cldec.storage_class & STC.scope_)
+                deprecation(cldec.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
+        }
     }
 
     override void visit(InterfaceDeclaration idec)
@@ -5844,12 +5792,15 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         }
         assert(idec.type.ty != Tclass || (cast(TypeClass)idec.type).sym == idec);
 
-        // @@@DEPRECATED_2.120@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
-        // Deprecated in 2.087
-        // Made an error in 2.100, but removal depends on `scope class` being removed too
-        // Don't forget to remove code at https://github.com/dlang/dmd/blob/b2f8274ba76358607fc3297a1e9f361480f9bcf9/src/dmd/dsymbolsem.d#L1032-L1036
-        if (idec.storage_class & STC.scope_)
-            error(idec.loc, "`scope` as a type constraint is obsolete.  Use `scope` at the usage site.");
+        version (none)
+        {
+            // @@@DEPRECATED_2.120@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+            // Deprecated in 2.087
+            // Made an error in 2.100, but removal depends on `scope class` being removed too
+            // Don't forget to remove code at https://github.com/dlang/dmd/blob/b2f8274ba76358607fc3297a1e9f361480f9bcf9/src/dmd/dsymbolsem.d#L1032-L1036
+            if (idec.storage_class & STC.scope_)
+                error(idec.loc, "`scope` as a type constraint is obsolete.  Use `scope` at the usage site.");
+        }
     }
 }
 
@@ -7385,4 +7336,65 @@ private void writeMixin(const(char)[] s, ref const Loc loc, ref int lines, ref O
     }
     buf.writenl();
     ++lines;
+}
+
+/**
+ * Check signature of `pragma(printf)` function, print error if invalid.
+ *
+ * printf/scanf-like functions must be of the form:
+ *    extern (C/C++) T printf([parameters...], const(char)* format, ...);
+ * or:
+ *    extern (C/C++) T vprintf([parameters...], const(char)* format, va_list);
+ *
+ * Params:
+ *      funcdecl = function to check
+ *      f = function type
+ *      sc = scope
+ */
+void checkPrintfScanfSignature(FuncDeclaration funcdecl, TypeFunction f, Scope* sc)
+{
+    static bool isPointerToChar(Parameter p)
+    {
+        if (auto tptr = p.type.isTypePointer())
+        {
+            return tptr.next.ty == Tchar;
+        }
+        return false;
+    }
+
+    bool isVa_list(Parameter p)
+    {
+        return p.type.equals(target.va_listType(funcdecl.loc, sc));
+    }
+
+    const nparams = f.parameterList.length;
+    const p = (funcdecl.printf ? Id.printf : Id.scanf).toChars();
+    if (!(f.linkage == LINK.c || f.linkage == LINK.cpp))
+    {
+        .error(funcdecl.loc, "`pragma(%s)` function `%s` must have `extern(C)` or `extern(C++)` linkage,"
+            ~" not `extern(%s)`",
+            p, funcdecl.toChars(), f.linkage.linkageToChars());
+    }
+    if (f.parameterList.varargs == VarArg.variadic)
+    {
+        if (!(nparams >= 1 && isPointerToChar(f.parameterList[nparams - 1])))
+        {
+            .error(funcdecl.loc, "`pragma(%s)` function `%s` must have"
+                ~ " signature `%s %s([parameters...], const(char)*, ...)` not `%s`",
+                p, funcdecl.toChars(), f.next.toChars(), funcdecl.toChars(), funcdecl.type.toChars());
+        }
+    }
+    else if (f.parameterList.varargs == VarArg.none)
+    {
+        if(!(nparams >= 2 && isPointerToChar(f.parameterList[nparams - 2]) &&
+            isVa_list(f.parameterList[nparams - 1])))
+            .error(funcdecl.loc, "`pragma(%s)` function `%s` must have"~
+                " signature `%s %s([parameters...], const(char)*, va_list)`",
+                p, funcdecl.toChars(), f.next.toChars(), funcdecl.toChars());
+    }
+    else
+    {
+        .error(funcdecl.loc, "`pragma(%s)` function `%s` must have C-style variadic `...` or `va_list` parameter",
+            p, funcdecl.toChars());
+    }
 }

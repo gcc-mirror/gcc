@@ -266,7 +266,8 @@ static reg_class_t sh_preferred_reload_class (rtx, reg_class_t);
 static reg_class_t sh_secondary_reload (bool, rtx, reg_class_t,
                                         machine_mode,
                                         struct secondary_reload_info *);
-static bool sh_legitimate_address_p (machine_mode, rtx, bool);
+static bool sh_legitimate_address_p (machine_mode, rtx, bool,
+				     code_helper = ERROR_MARK);
 static rtx sh_legitimize_address (rtx, rtx, machine_mode);
 static rtx sh_delegitimize_address (rtx);
 static bool sh_cannot_substitute_mem_equiv_p (rtx);
@@ -9038,7 +9039,7 @@ sh_legitimate_index_p (machine_mode mode, rtx op, bool consider_sh2a,
 	  GBR
 	  GBR+disp  */
 static bool
-sh_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+sh_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 {
   if (REG_P (x) && REGNO (x) == GBR_REG)
     return true;

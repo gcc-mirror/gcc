@@ -51,6 +51,7 @@ struct CompileEnv
     bool previewIn;          /// `in` means `[ref] scope const`, accepts rvalues
     bool ddocOutput;         /// collect embedded documentation comments
     bool shortenedMethods = true;   /// allow => in normal function declarations
+    bool obsolete;           /// warn on use of legacy code
 }
 
 /***********************************************************

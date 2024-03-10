@@ -64,8 +64,10 @@
 #endif
 #if __cplusplus >= 202002L
 # include <compare>
-#define __cpp_lib_constexpr_vector 201907L
 #endif
+
+#define __glibcxx_want_constexpr_vector
+#include <bits/version.h>
 
 #include <debug/assertions.h>
 

@@ -5200,8 +5200,8 @@ main (int argc, char **argv)
   this_file = input_file_by_name (__FILE__);
   system_h_file = input_file_by_name ("system.h");
   /* Set the scalar_is_char union number for predefined scalar types.  */
-  scalar_nonchar.u.scalar_is_char = FALSE;
-  scalar_char.u.scalar_is_char = TRUE;
+  scalar_nonchar.u.scalar_is_char = false;
+  scalar_char.u.scalar_is_char = true;
 
   parse_program_options (argc, argv);
 

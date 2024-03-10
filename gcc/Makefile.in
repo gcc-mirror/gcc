@@ -55,6 +55,7 @@ MAKEOVERRIDES =
 # -------------------------------
 
 build=@build@
+build_os=@build_os@
 host=@host@
 host_noncanonical=@host_noncanonical@
 host_os=@host_os@
@@ -469,6 +470,7 @@ USER_H = $(srcdir)/ginclude/float.h \
 	 $(srcdir)/ginclude/stdnoreturn.h \
 	 $(srcdir)/ginclude/stdalign.h \
 	 $(srcdir)/ginclude/stdatomic.h \
+	 $(srcdir)/ginclude/stdckdint.h \
 	 $(EXTRA_HEADERS)
 
 USER_H_INC_NEXT_PRE = @user_headers_inc_next_pre@
@@ -895,7 +897,8 @@ OPTIONS_C_EXTRA = $(PRETTY_PRINT_H)
 BCONFIG_H = bconfig.h $(build_xm_file_list)
 CONFIG_H  = config.h  $(host_xm_file_list)
 TCONFIG_H = tconfig.h $(xm_file_list)
-TM_P_H    = tm_p.h    $(tm_p_file_list)
+# Some $(target)-protos.h depends on tree.h
+TM_P_H    = tm_p.h    $(tm_p_file_list) $(TREE_H)
 TM_D_H    = tm_d.h    $(tm_d_file_list)
 TM_RUST_H = tm_rust.h $(tm_rust_file_list)
 GTM_H     = tm.h      $(tm_file_list) insn-constants.h
@@ -996,7 +999,7 @@ GIMPLE_H = gimple.h gimple.def gsstruct.def $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H) is-a.h
 GCOV_IO_H = gcov-io.h version.h auto-host.h gcov-counter.def
-RECOG_H = recog.h
+RECOG_H = recog.h $(TREE_H)
 EMIT_RTL_H = emit-rtl.h
 FLAGS_H = flags.h flag-types.h $(OPTIONS_H)
 OPTIONS_H = options.h flag-types.h $(OPTIONS_H_EXTRA)
@@ -1318,6 +1321,7 @@ ANALYZER_OBJS = \
 	analyzer/pending-diagnostic.o \
 	analyzer/program-point.o \
 	analyzer/program-state.o \
+	analyzer/ranges.o \
 	analyzer/region.o \
 	analyzer/region-model.o \
 	analyzer/region-model-asm.o \
@@ -3036,8 +3040,8 @@ build/genhooks.o : genhooks.cc $(TARGET_DEF) $(C_TARGET_DEF)		\
   $(SYSTEM_H) errors.h
 build/genmddump.o : genmddump.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
-build/genmatch.o : genmatch.cc $(BCONFIG_H) $(SYSTEM_H) \
-  $(CORETYPES_H) errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H) is-a.h \
+build/genmatch.o : genmatch.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) \
+  errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H) is-a.h ordered-hash-map.h \
   tree.def builtins.def internal-fn.def case-cfn-macros.h $(CPPLIB_H)
 build/gencfn-macros.o : gencfn-macros.cc $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) errors.h $(HASH_TABLE_H) hash-set.h builtins.def	\
@@ -3363,8 +3367,13 @@ stmp-fixinc: gsyslimits.h macro_list fixinc_list \
 	    multi_dir=`echo $${ml} | sed -e 's/^[^;]*;//'`; \
 	    fix_dir=include-fixed$${multi_dir}; \
 	    if ! $(inhibit_libc) && test ! -d ${BUILD_SYSTEM_HEADER_DIR}; then \
-	      echo The directory that should contain system headers does not exist: >&2 ; \
+	      echo "The directory (BUILD_SYSTEM_HEADER_DIR) that should contain system headers does not exist:" >&2 ; \
 	      echo "  ${BUILD_SYSTEM_HEADER_DIR}" >&2 ; \
+	      case ${build_os} in \
+	        darwin*) \
+	          echo "(on Darwin this usually means you need to pass the --with-sysroot= flag to point to a valid MacOS SDK)" >&2; \
+	          ;; \
+	      esac; \
 	      tooldir_sysinc=`echo "${gcc_tooldir}/sys-include" | sed -e :a -e "s,[^/]*/\.\.\/,," -e ta`; \
 	      if test "x${BUILD_SYSTEM_HEADER_DIR}" = "x$${tooldir_sysinc}"; \
 	      then sleep 1; else exit 1; fi; \

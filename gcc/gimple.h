@@ -1591,6 +1591,7 @@ gomp_parallel *gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
 gomp_task *gimple_build_omp_task (gimple_seq, tree, tree, tree, tree,
 				       tree, tree);
 gimple *gimple_build_omp_section (gimple_seq);
+gimple *gimple_build_omp_structured_block (gimple_seq);
 gimple *gimple_build_omp_scope (gimple_seq, tree);
 gimple *gimple_build_omp_master (gimple_seq);
 gimple *gimple_build_omp_masked (gimple_seq, tree);
@@ -1879,6 +1880,7 @@ gimple_has_substatements (gimple *g)
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SCOPE:
@@ -6746,6 +6748,7 @@ gimple_return_set_retval (greturn *gs, tree retval)
     case GIMPLE_OMP_TEAMS:			\
     case GIMPLE_OMP_SCOPE:			\
     case GIMPLE_OMP_SECTION:			\
+    case GIMPLE_OMP_STRUCTURED_BLOCK:		\
     case GIMPLE_OMP_MASTER:			\
     case GIMPLE_OMP_MASKED:			\
     case GIMPLE_OMP_TASKGROUP:			\

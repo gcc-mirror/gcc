@@ -3340,6 +3340,10 @@ improve_allocation (void)
 	}
       /* Assign the best chosen hard register to A.  */
       ALLOCNO_HARD_REGNO (a) = best;
+
+      for (j = nregs - 1; j >= 0; j--)
+	allocated_hardreg_p[best + j] = true;
+
       if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	fprintf (ira_dump_file, "Assigning %d to a%dr%d\n",
 		 best, ALLOCNO_NUM (a), ALLOCNO_REGNO (a));

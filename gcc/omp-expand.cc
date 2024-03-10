@@ -2562,7 +2562,8 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      tree factor = fd->factor;
 	      gcond *cond_stmt
 		= expand_omp_build_cond (gsi, NE_EXPR, factor,
-					 build_zero_cst (TREE_TYPE (factor)));
+					 build_zero_cst (TREE_TYPE (factor)),
+					 true);
 	      edge e = split_block (gsi_bb (*gsi), cond_stmt);
 	      basic_block bb0 = e->src;
 	      e->flags = EDGE_TRUE_VALUE;
@@ -10591,6 +10592,10 @@ expand_omp (struct omp_region *region)
 	  /* Individual omp sections are handled together with their
 	     parent GIMPLE_OMP_SECTIONS region.  */
 	  break;
+
+	case GIMPLE_OMP_STRUCTURED_BLOCK:
+	  /* We should have gotten rid of these in gimple lowering.  */
+	  gcc_unreachable ();
 
 	case GIMPLE_OMP_SINGLE:
 	case GIMPLE_OMP_SCOPE:

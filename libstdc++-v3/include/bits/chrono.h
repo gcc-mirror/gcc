@@ -32,6 +32,10 @@
 
 #pragma GCC system_header
 
+#define __glibcxx_want_chrono
+#define __glibcxx_want_chrono_udls
+#include <bits/version.h>
+
 #if __cplusplus >= 201103L
 
 #include <ratio>
@@ -276,8 +280,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if constexpr (is_same_v<_ToDur, duration<_Rep, _Period>>)
 	  return __d;
 	else
+	  {
 #endif
-	{
 	  using __to_period = typename _ToDur::period;
 	  using __to_rep = typename _ToDur::rep;
 	  using __cf = ratio_divide<_Period, __to_period>;
@@ -285,7 +289,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using __dc = __duration_cast_impl<_ToDur, __cf, __cr,
 					    __cf::num == 1, __cf::den == 1>;
 	  return __dc::__cast(__d);
-	}
+#if __cpp_inline_variables && __cpp_if_constexpr
+	  }
+#endif
       }
 
     /** Trait indicating whether to treat a type as a floating-point type.
@@ -368,9 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { };
 #endif // C++20
 
-#if __cplusplus >= 201703L
-# define __cpp_lib_chrono 201611L
-
+#ifdef __cpp_lib_chrono // C++ >= 17 && HOSTED
     /** Convert a `duration` to type `ToDur` and round down.
      *
      * If the duration cannot be represented exactly in the result type,
@@ -464,7 +468,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Make chrono::ceil<D> also usable as chrono::__detail::ceil<D>.
     namespace __detail { using chrono::ceil; }
 
-#else // ! C++17
+#else // ! __cpp_lib_chrono
 
     // We want to use ceil even when compiling for earlier standards versions.
     // C++11 only allows a single statement in a constexpr function, so we
@@ -486,7 +490,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __detail::__ceil_impl(chrono::duration_cast<_ToDur>(__d), __d);
 	}
     }
-#endif // C++17
+#endif // __cpp_lib_chrono
 
     /// duration_values
     template<typename _Rep>
@@ -1310,9 +1314,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 #endif // C++20
   } // namespace chrono
 
-#if __cplusplus >= 201402L
-#define __cpp_lib_chrono_udls 201304L
-
+#ifdef __cpp_lib_chrono_udls // C++ >= 14 && HOSTED
   inline namespace literals
   {
   /** ISO C++ 2014  namespace for suffixes for duration literals.
@@ -1433,7 +1435,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
   {
     using namespace literals::chrono_literals;
   } // namespace chrono
-#endif // C++14
+#endif // __cpp_lib_chrono_udls
 
 #if __cplusplus >= 201703L
   namespace filesystem

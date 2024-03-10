@@ -430,6 +430,10 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
     {
       tree t, t2;
 
+      if (TREE_CODE (name1) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name1))
+	return false;
+
       /* Do it.  */
       gsi = gsi_for_stmt (inner_cond);
       t = fold_build2 (LSHIFT_EXPR, TREE_TYPE (name1),
@@ -485,6 +489,12 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
     {
       gimple_stmt_iterator gsi;
       tree t;
+
+      if ((TREE_CODE (name1) == SSA_NAME
+	   && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name1))
+	  || (TREE_CODE (name2) == SSA_NAME
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name2)))
+	return false;
 
       /* Find the common name which is bit-tested.  */
       if (name1 == name2)

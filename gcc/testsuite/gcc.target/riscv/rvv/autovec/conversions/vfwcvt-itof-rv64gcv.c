@@ -3,5 +3,7 @@
 
 #include "vfwcvt-itof-template.h"
 
-/* { dg-final { scan-assembler-times {\tvfwcvt\.f\.x\.v} 3 } } */
+/* Conversions that the vectorizer does via multiple intermediate
+   types end up as signed conversions.  */
+/* { dg-final { scan-assembler-times {\tvfwcvt\.f\.x\.v} 9 } } */
 /* { dg-final { scan-assembler-times {\tvfwcvt\.f\.xu\.v} 3 } } */

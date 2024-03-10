@@ -314,7 +314,7 @@ finish_member_template_decl (tree decl)
 	  return DECL_TI_TEMPLATE (decl);
 	}
       else
-	return decl;
+	return NULL_TREE;
     }
   else
     error_at (DECL_SOURCE_LOCATION (decl),
@@ -4966,19 +4966,21 @@ generic_targs_for (tree tmpl)
 }
 
 /* Return the template arguments corresponding to the template parameters of
-   TMPL's enclosing scope.  When TMPL is a member of a partial specialization,
+   DECL's enclosing scope.  When DECL is a member of a partial specialization,
    this returns the arguments for the partial specialization as opposed to those
    for the primary template, which is the main difference between this function
-   and simply using e.g. the TYPE_TI_ARGS of TMPL's DECL_CONTEXT.  */
+   and simply using e.g. the TYPE_TI_ARGS of DECL's DECL_CONTEXT.  */
 
 tree
-outer_template_args (tree tmpl)
+outer_template_args (const_tree decl)
 {
-  tree ti = get_template_info (DECL_TEMPLATE_RESULT (tmpl));
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    decl = DECL_TEMPLATE_RESULT (decl);
+  tree ti = get_template_info (decl);
   if (!ti)
     return NULL_TREE;
   tree args = TI_ARGS (ti);
-  if (!PRIMARY_TEMPLATE_P (tmpl))
+  if (!PRIMARY_TEMPLATE_P (TI_TEMPLATE (ti)))
     return args;
   if (TMPL_ARGS_DEPTH (args) == 1)
     return NULL_TREE;
@@ -11049,14 +11051,21 @@ uses_outer_template_parms (tree decl)
    from its enclosing scope.  */
 
 bool
-uses_outer_template_parms_in_constraints (tree decl)
+uses_outer_template_parms_in_constraints (tree decl, tree ctx/*=NULL_TREE*/)
 {
   tree ci = get_constraints (decl);
   if (ci)
     ci = CI_ASSOCIATED_CONSTRAINTS (ci);
   if (!ci)
     return false;
-  int depth = template_class_depth (CP_DECL_CONTEXT (decl));
+  if (!ctx)
+    {
+      if (tree fc = DECL_FRIEND_CONTEXT (decl))
+	ctx = fc;
+      else
+	ctx = CP_DECL_CONTEXT (decl);
+    }
+  int depth = template_class_depth (ctx);
   if (depth == 0)
     return false;
   return for_each_template_parm (ci, template_parm_outer_level,
@@ -11393,9 +11402,6 @@ tsubst_friend_function (tree decl, tree args)
 	  not_tmpl = DECL_TEMPLATE_RESULT (new_friend);
 	  new_friend_result_template_info = DECL_TEMPLATE_INFO (not_tmpl);
 	}
-      else if (!constraints_satisfied_p (new_friend))
-	/* Only define a constrained hidden friend when satisfied.  */
-	return error_mark_node;
 
       /* Inside pushdecl_namespace_level, we will push into the
 	 current namespace. However, the friend function should go
@@ -18346,7 +18352,7 @@ tsubst_copy_asm_operands (tree t, tree args, tsubst_flags_t complain,
 static tree *omp_parallel_combined_clauses;
 
 static tree tsubst_decomp_names (tree, tree, tree, tsubst_flags_t, tree,
-				 tree *, unsigned int *);
+				 cp_decomp *);
 
 /* Substitute one OMP_FOR iterator.  */
 
@@ -18377,28 +18383,27 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
 	      && VAR_P (TREE_OPERAND (v, 0))
 	      && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
 	    {
-	      tree decomp_first = NULL_TREE;
-	      unsigned decomp_cnt = 0;
+	      cp_decomp decomp_d = { NULL_TREE, 0 };
 	      tree d = tsubst_decl (TREE_OPERAND (v, 0), args, complain);
 	      maybe_push_decl (d);
 	      d = tsubst_decomp_names (d, TREE_OPERAND (v, 0), args, complain,
-				       in_decl, &decomp_first, &decomp_cnt);
+				       in_decl, &decomp_d);
 	      decomp = true;
 	      if (d == error_mark_node)
 		decl = error_mark_node;
 	      else
-		for (unsigned int i = 0; i < decomp_cnt; i++)
+		for (unsigned int i = 0; i < decomp_d.count; i++)
 		  {
-		    if (!DECL_HAS_VALUE_EXPR_P (decomp_first))
+		    if (!DECL_HAS_VALUE_EXPR_P (decomp_d.decl))
 		      {
 			tree v = build_nt (ARRAY_REF, d,
-					   size_int (decomp_cnt - i - 1),
+					   size_int (decomp_d.count - i - 1),
 					   NULL_TREE, NULL_TREE);
-			SET_DECL_VALUE_EXPR (decomp_first, v);
-			DECL_HAS_VALUE_EXPR_P (decomp_first) = 1;
+			SET_DECL_VALUE_EXPR (decomp_d.decl, v);
+			DECL_HAS_VALUE_EXPR_P (decomp_d.decl) = 1;
 		      }
-		    fit_decomposition_lang_decl (decomp_first, d);
-		    decomp_first = DECL_CHAIN (decomp_first);
+		    fit_decomposition_lang_decl (decomp_d.decl, d);
+		    decomp_d.decl = DECL_CHAIN (decomp_d.decl);
 		  }
 	    }
 	}
@@ -18479,7 +18484,8 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
       tree this_pre_body = NULL_TREE;
       tree orig_init = NULL_TREE;
       tree orig_decl = NULL_TREE;
-      cp_convert_omp_range_for (this_pre_body, NULL, decl, orig_decl, init,
+      tree init_sl = NULL_TREE;
+      cp_convert_omp_range_for (this_pre_body, init_sl, decl, orig_decl, init,
 				orig_init, cond, incr);
       if (orig_decl)
 	{
@@ -18716,11 +18722,10 @@ tsubst_find_omp_teams (tree *tp, int *walk_subtrees, void *)
 
 static tree
 tsubst_decomp_names (tree decl, tree pattern_decl, tree args,
-		     tsubst_flags_t complain, tree in_decl, tree *first,
-		     unsigned int *cnt)
+		     tsubst_flags_t complain, tree in_decl, cp_decomp *decomp)
 {
   tree decl2, decl3, prev = decl;
-  *cnt = 0;
+  decomp->count = 0;
   gcc_assert (DECL_NAME (decl) == NULL_TREE);
   for (decl2 = DECL_CHAIN (pattern_decl);
        decl2
@@ -18729,12 +18734,12 @@ tsubst_decomp_names (tree decl, tree pattern_decl, tree args,
        && DECL_NAME (decl2);
        decl2 = DECL_CHAIN (decl2))
     {
-      if (TREE_TYPE (decl2) == error_mark_node && *cnt == 0)
+      if (TREE_TYPE (decl2) == error_mark_node && decomp->count == 0)
 	{
 	  gcc_assert (errorcount);
 	  return error_mark_node;
 	}
-      (*cnt)++;
+      decomp->count++;
       gcc_assert (DECL_DECOMP_BASE (decl2) == pattern_decl);
       gcc_assert (DECL_HAS_VALUE_EXPR_P (decl2));
       tree v = DECL_VALUE_EXPR (decl2);
@@ -18764,7 +18769,7 @@ tsubst_decomp_names (tree decl, tree pattern_decl, tree args,
       else
 	prev = decl3;
     }
-  *first = prev;
+  decomp->decl = prev;
   return decl;
 }
 
@@ -19036,8 +19041,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		else
 		  {
 		    bool const_init = false;
-		    unsigned int cnt = 0;
-		    tree first = NULL_TREE, ndecl = error_mark_node;
+		    cp_decomp decomp_d, *decomp = NULL;
+		    tree ndecl = error_mark_node;
 		    tree asmspec_tree = NULL_TREE;
 		    maybe_push_decl (decl);
 
@@ -19049,18 +19054,17 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		    if (VAR_P (decl)
 			&& DECL_DECOMPOSITION_P (decl)
 			&& TREE_TYPE (pattern_decl) != error_mark_node)
-		      ndecl = tsubst_decomp_names (decl, pattern_decl, args,
-						   complain, in_decl, &first,
-						   &cnt);
+		      {
+			decomp = &decomp_d;
+			ndecl = tsubst_decomp_names (decl, pattern_decl, args,
+						     complain, in_decl, decomp);
+		      }
 
 		    init = tsubst_init (init, decl, args, complain, in_decl);
 
 		    if (VAR_P (decl))
 		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P
 				    (pattern_decl));
-
-		    if (ndecl != error_mark_node)
-		      cp_maybe_mangle_decomp (ndecl, first, cnt);
 
 		    /* In a non-template function, VLA type declarations are
 		       handled in grokdeclarator; for templates, handle them
@@ -19078,10 +19082,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			TREE_TYPE (asmspec_tree) = char_array_type_node;
 		      }
 
-		    cp_finish_decl (decl, init, const_init, asmspec_tree, 0);
+		    cp_finish_decl (decl, init, const_init, asmspec_tree, 0,
+				    decomp);
 
 		    if (ndecl != error_mark_node)
-		      cp_finish_decomp (ndecl, first, cnt);
+		      cp_finish_decomp (ndecl, decomp);
 		  }
 	      }
 	  }
@@ -19120,12 +19125,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
         maybe_push_decl (decl);
         expr = RECUR (RANGE_FOR_EXPR (t));
 
-	tree decomp_first = NULL_TREE;
-	unsigned decomp_cnt = 0;
+	cp_decomp decomp_d, *decomp = NULL;
 	if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
-	  decl = tsubst_decomp_names (decl, RANGE_FOR_DECL (t), args,
-				      complain, in_decl,
-				      &decomp_first, &decomp_cnt);
+	  {
+	    decomp = &decomp_d;
+	    decl = tsubst_decomp_names (decl, RANGE_FOR_DECL (t), args,
+					complain, in_decl, decomp);
+	  }
 
 	if (processing_template_decl)
 	  {
@@ -19133,15 +19139,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    RANGE_FOR_UNROLL (stmt) = RANGE_FOR_UNROLL (t);
 	    RANGE_FOR_NOVECTOR (stmt) = RANGE_FOR_NOVECTOR (t);
 	    finish_range_for_decl (stmt, decl, expr);
-	    if (decomp_first && decl != error_mark_node)
-	      cp_finish_decomp (decl, decomp_first, decomp_cnt);
+	    if (decomp && decl != error_mark_node)
+	      cp_finish_decomp (decl, decomp);
 	  }
 	else
 	  {
 	    unsigned short unroll = (RANGE_FOR_UNROLL (t)
 				     ? tree_to_uhwi (RANGE_FOR_UNROLL (t)) : 0);
-	    stmt = cp_convert_range_for (stmt, decl, expr,
-					 decomp_first, decomp_cnt,
+	    stmt = cp_convert_range_for (stmt, decl, expr, decomp,
 					 RANGE_FOR_IVDEP (t), unroll,
 					 RANGE_FOR_NOVECTOR (t));
 	  }
@@ -19741,6 +19746,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       break;
 
     case OMP_MASTER:
+    case OMP_STRUCTURED_BLOCK:
       omp_parallel_combined_clauses = NULL;
       /* FALLTHRU */
     case OMP_SECTION:

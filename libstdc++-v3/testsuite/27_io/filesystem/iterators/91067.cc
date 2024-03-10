@@ -17,6 +17,7 @@
 
 // { dg-do link { target c++17 } }
 // { dg-require-filesystem-ts "" }
+// { dg-options "-Wno-self-move" }
 
 #include <filesystem>
 

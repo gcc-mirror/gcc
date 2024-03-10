@@ -219,7 +219,7 @@ Expression checkGC(Scope* sc, Expression e)
      * Just don't generate code for it.
      * Detect non-CTFE use of the GC in betterC code.
      */
-    const betterC = global.params.betterC;
+    const betterC = !global.params.useGC;
     FuncDeclaration f = sc.func;
     if (e && e.op != EXP.error && f && sc.intypeof != 1 &&
            (!(sc.flags & SCOPE.ctfe) || betterC) &&

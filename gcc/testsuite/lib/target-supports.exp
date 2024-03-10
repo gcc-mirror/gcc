@@ -975,6 +975,9 @@ proc check_effective_target_untyped_assembly {} {
 # Return 1 if alloca is supported, 0 otherwise.
 
 proc check_effective_target_alloca {} {
+    if { [istarget bpf-*-*] } {
+      return 0
+    }
     if { [istarget nvptx-*-*] } {
 	return [check_no_compiler_messages alloca assembly {
 	    void f (void*);
@@ -8397,7 +8400,8 @@ proc check_effective_target_vect_masked_load { } {
 # Return 1 if the target supports vector masked stores.
 
 proc check_effective_target_vect_masked_store { } {
-    return [expr { [check_effective_target_aarch64_sve]
+    return [expr { [check_avx_available]
+		   || [check_effective_target_aarch64_sve]
 		   || [istarget amdgcn*-*-*] }]
 }
 
@@ -8629,6 +8633,24 @@ proc check_effective_target_vect_multiple_sizes { } {
 
 proc check_effective_target_vect_variable_length { } {
     return [expr { [lindex [available_vector_sizes] 0] == 0 }]
+}
+
+# Return 1 if the target supports vectors of 512 bits.
+
+proc check_effective_target_vect512 { } {
+    return [expr { [lsearch -exact [available_vector_sizes] 512] >= 0 }]
+}
+
+# Return 1 if the target supports vectors of 256 bits.
+
+proc check_effective_target_vect256 { } {
+    return [expr { [lsearch -exact [available_vector_sizes] 256] >= 0 }]
+}
+
+# Return 1 if the target supports vectors of 128 bits.
+
+proc check_effective_target_vect128 { } {
+    return [expr { [lsearch -exact [available_vector_sizes] 128] >= 0 }]
 }
 
 # Return 1 if the target supports vectors of 64 bits.
@@ -12558,4 +12580,39 @@ proc check_effective_target_const_volatile_readonly_section { } {
 	return 0
     }
   return 1
+}
+
+# Appends necessary Python flags to extra-tool-flags if Python.h is supported.
+# Otherwise, modifies dg-do-what.
+proc dg-require-python-h { args } {
+    upvar dg-extra-tool-flags extra-tool-flags
+
+    verbose "ENTER dg-require-python-h" 2
+
+    set supported 0
+    set result [remote_exec host "python3-config --includes"]
+    set status [lindex $result 0]
+    if { $status == 0 } {
+	# Remove trailing newline from python3-config output.
+	set python_flags [string trim [lindex $result 1]]
+	if [check_no_compiler_messages python_h assembly {
+	    #include <Python.h>
+	    int main (void) { return 0; }
+	} $python_flags] {
+	    set supported 1
+	}
+    }
+
+    if { $supported == 0 } {
+	verbose "Python.h not supported" 2
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+
+    verbose "Python flags are: $python_flags" 2
+
+    verbose "Before appending, extra-tool-flags: ${extra-tool-flags}" 3
+    eval lappend extra-tool-flags $python_flags
+    verbose "After appending, extra-tool-flags: ${extra-tool-flags}" 3
 }

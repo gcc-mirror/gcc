@@ -4914,7 +4914,8 @@ s390_expand_plus_operand (rtx target, rtx src,
    STRICT specifies whether strict register checking applies.  */
 
 static bool
-s390_legitimate_address_p (machine_mode mode, rtx addr, bool strict)
+s390_legitimate_address_p (machine_mode mode, rtx addr, bool strict,
+			   code_helper = ERROR_MARK)
 {
   struct s390_address ad;
 

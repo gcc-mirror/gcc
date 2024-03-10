@@ -345,6 +345,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual
 -Wchar-subscripts
 -Wclobbered  -Wcomment
+-Wcompare-distinct-pointer-types
 -Wno-complain-wrong-lang
 -Wconversion  -Wno-coverage-mismatch  -Wno-cpp
 -Wdangling-else  -Wdangling-pointer  -Wdangling-pointer=@var{n}
@@ -430,6 +431,7 @@ Objective-C and Objective-C++ Dialects}.
 -fanalyzer-checker=@var{name}
 -fno-analyzer-feasibility
 -fanalyzer-fine-grained
+-fanalyzer-show-events-in-system-headers
 -fno-analyzer-state-merge
 -fno-analyzer-state-purge
 -fno-analyzer-suppress-followups
@@ -472,6 +474,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-null-argument
 -Wno-analyzer-null-dereference
 -Wno-analyzer-out-of-bounds
+-Wno-analyzer-overlapping-buffers
 -Wno-analyzer-possible-null-argument
 -Wno-analyzer-possible-null-dereference
 -Wno-analyzer-putenv-of-auto-var
@@ -1419,6 +1422,7 @@ See RS/6000 and PowerPC Options.
 -mcld  -mcx16  -msahf  -mmovbe  -mcrc32 -mmwait
 -mrecip  -mrecip=@var{opt}
 -mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt}
+-mpartial-vector-fp-math
 -mmove-max=@var{bits} -mstore-max=@var{bits}
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl
@@ -3012,6 +3016,9 @@ in C++14 and up.
 
 Version 18, which first appeard in G++ 13, fixes manglings of lambdas
 that have additional context.
+
+Version 19, which first appeard in G++ 14, fixes manglings of structured
+bindings to include ABI tags.
 
 See also @option{-Wabi}.
 
@@ -4772,7 +4779,7 @@ pointers after reallocation.
 
 @opindex Wuseless-cast
 @opindex Wno-useless-cast
-@item -Wuseless-cast @r{(C++ and Objective-C++ only)}
+@item -Wuseless-cast @r{(C, Objective-C, C++ and Objective-C++ only)}
 Warn when an expression is cast to its own type.  This warning does not
 occur when a class object is converted to a non-reference type as that
 is a way to create a temporary:
@@ -4833,7 +4840,7 @@ Use @var{class-name} as the name of the class to instantiate for each
 literal string specified with the syntax @code{@@"@dots{}"}.  The default
 class name is @code{NXConstantString} if the GNU runtime is being used, and
 @code{NSConstantString} if the NeXT runtime is being used (see below).  On
-Darwin (macOS, MacOS X) platforms, the @option{-fconstant-cfstrings} option, if
+Darwin / macOS platforms, the @option{-fconstant-cfstrings} option, if
 also present, overrides the @option{-fconstant-string-class} setting and cause
 @code{@@"@dots{}"} literals to be laid out as constant CoreFoundation strings.
 Note that @option{-fconstant-cfstrings} is an alias for the target-specific
@@ -4847,7 +4854,7 @@ runtime.  This is the default for most types of systems.
 @opindex fnext-runtime
 @item -fnext-runtime
 Generate output compatible with the NeXT runtime.  This is the default
-for NeXT-based systems, including Darwin and Mac OS X@.  The macro
+for NeXT-based systems, including Darwin / macOS.  The macro
 @code{__NEXT_RUNTIME__} is predefined if (and only if) this option is
 used.
 
@@ -9102,6 +9109,11 @@ The latter front end diagnoses
 @samp{f951: Warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for Fortran},
 which may be disabled with @option{-Wno-complain-wrong-lang}.
 
+@opindex Wcompare-distinct-pointer-types
+@item -Wcompare-distinct-pointer-types @r{(C and Objective-C only)}
+Warn if pointers of distinct types are compared without a cast.  This
+warning is enabled by default.
+
 @opindex Wconversion
 @opindex Wno-conversion
 @item -Wconversion
@@ -10311,6 +10323,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-null-argument
 -Wanalyzer-null-dereference
 -Wanalyzer-out-of-bounds
+-Wanalyzer-overlapping-buffers
 -Wanalyzer-possible-null-argument
 -Wanalyzer-possible-null-dereference
 -Wanalyzer-putenv-of-auto-var
@@ -10655,6 +10668,24 @@ apart; which one is before or after in memory, the relative sizes
 involved, the direction of the access (read vs write), and, in some
 cases, the values of data involved.  This diagram can be suppressed
 using @option{-fdiagnostics-text-art-charset=none}.
+
+@opindex Wanalyzer-overlapping-buffers
+@opindex Wno-analyzer-overlapping-buffers
+@item -Wno-analyzer-overlapping-buffers
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-overlapping-buffers} to disable it.
+
+This diagnostic warns for paths through the code in which overlapping
+buffers are passed to an API for which the behavior on such buffers
+is undefined.
+
+Specifically, the diagnostic occurs on calls to the following functions
+@itemize @bullet
+@item @code{memcpy}
+@item @code{strcat}
+@item @code{strcpy}
+@end itemize
+for cases where the buffers are known to overlap.
 
 @opindex Wanalyzer-possible-null-argument
 @opindex Wno-analyzer-possible-null-argument
@@ -11100,6 +11131,7 @@ and of the following functions:
 @item @code{siglongjmp}
 @item @code{signal}
 @item @code{sigsetjmp}
+@item @code{strcat}
 @item @code{strchr}
 @item @code{strlen}
 @end itemize
@@ -11202,6 +11234,14 @@ This option is intended for analyzer developers: if multiple diagnostics
 have been detected as being duplicates of each other, it emits a note when
 reporting the best diagnostic, giving the number of additional diagnostics
 that were suppressed by the deduplication logic.
+
+@opindex fanalyzer-show-events-in-system-headers
+@opindex fno-analyzer-show-events-in-system-headers
+@item -fanalyzer-show-events-in-system-headers
+By default the analyzer emits simplified diagnostics paths by hiding
+events fully located within a system header.
+With @option{-fanalyzer-show-events-in-system-headers} such
+events are no longer suppressed.
 
 @opindex fanalyzer-state-merge
 @opindex fno-analyzer-state-merge
@@ -11449,7 +11489,7 @@ possible.
 Produce debugging information in DWARF format (if that is supported).
 The value of @var{version} may be either 2, 3, 4 or 5; the default
 version for most targets is 5 (with the exception of VxWorks, TPF and
-Darwin/Mac OS X, which default to version 2, and AIX, which defaults
+Darwin / macOS, which default to version 2, and AIX, which defaults
 to version 4).
 
 Note that with DWARF Version 2, some ports require and always
@@ -12622,8 +12662,8 @@ Attempt to remove redundant extension instructions.  This is especially
 helpful for the x86-64 architecture, which implicitly zero-extends in 64-bit
 registers after writing to their lower 32-bit half.
 
-Enabled for Alpha, AArch64, PowerPC, RISC-V, SPARC, h83000 and x86 at levels
-@option{-O2}, @option{-O3}, @option{-Os}.
+Enabled for Alpha, AArch64, LoongArch, PowerPC, RISC-V, SPARC, h83000 and x86 at
+levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fno-lifetime-dse
 @opindex flifetime-dse
@@ -20529,8 +20569,9 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
 @samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x1c}, @samp{cortex-x2},
-@samp{cortex-x3}, @samp{cortex-a510}, @samp{cortex-a710}, @samp{cortex-a715},
-@samp{ampere1}, @samp{ampere1a}, and @samp{native}.
+@samp{cortex-x3}, @samp{cortex-a510}, @samp{cortex-a520}, @samp{cortex-a710},
+@samp{cortex-a715}, @samp{cortex-a720}, @samp{ampere1}, @samp{ampere1a},
+and @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -30031,7 +30072,7 @@ the same as @option{-mbig}.
 
 @opindex mdynamic-no-pic
 @item -mdynamic-no-pic
-On Darwin and Mac OS X systems, compile code so that it is not
+On Darwin / macOS systems, compile code so that it is not
 relocatable, but that its external references are relocatable.  The
 resulting code is suitable for applications, but not shared
 libraries.
@@ -33753,6 +33794,23 @@ This option instructs GCC to use 128-bit AVX instructions instead of
 @item -mprefer-vector-width=@var{opt}
 This option instructs GCC to use @var{opt}-bit vector width in instructions
 instead of default on the selected platform.
+
+@opindex mpartial-vector-fp-math
+@item -mpartial-vector-fp-math
+This option enables GCC to generate floating-point operations that might
+affect the set of floating-point status flags on partial vectors, where
+vector elements reside in the low part of the 128-bit SSE register.  Unless
+@option{-fno-trapping-math} is specified, the compiler guarantees correct
+behavior by sanitizing all input operands to have zeroes in the unused
+upper part of the vector register.  Note that by using built-in functions
+or inline assembly with partial vector arguments, NaNs, denormal or invalid
+values can leak into the upper part of the vector, causing possible
+performance issues when @option{-fno-trapping-math} is in effect.  These
+issues can be mitigated by manually sanitizing the upper part of the partial
+vector argument register or by using @option{-mdaz-ftz} to set
+denormals-are-zero (DAZ) flag in the MXCSR register.
+
+This option is enabled by default.
 
 @opindex mmove-max
 @item -mmove-max=@var{bits}

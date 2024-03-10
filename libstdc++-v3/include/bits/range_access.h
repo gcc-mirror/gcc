@@ -32,6 +32,10 @@
 
 #pragma GCC system_header
 
+#define __glibcxx_want_nonmember_container_access
+#define __glibcxx_want_ssize
+#include <bits/version.h>
+
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #include <type_traits>	    // common_type_t, make_signed_t
@@ -251,9 +255,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++14
 
-#if __cplusplus >= 201703L
-#define __cpp_lib_nonmember_container_access 201411L
-
+#ifdef __cpp_lib_nonmember_container_access // C++ >= 17
   /**
    *  @brief  Return the size of a container.
    *  @param  __cont  Container.
@@ -345,9 +347,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const _Tp*
     data(initializer_list<_Tp> __il) noexcept
     { return __il.begin(); }
+#endif // __cpp_lib_nonmember_container_access
 
-#if __cplusplus > 201703L
-#define __cpp_lib_ssize 201902L
+#ifdef __cpp_lib_ssize // C++ >= 20
   template<typename _Container>
     [[nodiscard, __gnu__::__always_inline__]]
     constexpr auto
@@ -364,9 +366,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr ptrdiff_t
     ssize(const _Tp (&)[_Num]) noexcept
     { return _Num; }
-#endif // C++20
-
-#endif // C++17
+#endif // __cpp_lib_ssize
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

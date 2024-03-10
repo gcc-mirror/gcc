@@ -1299,6 +1299,7 @@ extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
 extern bool c_omp_check_loop_iv_exprs (location_t, enum tree_code, tree, int,
 				       tree, tree, tree, walk_tree_lh);
+extern bool c_omp_check_loop_binding_exprs (tree, vec<tree> *);
 extern tree c_finish_oacc_wait (location_t, tree, tree);
 extern tree c_oacc_split_loop_clauses (tree, tree *, bool);
 extern void c_omp_split_clauses (location_t, enum tree_code, omp_clause_mask,

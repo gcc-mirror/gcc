@@ -1,3 +1,37 @@
+2023-08-23  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR libffi/108682
+	* configure.host: Add LoongArch support.
+	* Makefile.am: Likewise.
+	* Makefile.in: Regenerate.
+	* src/loongarch64/ffi.c: New file.
+	* src/loongarch64/ffitarget.h: New file.
+	* src/loongarch64/sysv.S: New file.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Alexander von Gluck IV  <kallisti5@unixzen.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
 2023-05-06  Dan Horák  <dan@danny.cz>
 
 	PR libffi/109447

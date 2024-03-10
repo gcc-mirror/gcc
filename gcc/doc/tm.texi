@@ -5800,7 +5800,7 @@ many ulps below or above those boundaries result could be.
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
 by default.  This calling convention involves passing the object, the selector
 and the method arguments all at once to the method-lookup library function.
-This is the usual setting when targeting Darwin/Mac OS X systems, which have
+This is the usual setting when targeting Darwin / macOS systems, which have
 the NeXT runtime installed.
 
 If the macro is set to 0, the "GNU" Objective-C message sending convention
@@ -5862,9 +5862,16 @@ the maximum number that @code{TARGET_LEGITIMATE_ADDRESS_P} would ever
 accept.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{x}, bool @var{strict})
+@deftypefn {Target Hook} bool TARGET_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{x}, bool @var{strict}, code_helper @var{ch})
 A function that returns whether @var{x} (an RTX) is a legitimate memory
 address on the target machine for a memory operand of mode @var{mode}.
+If @var{ch} is not @code{ERROR_MARK}, it can be called from middle-end to
+determine if it is valid to use @var{x} as a memory operand for RTX insn
+which is generated for the given code_helper @var{ch}.  For example,
+assuming the given @var{ch} is IFN_LEN_LOAD, on some target its underlying
+hardware instructions support fewer addressing modes than what are for the
+normal vector load and store, then with this @var{ch} target can know the
+actual use context and return more exact result.
 
 Legitimate addresses are defined in two variants: a strict variant and a
 non-strict one.  The @var{strict} parameter chooses which variant is
@@ -11018,11 +11025,12 @@ version of this hook returns true for the modes returned by either the
 target hooks for the given address space.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as})
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as}, code_helper @var{ch})
 Define this to return true if @var{exp} is a valid address for mode
-@var{mode} in the named address space @var{as}.  The @var{strict}
-parameter says whether strict addressing is in effect after reload has
-finished.  This target hook is the same as the
+@var{mode} in the named address space @var{as} with the use context
+@var{ch}.  The @var{strict} parameter says whether strict addressing
+is in effect after reload has finished.  The @var{ch} indicates what
+context @var{exp} will be used for.  This target hook is the same as the
 @code{TARGET_LEGITIMATE_ADDRESS_P} target hook, except that it includes
 explicit named address space support.
 @end deftypefn
@@ -12031,7 +12039,7 @@ This target hook is required only when the target has several different
 modes and they have different conditional execution capability, such as ARM.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_FIRST (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, int @var{code}, tree @var{op0}, tree @var{op1})
+@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_FIRST (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx_code @var{code}, tree @var{op0}, tree @var{op1})
 This function prepares to emit a comparison insn for the first compare in a
  sequence of conditional comparisions.  It returns an appropriate comparison
  with @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.
@@ -12041,7 +12049,7 @@ This function prepares to emit a comparison insn for the first compare in a
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_NEXT (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx @var{prev}, int @var{cmp_code}, tree @var{op0}, tree @var{op1}, int @var{bit_code})
+@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_NEXT (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx @var{prev}, rtx_code @var{cmp_code}, tree @var{op0}, tree @var{op1}, rtx_code @var{bit_code})
 This function prepares to emit a conditional comparison within a sequence
  of conditional comparisons.  It returns an appropriate comparison with
  @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.

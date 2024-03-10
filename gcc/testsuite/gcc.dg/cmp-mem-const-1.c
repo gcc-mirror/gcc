@@ -1,5 +1,5 @@
 /* { dg-do compile { target { lp64 } } } */
-/* { dg-options "-O1 -fdump-rtl-combine-details" } */
+/* { dg-options "-O2 -fdump-rtl-combine-details" } */
 /* { dg-final { scan-rtl-dump "narrow comparison from mode .I to QI" "combine" } } */
 
 typedef __UINT64_TYPE__ uint64_t;

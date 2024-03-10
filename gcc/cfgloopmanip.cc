@@ -1296,6 +1296,16 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
 	}
       profile_probability prob_pass_wont_exit =
 	      new_count_le.probability_in (count_in);
+      /* If profile count is 0, the probability will be uninitialized.
+	 We can set probability to any initialized value to avoid
+	 precision loss.  If profile is sane, all counts will be 0 anyway.  */
+      if (!count_in.nonzero_p ())
+	{
+	  prob_pass_thru
+		  = profile_probability::always ().apply_scale (1, 2);
+	  prob_pass_wont_exit
+		  = profile_probability::always ().apply_scale (1, 2);
+	}
 
       scale_step = XNEWVEC (profile_probability, ndupl);
 
@@ -1306,7 +1316,9 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
 
       /* Complete peeling is special as the probability of exit in last
 	 copy becomes 1.  */
-      if (flags & DLTHE_FLAG_COMPLETTE_PEEL)
+      if (!count_in.nonzero_p ())
+	;
+      else if (flags & DLTHE_FLAG_COMPLETTE_PEEL)
 	{
 	  profile_count wanted_count = e->count ();
 

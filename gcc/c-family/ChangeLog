@@ -1,3 +1,62 @@
+2023-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111069
+	* c-opts.cc (c_common_post_options): Change latest_abi_version to 19.
+
+2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* c.opt: Change spelling to macOS.
+
+2023-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111253
+	* c-pretty-print.cc (c_pretty_printer::primary_expression):
+	Only dump gimple_assign_single_p SSA def RHS.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-common.h (c_omp_check_loop_binding_exprs): Declare.
+	* c-omp.cc: Include tree-iterator.h.
+	(find_binding_in_body): New.
+	(check_loop_binding_expr_r): New.
+	(LOCATION_OR): New.
+	(check_looop_binding_expr): New.
+	(c_omp_check_loop_binding_exprs): New.
+
+2023-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-format.cc (read_any_format_width):
+	Rename TRUE/FALSE to true/false.
+
+2023-08-20  Martin Uecker  <uecker@tugraz.at>
+
+	* c-format.cc: Fix identation.
+
+2023-08-20  Tomas Kalibera  <tomas.kalibera@gmail.com>
+
+	PR c/95130
+	* c-format.cc: skip default format for printf symbol if
+	explicitly declared by prototype.
+
+2023-08-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR c/106537
+	* c.opt (Wcompare-distinct-pointer-types): New option.
+
+2023-08-14  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Adjust __cpp_concepts.
+
+2023-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (c_common_reswords): Add __typeof_unqual
+	and __typeof_unqual__ spellings of typeof_unqual.
+
+2023-08-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/84510
+	* c.opt: Enable warning for C and ObjC.
+
 2023-08-05  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/98536

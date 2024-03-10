@@ -2631,6 +2631,18 @@
   "vcmpequq. %0,%1,%2"
   [(set_attr "type" "veccmpfx")])
 
+;; Expand for builtin vcmpne{b,h,w}
+(define_expand "altivec_vcmpne_<mode>"
+  [(set (match_operand:VSX_EXTRACT_I 3 "altivec_register_operand" "=v")
+	(eq:VSX_EXTRACT_I (match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")
+			  (match_operand:VSX_EXTRACT_I 2 "altivec_register_operand" "v")))
+   (set (match_operand:VSX_EXTRACT_I 0 "altivec_register_operand" "=v")
+        (not:VSX_EXTRACT_I (match_dup 3)))]
+  "TARGET_ALTIVEC"
+  {
+    operands[3] = gen_reg_rtx (GET_MODE (operands[0]));
+  })
+
 (define_insn "*altivec_vcmpgts<VI_char>_p"
   [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(gt:CC (match_operand:VI2 1 "register_operand" "v")

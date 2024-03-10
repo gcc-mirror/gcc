@@ -81,9 +81,81 @@ test_format()
   }
 }
 
+void
+test_parse()
+{
+  using namespace std::chrono;
+  year y;
+
+  std::istringstream is("2023");
+  VERIFY( is >> parse("%Y", y) );
+  VERIFY( ! is.eof() );
+  VERIFY( y == year(2023) );
+
+  is.clear();
+  is.str("2023");
+  VERIFY( is >> parse("%5Y", y) );
+  VERIFY( is.eof() );
+  VERIFY( y == year(2023) );
+
+  is.clear();
+  is.str("2023");
+  VERIFY( is >> parse("%2Y", y) );
+  VERIFY( ! is.eof() );
+  VERIFY( y == year(20) );
+
+  is.clear();
+  is.str("2023");
+  VERIFY( is >> parse("%y", y) );
+  VERIFY( ! is.eof() );
+  VERIFY( y == year(2020) );
+
+  minutes offset;
+  std::string abbrev;
+
+  is.clear();
+  is.str("23 20 25:61 +1:30 WAT"); // Invalid %H:%M doesn't matter for year.
+  VERIFY( is >> parse("%y %C %H:%M %Oz %Z", y, abbrev, offset) );
+  VERIFY( is.eof() );
+  VERIFY( y == year(2023) );
+  VERIFY( abbrev == "WAT" );
+  VERIFY( offset == 90min );
+
+  is.clear();
+  is.str("2022 367");
+  VERIFY( is >> parse("%Y %j", y) ); // Invalid day-of-year doesn't matter.
+  VERIFY( ! is.eof() );
+  VERIFY( y == 2022y );
+
+  y = 999y;
+  is.clear();
+  is.str("2023");
+  VERIFY( ! (is >> parse("%G", y)) ); // ISO year not aligned with Gregorian.
+  VERIFY( y == 999y );
+
+  is.clear();
+  is.str("2023-W01-1");        // 2023-1-2
+  is >> parse("%G-W%V-%u", y); // Can get Gregorian year from full ISO date.
+  VERIFY( ! is.eof() );
+  VERIFY( y == 2023y );
+
+  is.clear();
+  is.str("2022-W052-7");       // 2023-1-1
+  is >> parse("%G-W%3V-%2u", y);
+  VERIFY( is.eof() );
+  VERIFY( y == 2023y );
+
+  y = year(1);
+  is.clear();
+  is.str("2023 01");
+  VERIFY( !( is >> parse("%Y %z xx", y)) ); // Gets EOF and can't parse " xx".
+  VERIFY( is.eof() );
+  VERIFY( y == year(1) );
+}
+
 int main()
 {
   test_ostream();
   test_format();
-  // TODO: test_parse();
+  test_parse();
 }

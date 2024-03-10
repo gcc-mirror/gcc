@@ -32,7 +32,10 @@
 
 #pragma GCC system_header
 
-#if __cplusplus > 202002L
+#define __glibcxx_want_move_only_function
+#include <bits/version.h>
+
+#ifdef __cpp_lib_move_only_function // C++ >= 23 && HOSTED
 
 #include <bits/invoke.h>
 #include <bits/utility.h>
@@ -40,8 +43,6 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#define __cpp_lib_move_only_function 202110L
 
   template<typename... _Signature>
     class move_only_function; // not defined
@@ -212,5 +213,5 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #define _GLIBCXX_MOF_REF &&
 #include "mofunc_impl.h"
 
-#endif // C++23
+#endif // __cpp_lib_move_only_function
 #endif // _GLIBCXX_MOVE_ONLY_FUNCTION_H

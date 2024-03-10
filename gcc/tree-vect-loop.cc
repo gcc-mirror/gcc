@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "ssa.h"
 #include "optabs-tree.h"
+#include "memmodel.h"
+#include "optabs.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"
@@ -1465,10 +1467,13 @@ vect_verify_loop_lens (loop_vec_info loop_vinfo)
   if (LOOP_VINFO_LENS (loop_vinfo).is_empty ())
     return false;
 
-  machine_mode len_load_mode = get_len_load_store_mode
-    (loop_vinfo->vector_mode, true).require ();
-  machine_mode len_store_mode = get_len_load_store_mode
-    (loop_vinfo->vector_mode, false).require ();
+  machine_mode len_load_mode, len_store_mode;
+  if (!get_len_load_store_mode (loop_vinfo->vector_mode, true)
+	 .exists (&len_load_mode))
+    return false;
+  if (!get_len_load_store_mode (loop_vinfo->vector_mode, false)
+	 .exists (&len_store_mode))
+    return false;
 
   signed char partial_load_bias = internal_len_load_store_bias
     (IFN_LEN_LOAD, len_load_mode);
@@ -2061,8 +2066,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 	  if (ok
 	      && STMT_VINFO_LIVE_P (stmt_info)
 	      && !PURE_SLP_STMT (stmt_info))
-	    ok = vectorizable_live_operation (loop_vinfo,
-					      stmt_info, NULL, NULL, NULL,
+	    ok = vectorizable_live_operation (loop_vinfo, stmt_info, NULL, NULL,
 					      -1, false, &cost_vec);
 
           if (!ok)
@@ -2449,8 +2453,13 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
 		  DR_GROUP_FIRST_ELEMENT (vinfo) = vinfo;
 		  DR_GROUP_NEXT_ELEMENT (vinfo) = NULL;
 		  DR_GROUP_SIZE (vinfo) = 1;
-		  if (STMT_VINFO_STRIDED_P (first_element))
-		    DR_GROUP_GAP (vinfo) = 0;
+		  if (STMT_VINFO_STRIDED_P (first_element)
+		      /* We cannot handle stores with gaps.  */
+		      || DR_IS_WRITE (dr_info->dr))
+		    {
+		      STMT_VINFO_STRIDED_P (vinfo) = true;
+		      DR_GROUP_GAP (vinfo) = 0;
+		    }
 		  else
 		    DR_GROUP_GAP (vinfo) = group_size - 1;
 		  /* Duplicate and adjust alignment info, it needs to
@@ -2840,7 +2849,8 @@ start_over:
 	     instructions record it and move on to the next instance.  */
 	  if (loads_permuted
 	      && SLP_INSTANCE_KIND (instance) == slp_inst_kind_store
-	      && vect_store_lanes_supported (vectype, group_size, false))
+	      && vect_store_lanes_supported (vectype, group_size, false)
+		   != IFN_LAST)
 	    {
 	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)
 		{
@@ -2849,9 +2859,9 @@ start_over:
 		  /* Use SLP for strided accesses (or if we can't
 		     load-lanes).  */
 		  if (STMT_VINFO_STRIDED_P (stmt_vinfo)
-		      || ! vect_load_lanes_supported
+		      || vect_load_lanes_supported
 			    (STMT_VINFO_VECTYPE (stmt_vinfo),
-			     DR_GROUP_SIZE (stmt_vinfo), false))
+			     DR_GROUP_SIZE (stmt_vinfo), false) == IFN_LAST)
 		    break;
 		}
 
@@ -3154,7 +3164,7 @@ again:
       vinfo = DR_GROUP_FIRST_ELEMENT (vinfo);
       unsigned int size = DR_GROUP_SIZE (vinfo);
       tree vectype = STMT_VINFO_VECTYPE (vinfo);
-      if (! vect_store_lanes_supported (vectype, size, false)
+      if (vect_store_lanes_supported (vectype, size, false) == IFN_LAST
 	 && ! known_eq (TYPE_VECTOR_SUBPARTS (vectype), 1U)
 	 && ! vect_grouped_store_supported (vectype, size))
 	return opt_result::failure_at (vinfo->stmt,
@@ -3166,7 +3176,7 @@ again:
 	  bool single_element_p = !DR_GROUP_NEXT_ELEMENT (vinfo);
 	  size = DR_GROUP_SIZE (vinfo);
 	  vectype = STMT_VINFO_VECTYPE (vinfo);
-	  if (! vect_load_lanes_supported (vectype, size, false)
+	  if (vect_load_lanes_supported (vectype, size, false) == IFN_LAST
 	      && ! vect_grouped_load_supported (vectype, single_element_p,
 						size))
 	    return opt_result::failure_at (vinfo->stmt,
@@ -6906,7 +6916,17 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 
   tree vector_identity = NULL_TREE;
   if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
-    vector_identity = build_zero_cst (vectype_out);
+    {
+      vector_identity = build_zero_cst (vectype_out);
+      if (!HONOR_SIGNED_ZEROS (vectype_out))
+	;
+      else
+	{
+	  gcc_assert (!HONOR_SIGN_DEPENDENT_ROUNDING (vectype_out));
+	  vector_identity = const_unop (NEGATE_EXPR, vectype_out,
+					vector_identity);
+	}
+    }
 
   tree scalar_dest_var = vect_create_destination_var (scalar_dest, NULL);
   int i;
@@ -7479,8 +7499,11 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	}
 
       if (reduc_chain_length == 1
-	  && direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST,
-					     vectype_in, OPTIMIZE_FOR_SPEED))
+	  && (direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST, vectype_in,
+					      OPTIMIZE_FOR_SPEED)
+	      || direct_internal_fn_supported_p (IFN_LEN_FOLD_EXTRACT_LAST,
+						 vectype_in,
+						 OPTIMIZE_FOR_SPEED)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -8036,6 +8059,18 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "can't operate on partial vectors because"
 			     " no conditional operation is available.\n");
+	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	}
+      else if (reduction_type == FOLD_LEFT_REDUCTION
+	       && reduc_fn == IFN_LAST
+	       && FLOAT_TYPE_P (vectype_in)
+	       && HONOR_SIGNED_ZEROS (vectype_in)
+	       && HONOR_SIGN_DEPENDENT_ROUNDING (vectype_in))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "can't operate on partial vectors because"
+			     " signed zeros cannot be preserved.\n");
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	}
       else
@@ -10185,9 +10220,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
    it can be supported.  */
 
 bool
-vectorizable_live_operation (vec_info *vinfo,
-			     stmt_vec_info stmt_info,
-			     gimple_stmt_iterator *gsi,
+vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 			     slp_tree slp_node, slp_instance slp_node_instance,
 			     int slp_index, bool vec_stmt_p,
 			     stmt_vector_for_cost *cost_vec)
@@ -10281,17 +10314,7 @@ vectorizable_live_operation (vec_info *vinfo,
       /* No transformation required.  */
       if (loop_vinfo && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
 	{
-	  if (!direct_internal_fn_supported_p (IFN_EXTRACT_LAST, vectype,
-					       OPTIMIZE_FOR_SPEED))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "can't operate on partial vectors "
-				 "because the target doesn't support extract "
-				 "last reduction.\n");
-	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
-	    }
-	  else if (slp_node)
+	  if (slp_node)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -10311,9 +10334,26 @@ vectorizable_live_operation (vec_info *vinfo,
 	  else
 	    {
 	      gcc_assert (ncopies == 1 && !slp_node);
-	      vect_record_loop_mask (loop_vinfo,
-				     &LOOP_VINFO_MASKS (loop_vinfo),
-				     1, vectype, NULL);
+	      if (direct_internal_fn_supported_p (IFN_EXTRACT_LAST, vectype,
+						  OPTIMIZE_FOR_SPEED))
+		vect_record_loop_mask (loop_vinfo,
+				       &LOOP_VINFO_MASKS (loop_vinfo),
+				       1, vectype, NULL);
+	      else if (can_vec_extract_var_idx_p (
+			 TYPE_MODE (vectype), TYPE_MODE (TREE_TYPE (vectype))))
+		vect_record_loop_len (loop_vinfo,
+				      &LOOP_VINFO_LENS (loop_vinfo),
+				      1, vectype, 1);
+	      else
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (
+		      MSG_MISSED_OPTIMIZATION, vect_location,
+		      "can't operate on partial vectors "
+		      "because the target doesn't support extract "
+		      "last reduction.\n");
+		  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+		}
 	    }
 	}
       /* ???  Enable for loop costing as well.  */
@@ -10339,7 +10379,9 @@ vectorizable_live_operation (vec_info *vinfo,
   gimple *vec_stmt;
   if (slp_node)
     {
-      gcc_assert (!loop_vinfo || !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
+      gcc_assert (!loop_vinfo
+		  || (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+		      && !LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo)));
 
       /* Get the correct slp vectorized stmt.  */
       vec_lhs = SLP_TREE_VEC_DEFS (slp_node)[vec_entry];
@@ -10383,7 +10425,42 @@ vectorizable_live_operation (vec_info *vinfo,
 
       gimple_seq stmts = NULL;
       tree new_tree;
-      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+	{
+	  /* Emit:
+
+	       SCALAR_RES = VEC_EXTRACT <VEC_LHS, LEN + BIAS - 1>
+
+	     where VEC_LHS is the vectorized live-out result and MASK is
+	     the loop mask for the final iteration.  */
+	  gcc_assert (ncopies == 1 && !slp_node);
+	  gimple_seq tem = NULL;
+	  gimple_stmt_iterator gsi = gsi_last (tem);
+	  tree len
+	    = vect_get_loop_len (loop_vinfo, &gsi,
+				 &LOOP_VINFO_LENS (loop_vinfo),
+				 1, vectype, 0, 0);
+
+	  /* BIAS - 1.  */
+	  signed char biasval = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+	  tree bias_minus_one
+	    = int_const_binop (MINUS_EXPR,
+			       build_int_cst (TREE_TYPE (len), biasval),
+			       build_one_cst (TREE_TYPE (len)));
+
+	  /* LAST_INDEX = LEN + (BIAS - 1).  */
+	  tree last_index = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (len),
+					  len, bias_minus_one);
+
+	  /* SCALAR_RES = VEC_EXTRACT <VEC_LHS, LEN + BIAS - 1>.  */
+	  tree scalar_res
+	    = gimple_build (&stmts, CFN_VEC_EXTRACT, TREE_TYPE (vectype),
+			    vec_lhs_phi, last_index);
+
+	  /* Convert the extracted vector element to the scalar type.  */
+	  new_tree = gimple_convert (&stmts, lhs_type, scalar_res);
+	}
+      else if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
 	{
 	  /* Emit:
 
@@ -10393,9 +10470,12 @@ vectorizable_live_operation (vec_info *vinfo,
 	     the loop mask for the final iteration.  */
 	  gcc_assert (ncopies == 1 && !slp_node);
 	  tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
-	  tree mask = vect_get_loop_mask (loop_vinfo, gsi,
+	  gimple_seq tem = NULL;
+	  gimple_stmt_iterator gsi = gsi_last (tem);
+	  tree mask = vect_get_loop_mask (loop_vinfo, &gsi,
 					  &LOOP_VINFO_MASKS (loop_vinfo),
 					  1, vectype, 0);
+	  gimple_seq_add_seq (&stmts, tem);
 	  tree scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST, scalar_type,
 					  mask, vec_lhs_phi);
 

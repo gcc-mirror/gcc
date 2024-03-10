@@ -6715,7 +6715,8 @@ arc_legitimate_constant_p (machine_mode mode, rtx x)
 }
 
 static bool
-arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+arc_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+			  code_helper = ERROR_MARK)
 {
   if (RTX_OK_FOR_BASE_P (x, strict))
      return true;
@@ -11646,7 +11647,7 @@ arc_split_mov_const (rtx *operands)
     }
 
   /* 3. Check if we can just shift by 16 to fit into the u6 of LSL16.  */
-  if (TARGET_BARREL_SHIFTER && TARGET_V2
+  if (TARGET_SWAP && TARGET_V2
       && ((ival & ~0x3f0000) == 0))
     {
       shimm = (ival >> 16) & 0x3f;

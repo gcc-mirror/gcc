@@ -104,8 +104,6 @@ template<typename T>
     const std::string expected = test::to_string(val);
     VERIFY( s == expected );
     VERIFY( s[s.size()] == '\0' ); // null-terminator not overwritten!
-    if (s.size() > empty_string_capacity)
-      VERIFY( s.capacity() == s.size() ); // GNU-specific guarantee
   }
 
 #ifdef SIMULATOR_TEST

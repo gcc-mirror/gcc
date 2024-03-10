@@ -3121,7 +3121,7 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
 	    = gimple_build_assign (new_var, MIN_EXPR, ops[1],
 				   build_int_cst (op_type, new_precision - 1));
 	  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
-	  if (unprom[1].dt == vect_external_def)
+	  if (ops[1] == unprom[1].op && unprom[1].dt == vect_external_def)
 	    {
 	      if (edge e = vect_get_external_def_edge (vinfo, ops[1]))
 		{

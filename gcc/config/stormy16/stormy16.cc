@@ -795,8 +795,8 @@ xstormy16_expand_andqi3 (rtx *operands)
   && (INTVAL (X) + (OFFSET) < 0x100 || INTVAL (X) + (OFFSET) >= 0x7F00))
 
 bool
-xstormy16_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
-				rtx x, bool strict)
+xstormy16_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
+				bool strict, code_helper)
 {
   if (LEGITIMATE_ADDRESS_CONST_INT_P (x, 0))
     return true;

@@ -22,7 +22,7 @@ class Form : WidgetI
 
 template Tuple(Specs)
 {
-    enum areCompatibleTuples(Tup2)(Tuple tup1, Tup2 tup2)
+    auto areCompatibleTuples(Tup2)(Tuple tup1, Tup2 tup2)
     {
         tup1.field == tup2;
     }

@@ -11,7 +11,7 @@ foo ()
     {
       for (int j = 0; j < 5; ++j)
 	++sum;
-      ++sum;	// { dg-error "collapsed loops not perfectly nested" }
+      ++sum;
     }
   return sum;
 }

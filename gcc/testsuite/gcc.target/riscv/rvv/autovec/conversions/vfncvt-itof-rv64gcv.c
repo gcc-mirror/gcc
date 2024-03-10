@@ -3,5 +3,5 @@
 
 #include "vfncvt-itof-template.h"
 
-/* { dg-final { scan-assembler-times {\tvfncvt\.f\.x\.w} 2 } } */
-/* { dg-final { scan-assembler-times {\tvfncvt\.f\.xu\.w} 2 } } */
+/* { dg-final { scan-assembler-times {\tvfncvt\.f\.x\.w} 5 } } */
+/* { dg-final { scan-assembler-times {\tvfncvt\.f\.xu\.w} 1 } } */

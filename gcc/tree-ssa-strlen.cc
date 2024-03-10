@@ -3340,7 +3340,8 @@ strlen_pass::handle_builtin_memcpy (built_in_function bcode)
       && !integer_zerop (len))
     {
       maybe_warn_overflow (stmt, false, len, olddsi, false, true);
-      adjust_last_stmt (olddsi, stmt, false);
+      if (tree_fits_uhwi_p (len))
+	adjust_last_stmt (olddsi, stmt, false);
     }
 
   int idx = get_stridx (src, stmt);

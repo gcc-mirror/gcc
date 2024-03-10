@@ -56,9 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "lcm.h"
 
 /* Edge based LCM routines.  */
-static void compute_antinout_edge (sbitmap *, sbitmap *, sbitmap *, sbitmap *);
-static void compute_earliest (struct edge_list *, int, sbitmap *, sbitmap *,
-			      sbitmap *, sbitmap *, sbitmap *);
 static void compute_laterin (struct edge_list *, sbitmap *, sbitmap *,
 			     sbitmap *, sbitmap *);
 static void compute_insert_delete (struct edge_list *edge_list, sbitmap *,
@@ -79,7 +76,7 @@ static void compute_rev_insert_delete (struct edge_list *edge_list, sbitmap *,
    This is done based on the flow graph, and not on the pred-succ lists.
    Other than that, its pretty much identical to compute_antinout.  */
 
-static void
+void
 compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 		       sbitmap *antout)
 {
@@ -170,7 +167,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 
 /* Compute the earliest vector for edge based lcm.  */
 
-static void
+void
 compute_earliest (struct edge_list *edge_list, int n_exprs, sbitmap *antin,
 		  sbitmap *antout, sbitmap *avout, sbitmap *kill,
 		  sbitmap *earliest)

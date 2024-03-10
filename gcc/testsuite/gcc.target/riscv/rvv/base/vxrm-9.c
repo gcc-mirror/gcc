@@ -22,5 +22,6 @@ void f (void * in, void *out, int32_t x, int n, int m)
   }
 }
 
-/* { dg-final { scan-assembler-times {csrwi\s+vxrm,\s*2\s+vsetivli\s+zero,\s*4,\s*e32,\s*m1,\s*tu,\s*m[au]} 1 } } */
+/* { dg-final { scan-assembler-times {vsetivli\s+zero,\s*4,\s*e32,\s*m1,\s*tu,\s*m[au]} 1 } } */
 /* { dg-final { scan-assembler-times {csrwi\s+vxrm,\s*2} 1 } } */
+/* { dg-final { scan-assembler-times {\.L[0-9]+:\s+vle32\.v} 2 } } */

@@ -55,10 +55,19 @@
   UNSPEC_FLT_QUIET
   UNSPEC_FLE_QUIET
   UNSPEC_COPYSIGN
+  UNSPEC_RINT
+  UNSPEC_ROUND
+  UNSPEC_FLOOR
+  UNSPEC_CEIL
+  UNSPEC_BTRUNC
+  UNSPEC_ROUNDEVEN
+  UNSPEC_NEARBYINT
   UNSPEC_LRINT
   UNSPEC_LROUND
   UNSPEC_FMIN
   UNSPEC_FMAX
+  UNSPEC_FMINM
+  UNSPEC_FMAXM
 
   ;; Stack tie
   UNSPEC_TIE
@@ -115,12 +124,15 @@
 
 (define_constants
   [(RETURN_ADDR_REGNUM		1)
+   (SP_REGNUM 			2)
    (GP_REGNUM 			3)
    (TP_REGNUM			4)
    (T0_REGNUM			5)
    (T1_REGNUM			6)
    (S0_REGNUM			8)
    (S1_REGNUM			9)
+   (A0_REGNUM			10)
+   (A1_REGNUM			11)
    (S2_REGNUM			18)
    (S3_REGNUM			19)
    (S4_REGNUM			20)
@@ -401,6 +413,7 @@
 ;; vgather      vector register gather instructions
 ;; vcompress    vector compress instruction
 ;; vmov         whole vector register move
+;; vector       unknown vector instruction
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
@@ -420,7 +433,7 @@
    vired,viwred,vfredu,vfredo,vfwredu,vfwredo,
    vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
    vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
-   vgather,vcompress,vmov"
+   vgather,vcompress,vmov,vector"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -1434,6 +1447,26 @@
 ;;
 ;;  ....................
 
+(define_insn "fminm<mode>3"
+  [(set (match_operand:ANYF                    0 "register_operand" "=f")
+	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" " f"))
+		      (use (match_operand:ANYF 2 "register_operand" " f"))]
+		     UNSPEC_FMINM))]
+  "TARGET_HARD_FLOAT && TARGET_ZFA"
+  "fminm.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmove")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "fmaxm<mode>3"
+  [(set (match_operand:ANYF                    0 "register_operand" "=f")
+	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" " f"))
+		      (use (match_operand:ANYF 2 "register_operand" " f"))]
+		     UNSPEC_FMAXM))]
+  "TARGET_HARD_FLOAT && TARGET_ZFA"
+  "fmaxm.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmove")
+   (set_attr "mode" "<UNITMODE>")])
+
 (define_insn "fmin<mode>3"
   [(set (match_operand:ANYF                    0 "register_operand" "=f")
 	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" " f"))
@@ -1744,13 +1777,13 @@
 })
 
 (define_insn "*movhf_hardfloat"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=f,f,f,m,m,*f,*r,  *r,*r,*m")
-	(match_operand:HF 1 "move_operand"         " f,G,m,f,G,*r,*f,*G*r,*m,*r"))]
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=f,   f,f,f,m,m,*f,*r,  *r,*r,*m")
+	(match_operand:HF 1 "move_operand"         " f,zfli,G,m,f,G,*r,*f,*G*r,*m,*r"))]
   "TARGET_ZFHMIN
    && (register_operand (operands[0], HFmode)
        || reg_or_0_operand (operands[1], HFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
+  [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "HF")])
 
 (define_insn "*movhf_softfloat"
@@ -1813,6 +1846,26 @@
 	    RINT))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fcvt.<GPR:ifmt>.<ANYF:fmt> %0,%1,<rint_rm>"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "<ANYF:MODE>")])
+
+(define_insn "<round_pattern><ANYF:mode>2"
+  [(set (match_operand:ANYF     0 "register_operand" "=f")
+	(unspec:ANYF
+	    [(match_operand:ANYF 1 "register_operand" " f")]
+	ROUND))]
+  "TARGET_HARD_FLOAT && TARGET_ZFA"
+  "fround.<ANYF:fmt>\t%0,%1,<round_rm>"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "<ANYF:MODE>")])
+
+(define_insn "rint<ANYF:mode>2"
+  [(set (match_operand:ANYF     0 "register_operand" "=f")
+	(unspec:ANYF
+	    [(match_operand:ANYF 1 "register_operand" " f")]
+	UNSPEC_RINT))]
+  "TARGET_HARD_FLOAT && TARGET_ZFA"
+  "froundnx.<ANYF:fmt>\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "<ANYF:MODE>")])
 
@@ -2075,13 +2128,13 @@
 })
 
 (define_insn "*movsf_hardfloat"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,f,m,m,*f,*r,  *r,*r,*m")
-	(match_operand:SF 1 "move_operand"         " f,G,m,f,G,*r,*f,*G*r,*m,*r"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,   f,f,f,m,m,*f,*r,  *r,*r,*m")
+	(match_operand:SF 1 "move_operand"         " f,zfli,G,m,f,G,*r,*f,*G*r,*m,*r"))]
   "TARGET_HARD_FLOAT
    && (register_operand (operands[0], SFmode)
        || reg_or_0_operand (operands[1], SFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
+  [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "SF")])
 
 (define_insn "*movsf_softfloat"
@@ -2109,23 +2162,23 @@
 ;; In RV32, we lack fmv.x.d and fmv.d.x.  Go through memory instead.
 ;; (However, we can still use fcvt.d.w to zero a floating-point register.)
 (define_insn "*movdf_hardfloat_rv32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,m,m,*th_f_fmv,*th_r_fmv,  *r,*r,*m")
-	(match_operand:DF 1 "move_operand"         " f,G,m,f,G,*th_r_fmv,*th_f_fmv,*r*G,*m,*r"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,   f,f,f,m,m,*zmvf,*zmvr,  *r,*r,*m")
+	(match_operand:DF 1 "move_operand"         " f,zfli,G,m,f,G,*zmvr,*zmvf,*r*G,*m,*r"))]
   "!TARGET_64BIT && TARGET_DOUBLE_FLOAT
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
+  [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "DF")])
 
 (define_insn "*movdf_hardfloat_rv64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,m,m,*f,*r,  *r,*r,*m")
-	(match_operand:DF 1 "move_operand"         " f,G,m,f,G,*r,*f,*r*G,*m,*r"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,   f,f,f,m,m,*f,*r,  *r,*r,*m")
+	(match_operand:DF 1 "move_operand"         " f,zfli,G,m,f,G,*r,*f,*r*G,*m,*r"))]
   "TARGET_64BIT && TARGET_DOUBLE_FLOAT
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
+  [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "DF")])
 
 (define_insn "*movdf_softfloat"
@@ -2136,6 +2189,39 @@
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,load,store")
+   (set_attr "mode" "DF")])
+
+(define_insn "movsidf2_low_rv32"
+  [(set (match_operand:SI      0 "register_operand" "=  r")
+	(truncate:SI
+	    (match_operand:DF 1 "register_operand"  "zmvf")))]
+  "TARGET_HARD_FLOAT && !TARGET_64BIT && TARGET_ZFA"
+  "fmv.x.w\t%0,%1"
+  [(set_attr "move_type" "fmove")
+   (set_attr "mode" "DF")])
+
+
+(define_insn "movsidf2_high_rv32"
+  [(set (match_operand:SI      0 "register_operand"    "=  r")
+	(truncate:SI
+            (lshiftrt:DF
+                (match_operand:DF 1 "register_operand" "zmvf")
+                (const_int 32))))]
+  "TARGET_HARD_FLOAT && !TARGET_64BIT && TARGET_ZFA"
+  "fmvh.x.d\t%0,%1"
+  [(set_attr "move_type" "fmove")
+   (set_attr "mode" "DF")])
+
+(define_insn "movdfsisi3_rv32"
+  [(set (match_operand:DF      0 "register_operand"    "=  f")
+	(plus:DF
+            (match_operand:SI 2 "register_operand"     "zmvr")
+            (ashift:SI
+                (match_operand:SI 1 "register_operand" "zmvr")
+                (const_int 32))))]
+  "TARGET_HARD_FLOAT && !TARGET_64BIT && TARGET_ZFA"
+  "fmvp.d.x\t%0,%2,%1"
+  [(set_attr "move_type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_split
@@ -2193,7 +2279,7 @@
 (define_insn "riscv_pause"
   [(unspec_volatile [(const_int 0)] UNSPECV_PAUSE)]
   ""
-  "pause")
+  "* return TARGET_ZIHINTPAUSE ? \"pause\" : \".insn\t0x0100000f\";")
 
 ;;
 ;;  ....................
@@ -2663,22 +2749,41 @@
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   rtx op2 = operands[2];
-  rtx tmp = gen_reg_rtx (SImode);
-  rtx cmp = gen_rtx_<QUIET_PATTERN> (<X:MODE>mode, op1, op2);
-  rtx frflags = gen_rtx_UNSPEC_VOLATILE (SImode, gen_rtvec (1, const0_rtx),
-					 UNSPECV_FRFLAGS);
-  rtx fsflags = gen_rtx_UNSPEC_VOLATILE (SImode, gen_rtvec (1, tmp),
-					 UNSPECV_FSFLAGS);
 
-  emit_insn (gen_rtx_SET (tmp, frflags));
-  emit_insn (gen_rtx_SET (op0, cmp));
-  emit_insn (fsflags);
+  if (TARGET_ZFA)
+    emit_insn (gen_f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_zfa(op0, op1, op2));
+  else
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      rtx cmp = gen_rtx_<QUIET_PATTERN> (<X:MODE>mode, op1, op2);
+      rtx frflags = gen_rtx_UNSPEC_VOLATILE (SImode, gen_rtvec (1, const0_rtx),
+					     UNSPECV_FRFLAGS);
+      rtx fsflags = gen_rtx_UNSPEC_VOLATILE (SImode, gen_rtvec (1, tmp),
+					     UNSPECV_FSFLAGS);
+
+      emit_insn (gen_rtx_SET (tmp, frflags));
+      emit_insn (gen_rtx_SET (op0, cmp));
+      emit_insn (fsflags);
+    }
+
   if (HONOR_SNANS (<ANYF:MODE>mode))
     emit_insn (gen_rtx_UNSPEC_VOLATILE (<ANYF:MODE>mode,
 					gen_rtvec (2, op1, op2),
 					UNSPECV_FSNVSNAN));
   DONE;
 })
+
+(define_insn "f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_zfa"
+   [(set (match_operand:X      0 "register_operand" "=r")
+	 (unspec:X
+	  [(match_operand:ANYF 1 "register_operand" " f")
+	   (match_operand:ANYF 2 "register_operand" " f")]
+	  QUIET_COMPARISON))]
+  "TARGET_HARD_FLOAT && TARGET_ZFA"
+  "f<quiet_pattern>q.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "<UNITMODE>")
+   (set (attr "length") (const_int 16))])
 
 (define_insn "*seq_zero_<X:mode><GPR:mode>"
   [(set (match_operand:GPR       0 "register_operand" "=r")
@@ -3321,6 +3426,8 @@
 (include "bitmanip.md")
 (include "crypto.md")
 (include "sync.md")
+(include "sync-rvwmo.md")
+(include "sync-ztso.md")
 (include "peephole.md")
 (include "pic.md")
 (include "generic.md")
@@ -3328,3 +3435,4 @@
 (include "thead.md")
 (include "vector.md")
 (include "zicond.md")
+(include "zc.md")

@@ -1509,10 +1509,16 @@ public:
       out.add_all_bytes_in_range (m_actual_bits);
     else
       {
-	byte_range head_of_string (0, m_ellipsis_head_len);
+	byte_range bytes (0, 0);
+	bool valid = m_actual_bits.as_concrete_byte_range (&bytes);
+	gcc_assert (valid);
+	byte_range head_of_string (bytes.get_start_byte_offset (),
+				   m_ellipsis_head_len);
 	out.add_all_bytes_in_range (head_of_string);
 	byte_range tail_of_string
-	  (TREE_STRING_LENGTH (string_cst) - m_ellipsis_tail_len,
+	  ((bytes.get_start_byte_offset ()
+	    + TREE_STRING_LENGTH (string_cst)
+	    - m_ellipsis_tail_len),
 	   m_ellipsis_tail_len);
 	out.add_all_bytes_in_range (tail_of_string);
 	/* Adding the above pair of ranges will also effectively add
@@ -1535,11 +1541,14 @@ public:
     tree string_cst = get_string_cst ();
     if (m_show_full_string)
       {
-       for (byte_offset_t byte_idx = bytes.get_start_byte_offset ();
-	    byte_idx < bytes.get_next_byte_offset ();
-	    byte_idx = byte_idx + 1)
-	 add_column_for_byte (t, btm, sm, byte_idx,
-			      byte_idx_table_y, byte_val_table_y);
+       for (byte_offset_t byte_idx_within_cluster
+	      = bytes.get_start_byte_offset ();
+	    byte_idx_within_cluster < bytes.get_next_byte_offset ();
+	    byte_idx_within_cluster = byte_idx_within_cluster + 1)
+	 add_column_for_byte
+	   (t, btm, sm, byte_idx_within_cluster,
+	    byte_idx_within_cluster - bytes.get_start_byte_offset (),
+	    byte_idx_table_y, byte_val_table_y);
 
        if (m_show_utf8)
 	 {
@@ -1566,10 +1575,13 @@ public:
 		 = decoded_char.m_start_byte - TREE_STRING_POINTER (string_cst);
 	       byte_size_t size_in_bytes
 		 = decoded_char.m_next_byte - decoded_char.m_start_byte;
-	       byte_range bytes (start_byte_idx, size_in_bytes);
+	       byte_range cluster_bytes_for_codepoint
+		 (start_byte_idx + bytes.get_start_byte_offset (),
+		  size_in_bytes);
 
 	       const table::rect_t code_point_table_rect
-		 = btm.get_table_rect (&m_string_reg, bytes,
+		 = btm.get_table_rect (&m_string_reg,
+				       cluster_bytes_for_codepoint,
 				       utf8_code_point_table_y, 1);
 	       char buf[100];
 	       sprintf (buf, "U+%04x", decoded_char.m_ch);
@@ -1579,7 +1591,8 @@ public:
 	       if (show_unichars)
 		 {
 		   const table::rect_t character_table_rect
-		     = btm.get_table_rect (&m_string_reg, bytes,
+		     = btm.get_table_rect (&m_string_reg,
+					   cluster_bytes_for_codepoint,
 					   utf8_character_table_y, 1);
 		   if (cpp_is_printable_char (decoded_char.m_ch))
 		     t.set_cell_span (character_table_rect,
@@ -1598,12 +1611,14 @@ public:
       {
 	/* Head of string.  */
 	for (int byte_idx = 0; byte_idx < m_ellipsis_head_len; byte_idx++)
-	  add_column_for_byte (t, btm, sm, byte_idx,
+	  add_column_for_byte (t, btm, sm,
+			       byte_idx + bytes.get_start_byte_offset (),
+			       byte_idx,
 			       byte_idx_table_y, byte_val_table_y);
 
 	/* Ellipsis (two rows high).  */
 	const byte_range ellipsis_bytes
-	  (m_ellipsis_head_len,
+	  (m_ellipsis_head_len + bytes.get_start_byte_offset (),
 	   TREE_STRING_LENGTH (string_cst)
 	   - (m_ellipsis_head_len + m_ellipsis_tail_len));
 	const table::rect_t table_rect
@@ -1616,7 +1631,9 @@ public:
 	       = (TREE_STRING_LENGTH (string_cst) - m_ellipsis_tail_len);
 	     byte_idx < TREE_STRING_LENGTH (string_cst);
 	     byte_idx++)
-	  add_column_for_byte (t, btm, sm, byte_idx,
+	  add_column_for_byte (t, btm, sm,
+			       byte_idx + bytes.get_start_byte_offset (),
+			       byte_idx,
 			       byte_idx_table_y, byte_val_table_y);
       }
 
@@ -1660,25 +1677,27 @@ private:
 
   void add_column_for_byte (table &t, const bit_to_table_map &btm,
 			    style_manager &sm,
-			    const byte_offset_t byte_idx,
+			    const byte_offset_t byte_idx_within_cluster,
+			    const byte_offset_t byte_idx_within_string,
 			    const int byte_idx_table_y,
 			    const int byte_val_table_y) const
   {
     tree string_cst = get_string_cst ();
-    gcc_assert (byte_idx >= 0);
-    gcc_assert (byte_idx < TREE_STRING_LENGTH (string_cst));
+    gcc_assert (byte_idx_within_string >= 0);
+    gcc_assert (byte_idx_within_string < TREE_STRING_LENGTH (string_cst));
 
-    const byte_range bytes (byte_idx, 1);
+    const byte_range bytes (byte_idx_within_cluster, 1);
     if (1) // show_byte_indices
       {
 	const table::rect_t idx_table_rect
 	  = btm.get_table_rect (&m_string_reg, bytes, byte_idx_table_y, 1);
 	t.set_cell_span (idx_table_rect,
 			 fmt_styled_string (sm, "[%li]",
-					    byte_idx.ulow ()));
+					    byte_idx_within_string.ulow ()));
       }
 
-    char byte_val = TREE_STRING_POINTER (string_cst)[byte_idx.ulow ()];
+    char byte_val
+      = TREE_STRING_POINTER (string_cst)[byte_idx_within_string.ulow ()];
     const table::rect_t val_table_rect
       = btm.get_table_rect (&m_string_reg, bytes, byte_val_table_y, 1);
     table_cell_content content (make_cell_content_for_byte (sm, byte_val));

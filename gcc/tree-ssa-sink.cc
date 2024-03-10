@@ -822,6 +822,7 @@ pass_sink_code::execute (function *fun)
   /* Arrange for the critical edge splitting to be undone if requested.  */
   unsigned todo = unsplit_edges ? TODO_cleanup_cfg : 0;
   connect_infinite_loops_to_exit ();
+  mark_dfs_back_edges (fun);
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS);
 

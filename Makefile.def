@@ -462,11 +462,14 @@ dependencies = { module=all-gdbsupport; on=all-gnulib; };
 dependencies = { module=all-gdbsupport; on=all-intl; };
 
 // Host modules specific to binutils.
+// build libsframe before bfd for encoder/decoder support for linking
+// SFrame sections
 dependencies = { module=configure-bfd; on=configure-libiberty; hard=true; };
 dependencies = { module=configure-bfd; on=configure-intl; };
 dependencies = { module=all-bfd; on=all-libiberty; };
 dependencies = { module=all-bfd; on=all-intl; };
 dependencies = { module=all-bfd; on=all-zlib; };
+dependencies = { module=all-bfd; on=all-libsframe; };
 dependencies = { module=configure-opcodes; on=configure-libiberty; hard=true; };
 dependencies = { module=all-opcodes; on=all-libiberty; };
 
@@ -498,6 +501,10 @@ dependencies = { module=install-ld; on=install-libctf; };
 dependencies = { module=install-strip-libctf; on=install-strip-bfd; };
 dependencies = { module=install-strip-ld; on=install-strip-bfd; };
 dependencies = { module=install-strip-ld; on=install-strip-libctf; };
+
+// libbfd depends on libsframe
+dependencies = { module=install-bfd; on=install-libsframe; };
+dependencies = { module=install-strip-bfd; on=install-strip-libsframe; };
 
 // libopcodes depends on libbfd
 dependencies = { module=configure-opcodes; on=configure-bfd; hard=true; };

@@ -8,8 +8,8 @@ f1 (void)
 {
   #pragma acc parallel
   #pragma acc loop collapse (2)
-  for (i = 0; i < 5; i++)
-    ;					/* { dg-error "not enough perfectly nested" } */
+  for (i = 0; i < 5; i++)	/* { dg-error "not enough nested loops" } */
+    ;
   {
     for (j = 0; j < 5; j++)
       ;
@@ -38,9 +38,9 @@ f3 (void)
 {
   #pragma acc parallel
   #pragma acc loop collapse (2)
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 5; i++)	/* { dg-error "inner loops must be perfectly nested" } */
     {
-      int k = foo ();			/* { dg-error "not enough perfectly nested" } */
+      int k = foo ();
       {
 	{
 	  for (j = 0; j < 5; j++)
@@ -56,12 +56,12 @@ f4 (void)
 {
   #pragma acc parallel
   #pragma acc loop collapse (2)
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 5; i++)	/* { dg-error "inner loops must be perfectly nested" } */
     {
       {
 	for (j = 0; j < 5; j++)
 	  ;
-	foo ();				/* { dg-error "collapsed loops not perfectly nested before" } */
+	foo ();
       }
     }
 }
@@ -71,13 +71,13 @@ f5 (void)
 {
   #pragma acc parallel
   #pragma acc loop collapse (2)
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 5; i++)	/* { dg-error "inner loops must be perfectly nested" } */
     {
       {
 	for (j = 0; j < 5; j++)
 	  ;
       }
-      foo ();				/* { dg-error "collapsed loops not perfectly nested before" } */
+      foo ();
     }
 }
 

@@ -118,6 +118,17 @@ gomp_init_libnuma (void)
 	dlclose (handle);
       return;
     }
+  if (handle)
+    {
+      int (*numa_available) (void);
+      numa_available
+	= (__typeof (numa_available)) dlsym (handle, "numa_available");
+      if (!numa_available || numa_available () != 0)
+	{
+	  dlclose (handle);
+	  handle = NULL;
+	}
+    }
   if (!handle)
     {
       __atomic_store_n (&libnuma_data, data, MEMMODEL_RELEASE);

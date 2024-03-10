@@ -6062,9 +6062,13 @@ build_c_cast (location_t loc, tree type, tree expr)
 
   if (type == TYPE_MAIN_VARIANT (TREE_TYPE (value)))
     {
-      if (RECORD_OR_UNION_TYPE_P (type))
-	pedwarn (loc, OPT_Wpedantic,
-		 "ISO C forbids casting nonscalar to the same type");
+      if (RECORD_OR_UNION_TYPE_P (type)
+	  && pedwarn (loc, OPT_Wpedantic,
+		      "ISO C forbids casting nonscalar to the same type"))
+	      ;
+      else if (warn_useless_cast)
+	warning_at (loc, OPT_Wuseless_cast,
+		    "useless cast to type %qT", type);
 
       /* Convert to remove any qualifiers from VALUE's type.  */
       value = convert (type, value);
@@ -12768,7 +12772,7 @@ build_binary_op (location_t location, enum tree_code code,
 	  else
 	    /* Avoid warning about the volatile ObjC EH puts on decls.  */
 	    if (!objc_ok)
-	      pedwarn (location, 0,
+	      pedwarn (location, OPT_Wcompare_distinct_pointer_types,
 		       "comparison of distinct pointer types lacks a cast");
 
 	  if (result_type == NULL_TREE)
@@ -12908,8 +12912,8 @@ build_binary_op (location_t location, enum tree_code code,
 	      int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
 	      result_type = build_pointer_type
 			      (build_qualified_type (void_type_node, qual));
-	      pedwarn (location, 0,
-		       "comparison of distinct pointer types lacks a cast");
+              pedwarn (location, OPT_Wcompare_distinct_pointer_types,
+                       "comparison of distinct pointer types lacks a cast");
 	    }
 	}
       else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))

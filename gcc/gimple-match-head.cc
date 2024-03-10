@@ -267,8 +267,8 @@ gimple_bitwise_equal_p (tree expr1, tree expr2, tree (*valueize) (tree))
 /* Return true if EXPR1 and EXPR2 have the bitwise opposite value,
    but not necessarily same type.
    The types can differ through nop conversions.  */
-#define bitwise_inverted_equal_p(expr1, expr2) \
-  gimple_bitwise_inverted_equal_p (expr1, expr2, valueize)
+#define bitwise_inverted_equal_p(expr1, expr2, wascmp) \
+  gimple_bitwise_inverted_equal_p (expr1, expr2, wascmp, valueize)
 
 
 bool gimple_bit_not_with_nop (tree, tree *, tree (*) (tree));
@@ -277,8 +277,9 @@ bool gimple_maybe_cmp (tree, tree *, tree (*) (tree));
 /* Helper function for bitwise_equal_p macro.  */
 
 static inline bool
-gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, tree (*valueize) (tree))
+gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, bool &wascmp, tree (*valueize) (tree))
 {
+  wascmp = false;
   if (expr1 == expr2)
     return false;
   if (!tree_nop_conversion_p (TREE_TYPE (expr1), TREE_TYPE (expr2)))
@@ -331,6 +332,7 @@ gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, tree (*valueize) (tree)
   tree op21 = do_valueize (valueize, gimple_assign_rhs2 (a2));
   if (!operand_equal_p (op11, op21))
     return false;
+  wascmp = true;
   if (invert_tree_comparison (gimple_assign_rhs_code (a1),
 			      HONOR_NANS (op10))
 	== gimple_assign_rhs_code (a2))

@@ -45,6 +45,9 @@
 #include <bits/std_thread.h> // std::thread, get_id, yield
 #include <bits/this_thread_sleep.h> // std::this_thread::sleep_for, sleep_until
 
+#define __glibcxx_want_jthread
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -103,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   /// @}
 
-#ifdef __cpp_lib_jthread
+#ifdef __cpp_lib_jthread // C++ >= 20
 
   /// @cond undocumented
 #ifndef __STRICT_ANSI__

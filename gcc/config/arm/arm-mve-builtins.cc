@@ -128,10 +128,11 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
     TYPE_##CLASS == TYPE_signed || TYPE_##CLASS == TYPE_unsigned, \
     TYPE_##CLASS == TYPE_unsigned, \
     TYPE_##CLASS == TYPE_float, \
+    TYPE_##CLASS == TYPE_poly, \
     0, \
     MODE },
 #include "arm-mve-builtins.def"
-  { "", NUM_VECTOR_TYPES, TYPE_bool, 0, 0, false, false, false,
+  { "", NUM_VECTOR_TYPES, TYPE_bool, 0, 0, false, false, false, false,
     0, VOIDmode }
 };
 
@@ -176,6 +177,10 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
 /* _s8 _s16 _s32.  */
 #define TYPES_all_signed(S, D) \
   S (s8), S (s16), S (s32)
+
+/* _p8 _p16.  */
+#define TYPES_poly_8_16(S, D) \
+  S (p8), S (p16)
 
 /* _u8 _u16 _u32.  */
 #define TYPES_all_unsigned(S, D) \
@@ -275,6 +280,7 @@ DEF_MVE_TYPES_ARRAY (integer_8);
 DEF_MVE_TYPES_ARRAY (integer_8_16);
 DEF_MVE_TYPES_ARRAY (integer_16_32);
 DEF_MVE_TYPES_ARRAY (integer_32);
+DEF_MVE_TYPES_ARRAY (poly_8_16);
 DEF_MVE_TYPES_ARRAY (signed_16_32);
 DEF_MVE_TYPES_ARRAY (signed_32);
 DEF_MVE_TYPES_ARRAY (reinterpret_integer);

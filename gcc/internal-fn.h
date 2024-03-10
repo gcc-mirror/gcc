@@ -224,6 +224,7 @@ extern bool set_edom_supported_p (void);
 
 extern internal_fn get_conditional_internal_fn (tree_code);
 extern internal_fn get_conditional_internal_fn (internal_fn);
+extern internal_fn get_len_internal_fn (internal_fn);
 extern internal_fn get_conditional_len_internal_fn (tree_code);
 extern tree_code conditional_internal_fn_code (internal_fn);
 extern internal_fn get_unconditional_internal_fn (internal_fn);

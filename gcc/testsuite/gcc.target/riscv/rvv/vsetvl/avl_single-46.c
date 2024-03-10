@@ -3,9 +3,9 @@
 
 #include "riscv_vector.h"
 
-void f (int8_t * restrict in, int8_t * restrict out, int n, int cond)
+void f (int8_t * restrict in, int8_t * restrict out, int n, int cond, size_t vl)
 {
-  int vl = 101;
+  vl = 101 + vl;
   if (n > cond) {
     vint8mf8_t v = __riscv_vle8_v_i8mf8 (in + 600, vl);
     vint8mf8_t v2 = __riscv_vle8_v_i8mf8_tu (v, in + 600, vl);

@@ -5250,10 +5250,9 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
 	&& !gfc_simplify_expr (expr->ts.u.cl->length, 0))
       gfc_internal_error ("is_c_interoperable(): gfc_simplify_expr failed");
 
-    if (!c_loc && expr->ts.u.cl
-	&& (!expr->ts.u.cl->length
-	    || expr->ts.u.cl->length->expr_type != EXPR_CONSTANT
-	    || mpz_cmp_si (expr->ts.u.cl->length->value.integer, 1) != 0))
+    if (!c_loc
+	&& expr->ts.u.cl
+	&& !gfc_length_one_character_type_p (&expr->ts))
       {
 	*msg = "Type shall have a character length of 1";
 	return false;

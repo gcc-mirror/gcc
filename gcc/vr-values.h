@@ -38,13 +38,15 @@ private:
   void legacy_fold_cond (gcond *, edge *);
   tree legacy_fold_cond_overflow (gimple *stmt);
   tree fold_cond_with_ops (tree_code, tree, tree, gimple *s);
-  bool simplify_casted_cond (gcond *);
+  bool simplify_casted_compare (tree_code &cond_code, tree &op0, tree &op1);
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_bit_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_min_or_max_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_cond_using_ranges_1 (gcond *);
+  bool simplify_compare_using_ranges_1 (tree_code &, tree &, tree &, gimple *);
+  bool simplify_compare_assign_using_ranges_1 (gimple_stmt_iterator *, gimple *);
   bool simplify_switch_using_ranges (gswitch *);
   bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
 					       gimple *);

@@ -934,10 +934,7 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
   // Remove tagged builtin-unreachable and maybe update globals.
   folder.m_unreachable.remove_and_update_globals (final_p);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      phi_analysis ().dump (dump_file);
-      ranger->dump (dump_file);
-    }
+    ranger->dump (dump_file);
 
   if ((warn_array_bounds || warn_strict_flex_arrays) && warn_array_bounds_p)
     {

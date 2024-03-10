@@ -127,10 +127,11 @@ along with GCC; see the file COPYING3.  If not see
 #define m_ALDERLAKE (HOST_WIDE_INT_1U<<PROCESSOR_ALDERLAKE)
 #define m_ROCKETLAKE (HOST_WIDE_INT_1U<<PROCESSOR_ROCKETLAKE)
 #define m_GRANITERAPIDS (HOST_WIDE_INT_1U<<PROCESSOR_GRANITERAPIDS)
+#define m_GRANITERAPIDS_D (HOST_WIDE_INT_1U<<PROCESSOR_GRANITERAPIDS_D)
 #define m_CORE_AVX512 (m_SKYLAKE_AVX512 | m_CANNONLAKE \
 		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER | m_CASCADELAKE \
 		       | m_TIGERLAKE | m_COOPERLAKE | m_SAPPHIRERAPIDS \
-		       | m_ROCKETLAKE | m_GRANITERAPIDS)
+		       | m_ROCKETLAKE | m_GRANITERAPIDS | m_GRANITERAPIDS_D)
 #define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
@@ -139,8 +140,14 @@ along with GCC; see the file COPYING3.  If not see
 #define m_SIERRAFOREST (HOST_WIDE_INT_1U<<PROCESSOR_SIERRAFOREST)
 #define m_GRANDRIDGE (HOST_WIDE_INT_1U<<PROCESSOR_GRANDRIDGE)
 #define m_ARROWLAKE (HOST_WIDE_INT_1U<<PROCESSOR_ARROWLAKE)
+#define m_ARROWLAKE_S (HOST_WIDE_INT_1U<<PROCESSOR_ARROWLAKE_S)
 #define m_CORE_ATOM (m_SIERRAFOREST | m_GRANDRIDGE)
 #define m_INTEL (HOST_WIDE_INT_1U<<PROCESSOR_INTEL)
+/* Gather Data Sampling / CVE-2022-40982 / INTEL-SA-00828.
+   Software mitigation.  */
+#define m_GDS (m_SKYLAKE | m_SKYLAKE_AVX512 | m_CANNONLAKE \
+	       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER | m_CASCADELAKE \
+	       | m_TIGERLAKE | m_COOPERLAKE | m_ROCKETLAKE)
 
 #define m_LUJIAZUI (HOST_WIDE_INT_1U<<PROCESSOR_LUJIAZUI)
 
@@ -771,6 +778,8 @@ static const struct processor_costs *processor_cost_table[] =
   &alderlake_cost,
   &icelake_cost,
   &icelake_cost,
+  &icelake_cost,
+  &alderlake_cost,
   &alderlake_cost,
   &intel_cost,
   &lujiazui_cost,
@@ -1731,20 +1740,46 @@ parse_mtune_ctrl_str (struct gcc_options *opts, bool dump)
           curr_feature_string++;
           clear = true;
         }
-      for (i = 0; i < X86_TUNE_LAST; i++)
-        {
-          if (!strcmp (curr_feature_string, ix86_tune_feature_names[i]))
-            {
-              ix86_tune_features[i] = !clear;
-              if (dump)
-                fprintf (stderr, "Explicitly %s feature %s\n",
-                         clear ? "clear" : "set", ix86_tune_feature_names[i]);
-              break;
-            }
-        }
-      if (i == X86_TUNE_LAST)
-	error ("unknown parameter to option %<-mtune-ctrl%>: %s",
-	       clear ? curr_feature_string - 1 : curr_feature_string);
+
+      if (!strcmp (curr_feature_string, "use_gather"))
+	{
+	  ix86_tune_features[X86_TUNE_USE_GATHER_2PARTS] = !clear;
+	  ix86_tune_features[X86_TUNE_USE_GATHER_4PARTS] = !clear;
+	  ix86_tune_features[X86_TUNE_USE_GATHER_8PARTS] = !clear;
+	  if (dump)
+	    fprintf (stderr, "Explicitly %s features use_gather_2parts,"
+		     " use_gather_4parts, use_gather_8parts\n",
+		     clear ? "clear" : "set");
+
+	}
+      else if (!strcmp (curr_feature_string, "use_scatter"))
+	{
+	  ix86_tune_features[X86_TUNE_USE_SCATTER_2PARTS] = !clear;
+	  ix86_tune_features[X86_TUNE_USE_SCATTER_4PARTS] = !clear;
+	  ix86_tune_features[X86_TUNE_USE_SCATTER_8PARTS] = !clear;
+	  if (dump)
+	    fprintf (stderr, "Explicitly %s features use_scatter_2parts,"
+		     " use_scatter_4parts, use_scatter_8parts\n",
+		     clear ? "clear" : "set");
+	}
+      else
+	{
+	  for (i = 0; i < X86_TUNE_LAST; i++)
+	    {
+	      if (!strcmp (curr_feature_string, ix86_tune_feature_names[i]))
+		{
+		  ix86_tune_features[i] = !clear;
+		  if (dump)
+		    fprintf (stderr, "Explicitly %s feature %s\n",
+			     clear ? "clear" : "set", ix86_tune_feature_names[i]);
+		  break;
+		}
+	    }
+
+	  if (i == X86_TUNE_LAST)
+	    error ("unknown parameter to option %<-mtune-ctrl%>: %s",
+		   clear ? curr_feature_string - 1 : curr_feature_string);
+	}
       curr_feature_string = next_feature_string;
     }
   while (curr_feature_string);

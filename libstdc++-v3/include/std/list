@@ -69,6 +69,9 @@
 # include <debug/list>
 #endif
 
+#define __glibcxx_want_erase_if
+#include <bits/version.h>
+
 #if __cplusplus >= 201703L
 #include <bits/memory_resource.h>
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -83,13 +86,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
 
-#if __cplusplus > 201703L
+#ifdef __cpp_lib_erase_if // C++ >= 20 && HOSTED
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#define __cpp_lib_erase_if 202002L
-
   template<typename _Tp, typename _Alloc, typename _Predicate>
     inline typename list<_Tp, _Alloc>::size_type
     erase_if(list<_Tp, _Alloc>& __cont, _Predicate __pred)
@@ -106,6 +106,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // C++20
+#endif // __cpp_lib_erase_if
 
 #endif /* _GLIBCXX_LIST */

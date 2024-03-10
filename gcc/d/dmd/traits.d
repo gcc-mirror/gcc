@@ -947,15 +947,24 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
          */
 
         Dsymbol sym = getDsymbol(o);
+
+        if (sym && e.ident == Id.hasMember)
+        {
+            if (auto sm = sym.search(e.loc, id))
+                return True();
+
+            // https://issues.dlang.org/show_bug.cgi?id=23951
+            if (auto decl = sym.isDeclaration())
+            {
+                ex = typeDotIdExp(e.loc, decl.type, id);
+                goto doSemantic;
+            }
+        }
+
         if (auto t = isType(o))
             ex = typeDotIdExp(e.loc, t, id);
         else if (sym)
         {
-            if (e.ident == Id.hasMember)
-            {
-                if (auto sm = sym.search(e.loc, id))
-                    return True();
-            }
             ex = new DsymbolExp(e.loc, sym);
             ex = new DotIdExp(e.loc, ex, id);
         }
@@ -966,7 +975,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             e.error("invalid first argument");
             return ErrorExp.get();
         }
-
+    doSemantic:
         // ignore symbol visibility and disable access checks for these traits
         Scope* scx = sc.push();
         scx.flags |= SCOPE.ignoresymbolvisibility | SCOPE.noaccesscheck;
@@ -1223,7 +1232,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             // @@@DEPRECATION 2.100.2
             if (auto td = s.isTemplateDeclaration())
             {
-                if (td.overnext || td.funcroot)
+                if (td.overnext || td.overroot)
                 {
                     deprecation(e.loc, "`__traits(getAttributes)` may only be used for individual functions, not the overload set `%s`", td.ident.toChars());
                     deprecationSupplemental(e.loc, "the result of `__traits(getOverloads)` may be used to select the desired function to extract attributes from");

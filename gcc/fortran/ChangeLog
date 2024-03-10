@@ -1,3 +1,161 @@
+2023-09-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/31059
+	* trans-array.cc (gfc_conv_ss_startstride): For array bounds checking,
+	consider also array constructors in expressions, and use their shape.
+
+2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.texi: Likewise.
+
+2023-08-30  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/48776
+	* gfortran.h (gfc_drop_interface_elements_before): New prototype.
+	(gfc_current_interface_head): Return a reference to the pointer.
+	* interface.cc (gfc_current_interface_head): Ditto.
+	(free_interface_elements_until): New function, generalizing
+	gfc_free_interface.
+	(gfc_free_interface): Use free_interface_elements_until.
+	(gfc_drop_interface_elements_before): New function.
+	* parse.cc
+	(current_interface_ptr, previous_interface_head): New static variables.
+	(current_interface_valid_p, get_current_interface_ptr): New functions.
+	(decode_statement): Initialize previous_interface_head.
+	(reject_statement): Restore current interface pointer to point to
+	previous_interface_head.
+
+2023-08-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92586
+	* trans-expr.cc (gfc_trans_arrayfunc_assign): Supply a missing
+	dereference for the call to gfc_deallocate_alloc_comp_no_caf.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.h (struct gfc_namespace): Add omp_structured_block bit.
+	* openmp.cc: Include omp-api.h.
+	(resolve_omp_clauses): Consolidate inscan reduction clause conflict
+	checking here.
+	(find_nested_loop_in_chain): New.
+	(find_nested_loop_in_block): New.
+	(gfc_resolve_omp_do_blocks): Set omp_current_do_collapse properly.
+	Handle imperfectly-nested loops when looking for nested omp scan.
+	Refactor to move inscan reduction clause conflict checking to
+	resolve_omp_clauses.
+	(gfc_resolve_do_iterator): Handle imperfectly-nested loops.
+	(struct icode_error_state): New.
+	(icode_code_error_callback): New.
+	(icode_expr_error_callback): New.
+	(diagnose_intervening_code_errors_1): New.
+	(diagnose_intervening_code_errors): New.
+	(make_structured_block): New.
+	(restructure_intervening_code): New.
+	(is_outer_iteration_variable): Do not assume loops are perfectly
+	nested.
+	(check_nested_loop_in_chain): New.
+	(check_nested_loop_in_block_state): New.
+	(check_nested_loop_in_block_symbol): New.
+	(check_nested_loop_in_block): New.
+	(expr_uses_intervening_var): New.
+	(is_intervening_var): New.
+	(expr_is_invariant): Do not assume loops are perfectly nested.
+	(resolve_omp_do): Handle imperfectly-nested loops.
+	* trans-stmt.cc (gfc_trans_block_construct): Generate
+	OMP_STRUCTURED_BLOCK if magic bit is set on block namespace.
+
+2023-08-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/35095
+	* data.cc (get_array_index): Add bounds-checking code and return error
+	status.  Overindexing will be allowed as an extension for -std=legacy
+	and generate an error in standard-conforming mode.
+	(gfc_assign_data_value): Use error status from get_array_index for
+	graceful error recovery.
+
+2023-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* match.cc (gfc_match_equivalence): Rename TRUE/FALSE to true/false.
+	* module.cc (check_access): Ditto.
+	* primary.cc (match_real_constant): Ditto.
+	* trans-array.cc (gfc_trans_allocate_array_storage): Ditto.
+	(get_array_ctor_strlen): Ditto.
+	* trans-common.cc (find_equivalence): Ditto.
+	(add_equivalences): Ditto.
+
+2023-08-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/32986
+	* resolve.cc (is_non_constant_shape_array): Add forward declaration.
+	(resolve_common_vars): Diagnose automatic array object in COMMON.
+	(resolve_symbol): Prevent confusing follow-on error.
+
+2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_defaultmap_category):
+	Add OMP_DEFAULTMAP_CAT_ALL.
+	* openmp.cc (gfc_match_omp_clauses): Parse
+	'all' as category.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle it.
+
+2023-08-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/49588
+	* data.cc (gfc_advance_section): Derive next index set and next offset
+	into DATA variable also for array references using vector sections.
+	Use auxiliary array to keep track of offsets into indexing vectors.
+	(gfc_get_section_index): Set up initial indices also for DATA variables
+	with array references using vector sections.
+	* data.h (gfc_get_section_index): Adjust prototype.
+	(gfc_advance_section): Likewise.
+	* resolve.cc (check_data_variable): Pass vector offsets.
+
+2023-08-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110360
+	* trans-expr.cc (conv_scalar_char_value): Use gfc_replace_expr to
+	avoid leaking replaced gfc_expr.
+
+2023-08-15  Martin Jambor  <mjambor@suse.cz>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110677
+	* resolve.cc (resolve_structure_cons): Check comp->ts is character
+	type before accessing stuff through comp->ts.u.cl.
+
+2023-08-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.cc (OACC_DATA_CLAUSES): Add OMP_CLAUSE_DEFAULT.
+
+2023-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/110360
+	PR fortran/110419
+	* trans-types.cc (gfc_sym_type): Use a bare character type for length
+	one value character dummy arguments.
+	* trans-expr.cc (gfc_conv_string_parameter): Handle single character
+	case.
+	(gfc_conv_procedure_call): Don't exclude interoperable kinds
+	from single character handling.  For single character dummy arguments,
+	extend the existing handling of non-constant expressions to constant
+	expressions.
+
+2023-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_length_one_character_type_p): New inline
+	function.
+	* check.cc (is_c_interoperable): Use
+	gfc_length_one_character_type_p.
+	* decl.cc (verify_bind_c_sym): Same.
+	* trans-expr.cc (gfc_conv_procedure_call): Same.
+
+2023-08-09  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	PR fortran/109684
+	* resolve.cc (resolve_types): Exclude contained procedures with
+	the artificial attribute from test for pureness.
+
 2023-07-31  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* openmp.cc (resolve_omp_clauses): Add checking requiring

@@ -61,4 +61,4 @@ void test_inject_write_through_null (void)
                { dg-final { scan-sarif-file "\"startColumn\": 3" } }
                { dg-final { scan-sarif-file "\"endColumn\": 31" } }
          { dg-final { scan-sarif-file "\"message\": " } }
-           { dg-final { scan-sarif-file "\"text\": \"Segmentation fault\"" } } */
+           { dg-final { scan-sarif-file "\"text\": \"Segmentation fault" } } */

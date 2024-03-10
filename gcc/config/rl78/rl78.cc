@@ -1143,7 +1143,8 @@ rl78_is_legitimate_constant (machine_mode mode ATTRIBUTE_UNUSED, rtx x ATTRIBUTE
 
 bool
 rl78_as_legitimate_address (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
-			    bool strict ATTRIBUTE_UNUSED, addr_space_t as ATTRIBUTE_UNUSED)
+			    bool strict ATTRIBUTE_UNUSED,
+			    addr_space_t as ATTRIBUTE_UNUSED, code_helper)
 {
   rtx base, index, addend;
   bool is_far_addr = false;

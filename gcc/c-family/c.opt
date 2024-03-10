@@ -1490,7 +1490,7 @@ C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
 Warn when a literal '0' is used as null pointer.
 
 Wuseless-cast
-C++ ObjC++ Var(warn_useless_cast) Warning
+C ObjC C++ ObjC++ Var(warn_useless_cast) Warning
 Warn about useless casts.
 
 Wsubobject-linkage
@@ -1935,6 +1935,10 @@ Winvalid-imported-macros
 C++ ObjC++ Var(warn_imported_macros) Warning
 Warn about macros that have conflicting header units definitions.
 
+Wcompare-distinct-pointer-types
+C ObjC Var(warn_compare_distinct_pointer_types) Warning Init(1)
+Warn if pointers of distinct types are compared without a cast.
+
 flang-info-include-translate
 C++ Var(note_include_translate_yes)
 Note #include directives translated to import declarations.
@@ -1984,7 +1988,7 @@ Implement resolution of DR 150 for matching of template template arguments.
 
 fnext-runtime
 ObjC ObjC++ LTO RejectNegative Var(flag_next_runtime)
-Generate code for NeXT (Apple Mac OS X) runtime environment.
+Generate code for NeXT (Apple macOS) runtime environment.
 
 fnil-receivers
 ObjC ObjC++ Var(flag_nil_receivers) Init(1)

@@ -538,6 +538,15 @@ concrete_binding::overlaps_p (const concrete_binding &other) const
   return false;
 }
 
+/* If this is expressible as a concrete byte range, return true
+   and write it to *OUT.  Otherwise return false.  */
+
+bool
+concrete_binding::get_byte_range (byte_range *out) const
+{
+  return m_bit_range.as_byte_range (out);
+}
+
 /* Comparator for use by vec<const concrete_binding *>::qsort.  */
 
 int

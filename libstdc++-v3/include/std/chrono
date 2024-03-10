@@ -50,12 +50,6 @@
 # include <bits/unique_ptr.h>
 #endif
 
-#if __cplusplus >= 202002L
-// TODO formatting and parsing
-// # undef __cpp_lib_chrono
-// # define __cpp_lib_chrono 201907L
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -2792,7 +2786,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       friend const tzdb& reload_tzdb();
-      friend class tzdb_list::_Node;
+      friend struct tzdb_list::_Node;
 
       explicit time_zone_link(nullptr_t) { }
 
@@ -2896,7 +2890,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       explicit leap_second(seconds::rep __s) : _M_s(__s) { }
 
-      friend class tzdb_list::_Node;
+      friend struct tzdb_list::_Node;
 
       friend const tzdb& reload_tzdb();
 
@@ -2937,7 +2931,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       friend const tzdb& reload_tzdb();
       friend class time_zone;
-      friend class tzdb_list::_Node;
+      friend struct tzdb_list::_Node;
     };
 
     tzdb_list& get_tzdb_list();
@@ -3039,7 +3033,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	template<typename _Duration2, typename _TimeZonePtr2>
 	  zoned_time(_TimeZonePtr __z,
 		     const zoned_time<_Duration2, _TimeZonePtr2>& __zt,
-		     choose __c)
+		     choose)
 	  requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
 	  : _M_zone(__z), _M_tp(__zt._M_tp)
 	  { }
@@ -3057,7 +3051,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	template<typename _Duration2, typename _TimeZonePtr2>
 	  zoned_time(string_view __name,
 		     const zoned_time<_Duration2, _TimeZonePtr2>& __zt,
-		     choose __c)
+		     choose)
 	  requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
 	  && requires {
 	    { _Traits::locate_zone(__name) } -> convertible_to<_TimeZonePtr>;

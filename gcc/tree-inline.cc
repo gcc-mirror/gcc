@@ -1708,6 +1708,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	           (s1, gimple_omp_sections_clauses (stmt));
 	  break;
 
+	case GIMPLE_OMP_STRUCTURED_BLOCK:
+	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
+	  copy = gimple_build_omp_structured_block (s1);
+	  break;
+
 	case GIMPLE_OMP_SINGLE:
 	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
 	  copy = gimple_build_omp_single
@@ -2815,6 +2820,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, profile_count count)
   init_empty_tree_cfg ();
 
   profile_status_for_fn (cfun) = profile_status_for_fn (src_cfun);
+  cfun->cfg->full_profile = src_cfun->cfg->full_profile;
 
   profile_count num = count;
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count;
@@ -4561,6 +4567,7 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_SECTIONS:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TARGET:
     case GIMPLE_OMP_TEAMS:
@@ -4953,6 +4960,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
   id->src_cfun = DECL_STRUCT_FUNCTION (fn);
   id->reset_location = DECL_IGNORED_P (fn);
   id->call_stmt = call_stmt;
+  cfun->cfg->full_profile &= id->src_cfun->cfg->full_profile;
 
   /* When inlining into an OpenMP SIMD-on-SIMT loop, arrange for new automatic
      variables to be added to IFN_GOMP_SIMT_ENTER argument list.  */

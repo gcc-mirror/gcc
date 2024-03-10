@@ -332,7 +332,8 @@ make_live_on_entry (tree_live_info_p live, basic_block bb , int p)
 /* On-demand virtual operand global live analysis.  There is at most
    a single virtual operand live at a time, the following computes and
    caches the virtual operand live at the exit of a basic block
-   supporting related live-in and live-on-edge queries.  */
+   supporting related live-in and live-on-edge queries.  It requires
+   up-to-date marked backedges.  */
 
 class virtual_operand_live
 {

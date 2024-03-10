@@ -7,6 +7,12 @@
 int
 main (void)
 {
+  /* FIXME: The purpose of this assembly is to ensure that the vtype register is
+     initialized befor instructions such as vmv1r.v are executed. Otherwise you
+     will get illegal instruction errors when running with spike+pk. This is an
+     interim solution for reduce unnecessary failures and a unified solution
+     will come later. */
+  asm volatile("vsetivli x0, 0, e8, m1, ta, ma");
 #define RUN_LOOP(DATA_TYPE, INDEX_TYPE)                                        \
   DATA_TYPE dest_##DATA_TYPE##_##INDEX_TYPE[202] = {0};                        \
   DATA_TYPE src_##DATA_TYPE##_##INDEX_TYPE[202] = {0};                         \

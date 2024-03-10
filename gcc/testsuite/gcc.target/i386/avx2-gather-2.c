@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-vect-details -march=skylake" } */
+/* { dg-options "-O3 -fdump-tree-vect-details -march=skylake -mtune=haswell" } */
 
 #include "avx2-gather-1.c"
 

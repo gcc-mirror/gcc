@@ -6727,6 +6727,7 @@ extern bool cp_handle_deprecated_or_unavailable (tree, tsubst_flags_t = tf_warni
 extern void cp_warn_deprecated_use_scopes	(tree);
 extern tree get_function_version_dispatcher	(tree);
 extern bool any_template_arguments_need_structural_equality_p (tree);
+extern void maybe_show_nonconverting_candidate	(tree, tree, tree, int);
 
 /* in class.cc */
 extern tree build_vfield_ref			(tree, tree);
@@ -6858,7 +6859,8 @@ extern void pop_switch				(void);
 extern void note_break_stmt			(void);
 extern bool note_iteration_stmt_body_start	(void);
 extern void note_iteration_stmt_body_end	(bool);
-extern void determine_local_discriminator	(tree);
+extern void determine_local_discriminator	(tree, tree = NULL_TREE);
+extern bool member_like_constrained_friend_p	(tree);
 extern bool fns_correspond			(tree, tree);
 extern int decls_match				(tree, tree, bool = true);
 extern bool maybe_version_functions		(tree, tree, bool);
@@ -6890,10 +6892,10 @@ extern tree start_decl				(const cp_declarator *, cp_decl_specifier_seq *, int, 
 extern void start_decl_1			(tree, bool);
 extern bool check_array_initializer		(tree, tree, tree);
 extern void omp_declare_variant_finalize	(tree, tree);
-extern void cp_finish_decl			(tree, tree, bool, tree, int);
+struct cp_decomp { tree decl; unsigned int count; };
+extern void cp_finish_decl			(tree, tree, bool, tree, int, cp_decomp * = nullptr);
 extern tree lookup_decomp_type			(tree);
-extern void cp_maybe_mangle_decomp		(tree, tree, unsigned int);
-extern void cp_finish_decomp			(tree, tree, unsigned int);
+extern void cp_finish_decomp			(tree, cp_decomp *);
 extern int cp_complete_array_type		(tree *, tree, bool);
 extern int cp_complete_array_type_or_error	(tree *, tree, bool, tsubst_flags_t);
 extern tree build_ptrmemfunc_type		(tree);
@@ -7082,7 +7084,7 @@ extern tree maybe_set_retval_sentinel		(void);
 extern tree template_parms_to_args		(tree);
 extern tree template_parms_level_to_args	(tree);
 extern tree generic_targs_for			(tree);
-extern tree outer_template_args			(tree);
+extern tree outer_template_args			(const_tree);
 
 /* in expr.cc */
 extern tree cplus_expand_constant		(tree);
@@ -7310,9 +7312,9 @@ extern tree clone_attrs				(tree);
 extern bool maybe_clone_body			(tree);
 
 /* In parser.cc */
-extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool,
+extern tree cp_convert_range_for (tree, tree, tree, cp_decomp *, bool,
 				  unsigned short, bool);
-extern void cp_convert_omp_range_for (tree &, vec<tree, va_gc> *, tree &,
+extern void cp_convert_omp_range_for (tree &, tree &, tree &,
 				      tree &, tree &, tree &, tree &, tree &);
 extern void cp_finish_omp_range_for (tree, tree);
 extern bool parsing_nsdmi (void);
@@ -7385,7 +7387,7 @@ extern tree lookup_template_function		(tree, tree);
 extern tree lookup_template_variable		(tree, tree, tsubst_flags_t);
 extern bool uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
-extern bool uses_outer_template_parms_in_constraints (tree);
+extern bool uses_outer_template_parms_in_constraints (tree, tree = NULL_TREE);
 extern bool need_generic_capture		(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);

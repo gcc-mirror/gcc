@@ -310,6 +310,25 @@ region_model_manager::get_or_create_initial_value (const region *reg,
 				 get_or_create_initial_value (original_reg));
     }
 
+  /* Simplify:
+       INIT_VAL(ELEMENT_REG(STRING_REG), CONSTANT_SVAL)
+     to:
+       CONSTANT_SVAL(STRING[N]).  */
+  if (const element_region *element_reg = reg->dyn_cast_element_region ())
+    if (tree cst_idx = element_reg->get_index ()->maybe_get_constant ())
+      if (const string_region *string_reg
+	  = element_reg->get_parent_region ()->dyn_cast_string_region ())
+	if (tree_fits_shwi_p (cst_idx))
+	  {
+	    HOST_WIDE_INT idx = tree_to_shwi (cst_idx);
+	    tree string_cst = string_reg->get_string_cst ();
+	    if (idx >= 0 && idx <= TREE_STRING_LENGTH (string_cst))
+	      {
+		int ch = TREE_STRING_POINTER (string_cst)[idx];
+		return get_or_create_int_cst (reg->get_type (), ch);
+	      }
+	  }
+
   /* INIT_VAL (*UNKNOWN_PTR) -> UNKNOWN_VAL.  */
   if (reg->symbolic_for_unknown_ptr_p ())
     return get_or_create_unknown_svalue (reg->get_type ());

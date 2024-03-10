@@ -3071,7 +3071,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
       /* (-1 - a) is ~a, unless the expression contains symbolic
 	 constants, in which case not retaining additions and
 	 subtractions could cause invalid assembly to be produced.  */
-      if (trueop0 == constm1_rtx
+      if (trueop0 == CONSTM1_RTX (mode)
 	  && !contains_symbolic_reference_p (op1))
 	return simplify_gen_unary (NOT, mode, op1, mode);
 

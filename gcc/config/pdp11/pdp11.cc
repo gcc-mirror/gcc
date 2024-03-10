@@ -1615,8 +1615,8 @@ pdp11_secondary_memory_needed (machine_mode, reg_class_t c1, reg_class_t c2)
 */
 
 static bool
-pdp11_legitimate_address_p (machine_mode mode,
-			    rtx operand, bool strict)
+pdp11_legitimate_address_p (machine_mode mode, rtx operand, bool strict,
+			    code_helper = ERROR_MARK)
 {
     rtx xfoob;
 

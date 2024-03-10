@@ -118,6 +118,19 @@
   (and (match_operand 0 "move_operand")
        (match_test "CONSTANT_P (op)")))
 
+;; Zfa constraints.
+
+(define_constraint "zfli"
+  "A floating point number that can be loaded using instruction `fli` in zfa."
+  (and (match_code "const_double")
+       (match_test "TARGET_ZFA && (riscv_float_const_rtx_index_for_fli (op) != -1)")))
+
+(define_register_constraint "zmvf" "(TARGET_ZFA || TARGET_XTHEADFMV) ? FP_REGS : NO_REGS"
+  "A floating-point register for ZFA or XTheadFmv.")
+
+(define_register_constraint "zmvr" "(TARGET_ZFA || TARGET_XTHEADFMV) ? GR_REGS : NO_REGS"
+  "An integer register for  ZFA or XTheadFmv.")
+
 ;; Vector constraints.
 
 (define_register_constraint "vr" "TARGET_VECTOR ? V_REGS : NO_REGS"
@@ -180,11 +193,3 @@
   "Vector duplicate memory operand"
   (and (match_code "mem")
        (match_code "reg" "0")))
-
-;; Vendor ISA extension constraints.
-
-(define_register_constraint "th_f_fmv" "TARGET_XTHEADFMV ? FP_REGS : NO_REGS"
-  "A floating-point register for XTheadFmv.")
-
-(define_register_constraint "th_r_fmv" "TARGET_XTHEADFMV ? GR_REGS : NO_REGS"
-  "An integer register for XTheadFmv.")

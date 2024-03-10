@@ -115,10 +115,12 @@ impl_region_model_context (program_state *state,
 }
 
 bool
-impl_region_model_context::warn (std::unique_ptr<pending_diagnostic> d)
+impl_region_model_context::warn (std::unique_ptr<pending_diagnostic> d,
+				 const stmt_finder *custom_finder)
 {
   LOG_FUNC (get_logger ());
-  if (m_stmt == NULL && m_stmt_finder == NULL)
+  auto curr_stmt_finder = custom_finder ? custom_finder : m_stmt_finder;
+  if (m_stmt == NULL && curr_stmt_finder == NULL)
     {
       if (get_logger ())
 	get_logger ()->log ("rejecting diagnostic: no stmt");
@@ -129,7 +131,7 @@ impl_region_model_context::warn (std::unique_ptr<pending_diagnostic> d)
       bool terminate_path = d->terminate_path_p ();
       if (m_eg->get_diagnostic_manager ().add_diagnostic
 	  (m_enode_for_diag, m_enode_for_diag->get_supernode (),
-	   m_stmt, m_stmt_finder, std::move (d)))
+	   m_stmt, curr_stmt_finder, std::move (d)))
 	{
 	  if (m_path_ctxt
 	      && terminate_path
@@ -147,6 +149,14 @@ impl_region_model_context::add_note (std::unique_ptr<pending_note> pn)
   LOG_FUNC (get_logger ());
   if (m_eg)
     m_eg->get_diagnostic_manager ().add_note (std::move (pn));
+}
+
+void
+impl_region_model_context::add_event (std::unique_ptr<checker_event> event)
+{
+  LOG_FUNC (get_logger ());
+  if (m_eg)
+    m_eg->get_diagnostic_manager ().add_event (std::move (event));
 }
 
 void
@@ -3840,8 +3850,10 @@ exploded_graph::maybe_create_dynamic_call (const gcall *call,
 class impl_path_context : public path_context
 {
 public:
-  impl_path_context (const program_state *cur_state)
+  impl_path_context (const program_state *cur_state,
+		     logger *logger)
   : m_cur_state (cur_state),
+    m_logger (logger),
     m_terminate_path (false)
   {
   }
@@ -3860,6 +3872,9 @@ public:
   void
   bifurcate (std::unique_ptr<custom_edge_info> info) final override
   {
+    if (m_logger)
+      m_logger->log ("bifurcating path");
+
     if (m_state_at_bifurcation)
       /* Verify that the state at bifurcation is consistent when we
 	 split into multiple out-edges.  */
@@ -3876,6 +3891,8 @@ public:
 
   void terminate_path () final override
   {
+    if (m_logger)
+      m_logger->log ("terminating path");
     m_terminate_path = true;
   }
 
@@ -3891,6 +3908,8 @@ public:
 
 private:
   const program_state *m_cur_state;
+
+  logger *m_logger;
 
   /* Lazily-created copy of the state before the split.  */
   std::unique_ptr<program_state> m_state_at_bifurcation;
@@ -4036,7 +4055,7 @@ exploded_graph::process_node (exploded_node *node)
 	   exactly one stmt, the one that caused the change. */
 	program_state next_state (state);
 
-	impl_path_context path_ctxt (&next_state);
+	impl_path_context path_ctxt (&next_state, logger);
 
 	uncertainty_t uncertainty;
 	const supernode *snode = point.get_supernode ();

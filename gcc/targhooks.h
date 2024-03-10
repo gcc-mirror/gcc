@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TARGHOOKS_H
 #define GCC_TARGHOOKS_H
 
-extern bool default_legitimate_address_p (machine_mode, rtx, bool);
+extern bool default_legitimate_address_p (machine_mode, rtx, bool, code_helper);
 
 extern void default_external_libcall (rtx);
 extern rtx default_legitimize_address (rtx, rtx, machine_mode);
@@ -202,8 +202,8 @@ extern scalar_int_mode default_addr_space_pointer_mode (addr_space_t);
 extern scalar_int_mode default_addr_space_address_mode (addr_space_t);
 extern bool default_addr_space_valid_pointer_mode (scalar_int_mode,
 						   addr_space_t);
-extern bool default_addr_space_legitimate_address_p (machine_mode, rtx,
-						     bool, addr_space_t);
+extern bool default_addr_space_legitimate_address_p (machine_mode, rtx, bool,
+						     addr_space_t, code_helper);
 extern rtx default_addr_space_legitimize_address (rtx, rtx, machine_mode,
 						  addr_space_t);
 extern bool default_addr_space_subset_p (addr_space_t, addr_space_t);

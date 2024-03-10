@@ -170,9 +170,13 @@ AARCH64_CORE("cortex-r82", cortexr82, cortexa53, V8R, (), cortexa53, 0x41, 0xd15
 /* Arm ('A') cores. */
 AARCH64_CORE("cortex-a510",  cortexa510, cortexa55, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), cortexa53, 0x41, 0xd46, -1)
 
+AARCH64_CORE("cortex-a520",  cortexa520, cortexa55, V9_2A,  (SVE2_BITPERM, MEMTAG), cortexa53, 0x41, 0xd80, -1)
+
 AARCH64_CORE("cortex-a710",  cortexa710, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd47, -1)
 
 AARCH64_CORE("cortex-a715",  cortexa715, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd4d, -1)
+
+AARCH64_CORE("cortex-a720",  cortexa720, cortexa57, V9_2A,  (SVE2_BITPERM, MEMTAG, PROFILE), neoversen2, 0x41, 0xd81, -1)
 
 AARCH64_CORE("cortex-x2",  cortexx2, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd48, -1)
 

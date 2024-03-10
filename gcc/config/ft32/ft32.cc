@@ -856,7 +856,8 @@ reg_ok_for_base_p (rtx r, bool strict)
 
 static bool
 ft32_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
-                                      addr_space_t as ATTRIBUTE_UNUSED)
+				      addr_space_t as ATTRIBUTE_UNUSED,
+				      code_helper = ERROR_MARK)
 {
   int max_offset = TARGET_FT32B ? 16384 : 128;
 
