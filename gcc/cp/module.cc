@@ -5173,7 +5173,6 @@ trees_out::start (tree t, bool code_streamed)
       break;
 
     case FIXED_CST:
-    case POLY_INT_CST:
       gcc_unreachable (); /* Not supported in C++.  */
       break;
 
@@ -5259,7 +5258,6 @@ trees_in::start (unsigned code)
 
     case FIXED_CST:
     case IDENTIFIER_NODE:
-    case POLY_INT_CST:
     case SSA_NAME:
     case TARGET_MEM_REF:
     case TRANSLATION_UNIT_DECL:
@@ -6106,7 +6104,10 @@ trees_out::core_vals (tree t)
       break;
 
     case POLY_INT_CST:
-      gcc_unreachable (); /* Not supported in C++.  */
+      if (streaming_p ())
+	for (unsigned ix = 0; ix != NUM_POLY_INT_COEFFS; ix++)
+	  WT (POLY_INT_CST_COEFF (t, ix));
+      break;
 
     case REAL_CST:
       if (streaming_p ())
@@ -6615,8 +6616,9 @@ trees_in::core_vals (tree t)
       break;
 
     case POLY_INT_CST:
-      /* Not suported in C++.  */
-      return false;
+      for (unsigned ix = 0; ix != NUM_POLY_INT_COEFFS; ix++)
+	RT (POLY_INT_CST_COEFF (t, ix));
+      break;
 
     case REAL_CST:
       if (const void *bytes = buf (sizeof (real_value)))
@@ -9068,8 +9070,8 @@ trees_out::type_node (tree type)
       if (streaming_p ())
 	{
 	  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type);
-	  /* to_constant asserts that only coeff[0] is of interest.  */
-	  wu (static_cast<unsigned HOST_WIDE_INT> (nunits.to_constant ()));
+	  for (unsigned ix = 0; ix != NUM_POLY_INT_COEFFS; ix++)
+	    wu (nunits.coeffs[ix]);
 	}
       break;
     }
@@ -9630,9 +9632,11 @@ trees_in::tree_node (bool is_use)
 
 	  case VECTOR_TYPE:
 	    {
-	      unsigned HOST_WIDE_INT nunits = wu ();
+	      poly_uint64 nunits;
+	      for (unsigned ix = 0; ix != NUM_POLY_INT_COEFFS; ix++)
+		nunits.coeffs[ix] = wu ();
 	      if (!get_overrun ())
-		res = build_vector_type (res, static_cast<poly_int64> (nunits));
+		res = build_vector_type (res, nunits);
 	    }
 	    break;
 	  }
@@ -20151,7 +20155,7 @@ init_modules (cpp_reader *reader)
      some global trees are lazily created and we don't want that to
      mess with our syndrome of fixed trees.  */
   unsigned crc = 0;
-  vec_alloc (fixed_trees, 200);
+  vec_alloc (fixed_trees, 250);
 
   dump () && dump ("+Creating globals");
   /* Insert the TRANSLATION_UNIT_DECL.  */
@@ -20168,6 +20172,14 @@ init_modules (cpp_reader *reader)
 	  unsigned v = maybe_add_global (*ptr, crc);
 	  dump () && dump ("+%u", v);
 	}
+    }
+  /* OS- and machine-specific types are dynamically registered at
+     runtime, so cannot be part of global_tree_arys.  */
+  registered_builtin_types && dump ("") && dump ("+\tB:");
+  for (tree t = registered_builtin_types; t; t = TREE_CHAIN (t))
+    {
+      unsigned v = maybe_add_global (TREE_VALUE (t), crc);
+      dump () && dump ("+%u", v);
     }
   global_crc = crc32_unsigned (crc, fixed_trees->length ());
   dump ("") && dump ("Created %u unique globals, crc=%x",
