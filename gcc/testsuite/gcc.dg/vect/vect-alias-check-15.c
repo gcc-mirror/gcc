@@ -33,6 +33,7 @@ typedef unsigned long long ull;
     {								\
       TYPE a[N + DIST * 2] = {};				\
       test_##TYPE (a + DIST, a + i);				\
+      _Pragma("GCC novector")					\
       for (int j = 0; j < N + DIST * 2; ++j)			\
 	{							\
 	  TYPE expected = 0;					\

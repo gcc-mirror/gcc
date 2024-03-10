@@ -48,7 +48,7 @@ namespace nameSpace
         extern void fn2();
 
     }
-    extern double identity(double _param_0);
+    extern double identity(double __param_0_);
 
 }
 ---
@@ -63,5 +63,5 @@ extern(C++, "nameSpace")
         void fn2() {}
     }
 
-    double identity(double) { return _param_0; }
+    double identity(double) { return __param_0; }
 }

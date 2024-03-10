@@ -1,6 +1,6 @@
 /* Verify signed division does not produce 'sdiv' insn in eBPF.  */
 /* { dg-do compile } */
-/* { dg-options "-O0" } */
+/* { dg-options "-O0 -mcpu=v3" } */
 
 void
 foo ()

@@ -102,21 +102,6 @@ private auto convError(S, T)(S source, string fn = __FILE__, size_t ln = __LINE_
     return new ConvException(msg, fn, ln);
 }
 
-private auto convError(S, T)(S source, int radix, string fn = __FILE__, size_t ln = __LINE__)
-{
-    string msg;
-
-    if (source.empty)
-        msg = text("Unexpected end of input when converting from type " ~ S.stringof ~ " base ", radix,
-                " to type " ~ T.stringof);
-    else
-        msg = text("Unexpected '", source.front,
-            "' when converting from type " ~ S.stringof ~ " base ", radix,
-            " to type " ~ T.stringof);
-
-    return new ConvException(msg, fn, ln);
-}
-
 @safe pure/* nothrow*/  // lazy parameter bug
 private auto parseError(lazy string msg, string fn = __FILE__, size_t ln = __LINE__)
 {
@@ -224,14 +209,14 @@ template to(T)
         return toImpl!T(args);
     }
 
-    // Fix issue 6175
+    // Fix https://issues.dlang.org/show_bug.cgi?id=6175
     T to(S)(ref S arg)
         if (isStaticArray!S)
     {
         return toImpl!T(arg);
     }
 
-    // Fix issue 16108
+    // Fix https://issues.dlang.org/show_bug.cgi?id=16108
     T to(S)(ref S arg)
         if (isAggregateType!S && !isCopyable!S)
     {
@@ -438,7 +423,7 @@ template to(T)
     assert(c == "abcx");
 }
 
-// Tests for issue 6175
+// Tests for https://issues.dlang.org/show_bug.cgi?id=6175
 @safe pure nothrow unittest
 {
     char[9] sarr = "blablabla";
@@ -447,7 +432,7 @@ template to(T)
     assert(sarr.length == darr.length);
 }
 
-// Tests for issue 7348
+// Tests for https://issues.dlang.org/show_bug.cgi?id=7348
 @safe pure /+nothrow+/ unittest
 {
     assert(to!string(null) == "null");
@@ -469,7 +454,7 @@ template to(T)
     assert(text("a", s) == "aS");
 }
 
-// Tests for issue 11390
+// Tests for https://issues.dlang.org/show_bug.cgi?id=11390
 @safe pure /+nothrow+/ unittest
 {
     const(typeof(null)) ctn;
@@ -478,7 +463,7 @@ template to(T)
     assert(to!string(itn) == "null");
 }
 
-// Tests for issue 8729: do NOT skip leading WS
+// Tests for https://issues.dlang.org/show_bug.cgi?id=8729: do NOT skip leading WS
 @safe pure unittest
 {
     import std.exception;
@@ -1023,7 +1008,15 @@ if (!(is(S : T) &&
     else static if (isIntegral!S && !is(S == enum))
     {
         // other integral-to-string conversions with default radix
-        return toImpl!(T, S)(value, 10);
+
+        import core.internal.string : signedToTempString, unsignedToTempString;
+
+        alias EEType = Unqual!(ElementEncodingType!T);
+        EEType[long.sizeof * 3 + 1] buf = void;
+        EEType[] t = isSigned!S
+            ?   signedToTempString!(10, false, EEType)(value, buf)
+            : unsignedToTempString!(10, false, EEType)(value, buf);
+        return t.dup;
     }
     else static if (is(S == void[]) || is(S == const(void)[]) || is(S == immutable(void)[]))
     {
@@ -1377,7 +1370,7 @@ if (is (T == immutable) && isExactSomeString!T && is(S == enum))
     S2 s2;
     assert(to!string(s2) == "S2(42, 43.5)");
 
-    // Test for issue 8080
+    // Test for https://issues.dlang.org/show_bug.cgi?id=8080
     struct S8080
     {
         short[4] data;
@@ -1979,7 +1972,7 @@ $(UL
 private T toImpl(T, S)(S value)
 if (isInputRange!S && isSomeChar!(ElementEncodingType!S) &&
     !isExactSomeString!T && is(typeof(parse!T(value))) &&
-    // issue 20539
+    // https://issues.dlang.org/show_bug.cgi?id=20539
     !(is(T == enum) && is(typeof(value == OriginalType!T.init)) && !isSomeString!(OriginalType!T)))
 {
     scope(success)
@@ -5567,7 +5560,7 @@ private bool isHexLiteral(String)(scope const String hexData)
     static assert( ("5A 01A C FF de 1b"d).isHexLiteral);
     static assert( ("0123456789abcdefABCDEF"d).isHexLiteral);
     static assert( (" 012 34 5 6789 abcd ef\rAB\nCDEF"d).isHexLiteral);
-    // library version allows what's pointed by issue 10454
+    // library version allows what's pointed by https://issues.dlang.org/show_bug.cgi?id=10454
     static assert( ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").isHexLiteral);
 }
 
@@ -5726,33 +5719,13 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
         {
             void initialize(UT value)
             {
-                bool neg = false;
-                if (value < 10)
-                {
-                    if (value >= 0)
-                    {
-                        lwr = 0;
-                        upr = 1;
-                        buf[0] = cast(char)(cast(uint) value + '0');
-                        return;
-                    }
-                    value = -value;
-                    neg = true;
-                }
-                auto i = cast(uint) buf.length - 1;
-                while (cast(Unsigned!UT) value >= 10)
-                {
-                    buf[i] = cast(ubyte)('0' + cast(Unsigned!UT) value % 10);
-                    value = unsigned(value) / 10;
-                    --i;
-                }
-                buf[i] = cast(char)(cast(uint) value + '0');
-                if (neg)
-                {
-                    buf[i - 1] = '-';
-                    --i;
-                }
-                lwr = i;
+                import core.internal.string : signedToTempString, unsignedToTempString;
+
+                char[] t = value < 0
+                    ?   signedToTempString!(10, false, char)(value, buf)
+                    : unsignedToTempString!(10, false, char)(value, buf);
+
+                lwr = cast(uint) (buf.length - t.length);
                 upr = cast(uint) buf.length;
             }
 
@@ -5958,7 +5931,7 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
     }
 }
 
-@safe unittest // opSlice (issue 16192)
+@safe unittest // opSlice (https://issues.dlang.org/show_bug.cgi?id=16192)
 {
     import std.meta : AliasSeq;
 
@@ -5986,7 +5959,7 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
         for (; !r.empty; r.popFront(), ++i)
         {
             assert(original[i .. original.length].tupleof == r.tupleof);
-                // tupleof is used to work around issue 16216.
+                // tupleof is used to work around https://issues.dlang.org/show_bug.cgi?id=16216.
         }
 
         // opSlice vs popBack

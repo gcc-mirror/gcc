@@ -16,6 +16,7 @@ int
 main (void)
 {
   f (a);
+#pragma GCC novector
   for (int i = 0; i < 4; ++i)
     {
       if (a[i] != (i + 1) * (i + 1))

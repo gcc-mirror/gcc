@@ -1,3 +1,25 @@
+2023-07-23  Andrew Pinski  <apinski@marvell.com>
+
+	* config.host (riscv*-*-linux*): Add t-crtstuff to tmake_file.
+	(riscv*-*-freebsd*): Likewise.
+	* config/riscv/t-crtstuff: New file.
+
+2023-07-19  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/t-softfp: Add -msse2 to libbid HFtype related
+	files.
+
+2023-07-11  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/110179
+	* unwind-dw2-fde-dip.c (find_fde_tail): Add cast to avoid
+	implicit conversion of pointer value to integer.
+
+2023-07-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/sfp-machine.h (FP_INIT_ROUNDMODE): Check zfinx.
+	(FP_HANDLE_EXCEPTIONS): Ditto.
+
 2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/lib2-divmod-di.c: Reimplement like lib2-divmod.c.

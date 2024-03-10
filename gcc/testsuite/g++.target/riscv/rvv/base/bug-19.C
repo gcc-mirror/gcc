@@ -131,7 +131,7 @@
  vuint64m1_t var_8 = __riscv_vredand_vs_u64m8_u64m1_tum(var_13, var_58, var_0, var_59, 1);
  __riscv_vse64_v_i64m8(var_74, var_3, 2);
  vuint64m8_t var_10 = __riscv_vmadd_vv_u64m8_mu(var_13, var_6, var_51, var_52, 13);
- vuint64m8_t var_15 = __riscv_vssubu_vv_u64m8_mu(var_33, var_6, var_34, var_35, 0, 13);
+ vuint64m8_t var_15 = __riscv_vssubu_vv_u64m8_mu(var_33, var_6, var_34, var_35, 13);
  vuint64m1_t var_9 = __riscv_vadd_vv_u64m1_mu(var_54, var_8, var_55, var_56, 1);
  vuint64m1_t var_11 = __riscv_vredxor_vs_u64m4_u64m1_tum(var_46, var_8, var_47, var_48, 1);
  if(!check(var_74, var_129, var_130)) {cerr << "check 128 fails" << endl; return_value = 1;}

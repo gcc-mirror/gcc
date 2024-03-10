@@ -39,6 +39,7 @@ __attribute__ ((noinline)) int main1 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (sa[i + NSHORTS - 1] != sb[i] || ia[i + NINTS - 1] != ib[i + 1])
@@ -69,6 +70,7 @@ __attribute__ ((noinline)) int main2 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (sa[i + NINTS - 1] != sb[i + 1] || ia[i + NINTS - 1] != ib[i])

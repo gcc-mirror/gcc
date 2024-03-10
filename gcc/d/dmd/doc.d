@@ -429,9 +429,9 @@ extern(C++) void gendocfile(Module m)
     if (m.filetype == FileType.ddoc)
     {
         const ploc = m.md ? &m.md.loc : &m.loc;
-        const loc = Loc(ploc.filename ? ploc.filename : srcfilename.ptr,
-                        ploc.linnum,
-                        ploc.charnum);
+        Loc loc = *ploc;
+        if (!loc.filename)
+            loc.filename = srcfilename.ptr;
 
         size_t commentlen = strlen(cast(char*)m.comment);
         Dsymbols a;
@@ -4151,7 +4151,7 @@ private size_t endRowAndTable(ref OutBuffer buf, size_t iStart, size_t iEnd, con
 private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t offset)
 {
     const incrementLoc = loc.linnum == 0 ? 1 : 0;
-    loc.linnum += incrementLoc;
+    loc.linnum = loc.linnum + incrementLoc;
     loc.charnum = 0;
     //printf("highlightText()\n");
     bool leadingBlank = true;
@@ -4256,7 +4256,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
             lineQuoted = false;
             tableRowDetected = false;
             iLineStart = i + 1;
-            loc.linnum += incrementLoc;
+            loc.linnum = loc.linnum + incrementLoc;
 
             // update the paragraph start if we just entered a macro
             if (previousMacroLevel < macroLevel && iParagraphStart < iLineStart)
@@ -5184,7 +5184,7 @@ private void highlightCode2(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t of
 
     scope Lexer lex = new Lexer(null, cast(char*)buf[].ptr, 0, buf.length - 1, 0, 1,
         global.errorSink,
-        global.vendor, global.versionNumber());
+        &global.compileEnv);
     OutBuffer res;
     const(char)* lastp = cast(char*)buf[].ptr;
     //printf("highlightCode2('%.*s')\n", cast(int)(buf.length - 1), buf[].ptr);

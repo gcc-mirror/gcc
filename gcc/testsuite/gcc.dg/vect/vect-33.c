@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -22,6 +23,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (s.ca[i] != 5)
@@ -40,3 +42,4 @@ int main (void)
 /* { dg-final { scan-tree-dump "Vectorizing an unaligned access" "vect" { target { { { ! powerpc*-*-* } && vect_hw_misalign } && { { ! vect64 } || vect_multiple_sizes } } xfail { ! vect_unaligned_possible } } } }  */
 /* { dg-final { scan-tree-dump "Alignment of access forced using peeling" "vect" { target { vector_alignment_reachable && { vect64 && {! vect_multiple_sizes} } } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { { {! vector_alignment_reachable} || {! vect64} } && {! vect_hw_misalign} } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

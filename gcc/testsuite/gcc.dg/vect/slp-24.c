@@ -41,6 +41,7 @@ main1 (unsigned char x, unsigned char max_result, unsigned char min_result, s *a
     pIn++;
   }
 
+#pragma GCC novector
   for (i = 0; i < N; i++) {
     if (ua1[2*i] != ub[2*i]
         || ua1[2*i+1] != ub[2*i+1]

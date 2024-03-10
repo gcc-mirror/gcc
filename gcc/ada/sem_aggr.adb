@@ -3228,12 +3228,27 @@ package body Sem_Aggr is
             Analyze_And_Resolve (New_Copy_Tree (Key_Expr), Key_Type);
             End_Scope;
 
+            Typ := Key_Type;
+
          elsif Present (Iterator_Specification (Comp)) then
+            --  Create a temporary scope to avoid some modifications from
+            --  escaping the Analyze call below. The original Tree will be
+            --  reanalyzed later.
+
+            Ent := New_Internal_Entity
+                     (E_Loop, Current_Scope, Sloc (Comp), 'L');
+            Set_Etype  (Ent, Standard_Void_Type);
+            Set_Parent (Ent, Parent (Comp));
+            Push_Scope (Ent);
+
             Copy    := Copy_Separate_Tree (Iterator_Specification (Comp));
             Id_Name :=
               Chars (Defining_Identifier (Iterator_Specification (Comp)));
 
-            Analyze (Copy);
+            Preanalyze (Copy);
+
+            End_Scope;
+
             Typ := Etype (Defining_Identifier (Copy));
 
          else
@@ -3252,7 +3267,7 @@ package body Sem_Aggr is
 
                elsif Present (Key_Type) then
                   Analyze_And_Resolve (Choice, Key_Type);
-
+                  Typ := Key_Type;
                else
                   Typ := Etype (Choice);  --  assume unique for now
                end if;
@@ -3282,12 +3297,8 @@ package body Sem_Aggr is
 
          Enter_Name (Id);
 
-         if No (Key_Type) then
-            pragma Assert (Present (Typ));
-            Set_Etype (Id, Typ);
-         else
-            Set_Etype (Id, Key_Type);
-         end if;
+         pragma Assert (Present (Typ));
+         Set_Etype (Id, Typ);
 
          Mutate_Ekind (Id, E_Variable);
          Set_Is_Not_Self_Hidden (Id);
@@ -4546,14 +4557,17 @@ package body Sem_Aggr is
                Component_Associations (New_Aggr));
 
             --  If the discriminant constraint is a current instance, mark the
-            --  current aggregate so that the self-reference can be expanded
-            --  later. The constraint may refer to the subtype of aggregate, so
-            --  use base type for comparison.
+            --  current aggregate so that the self-reference can be expanded by
+            --  Build_Record_Aggr_Code.Replace_Type later.
 
             if Nkind (Discr_Val) = N_Attribute_Reference
               and then Is_Entity_Name (Prefix (Discr_Val))
               and then Is_Type (Entity (Prefix (Discr_Val)))
-              and then Base_Type (Etype (N)) = Entity (Prefix (Discr_Val))
+              and then
+                Is_Ancestor
+                  (Entity (Prefix (Discr_Val)),
+                   Etype (N),
+                   Use_Full_View => True)
             then
                Set_Has_Self_Reference (N);
             end if;

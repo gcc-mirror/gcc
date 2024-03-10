@@ -765,6 +765,15 @@ cp_lexer_new_main (void)
   return lexer;
 }
 
+/* Create a lexer and parser to be used during preprocess-only mode.
+   This will be filled with tokens to parse when needed by pragma_lex ().  */
+void
+c_init_preprocess ()
+{
+  gcc_assert (!the_parser);
+  the_parser = cp_parser_new (cp_lexer_alloc ());
+}
+
 /* Create a new lexer whose token stream is primed with the tokens in
    CACHE.  When these tokens are exhausted, no new tokens will be read.  */
 
@@ -2324,15 +2333,15 @@ static tree cp_parser_selection_statement
 static tree cp_parser_condition
   (cp_parser *);
 static tree cp_parser_iteration_statement
-  (cp_parser *, bool *, bool, unsigned short);
+  (cp_parser *, bool *, bool, unsigned short, bool);
 static bool cp_parser_init_statement
   (cp_parser *, tree *decl);
 static tree cp_parser_for
-  (cp_parser *, bool, unsigned short);
+  (cp_parser *, bool, unsigned short, bool);
 static tree cp_parser_c_for
-  (cp_parser *, tree, tree, bool, unsigned short);
+  (cp_parser *, tree, tree, bool, unsigned short, bool);
 static tree cp_parser_range_for
-  (cp_parser *, tree, tree, tree, bool, unsigned short, bool);
+  (cp_parser *, tree, tree, tree, bool, unsigned short, bool, bool);
 static void do_range_for_auto_deduction
   (tree, tree, tree, unsigned int);
 static tree cp_parser_perform_range_for_lookup
@@ -2748,7 +2757,7 @@ static tree cp_parser_objc_struct_declaration
 /* Utility Routines */
 
 static cp_expr cp_parser_lookup_name
-  (cp_parser *, tree, enum tag_types, bool, bool, bool, tree *, location_t);
+  (cp_parser *, tree, enum tag_types, int, bool, bool, tree *, location_t);
 static tree cp_parser_lookup_name_simple
   (cp_parser *, tree, location_t);
 static tree cp_parser_maybe_treat_template_as_class
@@ -10734,11 +10743,6 @@ cp_parser_constant_expression (cp_parser* parser,
 			       bool *non_constant_p /* = NULL */,
 			       bool strict_p /* = false */)
 {
-  bool saved_integral_constant_expression_p;
-  bool saved_allow_non_integral_constant_expression_p;
-  bool saved_non_integral_constant_expression_p;
-  cp_expr expression;
-
   /* It might seem that we could simply parse the
      conditional-expression, and then check to see if it were
      TREE_CONSTANT.  However, an expression that is TREE_CONSTANT is
@@ -10757,10 +10761,12 @@ cp_parser_constant_expression (cp_parser* parser,
      will fold this operation to an INTEGER_CST for `3'.  */
 
   /* Save the old settings.  */
-  saved_integral_constant_expression_p = parser->integral_constant_expression_p;
-  saved_allow_non_integral_constant_expression_p
+  bool saved_integral_constant_expression_p
+    = parser->integral_constant_expression_p;
+  bool saved_allow_non_integral_constant_expression_p
     = parser->allow_non_integral_constant_expression_p;
-  saved_non_integral_constant_expression_p = parser->non_integral_constant_expression_p;
+  bool saved_non_integral_constant_expression_p
+    = parser->non_integral_constant_expression_p;
   /* We are now parsing a constant-expression.  */
   parser->integral_constant_expression_p = true;
   parser->allow_non_integral_constant_expression_p
@@ -10780,6 +10786,7 @@ cp_parser_constant_expression (cp_parser* parser,
      For example, cp_parser_initializer_clauses uses this function to
      determine whether a particular assignment-expression is in fact
      constant.  */
+  cp_expr expression;
   if (strict_p)
     expression = cp_parser_conditional_expression (parser);
   else
@@ -10789,7 +10796,8 @@ cp_parser_constant_expression (cp_parser* parser,
     = saved_integral_constant_expression_p;
   parser->allow_non_integral_constant_expression_p
     = saved_allow_non_integral_constant_expression_p;
-  if (cxx_dialect >= cxx11)
+  if (cxx_dialect >= cxx11
+      && (!allow_non_constant_p || non_constant_p))
     {
       /* Require an rvalue constant expression here; that's what our
 	 callers expect.  Reference constant expressions are handled
@@ -10803,7 +10811,7 @@ cp_parser_constant_expression (cp_parser* parser,
       if (!is_const && !allow_non_constant_p)
 	require_rvalue_constant_expression (decay);
     }
-  if (allow_non_constant_p)
+  if (allow_non_constant_p && non_constant_p)
     *non_constant_p = parser->non_integral_constant_expression_p;
   parser->non_integral_constant_expression_p
     = saved_non_integral_constant_expression_p;
@@ -12414,7 +12422,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_DO:
 	case RID_FOR:
 	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
-	  statement = cp_parser_iteration_statement (parser, if_p, false, 0);
+	  statement = cp_parser_iteration_statement (parser, if_p, false, 0,
+						     false);
 	  break;
 
 	case RID_BREAK:
@@ -13594,7 +13603,8 @@ cp_parser_condition (cp_parser* parser)
    not included. */
 
 static tree
-cp_parser_for (cp_parser *parser, bool ivdep, unsigned short unroll)
+cp_parser_for (cp_parser *parser, bool ivdep, unsigned short unroll,
+	       bool novector)
 {
   tree init, scope, decl;
   bool is_range_for;
@@ -13624,14 +13634,14 @@ cp_parser_for (cp_parser *parser, bool ivdep, unsigned short unroll)
 
   if (is_range_for)
     return cp_parser_range_for (parser, scope, init, decl, ivdep, unroll,
-				false);
+				novector, false);
   else
-    return cp_parser_c_for (parser, scope, init, ivdep, unroll);
+    return cp_parser_c_for (parser, scope, init, ivdep, unroll, novector);
 }
 
 static tree
 cp_parser_c_for (cp_parser *parser, tree scope, tree init, bool ivdep,
-		 unsigned short unroll)
+		 unsigned short unroll, bool novector)
 {
   /* Normal for loop */
   tree condition = NULL_TREE;
@@ -13658,7 +13668,7 @@ cp_parser_c_for (cp_parser *parser, tree scope, tree init, bool ivdep,
 		       "%<GCC unroll%> pragma");
       condition = error_mark_node;
     }
-  finish_for_cond (condition, stmt, ivdep, unroll);
+  finish_for_cond (condition, stmt, ivdep, unroll, novector);
   /* Look for the `;'.  */
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
@@ -13682,7 +13692,8 @@ cp_parser_c_for (cp_parser *parser, tree scope, tree init, bool ivdep,
 
 static tree
 cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
-		     bool ivdep, unsigned short unroll, bool is_omp)
+		     bool ivdep, unsigned short unroll, bool novector,
+		     bool is_omp)
 {
   tree stmt, range_expr;
   auto_vec <cxx_binding *, 16> bindings;
@@ -13758,6 +13769,8 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 	RANGE_FOR_IVDEP (stmt) = 1;
       if (unroll)
 	RANGE_FOR_UNROLL (stmt) = build_int_cst (integer_type_node, unroll);
+      if (novector)
+	RANGE_FOR_NOVECTOR (stmt) = 1;
       finish_range_for_decl (stmt, range_decl, range_expr);
       if (!type_dependent_expression_p (range_expr)
 	  /* do_auto_deduction doesn't mess with template init-lists.  */
@@ -13770,7 +13783,7 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
       stmt = begin_for_stmt (scope, init);
       stmt = cp_convert_range_for (stmt, range_decl, range_expr,
 				   decomp_first_name, decomp_cnt, ivdep,
-				   unroll);
+				   unroll, novector);
     }
   return stmt;
 }
@@ -13948,7 +13961,7 @@ warn_for_range_copy (tree decl, tree expr)
 tree
 cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 		      tree decomp_first_name, unsigned int decomp_cnt,
-		      bool ivdep, unsigned short unroll)
+		      bool ivdep, unsigned short unroll, bool novector)
 {
   tree begin, end;
   tree iter_type, begin_expr, end_expr;
@@ -14008,7 +14021,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 				 begin, ERROR_MARK,
 				 end, ERROR_MARK,
 				 NULL_TREE, NULL, tf_warning_or_error);
-  finish_for_cond (condition, statement, ivdep, unroll);
+  finish_for_cond (condition, statement, ivdep, unroll, novector);
 
   /* The new increment expression.  */
   expression = finish_unary_op_expr (input_location,
@@ -14175,7 +14188,7 @@ cp_parser_range_for_member_function (tree range, tree identifier)
 
 static tree
 cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep,
-			       unsigned short unroll)
+			       unsigned short unroll, bool novector)
 {
   cp_token *token;
   enum rid keyword;
@@ -14209,7 +14222,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep,
 	parens.require_open (parser);
 	/* Parse the condition.  */
 	condition = cp_parser_condition (parser);
-	finish_while_stmt_cond (condition, statement, ivdep, unroll);
+	finish_while_stmt_cond (condition, statement, ivdep, unroll, novector);
 	/* Look for the `)'.  */
 	parens.require_close (parser);
 	/* Parse the dependent statement.  */
@@ -14244,7 +14257,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep,
 	/* Parse the expression.  */
 	expression = cp_parser_expression (parser);
 	/* We're done with the do-statement.  */
-	finish_do_stmt (expression, statement, ivdep, unroll);
+	finish_do_stmt (expression, statement, ivdep, unroll, novector);
 	/* Look for the `)'.  */
 	parens.require_close (parser);
 	/* Look for the `;'.  */
@@ -14258,7 +14271,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep,
 	matching_parens parens;
 	parens.require_open (parser);
 
-	statement = cp_parser_for (parser, ivdep, unroll);
+	statement = cp_parser_for (parser, ivdep, unroll, novector);
 
 	/* Look for the `)'.  */
 	parens.require_close (parser);
@@ -16400,12 +16413,11 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
    If MEMBER_P, this static_assert is a class member.  */
 
 static void
-cp_parser_static_assert(cp_parser *parser, bool member_p)
+cp_parser_static_assert (cp_parser *parser, bool member_p)
 {
   cp_expr condition;
   location_t token_loc;
   tree message;
-  bool dummy;
 
   /* Peek at the `static_assert' token so we can keep track of exactly
      where the static assertion started.  */
@@ -16430,7 +16442,7 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
   condition =
     cp_parser_constant_expression (parser,
                                    /*allow_non_constant_p=*/true,
-                                   /*non_constant_p=*/&dummy);
+				   /*non_constant_p=*/nullptr);
 
   if (cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
     {
@@ -18771,7 +18783,7 @@ cp_parser_template_name (cp_parser* parser,
   /* Look up the name.  */
   decl = cp_parser_lookup_name (parser, identifier,
 				tag_type,
-				/*is_template=*/true,
+				/*is_template=*/1 + template_keyword_p,
 				/*is_namespace=*/false,
 				check_dependency_p,
 				/*ambiguous_decls=*/NULL,
@@ -31173,7 +31185,7 @@ prefer_type_arg (tag_types tag_type)
    refer to types are ignored.
 
    If IS_TEMPLATE is TRUE, bindings that do not refer to templates are
-   ignored.
+   ignored.  If IS_TEMPLATE IS 2, the 'template' keyword was specified.
 
    If IS_NAMESPACE is TRUE, bindings that do not refer to namespaces
    are ignored.
@@ -31188,7 +31200,7 @@ prefer_type_arg (tag_types tag_type)
 static cp_expr
 cp_parser_lookup_name (cp_parser *parser, tree name,
 		       enum tag_types tag_type,
-		       bool is_template,
+		       int is_template,
 		       bool is_namespace,
 		       bool check_dependency,
 		       tree *ambiguous_decls,
@@ -31372,7 +31384,14 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       else
 	decl = NULL_TREE;
 
-      if (!decl)
+      /* If we didn't find a member and have dependent bases, the member lookup
+	 is now dependent.  */
+      if (!dep && !decl && any_dependent_bases_p (object_type))
+	dep = true;
+
+      if (dep && is_template == 2)
+	/* The template keyword specifies a dependent template.  */;
+      else if (!decl)
 	/* Look it up in the enclosing context.  DR 141: When looking for a
 	   template-name after -> or ., only consider class templates.  */
 	decl = lookup_name (name, is_namespace ? LOOK_want::NAMESPACE
@@ -31400,8 +31419,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 
       /* If we know we're looking for a type (e.g. A in p->A::x),
 	 mock up a typename.  */
-      if (!decl && object_type && tag_type != none_type
-	  && dependentish_scope_p (object_type))
+      if (!decl && dep && tag_type != none_type)
 	{
 	  tree type = build_typename_type (object_type, name, name,
 					   typename_type);
@@ -43815,7 +43833,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	      cp_parser_require (parser, CPP_COLON, RT_COLON);
 
 	      init = cp_parser_range_for (parser, NULL_TREE, NULL_TREE, decl,
-					  false, 0, true);
+					  false, 0, false, true);
 
 	      cp_convert_omp_range_for (this_pre_body, for_block, decl,
 					orig_decl, init, orig_init,
@@ -45895,8 +45913,15 @@ cp_parser_oacc_host_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
   unsigned int save;
 
   clauses = cp_parser_oacc_all_clauses (parser, OACC_HOST_DATA_CLAUSE_MASK,
-					"#pragma acc host_data", pragma_tok);
-
+					"#pragma acc host_data", pragma_tok,
+					false);
+  if (!omp_find_clause (clauses, OMP_CLAUSE_USE_DEVICE_PTR))
+    {
+      error_at (pragma_tok->location,
+		"%<host_data%> construct requires %<use_device%> clause");
+      return error_mark_node;
+    }
+  clauses = finish_omp_clauses (clauses, C_ORT_ACC);
   block = begin_omp_parallel ();
   save = cp_parser_begin_omp_structured_block (parser);
   cp_parser_statement (parser, NULL_TREE, false, if_p);
@@ -49300,6 +49325,15 @@ cp_parser_pragma_unroll (cp_parser *parser, cp_token *pragma_tok)
   return unroll;
 }
 
+/* Parse a pragma GCC novector.  */
+
+static bool
+cp_parser_pragma_novector (cp_parser *parser, cp_token *pragma_tok)
+{
+  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+  return true;
+}
+
 /* Normal parsing of a pragma token.  Here we can (and must) use the
    regular lexer.  */
 
@@ -49605,58 +49639,73 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       break;
 
     case PRAGMA_IVDEP:
-      {
-	if (context == pragma_external)
-	  {
-	    error_at (pragma_tok->location,
-		      "%<#pragma GCC ivdep%> must be inside a function");
-	    break;
-	  }
-	const bool ivdep = cp_parser_pragma_ivdep (parser, pragma_tok);
-	unsigned short unroll;
-	cp_token *tok = cp_lexer_peek_token (the_parser->lexer);
-	if (tok->type == CPP_PRAGMA
-	    && cp_parser_pragma_kind (tok) == PRAGMA_UNROLL)
-	  {
-	    tok = cp_lexer_consume_token (parser->lexer);
-	    unroll = cp_parser_pragma_unroll (parser, tok);
-	    tok = cp_lexer_peek_token (the_parser->lexer);
-	  }
-	else
-	  unroll = 0;
-	if (tok->type != CPP_KEYWORD
-	    || (tok->keyword != RID_FOR
-		&& tok->keyword != RID_WHILE
-		&& tok->keyword != RID_DO))
-	  {
-	    cp_parser_error (parser, "for, while or do statement expected");
-	    return false;
-	  }
-	cp_parser_iteration_statement (parser, if_p, ivdep, unroll);
-	return true;
-      }
-
     case PRAGMA_UNROLL:
+    case PRAGMA_NOVECTOR:
       {
+	bool ivdep;
+	unsigned short unroll = 0;
+	bool novector = false;
+	const char *pragma_str;
+
+	switch (id)
+	  {
+	  case PRAGMA_IVDEP:
+	    pragma_str = "ivdep";
+	    break;
+	  case PRAGMA_UNROLL:
+	    pragma_str = "unroll";
+	    break;
+	  case PRAGMA_NOVECTOR:
+	    pragma_str = "novector";
+	    break;
+	  default:
+	    gcc_unreachable ();
+	}
+
 	if (context == pragma_external)
 	  {
 	    error_at (pragma_tok->location,
-		      "%<#pragma GCC unroll%> must be inside a function");
+		      "%<#pragma GCC %s%> must be inside a function",
+		      pragma_str);
 	    break;
 	  }
-	const unsigned short unroll
-	  = cp_parser_pragma_unroll (parser, pragma_tok);
-	bool ivdep;
-	cp_token *tok = cp_lexer_peek_token (the_parser->lexer);
-	if (tok->type == CPP_PRAGMA
-	    && cp_parser_pragma_kind (tok) == PRAGMA_IVDEP)
+
+	cp_token *tok = pragma_tok;
+	bool has_more = true;
+	do
 	  {
-	    tok = cp_lexer_consume_token (parser->lexer);
-	    ivdep = cp_parser_pragma_ivdep (parser, tok);
+	    switch (cp_parser_pragma_kind (tok))
+	      {
+		case PRAGMA_IVDEP:
+		  {
+		    if (tok != pragma_tok)
+		      tok = cp_lexer_consume_token (parser->lexer);
+		    ivdep = cp_parser_pragma_ivdep (parser, tok);
+		    break;
+		  }
+		case PRAGMA_UNROLL:
+		  {
+		    if (tok != pragma_tok)
+		      tok = cp_lexer_consume_token (parser->lexer);
+		    unroll = cp_parser_pragma_unroll (parser, tok);
+		    break;
+		  }
+		case PRAGMA_NOVECTOR:
+		  {
+		    if (tok != pragma_tok)
+		      tok = cp_lexer_consume_token (parser->lexer);
+		    novector = cp_parser_pragma_novector (parser, tok);
+		    break;
+		  }
+		default:
+		  has_more = false;
+		  break;
+	      }
 	    tok = cp_lexer_peek_token (the_parser->lexer);
+	    has_more = has_more && tok->type == CPP_PRAGMA;
 	  }
-	else
-	  ivdep = false;
+	while (has_more);
+
 	if (tok->type != CPP_KEYWORD
 	    || (tok->keyword != RID_FOR
 		&& tok->keyword != RID_WHILE
@@ -49665,7 +49714,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	    cp_parser_error (parser, "for, while or do statement expected");
 	    return false;
 	  }
-	cp_parser_iteration_statement (parser, if_p, ivdep, unroll);
+	cp_parser_iteration_statement (parser, if_p, ivdep, unroll, novector);
 	return true;
       }
 
@@ -49683,11 +49732,37 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
   return ret;
 }
 
+/* Helper for pragma_lex in preprocess-only mode; in this mode, we have not
+   populated the lexer with any tokens (the tokens rather being read by
+   c-ppoutput.c's machinery), so we need to read enough tokens now to handle
+   a pragma.  */
+static void
+maybe_read_tokens_for_pragma_lex ()
+{
+  const auto lexer = the_parser->lexer;
+  if (!lexer->buffer->is_empty ())
+    return;
+
+  /* Read the rest of the tokens comprising the pragma line.  */
+  cp_token *tok;
+  do
+    {
+      tok = vec_safe_push (lexer->buffer, cp_token ());
+      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
+      gcc_assert (tok->type != CPP_EOF);
+    } while (tok->type != CPP_PRAGMA_EOL);
+  lexer->next_token = lexer->buffer->address ();
+  lexer->last_token = lexer->next_token + lexer->buffer->length () - 1;
+}
+
 /* The interface the pragma parsers have to the lexer.  */
 
 enum cpp_ttype
 pragma_lex (tree *value, location_t *loc)
 {
+  if (flag_preprocess_only)
+    maybe_read_tokens_for_pragma_lex ();
+
   cp_token *tok = cp_lexer_peek_token (the_parser->lexer);
   enum cpp_ttype ret = tok->type;
 
@@ -49708,6 +49783,16 @@ pragma_lex (tree *value, location_t *loc)
     }
 
   return ret;
+}
+
+void
+pragma_lex_discard_to_eol ()
+{
+  /* We have already read all the tokens, so we just need to discard
+     them here.  */
+  const auto lexer = the_parser->lexer;
+  lexer->next_token = lexer->last_token;
+  lexer->buffer->truncate (0);
 }
 
 

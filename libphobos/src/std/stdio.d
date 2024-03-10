@@ -34,8 +34,16 @@ $(TR $(TD Misc) $(TD
 ))
 ))
 
-Standard I/O functions that extend $(B core.stdc.stdio).  $(B core.stdc.stdio)
+Standard I/O functions that extend $(LINK2 https://dlang.org/phobos/core_stdc_stdio.html, core.stdc.stdio).  $(B core.stdc.stdio)
 is $(D_PARAM public)ally imported when importing $(B std.stdio).
+
+There are three layers of I/O:
+$(OL
+$(LI The lowest layer is the operating system layer. The two main schemes are Windows and Posix.)
+$(LI C's $(TT stdio.h) which unifies the two operating system schemes.)
+$(LI $(TT std.stdio), this module, unifies the various $(TT stdio.h) implementations into
+a high level package for D programs.)
+)
 
 Source: $(PHOBOSSRC std/stdio.d)
 Copyright: Copyright The D Language Foundation 2007-.
@@ -43,8 +51,59 @@ License:   $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors:   $(HTTP digitalmars.com, Walter Bright),
            $(HTTP erdani.org, Andrei Alexandrescu),
            Alex Rønne Petersen
+Macros:
+CSTDIO=$(HTTP cplusplus.com/reference/cstdio/$1/, $1)
  */
 module std.stdio;
+
+/*
+# Glossary
+
+The three layers have many terms for their data structures and types.
+Here we try to bring some sanity to them for the intrepid code spelunker.
+
+## Windows
+
+Handle
+
+        A Windows handle is an opaque object of type HANDLE.
+        The `HANDLE` for standard devices can be retrieved with
+        Windows `GetStdHandle()`.
+
+## Posix
+
+file descriptor, aka fileno, aka fildes
+
+        An int from 0..`FOPEN_MAX`, which is an index into some internal data
+        structure.
+        0 is for `stdin`, 1 for `stdout`, 2 for `stderr`.
+        Negative values usually indicate an error.
+
+## stdio.h
+
+`FILE`
+
+        A struct that encapsulates the C library's view of the operating system
+        files. A `FILE` should only be referred to via a pointer.
+
+`fileno`
+
+        A field of `FILE` which is the Posix file descriptor for Posix systems, and
+        and an index into an array of file `HANDLE`s for Windows.
+        This array is how Posix behavior is emulated on Windows.
+        For Digital Mars C, that array is `__osfhnd[]`, and is initialized
+        at program start by the C runtime library.
+        In this module, they are typed as `fileno_t`.
+
+`stdin`, `stdout`, `stderr`
+
+        Global pointers to `FILE` representing standard input, output, and error streams.
+        Being global means there are synchronization issues when multiple threads
+        are doing I/O on the same streams.
+
+## std.stdio
+
+*/
 
 import core.stdc.stddef : wchar_t;
 public import core.stdc.stdio;
@@ -127,6 +186,10 @@ else version (Solaris)
 {
     version = GENERIC_IO;
 }
+else
+{
+    static assert(0, "unsupported operating system");
+}
 
 // Character type used for operating system filesystem APIs
 version (Windows)
@@ -138,6 +201,7 @@ else
     private alias FSChar = char;
 }
 
+private alias fileno_t = int;   // file descriptor, fildes, fileno
 
 version (Windows)
 {
@@ -201,7 +265,7 @@ version (DIGITAL_MARS_STDIO)
     // @@@DEPRECATED_2.107@@@
     deprecated("internal function _fileno was unintentionally available from "
                ~ "std.stdio and will be removed afer 2.107")
-    int _fileno(FILE* f) { return f._file; }
+    fileno_t _fileno(FILE* f) { return f._file; }
 }
 else version (MICROSOFT_STDIO)
 {
@@ -534,8 +598,7 @@ Params:
     name = range or string representing the file _name
     stdioOpenmode = range or string represting the open mode
         (with the same semantics as in the C standard library
-        $(HTTP cplusplus.com/reference/clibrary/cstdio/fopen.html, fopen)
-        function)
+        $(CSTDIO fopen) function)
 
 Throws: `ErrnoException` if the file could not be opened.
  */
@@ -549,7 +612,7 @@ Throws: `ErrnoException` if the file could not be opened.
                                 stdioOpenmode, "'")),
                 name);
 
-        // MSVCRT workaround (issue 14422)
+        // MSVCRT workaround (https://issues.dlang.org/show_bug.cgi?id=14422)
         version (MICROSOFT_STDIO)
         {
             setAppendWin(stdioOpenmode);
@@ -618,8 +681,7 @@ file.
 /**
 Detaches from the current file (throwing on failure), and then attempts to
 _open file `name` with mode `stdioOpenmode`. The mode has the
-same semantics as in the C standard library $(HTTP
-cplusplus.com/reference/clibrary/cstdio/fopen.html, fopen) function.
+same semantics as in the C standard library $(CSTDIO fopen) function.
 
 Throws: `ErrnoException` in case of error.
  */
@@ -708,7 +770,7 @@ Throws: `ErrnoException` in case of error.
         {
             auto handle = _p.handle;
             _p.handle = null;
-            // fclose disassociates the FILE* even in case of error (issue 19751)
+            // fclose disassociates the FILE* even in case of error (https://issues.dlang.org/show_bug.cgi?id=19751)
             errnoEnforce(.fclose(handle) == 0,
                     "Could not close file `"~_name~"'");
         }
@@ -735,8 +797,7 @@ Reuses the `File` object to either open a different file, or change
 the file mode. If `name` is `null`, the mode of the currently open
 file is changed; otherwise, a new file is opened, reusing the C
 `FILE*`. The function has the same semantics as in the C standard
-library $(HTTP cplusplus.com/reference/cstdio/freopen/, freopen)
-function.
+library $(CSTDIO freopen) function.
 
 Note: Calling `reopen` with a `null` `name` is not implemented
 in all C runtimes.
@@ -832,8 +893,8 @@ Throws: `ErrnoException` in case of error.
 Params:
     fd = File descriptor to associate with this `File`.
     stdioOpenmode = Mode to associate with this File. The mode has the same semantics
-        semantics as in the C standard library
-        $(HTTP cplusplus.com/reference/cstdio/fopen/, fdopen) function, and must be compatible with `fd`.
+        semantics as in the C standard library $(CSTDIO fdopen) function,
+        and must be compatible with `fd`.
  */
     void fdopen(int fd, scope const(char)[] stdioOpenmode = "rb") @safe
     {
@@ -932,8 +993,7 @@ Throws: `ErrnoException` in case of error.
     }
 
 /**
-Returns `true` if the file is at end (see $(HTTP
-cplusplus.com/reference/clibrary/cstdio/feof.html, feof)).
+Returns `true` if the file is at end (see $(CSTDIO feof)).
 
 Throws: `Exception` if the file is not opened.
  */
@@ -961,8 +1021,7 @@ Throws: `Exception` if the file is not opened.
 
 /**
 If the file is closed or not yet opened, returns `true`. Otherwise, returns
-$(HTTP cplusplus.com/reference/clibrary/cstdio/ferror.html, ferror) for
-the file handle.
+$(CSTDIO ferror) for the file handle.
  */
     @property bool error() const @trusted pure nothrow
     {
@@ -1017,8 +1076,7 @@ Throws: `ErrnoException` on failure if closing the file.
 
 /**
 If the file was closed or not yet opened, succeeds vacuously. Otherwise
-closes the file (by calling $(HTTP
-cplusplus.com/reference/clibrary/cstdio/fclose.html, fclose)),
+closes the file (by calling $(CSTDIO fclose)),
 throwing on error. Even if an exception is thrown, afterwards the $(D
 File) object is empty. This is different from `detach` in that it
 always closes the file; consequently, all other `File` objects
@@ -1046,8 +1104,7 @@ Throws: `ErrnoException` on error.
 
 /**
 If the file is closed or not yet opened, succeeds vacuously. Otherwise, returns
-$(HTTP cplusplus.com/reference/clibrary/cstdio/_clearerr.html,
-_clearerr) for the file handle.
+$(CSTDIO clearerr) for the file handle.
  */
     void clearerr() @safe pure nothrow
     {
@@ -1058,8 +1115,7 @@ _clearerr) for the file handle.
 /**
 Flushes the C `FILE` buffers.
 
-Calls $(HTTP cplusplus.com/reference/clibrary/cstdio/_fflush.html, _fflush)
-for the file handle.
+Calls $(CSTDIO fflush) for the file handle.
 
 Throws: `Exception` if the file is not opened or if the call to `fflush` fails.
  */
@@ -1125,7 +1181,7 @@ Throws: `Exception` if the file is not opened or if the OS call fails.
     }
 
 /**
-Calls $(HTTP cplusplus.com/reference/clibrary/cstdio/fread.html, fread) for the
+Calls $(CSTDIO fread) for the
 file handle. The number of items to read and the size of
 each item is inferred from the size and type of the input array, respectively.
 
@@ -1146,7 +1202,7 @@ Throws: `ErrnoException` if the file is not opened or the call to `fread` fails.
         enforce(isOpen, "Attempting to read from an unopened file");
         version (Windows)
         {
-            immutable fd = .fileno(_p.handle);
+            immutable fileno_t fd = .fileno(_p.handle);
             immutable mode = .__setmode(fd, _O_BINARY);
             scope(exit) .__setmode(fd, mode);
             version (DIGITAL_MARS_STDIO)
@@ -1220,7 +1276,7 @@ Throws: `ErrnoException` if the file is not opened or the call to `fread` fails.
     }
 
 /**
-Calls $(HTTP cplusplus.com/reference/clibrary/cstdio/fwrite.html, fwrite) for the file
+Calls $(CSTDIO fwrite) for the file
 handle. The number of items to write and the size of each
 item is inferred from the size and type of the input array, respectively. An
 error is thrown if the buffer could not be written in its entirety.
@@ -1236,7 +1292,7 @@ Throws: `ErrnoException` if the file is not opened or if the call to `fwrite` fa
 
         version (Windows)
         {
-            immutable fd = .fileno(_p.handle);
+            immutable fileno_t fd = .fileno(_p.handle);
             immutable oldMode = .__setmode(fd, _O_BINARY);
 
             if (oldMode != _O_BINARY)
@@ -1290,7 +1346,7 @@ Throws: `ErrnoException` if the file is not opened or if the call to `fwrite` fa
     }
 
 /**
-Calls $(HTTP cplusplus.com/reference/clibrary/cstdio/fseek.html, fseek)
+Calls $(CSTDIO fseek)
 for the file handle to move its position indicator.
 
 Params:
@@ -1374,7 +1430,7 @@ Throws: `Exception` if the file is not opened.
     }
 
 /**
-Calls $(HTTP cplusplus.com/reference/cstdio/ftell.html, ftell)
+Calls $(CSTDIO ftell)
 for the managed file handle, which returns the current value of
 the position indicator of the file handle.
 
@@ -1420,8 +1476,7 @@ Throws: `Exception` if the file is not opened.
     }
 
 /**
-Calls $(HTTP cplusplus.com/reference/clibrary/cstdio/_rewind.html, _rewind)
-for the file handle.
+Calls $(CSTDIO rewind) for the file handle.
 
 Throws: `Exception` if the file is not opened.
  */
@@ -1434,8 +1489,7 @@ Throws: `Exception` if the file is not opened.
     }
 
 /**
-Calls $(HTTP cplusplus.com/reference/clibrary/cstdio/_setvbuf.html, _setvbuf) for
-the file handle.
+Calls $(CSTDIO setvbuf) for the file handle.
 
 Throws: `Exception` if the file is not opened.
         `ErrnoException` if the call to `setvbuf` fails.
@@ -1450,8 +1504,7 @@ Throws: `Exception` if the file is not opened.
     }
 
 /**
-Calls $(HTTP cplusplus.com/reference/clibrary/cstdio/_setvbuf.html,
-_setvbuf) for the file handle.
+Calls $(CSTDIO setvbuf) for the file handle.
 
 Throws: `Exception` if the file is not opened.
         `ErrnoException` if the call to `setvbuf` fails.
@@ -2252,8 +2305,7 @@ $(CONSOLE
     }
 
 /**
- Returns a temporary file by calling
- $(HTTP cplusplus.com/reference/clibrary/cstdio/_tmpfile.html, _tmpfile).
+ Returns a temporary file by calling $(CSTDIO tmpfile).
  Note that the created file has no $(LREF name).*/
     static File tmpfile() @safe
     {
@@ -2297,7 +2349,7 @@ Returns the `FILE*` corresponding to this object.
 /**
 Returns the file number corresponding to this object.
  */
-    @property int fileno() const @trusted
+    @property fileno_t fileno() const @trusted
     {
         import std.exception : enforce;
 
@@ -3118,10 +3170,13 @@ is empty, throws an `Exception`. In case of an I/O error throws
                 // "wide-oriented" for us.
                 immutable int mode = __setmode(f.fileno, _O_TEXT);
                     // Set some arbitrary mode to obtain the previous one.
-                __setmode(f.fileno, mode); // Restore previous mode.
-                if (mode & (_O_WTEXT | _O_U16TEXT | _O_U8TEXT))
+                if (mode != -1) // __setmode() succeeded
                 {
-                    orientation_ = 1; // wide
+                    __setmode(f.fileno, mode); // Restore previous mode.
+                    if (mode & (_O_WTEXT | _O_U16TEXT | _O_U8TEXT))
+                    {
+                        orientation_ = 1; // wide
+                    }
                 }
             }
             else
@@ -3346,7 +3401,8 @@ is empty, throws an `Exception`. In case of an I/O error throws
 
         version (Windows)
         {
-            int fd, oldMode;
+            fileno_t fd;
+            int oldMode;
             version (DIGITAL_MARS_STDIO)
                 ubyte oldInfo;
         }
@@ -3805,7 +3861,7 @@ void main()
     assert(std.file.readText!string(deleteme) == "y");
 }
 
-@safe unittest // issue 18801
+@safe unittest // https://issues.dlang.org/show_bug.cgi?id=18801
 {
     static import std.file;
     import std.string : stripLeft;

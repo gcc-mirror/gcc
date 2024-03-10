@@ -67,8 +67,7 @@ version (DigitalMars)
 
     ushort __builtin_bswap16()(ushort value)
     {
-        import core.bitop;
-        return core.bitop.byteswap(value);
+        return cast(ushort) (((value >> 8) & 0xFF) | ((value << 8) & 0xFF00U));
     }
 
     uint __builtin_bswap32()(uint value)

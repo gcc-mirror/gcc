@@ -328,4 +328,31 @@ make_live_on_entry (tree_live_info_p live, basic_block bb , int p)
   bitmap_set_bit (live->global, p);
 }
 
+
+/* On-demand virtual operand global live analysis.  There is at most
+   a single virtual operand live at a time, the following computes and
+   caches the virtual operand live at the exit of a basic block
+   supporting related live-in and live-on-edge queries.  */
+
+class virtual_operand_live
+{
+public:
+  virtual_operand_live() : liveout (nullptr) {}
+  ~virtual_operand_live()
+  {
+    if (liveout)
+      free (liveout);
+  }
+
+  tree get_live_in (basic_block bb);
+  tree get_live_out (basic_block bb);
+  tree get_live_on_edge (edge e) { return get_live_out (e->src); }
+
+private:
+  void init ();
+
+  tree *liveout;
+};
+
+
 #endif /* _TREE_SSA_LIVE_H  */

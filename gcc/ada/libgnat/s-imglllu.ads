@@ -47,8 +47,7 @@ pragma Assertion_Policy (Pre                => Ignore,
 
 with System.Image_U;
 with System.Unsigned_Types;
-with System.Val_LLLU;
-with System.Wid_LLLU;
+with System.Vs_LLLU;
 
 package System.Img_LLLU
   with SPARK_Mode
@@ -56,11 +55,8 @@ is
    subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
    package Impl is new Image_U
-     (Uns                  => Long_Long_Long_Unsigned,
-      Unsigned_Width_Ghost =>
-         Wid_LLLU.Width_Long_Long_Long_Unsigned
-        (0, Long_Long_Long_Unsigned'Last),
-      Uns_Params           => System.Val_LLLU.Impl.Spec.Uns_Params);
+     (Uns    => Long_Long_Long_Unsigned,
+      U_Spec => System.Vs_LLLU.Spec);
 
    procedure Image_Long_Long_Long_Unsigned
      (V : Long_Long_Long_Unsigned;

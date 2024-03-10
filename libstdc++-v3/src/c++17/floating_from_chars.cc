@@ -1325,24 +1325,14 @@ _ZSt10from_charsPKcS0_RDF128_St12chars_format(const char* first,
 					      __ieee128& value,
 					      chars_format fmt) noexcept
 __attribute__((alias ("_ZSt10from_charsPKcS0_Ru9__ieee128St12chars_format")));
-#elif __FLT128_MANT_DIG__ == 113 && __LDBL_MANT_DIG__ != 113
+#elif defined(USE_STRTOF128_FOR_FROM_CHARS)
 // Overload for _Float128 is not defined inline in <charconv>, define it here.
 from_chars_result
 from_chars(const char* first, const char* last, _Float128& value,
 	   chars_format fmt) noexcept
 {
-#ifdef USE_STRTOF128_FOR_FROM_CHARS
   // fast_float doesn't support IEEE binary128 format, but we can use strtold.
   return from_chars_strtod(first, last, value, fmt);
-#else
-  // Read a long double. This might give an incorrect result (e.g. values
-  // out of range of long double give an error, even if they fit in _Float128).
-  long double ldbl_val;
-  auto res = std::from_chars(first, last, ldbl_val, fmt);
-  if (res.ec == errc{})
-    value = ldbl_val;
-  return res;
-#endif
 }
 #endif
 

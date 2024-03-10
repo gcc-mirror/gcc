@@ -45,7 +45,7 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Ghost              => Ignore,
                          Subprogram_Variant => Ignore);
 
-with System.Val_Util;
+with System.Value_U_Spec;
 
 generic
 
@@ -53,14 +53,12 @@ generic
 
    --  Additional parameters for ghost subprograms used inside contracts
 
-   Unsigned_Width_Ghost : Natural;
-
-   with package Uns_Params is new System.Val_Util.Uns_Params
-     (Uns => Uns, others => <>)
-   with Ghost;
+   with package U_Spec is new System.Value_U_Spec (Uns => Uns) with Ghost;
 
 package System.Image_U is
-   use all type Uns_Params.Uns_Option;
+   use all type U_Spec.Uns_Option;
+
+   Unsigned_Width_Ghost : constant Natural := U_Spec.Max_Log10 + 2 with Ghost;
 
    procedure Image_Unsigned
      (V : Uns;
@@ -71,7 +69,7 @@ package System.Image_U is
        and then S'Last < Integer'Last
        and then S'Last >= Unsigned_Width_Ghost,
      Post => P in S'Range
-       and then Uns_Params.Is_Value_Unsigned_Ghost (S (1 .. P), V);
+       and then U_Spec.Is_Value_Unsigned_Ghost (S (1 .. P), V);
    pragma Inline (Image_Unsigned);
    --  Computes Uns'Image (V) and stores the result in S (1 .. P) setting
    --  the resulting value of P. The caller guarantees that S is long enough to
@@ -89,10 +87,10 @@ package System.Image_U is
        and then P <= S'Last - Unsigned_Width_Ghost + 1,
      Post => S (S'First .. P'Old) = S'Old (S'First .. P'Old)
        and then P in P'Old + 1 .. S'Last
-       and then Uns_Params.Only_Decimal_Ghost (S, From => P'Old + 1, To => P)
-       and then Uns_Params.Scan_Based_Number_Ghost
+       and then U_Spec.Only_Decimal_Ghost (S, From => P'Old + 1, To => P)
+       and then U_Spec.Scan_Based_Number_Ghost
          (S, From => P'Old + 1, To => P)
-         = Uns_Params.Wrap_Option (V);
+         = U_Spec.Wrap_Option (V);
    --  Stores the image of V in S starting at S (P + 1), P is updated to point
    --  to the last character stored. The value stored is identical to the value
    --  of Uns'Image (V) except that no leading space is stored. The caller

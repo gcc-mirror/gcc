@@ -681,7 +681,7 @@ void test_strcpy_range (void)
   ptrdiff_t r;
 
   r = SR (0, 1);
-  T (8, "0", a + r, a);   /* { dg-warning "accessing between 1 and 2 bytes at offsets \\\[0, 1] and 0 overlaps up to 2 bytes at offset \\\[0, 1]" "strcpy" { xfail *-*-*} } */
+  T (8, "0", a + r, a);   /* { dg-warning "accessing 2 bytes at offsets \\\[0, 1] and 0 overlaps between 1 and 2 bytes at offset \\\[0, 1]" "strcpy" } */
 
   r = SR (2, 5);
   T (8, "01",  a + r, a);            /* { dg-warning "accessing 3 bytes at offsets \\\[2, 5] and 0 may overlap 1 byte at offset 2" } */
@@ -860,10 +860,11 @@ void test_strncpy_range (char *d, size_t n)
 
   i = SR (0, 1);
   T ("0123", a, a + i, 0);
-  T ("0123", a, a + i, 1);
-  /* Offset in the range [0, i] is represented as a PHI (&a, &a + i)
-     that the implementation isn't equipped to handle yet.  */
-  T ("0123", a, a + i, 2);   /* { dg-warning "accessing 2 bytes at offsets 0 and \\\[0, 1] may overlap 1 byte at offset 1" "strncpy" { xfail *-*-* } } */
+  T ("0123", a, a + i, 1); /* { dg-warning "accessing 1 byte at offsets 0 and \\\[0, 1] may overlap 1 byte at offset 0" } */
+  /* When i == 1 the following overlaps at least 1 byte: the nul at a[1]
+     (if a + 1 is the empty string).  If a + 1 is not empty then it overlaps
+     it plus as many non-nul characters after it, up to the total of 2.  */
+  T ("0123", a, a + i, 2);   /* { dg-warning "accessing 2 bytes at offsets 0 and \\\[0, 1] overlaps between 1 and 2 bytes at offset \\\[0, 1]" "strncpy" } */
 
   i = SR (1, 5);
   T ("0123", a, a + i, 0);

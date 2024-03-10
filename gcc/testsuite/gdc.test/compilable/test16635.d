@@ -39,7 +39,7 @@ void test16635_1()
     Vector2 b = Vector2(3, 4);
 
     // this line causes application to run infinitely
-    // Already fixed. It was issue 16621
+    // Already fixed. It was https://issues.dlang.org/show_bug.cgi?id=16621
     Vector2 c = a + b;
 
     // OK <- this line seg faults without the above line

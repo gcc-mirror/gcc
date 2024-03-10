@@ -198,7 +198,17 @@ public:
 	rtx len = m_vl_op;
 	if (m_vlmax_p)
 	  {
-	    if (const_vlmax_p (m_dest_mode))
+	    if (riscv_v_ext_vls_mode_p (m_dest_mode))
+	      {
+		/* VLS modes always set VSETVL by
+		   "vsetvl zero, rs1/imm".  */
+		poly_uint64 nunits = GET_MODE_NUNITS (m_dest_mode);
+		len = gen_int_mode (nunits, Pmode);
+		if (!satisfies_constraint_K (len))
+		  len = force_reg (Pmode, len);
+		m_vlmax_p = false; /* It has became NONVLMAX now.  */
+	      }
+	    else if (const_vlmax_p (m_dest_mode))
 	      {
 		/* Optimize VLS-VLMAX code gen, we can use vsetivli instead of
 		   the vsetvli to obtain the value of vlmax.  */
@@ -275,7 +285,7 @@ public:
     m_inner_mode = GET_MODE_INNER (mode);
     m_inner_bits_size = GET_MODE_BITSIZE (m_inner_mode);
     m_inner_bytes_size = GET_MODE_SIZE (m_inner_mode);
-    m_mask_mode = get_mask_mode (mode).require ();
+    m_mask_mode = get_mask_mode (mode);
 
     gcc_assert (
       int_mode_for_size (inner_bits_size (), 0).exists (&m_inner_int_mode));
@@ -556,16 +566,23 @@ const_vec_all_in_range_p (rtx vec, poly_int64 minval, poly_int64 maxval)
   return true;
 }
 
-/* Return a const_int vector of VAL.
-
-   This function also exists in aarch64, we may unify it in middle-end in the
-   future.  */
+/* Return a const vector of VAL. The VAL can be either const_int or
+   const_poly_int.  */
 
 static rtx
 gen_const_vector_dup (machine_mode mode, poly_int64 val)
 {
-  rtx c = gen_int_mode (val, GET_MODE_INNER (mode));
-  return gen_const_vec_duplicate (mode, c);
+  scalar_mode smode = GET_MODE_INNER (mode);
+  rtx c = gen_int_mode (val, smode);
+  if (!val.is_constant () && GET_MODE_SIZE (smode) > GET_MODE_SIZE (Pmode))
+    {
+      /* When VAL is const_poly_int value, we need to explicitly broadcast
+	 it into a vector using RVV broadcast instruction.  */
+      rtx dup = gen_reg_rtx (mode);
+      emit_insn (gen_vec_duplicate (mode, dup, c));
+      return dup;
+    }
+   return gen_const_vec_duplicate (mode, c);
 }
 
 /* Emit a vlmax vsetvl instruction.  This should only be used when
@@ -659,7 +676,7 @@ void
 emit_vlmax_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
 					  /* HAS_DEST_P */ true,
 					  /* FULLY_UNMASKED_P */ true,
@@ -681,7 +698,7 @@ void
 emit_vlmax_fp_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
 					  /* HAS_DEST_P */ true,
 					  /* FULLY_UNMASKED_P */ true,
@@ -704,7 +721,7 @@ void
 emit_vlmax_ternary_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
 					  /*HAS_DEST_P*/ true,
 					  /*FULLY_UNMASKED_P*/ true,
@@ -725,7 +742,7 @@ void
 emit_vlmax_fp_ternary_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
 					  /*HAS_DEST_P*/ true,
 					  /*FULLY_UNMASKED_P*/ true,
@@ -741,13 +758,35 @@ emit_vlmax_fp_ternary_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a {NONVLMAX, TAIL_UNDISTURBED, MASK_ANY} vsetvli followed
+ * by the ternary operation which always has a real merge operand.  */
+static void
+emit_nonvlmax_fp_ternary_tu_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false,
+					  /*DEST_MODE*/ dest_mode,
+					  /*MASK_MODE*/ mask_mode);
+  e.set_policy (TAIL_UNDISTURBED);
+  e.set_policy (MASK_ANY);
+  e.set_rounding_mode (FRM_DYN);
+  e.set_vl (vl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* This function emits a {NONVLMAX, TAIL_ANY, MASK_ANY} vsetvli followed by the
  * actual operation.  */
 void
 emit_nonvlmax_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
 					  /* HAS_DEST_P */ true,
 					  /* FULLY_UNMASKED_P */ true,
@@ -769,7 +808,7 @@ void
 emit_vlmax_slide_insn (unsigned icode, rtx *ops)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_SLIDE_OP,
 					  /* HAS_DEST_P */ true,
 					  /* FULLY_UNMASKED_P */ true,
@@ -791,7 +830,7 @@ void
 emit_nonvlmax_slide_tu_insn (unsigned icode, rtx *ops, rtx avl)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_SLIDE_OP,
 					  /* HAS_DEST_P */ true,
 					  /* FULLY_UNMASKED_P */ true,
@@ -814,7 +853,7 @@ void
 emit_vlmax_merge_insn (unsigned icode, int op_num, rtx *ops)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
 					  /* HAS_DEST_P */ true,
 					  /* FULLY_UNMASKED_P */ false,
@@ -869,7 +908,7 @@ static void
 emit_vlmax_masked_insn (unsigned icode, int op_num, rtx *ops)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
 					  /*HAS_DEST_P*/ true,
 					  /*FULLY_UNMASKED_P*/ false,
@@ -887,7 +926,7 @@ static void
 emit_nonvlmax_masked_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
 					  /*HAS_DEST_P*/ true,
 					  /*FULLY_UNMASKED_P*/ false,
@@ -901,12 +940,45 @@ emit_nonvlmax_masked_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a VLMAX masked store instruction.  */
+static void
+emit_vlmax_masked_store_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ false,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true, dest_mode,
+					  mask_mode);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a non-VLMAX masked store instruction.  */
+static void
+emit_nonvlmax_masked_store_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ false,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* This function emits a masked instruction.  */
 void
 emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  machine_mode mask_mode = get_mask_mode (dest_mode);
   insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
 					  /*HAS_DEST_P*/ true,
 					  /*FULLY_UNMASKED_P*/ false,
@@ -919,14 +991,53 @@ emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a TU instruction.  */
+static void
+emit_nonvlmax_tu_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_UNDISTURBED);
+  e.set_policy (MASK_ANY);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a TU instruction.  */
+static void
+emit_nonvlmax_fp_tu_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_UNDISTURBED);
+  e.set_policy (MASK_ANY);
+  e.set_rounding_mode (FRM_DYN);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* Emit vmv.s.x instruction.  */
 
 void
-emit_scalar_move_insn (unsigned icode, rtx *ops)
+emit_scalar_move_insn (unsigned icode, rtx *ops, rtx len)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (riscv_vector::RVV_SCALAR_MOV_OP,
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_SCALAR_MOV_OP,
 					  /* HAS_DEST_P */ true,
 					  /* FULLY_UNMASKED_P */ false,
 					  /* USE_REAL_MERGE_P */ true,
@@ -937,7 +1048,7 @@ emit_scalar_move_insn (unsigned icode, rtx *ops)
 
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_ANY);
-  e.set_vl (CONST1_RTX (Pmode));
+  e.set_vl (len ? len : CONST1_RTX (Pmode));
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
@@ -1040,6 +1151,81 @@ emit_vlmax_decompress_insn (rtx target, rtx op0, rtx op1, rtx mask)
   emit_vlmax_masked_gather_mu_insn (target, op1, sel, mask);
 }
 
+/* Emit compress instruction.  */
+static void
+emit_vlmax_compress_insn (unsigned icode, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_COMPRESS_OP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ false,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true, dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* Emit reduction instruction.  */
+static void
+emit_vlmax_reduction_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (GET_MODE (ops[1]));
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ false,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true, dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* Emit reduction instruction.  */
+static void
+emit_vlmax_fp_reduction_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (GET_MODE (ops[1]));
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ false,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true, dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.set_rounding_mode (FRM_DYN);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* Emit reduction instruction.  */
+static void
+emit_nonvlmax_fp_reduction_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (GET_MODE (ops[1]));
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ false,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ false, dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.set_rounding_mode (FRM_DYN);
+  e.set_vl (vl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* Emit merge instruction.  */
 
 static machine_mode
@@ -1062,8 +1248,6 @@ void
 expand_vec_series (rtx dest, rtx base, rtx step)
 {
   machine_mode mode = GET_MODE (dest);
-  machine_mode mask_mode;
-  gcc_assert (get_mask_mode (mode).exists (&mask_mode));
   poly_int64 nunits_m1 = GET_MODE_NUNITS (mode) - 1;
   poly_int64 value;
 
@@ -1137,7 +1321,6 @@ static void
 expand_const_vector (rtx target, rtx src)
 {
   machine_mode mode = GET_MODE (target);
-  scalar_mode elt_mode = GET_MODE_INNER (mode);
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
     {
       rtx elt;
@@ -1162,7 +1345,6 @@ expand_const_vector (rtx target, rtx src)
 	}
       else
 	{
-	  elt = force_reg (elt_mode, elt);
 	  rtx ops[] = {tmp, elt};
 	  emit_vlmax_insn (code_for_pred_broadcast (mode), RVV_UNOP, ops);
 	}
@@ -1343,27 +1525,51 @@ legitimize_move (rtx dest, rtx src)
       return true;
     }
 
-  /* In order to decrease the memory traffic, we don't use whole register
-   * load/store for the LMUL less than 1 and mask mode, so those case will
-   * require one extra general purpose register, but it's not allowed during LRA
-   * process, so we have a special move pattern used for LRA, which will defer
-   * the expansion after LRA.  */
-  if ((known_lt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
-       || GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
-      && lra_in_progress)
+  if (riscv_v_ext_vls_mode_p (mode))
     {
-      emit_insn (gen_mov_lra (mode, Pmode, dest, src));
-      return true;
+      if (GET_MODE_NUNITS (mode).to_constant () <= 31)
+	{
+	  /* For NUNITS <= 31 VLS modes, we don't need extrac
+	     scalar regisers so we apply the naive (set (op0) (op1)) pattern. */
+	  if (can_create_pseudo_p ())
+	    {
+	      /* Need to force register if mem <- !reg.  */
+	      if (MEM_P (dest) && !REG_P (src))
+		src = force_reg (mode, src);
+
+	      return false;
+	    }
+	}
+      else if (GET_MODE_NUNITS (mode).to_constant () > 31 && lra_in_progress)
+	{
+	  emit_insn (gen_mov_lra (mode, Pmode, dest, src));
+	  return true;
+	}
     }
-
-  if (known_ge (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
-      && GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+  else
     {
-      /* Need to force register if mem <- !reg.  */
-      if (MEM_P (dest) && !REG_P (src))
-	src = force_reg (mode, src);
+      /* In order to decrease the memory traffic, we don't use whole register
+       * load/store for the LMUL less than 1 and mask mode, so those case will
+       * require one extra general purpose register, but it's not allowed during
+       * LRA process, so we have a special move pattern used for LRA, which will
+       * defer the expansion after LRA.  */
+      if ((known_lt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
+	   || GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	  && lra_in_progress)
+	{
+	  emit_insn (gen_mov_lra (mode, Pmode, dest, src));
+	  return true;
+	}
 
-      return false;
+      if (known_ge (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
+	  && GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+	{
+	  /* Need to force register if mem <- !reg.  */
+	  if (MEM_P (dest) && !REG_P (src))
+	    src = force_reg (mode, src);
+
+	  return false;
+	}
     }
 
   if (register_operand (src, mode) && register_operand (dest, mode))
@@ -1396,37 +1602,20 @@ legitimize_move (rtx dest, rtx src)
 /* VTYPE information for machine_mode.  */
 struct mode_vtype_group
 {
-  enum vlmul_type vlmul_for_min_vlen32[NUM_MACHINE_MODES];
-  uint8_t ratio_for_min_vlen32[NUM_MACHINE_MODES];
-  enum vlmul_type vlmul_for_min_vlen64[NUM_MACHINE_MODES];
-  uint8_t ratio_for_min_vlen64[NUM_MACHINE_MODES];
-  enum vlmul_type vlmul_for_for_vlen128[NUM_MACHINE_MODES];
-  uint8_t ratio_for_for_vlen128[NUM_MACHINE_MODES];
+  enum vlmul_type vlmul[NUM_MACHINE_MODES];
+  uint8_t ratio[NUM_MACHINE_MODES];
   machine_mode subpart_mode[NUM_MACHINE_MODES];
   uint8_t nf[NUM_MACHINE_MODES];
   mode_vtype_group ()
   {
-#define ENTRY(MODE, REQUIREMENT, VLMUL_FOR_MIN_VLEN32, RATIO_FOR_MIN_VLEN32,   \
-	      VLMUL_FOR_MIN_VLEN64, RATIO_FOR_MIN_VLEN64,                      \
-	      VLMUL_FOR_MIN_VLEN128, RATIO_FOR_MIN_VLEN128)                    \
-  vlmul_for_min_vlen32[MODE##mode] = VLMUL_FOR_MIN_VLEN32;                     \
-  ratio_for_min_vlen32[MODE##mode] = RATIO_FOR_MIN_VLEN32;                     \
-  vlmul_for_min_vlen64[MODE##mode] = VLMUL_FOR_MIN_VLEN64;                     \
-  ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;                     \
-  vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
-  ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
-#define TUPLE_ENTRY(MODE, REQUIREMENT, SUBPART_MODE, NF, VLMUL_FOR_MIN_VLEN32, \
-		    RATIO_FOR_MIN_VLEN32, VLMUL_FOR_MIN_VLEN64,                \
-		    RATIO_FOR_MIN_VLEN64, VLMUL_FOR_MIN_VLEN128,               \
-		    RATIO_FOR_MIN_VLEN128)                                     \
+#define ENTRY(MODE, REQUIREMENT, VLMUL, RATIO)                                 \
+  vlmul[MODE##mode] = VLMUL;                                                   \
+  ratio[MODE##mode] = RATIO;
+#define TUPLE_ENTRY(MODE, REQUIREMENT, SUBPART_MODE, NF, VLMUL, RATIO)         \
   subpart_mode[MODE##mode] = SUBPART_MODE##mode;                               \
   nf[MODE##mode] = NF;                                                         \
-  vlmul_for_min_vlen32[MODE##mode] = VLMUL_FOR_MIN_VLEN32;                     \
-  ratio_for_min_vlen32[MODE##mode] = RATIO_FOR_MIN_VLEN32;                     \
-  vlmul_for_min_vlen64[MODE##mode] = VLMUL_FOR_MIN_VLEN64;                     \
-  ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;                     \
-  vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
-  ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
+  vlmul[MODE##mode] = VLMUL;                                                   \
+  ratio[MODE##mode] = RATIO;
 #include "riscv-vector-switch.def"
 #undef ENTRY
 #undef TUPLE_ENTRY
@@ -1439,12 +1628,62 @@ static mode_vtype_group mode_vtype_infos;
 enum vlmul_type
 get_vlmul (machine_mode mode)
 {
-  if (TARGET_MIN_VLEN >= 128)
-    return mode_vtype_infos.vlmul_for_for_vlen128[mode];
-  else if (TARGET_MIN_VLEN == 32)
-    return mode_vtype_infos.vlmul_for_min_vlen32[mode];
-  else
-    return mode_vtype_infos.vlmul_for_min_vlen64[mode];
+  /* For VLS modes, the vlmul should be dynamically
+     calculated since we need to adjust VLMUL according
+     to TARGET_MIN_VLEN.  */
+  if (riscv_v_ext_vls_mode_p (mode))
+    {
+      int size = GET_MODE_BITSIZE (mode).to_constant ();
+      int inner_size = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+      if (size < TARGET_MIN_VLEN)
+	{
+	  int factor = TARGET_MIN_VLEN / size;
+	  if (inner_size == 8)
+	    factor = MIN (factor, 8);
+	  else if (inner_size == 16)
+	    factor = MIN (factor, 4);
+	  else if (inner_size == 32)
+	    factor = MIN (factor, 2);
+	  else if (inner_size == 64)
+	    factor = MIN (factor, 1);
+	  else
+	    gcc_unreachable ();
+
+	  switch (factor)
+	    {
+	    case 1:
+	      return LMUL_1;
+	    case 2:
+	      return LMUL_F2;
+	    case 4:
+	      return LMUL_F4;
+	    case 8:
+	      return LMUL_F8;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      else
+	{
+	  int factor = size / TARGET_MIN_VLEN;
+	  switch (factor)
+	    {
+	    case 1:
+	      return LMUL_1;
+	    case 2:
+	      return LMUL_2;
+	    case 4:
+	      return LMUL_4;
+	    case 8:
+	      return LMUL_8;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+    }
+  return mode_vtype_infos.vlmul[mode];
 }
 
 /* Return the NF value of the corresponding mode.  */
@@ -1456,8 +1695,8 @@ get_nf (machine_mode mode)
   return mode_vtype_infos.nf[mode];
 }
 
-/* Return the subpart mode of the tuple mode. For VNx2x1SImode,
-   the subpart mode is VNx1SImode. This will help to build
+/* Return the subpart mode of the tuple mode. For RVVM2x2SImode,
+   the subpart mode is RVVM2SImode. This will help to build
    array/struct type in builtins.  */
 machine_mode
 get_subpart_mode (machine_mode mode)
@@ -1471,12 +1710,32 @@ get_subpart_mode (machine_mode mode)
 unsigned int
 get_ratio (machine_mode mode)
 {
-  if (TARGET_MIN_VLEN >= 128)
-    return mode_vtype_infos.ratio_for_for_vlen128[mode];
-  else if (TARGET_MIN_VLEN == 32)
-    return mode_vtype_infos.ratio_for_min_vlen32[mode];
-  else
-    return mode_vtype_infos.ratio_for_min_vlen64[mode];
+  if (riscv_v_ext_vls_mode_p (mode))
+    {
+      unsigned int sew = get_sew (mode);
+      vlmul_type vlmul = get_vlmul (mode);
+      switch (vlmul)
+	{
+	case LMUL_1:
+	  return sew;
+	case LMUL_2:
+	  return sew / 2;
+	case LMUL_4:
+	  return sew / 4;
+	case LMUL_8:
+	  return sew / 8;
+	case LMUL_F8:
+	  return sew * 8;
+	case LMUL_F4:
+	  return sew * 4;
+	case LMUL_F2:
+	  return sew * 2;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  return mode_vtype_infos.ratio[mode];
 }
 
 /* Get ta according to operand[tail_op_idx].  */
@@ -1528,10 +1787,21 @@ get_avl_type_rtx (enum avl_type type)
 
 /* Return the appropriate mask mode for MODE.  */
 
-opt_machine_mode
+machine_mode
 get_mask_mode (machine_mode mode)
 {
-  return get_vector_mode (BImode, GET_MODE_NUNITS (mode));
+  return get_vector_mode (BImode, GET_MODE_NUNITS (mode)).require();
+}
+
+/* Return the appropriate M1 mode for MODE.  */
+
+static opt_machine_mode
+get_m1_mode (machine_mode mode)
+{
+  scalar_mode smode = GET_MODE_INNER (mode);
+  unsigned int bytes = GET_MODE_SIZE (smode);
+  poly_uint64 m1_nunits = exact_div (BYTES_PER_RISCV_VECTOR, bytes);
+  return get_vector_mode (smode, m1_nunits);
 }
 
 /* Return the RVV vector mode that has NUNITS elements of mode INNER_MODE.
@@ -1551,7 +1821,8 @@ get_vector_mode (scalar_mode inner_mode, poly_uint64 nunits)
   FOR_EACH_MODE_IN_CLASS (mode, mclass)
     if (inner_mode == GET_MODE_INNER (mode)
 	&& known_eq (nunits, GET_MODE_NUNITS (mode))
-	&& riscv_v_ext_vector_mode_p (mode))
+	&& (riscv_v_ext_vector_mode_p (mode)
+	    || riscv_v_ext_vls_mode_p (mode)))
       return mode;
   return opt_machine_mode ();
 }
@@ -2006,12 +2277,12 @@ preferred_simd_mode (scalar_mode mode)
   /* We will disable auto-vectorization when TARGET_MIN_VLEN < 128 &&
      riscv_autovec_lmul < RVV_M2. Since GCC loop vectorizer report ICE when we
      enable -march=rv64gc_zve32* and -march=rv32gc_zve64*. in the
-     'can_duplicate_and_interleave_p' of tree-vect-slp.cc. Since we have
-     VNx1SImode in -march=*zve32* and VNx1DImode in -march=*zve64*, they are
-     enabled in targetm. vector_mode_supported_p and SLP vectorizer will try to
-     use them. Currently, we can support auto-vectorization in
-     -march=rv32_zve32x_zvl128b. Wheras, -march=rv32_zve32x_zvl32b or
-     -march=rv32_zve32x_zvl64b are disabled.  */
+     'can_duplicate_and_interleave_p' of tree-vect-slp.cc. Since both
+     RVVM1SImode in -march=*zve32*_zvl32b and RVVM1DImode in
+     -march=*zve64*_zvl64b are NUNITS = poly (1, 1), they will cause ICE in loop
+     vectorizer when we enable them in this target hook. Currently, we can
+     support auto-vectorization in -march=rv32_zve32x_zvl128b. Wheras,
+     -march=rv32_zve32x_zvl32b or -march=rv32_zve32x_zvl64b are disabled.  */
   if (autovec_use_vlmax_p ())
     {
       if (TARGET_MIN_VLEN < 128 && riscv_autovec_lmul < RVV_M2)
@@ -2045,8 +2316,6 @@ expand_vector_init_insert_elems (rtx target, const rvv_builder &builder,
 				 int nelts_reqd)
 {
   machine_mode mode = GET_MODE (target);
-  machine_mode mask_mode;
-  gcc_assert (get_mask_mode (mode).exists (&mask_mode));
   rtx dup = expand_vector_broadcast (mode, builder.elt (0));
   emit_move_insn (target, dup);
   int ndups = builder.count_dups (0, nelts_reqd - 1, 1);
@@ -2072,8 +2341,8 @@ expand_vector_init_merge_repeating_sequence (rtx target,
 					     const rvv_builder &builder)
 {
   machine_mode dup_mode = get_repeating_sequence_dup_machine_mode (builder);
-  machine_mode dup_mask_mode = get_mask_mode (dup_mode).require ();
-  machine_mode mask_mode = get_mask_mode (builder.mode ()).require ();
+  machine_mode dup_mask_mode = get_mask_mode (dup_mode);
+  machine_mode mask_mode = get_mask_mode (builder.mode ());
   uint64_t full_nelts = builder.full_nelts ().to_constant ();
 
   /* Step 1: Broadcast the first pattern.  */
@@ -2202,13 +2471,12 @@ autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (autovec_use_vlmax_p ())
     {
-      /* TODO: We will support RVV VLS auto-vectorization mode in the future. */
       poly_uint64 full_size
 	= BYTES_PER_RISCV_VECTOR * ((int) riscv_autovec_lmul);
 
-      /* Start with a VNxYYQImode where YY is the number of units that
+      /* Start with a RVV<LMUL>QImode where LMUL is the number of units that
 	 fit a whole vector.
-	 Then try YY = nunits / 2, nunits / 4 and nunits / 8 which
+	 Then try LMUL = nunits / 2, nunits / 4 and nunits / 8 which
 	 is guided by the extensions we have available (vf2, vf4 and vf8).
 
 	 - full_size: Try using full vectors for all element types.
@@ -2230,7 +2498,25 @@ autovectorize_vector_modes (vector_modes *modes, bool)
 	    modes->safe_push (mode);
 	}
     }
-  return 0;
+  unsigned int flag = 0;
+  if (TARGET_VECTOR_VLS)
+    {
+      /* Enable VECT_COMPARE_COSTS between VLA modes VLS modes for scalable
+	 auto-vectorization.  */
+      flag |= VECT_COMPARE_COSTS;
+      /* Push all VLSmodes according to TARGET_MIN_VLEN.  */
+      unsigned int i = 0;
+      unsigned int base_size = TARGET_MIN_VLEN * riscv_autovec_lmul / 8;
+      unsigned int size = base_size;
+      machine_mode mode;
+      while (size > 0 && get_vector_mode (QImode, size).exists (&mode))
+	{
+	  modes->safe_push (mode);
+	  i++;
+	  size = base_size / (1U << i);
+	}
+    }
+  return flag;
 }
 
 /* If the given VECTOR_MODE is an RVV mode,  first get the largest number
@@ -2431,6 +2717,25 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
   return false;
 }
 
+/* Modulo all SEL indices to ensure they are all in range if [0, MAX_SEL].  */
+static rtx
+modulo_sel_indices (rtx sel, poly_uint64 max_sel)
+{
+  rtx sel_mod;
+  machine_mode sel_mode = GET_MODE (sel);
+  poly_uint64 nunits = GET_MODE_NUNITS (sel_mode);
+  /* If SEL is variable-length CONST_VECTOR, we don't need to modulo it.  */
+  if (!nunits.is_constant () && CONST_VECTOR_P (sel))
+    sel_mod = sel;
+  else
+    {
+      rtx mod = gen_const_vector_dup (sel_mode, max_sel);
+      sel_mod
+	= expand_simple_binop (sel_mode, AND, sel, mod, NULL, 0, OPTAB_DIRECT);
+    }
+  return sel_mod;
+}
+
 /* Implement vec_perm<mode>.  */
 
 void
@@ -2444,47 +2749,50 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
      index is in range of [0, nunits - 1]. A single vrgather instructions is
      enough. Since we will use vrgatherei16.vv for variable-length vector,
      it is never out of range and we don't need to modulo the index.  */
-  if (!nunits.is_constant () || const_vec_all_in_range_p (sel, 0, nunits - 1))
+  if (nunits.is_constant () && const_vec_all_in_range_p (sel, 0, nunits - 1))
     {
       emit_vlmax_gather_insn (target, op0, sel);
       return;
     }
 
-  /* Check if the two values vectors are the same.  */
-  if (rtx_equal_p (op0, op1) || const_vec_duplicate_p (sel))
+  /* Check if all the indices are same.  */
+  rtx elt;
+  if (const_vec_duplicate_p (sel, &elt))
     {
-      /* Note: vec_perm indices are supposed to wrap when they go beyond the
-	 size of the two value vectors, i.e. the upper bits of the indices
-	 are effectively ignored.  RVV vrgather instead produces 0 for any
-	 out-of-range indices, so we need to modulo all the vec_perm indices
-	 to ensure they are all in range of [0, nunits - 1].  */
-      rtx max_sel = gen_const_vector_dup (sel_mode, nunits - 1);
-      rtx sel_mod = expand_simple_binop (sel_mode, AND, sel, max_sel, NULL, 0,
-					 OPTAB_DIRECT);
-      emit_vlmax_gather_insn (target, op1, sel_mod);
+      poly_uint64 value = rtx_to_poly_int64 (elt);
+      rtx op = op0;
+      if (maybe_gt (value, nunits - 1))
+	{
+	  sel = gen_const_vector_dup (sel_mode, value - nunits);
+	  op = op1;
+	}
+      emit_vlmax_gather_insn (target, op, sel);
+    }
+
+  /* Note: vec_perm indices are supposed to wrap when they go beyond the
+     size of the two value vectors, i.e. the upper bits of the indices
+     are effectively ignored.  RVV vrgather instead produces 0 for any
+     out-of-range indices, so we need to modulo all the vec_perm indices
+     to ensure they are all in range of [0, nunits - 1] when op0 == op1
+     or all in range of [0, 2 * nunits - 1] when op0 != op1.  */
+  rtx sel_mod
+    = modulo_sel_indices (sel,
+			  rtx_equal_p (op0, op1) ? nunits - 1 : 2 * nunits - 1);
+
+  /* Check if the two values vectors are the same.  */
+  if (rtx_equal_p (op0, op1))
+    {
+      emit_vlmax_gather_insn (target, op0, sel_mod);
       return;
     }
 
-  rtx sel_mod = sel;
   rtx max_sel = gen_const_vector_dup (sel_mode, 2 * nunits - 1);
-  /* We don't need to modulo indices for VLA vector.
-     Since we should gurantee they aren't out of range before.  */
-  if (nunits.is_constant ())
-    {
-      /* Note: vec_perm indices are supposed to wrap when they go beyond the
-	 size of the two value vectors, i.e. the upper bits of the indices
-	 are effectively ignored.  RVV vrgather instead produces 0 for any
-	 out-of-range indices, so we need to modulo all the vec_perm indices
-	 to ensure they are all in range of [0, 2 * nunits - 1].  */
-      sel_mod = expand_simple_binop (sel_mode, AND, sel, max_sel, NULL, 0,
-				     OPTAB_DIRECT);
-    }
 
   /* This following sequence is handling the case that:
      __builtin_shufflevector (vec1, vec2, index...), the index can be any
      value in range of [0, 2 * nunits - 1].  */
   machine_mode mask_mode;
-  mask_mode = get_mask_mode (data_mode).require ();
+  mask_mode = get_mask_mode (data_mode);
   rtx mask = gen_reg_rtx (mask_mode);
   max_sel = gen_const_vector_dup (sel_mode, nunits);
 
@@ -2556,7 +2864,7 @@ shuffle_merge_patterns (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  machine_mode mask_mode = get_mask_mode (vmode).require ();
+  machine_mode mask_mode = get_mask_mode (vmode);
   rtx mask = gen_reg_rtx (mask_mode);
 
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
@@ -2570,6 +2878,146 @@ shuffle_merge_patterns (struct expand_vec_perm_d *d)
 
   /* TARGET = MASK ? OP0 : OP1.  */
   emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op0, d->op1, mask));
+  return true;
+}
+
+/* Recognize the patterns that we can use compress operation to shuffle the
+   vectors. The perm selector of compress pattern is divided into 2 part:
+   The first part is the random index number < NUNITS.
+   The second part is consecutive last N index number >= NUNITS.
+
+   E.g.
+   v = VEC_PERM_EXPR (v0, v1, selector),
+   selector = { 0, 2, 6, 7 }
+
+   We can transform such pattern into:
+
+   op1 = vcompress (op0, mask)
+   mask = { 1, 0, 1, 0 }
+   v = op1.  */
+
+static bool
+shuffle_compress_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  poly_int64 vec_len = d->perm.length ();
+
+  if (!vec_len.is_constant ())
+    return false;
+
+  int vlen = vec_len.to_constant ();
+
+  /* It's not worthwhile the compress pattern has elemenets < 4
+     and we can't modulo indices for compress pattern.  */
+  if (known_ge (d->perm[vlen - 1], vlen * 2) || vlen < 4)
+    return false;
+
+  /* Compress pattern doesn't work for one vector.  */
+  if (d->one_vector_p)
+    return false;
+
+  /* Compress point is the point that all elements value with index i >=
+     compress point of the selector are all consecutive series increasing and
+     each selector value >= NUNTIS. In this case, we could compress all elements
+     of i < compress point into the op1.  */
+  int compress_point = -1;
+  for (int i = 0; i < vlen; i++)
+    {
+      if (compress_point < 0 && known_ge (d->perm[i], vec_len))
+	{
+	  compress_point = i;
+	  break;
+	}
+    }
+
+  /* We don't apply compress approach if we can't find the compress point.  */
+  if (compress_point < 0)
+    return false;
+
+  /* It must be series increasing from compress point.  */
+  if (!d->perm.series_p (compress_point, 1, d->perm[compress_point], 1))
+    return false;
+
+  /* We can only apply compress approach when all index values from 0 to
+     compress point are increasing.  */
+  for (int i = 1; i < compress_point; i++)
+    if (known_le (d->perm[i], d->perm[i - 1]))
+      return false;
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  /* Check whether we need to slideup op1 to apply compress approach.
+
+       E.g. For index = { 0, 2, 6, 7}, since d->perm[i - 1] = 7 which
+	    is 2 * NUNITS - 1, so we don't need to slide up.
+
+	    For index = { 0, 2, 5, 6}, we need to slide op1 up before
+	    we apply compress approach.  */
+  bool need_slideup_p = maybe_ne (d->perm[vlen - 1], 2 * vec_len - 1);
+
+  /* If we leave it directly be handled by general gather,
+     the code sequence will be:
+	VECTOR LOAD  selector
+	GEU          mask, selector, NUNITS
+	GATHER       dest, op0, selector
+	SUB          selector, selector, NUNITS
+	GATHER       dest, op1, selector, mask
+     Each ALU operation is considered as COST = 1 and VECTOR LOAD is considered
+     as COST = 4. So, we consider the general gather handling COST = 9.
+     TODO: This cost is not accurate, we can adjust it by tune info.  */
+  int general_cost = 9;
+
+  /* If we can use compress approach, the code squence will be:
+	MASK LOAD    mask
+	COMPRESS     op1, op0, mask
+     If it needs slide up, it will be:
+	MASK LOAD    mask
+	SLIDEUP      op1
+	COMPRESS     op1, op0, mask
+     By default, mask load COST = 2.
+     TODO: This cost is not accurate, we can adjust it by tune info.  */
+  int compress_cost = 4;
+
+  if (general_cost <= compress_cost)
+    return false;
+
+  /* Build a mask that is true when selector element is true.  */
+  machine_mode mask_mode = get_mask_mode (vmode);
+  rvv_builder builder (mask_mode, vlen, 1);
+  for (int i = 0; i < vlen; i++)
+    {
+      bool is_compress_index = false;
+      for (int j = 0; j < compress_point; j++)
+	{
+	  if (known_eq (d->perm[j], i))
+	    {
+	      is_compress_index = true;
+	      break;
+	    }
+	}
+      if (is_compress_index)
+	builder.quick_push (CONST1_RTX (BImode));
+      else
+	builder.quick_push (CONST0_RTX (BImode));
+    }
+  rtx mask = force_reg (mask_mode, builder.build ());
+
+  rtx merge = d->op1;
+  if (need_slideup_p)
+    {
+      int slideup_cnt = vlen - (d->perm[vlen - 1].to_constant () % vlen) - 1;
+      rtx ops[] = {d->target, RVV_VUNDEF (vmode), d->op1,
+		   gen_int_mode (slideup_cnt, Pmode)};
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
+      emit_vlmax_slide_insn (icode, ops);
+      merge = d->target;
+    }
+
+  insn_code icode = code_for_pred_compress (vmode);
+  rtx ops[] = {d->target, merge, d->op0, mask};
+  emit_vlmax_compress_insn (icode, ops);
   return true;
 }
 
@@ -2588,7 +3036,7 @@ static bool
 shuffle_decompress_patterns (struct expand_vec_perm_d *d)
 {
   poly_uint64 nelt = d->perm.length ();
-  machine_mode mask_mode = get_mask_mode (d->vmode).require ();
+  machine_mode mask_mode = get_mask_mode (d->vmode);
 
   /* For constant size indices, we dont't need to handle it here.
      Just leave it to vec_perm<mode>.  */
@@ -2696,6 +3144,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	{
 	  if (shuffle_merge_patterns (d))
 	    return true;
+	  if (shuffle_compress_patterns (d))
+	    return true;
 	  if (shuffle_decompress_patterns (d))
 	    return true;
 	  if (shuffle_generic_patterns (d))
@@ -2771,13 +3221,13 @@ expand_select_vl (rtx *ops)
   emit_insn (gen_no_side_effects_vsetvl_rtx (rvv_mode, ops[0], ops[1]));
 }
 
-/* Expand LEN_MASK_{LOAD,STORE}.  */
+/* Expand MASK_LEN_{LOAD,STORE}.  */
 void
 expand_load_store (rtx *ops, bool is_load)
 {
   poly_int64 value;
-  rtx len = ops[2];
-  rtx mask = ops[4];
+  rtx mask = ops[2];
+  rtx len = ops[3];
   machine_mode mode = GET_MODE (ops[0]);
 
   if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))
@@ -2810,6 +3260,278 @@ expand_load_store (rtx *ops, bool is_load)
 	emit_insn (gen_pred_store (mode, ops[0], mask, ops[1], len,
 				   get_avl_type_rtx (NONVLMAX)));
     }
+}
+
+
+/* Return true if the operation is the floating-point operation need FRM.  */
+static bool
+needs_fp_rounding (rtx_code code, machine_mode mode)
+{
+  if (!FLOAT_MODE_P (mode))
+    return false;
+  return code != SMIN && code != SMAX;
+}
+
+/* Expand COND_LEN_*.  */
+void
+expand_cond_len_binop (rtx_code code, rtx *ops)
+{
+  rtx dest = ops[0];
+  rtx mask = ops[1];
+  rtx src1 = ops[2];
+  rtx src2 = ops[3];
+  rtx merge = ops[4];
+  rtx len = ops[5];
+  machine_mode mode = GET_MODE (dest);
+  machine_mode mask_mode = GET_MODE (mask);
+
+  poly_uint64 value;
+  bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
+
+  if (is_dummy_mask)
+    {
+      /* Use TU, MASK ANY policy.  */
+      rtx ops[] = {dest, mask, merge, src1, src2};
+      insn_code icode = code_for_pred (code, mode);
+      if (needs_fp_rounding (code, mode))
+	emit_nonvlmax_fp_tu_insn (icode, RVV_BINOP_TU, ops, len);
+      else
+	emit_nonvlmax_tu_insn (icode, RVV_BINOP_TU, ops, len);
+    }
+  else
+    /* FIXME: Enable this case when we support it in the middle-end.  */
+    gcc_unreachable ();
+}
+
+/* Prepare insn_code for gather_load/scatter_store according to
+   the vector mode and index mode.  */
+static insn_code
+prepare_gather_scatter (machine_mode vec_mode, machine_mode idx_mode,
+			bool is_load)
+{
+  if (!is_load)
+    return code_for_pred_indexed_store (UNSPEC_UNORDERED, vec_mode, idx_mode);
+  else
+    {
+      unsigned src_eew_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (idx_mode));
+      unsigned dst_eew_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (vec_mode));
+      if (dst_eew_bitsize == src_eew_bitsize)
+	return code_for_pred_indexed_load_same_eew (UNSPEC_UNORDERED, vec_mode);
+      else if (dst_eew_bitsize > src_eew_bitsize)
+	{
+	  unsigned factor = dst_eew_bitsize / src_eew_bitsize;
+	  switch (factor)
+	    {
+	    case 2:
+	      return code_for_pred_indexed_load_x2_greater_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    case 4:
+	      return code_for_pred_indexed_load_x4_greater_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    case 8:
+	      return code_for_pred_indexed_load_x8_greater_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      else
+	{
+	  unsigned factor = src_eew_bitsize / dst_eew_bitsize;
+	  switch (factor)
+	    {
+	    case 2:
+	      return code_for_pred_indexed_load_x2_smaller_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    case 4:
+	      return code_for_pred_indexed_load_x4_smaller_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    case 8:
+	      return code_for_pred_indexed_load_x8_smaller_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+    }
+}
+
+/* Expand LEN_MASK_{GATHER_LOAD,SCATTER_STORE}.  */
+void
+expand_gather_scatter (rtx *ops, bool is_load)
+{
+  rtx ptr, vec_offset, vec_reg;
+  bool zero_extend_p;
+  int scale_log2;
+  rtx mask = ops[5];
+  rtx len = ops[6];
+  if (is_load)
+    {
+      vec_reg = ops[0];
+      ptr = ops[1];
+      vec_offset = ops[2];
+      zero_extend_p = INTVAL (ops[3]);
+      scale_log2 = exact_log2 (INTVAL (ops[4]));
+    }
+  else
+    {
+      vec_reg = ops[4];
+      ptr = ops[0];
+      vec_offset = ops[1];
+      zero_extend_p = INTVAL (ops[2]);
+      scale_log2 = exact_log2 (INTVAL (ops[3]));
+    }
+
+  machine_mode vec_mode = GET_MODE (vec_reg);
+  machine_mode idx_mode = GET_MODE (vec_offset);
+  scalar_mode inner_vec_mode = GET_MODE_INNER (vec_mode);
+  scalar_mode inner_idx_mode = GET_MODE_INNER (idx_mode);
+  unsigned inner_vsize = GET_MODE_BITSIZE (inner_vec_mode);
+  unsigned inner_offsize = GET_MODE_BITSIZE (inner_idx_mode);
+  poly_int64 nunits = GET_MODE_NUNITS (vec_mode);
+  poly_int64 value;
+  bool is_vlmax = poly_int_rtx_p (len, &value) && known_eq (value, nunits);
+
+  if (inner_offsize < inner_vsize)
+    {
+      /* 7.2. Vector Load/Store Addressing Modes.
+	 If the vector offset elements are narrower than XLEN, they are
+	 zero-extended to XLEN before adding to the ptr effective address. If
+	 the vector offset elements are wider than XLEN, the least-significant
+	 XLEN bits are used in the address calculation. An implementation must
+	 raise an illegal instruction exception if the EEW is not supported for
+	 offset elements.
+
+	 RVV spec only refers to the scale_log == 0 case.  */
+      if (!zero_extend_p || (zero_extend_p && scale_log2 != 0))
+	{
+	  if (zero_extend_p)
+	    inner_idx_mode
+	      = int_mode_for_size (inner_offsize * 2, 0).require ();
+	  else
+	    inner_idx_mode = int_mode_for_size (BITS_PER_WORD, 0).require ();
+	  machine_mode new_idx_mode
+	    = get_vector_mode (inner_idx_mode, nunits).require ();
+	  rtx tmp = gen_reg_rtx (new_idx_mode);
+	  emit_insn (gen_extend_insn (tmp, vec_offset, new_idx_mode, idx_mode,
+				      zero_extend_p ? true : false));
+	  vec_offset = tmp;
+	  idx_mode = new_idx_mode;
+	}
+    }
+
+  if (scale_log2 != 0)
+    {
+      rtx tmp = expand_binop (idx_mode, ashl_optab, vec_offset,
+			      gen_int_mode (scale_log2, Pmode), NULL_RTX, 0,
+			      OPTAB_DIRECT);
+      vec_offset = tmp;
+    }
+
+  insn_code icode = prepare_gather_scatter (vec_mode, idx_mode, is_load);
+  if (is_vlmax)
+    {
+      if (is_load)
+	{
+	  rtx load_ops[]
+	    = {vec_reg, mask, RVV_VUNDEF (vec_mode), ptr, vec_offset};
+	  emit_vlmax_masked_insn (icode, RVV_GATHER_M_OP, load_ops);
+	}
+      else
+	{
+	  rtx store_ops[] = {mask, ptr, vec_offset, vec_reg};
+	  emit_vlmax_masked_store_insn (icode, RVV_SCATTER_M_OP, store_ops);
+	}
+    }
+  else
+    {
+      if (is_load)
+	{
+	  rtx load_ops[]
+	    = {vec_reg, mask, RVV_VUNDEF (vec_mode), ptr, vec_offset};
+	  emit_nonvlmax_masked_insn (icode, RVV_GATHER_M_OP, load_ops, len);
+	}
+      else
+	{
+	  rtx store_ops[] = {mask, ptr, vec_offset, vec_reg};
+	  emit_nonvlmax_masked_store_insn (icode, RVV_SCATTER_M_OP, store_ops,
+					   len);
+	}
+    }
+}
+
+/* Expand COND_LEN_*.  */
+void
+expand_cond_len_ternop (unsigned icode, rtx *ops)
+{
+  rtx dest = ops[0];
+  rtx mask = ops[1];
+  rtx len = ops[6];
+  machine_mode mode = GET_MODE (dest);
+  machine_mode mask_mode = GET_MODE (mask);
+
+  poly_uint64 value;
+  bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
+
+  if (is_dummy_mask)
+    {
+      /* Use TU, MASK ANY policy.  */
+      if (FLOAT_MODE_P (mode))
+	emit_nonvlmax_fp_ternary_tu_insn (icode, RVV_TERNOP_TU, ops, len);
+      else
+	/* FIXME: Enable this case when we support it in the middle-end.  */
+	gcc_unreachable ();
+    }
+  else
+    /* FIXME: Enable this case when we support it in the middle-end.  */
+    gcc_unreachable ();
+}
+
+/* Expand reduction operations.  */
+void
+expand_reduction (rtx_code code, rtx *ops, rtx init, reduction_type type)
+{
+  rtx vector = type == reduction_type::UNORDERED ? ops[1] : ops[2];
+  machine_mode vmode = GET_MODE (vector);
+  machine_mode m1_mode = get_m1_mode (vmode).require ();
+  machine_mode m1_mmode = get_mask_mode (m1_mode);
+
+  rtx m1_tmp = gen_reg_rtx (m1_mode);
+  rtx m1_mask = gen_scalar_move_mask (m1_mmode);
+  rtx m1_undef = RVV_VUNDEF (m1_mode);
+  rtx scalar_move_ops[] = {m1_tmp, m1_mask, m1_undef, init};
+  rtx len = type == reduction_type::MASK_LEN_FOLD_LEFT ? ops[4] : NULL_RTX;
+  emit_scalar_move_insn (code_for_pred_broadcast (m1_mode), scalar_move_ops,
+			 len);
+
+  rtx m1_tmp2 = gen_reg_rtx (m1_mode);
+  rtx reduc_ops[] = {m1_tmp2, vector, m1_tmp};
+
+  if (FLOAT_MODE_P (vmode) && code == PLUS)
+    {
+      insn_code icode
+	= code_for_pred_reduc_plus (type == reduction_type::UNORDERED
+				      ? UNSPEC_UNORDERED
+				      : UNSPEC_ORDERED,
+				    vmode, m1_mode);
+      if (type == reduction_type::MASK_LEN_FOLD_LEFT)
+	{
+	  rtx mask = ops[3];
+	  rtx mask_len_reduc_ops[]
+	    = {m1_tmp2, mask, RVV_VUNDEF (m1_mode), vector, m1_tmp};
+	  emit_nonvlmax_fp_reduction_insn (icode, RVV_REDUCTION_TU_OP,
+					   mask_len_reduc_ops, len);
+	}
+      else
+	emit_vlmax_fp_reduction_insn (icode, RVV_REDUCTION_OP, reduc_ops);
+    }
+  else
+    {
+      insn_code icode = code_for_pred_reduc (code, vmode, m1_mode);
+      emit_vlmax_reduction_insn (icode, RVV_REDUCTION_OP, reduc_ops);
+    }
+
+  emit_insn (gen_pred_extract_first (m1_mode, ops[0], m1_tmp2));
 }
 
 } // namespace riscv_vector

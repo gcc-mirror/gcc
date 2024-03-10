@@ -2565,33 +2565,8 @@ E[] replace(E, R1, R2)(E[] subject, R1 from, R2 to)
 if ((isForwardRange!R1 && isForwardRange!R2 && (hasLength!R2 || isSomeString!R2)) ||
     is(Unqual!E : Unqual!R1))
 {
-    import std.algorithm.searching : find;
-    import std.range : dropOne;
-
-    static if (isInputRange!R1)
-    {
-        if (from.empty) return subject;
-        alias rSave = a => a.save;
-    }
-    else
-    {
-        alias rSave = a => a;
-    }
-
-    auto balance = find(subject, rSave(from));
-    if (balance.empty)
-        return subject;
-
-    auto app = appender!(E[])();
-    app.put(subject[0 .. subject.length - balance.length]);
-    app.put(rSave(to));
-    // replacing an element in an array is different to a range replacement
-    static if (is(Unqual!E : Unqual!R1))
-        replaceInto(app, balance.dropOne, from, to);
-    else
-        replaceInto(app, balance[from.length .. $], from, to);
-
-    return app.data;
+    size_t changed = 0;
+    return replace(subject, from, to, changed);
 }
 
 ///
@@ -2645,6 +2620,68 @@ if ((isForwardRange!R1 && isForwardRange!R2 && (hasLength!R2 || isSomeString!R2)
 }
 
 /++
+    Replace occurrences of `from` with `to` in `subject` in a new array.
+    `changed` counts how many replacements took place.
+
+    Params:
+        subject = the array to scan
+        from = the item to replace
+        to = the item to replace all instances of `from` with
+        changed = the number of replacements
+
+    Returns:
+        A new array without changing the contents of `subject`, or the original
+        array if no match is found.
+ +/
+E[] replace(E, R1, R2)(E[] subject, R1 from, R2 to, ref size_t changed)
+if ((isForwardRange!R1 && isForwardRange!R2 && (hasLength!R2 || isSomeString!R2)) ||
+    is(Unqual!E : Unqual!R1))
+{
+    import std.algorithm.searching : find;
+    import std.range : dropOne;
+
+    static if (isInputRange!R1)
+    {
+        if (from.empty) return subject;
+        alias rSave = a => a.save;
+    }
+    else
+    {
+        alias rSave = a => a;
+    }
+
+    auto balance = find(subject, rSave(from));
+    if (balance.empty)
+        return subject;
+
+    auto app = appender!(E[])();
+    app.put(subject[0 .. subject.length - balance.length]);
+    app.put(rSave(to));
+    ++changed;
+    // replacing an element in an array is different to a range replacement
+    static if (is(Unqual!E : Unqual!R1))
+        replaceInto(app, balance.dropOne, from, to, changed);
+    else
+        replaceInto(app, balance[from.length .. $], from, to, changed);
+
+    return app.data;
+}
+
+///
+@safe unittest
+{
+    size_t changed = 0;
+    assert("Hello Wörld".replace("o Wö", "o Wo", changed) == "Hello World");
+    assert(changed == 1);
+
+    changed = 0;
+    assert("Hello Wörld".replace("l", "h", changed) == "Hehho Wörhd");
+    import std.stdio : writeln;
+    writeln(changed);
+    assert(changed == 3);
+}
+
+/++
     Replace occurrences of `from` with `to` in `subject` and output the result into
     `sink`.
 
@@ -2662,38 +2699,8 @@ if (isOutputRange!(Sink, E) &&
     ((isForwardRange!R1 && isForwardRange!R2 && (hasLength!R2 || isSomeString!R2)) ||
     is(Unqual!E : Unqual!R1)))
 {
-    import std.algorithm.searching : find;
-    import std.range : dropOne;
-
-    static if (isInputRange!R1)
-    {
-        if (from.empty)
-        {
-            sink.put(subject);
-            return;
-        }
-        alias rSave = a => a.save;
-    }
-    else
-    {
-        alias rSave = a => a;
-    }
-    for (;;)
-    {
-        auto balance = find(subject, rSave(from));
-        if (balance.empty)
-        {
-            sink.put(subject);
-            break;
-        }
-        sink.put(subject[0 .. subject.length - balance.length]);
-        sink.put(rSave(to));
-        // replacing an element in an array is different to a range replacement
-        static if (is(Unqual!E : Unqual!R1))
-            subject = balance.dropOne;
-        else
-            subject = balance[from.length .. $];
-    }
+    size_t changed = 0;
+    replaceInto(sink, subject, from, to, changed);
 }
 
 ///
@@ -2781,6 +2788,72 @@ if (isOutputRange!(Sink, E) &&
     auto sink2 = appender!(dchar[])();
     replaceInto(sink2, "äbö", 'ä', 'a');
     assert(sink2.data == "abö");
+}
+
+/++
+    Replace occurrences of `from` with `to` in `subject` and output the result into
+    `sink`. `changed` counts how many replacements took place.
+
+    Params:
+        sink = an $(REF_ALTTEXT output range, isOutputRange, std,range,primitives)
+        subject = the array to scan
+        from = the item to replace
+        to = the item to replace all instances of `from` with
+        changed = the number of replacements
+ +/
+void replaceInto(E, Sink, R1, R2)(Sink sink, E[] subject, R1 from, R2 to, ref size_t changed)
+if (isOutputRange!(Sink, E) &&
+    ((isForwardRange!R1 && isForwardRange!R2 && (hasLength!R2 || isSomeString!R2)) ||
+    is(Unqual!E : Unqual!R1)))
+{
+    import std.algorithm.searching : find;
+    import std.range : dropOne;
+
+    static if (isInputRange!R1)
+    {
+        if (from.empty)
+        {
+            sink.put(subject);
+            return;
+        }
+        alias rSave = a => a.save;
+    }
+    else
+    {
+        alias rSave = a => a;
+    }
+    for (;;)
+    {
+        auto balance = find(subject, rSave(from));
+        if (balance.empty)
+        {
+            sink.put(subject);
+            break;
+        }
+        sink.put(subject[0 .. subject.length - balance.length]);
+        sink.put(rSave(to));
+        ++changed;
+        // replacing an element in an array is different to a range replacement
+        static if (is(Unqual!E : Unqual!R1))
+            subject = balance.dropOne;
+        else
+            subject = balance[from.length .. $];
+    }
+}
+
+///
+@safe unittest
+{
+    auto arr = [1, 2, 3, 4, 5];
+    auto from = [2, 3];
+    auto to = [4, 6];
+    auto sink = appender!(int[])();
+
+    size_t changed = 0;
+    replaceInto(sink, arr, from, to, changed);
+
+    assert(sink.data == [1, 4, 6, 4, 5]);
+    assert(changed == 1);
 }
 
 /++

@@ -57,6 +57,10 @@ typedef struct gfc_se
      here.  */
   tree class_vptr;
 
+  /* When expr is a reference to a direct subobject of a class, store
+     the reference to the class object here.  */
+  tree class_container;
+
   /* Whether expr is a reference to an unlimited polymorphic object.  */
   unsigned unlimited_polymorphic:1;
 
@@ -263,6 +267,7 @@ typedef struct gfc_ss_info
   gfc_ss_type type;
   gfc_expr *expr;
   tree string_length;
+  tree class_container;
 
   union
   {
@@ -446,13 +451,13 @@ tree gfc_vptr_def_init_get (tree);
 tree gfc_vptr_copy_get (tree);
 tree gfc_vptr_final_get (tree);
 tree gfc_vptr_deallocate_get (tree);
-void gfc_reset_vptr (stmtblock_t *, gfc_expr *);
+void gfc_reset_vptr (stmtblock_t *, gfc_expr *, tree = NULL_TREE);
 void gfc_reset_len (stmtblock_t *, gfc_expr *);
 tree gfc_get_class_from_gfc_expr (gfc_expr *);
 tree gfc_get_class_from_expr (tree);
 tree gfc_get_vptr_from_expr (tree);
 tree gfc_copy_class_to_class (tree, tree, tree, bool);
-bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *);
+bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *, tree = NULL_TREE);
 bool gfc_add_comp_finalizer_call (stmtblock_t *, tree, gfc_component *, bool);
 void gfc_finalize_tree_expr (gfc_se *, gfc_symbol *, symbol_attribute, int);
 bool gfc_assignment_finalizer_call (gfc_se *, gfc_expr *, bool);
@@ -525,6 +530,7 @@ void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
 /* If the value is not constant, Create a temporary and copy the value.  */
 tree gfc_evaluate_now_loc (location_t, tree, stmtblock_t *);
 tree gfc_evaluate_now (tree, stmtblock_t *);
+tree gfc_evaluate_data_ref_now (tree, stmtblock_t *);
 tree gfc_evaluate_now_function_scope (tree, stmtblock_t *);
 
 /* Find the appropriate variant of a math intrinsic.  */
@@ -765,10 +771,11 @@ void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree);
 
 /* Generate code to deallocate an array.  */
 tree gfc_deallocate_with_status (tree, tree, tree, tree, tree, bool,
-				 gfc_expr *, int, tree a = NULL_TREE,
-				 tree c = NULL_TREE);
+				 gfc_expr *, int, tree = NULL_TREE,
+				 tree a = NULL_TREE, tree c = NULL_TREE);
 tree gfc_deallocate_scalar_with_status (tree, tree, tree, bool, gfc_expr*,
-					gfc_typespec, bool c = false);
+					gfc_typespec, tree = NULL_TREE,
+					bool c = false);
 
 /* Generate code to call realloc().  */
 tree gfc_call_realloc (stmtblock_t *, tree, tree);

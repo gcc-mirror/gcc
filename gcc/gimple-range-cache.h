@@ -61,11 +61,11 @@ public:
   virtual bool has_range (tree name) const;
   virtual bool get_range (vrange &r, tree name) const;
   virtual bool set_range (tree name, const vrange &r);
+  virtual bool merge_range (tree name, const vrange &r);
   virtual void clear_range (tree name);
   virtual void clear ();
   void dump (FILE *f = stderr);
-  virtual bool range_of_expr (vrange &r, tree expr, gimple *stmt);
-
+  virtual bool range_of_expr (vrange &r, tree expr, gimple *stmt = NULL);
 protected:
   vec<vrange_storage *> m_tab;
   vrange_allocator *m_range_allocator;
@@ -80,8 +80,10 @@ class ssa_lazy_cache : public ssa_cache
 public:
   inline ssa_lazy_cache () { active_p = BITMAP_ALLOC (NULL); }
   inline ~ssa_lazy_cache () { BITMAP_FREE (active_p); }
+  inline bool empty_p () const { return bitmap_empty_p (active_p); }
   virtual bool has_range (tree name) const;
   virtual bool set_range (tree name, const vrange &r);
+  virtual bool merge_range (tree name, const vrange &r);
   virtual bool get_range (vrange &r, tree name) const;
   virtual void clear_range (tree name);
   virtual void clear ();
@@ -137,7 +139,6 @@ private:
   void exit_range (vrange &r, tree expr, basic_block bb, enum rfd_mode);
   bool edge_range (vrange &r, edge e, tree name, enum rfd_mode);
 
-  phi_analyzer *m_estimate;
   vec<basic_block> m_workback;
   class update_list *m_update;
 };

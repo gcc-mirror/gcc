@@ -6875,6 +6875,9 @@ elaborate_entity (Entity_Id gnat_entity)
 	}
       break;
 
+      /* -Wswitch warning avoidance.  */
+    default:
+      break;
     }
 }
 
@@ -9705,7 +9708,7 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
        gnat_node = Next_Rep_Item (gnat_node))
     if (Nkind (gnat_node) == N_Pragma)
       {
-	unsigned char pragma_id
+	const Pragma_Id pragma_id
 	  = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)));
 
 	if ((pragma_id == Pragma_Atomic && !component_p)

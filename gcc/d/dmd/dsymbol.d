@@ -1407,7 +1407,7 @@ extern (C++) class Dsymbol : ASTNode
     inout(CPPNamespaceDeclaration)     isCPPNamespaceDeclaration()     inout { return null; }
     inout(VisibilityDeclaration)       isVisibilityDeclaration()       inout { return null; }
     inout(OverloadSet)                 isOverloadSet()                 inout { return null; }
-    inout(CompileDeclaration)          isCompileDeclaration()          inout { return null; }
+    inout(MixinDeclaration)            isMixinDeclaration()            inout { return null; }
     inout(StaticAssert)                isStaticAssert()                inout { return null; }
     inout(StaticIfDeclaration)         isStaticIfDeclaration()         inout { return null; }
 }

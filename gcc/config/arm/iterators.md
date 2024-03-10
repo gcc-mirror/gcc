@@ -901,7 +901,23 @@
 		     VPSELQ_F
 		     ])
 
+(define_int_iterator MVE_VCADDQ_VCMULQ [
+		     UNSPEC_VCADD90 UNSPEC_VCADD270
+		     UNSPEC_VCMUL UNSPEC_VCMUL90 UNSPEC_VCMUL180 UNSPEC_VCMUL270
+		     ])
+
+(define_int_iterator MVE_VCADDQ_VCMULQ_M [
+		     VCADDQ_ROT90_M_F VCADDQ_ROT270_M_F
+		     VCMULQ_M_F VCMULQ_ROT90_M_F VCMULQ_ROT180_M_F VCMULQ_ROT270_M_F
+		     ])
+
+(define_int_iterator MVE_VCMLAQ_M [
+		     VCMLAQ_M_F VCMLAQ_ROT90_M_F VCMLAQ_ROT180_M_F VCMLAQ_ROT270_M_F
+		     ])
+
 (define_int_attr mve_insn [
+		 (UNSPEC_VCADD90 "vcadd") (UNSPEC_VCADD270 "vcadd")
+		 (UNSPEC_VCMUL "vcmul") (UNSPEC_VCMUL90 "vcmul") (UNSPEC_VCMUL180 "vcmul") (UNSPEC_VCMUL270 "vcmul")
 		 (VABAVQ_P_S "vabav") (VABAVQ_P_U "vabav")
 		 (VABAVQ_S "vabav") (VABAVQ_U "vabav")
 		 (VABDQ_M_S "vabd") (VABDQ_M_U "vabd") (VABDQ_M_F "vabd")
@@ -925,9 +941,13 @@
 		 (VBICQ_N_S "vbic") (VBICQ_N_U "vbic")
 		 (VBRSRQ_M_N_S "vbrsr") (VBRSRQ_M_N_U "vbrsr") (VBRSRQ_M_N_F "vbrsr")
 		 (VBRSRQ_N_S "vbrsr") (VBRSRQ_N_U "vbrsr") (VBRSRQ_N_F "vbrsr")
+		 (VCADDQ_ROT270_M_U "vcadd") (VCADDQ_ROT270_M_S "vcadd") (VCADDQ_ROT270_M_F "vcadd")
+		 (VCADDQ_ROT90_M_U "vcadd") (VCADDQ_ROT90_M_S "vcadd") (VCADDQ_ROT90_M_F "vcadd")
 		 (VCLSQ_M_S "vcls")
 		 (VCLSQ_S "vcls")
 		 (VCLZQ_M_S "vclz") (VCLZQ_M_U "vclz")
+		 (VCMLAQ_M_F "vcmla") (VCMLAQ_ROT90_M_F "vcmla") (VCMLAQ_ROT180_M_F "vcmla") (VCMLAQ_ROT270_M_F "vcmla")
+		 (VCMULQ_M_F "vcmul") (VCMULQ_ROT90_M_F "vcmul") (VCMULQ_ROT180_M_F "vcmul") (VCMULQ_ROT270_M_F "vcmul")
 		 (VCREATEQ_S "vcreate") (VCREATEQ_U "vcreate") (VCREATEQ_F "vcreate")
 		 (VDUPQ_M_N_S "vdup") (VDUPQ_M_N_U "vdup") (VDUPQ_M_N_F "vdup")
 		 (VDUPQ_N_S "vdup") (VDUPQ_N_U "vdup") (VDUPQ_N_F "vdup")
@@ -944,6 +964,8 @@
 		 (VHADDQ_M_S "vhadd") (VHADDQ_M_U "vhadd")
 		 (VHADDQ_N_S "vhadd") (VHADDQ_N_U "vhadd")
 		 (VHADDQ_S "vhadd") (VHADDQ_U "vhadd")
+		 (VHCADDQ_ROT90_M_S "vhcadd") (VHCADDQ_ROT270_M_S "vhcadd")
+		 (VHCADDQ_ROT90_S "vhcadd") (VHCADDQ_ROT270_S "vhcadd")
 		 (VHSUBQ_M_N_S "vhsub") (VHSUBQ_M_N_U "vhsub")
 		 (VHSUBQ_M_S "vhsub") (VHSUBQ_M_U "vhsub")
 		 (VHSUBQ_N_S "vhsub") (VHSUBQ_N_U "vhsub")
@@ -1187,10 +1209,14 @@
 		 (VSUBQ_M_N_S "vsub") (VSUBQ_M_N_U "vsub") (VSUBQ_M_N_F "vsub")
 		 (VSUBQ_M_S "vsub") (VSUBQ_M_U "vsub") (VSUBQ_M_F "vsub")
 		 (VSUBQ_N_S "vsub") (VSUBQ_N_U "vsub") (VSUBQ_N_F "vsub")
+		 (UNSPEC_VCMLA "vcmla") (UNSPEC_VCMLA90 "vcmla") (UNSPEC_VCMLA180 "vcmla") (UNSPEC_VCMLA270 "vcmla")
 		 ])
 
 (define_int_attr isu    [
+		 (UNSPEC_VCADD90 "i") (UNSPEC_VCADD270 "i")
 		 (VABSQ_M_S "s")
+		 (VCADDQ_ROT270_M_U "i") (VCADDQ_ROT270_M_S "i")
+		 (VCADDQ_ROT90_M_U "i") (VCADDQ_ROT90_M_S "i")
 		 (VCLSQ_M_S "s")
 		 (VCLZQ_M_S "i")
 		 (VCLZQ_M_U "i")
@@ -1214,6 +1240,8 @@
 		 (VCMPNEQ_M_N_U "i")
 		 (VCMPNEQ_M_S "i")
 		 (VCMPNEQ_M_U "i")
+		 (VHCADDQ_ROT90_M_S "s") (VHCADDQ_ROT270_M_S "s")
+		 (VHCADDQ_ROT90_S "s") (VHCADDQ_ROT270_S "s")
 		 (VMOVNBQ_M_S "i") (VMOVNBQ_M_U "i")
 		 (VMOVNBQ_S "i") (VMOVNBQ_U "i")
 		 (VMOVNTQ_M_S "i") (VMOVNTQ_M_U "i")
@@ -2155,6 +2183,16 @@
 
 (define_int_attr rot [(UNSPEC_VCADD90 "90")
 		      (UNSPEC_VCADD270 "270")
+		      (VCADDQ_ROT90_M_F "90")
+		      (VCADDQ_ROT90_M_S "90")
+		      (VCADDQ_ROT90_M_U "90")
+		      (VCADDQ_ROT270_M_F "270")
+		      (VCADDQ_ROT270_M_S "270")
+		      (VCADDQ_ROT270_M_U "270")
+		      (VHCADDQ_ROT90_S "90")
+		      (VHCADDQ_ROT270_S "270")
+		      (VHCADDQ_ROT90_M_S "90")
+		      (VHCADDQ_ROT270_M_S "270")
 		      (UNSPEC_VCMUL "0")
 		      (UNSPEC_VCMUL90 "90")
 		      (UNSPEC_VCMUL180 "180")
@@ -2162,7 +2200,16 @@
 		      (UNSPEC_VCMLA "0")
 		      (UNSPEC_VCMLA90 "90")
 		      (UNSPEC_VCMLA180 "180")
-		      (UNSPEC_VCMLA270 "270")])
+		      (UNSPEC_VCMLA270 "270")
+		      (VCMULQ_M_F "0")
+		      (VCMULQ_ROT90_M_F "90")
+		      (VCMULQ_ROT180_M_F "180")
+		      (VCMULQ_ROT270_M_F "270")
+		      (VCMLAQ_M_F "0")
+		      (VCMLAQ_ROT90_M_F "90")
+		      (VCMLAQ_ROT180_M_F "180")
+		      (VCMLAQ_ROT270_M_F "270")
+		      ])
 
 ;; The complex operations when performed on a real complex number require two
 ;; instructions to perform the operation. e.g. complex multiplication requires
@@ -2193,6 +2240,16 @@
 
 (define_int_attr mve_rot [(UNSPEC_VCADD90 "_rot90")
 			  (UNSPEC_VCADD270 "_rot270")
+			  (VCADDQ_ROT90_M_F "_rot90")
+			  (VCADDQ_ROT90_M_S "_rot90")
+			  (VCADDQ_ROT90_M_U "_rot90")
+			  (VCADDQ_ROT270_M_F "_rot270")
+			  (VCADDQ_ROT270_M_S "_rot270")
+			  (VCADDQ_ROT270_M_U "_rot270")
+			  (VHCADDQ_ROT90_S "_rot90")
+			  (VHCADDQ_ROT270_S "_rot270")
+			  (VHCADDQ_ROT90_M_S "_rot90")
+			  (VHCADDQ_ROT270_M_S "_rot270")
 			  (UNSPEC_VCMLA "")
 			  (UNSPEC_VCMLA90 "_rot90")
 			  (UNSPEC_VCMLA180 "_rot180")
@@ -2200,10 +2257,15 @@
 			  (UNSPEC_VCMUL "")
 			  (UNSPEC_VCMUL90 "_rot90")
 			  (UNSPEC_VCMUL180 "_rot180")
-			  (UNSPEC_VCMUL270 "_rot270")])
-
-(define_int_iterator VCMUL [UNSPEC_VCMUL UNSPEC_VCMUL90
-			    UNSPEC_VCMUL180 UNSPEC_VCMUL270])
+			  (UNSPEC_VCMUL270 "_rot270")
+			  (VCMULQ_M_F "")
+			  (VCMULQ_ROT90_M_F "_rot90")
+			  (VCMULQ_ROT180_M_F "_rot180")
+			  (VCMULQ_ROT270_M_F "_rot270")
+			  (VCMLAQ_M_F "")
+			  (VCMLAQ_ROT90_M_F "_rot90")
+			  (VCMLAQ_ROT180_M_F "_rot180")
+			  (VCMLAQ_ROT270_M_F "_rot270")])
 
 (define_int_attr fcmac1 [(UNSPEC_VCMLA "a") (UNSPEC_VCMLA_CONJ "a")
 			 (UNSPEC_VCMLA180 "s") (UNSPEC_VCMLA180_CONJ "s")])
@@ -2535,6 +2597,9 @@
 		       (VRMLALDAVHAQ_P_S "s") (VRMLALDAVHAQ_P_U "u")
 		       (VQSHLUQ_M_N_S "s")
 		       (VQSHLUQ_N_S "s")
+		       (VHCADDQ_ROT90_M_S "s") (VHCADDQ_ROT270_M_S "s")
+		       (VHCADDQ_ROT90_S "s") (VHCADDQ_ROT270_S "s")
+		       (UNSPEC_VCADD90 "") (UNSPEC_VCADD270 "")
 		       ])
 
 ;; Both kinds of return insn.
@@ -2767,7 +2832,9 @@
 (define_int_iterator VANDQ_M [VANDQ_M_U VANDQ_M_S])
 (define_int_iterator VBICQ_M [VBICQ_M_U VBICQ_M_S])
 (define_int_iterator VSHLQ_M_N [VSHLQ_M_N_S VSHLQ_M_N_U])
-(define_int_iterator VCADDQ_ROT270_M [VCADDQ_ROT270_M_U VCADDQ_ROT270_M_S])
+(define_int_iterator VCADDQ_M_F [VCADDQ_ROT90_M_F VCADDQ_ROT270_M_F])
+(define_int_iterator VxCADDQ [UNSPEC_VCADD90 UNSPEC_VCADD270 VHCADDQ_ROT90_S VHCADDQ_ROT270_S])
+(define_int_iterator VxCADDQ_M [VHCADDQ_ROT90_M_S VHCADDQ_ROT270_M_S VCADDQ_ROT90_M_U VCADDQ_ROT90_M_S VCADDQ_ROT270_M_U VCADDQ_ROT270_M_S])
 (define_int_iterator VQRSHLQ_M [VQRSHLQ_M_U VQRSHLQ_M_S])
 (define_int_iterator VQADDQ_M_N [VQADDQ_M_N_U VQADDQ_M_N_S])
 (define_int_iterator VADDQ_M_N [VADDQ_M_N_S VADDQ_M_N_U])
@@ -2777,7 +2844,6 @@
 (define_int_iterator VMLADAVAQ_P [VMLADAVAQ_P_U VMLADAVAQ_P_S])
 (define_int_iterator VBRSRQ_M_N [VBRSRQ_M_N_U VBRSRQ_M_N_S])
 (define_int_iterator VMULQ_M_N [VMULQ_M_N_U VMULQ_M_N_S])
-(define_int_iterator VCADDQ_ROT90_M [VCADDQ_ROT90_M_U VCADDQ_ROT90_M_S])
 (define_int_iterator VMULLTQ_INT_M [VMULLTQ_INT_M_S VMULLTQ_INT_M_U])
 (define_int_iterator VEORQ_M [VEORQ_M_S VEORQ_M_U])
 (define_int_iterator VSHRQ_M_N [VSHRQ_M_N_S VSHRQ_M_N_U])

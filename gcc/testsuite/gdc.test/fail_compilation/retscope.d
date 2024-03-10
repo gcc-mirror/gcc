@@ -403,7 +403,7 @@ class Foo13
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(1205): Error: scope variable `f14` assigned to non-scope parameter `this` calling `foo`
+fail_compilation/retscope.d(1205): Error: scope variable `f14` calling non-scope member function `Foo14.foo()`
 ---
 */
 

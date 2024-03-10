@@ -266,6 +266,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__rocketlake");
       def_or_undef (parse_in, "__rocketlake__");
       break;
+    case PROCESSOR_ARROWLAKE:
+      def_or_undef (parse_in, "__arrowlake");
+      def_or_undef (parse_in, "__arrowlake__");
+      break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -446,6 +450,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_GRANITERAPIDS:
       def_or_undef (parse_in, "__tune_graniterapids__");
+      break;
+    case PROCESSOR_ARROWLAKE:
+      def_or_undef (parse_in, "__tune_arrowlake__");
       break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
@@ -677,6 +684,14 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__RAOINT__");
   if (isa_flag2 & OPTION_MASK_ISA2_AMX_COMPLEX)
     def_or_undef (parse_in, "__AMX_COMPLEX__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AVXVNNIINT16)
+    def_or_undef (parse_in, "__AVXVNNIINT16__");
+  if (isa_flag2 & OPTION_MASK_ISA2_SM3)
+    def_or_undef (parse_in, "__SM3__");
+  if (isa_flag2 & OPTION_MASK_ISA2_SHA512)
+    def_or_undef (parse_in, "__SHA512__");
+  if (isa_flag2 & OPTION_MASK_ISA2_SM4)
+    def_or_undef (parse_in, "__SM4__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
@@ -816,6 +831,21 @@ ix86_target_macros (void)
 
   if (!TARGET_80387)
     cpp_define (parse_in, "_SOFT_FLOAT");
+
+  /* HFmode/BFmode is supported without depending any isa
+     in scalar_mode_supported_p and libgcc_floating_mode_supported_p,
+     but according to psABI, they're really supported w/ SSE2 and above.
+     Since libstdc++ uses __STDCPP_FLOAT16_T__ and __STDCPP_BFLOAT16_T__
+     for backend support of the types, undef the macros to avoid
+     build failure, see PR109504.  */
+  if (!TARGET_SSE2)
+    {
+      if (c_dialect_cxx () && cxx_dialect > cxx20)
+	{
+	  cpp_undef (parse_in, "__STDCPP_FLOAT16_T__");
+	  cpp_undef (parse_in, "__STDCPP_BFLOAT16_T__");
+	}
+    }
 
   if (TARGET_LONG_DOUBLE_64)
     cpp_define (parse_in, "__LONG_DOUBLE_64__");

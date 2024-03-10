@@ -189,7 +189,7 @@ private Expression fromConstInitializer(int result, Expression e1)
         {
             // If it is a comma expression involving a declaration, we mustn't
             // perform a copy -- we'd get two declarations of the same variable.
-            // See bugzilla 4465.
+            // See https://issues.dlang.org/show_bug.cgi?id=4465.
             if (e.op == EXP.comma && e.isCommaExp().e1.isDeclarationExp())
                 e = e1;
             else if (e.type != e1.type && e1.type && e1.type.ty != Tident)
@@ -371,7 +371,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
     {
         if (e.stageflags & stageOptimize)
             return;
-        int old = e.stageflags;
+        const old = e.stageflags;
         e.stageflags |= stageOptimize;
         if (e.elements)
         {
@@ -769,11 +769,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             return;
         if (e.arguments)
         {
-            Type t1 = e.e1.type.toBasetype();
-            if (auto td = t1.isTypeDelegate())
-                t1 = td.next;
             // t1 can apparently be void for __ArrayDtor(T) calls
-            if (auto tf = t1.isTypeFunction())
+            if (auto tf = e.calledFunctionType())
             {
                 foreach (i, ref arg; (*e.arguments)[])
                 {

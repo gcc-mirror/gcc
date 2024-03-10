@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "tree-ssa.h"
 #include "tree-pretty-print.h"
+#include "sreal.h"
 
 static void flow_loops_cfg_dump (FILE *);
 
@@ -134,20 +135,12 @@ flow_loop_dump (const class loop *loop, FILE *file,
       fprintf (file, "\n");
     }
 
-  fprintf (file, ";;  depth %d, outer %ld\n",
+  fprintf (file, ";;  depth %d, outer %ld",
 	   loop_depth (loop), (long) (loop_outer (loop)
 				      ? loop_outer (loop)->num : -1));
+  print_loop_info (file, loop, ";;  ");
 
-  if (loop->latch)
-    {
-      bool read_profile_p;
-      gcov_type nit = expected_loop_iterations_unbounded (loop, &read_profile_p);
-      if (read_profile_p && !loop->any_estimate)
-	fprintf (file, ";;  profile-based iteration count: %" PRIu64 "\n",
-		 (uint64_t) nit);
-    }
-
-  fprintf (file, ";;  nodes:");
+  fprintf (file, "\n;;  nodes:");
   bbs = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
     fprintf (file, " %d", bbs[i]->index);
@@ -2014,10 +2007,12 @@ get_estimated_loop_iterations (class loop *loop, widest_int *nit)
      profile.  */
   if (!loop->any_estimate)
     {
-      if (loop->header->count.reliable_p ())
+      sreal snit;
+      bool reliable;
+      if (expected_loop_iterations_by_profile (loop, &snit, &reliable)
+	  && reliable)
 	{
-          *nit = gcov_type_to_wide_int
-		   (expected_loop_iterations_unbounded (loop) + 1);
+	  *nit = snit.to_nearest_int ();
 	  return true;
 	}
       return false;

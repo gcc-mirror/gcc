@@ -664,6 +664,17 @@ issue a warning if a variable is used before it is initialized.
 The checking only occurs in the first basic block in each procedure.
 It does not check parameters, array types or set types.
 
+@item -Wuninit-variable-checking=all,known,cond
+issue a warning if a variable is used before it is initialized.
+The checking will only occur in the first basic block in each
+procedure if @samp{known} is specified.  If @samp{cond} or @samp{all}
+is specified then checking continues into conditional branches of the
+flow graph.  All checking will stop when a procedure call is invoked
+or the top of a loop is encountered.
+The option @samp{-Wall} will turn on this flag with
+@samp{-Wuninit-variable-checking=known}.
+The @samp{-Wuninit-variable-checking=all} will increase compile time.
+
 @c the following warning options are complete but need to be
 @c regression tested against all other front ends
 @c to ensure the options do not conflict.
@@ -1460,7 +1471,7 @@ plugin is invoked.
 The @samp{-Wuninit-variable-checking} can be used to identify
 uninitialized variables within the first basic block in a procedure.
 The checking is limited to variables so long as they are
-not an array or set or a variant record.
+not an array or set or a variant record or var parameter.
 
 The following example detects whether a sub component within a record
 is uninitialized.
@@ -1540,22 +1551,20 @@ access expression before it has been initialized
 @end example
 
 @example
-MODULE testwithptr ;
+MODULE testnew6 ;
 
-FROM SYSTEM IMPORT ADR ;
+FROM Storage IMPORT ALLOCATE ;
 
 TYPE
-   PtrToVec = POINTER TO Vec ;
-   Vec = RECORD
-            x, y: CARDINAL ;
-         END ;
+   PtrToVec = POINTER TO RECORD
+                            x, y: INTEGER ;
+                         END ;
 
 PROCEDURE test ;
 VAR
    p: PtrToVec ;
-   v: Vec ;
 BEGIN
-   p := ADR (v) ;
+   NEW (p) ;
    WITH p^ DO
       x := 1 ;
       x := 2   (* Deliberate typo, user meant y.  *)
@@ -1565,16 +1574,17 @@ BEGIN
    END
 END test ;
 
+
 BEGIN
    test
-END testwithptr.
+END testnew6.
 @end example
 
 @example
-gm2 -c -Wuninit-variable-checking testwithptr.mod
-testwithptr.mod:26:9: warning: In procedure ‘test’: attempting to
+$ gm2 -g -c -Wuninit-variable-checking testnew6.mod
+testnew6.mod:19:9: warning: In procedure ‘test’: attempting to
 access expression before it has been initialized
-   26 |    IF p^.y = 2
+   19 |    IF p^.y = 2
       |       ~~^~
 @end example
 

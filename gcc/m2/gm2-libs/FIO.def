@@ -159,7 +159,7 @@ PROCEDURE ReadNBytes (f: File; nBytes: CARDINAL;
 
 
 (*
-   ReadAny - reads HIGH(a) bytes into, a. All input
+   ReadAny - reads HIGH (a) + 1 bytes into, a.  All input
              is fully buffered, unlike ReadNBytes and thus is more
              suited to small reads.
 *)
@@ -180,7 +180,7 @@ PROCEDURE WriteNBytes (f: File; nBytes: CARDINAL;
 
 
 (*
-   WriteAny - writes HIGH(a) bytes onto, file, f. All output
+   WriteAny - writes HIGH (a) + 1 bytes onto, file, f.  All output
               is fully buffered, unlike WriteNBytes and thus is more
               suited to small writes.
 *)

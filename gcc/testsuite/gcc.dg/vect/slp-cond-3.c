@@ -72,6 +72,7 @@ int main ()
     }
 
   bar (a, b, c, d, e, 2);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (e[i] != ((i % 3) == 0 ? 10 : 2 * i))
       abort ();

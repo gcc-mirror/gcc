@@ -3331,8 +3331,8 @@ package Sem_Util is
    function Validated_View (Typ : Entity_Id) return Entity_Id;
    --  Obtain the "validated view" of arbitrary type Typ which is suitable for
    --  verification by attribute 'Valid_Scalars. This view is the type itself
-   --  or its full view while stripping away concurrency, derivations, and
-   --  privacy.
+   --  or its full view or nonlimited view, while stripping away concurrency,
+   --  derivations, and privacy.
 
    function Visible_Ancestors (Typ : Entity_Id) return Elist_Id;
    --  [Ada 2012:AI-0125-1]: Collect all the visible parents and progenitors
@@ -3362,12 +3362,16 @@ package Sem_Util is
    --  is potentially issued: it is the visible entity in the former case, and
    --  the use_clause in the latter case.
 
-   procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id);
+   procedure Wrong_Type
+     (Expr          : Node_Id;
+      Expected_Type : Entity_Id;
+      Multiple      : Boolean := False);
    --  Output error message for incorrectly typed expression. Expr is the node
    --  for the incorrectly typed construct (Etype (Expr) is the type found),
    --  and Expected_Type is the entity for the expected type. Note that Expr
    --  does not have to be a subexpression, anything with an Etype field may
-   --  be used.
+   --  be used. If Multiple is False, do not output the message if an error
+   --  has already been posted for Expr.
 
    function Yields_Synchronized_Object (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ "yields synchronized object" as specified by

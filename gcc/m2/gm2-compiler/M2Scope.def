@@ -37,7 +37,7 @@ EXPORT QUALIFIED ScopeBlock, ScopeProcedure,
 
 TYPE
    ScopeBlock ;
-   ScopeProcedure = PROCEDURE (CARDINAL, CARDINAL) ;
+   ScopeProcedure = PROCEDURE (CARDINAL, CARDINAL, CARDINAL) ;
 
 
 (*

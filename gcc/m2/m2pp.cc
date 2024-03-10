@@ -183,7 +183,7 @@ do_pf (tree t, int bits)
 }
 
 /* pf print function.  Expected to be printed interactively from
-   the debugger: print pf(func), or to be called from code.  */
+   the debugger: print modula2::pf(func), or to be called from code.  */
 
 void
 pf (tree t)
@@ -192,7 +192,7 @@ pf (tree t)
 }
 
 /* pe print expression.  Expected to be printed interactively from
-   the debugger: print pe(expr), or to be called from code.  */
+   the debugger: print modula2::pe(expr), or to be called from code.  */
 
 void
 pe (tree t)
@@ -206,8 +206,8 @@ pe (tree t)
 }
 
 /* pet print expression and its type.  Expected to be printed
-   interactively from the debugger: print pet(expr), or to be called
-   from code.  */
+   interactively from the debugger: print modula2::pet(expr), or to
+   be called from code.  */
 
 void
 pet (tree t)
@@ -2209,6 +2209,34 @@ m2pp_if_stmt (pretty *s, tree t)
 }
 #endif
 
+static void
+m2pp_asm_expr (pretty *state, tree node)
+{
+  m2pp_begin (state);
+  m2pp_print (state, "ASM");
+  m2pp_needspace (state);
+  if (ASM_VOLATILE_P (node))
+    {
+      m2pp_print (state, "VOLATILE");
+      m2pp_needspace (state);
+    }
+  m2pp_print (state, "(");
+  m2pp_expression (state, ASM_STRING (node));
+  m2pp_print (state, ":");
+  m2pp_needspace (state);
+  m2pp_expression (state, ASM_OUTPUTS (node));
+  m2pp_print (state, ":");
+  m2pp_needspace (state);
+  m2pp_expression (state, ASM_INPUTS (node));
+  if (ASM_CLOBBERS (node) != NULL)
+    {
+      m2pp_print (state, ":");
+      m2pp_needspace (state);
+      m2pp_expression (state, ASM_CLOBBERS (node));
+    }
+  m2pp_print (state, ");\n");
+}
+
 /* m2pp_statement attempts to reconstruct a statement.  */
 
 static void
@@ -2270,6 +2298,9 @@ m2pp_statement (pretty *s, tree t)
       break;
     case CATCH_EXPR:
       m2pp_catch_expr (s, t);
+      break;
+    case ASM_EXPR:
+      m2pp_asm_expr (s, t);
       break;
 #if defined(CPP)
     case IF_STMT:

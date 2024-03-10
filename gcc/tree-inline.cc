@@ -5526,9 +5526,7 @@ optimize_inline_calls (tree fn)
   return (TODO_update_ssa
 	  | TODO_cleanup_cfg
 	  | (gimple_in_ssa_p (cfun) ? TODO_remove_unused_locals : 0)
-	  | (gimple_in_ssa_p (cfun) ? TODO_update_address_taken : 0)
-	  | (profile_status_for_fn (cfun) != PROFILE_ABSENT
-	     ? TODO_rebuild_frequencies : 0));
+	  | (gimple_in_ssa_p (cfun) ? TODO_update_address_taken : 0));
 }
 
 /* Passed to walk_tree.  Copies the node pointed to, if appropriate.  */

@@ -18,6 +18,7 @@ __attribute__ ((noinline))
 void icheck_results (int *a, int *results)
 {
   int i;
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (a[i] != results[i])
@@ -29,6 +30,7 @@ __attribute__ ((noinline))
 void fcheck_results (float *a, float *results)
 {
   int i;
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (a[i] != results[i])
@@ -91,6 +93,7 @@ main1 ()
       ca[i] = cb[i];
     }
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (ca[i] != cb[i])
@@ -134,6 +137,7 @@ main1 ()
       a[i+3] = b[i-1];
     }
   /* check results:  */
+#pragma GCC novector
   for (i = 1; i <=N-4; i++)
     {
       if (a[i+3] != b[i-1])
@@ -151,6 +155,7 @@ main1 ()
       j++;
     }
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N; i++)
     {
       if (a[i] != c[i])
@@ -164,6 +169,7 @@ main1 ()
       a[N-i] = d[N-i];
     }
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N; i++)
     {
       if (a[i] != d[i])
@@ -177,6 +183,7 @@ main1 ()
       a[i] = 5.0;
     }
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (a[i] != 5.0)
@@ -188,6 +195,7 @@ main1 ()
       sa[i] = 5;
     }
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (sa[i] != 5)
@@ -199,6 +207,7 @@ main1 ()
       ia[i] = ib[i] + 5;
     }
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (ia[i] != ib[i] + 5)

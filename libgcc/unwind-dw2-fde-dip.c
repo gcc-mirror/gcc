@@ -403,7 +403,7 @@ find_fde_tail (_Unwind_Ptr pc,
 	 BFD ld generates.  */
       signed value __attribute__ ((mode (SI)));
       memcpy (&value, p, sizeof (value));
-      eh_frame = p + value;
+      eh_frame = (_Unwind_Ptr) (p + value);
       p += sizeof (value);
     }
   else

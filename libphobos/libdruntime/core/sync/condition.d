@@ -84,7 +84,8 @@ class Condition
     /// ditto
     this( shared Mutex m ) shared nothrow @safe @nogc
     {
-        this(m, true);
+        import core.atomic : atomicLoad;
+        this(atomicLoad(m), true);
     }
 
     //
@@ -117,7 +118,15 @@ class Condition
         }
         else version (Posix)
         {
-            m_assocMutex = m;
+            static if (is(Q == shared))
+            {
+                import core.atomic : atomicLoad;
+                m_assocMutex = atomicLoad(m);
+            }
+            else
+            {
+                m_assocMutex = m;
+            }
             static if ( is( typeof( pthread_condattr_setclock ) ) )
             {
                 () @trusted
@@ -183,7 +192,8 @@ class Condition
     /// ditto
     @property shared(Mutex) mutex() shared
     {
-        return m_assocMutex;
+        import core.atomic : atomicLoad;
+        return atomicLoad(m_assocMutex);
     }
 
     // undocumented function for internal use
@@ -195,7 +205,8 @@ class Condition
     // ditto
     final @property shared(Mutex) mutex_nothrow() shared pure nothrow @safe @nogc
     {
-        return m_assocMutex;
+        import core.atomic : atomicLoad;
+        return atomicLoad(m_assocMutex);
     }
 
     ////////////////////////////////////////////////////////////////////////////

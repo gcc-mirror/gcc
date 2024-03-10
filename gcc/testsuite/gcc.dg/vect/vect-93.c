@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_float } */
-/* { dg-additional-options "--param vect-max-peeling-for-alignment=0" } */
+/* { dg-additional-options "--param vect-max-peeling-for-alignment=0 -fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -23,6 +23,7 @@ main1 (float *pa)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N1; i++)
     {
       if (pa[i] != 2.0)
@@ -36,6 +37,7 @@ main1 (float *pa)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 1; i <= N2; i++)
     {
       if (pa[i] != 3.0)
@@ -60,6 +62,7 @@ int main (void)
   for (i = 1; i <= 256; i++) a[i] = b[i-1];
 
   /* check results:  */
+#pragma GCC novector
   for (i = 1; i <= 256; i++)
     {
       if (a[i] != i-1)
@@ -87,3 +90,4 @@ int main (void)
 /* in main: */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_no_align && { ! vect_hw_misalign } } } } } */
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

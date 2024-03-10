@@ -3049,7 +3049,7 @@ if (isBlitAssignable!T && !is(typeof(lhs.proxySwap(rhs))))
     swap(b1, b2);
 }
 
-// issue 20732
+// https://issues.dlang.org/show_bug.cgi?id=20732
 @safe unittest
 {
     static struct A

@@ -30,6 +30,7 @@ do_main ()
   #pragma omp simd
   for (i = 0; i < N; i++)
     e[i] = foo (c[i], d[i], f[i]);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (e[i] != 6 * i)
       __builtin_abort ();

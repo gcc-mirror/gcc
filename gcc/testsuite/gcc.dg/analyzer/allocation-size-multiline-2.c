@@ -11,13 +11,12 @@ void test_constant_1 (void)
 /* { dg-begin-multiline-output "" }
    int32_t *ptr = __builtin_alloca (1);
                   ^~~~~~~~~~~~~~~~~~~~
-  'test_constant_1': events 1-2
+  'test_constant_1': event 1
     |
     |   int32_t *ptr = __builtin_alloca (1);
     |                  ^~~~~~~~~~~~~~~~~~~~
     |                  |
-    |                  (1) allocated 1 byte here
-    |                  (2) assigned to 'int32_t *'
+    |                  (1) allocated 1 bytes and assigned to 'int32_t *' {aka 'int *'} here; 'sizeof (int32_t {aka int})' is '4'
     |
    { dg-end-multiline-output "" } */
 
@@ -29,13 +28,12 @@ void test_constant_2 (void)
 /* { dg-begin-multiline-output "" }
    int32_t *ptr = __builtin_alloca (2);
                   ^~~~~~~~~~~~~~~~~~~~
-  'test_constant_2': events 1-2
+  'test_constant_2': event 1
     |
     |   int32_t *ptr = __builtin_alloca (2);
     |                  ^~~~~~~~~~~~~~~~~~~~
     |                  |
-    |                  (1) allocated 2 bytes here
-    |                  (2) assigned to 'int32_t *'
+    |                  (1) allocated 2 bytes and assigned to 'int32_t *' {aka 'int *'} here; 'sizeof (int32_t {aka int})' is '4'
     |
    { dg-end-multiline-output "" } */
 
@@ -47,13 +45,12 @@ void test_symbolic (int n)
 /* { dg-begin-multiline-output "" }
    int32_t *ptr = __builtin_alloca (n * 2);
                   ^~~~~~~~~~~~~~~~~~~~~~~~
-  'test_symbolic': events 1-2
+  'test_symbolic': event 1
     |
     |   int32_t *ptr = __builtin_alloca (n * 2);
     |                  ^~~~~~~~~~~~~~~~~~~~~~~~
     |                  |
-    |                  (1) allocated 'n * 2' bytes here
-    |                  (2) assigned to 'int32_t *'
+    |                  (1) allocated 'n * 2' bytes and assigned to 'int32_t *' {aka 'int *'} here; 'sizeof (int32_t {aka int})' is '4'
     |
    { dg-end-multiline-output "" } */
 

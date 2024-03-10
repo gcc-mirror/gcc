@@ -4689,7 +4689,8 @@ struct S14604
 }
 alias Id14604(alias thing) = thing;
 alias c14604 = Id14604!(S14604.opDispatch!"go");     // ok
-alias d14604 = Id14604!(S14604.go);                  // issue 14604, 'Error: template instance opDispatch!"go" cannot resolve forward reference'
+// https://issues.dlang.org/show_bug.cgi?id=14604
+alias d14604 = Id14604!(S14604.go);                  // 'Error: template instance opDispatch!"go" cannot resolve forward reference'
 
 /******************************************/
 // https://issues.dlang.org/show_bug.cgi?id=14735

@@ -69,61 +69,16 @@ pure @safe:
     {
         buf     = buf_;
         addType = addType_;
-        dst     = dst_;
+        dst.dst = dst_;
     }
 
-
-    enum size_t minBufSize = 4000;
-
-
     const(char)[]   buf     = null;
-    char[]          dst     = null;
+    Buffer          dst;
     size_t          pos     = 0;
-    size_t          len     = 0;
     size_t          brp     = 0; // current back reference pos
     AddType         addType = AddType.yes;
     bool            mute    = false;
     Hooks           hooks;
-
-    static class ParseException : Exception
-    {
-        this(string msg) @safe pure nothrow
-        {
-            super( msg );
-        }
-    }
-
-
-    static class OverflowException : Exception
-    {
-        this(string msg) @safe pure nothrow
-        {
-            super( msg );
-        }
-    }
-
-
-    static noreturn error( string msg = "Invalid symbol" ) @trusted /* exception only used in module */
-    {
-        pragma(inline, false); // tame dmd inliner
-
-        //throw new ParseException( msg );
-        debug(info) printf( "error: %.*s\n", cast(int) msg.length, msg.ptr );
-        throw __ctfe ? new ParseException(msg)
-                     : cast(ParseException) __traits(initSymbol, ParseException).ptr;
-
-    }
-
-
-    static noreturn overflow( string msg = "Buffer overflow" ) @trusted /* exception only used in module */
-    {
-        pragma(inline, false); // tame dmd inliner
-
-        //throw new OverflowException( msg );
-        debug(info) printf( "overflow: %.*s\n", cast(int) msg.length, msg.ptr );
-        throw cast(OverflowException) __traits(initSymbol, OverflowException).ptr;
-    }
-
 
     //////////////////////////////////////////////////////////////////////////
     // Type Testing and Conversion
@@ -163,91 +118,11 @@ pure @safe:
         error();
     }
 
-
-    //////////////////////////////////////////////////////////////////////////
-    // Data Output
-    //////////////////////////////////////////////////////////////////////////
-
-
-    static bool contains( const(char)[] a, const(char)[] b ) @trusted
+    char[] shift(scope const(char)[] val) return scope
     {
-        if (a.length && b.length)
-        {
-            auto bend = b.ptr + b.length;
-            auto aend = a.ptr + a.length;
-            return a.ptr <= b.ptr && bend <= aend;
-        }
-        return false;
-    }
-
-
-    // move val to the end of the dst buffer
-    char[] shift( const(char)[] val )
-    {
-        pragma(inline, false); // tame dmd inliner
-
-        if ( val.length && !mute )
-        {
-            assert( contains( dst[0 .. len], val ) );
-            debug(info) printf( "shifting (%.*s)\n", cast(int) val.length, val.ptr );
-
-            if (len + val.length > dst.length)
-                overflow();
-            size_t v = &val[0] - &dst[0];
-            dst[len .. len + val.length] = val[];
-            for (size_t p = v; p < len; p++)
-                dst[p] = dst[p + val.length];
-
-            return dst[len - val.length .. len];
-        }
-        return null;
-    }
-
-    // remove val from dst buffer
-    void remove( const(char)[] val )
-    {
-        pragma(inline, false); // tame dmd inliner
-
-        if ( val.length )
-        {
-            assert( contains( dst[0 .. len], val ) );
-            debug(info) printf( "removing (%.*s)\n", cast(int) val.length, val.ptr );
-            size_t v = &val[0] - &dst[0];
-            assert( len >= val.length && len <= dst.length );
-            len -= val.length;
-            for (size_t p = v; p < len; p++)
-                dst[p] = dst[p + val.length];
-        }
-    }
-
-    char[] append( const(char)[] val ) return scope
-    {
-        pragma(inline, false); // tame dmd inliner
-
-        if ( val.length && !mute )
-        {
-            if ( !dst.length )
-                dst.length = minBufSize;
-            assert( !contains( dst[0 .. len], val ) );
-            debug(info) printf( "appending (%.*s)\n", cast(int) val.length, val.ptr );
-
-            if ( dst.length - len >= val.length && &dst[len] == &val[0] )
-            {
-                // data is already in place
-                auto t = dst[len .. len + val.length];
-                len += val.length;
-                return t;
-            }
-            if ( dst.length - len >= val.length )
-            {
-                dst[len .. len + val.length] = val[];
-                auto t = dst[len .. len + val.length];
-                len += val.length;
-                return t;
-            }
-            overflow();
-        }
-        return null;
+        if (mute)
+            return null;
+        return dst.shift(val);
     }
 
     void putComma(size_t n)
@@ -265,14 +140,9 @@ pure @safe:
 
     void put(scope const(char)[] val) return scope
     {
-        pragma(inline, false); // tame dmd inliner
-
-        if (!val.length) return;
-
-        if (!contains(dst[0 .. len], val))
-            append(val);
-        else
-            shift(val);
+        if (mute)
+            return;
+        dst.append(val);
     }
 
 
@@ -297,7 +167,7 @@ pure @safe:
     {
         if ( val.length )
         {
-            append( " " );
+            put(" ");
             put( val );
         }
     }
@@ -307,7 +177,7 @@ pure @safe:
     {
         debug(trace) printf( "silent+\n" );
         debug(trace) scope(success) printf( "silent-\n" );
-        auto n = len; dg(); len = n;
+        auto n = dst.length; dg(); dst.len = n;
     }
 
 
@@ -835,7 +705,7 @@ pure @safe:
 
         debug(trace) printf( "parseType+\n" );
         debug(trace) scope(success) printf( "parseType-\n" );
-        auto beg = len;
+        auto beg = dst.length;
         auto t = front;
 
         char[] parseBackrefType(scope char[] delegate() pure @safe parseDg) pure @safe
@@ -867,19 +737,19 @@ pure @safe:
             put( "shared(" );
             parseType();
             put( ')' );
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'x': // Const (x Type)
             popFront();
             put( "const(" );
             parseType();
             put( ')' );
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'y': // Immutable (y Type)
             popFront();
             put( "immutable(" );
             parseType();
             put( ')' );
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'N':
             popFront();
             switch ( front )
@@ -887,29 +757,28 @@ pure @safe:
             case 'n': // Noreturn
                 popFront();
                 put("noreturn");
-                return dst[beg .. len];
+                return dst[beg .. $];
             case 'g': // Wild (Ng Type)
                 popFront();
                 // TODO: Anything needed here?
                 put( "inout(" );
                 parseType();
                 put( ')' );
-                return dst[beg .. len];
+                return dst[beg .. $];
             case 'h': // TypeVector (Nh Type)
                 popFront();
                 put( "__vector(" );
                 parseType();
                 put( ')' );
-                return dst[beg .. len];
+                return dst[beg .. $];
             default:
                 error();
-                assert( 0 );
             }
         case 'A': // TypeArray (A Type)
             popFront();
             parseType();
             put( "[]" );
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'G': // TypeStaticArray (G Number Type)
             popFront();
             auto num = sliceNumber();
@@ -917,21 +786,21 @@ pure @safe:
             put( '[' );
             put( num );
             put( ']' );
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'H': // TypeAssocArray (H Type Type)
             popFront();
             // skip t1
             auto tx = parseType();
             parseType();
             put( '[' );
-            put( tx );
+            shift(tx);
             put( ']' );
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'P': // TypePointer (P Type)
             popFront();
             parseType();
             put( '*' );
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'F': case 'U': case 'W': case 'V': case 'R': // TypeFunction
             return parseTypeFunction();
         case 'C': // TypeClass (C LName)
@@ -940,7 +809,7 @@ pure @safe:
         case 'T': // TypeTypedef (T LName)
             popFront();
             parseQualifiedName();
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'D': // TypeDelegate (D TypeFunction)
             popFront();
             auto modifiers = parseModifier();
@@ -957,15 +826,15 @@ pure @safe:
                     put(str);
                 }
             }
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'n': // TypeNone (n)
             popFront();
             // TODO: Anything needed here?
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'B': // TypeTuple (B Number Arguments)
             popFront();
             // TODO: Handle this.
-            return dst[beg .. len];
+            return dst[beg .. $];
         case 'Z': // Internal symbol
             // This 'type' is used for untyped internal symbols, i.e.:
             // __array
@@ -975,13 +844,13 @@ pure @safe:
             // __Interface
             // __ModuleInfo
             popFront();
-            return dst[beg .. len];
+            return dst[beg .. $];
         default:
             if (t >= 'a' && t <= 'w')
             {
                 popFront();
                 put( primitives[cast(size_t)(t - 'a')] );
-                return dst[beg .. len];
+                return dst[beg .. $];
             }
             else if (t == 'z')
             {
@@ -991,14 +860,13 @@ pure @safe:
                 case 'i':
                     popFront();
                     put( "cent" );
-                    return dst[beg .. len];
+                    return dst[beg .. $];
                 case 'k':
                     popFront();
                     put( "ucent" );
-                    return dst[beg .. len];
+                    return dst[beg .. $];
                 default:
                     error();
-                    assert( 0 );
                 }
             }
             error();
@@ -1351,12 +1219,13 @@ pure @safe:
     {
         debug(trace) printf( "parseTypeFunction+\n" );
         debug(trace) scope(success) printf( "parseTypeFunction-\n" );
-        auto beg = len;
+        auto beg = dst.length;
 
         parseCallConvention();
         auto attributes = parseFuncAttr();
 
-        auto argbeg = len;
+        auto argbeg = dst.length;
+        put(IsDelegate.yes == isdg ? "delegate" : "function");
         put( '(' );
         parseFuncArguments();
         put( ')' );
@@ -1369,17 +1238,18 @@ pure @safe:
                 put(str);
             }
         }
-        auto retbeg = len;
-        parseType();
-        put( ' ' );
-        // append delegate/function
-        if (IsDelegate.yes == isdg)
-            put( "delegate" );
-        else
-            put( "function" );
-        // move arguments and attributes behind name
-        shift( dst[argbeg .. retbeg] );
-        return dst[beg..len];
+
+        // A function / delegate return type is located at the end of its mangling
+        // Write it in order, then shift it back to 'code order'
+        // e.g. `delegate(int) @safedouble ' => 'double delegate(int) @safe'
+        {
+            auto retbeg = dst.length;
+            parseType();
+            put(' ');
+            shift(dst[argbeg .. retbeg]);
+        }
+
+        return dst[beg .. $];
     }
 
     static bool isCallConvention( char ch )
@@ -1701,7 +1571,7 @@ pure @safe:
 
                 if ( mayBeMangledNameArg() )
                 {
-                    auto l = len;
+                    auto l = dst.length;
                     auto p = pos;
                     auto b = brp;
                     try
@@ -1712,7 +1582,7 @@ pure @safe:
                     }
                     catch ( ParseException e )
                     {
-                        len = l;
+                        dst.len = l;
                         pos = p;
                         brp = b;
                         debug(trace) printf( "not a mangled name arg\n" );
@@ -1724,7 +1594,7 @@ pure @safe:
                     // try all possible pairs of numbers
                     auto qlen = decodeNumber() / 10; // last digit needed for QualifiedName
                     pos--;
-                    auto l = len;
+                    auto l = dst.length;
                     auto p = pos;
                     auto b = brp;
                     while ( qlen > 0 )
@@ -1740,7 +1610,7 @@ pure @safe:
                         }
                         qlen /= 10; // retry with one digit less
                         pos = --p;
-                        len = l;
+                        dst.len = l;
                         brp = b;
                     }
                 }
@@ -1860,7 +1730,7 @@ pure @safe:
         case '0': .. case '9':
             if ( mayBeTemplateInstanceName() )
             {
-                auto t = len;
+                auto t = dst.length;
 
                 try
                 {
@@ -1871,7 +1741,7 @@ pure @safe:
                 catch ( ParseException e )
                 {
                     debug(trace) printf( "not a template instance name\n" );
-                    len = t;
+                    dst.len = t;
                 }
             }
             goto case;
@@ -1889,10 +1759,9 @@ pure @safe:
     {
         // try to demangle a function, in case we are pointing to some function local
         auto prevpos = pos;
-        auto prevlen = len;
+        auto prevlen = dst.length;
         auto prevbrp = brp;
 
-        char[] attr;
         try
         {
             if ( 'M' == front )
@@ -1908,6 +1777,7 @@ pure @safe:
             }
             if ( isCallConvention( front ) )
             {
+                char[] attr;
                 // we don't want calling convention and attributes in the qualified name
                 parseCallConvention();
                 auto attributes = parseFuncAttr();
@@ -1917,23 +1787,23 @@ pure @safe:
                         put(str);
                         put(' ');
                     }
-                    attr = dst[prevlen .. len];
+                    attr = dst[prevlen .. $];
                 }
 
                 put( '(' );
                 parseFuncArguments();
                 put( ')' );
+                return attr;
             }
         }
         catch ( ParseException )
         {
             // not part of a qualified name, so back up
             pos = prevpos;
-            len = prevlen;
+            dst.len = prevlen;
             brp = prevbrp;
-            attr = null;
         }
-        return attr;
+        return null;
     }
 
     /*
@@ -1945,7 +1815,7 @@ pure @safe:
     {
         debug(trace) printf( "parseQualifiedName+\n" );
         debug(trace) scope(success) printf( "parseQualifiedName-\n" );
-        size_t  beg = len;
+        size_t  beg = dst.length;
         size_t  n   = 0;
 
         do
@@ -1956,7 +1826,7 @@ pure @safe:
             parseFunctionTypeNoReturn();
 
         } while ( isSymbolNameFront() );
-        return dst[beg .. len];
+        return dst[beg .. $];
     }
 
 
@@ -1977,17 +1847,17 @@ pure @safe:
         match( 'D' );
         do
         {
-            size_t  beg = len;
-            size_t  nameEnd = len;
+            size_t  beg = dst.length;
+            size_t  nameEnd = dst.length;
             char[] attr;
             do
             {
                 if ( attr )
-                    remove( attr ); // dump attributes of parent symbols
-                if ( beg != len )
+                    dst.remove(attr); // dump attributes of parent symbols
+                if (beg != dst.length)
                     put( '.' );
                 parseSymbolName();
-                nameEnd = len;
+                nameEnd = dst.length;
                 attr = parseFunctionTypeNoReturn( displayType );
 
             } while ( isSymbolNameFront() );
@@ -1995,7 +1865,7 @@ pure @safe:
             if ( displayType )
             {
                 attr = shift( attr );
-                nameEnd = len - attr.length;  // name includes function arguments
+                nameEnd = dst.length - attr.length;  // name includes function arguments
             }
             name = dst[beg .. nameEnd];
 
@@ -2003,7 +1873,7 @@ pure @safe:
             if ( 'M' == front )
                 popFront(); // has 'this' pointer
 
-            auto lastlen = len;
+            auto lastlen = dst.length;
             auto type = parseType();
             if ( displayType )
             {
@@ -2016,7 +1886,7 @@ pure @safe:
             {
                 // remove type
                 assert( attr.length == 0 );
-                len = lastlen;
+                dst.len = lastlen;
             }
             if ( pos >= buf.length || (n != 0 && pos >= end) )
                 return;
@@ -2040,15 +1910,6 @@ pure @safe:
         parseMangledName( AddType.yes == addType );
     }
 
-    char[] copyInput() return scope
-    {
-        if (dst.length < buf.length)
-            dst.length = buf.length;
-        char[] r = dst[0 .. buf.length];
-        r[] = buf[];
-        return r;
-    }
-
     char[] doDemangle(alias FUNC)() return scope
     {
         while ( true )
@@ -2057,17 +1918,17 @@ pure @safe:
             {
                 debug(info) printf( "demangle(%.*s)\n", cast(int) buf.length, buf.ptr );
                 FUNC();
-                return dst[0 .. len];
+                return dst[0 .. $];
             }
             catch ( OverflowException e )
             {
                 debug(trace) printf( "overflow... restarting\n" );
-                auto a = minBufSize;
-                auto b = 2 * dst.length;
+                auto a = Buffer.minSize;
+                auto b = 2 * dst.dst.length;
                 auto newsz = a < b ? b : a;
                 debug(info) printf( "growing dst to %lu bytes\n", newsz );
-                dst.length = newsz;
-                pos = len = brp = 0;
+                dst.dst.length = newsz;
+                pos = dst.len = brp = 0;
                 continue;
             }
             catch ( ParseException e )
@@ -2077,7 +1938,7 @@ pure @safe:
                     auto msg = e.toString();
                     printf( "error: %.*s\n", cast(int) msg.length, msg.ptr );
                 }
-                return copyInput();
+                return dst.copyInput(buf);
             }
             catch ( Exception e )
             {
@@ -2119,7 +1980,7 @@ char[] demangle(return scope const(char)[] buf, return scope char[] dst = null, 
     // fast path (avoiding throwing & catching exception) for obvious
     // non-D mangled names
     if (buf.length < 2 || !(buf[0] == 'D' || buf[0..2] == "_D"))
-        return d.copyInput();
+        return d.dst.copyInput(buf);
     return d.demangleName();
 }
 
@@ -2212,7 +2073,7 @@ char[] reencodeMangled(return scope const(char)[] mangled) nothrow pure @safe
                     d.popFront();
                     size_t n = d.decodeBackref();
                     if (!n || n > refpos)
-                        d.error("invalid back reference");
+                        error("invalid back reference");
 
                     auto savepos = d.pos;
                     scope(exit) d.pos = savepos;
@@ -2220,11 +2081,11 @@ char[] reencodeMangled(return scope const(char)[] mangled) nothrow pure @safe
 
                     auto idlen = d.decodeNumber();
                     if (d.pos + idlen > d.buf.length)
-                        d.error("invalid back reference");
+                        error("invalid back reference");
                     auto id = d.buf[d.pos .. d.pos + idlen];
                     auto pid = id in idpos;
                     if (!pid)
-                        d.error("invalid back reference");
+                        error("invalid back reference");
                     npos = positionInResult(*pid);
                 }
                 encodeBackref(reslen - npos);
@@ -2235,7 +2096,7 @@ char[] reencodeMangled(return scope const(char)[] mangled) nothrow pure @safe
             {
                 auto n = d.decodeNumber();
                 if (!n || n > d.buf.length || n > d.buf.length - d.pos)
-                    d.error("LName too shot or too long");
+                    error("LName too shot or too long");
                 auto id = d.buf[d.pos .. d.pos + n];
                 d.pos += n;
                 if (auto pid = id in idpos)
@@ -2267,7 +2128,7 @@ char[] reencodeMangled(return scope const(char)[] mangled) nothrow pure @safe
             d.popFront();
             auto n = d.decodeBackref();
             if (n == 0 || n > refPos)
-                d.error("invalid back reference");
+                error("invalid back reference");
 
             size_t npos = positionInResult(refPos - n);
             size_t reslen = result.length;
@@ -2903,6 +2764,7 @@ private shared CXX_DEMANGLER __cxa_demangle;
 
 CXX_DEMANGLER getCXXDemangler() nothrow @trusted
 {
+    import core.atomic : atomicLoad, atomicStore;
     if (__cxa_demangle is null)
     version (Posix)
     {
@@ -2916,17 +2778,21 @@ CXX_DEMANGLER getCXXDemangler() nothrow @trusted
         version (Solaris) import core.sys.solaris.dlfcn : RTLD_DEFAULT;
 
         if (auto found = cast(CXX_DEMANGLER) dlsym(RTLD_DEFAULT, "__cxa_demangle"))
-            __cxa_demangle = found;
+            atomicStore(__cxa_demangle, found);
     }
 
     if (__cxa_demangle is null)
-        __cxa_demangle = (const char* mangled_name, char* output_buffer,
-                            size_t* length, int* status) nothrow pure @trusted {
-                                *status = -1;
-                                return null;
-                            };
+    {
+        static extern(C) char* _(const char* mangled_name, char* output_buffer,
+             size_t* length, int* status) nothrow pure @trusted
+        {
+            *status = -1;
+            return null;
+        }
+        atomicStore(__cxa_demangle, &_);
+    }
 
-    return __cxa_demangle;
+    return atomicLoad(__cxa_demangle);
 }
 
 /**
@@ -2966,4 +2832,164 @@ private char[] demangleCXX(return scope const(char)[] buf, CXX_DEMANGLER __cxa_d
     dst.length = buf.length;
     dst[] = buf[];
     return dst;
+}
+
+/**
+ * Error handling through Exceptions
+ *
+ * The following types / functions are only used in this module,
+ * hence why the functions are `@trusted`.
+ * To make things `@nogc`, default-initialized instances are thrown.
+ */
+private class ParseException : Exception
+{
+    public this(string msg) @safe pure nothrow
+    {
+        super(msg);
+    }
+}
+
+/// Ditto
+private class OverflowException : Exception
+{
+    public this(string msg) @safe pure nothrow
+    {
+        super(msg);
+    }
+}
+
+/// Ditto
+private noreturn error(string msg = "Invalid symbol") @trusted pure
+{
+    pragma(inline, false); // tame dmd inliner
+
+    //throw new ParseException( msg );
+    debug(info) printf( "error: %.*s\n", cast(int) msg.length, msg.ptr );
+    throw __ctfe ? new ParseException(msg)
+        : cast(ParseException) __traits(initSymbol, ParseException).ptr;
+}
+
+/// Ditto
+private noreturn overflow(string msg = "Buffer overflow") @trusted pure
+{
+    pragma(inline, false); // tame dmd inliner
+
+    //throw new OverflowException( msg );
+    debug(info) printf( "overflow: %.*s\n", cast(int) msg.length, msg.ptr );
+    throw cast(OverflowException) __traits(initSymbol, OverflowException).ptr;
+}
+
+private struct Buffer
+{
+    enum size_t minSize = 4000;
+
+    @safe pure:
+
+    private char[] dst;
+    private size_t len;
+
+    public alias opDollar = len;
+
+    public size_t length () const scope @safe pure nothrow @nogc
+    {
+        return this.len;
+    }
+
+    public inout(char)[] opSlice (size_t from, size_t to)
+        inout return scope @safe pure nothrow @nogc
+    {
+        assert(from <= to);
+        assert(to <= len);
+        return this.dst[from .. to];
+    }
+
+    static bool contains(scope const(char)[] a, scope const(char)[] b) @trusted
+    {
+        if (a.length && b.length)
+        {
+            auto bend = b.ptr + b.length;
+            auto aend = a.ptr + a.length;
+            return a.ptr <= b.ptr && bend <= aend;
+        }
+        return false;
+    }
+
+    char[] copyInput(scope const(char)[] buf)
+        return scope nothrow
+    {
+        if (dst.length < buf.length)
+            dst.length = buf.length;
+        char[] r = dst[0 .. buf.length];
+        r[] = buf[];
+        return r;
+    }
+
+    // move val to the end of the dst buffer
+    char[] shift(scope const(char)[] val) return scope
+    {
+        pragma(inline, false); // tame dmd inliner
+
+        if (val.length)
+        {
+            assert( contains( dst[0 .. len], val ) );
+            debug(info) printf( "shifting (%.*s)\n", cast(int) val.length, val.ptr );
+
+            if (len + val.length > dst.length)
+                overflow();
+            size_t v = &val[0] - &dst[0];
+            dst[len .. len + val.length] = val[];
+            for (size_t p = v; p < len; p++)
+                dst[p] = dst[p + val.length];
+
+            return dst[len - val.length .. len];
+        }
+        return null;
+    }
+
+    // remove val from dst buffer
+    void remove(scope const(char)[] val) scope
+    {
+        pragma(inline, false); // tame dmd inliner
+
+        if ( val.length )
+        {
+            assert( contains( dst[0 .. len], val ) );
+            debug(info) printf( "removing (%.*s)\n", cast(int) val.length, val.ptr );
+            size_t v = &val[0] - &dst[0];
+            assert( len >= val.length && len <= dst.length );
+            len -= val.length;
+            for (size_t p = v; p < len; p++)
+                dst[p] = dst[p + val.length];
+        }
+    }
+
+    char[] append(scope const(char)[] val) return scope
+    {
+        pragma(inline, false); // tame dmd inliner
+
+        if (val.length)
+        {
+            if ( !dst.length )
+                dst.length = minSize;
+            assert( !contains( dst[0 .. len], val ) );
+            debug(info) printf( "appending (%.*s)\n", cast(int) val.length, val.ptr );
+
+            if ( dst.length - len >= val.length && &dst[len] == &val[0] )
+            {
+                // data is already in place
+                auto t = dst[len .. len + val.length];
+                len += val.length;
+                return t;
+            }
+            if ( dst.length - len >= val.length )
+            {
+                dst[len .. len + val.length] = val[];
+                auto t = dst[len .. len + val.length];
+                len += val.length;
+                return t;
+            }
+            overflow();
+        }
+        return null;
+    }
 }

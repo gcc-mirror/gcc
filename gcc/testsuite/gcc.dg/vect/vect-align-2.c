@@ -26,6 +26,7 @@ void fbar(struct foo *fp)
         f2.y[i][j] = z[i];
 
    for (i=0; i<N; i++)
+#pragma GCC novector
       for (j=0; j<N; j++)
 	if (f2.y[i][j] != z[i])
 	  abort ();

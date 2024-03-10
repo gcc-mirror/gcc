@@ -1,6 +1,7 @@
 /* PR tree-optimization/107547 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-add-options float16 } */
 
 int x;
 

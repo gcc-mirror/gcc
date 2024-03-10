@@ -132,6 +132,9 @@
 
 /* Extended Features Sub-leaf (%eax == 7, %ecx == 1) */
 /* %eax */
+#define bit_SHA512	(1 << 0)
+#define bit_SM3		(1 << 1)
+#define bit_SM4		(1 << 2)
 #define bit_RAOINT      (1 << 3)
 #define bit_AVXVNNI     (1 << 4)
 #define bit_AVX512BF16  (1 << 5)
@@ -144,6 +147,7 @@
 /* %edx */
 #define bit_AVXVNNIINT8 (1 << 4)
 #define bit_AVXNECONVERT	(1 << 5)
+#define bit_AVXVNNIINT16	(1 << 10)
 #define bit_PREFETCHI	(1 << 14)
 
 /* Extended State Enumeration Sub-leaf (%eax == 0xd, %ecx == 1) */
@@ -291,7 +295,7 @@ __get_cpuid_max (unsigned int __ext, unsigned int *__sig)
 	   : "i" (0x00200000));
 #endif
 
-  if (!((__eax ^ __ebx) & 0x00200000))
+  if (__builtin_expect (!((__eax ^ __ebx) & 0x00200000), 0))
     return 0;
 #endif
 
@@ -334,7 +338,7 @@ __get_cpuid_count (unsigned int __leaf, unsigned int __subleaf,
   unsigned int __ext = __leaf & 0x80000000;
   unsigned int __maxlevel = __get_cpuid_max (__ext, 0);
 
-  if (__maxlevel == 0 || __maxlevel < __leaf)
+  if (__builtin_expect (__maxlevel == 0, 0) || __maxlevel < __leaf)
     return 0;
 
   __cpuid_count (__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);

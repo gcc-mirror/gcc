@@ -146,9 +146,11 @@ private:
 
 bool optError(const scope char[] msg, const scope char[] name, const(char)[] errName)
 {
+    import core.atomic : atomicLoad;
+
     version (CoreUnittest) if (inUnittest) return false;
 
-    fprintf(stderr, "%.*s %.*s option '%.*s'.\n",
+    fprintf(atomicLoad(stderr), "%.*s %.*s option '%.*s'.\n",
             cast(int)msg.length, msg.ptr,
             cast(int)errName.length, errName.ptr,
             cast(int)name.length, name.ptr);
@@ -332,9 +334,11 @@ do
 
 bool parseError(const scope char[] exp, const scope char[] opt, const scope char[] got, const(char)[] errName)
 {
+    import core.atomic : atomicLoad;
+
     version (CoreUnittest) if (inUnittest) return false;
 
-    fprintf(stderr, "Expecting %.*s as argument for %.*s option '%.*s', got '%.*s' instead.\n",
+    fprintf(atomicLoad(stderr), "Expecting %.*s as argument for %.*s option '%.*s', got '%.*s' instead.\n",
             cast(int)exp.length, exp.ptr,
             cast(int)errName.length, errName.ptr,
             cast(int)opt.length, opt.ptr,
@@ -344,9 +348,11 @@ bool parseError(const scope char[] exp, const scope char[] opt, const scope char
 
 bool overflowedError(const scope char[] opt, const scope char[] got)
 {
+    import core.atomic : atomicLoad;
+
     version (CoreUnittest) if (inUnittest) return false;
 
-    fprintf(stderr, "Argument for %.*s option '%.*s' is too big.\n",
+    fprintf(atomicLoad(stderr), "Argument for %.*s option '%.*s' is too big.\n",
             cast(int)opt.length, opt.ptr,
             cast(int)got.length, got.ptr);
     return false;

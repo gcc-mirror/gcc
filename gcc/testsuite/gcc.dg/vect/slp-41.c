@@ -48,6 +48,7 @@ int main()
        __asm__ volatile ("");
     }
   testi (ia, sa, 8, 32);
+#pragma GCC novector
   for (i = 0; i < 128; ++i)
     if (sa[i] != ia[(i / 4) * 8 + i % 4])
       abort ();
@@ -58,6 +59,7 @@ int main()
        __asm__ volatile ("");
     }
   testi2 (ia, sa, 8, 32);
+#pragma GCC novector
   for (i = 0; i < 128; ++i)
     if (ia[i] != sa[(i / 4) * 8 + i % 4])
       abort ();

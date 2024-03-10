@@ -3832,7 +3832,7 @@ package Einfo is
 
 --    Number_Formals (synthesized)
 --       Applies to subprograms and subprogram types. Yields the number of
---       formals as a value of type Pos.
+--       formals as a value of type Nat.
 
 --    Object_Size_Clause (synthesized)
 --       Applies to entities for types and subtypes. If an object size clause
@@ -4112,7 +4112,7 @@ package Einfo is
 --    Protected_Subprogram
 --       Defined in functions and procedures. Set for the pair of subprograms
 --       which emulate the runtime semantics of a protected subprogram. Denotes
---       the entity of the origial protected subprogram.
+--       the entity of the original protected subprogram.
 
 --    Protection_Object
 --       Applies to protected entries, entry families and subprograms. Denotes

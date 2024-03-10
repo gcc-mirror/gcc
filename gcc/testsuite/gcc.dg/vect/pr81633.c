@@ -24,6 +24,7 @@ int main(void)
   double A[4][4] = {{0.0}};
   kernel(A);
   for ( int i = 0; i < 4; i++ )
+#pragma GCC novector
     for ( int j = 0; j < 4; j++ )
       if (A[i][j] != expected[i][j])
 	__builtin_abort ();

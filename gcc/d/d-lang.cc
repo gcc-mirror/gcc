@@ -293,7 +293,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   /* Set default values.  */
   global._init ();
 
-  global.vendor = lang_hooks.name;
+  global.compileEnv.vendor = lang_hooks.name;
   global.params.argv0 = xstrdup (decoded_options[0].arg);
   global.params.errorLimit = flag_max_errors;
 
@@ -562,7 +562,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.useDIP1021 = value;
       global.params.bitfields = value;
       global.params.dtorFields = FeatureState::enabled;
-      global.params.fieldwise = value;
+      global.params.fieldwise = FeatureState::enabled;
       global.params.fixAliasThis = value;
       global.params.previewIn = value;
       global.params.fix16997 = value;
@@ -594,7 +594,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fpreview_fieldwise:
-      global.params.fieldwise = value;
+      global.params.fieldwise = FeatureState::enabled;
       break;
 
     case OPT_fpreview_fixaliasthis:
@@ -933,6 +933,12 @@ d_post_options (const char ** fn)
     global.params.dihdr.fullOutput = true;
 
   global.params.obj = !flag_syntax_only;
+
+  /* The front-end parser only has access to `compileEnv', synchronize its
+     fields with params.  */
+  global.compileEnv.previewIn = global.params.previewIn;
+  global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
+  global.compileEnv.shortenedMethods = global.params.shortenedMethods;
 
   /* Add in versions given on the command line.  */
   if (global.params.versionids)

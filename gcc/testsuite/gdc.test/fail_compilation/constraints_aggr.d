@@ -2,12 +2,12 @@
 EXTRA_FILES: imports/constraints.d
 TEST_OUTPUT:
 ---
-fail_compilation/constraints_aggr.d(32): Error: none of the overloads of template `imports.constraints.C.f` are callable using argument types `!()(int)`
+fail_compilation/constraints_aggr.d(32): Error: template `imports.constraints.C.f` is not callable using argument types `!()(int)`
 fail_compilation/imports/constraints.d(60):        Candidate is: `f(T)(T v)`
   with `T = int`
   must satisfy the following constraint:
 `       !P!T`
-fail_compilation/constraints_aggr.d(33): Error: none of the overloads of template `imports.constraints.C.g` are callable using argument types `!()()`
+fail_compilation/constraints_aggr.d(33): Error: template `imports.constraints.C.g` is not callable using argument types `!()()`
 fail_compilation/imports/constraints.d(63):        Candidate is: `g(this T)()`
   with `T = imports.constraints.C`
   must satisfy the following constraint:

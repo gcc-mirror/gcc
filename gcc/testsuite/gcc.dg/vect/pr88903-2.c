@@ -21,6 +21,7 @@ int main()
   for (int i = 0; i < 1024; ++i)
     x[i] = i, y[i] = i % 8;
   foo ();
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     if (x[i] != i << ((i & ~1) % 8))
       __builtin_abort ();

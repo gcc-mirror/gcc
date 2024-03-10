@@ -241,8 +241,10 @@ streamer_read_value_range (class lto_input_block *ib, data_in *data_in,
 	  int_range<2> tmp (type, lb, ub);
 	  r.union_ (tmp);
 	}
-      wide_int nz = streamer_read_wide_int (ib);
-      r.set_nonzero_bits (nz);
+      wide_int value = streamer_read_wide_int (ib);
+      wide_int mask = streamer_read_wide_int (ib);
+      irange_bitmask bm (value, mask);
+      r.update_bitmask (bm);
       return;
     }
   if (is_a <frange> (vr))

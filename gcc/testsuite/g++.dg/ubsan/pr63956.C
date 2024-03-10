@@ -56,12 +56,13 @@ fn3 (int a, int b)
 {
   if (b != 2)
     a = a / b; // { dg-error "..7 / 0.. is not a constant expression" }
+               // { dg-error "overflow in constant expression" "" { target *-*-* } .-1 }
   return a;
 }
 
 constexpr int k1 = fn3 (8, 4);
 constexpr int k2 = fn3 (7, 0); // { dg-message "in .constexpr. expansion" }
-constexpr int k3 = fn3 (INT_MIN, -1); // { dg-error "overflow in constant expression|in .constexpr. expansion of " }
+constexpr int k3 = fn3 (INT_MIN, -1); // { dg-message "in .constexpr. expansion of " }
 
 SA (k1 == 2);
 
@@ -100,13 +101,13 @@ constexpr int
 fn7 (const int *a, int b)
 {
   if (b != 3)
-    return fn6 (*a, b);
+    return fn6 (*a, b); // { dg-error "null pointer" }
   return 7;
 }
 
 constexpr int n1 = 7;
 constexpr int n2 = fn7 (&n1, 5);
-constexpr int n3 = fn7 ((const int *) 0, 8);  // { dg-error "null pointer|in .constexpr. expansion of " }
+constexpr int n3 = fn7 ((const int *) 0, 8);  // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn8 (int i)
@@ -122,15 +123,15 @@ constexpr int
 fn9 (int a, int b)
 {
   if (b != 0)
-    return a + b;
+    return a + b; // { dg-error "overflow in constant expression" }
   return a;
 }
 
 constexpr int p1 = fn9 (42, 7);
-constexpr int p2 = fn9 (__INT_MAX__, 1); // { dg-error "overflow in constant expression|in .constexpr. expansion of " }
+constexpr int p2 = fn9 (__INT_MAX__, 1); // { dg-message "in .constexpr. expansion of " }
 constexpr int p3 = fn9 (__INT_MAX__, -1);
 constexpr int p4 = fn9 (INT_MIN, 1);
-constexpr int p5 = fn9 (INT_MIN, -1); // { dg-error "overflow in constant expression|in .constexpr. expansion of " }
+constexpr int p5 = fn9 (INT_MIN, -1); // { dg-message "in .constexpr. expansion of " }
 
 SA (p1 == 49);
 SA (p3 == __INT_MAX__ - 1);
@@ -140,13 +141,13 @@ constexpr int
 fn10 (int a, int b)
 {
   if (b != 0)
-    return a * b;
+    return a * b; // { dg-error "overflow in constant expression" }
   return a;
 }
 
 constexpr int q1 = fn10 (10, 10);
-constexpr int q2 = fn10 (__INT_MAX__, 2); // { dg-error "overflow in constant expression|in .constexpr. expansion of " }
-constexpr int q3 = fn10 (INT_MIN, 2); // { dg-error "overflow in constant expression|in .constexpr. expansion of " }
+constexpr int q2 = fn10 (__INT_MAX__, 2); // { dg-message "in .constexpr. expansion of " }
+constexpr int q3 = fn10 (INT_MIN, 2); // { dg-message "in .constexpr. expansion of " }
 constexpr int q4 = fn10 (-1, -1);
 
 SA (q1 == 100);
@@ -155,14 +156,14 @@ SA (q4 == 1);
 constexpr int
 fn11 (double d)
 {
-  int i = d;
+  int i = d; // { dg-error "overflow in constant expression" }
   if (i != 0)
     return i;
   return i * 2;
 }
 
 constexpr int r1 = fn11 (3.4);
-constexpr int r2 = fn11 (__builtin_inf ()); // { dg-error "overflow in constant expression|in .constexpr. expansion of " }
+constexpr int r2 = fn11 (__builtin_inf ()); // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn12 (int i)

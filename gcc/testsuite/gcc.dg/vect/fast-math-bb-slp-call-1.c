@@ -32,6 +32,7 @@ main1 ()
       d[i] = i * i;
     }
   f1 ();
+#pragma GCC novector
   for (i = 0; i < 8; i++)
     if (fabsf (((i & 2) ? -4 * i : 4 * i) + 1 + i + i - a[i]) >= 0.0001f)
       abort ();

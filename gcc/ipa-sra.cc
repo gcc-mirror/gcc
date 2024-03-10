@@ -898,7 +898,8 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 
   FOR_EACH_IMM_USE_STMT (stmt, imm_iter, name)
     {
-      if (is_gimple_debug (stmt))
+      if (is_gimple_debug (stmt)
+	  || gimple_clobber_p (stmt))
 	continue;
 
       /* TODO: We could handle at least const builtin functions like arithmetic
@@ -1056,7 +1057,8 @@ ptr_parm_has_nonarg_uses (cgraph_node *node, function *fun, tree parm,
       unsigned uses_ok = 0;
       use_operand_p use_p;
 
-      if (is_gimple_debug (stmt))
+      if (is_gimple_debug (stmt)
+	  || gimple_clobber_p (stmt))
 	continue;
 
       if (gimple_assign_single_p (stmt))

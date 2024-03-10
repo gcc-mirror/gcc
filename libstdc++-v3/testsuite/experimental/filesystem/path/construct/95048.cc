@@ -18,6 +18,8 @@ test_wide()
   VERIFY( CHECK(L, "\U0001F4C1") ); // folder
   VERIFY( CHECK(L, "\U0001F4C2") ); // open folder
   VERIFY( CHECK(L, "\U0001F4C4") ); // filing cabient
+
+  VERIFY( path(u8"\U0001D11E").wstring() == L"\U0001D11E" ); // G Clef
 }
 
 void
@@ -27,6 +29,8 @@ test_u16()
   VERIFY( CHECK(u, "\U0001F4C1") ); // folder
   VERIFY( CHECK(u, "\U0001F4C2") ); // open folder
   VERIFY( CHECK(u, "\U0001F4C4") ); // filing cabient
+
+  VERIFY( path(u8"\U0001D11E").u16string() == u"\U0001D11E" ); // G Clef
 }
 
 void
@@ -36,6 +40,8 @@ test_u32()
   VERIFY( CHECK(U, "\U0001F4C1") ); // folder
   VERIFY( CHECK(U, "\U0001F4C2") ); // open folder
   VERIFY( CHECK(U, "\U0001F4C4") ); // filing cabient
+
+  VERIFY( path(u8"\U0001D11E").u32string() == U"\U0001D11E" ); // G Clef
 }
 
 int

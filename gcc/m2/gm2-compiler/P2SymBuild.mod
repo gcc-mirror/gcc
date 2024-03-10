@@ -109,6 +109,7 @@ FROM SymbolTable IMPORT NulSym,
                         ParametersDefinedInImplementation,
                         ProcedureParametersDefined,
                         PutProcedureNoReturn,
+                        PutProcedureParameterHeapVars,
                         CheckForUnImplementedExports,
                         CheckForUndeclaredExports,
                         IsHiddenTypeDeclared,
@@ -1377,6 +1378,7 @@ BEGIN
    THEN
       WriteFormat2('end procedure name does not match beginning %a name %a', NameStart, NameEnd)
    END ;
+   PutProcedureParameterHeapVars (ProcSym) ;
    EndScope ;
    M2Error.LeaveErrorScope
 END EndBuildProcedure ;

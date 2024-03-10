@@ -11,6 +11,7 @@ main ()
 
   for (; a;)
     for (; g; g++)
+#pragma GCC novector
       for (; f; f++)
 	if (j)
 	  {

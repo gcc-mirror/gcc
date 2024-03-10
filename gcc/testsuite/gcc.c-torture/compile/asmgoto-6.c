@@ -1,5 +1,5 @@
 
-/* { dg-do compile } */
+/* { dg-do compile { target lra } } */
 /* PR middle-end/110420 */
 /* PR middle-end/103979 */
 /* PR middle-end/98619 */

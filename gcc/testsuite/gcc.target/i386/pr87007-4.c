@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -march=skylake-avx512 -mfpmath=sse" } */
-
+/* { dg-options "-O2 -march=skylake-avx512 -mfpmath=sse" } */
+/* Load of d2/d3 is hoisted out, vrndscalesd will reuse loades register to avoid partial dependence.  */
 
 #include<math.h>
 
@@ -15,4 +15,4 @@ foo (int n, int k)
       d1 = ceil (d3);
 }
 
-/* { dg-final { scan-assembler-times "vxorps\[^\n\r\]*xmm\[0-9\]" 1 } } */
+/* { dg-final { scan-assembler-times "vxorps\[^\n\r\]*xmm\[0-9\]" 0 } } */

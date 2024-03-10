@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-do run } */
-/* { dg-options "-O2 -fno-tree-vectorize -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details" } */
+/* { dg-options "-O2 -fno-tree-vectorize -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details-blocks" } */
 
 void abort (void);
 
@@ -47,3 +47,4 @@ int main(void)
 
 /* Also check that we undid the transformation previously made by PRE.  */
 /* { dg-final { scan-tree-dump-times "looparound ref" 1 "pcom" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" } } */

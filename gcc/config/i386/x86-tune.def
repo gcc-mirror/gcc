@@ -42,8 +42,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
           m_PENT | m_LAKEMONT | m_PPRO | m_CORE_ALL | m_BONNELL | m_SILVERMONT
 	  | m_INTEL | m_KNL | m_KNM | m_K6_GEODE | m_AMD_MULTIPLE | m_LUJIAZUI
-	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM
-	  | m_GENERIC)
+	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_PARTIAL_REG_DEPENDENCY: Enable more register renaming
    on modern chips.  Prefer stores affecting whole integer register
@@ -53,7 +53,7 @@ DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
           m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2
 	  | m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_INTEL
 	  | m_KNL | m_KNM | m_AMD_MULTIPLE | m_LUJIAZUI | m_TREMONT
-	  | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC)
+	  | m_ALDERLAKE | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: This knob promotes all store
    destinations to be 128bit to allow register renaming on 128bit SSE units,
@@ -64,7 +64,7 @@ DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
 DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
 	  | m_BDVER | m_ZNVER | m_LUJIAZUI | m_TREMONT | m_ALDERLAKE
-	  | m_CORE_ATOM | m_GENERIC)
+	  | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY: This knob avoids
    partial write to the destination in scalar SSE conversion from FP
@@ -72,22 +72,22 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
 DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY,
 	  "sse_partial_reg_fp_converts_dependency",
 	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
-	  | m_BDVER | m_ZNVER | m_LUJIAZUI | m_ALDERLAKE | m_CORE_ATOM
-	  | m_GENERIC)
+	  | m_BDVER | m_ZNVER | m_LUJIAZUI | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY: This knob avoids partial
    write to the destination in scalar SSE conversion from integer to FP.  */
 DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY,
 	  "sse_partial_reg_converts_dependency",
 	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
-	  | m_BDVER | m_ZNVER | m_LUJIAZUI | m_ALDERLAKE | m_CORE_ATOM
-	  | m_GENERIC)
+	  | m_BDVER | m_ZNVER | m_LUJIAZUI | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_DEST_FALSE_DEP_FOR_GLC: This knob inserts zero-idiom before
    several insns to break false dependency on the dest register for GLC
    micro-architecture.  */
 DEF_TUNE (X86_TUNE_DEST_FALSE_DEP_FOR_GLC,
-	  "dest_false_dep_for_glc", m_SAPPHIRERAPIDS | m_ALDERLAKE
+	  "dest_false_dep_for_glc", m_SAPPHIRERAPIDS | m_ALDERLAKE | m_ARROWLAKE
 	  | m_CORE_ATOM)
 
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
@@ -114,14 +114,16 @@ DEF_TUNE (X86_TUNE_MOVX, "movx",
           m_PPRO | m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
 	  | m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_KNL | m_KNM | m_INTEL
 	  | m_GOLDMONT_PLUS | m_GEODE | m_AMD_MULTIPLE | m_LUJIAZUI
-	  | m_CORE_AVX2 | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC)
+	  | m_CORE_AVX2 | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_MEMORY_MISMATCH_STALL: Avoid partial stores that are followed by
    full sized loads.  */
 DEF_TUNE (X86_TUNE_MEMORY_MISMATCH_STALL, "memory_mismatch_stall",
           m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_INTEL
 	  | m_KNL | m_KNM | m_GOLDMONT | m_GOLDMONT_PLUS | m_AMD_MULTIPLE
-	  | m_LUJIAZUI | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC)
+	  | m_LUJIAZUI | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_FUSE_CMP_AND_BRANCH_32: Fuse compare with a subsequent
    conditional jump instruction for 32 bit TARGET.  */
@@ -177,14 +179,15 @@ DEF_TUNE (X86_TUNE_EPILOGUE_USING_MOVE, "epilogue_using_move",
 /* X86_TUNE_USE_LEAVE: Use "leave" instruction in epilogues where it fits.  */
 DEF_TUNE (X86_TUNE_USE_LEAVE, "use_leave",
 	  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_LUJIAZUI
-	  | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC)
+	  | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_PUSH_MEMORY: Enable generation of "push mem" instructions.
    Some chips, like 486 and Pentium works faster with separate load
    and push instructions.  */
 DEF_TUNE (X86_TUNE_PUSH_MEMORY, "push_memory",
           m_386 | m_P4_NOCONA | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE
-	  | m_LUJIAZUI | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC)
+	  | m_LUJIAZUI | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_SINGLE_PUSH: Enable if single push insn is preferred
    over esp subtraction.  */
@@ -254,8 +257,8 @@ DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_LAKEMONT | m_PPRO))
 DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
           ~(m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
 	    | m_BONNELL | m_SILVERMONT | m_INTEL |  m_KNL | m_KNM | m_GOLDMONT
-	    | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM
-	    | m_LUJIAZUI | m_GENERIC))
+	    | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE
+	    | m_CORE_ATOM | m_LUJIAZUI | m_GENERIC))
 
 /* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
    for DFmode copies */
@@ -263,7 +266,7 @@ DEF_TUNE (X86_TUNE_INTEGER_DFMODE_MOVES, "integer_dfmode_moves",
           ~(m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
 	    | m_KNL | m_KNM | m_INTEL | m_GEODE | m_AMD_MULTIPLE | m_LUJIAZUI
 	    | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE
-	    | m_CORE_ATOM | m_GENERIC))
+	    | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC))
 
 /* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
    will impact LEA instruction selection. */
@@ -301,8 +304,8 @@ DEF_TUNE (X86_TUNE_SINGLE_STRINGOP, "single_stringop", m_386 | m_P4_NOCONA)
    move/set sequences of bytes with known size.  */
 DEF_TUNE (X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB,
 	  "prefer_known_rep_movsb_stosb",
-	  m_SKYLAKE | m_ALDERLAKE | m_CORE_ATOM | m_TREMONT | m_CORE_AVX512
-	  | m_LUJIAZUI)
+	  m_SKYLAKE | m_ALDERLAKE | m_ARROWLAKE | m_CORE_ATOM
+	  | m_TREMONT | m_CORE_AVX512 | m_LUJIAZUI)
 
 /* X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES: Enable generation of
    compact prologues and epilogues by issuing a misaligned moves.  This
@@ -312,14 +315,15 @@ DEF_TUNE (X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB,
 DEF_TUNE (X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES,
 	  "misaligned_move_string_pro_epilogues",
 	  m_386 | m_486 | m_CORE_ALL | m_AMD_MULTIPLE | m_LUJIAZUI | m_TREMONT
-	  | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC)
+	  | m_ALDERLAKE | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_USE_SAHF: Controls use of SAHF.  */
 DEF_TUNE (X86_TUNE_USE_SAHF, "use_sahf",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
 	  | m_KNL | m_KNM | m_INTEL | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER
 	  | m_BTVER | m_ZNVER | m_LUJIAZUI | m_GOLDMONT | m_GOLDMONT_PLUS
-	  | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC)
+	  | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE | m_CORE_ATOM
+	  | m_GENERIC)
 
 /* X86_TUNE_USE_CLTD: Controls use of CLTD and CTQO instructions.  */
 DEF_TUNE (X86_TUNE_USE_CLTD, "use_cltd",
@@ -330,7 +334,8 @@ DEF_TUNE (X86_TUNE_USE_CLTD, "use_cltd",
 DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
           m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL
 	  | m_LAKEMONT | m_AMD_MULTIPLE | m_LUJIAZUI | m_GOLDMONT
-	  | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC)
+	  | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_AVOID_FALSE_DEP_FOR_BMI: Avoid false dependency
    for bit-manipulation instructions.  */
@@ -349,13 +354,13 @@ DEF_TUNE (X86_TUNE_ADJUST_UNROLL, "adjust_unroll_factor", m_BDVER3 | m_BDVER4)
    if-converted sequence to one.  */
 DEF_TUNE (X86_TUNE_ONE_IF_CONV_INSN, "one_if_conv_insn",
 	  m_SILVERMONT | m_KNL | m_KNM | m_INTEL | m_CORE_ALL | m_GOLDMONT
-	  | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM | m_LUJIAZUI
-	  | m_GENERIC)
+	  | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_LUJIAZUI | m_GENERIC)
 
 /* X86_TUNE_AVOID_MFENCE: Use lock prefixed instructions instead of mfence.  */
 DEF_TUNE (X86_TUNE_AVOID_MFENCE, "avoid_mfence",
 	 m_CORE_ALL | m_BDVER | m_ZNVER | m_LUJIAZUI | m_TREMONT | m_ALDERLAKE
-	 | m_CORE_ATOM | m_GENERIC)
+	 | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_EXPAND_ABS: This enables a new abs pattern by
    generating instructions for abs (x) = (((signed) x >> (W-1) ^ x) -
@@ -380,7 +385,8 @@ DEF_TUNE (X86_TUNE_USE_SIMODE_FIOP, "use_simode_fiop",
           ~(m_PENT | m_LAKEMONT | m_PPRO | m_CORE_ALL | m_BONNELL
 	    | m_SILVERMONT | m_KNL | m_KNM | m_INTEL | m_AMD_MULTIPLE
 	    | m_LUJIAZUI | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT
-	    | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC))
+	    | m_ALDERLAKE | m_ARROWLAKE | m_CORE_ATOM
+	    | m_GENERIC))
 
 /* X86_TUNE_USE_FFREEP: Use freep instruction instead of fstp.  */
 DEF_TUNE (X86_TUNE_USE_FFREEP, "use_ffreep", m_AMD_MULTIPLE | m_LUJIAZUI)
@@ -389,8 +395,8 @@ DEF_TUNE (X86_TUNE_USE_FFREEP, "use_ffreep", m_AMD_MULTIPLE | m_LUJIAZUI)
 DEF_TUNE (X86_TUNE_EXT_80387_CONSTANTS, "ext_80387_constants",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
 	  | m_KNL | m_KNM | m_INTEL | m_K6_GEODE | m_ATHLON_K8 | m_LUJIAZUI
-	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM
-	  | m_GENERIC)
+	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_GENERIC)
 
 /*****************************************************************************/
 /* SSE instruction selection tuning                                          */
@@ -406,15 +412,16 @@ DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
 	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_SILVERMONT | m_KNL | m_KNM
 	  | m_INTEL | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE
-	  | m_CORE_ATOM | m_AMDFAM10 | m_BDVER | m_BTVER | m_ZNVER | m_LUJIAZUI
-	  | m_GENERIC)
+	  | m_ARROWLAKE | m_CORE_ATOM | m_AMDFAM10 | m_BDVER
+	  | m_BTVER | m_ZNVER | m_LUJIAZUI | m_GENERIC)
 
 /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores
    instead of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
 	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_SILVERMONT | m_KNL | m_KNM
 	  | m_INTEL | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE
-	  | m_CORE_ATOM | m_BDVER | m_ZNVER | m_LUJIAZUI | m_GENERIC)
+	  | m_ARROWLAKE | m_CORE_ATOM | m_BDVER | m_ZNVER
+	  | m_LUJIAZUI | m_GENERIC)
 
 /* X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL: Use packed single
    precision 128bit instructions instead of double where possible.   */
@@ -424,13 +431,14 @@ DEF_TUNE (X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL, "sse_packed_single_insn_optim
 /* X86_TUNE_SSE_TYPELESS_STORES: Always movaps/movups for 128bit stores.   */
 DEF_TUNE (X86_TUNE_SSE_TYPELESS_STORES, "sse_typeless_stores",
 	  m_AMD_MULTIPLE | m_LUJIAZUI | m_CORE_ALL | m_TREMONT | m_ALDERLAKE
-	  | m_CORE_ATOM | m_GENERIC)
+	  | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_SSE_LOAD0_BY_PXOR: Always use pxor to load0 as opposed to
    xorps/xorpd and other variants.  */
 DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor",
 	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BDVER | m_BTVER | m_ZNVER
-	  | m_LUJIAZUI | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC)
+	  | m_LUJIAZUI | m_TREMONT | m_ALDERLAKE | m_ARROWLAKE
+	  | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_INTER_UNIT_MOVES_TO_VEC: Enable moves in from integer
    to SSE registers.  If disabled, the moves will be done by storing
@@ -477,12 +485,13 @@ DEF_TUNE (X86_TUNE_SLOW_PSHUFB, "slow_pshufb",
 /* X86_TUNE_AVOID_4BYTE_PREFIXES: Avoid instructions requiring 4+ bytes of prefixes.  */
 DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",
 	  m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE
-	  | m_CORE_ATOM | m_INTEL)
+	  | m_ARROWLAKE | m_CORE_ATOM | m_INTEL)
 
 /* X86_TUNE_USE_GATHER_2PARTS: Use gather instructions for vectors with 2
    elements.  */
 DEF_TUNE (X86_TUNE_USE_GATHER_2PARTS, "use_gather_2parts",
-	  ~(m_ZNVER1 | m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC))
+	  ~(m_ZNVER1 | m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ALDERLAKE
+	    | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC))
 
 /* X86_TUNE_USE_SCATTER_2PARTS: Use scater instructions for vectors with 2
    elements.  */
@@ -492,7 +501,8 @@ DEF_TUNE (X86_TUNE_USE_SCATTER_2PARTS, "use_scatter_2parts",
 /* X86_TUNE_USE_GATHER_4PARTS: Use gather instructions for vectors with 4
    elements.  */
 DEF_TUNE (X86_TUNE_USE_GATHER_4PARTS, "use_gather_4parts",
-	  ~(m_ZNVER1 | m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC))
+	  ~(m_ZNVER1 | m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ALDERLAKE
+	    | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC))
 
 /* X86_TUNE_USE_SCATTER_4PARTS: Use scater instructions for vectors with 4
    elements.  */
@@ -502,7 +512,8 @@ DEF_TUNE (X86_TUNE_USE_SCATTER_4PARTS, "use_scatter_4parts",
 /* X86_TUNE_USE_GATHER: Use gather instructions for vectors with 8 or more
    elements.  */
 DEF_TUNE (X86_TUNE_USE_GATHER, "use_gather",
-	  ~(m_ZNVER1 | m_ZNVER2 | m_ZNVER4 | m_ALDERLAKE | m_CORE_ATOM | m_GENERIC))
+	  ~(m_ZNVER1 | m_ZNVER2 | m_ZNVER4 | m_ALDERLAKE | m_ARROWLAKE
+	    | m_CORE_ATOM | m_GENERIC))
 
 /* X86_TUNE_USE_SCATTER: Use scater instructions for vectors with 8 or more
    elements.  */
@@ -516,7 +527,8 @@ DEF_TUNE (X86_TUNE_AVOID_128FMA_CHAINS, "avoid_fma_chains", m_ZNVER1 | m_ZNVER2 
 /* X86_TUNE_AVOID_256FMA_CHAINS: Avoid creating loops with tight 256bit or
    smaller FMA chain.  */
 DEF_TUNE (X86_TUNE_AVOID_256FMA_CHAINS, "avoid_fma256_chains", m_ZNVER2 | m_ZNVER3
-	  | m_ALDERLAKE | m_SAPPHIRERAPIDS | m_CORE_ATOM)
+	  | m_ALDERLAKE | m_ARROWLAKE | m_SAPPHIRERAPIDS
+	  | m_CORE_ATOM)
 
 /* X86_TUNE_AVOID_512FMA_CHAINS: Avoid creating loops with tight 512bit or
    smaller FMA chain.  */
@@ -560,12 +572,14 @@ DEF_TUNE (X86_TUNE_AVX512_SPLIT_REGS, "avx512_split_regs", m_ZNVER4)
 /* X86_TUNE_AVX256_MOVE_BY_PIECES: Optimize move_by_pieces with 256-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX256_MOVE_BY_PIECES, "avx256_move_by_pieces",
-	  m_ALDERLAKE | m_CORE_AVX2 | m_ZNVER1 | m_ZNVER2 | m_ZNVER3)
+	  m_ALDERLAKE | m_ARROWLAKE | m_CORE_AVX2 | m_ZNVER1
+	  | m_ZNVER2 | m_ZNVER3)
 
 /* X86_TUNE_AVX256_STORE_BY_PIECES: Optimize store_by_pieces with 256-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX256_STORE_BY_PIECES, "avx256_store_by_pieces",
-	  m_ALDERLAKE | m_CORE_AVX2 | m_ZNVER1 | m_ZNVER2 | m_ZNVER3)
+	  m_ALDERLAKE | m_ARROWLAKE | m_CORE_AVX2 | m_ZNVER1
+	  | m_ZNVER2 | m_ZNVER3)
 
 /* X86_TUNE_AVX512_MOVE_BY_PIECES: Optimize move_by_pieces with 512-bit
    AVX instructions.  */

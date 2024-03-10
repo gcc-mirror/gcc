@@ -315,6 +315,8 @@ immutable Msgtable[] msgtable =
     { "_d_newThrowable" },
     { "_d_newclassT" },
     { "_d_newclassTTrace" },
+    { "_d_newitemT" },
+    { "_d_newitemTTrace" },
     { "_d_assert_fail" },
     { "dup" },
     { "_aaApply" },
@@ -361,6 +363,8 @@ immutable Msgtable[] msgtable =
     { "_d_arrayappendcTXImpl" },
     { "_d_arrayappendcTX" },
     { "_d_arrayappendcTXTrace" },
+    { "_d_arraycatnTX" },
+    { "_d_arraycatnTXTrace" },
 
     // varargs implementation
     { "stdc" },
@@ -370,6 +374,10 @@ immutable Msgtable[] msgtable =
     // Builtin functions
     { "std" },
     { "core" },
+    { "config" },
+    { "c_complex_float" },
+    { "c_complex_double" },
+    { "c_complex_real" },
     { "etc" },
     { "attribute" },
     { "atomic" },
@@ -519,9 +527,17 @@ immutable Msgtable[] msgtable =
     { "__tag" },
     { "dllimport" },
     { "dllexport" },
+    { "naked" },
+    { "thread" },
     { "vector_size" },
     { "__func__" },
+    { "always_inline" },
+    { "noinline" },
     { "noreturn" },
+    { "_nothrow", "nothrow" },
+    { "_deprecated", "deprecated" },
+    { "_align", "align" },
+    { "aligned" },
     { "__pragma", "pragma" },
     { "builtins", "__builtins" },
     { "builtin_va_list", "__builtin_va_list" },
@@ -532,8 +548,10 @@ immutable Msgtable[] msgtable =
     { "show" },
     { "push" },
     { "pop" },
+    { "_pure", "pure" },
     { "define" },
     { "undef" },
+    { "ident" },
 ];
 
 

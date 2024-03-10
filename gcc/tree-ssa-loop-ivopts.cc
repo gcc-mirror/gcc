@@ -2442,7 +2442,7 @@ get_mem_type_for_internal_fn (gcall *call, tree *op_p)
     case IFN_MASK_LOAD:
     case IFN_MASK_LOAD_LANES:
     case IFN_LEN_LOAD:
-    case IFN_LEN_MASK_LOAD:
+    case IFN_MASK_LEN_LOAD:
       if (op_p == gimple_call_arg_ptr (call, 0))
 	return TREE_TYPE (gimple_call_lhs (call));
       return NULL_TREE;
@@ -2450,7 +2450,7 @@ get_mem_type_for_internal_fn (gcall *call, tree *op_p)
     case IFN_MASK_STORE:
     case IFN_MASK_STORE_LANES:
     case IFN_LEN_STORE:
-    case IFN_LEN_MASK_STORE:
+    case IFN_MASK_LEN_STORE:
       {
 	if (op_p == gimple_call_arg_ptr (call, 0))
 	  {
@@ -7567,8 +7567,8 @@ get_alias_ptr_type_for_ptr_address (iv_use *use)
     case IFN_MASK_STORE_LANES:
     case IFN_LEN_LOAD:
     case IFN_LEN_STORE:
-    case IFN_LEN_MASK_LOAD:
-    case IFN_LEN_MASK_STORE:
+    case IFN_MASK_LEN_LOAD:
+    case IFN_MASK_LEN_STORE:
       /* The second argument contains the correct alias type.  */
       gcc_assert (use->op_p = gimple_call_arg_ptr (call, 0));
       return TREE_TYPE (gimple_call_arg (call, 1));
@@ -7630,7 +7630,22 @@ rewrite_use_address (struct ivopts_data *data,
 				      true, GSI_SAME_STMT);
     }
   else
-    copy_ref_info (ref, *use->op_p);
+    {
+      /* When we end up confused enough and have no suitable base but
+	 stuffed everything to index2 use a LEA for the address and
+	 create a plain MEM_REF to avoid basing a memory reference
+	 on address zero which create_mem_ref_raw does as fallback.  */
+      if (TREE_CODE (ref) == TARGET_MEM_REF
+	  && TMR_INDEX2 (ref) != NULL_TREE
+	  && integer_zerop (TREE_OPERAND (ref, 0)))
+	{
+	  ref = fold_build1 (ADDR_EXPR, TREE_TYPE (TREE_OPERAND (ref, 0)), ref);
+	  ref = force_gimple_operand_gsi (&bsi, ref, true, NULL_TREE,
+					  true, GSI_SAME_STMT);
+	  ref = build2 (MEM_REF, type, ref, build_zero_cst (alias_ptr_type));
+	}
+      copy_ref_info (ref, *use->op_p);
+    }
 
   *use->op_p = ref;
 }

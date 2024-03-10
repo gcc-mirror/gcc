@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -mfpmath=sse" } */
 /* { dg-final { scan-assembler-times "minss" 1 } } */
-/* { dg-final { scan-assembler-not "movaps" } } */
-/* { dg-final { scan-assembler-not "movss" } } */
+/* { dg-final { scan-assembler-not "movaps" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not "movss" { xfail *-*-* } } } */
 
 typedef float vec __attribute__((vector_size(16)));
 

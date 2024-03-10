@@ -2059,7 +2059,8 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
        nbbs++;
     }
 
-  profile_probability cap = profile_probability::always ().apply_scale (2, 3);
+  profile_probability cap
+	  = profile_probability::guessed_always ().apply_scale (2, 3);
 
   if (flag_probability.initialized_p ())
     ;
@@ -2103,6 +2104,8 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 
   old_dest = ex->dest;
   new_bb = split_edge (ex);
+  if (append_cond_position)
+    new_bb->count += last_cond_fallthru->count ();
   then_bb = create_empty_bb (new_bb);
   then_bb->count = new_bb->count.apply_probability (flag_probability);
   if (irr)

@@ -52,12 +52,14 @@ doit (void)
   if (i != 11 || j != 101 || x != 10340 || niters != 550 || err)
     abort ();
   for (i = 1; i <= 10; i++)
+#pragma GCC novector
     for (j = 1; j <= 10 * i; j++)
       if (k[i][j] == 3)
 	k[i][j] = 0;
       else
 	abort ();
   for (i = 0; i < 11; i++)
+#pragma GCC novector
     for (j = 0; j < 101; j++)
       if (k[i][j] != 0)
 	abort ();
@@ -101,12 +103,14 @@ doit (void)
   if (i != 10 || j != 90 || x != 9305 || niters != 450 || err)
     abort ();
   for (i = 0; i < 10; i++)
+#pragma GCC novector
     for (j = 0; j < 10 * i; j++)
       if (k[i][j] == 3)
 	k[i][j] = 0;
       else
 	abort ();
   for (i = 0; i < 11; i++)
+#pragma GCC novector
     for (j = 0; j < 101; j++)
       if (k[i][j] != 0)
 	abort ();
@@ -156,6 +160,7 @@ doit (void)
       else
 	abort ();
   for (i = 0; i < 11; i++)
+#pragma GCC novector
     for (j = 0; j < 101; j++)
       if (k[i][j] != 0)
 	abort ();
@@ -199,12 +204,14 @@ doit (void)
   if (i != 11 || j != 10 || x != 9225 || niters != 25 || err)
     abort ();
   for (i = 1; i < 10; i += 2)
+#pragma GCC novector
     for (j = 1; j < i + 1; j++)
       if (k[i][j] == 3)
 	k[i][j] = 0;
       else
 	abort ();
   for (i = 0; i < 11; i++)
+#pragma GCC novector
     for (j = 0; j < 101; j++)
       if (k[i][j] != 0)
 	abort ();
@@ -244,11 +251,13 @@ doit (void)
       }
   if (i != 16 || j != 4 || x != 5109 || niters != 3 || err)
     abort ();
+#pragma GCC novector
   for (j = -11; j >= -41; j -= 15)
     if (k[0][-j] == 3)
       k[0][-j] = 0;
     else
       abort ();
+#pragma GCC novector
   for (j = -11; j >= -41; j--)
     if (k[0][-j] != 0)
       abort ();
@@ -288,6 +297,7 @@ doit (void)
       }
   if (/*i != 11 || j != 2 || */x != -12295 || niters != 28 || err)
     abort ();
+#pragma GCC novector
   for (j = -34; j <= -7; j++)
     if (k[0][-j] == 3)
       k[0][-j] = 0;

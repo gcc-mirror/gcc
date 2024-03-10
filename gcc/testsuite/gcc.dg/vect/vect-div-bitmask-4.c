@@ -16,6 +16,7 @@ int
 main (void)
 {
   V v = foo ((V) { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff }, 0xffff);
+#pragma GCC novector
   for (unsigned i = 0; i < sizeof (v) / sizeof (v[0]); i++)
     if (v[i] != 0x00010001)
       __builtin_abort ();

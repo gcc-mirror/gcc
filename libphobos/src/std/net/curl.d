@@ -23,7 +23,7 @@ SMTP) )
 )
 
 Note:
-You may need to link to the $(B curl) library, e.g. by adding $(D "libs": ["curl"])
+You may need to link with the $(B curl) library, e.g. by adding $(D "libs": ["curl"])
 to your $(B dub.json) file if you are using $(LINK2 http://code.dlang.org, DUB).
 
 Windows x86 note:
@@ -32,20 +32,19 @@ $(LINK2 https://downloads.dlang.org/other/index.html, download archive page).
 
 This module is not available for iOS, tvOS or watchOS.
 
-Compared to using libcurl directly this module allows simpler client code for
+Compared to using libcurl directly, this module allows simpler client code for
 common uses, requires no unsafe operations, and integrates better with the rest
-of the language. Futhermore it provides $(MREF_ALTTEXT range, std,range)
+of the language. Furthermore it provides $(MREF_ALTTEXT range, std,range)
 access to protocols supported by libcurl both synchronously and asynchronously.
 
 A high level and a low level API are available. The high level API is built
 entirely on top of the low level one.
 
 The high level API is for commonly used functionality such as HTTP/FTP get. The
-$(LREF byLineAsync) and $(LREF byChunkAsync) provides asynchronous
-$(MREF_ALTTEXT range, std,range) that performs the request in another
-thread while handling a line/chunk in the current thread.
+$(LREF byLineAsync) and $(LREF byChunkAsync) functions asynchronously
+perform the request given, outputting the fetched content into a $(MREF_ALTTEXT range, std,range).
 
-The low level API allows for streaming and other advanced features.
+The low level API allows for streaming, setting request headers and cookies, and other advanced features.
 
 $(BOOKTABLE Cheat Sheet,
 $(TR $(TH Function Name) $(TH Description)
@@ -79,18 +78,18 @@ byChunk("dlang.org", 10)) returns a range of ubyte[10] containing the
 dlang.org web page.)
 )
 $(TR $(TDNW $(LREF byLineAsync)) $(TD $(D
-byLineAsync("dlang.org")) returns a range of char[] containing the dlang.org web
- page asynchronously.)
+byLineAsync("dlang.org")) asynchronously returns a range of char[] containing the dlang.org web
+ page.)
 )
 $(TR $(TDNW $(LREF byChunkAsync)) $(TD $(D
-byChunkAsync("dlang.org", 10)) returns a range of ubyte[10] containing the
-dlang.org web page asynchronously.)
+byChunkAsync("dlang.org", 10)) asynchronously returns a range of ubyte[10] containing the
+dlang.org web page.)
 )
 $(LEADINGROW Low level
 )
-$(TR $(TDNW $(LREF HTTP)) $(TD `HTTP` struct for advanced usage))
-$(TR $(TDNW $(LREF FTP)) $(TD `FTP` struct for advanced usage))
-$(TR $(TDNW $(LREF SMTP)) $(TD `SMTP` struct for advanced usage))
+$(TR $(TDNW $(LREF HTTP)) $(TD Struct for advanced HTTP usage))
+$(TR $(TDNW $(LREF FTP)) $(TD Struct for advanced FTP usage))
+$(TR $(TDNW $(LREF SMTP)) $(TD Struct for advanced SMTP usage))
 )
 
 
@@ -135,10 +134,10 @@ http.perform();
 First, an instance of the reference-counted HTTP struct is created. Then the
 custom delegates are set. These will be called whenever the HTTP instance
 receives a header and a data buffer, respectively. In this simple example, the
-headers are written to stdout and the data is ignored. If the request should be
+headers are written to stdout and the data is ignored. If the request is
 stopped before it has finished then return something less than data.length from
 the onReceive callback. See $(LREF onReceiveHeader)/$(LREF onReceive) for more
-information. Finally the HTTP request is effected by calling perform(), which is
+information. Finally, the HTTP request is performed by calling perform(), which is
 synchronous.
 
 Source: $(PHOBOSSRC std/net/curl.d)
@@ -147,8 +146,8 @@ Copyright: Copyright Jonas Drewsen 2011-2012
 License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Jonas Drewsen. Some of the SMTP code contributed by Jimmy Cao.
 
-Credits: The functionally is based on $(HTTP curl.haxx.se/libcurl, libcurl).
-         LibCurl is licensed under an MIT/X derivative license.
+Credits: The functionality is based on $(HTTP curl.haxx.se/libcurl, libcurl).
+         libcurl is licensed under an MIT/X derivative license.
 */
 /*
          Copyright Jonas Drewsen 2011 - 2012.

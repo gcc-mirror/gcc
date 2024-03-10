@@ -219,6 +219,25 @@ extern (C++) final class PrintASTVisitor : Visitor
         printAST(e.value, indent + 2);
     }
 
+    override void visit(ArrayLiteralExp e)
+    {
+        visit(cast(Expression)e);
+        printIndent(indent + 2);
+        printf(".basis : %s\n", e.basis ? e.basis.toChars() : "");
+        if (e.elements)
+        {
+            printIndent(indent + 2);
+            printf("[");
+            foreach (i, element; (*e.elements)[])
+            {
+                if (i)
+                    printf(", ");
+                printf("%s", element.toChars());
+            }
+            printf("]\n");
+        }
+    }
+
     static void printIndent(int indent)
     {
         foreach (i; 0 .. indent)

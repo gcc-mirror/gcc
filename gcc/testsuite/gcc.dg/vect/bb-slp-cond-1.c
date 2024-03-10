@@ -35,6 +35,7 @@ int main ()
 
   foo (a, 4);
 
+#pragma GCC novector
   for (i = 1; i < N; i++)
     if (a[i] != i%4 + 1)
       abort ();

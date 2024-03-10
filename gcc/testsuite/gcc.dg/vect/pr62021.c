@@ -24,6 +24,7 @@ main ()
   #pragma omp simd
   for (i = 0; i < 1024; i++)
     b[i] = foo (b[i], i);
+#pragma GCC novector
   for (i = 0; i < 1024; i++)
     if (b[i] != &a[1023])
       __builtin_abort ();

@@ -11,7 +11,7 @@ fail_compilation/fail17955.d(49):        instantiated from here: `toRedis!(SysTi
 fail_compilation/fail17955.d(40):        ... (2 instantiations, -v to show) ...
 fail_compilation/fail17955.d(32):        instantiated from here: `indicesOf!(isRedisType, resetCodeExpireTime)`
 fail_compilation/fail17955.d(67):        instantiated from here: `RedisStripped!(User, true)`
-fail_compilation/fail17955.d(93): Error: need `this` for `fromISOExtString` of type `pure nothrow @nogc @safe immutable(SimpleTimeZone)(dstring _param_0)`
+fail_compilation/fail17955.d(93): Error: need `this` for `fromISOExtString` of type `pure nothrow @nogc @safe immutable(SimpleTimeZone)(dstring __param_0)`
 fail_compilation/fail17955.d(95): Error: undefined identifier `DateTimeException`
 fail_compilation/fail17955.d(25): Error: variable `fail17955.isISOExtStringSerializable!(SysTime).isISOExtStringSerializable` - type `void` is inferred from initializer `fromISOExtString("")`, and variables cannot be of type `void`
 fail_compilation/fail17955.d(54): Error: function `fail17955.toRedis!(SysTime).toRedis` has no `return` statement, but is expected to return a value of type `string`

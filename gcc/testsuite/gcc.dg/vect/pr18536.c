@@ -22,6 +22,7 @@ int main (void)
   main1 (0, x);
 
   /* check results:  */
+#pragma GCC novector
   while (++i < 4)
     {
       if (x[i-1] != 2)

@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "internal-fn.h"
 #include "gimple-range.h"
+#include "sreal.h"
 
 
 /* The maximum number of dominator BBs we search for conditions
@@ -3337,24 +3338,6 @@ finite_loop_p (class loop *loop)
   widest_int nit;
   int flags;
 
-  flags = flags_from_decl_or_type (current_function_decl);
-  if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Found loop %i to be finite: it is within pure or const function.\n",
-		 loop->num);
-      return true;
-    }
-
-  if (loop->any_upper_bound
-      || max_loop_iterations (loop, &nit))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Found loop %i to be finite: upper bound found.\n",
-		 loop->num);
-      return true;
-    }
-
   if (loop->finite_p)
     {
       unsigned i;
@@ -3367,9 +3350,34 @@ finite_loop_p (class loop *loop)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, "Assume loop %i to be finite: it has an exit "
-		       "and -ffinite-loops is on.\n", loop->num);
+		       "and -ffinite-loops is on or loop was "
+		       "previously finite.\n",
+		       loop->num);
 	    return true;
 	  }
+    }
+
+  flags = flags_from_decl_or_type (current_function_decl);
+  if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Found loop %i to be finite: it is within "
+		 "pure or const function.\n",
+		 loop->num);
+      loop->finite_p = true;
+      return true;
+    }
+
+  if (loop->any_upper_bound
+      /* Loop with no normal exit will not pass max_loop_iterations.  */
+      || (!loop->finite_p && max_loop_iterations (loop, &nit)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Found loop %i to be finite: upper bound found.\n",
+		 loop->num);
+      loop->finite_p = true;
+      return true;
     }
 
   return false;
@@ -4775,6 +4783,9 @@ estimate_numbers_of_iterations (class loop *loop)
 
   loop->estimate_state = EST_AVAILABLE;
 
+  sreal nit;
+  bool reliable;
+
   /* If we have a measured profile, use it to estimate the number of
      iterations.  Normally this is recorded by branch_prob right after
      reading the profile.  In case we however found a new loop, record the
@@ -4787,10 +4798,10 @@ estimate_numbers_of_iterations (class loop *loop)
      recomputing iteration bounds later in the compilation process will just
      introduce random roundoff errors.  */
   if (!loop->any_estimate
-      && loop->header->count.reliable_p ())
+      && expected_loop_iterations_by_profile (loop, &nit, &reliable)
+      && reliable)
     {
-      gcov_type nit = expected_loop_iterations_unbounded (loop);
-      bound = gcov_type_to_wide_int (nit);
+      bound = nit.to_nearest_int ();
       record_niter_bound (loop, bound, true, false);
     }
 

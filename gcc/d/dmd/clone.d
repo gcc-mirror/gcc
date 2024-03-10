@@ -106,18 +106,18 @@ FuncDeclaration hasIdentityOpAssign(AggregateDeclaration ad, Scope* sc)
         scope er = new NullExp(ad.loc, ad.type);    // dummy rvalue
         scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
         el.type = ad.type;
-        auto a = Expressions(1);
+        auto a = new Expressions(1);
         const errors = global.startGagging(); // Do not report errors, even if the template opAssign fbody makes it.
         sc = sc.push();
         sc.tinst = null;
         sc.minst = null;
 
-        a[0] = er;
-        auto f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(&a), FuncResolveFlag.quiet);
+        (*a)[0] = er;
+        auto f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(a), FuncResolveFlag.quiet);
         if (!f)
         {
-            a[0] = el;
-            f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(&a), FuncResolveFlag.quiet);
+            (*a)[0] = el;
+            f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(a), FuncResolveFlag.quiet);
         }
 
         sc = sc.pop();
@@ -465,7 +465,7 @@ private FuncDeclaration hasIdentityOpEquals(AggregateDeclaration ad, Scope* sc)
          */
         scope er = new NullExp(ad.loc, null); // dummy rvalue
         scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
-        auto a = Expressions(1);
+        auto a = new Expressions(1);
 
         bool hasIt(Type tthis)
         {
@@ -476,9 +476,9 @@ private FuncDeclaration hasIdentityOpEquals(AggregateDeclaration ad, Scope* sc)
 
             FuncDeclaration rfc(Expression e)
             {
-                a[0] = e;
-                a[0].type = tthis;
-                return resolveFuncCall(ad.loc, sc, eq, null, tthis, ArgumentList(&a), FuncResolveFlag.quiet);
+                (*a)[0] = e;
+                (*a)[0].type = tthis;
+                return resolveFuncCall(ad.loc, sc, eq, null, tthis, ArgumentList(a), FuncResolveFlag.quiet);
             }
 
             f = rfc(er);
@@ -840,7 +840,7 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
         "    else " ~
         "        h = h * 33 + typeid(T).getHash(cast(const void*)&p.tupleof[i]);" ~
         "return h;";
-    fop.fbody = new CompileStatement(loc, new StringExp(loc, code));
+    fop.fbody = new MixinStatement(loc, new StringExp(loc, code));
     Scope* sc2 = sc.push();
     sc2.stc = 0;
     sc2.linkage = LINK.d;
@@ -1261,8 +1261,9 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
 
         // if this field's postblit is not `nothrow`, add a `scope(failure)`
         // block to destroy any prior successfully postblitted fields should
-        // this field's postblit fail
-        if (fieldsToDestroy.length > 0 && !(cast(TypeFunction)sdv.postblit.type).isnothrow)
+        // this field's postblit fail.
+        // Don't generate it for betterC code since it cannot throw exceptions.
+        if (fieldsToDestroy.length > 0 && !(cast(TypeFunction)sdv.postblit.type).isnothrow && !global.params.betterC)
         {
              // create a list of destructors that need to be called
             Expression[] dtorCalls;

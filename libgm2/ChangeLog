@@ -1,3 +1,16 @@
+2023-08-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (GM2_CHECK_LIB): Check for clock_gettime
+	and clock_settime.
+	* libm2iso/Makefile.am (M2DEFS): Add wrapclock.def.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2iso/wraptime.cc: Replace HAVE_TIMEVAL with
+	HAVE_STRUCT_TIMEVAL.
+	* libm2iso/wrapclock.cc: New file.
+
 2023-06-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac (PERL): Remove.

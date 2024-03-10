@@ -1148,7 +1148,7 @@ begin_while_stmt (void)
 
 void
 finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep,
-			unsigned short unroll)
+			unsigned short unroll, bool novector)
 {
   cond = maybe_convert_cond (cond);
   finish_cond (&WHILE_COND (while_stmt), cond);
@@ -1168,6 +1168,13 @@ finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep,
 						     annot_expr_unroll_kind),
 				      build_int_cst (integer_type_node,
 						     unroll));
+  if (novector && cond != error_mark_node)
+    WHILE_COND (while_stmt) = build3 (ANNOTATE_EXPR,
+				      TREE_TYPE (WHILE_COND (while_stmt)),
+				      WHILE_COND (while_stmt),
+				      build_int_cst (integer_type_node,
+						     annot_expr_no_vector_kind),
+				      integer_zero_node);
   simplify_loop_decl_cond (&WHILE_COND (while_stmt), WHILE_BODY (while_stmt));
 }
 
@@ -1212,7 +1219,8 @@ finish_do_body (tree do_stmt)
    COND is as indicated.  */
 
 void
-finish_do_stmt (tree cond, tree do_stmt, bool ivdep, unsigned short unroll)
+finish_do_stmt (tree cond, tree do_stmt, bool ivdep, unsigned short unroll,
+		bool novector)
 {
   cond = maybe_convert_cond (cond);
   end_maybe_infinite_loop (cond);
@@ -1229,6 +1237,10 @@ finish_do_stmt (tree cond, tree do_stmt, bool ivdep, unsigned short unroll)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_unroll_kind),
 		   build_int_cst (integer_type_node, unroll));
+  if (novector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_no_vector_kind),
+		   integer_zero_node);
   DO_COND (do_stmt) = cond;
 }
 
@@ -1240,8 +1252,9 @@ finish_return_stmt (tree expr)
 {
   tree r;
   bool no_warning;
+  bool dangling;
 
-  expr = check_return_expr (expr, &no_warning);
+  expr = check_return_expr (expr, &no_warning, &dangling);
 
   if (error_operand_p (expr)
       || (flag_openmp && !check_omp_return ()))
@@ -1259,6 +1272,7 @@ finish_return_stmt (tree expr)
     }
 
   r = build_stmt (input_location, RETURN_EXPR, expr);
+  RETURN_EXPR_LOCAL_ADDR_P (r) = dangling;
   if (no_warning)
     suppress_warning (r, OPT_Wreturn_type);
   r = maybe_cleanup_point_expr_void (r);
@@ -1325,7 +1339,7 @@ finish_init_stmt (tree for_stmt)
    FOR_STMT.  */
 
 void
-finish_for_cond (tree cond, tree for_stmt, bool ivdep, unsigned short unroll)
+finish_for_cond (tree cond, tree for_stmt, bool ivdep, unsigned short unroll, bool novector)
 {
   cond = maybe_convert_cond (cond);
   finish_cond (&FOR_COND (for_stmt), cond);
@@ -1345,6 +1359,13 @@ finish_for_cond (tree cond, tree for_stmt, bool ivdep, unsigned short unroll)
 						 annot_expr_unroll_kind),
 				  build_int_cst (integer_type_node,
 						 unroll));
+  if (novector && cond != error_mark_node)
+    FOR_COND (for_stmt) = build3 (ANNOTATE_EXPR,
+				  TREE_TYPE (FOR_COND (for_stmt)),
+				  FOR_COND (for_stmt),
+				  build_int_cst (integer_type_node,
+						 annot_expr_no_vector_kind),
+				  integer_zero_node);
   simplify_loop_decl_cond (&FOR_COND (for_stmt), FOR_BODY (for_stmt));
 }
 

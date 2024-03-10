@@ -28,6 +28,7 @@ int main (void)
   foo ();
 
   for (i = 0; i < N; i++) {
+#pragma GCC novector
     for (j = 0; j < N; j++) {
       if (image[j][i] != j+i)
 	abort ();

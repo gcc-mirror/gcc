@@ -44,19 +44,23 @@ main ()
 {
   check_vect ();
   foo ();
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != 1)
       abort ();
   x = 1;
   foo ();
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != 2)
       abort ();
   baz ();
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != 3)
       abort ();
   qux ();
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != 4)
       abort ();

@@ -4,7 +4,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail4375q.d(17): Warning: else is dangling, add { } after condition at fail_compilation/fail4375q.d(13)
-fail_compilation/fail4375q.d(14): Error: `with` expressions must be aggregate types or pointers to them, not `int`
+fail_compilation/fail4375q.d(14): Error: `with` expression types must be enums or aggregates or pointers to them, not `int`
 ---
 */
 

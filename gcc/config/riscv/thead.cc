@@ -336,8 +336,8 @@ th_mempair_operands_p (rtx operands[4], bool load_p,
 }
 
 /* Given OPERANDS of consecutive load/store that can be merged,
-   swap them if they are not in ascending order.
-   Return true if swap was performed.  */
+   swap them if they are not in ascending order.  */
+
 void
 th_mempair_order_operands (rtx operands[4], bool load_p, machine_mode mode)
 {
@@ -368,8 +368,12 @@ th_mempair_save_regs (rtx operands[4])
   rtx set2 = gen_rtx_SET (operands[2], operands[3]);
   rtx insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set1, set2)));
   RTX_FRAME_RELATED_P (insn) = 1;
-  add_reg_note (insn, REG_CFA_OFFSET, copy_rtx (set1));
-  add_reg_note (insn, REG_CFA_OFFSET, copy_rtx (set2));
+
+  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+				      copy_rtx (set1), REG_NOTES (insn));
+
+  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+				      copy_rtx (set2), REG_NOTES (insn));
 }
 
 /* Similar like riscv_restore_reg, but restores two registers from memory

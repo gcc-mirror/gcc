@@ -3599,23 +3599,13 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	      continue;
 	    }
 
-	  if (newunspec != curunspec)
+	  if (newunspec > curunspec)
 	    {
 	      location_t warnloc = newloc, noteloc = origloc;
 	      const char *warnparmstr = newparmstr.c_str ();
 	      const char *noteparmstr = curparmstr.c_str ();
 	      unsigned warnunspec = newunspec, noteunspec = curunspec;
 
-	      if (newunspec < curunspec)
-		{
-		  /* If the new declaration has fewer unspecified bounds
-		     point the warning to the previous declaration to make
-		     it clear that that's the one to change.  Otherwise,
-		     point it to the new decl.  */
-		  std::swap (warnloc, noteloc);
-		  std::swap (warnparmstr, noteparmstr);
-		  std::swap (warnunspec, noteunspec);
-		}
 	      if (warning_n (warnloc, OPT_Wvla_parameter, warnunspec,
 			     "argument %u of type %s declared with "
 			     "%u unspecified variable bound",
@@ -3643,14 +3633,10 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	}
 
       /* Iterate over the lists of VLA variable bounds, comparing each
-	 pair for equality, and diagnosing mismatches.  The case of
-	 the lists having different lengths is handled above so at
-	 this point they do .  */
-      for (tree newvbl = newa->size, curvbl = cura->size; newvbl;
+	 pair for equality, and diagnosing mismatches.  */
+      for (tree newvbl = newa->size, curvbl = cura->size; newvbl && curvbl;
 	   newvbl = TREE_CHAIN (newvbl), curvbl = TREE_CHAIN (curvbl))
 	{
-	  gcc_assert (curvbl);
-
 	  tree newpos = TREE_PURPOSE (newvbl);
 	  tree curpos = TREE_PURPOSE (curvbl);
 

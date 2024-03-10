@@ -37,6 +37,7 @@ main (void)
       asm volatile ("" ::: "memory");
     }
   f (a, b, c, N / 20, 20);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     {
       int d = (BASE1 + BASE2 + i * 5) >> 1;

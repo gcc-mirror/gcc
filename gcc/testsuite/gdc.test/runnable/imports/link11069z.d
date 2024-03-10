@@ -1,7 +1,7 @@
 module imports.link11069z;
 struct Matrix(T, uint _M)
 {
-    int opCmp()(auto ref in Matrix b) const
+    int opCmp()(const auto ref Matrix b) const
     {
         return 0;
     }

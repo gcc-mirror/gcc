@@ -1312,6 +1312,34 @@ decode_omp_directive (void)
 	  prog_unit->omp_target_seen = true;
 	break;
       }
+    case ST_OMP_TEAMS:
+    case ST_OMP_TEAMS_DISTRIBUTE:
+    case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
+    case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+    case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case ST_OMP_TEAMS_LOOP:
+      for (gfc_state_data *stk = gfc_state_stack->previous; stk;
+	   stk = stk->previous)
+	if (stk && stk->tail)
+	  switch (stk->tail->op)
+	    {
+	    case EXEC_OMP_TARGET:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_LOOP:
+	    case EXEC_OMP_TARGET_PARALLEL:
+	    case EXEC_OMP_TARGET_PARALLEL_DO:
+	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
+	    case EXEC_OMP_TARGET_SIMD:
+	      stk->tail->ext.omp_clauses->contains_teams_construct = 1;
+	      break;
+	    default:
+	      break;
+	    }
+      break;
     case ST_OMP_ERROR:
       if (new_st.ext.omp_clauses->at != OMP_AT_EXECUTION)
 	return ST_NONE;
@@ -5733,7 +5761,7 @@ parse_openmp_allocate_block (gfc_statement omp_st)
 static gfc_statement
 parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 {
-  gfc_statement st, omp_end_st;
+  gfc_statement st, omp_end_st, first_st;
   gfc_code *cp, *np;
   gfc_state_data s;
 
@@ -5824,7 +5852,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
   gfc_namespace *my_ns = NULL;
   gfc_namespace *my_parent = NULL;
 
-  st = next_statement ();
+  first_st = st = next_statement ();
 
   if (st == ST_BLOCK)
     {
@@ -5843,8 +5871,27 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       new_st.ext.block.ns = my_ns;
       new_st.ext.block.assoc = NULL;
       accept_statement (ST_BLOCK);
-      st = parse_spec (ST_NONE);
+      first_st = next_statement ();
+      st = parse_spec (first_st);
     }
+
+  if (omp_end_st == ST_OMP_END_TARGET)
+    switch (first_st)
+      {
+      case ST_OMP_TEAMS:
+      case ST_OMP_TEAMS_DISTRIBUTE:
+      case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
+      case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+      case ST_OMP_TEAMS_LOOP:
+	{
+	  gfc_state_data *stk = gfc_state_stack->previous;
+	  stk->tail->ext.omp_clauses->target_first_st_is_teams = true;
+	  break;
+	}
+      default:
+	break;
+      }
 
   do
     {

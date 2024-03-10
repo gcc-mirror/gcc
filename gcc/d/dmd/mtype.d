@@ -313,6 +313,7 @@ int mutabilityOfType(bool isref, Type t)
  */
 enum DotExpFlag
 {
+    none    = 0,
     gag     = 1,    // don't report "not a property" error and just return null
     noDeref = 2,    // the use of the expression will not attempt a dereference
     noAliasThis = 4, // don't do 'alias this' resolution
@@ -2044,14 +2045,16 @@ extern (C++) abstract class Type : ASTNode
                 t = t.addMod(this.mod);
             return t;
         }
-        if (auto fd = s.isFuncDeclaration())
+        Dsymbol callable = s.isFuncDeclaration();
+        callable = callable ? callable : s.isTemplateDeclaration();
+        if (callable)
         {
-            fd = resolveFuncCall(Loc.initial, null, fd, null, this, ArgumentList(), FuncResolveFlag.quiet);
+            auto fd = resolveFuncCall(Loc.initial, null, callable, null, this, ArgumentList(), FuncResolveFlag.quiet);
             if (!fd || fd.errors || !fd.functionSemantic())
                 return Type.terror;
 
             auto t = fd.type.nextOf();
-            if (!t) // issue 14185
+            if (!t) // https://issues.dlang.org/show_bug.cgi?id=14185
                 return Type.terror;
             t = t.substWildTo(mod == 0 ? MODFlags.mutable : mod);
             return t;
@@ -2065,24 +2068,17 @@ extern (C++) abstract class Type : ASTNode
         {
             return ed.type;
         }
-        if (auto td = s.isTemplateDeclaration())
-        {
-            assert(td._scope);
-            auto fd = resolveFuncCall(Loc.initial, null, td, null, this, ArgumentList(), FuncResolveFlag.quiet);
-            if (!fd || fd.errors || !fd.functionSemantic())
-                return Type.terror;
-
-            auto t = fd.type.nextOf();
-            if (!t)
-                return Type.terror;
-            t = t.substWildTo(mod == 0 ? MODFlags.mutable : mod);
-            return t;
-        }
 
         //printf("%s\n", s.kind());
         return null;
     }
 
+    /**
+     * Check whether this type has endless `alias this` recursion.
+     * Returns:
+     *   `true` if this type has an `alias this` that can be implicitly
+     *    converted back to this type itself.
+     */
     extern (D) final bool checkAliasThisRec()
     {
         Type tb = toBasetype();
@@ -2452,7 +2448,7 @@ extern (C++) abstract class Type : ASTNode
         //printf("%p %s, deco = %s, name = %s\n", this, toChars(), deco, name);
         assert(0 < length && length < namelen); // don't overflow the buffer
 
-        auto id = Identifier.idPool(name, length);
+        auto id = Identifier.idPool(name[0 .. length]);
 
         if (name != namebuf.ptr)
             free(name);
@@ -2645,6 +2641,8 @@ extern (C++) abstract class Type : ASTNode
 
         if (t.isimaginary() || t.iscomplex())
         {
+            if (sc.flags & SCOPE.Cfile)
+                return true;            // complex/imaginary not deprecated in C code
             Type rt;
             switch (t.ty)
             {
@@ -4270,7 +4268,7 @@ extern (C++) final class TypeFunction : TypeNext
         super(Tfunction, treturn);
         //if (!treturn) *(char*)0=0;
         //    assert(treturn);
-        assert(VarArg.none <= pl.varargs && pl.varargs <= VarArg.typesafe);
+        assert(VarArg.none <= pl.varargs && pl.varargs <= VarArg.max);
         this.parameterList = pl;
         this.linkage = linkage;
 
@@ -4599,10 +4597,9 @@ extern (C++) final class TypeFunction : TypeNext
         // show qualification when toChars() is the same but types are different
         // https://issues.dlang.org/show_bug.cgi?id=19948
         // when comparing the type with strcmp, we need to drop the qualifier
-        auto at = arg.type.mutableOf().toChars();
-        bool qual = !arg.type.equals(par.type) && strcmp(at, par.type.mutableOf().toChars()) == 0;
-        if (qual)
-            at = arg.type.toPrettyChars(true);
+        bool qual = !arg.type.mutableOf().equals(par.type.mutableOf()) &&
+            strcmp(arg.type.mutableOf().toChars(), par.type.mutableOf().toChars()) == 0;
+        auto at = qual ? arg.type.toPrettyChars(true) : arg.type.toChars();
         OutBuffer buf;
         // only mention rvalue if it's relevant
         const rv = !arg.isLvalue() && par.isReference();
@@ -4942,7 +4939,7 @@ extern (C++) final class TypeFunction : TypeNext
         }
         if (tb.ty == Ttuple)
         {
-            error(loc, "functions cannot return a tuple");
+            error(loc, "functions cannot return a sequence (use `std.typecons.Tuple`)");
             next = Type.terror;
         }
         if (!isref && (tb.ty == Tstruct || tb.ty == Tsarray))
@@ -5107,7 +5104,7 @@ extern (C++) final class TypeDelegate : TypeNext
  * This is a shell containing a TraitsExp that can be
  * either resolved to a type or to a symbol.
  *
- * The point is to allow AliasDeclarationY to use `__traits()`, see issue 7804.
+ * The point is to allow AliasDeclarationY to use `__traits()`, see https://issues.dlang.org/show_bug.cgi?id=7804.
  */
 extern (C++) final class TypeTraits : Type
 {
@@ -6220,7 +6217,7 @@ extern (C++) final class TypeTuple : Type
             {
                 Expression e = (*exps)[i];
                 if (e.type.ty == Ttuple)
-                    e.error("cannot form tuple of tuples");
+                    e.error("cannot form sequence of sequences");
                 auto arg = new Parameter(STC.undefined_, e.type, null, null, null);
                 (*arguments)[i] = arg;
             }
@@ -6275,7 +6272,7 @@ extern (C++) final class TypeTuple : Type
 
     override const(char)* kind() const
     {
-        return "tuple";
+        return "sequence";
     }
 
     override TypeTuple syntaxCopy()
@@ -6513,6 +6510,7 @@ extern (C++) final class TypeTag : Type
 {
     Loc loc;                /// location of declaration
     TOK tok;                /// TOK.struct_, TOK.union_, TOK.enum_
+    structalign_t packalign; /// alignment of struct/union fields
     Identifier id;          /// tag name identifier
     Type base;              /// base type for enums otherwise null
     Dsymbols* members;      /// members of struct, null if none
@@ -6522,13 +6520,14 @@ extern (C++) final class TypeTag : Type
                             ///   struct S { int a; } s1, *s2;
     MOD mod;                /// modifiers to apply after type is resolved (only MODFlags.const_ at the moment)
 
-    extern (D) this(const ref Loc loc, TOK tok, Identifier id, Type base, Dsymbols* members)
+    extern (D) this(const ref Loc loc, TOK tok, Identifier id, structalign_t packalign, Type base, Dsymbols* members)
     {
         //printf("TypeTag ctor %s %p\n", id ? id.toChars() : "null".ptr, this);
         super(Ttag);
         this.loc = loc;
         this.tok = tok;
         this.id = id;
+        this.packalign = packalign;
         this.base = base;
         this.members = members;
         this.mod = 0;
@@ -7119,9 +7118,9 @@ bool isCopyable(Type t)
             assert(ctor);
             scope el = new IdentifierExp(Loc.initial, Id.p); // dummy lvalue
             el.type = cast() ts;
-            Expressions args;
+            Expressions* args = new Expressions();
             args.push(el);
-            FuncDeclaration f = resolveFuncCall(Loc.initial, null, ctor, null, cast()ts, ArgumentList(&args), FuncResolveFlag.quiet);
+            FuncDeclaration f = resolveFuncCall(Loc.initial, null, ctor, null, cast()ts, ArgumentList(args), FuncResolveFlag.quiet);
             if (!f || f.storage_class & STC.disable)
                 return false;
         }
@@ -7252,7 +7251,7 @@ private extern(D) bool isCopyConstructorCallable (StructDeclaration argStruct,
                 s ~= "pure ";
             if (!f.isSafe() && !f.isTrusted() && sc.setUnsafe())
                 s ~= "@safe ";
-            if (!f.isNogc && sc.func.setGC())
+            if (!f.isNogc && sc.func.setGC(arg.loc, null))
                 s ~= "nogc ";
             if (s)
             {
@@ -7271,7 +7270,7 @@ private extern(D) bool isCopyConstructorCallable (StructDeclaration argStruct,
             {
                 /* Although a copy constructor may exist, no suitable match was found.
                  * i.e: `inout` constructor creates `const` object, not mutable.
-                 * Fallback to using the original generic error before bugzilla 22202.
+                 * Fallback to using the original generic error before https://issues.dlang.org/show_bug.cgi?id=22202.
                  */
                 goto Lnocpctor;
             }
@@ -7578,4 +7577,114 @@ TypeVector toBooleanVector(TypeVector tv)
     assert(tsa !is null);
 
     return new TypeVector(new TypeSArray(telem, tsa.dim));
+}
+
+/*************************************************
+ * Dispatch to function based on static type of Type.
+ */
+mixin template VisitType(Result)
+{
+    Result VisitType(Type t)
+    {
+        final switch (t.ty)
+        {
+            case TY.Tvoid:
+            case TY.Tint8:
+            case TY.Tuns8:
+            case TY.Tint16:
+            case TY.Tuns16:
+            case TY.Tint32:
+            case TY.Tuns32:
+            case TY.Tint64:
+            case TY.Tuns64:
+            case TY.Tfloat32:
+            case TY.Tfloat64:
+            case TY.Tfloat80:
+            case TY.Timaginary32:
+            case TY.Timaginary64:
+            case TY.Timaginary80:
+            case TY.Tcomplex32:
+            case TY.Tcomplex64:
+            case TY.Tcomplex80:
+            case TY.Tbool:
+            case TY.Tchar:
+            case TY.Twchar:
+            case TY.Tdchar:
+            case TY.Tint128:
+            case TY.Tuns128:    mixin(visitTYCase("Basic"));
+            case TY.Tarray:     mixin(visitTYCase("DArray"));
+            case TY.Tsarray:    mixin(visitTYCase("SArray"));
+            case TY.Taarray:    mixin(visitTYCase("AArray"));
+            case TY.Tpointer:   mixin(visitTYCase("Pointer"));
+            case TY.Treference: mixin(visitTYCase("Reference"));
+            case TY.Tfunction:  mixin(visitTYCase("Function"));
+            case TY.Tident:     mixin(visitTYCase("Identifier"));
+            case TY.Tclass:     mixin(visitTYCase("Class"));
+            case TY.Tstruct:    mixin(visitTYCase("Struct"));
+            case TY.Tenum:      mixin(visitTYCase("Enum"));
+            case TY.Tdelegate:  mixin(visitTYCase("Delegate"));
+            case TY.Terror:     mixin(visitTYCase("Error"));
+            case TY.Tinstance:  mixin(visitTYCase("Instance"));
+            case TY.Ttypeof:    mixin(visitTYCase("Typeof"));
+            case TY.Ttuple:     mixin(visitTYCase("Tuple"));
+            case TY.Tslice:     mixin(visitTYCase("Slice"));
+            case TY.Treturn:    mixin(visitTYCase("Return"));
+            case TY.Tnull:      mixin(visitTYCase("Null"));
+            case TY.Tvector:    mixin(visitTYCase("Vector"));
+            case TY.Ttraits:    mixin(visitTYCase("Traits"));
+            case TY.Tmixin:     mixin(visitTYCase("Mixin"));
+            case TY.Tnoreturn:  mixin(visitTYCase("Noreturn"));
+            case TY.Ttag:       mixin(visitTYCase("Tag"));
+            case TY.Tnone:      assert(0);
+        }
+    }
+}
+
+/****************************************
+ * CTFE-only helper function for VisitInitializer.
+ * Params:
+ *      handler = string for the name of the visit handler
+ * Returns: boilerplate code for a case
+ */
+pure string visitTYCase(string handler)
+{
+    if (__ctfe)
+    {
+        return
+            "
+            enum isVoid = is(Result == void);
+            auto tx = t.isType"~handler~"();
+            static if (__traits(compiles, visit"~handler~"(tx)))
+            {
+                static if (isVoid)
+                {
+                    visit"~handler~"(tx);
+                    return;
+                }
+                else
+                {
+                    if (Result r = visit"~handler~"(tx))
+                        return r;
+                    return Result.init;
+                }
+            }
+            else static if (__traits(compiles, visitDefaultCase(t)))
+            {
+                static if (isVoid)
+                {
+                    visitDefaultCase(tx);
+                    return;
+                }
+                else
+                {
+                    if (Result r = visitDefaultCase(t))
+                        return r;
+                    return Result.init;
+                }
+            }
+            else
+                static assert(0, "~handler~");
+            ";
+    }
+    assert(0);
 }

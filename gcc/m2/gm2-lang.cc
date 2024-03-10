@@ -470,8 +470,9 @@ gm2_langhook_handle_option (
       M2Options_SetUnusedParameterChecking (value);
       return 1;
     case OPT_Wuninit_variable_checking:
-      M2Options_SetUninitVariableChecking (value);
-      return 1;
+      return M2Options_SetUninitVariableChecking (value, "known");
+    case OPT_Wuninit_variable_checking_:
+      return M2Options_SetUninitVariableChecking (value, arg);
     case OPT_fm2_strict_type:
       M2Options_SetStrictTypeChecking (value);
       return 1;

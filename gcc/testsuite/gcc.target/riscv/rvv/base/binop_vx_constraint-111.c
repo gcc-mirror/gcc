@@ -6,8 +6,8 @@ void f (void * in, void *out, int64_t x, int n)
 {
   vint64m1_t v = __riscv_vle64_v_i64m1 (in + 1, 4);
   vint64m1_t v2 = __riscv_vle64_v_i64m1_tu (v, in + 2, 4);
-  vint64m1_t v3 = __riscv_vssub_vx_i64m1 (v2, 0xAAAAAAAA, 0, 4);
-  vint64m1_t v4 = __riscv_vssub_vx_i64m1_tu (v3, v2, 0xAAAAAAAA, 0, 4);
+  vint64m1_t v3 = __riscv_vssub_vx_i64m1 (v2, 0xAAAAAAAA, 4);
+  vint64m1_t v4 = __riscv_vssub_vx_i64m1_tu (v3, v2, 0xAAAAAAAA, 4);
   __riscv_vse64_v_i64m1 (out + 2, v4, 4);
 }
 

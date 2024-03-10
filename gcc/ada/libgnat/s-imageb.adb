@@ -88,68 +88,53 @@ package body System.Image_B is
       S : out String;
       P : in out Natural)
    is
-      Start : constant Natural := P;
-      F, T  : Natural;
+      Start : constant Natural := P + 1;
       BU    : constant Uns := Uns (B);
       Hex   : constant array
                 (Uns range 0 .. 15) of Character := "0123456789ABCDEF";
 
-      procedure Set_Digits (T : Uns);
-      --  Set digits of absolute value of T
-
-      ----------------
-      -- Set_Digits --
-      ----------------
-
-      procedure Set_Digits (T : Uns) is
-      begin
-         if T >= BU then
-            Set_Digits (T / BU);
-            P := P + 1;
-            S (P) := Hex (T mod BU);
-         else
-            P := P + 1;
-            S (P) := Hex (T);
-         end if;
-      end Set_Digits;
-
-   --  Start of processing for Set_Image_Based_Unsigned
+      Nb_Digits : Natural := 1;
+      T : Uns := V;
 
    begin
 
-      if B >= 10 then
+      --  First we compute the number of characters needed for representing
+      --  the number.
+      loop
+         T := T / BU;
+         exit when T = 0;
+         Nb_Digits := Nb_Digits + 1;
+      end loop;
+
+      P := Start;
+
+      --  Pad S with spaces up to W reduced by Nb_Digits plus extra 3-4
+      --  characters needed for displaying the base.
+      while P < Start + W - Nb_Digits - 3 - B / 10 loop
+         S (P) := ' ';
          P := P + 1;
+      end loop;
+
+      if B >= 10 then
          S (P) := '1';
+         P := P + 1;
       end if;
 
+      S (P) := Hex (BU mod 10);
       P := P + 1;
-      S (P) := Character'Val (Character'Pos ('0') + B mod 10);
 
-      P := P + 1;
       S (P) := '#';
-
-      Set_Digits (V);
-
       P := P + 1;
+
+      --  We now populate digits from the end of the value to the beginning
+      T := V;
+      for J in reverse P .. P + Nb_Digits - 1 loop
+         S (J) := Hex (T mod BU);
+         T := T / BU;
+      end loop;
+
+      P := P + Nb_Digits;
       S (P) := '#';
-
-      --  Add leading spaces if required by width parameter
-
-      if P - Start < W then
-         F := P;
-         P := Start + W;
-         T := P;
-
-         while F > Start loop
-            S (T) := S (F);
-            T := T - 1;
-            F := F - 1;
-         end loop;
-
-         for J in Start + 1 .. T loop
-            S (J) := ' ';
-         end loop;
-      end if;
 
    end Set_Image_Based_Unsigned;
 

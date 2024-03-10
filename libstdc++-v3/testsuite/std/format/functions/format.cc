@@ -152,6 +152,10 @@ test_alternate_forms()
 
   s = std::format("{:#.2g}", -0.0);
   VERIFY( s == "-0.0" );
+
+  // PR libstdc++/108046
+  s = std::format("{0:#.0} {0:#.1} {0:#.0g}", 10.0);
+  VERIFY( s == "1.e+01 1.e+01 1.e+01" );
 }
 
 struct euro_punc : std::numpunct<char>

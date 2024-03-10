@@ -989,7 +989,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	    /* We can have early clobbered non-operand hard reg and
 	       the same hard reg as an insn input.  Don't make hard
 	       reg dead before the insns.  */
-	    for (reg2 = curr_id->regs; reg2 != NULL; reg2 = reg2->next)
+	    for (reg2 = curr_static_id->hard_regs; reg2 != NULL; reg2 = reg2->next)
 	      if (reg2->type != OP_OUT && reg2->regno == reg->regno)
 		break;
 	    if (reg2 == NULL)

@@ -34,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-details.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #if ENABLE_ANALYZER
 
@@ -224,6 +226,25 @@ call_details::get_or_create_conjured_svalue (const region *reg) const
   region_model_manager *mgr = m_model->get_manager ();
   return mgr->get_or_create_conjured_svalue (reg->get_type (), m_call, reg,
 					     conjured_purge (m_model, m_ctxt));
+}
+
+/* Look for a function attribute with name ATTR_NAME on the called
+   function (or on its type).
+   Return the attribute if one is found, otherwise return NULL_TREE.  */
+
+tree
+call_details::lookup_function_attribute (const char *attr_name) const
+{
+  tree allocfntype;
+  if (tree fndecl = get_fndecl_for_call ())
+    allocfntype = TREE_TYPE (fndecl);
+  else
+    allocfntype = gimple_call_fntype (m_call);
+
+  if (!allocfntype)
+    return NULL_TREE;
+
+  return lookup_attribute (attr_name, TYPE_ATTRIBUTES (allocfntype));
 }
 
 } // namespace ana

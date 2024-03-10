@@ -25,7 +25,7 @@ int* test() @safe
 ---
 fail_compilation/retscope6.d(7034): Error: address of variable `i` assigned to `s` with longer lifetime
 fail_compilation/retscope6.d(7035): Error: address of variable `i` assigned to `s` with longer lifetime
-fail_compilation/retscope6.d(7025): Error: scope variable `_param_2` assigned to `ref` variable `t` with longer lifetime
+fail_compilation/retscope6.d(7025): Error: scope variable `__param_2` assigned to `ref` variable `t` with longer lifetime
 fail_compilation/retscope6.d(7037): Error: template instance `retscope6.S.emplace4!(int*)` error instantiating
 fail_compilation/retscope6.d(7037): Error: address of variable `i` assigned to `s` with longer lifetime
 ---

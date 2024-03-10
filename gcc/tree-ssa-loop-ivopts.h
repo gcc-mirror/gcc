@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSA_LOOP_IVOPTS_H
 #define GCC_TREE_SSA_LOOP_IVOPTS_H
 
-extern edge single_dom_exit (class loop *);
 extern void dump_iv (FILE *, struct iv *);
 extern void dump_use (FILE *, struct iv_use *);
 extern void dump_uses (FILE *, struct ivopts_data *);

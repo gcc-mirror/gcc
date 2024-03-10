@@ -232,6 +232,7 @@ const unsigned int ARM_BUILTIN_CLASS = (1 << ARM_BUILTIN_SHIFT) - 1;
 namespace arm_mve {
   void handle_arm_mve_types_h ();
   void handle_arm_mve_h (bool);
+  tree builtin_decl (unsigned);
   tree resolve_overloaded_builtin (location_t, unsigned int,
 				   vec<tree, va_gc> *);
   bool check_builtin_call (location_t, vec<location_t>, unsigned int,

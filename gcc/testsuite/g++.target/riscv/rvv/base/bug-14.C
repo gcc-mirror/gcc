@@ -415,7 +415,7 @@ int32_t var_9 = __riscv_vmv_x_s_i32m4_i32(var_10);
 // 0
 
 __riscv_vsetvl_e32mf2(2);
-vint32mf2_t var_2 = __riscv_vsadd_vx_i32mf2_mu(var_47, var_48, var_49, var_9, 0, 2);
+vint32mf2_t var_2 = __riscv_vsadd_vx_i32mf2_mu(var_47, var_48, var_49, var_9, 2);
 // 470559939, 1961139923
 
 __riscv_vsuxei64_v_i32mf2(var_115, var_112, var_2, 2);

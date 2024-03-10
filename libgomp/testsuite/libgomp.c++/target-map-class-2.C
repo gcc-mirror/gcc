@@ -1,3 +1,4 @@
+/* { dg-require-effective-target lto } */
 /* { dg-additional-options "-flto" }  */
 /* PR middle-end/109816  */
 

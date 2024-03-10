@@ -1263,6 +1263,7 @@ void assign16271(T)(ref T a, T b)
 void test16271()
 {
     int x;
+    (delegate ref => x)() = -1;     assert(x == -1);
     (ref () => x )() = 1;           assert(x == 1);
     func16271!(ref () => x) = 2;    assert(x == 2);
     assign16271(x, 3);              assert(x == 3);

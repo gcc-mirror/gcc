@@ -66,7 +66,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "target-globals.h"
 #include "gimple-iterator.h"
-#include "tree-vectorizer.h"
 #include "shrink-wrap.h"
 #include "builtins.h"
 #include "rtl-iter.h"
@@ -429,6 +428,16 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 
     default:
       break;
+
+    case SUBREG:
+      /* Transform TImode paradoxical SUBREG into zero_extendditi2.  */
+      if (TARGET_64BIT
+	  && mode == TImode
+	  && SUBREG_P (op1)
+	  && GET_MODE (SUBREG_REG (op1)) == DImode
+	  && SUBREG_BYTE (op1) == 0)
+	op1 = gen_rtx_ZERO_EXTEND (TImode, SUBREG_REG (op1));
+      break;
     }
 
   if ((flag_pic || MACHOPIC_INDIRECT)
@@ -529,6 +538,43 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	      if (tmp != nullptr)
 		op1 = tmp;
 	    }
+	}
+    }
+
+  /* Special case inserting 64-bit values into a TImode register.  */
+  if (TARGET_64BIT
+      /* Disable for -O0 (see PR110587) unless naked (PR110533).  */
+      && (optimize || ix86_function_naked (current_function_decl))
+      && (mode == DImode || mode == DFmode)
+      && SUBREG_P (op0)
+      && GET_MODE (SUBREG_REG (op0)) == TImode
+      && REG_P (SUBREG_REG (op0))
+      && REG_P (op1))
+    {
+      /* Use *insvti_lowpart_1 to set lowpart.  */
+      if (SUBREG_BYTE (op0) == 0)
+	{
+	  wide_int mask = wi::mask (64, true, 128);
+	  rtx tmp = immed_wide_int_const (mask, TImode);
+	  op0 = SUBREG_REG (op0);
+	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
+	  if (mode == DFmode)
+	    op1 = gen_lowpart (DImode, op1);
+	  op1 = gen_rtx_ZERO_EXTEND (TImode, op1);
+	  op1 = gen_rtx_IOR (TImode, tmp, op1);
+	}
+      /* Use *insvti_highpart_1 to set highpart.  */
+      else if (SUBREG_BYTE (op0) == 8)
+	{
+	  wide_int mask = wi::mask (64, false, 128);
+	  rtx tmp = immed_wide_int_const (mask, TImode);
+	  op0 = SUBREG_REG (op0);
+	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
+	  if (mode == DFmode)
+	    op1 = gen_lowpart (DImode, op1);
+	  op1 = gen_rtx_ZERO_EXTEND (TImode, op1);
+	  op1 = gen_rtx_ASHIFT (TImode, op1, GEN_INT (64));
+	  op1 = gen_rtx_IOR (TImode, tmp, op1);
 	}
     }
 
@@ -2959,9 +3005,26 @@ ix86_expand_int_compare (enum rtx_code code, rtx op0, rtx op1)
   cmpmode = SELECT_CC_MODE (code, op0, op1);
   flags = gen_rtx_REG (cmpmode, FLAGS_REG);
 
+  /* Attempt to use PTEST, if available, when testing vector modes for
+     equality/inequality against zero.  */
+  if (op1 == const0_rtx
+      && SUBREG_P (op0)
+      && cmpmode == CCZmode
+      && SUBREG_BYTE (op0) == 0
+      && REG_P (SUBREG_REG (op0))
+      && VECTOR_MODE_P (GET_MODE (SUBREG_REG (op0)))
+      && TARGET_SSE4_1
+      && GET_MODE (op0) == TImode
+      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))) == 16)
+    {
+      tmp = SUBREG_REG (op0);
+      tmp = gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, tmp, tmp), UNSPEC_PTEST);
+    }
+  else
+    tmp = gen_rtx_COMPARE (cmpmode, op0, op1);
+
   /* This is very simple, but making the interface the same as in the
      FP case makes the rest of the code easier.  */
-  tmp = gen_rtx_COMPARE (cmpmode, op0, op1);
   emit_insn (gen_rtx_SET (flags, tmp));
 
   /* Return the test that should be put into the flags user, i.e.
@@ -10688,6 +10751,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_V4SF_UINT:
     case V4SF_FTYPE_V4SF_DI:
     case V4SF_FTYPE_V4SF_SI:
+    case V4DI_FTYPE_V4DI_V2DI:
     case V2DI_FTYPE_V2DI_V2DI:
     case V2DI_FTYPE_V16QI_V16QI:
     case V2DI_FTYPE_V4SI_V4SI:
@@ -10985,6 +11049,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8DI_V8HI_UQI:
     case V8SI_FTYPE_V8DI_V8SI_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI:
+    case V4DI_FTYPE_V4DI_V4DI_V2DI:
     case V16SI_FTYPE_V16SI_V16SI_V16SI:
     case V8DI_FTYPE_V8DI_V8DI_V8DI:
     case V32HI_FTYPE_V32HI_V32HI_V32HI:
@@ -11157,6 +11222,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_V4SF_V4SF_V4SI_INT:
     case V8SF_FTYPE_V8SF_V8SF_V8SI_INT:
     case V16SF_FTYPE_V16SF_V16SF_V16SI_INT:
+    case V4SI_FTYPE_V4SI_V4SI_V4SI_INT:
       nargs = 4;
       nargs_constant = 1;
       break;
@@ -12626,6 +12692,7 @@ ix86_check_builtin_isa_match (unsigned int fcode,
        OPTION_MASK_ISA2_AVXIFMA
      (OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA2_AVX512BF16) or
        OPTION_MASK_ISA2_AVXNECONVERT
+     OPTION_MASK_ISA_AES or (OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA2_VAES)
      where for each such pair it is sufficient if either of the ISAs is
      enabled, plus if it is ored with other options also those others.
      OPTION_MASK_ISA_MMX in bisa is satisfied also if TARGET_MMX_WITH_SSE.  */
@@ -12649,7 +12716,8 @@ ix86_check_builtin_isa_match (unsigned int fcode,
 		 OPTION_MASK_ISA2_AVXIFMA);
   SHARE_BUILTIN (OPTION_MASK_ISA_AVX512VL, OPTION_MASK_ISA2_AVX512BF16, 0,
 		 OPTION_MASK_ISA2_AVXNECONVERT);
-  SHARE_BUILTIN (OPTION_MASK_ISA_AES, 0, 0, OPTION_MASK_ISA2_VAES);
+  SHARE_BUILTIN (OPTION_MASK_ISA_AES, 0, OPTION_MASK_ISA_AVX512VL,
+		 OPTION_MASK_ISA2_VAES);
   isa = tmp_isa;
   isa2 = tmp_isa2;
 
@@ -15409,8 +15477,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	    {
 	      tmp1 = force_reg (GET_MODE_INNER (mode), val);
 	      tmp2 = gen_reg_rtx (mode);
-	      emit_insn (maybe_gen_vec_set_0 (mode, tmp2,
-					      CONST0_RTX (mode), tmp1));
+	      emit_insn (gen_vec_set_0 (mode, tmp2, CONST0_RTX (mode), tmp1));
 	      tmp1 = gen_lowpart (mode, tmp2);
 	    }
 	  else
@@ -17372,9 +17439,9 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 		 ? gen_reg_rtx (V16HFmode)
 		 : gen_reg_rtx (V16BFmode));
 	  if (elt < 16)
-	    emit_insn (maybe_gen_vec_extract_lo (mode, tmp, vec));
+	    emit_insn (gen_vec_extract_lo (mode, tmp, vec));
 	  else
-	    emit_insn (maybe_gen_vec_extract_hi (mode, tmp, vec));
+	    emit_insn (gen_vec_extract_hi (mode, tmp, vec));
 	  ix86_expand_vector_extract (false, target, tmp, elt & 15);
 	  return;
 	}
@@ -17388,9 +17455,9 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 		 ? gen_reg_rtx (V8HFmode)
 		 : gen_reg_rtx (V8BFmode));
 	  if (elt < 8)
-	    emit_insn (maybe_gen_vec_extract_lo (mode, tmp, vec));
+	    emit_insn (gen_vec_extract_lo (mode, tmp, vec));
 	  else
-	    emit_insn (maybe_gen_vec_extract_hi (mode, tmp, vec));
+	    emit_insn (gen_vec_extract_hi (mode, tmp, vec));
 	  ix86_expand_vector_extract (false, target, tmp, elt & 7);
 	  return;
 	}
@@ -22454,18 +22521,18 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       if (d->testing_p)
 	return true;
 
-      rtx (*maybe_gen) (machine_mode, int, rtx, rtx, rtx);
+      rtx (*gen_interleave) (machine_mode, int, rtx, rtx, rtx);
       if (elt >= nelt2)
 	{
-	  maybe_gen = maybe_gen_vec_interleave_high;
+	  gen_interleave = gen_vec_interleave_high;
 	  elt -= nelt2;
 	}
       else
-	maybe_gen = maybe_gen_vec_interleave_low;
+	gen_interleave = gen_vec_interleave_low;
       nelt2 /= 2;
 
       dest = gen_reg_rtx (vmode);
-      emit_insn (maybe_gen (vmode, 1, dest, op0, op0));
+      emit_insn (gen_interleave (vmode, 1, dest, op0, op0));
 
       vmode = V4SImode;
       op0 = gen_lowpart (vmode, dest);

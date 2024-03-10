@@ -35,6 +35,7 @@ main (void)
       asm volatile ("" ::: "memory");
     }
   f (a, b, c);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != ((BASE1 + BASE2 + i * 9 + BIAS) >> 1))
       __builtin_abort ();

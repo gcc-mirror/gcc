@@ -20,6 +20,7 @@ main ()
   asm volatile ("" : : : "memory");
   for (i = 0; i < 44; i++) 
     for (j = 0; j < 17; j++)
+#pragma GCC novector
       for (k = 0; k < 2; k++)
 	if (c[i][j][k] != -5105075050047261684)
 	  __builtin_abort ();

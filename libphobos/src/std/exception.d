@@ -1035,7 +1035,7 @@ Params:
 
 Bugs:
     The function is explicitly annotated `@nogc` because inference could fail,
-    see $(LINK2 https://issues.dlang.org/show_bug.cgi?id=17084, issue 17084).
+    see $(LINK2 https://issues.dlang.org/show_bug.cgi?id=17084, Bugzilla issue 17084).
 
 Returns: `true` if `source`'s representation embeds a pointer
 that points to `target`'s representation or somewhere inside

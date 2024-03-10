@@ -37,6 +37,7 @@ typedef unsigned long long ull;
       for (int i = 0; i < N + M; ++i)			\
 	a[i] = TEST_VALUE (i);				\
       test_##TYPE (a + j, a);				\
+      _Pragma("GCC novector")				\
       for (int i = 0; i < N; i += 2)			\
 	if (a[i + j] != (TYPE) (a[i] + 2)		\
 	    || a[i + j + 1] != (TYPE) (a[i + 1] + 3))	\

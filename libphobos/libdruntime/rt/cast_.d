@@ -117,22 +117,6 @@ int _d_isbaseof2(scope ClassInfo oc, scope const ClassInfo c, scope ref size_t o
 
 int _d_isbaseof(scope ClassInfo oc, scope const ClassInfo c) @safe
 {
-    if (areClassInfosEqual(oc, c))
-        return true;
-
-    do
-    {
-        if (oc.base && areClassInfosEqual(oc.base, c))
-            return true;
-
-        foreach (iface; oc.interfaces)
-        {
-            if (areClassInfosEqual(iface.classinfo, c) || _d_isbaseof(iface.classinfo, c))
-                return true;
-        }
-
-        oc = oc.base;
-    } while (oc);
-
-    return false;
+    size_t offset = 0;
+    return _d_isbaseof2(oc, c, offset);
 }

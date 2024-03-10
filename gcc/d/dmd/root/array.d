@@ -251,6 +251,18 @@ public:
         length++;
     }
 
+    /// Insert 'count' copies of 'value' at 'index' position
+    void insert(size_t index, size_t count, T value) pure nothrow
+    {
+        if (count == 0)
+            return;
+        reserve(count);
+        if (length != index)
+            memmove(data.ptr + index + count, data.ptr + index, (length - index) * T.sizeof);
+        data[index .. index + count] = value;
+        length += count;
+    }
+
     void setDim(size_t newdim) pure nothrow
     {
         if (length < newdim)
@@ -458,6 +470,12 @@ unittest
     arrayA.insert(0, [7, 8]);
     arrayA.insert(arrayA.length, [0, 9]);
     assert(arrayA[] == [7, 8, 5, 1, 2, 6, 0, 9]);
+    arrayA.insert(4, 3, 8);
+    assert(arrayA[] == [7, 8, 5, 1, 8, 8, 8, 2, 6, 0, 9]);
+    arrayA.insert(0, 3, 8);
+    assert(arrayA[] == [8, 8, 8, 7, 8, 5, 1, 8, 8, 8, 2, 6, 0, 9]);
+    arrayA.insert(arrayA.length, 3, 8);
+    assert(arrayA[] == [8, 8, 8, 7, 8, 5, 1, 8, 8, 8, 2, 6, 0, 9, 8, 8, 8]);
 }
 
 /**

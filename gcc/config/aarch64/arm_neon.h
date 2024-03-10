@@ -25590,7 +25590,7 @@ __INTERLEAVE_LIST (zip)
 #include "arm_fp16.h"
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.2-a+fp16")
+#pragma GCC target ("+nothing+simd+fp16")
 
 /* ARMv8.2-A FP16 one operand vector intrinsics.  */
 
@@ -26753,7 +26753,7 @@ vminnmvq_f16 (float16x8_t __a)
 /* AdvSIMD Dot Product intrinsics.  */
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.2-a+dotprod")
+#pragma GCC target ("+nothing+dotprod")
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -26844,7 +26844,7 @@ vdotq_laneq_s32 (int32x4_t __r, int8x16_t __a, int8x16_t __b, const int __index)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.2-a+sm4")
+#pragma GCC target ("+nothing+sm4")
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -26911,7 +26911,7 @@ vsm4ekeyq_u32 (uint32x4_t __a, uint32x4_t __b)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.2-a+sha3")
+#pragma GCC target ("+nothing+sha3")
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -27547,7 +27547,7 @@ vcmlaq_rot270_laneq_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b,
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.2-a+fp16fml")
+#pragma GCC target ("+nothing+fp16fml")
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -27856,7 +27856,7 @@ vrnd64xq_f64 (float64x2_t __a)
 #include "arm_bf16.h"
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.2-a+bf16")
+#pragma GCC target ("+nothing+bf16")
 
 __extension__ extern __inline bfloat16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -28535,7 +28535,7 @@ vst4q_lane_bf16 (bfloat16_t *__ptr, bfloat16x8x4_t __val, const int __lane)
 /* AdvSIMD 8-bit Integer Matrix Multiply (I8MM) intrinsics.  */
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.2-a+i8mm")
+#pragma GCC target ("+nothing+i8mm")
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))

@@ -26,6 +26,7 @@ int main()
 
   array_shift ();
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (dst[i] != i)
       abort ();

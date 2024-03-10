@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 /* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
@@ -19,6 +20,7 @@ f(struct s *ptr, unsigned n) {
 
 void __attribute__ ((noipa))
 check_f(struct s *ptr) {
+#pragma GCC novector
     for (unsigned i = 0; i < N; ++i)
       if (ptr[i].i != V)
 	abort ();
@@ -37,3 +39,4 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

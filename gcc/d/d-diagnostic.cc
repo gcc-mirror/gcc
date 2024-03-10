@@ -189,7 +189,7 @@ d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
   va_list argp;
   va_copy (argp, ap);
 
-  if (loc.filename || !verbatim)
+  if (loc.filename () || !verbatim)
     {
       rich_location rich_loc (line_table, make_location_t (loc));
       diagnostic_info diagnostic;

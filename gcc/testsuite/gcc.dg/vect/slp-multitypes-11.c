@@ -28,6 +28,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i].a !=  (int) in[i*3] + 1

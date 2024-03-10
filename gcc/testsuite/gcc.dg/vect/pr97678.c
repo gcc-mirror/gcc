@@ -19,6 +19,7 @@ main ()
       b[i * 2 + 1] = i * 8;
     }
 
+#pragma GCC novector
   for (i = 0; i < 158; ++i)
     if (b[i*2] != (unsigned short)(i*7)
         || b[i*2+1] != (unsigned short)(i*8))

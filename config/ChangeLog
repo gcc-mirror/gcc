@@ -1,3 +1,7 @@
+2023-07-21  Sergei Trofimovich  <siarheit@google.com>
+
+	* mh-mingw: Drop assignment of unused BOOT_CXXFLAGS variable.
+
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	Revert:

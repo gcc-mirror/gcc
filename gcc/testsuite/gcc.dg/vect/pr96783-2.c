@@ -20,6 +20,7 @@ int main()
   for (int i = 0; i < 1024; ++i)
     b[i] = i;
   foo ();
+#pragma GCC novector
   for (int i = 0; i < 256; ++i)
     if (a[3*i] != 1023 - 3*i - 2
 	|| a[3*i+1] != 1023 - 3*i - 1

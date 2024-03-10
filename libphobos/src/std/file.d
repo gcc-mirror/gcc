@@ -310,6 +310,8 @@ Params:
 Returns: Untyped array of bytes _read.
 
 Throws: $(LREF FileException) on error.
+
+See_Also: $(REF readText, std,file) for reading and validating a text file.
  */
 
 void[] read(R)(R name, size_t upTo = size_t.max)
@@ -497,6 +499,8 @@ version (linux) @safe unittest
 
     Throws: $(LREF FileException) if there is an error reading the file,
             $(REF UTFException, std, utf) on UTF decoding error.
+
+    See_Also: $(REF read, std,file) for reading a binary file.
 +/
 S readText(S = string, R)(auto ref R name)
 if (isSomeString!S && (isSomeFiniteCharInputRange!R || is(StringTypeOf!R)))

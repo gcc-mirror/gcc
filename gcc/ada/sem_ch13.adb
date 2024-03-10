@@ -15569,15 +15569,11 @@ package body Sem_Ch13 is
 
       function Visible_Component (Comp : Name_Id) return Entity_Id is
          E : Entity_Id;
-      begin
-         --  Types with nameable components are record, task, and protected
-         --  types, and discriminated private types.
 
-         if Ekind (T) in E_Record_Type
-                       | E_Task_Type
-                       | E_Protected_Type
-           or else (Is_Private_Type (T) and then Has_Discriminants (T))
-         then
+      begin
+         --  Types with nameable components are record, task, protected types
+
+         if Ekind (T) in E_Record_Type | E_Task_Type | E_Protected_Type then
             --  This is a sequential search, which seems acceptable
             --  efficiency-wise, given the typical size of component
             --  lists, protected operation lists, task item lists, and
@@ -15591,6 +15587,46 @@ package body Sem_Ch13 is
 
                Next_Entity (E);
             end loop;
+
+         --  Private discriminated types may have visible discriminants
+
+         elsif Is_Private_Type (T) and then Has_Discriminants (T) then
+            declare
+               Decl : constant Node_Id := Declaration_Node (T);
+
+               Discr : Node_Id;
+
+            begin
+               --  Loop over the discriminants listed in the discriminant part
+               --  of the private type declaration to find one with a matching
+               --  name; then, if it exists, return the discriminant entity of
+               --  the same name in the type, which is that of its full view.
+
+               if Nkind (Decl) in N_Private_Extension_Declaration
+                                | N_Private_Type_Declaration
+                 and then Present (Discriminant_Specifications (Decl))
+               then
+                  Discr := First (Discriminant_Specifications (Decl));
+
+                  while Present (Discr) loop
+                     if Chars (Defining_Identifier (Discr)) = Comp then
+                        Discr := First_Discriminant (T);
+
+                        while Present (Discr) loop
+                           if Chars (Discr) = Comp then
+                              return Discr;
+                           end if;
+
+                           Next_Discriminant (Discr);
+                        end loop;
+
+                        pragma Assert (False);
+                     end if;
+
+                     Next (Discr);
+                  end loop;
+               end if;
+            end;
          end if;
 
          --  Nothing by that name
@@ -16508,7 +16544,11 @@ package body Sem_Ch13 is
             It : Interp;
 
             function Is_Property_Function (E : Entity_Id) return Boolean;
-            --  Implements RM 7.3.4 definition of "property function".
+            --  Implements RM 7.3.4 definition of "property function"
+
+            --------------------------
+            -- Is_Property_Function --
+            --------------------------
 
             function Is_Property_Function (E : Entity_Id) return Boolean is
             begin

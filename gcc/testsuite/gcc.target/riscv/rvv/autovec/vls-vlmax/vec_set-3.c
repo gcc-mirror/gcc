@@ -20,6 +20,15 @@ typedef double vnx8df __attribute__((vector_size (64)));
     return v;					\
   }
 
+#define VEC_SET_VAR3(S,V)			\
+  V						\
+  __attribute__((noipa))			\
+  vec_set_var_##V (V v, int32_t idx, S s)	\
+  {						\
+    v[idx] = s;					\
+    return v;					\
+  }						\
+
 #define TEST_ALL3(T)				\
   T (_Float16, vnx32hf, 0)			\
   T (_Float16, vnx32hf, 3)			\
@@ -56,21 +65,31 @@ typedef double vnx8df __attribute__((vector_size (64)));
   T (int8_t, vnx64qi, 32)			\
   T (int8_t, vnx64qi, 63)			\
 
+#define TEST_ALL_VAR3(T)			\
+  T (_Float16, vnx32hf)				\
+  T (float, vnx16sf)				\
+  T (double, vnx8df)				\
+  T (int64_t, vnx8di)				\
+  T (int32_t, vnx16si)				\
+  T (int16_t, vnx32hi)				\
+  T (int8_t, vnx64qi)				\
+
 TEST_ALL3 (VEC_SET)
+TEST_ALL_VAR3 (VEC_SET_VAR3)
 
 /* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m4,\s*ta,\s*ma} 1 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m4,\s*tu,\s*ma} 4 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m4,\s*tu,\s*ma} 5 } } */
 /* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m4,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m4,\s*tu,\s*ma} 9 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m4,\s*tu,\s*ma} 11 } } */
 /* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m4,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m4,\s*tu,\s*ma} 8 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m4,\s*tu,\s*ma} 10 } } */
 /* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m4,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m4,\s*tu,\s*ma} 6 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m4,\s*tu,\s*ma} 8 } } */
 
-/* { dg-final { scan-assembler-times {\tvmv.v.x} 15 } } */
-/* { dg-final { scan-assembler-times {\tvfmv.v.f} 12 } } */
+/* { dg-final { scan-assembler-times {\tvmv.v.x} 19 } } */
+/* { dg-final { scan-assembler-times {\tvfmv.v.f} 15 } } */
 /* { dg-final { scan-assembler-times {\tvslideup.vi} 25 } } */
-/* { dg-final { scan-assembler-times {\tvslideup.vx} 2 } } */
+/* { dg-final { scan-assembler-times {\tvslideup.vx} 9 } } */
 
 /* { dg-final { scan-assembler-times {\tvfmv.s.f} 3 } } */
 /* { dg-final { scan-assembler-times {\tvmv.s.x} 4 } } */

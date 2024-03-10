@@ -5537,7 +5537,8 @@ gfc_free_namelist (gfc_namelist *name)
 
 void
 gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
-		       bool free_align_allocator)
+		       bool free_align_allocator,
+		       bool free_mem_traits_space)
 {
   gfc_omp_namelist *n;
 
@@ -5546,10 +5547,14 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
       gfc_free_expr (name->expr);
       if (free_align_allocator)
 	gfc_free_expr (name->u.align);
+      else if (free_mem_traits_space)
+	{ }  /* name->u.memspace_sym: shall not call gfc_free_symbol here. */
       if (free_ns)
 	gfc_free_namespace (name->u2.ns);
       else if (free_align_allocator)
 	gfc_free_expr (name->u2.allocator);
+      else if (free_mem_traits_space)
+	{ }  /* name->u2.traits_sym: shall not call gfc_free_symbol here. */
       else if (name->u2.udr)
 	{
 	  if (name->u2.udr->combiner)
@@ -5622,10 +5627,31 @@ gfc_match_namelist (void)
 		  gfc_error_check ();
 		}
 	      else
-		/* If the type is not set already, we set it here to the
-		   implicit default type.  It is not allowed to set it
-		   later to any other type.  */
-		gfc_set_default_type (sym, 0, gfc_current_ns);
+		{
+		  /* Before the symbol is given an implicit type, check to
+		     see if the symbol is already available in the namespace,
+		     possibly through host association.  Importantly, the
+		     symbol may be a user defined type.  */
+
+		  gfc_symbol *tmp;
+
+		  gfc_find_symbol (sym->name, NULL, 1, &tmp);
+		  if (tmp && tmp->attr.generic
+		      && (tmp = gfc_find_dt_in_generic (tmp)))
+		    {
+		      if (tmp->attr.flavor == FL_DERIVED)
+			{
+			  gfc_error ("Derived type %qs at %L conflicts with "
+				     "namelist object %qs at %C",
+				     tmp->name, &tmp->declared_at, sym->name);
+			  goto error;
+			}
+		    }
+
+		  /* Set type of the symbol to its implicit default type.  It is
+		     not allowed to set it later to any other type.  */
+		  gfc_set_default_type (sym, 0, gfc_current_ns);
+		}
 	    }
 	  if (sym->attr.in_namelist == 0
 	      && !gfc_add_in_namelist (&sym->attr, sym->name, NULL))
@@ -6805,8 +6831,20 @@ gfc_match_select_rank (void)
 
   gfc_current_ns = gfc_build_block_ns (ns);
   m = gfc_match (" %n => %e", name, &expr2);
+
   if (m == MATCH_YES)
     {
+      /* If expr2 corresponds to an implicitly typed variable, then the
+	 actual type of the variable may not have been set.  Set it here.  */
+      if (!gfc_current_ns->seen_implicit_none
+	  && expr2->expr_type == EXPR_VARIABLE
+	  && expr2->ts.type == BT_UNKNOWN
+	  && expr2->symtree && expr2->symtree->n.sym)
+	{
+	  gfc_set_default_type (expr2->symtree->n.sym, 0, gfc_current_ns);
+	  expr2->ts.type = expr2->symtree->n.sym->ts.type;
+	}
+
       expr1 = gfc_get_expr ();
       expr1->expr_type = EXPR_VARIABLE;
       expr1->where = expr2->where;

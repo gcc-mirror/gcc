@@ -1259,6 +1259,9 @@ setup_reg_class_relations (void)
 	  for (cl3 = 0; cl3 < N_REG_CLASSES; cl3++)
 	    {
 	      temp_hard_regset = reg_class_contents[cl3] & ~no_unit_alloc_regs;
+	      if (hard_reg_set_empty_p (temp_hard_regset))
+	        continue;
+
 	      if (hard_reg_set_subset_p (temp_hard_regset, intersection_set))
 		{
 		  /* CL3 allocatable hard register set is inside of
@@ -3075,7 +3078,7 @@ validate_equiv_mem_from_store (rtx dest, const_rtx set ATTRIBUTE_UNUSED,
     info->equiv_mem_modified = true;
 }
 
-static int equiv_init_varies_p (rtx x);
+static bool equiv_init_varies_p (rtx x);
 
 enum valid_equiv { valid_none, valid_combine, valid_reload };
 
@@ -3145,8 +3148,8 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
   return valid_none;
 }
 
-/* Returns zero if X is known to be invariant.  */
-static int
+/* Returns false if X is known to be invariant.  */
+static bool
 equiv_init_varies_p (rtx x)
 {
   RTX_CODE code = GET_CODE (x);
@@ -3162,14 +3165,14 @@ equiv_init_varies_p (rtx x)
     CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
-      return 0;
+      return false;
 
     case REG:
       return reg_equiv[REGNO (x)].replace == 0 && rtx_varies_p (x, 0);
 
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
-	return 1;
+	return true;
 
       /* Fall through.  */
 
@@ -3182,24 +3185,24 @@ equiv_init_varies_p (rtx x)
     if (fmt[i] == 'e')
       {
 	if (equiv_init_varies_p (XEXP (x, i)))
-	  return 1;
+	  return true;
       }
     else if (fmt[i] == 'E')
       {
 	int j;
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  if (equiv_init_varies_p (XVECEXP (x, i, j)))
-	    return 1;
+	    return true;
       }
 
-  return 0;
+  return false;
 }
 
-/* Returns nonzero if X (used to initialize register REGNO) is movable.
+/* Returns true if X (used to initialize register REGNO) is movable.
    X is only movable if the registers it uses have equivalent initializations
    which appear to be within the same loop (or in an inner loop) and movable
    or if they are not candidates for local_alloc and don't vary.  */
-static int
+static bool
 equiv_init_movable_p (rtx x, int regno)
 {
   int i, j;
@@ -3212,7 +3215,7 @@ equiv_init_movable_p (rtx x, int regno)
       return equiv_init_movable_p (SET_SRC (x), regno);
 
     case CLOBBER:
-      return 0;
+      return false;
 
     case PRE_INC:
     case PRE_DEC:
@@ -3220,7 +3223,7 @@ equiv_init_movable_p (rtx x, int regno)
     case POST_DEC:
     case PRE_MODIFY:
     case POST_MODIFY:
-      return 0;
+      return false;
 
     case REG:
       return ((reg_equiv[REGNO (x)].loop_depth >= reg_equiv[regno].loop_depth
@@ -3229,11 +3232,11 @@ equiv_init_movable_p (rtx x, int regno)
 		  && ! rtx_varies_p (x, 0)));
 
     case UNSPEC_VOLATILE:
-      return 0;
+      return false;
 
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
-	return 0;
+	return false;
 
       /* Fall through.  */
 
@@ -3247,16 +3250,16 @@ equiv_init_movable_p (rtx x, int regno)
       {
       case 'e':
 	if (! equiv_init_movable_p (XEXP (x, i), regno))
-	  return 0;
+	  return false;
 	break;
       case 'E':
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  if (! equiv_init_movable_p (XVECEXP (x, i, j), regno))
-	    return 0;
+	    return false;
 	break;
       }
 
-  return 1;
+  return true;
 }
 
 static bool memref_referenced_p (rtx memref, rtx x, bool read_p);
@@ -3370,7 +3373,7 @@ memref_referenced_p (rtx memref, rtx x, bool read_p)
    Callers should not call this routine if START is after END in the
    RTL chain.  */
 
-static int
+static bool
 memref_used_between_p (rtx memref, rtx_insn *start, rtx_insn *end)
 {
   rtx_insn *insn;
@@ -3383,15 +3386,15 @@ memref_used_between_p (rtx memref, rtx_insn *start, rtx_insn *end)
 	continue;
 
       if (memref_referenced_p (memref, PATTERN (insn), false))
-	return 1;
+	return true;
 
       /* Nonconst functions may access memory.  */
       if (CALL_P (insn) && (! RTL_CONST_CALL_P (insn)))
-	return 1;
+	return true;
     }
 
   gcc_assert (insn == NEXT_INSN (end));
-  return 0;
+  return false;
 }
 
 /* Mark REG as having no known equivalence.
@@ -5795,7 +5798,7 @@ ira (FILE *f)
        there is setjmp call because a variable not modified between
        setjmp and longjmp the compiler is required to preserve its
        value and sharing slots does not guarantee it.  */
-    flag_ira_share_spill_slots = FALSE;
+    flag_ira_share_spill_slots = false;
 
   ira_color ();
 

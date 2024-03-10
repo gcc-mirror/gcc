@@ -46,6 +46,10 @@ package body System.Dwarf_Lines is
 
    subtype Offset is Object_Reader.Offset;
 
+   function "-" (Left, Right : Address) return uint32;
+   pragma Import (Intrinsic, "-");
+   --  Return the difference between two addresses as an unsigned offset
+
    function Get_Load_Displacement (C : Dwarf_Context) return Storage_Offset;
    --  Return the displacement between the load address present in the binary
    --  and the run-time address at which it is loaded (i.e. non-zero for PIE).
@@ -1542,7 +1546,7 @@ package body System.Dwarf_Lines is
                exit when Ar_Start = Null_Address and Ar_Len = 0;
 
                Len   := uint32 (Ar_Len);
-               Start := uint32 (Storage_Count'(Ar_Start - C.Low));
+               Start := uint32'(Ar_Start - C.Low);
 
                --  Search START in the array
 
@@ -1762,7 +1766,7 @@ package body System.Dwarf_Lines is
 
       if C.Cache /= null then
          declare
-            Off : constant uint32 := uint32 (Storage_Count'(Addr - C.Low));
+            Off : constant uint32 := uint32'(Addr - C.Low);
 
             First, Last, Mid : Natural;
          begin

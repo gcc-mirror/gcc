@@ -4633,6 +4633,13 @@ gimple_phi_arg (const gphi *gs, unsigned index)
   return &(gs->args[index]);
 }
 
+inline const phi_arg_d *
+gimple_phi_arg (const gimple *gs, unsigned index)
+{
+  const gphi *phi_stmt = as_a <const gphi *> (gs);
+  return gimple_phi_arg (phi_stmt, index);
+}
+
 inline struct phi_arg_d *
 gimple_phi_arg (gimple *gs, unsigned index)
 {
@@ -4678,11 +4685,27 @@ gimple_phi_arg_def (const gphi *gs, size_t index)
 }
 
 inline tree
-gimple_phi_arg_def (gimple *gs, size_t index)
+gimple_phi_arg_def (const gimple *gs, size_t index)
 {
   return gimple_phi_arg (gs, index)->def;
 }
 
+/* Return the tree operand for the argument associated with
+   edge E of PHI node GS.  */
+
+inline tree
+gimple_phi_arg_def_from_edge (const gphi *gs, const_edge e)
+{
+  gcc_checking_assert (e->dest == gimple_bb (gs));
+  return gimple_phi_arg (gs, e->dest_idx)->def;
+}
+
+inline tree
+gimple_phi_arg_def_from_edge (const gimple *gs, const_edge e)
+{
+  gcc_checking_assert (e->dest == gimple_bb (gs));
+  return gimple_phi_arg (gs, e->dest_idx)->def;
+}
 
 /* Return a pointer to the tree operand for argument I of phi node PHI.  */
 

@@ -39,6 +39,7 @@ main (void)
       asm volatile ("" ::: "memory");
     }
   f (a, b, c, D);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != (BASE_B + BASE_C + D + i * 9) >> 2)
       __builtin_abort ();

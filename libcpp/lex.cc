@@ -2057,8 +2057,11 @@ warn_about_normalization (cpp_reader *pfile,
     }
 }
 
-/* Returns TRUE if the sequence starting at buffer->cur is valid in
-   an identifier.  FIRST is TRUE if this starts an identifier.  */
+/* Returns TRUE if the byte sequence starting at buffer->cur is a valid
+   extended character in an identifier.  If FIRST is TRUE, then the character
+   must be valid at the beginning of an identifier as well.  If the return
+   value is TRUE, then pfile->buffer->cur has been moved to point to the next
+   byte after the extended character.  */
 
 static bool
 forms_identifier_p (cpp_reader *pfile, int first,
@@ -2154,6 +2157,47 @@ maybe_va_opt_error (cpp_reader *pfile)
     }
 }
 
+/* Helper function to perform diagnostics that are needed (rarely)
+   when an identifier is lexed.  */
+static void
+identifier_diagnostics_on_lex (cpp_reader *pfile, cpp_hashnode *node)
+{
+  if (__builtin_expect (!(node->flags & NODE_DIAGNOSTIC)
+			|| pfile->state.skipping, 1))
+    return;
+
+  /* It is allowed to poison the same identifier twice.  */
+  if ((node->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
+    cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned \"%s\"",
+	       NODE_NAME (node));
+
+  /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
+     replacement list of a variadic macro.  */
+  if (node == pfile->spec_nodes.n__VA_ARGS__
+      && !pfile->state.va_args_ok)
+    {
+      if (CPP_OPTION (pfile, cplusplus))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "__VA_ARGS__ can only appear in the expansion"
+		   " of a C++11 variadic macro");
+      else
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "__VA_ARGS__ can only appear in the expansion"
+		   " of a C99 variadic macro");
+    }
+
+  /* __VA_OPT__ should only appear in the replacement list of a
+     variadic macro.  */
+  if (node == pfile->spec_nodes.n__VA_OPT__)
+    maybe_va_opt_error (pfile);
+
+  /* For -Wc++-compat, warn about use of C++ named operators.  */
+  if (node->flags & NODE_WARN_OPERATOR)
+    cpp_warning (pfile, CPP_W_CXX_OPERATOR_NAMES,
+		 "identifier \"%s\" is a special operator name in C++",
+		 NODE_NAME (node));
+}
+
 /* Helper function to get the cpp_hashnode of the identifier BASE.  */
 static cpp_hashnode *
 lex_identifier_intern (cpp_reader *pfile, const uchar *base)
@@ -2173,41 +2217,7 @@ lex_identifier_intern (cpp_reader *pfile, const uchar *base)
   hash = HT_HASHFINISH (hash, len);
   result = CPP_HASHNODE (ht_lookup_with_hash (pfile->hash_table,
 					      base, len, hash, HT_ALLOC));
-
-  /* Rarely, identifiers require diagnostics when lexed.  */
-  if (__builtin_expect ((result->flags & NODE_DIAGNOSTIC)
-			&& !pfile->state.skipping, 0))
-    {
-      /* It is allowed to poison the same identifier twice.  */
-      if ((result->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
-	cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned \"%s\"",
-		   NODE_NAME (result));
-
-      /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
-	 replacement list of a variadic macro.  */
-      if (result == pfile->spec_nodes.n__VA_ARGS__
-	  && !pfile->state.va_args_ok)
-	{
-	  if (CPP_OPTION (pfile, cplusplus))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "__VA_ARGS__ can only appear in the expansion"
-		       " of a C++11 variadic macro");
-	  else
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "__VA_ARGS__ can only appear in the expansion"
-		       " of a C99 variadic macro");
-	}
-
-      if (result == pfile->spec_nodes.n__VA_OPT__)
-	maybe_va_opt_error (pfile);
-
-      /* For -Wc++-compat, warn about use of C++ named operators.  */
-      if (result->flags & NODE_WARN_OPERATOR)
-	cpp_warning (pfile, CPP_W_CXX_OPERATOR_NAMES,
-		     "identifier \"%s\" is a special operator name in C++",
-		     NODE_NAME (result));
-    }
-
+  identifier_diagnostics_on_lex (pfile, result);
   return result;
 }
 
@@ -2221,7 +2231,9 @@ _cpp_lex_identifier (cpp_reader *pfile, const char *name)
   return result;
 }
 
-/* Lex an identifier starting at BUFFER->CUR - 1.  */
+/* Lex an identifier starting at BASE.  BUFFER->CUR is expected to point
+   one past the first character at BASE, which may be a (possibly multi-byte)
+   character if STARTS_UCN is true.  */
 static cpp_hashnode *
 lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 		struct normalize_state *nst, cpp_hashnode **spelling)
@@ -2270,42 +2282,51 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
       *spelling = result;
     }
 
-  /* Rarely, identifiers require diagnostics when lexed.  */
-  if (__builtin_expect ((result->flags & NODE_DIAGNOSTIC)
-			&& !pfile->state.skipping, 0))
+  return result;
+}
+
+/* Struct to hold the return value of the scan_cur_identifier () helper
+   function below.  */
+
+struct scan_id_result
+{
+  cpp_hashnode *node;
+  normalize_state nst;
+
+  scan_id_result ()
+    : node (nullptr)
+  {
+    nst = INITIAL_NORMALIZE_STATE;
+  }
+
+  explicit operator bool () const { return node; }
+};
+
+/* Helper function to scan an entire identifier beginning at
+   pfile->buffer->cur, and possibly containing extended characters (UCNs
+   and/or UTF-8).  Returns the cpp_hashnode for the identifier on success, or
+   else nullptr, as well as a normalize_state so that normalization warnings
+   may be issued once the token lexing is complete.  */
+
+static scan_id_result
+scan_cur_identifier (cpp_reader *pfile)
+{
+  const auto buffer = pfile->buffer;
+  const auto begin = buffer->cur;
+  scan_id_result result;
+  if (ISIDST (*buffer->cur))
     {
-      /* It is allowed to poison the same identifier twice.  */
-      if ((result->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
-	cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned \"%s\"",
-		   NODE_NAME (result));
-
-      /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
-	 replacement list of a variadic macro.  */
-      if (result == pfile->spec_nodes.n__VA_ARGS__
-	  && !pfile->state.va_args_ok)
-	{
-	  if (CPP_OPTION (pfile, cplusplus))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "__VA_ARGS__ can only appear in the expansion"
-		       " of a C++11 variadic macro");
-	  else
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "__VA_ARGS__ can only appear in the expansion"
-		       " of a C99 variadic macro");
-	}
-
-      /* __VA_OPT__ should only appear in the replacement list of a
-	 variadic macro.  */
-      if (result == pfile->spec_nodes.n__VA_OPT__)
-	maybe_va_opt_error (pfile);
-
-      /* For -Wc++-compat, warn about use of C++ named operators.  */
-      if (result->flags & NODE_WARN_OPERATOR)
-	cpp_warning (pfile, CPP_W_CXX_OPERATOR_NAMES,
-		     "identifier \"%s\" is a special operator name in C++",
-		     NODE_NAME (result));
+      ++buffer->cur;
+      cpp_hashnode *ignore;
+      result.node = lex_identifier (pfile, begin, false, &result.nst, &ignore);
     }
-
+  else if (forms_identifier_p (pfile, true, &result.nst))
+    {
+      /* buffer->cur has been moved already by the call
+	 to forms_identifier_p.  */
+      cpp_hashnode *ignore;
+      result.node = lex_identifier (pfile, begin, true, &result.nst, &ignore);
+    }
   return result;
 }
 
@@ -2365,6 +2386,24 @@ create_literal (cpp_reader *pfile, cpp_token *token, const uchar *base,
   token->val.str.text = cpp_alloc_token_string (pfile, base, len);
 }
 
+/* Like create_literal(), but construct it from two separate strings
+   which are concatenated.  LEN2 may be 0 if no second string is
+   required.  */
+static void
+create_literal2 (cpp_reader *pfile, cpp_token *token, const uchar *base1,
+		 unsigned int len1, const uchar *base2, unsigned int len2,
+		 enum cpp_ttype type)
+{
+  token->type = type;
+  token->val.str.len = len1 + len2;
+  uchar *const dest = _cpp_unaligned_alloc (pfile, len1 + len2 + 1);
+  memcpy (dest, base1, len1);
+  if (len2)
+    memcpy (dest+len1, base2, len2);
+  dest[len1 + len2] = 0;
+  token->val.str.text = dest;
+}
+
 const uchar *
 cpp_alloc_token_string (cpp_reader *pfile,
 			const unsigned char *ptr, unsigned len)
@@ -2403,6 +2442,11 @@ struct lit_accum {
       rpos = NULL;
     return c;
   }
+
+  void create_literal2 (cpp_reader *pfile, cpp_token *token,
+			const uchar *base1, unsigned int len1,
+			const uchar *base2, unsigned int len2,
+			enum cpp_ttype type);
 };
 
 /* Subroutine of lex_raw_string: Append LEN chars from BASE to the buffer
@@ -2445,45 +2489,59 @@ lit_accum::read_begin (cpp_reader *pfile)
   rpos = BUFF_FRONT (last);
 }
 
-/* Returns true if a macro has been defined.
-   This might not work if compile with -save-temps,
-   or preprocess separately from compilation.  */
+/* Helper function to check if a string format macro, say from inttypes.h, is
+   placed touching a string literal, in which case it could be parsed as a C++11
+   user-defined string literal thus breaking the program.  Return TRUE if the
+   UDL should be ignored for now and preserved for potential macro
+   expansion.  */
 
 static bool
-is_macro(cpp_reader *pfile, const uchar *base)
-{
-  const uchar *cur = base;
-  if (! ISIDST (*cur))
-    return false;
-  unsigned int hash = HT_HASHSTEP (0, *cur);
-  ++cur;
-  while (ISIDNUM (*cur))
-    {
-      hash = HT_HASHSTEP (hash, *cur);
-      ++cur;
-    }
-  hash = HT_HASHFINISH (hash, cur - base);
-
-  cpp_hashnode *result = CPP_HASHNODE (ht_lookup_with_hash (pfile->hash_table,
-					base, cur - base, hash, HT_NO_INSERT));
-
-  return result && cpp_macro_p (result);
-}
-
-/* Returns true if a literal suffix does not have the expected form
-   and is defined as a macro.  */
-
-static bool
-is_macro_not_literal_suffix(cpp_reader *pfile, const uchar *base)
+maybe_ignore_udl_macro_suffix (cpp_reader *pfile, location_t src_loc,
+			       const uchar *suffix_begin, cpp_hashnode *node)
 {
   /* User-defined literals outside of namespace std must start with a single
      underscore, so assume anything of that form really is a UDL suffix.
      We don't need to worry about UDLs defined inside namespace std because
      their names are reserved, so cannot be used as macro names in valid
      programs.  */
-  if (base[0] == '_' && base[1] != '_')
+  if ((suffix_begin[0] == '_' && suffix_begin[1] != '_')
+      || !cpp_macro_p (node))
     return false;
-  return is_macro (pfile, base);
+
+  /* Maybe raise a warning here; caller should arrange not to consume
+     the tokens.  */
+  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
+    cpp_warning_with_line (pfile, CPP_W_LITERAL_SUFFIX, src_loc, 0,
+			   "invalid suffix on literal; C++11 requires a space "
+			   "between literal and string macro");
+  return true;
+}
+
+/* Like create_literal2(), but also prepend all the accumulated data from
+   the lit_accum struct.  */
+void
+lit_accum::create_literal2 (cpp_reader *pfile, cpp_token *token,
+			    const uchar *base1, unsigned int len1,
+			    const uchar *base2, unsigned int len2,
+			    enum cpp_ttype type)
+{
+  const unsigned int tot_len = accum + len1 + len2;
+  uchar *dest = _cpp_unaligned_alloc (pfile, tot_len + 1);
+  token->type = type;
+  token->val.str.len = tot_len;
+  token->val.str.text = dest;
+  for (_cpp_buff *buf = first; buf; buf = buf->next)
+    {
+      size_t len = BUFF_FRONT (buf) - buf->base;
+      memcpy (dest, buf->base, len);
+      dest += len;
+    }
+  memcpy (dest, base1, len1);
+  dest += len1;
+  if (len2)
+    memcpy (dest, base2, len2);
+  dest += len2;
+  *dest = '\0';
 }
 
 /* Lexes a raw string.  The stored string contains the spelling,
@@ -2758,26 +2816,25 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 
   if (CPP_OPTION (pfile, user_literals))
     {
-      /* If a string format macro, say from inttypes.h, is placed touching
-	 a string literal it could be parsed as a C++11 user-defined string
-	 literal thus breaking the program.  */
-      if (is_macro_not_literal_suffix (pfile, pos))
-	{
-	  /* Raise a warning, but do not consume subsequent tokens.  */
-	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
-	    cpp_warning_with_line (pfile, CPP_W_LITERAL_SUFFIX,
-				   token->src_loc, 0,
-				   "invalid suffix on literal; C++11 requires "
-				   "a space between literal and string macro");
-	}
-      /* Grab user defined literal suffix.  */
-      else if (ISIDST (*pos))
-	{
-	  type = cpp_userdef_string_add_type (type);
-	  ++pos;
+      const uchar *const suffix_begin = pos;
+      pfile->buffer->cur = pos;
 
-	  while (ISIDNUM (*pos))
-	    ++pos;
+      if (const auto sr = scan_cur_identifier (pfile))
+	{
+	  if (maybe_ignore_udl_macro_suffix (pfile, token->src_loc,
+					     suffix_begin, sr.node))
+	      pfile->buffer->cur = suffix_begin;
+	  else
+	    {
+	      type = cpp_userdef_string_add_type (type);
+	      accum.create_literal2 (pfile, token, base, suffix_begin - base,
+				     NODE_NAME (sr.node), NODE_LEN (sr.node),
+				     type);
+	      if (accum.first)
+		_cpp_release_buff (pfile, accum.first);
+	      warn_about_normalization (pfile, token, &sr.nst, true);
+	      return;
+	    }
 	}
     }
 
@@ -2787,21 +2844,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
     create_literal (pfile, token, base, pos - base, type);
   else
     {
-      size_t extra_len = pos - base;
-      uchar *dest = _cpp_unaligned_alloc (pfile, accum.accum + extra_len + 1);
-
-      token->type = type;
-      token->val.str.len = accum.accum + extra_len;
-      token->val.str.text = dest;
-      for (_cpp_buff *buf = accum.first; buf; buf = buf->next)
-	{
-	  size_t len = BUFF_FRONT (buf) - buf->base;
-	  memcpy (dest, buf->base, len);
-	  dest += len;
-	}
+      accum.create_literal2 (pfile, token, base, pos - base, nullptr, 0, type);
       _cpp_release_buff (pfile, accum.first);
-      memcpy (dest, base, extra_len);
-      dest[extra_len] = '\0';
     }
 }
 
@@ -2908,39 +2952,40 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
     cpp_error (pfile, CPP_DL_PEDWARN, "missing terminating %c character",
 	       (int) terminator);
 
+  pfile->buffer->cur = cur;
+  const uchar *const suffix_begin = cur;
+
   if (CPP_OPTION (pfile, user_literals))
     {
-      /* If a string format macro, say from inttypes.h, is placed touching
-	 a string literal it could be parsed as a C++11 user-defined string
-	 literal thus breaking the program.  */
-      if (is_macro_not_literal_suffix (pfile, cur))
+      if (const auto sr = scan_cur_identifier (pfile))
 	{
-	  /* Raise a warning, but do not consume subsequent tokens.  */
-	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
-	    cpp_warning_with_line (pfile, CPP_W_LITERAL_SUFFIX,
-				   token->src_loc, 0,
-				   "invalid suffix on literal; C++11 requires "
-				   "a space between literal and string macro");
-	}
-      /* Grab user defined literal suffix.  */
-      else if (ISIDST (*cur))
-	{
-	  type = cpp_userdef_char_add_type (type);
-	  type = cpp_userdef_string_add_type (type);
-          ++cur;
-
-	  while (ISIDNUM (*cur))
-	    ++cur;
+	  if (maybe_ignore_udl_macro_suffix (pfile, token->src_loc,
+					     suffix_begin, sr.node))
+	    pfile->buffer->cur = suffix_begin;
+	  else
+	    {
+	      /* Grab user defined literal suffix.  */
+	      type = cpp_userdef_char_add_type (type);
+	      type = cpp_userdef_string_add_type (type);
+	      create_literal2 (pfile, token, base, suffix_begin - base,
+			       NODE_NAME (sr.node), NODE_LEN (sr.node), type);
+	      warn_about_normalization (pfile, token, &sr.nst, true);
+	      return;
+	    }
 	}
     }
   else if (CPP_OPTION (pfile, cpp_warn_cxx11_compat)
-	   && is_macro (pfile, cur)
 	   && !pfile->state.skipping)
-    cpp_warning_with_line (pfile, CPP_W_CXX11_COMPAT,
-			   token->src_loc, 0, "C++11 requires a space "
-			   "between string literal and macro");
+    {
+      const auto sr = scan_cur_identifier (pfile);
+      /* Maybe raise a warning, but do not consume the tokens.  */
+      pfile->buffer->cur = suffix_begin;
+      if (sr && cpp_macro_p (sr.node))
+	cpp_warning_with_line (pfile, CPP_W_CXX11_COMPAT,
+			       token->src_loc, 0, "C++11 requires a space "
+			       "between string literal and macro");
+    }
 
-  pfile->buffer->cur = cur;
   create_literal (pfile, token, base, cur - base, type);
 }
 
@@ -3915,9 +3960,10 @@ _cpp_lex_direct (cpp_reader *pfile)
       result->type = CPP_NAME;
       {
 	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
-	result->val.node.node = lex_identifier (pfile, buffer->cur - 1, false,
-						&nst,
-						&result->val.node.spelling);
+	const auto node = lex_identifier (pfile, buffer->cur - 1, false, &nst,
+					  &result->val.node.spelling);
+	result->val.node.node = node;
+	identifier_diagnostics_on_lex (pfile, node);
 	warn_about_normalization (pfile, result, &nst, true);
       }
 
@@ -4220,8 +4266,10 @@ _cpp_lex_direct (cpp_reader *pfile)
 	if (forms_identifier_p (pfile, true, &nst))
 	  {
 	    result->type = CPP_NAME;
-	    result->val.node.node = lex_identifier (pfile, base, true, &nst,
-						    &result->val.node.spelling);
+	    const auto node = lex_identifier (pfile, base, true, &nst,
+					      &result->val.node.spelling);
+	    result->val.node.node = node;
+	    identifier_diagnostics_on_lex (pfile, node);
 	    warn_about_normalization (pfile, result, &nst, true);
 	    break;
 	  }
@@ -4353,7 +4401,7 @@ cpp_digraph2name (enum cpp_ttype type)
 }
 
 /* Write the spelling of an identifier IDENT, using UCNs, to BUFFER.
-   The buffer must already contain the enough space to hold the
+   The buffer must already contain enough space to hold the
    token's spelling.  Returns a pointer to the character after the
    last character written.  */
 unsigned char *
@@ -4375,7 +4423,7 @@ _cpp_spell_ident_ucns (unsigned char *buffer, cpp_hashnode *ident)
 }
 
 /* Write the spelling of a token TOKEN to BUFFER.  The buffer must
-   already contain the enough space to hold the token's spelling.
+   already contain enough space to hold the token's spelling.
    Returns a pointer to the character after the last character written.
    FORSTRING is true if this is to be the spelling after translation
    phase 1 (with the original spelling of extended identifiers), false

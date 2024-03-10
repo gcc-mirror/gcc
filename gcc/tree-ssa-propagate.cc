@@ -532,6 +532,34 @@ struct prop_stats_d
 
 static struct prop_stats_d prop_stats;
 
+// range_query default methods to drive from a value_of_expr() ranther than
+// range_of_expr.
+
+tree
+substitute_and_fold_engine::value_on_edge (edge, tree expr)
+{
+  return value_of_expr (expr);
+}
+
+tree
+substitute_and_fold_engine::value_of_stmt (gimple *stmt, tree name)
+{
+  if (!name)
+    name = gimple_get_lhs (stmt);
+
+  gcc_checking_assert (!name || name == gimple_get_lhs (stmt));
+
+  if (name)
+    return value_of_expr (name);
+  return NULL_TREE;
+}
+
+bool
+substitute_and_fold_engine::range_of_expr (vrange &, tree, gimple *)
+{
+  return false;
+}
+
 /* Replace USE references in statement STMT with the values stored in
    PROP_VALUE. Return true if at least one reference was replaced.  */
 

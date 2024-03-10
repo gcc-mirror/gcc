@@ -48,6 +48,8 @@ gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 	"" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
 	"-O3 -ftree-vectorize" $CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls/*.\[cS\]]] \
+	"-O3 -ftree-vectorize --param riscv-autovec-preference=scalable" $CFLAGS
 
 set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O3 --param riscv-autovec-lmul=m1} \
@@ -71,6 +73,8 @@ foreach op $AUTOVEC_TEST_OPTS {
     "" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/ternop/*.\[cS\]]] \
     "" "$op"
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/reduc/*.\[cS\]]] \
+    "" "$op"
 }
 
 # widening operation only test on LMUL < 8
@@ -89,6 +93,29 @@ foreach op $AUTOVEC_TEST_OPTS {
 # VLS-VLMAX tests
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls-vlmax/*.\[cS\]]] \
 	"-std=c99 -O3 -ftree-vectorize --param riscv-autovec-preference=fixed-vlmax" $CFLAGS
+
+# gather-scatter tests
+set AUTOVEC_TEST_OPTS [list \
+  {-ftree-vectorize -O3 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} ]
+foreach op $AUTOVEC_TEST_OPTS {
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/gather-scatter/*.\[cS\]]] \
+    "" "$op"
+}
 
 # All done.
 dg-finish

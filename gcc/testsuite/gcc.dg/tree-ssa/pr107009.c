@@ -12,4 +12,4 @@ void saxpy(size_t n)
   foobar (n);
 }
 
-// { dg-final { scan-tree-dump "NONZERO.*fff8" "dom2" } }
+// { dg-final { scan-tree-dump "fff8 VALUE 0x0" "dom2" } }

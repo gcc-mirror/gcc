@@ -773,8 +773,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       vector(const vector& __x)
       : _Base(_Bit_alloc_traits::_S_select_on_copy(__x._M_get_Bit_allocator()))
       {
+	const_iterator __xbegin = __x.begin(), __xend = __x.end();
 	_M_initialize(__x.size());
-	_M_copy_aligned(__x.begin(), __x.end(), begin());
+	_M_copy_aligned(__xbegin, __xend, begin());
       }
 
 #if __cplusplus >= 201103L

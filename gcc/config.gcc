@@ -446,7 +446,8 @@ i[34567]86-*-* | x86_64-*-*)
 		       mwaitintrin.h avx512fp16intrin.h avx512fp16vlintrin.h
 		       avxifmaintrin.h avxvnniint8intrin.h avxneconvertintrin.h
 		       cmpccxaddintrin.h amxfp16intrin.h prfchiintrin.h
-		       raointintrin.h amxcomplexintrin.h"
+		       raointintrin.h amxcomplexintrin.h avxvnniint16intrin.h
+		       sm3intrin.h sha512intrin.h sm4intrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -703,7 +704,8 @@ silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
 skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake \
 sapphirerapids alderlake rocketlake eden-x2 nano nano-1000 nano-2000 nano-3000 \
 nano-x2 eden-x4 nano-x4 lujiazui x86-64 x86-64-v2 x86-64-v3 x86-64-v4 \
-sierraforest graniterapids grandridge native"
+sierraforest graniterapids graniterapids-d grandridge arrowlake arrowlake-s \
+native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -1636,8 +1638,8 @@ bpf-*-*)
         use_collect2=no
         extra_headers="bpf-helpers.h"
         use_gcc_stdint=provide
-        extra_objs="coreout.o"
-        target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/coreout.cc"
+        extra_objs="coreout.o core-builtins.o"
+        target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/coreout.cc \$(srcdir)/config/bpf/core-builtins.cc"
         ;;
 cris-*-elf | cris-*-none)
 	tm_file="elfos.h newlib-stdint.h ${tm_file}"
@@ -3087,7 +3089,7 @@ powerpc*-wrs-vxworks7r*)
 powerpc-wrs-vxworks*)
 	tm_file="${tm_file} elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
-	extra_options="${extra_options} rs6000/sysv4.opt"
+	extra_options="${extra_options} rs6000/sysv4.opt vxworks-smp.opt"
 	extra_headers="${extra_headers} ppc-asm.h"
 	case ${target} in
           *-vxworksmils*)

@@ -88,12 +88,14 @@ main ()
   s.foo (x, y);
   if (x != 1024 || s.s != 2051 || s.t != 2054)
     abort ();
+#pragma GCC novector
   for (int i = 0; i < 1025; ++i)
     if (a[i] != 2 * i)
       abort ();
   s.bar (x, y);
   if (x != 2049 || s.s != 4101 || s.t != 4104)
     abort ();
+#pragma GCC novector
   for (int i = 0; i < 1025; ++i)
     if (a[i] != 4 * i)
       abort ();
@@ -102,12 +104,14 @@ main ()
   s.baz (x, y);
   if (x != 1024 || s.s != 2051 || s.t != 2054)
     abort ();
+#pragma GCC novector
   for (int i = 0; i < 1025; ++i)
     if (a[i] != 2 * i)
       abort ();
   s.qux (x, y);
   if (x != 2049 || s.s != 4101 || s.t != 4104)
     abort ();
+#pragma GCC novector
   for (int i = 0; i < 1025; ++i)
     if (a[i] != 4 * i)
       abort ();

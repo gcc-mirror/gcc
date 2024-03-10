@@ -291,6 +291,9 @@ DEF_RVV_FUNCTION (vfsub, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfrsub, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfadd_frm, alu_frm, full_preds, f_vvv_ops)
 DEF_RVV_FUNCTION (vfadd_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfsub_frm, alu_frm, full_preds, f_vvv_ops)
+DEF_RVV_FUNCTION (vfsub_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfrsub_frm, alu_frm, full_preds, f_vvf_ops)
 
 // 13.3. Vector Widening Floating-Point Add/Subtract Instructions
 DEF_RVV_FUNCTION (vfwadd, widen_alu, full_preds, f_wvv_ops)
@@ -301,6 +304,14 @@ DEF_RVV_FUNCTION (vfwadd, widen_alu, full_preds, f_wwv_ops)
 DEF_RVV_FUNCTION (vfwadd, widen_alu, full_preds, f_wwf_ops)
 DEF_RVV_FUNCTION (vfwsub, widen_alu, full_preds, f_wwv_ops)
 DEF_RVV_FUNCTION (vfwsub, widen_alu, full_preds, f_wwf_ops)
+DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wvv_ops)
+DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wvf_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wvv_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wvf_ops)
+DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wwv_ops)
+DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wwf_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wwv_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wwf_ops)
 
 // 13.4. Vector Single-Width Floating-Point Multiply/Divide Instructions
 DEF_RVV_FUNCTION (vfmul, alu, full_preds, f_vvv_ops)
@@ -308,10 +319,17 @@ DEF_RVV_FUNCTION (vfmul, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfdiv, alu, full_preds, f_vvv_ops)
 DEF_RVV_FUNCTION (vfdiv, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfrdiv, alu, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfmul_frm, alu_frm, full_preds, f_vvv_ops)
+DEF_RVV_FUNCTION (vfmul_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfdiv_frm, alu_frm, full_preds, f_vvv_ops)
+DEF_RVV_FUNCTION (vfdiv_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfrdiv_frm, alu_frm, full_preds, f_vvf_ops)
 
 // 13.5. Vector Widening Floating-Point Multiply
 DEF_RVV_FUNCTION (vfwmul, alu, full_preds, f_wvv_ops)
 DEF_RVV_FUNCTION (vfwmul, alu, full_preds, f_wvf_ops)
+DEF_RVV_FUNCTION (vfwmul_frm, alu_frm, full_preds, f_wvv_ops)
+DEF_RVV_FUNCTION (vfwmul_frm, alu_frm, full_preds, f_wvf_ops)
 
 // 13.6. Vector Single-Width Floating-Point Fused Multiply-Add Instructions
 DEF_RVV_FUNCTION (vfmacc, alu, full_preds, f_vvvv_ops)

@@ -7,7 +7,7 @@ constexpr int& impl(const int (&array)[10], int index) {
 
 struct A {
   constexpr int& operator[](int i) { return impl(elems, i); }
-  const int elems[10];
+  const int elems[10]; // { dg-message "originally declared" }
 };
 
 constexpr bool
@@ -19,4 +19,3 @@ f()
 }
 
 constexpr bool b = f(); // { dg-message "in .constexpr. expansion of " }
-// { dg-message "originally declared" "" { target *-*-* } .-1 }

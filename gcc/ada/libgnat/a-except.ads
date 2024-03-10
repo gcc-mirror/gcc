@@ -120,7 +120,7 @@ package Ada.Exceptions is
 
    --  Ada 2005 (AI-438): The language revision introduces the following
    --  subprograms and attribute definitions. We do not provide them
-   --  explicitly. instead, the corresponding stream attributes are made
+   --  explicitly. Instead, the corresponding stream attributes are made
    --  available through a pragma Stream_Convert in the private part.
 
    --  procedure Read_Exception_Occurrence
@@ -163,6 +163,14 @@ private
 
    Null_Id : constant Exception_Id := null;
 
+   pragma Machine_Attribute (Raise_Exception, "expected_throw");
+   pragma Machine_Attribute (Reraise_Occurrence, "expected_throw");
+   --  Tell the compiler that an exception is likely after calling
+   --  these subprograms. This could eventually be used for hot/cold
+   --  partitioning. For now, this only enables the control flow
+   --  redundancy to avoid duplicating a check before the No_Return
+   --  call and in the exception handler for the call.
+
    -------------------------
    -- Private Subprograms --
    -------------------------
@@ -177,6 +185,7 @@ private
 
    procedure Raise_Exception_Always (E : Exception_Id; Message : String := "");
    pragma No_Return (Raise_Exception_Always);
+   pragma Machine_Attribute (Raise_Exception_Always, "expected_throw");
    pragma Export (Ada, Raise_Exception_Always, "__gnat_raise_exception");
    --  This differs from Raise_Exception only in that the caller has determined
    --  that for sure the parameter E is not null, and that therefore no check
@@ -195,6 +204,9 @@ private
            "__gnat_raise_from_controlled_operation");
    --  Raise Program_Error, providing information about X (an exception raised
    --  during a controlled operation) in the exception message.
+   pragma Machine_Attribute (Raise_From_Controlled_Operation,
+                             "expected_throw");
+   --  Mark it like internal exception-raising subprograms
 
    procedure Reraise_Library_Exception_If_Any;
    pragma Export
@@ -205,6 +217,7 @@ private
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);
+   pragma Machine_Attribute (Reraise_Occurrence_Always, "expected_throw");
    --  This differs from Raise_Occurrence only in that the caller guarantees
    --  that for sure the parameter X is not the null occurrence, and that
    --  therefore this procedure cannot return. The expander uses this routine
@@ -212,6 +225,7 @@ private
 
    procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_No_Defer);
+   pragma Machine_Attribute (Reraise_Occurrence_No_Defer, "expected_throw");
    --  Exactly like Reraise_Occurrence, except that abort is not deferred
    --  before the call and the parameter X is known not to be the null
    --  occurrence. This is used in generated code when it is known that abort

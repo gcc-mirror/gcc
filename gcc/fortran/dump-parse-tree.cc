@@ -1497,6 +1497,29 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_LINEAR_UVAL: fputs ("uval(", dumpfile); break;
 	  default: break;
 	  }
+      else if (list_type == OMP_LIST_USES_ALLOCATORS)
+	{
+	  if (n->u.memspace_sym)
+	    {
+	      fputs ("memspace(", dumpfile);
+	      fputs (n->sym->name, dumpfile);
+	      fputc (')', dumpfile);
+	    }
+	  if (n->u.memspace_sym && n->u2.traits_sym)
+	    fputc (',', dumpfile);
+	  if (n->u2.traits_sym)
+	    {
+	      fputs ("traits(", dumpfile);
+	      fputs (n->u2.traits_sym->name, dumpfile);
+	      fputc (')', dumpfile);
+	    }
+	  if (n->u.memspace_sym || n->u2.traits_sym)
+	    fputc (':', dumpfile);
+	  fputs (n->sym->name, dumpfile);
+	  if (n->next)
+	    fputs (", ", dumpfile);
+	  continue;
+	}
       fprintf (dumpfile, "%s", n->sym ? n->sym->name : "omp_all_memory");
       if (list_type == OMP_LIST_LINEAR && n->u.linear.op != OMP_LINEAR_DEFAULT)
 	fputc (')', dumpfile);
@@ -1799,6 +1822,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_ALLOCATE: type = "ALLOCATE"; break;
 	  case OMP_LIST_SCAN_IN: type = "INCLUSIVE"; break;
 	  case OMP_LIST_SCAN_EX: type = "EXCLUSIVE"; break;
+	  case OMP_LIST_USES_ALLOCATORS: type = "USES_ALLOCATORS"; break;
 	  default:
 	    gcc_unreachable ();
 	  }

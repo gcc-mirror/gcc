@@ -23,6 +23,7 @@ __attribute__ ((noinline)) int main1 (short X)
   }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (a[i] != (unsigned char)myX || b[i] != myX || c[i] != (unsigned int)myX++)

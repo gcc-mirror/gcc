@@ -34,6 +34,12 @@ subprograms.
      pragma Machine_Attribute (Bar, "zero_call_used_regs", "all");
      --  Before returning, Bar scrubs all call-clobbered registers.
 
+     function Baz return Integer;
+     pragma Machine_Attribute (Bar, "zero_call_used_regs", "leafy");
+     --  Before returning, Bar scrubs call-clobbered registers, either
+     --  those it uses itself, if it can be identified as a leaf
+     --  function, or all of them otherwise.
+
 
 For usage and more details on the command-line option, on the
 ``zero_call_used_regs`` attribute, and on their use with other
@@ -363,6 +369,11 @@ basic blocks take note as control flows through them, and, before
 returning, subprograms verify that the taken notes are consistent with
 the control-flow graph.
 
+The performance impact of verification on leaf subprograms can be much
+higher, while the averted risks are much lower on them.
+Instrumentation can be disabled for leaf subprograms with
+:switch:`-fhardcfr-skip-leaf`.
+
 Functions with too many basic blocks, or with multiple return points,
 call a run-time function to perform the verification.  Other functions
 perform the verification inline before returning.
@@ -487,17 +498,20 @@ gets modified as follows:
    end;
 
 
-Verification may also be performed before No_Return calls, whether
-only nothrow ones, with
-:switch:`-fhardcfr-check-noreturn-calls=nothrow`, or all of them, with
-:switch:`-fhardcfr-check-noreturn-calls=always`.  The default is
-:switch:`-fhardcfr-check-noreturn-calls=never` for this feature, that
-disables checking before No_Return calls.
+Verification may also be performed before No_Return calls, whether all
+of them, with :switch:`-fhardcfr-check-noreturn-calls=always`; all but
+internal subprograms involved in exception-raising or -reraising or
+subprograms explicitly marked with both :samp:`No_Return` and
+:samp:`Machine_Attribute` :samp:`expected_throw` pragmas, with
+:switch:`-fhardcfr-check-noreturn-calls=no-xthrow` (default); only
+nothrow ones, with :switch:`-fhardcfr-check-noreturn-calls=nothrow`;
+or none, with :switch:`-fhardcfr-check-noreturn-calls=never`.
 
 When a No_Return call returns control to its caller through an
 exception, verification may have already been performed before the
-call, if :switch:`-fhardcfr-check-noreturn-calls=always` is in effect.
-The compiler arranges for already-checked No_Return calls without a
+call, if :switch:`-fhardcfr-check-noreturn-calls=always` or
+:switch:`-fhardcfr-check-noreturn-calls=no-xthrow` is in effect.  The
+compiler arranges for already-checked No_Return calls without a
 preexisting handler to bypass the implicitly-added cleanup handler and
 thus the redundant check, but a local exception or cleanup handler, if
 present, will modify the set of visited blocks, and checking will take

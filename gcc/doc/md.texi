@@ -5040,14 +5040,14 @@ operand 5.  Bit @var{i} of the mask is set if element @var{i}
 of the result should be loaded from memory and clear if element @var{i}
 of the result should be set to zero.
 
-@cindex @code{len_mask_gather_load@var{m}@var{n}} instruction pattern
-@item @samp{len_mask_gather_load@var{m}@var{n}}
-Like @samp{gather_load@var{m}@var{n}}, but takes an extra length operand (operand 5),
-a bias operand (operand 6) as well as a mask operand (operand 7).  Similar to len_maskload,
-the instruction loads at most (operand 5 + operand 6) elements from memory.
+@cindex @code{mask_len_gather_load@var{m}@var{n}} instruction pattern
+@item @samp{mask_len_gather_load@var{m}@var{n}}
+Like @samp{gather_load@var{m}@var{n}}, but takes an extra mask operand (operand 5),
+a len operand (operand 6) as well as a bias operand (operand 7).  Similar to mask_len_load,
+the instruction loads at most (operand 6 + operand 7) elements from memory.
 Bit @var{i} of the mask is set if element @var{i} of the result should
 be loaded from memory and clear if element @var{i} of the result should be undefined.
-Mask elements @var{i} with @var{i} > (operand 5 + operand 6) are ignored.
+Mask elements @var{i} with @var{i} > (operand 6 + operand 7) are ignored.
 
 @cindex @code{scatter_store@var{m}@var{n}} instruction pattern
 @item @samp{scatter_store@var{m}@var{n}}
@@ -5078,18 +5078,20 @@ Like @samp{scatter_store@var{m}@var{n}}, but takes an extra mask operand as
 operand 5.  Bit @var{i} of the mask is set if element @var{i}
 of the result should be stored to memory.
 
-@cindex @code{len_mask_scatter_store@var{m}@var{n}} instruction pattern
-@item @samp{len_mask_scatter_store@var{m}@var{n}}
-Like @samp{scatter_store@var{m}@var{n}}, but takes an extra length operand (operand 5),
-a bias operand (operand 6) as well as a mask operand (operand 7).  The instruction stores
-at most (operand 5 + operand 6) elements of (operand 4) to memory.
+@cindex @code{mask_len_scatter_store@var{m}@var{n}} instruction pattern
+@item @samp{mask_len_scatter_store@var{m}@var{n}}
+Like @samp{scatter_store@var{m}@var{n}}, but takes an extra mask operand (operand 5),
+a len operand (operand 6) as well as a bias operand (operand 7).  The instruction stores
+at most (operand 6 + operand 7) elements of (operand 4) to memory.
 Bit @var{i} of the mask is set if element @var{i} of (operand 4) should be stored.
-Mask elements @var{i} with @var{i} > (operand 5 + operand 6) are ignored.
+Mask elements @var{i} with @var{i} > (operand 6 + operand 7) are ignored.
 
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
 Set given field in the vector value.  Operand 0 is the vector to modify,
 operand 1 is new value of field and operand 2 specify the field index.
+
+This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{vec_extract@var{m}@var{n}} instruction pattern
 @item @samp{vec_extract@var{m}@var{n}}
@@ -5098,7 +5100,10 @@ specify field index and operand 0 place to store value into.  The
 @var{n} mode is the mode of the field or vector of fields that should be
 extracted, should be either element mode of the vector mode @var{m}, or
 a vector mode with the same element mode and smaller number of elements.
-If @var{n} is a vector mode, the index is counted in units of that mode.
+If @var{n} is a vector mode the index is counted in multiples of
+mode @var{n}.
+
+This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{vec_init@var{m}@var{n}} instruction pattern
 @item @samp{vec_init@var{m}@var{n}}
@@ -5316,18 +5321,18 @@ of @code{QI} elements.
 
 This pattern is not allowed to @code{FAIL}.
 
-@cindex @code{len_maskload@var{m}@var{n}} instruction pattern
-@item @samp{len_maskload@var{m}@var{n}}
+@cindex @code{mask_len_load@var{m}@var{n}} instruction pattern
+@item @samp{mask_len_load@var{m}@var{n}}
 Perform a masked load from the memory location pointed to by operand 1
-into register operand 0.  (operand 2 + operand 3) elements are loaded from
+into register operand 0.  (operand 3 + operand 4) elements are loaded from
 memory and other elements in operand 0 are set to undefined values.
 This is a combination of len_load and maskload.
-Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 3
 has whichever integer mode the target prefers.  A mask is specified in
-operand 4 which must be of type @var{n}.  The mask has lower precedence than
+operand 2 which must be of type @var{n}.  The mask has lower precedence than
 the length and is itself subject to length masking,
-i.e. only mask indices < (operand 2 + operand 3) are used.
-Operand 3 conceptually has mode @code{QI}.
+i.e. only mask indices < (operand 3 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
 
 Operand 2 can be a variable or a constant amount.  Operand 4 specifies a
 constant bias: it is either a constant 0 or a constant -1.  The predicate on
@@ -5343,17 +5348,17 @@ of @code{QI} elements.
 
 This pattern is not allowed to @code{FAIL}.
 
-@cindex @code{len_maskstore@var{m}@var{n}} instruction pattern
-@item @samp{len_maskstore@var{m}@var{n}}
+@cindex @code{mask_len_store@var{m}@var{n}} instruction pattern
+@item @samp{mask_len_store@var{m}@var{n}}
 Perform a masked store from vector register operand 1 into memory operand 0.
-(operand 2 + operand 3) elements are stored to memory
+(operand 3 + operand 4) elements are stored to memory
 and leave the other elements of operand 0 unchanged.
 This is a combination of len_store and maskstore.
-Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2 has whichever
-integer mode the target prefers.  A mask is specified in operand 4 which must be
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 3 has whichever
+integer mode the target prefers.  A mask is specified in operand 2 which must be
 of type @var{n}.  The mask has lower precedence than the length and is itself subject to
-length masking, i.e. only mask indices < (operand 2 + operand 3) are used.
-Operand 3 conceptually has mode @code{QI}.
+length masking, i.e. only mask indices < (operand 3 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
 
 Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
 constant bias: it is either a constant 0 or a constant -1.  The predicate on
@@ -5609,6 +5614,19 @@ no reassociation.
 @item @code{mask_fold_left_plus_@var{m}}
 Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
 (operand 3) that specifies which elements of the source vector should be added.
+
+@cindex @code{mask_len_fold_left_plus_@var{m}} instruction pattern
+@item @code{mask_len_fold_left_plus_@var{m}}
+Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
+(operand 3), len operand (operand 4) and bias operand (operand 5) that
+performs following operations strictly in-order (no reassociation):
+
+@smallexample
+operand0 = operand1;
+for (i = 0; i < LEN + BIAS; i++)
+  if (operand3[i])
+    operand0 += operand2[i];
+@end smallexample
 
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
@@ -7226,6 +7244,86 @@ takes 3 operands rather than two.  For example, the vector form of
 
 @smallexample
 for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
+@end smallexample
+
+@cindex @code{cond_len_add@var{mode}} instruction pattern
+@cindex @code{cond_len_sub@var{mode}} instruction pattern
+@cindex @code{cond_len_mul@var{mode}} instruction pattern
+@cindex @code{cond_len_div@var{mode}} instruction pattern
+@cindex @code{cond_len_udiv@var{mode}} instruction pattern
+@cindex @code{cond_len_mod@var{mode}} instruction pattern
+@cindex @code{cond_len_umod@var{mode}} instruction pattern
+@cindex @code{cond_len_and@var{mode}} instruction pattern
+@cindex @code{cond_len_ior@var{mode}} instruction pattern
+@cindex @code{cond_len_xor@var{mode}} instruction pattern
+@cindex @code{cond_len_smin@var{mode}} instruction pattern
+@cindex @code{cond_len_smax@var{mode}} instruction pattern
+@cindex @code{cond_len_umin@var{mode}} instruction pattern
+@cindex @code{cond_len_umax@var{mode}} instruction pattern
+@cindex @code{cond_len_fmin@var{mode}} instruction pattern
+@cindex @code{cond_len_fmax@var{mode}} instruction pattern
+@cindex @code{cond_len_ashl@var{mode}} instruction pattern
+@cindex @code{cond_len_ashr@var{mode}} instruction pattern
+@cindex @code{cond_len_lshr@var{mode}} instruction pattern
+@item @samp{cond_len_add@var{mode}}
+@itemx @samp{cond_len_sub@var{mode}}
+@itemx @samp{cond_len_mul@var{mode}}
+@itemx @samp{cond_len_div@var{mode}}
+@itemx @samp{cond_len_udiv@var{mode}}
+@itemx @samp{cond_len_mod@var{mode}}
+@itemx @samp{cond_len_umod@var{mode}}
+@itemx @samp{cond_len_and@var{mode}}
+@itemx @samp{cond_len_ior@var{mode}}
+@itemx @samp{cond_len_xor@var{mode}}
+@itemx @samp{cond_len_smin@var{mode}}
+@itemx @samp{cond_len_smax@var{mode}}
+@itemx @samp{cond_len_umin@var{mode}}
+@itemx @samp{cond_len_umax@var{mode}}
+@itemx @samp{cond_len_fmin@var{mode}}
+@itemx @samp{cond_len_fmax@var{mode}}
+@itemx @samp{cond_len_ashl@var{mode}}
+@itemx @samp{cond_len_ashr@var{mode}}
+@itemx @samp{cond_len_lshr@var{mode}}
+When operand 1 is true and element index < operand 5 + operand 6, perform an operation on operands 2 and 3 and
+store the result in operand 0, otherwise store operand 4 in operand 0.
+The operation only works for the operands are vectors.
+
+@smallexample
+for (i = 0; i < ops[5] + ops[6]; i++)
+  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op4[i];
+@end smallexample
+
+where, for example, @var{op} is @code{+} for @samp{cond_len_add@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op3[i]}
+are not interpreted if @samp{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.  Operand 5 has whichever
+integer mode the target prefers.
+
+@samp{cond_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}3}.  As an exception, the vector forms
+of shifts correspond to patterns like @code{vashl@var{mode}3} rather
+than patterns like @code{ashl@var{mode}3}.
+
+@cindex @code{cond_len_fma@var{mode}} instruction pattern
+@cindex @code{cond_len_fms@var{mode}} instruction pattern
+@cindex @code{cond_len_fnma@var{mode}} instruction pattern
+@cindex @code{cond_len_fnms@var{mode}} instruction pattern
+@item @samp{cond_len_fma@var{mode}}
+@itemx @samp{cond_len_fms@var{mode}}
+@itemx @samp{cond_len_fnma@var{mode}}
+@itemx @samp{cond_len_fnms@var{mode}}
+Like @samp{cond_len_add@var{m}}, except that the conditional operation
+takes 3 operands rather than two.  For example, the vector form of
+@samp{cond_len_fma@var{mode}} is equivalent to:
+
+@smallexample
+for (i = 0; i < ops[6] + ops[7]; i++)
   op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
 @end smallexample
 

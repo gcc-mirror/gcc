@@ -265,6 +265,10 @@ package body Atree is
       --  True if a node/entity of the given Kind has the given Field.
       --  Always True if assertions are disabled.
 
+      function Field_Present
+        (N : Node_Id; Field : Node_Or_Entity_Field) return Boolean;
+      --  Same for a node, which could be an entity
+
    end Field_Checking;
 
    package body Field_Checking is
@@ -364,6 +368,17 @@ package body Atree is
          end if;
 
          return Entity_Fields_Present (Kind) (Field);
+      end Field_Present;
+
+      function Field_Present
+        (N : Node_Id; Field : Node_Or_Entity_Field) return Boolean is
+      begin
+         case Field is
+            when Node_Field =>
+               return Field_Present (Nkind (N), Field);
+            when Entity_Field =>
+               return Field_Present (Ekind (N), Field);
+         end case;
       end Field_Present;
 
    end Field_Checking;
@@ -885,6 +900,10 @@ package body Atree is
    function Get_Field_Value
      (N : Node_Id; Field : Node_Or_Entity_Field) return Field_Size_32_Bit
    is
+      pragma Assert
+        (if Field /= F_Scope_Depth_Value then -- ???Temporarily disable check
+           Field_Checking.Field_Present (N, Field));
+      --  Assert partially disabled because it fails in rare cases
       Desc : Field_Descriptor renames Field_Descriptors (Field);
       NN : constant Node_Or_Entity_Id := Node_To_Fetch_From (N, Field);
 
@@ -905,6 +924,7 @@ package body Atree is
    procedure Set_Field_Value
      (N : Node_Id; Field : Node_Or_Entity_Field; Val : Field_Size_32_Bit)
    is
+      pragma Assert (Field_Checking.Field_Present (N, Field));
       Desc : Field_Descriptor renames Field_Descriptors (Field);
 
    begin

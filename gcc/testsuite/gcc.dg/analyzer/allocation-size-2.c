@@ -19,8 +19,7 @@ void test_2 (int32_t n)
   free (ptr);
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } malloc2 } */
-  /* { dg-message "'\[a-z0-9\\*\\(\\)\\s\]*' bytes" "note" { target *-*-* } malloc2 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4" "note" { target *-*-* } malloc2 } */
+  /* { dg-message "allocated '\[a-z0-9\\*\\(\\)\\s\]*' bytes and assigned to 'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4" "note" { target *-*-* } malloc2 } */
 }
 
 void test_3 (int32_t n)

@@ -20,6 +20,15 @@ typedef double vnx2df __attribute__((vector_size (16)));
     return v;					\
   }
 
+#define VEC_SET_VAR1(S,V)			\
+  V						\
+  __attribute__((noipa))			\
+  vec_set_var_##V (V v, int8_t idx, S s)	\
+  {						\
+    v[idx] = s;					\
+    return v;					\
+  }						\
+
 #define TEST_ALL1(T)				\
   T (_Float16, vnx8hf, 0)			\
   T (_Float16, vnx8hf, 3)			\
@@ -43,20 +52,31 @@ typedef double vnx2df __attribute__((vector_size (16)));
   T (int8_t, vnx16qi, 11)			\
   T (int8_t, vnx16qi, 15)			\
 
+#define TEST_ALL_VAR1(T)			\
+  T (_Float16, vnx8hf)				\
+  T (float, vnx4sf)				\
+  T (double, vnx2df)				\
+  T (int64_t, vnx2di)				\
+  T (int32_t, vnx4si)				\
+  T (int16_t, vnx8hi)				\
+  T (int8_t, vnx16qi)				\
+
 TEST_ALL1 (VEC_SET)
+TEST_ALL_VAR1 (VEC_SET_VAR1)
 
 /* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m1,\s*ta,\s*ma} 1 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m1,\s*tu,\s*ma} 4 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m1,\s*tu,\s*ma} 5 } } */
 /* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m1,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m1,\s*tu,\s*ma} 4 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m1,\s*tu,\s*ma} 6 } } */
 /* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m1,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m1,\s*tu,\s*ma} 4 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m1,\s*tu,\s*ma} 6 } } */
 /* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m1,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m1,\s*tu,\s*ma} 2 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m1,\s*tu,\s*ma} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tvmv.v.x} 9 } } */
-/* { dg-final { scan-assembler-times {\tvfmv.v.f} 5 } } */
+/* { dg-final { scan-assembler-times {\tvmv.v.x} 13 } } */
+/* { dg-final { scan-assembler-times {\tvfmv.v.f} 8 } } */
 /* { dg-final { scan-assembler-times {\tvslideup.vi} 14 } } */
+/* { dg-final { scan-assembler-times {\tvslideup.vx} 7 } } */
 
 /* { dg-final { scan-assembler-times {\tvfmv.s.f} 3 } } */
 /* { dg-final { scan-assembler-times {\tvmv.s.x} 4 } } */

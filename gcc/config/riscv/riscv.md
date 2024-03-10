@@ -172,44 +172,59 @@
 
 ;; Main data type used by the insn
 (define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,HF,SF,DF,TF,
-  VNx1BI,VNx2BI,VNx4BI,VNx8BI,VNx16BI,VNx32BI,VNx64BI,VNx128BI,
-  VNx1QI,VNx2QI,VNx4QI,VNx8QI,VNx16QI,VNx32QI,VNx64QI,VNx128QI,
-  VNx1HI,VNx2HI,VNx4HI,VNx8HI,VNx16HI,VNx32HI,VNx64HI,
-  VNx1SI,VNx2SI,VNx4SI,VNx8SI,VNx16SI,VNx32SI,
-  VNx1DI,VNx2DI,VNx4DI,VNx8DI,VNx16DI,
-  VNx1HF,VNx2HF,VNx4HF,VNx8HF,VNx16HF,VNx32HF,VNx64HF,
-  VNx1SF,VNx2SF,VNx4SF,VNx8SF,VNx16SF,VNx32SF,
-  VNx1DF,VNx2DF,VNx4DF,VNx8DF,VNx16DF,
-  VNx2x64QI,VNx2x32QI,VNx3x32QI,VNx4x32QI,
-  VNx2x16QI,VNx3x16QI,VNx4x16QI,VNx5x16QI,VNx6x16QI,VNx7x16QI,VNx8x16QI,
-  VNx2x8QI,VNx3x8QI,VNx4x8QI,VNx5x8QI,VNx6x8QI,VNx7x8QI,VNx8x8QI,
-  VNx2x4QI,VNx3x4QI,VNx4x4QI,VNx5x4QI,VNx6x4QI,VNx7x4QI,VNx8x4QI,
-  VNx2x2QI,VNx3x2QI,VNx4x2QI,VNx5x2QI,VNx6x2QI,VNx7x2QI,VNx8x2QI,
-  VNx2x1QI,VNx3x1QI,VNx4x1QI,VNx5x1QI,VNx6x1QI,VNx7x1QI,VNx8x1QI,
-  VNx2x32HI,VNx2x16HI,VNx3x16HI,VNx4x16HI,
-  VNx2x8HI,VNx3x8HI,VNx4x8HI,VNx5x8HI,VNx6x8HI,VNx7x8HI,VNx8x8HI,
-  VNx2x4HI,VNx3x4HI,VNx4x4HI,VNx5x4HI,VNx6x4HI,VNx7x4HI,VNx8x4HI,
-  VNx2x2HI,VNx3x2HI,VNx4x2HI,VNx5x2HI,VNx6x2HI,VNx7x2HI,VNx8x2HI,
-  VNx2x1HI,VNx3x1HI,VNx4x1HI,VNx5x1HI,VNx6x1HI,VNx7x1HI,VNx8x1HI,
-  VNx2x32HF,VNx2x16HF,VNx3x16HF,VNx4x16HF,
-  VNx2x8HF,VNx3x8HF,VNx4x8HF,VNx5x8HF,VNx6x8HF,VNx7x8HF,VNx8x8HF,
-  VNx2x4HF,VNx3x4HF,VNx4x4HF,VNx5x4HF,VNx6x4HF,VNx7x4HF,VNx8x4HF,
-  VNx2x2HF,VNx3x2HF,VNx4x2HF,VNx5x2HF,VNx6x2HF,VNx7x2HF,VNx8x2HF,
-  VNx2x1HF,VNx3x1HF,VNx4x1HF,VNx5x1HF,VNx6x1HF,VNx7x1HF,VNx8x1HF,
-  VNx2x16SI,VNx2x8SI,VNx3x8SI,VNx4x8SI,
-  VNx2x4SI,VNx3x4SI,VNx4x4SI,VNx5x4SI,VNx6x4SI,VNx7x4SI,VNx8x4SI,
-  VNx2x2SI,VNx3x2SI,VNx4x2SI,VNx5x2SI,VNx6x2SI,VNx7x2SI,VNx8x2SI,
-  VNx2x1SI,VNx3x1SI,VNx4x1SI,VNx5x1SI,VNx6x1SI,VNx7x1SI,VNx8x1SI,
-  VNx2x16SF,VNx2x8SF,VNx3x8SF,VNx4x8SF,
-  VNx2x4SF,VNx3x4SF,VNx4x4SF,VNx5x4SF,VNx6x4SF,VNx7x4SF,VNx8x4SF,
-  VNx2x2SF,VNx3x2SF,VNx4x2SF,VNx5x2SF,VNx6x2SF,VNx7x2SF,VNx8x2SF,
-  VNx2x1SF,VNx3x1SF,VNx4x1SF,VNx5x1SF,VNx6x1SF,VNx7x1SF,VNx8x1SF,
-  VNx2x8DI,VNx2x4DI,VNx3x4DI,VNx4x4DI,
-  VNx2x2DI,VNx3x2DI,VNx4x2DI,VNx5x2DI,VNx6x2DI,VNx7x2DI,VNx8x2DI,
-  VNx2x1DI,VNx3x1DI,VNx4x1DI,VNx5x1DI,VNx6x1DI,VNx7x1DI,VNx8x1DI,
-  VNx2x8DF,VNx2x4DF,VNx3x4DF,VNx4x4DF,
-  VNx2x2DF,VNx3x2DF,VNx4x2DF,VNx5x2DF,VNx6x2DF,VNx7x2DF,VNx8x2DF,
-  VNx2x1DF,VNx3x1DF,VNx4x1DF,VNx5x1DF,VNx6x1DF,VNx7x1DF,VNx8x1DF"
+  RVVMF64BI,RVVMF32BI,RVVMF16BI,RVVMF8BI,RVVMF4BI,RVVMF2BI,RVVM1BI,
+  RVVM8QI,RVVM4QI,RVVM2QI,RVVM1QI,RVVMF2QI,RVVMF4QI,RVVMF8QI,
+  RVVM8HI,RVVM4HI,RVVM2HI,RVVM1HI,RVVMF2HI,RVVMF4HI,
+  RVVM8HF,RVVM4HF,RVVM2HF,RVVM1HF,RVVMF2HF,RVVMF4HF,
+  RVVM8SI,RVVM4SI,RVVM2SI,RVVM1SI,RVVMF2SI,
+  RVVM8SF,RVVM4SF,RVVM2SF,RVVM1SF,RVVMF2SF,
+  RVVM8DI,RVVM4DI,RVVM2DI,RVVM1DI,
+  RVVM8DF,RVVM4DF,RVVM2DF,RVVM1DF,
+  RVVM1x8QI,RVVMF2x8QI,RVVMF4x8QI,RVVMF8x8QI,
+  RVVM1x7QI,RVVMF2x7QI,RVVMF4x7QI,RVVMF8x7QI,
+  RVVM1x6QI,RVVMF2x6QI,RVVMF4x6QI,RVVMF8x6QI,
+  RVVM1x5QI,RVVMF2x5QI,RVVMF4x5QI,RVVMF8x5QI,
+  RVVM2x4QI,RVVM1x4QI,RVVMF2x4QI,RVVMF4x4QI,RVVMF8x4QI,
+  RVVM2x3QI,RVVM1x3QI,RVVMF2x3QI,RVVMF4x3QI,RVVMF8x3QI,
+  RVVM4x2QI,RVVM2x2QI,RVVM1x2QI,RVVMF2x2QI,RVVMF4x2QI,RVVMF8x2QI,
+  RVVM1x8HI,RVVMF2x8HI,RVVMF4x8HI,
+  RVVM1x7HI,RVVMF2x7HI,RVVMF4x7HI,
+  RVVM1x6HI,RVVMF2x6HI,RVVMF4x6HI,
+  RVVM1x5HI,RVVMF2x5HI,RVVMF4x5HI,
+  RVVM2x4HI,RVVM1x4HI,RVVMF2x4HI,RVVMF4x4HI,
+  RVVM2x3HI,RVVM1x3HI,RVVMF2x3HI,RVVMF4x3HI,
+  RVVM4x2HI,RVVM2x2HI,RVVM1x2HI,RVVMF2x2HI,RVVMF4x2HI,
+  RVVM1x8HF,RVVMF2x8HF,RVVMF4x8HF,RVVM1x7HF,RVVMF2x7HF,
+  RVVMF4x7HF,RVVM1x6HF,RVVMF2x6HF,RVVMF4x6HF,RVVM1x5HF,
+  RVVMF2x5HF,RVVMF4x5HF,RVVM2x4HF,RVVM1x4HF,RVVMF2x4HF,
+  RVVMF4x4HF,RVVM2x3HF,RVVM1x3HF,RVVMF2x3HF,RVVMF4x3HF,
+  RVVM4x2HF,RVVM2x2HF,RVVM1x2HF,RVVMF2x2HF,RVVMF4x2HF,
+  RVVM1x8SI,RVVMF2x8SI,
+  RVVM1x7SI,RVVMF2x7SI,
+  RVVM1x6SI,RVVMF2x6SI,
+  RVVM1x5SI,RVVMF2x5SI,
+  RVVM2x4SI,RVVM1x4SI,RVVMF2x4SI,
+  RVVM2x3SI,RVVM1x3SI,RVVMF2x3SI,
+  RVVM4x2SI,RVVM2x2SI,RVVM1x2SI,RVVMF2x2SI,
+  RVVM1x8SF,RVVMF2x8SF,RVVM1x7SF,RVVMF2x7SF,
+  RVVM1x6SF,RVVMF2x6SF,RVVM1x5SF,RVVMF2x5SF,
+  RVVM2x4SF,RVVM1x4SF,RVVMF2x4SF,RVVM2x3SF,
+  RVVM1x3SF,RVVMF2x3SF,RVVM4x2SF,RVVM2x2SF,
+  RVVM1x2SF,RVVMF2x2SF,
+  RVVM1x8DI,RVVM1x7DI,RVVM1x6DI,RVVM1x5DI,
+  RVVM2x4DI,RVVM1x4DI,RVVM2x3DI,RVVM1x3DI,
+  RVVM4x2DI,RVVM2x2DI,RVVM1x2DI,RVVM1x8DF,
+  RVVM1x7DF,RVVM1x6DF,RVVM1x5DF,RVVM2x4DF,
+  RVVM1x4DF,RVVM2x3DF,RVVM1x3DF,RVVM4x2DF,
+  RVVM2x2DF,RVVM1x2DF,
+  VNx2x1DF,VNx3x1DF,VNx4x1DF,VNx5x1DF,VNx6x1DF,VNx7x1DF,VNx8x1DF,
+  V1QI,V2QI,V4QI,V8QI,V16QI,V32QI,V64QI,V128QI,V256QI,V512QI,V1024QI,V2048QI,V4096QI,
+  V1HI,V2HI,V4HI,V8HI,V16HI,V32HI,V64HI,V128HI,V256HI,V512HI,V1024HI,V2048HI,
+  V1SI,V2SI,V4SI,V8SI,V16SI,V32SI,V64SI,V128SI,V256SI,V512SI,V1024SI,
+  V1DI,V2DI,V4DI,V8DI,V16DI,V32DI,V64DI,V128DI,V256DI,V512DI,
+  V1HF,V2HF,V4HF,V8HF,V16HF,V32HF,V64HF,V128HF,V256HF,V512HF,V1024HF,V2048HF,
+  V1SF,V2SF,V4SF,V8SF,V16SF,V32SF,V64SF,V128SF,V256SF,V512SF,V1024SF,
+  V1DF,V2DF,V4DF,V8DF,V16DF,V32DF,V64DF,V128DF,V256DF,V512DF"
   (const_string "unknown"))
 
 ;; True if the main data type is twice the size of a word.
@@ -391,7 +406,7 @@
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate,
    clmul,min,max,minu,maxu,clz,ctz,cpop,
-   atomic,condmove,crypto,rdvlenb,rdvl,wrvxrm,wrfrm,vsetvl,
+   atomic,condmove,crypto,rdvlenb,rdvl,wrvxrm,wrfrm,rdfrm,vsetvl,
    vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
@@ -447,13 +462,13 @@
 			  vfncvtitof,vfwcvtftoi,vfcvtftoi,vfcvtitof,
 			  vfredo,vfredu,vfwredo,vfwredu,
 			  vfslide1up,vfslide1down")
-	 (and (eq_attr "mode" "VNx1HF,VNx2HF,VNx4HF,VNx8HF,VNx16HF,VNx32HF,VNx64HF")
+	 (and (eq_attr "mode" "RVVM8HF,RVVM4HF,RVVM2HF,RVVM1HF,RVVMF2HF,RVVMF4HF")
 	      (match_test "!TARGET_ZVFH")))
     (const_string "yes")
 
     ;; The mode records as QI for the FP16 <=> INT8 instruction.
     (and (eq_attr "type" "vfncvtftoi,vfwcvtitof")
-	 (and (eq_attr "mode" "VNx1QI,VNx2QI,VNx4QI,VNx8QI,VNx16QI,VNx32QI,VNx64QI")
+	 (and (eq_attr "mode" "RVVM4QI,RVVM2QI,RVVM1QI,RVVMF2QI,RVVMF4QI,RVVMF8QI")
 	      (match_test "!TARGET_ZVFH")))
     (const_string "yes")
   ]
@@ -1491,11 +1506,6 @@
 	  DONE;
 	}
     }
-  else
-    {
-      emit_move_insn (operands[0], gen_rtx_AND (<MODE>mode, operands[1], operands[2]));
-      DONE;
-    }
 })
 
 (define_insn "*and<mode>3"
@@ -1594,7 +1604,7 @@
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT && !TARGET_ZBA
+  "TARGET_64BIT && !TARGET_ZBA && !TARGET_XTHEADBB
    && !(register_operand (operands[1], SImode)
         && reg_or_subregno (operands[1]) == VL_REGNUM)"
   "@
@@ -1621,7 +1631,7 @@
   [(set (match_operand:GPR    0 "register_operand"     "=r,r")
 	(zero_extend:GPR
 	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB"
+  "!TARGET_ZBB && !TARGET_XTHEADBB"
   "@
    #
    lhu\t%0,%1"
@@ -1677,7 +1687,7 @@
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB"
+  "!TARGET_ZBB && !TARGET_XTHEADBB"
   "@
    #
    l<SHORT:size>\t%0,%1"
@@ -2482,9 +2492,9 @@
 (define_expand "mov<mode>cc"
   [(set (match_operand:GPR 0 "register_operand")
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
-			  (match_operand:GPR 2 "reg_or_0_operand")
+			  (match_operand:GPR 2 "sfb_alu_operand")
 			  (match_operand:GPR 3 "sfb_alu_operand")))]
-  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV"
+  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND"
 {
   if (riscv_expand_conditional_move (operands[0], operands[1],
 				     operands[2], operands[3]))
@@ -3072,7 +3082,7 @@
   "frcsr\t%0")
 
 (define_insn "riscv_fscsr"
-  [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSCSR)]
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_FSCSR)]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fscsr\t%0")
 
@@ -3085,7 +3095,7 @@
 (define_insn "riscv_fsflags"
   [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSFLAGS)]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
-  "fsflags\t%0")
+  "fsflags%i0\t%0")
 
 (define_insn "*riscv_fsnvsnan<mode>2"
   [(unspec_volatile [(match_operand:ANYF 0 "register_operand" "f")
@@ -3317,3 +3327,4 @@
 (include "sifive-7.md")
 (include "thead.md")
 (include "vector.md")
+(include "zicond.md")

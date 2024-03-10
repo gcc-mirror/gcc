@@ -44,6 +44,7 @@ int main ()
   fun1 (a, N / 2, N);
   fun2 (b, N / 2, N);
 
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     {
       if (DEBUG)

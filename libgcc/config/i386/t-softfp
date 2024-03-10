@@ -31,3 +31,10 @@ CFLAGS-trunchfbf2.c += -msse2
 CFLAGS-eqhf2.c += -msse2
 CFLAGS-_divhc3.c += -msse2
 CFLAGS-_mulhc3.c += -msse2
+
+CFLAGS-_hf_to_sd.c += -msse2
+CFLAGS-_hf_to_dd.c += -msse2
+CFLAGS-_hf_to_td.c += -msse2
+CFLAGS-_sd_to_hf.c += -msse2
+CFLAGS-_dd_to_hf.c += -msse2
+CFLAGS-_td_to_hf.c += -msse2

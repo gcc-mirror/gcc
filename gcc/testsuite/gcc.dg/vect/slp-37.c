@@ -28,6 +28,7 @@ foo1 (s1 *arr)
     } 
    
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     { 
        if (arr[i].a != 6 

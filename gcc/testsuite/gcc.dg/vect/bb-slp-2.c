@@ -28,6 +28,7 @@ main1 (int dummy)
     }
 
   /* check results:  */ 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*8] !=  in[i*8]

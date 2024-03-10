@@ -1,7 +1,10 @@
 // Written in the D programming language.
 
 /**
-JavaScript Object Notation
+Implements functionality to read and write JavaScript Object Notation values.
+
+JavaScript Object Notation is a lightweight data interchange format commonly used in web services and configuration files.
+It's easy for humans to read and write, and it's easy for machines to parse and generate.
 
 Copyright: Copyright Jeremie Pelletier 2008 - 2009.
 License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -600,6 +603,45 @@ struct JSONValue
 
         j = JSONValue( ["language": "D"] );
         assert(j.type == JSONType.object);
+    }
+
+    /**
+     * An enum value that can be used to obtain a `JSONValue` representing
+     * an empty JSON object.
+     */
+    enum emptyObject = JSONValue(string[string].init);
+    ///
+    @system unittest
+    {
+        JSONValue obj1 = JSONValue.emptyObject;
+        assert(obj1.type == JSONType.object);
+        obj1.object["a"] = JSONValue(1);
+        assert(obj1.object["a"] == JSONValue(1));
+
+        JSONValue obj2 = JSONValue.emptyObject;
+        assert("a" !in obj2.object);
+        obj2.object["b"] = JSONValue(5);
+        assert(obj1 != obj2);
+    }
+
+    /**
+     * An enum value that can be used to obtain a `JSONValue` representing
+     * an empty JSON array.
+     */
+    enum emptyArray = JSONValue(JSONValue[].init);
+    ///
+    @system unittest
+    {
+        JSONValue arr1 = JSONValue.emptyArray;
+        assert(arr1.type == JSONType.array);
+        assert(arr1.array.length == 0);
+        arr1.array ~= JSONValue("Hello");
+        assert(arr1.array.length == 1);
+        assert(arr1.array[0] == JSONValue("Hello"));
+
+        JSONValue arr2 = JSONValue.emptyArray;
+        assert(arr2.array.length == 0);
+        assert(arr1 != arr2);
     }
 
     void opAssign(T)(T arg) if (!isStaticArray!T && !is(T : JSONValue))

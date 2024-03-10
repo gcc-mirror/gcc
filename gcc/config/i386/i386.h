@@ -1047,6 +1047,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_AVX512FP16_REG_MODE(MODE)					\
   ((MODE) == V8HFmode || (MODE) == V16HFmode || (MODE) == V32HFmode)
 
+#define VALID_SSE2_TYPE_MODE(MODE)		\
+  ((MODE) == HFmode || (MODE) == BFmode		\
+   || (MODE) == HCmode || (MODE) == BCmode)
+
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
    || (MODE) == V8HFmode || (MODE) == V4HFmode || (MODE) == V2HFmode	\
@@ -2233,6 +2237,7 @@ enum processor_type
   PROCESSOR_ALDERLAKE,
   PROCESSOR_ROCKETLAKE,
   PROCESSOR_GRANITERAPIDS,
+  PROCESSOR_ARROWLAKE,
   PROCESSOR_INTEL,
   PROCESSOR_LUJIAZUI,
   PROCESSOR_GEODE,
@@ -2343,8 +2348,13 @@ constexpr wide_int_bitmask PTA_ALDERLAKE = PTA_TREMONT | PTA_ADX | PTA_AVX
 constexpr wide_int_bitmask PTA_SIERRAFOREST = PTA_ALDERLAKE | PTA_AVXIFMA
   | PTA_AVXVNNIINT8 | PTA_AVXNECONVERT | PTA_CMPCCXADD | PTA_ENQCMD | PTA_UINTR;
 constexpr wide_int_bitmask PTA_GRANITERAPIDS = PTA_SAPPHIRERAPIDS | PTA_AMX_FP16
-  | PTA_PREFETCHI | PTA_AMX_COMPLEX;
+  | PTA_PREFETCHI;
+constexpr wide_int_bitmask PTA_GRANITERAPIDS_D = PTA_GRANITERAPIDS
+  | PTA_AMX_COMPLEX;
 constexpr wide_int_bitmask PTA_GRANDRIDGE = PTA_SIERRAFOREST | PTA_RAOINT;
+constexpr wide_int_bitmask PTA_ARROWLAKE = PTA_SIERRAFOREST;
+constexpr wide_int_bitmask PTA_ARROWLAKE_S = PTA_ARROWLAKE | PTA_AVXVNNIINT16
+  | PTA_SHA512 | PTA_SM3 | PTA_SM4;
 constexpr wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
   | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ;
 constexpr wide_int_bitmask PTA_ZNVER1 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2

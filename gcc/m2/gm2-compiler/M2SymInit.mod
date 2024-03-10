@@ -23,17 +23,30 @@ IMPLEMENTATION MODULE M2SymInit ;
 
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM M2Debug IMPORT Assert ;
+FROM M2Printf IMPORT printf0, printf1, printf2, printf3, printf4 ;
 FROM libc IMPORT printf ;
-FROM NameKey IMPORT Name, NulName, KeyToCharStar ;
-FROM M2Options IMPORT UninitVariableChecking ;
-FROM M2MetaError IMPORT MetaErrorT1 ;
+FROM NameKey IMPORT Name, NulName, KeyToCharStar, MakeKey ;
+FROM M2Base IMPORT Nil ;
+
+FROM M2Options IMPORT UninitVariableChecking, UninitVariableConditionalChecking,
+                      CompilerDebugging ;
+
+FROM M2MetaError IMPORT MetaErrorT1, MetaErrorStringT1, MetaErrorStringT2 ;
 FROM M2LexBuf IMPORT UnknownTokenNo ;
+FROM DynamicStrings IMPORT String, InitString, Mark, ConCat, InitString ;
+FROM M2Error IMPORT InternalError ;
+
+FROM M2BasicBlock IMPORT BasicBlock,
+                         InitBasicBlocks, InitBasicBlocksFromRange,
+			 KillBasicBlocks, FreeBasicBlocks,
+                         ForeachBasicBlockDo ;
 
 IMPORT Indexing ;
+FROM Indexing IMPORT Index ;
 
 FROM Lists IMPORT List, InitList, GetItemFromList, PutItemIntoList,
                   IsItemInList, IncludeItemIntoList, NoOfItemsInList,
-                  RemoveItemFromList, ForeachItemInListDo, KillList ;
+                  RemoveItemFromList, ForeachItemInListDo, KillList, DuplicateList ;
 
 FROM SymbolTable IMPORT NulSym, ModeOfAddr, IsVar, IsRecord, GetSType,
                         GetNth, IsRecordField, IsSet, IsArray, IsProcedure,
@@ -41,12 +54,21 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr, IsVar, IsRecord, GetSType,
                         VarCheckReadInit, VarInitState, PutVarInitialized,
                         PutVarFieldInitialized, GetVarFieldInitialized,
                         IsConst, IsConstString, NoOfParam, IsVarParam,
-                        ForeachLocalSymDo, IsTemporary, ModeOfAddr,
+                        ForeachLocalSymDo, ForeachParamSymDo,
+                        IsTemporary, ModeOfAddr,
                         IsReallyPointer, IsUnbounded,
-                        IsVarient, IsFieldVarient, GetVarient ;
+                        IsVarient, IsFieldVarient, GetVarient,
+                        IsVarArrayRef, GetSymName,
+                        IsType, IsPointer,
+                        GetParameterShadowVar, IsParameter, GetLType,
+                        GetParameterHeapVar ;
 
-FROM M2Quads IMPORT QuadOperator, GetQuadOtok, GetQuad, GetNextQuad ;
-FROM M2Options IMPORT CompilerDebugging ;
+FROM M2Quads IMPORT QuadOperator, GetQuadOtok, GetQuad, GetNextQuad,
+                    IsNewLocalVar, IsReturn, IsKillLocalVar, IsConditional,
+                    IsUnConditional, IsBackReference, IsCall, IsGoto,
+                    GetM2OperatorDesc, Opposite, DisplayQuadRange,
+                    GetQuadTrash ;
+
 FROM M2Printf IMPORT printf0, printf1, printf2 ;
 FROM M2GCCDeclare IMPORT PrintSym ;
 
@@ -78,9 +100,35 @@ TYPE
                             next  : symAlias ;
                          END ;
 
+   bbEntry = POINTER TO RECORD
+                           start, end: CARDINAL ;
+                           (* Is this the first bb?  *)
+                           first,
+                           (* Does it end with a call?  *)
+                           endCall,
+                           (* Does it end with a goto?  *)
+                           endGoto,
+                           (* Does it end with a conditional?  *)
+                           endCond,
+                           (* Does it form part of a loop?  *)
+                           topOfLoop : BOOLEAN ;
+                           trashQuad,
+                           indexBB,
+                           nextQuad,
+                           condQuad,
+                           nextBB,
+                           condBB    : CARDINAL ;
+                           next      : bbEntry ;
+                        END ;
+
 VAR
-   aliasArray: Indexing.Index ;
-   freeList  : symAlias ;
+   IndirectArray,
+   LArray       : Indexing.Index ;
+   freeList     : symAlias ;
+   bbArray      : Indexing.Index ;
+   bbFreeList   : bbEntry ;
+   ignoreList,
+   errorList    : List ;   (* Ensure that we only generate one set of warnings per token.  *)
 
 
 (*
@@ -380,10 +428,10 @@ END IsLocalVar ;
    RecordFieldContainsVarient -
 *)
 
-PROCEDURE RecordFieldContainsVarient (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE RecordFieldContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
 BEGIN
    Assert (IsRecordField (sym)) ;
-   IF ContainsVariant (GetSType (sym))
+   IF doContainsVariant (GetSType (sym), visited)
    THEN
       RETURN TRUE
    END ;
@@ -392,38 +440,226 @@ END RecordFieldContainsVarient ;
 
 
 (*
-   ContainsVariant - returns TRUE if type sym contains a variant record.
+   RecordContainsVarient -
 *)
 
-PROCEDURE ContainsVariant (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE RecordContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
 VAR
    i,
    fieldsym,
    fieldtype: CARDINAL ;
 BEGIN
-   IF IsRecord (sym)
-   THEN
-      i := 1 ;
-      REPEAT
-         fieldsym := GetNth (sym, i) ;
-         IF fieldsym # NulSym
+   Assert (IsRecord (sym)) ;
+   i := 1 ;
+   REPEAT
+      fieldsym := GetNth (sym, i) ;
+      IF fieldsym # NulSym
+      THEN
+         IF IsRecordField (fieldsym)
          THEN
-            IF IsRecordField (fieldsym)
-            THEN
-               IF RecordFieldContainsVarient (fieldsym)
-               THEN
-                  RETURN TRUE
-               END
-            ELSIF IsVarient (fieldsym)
+            IF RecordFieldContainsVarient (fieldsym, visited)
             THEN
                RETURN TRUE
-            END ;
-            INC (i)
-         END
-      UNTIL fieldsym = NulSym
+            END
+         ELSIF IsVarient (fieldsym)
+         THEN
+            RETURN TRUE
+         END ;
+         INC (i)
+      END
+   UNTIL fieldsym = NulSym ;
+   RETURN FALSE
+END RecordContainsVarient ;
+
+
+(*
+   VarContainsVarient -
+*)
+
+PROCEDURE VarContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   Assert (IsVar (sym)) ;
+   RETURN doContainsVariant (GetSType (sym), visited)
+END VarContainsVarient ;
+
+
+(*
+   TypeContainsVarient -
+*)
+
+PROCEDURE TypeContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   Assert (IsType (sym)) ;
+   RETURN doContainsVariant (GetSType (sym), visited)
+END TypeContainsVarient ;
+
+
+(*
+   ArrayContainsVarient -
+*)
+
+PROCEDURE ArrayContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   Assert (IsArray (sym)) ;
+   RETURN doContainsVariant (GetSType (sym), visited)
+END ArrayContainsVarient ;
+
+
+(*
+   PointerContainsVarient -
+*)
+
+PROCEDURE PointerContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   Assert (IsPointer (sym)) ;
+   RETURN doContainsVariant (GetSType (sym), visited)
+END PointerContainsVarient ;
+
+
+(*
+   doContainsVariant -
+*)
+
+PROCEDURE doContainsVariant (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   IF (sym # NulSym) AND (NOT IsItemInList (visited, sym))
+   THEN
+      IncludeItemIntoList (visited, sym) ;
+      IF IsVar (sym)
+      THEN
+         RETURN VarContainsVarient (sym, visited)
+      ELSIF IsRecord (sym)
+      THEN
+         RETURN RecordContainsVarient (sym, visited)
+      ELSIF IsPointer (sym)
+      THEN
+         RETURN PointerContainsVarient (sym, visited)
+      ELSIF IsArray (sym)
+      THEN
+         RETURN ArrayContainsVarient (sym, visited)
+      ELSIF IsType (sym)
+      THEN
+         RETURN TypeContainsVarient (sym, visited)
+      END
    END ;
    RETURN FALSE
+END doContainsVariant ;
+
+
+(*
+   ContainsVariant - returns TRUE if type sym contains a variant record.
+*)
+
+PROCEDURE ContainsVariant (sym: CARDINAL) : BOOLEAN ;
+VAR
+   visited: List ;
+   result : BOOLEAN ;
+BEGIN
+   InitList (visited) ;
+   result := doContainsVariant (sym, visited) ;
+   KillList (visited) ;
+   RETURN result
 END ContainsVariant ;
+
+
+(*
+   IssueConditional -
+*)
+
+PROCEDURE IssueConditional (quad: CARDINAL; conditional: BOOLEAN) ;
+VAR
+   op                          : QuadOperator ;
+   op1, op2, op3               : CARDINAL ;
+   op1tok, op2tok, op3tok, qtok: CARDINAL ;
+   overflowChecking            : BOOLEAN ;
+   s                           : String ;
+BEGIN
+   GetQuadOtok (quad, qtok, op, op1, op2, op3, overflowChecking,
+                op1tok, op2tok, op3tok) ;
+   IF IsUniqueWarning (qtok)
+   THEN
+      op1tok := DefaultTokPos (op1tok, qtok) ;
+      op2tok := DefaultTokPos (op2tok, qtok) ;
+      op3tok := DefaultTokPos (op3tok, qtok) ;
+      IF NOT conditional
+      THEN
+         op := Opposite (op)
+      END ;
+      s := InitString ('depending upon the result of {%1Oad} ') ;
+      s := ConCat (s, Mark (GetM2OperatorDesc (op))) ;
+      s := ConCat (s, InitString (' {%2ad}')) ;
+      MetaErrorStringT2 (qtok, s, op1, op2)
+   END
+END IssueConditional ;
+
+
+(*
+   GenerateNoteFlow -
+*)
+
+PROCEDURE GenerateNoteFlow (lst: List; n: CARDINAL; warning: BOOLEAN) ;
+VAR
+   i     : CARDINAL ;
+   ip1Ptr,
+   iPtr  : bbEntry ;
+BEGIN
+   IF NOT warning
+   THEN
+      (* Only issue flow messages for non warnings.  *)
+      i := 1 ;
+      WHILE i <= n DO
+         iPtr := Indexing.GetIndice (bbArray, i) ;
+         IF iPtr^.endCond
+         THEN
+            IF i < n
+            THEN
+               ip1Ptr := Indexing.GetIndice (bbArray, i+1) ;
+               IssueConditional (iPtr^.end, iPtr^.condBB = ip1Ptr^.indexBB)
+            END
+         END ;
+         INC (i)
+      END
+   END
+END GenerateNoteFlow ;
+
+
+(*
+   IssueWarning - issue a warning or note at tok location.
+*)
+
+PROCEDURE IssueWarning (tok: CARDINAL;
+                        before, after: ARRAY OF CHAR;
+                        sym: CARDINAL; warning: BOOLEAN) ;
+VAR
+   s: String ;
+BEGIN
+   s := InitString (before) ;
+   IF warning
+   THEN
+      s := ConCat (s, Mark (InitString ('{%1Wad}')))
+   ELSE
+      s := ConCat (s, Mark (InitString ('{%1Oad}')))
+   END ;
+   s := ConCat (s, Mark (InitString (after))) ;
+   MetaErrorStringT1 (tok, s, sym)
+END IssueWarning ;
+
+
+(*
+   IsUniqueWarning - return TRUE if a warning has not been issued at tok.
+                     It remembers tok and subsequent calls will always return FALSE.
+*)
+
+PROCEDURE IsUniqueWarning (tok: CARDINAL) : BOOLEAN ;
+BEGIN
+   IF NOT IsItemInList (errorList, tok)
+   THEN
+      IncludeItemIntoList (errorList, tok) ;
+      RETURN TRUE
+   ELSE
+      RETURN FALSE
+   END
+END IsUniqueWarning ;
 
 
 (*
@@ -431,7 +667,11 @@ END ContainsVariant ;
 *)
 
 PROCEDURE CheckDeferredRecordAccess (procsym: CARDINAL; tok: CARDINAL;
-                                     sym: CARDINAL; canDereference: BOOLEAN) ;
+                                     sym: CARDINAL;
+                                     canDereference, warning: BOOLEAN;
+                                     lst: List; i: CARDINAL) ;
+VAR
+   unique: BOOLEAN ;
 BEGIN
    IF IsVar (sym)
    THEN
@@ -455,36 +695,53 @@ BEGIN
          (* SetVarInitialized (sym, TRUE) *)
       ELSIF IsUnbounded (GetSType (sym))
       THEN
-         SetVarInitialized (sym, TRUE)
+         SetVarInitialized (sym, TRUE, tok)
       ELSIF IsComponent (sym)
       THEN
          Trace ("checkReadInit IsComponent (%d) is true)", sym) ;
-         IF NOT GetVarComponentInitialized (sym)
+         IF (NOT GetVarComponentInitialized (sym, tok)) AND IsUniqueWarning (tok)
          THEN
-            MetaErrorT1 (tok,
-                         'attempting to access {%1Wad} before it has been initialized',
-                         sym)
+            GenerateNoteFlow (lst, i, warning) ;
+            IssueWarning (tok,
+                          'attempting to access ',
+                          ' before it has been initialized',
+                          sym, warning)
          END
       ELSIF (GetMode (sym) = LeftValue) AND canDereference
       THEN
          Trace ("checkReadInit GetMode (%d) = LeftValue and canDereference (LeftValue and RightValue VarCheckReadInit)", sym) ;
+         unique := TRUE ;
          IF NOT VarCheckReadInit (sym, LeftValue)
          THEN
-            MetaErrorT1 (tok,
-                         'attempting to access the address of {%1Wad} before it has been initialized',
-                         sym)
+            unique := IsUniqueWarning (tok) ;
+            IF unique
+            THEN
+               GenerateNoteFlow (lst, i, warning) ;
+               IssueWarning (tok,
+                             'attempting to access the address of ',
+                             ' before it has been initialized',
+                             sym, warning)
+            END
          END ;
          IF NOT VarCheckReadInit (sym, RightValue)
          THEN
-            MetaErrorT1 (tok,
-                         'attempting to access {%1Wad} before it has been initialized', sym)
+            IF unique
+            THEN
+               GenerateNoteFlow (lst, i, warning) ;
+               IssueWarning (tok,
+                             'attempting to access ', ' before it has been initialized',
+                             sym, warning)
+            END
          END
       ELSE
          Trace ("checkReadInit call VarCheckReadInit using GetMode (%d)", sym) ;
-         IF NOT VarCheckReadInit (sym, GetMode (sym))
+         IF (NOT VarCheckReadInit (sym, GetMode (sym))) AND IsUniqueWarning (tok)
          THEN
-            MetaErrorT1 (tok,
-                         'attempting to access {%1Wad} before it has been initialized', sym)
+            GenerateNoteFlow (lst, i, warning) ;
+            IssueWarning (tok,
+                          'attempting to access ',
+                          ' before it has been initialized',
+                          sym, warning)
          END
       END
    END
@@ -497,9 +754,12 @@ END CheckDeferredRecordAccess ;
 
 PROCEDURE SetVarUninitialized (sym: CARDINAL) ;
 BEGIN
-   IF IsVar (sym) AND (NOT IsUnbounded (GetSType (sym))) AND (NOT IsVarAParam (sym))
+   IF IsVar (sym)
    THEN
-      VarInitState (sym)
+      IF NOT IsUnbounded (GetSType (sym))
+      THEN
+         VarInitState (sym)
+      END
    END
 END SetVarUninitialized ;
 
@@ -508,19 +768,29 @@ END SetVarUninitialized ;
    ComponentFindVar -
 *)
 
-PROCEDURE ComponentFindVar (sym: CARDINAL) : CARDINAL ;
+PROCEDURE ComponentFindVar (sym: CARDINAL;
+                            VAR lvalue: BOOLEAN;
+                            tok: CARDINAL) : CARDINAL ;
 VAR
    nsym,
    i   : CARDINAL ;
 BEGIN
    i := 1 ;
    REPEAT
-      nsym := getAlias (GetNth (sym, i)) ;
-      IF (nsym # NulSym) AND IsVar (nsym)
+      nsym := GetNth (sym, i) ;
+      lvalue := GetMode (nsym) = LeftValue ;
+      nsym := getLAlias (nsym) ;
+      IF nsym = Nil
+      THEN
+         MetaErrorT1 (tok,
+                      "attempting to dereference {%1Wad} which will be a {%kNIL} pointer",
+                      sym) ;
+         RETURN NulSym
+      ELSIF (nsym # NulSym) AND IsVar (nsym)
       THEN
          IF (nsym # sym) AND IsComponent (nsym)
          THEN
-            RETURN ComponentFindVar (nsym)
+            RETURN ComponentFindVar (nsym, lvalue, tok)
          ELSE
             RETURN nsym
          END
@@ -583,17 +853,35 @@ END ComponentBuildFieldList ;
 
 
 (*
+   deRefComponent -
+*)
+
+PROCEDURE deRefComponent (component: CARDINAL; lvalue: BOOLEAN;
+                          sym: CARDINAL; tok: CARDINAL) : CARDINAL ;
+BEGIN
+   IF lvalue
+   THEN
+      RETURN getContent (component, sym, tok)
+   ELSE
+      RETURN component
+   END
+END deRefComponent ;
+
+
+(*
    SetVarComponentInitialized -
 *)
 
-PROCEDURE SetVarComponentInitialized (sym: CARDINAL) ;
+PROCEDURE SetVarComponentInitialized (sym: CARDINAL; tok: CARDINAL) ;
 VAR
+   lvalue: BOOLEAN ;
    i, n,
    fsym,
-   vsym: CARDINAL ;
-   lst : List ;
+   vsym  : CARDINAL ;
+   lst   : List ;
 BEGIN
-   vsym := ComponentFindVar (sym) ;
+   vsym := ComponentFindVar (sym, lvalue, tok) ;
+   vsym := deRefComponent (vsym, lvalue, sym, tok) ;
    IF vsym # NulSym
    THEN
       IF Debugging
@@ -634,28 +922,36 @@ END SetVarComponentInitialized ;
    GetVarComponentInitialized -
 *)
 
-PROCEDURE GetVarComponentInitialized (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE GetVarComponentInitialized (sym: CARDINAL; tok: CARDINAL) : BOOLEAN ;
 VAR
-   init: BOOLEAN ;
-   vsym: CARDINAL ;
-   lst : List ;
+   lvalue,
+   init     : BOOLEAN ;
+   component,
+   vsym     : CARDINAL ;
+   lst      : List ;
 BEGIN
-   init := FALSE ;
-   vsym := ComponentFindVar (sym) ;
-   IF vsym # NulSym
+   component := ComponentFindVar (sym, lvalue, tok) ;
+   IF IsItemInList (ignoreList, component) OR IsExempt (component)
    THEN
-      IF IsExempt (vsym)
+      RETURN TRUE
+   ELSE
+      init := FALSE ;
+      vsym := deRefComponent (component, lvalue, sym, tok) ;
+      IF vsym # NulSym
       THEN
-         init := TRUE
-      ELSE
-         (* Create list representing how the field is accessed.  *)
-         lst := ComponentCreateFieldList (sym) ;
-         (* Now obtain the mark indicating whether this field was initialized.  *)
-         init := GetVarFieldInitialized (vsym, RightValue, lst) ;
-         KillList (lst)
-      END
-   END ;
-   RETURN init
+         IF IsExempt (vsym)
+         THEN
+            init := TRUE
+         ELSE
+            (* Create list representing how the field is accessed.  *)
+            lst := ComponentCreateFieldList (sym) ;
+            (* Now obtain the mark indicating whether this field was initialized.  *)
+            init := GetVarFieldInitialized (vsym, RightValue, lst) ;
+            KillList (lst)
+         END
+      END ;
+      RETURN init
+   END
 END GetVarComponentInitialized ;
 
 
@@ -678,14 +974,16 @@ END Trace ;
                        then set the left and right initialization state.
 *)
 
-PROCEDURE SetVarInitialized (sym: CARDINAL; canDereference: BOOLEAN) ;
+PROCEDURE SetVarInitialized (sym: CARDINAL; canDereference: BOOLEAN;
+                             tok: CARDINAL) ;
 BEGIN
    IF IsVar (sym)
    THEN
+      RemoveItemFromList (ignoreList, sym) ;
       IF IsComponent (sym)
       THEN
          Trace ("SetVarInitialized sym %d is a component and calling SetVarComponentInitialized", sym);
-         SetVarComponentInitialized (sym)
+         SetVarComponentInitialized (sym, tok)
       ELSIF (GetMode (sym) = LeftValue) AND canDereference
       THEN
          Trace ("SetVarInitialized sym %d is LeftValue and canDeference and calling PutVarInitialized LeftValue and RightValue", sym);
@@ -707,7 +1005,7 @@ END SetVarInitialized ;
    doGetVarInitialized -
 *)
 
-PROCEDURE doGetVarInitialized (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE doGetVarInitialized (sym: CARDINAL; tok: CARDINAL) : BOOLEAN ;
 BEGIN
    IF IsVar (sym)
    THEN
@@ -716,7 +1014,7 @@ BEGIN
          RETURN TRUE
       ELSIF IsComponent (sym)
       THEN
-         RETURN GetVarComponentInitialized (sym)
+         RETURN GetVarComponentInitialized (sym, tok)
       END ;
       RETURN VarCheckReadInit (sym, GetMode (sym))
    END ;
@@ -728,11 +1026,11 @@ END doGetVarInitialized ;
    GetVarInitialized -
 *)
 
-PROCEDURE GetVarInitialized (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE GetVarInitialized (sym: CARDINAL; tok: CARDINAL) : BOOLEAN ;
 VAR
    init: BOOLEAN ;
 BEGIN
-   init := doGetVarInitialized (sym) ;
+   init := doGetVarInitialized (sym, tok) ;
    IF Debugging
    THEN
       IF init
@@ -754,10 +1052,12 @@ END GetVarInitialized ;
 PROCEDURE IsExempt (sym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN (sym # NulSym) AND IsVar (sym) AND
-          (IsGlobalVar (sym) OR IsVarAParam (sym) OR
-           ContainsVariant (GetSType (sym)) OR
+          (IsGlobalVar (sym) OR
+           (* (IsVarAParam (sym) AND (GetMode (sym) = LeftValue)) OR *)
+           ContainsVariant (sym) OR
            IsArray (GetSType (sym)) OR IsSet (GetSType (sym)) OR
-           IsUnbounded (GetSType (sym)))
+           IsUnbounded (GetSType (sym)) OR IsVarArrayRef (sym) OR
+           IsItemInList (ignoreList, sym))
 END IsExempt ;
 
 
@@ -768,11 +1068,12 @@ END IsExempt ;
 PROCEDURE CheckBinary (procSym,
                        op1tok, op1,
                        op2tok, op2,
-                       op3tok, op3: CARDINAL) ;
+                       op3tok, op3: CARDINAL; warning: BOOLEAN;
+                       lst: List; i: CARDINAL) ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE) ;
-   CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE) ;
-   SetVarInitialized (op1, FALSE)
+   CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE, warning, lst, i) ;
+   CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) ;
+   SetVarInitialized (op1, FALSE, op1tok)
 END CheckBinary ;
 
 
@@ -782,10 +1083,11 @@ END CheckBinary ;
 
 PROCEDURE CheckUnary (procSym,
                       lhstok, lhs,
-                      rhstok, rhs: CARDINAL) ;
+                      rhstok, rhs: CARDINAL; warning: BOOLEAN;
+                      lst: List; i: CARDINAL) ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE) ;
-   SetVarInitialized (lhs, FALSE)
+   CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, lst, i) ;
+   SetVarInitialized (lhs, FALSE, lhstok)
 END CheckUnary ;
 
 
@@ -793,25 +1095,31 @@ END CheckUnary ;
    CheckXIndr -
 *)
 
-PROCEDURE CheckXIndr (procSym, lhstok, lhs, type, rhstok, rhs: CARDINAL) ;
+PROCEDURE CheckXIndr (procSym, lhstok, lhs, type,
+                      rhstok, rhs: CARDINAL; warning: BOOLEAN;
+                      bblst: List; i: CARDINAL) ;
 VAR
-   lst : List ;
-   vsym: CARDINAL ;
+   lst    : List ;
+   content: CARDINAL ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE) ;
-   CheckDeferredRecordAccess (procSym, lhstok, lhs, FALSE) ;
+   CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, bblst, i) ;
+   CheckDeferredRecordAccess (procSym, lhstok, lhs, FALSE, warning, bblst, i) ;
    (* Now see if we know what lhs is pointing to and set fields if necessary.  *)
-   vsym := getAlias (lhs) ;
-   IF (vsym # lhs) AND (GetSType (vsym) = type)
+   content := getContent (getLAlias (lhs), lhs, lhstok) ;
+   IF (content # NulSym) AND (content # lhs) AND (GetSType (content) = type)
    THEN
+      IF IsReallyPointer (rhs)
+      THEN
+         SetupLAlias (content, rhs)
+      END ;
       IF IsRecord (type)
       THEN
-         (* Set all fields of vsym as initialized.  *)
-         SetVarInitialized (vsym, FALSE)
+         (* Set all fields of content as initialized.  *)
+         SetVarInitialized (content, FALSE, lhstok)
       ELSE
          (* Set only the field assigned in vsym as initialized.  *)
          lst := ComponentCreateFieldList (rhs) ;
-         IF PutVarFieldInitialized (vsym, RightValue, lst)
+         IF PutVarFieldInitialized (content, RightValue, lst)
          THEN
          END ;
          KillList (lst)
@@ -824,11 +1132,25 @@ END CheckXIndr ;
    CheckIndrX -
 *)
 
-PROCEDURE CheckIndrX (procSym, lhstok, lhs, type, rhstok, rhs: CARDINAL) ;
+PROCEDURE CheckIndrX (procSym, lhstok, lhs, type, rhstok, rhs: CARDINAL;
+                      warning: BOOLEAN;
+                      lst: List; i: CARDINAL) ;
+VAR
+   content: CARDINAL ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE) ;
-   CheckDeferredRecordAccess (procSym, rhstok, rhs, TRUE) ;
-   SetVarInitialized (lhs, FALSE)
+   CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, lst, i) ;
+   content := getContent (getLAlias (rhs), rhs, rhstok) ;
+   IF content = NulSym
+   THEN
+      IncludeItemIntoList (ignoreList, lhs)
+   ELSE
+      CheckDeferredRecordAccess (procSym, rhstok, content, TRUE, warning, lst, i) ;
+      SetVarInitialized (lhs, VarCheckReadInit (content, RightValue), lhstok) ;
+      IF IsReallyPointer (content)
+      THEN
+         SetupLAlias (lhs, content)
+      END
+   END
 END CheckIndrX ;
 
 
@@ -846,24 +1168,30 @@ END CheckRecordField ;
    CheckBecomes -
 *)
 
-PROCEDURE CheckBecomes (procSym, destok, des, exprtok, expr: CARDINAL) ;
+PROCEDURE CheckBecomes (procSym, destok, des, exprtok, expr: CARDINAL;
+                        warning: BOOLEAN; bblst: List; i: CARDINAL) ;
 VAR
-   lst : List ;
-   vsym: CARDINAL ;
+   lvalue: BOOLEAN ;
+   lst   : List ;
+   vsym  : CARDINAL ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, exprtok, expr, FALSE) ;
-   SetupAlias (des, expr) ;
-   SetVarInitialized (des, FALSE) ;
+   CheckDeferredRecordAccess (procSym, exprtok, expr, FALSE, warning, bblst, i) ;
+   SetupLAlias (des, expr) ;
+   SetVarInitialized (des, FALSE, destok) ;
    (* Now see if we know what lhs is pointing to and set fields if necessary.  *)
    IF IsComponent (des)
    THEN
-      vsym := ComponentFindVar (des) ;
-      (* Set only the field assigned in vsym as initialized.  *)
-      lst := ComponentCreateFieldList (des) ;
-      IF PutVarFieldInitialized (vsym, RightValue, lst)
+      vsym := ComponentFindVar (des, lvalue, destok) ;
+      vsym := deRefComponent (vsym, lvalue, des, destok) ;
+      IF vsym # NulSym
       THEN
-      END ;
-      KillList (lst)
+         (* Set only the field assigned in vsym as initialized.  *)
+         lst := ComponentCreateFieldList (des) ;
+         IF PutVarFieldInitialized (vsym, RightValue, lst)
+         THEN
+         END ;
+         KillList (lst)
+      END
    END
 END CheckBecomes ;
 
@@ -872,10 +1200,11 @@ END CheckBecomes ;
    CheckComparison -
 *)
 
-PROCEDURE CheckComparison (procSym, op1tok, op1, op2tok, op2: CARDINAL) ;
+PROCEDURE CheckComparison (procSym, op1tok, op1, op2tok, op2: CARDINAL;
+                           warning: BOOLEAN; lst: List; i: CARDINAL) ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE) ;
-   CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE)
+   CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE, warning, lst, i) ;
+   CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE, warning, lst, i)
 END CheckComparison ;
 
 
@@ -883,10 +1212,10 @@ END CheckComparison ;
    CheckAddr -
 *)
 
-PROCEDURE CheckAddr (procSym, op1tok, op1, op3tok, op3: CARDINAL) ;
+PROCEDURE CheckAddr (procSym, ptrtok, ptr, contenttok, content: CARDINAL) ;
 BEGIN
-   SetVarInitialized (op1, GetVarInitialized (op3)) ;
-   SetupAlias (op1, op3)
+   SetVarInitialized (ptr, GetVarInitialized (content, contenttok), ptrtok) ;
+   SetupIndr (ptr, content)
 END CheckAddr ;
 
 
@@ -916,7 +1245,8 @@ END stop ;
    CheckReadBeforeInitQuad -
 *)
 
-PROCEDURE CheckReadBeforeInitQuad (procSym: CARDINAL; quad: CARDINAL) : BOOLEAN ;
+PROCEDURE CheckReadBeforeInitQuad (procSym: CARDINAL; quad: CARDINAL;
+                                   warning: BOOLEAN; lst: List; i: CARDINAL) : BOOLEAN ;
 VAR
    op                          : QuadOperator ;
    op1, op2, op3               : CARDINAL ;
@@ -949,7 +1279,7 @@ BEGIN
    IfLessOp,
    IfLessEquOp,
    IfGreOp,
-   IfGreEquOp        : CheckComparison (procSym, op1tok, op1, op2tok, op2) |
+   IfGreEquOp        : CheckComparison (procSym, op1tok, op1, op2tok, op2, warning, lst, i) |
    TryOp,
    ReturnOp,
    CallOp,
@@ -960,27 +1290,28 @@ BEGIN
    (* Variable references.  *)
 
    InclOp,
-   ExclOp            : CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE) ;
-                       CheckDeferredRecordAccess (procSym, op1tok, op1, TRUE) ;
-                       CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE) |
-   NegateOp          : CheckUnary (procSym, op1tok, op1, op3tok, op3) |
-   BecomesOp         : CheckBecomes (procSym, op1tok, op1, op3tok, op3) |
+   ExclOp            : CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE, warning, lst, i) ;
+                       CheckDeferredRecordAccess (procSym, op1tok, op1, TRUE, warning, lst, i) ;
+                       CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) |
+   NegateOp          : CheckUnary (procSym, op1tok, op1, op3tok, op3, warning, lst, i) |
+   BecomesOp         : CheckBecomes (procSym, op1tok, op1, op3tok, op3, warning, lst, i) |
    UnboundedOp,
    FunctValueOp,
+   StandardFunctionOp,
    HighOp,
-   SizeOp            : SetVarInitialized (op1, FALSE) |
+   SizeOp            : SetVarInitialized (op1, FALSE, op1tok) |
    AddrOp            : CheckAddr (procSym, op1tok, op1, op3tok, op3) |
-   ReturnValueOp     : SetVarInitialized (op1, FALSE) |
+   ReturnValueOp     : SetVarInitialized (op1, FALSE, op1tok) |
    NewLocalVarOp     : |
-   ParamOp           : CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE) ;
-                       CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE) ;
+   ParamOp           : CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE, warning, lst, i) ;
+                       CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) ;
                        IF (op1 > 0) AND (op1 <= NoOfParam (op2)) AND
                           IsVarParam (op2, op1)
                        THEN
-                          SetVarInitialized (op3, TRUE)
+                          SetVarInitialized (op3, TRUE, op3tok)
                        END |
-   ArrayOp           : CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE) ;
-                       SetVarInitialized (op1, TRUE) |
+   ArrayOp           : CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) ;
+                       SetVarInitialized (op1, TRUE, op1tok) |
    RecordFieldOp     : CheckRecordField (procSym, op1tok, op1, op2tok, op2) |
    LogicalShiftOp,
    LogicalRotateOp,
@@ -1002,14 +1333,43 @@ BEGIN
    DivFloorOp,
    ModTruncOp,
    DivTruncOp        : CheckBinary (procSym,
-                                    op1tok, op1, op2tok, op2, op3tok, op3) |
-   XIndrOp           : CheckXIndr (procSym, op1tok, op1, op2, op3tok, op3) |
-   IndrXOp           : CheckIndrX (procSym, op1tok, op1, op2, op3tok, op3) |
-   RangeCheckOp      : |
-   SaveExceptionOp   : SetVarInitialized (op1, FALSE) |
-   RestoreExceptionOp: CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE)
+                                    op1tok, op1, op2tok, op2, op3tok, op3, warning, lst, i) |
+   XIndrOp           : CheckXIndr (procSym, op1tok, op1, op2, op3tok, op3, warning, lst, i) |
+   IndrXOp           : CheckIndrX (procSym, op1tok, op1, op2, op3tok, op3, warning, lst, i) |
+   SaveExceptionOp   : SetVarInitialized (op1, FALSE, op1tok) |
+   RestoreExceptionOp: CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE, warning, lst, i) |
 
-   ELSE
+   SubrangeLowOp,
+   SubrangeHighOp    : InternalError ('quadruples should have been resolved') |
+   ElementSizeOp,
+   BuiltinConstOp,  (* Nothing to do, it is assigning a constant to op1 (also a const).  *)
+   BuiltinTypeInfoOp,  (* Likewise assigning op1 (const) with a type.  *)
+   ProcedureScopeOp,
+   InitEndOp,
+   InitStartOp,
+   FinallyStartOp,
+   FinallyEndOp,
+   CatchBeginOp,
+   CatchEndOp,
+   ThrowOp,
+   StartDefFileOp,
+   StartModFileOp,
+   EndFileOp,
+   CodeOnOp,
+   CodeOffOp,
+   ProfileOnOp,
+   ProfileOffOp,
+   OptimizeOnOp,
+   OptimizeOffOp,
+   InlineOp,
+   LineNumberOp,
+   StatementNoteOp,
+   SavePriorityOp,
+   RestorePriorityOp,
+   RangeCheckOp,
+   ModuleScopeOp,
+   ErrorOp          : |
+
    END ;
    RETURN FALSE
 END CheckReadBeforeInitQuad ;
@@ -1019,7 +1379,9 @@ END CheckReadBeforeInitQuad ;
    FilterCheckReadBeforeInitQuad -
 *)
 
-PROCEDURE FilterCheckReadBeforeInitQuad (procSym: CARDINAL; start: CARDINAL) : BOOLEAN ;
+PROCEDURE FilterCheckReadBeforeInitQuad (procSym: CARDINAL; start: CARDINAL;
+                                         warning: BOOLEAN;
+                                         lst: List; i: CARDINAL) : BOOLEAN ;
 VAR
    Op           : QuadOperator ;
    Op1, Op2, Op3: CARDINAL ;
@@ -1027,7 +1389,7 @@ BEGIN
    GetQuad (start, Op, Op1, Op2, Op3) ;
    IF (Op # RangeCheckOp) AND (Op # StatementNoteOp)
    THEN
-      RETURN CheckReadBeforeInitQuad (procSym, start)
+      RETURN CheckReadBeforeInitQuad (procSym, start, warning, lst, i)
    END ;
    RETURN FALSE
 END FilterCheckReadBeforeInitQuad ;
@@ -1038,56 +1400,528 @@ END FilterCheckReadBeforeInitQuad ;
 *)
 
 PROCEDURE CheckReadBeforeInitFirstBasicBlock (procSym: CARDINAL;
-                                              start, end: CARDINAL) ;
+                                              start, end: CARDINAL;
+                                              warning: BOOLEAN;
+                                              lst: List; i: CARDINAL) ;
 BEGIN
-   ForeachLocalSymDo (procSym, SetVarUninitialized) ;
    LOOP
-      IF FilterCheckReadBeforeInitQuad (procSym, start) OR (start = end)
+      IF FilterCheckReadBeforeInitQuad (procSym, start, warning, lst, i)
+      THEN
+      END ;
+      IF start = end
       THEN
          RETURN
-      END ;
-      start := GetNextQuad (start)
+      ELSE
+         start := GetNextQuad (start)
+      END
    END
 END CheckReadBeforeInitFirstBasicBlock ;
 
 
 (*
-   VariableAnalysis - checks to see whether a variable is:
-
-                      read before it has been initialized
+   bbArrayKill -
 *)
 
-PROCEDURE VariableAnalysis (Start, End: CARDINAL) ;
+PROCEDURE bbArrayKill ;
 VAR
-   Op           : QuadOperator ;
-   Op1, Op2, Op3: CARDINAL ;
+   i, h : CARDINAL ;
+   bbPtr: bbEntry ;
+BEGIN
+   h := Indexing.HighIndice (bbArray) ;
+   i := 1 ;
+   WHILE i <= h DO
+      bbPtr := Indexing.GetIndice (bbArray, i) ;
+      bbPtr^.next := bbFreeList ;
+      bbFreeList := bbPtr ;
+      INC (i)
+   END ;
+   bbArray := Indexing.KillIndex (bbArray)
+END bbArrayKill ;
+
+
+(*
+   DumpBBEntry -
+*)
+
+PROCEDURE DumpBBEntry (bbPtr: bbEntry; procSym: CARDINAL) ;
+BEGIN
+   printf4 ("bb %d: scope %d:  quads: %d .. %d",
+            bbPtr^.indexBB, procSym, bbPtr^.start, bbPtr^.end) ;
+   IF bbPtr^.first
+   THEN
+      printf0 (" first")
+   END ;
+   IF bbPtr^.endCall
+   THEN
+      printf0 (" endcall")
+   END ;
+   IF bbPtr^.endGoto
+   THEN
+      printf0 (" endgoto")
+   END ;
+   IF bbPtr^.endCond
+   THEN
+      printf0 (" endcond")
+   END ;
+   IF bbPtr^.topOfLoop
+   THEN
+      printf0 (" topofloop")
+   END ;
+   IF bbPtr^.condBB # 0
+   THEN
+      printf1 (" cond %d", bbPtr^.condBB)
+   END ;
+   IF bbPtr^.nextBB # 0
+   THEN
+      printf1 (" next %d", bbPtr^.nextBB)
+   END ;
+   printf0 ("\n")
+END DumpBBEntry ;
+
+
+(*
+   DumpBBArray -
+*)
+
+PROCEDURE DumpBBArray (procSym: CARDINAL) ;
+VAR
+   bbPtr: bbEntry ;
+   i, n : CARDINAL ;
+BEGIN
+   i := 1 ;
+   n := Indexing.HighIndice (bbArray) ;
+   WHILE i <= n DO
+      bbPtr := Indexing.GetIndice (bbArray, i) ;
+      DumpBBEntry (bbPtr, procSym) ;
+      INC (i)
+   END ;
+   i := 1 ;
+   WHILE i <= n DO
+      bbPtr := Indexing.GetIndice (bbArray, i) ;
+      printf4 ("bb %d: scope %d:  quads: %d .. %d\n",
+               bbPtr^.indexBB, procSym, bbPtr^.start, bbPtr^.end) ;
+      DisplayQuadRange (procSym, bbPtr^.start, bbPtr^.end) ;
+      INC (i)
+   END
+END DumpBBArray ;
+
+
+(*
+   DumpBBSequence -
+*)
+
+PROCEDURE DumpBBSequence (procSym: CARDINAL; lst: List) ;
+VAR
+   arrayindex,
+   listindex, n: CARDINAL ;
+BEGIN
+   n := NoOfItemsInList (lst) ;
+   listindex := 1 ;
+   printf0 ("=============\n");
+   printf0 (" checking sequence:");
+   WHILE listindex <= n DO
+      arrayindex := GetItemFromList (lst, listindex) ;
+      printf1 (" [%d]", listindex) ;
+      INC (listindex)
+   END ;
+   printf0 ("\n")
+END DumpBBSequence ;
+
+
+(*
+   trashParam -
+*)
+
+PROCEDURE trashParam (trashQuad: CARDINAL) ;
+VAR
+   op                            : QuadOperator ;
+   op1, proc, param, paramValue  : CARDINAL ;
+   op1tok, op2tok, paramtok, qtok: CARDINAL ;
+   overflowChecking              : BOOLEAN ;
+   heapValue, ptrToHeap          : CARDINAL ;
+BEGIN
+   IF trashQuad # 0
+   THEN
+      GetQuadOtok (trashQuad, qtok, op, op1, proc, param, overflowChecking,
+                   op1tok, op2tok, paramtok) ;
+      heapValue := GetQuadTrash (trashQuad) ;
+      IF Debugging
+      THEN
+         printf1 ("heapValue = %d\n", heapValue)
+      END ;
+      IF heapValue # NulSym
+      THEN
+         SetVarInitialized (param, FALSE, paramtok) ;
+         paramValue := getLAlias (param) ;
+         ptrToHeap := getContent (paramValue, param, paramtok) ;
+         IF ptrToHeap # NulSym
+         THEN
+            IF IsDeallocate (proc)
+            THEN
+               SetupLAlias (ptrToHeap, Nil) ;
+               SetVarInitialized (ptrToHeap, FALSE, paramtok)
+            ELSE
+               SetupIndr (ptrToHeap, heapValue) ;
+               SetVarInitialized (ptrToHeap, TRUE, paramtok)
+            END
+         END
+      END
+   END ;
+   DumpAliases
+END trashParam ;
+
+
+(*
+   SetVarLRInitialized - this sets up an alias between the parameter
+                         value and the pointer for the case:
+
+                         procedure foo (var shadow: PtrToType) ;
+
+                         which allows shadow to be statically analyzed
+                         once it is re-assigned.
+*)
+
+PROCEDURE SetVarLRInitialized (param: CARDINAL) ;
+VAR
+   heap,
+   shadow: CARDINAL ;
+BEGIN
+   Assert (IsParameter (param)) ;
+   shadow := GetParameterShadowVar (param) ;
+   IF shadow # NulSym
+   THEN
+      IncludeItemIntoList (ignoreList, shadow)
+   END ;
+   heap := GetParameterHeapVar (param) ;
+   IF (shadow # NulSym) AND (heap # NulSym)
+   THEN
+      PutVarInitialized (shadow, GetMode (shadow)) ;
+      PutVarInitialized (heap, GetMode (heap)) ;
+      SetupIndr (shadow, heap) ;
+      IncludeItemIntoList (ignoreList, heap)
+   END
+END SetVarLRInitialized ;
+
+
+(*
+   TestBBSequence -
+*)
+
+PROCEDURE TestBBSequence (procSym: CARDINAL; lst: List) ;
+VAR
+   bbPtr  : bbEntry ;
+   bbi,
+   i, n   : CARDINAL ;
+   warning: BOOLEAN ;  (* Should we issue a warning rather than a note?  *)
+BEGIN
+   IF Debugging
+   THEN
+      DumpBBSequence (procSym, lst)
+   END ;
+   initBlock ;
+   ForeachLocalSymDo (procSym, SetVarUninitialized) ;
+   ForeachParamSymDo (procSym, SetVarLRInitialized) ;
+   n := NoOfItemsInList (lst) ;
+   i := 1 ;
+   warning := TRUE ;
+   WHILE i <= n DO
+      bbi := GetItemFromList (lst, i) ;
+      bbPtr := Indexing.GetIndice (bbArray, bbi) ;
+      CheckReadBeforeInitFirstBasicBlock (procSym,
+                                          bbPtr^.start, bbPtr^.end,
+                                          warning, lst, i) ;
+      IF bbPtr^.endCond
+      THEN
+         (* Check to see if we are moving into an conditional block in which case
+            we will issue a note.  *)
+         warning := FALSE
+      ELSIF bbPtr^.endCall AND (bbPtr^.trashQuad # 0)
+      THEN
+         trashParam (bbPtr^.trashQuad)
+      END ;
+      INC (i)
+   END ;
+   killBlock
+END TestBBSequence ;
+
+
+(*
+   CreateBBPermultations -
+*)
+
+PROCEDURE CreateBBPermultations (procSym: CARDINAL; i: CARDINAL; lst: List) ;
+VAR
+   duplst: List ;
+   iPtr  : bbEntry ;
+BEGIN
+   IF i = 0
+   THEN
+      TestBBSequence (procSym, lst)
+   ELSE
+      iPtr := Indexing.GetIndice (bbArray, i) ;
+      IF iPtr^.topOfLoop
+      THEN
+         TestBBSequence (procSym, lst)
+      ELSE
+         duplst := DuplicateList (lst) ;
+         IncludeItemIntoList (duplst, i) ;
+         IF iPtr^.endCall AND (iPtr^.trashQuad = 0)
+         THEN
+            TestBBSequence (procSym, duplst)
+         ELSIF iPtr^.endGoto
+         THEN
+            CreateBBPermultations (procSym, iPtr^.nextBB, duplst)
+         ELSIF UninitVariableConditionalChecking AND iPtr^.endCond
+         THEN
+            CreateBBPermultations (procSym, iPtr^.nextBB, duplst) ;
+            CreateBBPermultations (procSym, iPtr^.condBB, duplst)
+         ELSIF iPtr^.endCond
+         THEN
+            TestBBSequence (procSym, duplst)
+         ELSE
+            (* Fall through.  *)
+            CreateBBPermultations (procSym, iPtr^.nextBB, duplst)
+         END ;
+         KillList (duplst)
+      END
+   END
+END CreateBBPermultations ;
+
+
+(*
+   ScopeBlockVariableAnalysis - checks to see whether a variable is
+                                read before it has been initialized.
+*)
+
+PROCEDURE ScopeBlockVariableAnalysis (Scope: CARDINAL;
+                                      Start, End: CARDINAL) ;
+VAR
+   bb : BasicBlock ;
+   lst: List ;
 BEGIN
    IF UninitVariableChecking
    THEN
-      GetQuad (Start, Op, Op1, Op2, Op3) ;
-      CASE Op OF
+      bbArray := Indexing.InitIndex (1) ;
+      bb := InitBasicBlocksFromRange (Scope, Start, End) ;
+      ForeachBasicBlockDo (bb, AppendEntry) ;
+      KillBasicBlocks (bb) ;
+      GenerateCFG ;
+      IF Scope # NulSym
+      THEN
+         InitList (lst) ;
+         IF Debugging
+         THEN
+            DumpBBArray (Scope) ;
+            IF UninitVariableConditionalChecking
+            THEN
+               printf0 ("UninitVariableConditionalChecking is TRUE\n")
+            END
+         END ;
+         CreateBBPermultations (Scope, 1, lst) ;
+         KillList (lst)
+      END ;
+      bbArrayKill
+   END
+END ScopeBlockVariableAnalysis ;
 
-      NewLocalVarOp:  initBlock ;
-                      CheckReadBeforeInitFirstBasicBlock (Op3, Start, End) ;
-                      killBlock
 
+(*
+   GetOp3 -
+*)
+
+PROCEDURE GetOp3 (quad: CARDINAL) : CARDINAL ;
+VAR
+   op: QuadOperator ;
+   op1, op2, op3: CARDINAL ;
+BEGIN
+   GetQuad (quad, op, op1, op2, op3) ;
+   RETURN op3
+END GetOp3 ;
+
+
+(*
+   getBBindex - return the basic block index which starts with quad.
+*)
+
+PROCEDURE getBBindex (quad: CARDINAL) : CARDINAL ;
+VAR
+   iPtr   : bbEntry ;
+   i, high: CARDINAL ;
+BEGIN
+   i := 1 ;
+   high := Indexing.HighIndice (bbArray) ;
+   WHILE i <= high DO
+      iPtr := Indexing.GetIndice (bbArray, i) ;
+      IF iPtr^.start = quad
+      THEN
+         RETURN iPtr^.indexBB
+      END ;
+      INC (i)
+   END ;
+   RETURN 0
+END getBBindex ;
+
+
+(*
+   GenerateCFG -
+*)
+
+PROCEDURE GenerateCFG ;
+VAR
+   iPtr   : bbEntry ;
+   next,
+   i, high: CARDINAL ;
+BEGIN
+   i := 1 ;
+   high := Indexing.HighIndice (bbArray) ;
+   WHILE i <= high DO
+      iPtr := Indexing.GetIndice (bbArray, i) ;
+      IF IsKillLocalVar (iPtr^.end) OR IsReturn (iPtr^.end)
+      THEN
+         (* Nothing to do as we have reached the end of this scope.  *)
       ELSE
+         next := GetNextQuad (iPtr^.end) ;
+         iPtr^.nextQuad := next ;
+         iPtr^.nextBB := getBBindex (next) ;
+         IF iPtr^.endCond
+         THEN
+            iPtr^.condQuad := GetOp3 (iPtr^.end) ;
+            iPtr^.condBB := getBBindex (iPtr^.condQuad)
+         END
+      END ;
+      INC (i)
+   END
+END GenerateCFG ;
+
+
+(*
+   NewEntry -
+*)
+
+PROCEDURE NewEntry () : bbEntry ;
+VAR
+   bbPtr: bbEntry ;
+BEGIN
+   IF bbFreeList = NIL
+   THEN
+      NEW (bbPtr)
+   ELSE
+      bbPtr := bbFreeList ;
+      bbFreeList := bbFreeList^.next
+   END ;
+   RETURN bbPtr
+END NewEntry ;
+
+
+(*
+   IsAllocate - return TRUE is sym is ALLOCATE.
+*)
+
+PROCEDURE IsAllocate (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsProcedure (sym) AND (GetSymName (sym) = MakeKey('ALLOCATE'))
+END IsAllocate ;
+
+
+(*
+   IsDeallocate - return TRUE is sym is DEALLOCATE.
+*)
+
+PROCEDURE IsDeallocate (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsProcedure (sym) AND (GetSymName (sym) = MakeKey('DEALLOCATE'))
+END IsDeallocate ;
+
+
+(*
+   DetectTrash -
+*)
+
+PROCEDURE DetectTrash (bbPtr: bbEntry) ;
+VAR
+   i            : CARDINAL ;
+   op           : QuadOperator ;
+   op1, op2, op3: CARDINAL ;
+BEGIN
+   IF bbPtr^.endCall
+   THEN
+      i := bbPtr^.start ;
+      LOOP
+         GetQuad (i, op, op1, op2, op3) ;
+         IF (op = ParamOp) AND (op1 = 1) AND (IsAllocate (op2) OR IsDeallocate (op2))
+         THEN
+            bbPtr^.trashQuad := i
+         END ;
+         IF i = bbPtr^.end
+         THEN
+            RETURN
+         END ;
+         i := GetNextQuad (i)
       END
    END
-END VariableAnalysis ;
+END DetectTrash ;
+
+
+(*
+   AppendEntry -
+*)
+
+PROCEDURE AppendEntry (Start, End: CARDINAL) ;
+VAR
+   bbPtr: bbEntry ;
+   high : CARDINAL ;
+BEGIN
+   high := Indexing.HighIndice (bbArray) ;
+   bbPtr := NewEntry () ;
+   WITH bbPtr^ DO
+      start := Start ;
+      end := End ;
+      first := high = 0 ;
+      endCall := IsCall (End) ;
+      endGoto := IsGoto (End) ;
+      endCond := IsConditional (End) ;
+      topOfLoop := IsBackReference (Start) ;
+      trashQuad := 0 ;
+      indexBB := high + 1 ;
+      nextQuad := 0 ;
+      condQuad := 0 ;
+      nextBB := 0 ;
+      condBB := 0 ;
+      next := NIL
+   END ;
+   DetectTrash (bbPtr) ;
+   Indexing.PutIndice (bbArray, high + 1, bbPtr)
+END AppendEntry ;
 
 
 (*
    DumpAlias -
 *)
 
-PROCEDURE DumpAlias (aliasIndex: CARDINAL) ;
+PROCEDURE DumpAlias (array: Index; aliasIndex: CARDINAL) ;
 VAR
    sa: symAlias ;
 BEGIN
-   sa := Indexing.GetIndice (aliasArray, aliasIndex) ;
-   printf2 ("keySym = %d: alias = %d\n", sa^.keySym, sa^.alias) ;
+   sa := Indexing.GetIndice (array, aliasIndex) ;
+   printf2 ("keySym = %d: alias = %d\n", sa^.keySym, sa^.alias)
 END DumpAlias ;
+
+
+(*
+   doDumpAliases -
+*)
+
+PROCEDURE doDumpAliases (array: Index) ;
+VAR
+   i, n: CARDINAL ;
+BEGIN
+   i := 1 ;
+   n := Indexing.HighIndice (array) ;
+   WHILE i <= n DO
+      DumpAlias (array, i) ;
+      INC (i)
+   END
+END doDumpAliases ;
 
 
 (*
@@ -1095,17 +1929,13 @@ END DumpAlias ;
 *)
 
 PROCEDURE DumpAliases ;
-VAR
-   i, n: CARDINAL ;
 BEGIN
    IF Debugging
    THEN
-      i := 1 ;
-      n := Indexing.HighIndice (aliasArray) ;
-      WHILE i <= n DO
-         DumpAlias (i) ;
-         INC (i)
-      END
+      printf0 ("LArray\n") ;
+      doDumpAliases (LArray) ;
+      printf0 ("IndirectArray\n") ;
+      doDumpAliases (IndirectArray)
    END
 END DumpAliases ;
 
@@ -1164,7 +1994,9 @@ END killAlias ;
 
 PROCEDURE initBlock ;
 BEGIN
-   aliasArray := Indexing.InitIndex (1) ;
+   LArray := Indexing.InitIndex (1) ;
+   IndirectArray := Indexing.InitIndex (1) ;
+   InitList (ignoreList)
 END initBlock ;
 
 
@@ -1173,32 +2005,40 @@ END initBlock ;
 *)
 
 PROCEDURE killBlock ;
+BEGIN
+   doKillBlock (LArray) ;
+   doKillBlock (IndirectArray) ;
+   KillList (ignoreList)
+END killBlock ;
+
+
+PROCEDURE doKillBlock (VAR array: Index) ;
 VAR
    i, n: CARDINAL ;
 BEGIN
    i := 1 ;
-   n := Indexing.HighIndice (aliasArray) ;
+   n := Indexing.HighIndice (array) ;
    WHILE i <= n DO
-      killAlias (Indexing.GetIndice (aliasArray, i)) ;
+      killAlias (Indexing.GetIndice (array, i)) ;
       INC (i)
    END ;
-   aliasArray := Indexing.KillIndex (aliasArray)
-END killBlock ;
+   array := Indexing.KillIndex (array)
+END doKillBlock ;
 
 
 (*
    addAlias -
 *)
 
-PROCEDURE addAlias (sym: CARDINAL; aliased: CARDINAL) ;
+PROCEDURE addAlias (array: Index; sym: CARDINAL; aliased: CARDINAL) ;
 VAR
    i, n: CARDINAL ;
    sa  : symAlias ;
 BEGIN
    i := 1 ;
-   n := Indexing.HighIndice (aliasArray) ;
+   n := Indexing.HighIndice (array) ;
    WHILE i <= n DO
-      sa := Indexing.GetIndice (aliasArray, i) ;
+      sa := Indexing.GetIndice (array, i) ;
       IF sa^.keySym = sym
       THEN
          sa^.alias := aliased ;
@@ -1207,7 +2047,7 @@ BEGIN
       INC (i)
    END ;
    sa := initAlias (sym) ;
-   Indexing.IncludeIndiceIntoIndex (aliasArray, sa) ;
+   Indexing.IncludeIndiceIntoIndex (array, sa) ;
    sa^.alias := aliased
 END addAlias ;
 
@@ -1216,15 +2056,15 @@ END addAlias ;
    lookupAlias -
 *)
 
-PROCEDURE lookupAlias (sym: CARDINAL) : symAlias ;
+PROCEDURE lookupAlias (array: Index; sym: CARDINAL) : symAlias ;
 VAR
    i, n: CARDINAL ;
    sa  : symAlias ;
 BEGIN
    i := 1 ;
-   n := Indexing.HighIndice (aliasArray) ;
+   n := Indexing.HighIndice (array) ;
    WHILE i <= n DO
-      sa := Indexing.GetIndice (aliasArray, i) ;
+      sa := Indexing.GetIndice (array, i) ;
       IF sa^.keySym = sym
       THEN
          RETURN sa
@@ -1239,11 +2079,11 @@ END lookupAlias ;
    doGetAlias -
 *)
 
-PROCEDURE doGetAlias (sym: CARDINAL) : CARDINAL ;
+PROCEDURE doGetAlias (array: Index; sym: CARDINAL) : CARDINAL ;
 VAR
    sa: symAlias ;
 BEGIN
-   sa := lookupAlias (sym) ;
+   sa := lookupAlias (array, sym) ;
    IF (sa # NIL) AND (sa^.alias # NulSym)
    THEN
       RETURN sa^.alias
@@ -1253,10 +2093,10 @@ END doGetAlias ;
 
 
 (*
-   getAlias - attempts to looks up an alias which is not a temporary variable.
+   getLAlias - attempts to looks up an alias which is not a temporary variable.
 *)
 
-PROCEDURE getAlias (sym: CARDINAL) : CARDINAL ;
+PROCEDURE getLAlias (sym: CARDINAL) : CARDINAL ;
 VAR
    type,
    nsym: CARDINAL ;
@@ -1268,28 +2108,58 @@ BEGIN
       IF (IsTemporary (sym) AND (GetMode (sym) = LeftValue)) OR
          ((type # NulSym) AND IsReallyPointer (type))
       THEN
-         nsym := doGetAlias (sym)
+         nsym := doGetAlias (LArray, sym)
       ELSE
          RETURN sym
       END
    UNTIL nsym = NulSym ;
    RETURN sym
-END getAlias ;
+END getLAlias ;
 
 
 (*
-   SetupAlias -
+   SetupLAlias -
 *)
 
-PROCEDURE SetupAlias (des, exp: CARDINAL) ;
+PROCEDURE SetupLAlias (des, exp: CARDINAL) ;
 BEGIN
-   IF IsVar (exp) AND
-      ((GetMode (des) = LeftValue) OR IsReallyPointer (GetSType (des)))
+   IF (exp = Nil) OR
+      (IsVar (exp) AND
+       ((GetMode (des) = LeftValue) OR IsReallyPointer (GetSType (des))))
    THEN
-      addAlias (des, exp) ;
+      addAlias (LArray, des, exp) ;
       DumpAliases
    END
-END SetupAlias ;
+END SetupLAlias ;
+
+
+(*
+   SetupIndr -
+*)
+
+PROCEDURE SetupIndr (ptr, content: CARDINAL) ;
+BEGIN
+   addAlias (IndirectArray, ptr, content) ;
+END SetupIndr ;
+
+
+(*
+   getContent - attempts to return the content pointed to by ptr.
+                sym is the original symbol and ptr will be the equivalent lvalue.
+*)
+
+PROCEDURE getContent (ptr: CARDINAL; sym: CARDINAL; tok: CARDINAL) : CARDINAL ;
+BEGIN
+   IF ptr = Nil
+   THEN
+      MetaErrorT1 (tok,
+                   "attempting to dereference {%1Wad} which will be a {%kNIL} pointer",
+                   sym) ;
+      RETURN NulSym
+   ELSE
+      RETURN doGetAlias (IndirectArray, ptr)
+   END
+END getContent ;
 
 
 (*
@@ -1298,7 +2168,9 @@ END SetupAlias ;
 
 PROCEDURE init ;
 BEGIN
-   freeList := NIL
+   freeList := NIL ;
+   bbFreeList := NIL ;
+   InitList (errorList)
 END init ;
 
 

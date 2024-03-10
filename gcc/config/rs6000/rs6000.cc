@@ -7694,12 +7694,11 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
     {
       unsigned int ele_size = GET_MODE_SIZE (inner_mode);
       rtx num_ele_m1 = GEN_INT (GET_MODE_NUNITS (mode) - 1);
-      rtx new_addr = gen_reg_rtx (Pmode);
 
       elt = gen_rtx_AND (Pmode, elt, num_ele_m1);
       if (ele_size > 1)
 	elt = gen_rtx_MULT (Pmode, elt, GEN_INT (ele_size));
-      new_addr = gen_rtx_PLUS (Pmode, XEXP (mem, 0), elt);
+      rtx new_addr = gen_rtx_PLUS (Pmode, XEXP (mem, 0), elt);
       new_addr = change_address (mem, inner_mode, new_addr);
       emit_move_insn (target, new_addr);
     }

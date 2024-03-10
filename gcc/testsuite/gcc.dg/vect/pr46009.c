@@ -49,6 +49,7 @@ main (void)
       e[i] = -1;
     }
   foo ();
+#pragma GCC novector
   for (i = 0; i < 1024; i++)
     {
       int g;
@@ -59,6 +60,7 @@ main (void)
       e[i] = -1;
     }
   bar ();
+#pragma GCC novector
   for (i = 0; i < 1024; i++)
     {
       int g;

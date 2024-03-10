@@ -27,5 +27,5 @@
 
 TEST_ALL ()
 
-/* { dg-final { scan-assembler-times {\tvnsra\.wv} 6 } } */
-/* { dg-final { scan-assembler-times {\tvnsrl\.wv} 5 } } */
+/* { dg-final { scan-assembler-times {\tvnsra\.wv} 4 } } */
+/* { dg-final { scan-assembler-times {\tvnsrl\.wv} 4 } } */

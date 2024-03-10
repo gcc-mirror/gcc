@@ -17333,7 +17333,7 @@ package body Sem_Util is
                   declare
                      Init : constant Entity_Id :=
                               (Find_Optional_Prim_Op
-                                 (Underlying_Type (Typ), Name_Initialize));
+                                 (Utyp, Name_Initialize));
 
                   begin
                      if Present (Init)
@@ -29231,6 +29231,13 @@ package body Sem_Util is
             return Typ;
          end if;
 
+      elsif From_Limited_With (Typ) then
+         if Has_Non_Limited_View (Typ) then
+            return Validated_View (Non_Limited_View (Typ));
+         else
+            return Typ;
+         end if;
+
       else
          return Typ;
       end if;
@@ -29391,7 +29398,11 @@ package body Sem_Util is
    -- Wrong_Type --
    ----------------
 
-   procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id) is
+   procedure Wrong_Type
+     (Expr          : Node_Id;
+      Expected_Type : Entity_Id;
+      Multiple      : Boolean := False)
+   is
       Found_Type : constant Entity_Id := First_Subtype (Etype (Expr));
       Expec_Type : constant Entity_Id := First_Subtype (Expected_Type);
 
@@ -29478,13 +29489,14 @@ package body Sem_Util is
 
    begin
       --  Don't output message if either type is Any_Type, or if a message
-      --  has already been posted for this node. We need to do the latter
-      --  check explicitly (it is ordinarily done in Errout), because we
-      --  are using ! to force the output of the error messages.
+      --  has already been posted for this node and we do not want multiple
+      --  error messages. We need to do the latter check explicitly (it is
+      --  ordinarily done in Errout) because we are using '!' to force the
+      --  output of the error messages.
 
       if Expec_Type = Any_Type
         or else Found_Type = Any_Type
-        or else Error_Posted (Expr)
+        or else (Error_Posted (Expr) and then not Multiple)
       then
          return;
 

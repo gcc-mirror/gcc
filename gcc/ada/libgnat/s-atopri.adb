@@ -59,6 +59,9 @@ package body System.Atomic_Primitives is
         new Atomic_Compare_Exchange (Atomic_Type);
 
    begin
+      pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                       "early returns for performance");
+
       if Expected /= Desired then
          if Atomic_Type'Atomic_Always_Lock_Free then
             return My_Atomic_Compare_Exchange (Ptr, Expected'Address, Desired);
@@ -68,6 +71,8 @@ package body System.Atomic_Primitives is
       end if;
 
       return True;
+
+      pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
    end Lock_Free_Try_Write;
 
 end System.Atomic_Primitives;

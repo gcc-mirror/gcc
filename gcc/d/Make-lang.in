@@ -81,7 +81,6 @@ D_FRONTEND_OBJS = \
 	d/access.o \
 	d/aggregate.o \
 	d/aliasthis.o \
-	d/apply.o \
 	d/arrayop.o \
 	d/arraytypes.o \
 	d/attrib.o \
@@ -160,6 +159,7 @@ D_FRONTEND_OBJS = \
 	d/parse.o \
 	d/parsetimevisitor.o \
 	d/permissivevisitor.o \
+	d/postordervisitor.o \
 	d/printast.o \
 	d/root-aav.o \
 	d/root-array.o \

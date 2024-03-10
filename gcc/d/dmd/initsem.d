@@ -582,10 +582,13 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
 
     Initializer visitC(CInitializer ci)
     {
-        //printf("CInitializer::semantic() (%s) %s\n", t.toChars(), ci.toChars());
+        //printf("CInitializer::semantic() tx: %s t: %s ci: %s\n", (tx ? tx.toChars() : "".ptr), t.toChars(), ci.toChars());
         /* Rewrite CInitializer into ExpInitializer, ArrayInitializer, or StructInitializer
          */
         t = t.toBasetype();
+
+        if (auto tv = t.isTypeVector())
+            t = tv.basetype;
 
         /* If `{ expression }` return the expression initializer
          */
@@ -767,7 +770,6 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 return err();
             }
             const nfields = sd.fields.length;
-
             size_t fieldi = 0;
 
             for (size_t index = 0; index < ci.initializerList.length; )
@@ -804,6 +806,12 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 {
                     if (fieldi == nfields)
                         break;
+                    if (index == 0 && ci.initializerList.length == 1 && di.initializer.isCInitializer())
+                    {
+                        ci = di.initializer.isCInitializer();
+                        continue;
+                    }
+
                     VarDeclaration field;
                     while (1)   // skip field if it overlaps with previously seen fields
                     {
@@ -951,22 +959,19 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             return initializerSemantic(ai, sc, tx, needInterpret);
         }
         else if (ExpInitializer ei = isBraceExpression())
+        {
             return visitExp(ei);
+        }
         else
         {
-            assert(0);
+            error(ci.loc, "unrecognized C initializer `%s`", ci.toChars());
+            return err();
         }
     }
 
-    final switch (init.kind)
-    {
-        case InitKind.void_:   return visitVoid  (init.isVoidInitializer());
-        case InitKind.error:   return visitError (init.isErrorInitializer());
-        case InitKind.struct_: return visitStruct(init.isStructInitializer());
-        case InitKind.array:   return visitArray (init.isArrayInitializer());
-        case InitKind.exp:     return visitExp   (init.isExpInitializer());
-        case InitKind.C_:      return visitC     (init.isCInitializer());
-    }
+    mixin VisitInitializer!Initializer visit;
+    auto result = visit.VisitInitializer(init);
+    return (result !is null) ? result : new ErrorInitializer();
 }
 
 /***********************
@@ -1120,15 +1125,9 @@ Initializer inferType(Initializer init, Scope* sc)
         return new ErrorInitializer();
     }
 
-    final switch (init.kind)
-    {
-        case InitKind.void_:   return visitVoid  (init.isVoidInitializer());
-        case InitKind.error:   return visitError (init.isErrorInitializer());
-        case InitKind.struct_: return visitStruct(init.isStructInitializer());
-        case InitKind.array:   return visitArray (init.isArrayInitializer());
-        case InitKind.exp:     return visitExp   (init.isExpInitializer());
-        case InitKind.C_:      return visitC     (init.isCInitializer());
-    }
+    mixin VisitInitializer!Initializer visit;
+    auto result = visit.VisitInitializer(init);
+    return (result !is null) ? result : new ErrorInitializer();
 }
 
 /***********************
@@ -1333,15 +1332,8 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
         return null;
     }
 
-    final switch (init.kind)
-    {
-        case InitKind.void_:   return visitVoid  (init.isVoidInitializer());
-        case InitKind.error:   return visitError (init.isErrorInitializer());
-        case InitKind.struct_: return visitStruct(init.isStructInitializer());
-        case InitKind.array:   return visitArray (init.isArrayInitializer());
-        case InitKind.exp:     return visitExp   (init.isExpInitializer());
-        case InitKind.C_:      return visitC     (init.isCInitializer());
-    }
+    mixin VisitInitializer!Expression visit;
+    return visit.VisitInitializer(init);
 }
 
 

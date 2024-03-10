@@ -17,7 +17,6 @@ import core.stdc.stdio;
 import core.stdc.string;
 
 import dmd.aggregate;
-import dmd.apply;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
@@ -867,7 +866,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
          * Resolve forward references to all class member functions,
          * and determine whether this class is abstract.
          */
-        static int func(Dsymbol s)
+        static int func(Dsymbol s, void*)
         {
             auto fd = s.isFuncDeclaration();
             if (!fd)
@@ -883,7 +882,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
         for (size_t i = 0; i < members.length; i++)
         {
             auto s = (*members)[i];
-            if (s.apply(&func))
+            if (s.apply(&func, null))
             {
                 return yes();
             }
@@ -910,7 +909,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
              * each of the virtual functions,
              * which will fill in the vtbl[] overrides.
              */
-            static int virtualSemantic(Dsymbol s)
+            static int virtualSemantic(Dsymbol s, void*)
             {
                 auto fd = s.isFuncDeclaration();
                 if (fd && !(fd.storage_class & STC.static_) && !fd.isUnitTestDeclaration())
@@ -921,7 +920,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
             for (size_t i = 0; i < members.length; i++)
             {
                 auto s = (*members)[i];
-                s.apply(&virtualSemantic);
+                s.apply(&virtualSemantic,null);
             }
         }
 

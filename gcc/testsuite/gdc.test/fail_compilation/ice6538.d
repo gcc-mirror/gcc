@@ -7,7 +7,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/ice6538.d(23): Error: expression `super` is not a valid template value argument
-fail_compilation/ice6538.d(28): Error: none of the overloads of template `ice6538.D.foo` are callable using argument types `!()()`
+fail_compilation/ice6538.d(28): Error: template `ice6538.D.foo` is not callable using argument types `!()()`
 fail_compilation/ice6538.d(23):        Candidate is: `foo()()`
 ---
 */

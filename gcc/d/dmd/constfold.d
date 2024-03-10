@@ -1437,7 +1437,7 @@ UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
             emplaceExp!(StringExp)(&ue, loc, s[0 .. len * sz], len, sz);
             StringExp es = ue.exp().isStringExp();
             es.type = type;
-            es.committed = 1;
+            es.committed = true;
         }
         else
         {

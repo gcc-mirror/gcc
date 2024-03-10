@@ -62,6 +62,12 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
         this.decl = decl;
     }
 
+    extern (D) this(const ref Loc loc, Dsymbols* decl)
+    {
+        super(loc, null);
+        this.decl = decl;
+    }
+
     extern (D) this(const ref Loc loc, Identifier ident, Dsymbols* decl)
     {
         super(loc, ident);
@@ -225,6 +231,12 @@ extern (C++) class StorageClassDeclaration : AttribDeclaration
     extern (D) this(StorageClass stc, Dsymbols* decl)
     {
         super(decl);
+        this.stc = stc;
+    }
+
+    extern (D) this(const ref Loc loc, StorageClass stc, Dsymbols* decl)
+    {
+        super(loc, decl);
         this.stc = stc;
     }
 
@@ -641,7 +653,8 @@ extern (C++) final class VisibilityDeclaration : AttribDeclaration
         {
             Module m = sc._module;
 
-            // While isAncestorPackageOf does an equality check, the fix for issue 17441 adds a check to see if
+            // https://issues.dlang.org/show_bug.cgi?id=17441
+            // While isAncestorPackageOf does an equality check, the fix for the issue adds a check to see if
             // each package's .isModule() properites are equal.
             //
             // Properties generated from `package(foo)` i.e. visibility.pkg have .isModule() == null.
@@ -1279,7 +1292,8 @@ extern(C++) final class ForwardingAttribDeclaration : AttribDeclaration
  *      mixin("int x");
  * https://dlang.org/spec/module.html#mixin-declaration
  */
-extern (C++) final class CompileDeclaration : AttribDeclaration
+// Note: was CompileDeclaration
+extern (C++) final class MixinDeclaration : AttribDeclaration
 {
     Expressions* exps;
     ScopeDsymbol scopesym;
@@ -1288,19 +1302,19 @@ extern (C++) final class CompileDeclaration : AttribDeclaration
     extern (D) this(const ref Loc loc, Expressions* exps)
     {
         super(loc, null, null);
-        //printf("CompileDeclaration(loc = %d)\n", loc.linnum);
+        //printf("MixinDeclaration(loc = %d)\n", loc.linnum);
         this.exps = exps;
     }
 
-    override CompileDeclaration syntaxCopy(Dsymbol s)
+    override MixinDeclaration syntaxCopy(Dsymbol s)
     {
-        //printf("CompileDeclaration::syntaxCopy('%s')\n", toChars());
-        return new CompileDeclaration(loc, Expression.arraySyntaxCopy(exps));
+        //printf("MixinDeclaration::syntaxCopy('%s')\n", toChars());
+        return new MixinDeclaration(loc, Expression.arraySyntaxCopy(exps));
     }
 
     override void addMember(Scope* sc, ScopeDsymbol sds)
     {
-        //printf("CompileDeclaration::addMember(sc = %p, sds = %p, memnum = %d)\n", sc, sds, memnum);
+        //printf("MixinDeclaration::addMember(sc = %p, sds = %p, memnum = %d)\n", sc, sds, memnum);
         this.scopesym = sds;
     }
 
@@ -1314,7 +1328,7 @@ extern (C++) final class CompileDeclaration : AttribDeclaration
         return "mixin";
     }
 
-    override inout(CompileDeclaration) isCompileDeclaration() inout
+    override inout(MixinDeclaration) isMixinDeclaration() inout
     {
         return this;
     }

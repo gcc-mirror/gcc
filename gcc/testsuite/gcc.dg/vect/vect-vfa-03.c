@@ -40,6 +40,7 @@ main (void)
   foo (X, Y);
   
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (Y[i].a != result[i].a)  

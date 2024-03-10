@@ -1,13 +1,13 @@
 /*
 TEST_OUTPUT:
 ---
-tuple((A), (B))
-tuple((A), (B), 0)
-tuple((A), (B), (A))
-tuple((A), (B), (A), (B))
-tuple((A), (B), (A), (B))
-tuple((A), (B), (A), (B), (A), (B), (A), (B))
-tuple((Attr))
+AliasSeq!((A), (B))
+AliasSeq!((A), (B), 0)
+AliasSeq!((A), (B), (A))
+AliasSeq!((A), (B), (A), (B))
+AliasSeq!((A), (B), (A), (B))
+AliasSeq!((A), (B), (A), (B), (A), (B), (A), (B))
+AliasSeq!((Attr))
 ---
 */
 

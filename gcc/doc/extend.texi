@@ -843,6 +843,7 @@ Thus, @code{array (pointer (char), 4)} is the type of arrays of 4
 pointers to @code{char}.
 @end itemize
 
+@cindex @code{__auto_type} in GNU C
 In GNU C, but not GNU C++, you may also declare the type of a variable
 as @code{__auto_type}.  In that case, the declaration must declare
 only one variable, whose declarator must just be an identifier, the
@@ -7163,6 +7164,26 @@ Enable/disable the generation of the RAOINT instructions.
 @itemx no-amx-complex
 Enable/disable the generation of the AMX-COMPLEX instructions.
 
+@cindex @code{target("avxvnniint16")} function attribute, x86
+@item avxvnniint16
+@itemx no-avxvnniint16
+Enable/disable the generation of the AVXVNNIINT16 instructions.
+
+@cindex @code{target("sm3")} function attribute, x86
+@item sm3
+@itemx no-sm3
+Enable/disable the generation of the SM3 instructions.
+
+@cindex @code{target("sha512")} function attribute, x86
+@item sha512
+@itemx no-sha512
+Enable/disable the generation of the SHA512 instructions.
+
+@cindex @code{target("sm4")} function attribute, x86
+@item sm4
+@itemx no-sm4
+Enable/disable the generation of the SM4 instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld
@@ -7243,11 +7264,6 @@ Prefer 256-bit vector width for instructions.
 Prefer 512-bit vector width for instructions.
 @end table
 
-On the x86, the inliner does not inline a
-function that has different target options than the caller, unless the
-callee has a subset of the target options of the caller.  For example
-a function declared with @code{target("sse3")} can inline a function
-with @code{target("sse2")}, since @code{-msse3} implies @code{-msse2}.
 @end table
 
 @cindex @code{indirect_branch} function attribute, x86
@@ -7360,6 +7376,20 @@ This attribute, attached to a global variable or function, is the
 counterpart to option @option{-mno-direct-extern-access}.
 
 @end table
+
+@subsubsection Inlining rules
+On the x86, the inliner does not inline a
+function that has different target options than the caller, unless the
+callee has a subset of the target options of the caller.  For example
+a function declared with @code{target("sse3")} can inline a function
+with @code{target("sse2")}, since @code{-msse3} implies @code{-msse2}.
+
+Besides the basic rule, when a function specifies
+@code{target("arch=@var{ARCH}")} or @code{target("tune=@var{TUNE}")}
+attribute, the inlining rule will be different. It allows inlining of
+a function with default @option{-march=x86-64} and
+@option{-mtune=generic} specified, or a function that has a subset
+of ISA features and marked with always_inline.
 
 @node Xstormy16 Function Attributes
 @subsection Xstormy16 Function Attributes
@@ -11524,6 +11554,16 @@ The list below describes the supported modifiers and their effects for LoongArch
 @item @code{z} @tab Print the operand in its unmodified form, followed by a comma.
 @end multitable
 
+@anchor{riscvOperandmodifiers}
+@subsubsection RISC-V Operand Modifiers
+
+The list below describes the supported modifiers and their effects for RISC-V.
+
+@multitable @columnfractions .10 .90
+@headitem Modifier @tab Description
+@item @code{z} @tab Print ''@code{zero}'' instead of 0 if the operand is an immediate with a value of zero.
+@item @code{i} @tab Print the character ''@code{i}'' if the operand is an immediate.
+@end multitable
 
 @lowersections
 @include md.texi
@@ -13147,6 +13187,7 @@ is called and the @var{flag} argument passed to it.
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
 @cindex built-in functions
+@findex __builtin_iseqsig
 @findex __builtin_isfinite
 @findex __builtin_isnormal
 @findex __builtin_isgreater
@@ -13698,9 +13739,9 @@ the same names as the standard macros ( @code{isgreater},
 @code{islessgreater}, and @code{isunordered}) , with @code{__builtin_}
 prefixed.  We intend for a library implementor to be able to simply
 @code{#define} each standard macro to its built-in equivalent.
-In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
-@code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins used with
-@code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
+In the same fashion, GCC provides @code{fpclassify}, @code{iseqsig},
+@code{isfinite}, @code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins
+used with @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
 built-in functions appear both with and without the @code{__builtin_} prefix.
 With @code{-ffinite-math-only} option the @code{isinf} and @code{isnan}
 built-in functions will always return 0.
@@ -15251,6 +15292,23 @@ __builtin_arc_sr()
 __builtin_arc_swi()
 @end example
 
+The following built-in functions are available for the ARCv2 family of
+processors.
+
+@example
+int __builtin_arc_clri ();
+void __builtin_arc_kflag (unsigned);
+void __builtin_arc_seti (int);
+@end example
+
+The following built-in functions are available for the ARCv2 family
+and uses @option{-mnorm}.
+
+@example
+int __builtin_arc_ffs (int);
+int __builtin_arc_fls (int);
+@end example
+
 @node ARC SIMD Built-in Functions
 @subsection ARC SIMD Built-in Functions
 
@@ -15475,6 +15533,44 @@ indicating one the registers I0-I7, and the fourth argument must be an
 @example
 void __builtin_arc_vst16_n (__v8hi, const int, const int, const int);
 void __builtin_arc_vst32_n (__v8hi, const int, const int, const int);
+@end example
+
+The following built-in functions are available on systems that uses
+@option{-mmpy-option=6} or higher.
+
+@example
+__v2hi __builtin_arc_dmach (__v2hi, __v2hi);
+__v2hi __builtin_arc_dmachu (__v2hi, __v2hi);
+__v2hi __builtin_arc_dmpyh (__v2hi, __v2hi);
+__v2hi __builtin_arc_dmpyhu (__v2hi, __v2hi);
+__v2hi __builtin_arc_vaddsub2h (__v2hi, __v2hi);
+__v2hi __builtin_arc_vsubadd2h (__v2hi, __v2hi);
+@end example
+
+The following built-in functions are available on systems that uses
+@option{-mmpy-option=7} or higher.
+
+@example
+__v2si __builtin_arc_vmac2h (__v2hi, __v2hi);
+__v2si __builtin_arc_vmac2hu (__v2hi, __v2hi);
+__v2si __builtin_arc_vmpy2h (__v2hi, __v2hi);
+__v2si __builtin_arc_vmpy2hu (__v2hi, __v2hi);
+@end example
+
+The following built-in functions are available on systems that uses
+@option{-mmpy-option=8} or higher.
+
+@example
+long long __builtin_arc_qmach (__v4hi, __v4hi);
+long long __builtin_arc_qmachu (__v4hi, __v4hi);
+long long __builtin_arc_qmpyh (__v4hi, __v4hi);
+long long __builtin_arc_qmpyhu (__v4hi, __v4hi);
+long long __builtin_arc_dmacwh (__v2si, __v2hi);
+long long __builtin_arc_dmacwhu (__v2si, __v2hi);
+_v2si __builtin_arc_vaddsub (__v2si, __v2si);
+_v2si __builtin_arc_vsubadd (__v2si, __v2si);
+_v4hi __builtin_arc_vaddsub4h (__v4hi, __v4hi);
+_v4hi __builtin_arc_vsubadd4h (__v4hi, __v4hi);
 @end example
 
 @node ARM iWMMXt Built-in Functions
@@ -15917,6 +16013,57 @@ read_y (struct S *arg)
 @}
 
 @end smallexample
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_preserve_enum_value (@var{type}, @var{enum}, unsigned int @var{kind})}
+BPF Compile Once-Run Everywhere (CO-RE) support. This builtin collects enum
+information and creates a CO-RE relocation relative to @var{enum} that should
+be of @var{type}.  The @var{kind} specifies the action performed.
+
+The following values are supported for @var{kind}:
+@table @code
+@item ENUM_VALUE_EXISTS = 0
+The return value is either 0 or 1 depending if the enum value exists in the
+target.
+
+@item ENUM_VALUE = 1
+The return value is the enum value in the target kernel.
+@end table
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_btf_type_id (@var{type}, unsigned int @var{kind})}
+BPF Compile Once-Run Everywhere (CO-RE) support. This builtin is used to get
+the BTF type ID of a specified type. Depending on the @var{kind} argument, it
+will either return the ID of the local BTF information, or the BTF type ID in
+the target kernel.
+
+The following values are supported for @var{kind}:
+@table @code
+@item BTF_TYPE_ID_LOCAL = 0
+Return the local BTF type ID. Always succeeds.
+
+@item BTF_TYPE_ID_TARGET = 1
+Return the target BTF type ID. If type does not exist in the target, returns 0.
+@end table
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_preserve_type_info (@var{type}, unsigned int @var{kind})}
+BPF Compile Once-Run Everywhere (CO-RE) support. This builtin performs named
+type (struct/union/enum/typedef) verifications. The type of verification
+dependents on the @var{kind} argument provided.  This builtin will always
+return 0 if type does not exists in the target kernel.
+
+The following values are supported for @var{kind}:
+@table @code
+@item BTF_TYPE_EXISTS = 0
+Checks if type exists in the target.
+
+@item BTF_TYPE_MATCHES = 1
+Checks if type matches the local definition in the target kernel.
+
+@item BTF_TYPE_SIZE = 2
+Returns the size of the type within the target.
+@end table
 @enddefbuiltin
 
 @node FR-V Built-in Functions
@@ -18318,7 +18465,7 @@ double __builtin_mffs (void);
 void __builtin_mtfsf (const int, double);
 void __builtin_mtfsb0 (const int);
 void __builtin_mtfsb1 (const int);
-void __builtin_set_fpscr_rn (int);
+double __builtin_set_fpscr_rn (int);
 @end smallexample
 
 The @code{__builtin_ppc_get_timebase} and @code{__builtin_ppc_mftb}
@@ -18339,13 +18486,20 @@ values to selected fields of the FPSCR.  The
 as an argument.  The valid bit range is between 0 and 31.  The builtins map to
 the @code{mtfsb0} and @code{mtfsb1} instructions which take the argument and
 add 32.  Hence these instructions only modify the FPSCR[32:63] bits by
-changing the specified bit to a zero or one respectively.  The
-@code{__builtin_set_fpscr_rn} builtin allows changing both of the floating
-point rounding mode bits.  The argument is a 2-bit value.  The argument can
-either be a @code{const int} or stored in a variable. The builtin uses
-the ISA 3.0
-instruction @code{mffscrn} if available, otherwise it reads the FPSCR, masks
-the current rounding mode bits out and OR's in the new value.
+changing the specified bit to a zero or one respectively.
+
+The @code{__builtin_set_fpscr_rn} built-in allows changing both of the floating
+point rounding mode bits and returning the various FPSCR fields before the RN
+field is updated.  The built-in returns a double consisting of the initial
+value of the FPSCR fields DRN, VE, OE, UE, ZE, XE, NI, and RN bit positions
+with all other bits set to zero.  The built-in argument is a 2-bit value for the
+new RN field value.  The argument can either be an @code{const int} or stored
+in a variable.  Earlier versions of @code{__builtin_set_fpscr_rn} returned
+void.  A @code{__SET_FPSCR_RN_RETURNS_FPSCR__} macro has been added.  If
+defined, then the @code{__builtin_set_fpscr_rn} built-in returns the FPSCR
+fields.  If not defined, the @code{__builtin_set_fpscr_rn} does not return a
+value.  If the @option{-msoft-float} option is used, the
+@code{__builtin_set_fpscr_rn} built-in will not return a value.
 
 @node Basic PowerPC Built-in Functions Available on ISA 2.05
 @subsubsection Basic PowerPC Built-in Functions Available on ISA 2.05
@@ -22144,6 +22298,9 @@ Intel Core i7 Rocketlake CPU.
 @item graniterapids
 Intel Core i7 graniterapids CPU.
 
+@item graniterapids-d
+Intel Core i7 graniterapids D CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
@@ -22164,6 +22321,12 @@ Intel Atom Sierra Forest CPU.
 
 @item grandridge
 Intel Atom Grand Ridge CPU.
+
+@item arrowlake
+Intel Core i7 Arrow Lake CPU.
+
+@item arrowlake-s
+Intel Core i7 Arrow Lake S CPU.
 
 @item knl
 Intel Knights Landing CPU.
@@ -24415,6 +24578,25 @@ void ignore_vec_dep (int *a, int k, int c, int m)
 #pragma GCC ivdep
   for (int i = 0; i < m; i++)
     a[i] = a[i + k] * c;
+@}
+@end smallexample
+
+@cindex pragma GCC novector
+@item #pragma GCC novector
+
+With this pragma, the programmer asserts that the following loop should be
+prevented from executing concurrently with SIMD (single instruction multiple
+data) instructions.
+
+For example, the compiler cannot vectorize the following loop with the pragma:
+
+@smallexample
+void foo (int n, int *a, int *b, int *c)
+@{
+  int i, j;
+#pragma GCC novector
+  for (i = 0; i < n; ++i)
+    a[i] = b[i] + c[i];
 @}
 @end smallexample
 

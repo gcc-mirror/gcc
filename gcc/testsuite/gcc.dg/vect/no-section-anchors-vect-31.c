@@ -39,6 +39,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N/2; i++)
     {
       if (tmp.b[i] != 5)
@@ -52,6 +53,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N/2; i++)
     {
       if (tmp.c[i] != 6)
@@ -65,6 +67,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N/2; i++)
     {
       if (tmp.d.k[i] != 7)
@@ -78,6 +81,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N/2; i++)
     {
       if (tmp.e.k[i] != 8)

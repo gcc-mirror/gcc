@@ -38,9 +38,14 @@
      </p><pre class="programlisting">
    --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/4.4-20090404</pre></dd><dt><span class="term"><code class="code">--enable-cstdio</code></span></dt><dd><p>This is an abbreviated form of <code class="code">'--enable-cstdio=stdio'</code>
 	(described next).
-     </p></dd><dt><span class="term"><code class="code">--enable-cstdio=OPTION</code></span></dt><dd><p>Select a target-specific I/O package. At the moment, the only
-	choice is to use 'stdio', a generic "C" abstraction.
-	The default is 'stdio'. This option can change the library ABI.
+     </p></dd><dt><span class="term"><code class="code">--enable-cstdio=OPTION</code></span></dt><dd><p>Select a target-specific I/O package. The choices are 'stdio'
+       which is a generic abstraction using POSIX file I/O APIs
+       (<code class="function">read</code>, <code class="function">write</code>,
+       <code class="function">lseek</code>, etc.), and 'stdio_pure' which is similar
+       but only uses standard C file I/O APIs (<code class="function">fread</code>,
+       <code class="function">fwrite</code>, <code class="function">fseek</code>, etc.).
+       The 'stdio_posix' choice is a synonym for 'stdio'.
+       The default is 'stdio'. This option can change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-clocale</code></span></dt><dd><p>This is an abbreviated form of <code class="code">'--enable-clocale=generic'</code>
 	(described next).
      </p></dd><dt><span class="term"><code class="code">--enable-clocale=OPTION</code></span></dt><dd><p>Select a target-specific underlying locale package.  The

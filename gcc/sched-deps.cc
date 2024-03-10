@@ -472,7 +472,7 @@ static int cache_size;
 /* True if we should mark added dependencies as a non-register deps.  */
 static bool mark_as_hard;
 
-static int deps_may_trap_p (const_rtx);
+static bool deps_may_trap_p (const_rtx);
 static void add_dependence_1 (rtx_insn *, rtx_insn *, enum reg_note);
 static void add_dependence_list (rtx_insn *, rtx_insn_list *, int,
 				 enum reg_note, bool);
@@ -488,7 +488,7 @@ static void sched_analyze_2 (class deps_desc *, rtx, rtx_insn *);
 static void sched_analyze_insn (class deps_desc *, rtx, rtx_insn *);
 
 static bool sched_has_condition_p (const rtx_insn *);
-static int conditions_mutex_p (const_rtx, const_rtx, bool, bool);
+static bool conditions_mutex_p (const_rtx, const_rtx, bool, bool);
 
 static enum DEPS_ADJUST_RESULT maybe_add_or_update_dep_1 (dep_t, bool,
 							  rtx, rtx);
@@ -497,9 +497,9 @@ static enum DEPS_ADJUST_RESULT add_or_update_dep_1 (dep_t, bool, rtx, rtx);
 static void check_dep (dep_t, bool);
 
 
-/* Return nonzero if a load of the memory reference MEM can cause a trap.  */
+/* Return true if a load of the memory reference MEM can cause a trap.  */
 
-static int
+static bool
 deps_may_trap_p (const_rtx mem)
 {
   const_rtx addr = XEXP (mem, 0);
@@ -617,8 +617,8 @@ sched_has_condition_p (const rtx_insn *insn)
 
 
 
-/* Return nonzero if conditions COND1 and COND2 can never be both true.  */
-static int
+/* Return true if conditions COND1 and COND2 can never be both true.  */
+static bool
 conditions_mutex_p (const_rtx cond1, const_rtx cond2, bool rev1, bool rev2)
 {
   if (COMPARISON_P (cond1)
@@ -629,8 +629,8 @@ conditions_mutex_p (const_rtx cond1, const_rtx cond2, bool rev1, bool rev2)
 	  : GET_CODE (cond2))
       && rtx_equal_p (XEXP (cond1, 0), XEXP (cond2, 0))
       && XEXP (cond1, 1) == XEXP (cond2, 1))
-    return 1;
-  return 0;
+    return true;
+  return false;
 }
 
 /* Return true if insn1 and insn2 can never depend on one another because

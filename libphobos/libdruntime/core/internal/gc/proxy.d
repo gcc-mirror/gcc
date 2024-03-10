@@ -62,8 +62,9 @@ extern (C)
             {
                 import core.stdc.stdio : fprintf, stderr;
                 import core.stdc.stdlib : exit;
+                import core.atomic : atomicLoad;
 
-                fprintf(stderr, "No GC was initialized, please recheck the name of the selected GC ('%.*s').\n", cast(int)config.gc.length, config.gc.ptr);
+                fprintf(atomicLoad(stderr), "No GC was initialized, please recheck the name of the selected GC ('%.*s').\n", cast(int)config.gc.length, config.gc.ptr);
                 instanceLock.unlock();
                 exit(1);
 
@@ -97,7 +98,9 @@ extern (C)
             {
                 default:
                     import core.stdc.stdio : fprintf, stderr;
-                    fprintf(stderr, "Unknown GC cleanup method, please recheck ('%.*s').\n",
+                    import core.atomic : atomicLoad;
+
+                    fprintf(atomicLoad(stderr), "Unknown GC cleanup method, please recheck ('%.*s').\n",
                             cast(int)config.cleanup.length, config.cleanup.ptr);
                     break;
                 case "none":

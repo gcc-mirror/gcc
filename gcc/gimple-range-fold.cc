@@ -262,7 +262,8 @@ fur_list::fur_list (unsigned num, vrange **list, range_query *q)
 bool
 fur_list::get_operand (vrange &r, tree expr)
 {
-  if (m_index >= m_limit)
+  // Do not use the vector for non-ssa-names, or if it has been emptied.
+  if (TREE_CODE (expr) != SSA_NAME || m_index >= m_limit)
     return m_query->range_of_expr (r, expr);
   r = *m_list[m_index++];
   gcc_checking_assert (range_compatible_p (TREE_TYPE (expr), r.type ()));
@@ -699,7 +700,7 @@ fold_using_range::range_of_range_op (vrange &r,
 				   relation_trio::op1_op2 (rel)))
 	    r.set_varying (type);
 	  if (irange::supports_p (type))
-	    relation_fold_and_or (as_a <irange> (r), s, src);
+	    relation_fold_and_or (as_a <irange> (r), s, src, range1, range2);
 	  if (lhs)
 	    {
 	      if (src.gori ())
@@ -1102,7 +1103,8 @@ fold_using_range::range_of_ssa_name_with_loop_info (vrange &r, tree name,
 
 void
 fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
-					fur_source &src)
+					fur_source &src, vrange &op1,
+					vrange &op2)
 {
   // No queries or already folded.
   if (!src.gori () || !src.query ()->oracle () || lhs_range.singleton_p ())
@@ -1163,9 +1165,8 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
     return;
 
   int_range<2> bool_one = range_true ();
-
-  relation_kind relation1 = handler1.op1_op2_relation (bool_one);
-  relation_kind relation2 = handler2.op1_op2_relation (bool_one);
+  relation_kind relation1 = handler1.op1_op2_relation (bool_one, op1, op2);
+  relation_kind relation2 = handler2.op1_op2_relation (bool_one, op1, op2);
   if (relation1 == VREL_VARYING || relation2 == VREL_VARYING)
     return;
 
@@ -1200,7 +1201,8 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
 // Register any outgoing edge relations from a conditional branch.
 
 void
-fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge e1)
+fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
+				     edge e0, edge e1)
 {
   int_range<2> e0_range, e1_range;
   tree name;
@@ -1235,17 +1237,20 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge 
   // if (a_2 < b_5)
   tree ssa1 = gimple_range_ssa_p (handler.operand1 ());
   tree ssa2 = gimple_range_ssa_p (handler.operand2 ());
+  Value_Range r1,r2;
   if (ssa1 && ssa2)
     {
+      r1.set_varying (TREE_TYPE (ssa1));
+      r2.set_varying (TREE_TYPE (ssa2));
       if (e0)
 	{
-	  relation_kind relation = handler.op1_op2_relation (e0_range);
+	  relation_kind relation = handler.op1_op2_relation (e0_range, r1, r2);
 	  if (relation != VREL_VARYING)
 	    register_relation (e0, relation, ssa1, ssa2);
 	}
       if (e1)
 	{
-	  relation_kind relation = handler.op1_op2_relation (e1_range);
+	  relation_kind relation = handler.op1_op2_relation (e1_range, r1, r2);
 	  if (relation != VREL_VARYING)
 	    register_relation (e1, relation, ssa1, ssa2);
 	}
@@ -1272,17 +1277,19 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge 
       Value_Range r (TREE_TYPE (name));
       if (ssa1 && ssa2)
 	{
+	  r1.set_varying (TREE_TYPE (ssa1));
+	  r2.set_varying (TREE_TYPE (ssa2));
 	  if (e0 && gori ()->outgoing_edge_range_p (r, e0, name, *m_query)
 	      && r.singleton_p ())
 	    {
-	      relation_kind relation = handler.op1_op2_relation (r);
+	      relation_kind relation = handler.op1_op2_relation (r, r1, r2);
 	      if (relation != VREL_VARYING)
 		register_relation (e0, relation, ssa1, ssa2);
 	    }
 	  if (e1 && gori ()->outgoing_edge_range_p (r, e1, name, *m_query)
 	      && r.singleton_p ())
 	    {
-	      relation_kind relation = handler.op1_op2_relation (r);
+	      relation_kind relation = handler.op1_op2_relation (r, r1, r2);
 	      if (relation != VREL_VARYING)
 		register_relation (e1, relation, ssa1, ssa2);
 	    }

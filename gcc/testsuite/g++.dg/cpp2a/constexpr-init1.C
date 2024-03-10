@@ -52,11 +52,10 @@ constexpr int
 fn5 ()
 {
   struct S { int a = 9; int b; } s;
-  return s.b;
+  return s.b; // { dg-error "accessing uninitialized member" }
 }
 
-constexpr int b = fn5 (); // { dg-error "accessing uninitialized member" }
-// { dg-message "in .constexpr. expansion of" "" { target *-*-* } .-1 }
+constexpr int b = fn5 (); // { dg-message "in .constexpr. expansion of" }
 
 constexpr int
 fn6 ()

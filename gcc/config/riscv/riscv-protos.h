@@ -37,10 +37,55 @@ enum riscv_symbol_type {
 };
 #define NUM_SYMBOL_TYPES (SYMBOL_TLS_GD + 1)
 
+/* Classifies an address.
+
+   ADDRESS_REG
+       A natural register + offset address.  The register satisfies
+       riscv_valid_base_register_p and the offset is a const_arith_operand.
+
+   ADDRESS_LO_SUM
+       A LO_SUM rtx.  The first operand is a valid base register and
+       the second operand is a symbolic address.
+
+   ADDRESS_CONST_INT
+       A signed 16-bit constant address.
+
+   ADDRESS_SYMBOLIC:
+       A constant symbolic address.  */
+enum riscv_address_type {
+  ADDRESS_REG,
+  ADDRESS_LO_SUM,
+  ADDRESS_CONST_INT,
+  ADDRESS_SYMBOLIC
+};
+
+/* Information about an address described by riscv_address_type.
+
+   ADDRESS_CONST_INT
+       No fields are used.
+
+   ADDRESS_REG
+       REG is the base register and OFFSET is the constant offset.
+
+   ADDRESS_LO_SUM
+       REG and OFFSET are the operands to the LO_SUM and SYMBOL_TYPE
+       is the type of symbol it references.
+
+   ADDRESS_SYMBOLIC
+       SYMBOL_TYPE is the type of symbol that the address references.  */
+struct riscv_address_info {
+  enum riscv_address_type type;
+  rtx reg;
+  rtx offset;
+  enum riscv_symbol_type symbol_type;
+};
+
 /* Routines implemented in riscv.cc.  */
 extern enum riscv_symbol_type riscv_classify_symbolic_expression (rtx);
 extern bool riscv_symbolic_constant_p (rtx, enum riscv_symbol_type *);
 extern int riscv_regno_mode_ok_for_base_p (int, machine_mode, bool);
+extern enum reg_class riscv_index_reg_class ();
+extern int riscv_regno_ok_for_index_p (int);
 extern int riscv_address_insns (rtx, machine_mode, bool);
 extern int riscv_const_insns (rtx);
 extern int riscv_split_const_insns (rtx);
@@ -58,7 +103,7 @@ extern const char *riscv_output_move (rtx, rtx);
 extern const char *riscv_output_return ();
 
 #ifdef RTX_CODE
-extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx);
+extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
 extern void riscv_expand_float_scc (rtx, enum rtx_code, rtx, rtx);
 extern void riscv_expand_conditional_branch (rtx, enum rtx_code, rtx, rtx);
 extern rtx riscv_emit_binary (enum rtx_code code, rtx dest, rtx x, rtx y);
@@ -82,6 +127,7 @@ extern void riscv_reinit (void);
 extern poly_uint64 riscv_regmode_natural_size (machine_mode);
 extern bool riscv_v_ext_vector_mode_p (machine_mode);
 extern bool riscv_v_ext_tuple_mode_p (machine_mode);
+extern bool riscv_v_ext_vls_mode_p (machine_mode);
 extern bool riscv_shamt_matches_mask_p (int, HOST_WIDE_INT);
 extern void riscv_subword_address (rtx, rtx *, rtx *, rtx *, rtx *);
 extern void riscv_lshift_subword (machine_mode, rtx, rtx, rtx *);
@@ -139,15 +185,22 @@ enum insn_type
   RVV_UNOP = 2,
   RVV_BINOP = 3,
   RVV_BINOP_MU = RVV_BINOP + 2,
+  RVV_BINOP_TU = RVV_BINOP + 2,
   RVV_MERGE_OP = 4,
   RVV_CMP_OP = 4,
   RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
   RVV_UNOP_MU = RVV_UNOP + 2,	  /* Likewise.  */
   RVV_UNOP_M = RVV_UNOP + 2,	  /* Likewise.  */
   RVV_TERNOP = 5,
+  RVV_TERNOP_TU = RVV_TERNOP + 1,
   RVV_WIDEN_TERNOP = 4,
   RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
   RVV_SLIDE_OP = 4,      /* Dest, VUNDEF, source and offset.  */
+  RVV_COMPRESS_OP = 4,
+  RVV_GATHER_M_OP = 5,
+  RVV_SCATTER_M_OP = 4,
+  RVV_REDUCTION_OP = 3,
+  RVV_REDUCTION_TU_OP = RVV_REDUCTION_OP + 2,
 };
 enum vlmul_type
 {
@@ -196,7 +249,7 @@ void emit_vlmax_merge_insn (unsigned, int, rtx *);
 void emit_vlmax_cmp_insn (unsigned, rtx *);
 void emit_vlmax_cmp_mu_insn (unsigned, rtx *);
 void emit_vlmax_masked_mu_insn (unsigned, int, rtx *);
-void emit_scalar_move_insn (unsigned, rtx *);
+void emit_scalar_move_insn (unsigned, rtx *, rtx = 0);
 void emit_nonvlmax_integer_move_insn (unsigned, rtx *, rtx);
 enum vlmul_type get_vlmul (machine_mode);
 unsigned int get_ratio (machine_mode);
@@ -219,6 +272,13 @@ enum mask_policy
   MASK_AGNOSTIC = 1,
   MASK_ANY = 2,
 };
+
+enum class reduction_type
+{
+  UNORDERED,
+  FOLD_LEFT,
+  MASK_LEN_FOLD_LEFT,
+};
 enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
@@ -230,6 +290,9 @@ bool neg_simm5_p (rtx);
 bool has_vi_variant_p (rtx_code, rtx);
 void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
+void expand_cond_len_binop (rtx_code, rtx *);
+void expand_reduction (rtx_code, rtx *, rtx,
+		       reduction_type = reduction_type::UNORDERED);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
@@ -249,12 +312,14 @@ bool slide1_sew64_helper (int, machine_mode, machine_mode,
 rtx gen_avl_for_scalar_move (rtx);
 void expand_tuple_move (rtx *);
 machine_mode preferred_simd_mode (scalar_mode);
-opt_machine_mode get_mask_mode (machine_mode);
+machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
 void expand_vec_perm (rtx, rtx, rtx, rtx);
 void expand_select_vl (rtx *);
 void expand_load_store (rtx *, bool);
+void expand_gather_scatter (rtx *, bool);
+void expand_cond_len_ternop (unsigned, rtx *);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode

@@ -352,7 +352,8 @@ class region_model
   const svalue *get_rvalue (tree expr, region_model_context *ctxt) const;
 
   const region *deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
-			       region_model_context *ctxt) const;
+			      region_model_context *ctxt,
+			      bool add_nonnull_constraint = true) const;
 
   const svalue *get_rvalue_for_bits (tree type,
 				     const region *reg,

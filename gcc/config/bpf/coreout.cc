@@ -30,6 +30,7 @@
 #include "ctfc.h"
 #include "btf.h"
 #include "rtl.h"
+#include "tree-pretty-print.h"
 
 #include "coreout.h"
 
@@ -146,38 +147,37 @@ static char btf_ext_info_section_label[MAX_BTF_EXT_LABEL_BYTES];
 
 static GTY (()) vec<bpf_core_section_ref, va_gc> *bpf_core_sections;
 
+struct bpf_core_extra {
+  const char *accessor_str;
+  tree type;
+};
+static hash_map<bpf_core_reloc_ref, struct bpf_core_extra *> bpf_comment_info;
 
 /* Create a new BPF CO-RE relocation record, and add it to the appropriate
    CO-RE section.  */
-
 void
 bpf_core_reloc_add (const tree type, const char * section_name,
-		    vec<unsigned int> *accessors, rtx_code_label *label,
+		    const char *accessor,
+		    rtx_code_label *label,
 		    enum btf_core_reloc_kind kind)
 {
-  char buf[40];
-  unsigned int i, n = 0;
-
-  /* A valid CO-RE access must have at least one accessor.  */
-  if (accessors->length () < 1)
-    return;
-
-  for (i = 0; i < accessors->length () - 1; i++)
-    n += snprintf (buf + n, sizeof (buf) - n, "%u:", (*accessors)[i]);
-  snprintf (buf + n, sizeof (buf) - n, "%u", (*accessors)[i]);
-
   bpf_core_reloc_ref bpfcr = ggc_cleared_alloc<bpf_core_reloc_t> ();
+  struct bpf_core_extra *info = ggc_cleared_alloc<struct bpf_core_extra> ();
   ctf_container_ref ctfc = ctf_get_tu_ctfc ();
 
   /* Buffer the access string in the auxiliary strtab.  */
-  ctf_add_string (ctfc, buf, &(bpfcr->bpfcr_astr_off), CTF_AUX_STRTAB);
-
+  ctf_add_string (ctfc, accessor, &(bpfcr->bpfcr_astr_off), CTF_AUX_STRTAB);
   bpfcr->bpfcr_type = get_btf_id (ctf_lookup_tree_type (ctfc, type));
   bpfcr->bpfcr_insn_label = label;
   bpfcr->bpfcr_kind = kind;
 
+  info->accessor_str = accessor;
+  info->type = type;
+  bpf_comment_info.put (bpfcr, info);
+
   /* Add the CO-RE reloc to the appropriate section.  */
   bpf_core_section_ref sec;
+  int i;
   FOR_EACH_VEC_ELT (*bpf_core_sections, i, sec)
     if (strcmp (sec->name, section_name) == 0)
       {
@@ -288,14 +288,26 @@ output_btfext_header (void)
 static void
 output_asm_btfext_core_reloc (bpf_core_reloc_ref bpfcr)
 {
+  struct bpf_core_extra **info = bpf_comment_info.get (bpfcr);
+  gcc_assert (info != NULL);
+
   bpfcr->bpfcr_astr_off += ctfc_get_strtab_len (ctf_get_tu_ctfc (),
 						CTF_STRTAB);
 
   dw2_assemble_integer (4, gen_rtx_LABEL_REF (Pmode, bpfcr->bpfcr_insn_label));
-  fprintf (asm_out_file, "\t%s bpfcr_insn\n", ASM_COMMENT_START);
+  fprintf (asm_out_file, "\t%s%s\n",
+	   flag_debug_asm ? ASM_COMMENT_START : "",
+	   (flag_debug_asm ? " bpfcr_insn" : ""));
 
-  dw2_asm_output_data (4, bpfcr->bpfcr_type, "bpfcr_type");
-  dw2_asm_output_data (4, bpfcr->bpfcr_astr_off, "bpfcr_astr_off");
+  /* Extract the pretty print for the type expression.  */
+  pretty_printer pp;
+  dump_generic_node (&pp, (*info)->type, 0, TDF_VOPS|TDF_MEMSYMS|TDF_SLIM,
+		     false);
+  char *str = xstrdup (pp_formatted_text (&pp));
+
+  dw2_asm_output_data (4, bpfcr->bpfcr_type, "bpfcr_type (%s)", str);
+  dw2_asm_output_data (4, bpfcr->bpfcr_astr_off, "bpfcr_astr_off (\"%s\")",
+			  (*info)->accessor_str);
   dw2_asm_output_data (4, bpfcr->bpfcr_kind, "bpfcr_kind");
 }
 

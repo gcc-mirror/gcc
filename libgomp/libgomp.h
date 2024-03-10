@@ -1388,6 +1388,8 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_free) *free_func;
   __typeof (GOMP_OFFLOAD_dev2host) *dev2host_func;
   __typeof (GOMP_OFFLOAD_host2dev) *host2dev_func;
+  __typeof (GOMP_OFFLOAD_memcpy2d) *memcpy2d_func;
+  __typeof (GOMP_OFFLOAD_memcpy3d) *memcpy3d_func;
   __typeof (GOMP_OFFLOAD_dev2dev) *dev2dev_func;
   __typeof (GOMP_OFFLOAD_can_run) *can_run_func;
   __typeof (GOMP_OFFLOAD_run) *run_func;

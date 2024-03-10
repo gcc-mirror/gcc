@@ -605,6 +605,32 @@ ssa_cache::set_range (tree name, const vrange &r)
   return m != NULL;
 }
 
+// If NAME has a range, intersect it with R, otherwise set it to R.
+// Return TRUE if there was already a range set, otherwise false.
+
+bool
+ssa_cache::merge_range (tree name, const vrange &r)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_tab.length ())
+    m_tab.safe_grow_cleared (num_ssa_names + 1);
+
+  vrange_storage *m = m_tab[v];
+  if (m)
+    {
+      Value_Range curr (TREE_TYPE (name));
+      m->get_vrange (curr, TREE_TYPE (name));
+      curr.intersect (r);
+      if (m->fits_p (curr))
+	m->set_vrange (curr);
+      else
+	m_tab[v] = m_range_allocator->clone (curr);
+    }
+  else
+    m_tab[v] = m_range_allocator->clone (r);
+  return m != NULL;
+}
+
 // Set the range for NAME to R in the ssa cache.
 
 void
@@ -682,6 +708,25 @@ ssa_lazy_cache::set_range (tree name, const vrange &r)
       // There is already an entry, simply set it.
       gcc_checking_assert (v < m_tab.length ());
       return ssa_cache::set_range (name, r);
+    }
+  if (v >= m_tab.length ())
+    m_tab.safe_grow (num_ssa_names + 1);
+  m_tab[v] = m_range_allocator->clone (r);
+  return false;
+}
+
+// If NAME has a range, intersect it with R, otherwise set it to R.
+// Return TRUE if there was already a range set, otherwise false.
+
+bool
+ssa_lazy_cache::merge_range (tree name, const vrange &r)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (!bitmap_set_bit (active_p, v))
+    {
+      // There is already an entry, simply merge it.
+      gcc_checking_assert (v < m_tab.length ());
+      return ssa_cache::merge_range (name, r);
     }
   if (v >= m_tab.length ())
     m_tab.safe_grow (num_ssa_names + 1);

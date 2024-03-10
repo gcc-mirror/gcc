@@ -7,4 +7,4 @@ int f(int x)
     return x & 1;
 }
 
-/* { dg-final { scan-tree-dump "gimple_simplified to.* = 1" "evrp" } }  */
+/* { dg-final { scan-tree-dump "Folded into: return 1;" "evrp" } }  */

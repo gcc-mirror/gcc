@@ -981,12 +981,6 @@ region_model::check_region_bounds (const region *reg,
   region_offset reg_offset = reg->get_offset (m_mgr);
   const region *base_reg = reg_offset.get_base_region ();
 
-  /* Bail out on symbolic regions.
-     (e.g. because the analyzer did not see previous offsets on the latter,
-     it might think that a negative access is before the buffer).  */
-  if (base_reg->symbolic_p ())
-	  return true;
-
   /* Find out how many bytes were accessed.  */
   const svalue *num_bytes_sval = reg->get_byte_size_sval (m_mgr);
   tree num_bytes_tree = maybe_get_integer_cst_tree (num_bytes_sval);
@@ -1010,9 +1004,9 @@ region_model::check_region_bounds (const region *reg,
     offset = wi::sext (reg_offset.get_bit_offset () >> LOG2_BITS_PER_UNIT,
 		       TYPE_PRECISION (size_type_node));
 
-  /* If either the offset or the number of bytes accessed are symbolic,
-     we have to reason about symbolic values.  */
-  if (reg_offset.symbolic_p () || !num_bytes_tree)
+  /* If any of the base region, the offset, or the number of bytes accessed
+     are symbolic, we have to reason about symbolic values.  */
+  if (base_reg->symbolic_p () || reg_offset.symbolic_p () || !num_bytes_tree)
     {
       const svalue* byte_offset_sval;
       if (!reg_offset.symbolic_p ())

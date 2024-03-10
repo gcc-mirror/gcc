@@ -93,12 +93,12 @@ program main
     src_offsets(2) = 1
     src_offsets(1) = 0
     src_offsets(0) = 3
-    dst_dimensions(2) = 2
+    dst_dimensions(2) = 3
     dst_dimensions(1) = 3
     dst_dimensions(0) = 6
     src_dimensions(2) = 3
     src_dimensions(1) = 4
-    src_dimensions(0) = 6
+    src_dimensions(0) = 9
 
     if (omp_target_memcpy_rect (p, c_loc (q), sizeof (q(0)), 3, volume, &
                                 dst_offsets, src_offsets, dst_dimensions, &
@@ -112,7 +112,7 @@ program main
       do j = 0, 5
         do k = 0, 2
           do l = 0, 1
-            if (q(j * 6 + k * 2 + l) /= 3 * 12 + 4 + 1 + l + k * 3 + j * 12) &
+            if (q(j * 9 + k * 3 + l) /= 3 * 12 + 4 + 1 + l + k * 3 + j * 12) &
               err = .true.
           end do
         end do

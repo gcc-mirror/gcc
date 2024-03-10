@@ -497,6 +497,22 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
   if test $glibcxx_cv_LFS = yes; then
     AC_DEFINE(_GLIBCXX_USE_LFS, 1, [Define if LFS support is available.])
   fi
+
+  AC_CACHE_CHECK([for fseeko and ftello], glibcxx_cv_posix_lfs, [
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <stdio.h>
+      ],
+      [FILE* fp;
+       fseeko(fp, 0, SEEK_CUR);
+       ftello(fp);
+      ],
+      [glibcxx_cv_posix_lfs=yes],
+      [glibcxx_cv_posix_lfs=no])
+  ])
+  if test $glibcxx_cv_posix_lfs = yes; then
+    AC_DEFINE(_GLIBCXX_USE_FSEEKO_FTELLO, 1, [Define if fseeko and ftello are available.])
+  fi
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])

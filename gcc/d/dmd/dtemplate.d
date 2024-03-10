@@ -741,9 +741,6 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
 
     const(char)* toCharsMaybeConstraints(bool includeConstraints) const
     {
-        if (literal)
-            return Dsymbol.toChars();
-
         OutBuffer buf;
         HdrGenState hgs;
 
@@ -1305,36 +1302,19 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
 
     /*************************************************
      * Match function arguments against a specific template function.
-     * Input:
-     *      ti
-     *      sc              instantiation scope
-     *      fd
-     *      tthis           'this' argument if !NULL
-     *      argumentList    arguments to function
-     * Output:
-     *      fd              Partially instantiated function declaration
-     *      ti.tdtypes     Expression/Type deduced template arguments
+     *
+     * Params:
+     *     ti = template instance. `ti.tdtypes` will be set to Expression/Type deduced template arguments
+     *     sc = instantiation scope
+     *     fd = Partially instantiated function declaration, which is set to an instantiated function declaration
+     *     tthis = 'this' argument if !NULL
+     *     argumentList = arguments to function
+     *
      * Returns:
      *      match pair of initial and inferred template arguments
      */
     extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateInstance ti, Scope* sc, ref FuncDeclaration fd, Type tthis, ArgumentList argumentList)
     {
-        size_t nfparams;
-        size_t nfargs;
-        size_t ntargs; // array size of tiargs
-        size_t fptupindex = IDX_NOTFOUND;
-        MATCH match = MATCH.exact;
-        MATCH matchTiargs = MATCH.exact;
-        ParameterList fparameters; // function parameter list
-        VarArg fvarargs; // function varargs
-        uint wildmatch = 0;
-        size_t inferStart = 0;
-
-        Loc instLoc = ti.loc;
-        Objects* tiargs = ti.tiargs;
-        auto dedargs = new Objects(parameters.length);
-        Objects* dedtypes = &ti.tdtypes; // for T:T*, the dedargs is the T*, dedtypes is the T
-
         version (none)
         {
             printf("\nTemplateDeclaration.deduceFunctionTemplateMatch() %s\n", toChars());
@@ -1351,8 +1331,10 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
 
         assert(_scope);
 
+        auto dedargs = new Objects(parameters.length);
         dedargs.zero();
 
+        Objects* dedtypes = &ti.tdtypes; // for T:T*, the dedargs is the T*, dedtypes is the T
         dedtypes.setDim(parameters.length);
         dedtypes.zero();
 
@@ -1396,8 +1378,12 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             }
         }
 
-        ntargs = 0;
-        if (tiargs)
+        size_t ntargs = 0; // array size of tiargs
+        size_t inferStart = 0; // index of first parameter to infer
+        const Loc instLoc = ti.loc;
+        MATCH matchTiargs = MATCH.exact;
+
+        if (auto tiargs = ti.tiargs)
         {
             // Set initial template arguments
             ntargs = tiargs.length;
@@ -1463,9 +1449,9 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             }
         }
 
-        fparameters = fd.getParameterList();
-        nfparams = fparameters.length; // number of function parameters
-        nfargs = argumentList.length; // number of function arguments
+        ParameterList fparameters = fd.getParameterList(); // function parameter list
+        const nfparams = fparameters.length; // number of function parameters
+        const nfargs = argumentList.length; // number of function arguments
         if (argumentList.hasNames)
             return matcherror(); // TODO: resolve named args
         Expressions* fargs = argumentList.arguments; // TODO: resolve named args
@@ -1476,6 +1462,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
          * void foo(T, A...)(T t, A a);
          * void main() { foo(1,2,3); }
          */
+        size_t fptupindex = IDX_NOTFOUND;
         if (tp) // if variadic
         {
             // TemplateTupleParameter always makes most lesser matching.
@@ -1518,6 +1505,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             }
         }
 
+        MATCH match = MATCH.exact;
         if (toParent().isModule())
             tthis = null;
         if (tthis)
@@ -1582,6 +1570,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             //printf("\ttp = %p, fptupindex = %d, found = %d, declaredTuple = %s\n", tp, fptupindex, fptupindex != IDX_NOTFOUND, declaredTuple ? declaredTuple.toChars() : NULL);
             size_t argi = 0;
             size_t nfargs2 = nfargs; // nfargs + supplied defaultArgs
+            uint inoutMatch = 0; // for debugging only
             for (size_t parami = 0; parami < nfparams; parami++)
             {
                 Parameter fparam = fparameters[parami];
@@ -1646,7 +1635,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             MATCH m;
                             if (ubyte wm = deduceWildHelper(farg.type, &tt, tid))
                             {
-                                wildmatch |= wm;
+                                inoutMatch |= wm;
                                 m = MATCH.constant;
                             }
                             else
@@ -1858,19 +1847,16 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                         Type taai;
                         if (argtype.ty == Tarray && (prmtype.ty == Tsarray || prmtype.ty == Taarray && (taai = (cast(TypeAArray)prmtype).index).ty == Tident && (cast(TypeIdentifier)taai).idents.length == 0))
                         {
-                            if (farg.op == EXP.string_)
+                            if (StringExp se = farg.isStringExp())
                             {
-                                StringExp se = cast(StringExp)farg;
                                 argtype = se.type.nextOf().sarrayOf(se.len);
                             }
-                            else if (farg.op == EXP.arrayLiteral)
+                            else if (ArrayLiteralExp ae = farg.isArrayLiteralExp())
                             {
-                                ArrayLiteralExp ae = cast(ArrayLiteralExp)farg;
                                 argtype = ae.type.nextOf().sarrayOf(ae.elements.length);
                             }
-                            else if (farg.op == EXP.slice)
+                            else if (SliceExp se = farg.isSliceExp())
                             {
-                                SliceExp se = cast(SliceExp)farg;
                                 if (Type tsa = toStaticArrayType(se))
                                     argtype = tsa;
                             }
@@ -1902,10 +1888,10 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     if (fparameters.varargs == VarArg.typesafe && parami + 1 == nfparams && argi + 1 < nfargs)
                         goto Lvarargs;
 
-                    uint wm = 0;
-                    MATCH m = deduceType(oarg, paramscope, prmtype, parameters, dedtypes, &wm, inferStart);
-                    //printf("\tL%d deduceType m = %d, wm = x%x, wildmatch = x%x\n", __LINE__, m, wm, wildmatch);
-                    wildmatch |= wm;
+                    uint im = 0;
+                    MATCH m = deduceType(oarg, paramscope, prmtype, parameters, dedtypes, &im, inferStart);
+                    //printf("\tL%d deduceType m = %d, im = x%x, inoutMatch = x%x\n", __LINE__, m, im, inoutMatch);
+                    inoutMatch |= im;
 
                     /* If no match, see if the argument can be matched by using
                      * implicit conversions.
@@ -2093,7 +2079,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             {
                                 uint wm = 0;
                                 m = deduceType(arg, paramscope, ta.next, parameters, dedtypes, &wm, inferStart);
-                                wildmatch |= wm;
+                                inoutMatch |= wm;
                             }
                             if (m == MATCH.nomatch)
                                 return nomatch();
@@ -2283,18 +2269,23 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
         Declaration d;
         VarDeclaration v = null;
 
-        if (ea && ea.op == EXP.type)
-            ta = ea.type;
-        else if (ea && ea.op == EXP.scope_)
-            sa = (cast(ScopeExp)ea).sds;
-        else if (ea && (ea.op == EXP.this_ || ea.op == EXP.super_))
-            sa = (cast(ThisExp)ea).var;
-        else if (ea && ea.op == EXP.function_)
+        if (ea)
         {
-            if ((cast(FuncExp)ea).td)
-                sa = (cast(FuncExp)ea).td;
-            else
-                sa = (cast(FuncExp)ea).fd;
+            if (ea.op == EXP.type)
+                ta = ea.type;
+            else if (auto se = ea.isScopeExp())
+                sa = se.sds;
+            else if (auto te = ea.isThisExp())
+                sa = te.var;
+            else if (auto se = ea.isSuperExp())
+                sa = se.var;
+            else if (auto fe = ea.isFuncExp())
+            {
+                if (fe.td)
+                    sa = fe.td;
+                else
+                    sa = fe.fd;
+            }
         }
 
         if (ta)
@@ -3856,9 +3847,9 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                 if (tparam.ty == Tsarray)
                 {
                     TypeSArray tsa = cast(TypeSArray)tparam;
-                    if (tsa.dim.op == EXP.variable && (cast(VarExp)tsa.dim).var.storage_class & STC.templateparameter)
+                    if (tsa.dim.isVarExp() && tsa.dim.isVarExp().var.storage_class & STC.templateparameter)
                     {
-                        Identifier id = (cast(VarExp)tsa.dim).var.ident;
+                        Identifier id = tsa.dim.isVarExp().var.ident;
                         i = templateIdentifierLookup(id, parameters);
                         assert(i != IDX_NOTFOUND);
                         tp = (*parameters)[i];
@@ -4142,178 +4133,8 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                     goto Lnomatch;
 
             L2:
-                for (size_t i = 0; 1; i++)
-                {
-                    //printf("\ttest: tempinst.tiargs[%zu]\n", i);
-                    RootObject o1 = null;
-                    if (i < t.tempinst.tiargs.length)
-                        o1 = (*t.tempinst.tiargs)[i];
-                    else if (i < t.tempinst.tdtypes.length && i < tp.tempinst.tiargs.length)
-                    {
-                        // Pick up default arg
-                        o1 = t.tempinst.tdtypes[i];
-                    }
-                    else if (i >= tp.tempinst.tiargs.length)
-                        break;
-                    //printf("\ttest: o1 = %s\n", o1.toChars());
-                    if (i >= tp.tempinst.tiargs.length)
-                    {
-                        size_t dim = tempdecl.parameters.length - (tempdecl.isVariadic() ? 1 : 0);
-                        while (i < dim && ((*tempdecl.parameters)[i].dependent || (*tempdecl.parameters)[i].hasDefaultArg()))
-                        {
-                            i++;
-                        }
-                        if (i >= dim)
-                            break; // match if all remained parameters are dependent
-                        goto Lnomatch;
-                    }
-
-                    RootObject o2 = (*tp.tempinst.tiargs)[i];
-                    Type t2 = isType(o2);
-                    //printf("\ttest: o2 = %s\n", o2.toChars());
-                    size_t j = (t2 && t2.ty == Tident && i == tp.tempinst.tiargs.length - 1)
-                        ? templateParameterLookup(t2, parameters) : IDX_NOTFOUND;
-                    if (j != IDX_NOTFOUND && j == parameters.length - 1 &&
-                        (*parameters)[j].isTemplateTupleParameter())
-                    {
-                        /* Given:
-                         *  struct A(B...) {}
-                         *  alias A!(int, float) X;
-                         *  static if (is(X Y == A!(Z), Z...)) {}
-                         * deduce that Z is a tuple(int, float)
-                         */
-
-                        /* Create tuple from remaining args
-                         */
-                        size_t vtdim = (tempdecl.isVariadic() ? t.tempinst.tiargs.length : t.tempinst.tdtypes.length) - i;
-                        auto vt = new Tuple(vtdim);
-                        for (size_t k = 0; k < vtdim; k++)
-                        {
-                            RootObject o;
-                            if (k < t.tempinst.tiargs.length)
-                                o = (*t.tempinst.tiargs)[i + k];
-                            else // Pick up default arg
-                                o = t.tempinst.tdtypes[i + k];
-                            vt.objects[k] = o;
-                        }
-
-                        Tuple v = cast(Tuple)(*dedtypes)[j];
-                        if (v)
-                        {
-                            if (!match(v, vt))
-                                goto Lnomatch;
-                        }
-                        else
-                            (*dedtypes)[j] = vt;
-                        break;
-                    }
-                    else if (!o1)
-                        break;
-
-                    Type t1 = isType(o1);
-                    Dsymbol s1 = isDsymbol(o1);
-                    Dsymbol s2 = isDsymbol(o2);
-                    Expression e1 = s1 ? getValue(s1) : getValue(isExpression(o1));
-                    Expression e2 = isExpression(o2);
-                    version (none)
-                    {
-                        Tuple v1 = isTuple(o1);
-                        Tuple v2 = isTuple(o2);
-                        if (t1)
-                            printf("t1 = %s\n", t1.toChars());
-                        if (t2)
-                            printf("t2 = %s\n", t2.toChars());
-                        if (e1)
-                            printf("e1 = %s\n", e1.toChars());
-                        if (e2)
-                            printf("e2 = %s\n", e2.toChars());
-                        if (s1)
-                            printf("s1 = %s\n", s1.toChars());
-                        if (s2)
-                            printf("s2 = %s\n", s2.toChars());
-                        if (v1)
-                            printf("v1 = %s\n", v1.toChars());
-                        if (v2)
-                            printf("v2 = %s\n", v2.toChars());
-                    }
-
-                    if (t1 && t2)
-                    {
-                        if (!deduceType(t1, sc, t2, parameters, dedtypes))
-                            goto Lnomatch;
-                    }
-                    else if (e1 && e2)
-                    {
-                    Le:
-                        e1 = e1.ctfeInterpret();
-
-                        /* If it is one of the template parameters for this template,
-                         * we should not attempt to interpret it. It already has a value.
-                         */
-                        if (e2.op == EXP.variable && ((cast(VarExp)e2).var.storage_class & STC.templateparameter))
-                        {
-                            /*
-                             * (T:Number!(e2), int e2)
-                             */
-                            j = templateIdentifierLookup((cast(VarExp)e2).var.ident, parameters);
-                            if (j != IDX_NOTFOUND)
-                                goto L1;
-                            // The template parameter was not from this template
-                            // (it may be from a parent template, for example)
-                        }
-
-                        e2 = e2.expressionSemantic(sc); // https://issues.dlang.org/show_bug.cgi?id=13417
-                        e2 = e2.ctfeInterpret();
-
-                        //printf("e1 = %s, type = %s %d\n", e1.toChars(), e1.type.toChars(), e1.type.ty);
-                        //printf("e2 = %s, type = %s %d\n", e2.toChars(), e2.type.toChars(), e2.type.ty);
-                        if (!e1.equals(e2))
-                        {
-                            if (!e2.implicitConvTo(e1.type))
-                                goto Lnomatch;
-
-                            e2 = e2.implicitCastTo(sc, e1.type);
-                            e2 = e2.ctfeInterpret();
-                            if (!e1.equals(e2))
-                                goto Lnomatch;
-                        }
-                    }
-                    else if (e1 && t2 && t2.ty == Tident)
-                    {
-                        j = templateParameterLookup(t2, parameters);
-                    L1:
-                        if (j == IDX_NOTFOUND)
-                        {
-                            t2.resolve((cast(TypeIdentifier)t2).loc, sc, e2, t2, s2);
-                            if (e2)
-                                goto Le;
-                            goto Lnomatch;
-                        }
-                        if (!(*parameters)[j].matchArg(sc, e1, j, parameters, dedtypes, null))
-                            goto Lnomatch;
-                    }
-                    else if (s1 && s2)
-                    {
-                    Ls:
-                        if (!s1.equals(s2))
-                            goto Lnomatch;
-                    }
-                    else if (s1 && t2 && t2.ty == Tident)
-                    {
-                        j = templateParameterLookup(t2, parameters);
-                        if (j == IDX_NOTFOUND)
-                        {
-                            t2.resolve((cast(TypeIdentifier)t2).loc, sc, e2, t2, s2);
-                            if (s2)
-                                goto Ls;
-                            goto Lnomatch;
-                        }
-                        if (!(*parameters)[j].matchArg(sc, s1, j, parameters, dedtypes, null))
-                            goto Lnomatch;
-                    }
-                    else
-                        goto Lnomatch;
-                }
+                if (!resolveTemplateInstantiation(t.tempinst.tiargs, &t.tempinst.tdtypes, tempdecl, tp, dedtypes))
+                    goto Lnomatch;
             }
             visit(cast(Type)t);
             return;
@@ -4321,6 +4142,198 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
         Lnomatch:
             //printf("no match\n");
             result = MATCH.nomatch;
+        }
+
+        /********************
+         * Match template `parameters` to the target template instance.
+         * Example:
+         *    struct Temp(U, int Z) {}
+         *    void foo(T)(Temp!(T, 3));
+         *    foo(Temp!(int, 3)());
+         * Input:
+         *    this.parameters  = template params of foo -> [T]
+         *    tiargs           = <Temp!(int, 3)>.tiargs  -> [int, 3]
+         *    tdtypes          = <Temp!(int, 3)>.tdtypes -> [int, 3]
+         *    tempdecl         = <struct Temp!(T, int Z)> -> [T, Z]
+         *    tp               = <Temp!(T, 3)>
+         * Output:
+         *    dedtypes         = deduced params of `foo(Temp!(int, 3)())` -> [int]
+         */
+        private bool resolveTemplateInstantiation(Objects* tiargs, Objects* tdtypes, TemplateDeclaration tempdecl, TypeInstance tp, Objects* dedtypes)
+        {
+            for (size_t i = 0; 1; i++)
+            {
+                //printf("\ttest: tempinst.tiargs[%zu]\n", i);
+                RootObject o1 = null;
+                if (i < tiargs.length)
+                    o1 = (*tiargs)[i];
+                else if (i < tdtypes.length && i < tp.tempinst.tiargs.length)
+                {
+                    // Pick up default arg
+                    o1 = (*tdtypes)[i];
+                }
+                else if (i >= tp.tempinst.tiargs.length)
+                    break;
+                //printf("\ttest: o1 = %s\n", o1.toChars());
+                if (i >= tp.tempinst.tiargs.length)
+                {
+                    size_t dim = tempdecl.parameters.length - (tempdecl.isVariadic() ? 1 : 0);
+                    while (i < dim && ((*tempdecl.parameters)[i].dependent || (*tempdecl.parameters)[i].hasDefaultArg()))
+                    {
+                        i++;
+                    }
+                    if (i >= dim)
+                        break; // match if all remained parameters are dependent
+                    return false;
+                }
+
+                RootObject o2 = (*tp.tempinst.tiargs)[i];
+                Type t2 = isType(o2);
+                //printf("\ttest: o2 = %s\n", o2.toChars());
+                size_t j = (t2 && t2.ty == Tident && i == tp.tempinst.tiargs.length - 1)
+                    ? templateParameterLookup(t2, parameters) : IDX_NOTFOUND;
+                if (j != IDX_NOTFOUND && j == parameters.length - 1 &&
+                    (*parameters)[j].isTemplateTupleParameter())
+                {
+                    /* Given:
+                         *  struct A(B...) {}
+                         *  alias A!(int, float) X;
+                         *  static if (is(X Y == A!(Z), Z...)) {}
+                         * deduce that Z is a tuple(int, float)
+                         */
+
+                    /* Create tuple from remaining args
+                         */
+                    size_t vtdim = (tempdecl.isVariadic() ? tiargs.length : tdtypes.length) - i;
+                    auto vt = new Tuple(vtdim);
+                    for (size_t k = 0; k < vtdim; k++)
+                    {
+                        RootObject o;
+                        if (k < tiargs.length)
+                            o = (*tiargs)[i + k];
+                        else // Pick up default arg
+                            o = (*tdtypes)[i + k];
+                        vt.objects[k] = o;
+                    }
+
+                    Tuple v = cast(Tuple)(*dedtypes)[j];
+                    if (v)
+                    {
+                        if (!match(v, vt))
+                            return false;
+                    }
+                    else
+                        (*dedtypes)[j] = vt;
+                    break;
+                }
+                else if (!o1)
+                    break;
+
+                Type t1 = isType(o1);
+                Dsymbol s1 = isDsymbol(o1);
+                Dsymbol s2 = isDsymbol(o2);
+                Expression e1 = s1 ? getValue(s1) : getValue(isExpression(o1));
+                Expression e2 = isExpression(o2);
+                version (none)
+                {
+                    Tuple v1 = isTuple(o1);
+                    Tuple v2 = isTuple(o2);
+                    if (t1)
+                        printf("t1 = %s\n", t1.toChars());
+                    if (t2)
+                        printf("t2 = %s\n", t2.toChars());
+                    if (e1)
+                        printf("e1 = %s\n", e1.toChars());
+                    if (e2)
+                        printf("e2 = %s\n", e2.toChars());
+                    if (s1)
+                        printf("s1 = %s\n", s1.toChars());
+                    if (s2)
+                        printf("s2 = %s\n", s2.toChars());
+                    if (v1)
+                        printf("v1 = %s\n", v1.toChars());
+                    if (v2)
+                        printf("v2 = %s\n", v2.toChars());
+                }
+
+                if (t1 && t2)
+                {
+                    if (!deduceType(t1, sc, t2, parameters, dedtypes))
+                        return false;
+                }
+                else if (e1 && e2)
+                {
+                Le:
+                    e1 = e1.ctfeInterpret();
+
+                    /* If it is one of the template parameters for this template,
+                         * we should not attempt to interpret it. It already has a value.
+                         */
+                    if (e2.op == EXP.variable && (e2.isVarExp().var.storage_class & STC.templateparameter))
+                    {
+                        /*
+                             * (T:Number!(e2), int e2)
+                             */
+                        j = templateIdentifierLookup(e2.isVarExp().var.ident, parameters);
+                        if (j != IDX_NOTFOUND)
+                            goto L1;
+                        // The template parameter was not from this template
+                        // (it may be from a parent template, for example)
+                    }
+
+                    e2 = e2.expressionSemantic(sc); // https://issues.dlang.org/show_bug.cgi?id=13417
+                    e2 = e2.ctfeInterpret();
+
+                    //printf("e1 = %s, type = %s %d\n", e1.toChars(), e1.type.toChars(), e1.type.ty);
+                    //printf("e2 = %s, type = %s %d\n", e2.toChars(), e2.type.toChars(), e2.type.ty);
+                    if (!e1.equals(e2))
+                    {
+                        if (!e2.implicitConvTo(e1.type))
+                            return false;
+
+                        e2 = e2.implicitCastTo(sc, e1.type);
+                        e2 = e2.ctfeInterpret();
+                        if (!e1.equals(e2))
+                            return false;
+                    }
+                }
+                else if (e1 && t2 && t2.ty == Tident)
+                {
+                    j = templateParameterLookup(t2, parameters);
+                L1:
+                    if (j == IDX_NOTFOUND)
+                    {
+                        t2.resolve((cast(TypeIdentifier)t2).loc, sc, e2, t2, s2);
+                        if (e2)
+                            goto Le;
+                        return false;
+                    }
+                    if (!(*parameters)[j].matchArg(sc, e1, j, parameters, dedtypes, null))
+                        return false;
+                }
+                else if (s1 && s2)
+                {
+                Ls:
+                    if (!s1.equals(s2))
+                        return false;
+                }
+                else if (s1 && t2 && t2.ty == Tident)
+                {
+                    j = templateParameterLookup(t2, parameters);
+                    if (j == IDX_NOTFOUND)
+                    {
+                        t2.resolve((cast(TypeIdentifier)t2).loc, sc, e2, t2, s2);
+                        if (s2)
+                            goto Ls;
+                        return false;
+                    }
+                    if (!(*parameters)[j].matchArg(sc, s1, j, parameters, dedtypes, null))
+                        return false;
+                }
+                else
+                    return false;
+            }
+            return true;
         }
 
         override void visit(TypeStruct t)
@@ -5236,7 +5249,7 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
         override void visit(DotTemplateInstanceExp e)
         {
             //printf("DotTemplateInstanceExp.reliesOnTemplateParameters('%s')\n", e.toChars());
-            visit(cast(UnaExp)e);
+            visit(e.isUnaExp());
             if (!result && e.ti.tiargs)
             {
                 foreach (oa; *e.ti.tiargs)
@@ -5254,7 +5267,7 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
         override void visit(CallExp e)
         {
             //printf("CallExp.reliesOnTemplateParameters('%s')\n", e.toChars());
-            visit(cast(UnaExp)e);
+            visit(e.isUnaExp());
             if (!result && e.arguments)
             {
                 foreach (ea; *e.arguments)
@@ -5269,7 +5282,7 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
         override void visit(CastExp e)
         {
             //printf("CallExp.reliesOnTemplateParameters('%s')\n", e.toChars());
-            visit(cast(UnaExp)e);
+            visit(e.isUnaExp());
             // e.to can be null for cast() with no type
             if (!result && e.to)
                 result = e.to.reliesOnTemplateParameters(tparams);
@@ -5278,7 +5291,7 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
         override void visit(SliceExp e)
         {
             //printf("SliceExp.reliesOnTemplateParameters('%s')\n", e.toChars());
-            visit(cast(UnaExp)e);
+            visit(e.isUnaExp());
             if (!result && e.lwr)
                 e.lwr.accept(this);
             if (!result && e.upr)
@@ -5296,7 +5309,7 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
         override void visit(ArrayExp e)
         {
             //printf("ArrayExp.reliesOnTemplateParameters('%s')\n", e.toChars());
-            visit(cast(UnaExp)e);
+            visit(e.isUnaExp());
             if (!result && e.arguments)
             {
                 foreach (ea; *e.arguments)
@@ -5317,7 +5330,7 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
             //printf("BinExp.reliesOnTemplateParameters('%s')\n", e.toChars());
             e.econd.accept(this);
             if (!result)
-                visit(cast(BinExp)e);
+                visit(e.isBinExp());
         }
     }
 
@@ -6727,7 +6740,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                     ea = ea.expressionSemantic(sc);
 
                     // must not interpret the args, excepting template parameters
-                    if (ea.op != EXP.variable || ((cast(VarExp)ea).var.storage_class & STC.templateparameter))
+                    if (!ea.isVarExp() || (ea.isVarExp().var.storage_class & STC.templateparameter))
                     {
                         ea = ea.optimize(WANTvalue);
                     }
@@ -6738,13 +6751,13 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                     ea = ea.expressionSemantic(sc);
                     sc = sc.endCTFE();
 
-                    if (ea.op == EXP.variable)
+                    if (auto varExp = ea.isVarExp())
                     {
                         /* If the parameter is a function that is not called
                          * explicitly, i.e. `foo!func` as opposed to `foo!func()`,
                          * then it is a dsymbol, not the return value of `func()`
                          */
-                        Declaration vd = (cast(VarExp)ea).var;
+                        Declaration vd = varExp.var;
                         if (auto fd = vd.isFuncDeclaration())
                         {
                             sa = fd;
@@ -6767,10 +6780,9 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                     }
                 }
                 //printf("-[%d] ea = %s %s\n", j, EXPtoString(ea.op).ptr, ea.toChars());
-                if (ea.op == EXP.tuple)
+                if (TupleExp te = ea.isTupleExp())
                 {
                     // Expand tuple
-                    TupleExp te = cast(TupleExp)ea;
                     size_t dim = te.exps.length;
                     tiargs.remove(j);
                     if (dim)
@@ -6796,12 +6808,11 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 }
                 if (ea.op == EXP.scope_)
                 {
-                    sa = (cast(ScopeExp)ea).sds;
+                    sa = ea.isScopeExp().sds;
                     goto Ldsym;
                 }
-                if (ea.op == EXP.function_)
+                if (FuncExp fe = ea.isFuncExp())
                 {
-                    FuncExp fe = cast(FuncExp)ea;
                     /* A function literal, that is passed to template and
                      * already semanticed as function pointer, never requires
                      * outer frame. So convert it to global function is valid.
@@ -6823,23 +6834,23 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 if (ea.op == EXP.dotVariable && !(flags & 1))
                 {
                     // translate expression to dsymbol.
-                    sa = (cast(DotVarExp)ea).var;
+                    sa = ea.isDotVarExp().var;
                     goto Ldsym;
                 }
-                if (ea.op == EXP.template_)
+                if (auto te = ea.isTemplateExp())
                 {
-                    sa = (cast(TemplateExp)ea).td;
+                    sa = te.td;
                     goto Ldsym;
                 }
                 if (ea.op == EXP.dotTemplateDeclaration && !(flags & 1))
                 {
                     // translate expression to dsymbol.
-                    sa = (cast(DotTemplateExp)ea).td;
+                    sa = ea.isDotTemplateExp().td;
                     goto Ldsym;
                 }
-                if (ea.op == EXP.dot)
+                if (auto de = ea.isDotExp())
                 {
-                    if (auto se = (cast(DotExp)ea).e2.isScopeExp())
+                    if (auto se = de.e2.isScopeExp())
                     {
                         sa = se.sds;
                         goto Ldsym;
@@ -7340,22 +7351,22 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             Tuple va = isTuple(o);
             if (ea)
             {
-                if (ea.op == EXP.variable)
+                if (auto ve = ea.isVarExp())
                 {
-                    sa = (cast(VarExp)ea).var;
+                    sa = ve.var;
                     goto Lsa;
                 }
-                if (ea.op == EXP.this_)
+                if (auto te = ea.isThisExp())
                 {
-                    sa = (cast(ThisExp)ea).var;
+                    sa = te.var;
                     goto Lsa;
                 }
-                if (ea.op == EXP.function_)
+                if (auto fe = ea.isFuncExp())
                 {
-                    if ((cast(FuncExp)ea).td)
-                        sa = (cast(FuncExp)ea).td;
+                    if (fe.td)
+                        sa = fe.td;
                     else
-                        sa = (cast(FuncExp)ea).fd;
+                        sa = fe.fd;
                     goto Lsa;
                 }
                 // Emulate Expression.toMangleBuffer call that had exist in TemplateInstance.genIdent.
@@ -7727,13 +7738,13 @@ bool definitelyValueParameter(Expression e)
      */
 
     // x.y.f cannot be a value
-    FuncDeclaration f = (cast(DotVarExp)e).var.isFuncDeclaration();
+    FuncDeclaration f = e.isDotVarExp().var.isFuncDeclaration();
     if (f)
         return false;
 
     while (e.op == EXP.dotVariable)
     {
-        e = (cast(DotVarExp)e).e1;
+        e = e.isDotVarExp().e1;
     }
     // this.x.y and super.x.y couldn't possibly be valid values.
     if (e.op == EXP.this_ || e.op == EXP.super_)
@@ -7747,7 +7758,7 @@ bool definitelyValueParameter(Expression e)
     if (e.op != EXP.variable)
         return true;
 
-    VarDeclaration v = (cast(VarExp)e).var.isVarDeclaration();
+    VarDeclaration v = e.isVarExp().var.isVarDeclaration();
     // func.x.y is not an alias
     if (!v)
         return true;
@@ -8242,10 +8253,15 @@ MATCH matchArg(TemplateParameter tp, Scope* sc, RootObject oarg, size_t i, Templ
         Type ta = isType(oarg);
         RootObject sa = ta && !ta.deco ? null : getDsymbol(oarg);
         Expression ea = isExpression(oarg);
-        if (ea && (ea.op == EXP.this_ || ea.op == EXP.super_))
-            sa = (cast(ThisExp)ea).var;
-        else if (ea && ea.op == EXP.scope_)
-            sa = (cast(ScopeExp)ea).sds;
+        if (ea)
+        {
+            if (auto te = ea.isThisExp())
+                sa = te.var;
+            else if (auto se = ea.isSuperExp())
+                sa = se.var;
+            else if (auto se = ea.isScopeExp())
+                sa = se.sds;
+        }
         if (sa)
         {
             if ((cast(Dsymbol)sa).isAggregateDeclaration())

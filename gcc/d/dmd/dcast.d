@@ -71,6 +71,8 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
 
         if (const match = (sc && sc.flags & SCOPE.Cfile) ? e.cimplicitConvTo(t) : e.implicitConvTo(t))
         {
+            // no need for an extra cast when matching is exact
+
             if (match == MATCH.convert && e.type.isTypeNoreturn())
             {
                 return specialNoreturnCast(e, t);
@@ -88,6 +90,8 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
             auto ad = isAggregate(e.type);
             if (ad && ad.aliasthis)
             {
+                if (!ad.type || ad.type.isTypeError())
+                    return e;
                 auto ts = ad.type.isTypeStruct();
                 const adMatch = ts
                     ? ts.implicitConvToWithoutAliasThis(t)
@@ -1845,7 +1849,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         if (!e.committed)
         {
             se = e.copy().isStringExp();
-            se.committed = 1;
+            se.committed = true;
             copied = 1;
         }
 
@@ -1887,7 +1891,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             assert(szx <= 255);
             se.sz = cast(ubyte)szx;
             se.len = cast(size_t)tb.isTypeSArray().dim.toInteger();
-            se.committed = 1;
+            se.committed = true;
             se.type = t;
 
             /* If larger than source, pad with zeros.
@@ -2918,6 +2922,7 @@ Type typeMerge(Scope* sc, EXP op, ref Expression pe1, ref Expression pe2)
         ubyte mod = MODmerge(t1.mod, t2.mod);
         t1 = t1.castMod(mod);
         t2 = t2.castMod(mod);
+        return Lret(t1);
     }
 
 Lagain:

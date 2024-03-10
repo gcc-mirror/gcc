@@ -8,8 +8,6 @@ fail_compilation/dtor_attributes.d(113):        generated `Strict.~this` is impu
 fail_compilation/dtor_attributes.d(111):         - HasDtor member
 fail_compilation/dtor_attributes.d(103):           impure `HasDtor.~this` is declared here
 fail_compilation/dtor_attributes.d(118): Error: `@safe` function `dtor_attributes.test1` cannot call `@system` destructor `dtor_attributes.Strict.~this`
-fail_compilation/dtor_attributes.d(113):        which calls `dtor_attributes.Strict.~this`
-fail_compilation/dtor_attributes.d(103):        which calls `dtor_attributes.HasDtor.~this`
 fail_compilation/dtor_attributes.d(113):        `dtor_attributes.Strict.~this` is declared here
 fail_compilation/dtor_attributes.d(113):        generated `Strict.~this` is @system because of the following field's destructors:
 fail_compilation/dtor_attributes.d(111):         - HasDtor member
@@ -32,7 +30,7 @@ struct HasDtor
     ~this() {}
 }
 
-// The user-defined dtor is overriden by a generated dtor calling both
+// The user-defined dtor is overridden by a generated dtor calling both
 // - HasDtor.~this
 // - Strict.~this
 struct Strict

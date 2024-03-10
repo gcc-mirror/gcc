@@ -11,7 +11,10 @@
 
 module dmd.location;
 
+import core.stdc.stdio;
+
 import dmd.common.outbuffer;
+import dmd.root.array;
 import dmd.root.filename;
 
 version (DMDLIB)
@@ -34,10 +37,9 @@ debug info etc.
 */
 struct Loc
 {
-    /// zero-terminated filename string, either absolute or relative to cwd
-    const(char)* filename;
-    uint linnum; /// line number, starting from 1
-    uint charnum; /// utf8 code unit index relative to start of line, starting from 1
+    private uint _linnum;
+    private ushort _charnum;
+    private ushort fileIndex; // index into filenames[], starting from 1 (0 means no filename)
     version (LocOffset)
         uint fileOffset; /// utf8 code unit index relative to start of file, starting from 0
 
@@ -45,6 +47,8 @@ struct Loc
 
     extern (C++) __gshared bool showColumns;
     extern (C++) __gshared MessageStyle messageStyle;
+
+    __gshared Array!(const(char)*) filenames;
 
 nothrow:
 
@@ -60,19 +64,69 @@ nothrow:
         this.messageStyle = messageStyle;
     }
 
-    extern (D) this(const(char)* filename, uint linnum, uint charnum) pure
+    extern (D) this(const(char)* filename, uint linnum, uint charnum)
     {
-        this.linnum = linnum;
-        this.charnum = charnum;
+        this._linnum = linnum;
+        this._charnum = cast(ushort) charnum;
         this.filename = filename;
+    }
+
+    /// utf8 code unit index relative to start of line, starting from 1
+    extern (C++) uint charnum() const @nogc @safe
+    {
+        return _charnum;
+    }
+
+    /// ditto
+    extern (C++) uint charnum(uint num) @nogc @safe
+    {
+        return _charnum = cast(ushort) num;
+    }
+
+    /// line number, starting from 1
+    extern (C++) uint linnum() const @nogc @safe
+    {
+        return _linnum;
+    }
+
+    /// ditto
+    extern (C++) uint linnum(uint num) @nogc @safe
+    {
+        return _linnum = num;
+    }
+
+    /***
+     * Returns: filename for this location, null if none
+     */
+    extern (C++) const(char)* filename() const @nogc
+    {
+        return fileIndex ? filenames[fileIndex - 1] : null;
+    }
+
+    /***
+     * Set file name for this location
+     * Params:
+     *   name = file name for location, null for no file name
+     */
+    extern (C++) void filename(const(char)* name)
+    {
+        if (name)
+        {
+            //printf("setting %s\n", name);
+            filenames.push(name);
+            fileIndex = cast(ushort)filenames.length;
+            assert(fileIndex);  // no overflow
+        }
+        else
+            fileIndex = 0;
     }
 
     extern (C++) const(char)* toChars(
         bool showColumns = Loc.showColumns,
-        MessageStyle messageStyle = Loc.messageStyle) const pure nothrow
+        MessageStyle messageStyle = Loc.messageStyle) const nothrow
     {
         OutBuffer buf;
-        if (filename)
+        if (fileIndex)
         {
             buf.writestring(filename);
         }
@@ -126,7 +180,7 @@ nothrow:
      * may lead to multiple equivalent filenames (`foo.d-mixin-<line>`),
      * e.g., for test/runnable/test18880.d.
      */
-    extern (D) bool opEquals(ref const(Loc) loc) const @trusted pure nothrow @nogc
+    extern (D) bool opEquals(ref const(Loc) loc) const @trusted nothrow @nogc
     {
         import core.stdc.string : strcmp;
 
@@ -137,7 +191,7 @@ nothrow:
     }
 
     /// ditto
-    extern (D) size_t toHash() const @trusted pure nothrow
+    extern (D) size_t toHash() const @trusted nothrow
     {
         import dmd.root.string : toDString;
 
@@ -153,6 +207,6 @@ nothrow:
      */
     bool isValid() const pure
     {
-        return filename !is null;
+        return fileIndex != 0;
     }
 }

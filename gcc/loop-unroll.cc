@@ -487,6 +487,8 @@ unroll_loop_constant_iterations (class loop *loop)
   bool exit_at_end = loop_exit_at_end_p (loop);
   struct opt_info *opt_info = NULL;
   bool ok;
+  bool flat = maybe_flat_loop_profile (loop);
+  profile_count orig_exit_count = desc->out_edge->count ();
 
   niter = desc->niter;
 
@@ -603,8 +605,14 @@ unroll_loop_constant_iterations (class loop *loop)
   ok = duplicate_loop_body_to_header_edge (
     loop, loop_latch_edge (loop), max_unroll, wont_exit, desc->out_edge,
     &remove_edges,
-    DLTHE_FLAG_UPDATE_FREQ | (opt_info ? DLTHE_RECORD_COPY_NUMBER : 0));
+    DLTHE_FLAG_UPDATE_FREQ | (opt_info ? DLTHE_RECORD_COPY_NUMBER : 0)
+    | (flat ? DLTHE_FLAG_FLAT_PROFILE : 0));
   gcc_assert (ok);
+
+  edge exit = update_loop_exit_probability_scale_dom_bbs
+	  (loop, desc->out_edge, orig_exit_count);
+  if (exit)
+    update_br_prob_note (exit->src);
 
   if (opt_info)
     {

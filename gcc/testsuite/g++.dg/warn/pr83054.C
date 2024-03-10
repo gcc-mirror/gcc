@@ -10,7 +10,7 @@
 #endif
 
 extern "C" int printf (const char *, ...);
-struct foo // { dg-warning "final would enable devirtualization of 5 calls" }
+struct foo
 {
   static int count;
   void print (int i, int j) { printf ("foo[%d][%d] = %d\n", i, j, x); }

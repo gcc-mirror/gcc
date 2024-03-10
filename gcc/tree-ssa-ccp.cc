@@ -1020,11 +1020,9 @@ ccp_finalize (bool nonzero_p)
       else
 	{
 	  unsigned int precision = TYPE_PRECISION (TREE_TYPE (val->value));
-	  wide_int nonzero_bits
-	    = (wide_int::from (val->mask, precision, UNSIGNED)
-	       | wi::to_wide (val->value));
-	  nonzero_bits &= get_nonzero_bits (name);
-	  set_nonzero_bits (name, nonzero_bits);
+	  wide_int value = wi::to_wide (val->value);
+	  wide_int mask = wide_int::from (val->mask, precision, UNSIGNED);
+	  set_bitmask (name, value, mask);
 	}
     }
 
@@ -1299,7 +1297,7 @@ ccp_fold (gimple *stmt)
    represented by the mask pair VAL and MASK with signedness SGN and
    precision PRECISION.  */
 
-void
+static void
 value_mask_to_min_max (widest_int *min, widest_int *max,
 		       const widest_int &val, const widest_int &mask,
 		       signop sgn, int precision)
@@ -1361,7 +1359,10 @@ bit_value_unop (enum tree_code code, signop type_sgn, int type_precision,
     case ABS_EXPR:
     case ABSU_EXPR:
       if (wi::sext (rmask, rtype_precision) == -1)
-	*mask = -1;
+	{
+	  *mask = -1;
+	  *val = 0;
+	}
       else if (wi::neg_p (rmask))
 	{
 	  /* Result is either rval or -rval.  */
@@ -1387,13 +1388,14 @@ bit_value_unop (enum tree_code code, signop type_sgn, int type_precision,
 
     default:
       *mask = -1;
+      *val = 0;
       break;
     }
 }
 
 /* Determine the mask pair *VAL and *MASK from multiplying the
    argument mask pair RVAL, RMASK by the unsigned constant C.  */
-void
+static void
 bit_value_mult_const (signop sgn, int width,
 		      widest_int *val, widest_int *mask,
 		      const widest_int &rval, const widest_int &rmask,
@@ -1455,7 +1457,7 @@ bit_value_mult_const (signop sgn, int width,
    bits in X (capped at the maximum value MAX).  For example, an X
    value 11, places 1, 2 and 8 in BITS and returns the value 3.  */
 
-unsigned int
+static unsigned int
 get_individual_bits (widest_int *bits, widest_int x, unsigned int max)
 {
   unsigned int count = 0;

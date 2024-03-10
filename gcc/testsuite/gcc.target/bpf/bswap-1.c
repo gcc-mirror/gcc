@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mlittle-endian" } */
+/* { dg-options "-mlittle-endian -mcpu=v3" } */
 
 unsigned short in16 = 0x1234U;
 unsigned int   in32 = 0x12345678U;

@@ -1,7 +1,7 @@
 /* TEST_OUTPUT:
 ---
 fail_compilation/fail23626a.d(10): Deprecation: function `fail23626a.ambig` cannot overload `extern(D)` function at fail_compilation/fail23626a.d(9)
-fail_compilation/fail23626a.d(13): Deprecation: function `fail23626a.ambigC` cannot overload `extern(C)` function at fail_compilation/fail23626a.d(12)
+fail_compilation/fail23626a.d(13): Error: function `fail23626a.ambigC` cannot overload `extern(C)` function at fail_compilation/fail23626a.d(12)
 fail_compilation/fail23626a.d(16): Error: function `fail23626a.ambigCxx(int a)` conflicts with previous declaration at fail_compilation/fail23626a.d(15)
 ---
 */

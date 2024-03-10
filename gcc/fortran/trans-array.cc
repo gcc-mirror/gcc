@@ -3271,6 +3271,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
   gfc_add_block_to_block (block, &se.pre);
   info->descriptor = se.expr;
   ss_info->string_length = se.string_length;
+  ss_info->class_container = se.class_container;
 
   if (base)
     {
@@ -7687,6 +7688,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  else if (deferred_array_component)
 	    se->string_length = ss_info->string_length;
 
+	  se->class_container = ss_info->class_container;
+
 	  gfc_free_ss_chain (ss);
 	  return;
 	}
@@ -9469,7 +9472,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 
 	      tmp = gfc_deallocate_with_status (comp, NULL_TREE, NULL_TREE,
 						NULL_TREE, NULL_TREE, true,
-						NULL, caf_dereg_mode,
+						NULL, caf_dereg_mode, NULL_TREE,
 						add_when_allocated, caf_token);
 
 	      gfc_add_expr_to_block (&tmpblock, tmp);

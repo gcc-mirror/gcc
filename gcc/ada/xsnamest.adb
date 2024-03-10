@@ -119,13 +119,17 @@ procedure XSnamesT is
    Header_Current_Symbol : Header_Symbol := None;
    Header_Pending_Line : VString := Nul;
 
+   --  Subtypes we will emit after an enum
+
+   Generated_C_Subtypes : Unbounded_String;
+
    ------------------------
    -- Output_Header_Line --
    ------------------------
 
    procedure Output_Header_Line (S : Header_Symbol) is
       function Make_Value (V : Integer) return String;
-      --  Build the definition for the current macro (Names are integers
+      --  Build the definition for the current enumerator (Names are integers
       --  offset to N, while other items are enumeration values).
 
       ----------------
@@ -144,14 +148,14 @@ procedure XSnamesT is
    --  Start of processing for Output_Header_Line
 
    begin
-      --  Skip all the #define for S-prefixed symbols in the header.
+      --  Skip all the enumerator for S-prefixed symbols in the header.
       --  Of course we are making implicit assumptions:
       --   (1) No newline between symbols with the same prefix.
       --   (2) Prefix order is the same as in snames.ads.
 
       if Header_Current_Symbol /= S then
          declare
-            Pat : constant Pattern := "#define  "
+            Pat : constant Pattern := "  "
                                        & Header_Prefix (S).all
                                        & Break (' ') * Name2;
             In_Pat : Boolean := False;
@@ -180,14 +184,12 @@ procedure XSnamesT is
 
       --  Now output the line
 
-      --  Note that we must ensure at least one space between macro name and
-      --  parens, otherwise the parenthesized value gets treated as an argument
-      --  specification.
-
-      Put_Line (OutH, "#define  " & Header_Prefix (S).all
+      Put_Line (OutH, "  " & Header_Prefix (S).all
                   & "_" & Name1
                   & (30 - Natural'Min (29, Length (Name1))) * ' '
-                  & Make_Value (Header_Counter (S)));
+                  & " = "
+                  & Make_Value (Header_Counter (S))
+                  & ",");
       Header_Counter (S) := Header_Counter (S) + 1;
    end Output_Header_Line;
 
@@ -235,10 +237,12 @@ begin
          elsif Match (Line, Get_Prag) then
             Output_Header_Line (Prag);
          elsif Match (Line, Get_Subt1) and then Match (Name2, Is_Conv) then
-            New_Line (OutH);
-            Put_Line (OutH, "SUBTYPE (" & Name1 & ", " & Name2 & ", ");
+            Generated_C_Subtypes := Generated_C_Subtypes & ASCII.LF
+                                     & "SUBTYPE (" & Name1 & ", " & Name2
+                                     & ", ";
          elsif Match (Line, Get_Subt2) and then Match (Name1, Is_Conv) then
-            Put_Line (OutH, "   " & Name1 & ", " & Name2 & ')');
+            Generated_C_Subtypes := Generated_C_Subtypes & ASCII.LF
+                                     & "   " & Name1 & ", " & Name2 & ')';
          end if;
       else
 
@@ -297,6 +301,8 @@ begin
       Put_Line (OutH, Line);
    end loop;
 
+   Put_Line (OutH, Generated_C_Subtypes);
+   Put_Line (OutH, "");
    Put_Line (OutH, "#ifdef __cplusplus");
    Put_Line (OutH, "}");
    Put_Line (OutH, "#endif");

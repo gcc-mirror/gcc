@@ -451,31 +451,6 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
   return NULL_RTX;
 }
 
-/* Helper function to copy attributes when replacing OLD_REG with NEW_REG.
-   If the changes required for NEW_REG are invalid return NULL_RTX, otherwise
-   return NEW_REG.  This is intended to be used with maybe_mode_change.  */
-
-static rtx
-maybe_copy_reg_attrs (rtx new_reg, rtx old_reg)
-{
-  if (new_reg != stack_pointer_rtx)
-    {
-      /* NEW_REG is assumed to be a register copy resulting from
-	 maybe_mode_change.  */
-      ORIGINAL_REGNO (new_reg) = ORIGINAL_REGNO (old_reg);
-      REG_ATTRS (new_reg) = REG_ATTRS (old_reg);
-      REG_POINTER (new_reg) = REG_POINTER (old_reg);
-    }
-  else if (REG_POINTER (new_reg) != REG_POINTER (old_reg))
-    {
-      /* Only a single instance of STACK_POINTER_RTX must exist and we cannot
-	 modify it.  Allow propagation if REG_POINTER for OLD_REG matches and
-	 don't touch ORIGINAL_REGNO and REG_ATTRS.  */
-      return NULL_RTX;
-    }
-  return new_reg;
-}
-
 /* Find the oldest copy of the value contained in REGNO that is in
    register class CL and has mode MODE.  If found, return an rtx
    of that oldest register, otherwise return NULL.  */
@@ -511,7 +486,17 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
 
       new_rtx = maybe_mode_change (oldmode, vd->e[regno].mode, mode, i, regno);
       if (new_rtx)
-	return maybe_copy_reg_attrs (new_rtx, reg);
+	{
+	  /* NEW_RTX may be the global stack pointer rtx, in which case we
+	     must not modify it's attributes.  */
+	  if (new_rtx != stack_pointer_rtx)
+	    {
+	      ORIGINAL_REGNO (new_rtx) = ORIGINAL_REGNO (reg);
+	      REG_ATTRS (new_rtx) = REG_ATTRS (reg);
+	      REG_POINTER (new_rtx) = REG_POINTER (reg);
+	    }
+	  return new_rtx;
+	}
     }
 
   return NULL_RTX;
@@ -985,15 +970,20 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
 		  if (validate_change (insn, &SET_SRC (set), new_rtx, 0))
 		    {
-		      if (maybe_copy_reg_attrs (new_rtx, src))
+		      /* NEW_RTX may be the global stack pointer rtx, in which
+			 case we must not modify it's attributes.  */
+		      if (new_rtx != stack_pointer_rtx)
 			{
-			  if (dump_file)
-			    fprintf (dump_file,
-				     "insn %u: replaced reg %u with %u\n",
-				     INSN_UID (insn), regno, REGNO (new_rtx));
-			  changed = true;
-			  goto did_replacement;
+			  ORIGINAL_REGNO (new_rtx) = ORIGINAL_REGNO (src);
+			  REG_ATTRS (new_rtx) = REG_ATTRS (src);
+			  REG_POINTER (new_rtx) = REG_POINTER (src);
 			}
+		      if (dump_file)
+			fprintf (dump_file,
+				 "insn %u: replaced reg %u with %u\n",
+				 INSN_UID (insn), regno, REGNO (new_rtx));
+		      changed = true;
+		      goto did_replacement;
 		    }
 		  /* We need to re-extract as validate_change clobbers
 		     recog_data.  */

@@ -127,6 +127,15 @@ public:
     this->result_ = this->make_import (TYPE_STUB_DECL (type));
   }
 
+  void visit (VarDeclaration *d) final override
+  {
+    /* Not all kinds of manifest constants create a CONST_DECL.  */
+    if (!d->canTakeAddressOf () && !d->type->isscalar ())
+      return;
+
+    visit ((Declaration *) d);
+  }
+
   /* For now, ignore importing other kinds of dsymbols.  */
   void visit (ScopeDsymbol *) final override
   {

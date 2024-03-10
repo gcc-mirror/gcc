@@ -46,6 +46,7 @@ int main1 (int n,
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (ia[i] != pib[i] + pic[i] 

@@ -13,7 +13,7 @@ module dmd.common.string;
 nothrow:
 
 /**
-Defines a temporary array using a fixed-length buffer as back store. If the length
+Defines a temporary array of `Element`s using a fixed-length buffer as back store. If the length
 of the buffer suffices, it is readily used. Otherwise, `malloc` is used to
 allocate memory for the array and `free` is used for deallocation in the
 destructor.
@@ -21,19 +21,26 @@ destructor.
 This type is meant to use exclusively as an automatic variable. It is not
 default constructible or copyable.
 */
-struct SmallBuffer(T)
+struct SmallBuffer(Element)
 {
     import core.stdc.stdlib : malloc, free;
 
-    private T[] _extent;
+    private Element[] _extent;
     private bool needsFree;
 
   nothrow:
+  @nogc:
 
     @disable this(); // no default ctor
-    @disable this(ref const SmallBuffer!T); // noncopyable, nonassignable
+    @disable this(ref const SmallBuffer!Element); // noncopyable, nonassignable
 
-    this(size_t len, T[] buffer)
+    /***********
+     * Construct a SmallBuffer
+     * Params:
+     *  len = number of elements in array
+     *  buffer = slice to use as backing-store, if len will fit in it
+     */
+    scope this(size_t len, return scope Element[] buffer)
     {
         if (len <= buffer.length)
         {
@@ -41,7 +48,8 @@ struct SmallBuffer(T)
         }
         else
         {
-            _extent = (cast(typeof(_extent.ptr)) malloc(len * _extent[0].sizeof))[0 .. len];
+            assert(len < sizeof.max / Element.sizeof);
+            _extent = (cast(typeof(_extent.ptr)) malloc(len * Element.sizeof))[0 .. len];
             _extent.ptr || assert(0, "Out of memory.");
             needsFree = true;
         }
@@ -54,16 +62,22 @@ struct SmallBuffer(T)
             free(_extent.ptr);
     }
 
-    void create(size_t len)
+    /******
+     * Resize existing SmallBuffer.
+     * Params:
+     *  len = number of elements after resize
+     */
+    scope void create(size_t len)
     {
         if (len <= _extent.length)
         {
-            _extent = _extent[0 .. len];
+            _extent = _extent[0 .. len]; // reuse existing storage
         }
         else
         {
             __dtor();
-            _extent = (cast(typeof(_extent.ptr)) malloc(len * _extent[0].sizeof))[0 .. len];
+            assert(len < sizeof.max / Element.sizeof);
+            _extent = (cast(typeof(_extent.ptr)) malloc(len * Element.sizeof))[0 .. len];
             _extent.ptr || assert(0, "Out of memory.");
             needsFree = true;
         }

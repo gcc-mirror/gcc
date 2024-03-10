@@ -2622,16 +2622,11 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type,
 	 be loaded directly into the destination.  */
       src = orig_src;
       if (!MEM_P (orig_src)
-	  && (!CONSTANT_P (orig_src)
-	      || (GET_MODE (orig_src) != mode
-		  && GET_MODE (orig_src) != VOIDmode)))
+	  && (!REG_P (orig_src) || HARD_REGISTER_P (orig_src))
+	  && !CONSTANT_P (orig_src))
 	{
-	  if (GET_MODE (orig_src) == VOIDmode)
-	    src = gen_reg_rtx (mode);
-	  else
-	    src = gen_reg_rtx (GET_MODE (orig_src));
-
-	  emit_move_insn (src, orig_src);
+	  gcc_assert (GET_MODE (orig_src) != VOIDmode);
+	  src = force_reg (GET_MODE (orig_src), orig_src);
 	}
 
       /* Optimize the access just a bit.  */

@@ -20,6 +20,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*4] != 8 
@@ -42,6 +43,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*8] != 8
@@ -66,6 +68,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*5] != 8
@@ -91,6 +94,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N/2; i++)
     {
       if (out[i*9] != 8

@@ -32,6 +32,9 @@ main ()
 #ifdef AVXNECONVERT
       && __builtin_cpu_supports ("avxneconvert")
 #endif
+#ifdef AVXVNNIINT16
+      && __builtin_cpu_supports ("avxvnniint16")
+#endif
       )
     {
       do_test ();

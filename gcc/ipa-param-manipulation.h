@@ -378,7 +378,9 @@ private:
   bool modify_call_stmt (gcall **stmt_p, gimple *orig_stmt);
   bool modify_cfun_body ();
   void reset_debug_stmts ();
+  tree get_ddef_if_exists_and_is_used (tree decl);
   void mark_dead_statements (tree dead_param, vec<tree> *debugstack);
+  void mark_clobbers_dead (tree dead_param);
   bool prepare_debug_expressions (tree dead_ssa);
 
   /* Declaration of the function that is being transformed.  */

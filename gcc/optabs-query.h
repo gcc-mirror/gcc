@@ -37,7 +37,7 @@ convert_optab_p (optab op)
 inline enum insn_code
 optab_handler (optab op, machine_mode mode)
 {
-  unsigned scode = (op << 16) | mode;
+  unsigned scode = (op << 20) | mode;
   gcc_assert (op > LAST_CONV_OPTAB);
   return raw_optab_handler (scode);
 }
@@ -50,7 +50,7 @@ inline enum insn_code
 convert_optab_handler (convert_optab op, machine_mode to_mode,
 		       machine_mode from_mode)
 {
-  unsigned scode = (op << 16) | (from_mode << 8) | to_mode;
+  unsigned scode = (op << 20) | (from_mode << 10) | to_mode;
   gcc_assert (convert_optab_p (op));
   return raw_optab_handler (scode);
 }

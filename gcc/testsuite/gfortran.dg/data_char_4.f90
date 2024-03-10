@@ -4,7 +4,7 @@
 
 program p
   character(l) :: c(2) ! { dg-error "must have constant character length" }
-  data c /'a', 'b'/
+  data c /'a', 'b'/    ! { dg-error "Non-constant character length" }
   common c
 end
 

@@ -1451,10 +1451,12 @@ package body Errout is
       if Has_Error_Code then
          declare
             Msg : constant String :=
-              "launch ""gnatprove --explain=[]"" for more information";
+              "\launch ""gnatprove --explain=[]"" for more information";
          begin
-            Prescan_Message (Msg);
+            Has_Double_Exclam := False;
             Has_Error_Code := False;
+            Has_Insertion_Line := False;
+
             Error_Msg_Internal
               (Msg      => Msg,
                Span     => Span,

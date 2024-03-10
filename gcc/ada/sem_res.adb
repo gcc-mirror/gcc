@@ -5146,7 +5146,10 @@ package body Sem_Res is
             if Is_EVF_Expression (A)
               and then Extensions_Visible_Status (Nam) =
                        Extensions_Visible_True
-              and then No (Class_Preconditions_Subprogram (Current_Scope))
+              and then not
+               (Is_Subprogram (Current_Scope)
+                  and then
+                Present (Class_Preconditions_Subprogram (Current_Scope)))
             then
                Error_Msg_N
                  ("formal parameter cannot act as actual parameter when "
@@ -7327,30 +7330,32 @@ package body Sem_Res is
                      or else Is_Invariant_Procedure (Current_Subprogram)
                      or else Is_DIC_Procedure (Current_Subprogram))
                then
-                  if Present (Body_Id)
-                    and then Present (Body_To_Inline (Nam_Decl))
-                  then
+                  declare
+                     Issue_Msg : constant Boolean :=
+                       Present (Body_Id)
+                         and then Present (Body_To_Inline (Nam_Decl));
+                  begin
                      if Is_Predicate_Function (Current_Subprogram) then
                         Cannot_Inline
                           ("cannot inline & (inside predicate)?",
-                           N, Nam_UA);
+                           N, Nam_UA, Suppress_Info => not Issue_Msg);
 
                      elsif Is_Invariant_Procedure (Current_Subprogram) then
                         Cannot_Inline
                           ("cannot inline & (inside invariant)?",
-                           N, Nam_UA);
+                           N, Nam_UA, Suppress_Info => not Issue_Msg);
 
                      elsif Is_DIC_Procedure (Current_Subprogram) then
                         Cannot_Inline
                         ("cannot inline & (inside Default_Initial_Condition)?",
-                         N, Nam_UA);
+                         N, Nam_UA, Suppress_Info => not Issue_Msg);
 
                      else
                         Cannot_Inline
                           ("cannot inline & (inside expression function)?",
-                           N, Nam_UA);
+                           N, Nam_UA, Suppress_Info => not Issue_Msg);
                      end if;
-                  end if;
+                  end;
 
                --  Cannot inline a call inside the definition of a record type,
                --  typically inside the constraints of the type. Calls in
@@ -12450,6 +12455,18 @@ package body Sem_Res is
             --  checking and comes from complex expanded code.
 
             elsif Orig_T = Base_Type (Standard_Long_Long_Integer) then
+               null;
+
+            --  Do not warn on conversion to class-wide type on helpers of
+            --  class-wide preconditions because in this context the warning
+            --  would be spurious (since the class-wide precondition has been
+            --  installed in the return statement of the helper, which has a
+            --  class-wide formal type instead of a regular tagged type).
+
+            elsif Is_Class_Wide_Type (Orig_T)
+              and then Is_Subprogram_Or_Generic_Subprogram (Current_Scope)
+              and then Present (Class_Preconditions_Subprogram (Current_Scope))
+            then
                null;
 
             --  Here we give the redundant conversion warning. If it is an

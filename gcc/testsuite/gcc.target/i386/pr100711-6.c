@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512f -mno-avx512vl -mprefer-vector-width=512 -O2" } */
+/* { dg-options "-mavx512f -mno-avx512vl -mprefer-vector-width=512 -Os" } */
 
 typedef int v16si __attribute__ ((vector_size (64)));
 typedef long long v8di __attribute__((vector_size (64)));

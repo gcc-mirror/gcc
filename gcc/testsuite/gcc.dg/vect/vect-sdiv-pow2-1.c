@@ -70,6 +70,7 @@ main (void)
       fns[i].div (b, a, N);
       fns[i].mod (c, a, N);
 
+#pragma GCC novector
       for (int j = 0; j < N; j++)
 	if (a[j] != (b[j] * p + c[j]))
           __builtin_abort ();

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-rtl-loop2_unroll -funroll-loops" } */
+/* { dg-options "-O3 -fdump-rtl-loop2_unroll-details-blocks -funroll-loops" } */
 /* { dg-require-effective-target int32plus } */
 
 void abort (void);
@@ -32,3 +32,4 @@ int t2()
 /* { dg-final { scan-rtl-dump-not "realistic bound: 999999" "loop2_unroll" } } */
 /* { dg-final { scan-rtl-dump-times "  upper bound: 2999999" 1 "loop2_unroll" } } */
 /* { dg-final { scan-rtl-dump-times "realistic bound: 2999999" 1 "loop2_unroll" } } */
+/* { dg-final { scan-rtl-dump-not "Invalid sum" "loop2_unroll" { xfail *-*-* } } } */

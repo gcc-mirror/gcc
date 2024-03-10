@@ -6,8 +6,8 @@ void f (void * in, void *out, uint64_t x, int n)
 {
   vuint64m1_t v = __riscv_vle64_v_u64m1 (in + 1, 4);
   vuint64m1_t v2 = __riscv_vle64_v_u64m1_tu (v, in + 2, 4);
-  vuint64m1_t v3 = __riscv_vssubu_vx_u64m1 (v2, 0xAAAAAAAAAAAAAAAA, 0, 4);
-  vuint64m1_t v4 = __riscv_vssubu_vx_u64m1_tu (v3, v2, 0xAAAAAAAAAAAAAAAA, 0, 4);
+  vuint64m1_t v3 = __riscv_vssubu_vx_u64m1 (v2, 0xAAAAAAAAAAAAAAAA, 4);
+  vuint64m1_t v4 = __riscv_vssubu_vx_u64m1_tu (v3, v2, 0xAAAAAAAAAAAAAAAA, 4);
   __riscv_vse64_v_u64m1 (out + 2, v4, 4);
 }
 

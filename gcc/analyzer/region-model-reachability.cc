@@ -184,6 +184,27 @@ reachable_regions::handle_sval (const svalue *sval)
 	}
       add (pointee, ptr_is_mutable);
     }
+  else if (sval->get_type ()
+	   && TREE_CODE (sval->get_type ()) == POINTER_TYPE
+	   && sval->get_kind () == SK_CONJURED)
+    {
+      /* Also add symbolic regions for pointers, but only for conjured svalues
+	 for the LHS of a stmt.  Doing it for more leads to state explosions
+	 on chains of calls to external functions, due to each conjured svalue
+	 potentially being modified at each successive call, recursively.  */
+      const conjured_svalue *conjured_sval = (const conjured_svalue *)sval;
+      if (conjured_sval->lhs_value_p ())
+	{
+	  const region *pointee
+	    = m_model->get_manager ()->get_symbolic_region (sval);
+	  /* Use const-ness of pointer type to affect mutability.  */
+	  bool ptr_is_mutable = true;
+	  if (TYPE_READONLY (TREE_TYPE (sval->get_type ())))
+	    ptr_is_mutable = false;
+	  add (pointee, ptr_is_mutable);
+	}
+    }
+
   /* Treat all svalues within a compound_svalue as reachable.  */
   if (const compound_svalue *compound_sval
       = sval->dyn_cast_compound_svalue ())

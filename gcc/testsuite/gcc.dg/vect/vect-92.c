@@ -1,5 +1,5 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
-/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0 -fdump-tree-optimized-details-blocks" } */
 /* { dg-require-effective-target vect_float } */
 
 #include <stdarg.h>
@@ -36,6 +36,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < 10; i++)
     {
       if (pa[i+1] != (pb[i+1] * pc[i+1]))
@@ -56,6 +57,7 @@ main2 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < 12; i++)
     {
       if (pa[i+1] != (pb[i+1] * pc[i+1]))
@@ -76,6 +78,7 @@ main3 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (pa[i+1] != (pb[i+1] * pc[i+1]))
@@ -101,3 +104,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 3 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" { xfail vect_element_align_preferred } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

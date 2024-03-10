@@ -11,7 +11,6 @@
 
 module dmd.sideeffect;
 
-import dmd.apply;
 import dmd.astenums;
 import dmd.declaration;
 import dmd.dscope;
@@ -22,6 +21,7 @@ import dmd.globals;
 import dmd.identifier;
 import dmd.init;
 import dmd.mtype;
+import dmd.postordervisitor;
 import dmd.tokens;
 import dmd.visitor;
 
@@ -101,9 +101,11 @@ extern (C++) bool hasSideEffect(Expression e, bool assumeImpureCalls = false)
 int callSideEffectLevel(FuncDeclaration f)
 {
     /* https://issues.dlang.org/show_bug.cgi?id=12760
-     * ctor call always has side effects.
+     * https://issues.dlang.org/show_bug.cgi?id=16384
+     *
+     * ctor calls and invariant calls always have side effects
      */
-    if (f.isCtorDeclaration())
+    if (f.isCtorDeclaration() || f.isInvariantDeclaration())
         return 0;
     assert(f.type.ty == Tfunction);
     TypeFunction tf = cast(TypeFunction)f.type;
@@ -185,6 +187,7 @@ private bool lambdaHasSideEffect(Expression e, bool assumeImpureCalls = false)
     case EXP.delete_:
     case EXP.new_:
     case EXP.newAnonymousClass:
+    case EXP.loweredAssignExp:
         return true;
     case EXP.call:
         {

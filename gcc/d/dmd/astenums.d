@@ -214,8 +214,8 @@ enum TY : ubyte
     Tmixin,
     Tnoreturn,
     Ttag,
-    TMAX
 }
+enum TMAX = TY.max + 1;
 
 alias Tarray = TY.Tarray;
 alias Tsarray = TY.Tsarray;
@@ -265,7 +265,6 @@ alias Ttraits = TY.Ttraits;
 alias Tmixin = TY.Tmixin;
 alias Tnoreturn = TY.Tnoreturn;
 alias Ttag = TY.Ttag;
-alias TMAX = TY.TMAX;
 
 enum TFlags
 {
@@ -328,6 +327,7 @@ enum VarArg : ubyte
     variadic = 1,  /// (T t, ...)  can be C-style (core.stdc.stdarg) or D-style (core.vararg)
     typesafe = 2,  /// (T t ...) typesafe https://dlang.org/spec/function.html#typesafe_variadic_functions
                    ///   or https://dlang.org/spec/function.html#typesafe_variadic_functions
+    KRvariadic = 3, /// K+R C style variadics (no function prototype)
 }
 
 /*************************
@@ -339,7 +339,7 @@ enum STMT : ubyte
     Error,
     Peel,
     Exp, DtorExp,
-    Compile,
+    Mixin,
     Compound, CompoundDeclaration, CompoundAsm,
     UnrolledLoop,
     Scope,
@@ -438,4 +438,23 @@ enum FileType : ubyte
     dhdr, /// D header file (.di)
     ddoc, /// Ddoc documentation file (.dd)
     c,    /// C source file
+}
+
+extern (C++) struct structalign_t
+{
+  private:
+    ushort value = 0;  // unknown
+    enum STRUCTALIGN_DEFAULT = 1234;   // default = match whatever the corresponding C compiler does
+    bool pack;         // use #pragma pack semantics
+
+  public:
+  pure @safe @nogc nothrow:
+    bool isDefault() const { return value == STRUCTALIGN_DEFAULT; }
+    void setDefault()      { value = STRUCTALIGN_DEFAULT; }
+    bool isUnknown() const { return value == 0; }  // value is not set
+    void setUnknown()      { value = 0; }
+    void set(uint value)   { this.value = cast(ushort)value; }
+    uint get() const       { return value; }
+    bool isPack() const    { return pack; }
+    void setPack(bool pack) { this.pack = pack; }
 }

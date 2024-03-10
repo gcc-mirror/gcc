@@ -314,6 +314,9 @@ gt_pch_note_reorder (void *obj, void *note_ptr_cookie,
   data = (struct ptr_data *)
     saving_htab->find_with_hash (obj, POINTER_HASH (obj));
   gcc_assert (data && data->note_ptr_cookie == note_ptr_cookie);
+  /* The GTY 'reorder' option doesn't make sense if we don't walk pointers,
+     such as for strings.  */
+  gcc_checking_assert (data->note_ptr_fn != gt_pch_p_S);
 
   data->reorder_fn = reorder_fn;
 }
@@ -336,8 +339,7 @@ ggc_call_count (ptr_data **slot, traversal_state *state)
 {
   struct ptr_data *d = *slot;
 
-  ggc_pch_count_object (state->d, d->obj, d->size,
-			d->note_ptr_fn == gt_pch_p_S);
+  ggc_pch_count_object (state->d, d->obj, d->size);
   state->count++;
   return 1;
 }
@@ -347,8 +349,7 @@ ggc_call_alloc (ptr_data **slot, traversal_state *state)
 {
   struct ptr_data *d = *slot;
 
-  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size,
-				      d->note_ptr_fn == gt_pch_p_S);
+  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size);
   state->ptrs[state->ptrs_i++] = d;
   return 1;
 }
@@ -638,13 +639,19 @@ gt_pch_save (FILE *f)
 	state.ptrs[i]->reorder_fn (state.ptrs[i]->obj,
 				   state.ptrs[i]->note_ptr_cookie,
 				   relocate_ptrs, &state);
-      state.ptrs[i]->note_ptr_fn (state.ptrs[i]->obj,
-				  state.ptrs[i]->note_ptr_cookie,
-				  relocate_ptrs, &state);
+      gt_note_pointers note_ptr_fn = state.ptrs[i]->note_ptr_fn;
+      gcc_checking_assert (note_ptr_fn != NULL);
+      /* 'gt_pch_p_S' enables certain special handling, but otherwise
+     corresponds to no 'note_ptr_fn'.  */
+      if (note_ptr_fn == gt_pch_p_S)
+	note_ptr_fn = NULL;
+      if (note_ptr_fn != NULL)
+	note_ptr_fn (state.ptrs[i]->obj, state.ptrs[i]->note_ptr_cookie,
+		     relocate_ptrs, &state);
       ggc_pch_write_object (state.d, state.f, state.ptrs[i]->obj,
-			    state.ptrs[i]->new_addr, state.ptrs[i]->size,
-			    state.ptrs[i]->note_ptr_fn == gt_pch_p_S);
-      if (state.ptrs[i]->note_ptr_fn != gt_pch_p_S)
+			    state.ptrs[i]->new_addr, state.ptrs[i]->size);
+      if (state.ptrs[i]->reorder_fn != NULL
+	  || note_ptr_fn != NULL)
 	memcpy (state.ptrs[i]->obj, this_object, state.ptrs[i]->size);
 #if defined ENABLE_VALGRIND_ANNOTATIONS && defined VALGRIND_GET_VBITS
       if (UNLIKELY (get_vbits == 1))

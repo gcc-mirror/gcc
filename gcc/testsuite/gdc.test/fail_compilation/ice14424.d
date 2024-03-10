@@ -3,7 +3,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice14424.d(13): Error: `tuple(__unittest_L3_C1)` has no effect
+fail_compilation/ice14424.d(13): Error: `AliasSeq!(__unittest_L3_C1)` has no effect
 ---
 */
 

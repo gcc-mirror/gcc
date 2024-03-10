@@ -112,6 +112,7 @@ extern void debug_bb (basic_block, dump_flags_t);
 extern basic_block debug_bb_n (int, dump_flags_t);
 extern void dump_bb_info (FILE *, basic_block, int, dump_flags_t, bool, bool);
 extern void brief_dump_cfg (FILE *, dump_flags_t);
+extern void set_edge_probability_and_rescale_others (edge, profile_probability);
 extern void update_bb_profile_for_threading (basic_block, profile_count, edge);
 extern void scale_bbs_frequencies_profile_count (basic_block *, int,
 					     profile_count, profile_count);
@@ -126,6 +127,8 @@ extern void set_bb_copy (basic_block, basic_block);
 extern basic_block get_bb_copy (basic_block);
 void set_loop_copy (class loop *, class loop *);
 class loop *get_loop_copy (class loop *);
+void scale_strictly_dominated_blocks (basic_block,
+				      profile_count, profile_count);
 
 /* Generic RAII class to allocate a bit from storage of integer type T.
    The allocated bit is accessible as mask with the single bit set

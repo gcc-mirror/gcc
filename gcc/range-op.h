@@ -145,8 +145,15 @@ public:
 					  const frange &op2,
 					  relation_kind = VREL_VARYING) const;
 
-  virtual relation_kind op1_op2_relation (const irange &lhs) const;
-  virtual relation_kind op1_op2_relation (const frange &lhs) const;
+  virtual relation_kind op1_op2_relation (const irange &lhs,
+					  const irange &op1,
+					  const irange &op2) const;
+  virtual relation_kind op1_op2_relation (const irange &lhs,
+					  const frange &op1,
+					  const frange &op2) const;
+  virtual relation_kind op1_op2_relation (const frange &lhs,
+					  const frange &op1,
+					  const frange &op2) const;
 protected:
   // Perform an integral operation between 2 sub-ranges and return it.
   virtual void wi_fold (irange &r, tree type,
@@ -213,7 +220,9 @@ public:
 				  const vrange &op1,
 				  const vrange &op2,
 				  relation_kind = VREL_VARYING) const;
-  relation_kind op1_op2_relation (const vrange &lhs) const;
+  relation_kind op1_op2_relation (const vrange &lhs,
+				  const vrange &op1,
+				  const vrange &op2) const;
 protected:
   unsigned dispatch_kind (const vrange &lhs, const vrange &op1,
 			  const vrange& op2) const;

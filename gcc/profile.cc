@@ -1543,14 +1543,17 @@ branch_prob (bool thunk)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	report_predictor_hitrates ();
+      sreal nit;
+      bool reliable;
 
       /* At this moment we have precise loop iteration count estimates.
 	 Record them to loop structure before the profile gets out of date. */
       for (auto loop : loops_list (cfun, 0))
-	if (loop->header->count > 0 && loop->header->count.reliable_p ())
+	if (loop->header->count.ipa ().nonzero_p ()
+	    && expected_loop_iterations_by_profile (loop, &nit, &reliable)
+	    && reliable)
 	  {
-	    gcov_type nit = expected_loop_iterations_unbounded (loop);
-	    widest_int bound = gcov_type_to_wide_int (nit);
+	    widest_int bound = nit.to_nearest_int ();
 	    loop->any_estimate = false;
 	    record_niter_bound (loop, bound, true, false);
 	  }

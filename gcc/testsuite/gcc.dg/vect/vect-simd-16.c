@@ -41,12 +41,14 @@ main ()
   check_vect ();
   if (foo (a) != 64)
     abort ();
+#pragma GCC novector
   for (i = 0; i < 64; ++i)
     if (a[i] != i)
       abort ();
     else
       a[i] = -8;
   bar (a);
+#pragma GCC novector
   for (i = 0; i < 64; ++i)
     if (a[i] != i + 1)
       abort ();
@@ -54,6 +56,7 @@ main ()
       a[i] = -8;
   if (baz (a) != 64)
     abort ();
+#pragma GCC novector
   for (i = 0; i < 64; ++i)
     if (a[i] != i + 2)
       abort ();

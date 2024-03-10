@@ -32,6 +32,7 @@ int main()
 
   barX();
 
+#pragma GCC novector
   for (i = 0; i < 1024; ++i)
     if (z[i] != ((x[i]>0 && w[i]<0) ? 0. : 1.))
       abort ();

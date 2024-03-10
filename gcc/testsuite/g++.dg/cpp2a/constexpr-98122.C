@@ -9,7 +9,7 @@ bar ()
 {
   V f { .b = 42 };
   constexpr auto m = &V::a;
-  return (f.*m) == 42;
+  return (f.*m) == 42;  // { dg-error "accessing 'V::a' member instead of initialized 'V::b' member in constant expression" }
 }
 
 constexpr bool
@@ -21,5 +21,5 @@ baz ()
 }
 
 static_assert (bar (), "");	// { dg-error "non-constant condition for static assertion" }
-				// { dg-error "accessing 'V::a' member instead of initialized 'V::b' member in constant expression" "" { target *-*-* } .-1 }
+				// { dg-message "in .constexpr. expansion" "" { target *-*-* } .-1 }
 static_assert (baz (), "");

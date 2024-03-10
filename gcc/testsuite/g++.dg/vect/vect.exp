@@ -64,7 +64,7 @@ dg-init
 
 # Main loop.
 et-dg-runtest g++-dg-runtest [lsort [glob -nocomplain \
-	$srcdir/$subdir/{pr,simd}*.{c,cc,S} ]] "" $DEFAULT_VECTCFLAGS
+	$srcdir/$subdir/{pr,simd,vect-}*.{c,cc,S} ]] "" $DEFAULT_VECTCFLAGS
 et-dg-runtest g++-dg-runtest [lsort [glob -nocomplain \
 	$srcdir/$subdir/slp-pr*.{c,cc,S} ]] "" $VECT_SLP_CFLAGS
 

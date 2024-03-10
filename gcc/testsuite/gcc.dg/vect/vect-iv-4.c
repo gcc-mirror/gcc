@@ -24,6 +24,7 @@ __attribute__ ((noinline)) int main1 ()
    } while (i < N);
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     { 
       if (arr1[i] != 2+2*i || arr2[i] != 5 + 2*i)

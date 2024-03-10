@@ -22,6 +22,7 @@ main ()
     }
   if (b[0] != 1)
     __builtin_abort ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (b[i + 1] != i)
       __builtin_abort ();

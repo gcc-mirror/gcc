@@ -447,14 +447,12 @@ private extern(C++) final class Semantic2Visitor : Visitor
                 const sameParams = tf1.parameterList == tf2.parameterList;
 
                 // Allow the hack to declare overloads with different parameters/STC's
-                // @@@DEPRECATED_2.104@@@
-                // Deprecated in 2020-08, make this an error in 2.104
                 if (parent1.isModule() &&
                     linkage1 != LINK.d && linkage1 != LINK.cpp &&
                     (!sameAttr || !sameParams)
                 )
                 {
-                    f2.deprecation("cannot overload `extern(%s)` function at %s",
+                    f2.error("cannot overload `extern(%s)` function at %s",
                             linkageToChars(f1._linkage),
                             f1.loc.toChars());
                     return 0;
@@ -659,6 +657,13 @@ private extern(C++) final class Semantic2Visitor : Visitor
         {
             foreach (base; cd.interfaces)
             {
+                // https://issues.dlang.org/show_bug.cgi?id=22729
+                // interfaces that have errors or that
+                // inherit from interfaces that have errors
+                // might have an uninitialized vtable
+                if (!base.sym.vtbl.length)
+                    continue;
+
                 // first entry is ClassInfo reference
                 auto methods = base.sym.vtbl[base.sym.vtblOffset .. $];
 

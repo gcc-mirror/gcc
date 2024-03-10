@@ -21,6 +21,7 @@ int main()
 {
   check_vect ();
   foo ();
+#pragma GCC novector
   for (int d = 0; d < 25; d++)
     if (a[d] != 0)
       __builtin_abort ();

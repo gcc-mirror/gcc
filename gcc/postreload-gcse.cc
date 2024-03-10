@@ -141,7 +141,7 @@ expr_hasher::hash (const expr *exp)
 inline bool
 expr_hasher::equal (const expr *exp1, const expr *exp2)
 {
-  int equiv_p = exp_equiv_p (exp1->expr, exp2->expr, 0, true);
+  bool equiv_p = exp_equiv_p (exp1->expr, exp2->expr, 0, true);
 
   gcc_assert (!equiv_p || exp1->hash == exp2->hash);
   return equiv_p;
@@ -244,7 +244,7 @@ static void record_last_set_info (rtx, const_rtx, void *);
 static void record_opr_changes (rtx_insn *);
 
 static void find_mem_conflicts (rtx, const_rtx, void *);
-static int load_killed_in_block_p (int, rtx, bool);
+static bool load_killed_in_block_p (int, rtx, bool);
 static void reset_opr_set_tables (void);
 
 /* Hash table support.  */
@@ -529,7 +529,7 @@ oprs_unchanged_p (rtx x, rtx_insn *insn, bool after_insn)
   const char *fmt;
 
   if (x == 0)
-    return 1;
+    return true;
 
   code = GET_CODE (x);
   switch (code)
@@ -544,7 +544,7 @@ oprs_unchanged_p (rtx x, rtx_insn *insn, bool after_insn)
 
     case MEM:
       if (load_killed_in_block_p (INSN_CUID (insn), x, after_insn))
-	return 0;
+	return false;
       else
 	return oprs_unchanged_p (XEXP (x, 0), insn, after_insn);
 
@@ -555,7 +555,7 @@ oprs_unchanged_p (rtx x, rtx_insn *insn, bool after_insn)
     case LABEL_REF:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
-      return 1;
+      return true;
 
     case PRE_DEC:
     case PRE_INC:
@@ -564,7 +564,7 @@ oprs_unchanged_p (rtx x, rtx_insn *insn, bool after_insn)
     case PRE_MODIFY:
     case POST_MODIFY:
       if (after_insn)
-	return 0;
+	return false;
       break;
 
     default:
@@ -576,15 +576,15 @@ oprs_unchanged_p (rtx x, rtx_insn *insn, bool after_insn)
       if (fmt[i] == 'e')
 	{
 	  if (! oprs_unchanged_p (XEXP (x, i), insn, after_insn))
-	    return 0;
+	    return false;
 	}
       else if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  if (! oprs_unchanged_p (XVECEXP (x, i, j), insn, after_insn))
-	    return 0;
+	    return false;
     }
 
-  return 1;
+  return true;
 }
 
 
@@ -628,7 +628,7 @@ find_mem_conflicts (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
    the hash table construction or redundancy elimination phases start
    processing a new basic block.  */
 
-static int
+static bool
 load_killed_in_block_p (int uid_limit, rtx x, bool after_insn)
 {
   struct modifies_mem *list_entry = modifies_mem_list;
@@ -651,7 +651,7 @@ load_killed_in_block_p (int uid_limit, rtx x, bool after_insn)
 	 to pure functions are never put on the list, so we need not
 	 worry about them.  */
       if (CALL_P (setter))
-	return 1;
+	return true;
 
       /* SETTER must be an insn of some kind that sets memory.  Call
 	 note_stores to examine each hunk of memory that is modified.
@@ -660,11 +660,11 @@ load_killed_in_block_p (int uid_limit, rtx x, bool after_insn)
       mems_conflict_p = 0;
       note_stores (setter, find_mem_conflicts, x);
       if (mems_conflict_p)
-	return 1;
+	return true;
 
       list_entry = list_entry->next;
     }
-  return 0;
+  return false;
 }
 
 
@@ -930,7 +930,7 @@ get_avail_load_store_reg (rtx_insn *insn)
     }
 }
 
-/* Return nonzero if the predecessors of BB are "well behaved".  */
+/* Return true if the predecessors of BB are "well behaved".  */
 
 static bool
 bb_has_well_behaved_predecessors (basic_block bb)
@@ -1416,12 +1416,11 @@ gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
 
 
 
-static unsigned int
+static void
 rest_of_handle_gcse2 (void)
 {
   gcse_after_reload_main (get_insns ());
   rebuild_jump_labels (get_insns ());
-  return 0;
 }
 
 namespace {
@@ -1455,7 +1454,8 @@ public:
 
   unsigned int execute (function *) final override
   {
-    return rest_of_handle_gcse2 ();
+    rest_of_handle_gcse2 ();
+    return 0;
   }
 
 }; // class pass_gcse2

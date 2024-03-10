@@ -217,6 +217,21 @@ struct GTY(()) non_terminated_string @{
 @};
 @end smallexample
 
+Similarly, this is useful for (regular NUL-terminated) strings with
+NUL characters embedded (that the default @code{strlen} use would run
+afoul of):
+
+@smallexample
+struct GTY(()) multi_string @{
+  const char * GTY((string_length ("%h.len + 1"))) str;
+  size_t len;
+@};
+@end smallexample
+
+The @code{string_length} option currently is not supported for (fields
+in) global variables.
+@c <https://inbox.sourceware.org/87bkgqvlst.fsf@euler.schwinge.homeip.net>
+
 @findex skip
 @item skip
 

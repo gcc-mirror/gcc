@@ -813,4 +813,14 @@ extern (C++) struct Scope
     {
         return this.intypeof || this.flags & SCOPE.compile;
     }
+
+
+    /**
+     * Returns: true if the code needs to go all the way through to code generation.
+     * This implies things like needing lowering to simpler forms.
+     */
+    extern (D) bool needsCodegen()
+    {
+        return (flags & (SCOPE.ctfe | SCOPE.ctfeBlock | SCOPE.compile)) == 0;
+    }
 }

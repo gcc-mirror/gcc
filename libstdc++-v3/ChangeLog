@@ -1,3 +1,287 @@
+2023-08-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Add __cxa_call_terminate
+	symbol export.
+
+2023-07-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++11/compatibility-ldbl-facets-aliases.h: Replace #define with
+	proper #error.
+	* src/c++11/locale-inst-monetary.h: Likewise.
+	* src/c++11/locale-inst-numeric.h: Likewise.
+
+2023-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108046
+	* include/std/format (__formatter_fp::format): Ensure __expc is
+	always set for all presentation types. Set __z correctly for
+	zero precision.
+	* testsuite/std/format/functions/format.cc: Check problem cases.
+
+2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110807
+	* testsuite/23_containers/vector/bool/110807.cc: Require c++11.
+
+2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110807
+	* include/bits/stl_bvector.h (vector(const vector&)): Access
+	iterators before allocating.
+	* include/bits/vector.tcc (vector<bool>::_M_insert_range):
+	Likewise.
+	* testsuite/23_containers/vector/bool/110807.cc: New test.
+
+2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/algorithmfwd.h (random_shuffle): Add deprecated
+	attribute.
+	* include/bits/stl_algo.h (random_shuffle): Correct comments.
+	* testsuite/25_algorithms/random_shuffle/1.cc: Disable
+	deprecated warnings.
+	* testsuite/25_algorithms/random_shuffle/59603.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/deprecated.cc: New
+	test.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* testsuite/25_algorithms/equal/constexpr_neg.cc: Update diagnostic
+	locations.
+	* testsuite/26_numerics/gcd/105844.cc: Likewise.
+	* testsuite/26_numerics/lcm/105844.cc: Likewise.
+
+2023-07-24  Deev Patel  <pateldeev@nevada.unr.edu>
+
+	* include/std/format (_Formatting_scanner::_M_on_chars): Add
+	missing constexpr specifier.
+	(_Formatting_scanner::_M_format_arg): Likewise.
+
+2023-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110653
+	* include/bits/basic_string.h [!HAVE_STOF] (stof): Do not
+	throw an exception for zero result.
+	[HAVE_BROKEN_STRTOLD] (stold): Do not use strtold.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110077
+	* src/c++17/floating_from_chars.cc (from_chars): Only define
+	_Float128 overload when using __strfromf128.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110593
+	* include/bits/chrono.h (duration): Improve static assert
+	messages.
+	(__is_ratio): Move to ...
+	* include/std/ratio (__is_ratio): ... here.
+	(__is_ratio_v): New variable template and partial
+	specialization.
+	(__are_both_ratios): New function template.
+	(__ratio_multiply, ratio_equal, ratio_less, __ratio_add):
+	Add static assertion.
+	* testsuite/20_util/ratio/requirements/type_constraints.cc:
+	New test.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc:
+	Adjust expected error.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc:
+	Likewise.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_format):
+	Do not set __is_neg for hh_mm_ss before calling
+	_M_format_to_ostream. Change __print_sign lambda to only check
+	__is_neg for durations and hh_mm_ss types.
+	(__formatter_chrono::_M_format_to_ostream): Only check __is_neg
+	for duration types.
+	* testsuite/std/time/hh_mm_ss/io.cc: Check negative values.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110719
+	* include/bits/chrono_io.h (__formatter_chrono::_S_floor_seconds):
+	Handle duration and hh_mm_ss.
+	* testsuite/20_util/duration/io.cc: Check locale-specific
+	formats.
+	* testsuite/std/time/hh_mm_ss/io.cc: Likewise.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__write_padded): Initialize first element
+	of array to avoid a -Wmaybe-uninitialized warning.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110719
+	* include/bits/chrono_io.h (__formatter_chrono::_M_parse): Fix
+	allowed modifiers for %z and %Z. Fix -Wparentheses and
+	-Wnarrowing warnings.
+	(__formatter_chrono::_M_format): Call new functions for %d, %e,
+	%H, %I, %m and %M.
+	(__formatter_chrono::_M_c): Use _S_floor_seconds to remove
+	subsecond precision.
+	(__formatter_chrono::_M_C_y_Y): Use _M_locale_fmt to handle
+	modifiers.
+	(__formatter_chrono::_M_e): Replace with _M_d_e and use
+	_M_locale_fmt.
+	(__formatter_chrono::_M_I): Replace with _M_H_I and use
+	_M_locale_fmt.
+	(__formatter_chrono::_M_m): New function.
+	(__formatter_chrono::_M_M): New function.
+	(__formatter_chrono::_M_r): Use _M_locale_fmt.
+	(__formatter_chrono::_M_S): Likewise.
+	(__formatter_chrono::_M_u_w): Likewise.
+	(__formatter_chrono::_M_U_V_W): Likewise.
+	(__formatter_chrono::_M_X): Use _S_floor_seconds.
+	(__formatter_chrono::_M_Z): Fix untested branch for wchar_t.
+	(__formatter_chrono::_S_altnum): Remove function.
+	(__formatter_chrono::_S_dd_zero_fill): Remove function.
+	(__formatter_chrono::_S_floor_seconds): New function.
+	(__formatter_chrono::_M_locale_fmt): New function.
+	* testsuite/std/time/clock/system/io.cc: Adjust expected output
+	for locale-specific formats and check modified formats.
+	* testsuite/std/time/clock/utc/io.cc: Likewise.
+	* testsuite/std/time/zoned_time/io.cc: New test.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110708
+	* include/bits/chrono_io.h (__formatter_chrono::_M_parse): Only
+	allow a single modifier.
+	* testsuite/std/time/format.cc: Check multiple modifiers.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110653
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stod.cc:
+	Remove dg-require-string-conversions.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stof.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoi.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stol.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoul.cc:
+	Likewise.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110653
+	* include/bits/basic_string.h [!_GLIBCXX_HAVE_STRTOF] (stof):
+	Define in terms of std::stod.
+
+2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110653
+	* include/bits/basic_string.h [_GLIBCXX_HAVE_STRTOF] (stof):
+	Define.
+	[_GLIBCXX_HAVE_STRTOLD] (stold): Define.
+	* include/c_global/cstdlib [_GLIBCXX_HAVE_STRTOF] (strtof):
+	Declare in namespace std.
+	[_GLIBCXX_HAVE_STRTOLD] (strtold): Likewise.
+
+2023-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110653
+	* include/bits/basic_string.h (stoi, stol, stoul, stod): Do not
+	depend on _GLIBCXX_USE_C99_STDLIB.
+	[__LONG_WIDTH__ == __LONG_LONG_WIDTH__] (stoll, stoull): Define
+	in terms of stol and stoul respectively.
+	[__DBL_MANT_DIG__ == __LDBL_MANT_DIG__] (stold): Define in terms
+	of stod.
+
+2023-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95048
+	* testsuite/27_io/filesystem/path/construct/95048.cc: Check
+	conversions to wide strings.
+	* testsuite/experimental/filesystem/path/construct/95048.cc:
+	Likewise.
+
+2023-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/io/basic_file_stdio.cc: Define LFS macros.
+	(__basic_file<char>::open): Use fopen unconditionally.
+	(get_file_offset): Use lseek unconditionally.
+	(__basic_file<char>::seekoff): Likewise.
+	(__basic_file<char>::showmanyc): Use fstat unconditionally.
+
+2023-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110574
+	* acinclude.m4 (GLIBCXX_CHECK_LFS): Check for fseeko and ftello
+	and define _GLIBCXX_USE_FSEEKO_FTELLO.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* config/io/basic_file_stdio.cc (xwrite) [_GLIBCXX_USE_STDIO_PURE]:
+	Check for fwrite error correctly.
+	(__basic_file<char>::xsgetn) [_GLIBCXX_USE_STDIO_PURE]: Check for
+	fread error correctly.
+	(get_file_offset): New function.
+	(__basic_file<char>::seekoff) [_GLIBCXX_USE_STDIO_PURE]: Use
+	fseeko if available. Use get_file_offset instead of return value
+	of fseek.
+	(__basic_file<char>::showmanyc): Use get_file_offset.
+
+2023-07-12  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (__make_unsigned_selector): Use
+	__is_enum built-in trait.
+	(__make_signed_selector): Likewise.
+	(__underlying_type_impl): Likewise.
+
+2023-07-06  Tianqiang Shuai  <1101282468@qq.com>
+
+	* config/io/basic_file_stdio.cc (xwrite) [USE_STDIO_PURE]: Fix
+	first argument.
+
+2023-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110574
+	* doc/xml/manual/configure.xml: Describe stdio_pure argument to
+	--enable-cstdio.
+	* doc/html/manual/configure.html: Regenerate.
+
+2023-07-05  Thomas Rodgers  <trodgers@redhat.com>
+
+	* testsuite/25_algorithms/pstl/alg_sorting/set.cc: Delete
+	file.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_difference.cc:
+	New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_intersection.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_symmetric_difference.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_union.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_util.h:
+	Likewise.
+
+2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/forward_list/debug/iterator1_neg.cc:
+	Skip as UNSUPPORTED for C++98 mode.
+	* testsuite/23_containers/forward_list/debug/iterator3_neg.cc:
+	Likewise.
+
+2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110542
+	* include/bits/stl_uninitialized.h (__uninitialized_default_n):
+	Do not use std::fill_n during constant evaluation.
+
+2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/vector.tcc (_M_default_append): Replace try-block
+	with RAII types.
+
+2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (projected): Add typename.
+
 2023-07-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/headers/iosfwd/synopsis.cc: Make wsyncbuf and

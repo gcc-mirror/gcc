@@ -26,6 +26,7 @@ int main ()
       __asm__ volatile ("");
     }
   foo (4);
+#pragma GCC novector
   for (i = 0; i < 64; ++i)
     if (a[i] != (4*(i/2) + (i & 1) ^ 1))
       abort ();

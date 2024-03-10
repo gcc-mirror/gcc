@@ -48,6 +48,7 @@ int main (void)
 
   foo1 (N);
 
+#pragma GCC novector
   for (i=0; i<N; i++) {
     if (uresult[i] != (unsigned short)uY[i])
       abort ();
@@ -55,6 +56,7 @@ int main (void)
   
   foo2 (N);
   
+#pragma GCC novector
   for (i=0; i<N; i++) {
     if (result[i] != (short)Y[i])
       abort ();

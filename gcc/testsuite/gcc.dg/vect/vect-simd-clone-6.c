@@ -57,6 +57,7 @@ main ()
   check_vect ();
   baz ();
   bar (0);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (a[i] != 2 * i || b[i] != 6 - 7 * i
 	|| c[i] != 6 - 5 * i + ((i & 31) << 4))
@@ -64,6 +65,7 @@ main ()
     else
       a[i] = c[i];
   bar (17);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (a[i] != 6 - 5 * i + ((i & 31) << 4)
 	|| b[i] != 6 - 7 * i

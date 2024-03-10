@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fdump-tree-optimized-blocks -O2" }
+! { dg-options "-fdump-tree-optimized-blocks-details -O2" }
 
 SUBROUTINE S42(a,b,c,N)
  IMPLICIT NONE

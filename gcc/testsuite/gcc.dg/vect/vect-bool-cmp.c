@@ -183,6 +183,7 @@ check (int *p, cmp_fn fn)
 {
   int i;
 
+#pragma GCC novector
   for (i = 0; i < 32; i++)
     {
       int t1 = ((i % 4) > 1) == 0;

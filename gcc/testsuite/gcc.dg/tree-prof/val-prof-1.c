@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized-details-blocks -fdump-ipa-profile-optimized" } */
 int a[1000];
 int b = 256;
 int c = 257;

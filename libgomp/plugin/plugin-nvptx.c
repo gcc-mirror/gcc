@@ -1781,6 +1781,124 @@ GOMP_OFFLOAD_dev2dev (int ord, void *dst, const void *src, size_t n)
   return true;
 }
 
+int
+GOMP_OFFLOAD_memcpy2d (int dst_ord, int src_ord, size_t dim1_size,
+		       size_t dim0_len, void *dst, size_t dst_offset1_size,
+		       size_t dst_offset0_len, size_t dst_dim1_size,
+		       const void *src, size_t src_offset1_size,
+		       size_t src_offset0_len, size_t src_dim1_size)
+{
+  if (!nvptx_attach_host_thread_to_device (src_ord != -1 ? src_ord : dst_ord))
+    return false;
+
+  /* TODO: Consider using CU_MEMORYTYPE_UNIFIED if supported.  */
+
+  CUDA_MEMCPY2D data;
+
+  memset (&data, 0, sizeof (data));
+  data.WidthInBytes = dim1_size;
+  data.Height = dim0_len;
+
+  if (dst_ord == -1)
+    {
+      data.dstMemoryType = CU_MEMORYTYPE_HOST;
+      data.dstHost = dst;
+    }
+  else
+    {
+      data.dstMemoryType = CU_MEMORYTYPE_DEVICE;
+      data.dstDevice = (CUdeviceptr) dst;
+    }
+  data.dstPitch = dst_dim1_size;
+  data.dstXInBytes = dst_offset1_size;
+  data.dstY = dst_offset0_len;
+
+  if (src_ord == -1)
+    {
+      data.srcMemoryType = CU_MEMORYTYPE_HOST;
+      data.srcHost = src;
+    }
+  else
+    {
+      data.srcMemoryType = CU_MEMORYTYPE_DEVICE;
+      data.srcDevice = (CUdeviceptr) src;
+    }
+  data.srcPitch = src_dim1_size;
+  data.srcXInBytes = src_offset1_size;
+  data.srcY = src_offset0_len;
+
+  CUresult res = CUDA_CALL_NOCHECK (cuMemcpy2D, &data);
+  if (res == CUDA_ERROR_INVALID_VALUE)
+    /* If pitch > CU_DEVICE_ATTRIBUTE_MAX_PITCH or for device-to-device
+       for (some) memory not allocated by cuMemAllocPitch, cuMemcpy2D fails
+       with an error; try the slower cuMemcpy2DUnaligned now.  */
+    CUDA_CALL (cuMemcpy2DUnaligned, &data);
+  else if (res != CUDA_SUCCESS)
+    {
+      GOMP_PLUGIN_error ("cuMemcpy2D error: %s", cuda_error (res));
+      return false;
+    }
+  return true;
+}
+
+int
+GOMP_OFFLOAD_memcpy3d (int dst_ord, int src_ord, size_t dim2_size,
+		       size_t dim1_len, size_t dim0_len, void *dst,
+		       size_t dst_offset2_size, size_t dst_offset1_len,
+		       size_t dst_offset0_len, size_t dst_dim2_size,
+		       size_t dst_dim1_len, const void *src,
+		       size_t src_offset2_size, size_t src_offset1_len,
+		       size_t src_offset0_len, size_t src_dim2_size,
+		       size_t src_dim1_len)
+{
+  if (!nvptx_attach_host_thread_to_device (src_ord != -1 ? src_ord : dst_ord))
+    return false;
+
+  /* TODO: Consider using CU_MEMORYTYPE_UNIFIED if supported.  */
+
+  CUDA_MEMCPY3D data;
+
+  memset (&data, 0, sizeof (data));
+  data.WidthInBytes = dim2_size;
+  data.Height = dim1_len;
+  data.Depth = dim0_len;
+
+  if (dst_ord == -1)
+    {
+      data.dstMemoryType = CU_MEMORYTYPE_HOST;
+      data.dstHost = dst;
+    }
+  else
+    {
+      data.dstMemoryType = CU_MEMORYTYPE_DEVICE;
+      data.dstDevice = (CUdeviceptr) dst;
+    }
+  data.dstPitch = dst_dim2_size;
+  data.dstHeight = dst_dim1_len;
+  data.dstXInBytes = dst_offset2_size;
+  data.dstY = dst_offset1_len;
+  data.dstZ = dst_offset0_len;
+
+  if (src_ord == -1)
+    {
+      data.srcMemoryType = CU_MEMORYTYPE_HOST;
+      data.srcHost = src;
+    }
+  else
+    {
+      data.srcMemoryType = CU_MEMORYTYPE_DEVICE;
+      data.srcDevice = (CUdeviceptr) src;
+    }
+  data.srcPitch = src_dim2_size;
+  data.srcHeight = src_dim1_len;
+  data.srcXInBytes = src_offset2_size;
+  data.srcY = src_offset1_len;
+  data.srcZ = src_offset0_len;
+
+  CUDA_CALL (cuMemcpy3D, &data);
+  return true;
+}
+
 bool
 GOMP_OFFLOAD_openacc_async_host2dev (int ord, void *dst, const void *src,
 				     size_t n, struct goacc_asyncqueue *aq)

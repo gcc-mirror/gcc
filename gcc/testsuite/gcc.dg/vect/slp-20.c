@@ -34,6 +34,7 @@ main1 (unsigned short a0, unsigned short a1, unsigned short a2,
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*4] != b0 
@@ -77,6 +78,7 @@ main1 (unsigned short a0, unsigned short a1, unsigned short a2,
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*4] != b0 

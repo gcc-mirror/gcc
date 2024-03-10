@@ -30,7 +30,7 @@
 #include <stdint.h>
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.2-a+fp16")
+#pragma GCC target ("+nothing+fp16")
 
 typedef __fp16 float16_t;
 

@@ -34,6 +34,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (in[i] != i+5)
@@ -51,6 +52,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (in2[i] != (i % 4) + (i / 4) * 5)
@@ -69,6 +71,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (in3[i] != (i % 12) + (i / 12) * 5)

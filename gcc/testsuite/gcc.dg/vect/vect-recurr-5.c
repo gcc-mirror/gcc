@@ -32,6 +32,7 @@ main ()
     }
   int c = 7;
   foo (a, b, &c);
+#pragma GCC novector
   for (int i = 2; i < 64; i+=2)
     if (b[i] != a[i] - a[i-2]
 	|| b[i+1] != a[i+1] - a[i-1])

@@ -25,6 +25,7 @@ int main ()
   foo ();
 
   /* check results */
+#pragma GCC novector
   for (int i = 0; i < 1020; ++i)
     if (a[i] != ((i + 4) / 5) * 5)
       abort ();

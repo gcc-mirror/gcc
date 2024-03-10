@@ -29,6 +29,7 @@ int main (void)
 
   foo1 (N);
 
+#pragma GCC novector
   for (i=0; i<N; i++) {
     if (result[i] != X[i] * Y[i])
       abort ();

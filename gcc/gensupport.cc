@@ -620,7 +620,7 @@ public:
   conlist (const char *ns, unsigned int len, bool numeric)
   {
     /* Trim leading whitespaces.  */
-    while (ISBLANK (*ns))
+    while (len > 0 && ISBLANK (*ns))
       {
 	ns++;
 	len--;
@@ -632,7 +632,7 @@ public:
 	break;
 
     /* Parse off any modifiers.  */
-    while (!ISALNUM (*ns))
+    while (len > 0 && !ISALNUM (*ns))
       {
 	con += *(ns++);
 	len--;
@@ -3806,7 +3806,7 @@ find_optab (optab_pattern *p, const char *name)
 	{
 	  p->name = name;
 	  p->op = optabs[pindex].op;
-	  p->sort_num = (p->op << 16) | (p->m2 << 8) | p->m1;
+	  p->sort_num = (p->op << 20) | (p->m2 << 10) | p->m1;
 	  return true;
 	}
     }

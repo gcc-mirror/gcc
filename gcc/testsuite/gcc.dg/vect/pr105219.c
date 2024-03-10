@@ -22,6 +22,7 @@ int main()
       {
         __builtin_memset (data, 0, sizeof (data));
         foo (&data[start], n);
+#pragma GCC novector
         for (int j = 0; j < n; ++j)
           if (data[start + j] != j)
             __builtin_abort ();

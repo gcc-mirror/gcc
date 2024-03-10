@@ -5370,7 +5370,7 @@ arith_overflowed_p (enum tree_code code, const_tree type,
   return wi::min_precision (wres, sign) > TYPE_PRECISION (type);
 }
 
-/* If IFN_{MASK,LEN,LEN_MASK}_LOAD/STORE call CALL is unconditional,
+/* If IFN_{MASK,LEN,MASK_LEN}_LOAD/STORE call CALL is unconditional,
    return a MEM_REF for the memory it references, otherwise return null.
    VECTYPE is the type of the memory vector.  MASK_P indicates it's for
    MASK if true, otherwise it's for LEN.  */
@@ -5398,15 +5398,15 @@ gimple_fold_partial_load_store_mem_ref (gcall *call, tree vectype, bool mask_p)
 	return NULL_TREE;
       tree bias = gimple_call_arg (call, len_index + 1);
       gcc_assert (TREE_CODE (bias) == INTEGER_CST);
-      /* For LEN_LOAD/LEN_STORE/LEN_MASK_LOAD/LEN_MASK_STORE,
+      /* For LEN_LOAD/LEN_STORE/MASK_LEN_LOAD/MASK_LEN_STORE,
 	 we don't fold when (bias + len) != VF.  */
       if (maybe_ne (wi::to_poly_widest (basic_len) + wi::to_widest (bias),
 		    GET_MODE_NUNITS (TYPE_MODE (vectype))))
 	return NULL_TREE;
 
-      /* For LEN_MASK_{LOAD,STORE}, we should also check whether
+      /* For MASK_LEN_{LOAD,STORE}, we should also check whether
 	  the mask is all ones mask.  */
-      if (ifn == IFN_LEN_MASK_LOAD || ifn == IFN_LEN_MASK_STORE)
+      if (ifn == IFN_MASK_LEN_LOAD || ifn == IFN_MASK_LEN_STORE)
 	{
 	  tree mask = gimple_call_arg (call, internal_fn_mask_index (ifn));
 	  if (!integer_all_onesp (mask))
@@ -5689,11 +5689,11 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  changed |= gimple_fold_partial_store (gsi, stmt, true);
 	  break;
 	case IFN_LEN_LOAD:
-	case IFN_LEN_MASK_LOAD:
+	case IFN_MASK_LEN_LOAD:
 	  changed |= gimple_fold_partial_load (gsi, stmt, false);
 	  break;
 	case IFN_LEN_STORE:
-	case IFN_LEN_MASK_STORE:
+	case IFN_MASK_LEN_STORE:
 	  changed |= gimple_fold_partial_store (gsi, stmt, false);
 	  break;
 	default:
@@ -6947,7 +6947,7 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 }
 
 static basic_block fosa_bb;
-static vec<std::pair<tree, vrange_storage *> > *fosa_unwind;
+static vec<std::pair<tree, flow_sensitive_info_storage> > *fosa_unwind;
 static tree
 follow_outer_ssa_edges (tree val)
 {
@@ -6967,14 +6967,11 @@ follow_outer_ssa_edges (tree val)
 	   || POINTER_TYPE_P (TREE_TYPE (val)))
 	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (val)))
 	return NULL_TREE;
+      flow_sensitive_info_storage storage;
+      storage.save_and_clear (val);
       /* If the definition does not dominate fosa_bb temporarily reset
 	 flow-sensitive info.  */
-      if (val->ssa_name.info.range_info)
-	{
-	  fosa_unwind->safe_push (std::make_pair
-				    (val, val->ssa_name.info.range_info));
-	  val->ssa_name.info.range_info = NULL;
-	}
+      fosa_unwind->safe_push (std::make_pair (val, storage));
       return val;
     }
   return val;
@@ -7034,14 +7031,14 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
 		      type, gimple_assign_lhs (stmt1),
 		      gimple_assign_lhs (stmt2));
   fosa_bb = outer_cond_bb;
-  auto_vec<std::pair<tree, vrange_storage *>, 8> unwind_stack;
+  auto_vec<std::pair<tree, flow_sensitive_info_storage>, 8> unwind_stack;
   fosa_unwind = &unwind_stack;
   if (op.resimplify (NULL, (!outer_cond_bb
 			    ? follow_all_ssa_edges : follow_outer_ssa_edges)))
     {
       fosa_unwind = NULL;
       for (auto p : unwind_stack)
-	p.first->ssa_name.info.range_info = p.second;
+	p.second.restore (p.first);
       if (gimple_simplified_result_is_gimple_val (&op))
 	{
 	  tree res = op.ops[0];
@@ -7065,7 +7062,7 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
     }
   fosa_unwind = NULL;
   for (auto p : unwind_stack)
-    p.first->ssa_name.info.range_info = p.second;
+    p.second.restore (p.first);
 
   return NULL_TREE;
 }
@@ -8162,8 +8159,8 @@ fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
      result.  */
   if (!AGGREGATE_TYPE_P (TREE_TYPE (ctor)) && !offset
       /* VIEW_CONVERT_EXPR is defined only for matching sizes.  */
-      && !compare_tree_int (TYPE_SIZE (type), size)
-      && !compare_tree_int (TYPE_SIZE (TREE_TYPE (ctor)), size))
+      && known_eq (wi::to_poly_widest (TYPE_SIZE (type)), size)
+      && known_eq (wi::to_poly_widest (TYPE_SIZE (TREE_TYPE (ctor))), size))
     {
       ret = canonicalize_constructor_val (unshare_expr (ctor), from_decl);
       if (ret)

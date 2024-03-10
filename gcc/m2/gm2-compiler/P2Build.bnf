@@ -60,7 +60,6 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, OperandT, PushTFA, T
                     BuildProcedureStart,
                     BuildProcedureEnd,
                     BuildAssignment,
-                    BuildInline,
                     AddRecordToList, AddVarientToList,
                     IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto, DisplayStack ;
 

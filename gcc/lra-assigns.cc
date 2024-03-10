@@ -948,7 +948,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
     }
   best_hard_regno = -1;
   best_cost = INT_MAX;
-  best_static_p = TRUE;
+  best_static_p = true;
   best_insn_pseudos_num = INT_MAX;
   smallest_bad_spills_num = INT_MAX;
   rclass_size = ira_class_hard_regs_num[rclass];
@@ -1443,10 +1443,11 @@ assign_by_spills (void)
 		 pass.  Indicate that it is no longer spilled.  */
 	      bitmap_clear_bit (&all_spilled_pseudos, regno);
 	      assign_hard_regno (hard_regno, regno);
-	      if (! reload_p)
-		/* As non-reload pseudo assignment is changed we
-		   should reconsider insns referring for the
-		   pseudo.  */
+	      if (! reload_p || regno_allocno_class_array[regno] == ALL_REGS)
+		/* As non-reload pseudo assignment is changed we should
+		   reconsider insns referring for the pseudo.  Do the same if a
+		   reload pseudo did not refine its class which can happens
+		   when the pseudo occurs only in reload insns.  */
 		bitmap_set_bit (&changed_pseudo_bitmap, regno);
 	    }
 	}
@@ -1850,20 +1851,8 @@ lra_split_hard_reg_for (void)
       insn = lra_insn_recog_data[u]->insn;
       if (asm_noperands (PATTERN (insn)) >= 0)
 	{
-	  lra_asm_error_p = asm_p = true;
-	  error_for_asm (insn,
-			 "%<asm%> operand has impossible constraints");
-	  /* Avoid further trouble with this insn.  */
-	  if (JUMP_P (insn))
-	    {
-	      ira_nullify_asm_goto (insn);
-	      lra_update_insn_regno_info (insn);
-	    }
-	  else
-	    {
-	      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
-	      lra_set_insn_deleted (insn);
-	    }
+	  asm_p = true;
+	  lra_asm_insn_error (insn);
 	}
       else if (!asm_p)
 	{

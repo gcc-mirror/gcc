@@ -227,7 +227,7 @@ package Einfo.Utils is
    function Next_Stored_Discriminant (Id : E) return Entity_Id;
    function Number_Dimensions (Id : E) return Pos;
    function Number_Entries (Id : E) return Nat;
-   function Number_Formals (Id : E) return Pos;
+   function Number_Formals (Id : E) return Nat;
    function Object_Size_Clause (Id : E) return Node_Id;
    function Parameter_Mode (Id : E) return Formal_Kind;
    function Partial_Refinement_Constituents (Id : E) return L;

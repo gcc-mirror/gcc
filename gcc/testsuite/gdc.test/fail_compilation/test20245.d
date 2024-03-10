@@ -9,7 +9,7 @@ fail_compilation/test20245.d(27): Error: cannot take address of `scope` variable
 fail_compilation/test20245.d(33): Error: reference to local variable `x` assigned to non-scope parameter `ptr` calling `escape`
 fail_compilation/test20245.d(34): Error: copying `&x` into allocated memory escapes a reference to parameter `x`
 fail_compilation/test20245.d(50): Error: reference to local variable `price` assigned to non-scope `this.minPrice`
-fail_compilation/test20245.d(69): Error: reference to local variable `this` assigned to non-scope parameter `msg` calling `this`
+fail_compilation/test20245.d(69): Error: reference to local variable `this.content[]` calling non-scope member function `Exception.this()`
 fail_compilation/test20245.d(89): Error: reference to local variable `this` assigned to non-scope parameter `content` calling `listUp`
 fail_compilation/test20245.d(82):        which is not `scope` because of `charPtr = content`
 ---

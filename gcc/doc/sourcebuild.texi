@@ -2186,9 +2186,15 @@ the Custom Datapath Extension (CDE) and floating-point (VFP).
 Some multilibs may be incompatible with these options.
 
 @item arm_v8_1m_main_cde_mve
-ARM target supports options to generate instructions from ARMv8.1-M with
+Arm target supports options to generate instructions from Armv8.1-M with
 the Custom Datapath Extension (CDE) and M-Profile Vector Extension (MVE).
 Some multilibs may be incompatible with these options.
+
+@item arm_v8_1m_main_cde_mve_fp
+Arm target supports options to generate instructions from Armv8.1-M
+with the Custom Datapath Extension (CDE) and M-Profile Vector
+Extension (MVE) with floating-point support.  Some multilibs may be
+incompatible with these options.
 
 @item arm_pacbti_hw
 Test system supports executing Pointer Authentication and Branch Target
@@ -2505,6 +2511,9 @@ Target supports the execution of @code{avxneconvert} instructions.
 @item avxvnniint8
 Target supports the execution of @code{avxvnniint8} instructions.
 
+@item avxvnniint16
+Target supports the execution of @code{avxvnniint16} instructions.
+
 @item amx_tile
 Target supports the execution of @code{amx-tile} instructions.
 
@@ -2579,6 +2588,15 @@ Target supports the execution of @code{raoint} instructions.
 
 @item rdrand
 Target supports x86 @code{rdrand} instruction.
+
+@item sha512
+Target supports the execution of @code{sha512} instructions.
+
+@item sm3
+Target supports the execution of @code{sm3} instructions.
+
+@item sm4
+Target supports the execution of @code{sm4} instructions.
 
 @item sqrt_insn
 Target has a square root instruction that the compiler can generate.

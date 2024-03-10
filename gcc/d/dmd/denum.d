@@ -169,7 +169,12 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
             return defaultval;
         }
         //printf("EnumDeclaration::getDefaultValue() %p %s\n", this, toChars());
-        if (defaultval)
+        // https://issues.dlang.org/show_bug.cgi?id=23904
+        // Return defaultval only if it is not ErrorExp.
+        // A speculative context may set defaultval to ErrorExp;
+        // subsequent non-speculative contexts need to be able
+        // to print the error.
+        if (defaultval && !defaultval.isErrorExp())
             return defaultval;
 
         if (isCsymbol())

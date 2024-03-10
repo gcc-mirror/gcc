@@ -505,26 +505,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return numeric_limits<_Rep>::lowest(); }
       };
 
-    /// @cond undocumented
-
-    template<typename _Tp>
-      struct __is_ratio
-      : std::false_type
-      { };
-
-    template<intmax_t _Num, intmax_t _Den>
-      struct __is_ratio<ratio<_Num, _Den>>
-      : std::true_type
-      { };
-
-    /// @endcond
-
     template<typename _Rep, typename _Period>
       class duration
       {
-	static_assert(!__is_duration<_Rep>::value, "rep cannot be a duration");
+	static_assert(!__is_duration<_Rep>::value,
+		      "rep cannot be a std::chrono::duration");
 	static_assert(__is_ratio<_Period>::value,
-		      "period must be a specialization of ratio");
+		      "period must be a specialization of std::ratio");
 	static_assert(_Period::num > 0, "period must be positive");
 
 	template<typename _Rep2>

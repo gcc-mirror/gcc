@@ -1874,7 +1874,8 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	     to zero.  */
 	  if ((complain & tf_warning)
 	      && !cp_unevaluated_operand
-	      && !EMPTY_CONSTRUCTOR_P (init))
+	      && !EMPTY_CONSTRUCTOR_P (init)
+	      && !is_really_empty_class (fldtype, /*ignore_vptr*/false))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
 

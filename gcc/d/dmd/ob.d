@@ -20,7 +20,6 @@ import dmd.root.rootobject;
 import dmd.root.rmem;
 
 import dmd.aggregate;
-import dmd.apply;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.declaration;
@@ -844,7 +843,7 @@ void toObNodes(ref ObNodes obnodes, Statement s)
             case STMT.Conditional:
             case STMT.While:
             case STMT.Forwarding:
-            case STMT.Compile:
+            case STMT.Mixin:
             case STMT.Peel:
             case STMT.Synchronized:
                 debug printf("s: %s\n", s.toChars());

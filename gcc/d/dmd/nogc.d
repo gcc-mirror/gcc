@@ -16,7 +16,6 @@ module dmd.nogc;
 import core.stdc.stdio;
 
 import dmd.aggregate;
-import dmd.apply;
 import dmd.astenums;
 import dmd.declaration;
 import dmd.dscope;
@@ -26,6 +25,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.init;
 import dmd.mtype;
+import dmd.postordervisitor;
 import dmd.tokens;
 import dmd.visitor;
 
@@ -83,7 +83,7 @@ public:
             err = true;
             return true;
         }
-        if (f.setGC())
+        if (f.setGC(e.loc, format))
         {
             e.error(format, f.kind(), f.toPrettyChars());
             err = true;
@@ -135,7 +135,7 @@ public:
 
     override void visit(NewExp e)
     {
-        if (e.member && !e.member.isNogc() && f.setGC())
+        if (e.member && !e.member.isNogc() && f.setGC(e.loc, null))
         {
             // @nogc-ness is already checked in NewExp::semantic
             return;
@@ -195,7 +195,7 @@ public:
             err = true;
             return;
         }
-        if (f.setGC())
+        if (f.setGC(e.loc, null))
         {
             err = true;
             return;

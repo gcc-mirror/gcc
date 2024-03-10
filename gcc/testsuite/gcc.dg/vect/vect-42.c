@@ -1,5 +1,5 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
-/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0 -fdump-tree-optimized-details-blocks" } */
 /* { dg-require-effective-target vect_float } */
 /* { dg-add-options double_vectors } */
 
@@ -14,6 +14,7 @@ void bar (float *pa, float *pb, float *pc)
   int i;
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (pa[i] != (pb[i] * pc[i]))
@@ -71,3 +72,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { xfail { vect_no_align || { { !  vector_alignment_reachable } || vect_element_align  } } } } }  */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 3 "vect" { target vect_element_align xfail { ! { vect_unaligned_possible && vect_align_stack_vars } } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { vect_no_align || { { ! vector_alignment_reachable } || vect_element_align } } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

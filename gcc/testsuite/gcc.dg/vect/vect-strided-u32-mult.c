@@ -29,6 +29,7 @@ main1 (unsigned short *arr, ii *iarr)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (res[i] != arr[i]

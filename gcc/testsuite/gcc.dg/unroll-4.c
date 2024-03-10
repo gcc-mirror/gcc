@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cunrolli-details -fno-peel-loops -fno-tree-vrp -fdisable-tree-cunroll -fenable-tree-cunrolli=foo -fdisable-tree-cunrolli=foo2" } */
+/* { dg-options "-O2 -fdump-tree-cunrolli-details-blocks -fno-peel-loops -fno-tree-vrp -fdisable-tree-cunroll -fenable-tree-cunrolli=foo -fdisable-tree-cunrolli=foo2" } */
 
 unsigned a[100], b[100];
 inline void bar()
@@ -29,3 +29,4 @@ int foo2(void)
 }
 
 /* { dg-final { scan-tree-dump-times "loop with 2 iterations completely unrolled" 1 "cunrolli" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "cunrolli" } } */

@@ -29,6 +29,7 @@ main ()
       b[i] = 0x1200000000ULL + (i % 54);
     }
   foo ();
+#pragma GCC novector
   for (i = 0; i < 64; i++)
     if (a[i] != (0x1234ULL << (i % 54)))
       abort ();

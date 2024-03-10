@@ -8,6 +8,7 @@ bar (double p[][4])
 {
   int i;
   double d = 172.0;
+#pragma GCC novector
   for (i = 0; i < 4096; i++)
     {
       if (p[i][0] != 6.0 || p[i][1] != 6.0 || p[i][2] != 10.0)

@@ -28,6 +28,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*8] !=  in[i*8] + i
@@ -59,6 +60,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N/2; i++)
     {
         if (out2[i*12] != in2[i*12] + i
@@ -94,6 +96,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N/2; i++)
     {
         if (out2[i*12] != in2[i*12] + 1

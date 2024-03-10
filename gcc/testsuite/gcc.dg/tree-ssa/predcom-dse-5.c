@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fno-inline -fpredictive-commoning -fdump-tree-pcom-details" } */
+/* { dg-options "-O2 -fno-inline -fpredictive-commoning -fdump-tree-pcom-details-blocks" } */
 
 int arr[105] = {2, 3, 5, 7, 11};
 int result0[10] = {2, 3, 5, 7, 11};
@@ -61,3 +61,4 @@ int main (void)
   return 0;
 }
 /* { dg-final { scan-tree-dump "Store-stores chain" "pcom"} } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" } } */

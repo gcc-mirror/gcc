@@ -61,7 +61,7 @@ package body Exp_Imgv is
 
    procedure Rewrite_Object_Image
      (N         : Node_Id;
-      Pref      : Entity_Id;
+      Pref      : Node_Id;
       Attr_Name : Name_Id;
       Str_Typ   : Entity_Id);
    --  AI12-0124: Rewrite attribute 'Image when it is applied to an object
@@ -1830,7 +1830,7 @@ package body Exp_Imgv is
 
    procedure Expand_Wide_Image_Attribute (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
-      Pref : constant Entity_Id  := Prefix (N);
+      Pref : constant Node_Id    := Prefix (N);
       Rnn  : constant Entity_Id  := Make_Temporary (Loc, 'S');
       Lnn  : constant Entity_Id  := Make_Temporary (Loc, 'P');
       Rtyp : Entity_Id;
@@ -1938,7 +1938,7 @@ package body Exp_Imgv is
 
    procedure Expand_Wide_Wide_Image_Attribute (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
-      Pref : constant Entity_Id  := Prefix (N);
+      Pref : constant Node_Id    := Prefix (N);
       Rnn  : constant Entity_Id  := Make_Temporary (Loc, 'S');
       Lnn  : constant Entity_Id  := Make_Temporary (Loc, 'P');
       Rtyp : Entity_Id;
@@ -2493,7 +2493,7 @@ package body Exp_Imgv is
 
    procedure Rewrite_Object_Image
      (N         : Node_Id;
-      Pref      : Entity_Id;
+      Pref      : Node_Id;
       Attr_Name : Name_Id;
       Str_Typ   : Entity_Id)
    is

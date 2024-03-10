@@ -159,7 +159,7 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
 	{
 	case IFN_LEN_STORE:
 	case IFN_MASK_STORE:
-	case IFN_LEN_MASK_STORE:
+	case IFN_MASK_LEN_STORE:
 	  {
 	    internal_fn ifn = gimple_call_internal_fn (stmt);
 	    int stored_value_index = internal_fn_stored_value_index (ifn);
@@ -1517,7 +1517,7 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
 	{
 	case IFN_LEN_STORE:
 	case IFN_MASK_STORE:
-	case IFN_LEN_MASK_STORE:
+	case IFN_MASK_LEN_STORE:
 	  {
 	    enum dse_store_status store_status;
 	    store_status = dse_classify_store (&ref, stmt, false, live_bytes);

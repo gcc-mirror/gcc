@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-rtl-loop2_unroll -funroll-loops" } */
+/* { dg-options "-O2 -fdump-rtl-loop2_unroll-details-blocks -funroll-loops" } */
 /* { dg-additional-options "-fno-tree-vectorize" { target amdgcn-*-* } } */
 
 struct a {int a[7];};

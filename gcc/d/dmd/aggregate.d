@@ -18,7 +18,6 @@ import core.stdc.stdio;
 import core.checkedint;
 
 import dmd.aliasthis;
-import dmd.apply;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
@@ -764,21 +763,18 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         if (s)
         {
             // Finish all constructors semantics to determine this.noDefaultCtor.
-            struct SearchCtor
+            static int searchCtor(Dsymbol s, void*)
             {
-                extern (C++) static int fp(Dsymbol s, void* ctxt)
-                {
-                    auto f = s.isCtorDeclaration();
-                    if (f && f.semanticRun == PASS.initial)
-                        f.dsymbolSemantic(null);
-                    return 0;
-                }
+                auto f = s.isCtorDeclaration();
+                if (f && f.semanticRun == PASS.initial)
+                    f.dsymbolSemantic(null);
+                return 0;
             }
 
             for (size_t i = 0; i < members.length; i++)
             {
                 auto sm = (*members)[i];
-                sm.apply(&SearchCtor.fp, null);
+                sm.apply(&searchCtor, null);
             }
         }
         return s;
@@ -813,4 +809,37 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     {
         v.visit(this);
     }
+}
+
+/*********************************
+ * Iterate this dsymbol or members of this scoped dsymbol, then
+ * call `fp` with the found symbol and `params`.
+ * Params:
+ *  symbol = the dsymbol or parent of members to call fp on
+ *  fp = function pointer to process the iterated symbol.
+ *       If it returns nonzero, the iteration will be aborted.
+ *  ctx = context parameter passed to fp.
+ * Returns:
+ *  nonzero if the iteration is aborted by the return value of fp,
+ *  or 0 if it's completed.
+ */
+int apply(Dsymbol symbol, int function(Dsymbol, void*) fp, void* ctx)
+{
+    if (auto nd = symbol.isNspace())
+    {
+        return nd.members.foreachDsymbol( (s) { return s && s.apply(fp, ctx); } );
+    }
+    if (auto ad = symbol.isAttribDeclaration())
+    {
+        return ad.include(ad._scope).foreachDsymbol( (s) { return s && s.apply(fp, ctx); } );
+    }
+    if (auto tm = symbol.isTemplateMixin())
+    {
+        if (tm._scope) // if fwd reference
+            dsymbolSemantic(tm, null); // try to resolve it
+
+        return tm.members.foreachDsymbol( (s) { return s && s.apply(fp, ctx); } );
+    }
+
+    return fp(symbol, ctx);
 }

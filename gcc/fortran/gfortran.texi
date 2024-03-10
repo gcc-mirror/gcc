@@ -3750,7 +3750,8 @@ front ends of GCC, e.g. to GCC's C99 compiler for @code{_Bool}
 or GCC's Ada compiler for @code{Boolean}.)
 
 For arguments of @code{CHARACTER} type, the character length is passed
-as a hidden argument at the end of the argument list.  For
+as a hidden argument at the end of the argument list, except when the
+corresponding dummy argument is declared as @code{TYPE(*)}.  For
 deferred-length strings, the value is passed by reference, otherwise
 by value.  The character length has the C type @code{size_t} (or
 @code{INTEGER(kind=C_SIZE_T)} in Fortran).  Note that this is

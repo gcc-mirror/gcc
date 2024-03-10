@@ -40,7 +40,7 @@ pragma Assertion_Policy (Pre            => Ignore,
                          Contract_Cases => Ignore,
                          Ghost          => Ignore);
 
-with System.Val_Util;
+with System.Val_Spec;
 
 package System.Val_Bool
   with SPARK_Mode
@@ -48,10 +48,10 @@ is
    pragma Preelaborate;
 
    function Is_Boolean_Image_Ghost (Str : String) return Boolean is
-     (not System.Val_Util.Only_Space_Ghost (Str, Str'First, Str'Last)
+     (not System.Val_Spec.Only_Space_Ghost (Str, Str'First, Str'Last)
         and then
       (declare
-         F : constant Positive := System.Val_Util.First_Non_Space_Ghost
+         F : constant Positive := System.Val_Spec.First_Non_Space_Ghost
            (Str, Str'First, Str'Last);
        begin
          (F <= Str'Last - 3
@@ -61,7 +61,7 @@ is
           and then Str (F + 3) in 'e' | 'E'
           and then
             (if F + 3 < Str'Last then
-               System.Val_Util.Only_Space_Ghost (Str, F + 4, Str'Last)))
+               System.Val_Spec.Only_Space_Ghost (Str, F + 4, Str'Last)))
            or else
          (F <= Str'Last - 4
           and then Str (F)     in 'f' | 'F'
@@ -71,7 +71,7 @@ is
           and then Str (F + 4) in 'e' | 'E'
           and then
             (if F + 4 < Str'Last then
-               System.Val_Util.Only_Space_Ghost (Str, F + 5, Str'Last)))))
+               System.Val_Spec.Only_Space_Ghost (Str, F + 5, Str'Last)))))
    with
      Ghost;
    --  Ghost function that returns True iff Str is the image of a boolean, that
@@ -83,7 +83,7 @@ is
      Pre  => Is_Boolean_Image_Ghost (Str),
      Post =>
        Value_Boolean'Result =
-         (Str (System.Val_Util.First_Non_Space_Ghost
+         (Str (System.Val_Spec.First_Non_Space_Ghost
             (Str, Str'First, Str'Last)) in 't' | 'T');
    --  Computes Boolean'Value (Str)
 

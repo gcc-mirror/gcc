@@ -3,7 +3,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail22202.d(21): Error: function `fail22202.fun(SystemCopy _param_0)` is not callable using argument types `(SystemCopy)`
+fail_compilation/fail22202.d(21): Error: function `fail22202.fun(SystemCopy __param_0)` is not callable using argument types `(SystemCopy)`
 fail_compilation/fail22202.d(21):        `inout ref inout(SystemCopy)(ref inout(SystemCopy) other)` copy constructor cannot be called from a `pure @safe nogc` context
 ---
 */

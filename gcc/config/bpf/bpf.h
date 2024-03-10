@@ -22,7 +22,8 @@
 
 /**** Controlling the Compilation Driver.  */
 
-#define ASM_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL} %{mxbpf:-mxbpf}"
+#define ASM_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL} %{mxbpf:-mxbpf} " \
+  "%{masm=pseudoc:-mdialect=pseudoc}"
 #define LINK_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL}"
 #define LIB_SPEC ""
 #define STARTFILE_SPEC ""
@@ -176,6 +177,7 @@
 enum reg_class
 {
   NO_REGS,		/* no registers in set.  */
+  R0,		        /* register r0.  */
   ALL_REGS,		/* all registers.  */
   LIM_REG_CLASSES	/* max value + 1.  */
 };
@@ -189,6 +191,7 @@ enum reg_class
 #define REG_CLASS_NAMES				\
 {						\
   "NO_REGS",					\
+  "R0",					\
   "ALL_REGS"					\
 }
 
@@ -202,6 +205,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS			\
 {						\
    0x00000000, /* NO_REGS */			\
+   0x00000001, /* R0 */                         \
    0x00000fff, /* ALL_REGS */		        \
 }
 
@@ -209,7 +213,8 @@ enum reg_class
    register REGNO.  In general there is more that one such class;
    choose a class which is "minimal", meaning that no smaller class
    also contains the register.  */
-#define REGNO_REG_CLASS(REGNO) ((void)(REGNO), GENERAL_REGS)
+#define REGNO_REG_CLASS(REGNO) \
+  ((REGNO) == 0 ? R0 : GENERAL_REGS)
 
 /* A macro whose definition is the name of the class to which a
    valid base register must belong.  A base register is one used in
@@ -502,5 +507,7 @@ enum reg_class
   do { } while (0)
 #define DO_GLOBAL_DTORS_BODY			\
   do { } while (0)
+
+#define ASSEMBLER_DIALECT ((int) asm_dialect)
 
 #endif /* ! GCC_BPF_H */

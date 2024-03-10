@@ -11,6 +11,7 @@ void bar (const float *pa, const float *pb, const float *pc)
   int i;
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (pa[i] != (pb[i] * pc[i]))

@@ -902,6 +902,37 @@ END checkPointerType ;
 
 
 (*
+   checkProcTypeEquivalence - allow proctype to be compared against another
+                              proctype or procedure.  It is legal to be compared
+                              against an address.
+*)
+
+PROCEDURE checkProcTypeEquivalence (result: status; tinfo: tInfo;
+                                    left, right: CARDINAL) : status ;
+BEGIN
+   IF isFalse (result)
+   THEN
+      RETURN result
+   ELSIF IsProcedure (left) AND IsProcType (right)
+   THEN
+      RETURN checkProcedure (result, tinfo, right, left)
+   ELSIF IsProcType (left) AND IsProcedure (right)
+   THEN
+      RETURN checkProcedure (result, tinfo, left, right)
+   ELSIF IsProcType (left) AND IsProcType (right)
+   THEN
+      RETURN checkProcType (result, tinfo, left, right)
+   ELSIF (left = Address) OR (right = Address)
+   THEN
+      RETURN true
+   ELSE
+      RETURN false
+   END
+END checkProcTypeEquivalence ;
+
+
+
+(*
    checkTypeKindEquivalence -
 *)
 
@@ -928,15 +959,9 @@ BEGIN
       ELSIF IsEnumeration (left) AND IsEnumeration (right)
       THEN
          RETURN checkEnumerationEquivalence (result, left, right)
-      ELSIF IsProcedure (left) AND IsProcType (right)
-      THEN
-         RETURN checkProcedure (result, tinfo, right, left)
-      ELSIF IsProcType (left) AND IsProcedure (right)
-      THEN
-         RETURN checkProcedure (result, tinfo, left, right)
       ELSIF IsProcType (left) OR IsProcType (right)
       THEN
-         RETURN checkProcType (result, tinfo, left, right)
+         RETURN checkProcTypeEquivalence (result, tinfo, right, left)
       ELSIF IsReallyPointer (left) AND IsReallyPointer (right)
       THEN
          RETURN checkPointerType (result, left, right)

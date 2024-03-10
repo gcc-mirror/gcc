@@ -93,22 +93,7 @@ bool checkMutableArguments(Scope* sc, FuncDeclaration fd, TypeFunction tf,
         bool isMutable;         // true if reference to mutable
     }
 
-    /* Store escapeBy as static data escapeByStorage so we can keep reusing the same
-     * arrays rather than reallocating them.
-     */
-    __gshared EscapeBy[] escapeByStorage;
-    auto escapeBy = escapeByStorage;
-    if (escapeBy.length < len)
-    {
-        auto newPtr = cast(EscapeBy*)mem.xrealloc(escapeBy.ptr, len * EscapeBy.sizeof);
-        // Clear the new section
-        memset(newPtr + escapeBy.length, 0, (len - escapeBy.length) * EscapeBy.sizeof);
-        escapeBy = newPtr[0 .. len];
-        escapeByStorage = escapeBy;
-    }
-    else
-        escapeBy = escapeBy[0 .. len];
-
+    auto escapeBy = new EscapeBy[len];
     const paramLength = tf.parameterList.length;
 
     // Fill in escapeBy[] with arguments[], ethis, and outerVars[]
@@ -181,7 +166,7 @@ bool checkMutableArguments(Scope* sc, FuncDeclaration fd, TypeFunction tf,
         if (!(eb.isMutable || eb2.isMutable))
             return;
 
-        if (!tf.islive && !(global.params.useDIP1000 == FeatureState.enabled && sc.func.setUnsafe()))
+        if (!tf.islive && !(global.params.useDIP1000 == FeatureState.enabled && sc.func && sc.func.setUnsafe()))
             return;
 
         if (!gag)
@@ -226,13 +211,6 @@ bool checkMutableArguments(Scope* sc, FuncDeclaration fd, TypeFunction tf,
     {
         escape(i, eb, true);
         escape(i, eb, false);
-    }
-
-    /* Reset the arrays in escapeBy[] so we can reuse them next time through
-     */
-    foreach (ref eb; escapeBy)
-    {
-        eb.er.reset();
     }
 
     return errors;
@@ -377,13 +355,19 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Identifier parId, 
                 desc ~ " `%s` assigned to non-scope parameter calling `assert()`", v);
             return;
         }
+
+        bool isThis = fdc && fdc.needThis() && fdc.vthis == vPar; // implicit `this` parameter to member function
+
         const(char)* msg =
+            (isThis)        ? (desc ~ " `%s` calling non-scope member function `%s.%s()`") :
             (fdc &&  parId) ? (desc ~ " `%s` assigned to non-scope parameter `%s` calling `%s`") :
             (fdc && !parId) ? (desc ~ " `%s` assigned to non-scope anonymous parameter calling `%s`") :
             (!fdc && parId) ? (desc ~ " `%s` assigned to non-scope parameter `%s`") :
             (desc ~ " `%s` assigned to non-scope anonymous parameter");
 
-        if (sc.setUnsafeDIP1000(gag, arg.loc, msg, v, parId ? parId : fdc, fdc))
+        if (isThis ?
+            sc.setUnsafeDIP1000(gag, arg.loc, msg, arg, fdc.toParent2(), fdc) :
+            sc.setUnsafeDIP1000(gag, arg.loc, msg, v, parId ? parId : fdc, fdc))
         {
             result = true;
             printScopeFailure(previewSupplementalFunc(sc.isDeprecated(), global.params.useDIP1000), vPar, 10);
@@ -503,7 +487,7 @@ bool checkParamArgumentReturn(Scope* sc, Expression firstArg, Expression arg, Pa
     const byRef = param.isReference() && !(param.storageClass & STC.scope_)
         && !(param.storageClass & STC.returnScope); // fixme: it's possible to infer returnScope without scope with vaIsFirstRef
 
-    scope e = new AssignExp(arg.loc, firstArg, arg);
+    auto e = new AssignExp(arg.loc, firstArg, arg);
     return checkAssignEscape(sc, e, gag, byRef);
 }
 
@@ -1746,20 +1730,8 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool re
         /* Check each argument that is
          * passed as 'return scope'.
          */
-        Type t1 = e.e1.type.toBasetype();
-        TypeFunction tf;
-        TypeDelegate dg;
-        if (t1.ty == Tdelegate)
-        {
-            dg = t1.isTypeDelegate();
-            tf = dg.next.isTypeFunction();
-        }
-        else if (t1.ty == Tfunction)
-            tf = t1.isTypeFunction();
-        else
-            return;
-
-        if (!e.type.hasPointers())
+        TypeFunction tf = e.calledFunctionType();
+        if (!tf || !e.type.hasPointers())
             return;
 
         if (e.arguments && e.arguments.length)
@@ -1815,6 +1787,7 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool re
             }
         }
         // If 'this' is returned, check it too
+        Type t1 = e.e1.type.toBasetype();
         if (e.e1.op == EXP.dotVariable && t1.ty == Tfunction)
         {
             DotVarExp dve = e.e1.isDotVarExp();
@@ -1880,7 +1853,7 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool re
         /* If returning the result of a delegate call, the .ptr
          * field of the delegate must be checked.
          */
-        if (dg)
+        if (t1.isTypeDelegate())
         {
             if (tf.isreturn)
                 escapeByValue(e.e1, er, live, retRefTransition);
@@ -2066,13 +2039,8 @@ void escapeByRef(Expression e, EscapeByResults* er, bool live = false, bool retR
         /* If the function returns by ref, check each argument that is
          * passed as 'return ref'.
          */
-        Type t1 = e.e1.type.toBasetype();
-        TypeFunction tf;
-        if (t1.ty == Tdelegate)
-            tf = t1.isTypeDelegate().next.isTypeFunction();
-        else if (t1.ty == Tfunction)
-            tf = t1.isTypeFunction();
-        else
+        TypeFunction tf = e.calledFunctionType();
+        if (!tf)
             return;
         if (tf.isref)
         {
@@ -2107,6 +2075,7 @@ void escapeByRef(Expression e, EscapeByResults* er, bool live = false, bool retR
                 }
             }
             // If 'this' is returned by ref, check it too
+            Type t1 = e.e1.type.toBasetype();
             if (e.e1.op == EXP.dotVariable && t1.ty == Tfunction)
             {
                 DotVarExp dve = e.e1.isDotVarExp();
@@ -2377,7 +2346,7 @@ void finishScopeParamInference(FuncDeclaration funcdecl, ref TypeFunction f)
         foreach (u, p; f.parameterList)
         {
             auto v = (*funcdecl.parameters)[u];
-            if (!v.isScope() && inferScope(v))
+            if (!v.isScope() && v.type.hasPointers() && inferScope(v))
             {
                 //printf("Inferring scope for %s\n", v.toChars());
                 p.storageClass |= STC.scope_ | STC.scopeinferred;
@@ -2496,6 +2465,9 @@ bool isReferenceToMutable(Type t)
                     return true;
             }
             break;
+
+        case Tnull:
+            return false;
 
         default:
             assert(0);

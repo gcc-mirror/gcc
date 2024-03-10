@@ -407,7 +407,7 @@ MAKEINFO = @MAKEINFO@
 EXPECT = @EXPECT@
 RUNTEST = @RUNTEST@
 
-AUTO_PROFILE = gcc-auto-profile -c 10000000
+AUTO_PROFILE = gcc-auto-profile --all -c 10000000
 
 # This just becomes part of the MAKEINFO definition passed down to
 # sub-makes.  It lets flags be given on the command line while still
@@ -447,7 +447,7 @@ LIBCFLAGS = $(CFLAGS)
 CXXFLAGS = @CXXFLAGS@
 LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
 GOCFLAGS = $(CFLAGS)
-GDCFLAGS = $(CFLAGS)
+GDCFLAGS = @GDCFLAGS@
 GM2FLAGS = $(CFLAGS)
 
 # Pass additional PGO and LTO compiler options to the PGO build.

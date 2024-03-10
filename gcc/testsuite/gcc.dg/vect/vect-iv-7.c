@@ -22,6 +22,7 @@ __attribute__ ((noinline, noclone)) int main1 (int X)
    } while (i < N);
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (arr[i] != result[i])

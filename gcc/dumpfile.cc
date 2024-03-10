@@ -2074,15 +2074,6 @@ dump_function (int phase, tree fn)
     }
 }
 
-/* Print information from the combine pass on dump_file.  */
-
-void
-print_combine_total_stats (void)
-{
-  if (dump_file)
-    dump_combine_total_stats (dump_file);
-}
-
 /* Enable RTL dump for all the RTL passes.  */
 
 bool

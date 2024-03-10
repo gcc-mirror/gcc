@@ -47,6 +47,7 @@
 (define_mode_iterator VI_HW     [V16QI V8HI V4SI V2DI])
 (define_mode_iterator VI_HW_QHS [V16QI V8HI V4SI])
 (define_mode_iterator VI_HW_HSD [V8HI  V4SI V2DI])
+(define_mode_iterator VI_HW_HSDT [V8HI V4SI V2DI V1TI TI])
 (define_mode_iterator VI_HW_HS  [V8HI  V4SI])
 (define_mode_iterator VI_HW_QH  [V16QI V8HI])
 
@@ -2876,12 +2877,12 @@
      (use (match_dup 2))])]
   "TARGET_VX"
 {
-  static char p[4][16] =
+  static const char p[4][16] =
     { { 1,  0,  3,  2,  5,  4,  7, 6, 9,  8,  11, 10, 13, 12, 15, 14 },   /* H */
       { 3,  2,  1,  0,  7,  6,  5, 4, 11, 10, 9,  8,  15, 14, 13, 12 },   /* S */
       { 7,  6,  5,  4,  3,  2,  1, 0, 15, 14, 13, 12, 11, 10, 9,  8  },   /* D */
       { 15, 14, 13, 12, 11, 10, 9, 8, 7,  6,  5,  4,  3,  2,  1,  0  } }; /* T */
-  char *perm;
+  const char *perm;
   rtx perm_rtx[16];
 
   switch (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)))
@@ -2933,8 +2934,8 @@
   "TARGET_VXE2"
   "@
    #
-   vlbr<bhfgq>\t%v0,%v1
-   vstbr<bhfgq>\t%v1,%v0"
+   vlbr<bhfgq>\t%v0,%1
+   vstbr<bhfgq>\t%v1,%0"
   "&& reload_completed
    && !memory_operand (operands[0], <MODE>mode)
    && !memory_operand (operands[1], <MODE>mode)"
@@ -2946,6 +2947,13 @@
 		       UNSPEC_VEC_PERM) 0))]
   ""
   [(set_attr "op_type"      "*,VRX,VRX")])
+
+(define_insn "*vstbr<mode>"
+  [(set (match_operand:VI_HW_HSDT                   0 "memory_operand"  "=R")
+	(bswap:VI_HW_HSDT (match_operand:VI_HW_HSDT 1 "register_operand" "v")))]
+  "TARGET_VXE2"
+  "vstbr<bhfgq>\t%v1,%0"
+  [(set_attr "op_type" "VRX")])
 
 ;
 ; Implement len_load/len_store optabs with vll/vstl.

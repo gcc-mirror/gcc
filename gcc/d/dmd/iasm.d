@@ -13,17 +13,24 @@
 
 module dmd.iasm;
 
-import dmd.dscope;
-import dmd.func;
-import dmd.statement;
+import core.stdc.stdio;
 
-version (MARS)
-{
-    import dmd.iasmdmd;
-}
-else version (IN_GCC)
+import dmd.dscope;
+import dmd.expression;
+import dmd.func;
+import dmd.mtype;
+import dmd.tokens;
+import dmd.statement;
+import dmd.statementsem;
+
+version (IN_GCC)
 {
     import dmd.iasmgcc;
+}
+else
+{
+    import dmd.iasmdmd;
+    version = MARS;
 }
 
 /************************ AsmStatement ***************************************/
@@ -43,6 +50,19 @@ extern(C++) Statement asmSemantic(AsmStatement s, Scope *sc)
 
     version (MARS)
     {
+        /* If it starts with a string literal, it's gcc inline asm
+         */
+        if (s.tokens.value == TOK.string_)
+        {
+            /* Replace the asm statement with an assert(0, msg) that trips at runtime.
+             */
+            const loc = s.loc;
+            auto e = new IntegerExp(loc, 0, Type.tint32);
+            auto msg = new StringExp(loc, "Gnu Asm not supported - compile this function with gcc or clang");
+            auto ae = new AssertExp(loc, e, msg);
+            auto se = new ExpStatement(loc, ae);
+            return statementSemantic(se, sc);
+        }
         auto ias = new InlineAsmStatement(s.loc, s.tokens);
         return inlineAsmSemantic(ias, sc);
     }

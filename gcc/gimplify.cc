@@ -3209,6 +3209,9 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
     {
       tree t = expr_stack[i];
 
+      if (error_operand_p (TREE_OPERAND (t, 0)))
+	return GS_ERROR;
+
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
 	  /* Deal with the low bound and element type size and put them into

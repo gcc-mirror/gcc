@@ -359,13 +359,6 @@ finish_optimization_passes (void)
       dumps->dump_finish (pass_profile_1->static_pass_number);
     }
 
-  if (optimize > 0)
-    {
-      dumps->dump_start (pass_combine_1->static_pass_number, NULL);
-      print_combine_total_stats ();
-      dumps->dump_finish (pass_combine_1->static_pass_number);
-    }
-
   /* Do whatever is necessary to finish printing the graphs.  */
   for (i = TDI_end; (dfi = dumps->get_dump_file_info (i)) != NULL; ++i)
     if (dfi->graph_dump_initialized)
@@ -2074,9 +2067,6 @@ execute_function_todo (function *fn, void *data)
 
   if (flags & TODO_remove_unused_locals)
     remove_unused_locals ();
-
-  if (flags & TODO_rebuild_frequencies)
-    rebuild_frequencies ();
 
   if (flags & TODO_rebuild_cgraph_edges)
     cgraph_edge::rebuild_edges ();

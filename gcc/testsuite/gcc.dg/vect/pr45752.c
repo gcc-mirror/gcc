@@ -146,6 +146,7 @@ int main (int argc, const char* argv[])
 
   foo (input, output, input2, output2);
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (output[i] != check_results[i]
         || output2[i] != check_results2[i])

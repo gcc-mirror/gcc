@@ -64,6 +64,8 @@ public:
 
   const svalue *get_or_create_conjured_svalue (const region *) const;
 
+  tree lookup_function_attribute (const char *attr_name) const;
+
 private:
   const gcall *m_call;
   region_model *m_model;

@@ -173,6 +173,7 @@ protected:
   bool range_of_phi (vrange &r, gphi *phi, fur_source &src);
   void range_of_ssa_name_with_loop_info (vrange &, tree, class loop *, gphi *,
 					 fur_source &src);
-  void relation_fold_and_or (irange& lhs_range, gimple *s, fur_source &src);
+  void relation_fold_and_or (irange& lhs_range, gimple *s, fur_source &src,
+			     vrange &op1, vrange &op2);
 };
 #endif // GCC_GIMPLE_RANGE_FOLD_H

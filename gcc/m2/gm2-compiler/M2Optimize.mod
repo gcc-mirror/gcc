@@ -351,7 +351,8 @@ BEGIN
 END RemoveProcedures ;
 
 
-PROCEDURE KnownReachable (Start, End: CARDINAL) ;
+PROCEDURE KnownReachable (Scope: CARDINAL;
+                          Start, End: CARDINAL) ;
 VAR
    Op           : QuadOperator ;
    Op1, Op2, Op3: CARDINAL ;

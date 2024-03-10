@@ -86,66 +86,36 @@ package body System.Image_W is
       S : out String;
       P : in out Natural)
    is
-      Start : constant Natural := P;
-      F, T  : Natural;
-
-      procedure Set_Digits (T : Uns);
-      --  Set digits of absolute value of T
-
-      ----------------
-      -- Set_Digits --
-      ----------------
-
-      procedure Set_Digits (T : Uns) is
-      begin
-         if T >= 10 then
-            Set_Digits (T / 10);
-            pragma Assert (P >= (S'First - 1) and P < S'Last and
-                           P < Natural'Last);
-            --  No check is done since, as documented in the specification,
-            --  the caller guarantees that S is long enough to hold the result.
-            P := P + 1;
-            S (P) := Character'Val (T mod 10 + Character'Pos ('0'));
-
-         else
-            pragma Assert (P >= (S'First - 1) and P < S'Last and
-                           P < Natural'Last);
-            --  No check is done since, as documented in the specification,
-            --  the caller guarantees that S is long enough to hold the result.
-            P := P + 1;
-            S (P) := Character'Val (T + Character'Pos ('0'));
-         end if;
-      end Set_Digits;
-
-   --  Start of processing for Set_Image_Width_Unsigned
+      Start : constant Natural := P + 1;
+      Nb_Digits : Natural := 1;
+      T : Uns := V;
 
    begin
-      Set_Digits (V);
 
-      --  Add leading spaces if required by width parameter
+      --  First we compute the number of characters needed for representing
+      --  the number.
+      loop
+         T := T / 10;
+         exit when T = 0;
+         Nb_Digits := Nb_Digits + 1;
+      end loop;
 
-      if P - Start < W then
-         F := P;
-         P := P + (W - (P - Start));
-         T := P;
+      P := Start;
 
-         while F > Start loop
-            pragma Assert (T >= S'First and T <= S'Last and
-                           F >= S'First and F <= S'Last);
-            --  No check is done since, as documented in the specification,
-            --  the caller guarantees that S is long enough to hold the result.
-            S (T) := S (F);
-            T := T - 1;
-            F := F - 1;
-         end loop;
+      --  Pad S with spaces up to W reduced by Nb_Digits
+      while P < Start + W - Nb_Digits loop
+         S (P) := ' ';
+         P := P + 1;
+      end loop;
 
-         for J in Start + 1 .. T loop
-            pragma Assert (J >= S'First and J <= S'Last);
-            --  No check is done since, as documented in the specification,
-            --  the caller guarantees that S is long enough to hold the result.
-            S (J) := ' ';
-         end loop;
-      end if;
+      --  We now populate digits from the end of the value to the beginning
+      T := V;
+      for J in reverse  P .. P + Nb_Digits - 1 loop
+         S (J) := Character'Val (T mod 10 + Character'Pos ('0'));
+         T := T / 10;
+      end loop;
+
+      P := P + Nb_Digits - 1;
 
    end Set_Image_Width_Unsigned;
 

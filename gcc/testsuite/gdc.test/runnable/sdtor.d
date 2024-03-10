@@ -4814,6 +4814,41 @@ void testPR12012()
 }
 
 /**********************************/
+// https://issues.dlang.org/show_bug.cgi?id=24010
+
+alias AliasSeq(TList...) = TList;
+
+__gshared int x24010 = 7;
+
+struct A24010 {
+    int x;
+    ~this() {
+        printf("A.~this\n");
+        x24010 += 1;
+    }
+}
+
+struct B24010 {
+    ~this() {
+        printf("B.~this\n");
+        x24010 *= 10;
+    }
+}
+
+void test24010()
+{
+    {
+        AliasSeq!(A24010, B24010) params;
+        printf("statement\n");
+        params[0].x = 3;
+        printf(".x = %d\n", params[0].x);
+        assert(params[0].x == 3);
+        assert(x24010 == 7);
+    }
+    assert(x24010 == 71);
+}
+
+/**********************************/
 
 int main()
 {
@@ -4954,6 +4989,7 @@ int main()
     test67();
     test68();
     testPR12012();
+    test24010();
 
     printf("Success\n");
     return 0;

@@ -1918,6 +1918,15 @@ arm_init_mve_builtins (void)
       arm_builtin_datum *d = &mve_builtin_data[i];
       arm_init_builtin (fcode, d, "__builtin_mve");
     }
+
+  if (in_lto_p)
+    {
+      arm_mve::handle_arm_mve_types_h ();
+      /* Under LTO, we cannot know whether
+	 __ARM_MVE_PRESERVE_USER_NAMESPACE was defined, so assume it
+	 was not.  */
+      arm_mve::handle_arm_mve_h (false);
+    }
 }
 
 /* Set up all the NEON builtins, even builtins for instructions that are not
@@ -2723,7 +2732,7 @@ arm_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
     case ARM_BUILTIN_GENERAL:
       return arm_general_builtin_decl (subcode);
     case ARM_BUILTIN_MVE:
-      return error_mark_node;
+      return arm_mve::builtin_decl (subcode);
     default:
       gcc_unreachable ();
     }

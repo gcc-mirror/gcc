@@ -4108,7 +4108,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
-#if _GLIBCXX_USE_C99_STDLIB
   // 21.4 Numeric Conversions [string.conversions].
   inline int
   stoi(const string& __str, size_t* __idx = 0, int __base = 10)
@@ -4125,6 +4124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   { return __gnu_cxx::__stoa(&std::strtoul, "stoul", __str.c_str(),
 			     __idx, __base); }
 
+#if _GLIBCXX_USE_C99_STDLIB
   inline long long
   stoll(const string& __str, size_t* __idx = 0, int __base = 10)
   { return __gnu_cxx::__stoa(&std::strtoll, "stoll", __str.c_str(),
@@ -4134,20 +4134,52 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   stoull(const string& __str, size_t* __idx = 0, int __base = 10)
   { return __gnu_cxx::__stoa(&std::strtoull, "stoull", __str.c_str(),
 			     __idx, __base); }
+#elif __LONG_WIDTH__ == __LONG_LONG_WIDTH__
+  inline long long
+  stoll(const string& __str, size_t* __idx = 0, int __base = 10)
+  { return std::stol(__str, __idx, __base); }
 
-  // NB: strtof vs strtod.
-  inline float
-  stof(const string& __str, size_t* __idx = 0)
-  { return __gnu_cxx::__stoa(&std::strtof, "stof", __str.c_str(), __idx); }
+  inline unsigned long long
+  stoull(const string& __str, size_t* __idx = 0, int __base = 10)
+  { return std::stoul(__str, __idx, __base); }
+#endif
 
   inline double
   stod(const string& __str, size_t* __idx = 0)
   { return __gnu_cxx::__stoa(&std::strtod, "stod", __str.c_str(), __idx); }
 
+#if _GLIBCXX_HAVE_STRTOF
+  // NB: strtof vs strtod.
+  inline float
+  stof(const string& __str, size_t* __idx = 0)
+  { return __gnu_cxx::__stoa(&std::strtof, "stof", __str.c_str(), __idx); }
+#else
+  inline float
+  stof(const string& __str, size_t* __idx = 0)
+  {
+    double __d = std::stod(__str, __idx);
+    if (__builtin_isfinite(__d) && __d != 0.0)
+      {
+	double __abs_d = __builtin_fabs(__d);
+	if (__abs_d < __FLT_MIN__ || __abs_d > __FLT_MAX__)
+	  {
+	    errno = ERANGE;
+	    std::__throw_out_of_range("stof");
+	  }
+      }
+    return __d;
+  }
+#endif
+
+#if _GLIBCXX_HAVE_STRTOLD && ! _GLIBCXX_HAVE_BROKEN_STRTOLD
   inline long double
   stold(const string& __str, size_t* __idx = 0)
   { return __gnu_cxx::__stoa(&std::strtold, "stold", __str.c_str(), __idx); }
-#endif // _GLIBCXX_USE_C99_STDLIB
+#elif __DBL_MANT_DIG__ == __LDBL_MANT_DIG__
+  inline long double
+  stold(const string& __str, size_t* __idx = 0)
+  { return std::stod(__str, __idx); }
+#endif
 
   // DR 1261. Insufficent overloads for to_string / to_wstring
 

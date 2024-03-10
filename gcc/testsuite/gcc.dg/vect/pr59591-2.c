@@ -32,6 +32,7 @@ bar (void)
       t[i] = i * 13;
     }
   foo ();
+#pragma GCC novector
   for (i = 0; i < 256; i++)
     if ((i >> 2) & (1 << (i & 3)))
       {

@@ -14,7 +14,6 @@
 module dmd.canthrow;
 
 import dmd.aggregate;
-import dmd.apply;
 import dmd.arraytypes;
 import dmd.attrib;
 import dmd.astenums;
@@ -26,6 +25,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.init;
 import dmd.mtype;
+import dmd.postordervisitor;
 import dmd.root.rootobject;
 import dmd.tokens;
 import dmd.visitor;
@@ -53,7 +53,7 @@ enum CT : BE
  */
 extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustNotThrow)
 {
-    //printf("Expression::canThrow(%d) %s\n", mustNotThrow, toChars());
+    //printf("Expression::canThrow(%d) %s\n", mustNotThrow, e.toChars());
     // stop walking if we determine this expression can throw
     extern (C++) final class CanThrow : StoppableVisitor
     {
@@ -76,10 +76,15 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
             {
                 if (mustNotThrow)
                 {
-                    e.error("%s `%s` is not `nothrow`",
-                        f.kind(), f.toPrettyChars());
+                    e.error("%s `%s` is not `nothrow`", f.kind(), f.toPrettyChars());
+                    if (!f.isDtorDeclaration())
+                        errorSupplementalInferredAttr(f, 10, false, STC.nothrow_);
 
-                    e.checkOverridenDtor(null, f, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
+                    e.checkOverriddenDtor(null, f, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
+                }
+                else if (func)
+                {
+                    func.setThrowCall(e.loc, f);
                 }
                 result |= CT.exception;
             }
@@ -113,7 +118,7 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
                     {
                         auto sd = ts.sym;
                         const id = ce.f.ident;
-                        if (sd.postblit && isArrayConstructionOrAssign(id))
+                        if (sd.postblit && isArrayConstruction(id))
                         {
                             checkFuncThrows(ce, sd.postblit);
                             return;
@@ -128,16 +133,9 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
              */
             if (ce.f && ce.f == func)
                 return;
-            Type t = ce.e1.type.toBasetype();
-            auto tf = t.isTypeFunction();
+            const tf = ce.calledFunctionType();
             if (tf && tf.isnothrow)
                 return;
-            else
-            {
-                auto td = t.isTypeDelegate();
-                if (td && td.nextOf().isTypeFunction().isnothrow)
-                    return;
-            }
 
             if (ce.f)
                 checkFuncThrows(ce, ce.f);
@@ -205,7 +203,7 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
 
         override void visit(ThrowExp te)
         {
-            const res = checkThrow(te.loc, te.e1, mustNotThrow);
+            const res = checkThrow(te.loc, te.e1, mustNotThrow, func);
             assert((res & ~(CT.exception | CT.error)) == 0);
             result |= res;
         }

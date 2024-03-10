@@ -66,7 +66,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "target-globals.h"
 #include "gimple-iterator.h"
-#include "tree-vectorizer.h"
 #include "shrink-wrap.h"
 #include "builtins.h"
 #include "rtl-iter.h"
@@ -662,19 +661,23 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAIT);
 
   /* AES */
-  def_builtin_const (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2,
+  def_builtin_const (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2
+		     | OPTION_MASK_ISA_AVX512VL,
 		     OPTION_MASK_ISA2_VAES,
 		     "__builtin_ia32_aesenc128",
 		     V2DI_FTYPE_V2DI_V2DI, IX86_BUILTIN_AESENC128);
-  def_builtin_const (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2,
+  def_builtin_const (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2
+		     | OPTION_MASK_ISA_AVX512VL,
 		     OPTION_MASK_ISA2_VAES,
 		     "__builtin_ia32_aesenclast128",
 		     V2DI_FTYPE_V2DI_V2DI, IX86_BUILTIN_AESENCLAST128);
-  def_builtin_const (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2,
+  def_builtin_const (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2
+		     | OPTION_MASK_ISA_AVX512VL,
 		     OPTION_MASK_ISA2_VAES,
 		     "__builtin_ia32_aesdec128",
 		     V2DI_FTYPE_V2DI_V2DI, IX86_BUILTIN_AESDEC128);
-  def_builtin_const (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2,
+  def_builtin_const (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2
+		     | OPTION_MASK_ISA_AVX512VL,
 		     OPTION_MASK_ISA2_VAES,
 		     "__builtin_ia32_aesdeclast128",
 		     V2DI_FTYPE_V2DI_V2DI, IX86_BUILTIN_AESDECLAST128);
@@ -1372,7 +1375,7 @@ ix86_register_float16_builtin_type (void)
   else
     ix86_float16_type_node = float16_type_node;
 
-  if (!maybe_get_identifier ("_Float16") && TARGET_SSE2)
+  if (!maybe_get_identifier ("_Float16"))
     lang_hooks.types.register_builtin_type (ix86_float16_type_node,
 					    "_Float16");
 }
@@ -1390,7 +1393,7 @@ ix86_register_bf16_builtin_type (void)
   else
     ix86_bf16_type_node = bfloat16_type_node;
 
-  if (!maybe_get_identifier ("__bf16") && TARGET_SSE2)
+  if (!maybe_get_identifier ("__bf16"))
     lang_hooks.types.register_builtin_type (ix86_bf16_type_node, "__bf16");
 }
 

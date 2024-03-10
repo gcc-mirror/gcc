@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include "tree-vect.h"
 
@@ -21,6 +22,7 @@ int main (void)
 
   foo(100);
 
+#pragma GCC novector
   for (i = 0; i < 100; ++i) {
     if (ca[i] != 2)
       abort();
@@ -29,3 +31,4 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

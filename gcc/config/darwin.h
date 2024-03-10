@@ -270,10 +270,24 @@ extern GTY(()) int darwin_ms_struct;
   "%<y*",								\
   "%<Mach "
 
+#if LD64_HAS_DEMANGLE
+#define DARWIN_LD_DEMANGLE " -demangle "
+#else
+#define DARWIN_LD_DEMANGLE ""
+#endif
+
 #if LD64_HAS_EXPORT_DYNAMIC
 #define DARWIN_RDYNAMIC "%{rdynamic:-export_dynamic}"
 #else
 #define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
+#endif
+
+#if LD64_HAS_PLATFORM_VERSION
+#define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*: -platform_version macos %* 0.0} "
+#else
+#define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*:-macosx_version_min %*} "
 #endif
 
 /* Code built with mdynamic-no-pic does not support PIE/PIC, so  we disallow
@@ -348,10 +362,13 @@ extern GTY(()) int darwin_ms_struct;
 #define LINK_COMMAND_SPEC_A \
    "%{!c:%{!E:%{!S:%{!M:%{!MM:%{!fsyntax-only:%{!fdump=*: \
     %(linker)" \
+    DARWIN_LD_DEMANGLE \
     LINK_PLUGIN_SPEC \
     "%{flto*:%<fcompare-debug*} \
      %{flto} %{fno-lto} %{flto=*} \
-    %l " LINK_COMPRESS_DEBUG_SPEC \
+    %l " \
+    DARWIN_PLATFORM_ID \
+    LINK_COMPRESS_DEBUG_SPEC \
    "%X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \
     %{o*}%{!o:-o a.out} \
@@ -454,8 +471,7 @@ extern GTY(()) int darwin_ms_struct;
   %{force_cpusubtype_ALL:-arch %(darwin_arch)} \
    %{!force_cpusubtype_ALL:-arch %(darwin_subarch)} "\
    LINK_SYSROOT_SPEC \
-  "%{mmacosx-version-min=*:-macosx_version_min %*} \
-   %{!multiply_defined*:%{shared-libgcc: \
+   "%{!multiply_defined*:%{shared-libgcc: \
      %:version-compare(< 10.5 mmacosx-version-min= -multiply_defined) \
      %:version-compare(< 10.5 mmacosx-version-min= suppress) }} \
    %{sectalign*} %{sectcreate*} %{sectobjectsymbols*}  %{sectorder*} \

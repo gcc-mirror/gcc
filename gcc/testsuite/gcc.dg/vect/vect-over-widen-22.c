@@ -37,6 +37,7 @@ main (void)
       asm volatile ("" ::: "memory");
     }
   f (a, b, c, d, 0x73);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (b[i] != ((i * 2 + 3) ^ 0x73)
 	|| a[i] != ((i * 11) | b[i]))

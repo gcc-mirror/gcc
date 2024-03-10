@@ -233,3 +233,56 @@ AC_DEFUN([DRUNTIME_LIBRARIES_UCONTEXT],
       AC_MSG_ERROR([swapcontext required but not found]))
   fi
 ])
+
+# DRUNTIME_LIBRARIES_VALGRIND
+# ------------------------------
+# Allow specifying whether to use valgrind integration in the GC, which enables
+# the D run-time to communicate which memory access operations are valid.
+# This is only required if `--enable-libphobos-checking=valgrind' was seen.
+AC_DEFUN([DRUNTIME_LIBRARIES_VALGRIND],
+[
+  AC_CHECK_HEADERS(stddef.h stdlib.h)
+
+  AC_CHECK_HEADER(valgrind.h, have_valgrind_h=yes, have_valgrind_h=no)
+
+  AC_MSG_CHECKING(for VALGRIND_DISCARD in <valgrind/memcheck.h>)
+  AC_PREPROC_IFELSE([AC_LANG_SOURCE(
+    [[#include <valgrind/memcheck.h>
+  #ifndef VALGRIND_DISCARD
+  #error VALGRIND_DISCARD not defined
+  #endif]])],
+    [have_valgrind_memcheck_h=yes],
+    [have_valgrind_memcheck_h=no])
+  AC_MSG_RESULT($have_valgrind_memcheck_h)
+  AC_MSG_CHECKING(for VALGRIND_DISCARD in <memcheck.h>)
+  AC_PREPROC_IFELSE([AC_LANG_SOURCE(
+    [[#include <memcheck.h>
+  #ifndef VALGRIND_DISCARD
+  #error VALGRIND_DISCARD not defined
+  #endif]])],
+    [have_memcheck_h=yes],
+    [have_memcheck_h=no])
+  AC_MSG_RESULT($have_memcheck_h)
+
+  if test x$VALGRIND_FLAG != x ; then
+    AC_DEFINE(ENABLE_VALGRIND_CHECKING, 1,
+        [Define to enable to integrate valgrind (a memory checker) in the GC.])
+  fi
+  if test $have_valgrind_memcheck_h = yes; then
+    AC_DEFINE(HAVE_VALGRIND_MEMCHECK_H, 1,
+        [Define if valgrind's valgrind/memcheck.h header is installed.])
+  fi
+  if test $have_memcheck_h = yes; then
+    AC_DEFINE(HAVE_MEMCHECK_H, 1,
+        [Define if valgrind's memcheck.h header is installed.])
+  fi
+
+  if test x$VALGRIND_FLAG != x; then
+    if (test $have_valgrind_h = no \
+        && test $have_memcheck_h = no \
+        && test $have_valgrind_memcheck_h = no); then
+      AC_MSG_ERROR([*** valgrind checking requested, but
+*** Can't find valgrind/memcheck.h, memcheck.h or valgrind.h])
+    fi
+  fi
+])

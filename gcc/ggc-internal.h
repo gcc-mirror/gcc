@@ -52,9 +52,8 @@ extern struct ggc_pch_data *init_ggc_pch (void);
 
 /* The second parameter and third parameters give the address and size
    of an object.  Update the ggc_pch_data structure with as much of
-   that information as is necessary. The bool argument should be true
-   if the object is a string.  */
-extern void ggc_pch_count_object (struct ggc_pch_data *, void *, size_t, bool);
+   that information as is necessary.  */
+extern void ggc_pch_count_object (struct ggc_pch_data *, void *, size_t);
 
 /* Return the total size of the data to be written to hold all
    the objects previously passed to ggc_pch_count_object.  */
@@ -65,17 +64,15 @@ extern size_t ggc_pch_total_size (struct ggc_pch_data *);
 extern void ggc_pch_this_base (struct ggc_pch_data *, void *);
 
 /* Assuming that the objects really do end up at the address
-   passed to ggc_pch_this_base, return the address of this object.
-   The bool argument should be true if the object is a string.  */
-extern char *ggc_pch_alloc_object (struct ggc_pch_data *, void *, size_t, bool);
+   passed to ggc_pch_this_base, return the address of this object.  */
+extern char *ggc_pch_alloc_object (struct ggc_pch_data *, void *, size_t);
 
 /* Write out any initial information required.  */
 extern void ggc_pch_prepare_write (struct ggc_pch_data *, FILE *);
 
-/* Write out this object, including any padding.  The last argument should be
-   true if the object is a string.  */
+/* Write out this object, including any padding.  */
 extern void ggc_pch_write_object (struct ggc_pch_data *, FILE *, void *,
-				  void *, size_t, bool);
+				  void *, size_t);
 
 /* All objects have been written, write out any final information
    required.  */

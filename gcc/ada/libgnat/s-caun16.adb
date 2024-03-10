@@ -58,6 +58,9 @@ package body System.Compare_Array_Unsigned_16 is
    -- Compare_Array_U16 --
    -----------------------
 
+   pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                    "early returns for performance");
+
    function Compare_Array_U16
      (Left      : System.Address;
       Right     : System.Address;
@@ -130,4 +133,5 @@ package body System.Compare_Array_Unsigned_16 is
       end if;
    end Compare_Array_U16;
 
+   pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
 end System.Compare_Array_Unsigned_16;

@@ -121,7 +121,7 @@ asm volatile ("ttt":::"memory");
   if (check(k, ab, aa))
     cerr << "check 8 fails" << endl;
   vbool64_t var_2 = __riscv_vmsne_vx_u32mf2_b64_mu(var_55, var_56, var_3, au, 2);
-  vint16mf4_t var_1 = __riscv_vssub_vv_i16mf4_mu(var_2, var_0, var_4, cg, 0, 2);
+  vint16mf4_t var_1 = __riscv_vssub_vv_i16mf4_mu(var_2, var_0, var_4, cg, 2);
   vint16mf4_t var_5 = __riscv_vxor_vv_i16mf4_mu(var_46, var_1, bw, bx, 2);
   vint32mf2_t var_18 = __riscv_vwmaccsu_vv_i32mf2(bf, var_1, bg, 2);
   vint8mf8_t var_6 = __riscv_vncvt_x_x_w_i8mf8_mu(var_8, var_7, var_5, 1);

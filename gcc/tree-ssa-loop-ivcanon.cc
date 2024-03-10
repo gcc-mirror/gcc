@@ -906,6 +906,10 @@ try_unroll_loop_completely (class loop *loop,
       if (may_be_zero)
 	bitmap_clear_bit (wont_exit, 1);
 
+      /* If loop was originally estimated to iterate too many times,
+	 reduce the profile to avoid new profile inconsistencies.  */
+      scale_loop_profile (loop, profile_probability::always (), n_unroll);
+
       if (!gimple_duplicate_loop_body_to_header_edge (
 	    loop, loop_preheader_edge (loop), n_unroll, wont_exit, exit,
 	    &edges_to_remove,
@@ -919,6 +923,8 @@ try_unroll_loop_completely (class loop *loop,
 
       free_original_copy_tables ();
     }
+  else
+    scale_loop_profile (loop, profile_probability::always (), 0);
 
   /* Remove the conditional from the last copy of the loop.  */
   if (edge_to_cancel)
@@ -1146,6 +1152,7 @@ try_peel_loop (class loop *loop,
     }
   if (may_be_zero)
     bitmap_clear_bit (wont_exit, 1);
+
   if (!gimple_duplicate_loop_body_to_header_edge (
 	loop, loop_preheader_edge (loop), npeel, wont_exit, exit,
 	&edges_to_remove, DLTHE_FLAG_UPDATE_FREQ))
@@ -1160,20 +1167,7 @@ try_peel_loop (class loop *loop,
 	       loop->num, (int) npeel);
     }
   adjust_loop_info_after_peeling (loop, npeel, true);
-  profile_count entry_count = profile_count::zero ();
 
-  edge e;
-  edge_iterator ei;
-  FOR_EACH_EDGE (e, ei, loop->header->preds)
-    if (e->src != loop->latch)
-      {
-	if (e->src->count.initialized_p ())
-	  entry_count += e->src->count;
-	gcc_assert (!flow_bb_inside_loop_p (loop, e->src));
-      }
-  profile_probability p;
-  p = entry_count.probability_in (loop->header->count);
-  scale_loop_profile (loop, p, 0);
   bitmap_set_bit (peeled_loops, loop->num);
   return true;
 }

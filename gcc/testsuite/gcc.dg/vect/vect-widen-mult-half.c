@@ -38,6 +38,7 @@ int main (void)
 
   foo (COEF2);
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (out[i] != in[i] * COEF || out2[i] != in[i] + COEF2)
       abort ();

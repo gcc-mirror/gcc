@@ -79,6 +79,7 @@ main ()
   foo (a, b);
   if (r != 1024 * 1023 / 2)
     abort ();
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       s += i;
@@ -90,6 +91,7 @@ main ()
   if (bar () != 1024 * 1023)
     abort ();
   s = 0;
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       s += 2 * i;
@@ -103,6 +105,7 @@ main ()
   if (r != 1024 * 1023 / 2)
     abort ();
   s = 0;
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       s += i;
@@ -114,6 +117,7 @@ main ()
   if (qux () != 1024 * 1023)
     abort ();
   s = 0;
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       s += 2 * i;

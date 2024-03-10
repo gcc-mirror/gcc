@@ -59,6 +59,10 @@ import dmd.statementsem;
 import dmd.tokens;
 import dmd.visitor;
 
+version (IN_GCC) {}
+else version (IN_LLVM) {}
+else version = MARS;
+
 /// Inline Status
 enum ILS : ubyte
 {
@@ -204,6 +208,7 @@ private struct FUNCFLAG
     bool hasCatches;         /// function has try-catch statements
     bool skipCodegen;        /// do not generate code for this function.
     bool printf;             /// is a printf-like function
+
     bool scanf;              /// is a scanf-like function
     bool noreturn;           /// the function does not return
     bool isNRVO = true;      /// Support for named return value optimization
@@ -214,11 +219,14 @@ private struct FUNCFLAG
     bool hasNoEH;            /// No exception unwinding is needed
     bool inferRetType;       /// Return type is to be inferred
     bool hasDualContext;     /// has a dual-context 'this' parameter
+
     bool hasAlwaysInlines;   /// Contains references to functions that must be inlined
     bool isCrtCtor;          /// Has attribute pragma(crt_constructor)
     bool isCrtDtor;          /// Has attribute pragma(crt_destructor)
     bool hasEscapingSiblings;/// Has sibling functions that escape
     bool computedEscapingSiblings; /// `hasEscapingSiblings` has been computed
+    bool dllImport;          /// __declspec(dllimport)
+    bool dllExport;          /// __declspec(dllexport)
 }
 
 /***********************************************************
@@ -255,21 +263,30 @@ extern (C++) struct Ensure
 }
 
 /***********************************************************
+ * Most functions don't have contracts, so save memory by grouping
+ * this information into a separate struct
  */
-extern (C++) class FuncDeclaration : Declaration
+private struct ContractInfo
 {
     Statements* frequires;              /// in contracts
     Ensures* fensures;                  /// out contracts
     Statement frequire;                 /// lowered in contract
     Statement fensure;                  /// lowered out contract
+    FuncDeclaration fdrequire;          /// function that does the in contract
+    FuncDeclaration fdensure;           /// function that does the out contract
+    Expressions* fdrequireParams;       /// argument list for __require
+    Expressions* fdensureParams;        /// argument list for __ensure
+}
+
+/***********************************************************
+ */
+extern (C++) class FuncDeclaration : Declaration
+{
     Statement fbody;                    /// function body
 
     FuncDeclarations foverrides;        /// functions this function overrides
-    FuncDeclaration fdrequire;          /// function that does the in contract
-    FuncDeclaration fdensure;           /// function that does the out contract
 
-    Expressions* fdrequireParams;       /// argument list for __require
-    Expressions* fdensureParams;        /// argument list for __ensure
+    private ContractInfo* contracts;    /// contract information
 
     const(char)* mangleString;          /// mangled symbol created from mangleExact()
 
@@ -356,6 +373,9 @@ extern (C++) class FuncDeclaration : Declaration
     /// In case of failed `@safe` inference, store the error that made the function `@system` for
     /// better diagnostics
     AttributeViolation* safetyViolation;
+    AttributeViolation* nogcViolation;
+    AttributeViolation* pureViolation;
+    AttributeViolation* nothrowViolation;
 
     /// See the `FUNCFLAG` struct
     import dmd.common.bitfields;
@@ -370,8 +390,8 @@ extern (C++) class FuncDeclaration : Declaration
     extern (D) this(const ref Loc loc, const ref Loc endloc, Identifier ident, StorageClass storage_class, Type type, bool noreturn = false)
     {
         super(loc, ident);
-        //printf("FuncDeclaration(id = '%s', type = %p)\n", id.toChars(), type);
-        //printf("storage_class = x%x\n", storage_class);
+        //.printf("FuncDeclaration(id = '%s', type = %s)\n", ident.toChars(), type.toChars());
+        //.printf("storage_class = x%llx\n", storage_class);
         this.storage_class = storage_class;
         this.type = type;
         if (type)
@@ -394,6 +414,44 @@ extern (C++) class FuncDeclaration : Declaration
     static FuncDeclaration create(const ref Loc loc, const ref Loc endloc, Identifier id, StorageClass storage_class, Type type, bool noreturn = false)
     {
         return new FuncDeclaration(loc, endloc, id, storage_class, type, noreturn);
+    }
+
+    final nothrow pure @safe
+    {
+        private ref ContractInfo getContracts()
+        {
+            if (!contracts)
+                contracts = new ContractInfo();
+            return *contracts;
+        }
+
+        // getters
+        inout(Statements*) frequires() inout { return contracts ? contracts.frequires : null; }
+        inout(Ensures*) fensures() inout { return contracts ? contracts.fensures : null; }
+        inout(Statement) frequire() inout { return contracts ? contracts.frequire: null; }
+        inout(Statement) fensure() inout { return contracts ? contracts.fensure : null; }
+        inout(FuncDeclaration) fdrequire() inout { return contracts ? contracts.fdrequire : null; }
+        inout(FuncDeclaration) fdensure() inout { return contracts ? contracts.fdensure: null; }
+        inout(Expressions*) fdrequireParams() inout { return contracts ? contracts.fdrequireParams: null; }
+        inout(Expressions*) fdensureParams() inout { return contracts ? contracts.fdensureParams: null; }
+
+        extern (D) private static string generateContractSetter(string field, string type)
+        {
+            return type ~ " " ~ field ~ "(" ~ type ~ " param)" ~
+                    "{
+                        if (!param && !contracts) return null;
+                        return getContracts()." ~ field ~ " = param;
+                     }";
+        }
+
+        mixin(generateContractSetter("frequires", "Statements*"));
+        mixin(generateContractSetter("fensures", "Ensures*"));
+        mixin(generateContractSetter("frequire", "Statement"));
+        mixin(generateContractSetter("fensure", "Statement"));
+        mixin(generateContractSetter("fdrequire", "FuncDeclaration"));
+        mixin(generateContractSetter("fdensure", "FuncDeclaration"));
+        mixin(generateContractSetter("fdrequireParams", "Expressions*"));
+        mixin(generateContractSetter("fdensureParams", "Expressions*"));
     }
 
     override FuncDeclaration syntaxCopy(Dsymbol s)
@@ -1294,14 +1352,14 @@ extern (C++) class FuncDeclaration : Declaration
 
     override final bool isExport() const
     {
-        return visibility.kind == Visibility.Kind.export_;
+        return visibility.kind == Visibility.Kind.export_ || dllExport;
     }
 
     override final bool isImportedSymbol() const
     {
         //printf("isImportedSymbol()\n");
         //printf("protection = %d\n", visibility);
-        return (visibility.kind == Visibility.Kind.export_) && !fbody;
+        return (visibility.kind == Visibility.Kind.export_ || dllImport) && !fbody;
     }
 
     override final bool isCodeseg() const pure nothrow @nogc @safe
@@ -1441,17 +1499,27 @@ extern (C++) class FuncDeclaration : Declaration
     }
 
     /**************************************
-     * The function is doing something impure,
-     * so mark it as impure.
-     * If there's a purity error, return true.
+     * The function is doing something impure, so mark it as impure.
+     *
+     * Params:
+     *     loc = location of impure action
+     *     fmt = format string for error message. Must include "%s `%s`" for the function kind and name.
+     *     arg0 = (optional) argument to format string
+     *
+     * Returns: `true` if there's a purity error
      */
-    extern (D) final bool setImpure()
+    extern (D) final bool setImpure(Loc loc = Loc.init, const(char)* fmt = null, RootObject arg0 = null)
     {
         if (purityInprocess)
         {
             purityInprocess = false;
+            if (fmt)
+                pureViolation = new AttributeViolation(loc, fmt, this, arg0); // impure action
+            else if (arg0)
+                pureViolation = new AttributeViolation(loc, fmt, arg0); // call to impure function
+
             if (fes)
-                fes.func.setImpure();
+                fes.func.setImpure(loc, fmt, arg0);
         }
         else if (isPure())
             return true;
@@ -1540,7 +1608,7 @@ extern (C++) class FuncDeclaration : Declaration
     {
         //printf("isNogc() %s, inprocess: %d\n", toChars(), !!(flags & FUNCFLAG.nogcInprocess));
         if (nogcInprocess)
-            setGC();
+            setGC(loc, null);
         return type.toTypeFunction().isnogc;
     }
 
@@ -1552,10 +1620,16 @@ extern (C++) class FuncDeclaration : Declaration
     /**************************************
      * The function is doing something that may allocate with the GC,
      * so mark it as not nogc (not no-how).
+     *
+     * Params:
+     *     loc = location of impure action
+     *     fmt = format string for error message. Must include "%s `%s`" for the function kind and name.
+     *     arg0 = (optional) argument to format string
+     *
      * Returns:
      *      true if function is marked as @nogc, meaning a user error occurred
      */
-    extern (D) final bool setGC()
+    extern (D) final bool setGC(Loc loc, const(char)* fmt, RootObject arg0 = null)
     {
         //printf("setGC() %s\n", toChars());
         if (nogcInprocess && semanticRun < PASS.semantic3 && _scope)
@@ -1567,13 +1641,57 @@ extern (C++) class FuncDeclaration : Declaration
         if (nogcInprocess)
         {
             nogcInprocess = false;
+            if (fmt)
+                nogcViolation = new AttributeViolation(loc, fmt, this, arg0); // action that requires GC
+            else if (arg0)
+                nogcViolation = new AttributeViolation(loc, fmt, arg0); // call to non-@nogc function
+
             type.toTypeFunction().isnogc = false;
             if (fes)
-                fes.func.setGC();
+                fes.func.setGC(Loc.init, null, null);
         }
         else if (isNogc())
             return true;
         return false;
+    }
+
+    /**************************************
+     * The function calls non-`@nogc` function f, mark it as not nogc.
+     * Params:
+     *     f = function being called
+     * Returns:
+     *      true if function is marked as @nogc, meaning a user error occurred
+     */
+    extern (D) final bool setGCCall(FuncDeclaration f)
+    {
+        return setGC(loc, null, f);
+    }
+
+    /**************************************
+     * The function is doing something that may throw an exception, register that in case nothrow is being inferred
+     *
+     * Params:
+     *     loc = location of action
+     *     fmt = format string for error message
+     *     arg0 = (optional) argument to format string
+     */
+    extern (D) final void setThrow(Loc loc, const(char)* fmt, RootObject arg0 = null)
+    {
+        if (nothrowInprocess && !nothrowViolation)
+        {
+            nothrowViolation = new AttributeViolation(loc, fmt, arg0); // action that requires GC
+        }
+    }
+
+    /**************************************
+     * The function calls non-`nothrow` function f, register that in case nothrow is being inferred
+     * Params:
+     *     loc = location of call
+     *     f = function being called
+     */
+    extern (D) final void setThrowCall(Loc loc, FuncDeclaration f)
+    {
+        return setThrow(loc, null, f);
     }
 
     extern (D) final void printGCUsage(const ref Loc loc, const(char)* warn)
@@ -2119,7 +2237,7 @@ extern (C++) class FuncDeclaration : Declaration
         if (!needsClosure())
             return false;
 
-        if (setGC())
+        if (setGC(loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", this))
         {
             error("is `@nogc` yet allocates closure for `%s()` with the GC", toChars());
             if (global.gag)     // need not report supplemental errors
@@ -2650,7 +2768,7 @@ extern (C++) class FuncDeclaration : Declaration
      */
     static FuncDeclaration genCfunc(Parameters* fparams, Type treturn, const(char)* name, StorageClass stc = 0)
     {
-        return genCfunc(fparams, treturn, Identifier.idPool(name, cast(uint)strlen(name)), stc);
+        return genCfunc(fparams, treturn, Identifier.idPool(name[0 .. strlen(name)]), stc);
     }
 
     static FuncDeclaration genCfunc(Parameters* fparams, Type treturn, Identifier id, StorageClass stc = 0)
@@ -3132,6 +3250,7 @@ enum FuncResolveFlag : ubyte
     quiet = 1,          /// do not issue error message on no match, just return `null`.
     overloadOnly = 2,   /// only resolve overloads, i.e. do not issue error on ambiguous
                         /// matches and need explicit this.
+    ufcs = 4,           /// trying to resolve UFCS call
 }
 
 /*******************************************
@@ -3249,12 +3368,22 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
     }
 
     // no match, generate an error messages
+    if (flags & FuncResolveFlag.ufcs)
+    {
+        auto arg = (*fargs)[0];
+        .error(loc, "no property `%s` for `%s` of type `%s`", s.ident.toChars(), arg.toChars(), arg.type.toChars());
+        .errorSupplemental(loc, "the following error occured while looking for a UFCS match");
+    }
+
     if (!fd)
     {
         // all of overloads are templates
         if (td)
         {
-            .error(loc, "none of the overloads of %s `%s.%s` are callable using argument types `!(%s)%s`",
+            const(char)* msg = "none of the overloads of %s `%s.%s` are callable using argument types `!(%s)%s`";
+            if (!od && !td.overnext)
+                msg = "%s `%s.%s` is not callable using argument types `!(%s)%s`";
+            .error(loc, msg,
                    td.kind(), td.parent.toPrettyChars(), td.ident.toChars(),
                    tiargsBuf.peekChars(), fargsBuf.peekChars());
 
@@ -4531,18 +4660,51 @@ struct AttributeViolation
 ///   fd = function to check
 ///   maxDepth = up to how many functions deep to report errors
 ///   deprecation = print deprecations instead of errors
-void errorSupplementalInferredSafety(FuncDeclaration fd, int maxDepth, bool deprecation)
+///   stc = storage class of attribute to check
+void errorSupplementalInferredAttr(FuncDeclaration fd, int maxDepth, bool deprecation, STC stc)
 {
     auto errorFunc = deprecation ? &deprecationSupplemental : &errorSupplemental;
-    if (auto s = fd.safetyViolation)
+
+    AttributeViolation* s;
+    const(char)* attr;
+    if (stc & STC.safe)
+    {
+        s = fd.safetyViolation;
+        attr = "@safe";
+    }
+    else if (stc & STC.pure_)
+    {
+        s = fd.pureViolation;
+        attr = "pure";
+    }
+    else if (stc & STC.nothrow_)
+    {
+        s = fd.nothrowViolation;
+        attr = "nothrow";
+    }
+    else if (stc & STC.nogc)
+    {
+        s = fd.nogcViolation;
+        attr = "@nogc";
+    }
+
+    if (s)
     {
         if (s.fmtStr)
         {
             errorFunc(s.loc, deprecation ?
-                "which would be `@system` because of:" :
-                "which was inferred `@system` because of:");
-            errorFunc(s.loc, s.fmtStr,
-                s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
+                "which wouldn't be `%s` because of:" :
+                "which wasn't inferred `%s` because of:", attr);
+            if (stc == STC.nogc || stc == STC.pure_)
+            {
+                auto f = (cast(Dsymbol) s.arg0).isFuncDeclaration();
+                errorFunc(s.loc, s.fmtStr, f.kind(), f.toPrettyChars(), s.arg1 ? s.arg1.toChars() : "");
+            }
+            else
+            {
+                errorFunc(s.loc, s.fmtStr,
+                    s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
+            }
         }
         else if (s.arg0.dyncast() == DYNCAST.dsymbol)
         {
@@ -4551,7 +4713,7 @@ void errorSupplementalInferredSafety(FuncDeclaration fd, int maxDepth, bool depr
                 if (maxDepth > 0)
                 {
                     errorFunc(s.loc, "which calls `%s`", fd2.toPrettyChars());
-                    errorSupplementalInferredSafety(fd2, maxDepth - 1, deprecation);
+                    errorSupplementalInferredAttr(fd2, maxDepth - 1, deprecation, stc);
                 }
             }
         }

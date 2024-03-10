@@ -1121,7 +1121,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
 				       comp_width, comp_index);
 	  tree aa2 = tree_vec_extract (gsi, comp_inner_type, a2,
 				       comp_width, comp_index);
-	  aa = gimplify_build2 (gsi, code, cond_type, aa1, aa2);
+	  aa = gimplify_build2 (gsi, code, boolean_type_node, aa1, aa2);
 	}
       else if (a_is_scalar_bitmask)
 	{
@@ -1132,7 +1132,11 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
 				build_zero_cst (TREE_TYPE (a)));
 	}
       else
-	aa = tree_vec_extract (gsi, cond_type, a, comp_width, comp_index);
+	{
+	  result = tree_vec_extract (gsi, cond_type, a, comp_width, comp_index);
+	  aa = gimplify_build2 (gsi, NE_EXPR, boolean_type_node, result,
+				build_zero_cst (cond_type));
+	}
       result = gimplify_build3 (gsi, COND_EXPR, inner_type, aa, bb, cc);
       if (!CONSTANT_CLASS_P (result))
 	constant_p = false;

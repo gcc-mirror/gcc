@@ -8935,7 +8935,8 @@ native_interpret_aggregate (tree type, const unsigned char *ptr, int off,
     return NULL_TREE;
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
-      if (TREE_CODE (field) != FIELD_DECL || DECL_PADDING_P (field))
+      if (TREE_CODE (field) != FIELD_DECL || DECL_PADDING_P (field)
+	  || is_empty_type (TREE_TYPE (field)))
 	continue;
       tree fld = field;
       HOST_WIDE_INT bitoff = 0, pos = 0, sz = 0;

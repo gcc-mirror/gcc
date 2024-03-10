@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -22,6 +23,7 @@ int main1 (int ia[][N])
     }
 
   /* check results: */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
        if (ic[0][i] != DOT16 (ia[i], ib))
@@ -50,3 +52,4 @@ int main (void)
 /* Needs interleaving support.  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_strided4 } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { xfail  vect_strided4 } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

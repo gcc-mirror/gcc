@@ -782,7 +782,7 @@ public:
       {
 	/* Do not store variables we cannot take the address of,
 	   but keep the values for purposes of debugging.  */
-	if (!d->type->isscalar ())
+	if (d->type->isscalar () && !d->type->hasPointers ())
 	  {
 	    tree decl = get_symbol_decl (d);
 	    d_pushdecl (decl);
@@ -1083,7 +1083,7 @@ build_decl_tree (Dsymbol *d)
   location_t saved_location = input_location;
 
   /* Set input location, empty DECL_SOURCE_FILE can crash debug generator.  */
-  if (d->loc.filename)
+  if (d->loc.filename ())
     input_location = make_location_t (d->loc);
   else
     input_location = make_location_t (Loc ("<no_file>", 1, 0));
@@ -1212,6 +1212,20 @@ get_symbol_decl (Declaration *decl)
       return decl->csym;
     }
 
+  if (VarDeclaration *vd = decl->isVarDeclaration ())
+    {
+      /* CONST_DECL was initially intended for enumerals and may be used for
+	 scalars in general, but not for aggregates.  Here a non-constant
+	 value is generated anyway so as its value can be used.  */
+      if (!vd->canTakeAddressOf () && !vd->type->isscalar ())
+	{
+	  gcc_assert (vd->_init && !vd->_init->isVoidInitializer ());
+	  Expression *ie = initializerToExpression (vd->_init);
+	  decl->csym = build_expr (ie, false);
+	  return decl->csym;
+	}
+    }
+
   /* Build the tree for the symbol.  */
   FuncDeclaration *fd = decl->isFuncDeclaration ();
   if (fd)
@@ -1259,23 +1273,15 @@ get_symbol_decl (Declaration *decl)
       if (vd->storage_class & STCextern)
 	DECL_EXTERNAL (decl->csym) = 1;
 
-      /* CONST_DECL was initially intended for enumerals and may be used for
-	 scalars in general, but not for aggregates.  Here a non-constant
-	 value is generated anyway so as the CONST_DECL only serves as a
-	 placeholder for the value, however the DECL itself should never be
-	 referenced in any generated code, or passed to the back-end.  */
-      if (vd->storage_class & STCmanifest)
+      if (!vd->canTakeAddressOf ())
 	{
 	  /* Cannot make an expression out of a void initializer.  */
-	  if (vd->_init && !vd->_init->isVoidInitializer ())
-	    {
-	      Expression *ie = initializerToExpression (vd->_init);
+	  gcc_assert (vd->_init && !vd->_init->isVoidInitializer ());
+	  /* Non-scalar manifest constants have already been dealt with.  */
+	  gcc_assert (vd->type->isscalar ());
 
-	      if (!vd->type->isscalar ())
-		DECL_INITIAL (decl->csym) = build_expr (ie, false);
-	      else
-		DECL_INITIAL (decl->csym) = build_expr (ie, true);
-	    }
+	  Expression *ie = initializerToExpression (vd->_init);
+	  DECL_INITIAL (decl->csym) = build_expr (ie, true);
 	}
 
       /* [type-qualifiers/const-and-immutable]
@@ -2058,7 +2064,7 @@ start_function (FuncDeclaration *fd)
   allocate_struct_function (fndecl, false);
 
   /* Store the end of the function.  */
-  if (fd->endloc.filename)
+  if (fd->endloc.filename ())
     cfun->function_end_locus = make_location_t (fd->endloc);
   else
     cfun->function_end_locus = DECL_SOURCE_LOCATION (fndecl);

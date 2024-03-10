@@ -28,39 +28,55 @@
 
 /* Name_Id values */
 
-#define  Name_ !! TEMPLATE INSERTION POINT
-
-/* Define the function to return one of the numeric values below. Note
-   that it actually returns a char since an enumeration value of less
-   than 256 entries is represented that way in Ada.  The operand is a Chars
-   field value.  */
-
-#define Get_Attribute_Id snames__get_attribute_id
-extern unsigned char Get_Attribute_Id (int);
+enum Name_Id : Int
+{
+  Name_ !! TEMPLATE INSERTION POINT
+};
 
 /* Define the numeric values for attributes.  */
 
-#define  Attr_ !! TEMPLATE INSERTION POINT
+enum Attribute_Id : unsigned char
+{
+  Attr_ !! TEMPLATE INSERTION POINT
+};
+
+/* Define the function to return one of the numeric values above.  The operand
+   is a Chars field value.  */
+
+static inline Attribute_Id
+Get_Attribute_Id (int id)
+{
+  extern unsigned char snames__get_attribute_id (int);
+  return (Attribute_Id) snames__get_attribute_id (id);
+}
 
 /* Define the numeric values for the conventions.  */
 
-#define  Convention_ !! TEMPLATE INSERTION POINT
+enum Convention_Id : Byte
+{
+  Convention_ !! TEMPLATE INSERTION POINT
+};
 
 /* Define the function to check if a Name_Id value is a valid pragma */
 
 #define Is_Pragma_Name snames__is_pragma_name
 extern Boolean Is_Pragma_Name (Name_Id);
 
-/* Define the function to return one of the numeric values below.  Note
-   that it actually returns a char since an enumeration value of less
-   than 256 entries is represented that way in Ada.  The operand is a Chars
-   field value.  */
-
-#define Get_Pragma_Id snames__get_pragma_id
-extern unsigned char Get_Pragma_Id (int);
-
 /* Define the numeric values for the pragmas. */
 
-#define  Pragma_ !! TEMPLATE_INSERTION_POINT
+enum Pragma_Id : Byte
+{
+  Pragma_ !! TEMPLATE_INSERTION_POINT
+};
+
+/* Define the function to return one of the numeric values above.  The operand
+   is a Chars field value.  */
+
+static inline Pragma_Id
+Get_Pragma_Id (int id)
+{
+  extern unsigned char snames__get_pragma_id (int);
+  return (Pragma_Id) snames__get_pragma_id (id);
+}
 
 /* End of snames.h (C version of Snames package spec) */

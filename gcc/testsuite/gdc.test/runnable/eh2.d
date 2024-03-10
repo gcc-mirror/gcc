@@ -24,7 +24,7 @@ class Abc : Throwable
     {
         printf("foo 1\n");
         x |= 4;
-        throw this;
+        throw cast() this;
         printf("foo 2\n");
         x |= 8;
     }
@@ -72,11 +72,11 @@ int main()
         a.test();
         Abc.x |= 0x40;
     }
-    catch (shared(Abc) b)
+    catch (Abc b)
     {
         Abc.x |= 0x80;
         printf("Caught %p, x = x%x\n", b, Abc.x);
-        assert(a is b);
+        assert(cast() a is b);
         assert(Abc.x == 0xB5);
     }
     printf("Success!\n");

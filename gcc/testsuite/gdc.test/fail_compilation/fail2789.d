@@ -61,8 +61,8 @@ auto f6() { return ""; }    // string(), conflict
 TEST_OUTPUT:
 ---
 fail_compilation/fail2789.d(67): Error: function `fail2789.f_ExternC1()` conflicts with previous declaration at fail_compilation/fail2789.d(66)
-fail_compilation/fail2789.d(70): Deprecation: function `fail2789.f_ExternC2` cannot overload `extern(C)` function at fail_compilation/fail2789.d(69)
-fail_compilation/fail2789.d(73): Deprecation: function `fail2789.f_ExternC3` cannot overload `extern(C)` function at fail_compilation/fail2789.d(72)
+fail_compilation/fail2789.d(70): Error: function `fail2789.f_ExternC2` cannot overload `extern(C)` function at fail_compilation/fail2789.d(69)
+fail_compilation/fail2789.d(73): Error: function `fail2789.f_ExternC3` cannot overload `extern(C)` function at fail_compilation/fail2789.d(72)
 ---
 */
 

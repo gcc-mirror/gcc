@@ -14,8 +14,8 @@ is_corresponding_member (M1 S1::*m1, M2 S2::*m2) noexcept
 struct A { int a; };
 struct B;
 constexpr int B::*n = nullptr;
-constexpr auto a = std::is_corresponding_member (&A::a, n);	// { dg-error "invalid use of incomplete type 'struct B'" }
-constexpr auto b = std::is_corresponding_member (n, &A::a);	// { dg-error "invalid use of incomplete type 'struct B'" }
+constexpr auto a = std::is_corresponding_member (&A::a, n);	// { dg-message "in .constexpr. expansion of" }
+constexpr auto b = std::is_corresponding_member (n, &A::a);	// { dg-message "in .constexpr. expansion of" }
 
 void
 foo (int B::*m)

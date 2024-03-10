@@ -22,10 +22,9 @@
 (define_insn "*th_addsl<mode>4"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(plus:X (ashift:X (match_operand:X 1 "register_operand" "r")
-			  (match_operand 2 "const_int_operand" "n"))
+			  (match_operand:QI 2 "imm123_operand" "Ds3"))
 		(match_operand:X 3 "register_operand" "r")))]
-  "TARGET_XTHEADBA
-   && (INTVAL (operands[2]) >= 0) && (INTVAL (operands[2]) <= 3)"
+  "TARGET_XTHEADBA"
   "th.addsl\t%0,%3,%1,%2"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
@@ -59,6 +58,17 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<GPR:MODE>")])
 
+(define_insn "*extend<SHORT:mode><SUPERQI:mode>2_th_ext"
+  [(set (match_operand:SUPERQI 0 "register_operand" "=r,r")
+	(sign_extend:SUPERQI
+	    (match_operand:SHORT 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_XTHEADBB"
+  "@
+   th.ext\t%0,%1,15,0
+   l<SHORT:size>\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "<SUPERQI:MODE>")])
+
 (define_insn "*th_extu<mode>4"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(zero_extract:GPR (match_operand:GPR 1 "register_operand" "r")
@@ -71,6 +81,26 @@
 }
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "*zero_extendsidi2_th_extu"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_64BIT && TARGET_XTHEADBB"
+  "@
+   th.extu\t%0,%1,31,0
+   lwu\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "SI")])
+
+(define_insn "*zero_extendhi<GPR:mode>2_th_extu"
+  [(set (match_operand:GPR 0 "register_operand" "=r,r")
+	(zero_extend:GPR (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_XTHEADBB"
+  "@
+   th.extu\t%0,%1,15,0
+   lhu\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "HI")])
 
 (define_insn "*th_clz<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
@@ -331,3 +361,5 @@
   [(set_attr "move_type" "load")
    (set_attr "mode" "DI")
    (set_attr "length" "8")])
+
+(include "thead-peephole.md")

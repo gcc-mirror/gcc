@@ -1,3 +1,54 @@
+2023-08-02  Jan Beulich  <jbeulich@suse.com>
+
+	* MAINTAINERS: Correct my email address.
+
+2023-08-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-08-01  Richard Ball  <richard.ball@arm.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-07-31  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac (GDCFLAGS): Set default from ${CFLAGS}.
+	* configure: Regenerate.
+	* Makefile.in (GDCFLAGS): Substitute @GDCFLAGS@.
+
+2023-07-31  xuli  <xuli1@eswincomputing.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-07-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: List myself as "nvptx port" maintainer.
+
+2023-07-21  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* MAINTAINERS: Add myself to write after approval
+
+2023-07-18  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* MAINTAINERS: Add myself as a reviewer for the riscv port.
+
+2023-07-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Add myself as a reviewer for the riscv port.
+
+2023-07-12  Hao Liu  <hliu@os.amperecomputing.com>
+
+	* MAINTAINERS: Add Hao Liu to write after approval
+
+2023-07-12  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* MAINTAINERS: Add Ken Matsui to write after approval
+
+2023-07-07  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Collect both kernel and user events for autofdo
+	* Makefile.tpl: Collect both kernel and user events for autofdo
+
 2023-06-30  Rishi Raj  <rishiraj45035@gmail.com>
 
 	* MAINTAINERS: Added myself to Write After Approval and DCO

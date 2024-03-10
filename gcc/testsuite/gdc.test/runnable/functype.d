@@ -301,7 +301,7 @@ void test10734()
 
 void test14656()
 {
-    //void unaryFun()(auto int a) pure nothrow @safe @nogc {}   // changed to invalid by fixing issue 14669
+    //void unaryFun()(auto int a) pure nothrow @safe @nogc {}   // changed to invalid by fixing https://issues.dlang.org/show_bug.cgi?id=14669
     alias Identity(F) = F;
     //unaryFun!()(41);
     static void fun(int n) pure nothrow @safe @nogc {}

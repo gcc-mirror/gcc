@@ -16,7 +16,7 @@ int main()
 struct complex 			// { dg-message "no .constexpr. constructor" "" { target { ! implicit_constexpr } } }
 {
   complex(double r, double i) : re(r), im(i) { }
-  constexpr double real() const { return re; } // { dg-error "not a literal type" "" { target c++11_only } }
+  constexpr double real() const { return re; } // { dg-error "not a literal type|not usable in a constant expression" "" { target { ! implicit_constexpr } } }
   double imag() const { return im; }
 
 private:

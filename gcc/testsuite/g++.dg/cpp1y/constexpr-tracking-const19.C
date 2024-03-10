@@ -7,7 +7,7 @@ template <typename E, size_t N>
 struct array
 {
   constexpr const E &operator[](size_t n) const noexcept { return elems[n]; }
-  const E elems[N];
+  const E elems[N]; // { dg-message "originally declared" }
 };
 
 template <typename T>
@@ -20,4 +20,4 @@ struct S {
   }
 };
 
-constexpr S<int> p = { 10 }; // { dg-message "originally declared" }
+constexpr S<int> p = { 10 };

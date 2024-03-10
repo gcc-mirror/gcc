@@ -62,6 +62,7 @@ int main (void)
   foo ();
   fir ();
   
+#pragma GCC novector
   for (i = 0; i < N; i++) {
     if (out[i] != fir_out[i])
       abort ();

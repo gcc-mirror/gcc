@@ -719,5 +719,5 @@ void test_overlap_with_precision (char *d, int i, int j)
   T (d, "%.*s", i, d + 0);    /* { dg-warning "may overlap" } */
   T (d, "%.*s", i, d + 1);    /* { dg-warning "may overlap" } */
   T (d, "%.*s", i, d + 2);
-  T (d, "%.*s", i, d + i);    /* { dg-warning "may overlap" "" { xfail *-*-* } } */
+  T (d, "%.*s", i, d + i);    /* { dg-warning "may overlap" } */
 }

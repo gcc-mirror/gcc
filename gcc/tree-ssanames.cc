@@ -465,6 +465,21 @@ set_nonzero_bits (tree name, const wide_int &mask)
   set_range_info (name, r);
 }
 
+/* Update the known bits of NAME.
+
+   Zero bits in MASK cover constant values.  Set bits in MASK cover
+   unknown values.  VALUE are the known bits.  */
+
+void
+set_bitmask (tree name, const wide_int &value, const wide_int &mask)
+{
+  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+
+  int_range<2> r (TREE_TYPE (name));
+  r.update_bitmask (irange_bitmask (value, mask));
+  set_range_info (name, r);
+}
+
 /* Return a widest_int with potentially non-zero bits in SSA_NAME
    NAME, the constant for INTEGER_CST, or -1 if unknown.  */
 
@@ -915,4 +930,76 @@ gimple_opt_pass *
 make_pass_release_ssa_names (gcc::context *ctxt)
 {
   return new pass_release_ssa_names (ctxt);
+}
+
+/* Save and restore of flow sensitive information. */
+
+/* Save off the flow sensitive info from NAME. */
+
+void
+flow_sensitive_info_storage::save (tree name)
+{
+  gcc_assert (state == 0);
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      range_info = SSA_NAME_RANGE_INFO (name);
+      state = 1;
+      return;
+    }
+  state = -1;
+  auto ptr_info = SSA_NAME_PTR_INFO (name);
+  if (ptr_info)
+    {
+      align = ptr_info->align;
+      misalign = ptr_info->misalign;
+      null = SSA_NAME_PTR_INFO (name)->pt.null;
+    }
+  else
+    {
+      align = 0;
+      misalign = 0;
+      null = true;
+    }
+}
+
+/* Restore the flow sensitive info from NAME. */
+
+void
+flow_sensitive_info_storage::restore (tree name)
+{
+  gcc_assert (state != 0);
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      gcc_assert (state == 1);
+      SSA_NAME_RANGE_INFO (name) = range_info;
+      return;
+    }
+  gcc_assert (state == -1);
+  auto ptr_info = SSA_NAME_PTR_INFO (name);
+  /* If there was no flow sensitive info on the pointer
+     just return, there is nothing to restore to.  */
+  if (!ptr_info)
+    return;
+  if (align != 0)
+    set_ptr_info_alignment (ptr_info, align, misalign);
+  else
+    mark_ptr_info_alignment_unknown (ptr_info);
+  SSA_NAME_PTR_INFO (name)->pt.null = null;
+}
+
+/* Save off the flow sensitive info from NAME.
+   And reset the flow sensitive info of NAME. */
+
+void
+flow_sensitive_info_storage::save_and_clear (tree name)
+{
+  save (name);
+  reset_flow_sensitive_info (name);
+}
+
+/* Clear the storage. */
+void
+flow_sensitive_info_storage::clear_storage (void)
+{
+  state = 0;
 }

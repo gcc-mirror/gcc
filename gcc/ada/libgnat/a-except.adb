@@ -229,6 +229,7 @@ package body Ada.Exceptions is
 
       procedure Propagate_Exception (Excep : Exception_Occurrence);
       pragma No_Return (Propagate_Exception);
+      pragma Machine_Attribute (Propagate_Exception, "expected_throw");
       --  This procedure propagates the exception represented by Excep
 
    end Exception_Propagation;
@@ -256,6 +257,8 @@ package body Ada.Exceptions is
 
    procedure Complete_And_Propagate_Occurrence (X : EOA);
    pragma No_Return (Complete_And_Propagate_Occurrence);
+   pragma Machine_Attribute (Complete_And_Propagate_Occurrence,
+                             "expected_throw");
    --  This is a simple wrapper to Complete_Occurrence and
    --  Exception_Propagation.Propagate_Exception.
 
@@ -280,6 +283,7 @@ package body Ada.Exceptions is
     (Ada, Raise_Exception_No_Defer,
      "ada__exceptions__raise_exception_no_defer");
    pragma No_Return (Raise_Exception_No_Defer);
+   pragma Machine_Attribute (Raise_Exception_No_Defer, "expected_throw");
    --  Similar to Raise_Exception, but with no abort deferral
 
    procedure Raise_From_Signal_Handler
@@ -288,6 +292,7 @@ package body Ada.Exceptions is
    pragma Export
      (C, Raise_From_Signal_Handler, "__gnat_raise_from_signal_handler");
    pragma No_Return (Raise_From_Signal_Handler);
+   pragma Machine_Attribute (Raise_From_Signal_Handler, "expected_throw");
    --  This routine is used to raise an exception from a signal handler. The
    --  signal handler has already stored the machine state (i.e. the state that
    --  corresponds to the location at which the signal was raised). E is the
@@ -301,6 +306,7 @@ package body Ada.Exceptions is
 
    procedure Raise_With_Msg (E : Exception_Id);
    pragma No_Return (Raise_With_Msg);
+   pragma Machine_Attribute (Raise_With_Msg, "expected_throw");
    pragma Export (C, Raise_With_Msg, "__gnat_raise_with_msg");
    --  Raises an exception with given exception id value. A message
    --  is associated with the raise, and has already been stored in the
@@ -314,6 +320,7 @@ package body Ada.Exceptions is
       C : Integer := 0;
       M : System.Address := System.Null_Address);
    pragma No_Return (Raise_With_Location_And_Msg);
+   pragma Machine_Attribute (Raise_With_Location_And_Msg, "expected_throw");
    --  Raise an exception with given exception id value. A filename and line
    --  number is associated with the raise and is stored in the exception
    --  occurrence and in addition a column and a string message M may be
@@ -321,6 +328,7 @@ package body Ada.Exceptions is
 
    procedure Raise_Constraint_Error (File : System.Address; Line : Integer);
    pragma No_Return (Raise_Constraint_Error);
+   pragma Machine_Attribute (Raise_Constraint_Error, "expected_throw");
    pragma Export (C, Raise_Constraint_Error, "__gnat_raise_constraint_error");
    --  Raise constraint error with file:line information
 
@@ -330,12 +338,14 @@ package body Ada.Exceptions is
       Column : Integer;
       Msg    : System.Address);
    pragma No_Return (Raise_Constraint_Error_Msg);
+   pragma Machine_Attribute (Raise_Constraint_Error_Msg, "expected_throw");
    pragma Export
      (C, Raise_Constraint_Error_Msg, "__gnat_raise_constraint_error_msg");
    --  Raise constraint error with file:line:col + msg information
 
    procedure Raise_Program_Error (File : System.Address; Line : Integer);
    pragma No_Return (Raise_Program_Error);
+   pragma Machine_Attribute (Raise_Program_Error, "expected_throw");
    pragma Export (C, Raise_Program_Error, "__gnat_raise_program_error");
    --  Raise program error with file:line information
 
@@ -344,12 +354,14 @@ package body Ada.Exceptions is
       Line : Integer;
       Msg  : System.Address);
    pragma No_Return (Raise_Program_Error_Msg);
+   pragma Machine_Attribute (Raise_Program_Error_Msg, "expected_throw");
    pragma Export
      (C, Raise_Program_Error_Msg, "__gnat_raise_program_error_msg");
    --  Raise program error with file:line + msg information
 
    procedure Raise_Storage_Error (File : System.Address; Line : Integer);
    pragma No_Return (Raise_Storage_Error);
+   pragma Machine_Attribute (Raise_Storage_Error, "expected_throw");
    pragma Export (C, Raise_Storage_Error, "__gnat_raise_storage_error");
    --  Raise storage error with file:line information
 
@@ -358,6 +370,7 @@ package body Ada.Exceptions is
       Line : Integer;
       Msg  : System.Address);
    pragma No_Return (Raise_Storage_Error_Msg);
+   pragma Machine_Attribute (Raise_Storage_Error_Msg, "expected_throw");
    pragma Export
      (C, Raise_Storage_Error_Msg, "__gnat_raise_storage_error_msg");
    --  Raise storage error with file:line + reason msg information
@@ -385,6 +398,7 @@ package body Ada.Exceptions is
 
    procedure Reraise;
    pragma No_Return (Reraise);
+   pragma Machine_Attribute (Reraise, "expected_throw");
    pragma Export (C, Reraise, "__gnat_reraise");
    --  Reraises the exception referenced by the Current_Excep field
    --  of the TSD (all fields of this exception occurrence are set).
@@ -631,6 +645,96 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_CE_Index_Check_Ext);
    pragma No_Return (Rcheck_CE_Invalid_Data_Ext);
    pragma No_Return (Rcheck_CE_Range_Check_Ext);
+
+   --  These procedures are all expected to raise an exception.
+   --  These attributes are not visible to callers; they are made
+   --  visible in trans.c:build_raise_check.
+
+   pragma Machine_Attribute (Rcheck_CE_Access_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Null_Access_Parameter,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Discriminant_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Divide_By_Zero,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Explicit_Raise,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Index_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Invalid_Data,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Length_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Null_Exception_Id,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Null_Not_Allowed,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Overflow_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Partition_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Range_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Tag_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Access_Before_Elaboration,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Accessibility_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Address_Of_Intrinsic,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Aliased_Parameters,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_All_Guards_Closed,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Bad_Predicated_Generic_Type,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Build_In_Place_Mismatch,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Current_Task_In_Entry_Body,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Duplicated_Entry_Address,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Explicit_Raise,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Implicit_Return,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Misaligned_Address_Value,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Missing_Return,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Non_Transportable_Actual,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Overlaid_Controlled_Object,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Potentially_Blocking_Operation,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Stream_Operation_Not_Allowed,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Stubbed_Subprogram_Called,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Unchecked_Union_Restriction,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Finalize_Raised_Exception,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_SE_Empty_Storage_Pool,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_SE_Explicit_Raise,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_SE_Infinite_Recursion,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_SE_Object_Too_Large,
+                             "expected_throw");
+
+   pragma Machine_Attribute (Rcheck_CE_Access_Check_Ext,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Index_Check_Ext,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Invalid_Data_Ext,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_CE_Range_Check_Ext,
+                             "expected_throw");
 
    --  Make all of these procedures callable from strub contexts.
    --  These attributes are not visible to callers; they are made

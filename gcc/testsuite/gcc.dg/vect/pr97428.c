@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_double } */
 
 typedef struct { double re, im; } dcmlx_t;
 typedef struct { double re[4], im[4]; } dcmlx4_t;

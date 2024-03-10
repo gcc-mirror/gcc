@@ -97,17 +97,20 @@ main ()
     }
   f1 ();
   f2 ();
+#pragma GCC novector
   for (i = 0; i < 8; i++)
     if (a[i] != b[i] / 8 || c[i] != d[i] / 3)
       abort ();
   f3 ();
   f4 ();
+#pragma GCC novector
   for (i = 0; i < 8; i+= 2)
     if (a[i] != b[i] / 8 || a[i + 1] != b[i + 1] / 4
 	|| c[i] != d[i] / 3 || c[i + 1] != d[i + 1] / 5)
       abort ();
   f5 ();
   f6 ();
+#pragma GCC novector
   for (i = 0; i < 8; i+= 2)
     if (a[i] != b[i] / 14 || a[i + 1] != b[i + 1] / 15
 	|| c[i] != d[i] / (i == 6 ? 13 : 6) || c[i + 1] != d[i + 1] / 5)

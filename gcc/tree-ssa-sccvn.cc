@@ -3299,11 +3299,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    return (void *)-1;
 	  break;
 	case IFN_LEN_STORE:
-	  len = gimple_call_arg (call, 2);
-	  bias = gimple_call_arg (call, 4);
-	  if (!tree_fits_uhwi_p (len) || !tree_fits_shwi_p (bias))
-	    return (void *)-1;
-	  break;
+	  {
+	    int len_index = internal_fn_len_index (fn);
+	    len = gimple_call_arg (call, len_index);
+	    bias = gimple_call_arg (call, len_index + 1);
+	    if (!tree_fits_uhwi_p (len) || !tree_fits_shwi_p (bias))
+	      return (void *) -1;
+	    break;
+	  }
 	default:
 	  return (void *)-1;
 	}
@@ -6594,7 +6597,24 @@ eliminate_dom_walker::eliminate_avail (basic_block, tree op)
       if (SSA_NAME_IS_DEFAULT_DEF (valnum))
 	return valnum;
       if (avail.length () > SSA_NAME_VERSION (valnum))
-	return avail[SSA_NAME_VERSION (valnum)];
+	{
+	  tree av = avail[SSA_NAME_VERSION (valnum)];
+	  /* When PRE discovers a new redundancy there's no way to unite
+	     the value classes so it instead inserts a copy old-val = new-val.
+	     Look through such copies here, providing one more level of
+	     simplification at elimination time.  */
+	  gassign *ass;
+	  if (av && (ass = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (av))))
+	    if (gimple_assign_rhs_class (ass) == GIMPLE_SINGLE_RHS)
+	      {
+		tree rhs1 = gimple_assign_rhs1 (ass);
+		if (CONSTANT_CLASS_P (rhs1)
+		    || (TREE_CODE (rhs1) == SSA_NAME
+			&& !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)))
+		  av = rhs1;
+	      }
+	  return av;
+	}
     }
   else if (is_gimple_min_invariant (valnum))
     return valnum;

@@ -5033,18 +5033,18 @@ get_ebb_head_tail (basic_block beg, basic_block end,
   *tailp = end_tail;
 }
 
-/* Return nonzero if there are no real insns in the range [ HEAD, TAIL ].  */
+/* Return true if there are no real insns in the range [ HEAD, TAIL ].  */
 
-int
+bool
 no_real_insns_p (const rtx_insn *head, const rtx_insn *tail)
 {
   while (head != NEXT_INSN (tail))
     {
       if (!NOTE_P (head) && !LABEL_P (head))
-	return 0;
+	return false;
       head = NEXT_INSN (head);
     }
-  return 1;
+  return true;
 }
 
 /* Restore-other-notes: NOTE_LIST is the end of a chain of notes
@@ -6624,7 +6624,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
   advance = 0;
 
   gcc_assert (scheduled_insns.length () == 0);
-  sort_p = TRUE;
+  sort_p = true;
   must_backtrack = false;
   modulo_insns_scheduled = 0;
 
@@ -6844,7 +6844,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
               break;
 	    }
 
-	  sort_p = TRUE;
+	  sort_p = true;
 
 	  if (current_sched_info->can_schedule_ready_p
 	      && ! (*current_sched_info->can_schedule_ready_p) (insn))

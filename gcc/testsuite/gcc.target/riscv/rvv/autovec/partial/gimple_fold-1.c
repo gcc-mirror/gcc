@@ -40,4 +40,4 @@ main ()
   RUN_ALL ()
 }
 
-/* { dg-final { scan-tree-dump-times "\.LEN_MASK_STORE" 6 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.MASK_LEN_STORE" 6 "optimized" } } */

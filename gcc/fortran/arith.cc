@@ -1120,6 +1120,11 @@ gfc_compare_expr (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 	    || (op1->value.logical && !op2->value.logical));
       break;
 
+    case BT_COMPLEX:
+      gcc_assert (op == INTRINSIC_EQ);
+      rc = mpc_cmp (op1->value.complex, op2->value.complex);
+      break;
+
     default:
       gfc_internal_error ("gfc_compare_expr(): Bad basic type");
     }

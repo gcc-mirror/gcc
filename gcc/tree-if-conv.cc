@@ -80,6 +80,7 @@ along with GCC; see the file COPYING3.  If not see
      <L18>:;
 */
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -231,6 +232,10 @@ struct bb_predicate {
      recorded here, in order to avoid the duplication of computations
      that occur in previous conditions.  See PR44483.  */
   gimple_seq predicate_gimplified_stmts;
+
+  /* Records the number of statements recorded into
+     PREDICATE_GIMPLIFIED_STMTS.   */
+  unsigned no_predicate_stmts;
 };
 
 /* Returns true when the basic block BB has a predicate.  */
@@ -254,10 +259,16 @@ bb_predicate (basic_block bb)
 static inline void
 set_bb_predicate (basic_block bb, tree cond)
 {
+  auto aux = (struct bb_predicate *) bb->aux;
   gcc_assert ((TREE_CODE (cond) == TRUTH_NOT_EXPR
 	       && is_gimple_val (TREE_OPERAND (cond, 0)))
 	      || is_gimple_val (cond));
-  ((struct bb_predicate *) bb->aux)->predicate = cond;
+  aux->predicate = cond;
+  aux->no_predicate_stmts++;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Recording block %d value %d\n", bb->index,
+	     aux->no_predicate_stmts);
 }
 
 /* Returns the sequence of statements of the gimplification of the
@@ -270,12 +281,16 @@ bb_predicate_gimplified_stmts (basic_block bb)
 }
 
 /* Sets the sequence of statements STMTS of the gimplification of the
-   predicate for basic block BB.  */
+   predicate for basic block BB.  If PRESERVE_COUNTS then don't clear the predicate
+   counts.  */
 
 static inline void
-set_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
+set_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts,
+				   bool preserve_counts)
 {
   ((struct bb_predicate *) bb->aux)->predicate_gimplified_stmts = stmts;
+  if (stmts == NULL && !preserve_counts)
+    ((struct bb_predicate *) bb->aux)->no_predicate_stmts = 0;
 }
 
 /* Adds the sequence of statements STMTS to the sequence of statements
@@ -296,9 +311,19 @@ add_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
       gimple *stmt = gsi_stmt (gsi);
       delink_stmt_imm_use (stmt);
       gimple_set_modified (stmt, true);
+      ((struct bb_predicate *) bb->aux)->no_predicate_stmts++;
     }
   gimple_seq_add_seq_without_update
     (&(((struct bb_predicate *) bb->aux)->predicate_gimplified_stmts), stmts);
+}
+
+/* Return the number of statements the predicate of the basic block consists
+   of.  */
+
+static inline unsigned
+get_bb_num_predicate_stmts (basic_block bb)
+{
+  return ((struct bb_predicate *) bb->aux)->no_predicate_stmts;
 }
 
 /* Initializes to TRUE the predicate of basic block BB.  */
@@ -307,7 +332,7 @@ static inline void
 init_bb_predicate (basic_block bb)
 {
   bb->aux = XNEW (struct bb_predicate);
-  set_bb_predicate_gimplified_stmts (bb, NULL);
+  set_bb_predicate_gimplified_stmts (bb, NULL, false);
   set_bb_predicate (bb, boolean_true_node);
 }
 
@@ -327,7 +352,7 @@ release_bb_predicate (basic_block bb)
 
       /* Discard them.  */
       gimple_seq_discard (stmts);
-      set_bb_predicate_gimplified_stmts (bb, NULL);
+      set_bb_predicate_gimplified_stmts (bb, NULL, false);
     }
 }
 
@@ -1870,12 +1895,44 @@ convert_scalar_cond_reduction (gimple *reduc, gimple_stmt_iterator *gsi,
   return rhs;
 }
 
+/* Generate a simplified conditional.  */
+
+static tree
+gen_simplified_condition (tree cond, scalar_cond_masked_set_type &cond_set)
+{
+  /* Check if the value is already live in a previous branch.  This resolves
+     nested conditionals from diamond PHI reductions.  */
+  if (TREE_CODE (cond) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (cond);
+      gassign *assign = NULL;
+      if ((assign = as_a <gassign *> (stmt))
+	   && gimple_assign_rhs_code (assign) == BIT_AND_EXPR)
+	{
+	  tree arg1 = gimple_assign_rhs1 (assign);
+	  tree arg2 = gimple_assign_rhs2 (assign);
+	  if (cond_set.contains ({ arg1, 1 }))
+	    arg1 = boolean_true_node;
+	  else
+	    arg1 = gen_simplified_condition (arg1, cond_set);
+
+	  if (cond_set.contains ({ arg2, 1 }))
+	    arg2 = boolean_true_node;
+	  else
+	    arg2 = gen_simplified_condition (arg2, cond_set);
+
+	  cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, arg1, arg2);
+	}
+    }
+  return cond;
+}
+
 /* Produce condition for all occurrences of ARG in PHI node.  Set *INVERT
    as to whether the condition is inverted.  */
 
 static tree
-gen_phi_arg_condition (gphi *phi, vec<int> *occur,
-		       gimple_stmt_iterator *gsi, bool *invert)
+gen_phi_arg_condition (gphi *phi, vec<int> *occur, gimple_stmt_iterator *gsi,
+		       scalar_cond_masked_set_type &cond_set, bool *invert)
 {
   int len;
   int i;
@@ -1902,6 +1959,8 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
 	  c = TREE_OPERAND (c, 0);
 	  *invert = true;
 	}
+
+      c = gen_simplified_condition (c, cond_set);
       c = force_gimple_operand_gsi (gsi, unshare_expr (c),
 				    true, NULL_TREE, true, GSI_SAME_STMT);
       if (cond != NULL_TREE)
@@ -1913,9 +1972,77 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
 	}
       else
 	cond = c;
+
+      /* Register the new possibly simplified conditional.  When more than 2
+	 entries in a phi node we chain entries in the false branch, so the
+	 inverted condition is active.  */
+      scalar_cond_masked_key pred_cond ({ cond, 1 });
+      if (!*invert)
+	pred_cond.inverted_p = !pred_cond.inverted_p;
+      cond_set.add (pred_cond);
     }
   gcc_assert (cond != NULL_TREE);
   return cond;
+}
+
+/* Create the smallest nested conditional possible.  On pre-order we record
+   which conditionals are live, and on post-order rewrite the chain by removing
+   already active conditions.
+
+   As an example we simplify:
+
+  _7 = a_10 < 0;
+  _21 = a_10 >= 0;
+  _22 = a_10 < e_11(D);
+  _23 = _21 & _22;
+  _ifc__42 = _23 ? t_13 : 0;
+  t_6 = _7 ? 1 : _ifc__42
+
+  into
+
+  _7 = a_10 < 0;
+  _22 = a_10 < e_11(D);
+  _ifc__42 = _22 ? t_13 : 0;
+  t_6 = _7 ? 1 : _ifc__42;
+
+  which produces better code.  */
+
+static tree
+gen_phi_nest_statement (gphi *phi, gimple_stmt_iterator *gsi,
+			scalar_cond_masked_set_type &cond_set, tree type,
+			hash_map<tree_operand_hash, auto_vec<int>> &phi_arg_map,
+			gimple **res_stmt, tree lhs0, vec<tree> &args,
+			unsigned idx)
+{
+  if (idx == args.length ())
+    return args[idx - 1];
+
+  vec<int> *indexes = phi_arg_map.get (args[idx - 1]);
+  bool invert;
+  tree cond = gen_phi_arg_condition (phi, indexes, gsi, cond_set, &invert);
+  tree arg1 = gen_phi_nest_statement (phi, gsi, cond_set, type, phi_arg_map,
+				      res_stmt, lhs0, args, idx + 1);
+
+  unsigned prev = idx;
+  unsigned curr = prev - 1;
+  tree arg0 = args[curr];
+  tree rhs, lhs;
+  if (idx > 1)
+    lhs = make_temp_ssa_name (type, NULL, "_ifc_");
+  else
+    lhs = lhs0;
+
+  if (invert)
+    rhs = fold_build_cond_expr (type, unshare_expr (cond),
+				arg1, arg0);
+  else
+    rhs = fold_build_cond_expr (type, unshare_expr (cond),
+				arg0, arg1);
+  gassign *new_stmt = gimple_build_assign (lhs, rhs);
+  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+  update_stmt (new_stmt);
+  *res_stmt = new_stmt;
+  return lhs;
 }
 
 /* Replace a scalar PHI node with a COND_EXPR using COND as condition.
@@ -1939,7 +2066,6 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
   tree rhs, res, arg0, arg1, op0, op1, scev;
   tree cond;
   unsigned int index0;
-  unsigned int max, args_len;
   edge e;
   basic_block bb;
   unsigned int i;
@@ -1968,6 +2094,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
     }
 
   bb = gimple_bb (phi);
+  /* Keep track of conditionals already seen.  */
+  scalar_cond_masked_set_type cond_set;
   if (EDGE_COUNT (bb->preds) == 2)
     {
       /* Predicate ordinary PHI node with 2 arguments.  */
@@ -1976,6 +2104,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       first_edge = EDGE_PRED (bb, 0);
       second_edge = EDGE_PRED (bb, 1);
       cond = bb_predicate (first_edge->src);
+      cond_set.add ({ cond, 1 });
       if (TREE_CODE (cond) == TRUTH_NOT_EXPR)
 	std::swap (first_edge, second_edge);
       if (EDGE_COUNT (first_edge->src->succs) > 1)
@@ -1988,7 +2117,9 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
 	}
       else
 	cond = bb_predicate (first_edge->src);
+
       /* Gimplify the condition to a valid cond-expr conditonal operand.  */
+      cond = gen_simplified_condition (cond, cond_set);
       cond = force_gimple_operand_gsi (gsi, unshare_expr (cond), true,
 				       NULL_TREE, true, GSI_SAME_STMT);
       true_bb = first_edge->src;
@@ -2038,7 +2169,6 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
   bool swap = false;
   hash_map<tree_operand_hash, auto_vec<int> > phi_arg_map;
   unsigned int num_args = gimple_phi_num_args (phi);
-  int max_ind = -1;
   /* Vector of different PHI argument values.  */
   auto_vec<tree> args (num_args);
 
@@ -2053,28 +2183,39 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       phi_arg_map.get_or_insert (arg).safe_push (i);
     }
 
-  /* Determine element with max number of occurrences.  */
-  max_ind = -1;
-  max = 1;
-  args_len = args.length ();
-  for (i = 0; i < args_len; i++)
+  /* Determine element with max number of occurrences and complexity.  Looking at only
+     number of occurrences as a measure for complexity isn't enough as all usages can
+     be unique but the comparisons to reach the PHI node differ per branch.  */
+  typedef std::pair <tree, std::pair <unsigned, unsigned>> ArgEntry;
+  auto_vec<ArgEntry> argsKV;
+  for (i = 0; i < args.length (); i++)
     {
-      unsigned int len;
-      if ((len = phi_arg_map.get (args[i])->length ()) > max)
+      unsigned int len = 0;
+      for (int index : phi_arg_map.get (args[i]))
 	{
-	  max_ind = (int) i;
-	  max = len;
+	  edge e = gimple_phi_arg_edge (phi, index);
+	  len += get_bb_num_predicate_stmts (e->src);
 	}
+
+      unsigned occur = phi_arg_map.get (args[i])->length ();
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Ranking %d as len=%d, idx=%d\n", i, len, occur);
+      argsKV.safe_push ({ args[i], { len, occur }});
     }
 
-  /* Put element with max number of occurences to the end of ARGS.  */
-  if (max_ind != -1 && max_ind + 1 != (int) args_len)
-    std::swap (args[args_len - 1], args[max_ind]);
+  /* Sort elements based on rankings ARGS.  */
+  std::sort(argsKV.begin(), argsKV.end(), [](const ArgEntry &left,
+					     const ArgEntry &right) {
+    return left.second < right.second;
+  });
+
+  for (i = 0; i < args.length (); i++)
+    args[i] = argsKV[i].first;
 
   /* Handle one special case when number of arguments with different values
      is equal 2 and one argument has the only occurrence.  Such PHI can be
      handled as if would have only 2 arguments.  */
-  if (args_len == 2 && phi_arg_map.get (args[0])->length () == 1)
+  if (args.length () == 2 && phi_arg_map.get (args[0])->length () == 1)
     {
       vec<int> *indexes;
       indexes = phi_arg_map.get (args[0]);
@@ -2110,31 +2251,9 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
   else
     {
       /* Common case.  */
-      vec<int> *indexes;
       tree type = TREE_TYPE (gimple_phi_result (phi));
-      tree lhs;
-      arg1 = args[args_len - 1];
-      for (i = args_len - 1; i > 0; i--)
-	{
-	  arg0 = args[i - 1];
-	  indexes = phi_arg_map.get (args[i - 1]);
-	  if (i != 1)
-	    lhs = make_temp_ssa_name (type, NULL, "_ifc_");
-	  else
-	    lhs = res;
-	  bool invert;
-	  cond = gen_phi_arg_condition (phi, indexes, gsi, &invert);
-	  if (invert)
-	    rhs = fold_build_cond_expr (type, unshare_expr (cond),
-					arg1, arg0);
-	  else
-	    rhs = fold_build_cond_expr (type, unshare_expr (cond),
-					arg0, arg1);
-	  new_stmt = gimple_build_assign (lhs, rhs);
-	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
-	  update_stmt (new_stmt);
-	  arg1 = lhs;
-	}
+      gen_phi_nest_statement (phi, gsi, cond_set, type, phi_arg_map,
+			      &new_stmt, res, args, 1);
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2232,7 +2351,7 @@ insert_gimplified_predicates (loop_p loop)
 	    }
 
 	  /* Once the sequence is code generated, set it to NULL.  */
-	  set_bb_predicate_gimplified_stmts (bb, NULL);
+	  set_bb_predicate_gimplified_stmts (bb, NULL, true);
 	}
     }
 }

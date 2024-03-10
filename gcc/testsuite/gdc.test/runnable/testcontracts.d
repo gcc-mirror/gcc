@@ -936,7 +936,7 @@ void test9383()
 
 /*******************************************/
 // https://issues.dlang.org/show_bug.cgi?id=15524
-// Different from issue 9383 cases, closed variable size is bigger than REGSIZE.
+// Different from https://issues.dlang.org/show_bug.cgi?id=9383 cases, closed variable size is bigger than REGSIZE.
 
 class A15524
 {
