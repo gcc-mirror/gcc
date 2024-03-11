@@ -1156,7 +1156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       size_type
       erase(const key_type& __x)
-      { return _M_t.erase(__x); }
+      { return _M_t._M_erase_unique(__x); }
 
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
