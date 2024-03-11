@@ -1,3 +1,33 @@
+2024-03-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/112285
+	PR d/112290
+	* gdc.dg/pr112285.d: New test.
+	* gdc.dg/pr112290.d: New test.
+
+2024-03-10  jlaw  <jeffreyalaw@gmail.com>
+
+	PR tree-optimization/110199
+	* gcc.dg/tree-ssa/minmax-27.c: New test.
+	* gcc.dg/tree-ssa/minmax-28.c: New test.
+
+2024-03-10  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr114195-1.c: New test.
+
+2024-03-10  jlaw  <jeffreyalaw@gmail.com>
+
+	Revert:
+	2024-01-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/sh/pr59533-1.c: Adjust expected output.
+
+2024-03-10  jlaw  <jeffreyalaw@gmail.com>
+
+	PR target/111362
+	* gcc.target/riscv/compare-debug-1.c: New test.
+	* gcc.target/riscv/compare-debug-2.c: New test.
+
 2024-03-09  Xi Ruoyao  <xry111@xry111.site>
 
 	* gcc.target/loongarch/tls-ie-relax.c: New test.

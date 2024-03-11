@@ -1,3 +1,29 @@
+2024-03-10  jlaw  <jeffreyalaw@gmail.com>
+
+	PR tree-optimization/110199
+	* tree-ssa-scopedtables.cc
+	(avail_exprs_stack::simplify_binary_operation): Generalize handling
+	of MIN_EXPR/MAX_EXPR to allow additional simplifications.  Canonicalize
+	comparison operands for other cases.
+
+2024-03-10  Pan Li  <pan2.li@intel.com>
+
+	* tree-vect-stmts.cc (vectorizable_store): Enable the assert
+	during transform process.
+	(vectorizable_load): Ditto.
+
+2024-03-10  jlaw  <jeffreyalaw@gmail.com>
+
+	PR target/102250
+	* doc/install.texi: Document need for python when building
+	RISC-V compilers.
+
+2024-03-10  jlaw  <jeffreyalaw@gmail.com>
+
+	PR target/111362
+	* mode-switching.cc (optimize_mode_switching): Only process
+	NONDEBUG insns.
+
 2024-03-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md: Fix typos in comment, indentation glitches
