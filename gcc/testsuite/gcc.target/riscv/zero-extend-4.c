@@ -18,4 +18,4 @@ f(void)
 	d->binmap[0] = e;
     }
 }
-/* { dg-final { scan-assembler-times "sext.w" 0 } } */
+/* { dg-final { scan-assembler-times {\msext\.w\M} 0 } } */

@@ -4,7 +4,7 @@ TEST_OUTPUT:
 fail_compilation/fail61.d(22): Error: no property `B` for type `fail61.A.B`
 fail_compilation/fail61.d(23): Error: no property `B` for type `fail61.A.B`
 fail_compilation/fail61.d(32): Error: no property `A2` for type `fail61.B2`
-fail_compilation/fail61.d(41): Error: need `this` for `foo` of type `void()`
+fail_compilation/fail61.d(41): Error: calling non-static function `foo` requires an instance of type `B3`
 ---
 */
 

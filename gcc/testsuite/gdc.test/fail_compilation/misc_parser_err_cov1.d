@@ -17,7 +17,7 @@ fail_compilation/misc_parser_err_cov1.d(38): Error: template argument expected f
 fail_compilation/misc_parser_err_cov1.d(38): Error: missing closing `)` after `if (parseShift!()`
 fail_compilation/misc_parser_err_cov1.d(38): Error: found `)` when expecting `(`
 fail_compilation/misc_parser_err_cov1.d(39): Error: missing closing `)` after `if (`
-fail_compilation/misc_parser_err_cov1.d(39): Error: identifier expected following `(type)`.
+fail_compilation/misc_parser_err_cov1.d(39): Error: identifier expected following `immutable(int).`, not `+`
 fail_compilation/misc_parser_err_cov1.d(39): Error: expression expected, not `;`
 fail_compilation/misc_parser_err_cov1.d(40): Error: semicolon expected following auto declaration, not `auto`
 fail_compilation/misc_parser_err_cov1.d(40): Error: identifier or `new` expected following `.`, not `+`

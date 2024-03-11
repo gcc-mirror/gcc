@@ -18,11 +18,11 @@ import dmd.identifier;
 import dmd.location;
 
 // Used in isIncrementOrDecrement
-private static const StringExp plusPlus, minusMinus;
+private const StringExp plusPlus, minusMinus;
 
 // Loc.initial cannot be used in static initializers, so
 // these need a static constructor.
-static this()
+shared static this()
 {
     plusPlus = new StringExp(Loc.initial, "++");
     minusMinus = new StringExp(Loc.initial, "--");

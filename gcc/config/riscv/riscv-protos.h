@@ -250,6 +250,18 @@ enum insn_flags : unsigned int
   /* flags for the floating-point rounding mode.  */
   /* Means INSN has FRM operand and the value is FRM_DYN.  */
   FRM_DYN_P = 1 << 15,
+
+  /* Means INSN has FRM operand and the value is FRM_RUP.  */
+  FRM_RUP_P = 1 << 16,
+
+  /* Means INSN has FRM operand and the value is FRM_RDN.  */
+  FRM_RDN_P = 1 << 17,
+
+  /* Means INSN has FRM operand and the value is FRM_RMM.  */
+  FRM_RMM_P = 1 << 18,
+
+  /* Means INSN has FRM operand and the value is FRM_RNE.  */
+  FRM_RNE_P = 1 << 19,
 };
 
 enum insn_type : unsigned int
@@ -290,6 +302,11 @@ enum insn_type : unsigned int
   UNARY_OP_TAMA = __MASK_OP_TAMA | UNARY_OP_P,
   UNARY_OP_TAMU = __MASK_OP_TAMU | UNARY_OP_P,
   UNARY_OP_FRM_DYN = UNARY_OP | FRM_DYN_P,
+  UNARY_OP_TAMU_FRM_DYN = UNARY_OP_TAMU | FRM_DYN_P,
+  UNARY_OP_TAMU_FRM_RUP = UNARY_OP_TAMU | FRM_RUP_P,
+  UNARY_OP_TAMU_FRM_RDN = UNARY_OP_TAMU | FRM_RDN_P,
+  UNARY_OP_TAMU_FRM_RMM = UNARY_OP_TAMU | FRM_RMM_P,
+  UNARY_OP_TAMU_FRM_RNE = UNARY_OP_TAMU | FRM_RNE_P,
 
   /* Binary operator.  */
   BINARY_OP = __NORMAL_OP | BINARY_OP_P,
@@ -337,6 +354,7 @@ enum insn_type : unsigned int
 
   /* For vreduce, no mask policy operand. */
   REDUCE_OP = __NORMAL_OP_TA | BINARY_OP_P | VTYPE_MODE_FROM_OP1_P,
+  REDUCE_OP_M = __MASK_OP_TA | BINARY_OP_P | VTYPE_MODE_FROM_OP1_P,
   REDUCE_OP_FRM_DYN = REDUCE_OP | FRM_DYN_P | VTYPE_MODE_FROM_OP1_P,
   REDUCE_OP_M_FRM_DYN
   = __MASK_OP_TA | BINARY_OP_P | FRM_DYN_P | VTYPE_MODE_FROM_OP1_P,
@@ -364,10 +382,27 @@ enum vlmul_type
   NUM_LMUL = 8
 };
 
+/* The RISC-V vsetvli pass uses "known vlmax" operations for optimization.
+   Whether or not an instruction actually is a vlmax operation is not
+   recognizable from the length operand alone but the avl_type operand
+   is used instead.  In general, there are two cases:
+
+    - Emit a vlmax operation by calling emit_vlmax_insn[_lra].  Here we emit
+      a vsetvli with vlmax configuration and set the avl_type to VLMAX for
+      VLA modes or VLS for VLS modes.
+    - Emit an operation that uses the existing (last-set) length and
+      set the avl_type to NONVLMAX.
+
+    Sometimes we also need to set the VLMAX or VLS avl_type to an operation that
+    already uses a given length register.  This can happen during or after
+    register allocation when we are not allowed to create a new register.
+    For that case we also allow to set the avl_type to VLMAX or VLS.
+*/
 enum avl_type
 {
-  NONVLMAX,
-  VLMAX,
+  NONVLMAX = 0,
+  VLMAX = 1,
+  VLS = 2,
 };
 /* Routines implemented in riscv-vector-builtins.cc.  */
 void init_builtins (void);
@@ -432,6 +467,13 @@ bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void expand_cond_len_unop (unsigned, rtx *);
 void expand_cond_len_binop (unsigned, rtx *);
 void expand_reduction (unsigned, unsigned, rtx *, rtx);
+void expand_vec_ceil (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_floor (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_nearbyint (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_rint (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_round (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_trunc (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_roundeven (rtx, rtx, machine_mode, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
@@ -462,6 +504,9 @@ void expand_cond_len_ternop (unsigned, rtx *);
 void prepare_ternary_operands (rtx *);
 void expand_lanes_load_store (rtx *, bool);
 void expand_fold_extract_last (rtx *);
+void expand_cond_unop (unsigned, rtx *);
+void expand_cond_binop (unsigned, rtx *);
+void expand_cond_ternop (unsigned, rtx *);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode

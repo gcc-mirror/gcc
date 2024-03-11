@@ -64,7 +64,7 @@ nothrow:
         this.messageStyle = messageStyle;
     }
 
-    extern (D) this(const(char)* filename, uint linnum, uint charnum)
+    extern (D) this(const(char)* filename, uint linnum, uint charnum) @safe
     {
         this._linnum = linnum;
         this._charnum = cast(ushort) charnum;
@@ -108,7 +108,7 @@ nothrow:
      * Params:
      *   name = file name for location, null for no file name
      */
-    extern (C++) void filename(const(char)* name)
+    extern (C++) void filename(const(char)* name) @trusted
     {
         if (name)
         {
@@ -205,7 +205,7 @@ nothrow:
      * Returns:
      *   true if Loc has been set to other than the default initialization
      */
-    bool isValid() const pure
+    bool isValid() const pure @safe
     {
         return fileIndex != 0;
     }

@@ -3769,6 +3769,13 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
     {
       if (hi != ohi)
 	{
+	  /* Work around maybe_convert_nontype_argument not doing this for
+	     dependent arguments.  Don't use IMPLICIT_CONV_EXPR_NONTYPE_ARG
+	     because that will make tsubst_copy_and_build ignore it.  */
+	  tree type = tsubst (TREE_TYPE (ohi), args, complain, in_decl);
+	  if (!TREE_TYPE (hi) || !same_type_p (type, TREE_TYPE (hi)))
+	    hi = build1 (IMPLICIT_CONV_EXPR, type, hi);
+
 	  call = copy_node (call);
 	  CALL_EXPR_ARG (call, 0) = hi;
 	}
@@ -3779,8 +3786,6 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
     }
   else
     {
-      hi = perform_implicit_conversion_flags (integer_type_node, hi, complain,
-					      LOOKUP_IMPLICIT);
       hi = instantiate_non_dependent_expr (hi, complain);
       hi = cxx_constant_value (hi, complain);
       int len = valid_constant_size_p (hi) ? tree_to_shwi (hi) : -1;
@@ -8361,7 +8366,7 @@ canonicalize_expr_argument (tree arg, tsubst_flags_t complain)
    constrained than the parameter.  */
 
 static bool
-is_compatible_template_arg (tree parm, tree arg)
+is_compatible_template_arg (tree parm, tree arg, tree args)
 {
   tree parm_cons = get_constraints (parm);
 
@@ -8382,6 +8387,7 @@ is_compatible_template_arg (tree parm, tree arg)
     {
       tree aparms = DECL_INNERMOST_TEMPLATE_PARMS (arg);
       new_args = template_parms_level_to_args (aparms);
+      new_args = add_to_template_args (args, new_args);
       ++processing_template_decl;
       parm_cons = tsubst_constraint_info (parm_cons, new_args,
 					  tf_none, NULL_TREE);
@@ -8636,7 +8642,7 @@ convert_template_argument (tree parm,
               // Check that the constraints are compatible before allowing the
               // substitution.
               if (val != error_mark_node)
-                if (!is_compatible_template_arg (parm, arg))
+		if (!is_compatible_template_arg (parm, arg, args))
                   {
 		    if (in_decl && (complain & tf_error))
                       {
@@ -19912,13 +19918,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 				    templated_operator_saved_lookups (t),
 				    complain));
 
-    case ANNOTATE_EXPR:
-      tmp = RECUR (TREE_OPERAND (t, 0));
-      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
-			  TREE_TYPE (tmp), tmp,
-			  RECUR (TREE_OPERAND (t, 1)),
-			  RECUR (TREE_OPERAND (t, 2))));
-
     case PREDICT_EXPR:
       RETURN (add_stmt (copy_node (t)));
 
@@ -21866,6 +21865,13 @@ tsubst_copy_and_build (tree t,
 	  }
 	RETURN (op);
       }
+
+    case ANNOTATE_EXPR:
+      op1 = RECUR (TREE_OPERAND (t, 0));
+      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
+			  TREE_TYPE (op1), op1,
+			  RECUR (TREE_OPERAND (t, 1)),
+			  RECUR (TREE_OPERAND (t, 2))));
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */

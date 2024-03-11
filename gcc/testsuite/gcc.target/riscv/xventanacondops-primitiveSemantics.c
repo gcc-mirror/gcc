@@ -6,5 +6,5 @@
 
 /* { dg-final { scan-assembler-times "vt\\.maskc\t" 6 } } */
 /* { dg-final { scan-assembler-times "vt\\.maskcn\t" 6 } } */
-/* { dg-final { scan-assembler-not "beq" } } */
-/* { dg-final { scan-assembler-not "bne" } } */
+/* { dg-final { scan-assembler-not {\mbeq} } } */
+/* { dg-final { scan-assembler-not {\mbne} } } */

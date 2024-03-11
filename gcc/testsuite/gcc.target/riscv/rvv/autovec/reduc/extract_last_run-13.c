@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=fixed-vlmax -fno-vect-cost-model" } */
 
 #include "extract_last-13.c"

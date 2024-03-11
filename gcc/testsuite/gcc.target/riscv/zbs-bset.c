@@ -39,4 +39,4 @@ sub4 (long i)
 
 /* { dg-final { scan-assembler-times "bset\t" 4 } } */
 /* { dg-final { scan-assembler-times "bseti\t" 1 } } */
-/* { dg-final { scan-assembler-not "andi" } } */
+/* { dg-final { scan-assembler-not {\mandi} } } */

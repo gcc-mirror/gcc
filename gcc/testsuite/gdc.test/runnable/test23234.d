@@ -1,12 +1,5 @@
 // https://issues.dlang.org/show_bug.cgi?id=23234
 
-/*
-TEST_OUTPUT:
----
-runnable/test23234.d(17): Deprecation: alias this for classes/interfaces is deprecated
----
-*/
-
 class Bar
 {
 }

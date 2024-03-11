@@ -123,7 +123,7 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	    return;
 
 	  OutBuffer buf;
-	  mangleToBuffer (fd->type, &buf);
+	  mangleToBuffer (fd->type, buf);
 	  tdeco = buf.extractChars ();
 	}
 

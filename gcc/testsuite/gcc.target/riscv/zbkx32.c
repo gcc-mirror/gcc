@@ -14,5 +14,5 @@ uint32_t foo4(uint32_t rs1, uint32_t rs2)
     return __builtin_riscv_xperm4(rs1, rs2);
 }
 
-/* { dg-final { scan-assembler-times "xperm8" 1 } } */
-/* { dg-final { scan-assembler-times "xperm4" 1 } } */
+/* { dg-final { scan-assembler-times {\mxperm8} 1 } } */
+/* { dg-final { scan-assembler-times {\mxperm4} 1 } } */

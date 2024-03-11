@@ -5048,9 +5048,11 @@ package body Sem_Ch3 is
             Apply_Length_Check (E, T);
          end if;
 
-      --  When possible, build the default subtype
+      --  When possible, and not a deferred constant, build the default subtype
 
-      elsif Build_Default_Subtype_OK (T) then
+      elsif Build_Default_Subtype_OK (T)
+        and then (not Constant_Present (N) or else Present (E))
+      then
          if No (E) then
             Act_T := Build_Default_Subtype (T, N);
          else

@@ -193,7 +193,7 @@ class Lexer
     /******************
      * Used for unittests for a mock Lexer
      */
-    this(ErrorSink errorSink) scope { assert(errorSink); this.eSink = errorSink; }
+    this(ErrorSink errorSink) scope @safe { assert(errorSink); this.eSink = errorSink; }
 
     /**************************************
      * Reset lexer to lex #define's

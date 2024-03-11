@@ -14,9 +14,9 @@ d2ll (double d)
   return *(long long*)&d;
 }
 
-/* { dg-final { scan-assembler "fmv.w.x" } } */
+/* { dg-final { scan-assembler {\mfmv\.w.x\M} } } */
 /* { dg-final { scan-assembler "th.fmv.hw.x" } } */
-/* { dg-final { scan-assembler "fmv.x.w" } } */
+/* { dg-final { scan-assembler {\mfmv\.x.w\M} } } */
 /* { dg-final { scan-assembler "th.fmv.x.hw" } } */
 /* { dg-final { scan-assembler-not "\tsw\t" } } */
 /* { dg-final { scan-assembler-not "\tfld\t" } } */

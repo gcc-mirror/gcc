@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail144.d(13): Error: `"message"`
+fail_compilation/fail144.d(13): Error: message
 fail_compilation/fail144.d(26):        called from here: `bar(7)`
 ---
 */

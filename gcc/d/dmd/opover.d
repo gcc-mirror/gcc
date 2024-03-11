@@ -43,7 +43,7 @@ import dmd.visitor;
  * Determine if operands of binary op can be reversed
  * to fit operator overload.
  */
-bool isCommutative(EXP op)
+bool isCommutative(EXP op) @safe
 {
     switch (op)
     {
@@ -1840,7 +1840,7 @@ private bool matchParamsToOpApply(TypeFunction tf, Parameters* parameters, bool 
  * Returns:
  *      reverse of op
  */
-private EXP reverseRelation(EXP op) pure
+private EXP reverseRelation(EXP op) pure @safe
 {
     switch (op)
     {

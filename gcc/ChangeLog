@@ -1,3 +1,497 @@
+2023-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111614
+	* tree-ssa-reassoc.cc (undistribute_bitref_for_vector): Properly
+	convert the first vector when required.
+
+2023-09-28  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111533
+	* config/riscv/riscv-v.cc (expand_const_vector): Fix bug.
+	* config/riscv/riscv-vsetvl.cc (anticipatable_occurrence_p): Fix bug.
+
+2023-09-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gimple.cc (gimple_copy): Add case GIMPLE_OMP_STRUCTURED_BLOCK.
+
+2023-09-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/111610
+	* configure: Regenerate.
+	* configure.ac: Rename the missing dsymutil case to "DET_UNKNOWN".
+
+2023-09-27  Manos Anagnostakis  <manos.anagnostakis@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* config/aarch64/aarch64-opts.h (enum aarch64_ldp_policy): New
+	enum type.
+	(enum aarch64_stp_policy): New enum type.
+	* config/aarch64/aarch64-protos.h (struct tune_params): Add
+	appropriate enums for the policies.
+	(aarch64_mem_ok_with_ldpstp_policy_model): New declaration.
+	* config/aarch64/aarch64-tuning-flags.def
+	(AARCH64_EXTRA_TUNING_OPTION): Remove superseded tuning
+	options.
+	* config/aarch64/aarch64.cc (aarch64_parse_ldp_policy): New
+	function to parse ldp-policy parameter.
+	(aarch64_parse_stp_policy): New function to parse stp-policy parameter.
+	(aarch64_override_options_internal): Call parsing functions.
+	(aarch64_mem_ok_with_ldpstp_policy_model): New function.
+	(aarch64_operands_ok_for_ldpstp): Add call to
+	aarch64_mem_ok_with_ldpstp_policy_model for parameter-value
+	check and alignment check and remove superseded ones.
+	(aarch64_operands_adjust_ok_for_ldpstp): Add call to
+	aarch64_mem_ok_with_ldpstp_policy_model for parameter-value
+	check and alignment check and remove superseded ones.
+	* config/aarch64/aarch64.opt (aarch64-ldp-policy): New param.
+	(aarch64-stp-policy): New param.
+	* doc/invoke.texi: Document the parameters accordingly.
+
+2023-09-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-data-ref.cc (include calls.h): Add new include.
+	(get_references_in_stmt): Correctly handle IFN_MASK_CALL.
+
+2023-09-27  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (abs (copysign (x, y)) -> abs (x)): New pattern.
+
+2023-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105606
+	* system.h (BROKEN_VALUE_INITIALIZATION): Don't define.
+	* vec.h (vec_default_construct): Remove BROKEN_VALUE_INITIALIZATION
+	workaround.
+	* function.cc (assign_parm_find_data_types): Likewise.
+
+2023-09-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (roundeven<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_flags): New enum type.
+	(enum insn_type): Ditto.
+	(expand_vec_roundeven): New func decl.
+	* config/riscv/riscv-v.cc (expand_vec_roundeven): New func impl.
+
+2023-09-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111590
+	* dse.cc (find_shift_sequence): Check the mode with access_size exist on the target.
+
+2023-09-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-if-conv.cc (is_cond_scalar_reduction): Fix comments.
+
+2023-09-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (btrunc<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (expand_vec_trunc): New func decl.
+	* config/riscv/riscv-v.cc (emit_vec_cvt_x_f_rtz): New func impl.
+	(expand_vec_trunc): Ditto.
+
+2023-09-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/107567
+	PR target/109166
+	* builtins.cc (expand_builtin) <case BUILT_IN_ATOMIC_TEST_AND_SET>:
+	Handle failure from expand_builtin_atomic_test_and_set.
+	* optabs.cc (expand_atomic_test_and_set): When all attempts fail to
+	generate atomic code through target support, return NULL
+	instead of emitting non-atomic code.  Also, for code handling
+	targetm.atomic_test_and_set_trueval != 1, gcc_assert result
+	from calling emit_store_flag_force instead of returning NULL.
+
+2023-09-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111599
+	* value-relation.cc (relation_oracle::valid_equivs): Ensure
+	ssa_name is valid.
+
+2023-09-26  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	PR tree-optimization/111456
+	* match.pd (`(A ==/!= B) & (A CMP C)`):
+	Support an optional cast on the second A.
+	(`(A ==/!= B) | (A CMP C)`): Likewise.
+
+2023-09-26  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111469
+	* tree-ssa-phiopt.cc (minmax_replacement): Fix
+	the assumption for the `non-diamond` handling cases
+	of diamond code.
+
+2023-09-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* match.pd: Optimize COND_ADD reduction pattern.
+
+2023-09-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR tree-optimization/111594
+	PR tree-optimization/110660
+	* match.pd: Optimize COND_LEN_ADD reduction.
+
+2023-09-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (round<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_flags): New enum type.
+	(enum insn_type): Ditto.
+	(expand_vec_round): New function decl.
+	* config/riscv/riscv-v.cc (expand_vec_round): New function impl.
+
+2023-09-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DARWIN_CC1_SPEC): Remove -dynamiclib.
+
+2023-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/111547
+	* doc/invoke.texi (-fopenmp): Mention C++11 [[omp::decl(...)]] syntax.
+	(-fopenmp-simd): Likewise. Clarify 'loop' directive semantic.
+
+2023-09-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (rint<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (expand_vec_rint): New function decl.
+	* config/riscv/riscv-v.cc (expand_vec_rint): New function impl.
+
+2023-09-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (nearbyint<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(expand_vec_nearbyint): New function decl.
+	* config/riscv/riscv-v.cc (expand_vec_nearbyint): New func impl.
+
+2023-09-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (gen_ceil_const_fp): Remove.
+	(get_fp_rounding_coefficient): Rename.
+	(gen_floor_const_fp): Remove.
+	(expand_vec_ceil): Take renamed func.
+	(expand_vec_floor): Ditto.
+
+2023-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/111497
+	* lra-constraints.cc (lra_constraints): Copy substituted
+	equivalence.
+	* lra.cc (lra): Change comment for calling unshare_all_rtl_again.
+
+2023-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-range-gori.cc (gori_compute::logical_combine): Add missing
+	return statement in the varying case.
+
+2023-09-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* doc/invoke.texi: Update -m[no-]explicit-relocs for r14-4160.
+
+2023-09-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110386
+	* gimple-ssa-backprop.cc (strip_sign_op_1): Remove ABSU_EXPR.
+
+2023-09-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111548
+	* config/riscv/riscv-vsetvl.cc (earliest_pred_can_be_fused_p): Bugfix
+
+2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111366
+	* config/rs6000/rs6000.cc (rs6000_update_ipa_fn_target_info): Skip
+	empty inline asm.
+
+2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111380
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Adopt
+	target_option_default_node when the callee has no option
+	attributes, also simplify the existing code accordingly.
+
+2023-09-25  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md (lasx_vecinit_merge_<LASX:mode>): New
+	pattern for vector construction.
+	(vec_set<mode>_internal): Ditto.
+	(lasx_xvinsgr2vr_<mode256_i_half>_internal): Ditto.
+	(lasx_xvilvl_<lasxfmt_f>_internal): Ditto.
+	* config/loongarch/loongarch.cc (loongarch_expand_vector_init):
+	Optimized the implementation of vector construction.
+	(loongarch_expand_vector_init_same): New function.
+	* config/loongarch/lsx.md (lsx_vilvl_<lsxfmt_f>_internal): New
+	pattern for vector construction.
+	(lsx_vreplvei_mirror_<lsxfmt_f>): New pattern for vector
+	construction.
+	(vec_concatv2df): Ditto.
+	(vec_concatv4sf): Ditto.
+
+2023-09-24  Pan Li  <pan2.li@intel.com>
+
+	PR target/111546
+	* config/riscv/riscv-v.cc
+	(expand_vector_init_merge_repeating_sequence): Bugfix
+
+2023-09-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111543
+	* match.pd (`(X & ~Y) & Y`, `(X | ~Y) | Y`): New patterns.
+
+2023-09-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md: Extend VLS modes
+	* config/riscv/vector-iterators.md: Ditto.
+
+2023-09-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md: Add VLS modes for conditional ABS/SQRT.
+
+2023-09-23  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (floor<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_flags): New enum type.
+	(enum insn_type): Ditto.
+	(expand_vec_floor): New function decl.
+	* config/riscv/riscv-v.cc (gen_floor_const_fp): New function impl.
+	(expand_vec_floor): Ditto.
+
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vec_float_cmp_mask): Refactor.
+	(emit_vec_float_cmp_mask): Rename.
+	(expand_vec_copysign): Ditto.
+	(emit_vec_copysign): Ditto.
+	(emit_vec_abs): New function impl.
+	(emit_vec_cvt_x_f): Ditto.
+	(emit_vec_cvt_f_x): Ditto.
+	(expand_vec_ceil): Ditto.
+
+2023-09-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Extend VLS modes.
+
+2023-09-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (gen_const_vector_dup): Use global expand function.
+	* config/riscv/vector.md (@vec_duplicate<mode>): Remove @.
+	(vec_duplicate<mode>): Ditto.
+
+2023-09-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Add VLS conditional patterns.
+	* config/riscv/riscv-protos.h (expand_cond_unop): Ditto.
+	(expand_cond_binop): Ditto.
+	(expand_cond_ternop): Ditto.
+	* config/riscv/riscv-v.cc (expand_cond_unop): Ditto.
+	(expand_cond_binop): Ditto.
+	(expand_cond_ternop): Ditto.
+
+2023-09-22  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111451
+	* config/riscv/riscv-v.cc (emit_vlmax_gather_insn): Optimization of vrgather.vv
+							into vrgatherei16.vv.
+
+2023-09-22  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_widen_reduc_plus_scal_<mode>):
+	New combine patterns.
+	* config/riscv/riscv-protos.h (enum insn_type): New insn_type.
+
+2023-09-22  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv-protos.h (enum avl_type): New VLS avl_type.
+	* config/riscv/riscv-v.cc (autovec_use_vlmax_p): Move comments.
+
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (ceil<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_flags): New enum type.
+	(enum insn_type): Ditto.
+	(expand_vec_ceil): New function decl.
+	* config/riscv/riscv-v.cc (gen_ceil_const_fp): New function impl.
+	(expand_vec_float_cmp_mask): Ditto.
+	(expand_vec_copysign): Ditto.
+	(expand_vec_ceil): Ditto.
+	* config/riscv/vector.md: Add VLS mode support.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS modes.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Extend VLS modes.
+
+2023-09-21  Lehua Ding  <lehua.ding@rivai.ai>
+	    Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/riscv-v.cc (emit_vlmax_insn): Adjust comments.
+	(emit_nonvlmax_insn): Adjust comments.
+	(emit_vlmax_insn_lra): Adjust comments.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*linux*): Set rust target_objs, and
+	target_has_targetrustm,
+	* config/t-linux (linux-rust.o): New rule.
+	* config/linux-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (i[34567]86-*-mingw* | x86_64-*-mingw*): Set
+	rust_target_objs and target_has_targetrustm.
+	* config/t-winnt (winnt-rust.o): New rule.
+	* config/winnt-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-fuchsia): Set tmake_rule, rust_target_objs,
+	and target_has_targetrustm.
+	* config/fuchsia-rust.cc: New file.
+	* config/t-fuchsia: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-vxworks*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-vxworks (vxworks-rust.o): New rule.
+	* config/vxworks-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-dragonfly*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-dragonfly (dragonfly-rust.o): New rule.
+	* config/dragonfly-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-solaris2*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-sol2 (sol2-rust.o): New rule.
+	* config/sol2-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-openbsd*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-openbsd (openbsd-rust.o): New rule.
+	* config/openbsd-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-netbsd*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-netbsd (netbsd-rust.o): New rule.
+	* config/netbsd-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-freebsd*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-freebsd (freebsd-rust.o): New rule.
+	* config/freebsd-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-darwin*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-darwin (darwin-rust.o): New rule.
+	* config/darwin-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/i386/t-i386 (i386-rust.o): New rule.
+	* config/i386/i386-rust.cc: New file.
+	* config/i386/i386-rust.h: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Document TARGET_RUST_OS_INFO.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Add @node for Rust language and ABI, and document
+	TARGET_RUST_CPU_INFO.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in (tm_rust_file_list, tm_rust_include_list, TM_RUST_H,
+	RUST_TARGET_DEF, RUST_TARGET_H, RUST_TARGET_OBJS): New variables.
+	(tm_rust.h, cs-tm_rust.h, default-rust.o,
+	rust/rust-target-hooks-def.h, s-rust-target-hooks-def-h): New rules.
+	(s-tm-texi): Also check timestamp on rust-target.def.
+	(generated_files): Add TM_RUST_H and rust-target-hooks-def.h.
+	(build/genhooks.o): Also depend on RUST_TARGET_DEF.
+	* config.gcc (tm_rust_file, rust_target_objs, target_has_targetrustm):
+	New variables.
+	* configure: Regenerate.
+	* configure.ac (tm_rust_file_list, tm_rust_include_list,
+	rust_target_objs): Add substitutes.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (targetrustm): Document.
+	(target_has_targetrustm): Document.
+	* genhooks.cc: Include rust/rust-target.def.
+	* config/default-rust.cc: New file.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110751
+	* config/riscv/autovec.md: Enable scratch rtx in ELSE operand.
+	* config/riscv/predicates.md (autovec_else_operand): New predicate.
+	* config/riscv/riscv-v.cc (get_else_operand): New function.
+	(expand_cond_len_unop): Adapt ELSE value.
+	(expand_cond_len_binop): Ditto.
+	(expand_cond_len_ternop): Ditto.
+	* config/riscv/riscv.cc (riscv_preferred_else_value): New function.
+	(TARGET_PREFERRED_ELSE_VALUE): New targethook.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111486
+	* config/riscv/riscv.cc (riscv_legitimize_move): Fix bug.
+
+2023-09-21  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/111355
+	* match.pd ((X + C) / N): Update pattern.
+
+2023-09-21  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* match.pd ((t * 2) / 2): Update to use overflow_free_p.
+
+2023-09-21  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111450
+	* config/riscv/constraints.md (c01): const_int 1.
+	(c02): const_int 2.
+	(c04): const_int 4.
+	(c08): const_int 8.
+	* config/riscv/predicates.md (vector_eew8_stride_operand): New predicate for stride operand.
+	(vector_eew16_stride_operand): Ditto.
+	(vector_eew32_stride_operand): Ditto.
+	(vector_eew64_stride_operand): Ditto.
+	* config/riscv/vector-iterators.md: New iterator for stride operand.
+	* config/riscv/vector.md: Add stride = element width constraint.
+
+2023-09-21  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/predicates.md (const_1_or_2_operand): Rename.
+	(const_1_or_4_operand): Ditto.
+	(vector_gs_scale_operand_16): Ditto.
+	(vector_gs_scale_operand_32): Ditto.
+	* config/riscv/vector-iterators.md: Adjust.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS modes.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+
 2023-09-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc (ssa_cache::merge_range): Change meaning

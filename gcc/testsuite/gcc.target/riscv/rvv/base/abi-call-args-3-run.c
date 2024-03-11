@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_v } } } */
 /* { dg-options "-O1 --param=riscv-vector-abi -Wno-psabi" } */
 /* { dg-additional-sources abi-call-args-3.c } */
 

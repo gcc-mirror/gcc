@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail25.d(14): Error: need `this` for `yuiop` of type `int`
+fail_compilation/fail25.d(14): Error: accessing non-static variable `yuiop` requires an instance of `Qwert`
 ---
 */
 

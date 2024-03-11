@@ -2,15 +2,24 @@
 REQUIRED_ARGS: -preview=systemVariables
 TEST_OUTPUT:
 ---
-fail_compilation/systemvariables.d(30): Error: cannot access `@system` variable `gInt` in @safe code
-fail_compilation/systemvariables.d(31): Error: cannot access `@system` variable `gInt` in @safe code
-fail_compilation/systemvariables.d(32): Error: cannot access `@system` variable `gArr` in @safe code
-fail_compilation/systemvariables.d(33): Error: cannot access `@system` variable `gArr` in @safe code
-fail_compilation/systemvariables.d(34): Error: cannot access `@system` variable `gInt` in @safe code
-fail_compilation/systemvariables.d(37): Error: cannot access `@system` variable `lSys` in @safe code
-fail_compilation/systemvariables.d(38): Error: cannot access `@system` variable `lSys` in @safe code
-fail_compilation/systemvariables.d(39): Error: cannot access `@system` variable `lSys` in @safe code
-fail_compilation/systemvariables.d(41): Error: cannot access `@system` variable `eInt` in @safe code
+fail_compilation/systemvariables.d(39): Error: cannot access `@system` variable `gInt` in @safe code
+fail_compilation/systemvariables.d(29):        `gInt` is declared here
+fail_compilation/systemvariables.d(40): Error: cannot access `@system` variable `gInt` in @safe code
+fail_compilation/systemvariables.d(29):        `gInt` is declared here
+fail_compilation/systemvariables.d(41): Error: cannot access `@system` variable `gArr` in @safe code
+fail_compilation/systemvariables.d(31):        `gArr` is declared here
+fail_compilation/systemvariables.d(42): Error: cannot access `@system` variable `gArr` in @safe code
+fail_compilation/systemvariables.d(31):        `gArr` is declared here
+fail_compilation/systemvariables.d(43): Error: cannot access `@system` variable `gInt` in @safe code
+fail_compilation/systemvariables.d(29):        `gInt` is declared here
+fail_compilation/systemvariables.d(46): Error: cannot access `@system` variable `lSys` in @safe code
+fail_compilation/systemvariables.d(45):        `lSys` is declared here
+fail_compilation/systemvariables.d(47): Error: cannot access `@system` variable `lSys` in @safe code
+fail_compilation/systemvariables.d(45):        `lSys` is declared here
+fail_compilation/systemvariables.d(48): Error: cannot access `@system` variable `lSys` in @safe code
+fail_compilation/systemvariables.d(45):        `lSys` is declared here
+fail_compilation/systemvariables.d(50): Error: cannot access `@system` variable `eInt` in @safe code
+fail_compilation/systemvariables.d(30):        `eInt` is declared here
 ---
 */
 

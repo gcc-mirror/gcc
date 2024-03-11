@@ -68,9 +68,10 @@
 #include <bits/stl_relops.h>
 #include <bits/stl_pair.h>
 
-#define __glibcxx_want_exchange_function
-#define __glibcxx_want_constexpr_algorithms
 #define __glibcxx_want_as_const
+#define __glibcxx_want_constexpr_algorithms
+#define __glibcxx_want_exchange_function
+#define __glibcxx_want_forward_like
 #define __glibcxx_want_integer_comparison_functions
 #define __glibcxx_want_to_underlying
 #define __glibcxx_want_unreachable

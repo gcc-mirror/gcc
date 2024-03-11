@@ -1,3 +1,14 @@
+2023-09-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111510
+	* gm2-compiler/M2GenGCC.mod (IsExportedGcc): Minor spacing changes.
+	(BuildTrashTreeFromInterface): Minor spacing changes.
+	* gm2-compiler/M2Options.mod (GetRuntimeModuleOverride): Call
+	string to generate a nul terminated C style string.
+	* gm2-compiler/M2Quads.mod (BuildStringAdrParam): New procedure.
+	(BuildM2InitFunction): Replace inline parameter generation with
+	calls to BuildStringAdrParam.
+
 2023-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (host_mc_longreal): Detect hosting on powerpc64le

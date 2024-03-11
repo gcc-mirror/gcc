@@ -1,4 +1,4 @@
-/* { dg-do compile { target { riscv_vector } } } */
+/* { dg-do compile { target { riscv_v } } } */
 
 #include <iostream>
 #include "riscv_vector.h"

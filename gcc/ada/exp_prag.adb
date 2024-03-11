@@ -685,7 +685,7 @@ package body Exp_Prag is
    --        Blocks_Id'address,
    --        Mem_Id'address,
    --        Stream_Id'address),
-   --      CUDA.Runtime_Api.Launch_Kernel (
+   --      CUDA.Internal.Launch_Kernel (
    --        My_Proc'Address,
    --        Blocks_Id,
    --        Grids_Id,
@@ -703,7 +703,7 @@ package body Exp_Prag is
          Decls  : List_Id;
          Copies : Elist_Id);
       --  For each parameter in list Params, create an object declaration of
-      --  the followinng form:
+      --  the following form:
       --
       --    Copy_Id : Param_Typ := Param_Val;
       --
@@ -755,8 +755,8 @@ package body Exp_Prag is
          Kernel_Arg : Entity_Id;
          Memory     : Entity_Id;
          Stream     : Entity_Id) return Node_Id;
-      --  Builds and returns a call to CUDA.Launch_Kernel using the given
-      --  arguments. Proc is the entity of the procedure passed to the
+      --  Builds and returns a call to CUDA.Internal.Launch_Kernel using the
+      --  given arguments. Proc is the entity of the procedure passed to the
       --  CUDA_Execute pragma. Grid_Dims and Block_Dims are entities of the
       --  generated declarations that hold the kernel's dimensions. Args is the
       --  entity of the temporary array that holds the arguments of the kernel.

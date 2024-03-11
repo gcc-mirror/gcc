@@ -2561,7 +2561,7 @@ private void addMaybe(VarDeclaration va, VarDeclaration v)
 }
 
 // `setUnsafePreview` partially evaluated for dip1000
-private bool setUnsafeDIP1000(Scope* sc, bool gag, Loc loc, const(char)* msg,
+bool setUnsafeDIP1000(Scope* sc, bool gag, Loc loc, const(char)* msg,
     RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
 {
     return setUnsafePreview(sc, global.params.useDIP1000, gag, loc, msg, arg0, arg1, arg2);

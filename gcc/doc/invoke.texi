@@ -2766,8 +2766,9 @@ can be omitted, to use a target-specific default value.
 @cindex OpenMP parallel
 @item -fopenmp
 Enable handling of OpenMP directives @code{#pragma omp} in C/C++,
-@code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++ and
-@code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
+@code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
+@code{[[omp::decl(...)]]} in C++ and @code{!$omp} in Fortran.
+When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
 Program Interface v4.5 @w{@uref{https://www.openmp.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
@@ -2779,11 +2780,14 @@ have support for @option{-pthread}. @option{-fopenmp} implies
 @cindex SIMD
 @item -fopenmp-simd
 Enable handling of OpenMP's @code{simd}, @code{declare simd},
-@code{declare reduction}, @code{assume}, @code{ordered}, @code{scan},
-@code{loop} directives and combined or composite directives with
+@code{declare reduction}, @code{assume}, @code{ordered}, @code{scan}
+and @code{loop} directive, and of combined or composite directives with
 @code{simd} as constituent with @code{#pragma omp} in C/C++,
-@code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++
-and @code{!$omp} in Fortran.  Other OpenMP directives are ignored.
+@code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
+@code{[[omp::decl(...)]]} in C++ and @code{!$omp} in Fortran.
+Other OpenMP directives are ignored.  Unless @option{-fopenmp} is
+additionally specified, the @code{loop} region binds to the current
+task region, independent of the specified @code{bind} clause.
 
 @opindex fopenmp-target-simd-clone
 @cindex OpenMP target SIMD clone
@@ -16508,6 +16512,26 @@ Use both Advanced SIMD and SVE.  Prefer SVE when the costs are deemed equal.
 @end table
 The default value is 0.
 
+@item aarch64-ldp-policy
+Fine-grained policy for load pairs.
+With @option{--param=aarch64-ldp-policy=default}, use the policy of the
+tuning structure.  This is the current default.
+With @option{--param=aarch64-ldp-policy=always}, emit ldp regardless
+of alignment.
+With @option{--param=aarch64-ldp-policy=never}, do not emit ldp.
+With @option{--param=aarch64-ldp-policy=aligned}, emit ldp only if the
+source pointer is aligned to at least double the alignment of the type.
+
+@item aarch64-stp-policy
+Fine-grained policy for store pairs.
+With @option{--param=aarch64-stp-policy=default}, use the policy of the
+tuning structure.  This is the current default.
+With @option{--param=aarch64-stp-policy=always}, emit stp regardless
+of alignment.
+With @option{--param=aarch64-stp-policy=never}, do not emit stp.
+With @option{--param=aarch64-stp-policy=aligned}, emit stp only if the
+source pointer is aligned to at least double the alignment of the type.
+
 @item aarch64-loop-vect-issue-rate-niters
 The tuning for some AArch64 CPUs tries to take both latencies and issue
 rates into account when deciding whether a loop should be vectorized
@@ -26159,10 +26183,12 @@ The default code model is @code{normal}.
 @itemx -mno-explicit-relocs
 Use or do not use assembler relocation operators when dealing with symbolic
 addresses.  The alternative is to use assembler macros instead, which may
-limit optimization.  The default value for the option is determined during
-GCC build-time by detecting corresponding assembler support:
-@code{-mexplicit-relocs} if said support is present,
-@code{-mno-explicit-relocs} otherwise.  This option is mostly useful for
+limit instruction scheduling but allow linker relaxation.  The default
+value for the option is determined during GCC build-time by detecting
+corresponding assembler support:
+@code{-mno-explicit-relocs} if the assembler supports relaxation or it
+does not support relocation operators at all,
+@code{-mexplicit-relocs} otherwise.  This option is mostly useful for
 debugging, or interoperation with assemblers different from the build-time
 one.
 

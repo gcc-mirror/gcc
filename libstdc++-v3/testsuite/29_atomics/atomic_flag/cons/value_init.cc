@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++20 } }
+// { dg-require-thread-fence "" }
 
 #include <atomic>
 #include <testsuite_hooks.h>

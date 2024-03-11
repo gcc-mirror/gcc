@@ -1,3 +1,34 @@
+2023-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111357
+	* pt.cc (expand_integer_pack): Use IMPLICIT_CONV_EXPR.
+
+2023-09-22  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (free_constructor): Handle null ce->value.
+
+2023-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111529
+	* parser.cc (cp_parser_lambda_declarator_opt): Don't suggest
+	-std=c++14 for lambda templates.
+	* pt.cc (tsubst_expr): Move ANNOTATE_EXPR handling...
+	(tsubst_copy_and_build): ...here.
+
+2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111493
+	* decl2.cc (grok_array_decl): Guard diagnostic and backward
+	compatibility fallback code paths with tf_error.
+
+2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111485
+	* pt.cc (is_compatible_template_arg): New parameter 'args'.
+	Add the outer template arguments 'args' to 'new_args'.
+	(convert_template_argument): Pass 'args' to
+	is_compatible_template_arg.
+
 2023-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.cc (cp_parser_postfix_expression): Parse

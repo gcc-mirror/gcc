@@ -63,5 +63,5 @@ char sext8_16(short s16)
     return s16;
 }
 
-/* { dg-final { scan-assembler-not "slli" } } */
-/* { dg-final { scan-assembler-not "srli" } } */
+/* { dg-final { scan-assembler-not {\mslli} } } */
+/* { dg-final { scan-assembler-not {\msrli} } } */

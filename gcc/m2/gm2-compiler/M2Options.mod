@@ -1326,7 +1326,7 @@ END SetRuntimeModuleOverride ;
 
 PROCEDURE GetRuntimeModuleOverride () : ADDRESS ;
 BEGIN
-   RETURN RuntimeModuleOverride
+   RETURN string (RuntimeModuleOverride)
 END GetRuntimeModuleOverride ;
 
 

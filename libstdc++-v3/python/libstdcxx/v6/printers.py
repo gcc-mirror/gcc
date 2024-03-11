@@ -2215,7 +2215,7 @@ class StdChronoTimeZoneRulePrinter:
         day = on['day_of_month']
         ordinal_day = '{}{}'.format(day, suffixes.get(day, 'th'))
         if kind == 0:  # DayOfMonth
-            start = '{} {}{}'.format(month, ordinal_day)
+            start = '{} {}'.format(month, ordinal_day)
         else:
             weekday = weekdays[on['day_of_week']]
             if kind == 1:  # LastWeekDay

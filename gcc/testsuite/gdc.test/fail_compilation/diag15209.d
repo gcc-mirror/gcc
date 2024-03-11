@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag15209.d(18): Error: need `this` for `x` of type `int`
-fail_compilation/diag15209.d(21): Error: need `this` for `x` of type `int`
+fail_compilation/diag15209.d(18): Error: accessing non-static variable `x` requires an instance of `C1`
+fail_compilation/diag15209.d(21): Error: accessing non-static variable `x` requires an instance of `S2`
 ---
 */
 

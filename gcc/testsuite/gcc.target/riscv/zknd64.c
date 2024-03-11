@@ -33,4 +33,4 @@ uint64_t foo5(uint64_t rs1)
 /* { dg-final { scan-assembler-times "aes64dsm" 1 } } */
 /* { dg-final { scan-assembler-times "aes64ks1i" 1 } } */
 /* { dg-final { scan-assembler-times "aes64ks2" 1 } } */
-/* { dg-final { scan-assembler-times "aes64im" 1 } } */
+/* { dg-final { scan-assembler-times {\maes64im} 1 } } */

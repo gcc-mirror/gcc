@@ -5,4 +5,4 @@ void __attribute__ ((interrupt ("supervisor")))
 foo (void)
 {
 }
-/* { dg-final { scan-assembler "sret" } } */
+/* { dg-final { scan-assembler {\msret} } } */

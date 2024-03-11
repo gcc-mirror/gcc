@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_v } } } */
 /* { dg-options "--param riscv-autovec-preference=fixed-vlmax -O0 -Wno-psabi" } */
 
 #include "perm-7.c"

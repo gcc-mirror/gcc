@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_v } } } */
 /* { dg-options "--param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m8 -O3" } */
 
 #include <stdint-gcc.h>

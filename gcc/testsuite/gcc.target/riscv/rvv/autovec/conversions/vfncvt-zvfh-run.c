@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector && riscv_zvfh_hw } } } */
+/* { dg-do run { target { riscv_v && riscv_zvfh_hw } } } */
 /* { dg-additional-options "-std=c99 -march=rv64gcv_zvfh -mabi=lp64d -fno-vect-cost-model --param=riscv-autovec-preference=scalable" } */
 
 #include "vfncvt-template.h"

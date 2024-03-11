@@ -127,7 +127,7 @@ pure @safe:
 
     void putComma(size_t n)
     {
-        pragma(inline, false);
+        version (DigitalMars) pragma(inline, false);
         if (n)
             put(", ");
     }
@@ -2861,7 +2861,7 @@ private class OverflowException : Exception
 /// Ditto
 private noreturn error(string msg = "Invalid symbol") @trusted pure
 {
-    pragma(inline, false); // tame dmd inliner
+    version (DigitalMars) pragma(inline, false); // tame dmd inliner
 
     //throw new ParseException( msg );
     debug(info) printf( "error: %.*s\n", cast(int) msg.length, msg.ptr );
@@ -2872,7 +2872,7 @@ private noreturn error(string msg = "Invalid symbol") @trusted pure
 /// Ditto
 private noreturn overflow(string msg = "Buffer overflow") @trusted pure
 {
-    pragma(inline, false); // tame dmd inliner
+    version (DigitalMars) pragma(inline, false); // tame dmd inliner
 
     //throw new OverflowException( msg );
     debug(info) printf( "overflow: %.*s\n", cast(int) msg.length, msg.ptr );
@@ -2927,7 +2927,7 @@ private struct Buffer
     // move val to the end of the dst buffer
     char[] shift(scope const(char)[] val) return scope
     {
-        pragma(inline, false); // tame dmd inliner
+        version (DigitalMars) pragma(inline, false); // tame dmd inliner
 
         if (val.length)
         {
@@ -2949,7 +2949,7 @@ private struct Buffer
     // remove val from dst buffer
     void remove(scope const(char)[] val) scope
     {
-        pragma(inline, false); // tame dmd inliner
+        version (DigitalMars) pragma(inline, false); // tame dmd inliner
 
         if ( val.length )
         {
@@ -2965,7 +2965,7 @@ private struct Buffer
 
     char[] append(scope const(char)[] val) return scope
     {
-        pragma(inline, false); // tame dmd inliner
+        version (DigitalMars) pragma(inline, false); // tame dmd inliner
 
         if (val.length)
         {

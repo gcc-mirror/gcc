@@ -188,6 +188,15 @@ bool modifyFieldVar(Loc loc, Scope* sc, VarDeclaration var, Expression e1)
                     MODtoChars(var.type.mod), var.kind(), var.toChars());
                 errorSupplemental(loc, "Use `shared static this` instead.");
             }
+            else if (fd.isStaticCtorDeclaration() && !fd.isSharedStaticCtorDeclaration() &&
+                    var.type.isConst())
+            {
+                // @@@DEPRECATED_2.116@@@
+                // Turn this into an error, merging with the branch above
+                .deprecation(loc, "%s %s `%s` initialization is not allowed in `static this`",
+                    MODtoChars(var.type.mod), var.kind(), var.toChars());
+                deprecationSupplemental(loc, "Use `shared static this` instead.");
+            }
             return result;
         }
         else
@@ -242,13 +251,13 @@ extern (C++) abstract class Declaration : Dsymbol
     // overridden symbol with pragma(mangle, "...")
     const(char)[] mangleOverride;
 
-    final extern (D) this(Identifier ident)
+    final extern (D) this(Identifier ident) @safe
     {
         super(ident);
         visibility = Visibility(Visibility.Kind.undefined);
     }
 
-    final extern (D) this(const ref Loc loc, Identifier ident)
+    final extern (D) this(const ref Loc loc, Identifier ident) @safe
     {
         super(loc, ident);
         visibility = Visibility(Visibility.Kind.undefined);
@@ -586,7 +595,7 @@ extern (C++) final class TupleDeclaration : Declaration
     bool isexp;             // true: expression tuple
     bool building;          // it's growing in AliasAssign semantic
 
-    extern (D) this(const ref Loc loc, Identifier ident, Objects* objects)
+    extern (D) this(const ref Loc loc, Identifier ident, Objects* objects) @safe
     {
         super(loc, ident);
         this.objects = objects;
@@ -617,7 +626,7 @@ extern (C++) final class TupleDeclaration : Declaration
             for (size_t i = 0; i < objects.length; i++)
             {
                 RootObject o = (*objects)[i];
-                if (o.dyncast() != DYNCAST.type)
+                if (!o.isType())
                 {
                     //printf("\tnot[%d], %p, %d\n", i, o, o.dyncast());
                     return null;
@@ -737,7 +746,7 @@ extern (C++) final class AliasDeclaration : Declaration
     Dsymbol overnext;   // next in overload list
     Dsymbol _import;    // !=null if unresolved internal alias for selective import
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type type)
+    extern (D) this(const ref Loc loc, Identifier ident, Type type) @safe
     {
         super(loc, ident);
         //printf("AliasDeclaration(id = '%s', type = %p)\n", ident.toChars(), type);
@@ -746,7 +755,7 @@ extern (C++) final class AliasDeclaration : Declaration
         assert(type);
     }
 
-    extern (D) this(const ref Loc loc, Identifier ident, Dsymbol s)
+    extern (D) this(const ref Loc loc, Identifier ident, Dsymbol s) @safe
     {
         super(loc, ident);
         //printf("AliasDeclaration(id = '%s', s = %p)\n", ident.toChars(), s);
@@ -755,7 +764,7 @@ extern (C++) final class AliasDeclaration : Declaration
         assert(s);
     }
 
-    static AliasDeclaration create(const ref Loc loc, Identifier id, Type type)
+    static AliasDeclaration create(const ref Loc loc, Identifier id, Type type) @safe
     {
         return new AliasDeclaration(loc, id, type);
     }
@@ -1036,7 +1045,7 @@ extern (C++) final class OverDeclaration : Declaration
     Dsymbol overnext;   // next in overload list
     Dsymbol aliassym;
 
-    extern (D) this(Identifier ident, Dsymbol s)
+    extern (D) this(Identifier ident, Dsymbol s) @safe
     {
         super(ident);
         this.aliassym = s;
@@ -1158,10 +1167,11 @@ extern (C++) class VarDeclaration : Declaration
             bool inClosure;         /// is inserted into a GC allocated closure
             bool inAlignSection;    /// is inserted into an aligned section on stack
         }
+        bool systemInferred;    /// @system was inferred from initializer
     }
 
     import dmd.common.bitfields : generateBitFields;
-    mixin(generateBitFields!(BitFields, ushort));
+    mixin(generateBitFields!(BitFields, uint));
 
     byte canassign;                 // it can be assigned to
     ubyte isdataseg;                // private data for isDataseg 0 unset, 1 true, 2 false
@@ -2003,7 +2013,7 @@ extern (C++) final class SymbolDeclaration : Declaration
 {
     AggregateDeclaration dsym;
 
-    extern (D) this(const ref Loc loc, AggregateDeclaration dsym)
+    extern (D) this(const ref Loc loc, AggregateDeclaration dsym) @safe
     {
         super(loc, dsym.ident);
         this.dsym = dsym;

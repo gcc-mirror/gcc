@@ -18,4 +18,4 @@ foo1 (long i)
 
 /* { dg-final { scan-assembler-times "binv\t" 1 } } */
 /* { dg-final { scan-assembler-times "binvi\t" 1 } } */
-/* { dg-final { scan-assembler-not "andi" } } */
+/* { dg-final { scan-assembler-not {\mandi} } } */

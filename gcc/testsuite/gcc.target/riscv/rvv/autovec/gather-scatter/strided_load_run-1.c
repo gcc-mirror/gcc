@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-mcmodel=medany" } */
 
 #include "strided_load-1.c"

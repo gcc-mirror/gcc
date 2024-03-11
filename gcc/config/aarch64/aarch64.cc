@@ -1357,7 +1357,9 @@ static const struct tune_params generic_tunings =
      Neoverse V1.  It does not have a noticeable effect on A64FX and should
      have at most a very minor effect on SVE2 cores.  */
   (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params cortexa35_tunings =
@@ -1391,7 +1393,9 @@ static const struct tune_params cortexa35_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params cortexa53_tunings =
@@ -1425,7 +1429,9 @@ static const struct tune_params cortexa53_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params cortexa57_tunings =
@@ -1459,7 +1465,9 @@ static const struct tune_params cortexa57_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_RENAME_FMA_REGS),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params cortexa72_tunings =
@@ -1493,7 +1501,9 @@ static const struct tune_params cortexa72_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params cortexa73_tunings =
@@ -1527,7 +1537,9 @@ static const struct tune_params cortexa73_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 
@@ -1562,7 +1574,9 @@ static const struct tune_params exynosm1_tunings =
   48,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK, /* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE), /* tune_flags.  */
-  &exynosm1_prefetch_tune
+  &exynosm1_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params thunderxt88_tunings =
@@ -1594,8 +1608,10 @@ static const struct tune_params thunderxt88_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW),	/* tune_flags.  */
-  &thunderxt88_prefetch_tune
+  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  &thunderxt88_prefetch_tune,
+  tune_params::LDP_POLICY_ALIGNED,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALIGNED	/* stp_policy_model.  */
 };
 
 static const struct tune_params thunderx_tunings =
@@ -1627,9 +1643,10 @@ static const struct tune_params thunderx_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW
-   | AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND),	/* tune_flags.  */
-  &thunderx_prefetch_tune
+  (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND),	/* tune_flags.  */
+  &thunderx_prefetch_tune,
+  tune_params::LDP_POLICY_ALIGNED,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALIGNED	/* stp_policy_model.  */
 };
 
 static const struct tune_params tsv110_tunings =
@@ -1663,7 +1680,9 @@ static const struct tune_params tsv110_tunings =
   0,    /* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,     /* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),     /* tune_flags.  */
-  &tsv110_prefetch_tune
+  &tsv110_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params xgene1_tunings =
@@ -1696,7 +1715,9 @@ static const struct tune_params xgene1_tunings =
   17,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
-  &xgene1_prefetch_tune
+  &xgene1_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params emag_tunings =
@@ -1729,7 +1750,9 @@ static const struct tune_params emag_tunings =
   17,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
-  &xgene1_prefetch_tune
+  &xgene1_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params qdf24xx_tunings =
@@ -1763,7 +1786,9 @@ static const struct tune_params qdf24xx_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   AARCH64_EXTRA_TUNE_RENAME_LOAD_REGS, /* tune_flags.  */
-  &qdf24xx_prefetch_tune
+  &qdf24xx_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 /* Tuning structure for the Qualcomm Saphira core.  Default to falkor values
@@ -1799,7 +1824,9 @@ static const struct tune_params saphira_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),		/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params thunderx2t99_tunings =
@@ -1833,7 +1860,9 @@ static const struct tune_params thunderx2t99_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
-  &thunderx2t99_prefetch_tune
+  &thunderx2t99_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params thunderx3t110_tunings =
@@ -1867,7 +1896,9 @@ static const struct tune_params thunderx3t110_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
-  &thunderx3t110_prefetch_tune
+  &thunderx3t110_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params neoversen1_tunings =
@@ -1900,7 +1931,9 @@ static const struct tune_params neoversen1_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params ampere1_tunings =
@@ -1936,8 +1969,10 @@ static const struct tune_params ampere1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NO_LDP_COMBINE),	/* tune_flags.  */
-  &ampere1_prefetch_tune
+  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  &ampere1_prefetch_tune,
+  tune_params::LDP_POLICY_ALIGNED,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALIGNED	/* stp_policy_model.  */
 };
 
 static const struct tune_params ampere1a_tunings =
@@ -1974,8 +2009,10 @@ static const struct tune_params ampere1a_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NO_LDP_COMBINE),	/* tune_flags.  */
-  &ampere1_prefetch_tune
+  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  &ampere1_prefetch_tune,
+  tune_params::LDP_POLICY_ALIGNED,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALIGNED	/* stp_policy_model.  */
 };
 
 static const advsimd_vec_cost neoversev1_advsimd_vector_cost =
@@ -2156,7 +2193,9 @@ static const struct tune_params neoversev1_tunings =
    | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT
    | AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const sve_vec_cost neoverse512tvb_sve_vector_cost =
@@ -2293,7 +2332,9 @@ static const struct tune_params neoverse512tvb_tunings =
   (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
    | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const advsimd_vec_cost neoversen2_advsimd_vector_cost =
@@ -2483,7 +2524,9 @@ static const struct tune_params neoversen2_tunings =
    | AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
    | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const advsimd_vec_cost neoversev2_advsimd_vector_cost =
@@ -2673,7 +2716,9 @@ static const struct tune_params neoversev2_tunings =
    | AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
    | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &generic_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 static const struct tune_params a64fx_tunings =
@@ -2706,7 +2751,9 @@ static const struct tune_params a64fx_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
-  &a64fx_prefetch_tune
+  &a64fx_prefetch_tune,
+  tune_params::LDP_POLICY_ALWAYS,	/* ldp_policy_model.  */
+  tune_params::STP_POLICY_ALWAYS	/* stp_policy_model.  */
 };
 
 /* Support for fine-grained override of the tuning structures.  */
@@ -17819,6 +17866,36 @@ aarch64_parse_tune (const char *to_parse, const struct processor **res)
   return AARCH_PARSE_INVALID_ARG;
 }
 
+/* Parse a command-line -param=aarch64-ldp-policy= parameter.  VALUE is
+   the value of the parameter.  */
+
+static void
+aarch64_parse_ldp_policy (enum aarch64_ldp_policy value,
+			  struct tune_params* tune)
+{
+  if (value == LDP_POLICY_ALWAYS)
+    tune->ldp_policy_model = tune_params::LDP_POLICY_ALWAYS;
+  else if (value == LDP_POLICY_NEVER)
+    tune->ldp_policy_model = tune_params::LDP_POLICY_NEVER;
+  else if (value == LDP_POLICY_ALIGNED)
+    tune->ldp_policy_model = tune_params::LDP_POLICY_ALIGNED;
+}
+
+/* Parse a command-line -param=aarch64-stp-policy= parameter.  VALUE is
+   the value of the parameter.  */
+
+static void
+aarch64_parse_stp_policy (enum aarch64_stp_policy value,
+			  struct tune_params* tune)
+{
+  if (value == STP_POLICY_ALWAYS)
+    tune->stp_policy_model = tune_params::STP_POLICY_ALWAYS;
+  else if (value == STP_POLICY_NEVER)
+    tune->stp_policy_model = tune_params::STP_POLICY_NEVER;
+  else if (value == STP_POLICY_ALIGNED)
+    tune->stp_policy_model = tune_params::STP_POLICY_ALIGNED;
+}
+
 /* Parse TOKEN, which has length LENGTH to see if it is an option
    described in FLAG.  If it is, return the index bit for that fusion type.
    If not, error (printing OPTION_NAME) and return zero.  */
@@ -18166,6 +18243,14 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (opts->x_aarch64_override_tune_string)
     aarch64_parse_override_string (opts->x_aarch64_override_tune_string,
 				   &aarch64_tune_params);
+
+  if (opts->x_aarch64_ldp_policy_param)
+    aarch64_parse_ldp_policy (opts->x_aarch64_ldp_policy_param,
+			      &aarch64_tune_params);
+
+  if (opts->x_aarch64_stp_policy_param)
+    aarch64_parse_stp_policy (opts->x_aarch64_stp_policy_param,
+			      &aarch64_tune_params);
 
   /* This target defaults to strict volatile bitfields.  */
   if (opts->x_flag_strict_volatile_bitfields < 0 && abi_version_at_least (2))
@@ -26457,6 +26542,43 @@ aarch64_mergeable_load_pair_p (machine_mode mode, rtx mem1, rtx mem2)
   return aarch64_check_consecutive_mems (&mem1, &mem2, nullptr);
 }
 
+/* Return true if MEM agrees with the ldp-stp policy model.
+   Otherwise, false.  */
+
+bool
+aarch64_mem_ok_with_ldpstp_policy_model (rtx mem, bool load, machine_mode mode)
+{
+  /* If we have LDP_POLICY_NEVER, reject the load pair.  */
+  if (load
+      && aarch64_tune_params.ldp_policy_model == tune_params::LDP_POLICY_NEVER)
+    return false;
+
+  /* If we have STP_POLICY_NEVER, reject the store pair.  */
+  if (!load
+      && aarch64_tune_params.stp_policy_model == tune_params::STP_POLICY_NEVER)
+    return false;
+
+  /* If we have LDP_POLICY_ALIGNED,
+     do not emit the load pair unless the alignment is checked to be
+     at least double the alignment of the type.  */
+  if (load
+      && aarch64_tune_params.ldp_policy_model == tune_params::LDP_POLICY_ALIGNED
+      && !optimize_function_for_size_p (cfun)
+      && MEM_ALIGN (mem) < 2 * GET_MODE_ALIGNMENT (mode))
+    return false;
+
+  /* If we have STP_POLICY_ALIGNED,
+     do not emit the store pair unless the alignment is checked to be
+     at least double the alignment of the type.  */
+  if (!load
+      && aarch64_tune_params.stp_policy_model == tune_params::STP_POLICY_ALIGNED
+      && !optimize_function_for_size_p (cfun)
+      && MEM_ALIGN (mem) < 2 * GET_MODE_ALIGNMENT (mode))
+    return false;
+
+  return true;
+}
+
 /* Given OPERANDS of consecutive load/store, check if we can merge
    them into ldp/stp.  LOAD is true if they are load instructions.
    MODE is the mode of memory operands.  */
@@ -26467,20 +26589,6 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
 {
   enum reg_class rclass_1, rclass_2;
   rtx mem_1, mem_2, reg_1, reg_2;
-
-  /* Allow the tuning structure to disable LDP instruction formation
-     from combining instructions (e.g., in peephole2).
-     TODO: Implement fine-grained tuning control for LDP and STP:
-	   1. control policies for load and store separately;
-	   2. support the following policies:
-	      - default (use what is in the tuning structure)
-	      - always
-	      - never
-	      - aligned (only if the compiler can prove that the
-		load will be aligned to 2 * element_size)  */
-  if (load && (aarch64_tune_params.extra_tuning_flags
-	       & AARCH64_EXTRA_TUNE_NO_LDP_COMBINE))
-    return false;
 
   if (load)
     {
@@ -26506,13 +26614,8 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
   if (MEM_VOLATILE_P (mem_1) || MEM_VOLATILE_P (mem_2))
     return false;
 
-  /* If we have SImode and slow unaligned ldp,
-     check the alignment to be at least 8 byte. */
-  if (mode == SImode
-      && (aarch64_tune_params.extra_tuning_flags
-          & AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW)
-      && !optimize_size
-      && MEM_ALIGN (mem_1) < 8 * BITS_PER_UNIT)
+  /* Check if mem_1 is ok with the ldp-stp policy model.  */
+  if (!aarch64_mem_ok_with_ldpstp_policy_model (mem_1, load, mode))
     return false;
 
   /* Check if the addresses are in the form of [base+offset].  */
@@ -26729,13 +26832,8 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
   if (offvals[0] % msize != offvals[2] % msize)
     return false;
 
-  /* If we have SImode and slow unaligned ldp,
-     check the alignment to be at least 8 byte. */
-  if (mode == SImode
-      && (aarch64_tune_params.extra_tuning_flags
-	  & AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW)
-      && !optimize_size
-      && MEM_ALIGN (mem[0]) < 8 * BITS_PER_UNIT)
+   /* Check if mem[0] is ok with the ldp-stp policy model.  */
+  if (!aarch64_mem_ok_with_ldpstp_policy_model (mem[0], load, mode))
     return false;
 
   return true;

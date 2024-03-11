@@ -13100,10 +13100,38 @@ package body Exp_Util is
             --  Simple protected objects which use type System.Tasking.
             --  Protected_Objects.Protection to manage their locks should be
             --  treated as controlled since they require manual cleanup.
+            --  The only exception is illustrated in the following example:
+
+            --     package Pkg is
+            --        type Ctrl is new Controlled ...
+            --        procedure Finalize (Obj : in out Ctrl);
+            --        Lib_Obj : Ctrl;
+            --     end Pkg;
+
+            --     package body Pkg is
+            --        protected Prot is
+            --           procedure Do_Something (Obj : in out Ctrl);
+            --        end Prot;
+
+            --        protected body Prot is
+            --           procedure Do_Something (Obj : in out Ctrl) is ...
+            --        end Prot;
+
+            --        procedure Finalize (Obj : in out Ctrl) is
+            --        begin
+            --           Prot.Do_Something (Obj);
+            --        end Finalize;
+            --     end Pkg;
+
+            --  Since for the most part entities in package bodies depend on
+            --  those in package specs, Prot's lock should be cleaned up
+            --  first. The subsequent cleanup of the spec finalizes Lib_Obj.
+            --  This act however attempts to invoke Do_Something and fails
+            --  because the lock has disappeared.
 
             elsif Ekind (Obj_Id) = E_Variable
-              and then (Is_Simple_Protected_Type (Obj_Typ)
-                         or else Has_Simple_Protected_Object (Obj_Typ))
+              and then not In_Library_Level_Package_Body (Obj_Id)
+              and then Has_Simple_Protected_Object (Obj_Typ)
             then
                return True;
             end if;
@@ -13127,9 +13155,9 @@ package body Exp_Util is
             elsif Is_Ignored_Ghost_Entity (Obj_Id) then
                null;
 
-            --  Return object of a build-in-place function. This case is
-            --  recognized and marked by the expansion of an extended return
-            --  statement (see Expand_N_Extended_Return_Statement).
+            --  Return object of extended return statements. This case is
+            --  recognized and marked by the expansion of extended return
+            --  statements (see Expand_N_Extended_Return_Statement).
 
             elsif Needs_Finalization (Obj_Typ)
               and then Is_Return_Object (Obj_Id)

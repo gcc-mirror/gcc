@@ -76,5 +76,5 @@ void foo_double64 ()
   a = __builtin_nan ("");
 }
 
-/* { dg-final { scan-assembler-times "fli.s" 32 } } */
-/* { dg-final { scan-assembler-times "fli.d" 32 } } */
+/* { dg-final { scan-assembler-times {\mfli\.s\M} 32 } } */
+/* { dg-final { scan-assembler-times {\mfli\.d\M} 32 } } */

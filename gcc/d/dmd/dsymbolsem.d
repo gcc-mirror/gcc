@@ -274,7 +274,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     alias visit = Visitor.visit;
 
     Scope* sc;
-    this(Scope* sc) scope
+    this(Scope* sc) scope @safe
     {
         this.sc = sc;
     }
@@ -319,11 +319,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             error(dsym.loc, "alias this can only be a member of aggregate, not %s `%s`", p.kind(), p.toChars());
             return;
         }
-
-        // @@@DEPRECATED_2.121@@@
-        // Deprecated in 2.101 - Can be removed in 2.121
-        if (ad.isClassDeclaration() || ad.isInterfaceDeclaration())
-            deprecation(dsym.loc, "alias this for classes/interfaces is deprecated");
 
         assert(ad.members);
         Dsymbol s = ad.search(dsym.loc, dsym.ident);
@@ -1125,16 +1120,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                                  */
                                 if (ne.member && !(ne.member.storage_class & STC.scope_))
                                 {
-                                    if (sc.func.isSafe())
-                                    {
-                                        // @@@DEPRECATED_2.112@@@
-                                        deprecation(dsym.loc,
-                                            "`scope` allocation of `%s` requires that constructor be annotated with `scope`",
-                                            dsym.toChars());
-                                        deprecationSupplemental(ne.member.loc, "is the location of the constructor");
-                                     }
-                                     else
-                                         sc.func.setUnsafe();
+                                    import dmd.escape : setUnsafeDIP1000;
+                                    const inSafeFunc = sc.func && sc.func.isSafeBypassingInference();
+                                    if (sc.setUnsafeDIP1000(false, dsym.loc, "`scope` allocation of `%s` requires that constructor be annotated with `scope`", dsym))
+                                        errorSupplemental(ne.member.loc, "is the location of the constructor");
+                                    else if (global.params.obsolete && inSafeFunc)
+                                        warningSupplemental(ne.member.loc, "is the location of the constructor");
                                 }
                                 ne.onstack = 1;
                                 dsym.onstack = true;
@@ -1224,8 +1215,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                             bool needctfe = dsym.isDataseg() || (dsym.storage_class & STC.manifest);
                             if (needctfe)
                                 sc = sc.startCTFE();
+                            sc = sc.push();
+                            sc.varDecl = dsym; // https://issues.dlang.org/show_bug.cgi?id=24051
                             exp = exp.expressionSemantic(sc);
                             exp = resolveProperties(sc, exp);
+                            sc = sc.pop();
                             if (needctfe)
                                 sc = sc.endCTFE();
                             ei.exp = exp;
@@ -2098,7 +2092,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         Scope* sc = m._scope; // see if already got one from importAll()
         if (!sc)
         {
-            sc = Scope.createGlobal(m); // create root scope
+            sc = Scope.createGlobal(m, global.errorSink); // create root scope
         }
 
         //printf("Module = %p, linkage = %d\n", sc.scopesym, sc.linkage);
@@ -6087,7 +6081,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
                 alias visit = Visitor.visit;
                 TemplateInstance inst;
 
-                extern (D) this(TemplateInstance inst) scope
+                extern (D) this(TemplateInstance inst) scope @safe
                 {
                     this.inst = inst;
                 }

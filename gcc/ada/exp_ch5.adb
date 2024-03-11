@@ -4092,8 +4092,9 @@ package body Exp_Ch5 is
          end if;
 
          --  First step is to worry about possible invalid argument. The RM
-         --  requires (RM 5.4(13)) that if the result is invalid (e.g. it is
-         --  outside the base range), then Constraint_Error must be raised.
+         --  requires (RM 4.5.7 (21/3) and 5.4 (13)) that if the result is
+         --  invalid (e.g. it is outside the base range), then Constraint_Error
+         --  must be raised.
 
          --  Case of validity check required (validity checks are on, the
          --  expression is not known to be valid, and the case statement
@@ -4274,7 +4275,7 @@ package body Exp_Ch5 is
 
             --  If Predicates_Ignored is true the value does not satisfy the
             --  predicate, and there is no Others choice, Constraint_Error
-            --  must be raised (4.5.7 (21/3)).
+            --  must be raised (RM 4.5.7 (21/3) and 5.4 (13)).
 
             if Predicates_Ignored (Etype (Expr)) then
                declare

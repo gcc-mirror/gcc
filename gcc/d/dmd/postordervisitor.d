@@ -40,7 +40,7 @@ private extern (C++) final class PostorderExpressionVisitor : StoppableVisitor
 public:
     StoppableVisitor v;
 
-    extern (D) this(StoppableVisitor v) scope
+    extern (D) this(StoppableVisitor v) scope @safe
     {
         this.v = v;
     }

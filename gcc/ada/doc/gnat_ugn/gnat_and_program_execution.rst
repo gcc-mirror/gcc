@@ -3294,6 +3294,18 @@ requires ``DV(Source)`` = ``DV(Target)``, and analogously for parameter
 passing (the dimension vector for the actual parameter must be equal to the
 dimension vector for the formal parameter).
 
+When using dimensioned types with elementary functions it is necessary to
+instantiate the ``Ada.Numerics.Generic_Elementary_Functions`` package using
+the ``Mks_Type`` and not any of the derived subtypes such as ``Distance``.
+For functions such as ``Sqrt`` the dimensional analysis will fail when using
+the subtypes because both the parameter and return are of the same type.
+
+An example instantiation
+
+  .. code-block:: ada
+  
+        package Mks_Numerics is new 
+           Ada.Numerics.Generic_Elementary_Functions (System.Dim.Mks.Mks_Type);
 
 .. _Stack_Related_Facilities:
 

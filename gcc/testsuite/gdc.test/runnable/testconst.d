@@ -551,7 +551,7 @@ void test38()
 static const int x39;
 const int y39;
 
-static this()
+shared static this()
 {
     x39 = 3;
     y39 = 4;
@@ -613,7 +613,7 @@ class C42
     static const int d;
     static const int e = ctfe() + 2;
 
-    static this()
+    shared static this()
     {
         d = 4;
     }
@@ -1302,7 +1302,7 @@ void test78()
 
 const bool[string] stopWords79;
 
-static this()
+shared static this()
 {
     stopWords79 = [ "a"[]:1 ];
 }

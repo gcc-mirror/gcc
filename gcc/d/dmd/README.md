@@ -31,7 +31,8 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 | File                                                                        | Purpose                                                               |
 |-----------------------------------------------------------------------------|-----------------------------------------------------------------------|
-| [mars.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mars.d)           | The entry point. Contains `main`.                                     |
+| [main.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/main.d)           | The entry point. Contains `main`.                                     |
+| [mars.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mars.d)           | Argument parsing, path manipulation.                                  |
 | [cli.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/cli.d)             | Define the command line interface                                     |
 | [dmdparams.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dmdparams.d) | DMD-specific parameters                                               |
 | [globals.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/globals.d)     | Define a structure storing command line options                       |

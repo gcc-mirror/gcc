@@ -8,4 +8,4 @@ sub1 (int i, int j)
 {
   return i << (j & 0x1f);
 }
-/* { dg-final { scan-assembler-not "andi" } } */
+/* { dg-final { scan-assembler-not {\mandi} } } */

@@ -84,7 +84,7 @@ private enum LOG = false;
 
 enum IDX_NOTFOUND = 0x12345678;
 
-pure nothrow @nogc
+pure nothrow @nogc @safe
 {
 
 /********************************************
@@ -3507,7 +3507,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
         bool ignoreAliasThis;
         MATCH result;
 
-        extern (D) this(Scope* sc, Type tparam, TemplateParameters* parameters, Objects* dedtypes, uint* wm, size_t inferStart, bool ignoreAliasThis)
+        extern (D) this(Scope* sc, Type tparam, TemplateParameters* parameters, Objects* dedtypes, uint* wm, size_t inferStart, bool ignoreAliasThis) @safe
         {
             this.sc = sc;
             this.tparam = tparam;
@@ -5091,7 +5091,7 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
         TemplateParameter[] tparams;
         bool result;
 
-        extern (D) this(TemplateParameter[] tparams)
+        extern (D) this(TemplateParameter[] tparams) @safe
         {
             this.tparams = tparams;
         }
@@ -5358,7 +5358,7 @@ extern (C++) class TemplateParameter : ASTNode
     bool dependent;
 
     /* ======================== TemplateParameter =============================== */
-    extern (D) this(const ref Loc loc, Identifier ident)
+    extern (D) this(const ref Loc loc, Identifier ident) @safe
     {
         this.loc = loc;
         this.ident = ident;
@@ -5433,7 +5433,7 @@ extern (C++) class TemplateTypeParameter : TemplateParameter
 
     extern (D) __gshared Type tdummy = null;
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type specType, Type defaultType)
+    extern (D) this(const ref Loc loc, Identifier ident, Type specType, Type defaultType) @safe
     {
         super(loc, ident);
         this.specType = specType;
@@ -5521,7 +5521,7 @@ extern (C++) class TemplateTypeParameter : TemplateParameter
  */
 extern (C++) final class TemplateThisParameter : TemplateTypeParameter
 {
-    extern (D) this(const ref Loc loc, Identifier ident, Type specType, Type defaultType)
+    extern (D) this(const ref Loc loc, Identifier ident, Type specType, Type defaultType) @safe
     {
         super(loc, ident, specType, defaultType);
     }
@@ -5556,7 +5556,7 @@ extern (C++) final class TemplateValueParameter : TemplateParameter
     extern (D) __gshared Expression[void*] edummies;
 
     extern (D) this(const ref Loc loc, Identifier ident, Type valType,
-        Expression specValue, Expression defaultValue)
+        Expression specValue, Expression defaultValue) @safe
     {
         super(loc, ident);
         this.valType = valType;
@@ -5683,7 +5683,7 @@ extern (C++) final class TemplateAliasParameter : TemplateParameter
 
     extern (D) __gshared Dsymbol sdummy = null;
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type specType, RootObject specAlias, RootObject defaultAlias)
+    extern (D) this(const ref Loc loc, Identifier ident, Type specType, RootObject specAlias, RootObject defaultAlias) @safe
     {
         super(loc, ident);
         this.specType = specType;
@@ -5768,7 +5768,7 @@ extern (C++) final class TemplateAliasParameter : TemplateParameter
  */
 extern (C++) final class TemplateTupleParameter : TemplateParameter
 {
-    extern (D) this(const ref Loc loc, Identifier ident)
+    extern (D) this(const ref Loc loc, Identifier ident) @safe
     {
         super(loc, ident);
     }
@@ -7542,7 +7542,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         //printf("TemplateInstance.genIdent('%s')\n", tempdecl.ident.toChars());
         assert(args is tiargs);
         OutBuffer buf;
-        mangleToBuffer(this, &buf);
+        mangleToBuffer(this, buf);
         //printf("\tgenIdent = %s\n", buf.peekChars());
         return Identifier.idPool(buf[]);
     }
@@ -7717,7 +7717,7 @@ void unSpeculative(Scope* sc, RootObject o)
  * Return false if it might be an alias or tuple.
  * (Note that even in this case, it could still turn out to be a value).
  */
-bool definitelyValueParameter(Expression e)
+bool definitelyValueParameter(Expression e) @safe
 {
     // None of these can be value parameters
     if (e.op == EXP.tuple || e.op == EXP.scope_ ||

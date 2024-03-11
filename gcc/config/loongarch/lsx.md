@@ -176,6 +176,8 @@
   UNSPEC_LSX_VSSRARNI
   UNSPEC_LSX_VSSRARNI2
   UNSPEC_LSX_VPERMI
+  UNSPEC_LSX_VILVL_INTERNAL
+  UNSPEC_LSX_VREPLVEI_MIRROR
 ])
 
 ;; This attribute gives suffix for integers in VHMODE.
@@ -1551,6 +1553,18 @@
   [(set_attr "type" "simd_flog2")
    (set_attr "mode" "<MODE>")])
 
+;; Only for loongarch_expand_vector_init in loongarch.cc.
+;; Merge two scalar floating-point op1 and op2 into a LSX op0.
+(define_insn "lsx_vilvl_<lsxfmt_f>_internal"
+  [(set (match_operand:FLSX 0 "register_operand" "=f")
+	(unspec:FLSX [(match_operand:<UNITMODE> 1 "register_operand" "f")
+		      (match_operand:<UNITMODE> 2 "register_operand" "f")]
+		     UNSPEC_LSX_VILVL_INTERNAL))]
+  "ISA_HAS_LSX"
+  "vilvl.<lsxfmt>\t%w0,%w2,%w1"
+  [(set_attr "type" "simd_permute")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "smax<mode>3"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
 	(smax:FLSX (match_operand:FLSX 1 "register_operand" "f")
@@ -2289,6 +2303,16 @@
   [(set_attr "type" "simd_splat")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "lsx_vreplvei_mirror_<lsxfmt_f>"
+  [(set (match_operand:LSX 0 "register_operand" "=f")
+	(unspec: LSX [(match_operand:LSX 1 "register_operand" "f")
+				(match_operand 2 "const_<indeximm>_operand" "")]
+				UNSPEC_LSX_VREPLVEI_MIRROR))]
+  "ISA_HAS_LSX"
+  "vreplvei.d\t%w0,%w1,%2"
+  [(set_attr "type" "simd_splat")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "lsx_vreplvei_<lsxfmt_f>"
   [(set (match_operand:LSX 0 "register_operand" "=f")
 	(vec_duplicate:LSX
@@ -2450,6 +2474,99 @@
   DONE;
 })
 
+;; Implement vec_concatv2df by vilvl.d.
+(define_insn_and_split "vec_concatv2df"
+  [(set (match_operand:V2DF 0 "register_operand" "=f")
+	(vec_concat:V2DF
+	  (match_operand:DF 1 "register_operand" "f")
+	  (match_operand:DF 2 "register_operand" "f")))]
+  "ISA_HAS_LSX"
+  ""
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_lsx_vilvl_d_f (operands[0],
+				gen_rtx_REG (V2DFmode, REGNO (operands[1])),
+				gen_rtx_REG (V2DFmode, REGNO (operands[2]))));
+  DONE;
+}
+  [(set_attr "mode" "V2DF")])
+
+;; Implement vec_concatv4sf.
+;; Optimize based on hardware register allocation of operands.
+(define_insn_and_split "vec_concatv4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "=f")
+	(vec_concat:V4SF
+	  (vec_concat:V2SF
+	    (match_operand:SF 1 "register_operand" "f")
+	    (match_operand:SF 2 "register_operand" "f"))
+	  (vec_concat:V2SF
+	    (match_operand:SF 3 "register_operand" "f")
+	    (match_operand:SF 4 "register_operand" "f"))))]
+  "ISA_HAS_LSX"
+  ""
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  operands[5] = GEN_INT (1);
+  operands[6] = GEN_INT (2);
+  operands[7] = GEN_INT (4);
+  operands[8] = GEN_INT (8);
+
+  /* If all input are same, use vreplvei.w to broadcast.  */
+  if (REGNO (operands[1]) == REGNO (operands[2])
+      && REGNO (operands[1]) == REGNO (operands[3])
+      && REGNO (operands[1]) == REGNO (operands[4]))
+    {
+      emit_insn (gen_lsx_vreplvei_w_f_scalar (operands[0], operands[1]));
+    }
+  /* If op0 is equal to op3, use vreplvei.w to set each element of op0 as op3.
+     If other input is different from op3, use vextrins.w to insert.  */
+  else if (REGNO (operands[0]) == REGNO (operands[3]))
+    {
+      emit_insn (gen_lsx_vreplvei_w_f_scalar (operands[0], operands[3]));
+      if (REGNO (operands[1]) != REGNO (operands[3]))
+	emit_insn (gen_lsx_vextrins_w_f_scalar (operands[0], operands[1],
+						operands[0], operands[5]));
+      if (REGNO (operands[2]) != REGNO (operands[3]))
+	emit_insn (gen_lsx_vextrins_w_f_scalar (operands[0], operands[2],
+						operands[0], operands[6]));
+      if (REGNO (operands[4]) != REGNO (operands[3]))
+	emit_insn (gen_lsx_vextrins_w_f_scalar (operands[0], operands[4],
+						operands[0], operands[8]));
+    }
+  /* If op0 is equal to op4, use vreplvei.w to set each element of op0 as op4.
+     If other input is different from op4, use vextrins.w to insert.  */
+  else if (REGNO (operands[0]) == REGNO (operands[4]))
+    {
+      emit_insn (gen_lsx_vreplvei_w_f_scalar (operands[0], operands[4]));
+      if (REGNO (operands[1]) != REGNO (operands[4]))
+	emit_insn (gen_lsx_vextrins_w_f_scalar (operands[0], operands[1],
+						operands[0], operands[5]));
+      if (REGNO (operands[2]) != REGNO (operands[4]))
+	emit_insn (gen_lsx_vextrins_w_f_scalar (operands[0], operands[2],
+						operands[0], operands[6]));
+      if (REGNO (operands[3]) != REGNO (operands[4]))
+	emit_insn (gen_lsx_vextrins_w_f_scalar (operands[0], operands[3],
+						operands[0], operands[7]));
+    }
+  /* Otherwise, use vilvl.w to merge op1 and op2 first.
+     If op3 is different from op1, use vextrins.w to insert.
+     If op4 is different from op2, use vextrins.w to insert.  */
+  else
+    {
+      emit_insn (
+	gen_lsx_vilvl_w_f (operands[0],
+			   gen_rtx_REG (V4SFmode, REGNO (operands[1])),
+			   gen_rtx_REG (V4SFmode, REGNO (operands[2]))));
+      emit_insn (gen_lsx_vextrins_w_f_scalar (operands[0], operands[3],
+					      operands[0], operands[7]));
+      emit_insn (gen_lsx_vextrins_w_f_scalar (operands[0], operands[4],
+					      operands[0], operands[8]));
+    }
+  DONE;
+}
+  [(set_attr "mode" "V4SF")])
 
 (define_insn "vandn<mode>3"
   [(set (match_operand:LSX 0 "register_operand" "=f")
@@ -4465,3 +4582,20 @@
   "vpermi.w\t%w0,%w2,%3"
   [(set_attr "type" "simd_bit")
    (set_attr "mode" "V4SI")])
+
+;; Delete one of two instructions that exactly play the same role.
+(define_peephole2
+  [(set (match_operand:V2DI 0 "register_operand")
+	(vec_duplicate:V2DI (match_operand:DI 1 "register_operand")))
+   (set (match_operand:V2DI 2 "register_operand")
+	(vec_merge:V2DI
+	  (vec_duplicate:V2DI (match_operand:DI 3 "register_operand"))
+	  (match_operand:V2DI 4 "register_operand")
+	  (match_operand 5 "const_int_operand")))]
+  "operands[0] == operands[2] &&
+   operands[1] == operands[3] &&
+   operands[2] == operands[4] &&
+   INTVAL (operands[5]) == 2"
+  [(set (match_dup 0)
+	(vec_duplicate:V2DI (match_dup 1)))]
+  "")

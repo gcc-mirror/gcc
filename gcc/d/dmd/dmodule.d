@@ -948,7 +948,7 @@ extern (C++) final class Module : Package
          * gets imported, it is unaffected by context.
          * Ignore prevsc.
          */
-        Scope* sc = Scope.createGlobal(this); // create root scope
+        Scope* sc = Scope.createGlobal(this, global.errorSink); // create root scope
 
         if (md && md.msg)
             md.msg = semanticString(sc, md.msg, "deprecation message");
@@ -1380,7 +1380,7 @@ extern (C++) struct ModuleDeclaration
     bool isdeprecated;      // if it is a deprecated module
     Expression msg;
 
-    extern (D) this(const ref Loc loc, Identifier[] packages, Identifier id, Expression msg, bool isdeprecated)
+    extern (D) this(const ref Loc loc, Identifier[] packages, Identifier id, Expression msg, bool isdeprecated) @safe
     {
         this.loc = loc;
         this.packages = packages;
@@ -1389,7 +1389,7 @@ extern (C++) struct ModuleDeclaration
         this.isdeprecated = isdeprecated;
     }
 
-    extern (C++) const(char)* toChars() const
+    extern (C++) const(char)* toChars() const @safe
     {
         OutBuffer buf;
         foreach (pid; packages)

@@ -805,7 +805,7 @@ public:
     OutBuffer* buf;
     HdrGenState* hgs;
 
-    extern (D) this(OutBuffer* buf, HdrGenState* hgs) scope
+    extern (D) this(OutBuffer* buf, HdrGenState* hgs) scope @safe
     {
         this.buf = buf;
         this.hgs = hgs;
@@ -2775,7 +2775,7 @@ public:
     OutBuffer* buf;
     HdrGenState* hgs;
 
-    extern (D) this(OutBuffer* buf, HdrGenState* hgs) scope
+    extern (D) this(OutBuffer* buf, HdrGenState* hgs) scope @safe
     {
         this.buf = buf;
         this.hgs = hgs;
@@ -2856,7 +2856,7 @@ public:
     OutBuffer* buf;
     HdrGenState* hgs;
 
-    extern (D) this(OutBuffer* buf, HdrGenState* hgs) scope
+    extern (D) this(OutBuffer* buf, HdrGenState* hgs) scope @safe
     {
         this.buf = buf;
         this.hgs = hgs;
@@ -2920,7 +2920,7 @@ void toCBuffer(const Initializer iz, OutBuffer* buf, HdrGenState* hgs)
     initializerToBuffer(cast() iz, buf, hgs);
 }
 
-bool stcToBuffer(OutBuffer* buf, StorageClass stc)
+bool stcToBuffer(OutBuffer* buf, StorageClass stc) @safe
 {
     //printf("stc: %llx\n", stc);
     bool result = false;
@@ -2980,7 +2980,7 @@ bool stcToBuffer(OutBuffer* buf, StorageClass stc)
  * and return a string representation of it.
  * stc is reduced by the one picked.
  */
-string stcToString(ref StorageClass stc)
+string stcToString(ref StorageClass stc) @safe
 {
     static struct SCstring
     {
@@ -3039,7 +3039,7 @@ string stcToString(ref StorageClass stc)
     return null;
 }
 
-private void linkageToBuffer(OutBuffer* buf, LINK linkage)
+private void linkageToBuffer(OutBuffer* buf, LINK linkage) @safe
 {
     const s = linkageToString(linkage);
     if (s.length)
@@ -3056,7 +3056,7 @@ const(char)* linkageToChars(LINK linkage)
     return linkageToString(linkage).ptr;
 }
 
-string linkageToString(LINK linkage) pure nothrow
+string linkageToString(LINK linkage) pure nothrow @safe
 {
     final switch (linkage)
     {
@@ -3099,7 +3099,7 @@ const(char)* visibilityToChars(Visibility.Kind kind)
 }
 
 /// Ditto
-extern (D) string visibilityToString(Visibility.Kind kind) nothrow pure
+extern (D) string visibilityToString(Visibility.Kind kind) nothrow pure @safe
 {
     final switch (kind)
     {

@@ -1,3 +1,4 @@
+
 module traits_getPointerBitmap;
 
 import core.stdc.stdio;
@@ -75,6 +76,19 @@ template pOff(T)
     enum pOff = T.p.offsetof / bytesPerPtr;
 }
 
+class C(T, aliasTo = void)
+{
+    static if(!is(aliasTo == void))
+    {
+        aliasTo a;
+        alias a this;
+    }
+
+    size_t x;
+    T t = void;
+    void* p;
+}
+
 ///////////////////////////////////////
 
 void _testType(T)(size_t[] expected)
@@ -104,6 +118,21 @@ void testType(T)(size_t[] expected)
     // prepend string
     sexp[0] = (expected[0] << tOff!(S!(T, string))) | (1 << pOff!(S!(T, string))) | 2; // arr ptr
     _testType!(S!(T, string))(sexp);
+
+    // generate bit pattern for C!T
+    C!T ct = null;
+    size_t mutexBit = (RTInfoMark__Monitor ? 2 : 0);
+    size_t ctpOff = ct.p.offsetof / bytesPerPtr;
+    size_t cttOff = ct.t.offsetof / bytesPerPtr;
+    sexp[0] = (expected[0] << cttOff) | (1 << ctpOff) | mutexBit;
+    _testType!(C!(T))(sexp);
+
+    C!(T, string) cts = null;
+    size_t ctspOff = cts.p.offsetof / bytesPerPtr;
+    size_t ctstOff = cts.t.offsetof / bytesPerPtr;
+    // generate bit pattern for C!T
+    sexp[0] = (expected[0] << ctstOff) | (1 << ctspOff) | mutexBit | 0b1000; // arr ptr
+    _testType!(C!(T, string))(sexp);
 }
 
 ///////////////////////////////////////

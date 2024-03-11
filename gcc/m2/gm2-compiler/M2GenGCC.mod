@@ -391,7 +391,7 @@ BEGIN
    IF WholeProgram
    THEN
       scope := GetScope (sym) ;
-      WHILE scope#NulSym DO
+      WHILE scope # NulSym DO
          IF IsDefImp (scope)
          THEN
             RETURN IsExported (scope, sym)
@@ -771,7 +771,7 @@ VAR
    tree: Tree ;
 BEGIN
    tree := Tree (NIL) ;
-   IF sym#NulSym
+   IF sym # NulSym
    THEN
       i := 1 ;
       REPEAT

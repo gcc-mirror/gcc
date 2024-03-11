@@ -280,19 +280,19 @@ private:
     Expression localThis;       // value of 'this', or NULL if none
 
 public:
-    size_t stackPointer()
+    size_t stackPointer() @safe
     {
         return values.length;
     }
 
     // The current value of 'this', or NULL if none
-    Expression getThis()
+    Expression getThis() @safe
     {
         return localThis;
     }
 
     // Largest number of stack positions we've used
-    size_t maxStackUsage()
+    size_t maxStackUsage() @safe
     {
         return maxStackPointer;
     }
@@ -1646,7 +1646,7 @@ public:
     Expression result;
     UnionExp* pue;              // storage for `result`
 
-    extern (D) this(UnionExp* pue, InterState* istate, CTFEGoal goal) scope
+    extern (D) this(UnionExp* pue, InterState* istate, CTFEGoal goal) scope @safe
     {
         this.pue = pue;
         this.istate = istate;
@@ -3246,7 +3246,7 @@ public:
      */
     // Returns the variable which is eventually modified, or NULL if an rvalue.
     // thisval is the current value of 'this'.
-    static VarDeclaration findParentVar(Expression e)
+    static VarDeclaration findParentVar(Expression e) @safe
     {
         for (;;)
         {
@@ -6105,7 +6105,10 @@ public:
                 result = interpret(&ue, e.msg, istate);
                 if (exceptionOrCant(result))
                     return;
-                e.error("`%s`", result.toChars());
+                if (StringExp se = result.isStringExp())
+                    e.error("%s", se.toStringz().ptr);
+                else
+                    e.error("%s", result.toChars());
             }
             else
                 e.error("`%s` failed", e.toChars());
@@ -7703,7 +7706,7 @@ private void removeHookTraceImpl(ref CallExp ce, ref FuncDeclaration fd)
     // Get the Hook from the second template parameter
     TemplateInstance templateInstance = fd.parent.isTemplateInstance;
     RootObject hook = (*templateInstance.tiargs)[1];
-    assert(hook.dyncast() == DYNCAST.dsymbol, "Expected _d_HookTraceImpl's second template parameter to be an alias to the hook!");
+    assert(hook.isDsymbol(), "Expected _d_HookTraceImpl's second template parameter to be an alias to the hook!");
     fd = (cast(Dsymbol)hook).isFuncDeclaration;
 
     // Remove the first three trace parameters

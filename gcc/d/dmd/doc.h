@@ -11,5 +11,6 @@
 #pragma once
 
 class Module;
+class ErrorSink;
 
-void gendocfile(Module *m);
+void gendocfile(Module *m, ErrorSink *eSink);

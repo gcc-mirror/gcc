@@ -699,6 +699,7 @@ public:
 
     d_bool deleted;           // set if rewritten to return in foreach delegate
     d_bool iasm;              // set if used by inline assembler
+    d_bool duplicated;        // set if multiply defined, to avoid duplicate error messages
 
     static LabelDsymbol *create(Identifier *ident);
     LabelDsymbol *isLabel() override;

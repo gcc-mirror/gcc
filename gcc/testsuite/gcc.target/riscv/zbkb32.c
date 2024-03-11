@@ -30,7 +30,7 @@ uint32_t foo5(uint32_t rs1)
 }
 
 /* { dg-final { scan-assembler-times "pack\t" 1 } } */
-/* { dg-final { scan-assembler-times "packh" 1 } } */
-/* { dg-final { scan-assembler-times "brev8" 1 } } */
+/* { dg-final { scan-assembler-times {\mpackh} 1 } } */
+/* { dg-final { scan-assembler-times {\mbrev8} 1 } } */
 /* { dg-final { scan-assembler-times "\tzip\t" 1 } } */
-/* { dg-final { scan-assembler-times "unzip" 1 } } */
+/* { dg-final { scan-assembler-times {\munzip} 1 } } */

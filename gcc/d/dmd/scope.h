@@ -10,6 +10,7 @@
 
 #pragma once
 
+class ErrorSink;
 class Identifier;
 class Module;
 class Statement;
@@ -85,6 +86,7 @@ struct Scope
     d_bool inLoop;                // true if inside a loop (where constructor calls aren't allowed)
     int intypeof;               // in typeof(exp)
     VarDeclaration *lastVar;    // Previous symbol used to prevent goto-skips-init
+    ErrorSink *eSink;           // sink for error messages
 
     /* If  minst && !tinst, it's in definitely non-speculative scope (eg. module member scope).
      * If !minst && !tinst, it's in definitely speculative scope (eg. template constraint).

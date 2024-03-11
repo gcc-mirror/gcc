@@ -12,4 +12,4 @@ void foo(int x) {
   case 4: asdf(14); break;
   }
 }
-/* { dg-final { scan-assembler-not "srli" } } */
+/* { dg-final { scan-assembler-not {\msrli} } } */

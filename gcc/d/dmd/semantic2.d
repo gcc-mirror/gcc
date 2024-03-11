@@ -83,7 +83,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
 {
     alias visit = Visitor.visit;
     Scope* sc;
-    this(Scope* sc) scope
+    this(Scope* sc) scope @safe
     {
         this.sc = sc;
     }
@@ -245,8 +245,9 @@ private extern(C++) final class Semantic2Visitor : Visitor
             return;
 
         //printf("VarDeclaration::semantic2('%s')\n", toChars());
+        sc = sc.push();
         sc.varDecl = vd;
-        scope(exit) sc.varDecl = null;
+        scope(exit) sc = sc.pop();
 
         if (vd.aliasTuple)        // if it's a tuple
         {
@@ -345,7 +346,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
         // Note that modules get their own scope, from scratch.
         // This is so regardless of where in the syntax a module
         // gets imported, it is unaffected by context.
-        Scope* sc = Scope.createGlobal(mod); // create root scope
+        Scope* sc = Scope.createGlobal(mod, global.errorSink); // create root scope
         //printf("Module = %p\n", sc.scopesym);
         if (mod.members)
         {

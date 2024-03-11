@@ -14,7 +14,7 @@ foo()
     abort();
 }
 
-/* { dg-final { scan-assembler-times "fleq.s" 1 } } */
-/* { dg-final { scan-assembler-times "fltq.s" 1 } } */
-/* { dg-final { scan-assembler-times "fleq.d" 1 } } */
-/* { dg-final { scan-assembler-times "fltq.d" 1 } } */
+/* { dg-final { scan-assembler-times {\mfleq\.s\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mfltq\.s\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mfleq\.d\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mfltq\.d\M} 1 } } */

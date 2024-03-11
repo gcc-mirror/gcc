@@ -1,3 +1,22 @@
+2023-09-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 4574d1728d.
+	* dmd/VERSION: Bump version to v2.105.0.
+	* d-diagnostic.cc (verror): Remove.
+	(verrorSupplemental): Remove.
+	(vwarning): Remove.
+	(vwarningSupplemental): Remove.
+	(vdeprecation): Remove.
+	(vdeprecationSupplemental): Remove.
+	(vmessage): Remove.
+	(vtip): Remove.
+	(verrorReport): New function.
+	(verrorReportSupplemental): New function.
+	* d-lang.cc (d_parse_file): Update for new front-end interface.
+	* decl.cc (d_mangle_decl): Update for new front-end interface.
+	* intrinsics.cc (maybe_set_intrinsic): Update for new front-end
+	interface.
+
 2023-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 26f049fb26.

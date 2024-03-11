@@ -568,6 +568,30 @@ struct tune_params
   /* Place prefetch struct pointer at the end to enable type checking
      errors when tune_params misses elements (e.g., from erroneous merges).  */
   const struct cpu_prefetch_tune *prefetch;
+/* An enum specifying how to handle load pairs using a fine-grained policy:
+   - LDP_POLICY_ALIGNED: Emit ldp if the source pointer is aligned
+   to at least double the alignment of the type.
+   - LDP_POLICY_ALWAYS: Emit ldp regardless of alignment.
+   - LDP_POLICY_NEVER: Do not emit ldp.  */
+
+  enum aarch64_ldp_policy_model
+  {
+    LDP_POLICY_ALIGNED,
+    LDP_POLICY_ALWAYS,
+    LDP_POLICY_NEVER
+  } ldp_policy_model;
+/* An enum specifying how to handle store pairs using a fine-grained policy:
+   - STP_POLICY_ALIGNED: Emit stp if the source pointer is aligned
+   to at least double the alignment of the type.
+   - STP_POLICY_ALWAYS: Emit stp regardless of alignment.
+   - STP_POLICY_NEVER: Do not emit stp.  */
+
+  enum aarch64_stp_policy_model
+  {
+    STP_POLICY_ALIGNED,
+    STP_POLICY_ALWAYS,
+    STP_POLICY_NEVER
+  } stp_policy_model;
 };
 
 /* Classifies an address.
@@ -1015,6 +1039,7 @@ bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_mergeable_load_pair_p (machine_mode, rtx, rtx);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
+bool aarch64_mem_ok_with_ldpstp_policy_model (rtx, bool, machine_mode);
 void aarch64_swap_ldrstr_operands (rtx *, bool);
 
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,

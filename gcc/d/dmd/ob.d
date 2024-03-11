@@ -145,7 +145,7 @@ enum ObType : ubyte
     fend,
 }
 
-string toString(ObType obtype)
+string toString(ObType obtype) @safe
 {
     return obtype == ObType.goto_     ? "goto  "  :
            obtype == ObType.return_   ? "ret   "  :
@@ -202,7 +202,7 @@ const(char)* toChars(PtrState state)
     return toString(state).ptr;
 }
 
-string toString(PtrState state)
+string toString(PtrState state) @safe
 {
     return ["Initial", "Undefined", "Owner", "Borrowed", "Readonly"][state];
 }
@@ -1012,7 +1012,7 @@ void insertFinallyBlockGotos(ref ObNodes obnodes)
  * Set the `index` field of each ObNode
  * to its index in the `obnodes[]` array.
  */
-void numberNodes(ref ObNodes obnodes)
+void numberNodes(ref ObNodes obnodes) @safe
 {
     //printf("numberNodes()\n");
     foreach (i, ob; obnodes)

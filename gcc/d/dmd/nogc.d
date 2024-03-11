@@ -19,6 +19,7 @@ import dmd.aggregate;
 import dmd.astenums;
 import dmd.declaration;
 import dmd.dscope;
+import dmd.dtemplate : isDsymbol;
 import dmd.errors;
 import dmd.expression;
 import dmd.func;
@@ -40,7 +41,7 @@ public:
     bool checkOnly;     // don't print errors
     bool err;
 
-    extern (D) this(FuncDeclaration f) scope
+    extern (D) this(FuncDeclaration f) scope @safe
     {
         this.f = f;
     }
@@ -263,6 +264,7 @@ private FuncDeclaration stripHookTraceImpl(FuncDeclaration fd)
     // Get the Hook from the second template parameter
     auto templateInstance = fd.parent.isTemplateInstance;
     RootObject hook = (*templateInstance.tiargs)[1];
-    assert(hook.dyncast() == DYNCAST.dsymbol, "Expected _d_HookTraceImpl's second template parameter to be an alias to the hook!");
-    return (cast(Dsymbol)hook).isFuncDeclaration;
+    Dsymbol s = hook.isDsymbol();
+    assert(s, "Expected _d_HookTraceImpl's second template parameter to be an alias to the hook!");
+    return s.isFuncDeclaration;
 }

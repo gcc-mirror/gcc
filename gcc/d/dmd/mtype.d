@@ -157,7 +157,7 @@ MOD MODmerge(MOD mod1, MOD mod2) pure nothrow @nogc @safe
 /*********************************
  * Store modifier name into buf.
  */
-void MODtoBuffer(OutBuffer* buf, MOD mod) nothrow
+void MODtoBuffer(OutBuffer* buf, MOD mod) nothrow @safe
 {
     buf.writestring(MODtoString(mod));
 }
@@ -174,7 +174,7 @@ const(char)* MODtoChars(MOD mod) nothrow pure
 }
 
 /// Ditto
-string MODtoString(MOD mod) nothrow pure
+string MODtoString(MOD mod) nothrow pure @safe
 {
     final switch (mod)
     {
@@ -457,7 +457,7 @@ extern (C++) abstract class Type : ASTNode
             return sizeTy;
         }();
 
-    final extern (D) this(TY ty) scope
+    final extern (D) this(TY ty) scope @safe
     {
         this.ty = ty;
     }
@@ -2434,7 +2434,7 @@ extern (C++) abstract class Type : ASTNode
         // _init_10TypeInfo_%s
         OutBuffer buf;
         buf.reserve(32);
-        mangleToBuffer(this, &buf);
+        mangleToBuffer(this, buf);
 
         const slice = buf[];
 
@@ -2780,7 +2780,7 @@ extern (C++) abstract class Type : ASTNode
  */
 extern (C++) final class TypeError : Type
 {
-    extern (D) this()
+    extern (D) this() @safe
     {
         super(Terror);
     }
@@ -2818,7 +2818,7 @@ extern (C++) abstract class TypeNext : Type
 {
     Type next;
 
-    final extern (D) this(TY ty, Type next)
+    final extern (D) this(TY ty, Type next) @safe
     {
         super(ty);
         this.next = next;
@@ -3517,13 +3517,13 @@ extern (C++) final class TypeVector : Type
 {
     Type basetype;
 
-    extern (D) this(Type basetype)
+    extern (D) this(Type basetype) @safe
     {
         super(Tvector);
         this.basetype = basetype;
     }
 
-    static TypeVector create(Type basetype)
+    static TypeVector create(Type basetype) @safe
     {
         return new TypeVector(basetype);
     }
@@ -3632,7 +3632,7 @@ extern (C++) final class TypeVector : Type
  */
 extern (C++) abstract class TypeArray : TypeNext
 {
-    final extern (D) this(TY ty, Type next)
+    final extern (D) this(TY ty, Type next) @safe
     {
         super(ty, next);
     }
@@ -3650,7 +3650,7 @@ extern (C++) final class TypeSArray : TypeArray
 {
     Expression dim;
 
-    extern (D) this(Type t, Expression dim)
+    extern (D) this(Type t, Expression dim) @safe
     {
         super(Tsarray, t);
         //printf("TypeSArray(%s)\n", dim.toChars());
@@ -3874,7 +3874,7 @@ extern (C++) final class TypeSArray : TypeArray
  */
 extern (C++) final class TypeDArray : TypeArray
 {
-    extern (D) this(Type t)
+    extern (D) this(Type t) @safe
     {
         super(Tarray, t);
         //printf("TypeDArray(t = %p)\n", t);
@@ -3972,13 +3972,13 @@ extern (C++) final class TypeAArray : TypeArray
     Type index;     // key type
     Loc loc;
 
-    extern (D) this(Type t, Type index)
+    extern (D) this(Type t, Type index) @safe
     {
         super(Taarray, t);
         this.index = index;
     }
 
-    static TypeAArray create(Type t, Type index)
+    static TypeAArray create(Type t, Type index) @safe
     {
         return new TypeAArray(t, index);
     }
@@ -4066,12 +4066,12 @@ extern (C++) final class TypeAArray : TypeArray
  */
 extern (C++) final class TypePointer : TypeNext
 {
-    extern (D) this(Type t)
+    extern (D) this(Type t) @safe
     {
         super(Tpointer, t);
     }
 
-    static TypePointer create(Type t)
+    static TypePointer create(Type t) @safe
     {
         return new TypePointer(t);
     }
@@ -4173,7 +4173,7 @@ extern (C++) final class TypePointer : TypeNext
  */
 extern (C++) final class TypeReference : TypeNext
 {
-    extern (D) this(Type t)
+    extern (D) this(Type t) @safe
     {
         super(Treference, t);
         // BUG: what about references to static arrays?
@@ -4263,7 +4263,7 @@ extern (C++) final class TypeFunction : TypeNext
     byte inuse;
     Expressions* fargs;         // function arguments
 
-    extern (D) this(ParameterList pl, Type treturn, LINK linkage, StorageClass stc = 0)
+    extern (D) this(ParameterList pl, Type treturn, LINK linkage, StorageClass stc = 0) @safe
     {
         super(Tfunction, treturn);
         //if (!treturn) *(char*)0=0;
@@ -4305,7 +4305,7 @@ extern (C++) final class TypeFunction : TypeNext
             this.trust = TRUST.trusted;
     }
 
-    static TypeFunction create(Parameters* parameters, Type treturn, ubyte varargs, LINK linkage, StorageClass stc = 0)
+    static TypeFunction create(Parameters* parameters, Type treturn, ubyte varargs, LINK linkage, StorageClass stc = 0) @safe
     {
         return new TypeFunction(ParameterList(parameters, cast(VarArg)varargs), treturn, linkage, stc);
     }
@@ -5013,13 +5013,13 @@ extern (C++) final class TypeDelegate : TypeNext
 {
     // .next is a TypeFunction
 
-    extern (D) this(TypeFunction t)
+    extern (D) this(TypeFunction t) @safe
     {
         super(Tfunction, t);
         ty = Tdelegate;
     }
 
-    static TypeDelegate create(TypeFunction t)
+    static TypeDelegate create(TypeFunction t) @safe
     {
         return new TypeDelegate(t);
     }
@@ -5114,7 +5114,7 @@ extern (C++) final class TypeTraits : Type
     /// Cached type/symbol after semantic analysis.
     RootObject obj;
 
-    final extern (D) this(const ref Loc loc, TraitsExp exp)
+    final extern (D) this(const ref Loc loc, TraitsExp exp) @safe
     {
         super(Ttraits);
         this.loc = loc;
@@ -5170,7 +5170,7 @@ extern (C++) final class TypeMixin : Type
     Expressions* exps;
     RootObject obj; // cached result of semantic analysis.
 
-    extern (D) this(const ref Loc loc, Expressions* exps)
+    extern (D) this(const ref Loc loc, Expressions* exps) @safe
     {
         super(Tmixin);
         this.loc = loc;
@@ -5494,13 +5494,13 @@ extern (C++) final class TypeStruct : Type
     AliasThisRec att = AliasThisRec.fwdref;
     bool inuse = false; // struct currently subject of recursive method call
 
-    extern (D) this(StructDeclaration sym)
+    extern (D) this(StructDeclaration sym) @safe
     {
         super(Tstruct);
         this.sym = sym;
     }
 
-    static TypeStruct create(StructDeclaration sym)
+    static TypeStruct create(StructDeclaration sym) @safe
     {
         return new TypeStruct(sym);
     }
@@ -5830,7 +5830,7 @@ extern (C++) final class TypeEnum : Type
 {
     EnumDeclaration sym;
 
-    extern (D) this(EnumDeclaration sym)
+    extern (D) this(EnumDeclaration sym) @safe
     {
         super(Tenum);
         this.sym = sym;
@@ -6008,7 +6008,7 @@ extern (C++) final class TypeClass : Type
     AliasThisRec att = AliasThisRec.fwdref;
     CPPMANGLE cppmangle = CPPMANGLE.def;
 
-    extern (D) this(ClassDeclaration sym)
+    extern (D) this(ClassDeclaration sym) @safe
     {
         super(Tclass);
         this.sym = sym;
@@ -6184,7 +6184,7 @@ extern (C++) final class TypeTuple : Type
 
     Parameters* arguments;  // types making up the tuple
 
-    extern (D) this(Parameters* arguments)
+    extern (D) this(Parameters* arguments) @safe
     {
         super(Ttuple);
         //printf("TypeTuple(this = %p)\n", this);
@@ -6226,7 +6226,7 @@ extern (C++) final class TypeTuple : Type
         //printf("TypeTuple() %p, %s\n", this, toChars());
     }
 
-    static TypeTuple create(Parameters* arguments)
+    static TypeTuple create(Parameters* arguments) @safe
     {
         return new TypeTuple(arguments);
     }
@@ -6234,7 +6234,7 @@ extern (C++) final class TypeTuple : Type
     /*******************************************
      * Type tuple with 0, 1 or 2 types in it.
      */
-    extern (D) this()
+    extern (D) this() @safe
     {
         super(Ttuple);
         arguments = new Parameters();
@@ -6255,7 +6255,7 @@ extern (C++) final class TypeTuple : Type
         arguments.push(new Parameter(0, t2, null, null, null));
     }
 
-    static TypeTuple create()
+    static TypeTuple create() @safe
     {
         return new TypeTuple();
     }
@@ -6343,7 +6343,7 @@ extern (C++) final class TypeSlice : TypeNext
     Expression lwr;
     Expression upr;
 
-    extern (D) this(Type next, Expression lwr, Expression upr)
+    extern (D) this(Type next, Expression lwr, Expression upr) @safe
     {
         super(Tslice, next);
         //printf("TypeSlice[%s .. %s]\n", lwr.toChars(), upr.toChars());
@@ -6373,7 +6373,7 @@ extern (C++) final class TypeSlice : TypeNext
  */
 extern (C++) final class TypeNull : Type
 {
-    extern (D) this()
+    extern (D) this() @safe
     {
         //printf("TypeNull %p\n", this);
         super(Tnull);
@@ -6438,7 +6438,7 @@ extern (C++) final class TypeNull : Type
  */
 extern (C++) final class TypeNoreturn : Type
 {
-    extern (D) this()
+    extern (D) this() @safe
     {
         //printf("TypeNoreturn %p\n", this);
         super(Tnoreturn);
@@ -6520,7 +6520,7 @@ extern (C++) final class TypeTag : Type
                             ///   struct S { int a; } s1, *s2;
     MOD mod;                /// modifiers to apply after type is resolved (only MODFlags.const_ at the moment)
 
-    extern (D) this(const ref Loc loc, TOK tok, Identifier id, structalign_t packalign, Type base, Dsymbols* members)
+    extern (D) this(const ref Loc loc, TOK tok, Identifier id, structalign_t packalign, Type base, Dsymbols* members) @safe
     {
         //printf("TypeTag ctor %s %p\n", id ? id.toChars() : "null".ptr, this);
         super(Ttag);
@@ -6564,7 +6564,7 @@ extern (C++) struct ParameterList
     VarArg varargs = VarArg.none;
     bool hasIdentifierList;             // true if C identifier-list style
 
-    this(Parameters* parameters, VarArg varargs = VarArg.none, StorageClass stc = 0)
+    this(Parameters* parameters, VarArg varargs = VarArg.none, StorageClass stc = 0) @safe
     {
         this.parameters = parameters;
         this.varargs = varargs;
@@ -6667,7 +6667,7 @@ extern (C++) final class Parameter : ASTNode
     Expression defaultArg;
     UserAttributeDeclaration userAttribDecl; // user defined attributes
 
-    extern (D) this(StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl)
+    extern (D) this(StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
     {
         this.type = type;
         this.ident = ident;
@@ -6676,7 +6676,7 @@ extern (C++) final class Parameter : ASTNode
         this.userAttribDecl = userAttribDecl;
     }
 
-    static Parameter create(StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl)
+    static Parameter create(StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
     {
         return new Parameter(storageClass, type, ident, defaultArg, userAttribDecl);
     }
@@ -7646,7 +7646,7 @@ mixin template VisitType(Result)
  *      handler = string for the name of the visit handler
  * Returns: boilerplate code for a case
  */
-pure string visitTYCase(string handler)
+pure string visitTYCase(string handler) @safe
 {
     if (__ctfe)
     {

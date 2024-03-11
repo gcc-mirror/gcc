@@ -1,4 +1,4 @@
-/* { dg-do run { target { { {riscv_vector} && {rv64} } } } } */
+/* { dg-do run { target { { {riscv_v} && {rv64} } } } } */
 /* { dg-options "-O2" } */
 
 #include<cstdalign>

@@ -575,7 +575,7 @@ struct Msgtable
      * Returns: the name to use in the D executable, `name_` if non-empty,
      *  otherwise `ident`
      */
-    string name()
+    string name() @safe
     {
         return name_ ? name_ : ident;
     }
@@ -602,19 +602,19 @@ string generate(immutable(Msgtable)[] msgtable, string function(Msgtable) dg)
 }
 
 // Used to generate the code for each identifier.
-string identifier(Msgtable m)
+string identifier(Msgtable m) @safe
 {
     return "Identifier " ~ m.ident ~ ";";
 }
 
 // Used to generate the code for each initializer.
-string initializer(Msgtable m)
+string initializer(Msgtable m) @safe
 {
     return m.ident ~ ` = Identifier.idPool("` ~ m.name ~ `");`;
 }
 
 // Used to generate the code for each deinitializer.
-string deinitializer(Msgtable m)
+string deinitializer(Msgtable m) @safe
 {
     return m.ident ~ " = Identifier.init;";
 }

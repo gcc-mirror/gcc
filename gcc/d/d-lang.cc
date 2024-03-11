@@ -1101,7 +1101,7 @@ d_parse_file (void)
 
       if (m->filetype == FileType::ddoc)
 	{
-	  gendocfile (m);
+	  gendocfile (m, global.errorSink);
 	  /* Remove M from list of modules.  */
 	  modules.remove (i);
 	  i--;
@@ -1256,7 +1256,7 @@ d_parse_file (void)
       /* Declare the name of the root module as the first global name in order
 	 to make the middle-end fully deterministic.  */
       OutBuffer buf;
-      mangleToBuffer (Module::rootModule, &buf);
+      mangleToBuffer (Module::rootModule, buf);
       first_global_object_name = buf.extractChars ();
     }
 
@@ -1337,7 +1337,7 @@ d_parse_file (void)
       for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
-	  gendocfile (m);
+	  gendocfile (m, global.errorSink);
 	}
     }
 

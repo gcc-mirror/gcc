@@ -5,4 +5,4 @@ void __attribute__ ((interrupt ("user")))
 foo (void)
 {
 }
-/* { dg-final { scan-assembler "uret" } } */
+/* { dg-final { scan-assembler {\muret} } } */

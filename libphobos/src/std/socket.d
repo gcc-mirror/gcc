@@ -181,16 +181,13 @@ string formatSocketError(int err) @trusted
         return "Socket error " ~ to!string(err);
 }
 
-/// Retrieve the error message for the most recently encountered network error.
+/// Returns the error message of the most recently encountered network error.
 @property string lastSocketError()
 {
     return formatSocketError(_lasterr());
 }
 
-/**
- * Socket exceptions representing network errors reported by the operating
- * system.
- */
+/// Socket exception representing network errors reported by the operating system.
 class SocketOSException: SocketException
 {
     int errorCode;     /// Platform-specific error code.
@@ -234,14 +231,14 @@ class SocketOSException: SocketException
     }
 }
 
-/// Socket exceptions representing invalid parameters specified by user code.
+/// Socket exception representing invalid parameters specified by user code.
 class SocketParameterException: SocketException
 {
     mixin basicExceptionCtors;
 }
 
 /**
- * Socket exceptions representing attempts to use network capabilities not
+ * Socket exception representing attempts to use network capabilities not
  * available on the current system.
  */
 class SocketFeatureException: SocketException
@@ -254,7 +251,7 @@ class SocketFeatureException: SocketException
  * Returns:
  * `true` if the last socket operation failed because the socket
  * was in non-blocking mode and the operation would have blocked,
- * or if the socket is in blocking mode and set a SNDTIMEO or RCVTIMEO,
+ * or if the socket is in blocking mode and set a `SNDTIMEO` or `RCVTIMEO`,
  * and the operation timed out.
  */
 bool wouldHaveBlocked() nothrow @nogc
@@ -334,7 +331,7 @@ shared static ~this() @system nothrow @nogc
 enum AddressFamily: ushort
 {
     UNSPEC =     AF_UNSPEC,     /// Unspecified address family
-    UNIX =       AF_UNIX,       /// Local communication
+    UNIX =       AF_UNIX,       /// Local communication (Unix socket)
     INET =       AF_INET,       /// Internet Protocol version 4
     IPX =        AF_IPX,        /// Novell IPX
     APPLETALK =  AF_APPLETALK,  /// AppleTalk
@@ -374,7 +371,7 @@ enum ProtocolType: int
 
 
 /**
- * `Protocol` is a class for retrieving protocol information.
+ * Class for retrieving protocol information.
  *
  * Example:
  * ---
@@ -473,7 +470,7 @@ version (CRuntime_Bionic) {} else
 
 
 /**
- * `Service` is a class for retrieving service information.
+ * Class for retrieving service information.
  *
  * Example:
  * ---
@@ -618,7 +615,7 @@ class HostException: SocketOSException
 }
 
 /**
- * `InternetHost` is a class for resolving IPv4 addresses.
+ * Class for resolving IPv4 addresses.
  *
  * Consider using `getAddress`, `parseAddress` and `Address` methods
  * instead of using this class directly.
@@ -1220,7 +1217,7 @@ class AddressException: SocketOSException
 
 
 /**
- * `Address` is an abstract class for representing a socket addresses.
+ * Abstract class for representing a socket address.
  *
  * Example:
  * ---
@@ -1402,7 +1399,7 @@ abstract class Address
 }
 
 /**
- * `UnknownAddress` encapsulates an unknown socket address.
+ * Encapsulates an unknown socket address.
  */
 class UnknownAddress: Address
 {
@@ -1431,7 +1428,7 @@ public:
 
 
 /**
- * `UnknownAddressReference` encapsulates a reference to an arbitrary
+ * Encapsulates a reference to an arbitrary
  * socket address.
  */
 class UnknownAddressReference: Address
@@ -1474,8 +1471,7 @@ public:
 
 
 /**
- * `InternetAddress` encapsulates an IPv4 (Internet Protocol version 4)
- * socket address.
+ * Encapsulates an IPv4 (Internet Protocol version 4) socket address.
  *
  * Consider using `getAddress`, `parseAddress` and `Address` methods
  * instead of using this class directly.
@@ -1624,7 +1620,8 @@ public:
     }
 
     /**
-     * Compares with another InternetAddress of same type for equality
+     * Provides support for comparing equality with another
+     * InternetAddress of the same type.
      * Returns: true if the InternetAddresses share the same address and
      * port number.
      */
@@ -1728,8 +1725,7 @@ public:
 
 
 /**
- * `Internet6Address` encapsulates an IPv6 (Internet Protocol version 6)
- * socket address.
+ * Encapsulates an IPv6 (Internet Protocol version 6) socket address.
  *
  * Consider using `getAddress`, `parseAddress` and `Address` methods
  * instead of using this class directly.
@@ -1913,8 +1909,8 @@ version (StdDdoc)
     }
 
     /**
-     * `UnixAddress` encapsulates an address for a Unix domain socket
-     * (`AF_UNIX`), i.e. a socket bound to a path name in the file system.
+     * Encapsulates an address for a Unix domain socket (`AF_UNIX`),
+     * i.e. a socket bound to a path name in the file system.
      * Available only on supported systems.
      *
      * Linux also supports an abstract address namespace, in which addresses
@@ -2111,7 +2107,7 @@ static if (is(sockaddr_un))
 
 
 /**
- * Class for exceptions thrown by `Socket.accept`.
+ * Exception thrown by `Socket.accept`.
  */
 class SocketAcceptException: SocketOSException
 {
@@ -2127,7 +2123,7 @@ enum SocketShutdown: int
 }
 
 
-/// Flags may be OR'ed together:
+/// Socket flags that may be OR'ed together:
 enum SocketFlags: int
 {
     NONE =       0,                 /// no flags specified
@@ -2622,7 +2618,7 @@ enum SocketOption: int
 
 
 /**
- * `Socket` is a class that creates a network communication endpoint using
+ * Class that creates a network communication endpoint using
  * the Berkeley sockets interface.
  */
 class Socket
@@ -2969,7 +2965,7 @@ public:
 
 
     /**
-     * Returns: the local machine's host name
+     * Returns: The local machine's host name
      */
     static @property string hostName() @trusted     // getter
     {
@@ -3518,7 +3514,7 @@ public:
 
     /**
      * Can be overridden to support other addresses.
-     * Returns: a new `Address` object for the current address family.
+     * Returns: A new `Address` object for the current address family.
      */
     protected Address createAddress() pure nothrow
     {
@@ -3549,7 +3545,7 @@ public:
 }
 
 
-/// `TcpSocket` is a shortcut class for a TCP Socket.
+/// Shortcut class for a TCP Socket.
 class TcpSocket: Socket
 {
     /// Constructs a blocking TCP Socket.
@@ -3566,7 +3562,7 @@ class TcpSocket: Socket
 
 
     //shortcut
-    /// Constructs a blocking TCP Socket and connects to an `Address`.
+    /// Constructs a blocking TCP Socket and connects to the given `Address`.
     this(Address connectTo)
     {
         this(connectTo.addressFamily);
@@ -3575,7 +3571,7 @@ class TcpSocket: Socket
 }
 
 
-/// `UdpSocket` is a shortcut class for a UDP Socket.
+/// Shortcut class for a UDP Socket.
 class UdpSocket: Socket
 {
     /// Constructs a blocking UDP Socket.

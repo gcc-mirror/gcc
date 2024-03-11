@@ -2581,6 +2581,23 @@ END BuildM2MainFunction ;
 
 
 (*
+   BuildStringAdrParam - push the address of a nul terminated string onto the quad stack.
+*)
+
+PROCEDURE BuildStringAdrParam (tok: CARDINAL; name: Name);
+VAR
+   str, m2strnul: CARDINAL ;
+BEGIN
+   PushTF (Adr, Address) ;
+   str := MakeConstLitString (tok, name) ;
+   m2strnul := MakeConstStringM2nul (tok, str) ;
+   PushTtok (m2strnul, tok) ;
+   PushT (1) ;
+   BuildAdrFunction
+END BuildAdrFunction ;
+
+
+(*
    BuildM2InitFunction -
 *)
 
@@ -2620,22 +2637,9 @@ BEGIN
             (* ConstructModules (module_name, argc, argv, envp);  *)
             PushTtok (constructModules, tok) ;
 
-            PushTF(Adr, Address) ;
-            PushTtok (MakeConstLitString (tok, GetSymName (moduleSym)), tok) ;
-            PushT(1) ;
-            BuildAdrFunction ;
-
-            PushTF(Adr, Address) ;
-            PushTtok (MakeConstLitString (tok, GetLibName (moduleSym)), tok) ;
-            PushT(1) ;
-            BuildAdrFunction ;
-
-            PushTF(Adr, Address) ;
-            PushTtok (MakeConstLitString (tok,
-                                          makekey (GetRuntimeModuleOverride ())),
-                      tok) ;
-            PushT(1) ;
-            BuildAdrFunction ;
+	    BuildStringAdrParam (tok, GetSymName (moduleSym)) ;
+	    BuildStringAdrParam (tok, GetLibName (moduleSym)) ;
+	    BuildStringAdrParam (tok, makekey (GetRuntimeModuleOverride ())) ;
 
             PushTtok (SafeRequestSym (tok, MakeKey ("argc")), tok) ;
             PushTtok (SafeRequestSym (tok, MakeKey ("argv")), tok) ;

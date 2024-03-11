@@ -1045,7 +1045,7 @@ if (!hasElaborateDestructor!T)
         return isBig ? big.ptr[0 .. length] : small[0 .. length];
     }
 
-    this(this)
+    this(this) @trusted
     {
         if (isBig)
         {

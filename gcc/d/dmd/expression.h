@@ -955,6 +955,7 @@ public:
 private:
     uint8_t bitFields;
 
+public:
     SliceExp *syntaxCopy() override;
     bool isLvalue() override;
     Expression *toLvalue(Scope *sc, Expression *e) override;

@@ -50,10 +50,12 @@
 
 #ifdef __cplusplus
 # include <cstdarg>
+# include <cstddef>
 # include <cstdlib>
 #else
 # include <stdarg.h>
 # include <stdbool.h>
+# include <stddef.h>
 # include <stdlib.h>
 #endif
 
@@ -592,6 +594,11 @@ get_ip_from_context (_Unwind_Context *uw_context)
 #else
   _Unwind_Ptr ip = _Unwind_GetIP (uw_context);
 #endif
+
+#if !defined(__USING_SJLJ_EXCEPTIONS__) && defined(__CHERI__)
+  ip = __builtin_code_address_from_pointer ((void *)ip);
+#endif
+
   /* Subtract 1 if necessary because GetIPInfo yields a call return address
      in this case, while we are interested in information for the call point.
      This does not always yield the exact call instruction address but always
@@ -850,7 +857,27 @@ get_call_site_action_for (_Unwind_Ptr ip,
       /* Note that all call-site encodings are "absolute" displacements.  */
       p = read_encoded_value (0, region->call_site_encoding, p, &cs_start);
       p = read_encoded_value (0, region->call_site_encoding, p, &cs_len);
+#ifdef __CHERI_PURE_CAPABILITY__
+      // Single uleb128 value as the capability marker.
+      _Unwind_Ptr marker = 0;
+      p = read_encoded_value (0, DW_EH_PE_uleb128, p, &marker);
+      if (marker == 0xd)
+	{
+	  /* 8-byte offset to the (indirected) capability. */
+	  p = read_encoded_value (0, DW_EH_PE_pcrel | DW_EH_PE_udata8, p,
+				  &cs_lp);
+	}
+      else if (marker)
+	{
+	  /* Unsupported landing pad marker value. */
+	  abort ();
+	}
+      else
+	cs_lp = 0; // No landing pad.
+#else
       p = read_encoded_value (0, region->call_site_encoding, p, &cs_lp);
+#endif
+
       p = read_uleb128 (p, &cs_action);
 
       db (DB_CSITE,
@@ -859,18 +886,24 @@ get_call_site_action_for (_Unwind_Ptr ip,
 	  (char *)region->lp_base + cs_lp, (void *)cs_lp);
 
       /* The table is sorted, so if we've passed the IP, stop.  */
-      if (ip < region->base + cs_start)
+      if (ip < region->base + (size_t)cs_start)
  	break;
 
       /* If we have a match, fill the ACTION fields accordingly.  */
-      else if (ip < region->base + cs_start + cs_len)
+      else if (ip < region->base + (size_t)cs_start + (size_t)cs_len)
 	{
 	  /* Let the caller know there may be an action to take, but let it
 	     determine the kind.  */
 	  action->kind = unknown;
 
 	  if (cs_lp)
-	    action->landing_pad = region->lp_base + cs_lp;
+	    {
+#ifdef __CHERI_PURE_CAPABILITY__
+	      action->landing_pad = *(_Unwind_Ptr *)cs_lp;
+#else
+	      action->landing_pad = region->lp_base + cs_lp;
+#endif
+	    }
 	  else
 	    action->landing_pad = 0;
 

@@ -7080,25 +7080,17 @@ expand_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
   /* Recall that the legacy lock_test_and_set optab was allowed to do magic
      things with the value 1.  Thus we try again without trueval.  */
   if (!ret && targetm.atomic_test_and_set_trueval != 1)
-    ret = maybe_emit_sync_lock_test_and_set (subtarget, mem, const1_rtx, model);
-
-  /* Failing all else, assume a single threaded environment and simply
-     perform the operation.  */
-  if (!ret)
     {
-      /* If the result is ignored skip the move to target.  */
-      if (subtarget != const0_rtx)
-        emit_move_insn (subtarget, mem);
+      ret = maybe_emit_sync_lock_test_and_set (subtarget, mem, const1_rtx, model);
 
-      emit_move_insn (mem, trueval);
-      ret = subtarget;
+      if (ret)
+	{
+	  /* Rectify the not-one trueval.  */
+	  ret = emit_store_flag_force (target, NE, ret, const0_rtx, mode, 0, 1);
+	  gcc_assert (ret);
+	}
     }
 
-  /* Recall that have to return a boolean value; rectify if trueval
-     is not exactly one.  */
-  if (targetm.atomic_test_and_set_trueval != 1)
-    ret = emit_store_flag_force (target, NE, ret, const0_rtx, mode, 0, 1);
-  
   return ret;
 }
 

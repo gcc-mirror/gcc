@@ -8,5 +8,5 @@ f (int * __restrict dst, int * __restrict op1, int * __restrict op2, int count)
     dst[i] = op1[i] + op2[i];
 }
 
-/* { dg-final { scan-assembler-not "lw" } } */
-/* { dg-final { scan-assembler-not "sw" } } */
+/* { dg-final { scan-assembler-not {\mlw} } } */
+/* { dg-final { scan-assembler-not {\msw} } } */

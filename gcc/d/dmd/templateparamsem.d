@@ -50,7 +50,7 @@ private extern (C++) final class TemplateParameterSemanticVisitor : Visitor
     TemplateParameters* parameters;
     bool result;
 
-    this(Scope* sc, TemplateParameters* parameters) scope
+    this(Scope* sc, TemplateParameters* parameters) scope @safe
     {
         this.sc = sc;
         this.parameters = parameters;

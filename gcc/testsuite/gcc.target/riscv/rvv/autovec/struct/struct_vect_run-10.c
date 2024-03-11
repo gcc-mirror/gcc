@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector && riscv_zvfh_hw } } } */
+/* { dg-do run { target { riscv_v && riscv_zvfh_hw } } } */
 /* { dg-additional-options "-std=c99 --param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
 
 #define TYPE _Float16

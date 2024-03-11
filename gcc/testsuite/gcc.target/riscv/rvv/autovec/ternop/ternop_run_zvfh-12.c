@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector && riscv_zvfh_hw } } } */
+/* { dg-do run { target { riscv_v && riscv_zvfh_hw } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -ffast-math" } */
 
 #include "ternop-12.c"

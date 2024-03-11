@@ -9,4 +9,4 @@ fle (double x, double y)
 }
 
 /* { dg-final { scan-assembler "\tfrflags\t(\[^\n\]*)\n\tfle\\.d\t\[^,\]*,(\[^,\]*),(\[^,\]*)\n\tfsflags\t\\1\n\tfeq\\.d\tzero,\\2,\\3\n" } } */
-/* { dg-final { scan-assembler-not "snez" } } */
+/* { dg-final { scan-assembler-not {\msnez} } } */

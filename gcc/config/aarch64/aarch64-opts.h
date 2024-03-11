@@ -108,4 +108,20 @@ enum aarch64_key_type {
   AARCH64_KEY_B
 };
 
+/* Load pair policy type.  */
+enum aarch64_ldp_policy {
+  LDP_POLICY_DEFAULT,
+  LDP_POLICY_ALWAYS,
+  LDP_POLICY_NEVER,
+  LDP_POLICY_ALIGNED
+};
+
+/* Store pair policy type.  */
+enum aarch64_stp_policy {
+  STP_POLICY_DEFAULT,
+  STP_POLICY_ALWAYS,
+  STP_POLICY_NEVER,
+  STP_POLICY_ALIGNED
+};
+
 #endif

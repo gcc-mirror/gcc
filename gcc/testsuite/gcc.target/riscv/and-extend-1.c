@@ -23,8 +23,8 @@ foo3(unsigned int a, unsigned int* ptr)
     ptr[1] &= 0xffff;
 }
 
-/* { dg-final { scan-assembler-times "zext.w" 1 } } */
-/* { dg-final { scan-assembler-times "zext.h" 2 } } */
-/* { dg-final { scan-assembler-times "lwu" 1 } } */
-/* { dg-final { scan-assembler-times "lhu" 2 } } */
+/* { dg-final { scan-assembler-times {\mzext\.w\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mzext\.h\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mlwu} 1 } } */
+/* { dg-final { scan-assembler-times {\mlhu} 2 } } */
 /* { dg-final { scan-assembler-not "and\t" } } */

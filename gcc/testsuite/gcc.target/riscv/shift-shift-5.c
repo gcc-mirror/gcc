@@ -18,4 +18,4 @@ sub (long l)
   u.l = l;
   return u.s.b;
 }
-/* { dg-final { scan-assembler "srliw" } } */
+/* { dg-final { scan-assembler {\msrliw} } } */

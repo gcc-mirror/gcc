@@ -1991,7 +1991,7 @@ void test8976()
 // https://issues.dlang.org/show_bug.cgi?id=8940
 
 const int n8940; // or `immutable`
-static this() { n8940 = 3; }
+shared static this() { n8940 = 3; }
 
 void f8940(T)(ref int val)
 {

@@ -244,7 +244,7 @@ public:
     // The index of this variable on the CTFE stack, ~0u if not allocated
     unsigned ctfeAdrOnStack;
 private:
-    uint16_t bitFields;
+    uint32_t bitFields;
 public:
     int8_t canassign; // // it can be assigned to
     uint8_t isdataseg; // private data for isDataseg
@@ -278,6 +278,8 @@ public:
     bool inAlignSection() const; // is inserted into aligned section on stack
     bool inAlignSection(bool v);
 #endif
+    bool systemInferred() const;
+    bool systemInferred(bool v);
     static VarDeclaration *create(const Loc &loc, Type *t, Identifier *id, Initializer *init, StorageClass storage_class = STCundefined);
     VarDeclaration *syntaxCopy(Dsymbol *) override;
     void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override final;

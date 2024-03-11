@@ -28,7 +28,7 @@ const char *cppTypeInfoMangleMSVC(Dsymbol *s);
 
 // In dmangle.d
 const char *mangleExact(FuncDeclaration *fd);
-void mangleToBuffer(Type *s, OutBuffer *buf);
-void mangleToBuffer(Expression *s, OutBuffer *buf);
-void mangleToBuffer(Dsymbol *s, OutBuffer *buf);
-void mangleToBuffer(TemplateInstance *s, OutBuffer *buf);
+void mangleToBuffer(Type *s, OutBuffer& buf);
+void mangleToBuffer(Expression *s, OutBuffer& buf);
+void mangleToBuffer(Dsymbol *s, OutBuffer& buf);
+void mangleToBuffer(TemplateInstance *s, OutBuffer& buf);

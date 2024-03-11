@@ -9,4 +9,4 @@ foo (long i)
 }
 /* XXX: This pattern need combine improvement or intermediate instruction
  *      from zbs.   */
-/* { dg-final { scan-assembler "slli.uw" } } */
+/* { dg-final { scan-assembler {\mslli\.uw\M} } } */

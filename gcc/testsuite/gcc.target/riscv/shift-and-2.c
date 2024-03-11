@@ -57,5 +57,5 @@ sub9 (unsigned i, unsigned j) {
   return (i >> 10) & j;
 }
 
-/* { dg-final { scan-assembler-not "andi" } } */
-/* { dg-final { scan-assembler-not "sext.w" } } */
+/* { dg-final { scan-assembler-not {\mandi} } } */
+/* { dg-final { scan-assembler-not {\msext\.w\M} } } */

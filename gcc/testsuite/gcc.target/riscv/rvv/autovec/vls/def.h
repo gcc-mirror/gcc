@@ -518,3 +518,309 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     for (int i = 0; i < NUM; i++)                                              \
       dst[i] = ((TYPE2) a[i] + b[i] + 1) >> 1;                                 \
   }
+
+#define DEF_MULH(TYPE, NUM)                                                    \
+  void __attribute__ ((noipa))                                                 \
+  mod_##TYPE##_##NUM (TYPE *__restrict dst, TYPE *__restrict src)              \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      dst[i] = src[i] % 19;                                                    \
+  }
+
+#define DEF_COND_UNOP(PREFIX, NUM, TYPE, OP)                                   \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE cond)                             \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? OP (a[i]) : b[i];                                       \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_BINOP(PREFIX, NUM, TYPE, OP)                                  \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? a[i] OP b[i] : c[i];                                    \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_MINMAX(PREFIX, NUM, TYPE, OP)                                 \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? ((a[i]) OP (b[i]) ? (a[i]) : (b[i])) : c[i];            \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_FMA_VV(PREFIX, NUM, TYPE)                                     \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? a[i] * b[i] + c[i] : b[i];                              \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_FNMA_VV(PREFIX, NUM, TYPE)                                    \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? a[i] - b[i] * c[i] : b[i];                              \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_FMS_VV(PREFIX, NUM, TYPE)                                     \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? a[i] * b[i] - c[i] : b[i];                              \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_FNMS_VV(PREFIX, NUM, TYPE)                                    \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? -(a[i] * b[i]) - c[i] : b[i];                           \
+    return v;                                                                  \
+  }
+
+#define DEF_OP_WVV(PREFIX, NUM, TYPE, TYPE2, OP)                               \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##_##TYPE2##NUM (TYPE2 *restrict a, TYPE *restrict b,         \
+				  TYPE *restrict c)                            \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE2) b[i] OP (TYPE2) c[i];                                     \
+  }
+
+#define DEF_OP_WWV(PREFIX, NUM, TYPE, TYPE2, OP)                               \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##_##TYPE2##NUM (TYPE2 *restrict a, TYPE2 *restrict b,        \
+				  TYPE *restrict c)                            \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] OP (TYPE2) c[i];                                             \
+  }
+
+#define DEF_OP_WVV_SU(PREFIX, NUM, TYPE1, TYPE2, TYPE3, OP)                    \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##_##TYPE2##NUM (TYPE3 *restrict a, TYPE1 *restrict b,        \
+				  TYPE2 *restrict c)                           \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE3) b[i] OP (TYPE3) c[i];                                     \
+  }
+
+#define DEF_FMA_WVV(PREFIX, NUM, TYPE1, TYPE2)                                 \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##NUM (TYPE2 *restrict a, TYPE1 *restrict b,       \
+				   TYPE1 *restrict c, TYPE2 *restrict d)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE2) b[i] * (TYPE2) c[i] + d[i];                               \
+  }
+
+#define DEF_FMA_WVV_SU(PREFIX, NUM, TYPE1, TYPE2, TYPE3)                       \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##_##TYPE3##NUM (TYPE3 *restrict a,                \
+					     TYPE1 *restrict b,                \
+					     TYPE2 *restrict c,                \
+					     TYPE3 *restrict d)                \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE3) b[i] * (TYPE3) c[i] + d[i];                               \
+  }
+
+#define DEF_FNMA_WVV(PREFIX, NUM, TYPE1, TYPE2)                                \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##NUM (TYPE2 *restrict a, TYPE1 *restrict b,       \
+				   TYPE1 *restrict c, TYPE2 *restrict d)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = d[i] - (TYPE2) b[i] * (TYPE2) c[i];                               \
+  }
+
+#define DEF_FMS_WVV(PREFIX, NUM, TYPE1, TYPE2)                                 \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##NUM (TYPE2 *restrict a, TYPE1 *restrict b,       \
+				   TYPE1 *restrict c, TYPE2 *restrict d)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE2) b[i] * (TYPE2) c[i] - d[i];                               \
+  }
+
+#define DEF_FNMS_WVV(PREFIX, NUM, TYPE1, TYPE2)                                \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##NUM (TYPE2 *restrict a, TYPE1 *restrict b,       \
+				   TYPE1 *restrict c, TYPE2 *restrict d)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = -((TYPE2) b[i] * (TYPE2) c[i]) - d[i];                            \
+  }
+
+#define DEF_WIDEN_REDUC_PLUS(TYPE, TYPE2, NUM)                                 \
+  TYPE2 __attribute__ ((noinline, noclone))                                    \
+  reduc_plus_##TYPE##_##TYPE2##NUM (TYPE *__restrict a)                        \
+  {                                                                            \
+    TYPE2 r = 0;                                                               \
+    for (int i = 0; i < NUM; ++i)                                              \
+      r += a[i];                                                               \
+    return r;                                                                  \
+  }
+
+#define DEF_NARROW_TRUNC_IMM(TYPE1, TYPE2, NUM)                                \
+  void narrow_##TYPE1##_##TYPE2##_##NUM (TYPE1 *restrict a, TYPE2 *restrict b) \
+  {                                                                            \
+    for (int i = 0; i < NUM; i += 1)                                           \
+      a[i] = (TYPE1) (b[i] >> 7);                                              \
+  }
+
+#define DEF_NARROW_TRUNC_XREG(TYPE1, TYPE2, NUM)                               \
+  void narrow_##TYPE1##_##TYPE2##_##NUM (TYPE1 *restrict a, TYPE2 *restrict b, \
+					 int shift)                            \
+  {                                                                            \
+    for (int i = 0; i < NUM; i += 1)                                           \
+      a[i] = (TYPE1) (b[i] >> shift);                                          \
+  }
+
+#define DEF_NARROW_TRUNC_VREG(TYPE1, TYPE2, NUM)                               \
+  void narrow_##TYPE1##_##TYPE2##_##NUM (TYPE1 *restrict a, TYPE2 *restrict b, \
+					 int *restrict shift)                  \
+  {                                                                            \
+    for (int i = 0; i < NUM; i += 1)                                           \
+      a[i] = (TYPE1) (b[i] >> shift[i]);                                       \
+  }
+
+#define DEF_COND_CONVERT(PREFIX, TYPE1, TYPE2, NUM)                            \
+  __attribute__ ((noipa))                                                      \
+  TYPE2 PREFIX##_##TYPE1##TYPE2##_##NUM (TYPE2 dst, TYPE1 a, int *cond)        \
+  {                                                                            \
+    for (int i = 0; i < NUM; i++)                                              \
+      dst[i] = cond[i] ? a[i] : dst[i];                                        \
+    return dst;                                                                \
+  }
+
+#define DEF_COND_FP_CONVERT(PREFIX, TYPE1, TYPE2, TYPE3, NUM)                  \
+  __attribute__ ((noipa))                                                      \
+  v##NUM##TYPE2 PREFIX##_##TYPE1##TYPE2##TYPE3##_##NUM (v##NUM##TYPE2 dst,     \
+							v##NUM##TYPE1 a,       \
+							int *cond)             \
+  {                                                                            \
+    for (int i = 0; i < NUM; i++)                                              \
+      dst[i] = cond[i] ? (TYPE3) a[i] : dst[i];                                \
+    return dst;                                                                \
+  }
+
+#define DEF_COND_CALL(PREFIX, NUM, TYPE, CALL)                                 \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? CALL (a[i], b[i]) : c[i];                               \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_MULH(PREFIX, NUM, TYPE, TYPE2, TYPE3, SHIFT)                  \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i]                                                                     \
+	= cond[i] ? (TYPE3) (((TYPE2) a[i] * (TYPE2) b[i]) >> SHIFT) : c[i];   \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_OP_WVV(PREFIX, NUM, TYPE, TYPE2, TYPE3, OP)                   \
+  v##NUM##TYPE2 __attribute__ ((noinline, noclone))                            \
+  PREFIX##_##TYPE##_##TYPE2##NUM (v##NUM##TYPE2 a, v##NUM##TYPE b,             \
+				  v##NUM##TYPE c, int *restrict cond)          \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = cond[i] ? (TYPE3) b[i] OP (TYPE3) c[i] : a[i];                    \
+    return a;                                                                  \
+  }
+
+#define DEF_COND_OP_WVV_SU(PREFIX, NUM, TYPE, TYPE2, TYPE3, OP)                \
+  v##NUM##TYPE2 __attribute__ ((noinline, noclone))                            \
+  PREFIX##_##TYPE##_##TYPE2##NUM (v##NUM##TYPE2 a, v##NUM##u##TYPE b,          \
+				  v##NUM##TYPE c, int *restrict cond)          \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = cond[i] ? (TYPE3) b[i] OP (TYPE3) c[i] : a[i];                    \
+    return a;                                                                  \
+  }
+
+#define DEF_COND_OP_WWV(PREFIX, NUM, TYPE, TYPE2, TYPE3, OP)                   \
+  v##NUM##TYPE2 __attribute__ ((noinline, noclone))                            \
+  PREFIX##_##TYPE##_##TYPE2##NUM (v##NUM##TYPE2 a, v##NUM##TYPE2 b,            \
+				  v##NUM##TYPE c, int *restrict cond)          \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = cond[i] ? (TYPE3) b[i] OP (TYPE3) c[i] : a[i];                    \
+    return a;                                                                  \
+  }
+
+#define DEF_WFMA_VV(PREFIX, NUM, TYPE, TYPE2, TYPE3)                           \
+  v##NUM##TYPE2 __attribute__ ((noinline, noclone))                            \
+  PREFIX##_##TYPE##TYPE2##TYPE3##NUM (v##NUM##TYPE2 a, v##NUM##TYPE b,         \
+				      v##NUM##TYPE c, int *restrict cond)      \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = cond[i] ? (TYPE3) b[i] * (TYPE3) c[i] + a[i] : a[i];              \
+    return a;                                                                  \
+  }
+
+#define DEF_WFNMA_VV(PREFIX, NUM, TYPE, TYPE2, TYPE3)                          \
+  v##NUM##TYPE2 __attribute__ ((noinline, noclone))                            \
+  PREFIX##_##TYPE##TYPE2##TYPE3##NUM (v##NUM##TYPE2 a, v##NUM##TYPE b,         \
+				      v##NUM##TYPE c, int *restrict cond)      \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = cond[i] ? a[i] - (TYPE3) b[i] * (TYPE3) c[i] : a[i];              \
+    return a;                                                                  \
+  }
+
+#define DEF_WFMS_VV(PREFIX, NUM, TYPE, TYPE2, TYPE3)                           \
+  v##NUM##TYPE2 __attribute__ ((noinline, noclone))                            \
+  PREFIX##_##TYPE##TYPE2##TYPE3##NUM (v##NUM##TYPE2 a, v##NUM##TYPE b,         \
+				      v##NUM##TYPE c, int *restrict cond)      \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = cond[i] ? (TYPE3) b[i] * (TYPE3) c[i] - a[i] : a[i];              \
+    return a;                                                                  \
+  }
+
+#define DEF_COND_NARROW_TRUNC_IMM(TYPE1, TYPE2, TYPE3, NUM)                    \
+  v##NUM##TYPE1 narrow_##TYPE1##_##TYPE2##_##NUM (v##NUM##TYPE1 a,             \
+						  v##NUM##TYPE2 b,             \
+						  int *__restrict cond)        \
+  {                                                                            \
+    for (int i = 0; i < NUM; i += 1)                                           \
+      a[i] = cond[i] ? (TYPE3) (b[i] >> 7) : a[i];                             \
+    return a;                                                                  \
+  }
+
+#define DEF_COND_NARROW_TRUNC_XREG(TYPE1, TYPE2, TYPE3, NUM)                   \
+  v##NUM##TYPE1 narrow_##TYPE1##_##TYPE2##_##NUM (v##NUM##TYPE1 a,             \
+						  v##NUM##TYPE2 b, int shift,  \
+						  int *__restrict cond)        \
+  {                                                                            \
+    for (int i = 0; i < NUM; i += 1)                                           \
+      a[i] = cond[i] ? (TYPE3) (b[i] >> shift) : a[i];                         \
+    return a;                                                                  \
+  }
