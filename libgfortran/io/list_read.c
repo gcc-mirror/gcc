@@ -476,18 +476,8 @@ eat_separator (st_parameter_dt *dtp)
 	  unget_char (dtp, c);
 	  break;
 	}
-      dtp->u.p.comma_flag = 1;
-      eat_spaces (dtp);
-      break;
-
+    /* Fall through. */
     case ';':
-      if (dtp->u.p.current_unit->decimal_status == DECIMAL_POINT)
-	{
-	  generate_error (&dtp->common, LIBERROR_READ_VALUE,
-	   "Semicolon not allowed as separator with DECIMAL='point'");
-	  unget_char (dtp, c);
-	  break;
-	}
       dtp->u.p.comma_flag = 1;
       eat_spaces (dtp);
       break;
