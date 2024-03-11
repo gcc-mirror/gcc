@@ -171,57 +171,6 @@ Selecting another run-time library temporarily can be
 achieved by using the :switch:`--RTS` switch, e.g., :switch:`--RTS=sjlj`
 
 
-.. _Choosing_the_Scheduling_Policy:
-
-.. index:: SCHED_FIFO scheduling policy
-.. index:: SCHED_RR scheduling policy
-.. index:: SCHED_OTHER scheduling policy
-
-Choosing the Scheduling Policy
-------------------------------
-
-When using a POSIX threads implementation, you have a choice of several
-scheduling policies: ``SCHED_FIFO``, ``SCHED_RR`` and ``SCHED_OTHER``.
-
-Typically, the default is ``SCHED_OTHER``, while using ``SCHED_FIFO``
-or ``SCHED_RR`` requires special (e.g., root) privileges.
-
-.. index:: pragma Time_Slice
-.. index:: -T0 option
-.. index:: pragma Task_Dispatching_Policy
-
-
-By default, GNAT uses the ``SCHED_OTHER`` policy. To specify
-``SCHED_FIFO``,
-you can use one of the following:
-
-* ``pragma Time_Slice (0.0)``
-* the corresponding binder option :switch:`-T0`
-* ``pragma Task_Dispatching_Policy (FIFO_Within_Priorities)``
-
-
-To specify ``SCHED_RR``,
-you should use ``pragma Time_Slice`` with a
-value greater than 0.0, or else use the corresponding :switch:`-T`
-binder option.
-
-
-To make sure a program is running as root, you can put something like
-this in a library package body in your application:
-
-  .. code-block:: ada
-
-     function geteuid return Integer;
-     pragma Import (C, geteuid, "geteuid");
-     Ignore : constant Boolean :=
-       (if geteuid = 0 then True else raise Program_Error with "must be root");
-
-It gets the effective user id, and if it's not 0 (i.e. root), it raises
-Program_Error. Note that if you re running the code in a container, this may
-not be sufficient, as you may have sufficient priviledge on the container,
-but not on the host machine running the container, so check that you also
-have sufficient priviledge for running the container image.
-
 .. index:: Linux
 .. index:: GNU/Linux
 
@@ -295,6 +244,55 @@ From there, to be able to link your binaries with PIE and therefore
 drop the :samp:`-no-pie` workaround, you'll need to get the identified
 dependencies rebuilt with PIE enabled (compiled with :samp:`-fPIE`
 and linked with :samp:`-pie`).
+
+.. _Choosing_the_Scheduling_Policy_With_GNU_Linux:
+
+.. index:: SCHED_FIFO scheduling policy
+.. index:: SCHED_RR scheduling policy
+.. index:: SCHED_OTHER scheduling policy
+
+Choosing the Scheduling Policy with GNU/Linux
+---------------------------------------------
+
+When using a POSIX threads implementation, you have a choice of several
+scheduling policies: ``SCHED_FIFO``, ``SCHED_RR`` and ``SCHED_OTHER``.
+
+Typically, the default is ``SCHED_OTHER``, while using ``SCHED_FIFO``
+or ``SCHED_RR`` requires special (e.g., root) privileges.
+
+.. index:: pragma Time_Slice
+.. index:: -T0 option
+.. index:: pragma Task_Dispatching_Policy
+
+
+By default, GNAT uses the ``SCHED_OTHER`` policy. To specify
+``SCHED_FIFO``,
+you can use one of the following:
+
+* ``pragma Time_Slice (0.0)``
+* the corresponding binder option :switch:`-T0`
+* ``pragma Task_Dispatching_Policy (FIFO_Within_Priorities)``
+
+To specify ``SCHED_RR``,
+you should use ``pragma Time_Slice`` with a
+value greater than 0.0, or else use the corresponding :switch:`-T`
+binder option.
+
+To make sure a program is running as root, you can put something like
+this in a library package body in your application:
+
+  .. code-block:: ada
+
+     function geteuid return Integer;
+     pragma Import (C, geteuid, "geteuid");
+     Ignore : constant Boolean :=
+       (if geteuid = 0 then True else raise Program_Error with "must be root");
+
+It gets the effective user id, and if it's not 0 (i.e. root), it raises
+Program_Error. Note that if you re running the code in a container, this may
+not be sufficient, as you may have sufficient priviledge on the container,
+but not on the host machine running the container, so check that you also
+have sufficient priviledge for running the container image.
 
 .. _A_GNU_Linux_debug_quirk:
 
@@ -534,6 +532,23 @@ and::
 
    Ada.Command_Line.Argument (1) -> "'*.txt'"
 
+.. _Choosing_the_Scheduling_Policy_With_Windows:
+
+Choosing the Scheduling Policy with Windows
+-------------------------------------------
+
+Under Windows, the standard 31 priorities of the Ada model are mapped onto 
+Window's seven standard priority levels by default: Idle, Lowest, Below Normal,
+Normal, Above Normal,
+
+When using the ``FIFO_Within_Priorities`` task dispatching policy, GNAT
+will assign the ``REALTIME_PRIORITY_CLASS`` priority class to the application 
+and map the Ada priority range to the sixteen priorities made available under 
+``REALTIME_PRIORITY_CLASS``. 
+
+For details on the values of the different priority mappings, see declarations
+in :file:`system.ads`. For more information about Windows priorities, please 
+refer to Microsoft's documentation.
 
 Windows Socket Timeouts
 -----------------------

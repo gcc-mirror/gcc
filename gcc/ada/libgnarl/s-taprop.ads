@@ -322,6 +322,15 @@ package System.Task_Primitives.Operations is
    --  priority (RM D.2.2 par 9). Loss_Of_Inheritance helps the underlying
    --  implementation to do it right when the OS doesn't.
 
+   --  Note: The behavior of Set_Priority is OS specific when a dispatching
+   --  policy is not specified, and, as a result, calls to Set_Priority may
+   --  have no affect without setting such a policy via pragma
+   --  Task_Dispatching_Policy.
+
+   --  For example:
+
+   --    pragma Task_Dispatching_Policy (FIFO_Within_Priorities);
+
    function Get_Priority (T : ST.Task_Id) return System.Any_Priority;
    pragma Inline (Get_Priority);
    --  Returns the priority last set by Set_Priority for this task

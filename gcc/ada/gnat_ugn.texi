@@ -425,14 +425,11 @@ Run-Time Libraries
 
 * Summary of Run-Time Configurations:: 
 
-Specifying a Run-Time Library
-
-* Choosing the Scheduling Policy:: 
-
 GNU/Linux Topics
 
 * Required Packages on GNU/Linux:: 
 * Position Independent Executable (PIE) Enabled by Default on Linux: Position Independent Executable PIE Enabled by Default on Linux. 
+* Choosing the Scheduling Policy with GNU/Linux:: 
 * A GNU/Linux Debug Quirk:: 
 
 Microsoft Windows Topics
@@ -442,6 +439,7 @@ Microsoft Windows Topics
 * CONSOLE and WINDOWS subsystems:: 
 * Temporary Files:: 
 * Disabling Command Line Argument Expansion:: 
+* Choosing the Scheduling Policy with Windows:: 
 * Windows Socket Timeouts:: 
 * Mixed-Language Programming on Windows:: 
 * Windows Specific Add-Ons:: 
@@ -22913,21 +22911,116 @@ Alternatively, you can specify @code{rts-sjlj/adainclude} in the file
 
 Selecting another run-time library temporarily can be
 achieved by using the @code{--RTS} switch, e.g., @code{--RTS=sjlj}
-@anchor{gnat_ugn/platform_specific_information choosing-the-scheduling-policy}@anchor{1bb}
+
+@geindex Linux
+
+@geindex GNU/Linux
+
+@node GNU/Linux Topics,Microsoft Windows Topics,Specifying a Run-Time Library,Platform-Specific Information
+@anchor{gnat_ugn/platform_specific_information gnu-linux-topics}@anchor{1bb}@anchor{gnat_ugn/platform_specific_information id5}@anchor{1bc}
+@section GNU/Linux Topics
+
+
+This section describes topics that are specific to GNU/Linux platforms.
+
+@menu
+* Required Packages on GNU/Linux:: 
+* Position Independent Executable (PIE) Enabled by Default on Linux: Position Independent Executable PIE Enabled by Default on Linux. 
+* Choosing the Scheduling Policy with GNU/Linux:: 
+* A GNU/Linux Debug Quirk:: 
+
+@end menu
+
+@node Required Packages on GNU/Linux,Position Independent Executable PIE Enabled by Default on Linux,,GNU/Linux Topics
+@anchor{gnat_ugn/platform_specific_information id6}@anchor{1bd}@anchor{gnat_ugn/platform_specific_information required-packages-on-gnu-linux}@anchor{1be}
+@subsection Required Packages on GNU/Linux
+
+
+GNAT requires the C library developer’s package to be installed.
+The name of of that package depends on your GNU/Linux distribution:
+
+
+@itemize *
+
+@item 
+RedHat, SUSE: @code{glibc-devel};
+
+@item 
+Debian, Ubuntu: @code{libc6-dev} (normally installed by default).
+@end itemize
+
+If using the 32-bit version of GNAT on a 64-bit version of GNU/Linux,
+you’ll need the 32-bit version of the following packages:
+
+
+@itemize *
+
+@item 
+RedHat, SUSE: @code{glibc.i686}, @code{glibc-devel.i686}, @code{ncurses-libs.i686}
+
+@item 
+SUSE: @code{glibc-locale-base-32bit}
+
+@item 
+Debian, Ubuntu: @code{libc6:i386}, @code{libc6-dev:i386}, @code{lib32ncursesw5}
+@end itemize
+
+Other GNU/Linux distributions might be choosing a different name
+for those packages.
+
+@node Position Independent Executable PIE Enabled by Default on Linux,Choosing the Scheduling Policy with GNU/Linux,Required Packages on GNU/Linux,GNU/Linux Topics
+@anchor{gnat_ugn/platform_specific_information pie-enabled-by-default-on-linux}@anchor{1bf}@anchor{gnat_ugn/platform_specific_information position-independent-executable-pie-enabled-by-default-on-linux}@anchor{1c0}
+@subsection Position Independent Executable (PIE) Enabled by Default on Linux
+
+
+GNAT generates Position Independent Executable (PIE) code by default.
+PIE binaries are loaded into random memory locations, introducing
+an additional layer of protection against attacks.
+
+Building PIE binaries requires that all of their dependencies also be
+built as Position Independent. If the link of your project fails with
+an error like:
+
+@example
+/[...]/ld: /path/to/object/file: relocation R_X86_64_32S against symbol
+`symbol name' can not be used when making a PIE object;
+recompile with -fPIE
+@end example
+
+it means the identified object file has not been built as Position
+Independent.
+
+If you are not interested in building PIE binaries, you can simply
+turn this feature off by first compiling your code with @code{-fno-pie}
+and then by linking with @code{-no-pie} (note the subtle but important
+difference in the names of the options – the linker option does `not'
+have an @cite{f} after the dash!). When using gprbuild, this is
+achieved by updating the `Required_Switches' attribute in package @cite{Compiler}
+and, depending on your type of project, either attribute `Switches'
+or attribute `Library_Options' in package @cite{Linker}.
+
+On the other hand, if you would like to build PIE binaries and you are
+getting the error above, a quick and easy workaround to allow linking
+to succeed again is to disable PIE during the link, thus temporarily
+lifting the requirement that all dependencies also be Position
+Independent code. To do so, you simply need to add @code{-no-pie} to
+the list of switches passed to the linker. As part of this workaround,
+there is no need to adjust the compiler switches.
+
+From there, to be able to link your binaries with PIE and therefore
+drop the @code{-no-pie} workaround, you’ll need to get the identified
+dependencies rebuilt with PIE enabled (compiled with @code{-fPIE}
+and linked with @code{-pie}).
+@anchor{gnat_ugn/platform_specific_information choosing-the-scheduling-policy-with-gnu-linux}@anchor{1c1}
 @geindex SCHED_FIFO scheduling policy
 
 @geindex SCHED_RR scheduling policy
 
 @geindex SCHED_OTHER scheduling policy
 
-@menu
-* Choosing the Scheduling Policy:: 
-
-@end menu
-
-@node Choosing the Scheduling Policy,,,Specifying a Run-Time Library
-@anchor{gnat_ugn/platform_specific_information id5}@anchor{1bc}
-@subsection Choosing the Scheduling Policy
+@node Choosing the Scheduling Policy with GNU/Linux,A GNU/Linux Debug Quirk,Position Independent Executable PIE Enabled by Default on Linux,GNU/Linux Topics
+@anchor{gnat_ugn/platform_specific_information id7}@anchor{1c2}
+@subsection Choosing the Scheduling Policy with GNU/Linux
 
 
 When using a POSIX threads implementation, you have a choice of several
@@ -22983,106 +23076,7 @@ not be sufficient, as you may have sufficient priviledge on the container,
 but not on the host machine running the container, so check that you also
 have sufficient priviledge for running the container image.
 
-@geindex Linux
-
-@geindex GNU/Linux
-
-@node GNU/Linux Topics,Microsoft Windows Topics,Specifying a Run-Time Library,Platform-Specific Information
-@anchor{gnat_ugn/platform_specific_information gnu-linux-topics}@anchor{1bd}@anchor{gnat_ugn/platform_specific_information id6}@anchor{1be}
-@section GNU/Linux Topics
-
-
-This section describes topics that are specific to GNU/Linux platforms.
-
-@menu
-* Required Packages on GNU/Linux:: 
-* Position Independent Executable (PIE) Enabled by Default on Linux: Position Independent Executable PIE Enabled by Default on Linux. 
-* A GNU/Linux Debug Quirk:: 
-
-@end menu
-
-@node Required Packages on GNU/Linux,Position Independent Executable PIE Enabled by Default on Linux,,GNU/Linux Topics
-@anchor{gnat_ugn/platform_specific_information id7}@anchor{1bf}@anchor{gnat_ugn/platform_specific_information required-packages-on-gnu-linux}@anchor{1c0}
-@subsection Required Packages on GNU/Linux
-
-
-GNAT requires the C library developer’s package to be installed.
-The name of of that package depends on your GNU/Linux distribution:
-
-
-@itemize *
-
-@item 
-RedHat, SUSE: @code{glibc-devel};
-
-@item 
-Debian, Ubuntu: @code{libc6-dev} (normally installed by default).
-@end itemize
-
-If using the 32-bit version of GNAT on a 64-bit version of GNU/Linux,
-you’ll need the 32-bit version of the following packages:
-
-
-@itemize *
-
-@item 
-RedHat, SUSE: @code{glibc.i686}, @code{glibc-devel.i686}, @code{ncurses-libs.i686}
-
-@item 
-SUSE: @code{glibc-locale-base-32bit}
-
-@item 
-Debian, Ubuntu: @code{libc6:i386}, @code{libc6-dev:i386}, @code{lib32ncursesw5}
-@end itemize
-
-Other GNU/Linux distributions might be choosing a different name
-for those packages.
-
-@node Position Independent Executable PIE Enabled by Default on Linux,A GNU/Linux Debug Quirk,Required Packages on GNU/Linux,GNU/Linux Topics
-@anchor{gnat_ugn/platform_specific_information pie-enabled-by-default-on-linux}@anchor{1c1}@anchor{gnat_ugn/platform_specific_information position-independent-executable-pie-enabled-by-default-on-linux}@anchor{1c2}
-@subsection Position Independent Executable (PIE) Enabled by Default on Linux
-
-
-GNAT generates Position Independent Executable (PIE) code by default.
-PIE binaries are loaded into random memory locations, introducing
-an additional layer of protection against attacks.
-
-Building PIE binaries requires that all of their dependencies also be
-built as Position Independent. If the link of your project fails with
-an error like:
-
-@example
-/[...]/ld: /path/to/object/file: relocation R_X86_64_32S against symbol
-`symbol name' can not be used when making a PIE object;
-recompile with -fPIE
-@end example
-
-it means the identified object file has not been built as Position
-Independent.
-
-If you are not interested in building PIE binaries, you can simply
-turn this feature off by first compiling your code with @code{-fno-pie}
-and then by linking with @code{-no-pie} (note the subtle but important
-difference in the names of the options – the linker option does `not'
-have an @cite{f} after the dash!). When using gprbuild, this is
-achieved by updating the `Required_Switches' attribute in package @cite{Compiler}
-and, depending on your type of project, either attribute `Switches'
-or attribute `Library_Options' in package @cite{Linker}.
-
-On the other hand, if you would like to build PIE binaries and you are
-getting the error above, a quick and easy workaround to allow linking
-to succeed again is to disable PIE during the link, thus temporarily
-lifting the requirement that all dependencies also be Position
-Independent code. To do so, you simply need to add @code{-no-pie} to
-the list of switches passed to the linker. As part of this workaround,
-there is no need to adjust the compiler switches.
-
-From there, to be able to link your binaries with PIE and therefore
-drop the @code{-no-pie} workaround, you’ll need to get the identified
-dependencies rebuilt with PIE enabled (compiled with @code{-fPIE}
-and linked with @code{-pie}).
-
-@node A GNU/Linux Debug Quirk,,Position Independent Executable PIE Enabled by Default on Linux,GNU/Linux Topics
+@node A GNU/Linux Debug Quirk,,Choosing the Scheduling Policy with GNU/Linux,GNU/Linux Topics
 @anchor{gnat_ugn/platform_specific_information a-gnu-linux-debug-quirk}@anchor{1c3}@anchor{gnat_ugn/platform_specific_information id8}@anchor{1c4}
 @subsection A GNU/Linux Debug Quirk
 
@@ -23117,6 +23111,7 @@ platforms.
 * CONSOLE and WINDOWS subsystems:: 
 * Temporary Files:: 
 * Disabling Command Line Argument Expansion:: 
+* Choosing the Scheduling Policy with Windows:: 
 * Windows Socket Timeouts:: 
 * Mixed-Language Programming on Windows:: 
 * Windows Specific Add-Ons:: 
@@ -23291,7 +23286,7 @@ file will be created. This is particularly useful in networked
 environments where you may not have write access to some
 directories.
 
-@node Disabling Command Line Argument Expansion,Windows Socket Timeouts,Temporary Files,Microsoft Windows Topics
+@node Disabling Command Line Argument Expansion,Choosing the Scheduling Policy with Windows,Temporary Files,Microsoft Windows Topics
 @anchor{gnat_ugn/platform_specific_information disabling-command-line-argument-expansion}@anchor{1cf}
 @subsection Disabling Command Line Argument Expansion
 
@@ -23362,8 +23357,26 @@ and:
 Ada.Command_Line.Argument (1) -> "'*.txt'"
 @end example
 
-@node Windows Socket Timeouts,Mixed-Language Programming on Windows,Disabling Command Line Argument Expansion,Microsoft Windows Topics
-@anchor{gnat_ugn/platform_specific_information windows-socket-timeouts}@anchor{1d0}
+@node Choosing the Scheduling Policy with Windows,Windows Socket Timeouts,Disabling Command Line Argument Expansion,Microsoft Windows Topics
+@anchor{gnat_ugn/platform_specific_information choosing-the-scheduling-policy-with-windows}@anchor{1d0}@anchor{gnat_ugn/platform_specific_information id14}@anchor{1d1}
+@subsection Choosing the Scheduling Policy with Windows
+
+
+Under Windows, the standard 31 priorities of the Ada model are mapped onto
+Window’s seven standard priority levels by default: Idle, Lowest, Below Normal,
+Normal, Above Normal,
+
+When using the @code{FIFO_Within_Priorities} task dispatching policy, GNAT
+will assign the @code{REALTIME_PRIORITY_CLASS} priority class to the application
+and map the Ada priority range to the sixteen priorities made available under
+@code{REALTIME_PRIORITY_CLASS}.
+
+For details on the values of the different priority mappings, see declarations
+in @code{system.ads}. For more information about Windows priorities, please
+refer to Microsoft’s documentation.
+
+@node Windows Socket Timeouts,Mixed-Language Programming on Windows,Choosing the Scheduling Policy with Windows,Microsoft Windows Topics
+@anchor{gnat_ugn/platform_specific_information windows-socket-timeouts}@anchor{1d2}
 @subsection Windows Socket Timeouts
 
 
@@ -23409,7 +23422,7 @@ shorter than 500 ms is needed on these Windows versions, a call to
 Check_Selector should be added before any socket read or write operations.
 
 @node Mixed-Language Programming on Windows,Windows Specific Add-Ons,Windows Socket Timeouts,Microsoft Windows Topics
-@anchor{gnat_ugn/platform_specific_information id14}@anchor{1d1}@anchor{gnat_ugn/platform_specific_information mixed-language-programming-on-windows}@anchor{1d2}
+@anchor{gnat_ugn/platform_specific_information id15}@anchor{1d3}@anchor{gnat_ugn/platform_specific_information mixed-language-programming-on-windows}@anchor{1d4}
 @subsection Mixed-Language Programming on Windows
 
 
@@ -23431,12 +23444,12 @@ to use the Microsoft tools for your C++ code, you have two choices:
 Encapsulate your C++ code in a DLL to be linked with your Ada
 application. In this case, use the Microsoft or whatever environment to
 build the DLL and use GNAT to build your executable
-(@ref{1d3,,Using DLLs with GNAT}).
+(@ref{1d5,,Using DLLs with GNAT}).
 
 @item 
 Or you can encapsulate your Ada code in a DLL to be linked with the
 other part of your application. In this case, use GNAT to build the DLL
-(@ref{1d4,,Building DLLs with GNAT Project files}) and use the Microsoft
+(@ref{1d6,,Building DLLs with GNAT Project files}) and use the Microsoft
 or whatever environment to build your executable.
 @end itemize
 
@@ -23493,7 +23506,7 @@ native SEH support is used.
 @end menu
 
 @node Windows Calling Conventions,Introduction to Dynamic Link Libraries DLLs,,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id15}@anchor{1d5}@anchor{gnat_ugn/platform_specific_information windows-calling-conventions}@anchor{1d6}
+@anchor{gnat_ugn/platform_specific_information id16}@anchor{1d7}@anchor{gnat_ugn/platform_specific_information windows-calling-conventions}@anchor{1d8}
 @subsubsection Windows Calling Conventions
 
 
@@ -23538,7 +23551,7 @@ are available for Windows:
 @end menu
 
 @node C Calling Convention,Stdcall Calling Convention,,Windows Calling Conventions
-@anchor{gnat_ugn/platform_specific_information c-calling-convention}@anchor{1d7}@anchor{gnat_ugn/platform_specific_information id16}@anchor{1d8}
+@anchor{gnat_ugn/platform_specific_information c-calling-convention}@anchor{1d9}@anchor{gnat_ugn/platform_specific_information id17}@anchor{1da}
 @subsubsection @code{C} Calling Convention
 
 
@@ -23580,10 +23593,10 @@ is missing, as in the above example, this parameter is set to be the
 When importing a variable defined in C, you should always use the @code{C}
 calling convention unless the object containing the variable is part of a
 DLL (in which case you should use the @code{Stdcall} calling
-convention, @ref{1d9,,Stdcall Calling Convention}).
+convention, @ref{1db,,Stdcall Calling Convention}).
 
 @node Stdcall Calling Convention,Win32 Calling Convention,C Calling Convention,Windows Calling Conventions
-@anchor{gnat_ugn/platform_specific_information id17}@anchor{1da}@anchor{gnat_ugn/platform_specific_information stdcall-calling-convention}@anchor{1d9}
+@anchor{gnat_ugn/platform_specific_information id18}@anchor{1dc}@anchor{gnat_ugn/platform_specific_information stdcall-calling-convention}@anchor{1db}
 @subsubsection @code{Stdcall} Calling Convention
 
 
@@ -23680,7 +23693,7 @@ Note that to ease building cross-platform bindings this convention
 will be handled as a @code{C} calling convention on non-Windows platforms.
 
 @node Win32 Calling Convention,DLL Calling Convention,Stdcall Calling Convention,Windows Calling Conventions
-@anchor{gnat_ugn/platform_specific_information id18}@anchor{1db}@anchor{gnat_ugn/platform_specific_information win32-calling-convention}@anchor{1dc}
+@anchor{gnat_ugn/platform_specific_information id19}@anchor{1dd}@anchor{gnat_ugn/platform_specific_information win32-calling-convention}@anchor{1de}
 @subsubsection @code{Win32} Calling Convention
 
 
@@ -23688,7 +23701,7 @@ This convention, which is GNAT-specific is fully equivalent to the
 @code{Stdcall} calling convention described above.
 
 @node DLL Calling Convention,,Win32 Calling Convention,Windows Calling Conventions
-@anchor{gnat_ugn/platform_specific_information dll-calling-convention}@anchor{1dd}@anchor{gnat_ugn/platform_specific_information id19}@anchor{1de}
+@anchor{gnat_ugn/platform_specific_information dll-calling-convention}@anchor{1df}@anchor{gnat_ugn/platform_specific_information id20}@anchor{1e0}
 @subsubsection @code{DLL} Calling Convention
 
 
@@ -23696,7 +23709,7 @@ This convention, which is GNAT-specific is fully equivalent to the
 @code{Stdcall} calling convention described above.
 
 @node Introduction to Dynamic Link Libraries DLLs,Using DLLs with GNAT,Windows Calling Conventions,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id20}@anchor{1df}@anchor{gnat_ugn/platform_specific_information introduction-to-dynamic-link-libraries-dlls}@anchor{1e0}
+@anchor{gnat_ugn/platform_specific_information id21}@anchor{1e1}@anchor{gnat_ugn/platform_specific_information introduction-to-dynamic-link-libraries-dlls}@anchor{1e2}
 @subsubsection Introduction to Dynamic Link Libraries (DLLs)
 
 
@@ -23780,10 +23793,10 @@ As a side note, an interesting difference between Microsoft DLLs and
 Unix shared libraries, is the fact that on most Unix systems all public
 routines are exported by default in a Unix shared library, while under
 Windows it is possible (but not required) to list exported routines in
-a definition file (see @ref{1e1,,The Definition File}).
+a definition file (see @ref{1e3,,The Definition File}).
 
 @node Using DLLs with GNAT,Building DLLs with GNAT Project files,Introduction to Dynamic Link Libraries DLLs,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id21}@anchor{1e2}@anchor{gnat_ugn/platform_specific_information using-dlls-with-gnat}@anchor{1d3}
+@anchor{gnat_ugn/platform_specific_information id22}@anchor{1e4}@anchor{gnat_ugn/platform_specific_information using-dlls-with-gnat}@anchor{1d5}
 @subsubsection Using DLLs with GNAT
 
 
@@ -23874,7 +23887,7 @@ example a fictitious DLL called @code{API.dll}.
 @end menu
 
 @node Creating an Ada Spec for the DLL Services,Creating an Import Library,,Using DLLs with GNAT
-@anchor{gnat_ugn/platform_specific_information creating-an-ada-spec-for-the-dll-services}@anchor{1e3}@anchor{gnat_ugn/platform_specific_information id22}@anchor{1e4}
+@anchor{gnat_ugn/platform_specific_information creating-an-ada-spec-for-the-dll-services}@anchor{1e5}@anchor{gnat_ugn/platform_specific_information id23}@anchor{1e6}
 @subsubsection Creating an Ada Spec for the DLL Services
 
 
@@ -23914,7 +23927,7 @@ end API;
 @end quotation
 
 @node Creating an Import Library,,Creating an Ada Spec for the DLL Services,Using DLLs with GNAT
-@anchor{gnat_ugn/platform_specific_information creating-an-import-library}@anchor{1e5}@anchor{gnat_ugn/platform_specific_information id23}@anchor{1e6}
+@anchor{gnat_ugn/platform_specific_information creating-an-import-library}@anchor{1e7}@anchor{gnat_ugn/platform_specific_information id24}@anchor{1e8}
 @subsubsection Creating an Import Library
 
 
@@ -23928,7 +23941,7 @@ as in this case it is possible to link directly against the
 DLL. Otherwise read on.
 
 @geindex Definition file
-@anchor{gnat_ugn/platform_specific_information the-definition-file}@anchor{1e1}
+@anchor{gnat_ugn/platform_specific_information the-definition-file}@anchor{1e3}
 @subsubheading The Definition File
 
 
@@ -23976,17 +23989,17 @@ EXPORTS
 @end table
 
 Note that you must specify the correct suffix (@code{@@@var{nn}})
-(see @ref{1d6,,Windows Calling Conventions}) for a Stdcall
+(see @ref{1d8,,Windows Calling Conventions}) for a Stdcall
 calling convention function in the exported symbols list.
 
 There can actually be other sections in a definition file, but these
 sections are not relevant to the discussion at hand.
-@anchor{gnat_ugn/platform_specific_information create-def-file-automatically}@anchor{1e7}
+@anchor{gnat_ugn/platform_specific_information create-def-file-automatically}@anchor{1e9}
 @subsubheading Creating a Definition File Automatically
 
 
 You can automatically create the definition file @code{API.def}
-(see @ref{1e1,,The Definition File}) from a DLL.
+(see @ref{1e3,,The Definition File}) from a DLL.
 For that use the @code{dlltool} program as follows:
 
 @quotation
@@ -23996,7 +24009,7 @@ $ dlltool API.dll -z API.def --export-all-symbols
 @end example
 
 Note that if some routines in the DLL have the @code{Stdcall} convention
-(@ref{1d6,,Windows Calling Conventions}) with stripped @code{@@@var{nn}}
+(@ref{1d8,,Windows Calling Conventions}) with stripped @code{@@@var{nn}}
 suffix then you’ll have to edit @code{api.def} to add it, and specify
 @code{-k} to @code{gnatdll} when creating the import library.
 
@@ -24020,13 +24033,13 @@ tells you what symbol is expected. You just have to go back to the
 definition file and add the right suffix.
 @end itemize
 @end quotation
-@anchor{gnat_ugn/platform_specific_information gnat-style-import-library}@anchor{1e8}
+@anchor{gnat_ugn/platform_specific_information gnat-style-import-library}@anchor{1ea}
 @subsubheading GNAT-Style Import Library
 
 
 To create a static import library from @code{API.dll} with the GNAT tools
 you should create the .def file, then use @code{gnatdll} tool
-(see @ref{1e9,,Using gnatdll}) as follows:
+(see @ref{1eb,,Using gnatdll}) as follows:
 
 @quotation
 
@@ -24042,15 +24055,15 @@ definition file name is @code{xyz.def}, the import library name will
 be @code{libxyz.a}. Note that in the previous example option
 @code{-e} could have been removed because the name of the definition
 file (before the @code{.def} suffix) is the same as the name of the
-DLL (@ref{1e9,,Using gnatdll} for more information about @code{gnatdll}).
+DLL (@ref{1eb,,Using gnatdll} for more information about @code{gnatdll}).
 @end quotation
-@anchor{gnat_ugn/platform_specific_information msvs-style-import-library}@anchor{1ea}
+@anchor{gnat_ugn/platform_specific_information msvs-style-import-library}@anchor{1ec}
 @subsubheading Microsoft-Style Import Library
 
 
 A Microsoft import library is needed only if you plan to make an
 Ada DLL available to applications developed with Microsoft
-tools (@ref{1d2,,Mixed-Language Programming on Windows}).
+tools (@ref{1d4,,Mixed-Language Programming on Windows}).
 
 To create a Microsoft-style import library for @code{API.dll} you
 should create the .def file, then build the actual import library using
@@ -24074,7 +24087,7 @@ See the Microsoft documentation for further details about the usage of
 @end quotation
 
 @node Building DLLs with GNAT Project files,Building DLLs with GNAT,Using DLLs with GNAT,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnat-project-files}@anchor{1d4}@anchor{gnat_ugn/platform_specific_information id24}@anchor{1eb}
+@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnat-project-files}@anchor{1d6}@anchor{gnat_ugn/platform_specific_information id25}@anchor{1ed}
 @subsubsection Building DLLs with GNAT Project files
 
 
@@ -24090,7 +24103,7 @@ when inside the @code{DllMain} routine which is used for auto-initialization
 of shared libraries, so it is not possible to have library level tasks in SALs.
 
 @node Building DLLs with GNAT,Building DLLs with gnatdll,Building DLLs with GNAT Project files,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnat}@anchor{1ec}@anchor{gnat_ugn/platform_specific_information id25}@anchor{1ed}
+@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnat}@anchor{1ee}@anchor{gnat_ugn/platform_specific_information id26}@anchor{1ef}
 @subsubsection Building DLLs with GNAT
 
 
@@ -24121,7 +24134,7 @@ $ gcc -shared -shared-libgcc -o api.dll obj1.o obj2.o ...
 It is important to note that in this case all symbols found in the
 object files are automatically exported. It is possible to restrict
 the set of symbols to export by passing to @code{gcc} a definition
-file (see @ref{1e1,,The Definition File}).
+file (see @ref{1e3,,The Definition File}).
 For example:
 
 @example
@@ -24159,7 +24172,7 @@ $ gnatmake main -Iapilib -bargs -shared -largs -Lapilib -lAPI
 @end quotation
 
 @node Building DLLs with gnatdll,Ada DLLs and Finalization,Building DLLs with GNAT,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnatdll}@anchor{1ee}@anchor{gnat_ugn/platform_specific_information id26}@anchor{1ef}
+@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnatdll}@anchor{1f0}@anchor{gnat_ugn/platform_specific_information id27}@anchor{1f1}
 @subsubsection Building DLLs with gnatdll
 
 
@@ -24167,8 +24180,8 @@ $ gnatmake main -Iapilib -bargs -shared -largs -Lapilib -lAPI
 @geindex building
 
 Note that it is preferred to use GNAT Project files
-(@ref{1d4,,Building DLLs with GNAT Project files}) or the built-in GNAT
-DLL support (@ref{1ec,,Building DLLs with GNAT}) or to build DLLs.
+(@ref{1d6,,Building DLLs with GNAT Project files}) or the built-in GNAT
+DLL support (@ref{1ee,,Building DLLs with GNAT}) or to build DLLs.
 
 This section explains how to build DLLs containing Ada code using
 @code{gnatdll}. These DLLs will be referred to as Ada DLLs in the
@@ -24184,20 +24197,20 @@ non-Ada applications are as follows:
 You need to mark each Ada entity exported by the DLL with a @code{C} or
 @code{Stdcall} calling convention to avoid any Ada name mangling for the
 entities exported by the DLL
-(see @ref{1f0,,Exporting Ada Entities}). You can
+(see @ref{1f2,,Exporting Ada Entities}). You can
 skip this step if you plan to use the Ada DLL only from Ada applications.
 
 @item 
 Your Ada code must export an initialization routine which calls the routine
 @code{adainit} generated by @code{gnatbind} to perform the elaboration of
-the Ada code in the DLL (@ref{1f1,,Ada DLLs and Elaboration}). The initialization
+the Ada code in the DLL (@ref{1f3,,Ada DLLs and Elaboration}). The initialization
 routine exported by the Ada DLL must be invoked by the clients of the DLL
 to initialize the DLL.
 
 @item 
 When useful, the DLL should also export a finalization routine which calls
 routine @code{adafinal} generated by @code{gnatbind} to perform the
-finalization of the Ada code in the DLL (@ref{1f2,,Ada DLLs and Finalization}).
+finalization of the Ada code in the DLL (@ref{1f4,,Ada DLLs and Finalization}).
 The finalization routine exported by the Ada DLL must be invoked by the
 clients of the DLL when the DLL services are no further needed.
 
@@ -24207,11 +24220,11 @@ of the programming languages to which you plan to make the DLL available.
 
 @item 
 You must provide a definition file listing the exported entities
-(@ref{1e1,,The Definition File}).
+(@ref{1e3,,The Definition File}).
 
 @item 
 Finally you must use @code{gnatdll} to produce the DLL and the import
-library (@ref{1e9,,Using gnatdll}).
+library (@ref{1eb,,Using gnatdll}).
 @end itemize
 
 Note that a relocatable DLL stripped using the @code{strip}
@@ -24231,7 +24244,7 @@ chapter of the `GPRbuild User’s Guide'.
 @end menu
 
 @node Limitations When Using Ada DLLs from Ada,Exporting Ada Entities,,Building DLLs with gnatdll
-@anchor{gnat_ugn/platform_specific_information limitations-when-using-ada-dlls-from-ada}@anchor{1f3}
+@anchor{gnat_ugn/platform_specific_information limitations-when-using-ada-dlls-from-ada}@anchor{1f5}
 @subsubsection Limitations When Using Ada DLLs from Ada
 
 
@@ -24252,7 +24265,7 @@ It is completely safe to exchange plain elementary, array or record types,
 Windows object handles, etc.
 
 @node Exporting Ada Entities,Ada DLLs and Elaboration,Limitations When Using Ada DLLs from Ada,Building DLLs with gnatdll
-@anchor{gnat_ugn/platform_specific_information exporting-ada-entities}@anchor{1f0}@anchor{gnat_ugn/platform_specific_information id27}@anchor{1f4}
+@anchor{gnat_ugn/platform_specific_information exporting-ada-entities}@anchor{1f2}@anchor{gnat_ugn/platform_specific_information id28}@anchor{1f6}
 @subsubsection Exporting Ada Entities
 
 
@@ -24352,10 +24365,10 @@ end API;
 Note that if you do not export the Ada entities with a @code{C} or
 @code{Stdcall} convention you will have to provide the mangled Ada names
 in the definition file of the Ada DLL
-(@ref{1f5,,Creating the Definition File}).
+(@ref{1f7,,Creating the Definition File}).
 
 @node Ada DLLs and Elaboration,,Exporting Ada Entities,Building DLLs with gnatdll
-@anchor{gnat_ugn/platform_specific_information ada-dlls-and-elaboration}@anchor{1f1}@anchor{gnat_ugn/platform_specific_information id28}@anchor{1f6}
+@anchor{gnat_ugn/platform_specific_information ada-dlls-and-elaboration}@anchor{1f3}@anchor{gnat_ugn/platform_specific_information id29}@anchor{1f8}
 @subsubsection Ada DLLs and Elaboration
 
 
@@ -24373,7 +24386,7 @@ the Ada elaboration routine @code{adainit} generated by the GNAT binder
 (@ref{7e,,Binding with Non-Ada Main Programs}). See the body of
 @code{Initialize_Api} for an example. Note that the GNAT binder is
 automatically invoked during the DLL build process by the @code{gnatdll}
-tool (@ref{1e9,,Using gnatdll}).
+tool (@ref{1eb,,Using gnatdll}).
 
 When a DLL is loaded, Windows systematically invokes a routine called
 @code{DllMain}. It would therefore be possible to call @code{adainit}
@@ -24386,7 +24399,7 @@ time), which means that the GNAT run-time will deadlock waiting for the
 newly created task to complete its initialization.
 
 @node Ada DLLs and Finalization,Creating a Spec for Ada DLLs,Building DLLs with gnatdll,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information ada-dlls-and-finalization}@anchor{1f2}@anchor{gnat_ugn/platform_specific_information id29}@anchor{1f7}
+@anchor{gnat_ugn/platform_specific_information ada-dlls-and-finalization}@anchor{1f4}@anchor{gnat_ugn/platform_specific_information id30}@anchor{1f9}
 @subsubsection Ada DLLs and Finalization
 
 
@@ -24401,10 +24414,10 @@ routine @code{adafinal} generated by the GNAT binder
 See the body of @code{Finalize_Api} for an
 example. As already pointed out the GNAT binder is automatically invoked
 during the DLL build process by the @code{gnatdll} tool
-(@ref{1e9,,Using gnatdll}).
+(@ref{1eb,,Using gnatdll}).
 
 @node Creating a Spec for Ada DLLs,GNAT and Windows Resources,Ada DLLs and Finalization,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information creating-a-spec-for-ada-dlls}@anchor{1f8}@anchor{gnat_ugn/platform_specific_information id30}@anchor{1f9}
+@anchor{gnat_ugn/platform_specific_information creating-a-spec-for-ada-dlls}@anchor{1fa}@anchor{gnat_ugn/platform_specific_information id31}@anchor{1fb}
 @subsubsection Creating a Spec for Ada DLLs
 
 
@@ -24462,7 +24475,7 @@ end API;
 @end menu
 
 @node Creating the Definition File,Using gnatdll,,Creating a Spec for Ada DLLs
-@anchor{gnat_ugn/platform_specific_information creating-the-definition-file}@anchor{1f5}@anchor{gnat_ugn/platform_specific_information id31}@anchor{1fa}
+@anchor{gnat_ugn/platform_specific_information creating-the-definition-file}@anchor{1f7}@anchor{gnat_ugn/platform_specific_information id32}@anchor{1fc}
 @subsubsection Creating the Definition File
 
 
@@ -24498,7 +24511,7 @@ EXPORTS
 @end quotation
 
 @node Using gnatdll,,Creating the Definition File,Creating a Spec for Ada DLLs
-@anchor{gnat_ugn/platform_specific_information id32}@anchor{1fb}@anchor{gnat_ugn/platform_specific_information using-gnatdll}@anchor{1e9}
+@anchor{gnat_ugn/platform_specific_information id33}@anchor{1fd}@anchor{gnat_ugn/platform_specific_information using-gnatdll}@anchor{1eb}
 @subsubsection Using @code{gnatdll}
 
 
@@ -24709,7 +24722,7 @@ asks @code{gnatlink} to generate the routines @code{DllMain} and
 is loaded into memory.
 
 @item 
-@code{gnatdll} uses @code{dlltool} (see @ref{1fc,,Using dlltool}) to build the
+@code{gnatdll} uses @code{dlltool} (see @ref{1fe,,Using dlltool}) to build the
 export table (@code{api.exp}). The export table contains the relocation
 information in a form which can be used during the final link to ensure
 that the Windows loader is able to place the DLL anywhere in memory.
@@ -24748,7 +24761,7 @@ $ gnatbind -n api
 $ gnatlink api api.exp -o api.dll -mdll
 @end example
 @end itemize
-@anchor{gnat_ugn/platform_specific_information using-dlltool}@anchor{1fc}
+@anchor{gnat_ugn/platform_specific_information using-dlltool}@anchor{1fe}
 @subsubheading Using @code{dlltool}
 
 
@@ -24807,7 +24820,7 @@ DLL in the static import library generated by @code{dlltool} with switch
 @item @code{-k}
 
 Kill @code{@@@var{nn}} from exported names
-(@ref{1d6,,Windows Calling Conventions}
+(@ref{1d8,,Windows Calling Conventions}
 for a discussion about @code{Stdcall}-style symbols).
 @end table
 
@@ -24863,7 +24876,7 @@ Use @code{assembler-name} as the assembler. The default is @code{as}.
 @end table
 
 @node GNAT and Windows Resources,Using GNAT DLLs from Microsoft Visual Studio Applications,Creating a Spec for Ada DLLs,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information gnat-and-windows-resources}@anchor{1fd}@anchor{gnat_ugn/platform_specific_information id33}@anchor{1fe}
+@anchor{gnat_ugn/platform_specific_information gnat-and-windows-resources}@anchor{1ff}@anchor{gnat_ugn/platform_specific_information id34}@anchor{200}
 @subsubsection GNAT and Windows Resources
 
 
@@ -24958,7 +24971,7 @@ the corresponding Microsoft documentation.
 @end menu
 
 @node Building Resources,Compiling Resources,,GNAT and Windows Resources
-@anchor{gnat_ugn/platform_specific_information building-resources}@anchor{1ff}@anchor{gnat_ugn/platform_specific_information id34}@anchor{200}
+@anchor{gnat_ugn/platform_specific_information building-resources}@anchor{201}@anchor{gnat_ugn/platform_specific_information id35}@anchor{202}
 @subsubsection Building Resources
 
 
@@ -24978,7 +24991,7 @@ complete description of the resource script language can be found in the
 Microsoft documentation.
 
 @node Compiling Resources,Using Resources,Building Resources,GNAT and Windows Resources
-@anchor{gnat_ugn/platform_specific_information compiling-resources}@anchor{201}@anchor{gnat_ugn/platform_specific_information id35}@anchor{202}
+@anchor{gnat_ugn/platform_specific_information compiling-resources}@anchor{203}@anchor{gnat_ugn/platform_specific_information id36}@anchor{204}
 @subsubsection Compiling Resources
 
 
@@ -25020,7 +25033,7 @@ $ windres -i myres.res -o myres.o
 @end quotation
 
 @node Using Resources,,Compiling Resources,GNAT and Windows Resources
-@anchor{gnat_ugn/platform_specific_information id36}@anchor{203}@anchor{gnat_ugn/platform_specific_information using-resources}@anchor{204}
+@anchor{gnat_ugn/platform_specific_information id37}@anchor{205}@anchor{gnat_ugn/platform_specific_information using-resources}@anchor{206}
 @subsubsection Using Resources
 
 
@@ -25040,7 +25053,7 @@ $ gnatmake myprog -largs myres.o
 @end quotation
 
 @node Using GNAT DLLs from Microsoft Visual Studio Applications,Debugging a DLL,GNAT and Windows Resources,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information using-gnat-dll-from-msvs}@anchor{205}@anchor{gnat_ugn/platform_specific_information using-gnat-dlls-from-microsoft-visual-studio-applications}@anchor{206}
+@anchor{gnat_ugn/platform_specific_information using-gnat-dll-from-msvs}@anchor{207}@anchor{gnat_ugn/platform_specific_information using-gnat-dlls-from-microsoft-visual-studio-applications}@anchor{208}
 @subsubsection Using GNAT DLLs from Microsoft Visual Studio Applications
 
 
@@ -25074,7 +25087,7 @@ $ gprbuild -p mylib.gpr
 @item 
 Produce a .def file for the symbols you need to interface with, either by
 hand or automatically with possibly some manual adjustments
-(see @ref{1e7,,Creating Definition File Automatically}):
+(see @ref{1e9,,Creating Definition File Automatically}):
 @end enumerate
 
 @quotation
@@ -25091,7 +25104,7 @@ $ dlltool libmylib.dll -z libmylib.def --export-all-symbols
 Make sure that MSVS command-line tools are accessible on the path.
 
 @item 
-Create the Microsoft-style import library (see @ref{1ea,,MSVS-Style Import Library}):
+Create the Microsoft-style import library (see @ref{1ec,,MSVS-Style Import Library}):
 @end enumerate
 
 @quotation
@@ -25133,7 +25146,7 @@ or copy the DLL into into the directory containing the .exe.
 @end enumerate
 
 @node Debugging a DLL,Setting Stack Size from gnatlink,Using GNAT DLLs from Microsoft Visual Studio Applications,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information debugging-a-dll}@anchor{207}@anchor{gnat_ugn/platform_specific_information id37}@anchor{208}
+@anchor{gnat_ugn/platform_specific_information debugging-a-dll}@anchor{209}@anchor{gnat_ugn/platform_specific_information id38}@anchor{20a}
 @subsubsection Debugging a DLL
 
 
@@ -25171,7 +25184,7 @@ tools suite used to build the DLL.
 @end menu
 
 @node Program and DLL Both Built with GCC/GNAT,Program Built with Foreign Tools and DLL Built with GCC/GNAT,,Debugging a DLL
-@anchor{gnat_ugn/platform_specific_information id38}@anchor{209}@anchor{gnat_ugn/platform_specific_information program-and-dll-both-built-with-gcc-gnat}@anchor{20a}
+@anchor{gnat_ugn/platform_specific_information id39}@anchor{20b}@anchor{gnat_ugn/platform_specific_information program-and-dll-both-built-with-gcc-gnat}@anchor{20c}
 @subsubsection Program and DLL Both Built with GCC/GNAT
 
 
@@ -25181,7 +25194,7 @@ the process. Let’s suppose here that the main procedure is named
 @code{ada_main} and that in the DLL there is an entry point named
 @code{ada_dll}.
 
-The DLL (@ref{1e0,,Introduction to Dynamic Link Libraries (DLLs)}) and
+The DLL (@ref{1e2,,Introduction to Dynamic Link Libraries (DLLs)}) and
 program must have been built with the debugging information (see GNAT -g
 switch). Here are the step-by-step instructions for debugging it:
 
@@ -25221,7 +25234,7 @@ you can use the standard approach to debug the whole program
 (@ref{14f,,Running and Debugging Ada Programs}).
 
 @node Program Built with Foreign Tools and DLL Built with GCC/GNAT,,Program and DLL Both Built with GCC/GNAT,Debugging a DLL
-@anchor{gnat_ugn/platform_specific_information id39}@anchor{20b}@anchor{gnat_ugn/platform_specific_information program-built-with-foreign-tools-and-dll-built-with-gcc-gnat}@anchor{20c}
+@anchor{gnat_ugn/platform_specific_information id40}@anchor{20d}@anchor{gnat_ugn/platform_specific_information program-built-with-foreign-tools-and-dll-built-with-gcc-gnat}@anchor{20e}
 @subsubsection Program Built with Foreign Tools and DLL Built with GCC/GNAT
 
 
@@ -25238,7 +25251,7 @@ example some C code built with Microsoft Visual C) and that there is a
 DLL named @code{test.dll} containing an Ada entry point named
 @code{ada_dll}.
 
-The DLL (see @ref{1e0,,Introduction to Dynamic Link Libraries (DLLs)}) must have
+The DLL (see @ref{1e2,,Introduction to Dynamic Link Libraries (DLLs)}) must have
 been built with debugging information (see the GNAT @code{-g} option).
 
 @subsubheading Debugging the DLL Directly
@@ -25377,7 +25390,7 @@ approach to debug a program as described in
 @ref{14f,,Running and Debugging Ada Programs}.
 
 @node Setting Stack Size from gnatlink,Setting Heap Size from gnatlink,Debugging a DLL,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id40}@anchor{20d}@anchor{gnat_ugn/platform_specific_information setting-stack-size-from-gnatlink}@anchor{129}
+@anchor{gnat_ugn/platform_specific_information id41}@anchor{20f}@anchor{gnat_ugn/platform_specific_information setting-stack-size-from-gnatlink}@anchor{129}
 @subsubsection Setting Stack Size from @code{gnatlink}
 
 
@@ -25420,7 +25433,7 @@ because the comma is a separator for this option.
 @end itemize
 
 @node Setting Heap Size from gnatlink,,Setting Stack Size from gnatlink,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id41}@anchor{20e}@anchor{gnat_ugn/platform_specific_information setting-heap-size-from-gnatlink}@anchor{12a}
+@anchor{gnat_ugn/platform_specific_information id42}@anchor{210}@anchor{gnat_ugn/platform_specific_information setting-heap-size-from-gnatlink}@anchor{12a}
 @subsubsection Setting Heap Size from @code{gnatlink}
 
 
@@ -25453,7 +25466,7 @@ because the comma is a separator for this option.
 @end itemize
 
 @node Windows Specific Add-Ons,,Mixed-Language Programming on Windows,Microsoft Windows Topics
-@anchor{gnat_ugn/platform_specific_information win32-specific-addons}@anchor{20f}@anchor{gnat_ugn/platform_specific_information windows-specific-add-ons}@anchor{210}
+@anchor{gnat_ugn/platform_specific_information win32-specific-addons}@anchor{211}@anchor{gnat_ugn/platform_specific_information windows-specific-add-ons}@anchor{212}
 @subsection Windows Specific Add-Ons
 
 
@@ -25466,7 +25479,7 @@ This section describes the Windows specific add-ons.
 @end menu
 
 @node Win32Ada,wPOSIX,,Windows Specific Add-Ons
-@anchor{gnat_ugn/platform_specific_information id42}@anchor{211}@anchor{gnat_ugn/platform_specific_information win32ada}@anchor{212}
+@anchor{gnat_ugn/platform_specific_information id43}@anchor{213}@anchor{gnat_ugn/platform_specific_information win32ada}@anchor{214}
 @subsubsection Win32Ada
 
 
@@ -25497,7 +25510,7 @@ gprbuild p.gpr
 @end quotation
 
 @node wPOSIX,,Win32Ada,Windows Specific Add-Ons
-@anchor{gnat_ugn/platform_specific_information id43}@anchor{213}@anchor{gnat_ugn/platform_specific_information wposix}@anchor{214}
+@anchor{gnat_ugn/platform_specific_information id44}@anchor{215}@anchor{gnat_ugn/platform_specific_information wposix}@anchor{216}
 @subsubsection wPOSIX
 
 
@@ -25530,7 +25543,7 @@ gprbuild p.gpr
 @end quotation
 
 @node Mac OS Topics,,Microsoft Windows Topics,Platform-Specific Information
-@anchor{gnat_ugn/platform_specific_information id44}@anchor{215}@anchor{gnat_ugn/platform_specific_information mac-os-topics}@anchor{216}
+@anchor{gnat_ugn/platform_specific_information id45}@anchor{217}@anchor{gnat_ugn/platform_specific_information mac-os-topics}@anchor{218}
 @section Mac OS Topics
 
 
@@ -25545,7 +25558,7 @@ platform.
 @end menu
 
 @node Codesigning the Debugger,,,Mac OS Topics
-@anchor{gnat_ugn/platform_specific_information codesigning-the-debugger}@anchor{217}
+@anchor{gnat_ugn/platform_specific_information codesigning-the-debugger}@anchor{219}
 @subsection Codesigning the Debugger
 
 
@@ -25626,7 +25639,7 @@ the location where you installed GNAT.  Also, be sure that users are
 in the Unix group @code{_developer}.
 
 @node Example of Binder Output File,Elaboration Order Handling in GNAT,Platform-Specific Information,Top
-@anchor{gnat_ugn/example_of_binder_output doc}@anchor{218}@anchor{gnat_ugn/example_of_binder_output example-of-binder-output-file}@anchor{e}@anchor{gnat_ugn/example_of_binder_output id1}@anchor{219}
+@anchor{gnat_ugn/example_of_binder_output doc}@anchor{21a}@anchor{gnat_ugn/example_of_binder_output example-of-binder-output-file}@anchor{e}@anchor{gnat_ugn/example_of_binder_output id1}@anchor{21b}
 @chapter Example of Binder Output File
 
 
@@ -26378,7 +26391,7 @@ elaboration code in your own application).
 @c -- Example: A |withing| unit has a |with| clause, it |withs| a |withed| unit
 
 @node Elaboration Order Handling in GNAT,Inline Assembler,Example of Binder Output File,Top
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat doc}@anchor{21a}@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-order-handling-in-gnat}@anchor{f}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id1}@anchor{21b}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat doc}@anchor{21c}@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-order-handling-in-gnat}@anchor{f}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id1}@anchor{21d}
 @chapter Elaboration Order Handling in GNAT
 
 
@@ -26408,7 +26421,7 @@ GNAT, either automatically or with explicit programming features.
 @end menu
 
 @node Elaboration Code,Elaboration Order,,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-code}@anchor{21c}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id2}@anchor{21d}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-code}@anchor{21e}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id2}@anchor{21f}
 @section Elaboration Code
 
 
@@ -26556,7 +26569,7 @@ elaborated.
 @end itemize
 
 @node Elaboration Order,Checking the Elaboration Order,Elaboration Code,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-order}@anchor{21e}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id3}@anchor{21f}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-order}@anchor{220}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id3}@anchor{221}
 @section Elaboration Order
 
 
@@ -26725,7 +26738,7 @@ however a compiler may not always find such an order due to complications with
 respect to control and data flow.
 
 @node Checking the Elaboration Order,Controlling the Elaboration Order in Ada,Elaboration Order,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat checking-the-elaboration-order}@anchor{220}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id4}@anchor{221}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat checking-the-elaboration-order}@anchor{222}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id4}@anchor{223}
 @section Checking the Elaboration Order
 
 
@@ -26786,7 +26799,7 @@ order.
 @end itemize
 
 @node Controlling the Elaboration Order in Ada,Controlling the Elaboration Order in GNAT,Checking the Elaboration Order,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat controlling-the-elaboration-order-in-ada}@anchor{222}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id5}@anchor{223}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat controlling-the-elaboration-order-in-ada}@anchor{224}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id5}@anchor{225}
 @section Controlling the Elaboration Order in Ada
 
 
@@ -27114,7 +27127,7 @@ is that the program continues to stay in the last state (one or more correct
 orders exist) even if maintenance changes the bodies of targets.
 
 @node Controlling the Elaboration Order in GNAT,Mixing Elaboration Models,Controlling the Elaboration Order in Ada,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat controlling-the-elaboration-order-in-gnat}@anchor{224}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id6}@anchor{225}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat controlling-the-elaboration-order-in-gnat}@anchor{226}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id6}@anchor{227}
 @section Controlling the Elaboration Order in GNAT
 
 
@@ -27244,7 +27257,7 @@ The dynamic, legacy, and static models can be relaxed using compiler switch
 may not diagnose certain elaboration issues or install run-time checks.
 
 @node Mixing Elaboration Models,ABE Diagnostics,Controlling the Elaboration Order in GNAT,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id7}@anchor{226}@anchor{gnat_ugn/elaboration_order_handling_in_gnat mixing-elaboration-models}@anchor{227}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id7}@anchor{228}@anchor{gnat_ugn/elaboration_order_handling_in_gnat mixing-elaboration-models}@anchor{229}
 @section Mixing Elaboration Models
 
 
@@ -27291,7 +27304,7 @@ warning:   "y.ads" which has static elaboration checks
 The warnings can be suppressed by binder switch @code{-ws}.
 
 @node ABE Diagnostics,SPARK Diagnostics,Mixing Elaboration Models,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat abe-diagnostics}@anchor{228}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id8}@anchor{229}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat abe-diagnostics}@anchor{22a}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id8}@anchor{22b}
 @section ABE Diagnostics
 
 
@@ -27398,7 +27411,7 @@ declaration @code{Safe} because the body of function @code{ABE} has already been
 elaborated at that point.
 
 @node SPARK Diagnostics,Elaboration Circularities,ABE Diagnostics,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id9}@anchor{22a}@anchor{gnat_ugn/elaboration_order_handling_in_gnat spark-diagnostics}@anchor{22b}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id9}@anchor{22c}@anchor{gnat_ugn/elaboration_order_handling_in_gnat spark-diagnostics}@anchor{22d}
 @section SPARK Diagnostics
 
 
@@ -27424,7 +27437,7 @@ rules.
 @end quotation
 
 @node Elaboration Circularities,Resolving Elaboration Circularities,SPARK Diagnostics,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-circularities}@anchor{22c}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id10}@anchor{22d}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-circularities}@anchor{22e}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id10}@anchor{22f}
 @section Elaboration Circularities
 
 
@@ -27524,7 +27537,7 @@ This section enumerates various tactics for eliminating the circularity.
 @end itemize
 
 @node Resolving Elaboration Circularities,Elaboration-related Compiler Switches,Elaboration Circularities,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id11}@anchor{22e}@anchor{gnat_ugn/elaboration_order_handling_in_gnat resolving-elaboration-circularities}@anchor{22f}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id11}@anchor{230}@anchor{gnat_ugn/elaboration_order_handling_in_gnat resolving-elaboration-circularities}@anchor{231}
 @section Resolving Elaboration Circularities
 
 
@@ -27796,7 +27809,7 @@ Use the relaxed dynamic-elaboration model, with compiler switches
 @end itemize
 
 @node Elaboration-related Compiler Switches,Summary of Procedures for Elaboration Control,Resolving Elaboration Circularities,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-related-compiler-switches}@anchor{230}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id12}@anchor{231}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-related-compiler-switches}@anchor{232}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id12}@anchor{233}
 @section Elaboration-related Compiler Switches
 
 
@@ -27977,7 +27990,7 @@ checks. The example above will still fail at run time with an ABE.
 @end table
 
 @node Summary of Procedures for Elaboration Control,Inspecting the Chosen Elaboration Order,Elaboration-related Compiler Switches,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id13}@anchor{232}@anchor{gnat_ugn/elaboration_order_handling_in_gnat summary-of-procedures-for-elaboration-control}@anchor{233}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id13}@anchor{234}@anchor{gnat_ugn/elaboration_order_handling_in_gnat summary-of-procedures-for-elaboration-control}@anchor{235}
 @section Summary of Procedures for Elaboration Control
 
 
@@ -28035,7 +28048,7 @@ Use the relaxed dynamic elaboration model, with compiler switches
 @end itemize
 
 @node Inspecting the Chosen Elaboration Order,,Summary of Procedures for Elaboration Control,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id14}@anchor{234}@anchor{gnat_ugn/elaboration_order_handling_in_gnat inspecting-the-chosen-elaboration-order}@anchor{235}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id14}@anchor{236}@anchor{gnat_ugn/elaboration_order_handling_in_gnat inspecting-the-chosen-elaboration-order}@anchor{237}
 @section Inspecting the Chosen Elaboration Order
 
 
@@ -28178,7 +28191,7 @@ gdbstr (body)
 @end quotation
 
 @node Inline Assembler,GNU Free Documentation License,Elaboration Order Handling in GNAT,Top
-@anchor{gnat_ugn/inline_assembler doc}@anchor{236}@anchor{gnat_ugn/inline_assembler id1}@anchor{237}@anchor{gnat_ugn/inline_assembler inline-assembler}@anchor{10}
+@anchor{gnat_ugn/inline_assembler doc}@anchor{238}@anchor{gnat_ugn/inline_assembler id1}@anchor{239}@anchor{gnat_ugn/inline_assembler inline-assembler}@anchor{10}
 @chapter Inline Assembler
 
 
@@ -28237,7 +28250,7 @@ and with assembly language programming.
 @end menu
 
 @node Basic Assembler Syntax,A Simple Example of Inline Assembler,,Inline Assembler
-@anchor{gnat_ugn/inline_assembler basic-assembler-syntax}@anchor{238}@anchor{gnat_ugn/inline_assembler id2}@anchor{239}
+@anchor{gnat_ugn/inline_assembler basic-assembler-syntax}@anchor{23a}@anchor{gnat_ugn/inline_assembler id2}@anchor{23b}
 @section Basic Assembler Syntax
 
 
@@ -28353,7 +28366,7 @@ Intel: Destination first; for example @code{mov eax, 4}@w{ }
 
 
 @node A Simple Example of Inline Assembler,Output Variables in Inline Assembler,Basic Assembler Syntax,Inline Assembler
-@anchor{gnat_ugn/inline_assembler a-simple-example-of-inline-assembler}@anchor{23a}@anchor{gnat_ugn/inline_assembler id3}@anchor{23b}
+@anchor{gnat_ugn/inline_assembler a-simple-example-of-inline-assembler}@anchor{23c}@anchor{gnat_ugn/inline_assembler id3}@anchor{23d}
 @section A Simple Example of Inline Assembler
 
 
@@ -28502,7 +28515,7 @@ If there are no errors, @code{as} will generate an object file
 @code{nothing.out}.
 
 @node Output Variables in Inline Assembler,Input Variables in Inline Assembler,A Simple Example of Inline Assembler,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id4}@anchor{23c}@anchor{gnat_ugn/inline_assembler output-variables-in-inline-assembler}@anchor{23d}
+@anchor{gnat_ugn/inline_assembler id4}@anchor{23e}@anchor{gnat_ugn/inline_assembler output-variables-in-inline-assembler}@anchor{23f}
 @section Output Variables in Inline Assembler
 
 
@@ -28869,7 +28882,7 @@ end Get_Flags_3;
 @end quotation
 
 @node Input Variables in Inline Assembler,Inlining Inline Assembler Code,Output Variables in Inline Assembler,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id5}@anchor{23e}@anchor{gnat_ugn/inline_assembler input-variables-in-inline-assembler}@anchor{23f}
+@anchor{gnat_ugn/inline_assembler id5}@anchor{240}@anchor{gnat_ugn/inline_assembler input-variables-in-inline-assembler}@anchor{241}
 @section Input Variables in Inline Assembler
 
 
@@ -28958,7 +28971,7 @@ _increment__incr.1:
 @end quotation
 
 @node Inlining Inline Assembler Code,Other Asm Functionality,Input Variables in Inline Assembler,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id6}@anchor{240}@anchor{gnat_ugn/inline_assembler inlining-inline-assembler-code}@anchor{241}
+@anchor{gnat_ugn/inline_assembler id6}@anchor{242}@anchor{gnat_ugn/inline_assembler inlining-inline-assembler-code}@anchor{243}
 @section Inlining Inline Assembler Code
 
 
@@ -29029,7 +29042,7 @@ movl %esi,%eax
 thus saving the overhead of stack frame setup and an out-of-line call.
 
 @node Other Asm Functionality,,Inlining Inline Assembler Code,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id7}@anchor{242}@anchor{gnat_ugn/inline_assembler other-asm-functionality}@anchor{243}
+@anchor{gnat_ugn/inline_assembler id7}@anchor{244}@anchor{gnat_ugn/inline_assembler other-asm-functionality}@anchor{245}
 @section Other @code{Asm} Functionality
 
 
@@ -29044,7 +29057,7 @@ and @code{Volatile}, which inhibits unwanted optimizations.
 @end menu
 
 @node The Clobber Parameter,The Volatile Parameter,,Other Asm Functionality
-@anchor{gnat_ugn/inline_assembler id8}@anchor{244}@anchor{gnat_ugn/inline_assembler the-clobber-parameter}@anchor{245}
+@anchor{gnat_ugn/inline_assembler id8}@anchor{246}@anchor{gnat_ugn/inline_assembler the-clobber-parameter}@anchor{247}
 @subsection The @code{Clobber} Parameter
 
 
@@ -29108,7 +29121,7 @@ Use ‘register’ name @code{memory} if you changed a memory location
 @end itemize
 
 @node The Volatile Parameter,,The Clobber Parameter,Other Asm Functionality
-@anchor{gnat_ugn/inline_assembler id9}@anchor{246}@anchor{gnat_ugn/inline_assembler the-volatile-parameter}@anchor{247}
+@anchor{gnat_ugn/inline_assembler id9}@anchor{248}@anchor{gnat_ugn/inline_assembler the-volatile-parameter}@anchor{249}
 @subsection The @code{Volatile} Parameter
 
 
@@ -29144,7 +29157,7 @@ to @code{True} only if the compiler’s optimizations have created
 problems.
 
 @node GNU Free Documentation License,Index,Inline Assembler,Top
-@anchor{share/gnu_free_documentation_license doc}@anchor{248}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{249}
+@anchor{share/gnu_free_documentation_license doc}@anchor{24a}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{24b}
 @chapter GNU Free Documentation License
 
 

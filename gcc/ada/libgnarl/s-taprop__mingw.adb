@@ -675,7 +675,10 @@ package body System.Task_Primitives.Operations is
       Res :=
         SetThreadPriority
           (T.Common.LL.Thread,
-           Interfaces.C.int (Underlying_Priorities (Prio)));
+           Interfaces.C.int ((if Dispatching_Policy = 'F' then
+                                 FIFO_Underlying_Priorities (Prio)
+                              else
+                                 Underlying_Priorities (Prio))));
       pragma Assert (Res = Win32.TRUE);
 
       --  Note: Annex D (RM D.2.3(5/2)) requires the task to be placed at the
