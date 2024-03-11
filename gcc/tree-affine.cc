@@ -268,7 +268,6 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 			 tree op0, tree op1 = NULL_TREE)
 {
   aff_tree tmp;
-  poly_int64 bitpos, bitsize, bytepos;
 
   switch (code)
     {
