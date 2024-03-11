@@ -652,6 +652,11 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
   gimplify_and_add (mod, pre_p);
   ggc_free (mod);
 
+  /* If we failed to gimplify VAL then we can end up with the temporary
+     SSA name not having a definition.  In this case return a decl.  */
+  if (TREE_CODE (t) == SSA_NAME && ! SSA_NAME_DEF_STMT (t))
+    return lookup_tmp_var (val, is_formal, not_gimple_reg);
+
   return t;
 }
 
