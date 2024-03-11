@@ -1,3 +1,14 @@
+2024-03-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2024-03-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/112285
+	PR d/112290
+	* gdc.dg/pr112285.d: New test.
+	* gdc.dg/pr112290.d: New test.
+	* gdc.test/compilable/previewin.d: Adjust testcase.
+
 2024-03-09  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:
