@@ -274,7 +274,7 @@ gimple_bitwise_equal_p (tree expr1, tree expr2, tree (*valueize) (tree))
 bool gimple_bit_not_with_nop (tree, tree *, tree (*) (tree));
 bool gimple_maybe_cmp (tree, tree *, tree (*) (tree));
 
-/* Helper function for bitwise_equal_p macro.  */
+/* Helper function for bitwise_inverted_equal_p macro.  */
 
 static inline bool
 gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, bool &wascmp, tree (*valueize) (tree))

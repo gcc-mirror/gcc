@@ -290,14 +290,14 @@ void issue22076()
     extern(C++) static class C0
     {
         int foo() { return 0; } // Need at least one function in vtable.
-        S0 a; alias a this; // { dg-warning "is deprecated" }
+        S0 a; alias a this;
     }
 
     extern(C++) static class C1
     {
         S1 a;
         inout(S1)* b() inout nothrow { return &a; }
-        alias b this;       // { dg-warning "is deprecated" }
+        alias b this;
     }
 
     cast(void) hashOf(S0.init);

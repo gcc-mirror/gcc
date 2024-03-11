@@ -366,14 +366,15 @@ th_mempair_save_regs (rtx operands[4])
 {
   rtx set1 = gen_rtx_SET (operands[0], operands[1]);
   rtx set2 = gen_rtx_SET (operands[2], operands[3]);
+  rtx dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
   rtx insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set1, set2)));
   RTX_FRAME_RELATED_P (insn) = 1;
 
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				      copy_rtx (set1), REG_NOTES (insn));
-
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				      copy_rtx (set2), REG_NOTES (insn));
+  XVECEXP (dwarf, 0, 0) = copy_rtx (set1);
+  XVECEXP (dwarf, 0, 1) = copy_rtx (set2);
+  RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 0)) = 1;
+  RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 1)) = 1;
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 }
 
 /* Similar like riscv_restore_reg, but restores two registers from memory

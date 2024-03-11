@@ -281,14 +281,14 @@ public:
 			    gimple *stmt,
 			    unsigned lenrange[3], bool *nulterm,
 			    bool *allnul, bool *allnonnul);
-  bool count_nonzero_bytes (tree exp,
+  bool count_nonzero_bytes (tree exp, tree vuse,
 			    gimple *stmt,
 			    unsigned HOST_WIDE_INT offset,
 			    unsigned HOST_WIDE_INT nbytes,
 			    unsigned lenrange[3], bool *nulterm,
 			    bool *allnul, bool *allnonnul,
 			    ssa_name_limit_t &snlim);
-  bool count_nonzero_bytes_addr (tree exp,
+  bool count_nonzero_bytes_addr (tree exp, tree vuse,
 				 gimple *stmt,
 				 unsigned HOST_WIDE_INT offset,
 				 unsigned HOST_WIDE_INT nbytes,
@@ -4531,8 +4531,8 @@ nonzero_bytes_for_type (tree type, unsigned lenrange[3],
 }
 
 /* Recursively determine the minimum and maximum number of leading nonzero
-   bytes in the representation of EXP and set LENRANGE[0] and LENRANGE[1]
-   to each.
+   bytes in the representation of EXP at memory state VUSE and set
+   LENRANGE[0] and LENRANGE[1] to each.
    Sets LENRANGE[2] to the total size of the access (which may be less
    than LENRANGE[1] when what's being referenced by EXP is a pointer
    rather than an array).
@@ -4546,7 +4546,7 @@ nonzero_bytes_for_type (tree type, unsigned lenrange[3],
    Returns true on success and false otherwise.  */
 
 bool
-strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
+strlen_pass::count_nonzero_bytes (tree exp, tree vuse, gimple *stmt,
 				  unsigned HOST_WIDE_INT offset,
 				  unsigned HOST_WIDE_INT nbytes,
 				  unsigned lenrange[3], bool *nulterm,
@@ -4566,22 +4566,23 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
 	     exact value is not known) recurse once to set the range
 	     for an arbitrary constant.  */
 	  exp = build_int_cst (type, 1);
-	  return count_nonzero_bytes (exp, stmt,
+	  return count_nonzero_bytes (exp, vuse, stmt,
 				      offset, 1, lenrange,
 				      nulterm, allnul, allnonnul, snlim);
 	}
 
-      gimple *stmt = SSA_NAME_DEF_STMT (exp);
-      if (gimple_assign_single_p (stmt))
+      gimple *g = SSA_NAME_DEF_STMT (exp);
+      if (gimple_assign_single_p (g))
 	{
-	  exp = gimple_assign_rhs1 (stmt);
+	  exp = gimple_assign_rhs1 (g);
 	  if (!DECL_P (exp)
 	      && TREE_CODE (exp) != CONSTRUCTOR
 	      && TREE_CODE (exp) != MEM_REF)
 	    return false;
 	  /* Handle DECLs, CONSTRUCTOR and MEM_REF below.  */
+	  stmt = g;
 	}
-      else if (gimple_code (stmt) == GIMPLE_PHI)
+      else if (gimple_code (g) == GIMPLE_PHI)
 	{
 	  /* Avoid processing an SSA_NAME that has already been visited
 	     or if an SSA_NAME limit has been reached.  Indicate success
@@ -4590,11 +4591,11 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
 	    return res > 0;
 
 	  /* Determine the minimum and maximum from the PHI arguments.  */
-	  unsigned int n = gimple_phi_num_args (stmt);
+	  unsigned int n = gimple_phi_num_args (g);
 	  for (unsigned i = 0; i != n; i++)
 	    {
-	      tree def = gimple_phi_arg_def (stmt, i);
-	      if (!count_nonzero_bytes (def, stmt,
+	      tree def = gimple_phi_arg_def (g, i);
+	      if (!count_nonzero_bytes (def, vuse, g,
 					offset, nbytes, lenrange, nulterm,
 					allnul, allnonnul, snlim))
 		return false;
@@ -4652,7 +4653,7 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
 	return false;
 
       /* Handle MEM_REF = SSA_NAME types of assignments.  */
-      return count_nonzero_bytes_addr (arg, stmt,
+      return count_nonzero_bytes_addr (arg, vuse, stmt,
 				       offset, nbytes, lenrange, nulterm,
 				       allnul, allnonnul, snlim);
     }
@@ -4765,7 +4766,7 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
    bytes that are pointed to by EXP, which should be a pointer.  */
 
 bool
-strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
+strlen_pass::count_nonzero_bytes_addr (tree exp, tree vuse, gimple *stmt,
 				       unsigned HOST_WIDE_INT offset,
 				       unsigned HOST_WIDE_INT nbytes,
 				       unsigned lenrange[3], bool *nulterm,
@@ -4775,6 +4776,14 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
   int idx = get_stridx (exp, stmt);
   if (idx > 0)
     {
+      /* get_strinfo reflects string lengths before the current statement,
+	 where the current statement is the outermost count_nonzero_bytes
+	 stmt.  If there are any stores in between stmt and that
+	 current statement, the string length information might describe
+	 something significantly different.  */
+      if (gimple_vuse (stmt) != vuse)
+	return false;
+
       strinfo *si = get_strinfo (idx);
       if (!si)
 	return false;
@@ -4835,14 +4844,14 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
     }
 
   if (TREE_CODE (exp) == ADDR_EXPR)
-    return count_nonzero_bytes (TREE_OPERAND (exp, 0), stmt,
+    return count_nonzero_bytes (TREE_OPERAND (exp, 0), vuse, stmt,
 				offset, nbytes,
 				lenrange, nulterm, allnul, allnonnul, snlim);
 
   if (TREE_CODE (exp) == SSA_NAME)
     {
-      gimple *stmt = SSA_NAME_DEF_STMT (exp);
-      if (gimple_code (stmt) == GIMPLE_PHI)
+      gimple *g = SSA_NAME_DEF_STMT (exp);
+      if (gimple_code (g) == GIMPLE_PHI)
 	{
 	  /* Avoid processing an SSA_NAME that has already been visited
 	     or if an SSA_NAME limit has been reached.  Indicate success
@@ -4851,11 +4860,11 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
 	    return res > 0;
 
 	  /* Determine the minimum and maximum from the PHI arguments.  */
-	  unsigned int n = gimple_phi_num_args (stmt);
+	  unsigned int n = gimple_phi_num_args (g);
 	  for (unsigned i = 0; i != n; i++)
 	    {
-	      tree def = gimple_phi_arg_def (stmt, i);
-	      if (!count_nonzero_bytes_addr (def, stmt,
+	      tree def = gimple_phi_arg_def (g, i);
+	      if (!count_nonzero_bytes_addr (def, vuse, g,
 					     offset, nbytes, lenrange,
 					     nulterm, allnul, allnonnul,
 					     snlim))
@@ -4903,7 +4912,7 @@ strlen_pass::count_nonzero_bytes (tree expr_or_type, gimple *stmt,
 
   ssa_name_limit_t snlim;
   tree expr = expr_or_type;
-  return count_nonzero_bytes (expr, stmt,
+  return count_nonzero_bytes (expr, gimple_vuse (stmt), stmt,
 			      0, 0, lenrange, nulterm, allnul, allnonnul,
 			      snlim);
 }

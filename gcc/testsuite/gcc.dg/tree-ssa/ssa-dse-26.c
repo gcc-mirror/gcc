@@ -31,5 +31,5 @@ constraint_equal (struct constraint a, struct constraint b)
     && constraint_expr_equal (a.rhs, b.rhs);
 }
 
-/* { dg-final { scan-tree-dump-times "Deleted dead store: x = " 1 "dse1" } } */
-/* { dg-final { scan-tree-dump-times "Deleted dead store: y = " 1 "dse1" } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: x = " 2 "dse1" } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: y = " 2 "dse1" } } */

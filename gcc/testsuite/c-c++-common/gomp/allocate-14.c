@@ -17,7 +17,7 @@ h ()
 {
   #pragma omp target
    #pragma omp parallel
-    #pragma omp serial
+    #pragma omp single
      {
        int var2[5];  /* { dg-error "'allocate' directive for 'var2' inside a target region must specify an 'allocator' clause" } */
        #pragma omp allocate(var2)

@@ -20,6 +20,7 @@ import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
+import dmd.errors;
 import dmd.globals;
 import dmd.identifier;
 import dmd.location;
@@ -77,14 +78,14 @@ extern (C++) final class DebugSymbol : Dsymbol
         {
             if (!m)
             {
-                error("declaration must be at module level");
+                .error(loc, "%s `%s` declaration must be at module level", kind, toPrettyChars);
                 errors = true;
             }
             else
             {
                 if (findCondition(m.debugidsNot, ident))
                 {
-                    error("defined after use");
+                    .error(loc, "%s `%s` defined after use", kind, toPrettyChars);
                     errors = true;
                 }
                 if (!m.debugids)
@@ -96,7 +97,7 @@ extern (C++) final class DebugSymbol : Dsymbol
         {
             if (!m)
             {
-                error("level declaration must be at module level");
+                .error(loc, "%s `%s` level declaration must be at module level", kind, toPrettyChars);
                 errors = true;
             }
             else
@@ -172,14 +173,14 @@ extern (C++) final class VersionSymbol : Dsymbol
             VersionCondition.checkReserved(loc, ident.toString());
             if (!m)
             {
-                error("declaration must be at module level");
+                .error(loc, "%s `%s` declaration must be at module level", kind, toPrettyChars);
                 errors = true;
             }
             else
             {
                 if (findCondition(m.versionidsNot, ident))
                 {
-                    error("defined after use");
+                    .error(loc, "%s `%s` defined after use", kind, toPrettyChars);
                     errors = true;
                 }
                 if (!m.versionids)
@@ -191,7 +192,7 @@ extern (C++) final class VersionSymbol : Dsymbol
         {
             if (!m)
             {
-                error("level declaration must be at module level");
+                .error(loc, "%s `%s` level declaration must be at module level", kind, toPrettyChars);
                 errors = true;
             }
             else

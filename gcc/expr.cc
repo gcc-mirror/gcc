@@ -5438,8 +5438,8 @@ optimize_bitfield_assignment_op (poly_uint64 pbitsize,
    *BITSTART and *BITEND.  */
 
 void
-get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
-	       poly_int64_pod *bitpos, tree *offset)
+get_bit_range (poly_uint64 *bitstart, poly_uint64 *bitend, tree exp,
+	       poly_int64 *bitpos, tree *offset)
 {
   poly_int64 bitoffset;
   tree field, repr;
@@ -6083,13 +6083,10 @@ string_cst_read_str (void *data, void *, HOST_WIDE_INT offset,
       size_t l = TREE_STRING_LENGTH (str) - offset;
       memcpy (p, TREE_STRING_POINTER (str) + offset, l);
       memset (p + l, '\0', GET_MODE_SIZE (mode) - l);
-      return c_readstr (p, as_a <scalar_int_mode> (mode), false);
+      return c_readstr (p, mode, false);
     }
 
-  /* The by-pieces infrastructure does not try to pick a vector mode
-     for storing STRING_CST.  */
-  return c_readstr (TREE_STRING_POINTER (str) + offset,
-		    as_a <scalar_int_mode> (mode), false);
+  return c_readstr (TREE_STRING_POINTER (str) + offset, mode, false);
 }
 
 /* Generate code for computing expression EXP,
@@ -7884,8 +7881,8 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
    this case, but the address of the object can be found.  */
 
 tree
-get_inner_reference (tree exp, poly_int64_pod *pbitsize,
-		     poly_int64_pod *pbitpos, tree *poffset,
+get_inner_reference (tree exp, poly_int64 *pbitsize,
+		     poly_int64 *pbitpos, tree *poffset,
 		     machine_mode *pmode, int *punsignedp,
 		     int *preversep, int *pvolatilep)
 {
@@ -9331,13 +9328,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	{
 	  op0 = expand_expr (treeop0, target, VOIDmode,
 			     modifier);
-
-	  /* If the signedness of the conversion differs and OP0 is
-	     a promoted SUBREG, clear that indication since we now
-	     have to do the proper extension.  */
-	  if (TYPE_UNSIGNED (TREE_TYPE (treeop0)) != unsignedp
-	      && GET_CODE (op0) == SUBREG)
-	    SUBREG_PROMOTED_VAR_P (op0) = 0;
 
 	  return REDUCE_BIT_FIELD (op0);
 	}

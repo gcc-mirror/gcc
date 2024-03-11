@@ -3,9 +3,9 @@ EXTRA_FILES: imports/fail1900a.d imports/fail1900b.d
 TEST_OUTPUT:
 ---
 fail_compilation/fail1900.d(27): Error: template `fail1900.Mix1a!().Foo` matches more than one template declaration:
-fail_compilation/fail1900.d(14):     `Foo(ubyte x)`
-and
-fail_compilation/fail1900.d(15):     `Foo(byte x)`
+fail_compilation/fail1900.d(14):        `Foo(ubyte x)`
+and:
+fail_compilation/fail1900.d(15):        `Foo(byte x)`
 ---
 */
 

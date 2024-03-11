@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern tree number_of_latch_executions (class loop *);
 extern gcond *get_loop_exit_condition (const class loop *);
+extern gcond *get_loop_exit_condition (const_edge);
 
 extern void scev_initialize (void);
 extern bool scev_initialized_p (void);

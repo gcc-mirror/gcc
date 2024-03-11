@@ -92,6 +92,7 @@ extern void test_avxvnniint16 (void)		__attribute__((__target__("avxvnniint16"))
 extern void test_sm3 (void)			__attribute__((__target__("sm3")));
 extern void test_sha512 (void)			__attribute__((__target__("sha512")));
 extern void test_sm4 (void)                     __attribute__((__target__("sm4")));
+extern void test_user_msr (void)		__attribute__((__target__("usermsr")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
 extern void test_no_avx5124fmaps(void)		__attribute__((__target__("no-avx5124fmaps")));
@@ -185,6 +186,7 @@ extern void test_no_avxvnniint16 (void)		__attribute__((__target__("no-avxvnniin
 extern void test_no_sm3 (void)			__attribute__((__target__("no-sm3")));
 extern void test_no_sha512 (void)		__attribute__((__target__("no-sha512")));
 extern void test_no_sm4 (void)                  __attribute__((__target__("no-sm4")));
+extern void test_no_user_msr (void)		__attribute__((__target__("no-usermsr")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));
@@ -214,6 +216,8 @@ extern void test_arch_graniterapids (void)	__attribute__((__target__("arch=grani
 extern void test_arch_graniterapids_d (void)	__attribute__((__target__("arch=graniterapids-d")));
 extern void test_arch_arrowlake (void)		__attribute__((__target__("arch=arrowlake")));
 extern void test_arch_arrowlake_s (void)	__attribute__((__target__("arch=arrowlake-s")));
+extern void test_arch_clearwaterforest (void)	__attribute__((__target__("arch=clearwaterforest")));
+extern void test_arch_pantherlake (void)	__attribute__((__target__("arch=pantherlake")));
 extern void test_arch_lujiazui (void)			__attribute__((__target__("arch=lujiazui")));
 extern void test_arch_k8 (void)			__attribute__((__target__("arch=k8")));
 extern void test_arch_k8_sse3 (void)		__attribute__((__target__("arch=k8-sse3")));

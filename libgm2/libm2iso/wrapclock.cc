@@ -75,6 +75,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define NULL (void *)0
 #endif
 
+typedef long long int longint_t;
+
 
 /* GetTimeRealtime performs return gettime (CLOCK_REALTIME, ts).
    gettime returns 0 on success and -1 on failure.  If the underlying
@@ -175,7 +177,7 @@ EXPORT(KillTimespec) (void *ts)
 
 #if defined(HAVE_STRUCT_TIMESPEC)
 extern "C" int
-EXPORT(GetTimespec) (timespec *ts, unsigned long *sec, unsigned long *nano)
+EXPORT(GetTimespec) (timespec *ts, longint_t *sec, longint_t *nano)
 {
 #if defined(HAVE_STRUCT_TIMESPEC)
   *sec = ts->tv_sec;
@@ -188,7 +190,7 @@ EXPORT(GetTimespec) (timespec *ts, unsigned long *sec, unsigned long *nano)
 
 #else
 extern "C" int
-EXPORT(GetTimespec) (void *ts, unsigned long *sec, unsigned long *nano)
+EXPORT(GetTimespec) (void *ts, longint_t *sec, longint_t *nano)
 {
   return 0;
 }
@@ -199,7 +201,7 @@ EXPORT(GetTimespec) (void *ts, unsigned long *sec, unsigned long *nano)
 
 #if defined(HAVE_STRUCT_TIMESPEC)
 extern "C" int
-EXPORT(SetTimespec) (timespec *ts, unsigned long sec, unsigned long nano)
+EXPORT(SetTimespec) (timespec *ts, longint_t sec, longint_t nano)
 {
 #if defined(HAVE_STRUCT_TIMESPEC)
   ts->tv_sec = sec;
@@ -213,13 +215,13 @@ EXPORT(SetTimespec) (timespec *ts, unsigned long sec, unsigned long nano)
 #else
 
 extern "C" int
-EXPORT(SetTimespec) (void *ts, unsigned long sec, unsigned long nano)
+EXPORT(SetTimespec) (void *ts, longint_t sec, longint_t nano)
 {
   return 0;
 }
 #endif
 
-extern "C" long int
+extern "C" longint_t
 EXPORT(timezone) (void)
 {
 #if defined(HAVE_STRUCT_TIMESPEC)

@@ -12,7 +12,6 @@
 module dmd.ctfeexpr;
 
 import core.stdc.stdio;
-import core.stdc.stdlib;
 import core.stdc.string;
 import dmd.arraytypes;
 import dmd.astenums;
@@ -148,7 +147,7 @@ extern (C++) final class ThrownExceptionExp : Expression
         UnionExp ue = void;
         Expression e = resolveSlice((*thrown.value.elements)[0], &ue);
         StringExp se = e.toStringExp();
-        thrown.error("uncaught CTFE exception `%s(%s)`", thrown.type.toChars(), se ? se.toChars() : e.toChars());
+        error(thrown.loc, "uncaught CTFE exception `%s(%s)`", thrown.type.toChars(), se ? se.toChars() : e.toChars());
         /* Also give the line where the throw statement was. We won't have it
          * in the case where the ThrowStatement is generated internally
          * (eg, in ScopeStatement)
@@ -306,9 +305,10 @@ UnionExp copyLiteral(Expression e)
     }
     if (auto aae = e.isAssocArrayLiteralExp())
     {
-        emplaceExp!(AssocArrayLiteralExp)(&ue, e.loc, copyLiteralArray(aae.keys), copyLiteralArray(aae.values));
+        emplaceExp!(AssocArrayLiteralExp)(&ue, aae.loc, copyLiteralArray(aae.keys), copyLiteralArray(aae.values));
         AssocArrayLiteralExp r = ue.exp().isAssocArrayLiteralExp();
-        r.type = e.type;
+        r.type = aae.type;
+        r.lowering = aae.lowering;
         r.ownedByCtfe = OwnedBy.ctfe;
         return ue;
     }
@@ -435,7 +435,7 @@ UnionExp copyLiteral(Expression e)
         emplaceExp!(UnionExp)(&ue, e);
         return ue;
     }
-    e.error("CTFE internal error: literal `%s`", e.toChars());
+    error(e.loc, "CTFE internal error: literal `%s`", e.toChars());
     assert(0);
 }
 
@@ -506,7 +506,7 @@ private UnionExp paintTypeOntoLiteralCopy(Type type, Expression lit)
         // Can't type paint from struct to struct*; this needs another
         // level of indirection
         if (lit.op == EXP.structLiteral && isPointer(type))
-            lit.error("CTFE internal error: painting `%s`", type.toChars());
+            error(lit.loc, "CTFE internal error: painting `%s`", type.toChars());
         ue = copyLiteral(lit);
     }
     ue.exp().type = type;
@@ -1919,7 +1919,7 @@ bool isCtfeValueValid(Expression newval)
             return true; // uninitialized value
 
         default:
-            newval.error("CTFE internal error: illegal CTFE value `%s`", newval.toChars());
+            error(newval.loc, "CTFE internal error: illegal CTFE value `%s`", newval.toChars());
             return false;
     }
 }

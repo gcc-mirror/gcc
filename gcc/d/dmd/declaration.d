@@ -16,7 +16,6 @@ import core.stdc.stdio;
 import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
-import dmd.attrib;
 import dmd.ctorflow;
 import dmd.dclass;
 import dmd.delegatize;
@@ -327,12 +326,12 @@ extern (C++) abstract class Declaration : Dsymbol
                             continue;
                         if (sdv.postblit.isDisabled())
                         {
-                            p.error(loc, "is not copyable because field `%s` is not copyable", structField.toChars());
+                            .error(loc, "%s `%s` is not copyable because field `%s` is not copyable", p.kind, p.toPrettyChars, structField.toChars());
                             return true;
                         }
                     }
                 }
-                p.error(loc, "is not copyable because it has a disabled postblit");
+                .error(loc, "%s `%s` is not copyable because it has a disabled postblit", p.kind, p.toPrettyChars);
                 return true;
             }
         }
@@ -358,7 +357,7 @@ extern (C++) abstract class Declaration : Dsymbol
                 return true;
             }
         }
-        error(loc, "cannot be used because it is annotated with `@disable`");
+        .error(loc, "%s `%s` cannot be used because it is annotated with `@disable`", kind, toPrettyChars);
         return true;
     }
 
@@ -389,7 +388,7 @@ extern (C++) abstract class Declaration : Dsymbol
                 {
                     const(char)* s = isParameter() && parent.ident != Id.ensure ? "parameter" : "result";
                     if (!(flag & ModifyFlags.noError))
-                        error(loc, "cannot modify %s `%s` in contract", s, toChars());
+                        error(loc, "%s `%s` cannot modify %s `%s` in contract", kind, toPrettyChars, s, toChars());
                     return Modifiable.initialization; // do not report type related errors
                 }
             }
@@ -403,7 +402,7 @@ extern (C++) abstract class Declaration : Dsymbol
                 if (scx.func == vthis.parent && (scx.flags & SCOPE.contract))
                 {
                     if (!(flag & ModifyFlags.noError))
-                        error(loc, "cannot modify parameter `this` in contract");
+                        error(loc, "%s `%s` cannot modify parameter `this` in contract", kind, toPrettyChars);
                     return Modifiable.initialization; // do not report type related errors
                 }
             }
@@ -647,11 +646,11 @@ extern (C++) final class TupleDeclaration : Declaration
                 {
                     buf.printf("_%s_%d", ident.toChars(), i);
                     auto id = Identifier.idPool(buf.extractSlice());
-                    auto arg = new Parameter(STC.in_, t, id, null);
+                    auto arg = new Parameter(Loc.initial, STC.in_, t, id, null);
                 }
                 else
                 {
-                    auto arg = new Parameter(0, t, null, null, null);
+                    auto arg = new Parameter(Loc.initial, 0, t, null, null, null);
                 }
                 (*args)[i] = arg;
                 if (!t.deco)
@@ -946,7 +945,7 @@ extern (C++) final class AliasDeclaration : Declaration
         }
         if (inuse)
         {
-            error("recursive alias declaration");
+            .error(loc, "%s `%s` recursive alias declaration", kind, toPrettyChars);
 
         Lerr:
             // Avoid breaking "recursive alias" state during errors gagged
@@ -1004,7 +1003,7 @@ extern (C++) final class AliasDeclaration : Declaration
     {
         if (inuse)
         {
-            error("recursive alias declaration");
+            .error(loc, "%s `%s` recursive alias declaration", kind, toPrettyChars);
             return this;
         }
         inuse = 1;
@@ -1378,7 +1377,7 @@ extern (C++) class VarDeclaration : Declaration
             Dsymbol parent = toParent();
             if (!parent && !(storage_class & STC.static_))
             {
-                error("forward referenced");
+                .error(loc, "%s `%s` forward referenced", kind, toPrettyChars);
                 type = Type.terror;
             }
             else if (storage_class & (STC.static_ | STC.extern_ | STC.gshared) ||
@@ -1602,6 +1601,8 @@ extern (C++) class VarDeclaration : Declaration
         {
             inuse++;
             _init = _init.initializerSemantic(_scope, type, INITinterpret);
+            import dmd.semantic2 : lowerStaticAAs;
+            lowerStaticAAs(this, _scope);
             _scope = null;
             inuse--;
         }

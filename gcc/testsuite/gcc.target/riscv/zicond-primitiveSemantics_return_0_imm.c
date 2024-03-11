@@ -61,5 +61,5 @@ int primitiveSemantics_return_0_imm_11(int a, int b) {
 
 /* { dg-final { scan-assembler-times {\mczero\.eqz\M} 6 } } */
 /* { dg-final { scan-assembler-times {\mczero\.nez\M} 6 } } */
-/* { dg-final { scan-assembler-not {\mbeq} } } */
-/* { dg-final { scan-assembler-not {\mbne} } } */
+/* { dg-final { scan-assembler-not {\mbeq\M} } } */
+/* { dg-final { scan-assembler-not {\mbne\M} } } */

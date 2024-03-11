@@ -1,0 +1,32 @@
+(define_insn_and_split "*movsi_aarch64"
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  "(register_operand (operands[0], SImode)
+    || aarch64_reg_or_zero (operands[1], SImode))"
+  {@ [ cons: =0 , 1   ; attrs: type , arch , length ]
+     [ r        , r   ; mov_reg     , *    , 4      ] mov\t%w0, %w1
+     [ k        , r   ; mov_reg     , *    , 4      ] mov\t%w0, %w1
+     [ r        , k   ; mov_reg     , *    , 4      ] mov\t%w0, %w1
+     [ r        , M   ; mov_imm     , *    , 4      ] mov\t%w0, %1
+     [ r        , n   ; mov_imm     , *    , *      ] #
+     [ r        , Usv ; mov_imm     , sve  , 4      ] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [ r        , m   ; load_4      , *    , 4      ] ldr\t%w0, %1
+     [ w        , m   ; load_4      , fp   , 4      ] ldr\t%s0, %1
+     [ m        , rZ  ; store_4     , *    , 4      ] str\t%w1, %0
+     [ m        , w   ; store_4     , fp   , 4      ] str\t%s1, %0
+     [ r        , Usw ; load_4      , *    , 8      ] adrp\t%x0, %A1\;ldr\t%w0, [%x0, %L1]
+     [ r        , Usa ; adr         , *    , 4      ] adr\t%x0, %c1
+     [ r        , Ush ; adr         , *    , 4      ] adrp\t%x0, %A1
+     [ w        , rZ  ; f_mcr       , fp   , 4      ] fmov\t%s0, %w1
+     [ r        , w   ; f_mrc       , fp   , 4      ] fmov\t%w0, %s1
+     [ w        , w   ; fmov        , fp   , 4      ] fmov\t%s0, %s1
+     [ w        , Ds  ; neon_move   , simd , 4      ] << aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
+  }
+  "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), SImode)
+    && REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
+   [(const_int 0)]
+   "{
+       aarch64_expand_mov_immediate (operands[0], operands[1]);
+       DONE;
+    }"
+)

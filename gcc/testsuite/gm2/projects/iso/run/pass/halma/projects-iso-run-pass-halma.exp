@@ -29,6 +29,11 @@ set gm2src ${srcdir}/../m2
 
 gm2_init_iso ""
 
+# We should be able to compile, link or run in 45 seconds even on a
+# really slow host/target.
+
+gm2_push_timeout 45
+
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.
     if ![runtest_file_p $runtests $testcase] then {
@@ -37,3 +42,5 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
 
     gm2-torture-execute $testcase "" "pass"
 }
+
+gm2_pop_timeout

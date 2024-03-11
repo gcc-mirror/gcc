@@ -935,7 +935,7 @@ location_t linemap_add_macro_token (const line_map_macro *,
    LOCATION is the location of token that is part of the
    expansion-list of a macro expansion return the line number of the
    macro expansion point.  */
-int linemap_get_expansion_line (class line_maps *,
+int linemap_get_expansion_line (const line_maps *,
 				location_t);
 
 /* Return the path of the file corresponding to source code location
@@ -946,7 +946,7 @@ int linemap_get_expansion_line (class line_maps *,
    macro expansion point.
 
    SET is the line map set LOCATION comes from.  */
-const char* linemap_get_expansion_filename (class line_maps *,
+const char* linemap_get_expansion_filename (const line_maps *,
 					    location_t);
 
 /* A subclass of rich_location for emitting a diagnostic

@@ -10739,10 +10739,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 ;; generating PA 1.x code even though all PA 1.x systems are strongly ordered.
 
 ;; When barriers are needed, we use a strongly ordered ldcw instruction as
-;; the barrier.  Most PA 2.0 targets are cache coherent.  In that case, we
-;; can use the coherent cache control hint and avoid aligning the ldcw
-;; address.  In spite of its description, it is not clear that the sync
-;; instruction works as a barrier.
+;; the barrier.  All PA 2.0 targets accept the "co" cache control hint but
+;; only PA8800 and PA8900 processors implement the cacheable hint.  In
+;; that case, we can avoid aligning the ldcw address.  In spite of its
+;; description, it is not clear that the sync instruction works as a barrier.
 
 (define_expand "memory_barrier"
   [(parallel
@@ -10772,7 +10772,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
         (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
     (clobber (match_operand 1 "pmode_register_operand" "=&r"))]
   "TARGET_64BIT"
-  "ldo 15(%%sp),%1\n\tdepd %%r0,63,3,%1\n\tldcw 0(%1),%1"
+  "ldo 15(%%sp),%1\n\tdepd %%r0,63,3,%1\n\tldcw,co 0(%1),%1"
   [(set_attr "type" "binary")
    (set_attr "length" "12")])
 
@@ -10781,6 +10781,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
         (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
     (clobber (match_operand 1 "pmode_register_operand" "=&r"))]
   ""
-  "ldo 15(%%sp),%1\n\t{dep|depw} %%r0,31,3,%1\n\tldcw 0(%1),%1"
+  "ldo 15(%%sp),%1\n\t{dep|depw} %%r0,31,3,%1\n\t{ldcw|ldcw,co} 0(%1),%1"
   [(set_attr "type" "binary")
    (set_attr "length" "12")])

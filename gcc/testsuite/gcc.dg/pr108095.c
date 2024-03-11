@@ -1,5 +1,5 @@
 /* PR tree-optimization/108095 */
-/* { dg-do compile } */
+/* { dg-do compile { target lra } } */
 /* { dg-options "-Os -g" } */
 
 int v;

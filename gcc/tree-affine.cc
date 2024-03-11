@@ -805,6 +805,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 	      continue;
 	    }
 	  exp = XNEW (class name_expansion);
+	  ::new (static_cast<void *> (exp)) name_expansion ();
 	  exp->in_progress = 1;
 	  if (!*cache)
 	    *cache = new hash_map<tree, name_expansion *>;
@@ -860,6 +861,7 @@ tree_to_aff_combination_expand (tree expr, tree type, aff_tree *comb,
 bool
 free_name_expansion (tree const &, name_expansion **value, void *)
 {
+  (*value)->~name_expansion ();
   free (*value);
   return true;
 }

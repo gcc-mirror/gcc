@@ -679,12 +679,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		    if (!vr.undefined_p () && !vr.varying_p ())
 		      {
 			if (!avals->m_known_value_ranges.length ())
-			  {
-			    avals->m_known_value_ranges.safe_grow (count, true);
-			    for (int i = 0; i < count; ++i)
-			      new (&avals->m_known_value_ranges[i])
-				Value_Range ();
-			  }
+			  avals->m_known_value_ranges.safe_grow_cleared (count,
+									 true);
 			avals->m_known_value_ranges[i] = vr;
 		      }
 		  }

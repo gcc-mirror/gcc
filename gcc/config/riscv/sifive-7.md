@@ -44,7 +44,7 @@
 
 (define_insn_reservation "sifive_7_jump" 1
   (and (eq_attr "tune" "sifive_7")
-       (eq_attr "type" "jump,call"))
+       (eq_attr "type" "jump,call,jalr"))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_mul" 3

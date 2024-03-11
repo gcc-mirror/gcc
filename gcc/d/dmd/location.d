@@ -38,8 +38,8 @@ debug info etc.
 struct Loc
 {
     private uint _linnum;
-    private ushort _charnum;
-    private ushort fileIndex; // index into filenames[], starting from 1 (0 means no filename)
+    private uint _charnum;
+    private uint fileIndex; // index into filenames[], starting from 1 (0 means no filename)
     version (LocOffset)
         uint fileOffset; /// utf8 code unit index relative to start of file, starting from 0
 
@@ -67,7 +67,7 @@ nothrow:
     extern (D) this(const(char)* filename, uint linnum, uint charnum) @safe
     {
         this._linnum = linnum;
-        this._charnum = cast(ushort) charnum;
+        this._charnum = charnum;
         this.filename = filename;
     }
 
@@ -80,7 +80,7 @@ nothrow:
     /// ditto
     extern (C++) uint charnum(uint num) @nogc @safe
     {
-        return _charnum = cast(ushort) num;
+        return _charnum = num;
     }
 
     /// line number, starting from 1
@@ -114,8 +114,16 @@ nothrow:
         {
             //printf("setting %s\n", name);
             filenames.push(name);
-            fileIndex = cast(ushort)filenames.length;
-            assert(fileIndex);  // no overflow
+            fileIndex = cast(uint)filenames.length;
+            if (!fileIndex)
+            {
+                import dmd.globals : global;
+                import dmd.errors : error, fatal;
+
+                global.gag = 0; // ensure error message gets printed
+                error(Loc.initial, "internal compiler error: file name index overflow!");
+                fatal();
+            }
         }
         else
             fileIndex = 0;

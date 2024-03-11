@@ -300,7 +300,7 @@ get_stack_local_alignment (tree type, machine_mode mode)
 static bool
 try_fit_stack_local (poly_int64 start, poly_int64 length,
 		     poly_int64 size, unsigned int alignment,
-		     poly_int64_pod *poffset)
+		     poly_int64 *poffset)
 {
   poly_int64 this_frame_offset;
   int frame_off, frame_alignment, frame_phase;
@@ -1431,7 +1431,7 @@ static poly_int64 cfa_offset;
    offset indirectly through the pointer.  Otherwise, return 0.  */
 
 static rtx
-instantiate_new_reg (rtx x, poly_int64_pod *poffset)
+instantiate_new_reg (rtx x, poly_int64 *poffset)
 {
   rtx new_rtx;
   poly_int64 offset;
@@ -6112,6 +6112,8 @@ thread_prologue_and_epilogue_insns (void)
 		  && returnjump_p (BB_END (e->src)))
 		e->flags &= ~EDGE_FALLTHRU;
 	    }
+
+	  find_sub_basic_blocks (BLOCK_FOR_INSN (epilogue_seq));
 	}
       else if (next_active_insn (BB_END (exit_fallthru_edge->src)))
 	{
@@ -6210,6 +6212,8 @@ thread_prologue_and_epilogue_insns (void)
 	  set_insn_locations (seq, epilogue_location);
 
 	  emit_insn_before (seq, insn);
+
+	  find_sub_basic_blocks (BLOCK_FOR_INSN (insn));
 	}
     }
 

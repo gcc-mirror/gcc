@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu89" } */
 typedef unsigned char qi;
 typedef unsigned short hi;
 typedef unsigned long si;

@@ -205,11 +205,7 @@ d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
   else
     {
       /* Write verbatim messages with no location direct to stream.  */
-      text_info text;
-      text.err_no = errno;
-      text.args_ptr = &argp;
-      text.format_spec = expand_d_format (format);
-      text.x_data = NULL;
+      text_info text (expand_d_format (format), &argp, errno, nullptr);
 
       pp_format_verbatim (global_dc->printer, &text);
       pp_newline_and_flush (global_dc->printer);
@@ -224,7 +220,7 @@ d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
 
 void D_ATTRIBUTE_FORMAT(2,0) ATTRIBUTE_GCC_DIAG(2,0)
 verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
-	      const char *prefix1 = NULL, const char *prefix2 = NULL)
+	      const char *prefix1, const char *prefix2)
 {
   diagnostic_t diag_kind = DK_UNSPECIFIED;
   int opt = 0;
@@ -237,7 +233,7 @@ verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
       if (global.gag)
 	global.gaggedErrors++;
 
-      if (global.gag && !global.params.showGaggedErrors)
+      if (global.gag && !global.params.v.showGaggedErrors)
 	return;
 
       diag_kind = global.gag ? DK_ANACHRONISM : DK_ERROR;
@@ -281,6 +277,9 @@ verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
     }
   else if (kind == ErrorKind::tip)
     {
+      if (global.gag)
+	return;
+
       diag_kind = DK_DEBUG;
       verbatim = true;
     }
@@ -309,7 +308,7 @@ verrorReportSupplemental (const Loc& loc, const char* format, va_list ap,
 {
   if (kind == ErrorKind::error)
     {
-      if (global.gag && !global.params.showGaggedErrors)
+      if (global.gag && !global.params.v.showGaggedErrors)
 	return;
     }
   else if (kind == ErrorKind::warning)

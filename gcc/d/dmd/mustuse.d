@@ -12,6 +12,7 @@ module dmd.mustuse;
 
 import dmd.dscope;
 import dmd.dsymbol;
+import dmd.errors;
 import dmd.expression;
 import dmd.globals;
 import dmd.identifier;
@@ -49,7 +50,7 @@ bool checkMustUse(Expression e, Scope* sc)
         // isStructDeclaration returns non-null for both structs and unions
         if (sd && hasMustUseAttribute(sd, sc) && !isAssignment(e) && !isIncrementOrDecrement(e))
         {
-            e.error("ignored value of `@%s` type `%s`; prepend a `cast(void)` if intentional",
+            error(e.loc, "ignored value of `@%s` type `%s`; prepend a `cast(void)` if intentional",
                 Id.udaMustUse.toChars(), e.type.toPrettyChars(true));
             return true;
         }

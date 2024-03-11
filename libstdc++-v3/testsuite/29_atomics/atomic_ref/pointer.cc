@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++20 } }
-// { dg-require-thread-fence "" }
+// { dg-require-atomic-cmpxchg-word "" }
 // { dg-add-options libatomic }
 
 #include <atomic>

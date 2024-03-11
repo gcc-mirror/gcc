@@ -117,7 +117,6 @@ extern rtx riscv_emit_binary (enum rtx_code code, rtx dest, rtx x, rtx y);
 extern bool riscv_expand_conditional_move (rtx, rtx, rtx, rtx);
 extern rtx riscv_legitimize_call_address (rtx);
 extern void riscv_set_return_address (rtx, rtx);
-extern bool riscv_expand_block_move (rtx, rtx, rtx);
 extern rtx riscv_return_addr (int, rtx);
 extern poly_int64 riscv_initial_elimination_offset (int, int);
 extern void riscv_expand_prologue (void);
@@ -125,7 +124,6 @@ extern void riscv_expand_epilogue (int);
 extern bool riscv_epilogue_uses (unsigned int);
 extern bool riscv_can_use_return_insn (void);
 extern rtx riscv_function_value (const_tree, const_tree, enum machine_mode);
-extern bool riscv_expand_block_move (rtx, rtx, rtx);
 extern bool riscv_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern rtx riscv_gen_gpr_save_insn (struct riscv_frame_info *);
 extern bool riscv_gpr_save_operation_p (rtx);
@@ -159,6 +157,9 @@ extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 
 rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
+
+/* Routines implemented in riscv-string.c.  */
+extern bool riscv_expand_block_move (rtx, rtx, rtx);
 
 /* Information about one CPU we know about.  */
 struct riscv_cpu_info {
@@ -302,6 +303,9 @@ enum insn_type : unsigned int
   UNARY_OP_TAMA = __MASK_OP_TAMA | UNARY_OP_P,
   UNARY_OP_TAMU = __MASK_OP_TAMU | UNARY_OP_P,
   UNARY_OP_FRM_DYN = UNARY_OP | FRM_DYN_P,
+  UNARY_OP_FRM_RMM = UNARY_OP | FRM_RMM_P,
+  UNARY_OP_FRM_RUP = UNARY_OP | FRM_RUP_P,
+  UNARY_OP_FRM_RDN = UNARY_OP | FRM_RDN_P,
   UNARY_OP_TAMU_FRM_DYN = UNARY_OP_TAMU | FRM_DYN_P,
   UNARY_OP_TAMU_FRM_RUP = UNARY_OP_TAMU | FRM_RUP_P,
   UNARY_OP_TAMU_FRM_RDN = UNARY_OP_TAMU | FRM_RDN_P,
@@ -421,7 +425,7 @@ rtx expand_builtin (unsigned int, tree, rtx);
 bool check_builtin_call (location_t, vec<location_t>, unsigned int,
 			   tree, unsigned int, tree *);
 bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
-bool legitimize_move (rtx, rtx);
+bool legitimize_move (rtx, rtx *);
 void emit_vlmax_vsetvl (machine_mode, rtx);
 void emit_hard_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_insn (unsigned, unsigned, rtx *);
@@ -474,6 +478,10 @@ void expand_vec_rint (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_round (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_trunc (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_roundeven (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_lrint (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_lround (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_lceil (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_lfloor (rtx, rtx, machine_mode, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
@@ -492,6 +500,7 @@ bool slide1_sew64_helper (int, machine_mode, machine_mode,
 			  machine_mode, rtx *);
 rtx gen_avl_for_scalar_move (rtx);
 void expand_tuple_move (rtx *);
+bool expand_block_move (rtx, rtx, rtx);
 machine_mode preferred_simd_mode (scalar_mode);
 machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
@@ -542,6 +551,7 @@ opt_machine_mode vectorize_related_mode (machine_mode, scalar_mode,
 unsigned int autovectorize_vector_modes (vec<machine_mode> *, bool);
 bool cmp_lmul_le_one (machine_mode);
 bool cmp_lmul_gt_one (machine_mode);
+bool gather_scatter_valid_offset_mode_p (machine_mode);
 }
 
 /* We classify builtin types into two classes:

@@ -261,7 +261,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   switch (*spec)
     {
     case 'E':
-      t = va_arg (*text->args_ptr, tree);
+      t = va_arg (*text->m_args_ptr, tree);
       if (TREE_CODE (t) == IDENTIFIER_NODE)
 	{
 	  pp_identifier (pp, IDENTIFIER_POINTER (t));
@@ -270,14 +270,14 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       break;
 
     case 'D':
-      t = va_arg (*text->args_ptr, tree);
+      t = va_arg (*text->m_args_ptr, tree);
       if (VAR_P (t) && DECL_HAS_DEBUG_EXPR_P (t))
 	t = DECL_DEBUG_EXPR (t);
       break;
 
     case 'F':
     case 'T':
-      t = va_arg (*text->args_ptr, tree);
+      t = va_arg (*text->m_args_ptr, tree);
       break;
 
     default:

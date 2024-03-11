@@ -2758,13 +2758,10 @@ noBitsRequired (tree values)
 {
   int bits = tree_floor_log2 (values);
 
-  if (integer_pow2p (values))
-    return m2decl_BuildIntegerConstant (bits + 1);
-  else
-    return m2decl_BuildIntegerConstant (bits + 1);
+  return m2decl_BuildIntegerConstant (bits + 1);
 }
 
-/* getMax return the result of max(a, b).  */
+/* getMax return the result of max (a, b).  */
 
 static tree
 getMax (tree a, tree b)
@@ -2778,8 +2775,8 @@ getMax (tree a, tree b)
 /* calcNbits return the smallest number of bits required to
    represent: min..max.  */
 
-static tree
-calcNbits (location_t location, tree min, tree max)
+tree
+m2expr_calcNbits (location_t location, tree min, tree max)
 {
   int negative = false;
   tree t = testLimits (location, m2type_GetIntegerType (), min, max);
@@ -2832,7 +2829,7 @@ m2expr_BuildTBitSize (location_t location, tree type)
                                     TYPE_MAX_VALUE (type), false);
       min = m2convert_BuildConvert (location, m2type_GetIntegerType (),
                                     TYPE_MIN_VALUE (type), false);
-      return calcNbits (location, min, max);
+      return m2expr_calcNbits (location, min, max);
     case BOOLEAN_TYPE:
       return m2expr_GetIntegerOne (location);
     default:

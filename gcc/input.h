@@ -150,6 +150,9 @@ class file_cache
   void initialize_input_context (diagnostic_input_charset_callback ccb,
 				 bool should_skip_bom);
 
+  char_span get_source_file_content (const char *file_path);
+  char_span get_source_line (const char *file_path, int line);
+
  private:
   file_cache_slot *evicted_cache_tab_entry (unsigned *highest_use_count);
   file_cache_slot *add_file (const char *file_path);

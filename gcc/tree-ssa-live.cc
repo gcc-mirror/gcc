@@ -1361,7 +1361,7 @@ compute_live_vars (struct function *fn, live_vars_map *vars)
      We then do a mostly classical bitmap liveness algorithm.  */
 
   active.create (last_basic_block_for_fn (fn));
-  active.quick_grow (last_basic_block_for_fn (fn));
+  active.quick_grow_cleared (last_basic_block_for_fn (fn));
   for (int i = 0; i < last_basic_block_for_fn (fn); i++)
     bitmap_initialize (&active[i], &bitmap_default_obstack);
 

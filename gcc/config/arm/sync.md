@@ -62,68 +62,110 @@
    (set_attr "conds" "unconditional")
    (set_attr "predicable" "no")])
 
-(define_insn "atomic_load<mode>"
-  [(set (match_operand:QHSI 0 "register_operand" "=r,r,l")
+(define_insn "arm_atomic_load<mode>"
+  [(set (match_operand:QHSI 0 "register_operand" "=r,l")
     (unspec_volatile:QHSI
-      [(match_operand:QHSI 1 "arm_sync_memory_operand" "Q,Q,Q")
-       (match_operand:SI 2 "const_int_operand" "n,Pf,n")]	;; model
+      [(match_operand:QHSI 1 "memory_operand" "m,m")]
+      VUNSPEC_LDR))]
+  ""
+  "ldr<sync_sfx>\t%0, %1"
+  [(set_attr "arch" "32,any")])
+
+(define_insn "arm_atomic_load_acquire<mode>"
+  [(set (match_operand:QHSI 0 "register_operand" "=r")
+    (unspec_volatile:QHSI
+      [(match_operand:QHSI 1 "arm_sync_memory_operand" "Q")]
       VUNSPEC_LDA))]
   "TARGET_HAVE_LDACQ"
-  {
-    if (aarch_mm_needs_acquire (operands[2]))
-      {
-	if (TARGET_THUMB1)
-	  return "lda<sync_sfx>\t%0, %1";
-	else
-	  return "lda<sync_sfx>%?\t%0, %1";
-      }
-    else
-      {
-	if (TARGET_THUMB1)
-	  return "ldr<sync_sfx>\t%0, %1";
-	else
-	  return "ldr<sync_sfx>%?\t%0, %1";
-      }
-  }
-  [(set_attr "arch" "32,v8mb,any")
-   (set_attr "predicable" "yes")])
+  "lda<sync_sfx>\t%0, %C1"
+)
 
-(define_insn "atomic_store<mode>"
-  [(set (match_operand:QHSI 0 "memory_operand" "=Q,Q,Q")
+(define_insn "arm_atomic_store<mode>"
+  [(set (match_operand:QHSI 0 "memory_operand" "=m,m")
     (unspec_volatile:QHSI
-      [(match_operand:QHSI 1 "general_operand" "r,r,l")
-       (match_operand:SI 2 "const_int_operand" "n,Pf,n")]	;; model
+      [(match_operand:QHSI 1 "register_operand" "r,l")]
+      VUNSPEC_STR))]
+  ""
+  "str<sync_sfx>\t%1, %0";
+  [(set_attr "arch" "32,any")])
+
+(define_insn "arm_atomic_store_release<mode>"
+  [(set (match_operand:QHSI 0 "arm_sync_memory_operand" "=Q")
+    (unspec_volatile:QHSI
+      [(match_operand:QHSI 1 "register_operand" "r")]
       VUNSPEC_STL))]
   "TARGET_HAVE_LDACQ"
-  {
-    if (aarch_mm_needs_release (operands[2]))
-      {
-	if (TARGET_THUMB1)
-	  return "stl<sync_sfx>\t%1, %0";
-	else
-	  return "stl<sync_sfx>%?\t%1, %0";
-      }
-    else
-      {
-	if (TARGET_THUMB1)
-	  return "str<sync_sfx>\t%1, %0";
-	else
-	  return "str<sync_sfx>%?\t%1, %0";
-      }
-  }
-  [(set_attr "arch" "32,v8mb,any")
-   (set_attr "predicable" "yes")])
+  "stl<sync_sfx>\t%1, %C0")
+
+
+(define_expand "atomic_load<mode>"
+  [(match_operand:QHSI 0 "register_operand")		;; val out
+   (match_operand:QHSI 1 "arm_sync_memory_operand")	;; memory
+   (match_operand:SI 2 "const_int_operand")]		;; model
+  ""
+{
+  memmodel model = memmodel_from_int (INTVAL (operands[2]));
+
+  if (TARGET_HAVE_LDACQ && !is_mm_relaxed (model))
+    {
+      emit_insn (gen_arm_atomic_load_acquire<mode> (operands[0], operands[1]));
+      DONE;
+    }
+
+  /* The seq_cst model needs a barrier before the load to block reordering with
+     earlier accesses.  */
+  if (is_mm_seq_cst (model))
+    expand_mem_thread_fence (model);
+
+  emit_insn (gen_arm_atomic_load<mode> (operands[0], operands[1]));
+
+  /* All non-relaxed models need a barrier after the load when load-acquire
+     instructions are not available.  */
+  if (!is_mm_relaxed (model))
+    expand_mem_thread_fence (model);
+
+  DONE;
+})
+
+(define_expand "atomic_store<mode>"
+  [(match_operand:QHSI 0 "arm_sync_memory_operand")	;; memory
+   (match_operand:QHSI 1 "register_operand")		;; store value
+   (match_operand:SI 2 "const_int_operand")]		;; model
+  ""
+{
+  memmodel model = memmodel_from_int (INTVAL (operands[2]));
+
+  if (TARGET_HAVE_LDACQ && !is_mm_relaxed (model))
+    {
+      emit_insn (gen_arm_atomic_store_release<mode> (operands[0], operands[1]));
+      DONE;
+    }
+
+  /* All non-relaxed models need a barrier after the load when load-acquire
+     instructions are not available.  */
+  if (!is_mm_relaxed (model))
+    expand_mem_thread_fence (model);
+
+  emit_insn (gen_arm_atomic_store<mode> (operands[0], operands[1]));
+
+  /* The seq_cst model needs a barrier after the store to block reordering with
+     later accesses.  */
+  if (is_mm_seq_cst (model))
+    expand_mem_thread_fence (model);
+
+  DONE;
+})
 
 ;; An LDRD instruction usable by the atomic_loaddi expander on LPAE targets
 
 (define_insn "arm_atomic_loaddi2_ldrd"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec_volatile:DI
-	  [(match_operand:DI 1 "arm_sync_memory_operand" "Q")]
+	  [(match_operand:DI 1 "memory_operand" "m")]
 	    VUNSPEC_LDRD_ATOMIC))]
   "ARM_DOUBLEWORD_ALIGN && TARGET_HAVE_LPAE"
-  "ldrd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")])
+  "ldrd\t%0, %H0, %1"
+)
 
 ;; There are three ways to expand this depending on the architecture
 ;; features available.  As for the barriers, a load needs a barrier
@@ -152,6 +194,11 @@
       DONE;
     }
 
+  /* The seq_cst model needs a barrier before the load to block reordering with
+     earlier accesses.  */
+  if (is_mm_seq_cst (model))
+    expand_mem_thread_fence (model);
+
   /* On LPAE targets LDRD and STRD accesses to 64-bit aligned
      locations are 64-bit single-copy atomic.  We still need barriers in the
      appropriate places to implement the ordering constraints.  */
@@ -159,7 +206,6 @@
     emit_insn (gen_arm_atomic_loaddi2_ldrd (operands[0], operands[1]));
   else
     emit_insn (gen_arm_load_exclusivedi (operands[0], operands[1]));
-
 
   /* All non-relaxed models need a barrier after the load when load-acquire
      instructions are not available.  */
@@ -446,54 +492,42 @@
   [(set_attr "arch" "32,v8mb")])
 
 (define_insn "arm_load_exclusive<mode>"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
         (zero_extend:SI
 	  (unspec_volatile:NARROW
-	    [(match_operand:NARROW 1 "mem_noofs_operand" "Ua,Ua")]
+	    [(match_operand:NARROW 1 "mem_noofs_operand" "Ua")]
 	    VUNSPEC_LL)))]
   "TARGET_HAVE_LDREXBH"
-  "@
-   ldrex<sync_sfx>%?\t%0, %C1
-   ldrex<sync_sfx>\t%0, %C1"
-  [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")])
+  "ldrex<sync_sfx>\t%0, %C1"
+)
 
 (define_insn "arm_load_acquire_exclusive<mode>"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
         (zero_extend:SI
 	  (unspec_volatile:NARROW
-	    [(match_operand:NARROW 1 "mem_noofs_operand" "Ua,Ua")]
+	    [(match_operand:NARROW 1 "mem_noofs_operand" "Ua")]
 	    VUNSPEC_LAX)))]
   "TARGET_HAVE_LDACQ"
-  "@
-   ldaex<sync_sfx>%?\\t%0, %C1
-   ldaex<sync_sfx>\\t%0, %C1"
-  [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")])
+  "ldaex<sync_sfx>\\t%0, %C1"
+)
 
 (define_insn "arm_load_exclusivesi"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec_volatile:SI
-	  [(match_operand:SI 1 "mem_noofs_operand" "Ua,Ua")]
+	  [(match_operand:SI 1 "mem_noofs_operand" "Ua")]
 	  VUNSPEC_LL))]
   "TARGET_HAVE_LDREX"
-  "@
-   ldrex%?\t%0, %C1
-   ldrex\t%0, %C1"
-  [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")])
+  "ldrex\t%0, %C1"
+)
 
 (define_insn "arm_load_acquire_exclusivesi"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec_volatile:SI
-	  [(match_operand:SI 1 "mem_noofs_operand" "Ua,Ua")]
+	  [(match_operand:SI 1 "mem_noofs_operand" "Ua")]
 	  VUNSPEC_LAX))]
   "TARGET_HAVE_LDACQ"
-  "@
-   ldaex%?\t%0, %C1
-   ldaex\t%0, %C1"
-  [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")])
+  "ldaex\t%0, %C1"
+)
 
 (define_insn "arm_load_exclusivedi"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -501,8 +535,8 @@
 	  [(match_operand:DI 1 "mem_noofs_operand" "Ua")]
 	  VUNSPEC_LL))]
   "TARGET_HAVE_LDREXD"
-  "ldrexd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")])
+  "ldrexd\t%0, %H0, %C1"
+)
 
 (define_insn "arm_load_acquire_exclusivedi"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -510,8 +544,8 @@
 	  [(match_operand:DI 1 "mem_noofs_operand" "Ua")]
 	  VUNSPEC_LAX))]
   "TARGET_HAVE_LDACQEXD && ARM_DOUBLEWORD_ALIGN"
-  "ldaexd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")])
+  "ldaexd\t%0, %H0, %C1"
+)
 
 (define_insn "arm_store_exclusive<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
@@ -530,14 +564,11 @@
 	   Note that the 1st register always gets the
 	   lowest word in memory.  */
 	gcc_assert ((REGNO (operands[2]) & 1) == 0 || TARGET_THUMB2);
-	return "strexd%?\t%0, %2, %H2, %C1";
+	return "strexd\t%0, %2, %H2, %C1";
       }
-    if (TARGET_THUMB1)
-      return "strex<sync_sfx>\t%0, %2, %C1";
-    else
-      return "strex<sync_sfx>%?\t%0, %2, %C1";
+    return "strex<sync_sfx>\t%0, %2, %C1";
   }
-  [(set_attr "predicable" "yes")])
+)
 
 (define_insn "arm_store_release_exclusivedi"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
@@ -550,20 +581,16 @@
   {
     /* See comment in arm_store_exclusive<mode> above.  */
     gcc_assert ((REGNO (operands[2]) & 1) == 0 || TARGET_THUMB2);
-    return "stlexd%?\t%0, %2, %H2, %C1";
+    return "stlexd\t%0, %2, %H2, %C1";
   }
-  [(set_attr "predicable" "yes")])
+)
 
 (define_insn "arm_store_release_exclusive<mode>"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r,&r")
+  [(set (match_operand:SI 0 "s_register_operand" "=&r")
 	(unspec_volatile:SI [(const_int 0)] VUNSPEC_SLX))
-   (set (match_operand:QHSI 1 "mem_noofs_operand" "=Ua,Ua")
+   (set (match_operand:QHSI 1 "mem_noofs_operand" "=Ua")
 	(unspec_volatile:QHSI
-	  [(match_operand:QHSI 2 "s_register_operand" "r,r")]
+	  [(match_operand:QHSI 2 "s_register_operand" "r")]
 	  VUNSPEC_SLX))]
   "TARGET_HAVE_LDACQ"
-  "@
-   stlex<sync_sfx>%?\t%0, %2, %C1
-   stlex<sync_sfx>\t%0, %2, %C1"
-  [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")])
+  "stlex<sync_sfx>\t%0, %2, %C1")

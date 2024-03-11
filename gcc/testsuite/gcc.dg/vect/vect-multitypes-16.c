@@ -35,6 +35,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_unpack } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { ! vect_unpack } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { { vect_unpack } || { vect_variable_length && vect_ext_char_longlong } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { { ! vect_unpack } && {! { vect_variable_length && vect_ext_char_longlong } } } } } } */
 

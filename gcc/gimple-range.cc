@@ -928,3 +928,303 @@ assume_query::dump (FILE *f)
     }
   fprintf (f, "------------------------------\n");
 }
+
+// ---------------------------------------------------------------------------
+
+
+// Create a DOM based ranger for use by a DOM walk pass.
+
+dom_ranger::dom_ranger () : m_global (), m_out ()
+{
+  m_freelist.create (0);
+  m_freelist.truncate (0);
+  m_e0.create (0);
+  m_e0.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_e1.create (0);
+  m_e1.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_pop_list = BITMAP_ALLOC (NULL);
+  if (dump_file && (param_ranger_debug & RANGER_DEBUG_TRACE))
+    tracer.enable_trace ();
+}
+
+// Dispose of a DOM ranger.
+
+dom_ranger::~dom_ranger ()
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Non-varying global ranges:\n");
+      fprintf (dump_file, "=========================:\n");
+      m_global.dump (dump_file);
+    }
+  BITMAP_FREE (m_pop_list);
+  m_e1.release ();
+  m_e0.release ();
+  m_freelist.release ();
+}
+
+// Implement range of EXPR on stmt S, and return it in R.
+// Return false if no range can be calculated.
+
+bool
+dom_ranger::range_of_expr (vrange &r, tree expr, gimple *s)
+{
+  unsigned idx;
+  if (!gimple_range_ssa_p (expr))
+    return get_tree_range (r, expr, s);
+
+  if ((idx = tracer.header ("range_of_expr ")))
+    {
+      print_generic_expr (dump_file, expr, TDF_SLIM);
+      if (s)
+	{
+	  fprintf (dump_file, " at ");
+	  print_gimple_stmt (dump_file, s, 0, TDF_SLIM);
+	}
+      else
+	  fprintf (dump_file, "\n");
+    }
+
+  if (s)
+    range_in_bb (r, gimple_bb (s), expr);
+  else
+    m_global.range_of_expr (r, expr, s);
+
+  if (idx)
+    tracer.trailer (idx, " ", true, expr, r);
+  return true;
+}
+
+
+// Return TRUE and the range if edge E has a range set for NAME in
+// block E->src.
+
+bool
+dom_ranger::edge_range (vrange &r, edge e, tree name)
+{
+  bool ret = false;
+  basic_block bb = e->src;
+
+  // Check if BB has any outgoing ranges on edge E.
+  ssa_lazy_cache *out = NULL;
+  if (EDGE_SUCC (bb, 0) == e)
+    out = m_e0[bb->index];
+  else if (EDGE_SUCC (bb, 1) == e)
+    out = m_e1[bb->index];
+
+  // If there is an edge vector and it has a range, pick it up.
+  if (out && out->has_range (name))
+    ret = out->get_range (r, name);
+
+  return ret;
+}
+
+
+// Return the range of EXPR on edge E in R.
+// Return false if no range can be calculated.
+
+bool
+dom_ranger::range_on_edge (vrange &r, edge e, tree expr)
+{
+  basic_block bb = e->src;
+  unsigned idx;
+  if ((idx = tracer.header ("range_on_edge ")))
+    {
+      fprintf (dump_file, "%d->%d for ",e->src->index, e->dest->index);
+      print_generic_expr (dump_file, expr, TDF_SLIM);
+      fputc ('\n',dump_file);
+    }
+
+  if (!gimple_range_ssa_p (expr))
+    return get_tree_range (r, expr, NULL);
+
+  if (!edge_range (r, e, expr))
+    range_in_bb (r, bb, expr);
+
+  if (idx)
+    tracer.trailer (idx, " ", true, expr, r);
+  return true;
+}
+
+// Return the range of NAME as it exists at the end of block BB in R.
+
+void
+dom_ranger::range_in_bb (vrange &r, basic_block bb, tree name)
+{
+  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+  // Loop through dominators until we get to the entry block, or we find
+  // either the defintion block for NAME, or a single pred edge with a range.
+  while (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    {
+      // If we hit the deifntion block, pick up the global value.
+      if (bb == def_bb)
+	{
+	  m_global.range_of_expr (r, name);
+	  return;
+	}
+      // If its a single pred, check the outgoing range of the edge.
+      if (EDGE_COUNT (bb->preds) == 1
+	  && edge_range (r, EDGE_PRED (bb, 0), name))
+	return;
+      // Otherwise move up to the dominator, and check again.
+      bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+    }
+  m_global.range_of_expr (r, name);
+}
+
+
+// Calculate the range of NAME, as the def of stmt S and return it in R.
+// Return FALSE if no range cqn be calculated.
+// Also set the global range for NAME as this should only be called within
+// the def block during a DOM walk.
+// Outgoing edges were pre-calculated, so when we establish a global defintion
+// check if any outgoing edges hav ranges that can be combined with the
+// global.
+
+bool
+dom_ranger::range_of_stmt (vrange &r, gimple *s, tree name)
+{
+  unsigned idx;
+  bool ret;
+  if (!name)
+    name = gimple_range_ssa_p (gimple_get_lhs (s));
+
+  gcc_checking_assert (!name || name == gimple_get_lhs (s));
+
+  if ((idx = tracer.header ("range_of_stmt ")))
+    print_gimple_stmt (dump_file, s, 0, TDF_SLIM);
+
+  // Its already been calculated.
+  if (name && m_global.has_range (name))
+    {
+      ret = m_global.range_of_expr (r, name, s);
+      if (idx)
+	tracer.trailer (idx, " Already had value ", ret, name, r);
+      return ret;
+    }
+
+  // If there is a new calculated range and it is not varying, set
+  // a global range.
+  ret = fold_range (r, s, this);
+  if (ret && name && m_global.merge_range (name, r) && !r.varying_p ())
+    {
+      if (set_range_info (name, r) && dump_file)
+	{
+	  fprintf (dump_file, "Global Exported: ");
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fprintf (dump_file, " = ");
+	  r.dump (dump_file);
+	  fputc ('\n', dump_file);
+	}
+      basic_block bb = gimple_bb (s);
+      unsigned bbi = bb->index;
+      Value_Range vr (TREE_TYPE (name));
+      // If there is a range on edge 0, update it.
+      if (m_e0[bbi] && m_e0[bbi]->has_range (name))
+	{
+	  if (m_e0[bbi]->merge_range (name, r) && dump_file
+	      && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Outgoing range for ");
+	      print_generic_expr (dump_file, name, TDF_SLIM);
+	      fprintf (dump_file, " updated on edge %d->%d : ", bbi,
+		       EDGE_SUCC (bb, 0)->dest->index);
+	      if (m_e0[bbi]->get_range (vr, name))
+		vr.dump (dump_file);
+	      fputc ('\n', dump_file);
+	    }
+	}
+      // If there is a range on edge 1, update it.
+      if (m_e1[bbi] && m_e1[bbi]->has_range (name))
+	{
+	  if (m_e1[bbi]->merge_range (name, r) && dump_file
+	      && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Outgoing range for ");
+	      print_generic_expr (dump_file, name, TDF_SLIM);
+	      fprintf (dump_file, " updated on edge %d->%d : ", bbi,
+		       EDGE_SUCC (bb, 1)->dest->index);
+	      if (m_e1[bbi]->get_range (vr, name))
+		vr.dump (dump_file);
+	      fputc ('\n', dump_file);
+	    }
+	}
+    }
+  if (idx)
+    tracer.trailer (idx, " ", ret, name, r);
+  return ret;
+}
+
+// Check if GORI has an ranges on edge E.  If there re, store them in
+// either the E0 or E1 vector based on EDGE_0.
+// If there are no ranges, put the empty lazy_cache entry on the freelist
+// for use next time.
+
+void
+dom_ranger::maybe_push_edge (edge e, bool edge_0)
+{
+  ssa_lazy_cache *e_cache;
+  if (!m_freelist.is_empty ())
+    e_cache = m_freelist.pop ();
+  else
+    e_cache = new ssa_lazy_cache;
+  gori_on_edge (*e_cache, e, this, &m_out);
+  if (e_cache->empty_p ())
+    m_freelist.safe_push (e_cache);
+  else
+    {
+      if (edge_0)
+	m_e0[e->src->index] = e_cache;
+      else
+	m_e1[e->src->index] = e_cache;
+    }
+}
+
+// Preprocess block BB.  If there are any outgoing edges, precalculate
+// the outgoing ranges and store them.   Note these are done before
+// we process the block, so global values have not been set yet.
+// These are "pure" outgoing ranges inflicted by the condition.
+
+void
+dom_ranger::pre_bb (basic_block bb)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "#FVRP entering BB %d\n", bb->index);
+
+  // Next, see if this block needs outgoing edges calculated.
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  if (!gsi_end_p (gsi))
+    {
+      gimple *s = gsi_stmt (gsi);
+      if (is_a<gcond *> (s) && gimple_range_op_handler::supported_p (s))
+	{
+	  maybe_push_edge (EDGE_SUCC (bb, 0), true);
+	  maybe_push_edge (EDGE_SUCC (bb, 1), false);
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      if (m_e0[bb->index])
+		{
+		  fprintf (dump_file, "\nEdge ranges BB %d->%d\n",
+			   bb->index, EDGE_SUCC (bb, 0)->dest->index);
+		  m_e0[bb->index]->dump(dump_file);
+		}
+	      if (m_e1[bb->index])
+		{
+		  fprintf (dump_file, "\nEdge ranges BB %d->%d\n",
+			   bb->index, EDGE_SUCC (bb, 1)->dest->index);
+		  m_e1[bb->index]->dump(dump_file);
+		}
+	    }
+	}
+    }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "#FVRP DONE entering BB %d\n", bb->index);
+}
+
+// Perform any post block processing.
+
+void
+dom_ranger::post_bb (basic_block)
+{
+}

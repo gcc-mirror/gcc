@@ -277,10 +277,12 @@ streamer_read_value_range (class lto_input_block *ib, data_in *data_in,
 wide_int
 streamer_read_wide_int (class lto_input_block *ib)
 {
-  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT abuf[WIDE_INT_MAX_INL_ELTS], *a = abuf;
   int i;
   int prec = streamer_read_uhwi (ib);
   int len = streamer_read_uhwi (ib);
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    a = XALLOCAVEC (HOST_WIDE_INT, len);
   for (i = 0; i < len; i++)
     a[i] = streamer_read_hwi (ib);
   return wide_int::from_array (a, len, prec);
@@ -292,10 +294,12 @@ streamer_read_wide_int (class lto_input_block *ib)
 widest_int
 streamer_read_widest_int (class lto_input_block *ib)
 {
-  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT abuf[WIDE_INT_MAX_INL_ELTS], *a = abuf;
   int i;
   int prec ATTRIBUTE_UNUSED = streamer_read_uhwi (ib);
   int len = streamer_read_uhwi (ib);
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    a = XALLOCAVEC (HOST_WIDE_INT, len);
   for (i = 0; i < len; i++)
     a[i] = streamer_read_hwi (ib);
   return widest_int::from_array (a, len);

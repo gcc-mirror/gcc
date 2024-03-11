@@ -443,7 +443,10 @@ file_cache::evicted_cache_tab_entry (unsigned *highest_use_count)
    accessed by caret diagnostic.  This cache is added to an array of
    cache and can be retrieved by lookup_file_in_cache_tab.  This
    function returns the created cache.  Note that only the last
-   num_file_slots files are cached.  */
+   num_file_slots files are cached.
+
+   This can return nullptr if the FILE_PATH can't be opened for
+   reading, or if the content can't be converted to the input_charset.  */
 
 file_cache_slot*
 file_cache::add_file (const char *file_path)
@@ -547,7 +550,10 @@ file_cache::~file_cache ()
 /* Lookup the cache used for the content of a given file accessed by
    caret diagnostic.  If no cached file was found, create a new cache
    for this file, add it to the array of cached file and return
-   it.  */
+   it.
+
+   This can return nullptr on a cache miss if FILE_PATH can't be opened for
+   reading, or if the content can't be converted to the input_charset.  */
 
 file_cache_slot*
 file_cache::lookup_or_add_file (const char *file_path)
@@ -946,7 +952,7 @@ file_cache_slot::read_line_num (size_t line_num,
    If the function fails, a NULL char_span is returned.  */
 
 char_span
-location_get_source_line (const char *file_path, int line)
+file_cache::get_source_line (const char *file_path, int line)
 {
   char *buffer = NULL;
   ssize_t len;
@@ -957,9 +963,7 @@ location_get_source_line (const char *file_path, int line)
   if (file_path == NULL)
     return char_span (NULL, 0);
 
-  diagnostic_file_cache_init ();
-
-  file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
+  file_cache_slot *c = lookup_or_add_file (file_path);
   if (c == NULL)
     return char_span (NULL, 0);
 
@@ -968,6 +972,13 @@ location_get_source_line (const char *file_path, int line)
     return char_span (NULL, 0);
 
   return char_span (buffer, len);
+}
+
+char_span
+location_get_source_line (const char *file_path, int line)
+{
+  diagnostic_file_cache_init ();
+  return global_dc->m_file_cache->get_source_line (file_path, line);
 }
 
 /* Return a NUL-terminated copy of the source text between two locations, or
@@ -1062,6 +1073,17 @@ get_source_text_between (location_t start, location_t end)
   return xstrdup (buf);
 }
 
+
+char_span
+file_cache::get_source_file_content (const char *file_path)
+{
+  file_cache_slot *c = lookup_or_add_file (file_path);
+  if (c == nullptr)
+    return char_span (nullptr, 0);
+  return c->get_full_file_content ();
+}
+
+
 /* Get a borrowed char_span to the full content of FILE_PATH
    as decoded according to the input charset, encoded as UTF-8.  */
 
@@ -1069,9 +1091,7 @@ char_span
 get_source_file_content (const char *file_path)
 {
   diagnostic_file_cache_init ();
-
-  file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
-  return c->get_full_file_content ();
+  return global_dc->m_file_cache->get_source_file_content (file_path);
 }
 
 /* Determine if FILE_PATH missing a trailing newline on its final line.
@@ -1184,7 +1204,9 @@ expansion_point_location (location_t location)
 }
 
 /* Construct a location with caret at CARET, ranging from START to
-   finish e.g.
+   FINISH.
+
+   For example, consider:
 
                  11111111112
         12345678901234567890
@@ -1200,16 +1222,7 @@ expansion_point_location (location_t location)
 location_t
 make_location (location_t caret, location_t start, location_t finish)
 {
-  location_t pure_loc = get_pure_location (caret);
-  source_range src_range;
-  src_range.m_start = get_start (start);
-  src_range.m_finish = get_finish (finish);
-  location_t combined_loc = COMBINE_LOCATION_DATA (line_table,
-						   pure_loc,
-						   src_range,
-						   NULL,
-						   0);
-  return combined_loc;
+  return line_table->make_location (caret, start, finish);
 }
 
 /* Same as above, but taking a source range rather than two locations.  */
@@ -1218,7 +1231,8 @@ location_t
 make_location (location_t caret, source_range src_range)
 {
   location_t pure_loc = get_pure_location (caret);
-  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL, 0);
+  return line_table->get_or_create_combined_loc (pure_loc, src_range,
+						 nullptr, 0);
 }
 
 /* An expanded_location stores the column in byte units.  This function
@@ -1300,9 +1314,9 @@ dump_line_table_statistics (void)
   fprintf (stderr, "Ad-hoc table entries used:           " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.adhoc_table_entries_used));
   fprintf (stderr, "optimized_ranges:                    " PRsa (5) "\n",
-	   SIZE_AMOUNT (line_table->num_optimized_ranges));
+	   SIZE_AMOUNT (line_table->m_num_optimized_ranges));
   fprintf (stderr, "unoptimized_ranges:                  " PRsa (5) "\n",
-	   SIZE_AMOUNT (line_table->num_unoptimized_ranges));
+	   SIZE_AMOUNT (line_table->m_num_unoptimized_ranges));
 
   fprintf (stderr, "\n");
 }
@@ -1904,7 +1918,8 @@ location_with_discriminator (location_t locus, int discriminator)
   if (locus == UNKNOWN_LOCATION)
     return locus;
 
-  return COMBINE_LOCATION_DATA (line_table, locus, src_range, block, discriminator);
+  return line_table->get_or_create_combined_loc (locus, src_range, block,
+						 discriminator);
 }
 
 /* Return TRUE if LOCUS represents a location with a discriminator.  */
@@ -2086,10 +2101,10 @@ line_table_test::line_table_test ()
   saved_line_table = line_table;
   line_table = ggc_alloc<line_maps> ();
   linemap_init (line_table, BUILTINS_LOCATION);
-  gcc_assert (saved_line_table->reallocator);
-  line_table->reallocator = saved_line_table->reallocator;
-  gcc_assert (saved_line_table->round_alloc_size);
-  line_table->round_alloc_size = saved_line_table->round_alloc_size;
+  gcc_assert (saved_line_table->m_reallocator);
+  line_table->m_reallocator = saved_line_table->m_reallocator;
+  gcc_assert (saved_line_table->m_round_alloc_size);
+  line_table->m_round_alloc_size = saved_line_table->m_round_alloc_size;
   line_table->default_range_bits = 0;
 }
 
@@ -2102,10 +2117,10 @@ line_table_test::line_table_test (const line_table_case &case_)
   saved_line_table = line_table;
   line_table = ggc_alloc<line_maps> ();
   linemap_init (line_table, BUILTINS_LOCATION);
-  gcc_assert (saved_line_table->reallocator);
-  line_table->reallocator = saved_line_table->reallocator;
-  gcc_assert (saved_line_table->round_alloc_size);
-  line_table->round_alloc_size = saved_line_table->round_alloc_size;
+  gcc_assert (saved_line_table->m_reallocator);
+  line_table->m_reallocator = saved_line_table->m_reallocator;
+  gcc_assert (saved_line_table->m_round_alloc_size);
+  line_table->m_round_alloc_size = saved_line_table->m_round_alloc_size;
   line_table->default_range_bits = case_.m_default_range_bits;
   if (case_.m_base_location)
     {

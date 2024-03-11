@@ -46,6 +46,10 @@ typedef struct
 typedef struct
 {
 } printf_arg_dynarr;
+extern void Lstream_fputc (struct lstream *, int);
+extern void Lstream_write (struct lstream *, const Bufbyte *, Bytecount);
+extern void Lstream_flush_out (struct lstream *);
+extern printf_spec_dynarr *parse_doprnt_spec (Bufbyte *, Bytecount);
 static void
 doprnt_1 (Lisp_Object stream, const  Bufbyte *string, Bytecount len,
 	  Charcount minlen, Charcount maxlen, int minus_flag, int zero_flag)

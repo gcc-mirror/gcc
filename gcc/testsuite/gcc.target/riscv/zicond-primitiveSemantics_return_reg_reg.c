@@ -61,5 +61,5 @@ int primitiveSemantics_return_reg_reg_11(int a, int b, int c) {
 
 /* { dg-final { scan-assembler-times {\mczero\.eqz\M} 12 } } */
 /* { dg-final { scan-assembler-times {\mczero\.nez\M} 12 } } */
-/* { dg-final { scan-assembler-not {\mbeq} } } */
-/* { dg-final { scan-assembler-not {\mbne} } } */
+/* { dg-final { scan-assembler-not {\mbeq\M} } } */
+/* { dg-final { scan-assembler-not {\mbne\M} } } */

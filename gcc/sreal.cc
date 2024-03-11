@@ -323,7 +323,7 @@ sreal_verify_basics (void)
    of given arguments A and B.  */
 
 static void
-verify_aritmetics (int64_t a, int64_t b)
+verify_arithmetics (int64_t a, int64_t b)
 {
   ASSERT_EQ (a, -(-(sreal (a))).to_int ());
   ASSERT_EQ (a < b, sreal (a) < sreal (b));
@@ -356,7 +356,7 @@ sreal_verify_arithmetics (void)
 	int a = values[i];
 	int b = values[j];
 
-	verify_aritmetics (a, b);
+	verify_arithmetics (a, b);
       }
 }
 

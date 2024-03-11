@@ -788,7 +788,7 @@ public:
         objectStart();
         jsonProperties(d);
         if (d._init)
-            property("init", d._init.toString());
+            property("init", toString(d._init));
         if (d.isField())
             property("offset", d.offset);
         if (!d.alignment.isUnknown() && !d.alignment.isDefault())
@@ -810,17 +810,14 @@ public:
     Params:
      modules = array of the "root modules"
     */
-    private void generateModules(Modules* modules)
+    private void generateModules(ref Modules modules)
     {
         arrayStart();
-        if (modules)
+        foreach (m; modules)
         {
-            foreach (m; *modules)
-            {
-                if (global.params.verbose)
-                    message("json gen %s", m.toChars());
-                m.accept(this);
-            }
+            if (global.params.v.verbose)
+                message("json gen %s", m.toChars());
+            m.accept(this);
         }
         arrayEnd();
     }
@@ -981,9 +978,15 @@ public:
     }
 }
 
-extern (C++) void json_generate(OutBuffer* buf, Modules* modules)
+/***********************************
+ * Generate json for the modules.
+ * Params:
+ *      modules = array of Modules
+ *      buf = write json output to buf
+ */
+extern (C++) void json_generate(ref Modules modules, ref OutBuffer buf)
 {
-    scope ToJsonVisitor json = new ToJsonVisitor(buf);
+    scope ToJsonVisitor json = new ToJsonVisitor(&buf);
     // write trailing newline
     scope(exit) buf.writeByte('\n');
 

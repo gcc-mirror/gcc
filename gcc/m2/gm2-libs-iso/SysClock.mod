@@ -137,7 +137,8 @@ END daysInYear ;
 
 
 (*
-   ExtractDate - extracts the year, month, day from days.
+   ExtractDate - extracts the year, month, day from secs.  days is the
+                 total days since 1970.
 *)
 
 PROCEDURE ExtractDate (days: LONGCARD;
@@ -145,28 +146,29 @@ PROCEDURE ExtractDate (days: LONGCARD;
 VAR
    testMonth,
    testYear : CARDINAL ;
-   testDays : LONGCARD ;
+   monthOfDays,
+   yearOfDays : LONGCARD ;
 BEGIN
    testYear := 1970 ;
    LOOP
-      testDays := daysInYear (31, 12, testYear) ;
-      IF days < testDays
+      yearOfDays := daysInYear (31, 12, testYear) ;
+      IF days < yearOfDays
       THEN
          year := testYear ;
          testMonth := 1 ;
          LOOP
-            testDays := daysInMonth (year, testMonth) ;
-            IF days < testDays
+            monthOfDays := daysInMonth (year, testMonth) ;
+            IF days < monthOfDays
             THEN
                day := VAL (Day, days) + MIN (Day) ;
                month := VAL (Month, testMonth) ;
                RETURN
             END ;
-            DEC (days, testDays) ;
+            DEC (days, monthOfDays) ;
             INC (testMonth)
          END
       ELSE
-         DEC (days, testDays) ;
+         DEC (days, yearOfDays) ;
          INC (testYear)
       END
    END
@@ -218,6 +220,8 @@ BEGIN
                printf ("getclock = %ld\n", sec)
             END ;
             WITH userData DO
+               (* Here we keep dividing sec by max seconds, minutes, hours
+                  to convert sec into total days since epoch.  *)
                second := VAL (Sec, DivMod (sec, MAX (Sec) + 1)) ;
                minute := VAL (Min, DivMod (sec, MAX (Min) + 1)) ;
                hour := VAL (Hour, DivMod (sec, MAX (Hour) + 1)) ;

@@ -1,11 +1,4 @@
-/* REQUIRED_ARGS: -wo -wi
-TEST_OUTPUT:
----
-compilable/test23145.d(117): Warning: `scope` allocation of `c` requires that constructor be annotated with `scope`
-compilable/test23145.d(111):        is the location of the constructor
-compilable/test23145.d(124): Warning: `scope` allocation of `c` requires that constructor be annotated with `scope`
-compilable/test23145.d(111):        is the location of the constructor
----
+/* REQUIRED_ARGS: -wi
 */
 
 // https://issues.dlang.org/show_bug.cgi?id=23145
@@ -28,14 +21,14 @@ class C
 C foo(D d) @nogc @safe
 {
     scope e = new C(1);  // ok
-    scope c = new C(d);  // deprecation
+    scope c = new C(d);  // obsolete
     return c.d.c;
 }
 
 C bax(D d) @safe
 {
     scope e = new C(1);  // ok
-    scope c = new C(d);  // deprecation
+    scope c = new C(d);  // obsolete
     return c.d.c;
 }
 

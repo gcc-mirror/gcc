@@ -3815,6 +3815,7 @@ unittest
     assert(chomp(" hello world  \n\n" ~ [lineSep]) == " hello world  \n\n");
     assert(chomp(" hello world  \n\n" ~ [paraSep]) == " hello world  \n\n");
     assert(chomp(" hello world  \n\n" ~ [ nelSep]) == " hello world  \n\n");
+    assert(chomp(" hello world ") == " hello world ");
     assert(chomp(" hello world") == " hello world");
     assert(chomp("") == "");
 

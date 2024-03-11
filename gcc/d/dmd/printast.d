@@ -64,7 +64,7 @@ extern (C++) final class PrintASTVisitor : Visitor
         import dmd.hdrgen : floatToBuffer;
         import dmd.common.outbuffer : OutBuffer;
         OutBuffer buf;
-        floatToBuffer(e.type, e.value, &buf, false);
+        floatToBuffer(e.type, e.value, buf, false);
         printf("Real %s %s\n", buf.peekChars(), e.type ? e.type.toChars() : "");
     }
 

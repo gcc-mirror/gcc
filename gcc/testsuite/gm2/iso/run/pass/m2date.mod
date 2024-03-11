@@ -13,7 +13,8 @@ TYPE
 
 CONST
    Debugging = FALSE ;
-   DayName = DayArray { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" } ;
+   (* 1st January 1970 was a Thursday.  *)
+   DayName   = DayArray { "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed" } ;
    MonthName = MonthArray { "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov" } ;
 
 

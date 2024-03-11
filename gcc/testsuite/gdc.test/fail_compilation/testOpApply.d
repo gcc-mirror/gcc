@@ -48,9 +48,9 @@ void testSameAttr() @system
 TEST_OUTPUT:
 ---
 fail_compilation/testOpApply.d(217): Error: `sa.opApply` matches more than one declaration:
-`fail_compilation/testOpApply.d(203)`:     `int(int delegate(int) dg)`
+fail_compilation/testOpApply.d(203):        `int(int delegate(int) dg)`
 and:
-`fail_compilation/testOpApply.d(208)`:     `int(int delegate(string) dg)`
+fail_compilation/testOpApply.d(208):        `int(int delegate(string) dg)`
 fail_compilation/testOpApply.d(217): Error: cannot uniquely infer `foreach` argument types
 ---
 +/
@@ -79,9 +79,9 @@ void testDifferentTypes()
 TEST_OUTPUT:
 ---
 fail_compilation/testOpApply.d(317): Error: `sa.opApply` matches more than one declaration:
-`fail_compilation/testOpApply.d(303)`:     `int(int delegate(int) dg)`
+fail_compilation/testOpApply.d(303):        `int(int delegate(int) dg)`
 and:
-`fail_compilation/testOpApply.d(308)`:     `int(int delegate(long) dg)`
+fail_compilation/testOpApply.d(308):        `int(int delegate(long) dg)`
 fail_compilation/testOpApply.d(317): Error: cannot uniquely infer `foreach` argument types
 ---
 +/
@@ -112,9 +112,9 @@ See https://issues.dlang.org/show_bug.cgi?id=21683
 TEST_OUTPUT:
 ---
 fail_compilation/testOpApply.d(420): Error: `sa.opApply` matches more than one declaration:
-`fail_compilation/testOpApply.d(404)`:     `int(int delegate(int) dg)`
+fail_compilation/testOpApply.d(404):        `int(int delegate(int) dg)`
 and:
-`fail_compilation/testOpApply.d(410)`:     `int(int delegate(ref int) dg)`
+fail_compilation/testOpApply.d(410):        `int(int delegate(ref int) dg)`
 fail_compilation/testOpApply.d(420): Error: cannot uniquely infer `foreach` argument types
 ---
 +/
@@ -146,9 +146,9 @@ void testDifferentQualifiers()
 TEST_OUTPUT:
 ---
 fail_compilation/testOpApply.d(504): Error: `sa.opApply` matches more than one declaration:
-`fail_compilation/testOpApply.d(404)`:     `int(int delegate(int) dg)`
+fail_compilation/testOpApply.d(404):        `int(int delegate(int) dg)`
 and:
-`fail_compilation/testOpApply.d(410)`:     `int(int delegate(ref int) dg)`
+fail_compilation/testOpApply.d(410):        `int(int delegate(ref int) dg)`
 fail_compilation/testOpApply.d(504): Error: cannot uniquely infer `foreach` argument types
 ---
 +/

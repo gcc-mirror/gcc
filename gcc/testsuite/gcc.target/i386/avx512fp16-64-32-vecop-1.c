@@ -1,10 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512fp16 -mavx512vl" } */
 
-/* { dg-final { scan-assembler-times "vaddph" 2 } } */
-/* { dg-final { scan-assembler-times "vsubph" 2 } } */
-/* { dg-final { scan-assembler-times "vmulph" 2 } } */
-/* { dg-final { scan-assembler-times "vdivph" 2 } } */
+/* { dg-final { scan-assembler-times "vaddph" 2 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vsubph" 2 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vmulph" 2 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vdivph" 2 { target { ! ia32 } } } } */
 
 #define DO_PRAGMA(X) _Pragma(#X)
 

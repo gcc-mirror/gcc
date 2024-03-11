@@ -20,14 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef HAVE_POLY_INT_TYPES_H
 #define HAVE_POLY_INT_TYPES_H
 
-typedef poly_int_pod<NUM_POLY_INT_COEFFS, unsigned short> poly_uint16_pod;
-typedef poly_int_pod<NUM_POLY_INT_COEFFS, HOST_WIDE_INT> poly_int64_pod;
-typedef poly_int_pod<NUM_POLY_INT_COEFFS,
-		     unsigned HOST_WIDE_INT> poly_uint64_pod;
-typedef poly_int_pod<NUM_POLY_INT_COEFFS, offset_int> poly_offset_int_pod;
-typedef poly_int_pod<NUM_POLY_INT_COEFFS, wide_int> poly_wide_int_pod;
-typedef poly_int_pod<NUM_POLY_INT_COEFFS, widest_int> poly_widest_int_pod;
-
 typedef poly_int<NUM_POLY_INT_COEFFS, unsigned short> poly_uint16;
 typedef poly_int<NUM_POLY_INT_COEFFS, HOST_WIDE_INT> poly_int64;
 typedef poly_int<NUM_POLY_INT_COEFFS, unsigned HOST_WIDE_INT> poly_uint64;

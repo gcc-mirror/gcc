@@ -1291,7 +1291,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 				 cumulative_args_t args_so_far,
 				 int reg_parm_stack_space,
 				 rtx *old_stack_level,
-				 poly_int64_pod *old_pending_adj,
+				 poly_int64 *old_pending_adj,
 				 bool *must_preallocate, int *ecf_flags,
 				 bool *may_tailcall, bool call_from_thunk_p)
 {
@@ -2298,7 +2298,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
    bytes that should be popped after the call.  */
 
 static bool
-combine_pending_stack_adjustment_and_call (poly_int64_pod *adjustment_out,
+combine_pending_stack_adjustment_and_call (poly_int64 *adjustment_out,
 					   poly_int64 unadjusted_args_size,
 					   struct args_size *args_size,
 					   unsigned int preferred_unit_stack_boundary)

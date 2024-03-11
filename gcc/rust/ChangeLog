@@ -1,3 +1,8 @@
+2023-09-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* backend/rust-constexpr.cc (rs_fold_indirect_ref): Remove unused
+	variables.
+
 2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* rust-session-manager.cc (Session::init): Call

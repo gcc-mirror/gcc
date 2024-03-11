@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-march=rv32gcv -mabi=ilp32d --param riscv-autovec-preference=scalable -fno-vect-cost-model -fdump-tree-optimized-details" } */
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 #define VEC_PERM(TYPE)                                                         \
   TYPE __attribute__ ((noinline, noclone))                                     \

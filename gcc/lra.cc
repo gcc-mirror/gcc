@@ -2262,8 +2262,8 @@ update_inc_notes (void)
       }
 }
 
-/* Set to 1 while in lra.  */
-int lra_in_progress;
+/* Set to true while in LRA.  */
+bool lra_in_progress = false;
 
 /* Start of pseudo regnos before the LRA.  */
 int lra_new_regno_start;
@@ -2360,7 +2360,7 @@ lra (FILE *f)
   if (flag_checking)
     check_rtl (false);
 
-  lra_in_progress = 1;
+  lra_in_progress = true;
 
   lra_live_range_iter = lra_coalesce_iter = lra_constraint_iter = 0;
   lra_assignment_iter = lra_assignment_iter_after_spill = 0;
@@ -2552,7 +2552,7 @@ lra (FILE *f)
   ira_restore_scratches (lra_dump_file);
   lra_eliminate (true, false);
   lra_final_code_change ();
-  lra_in_progress = 0;
+  lra_in_progress = false;
   if (live_p)
     lra_clear_live_ranges ();
   lra_live_ranges_finish ();

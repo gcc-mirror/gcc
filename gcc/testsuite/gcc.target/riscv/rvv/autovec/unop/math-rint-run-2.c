@@ -9,24 +9,30 @@ double in[ARRAY_SIZE];
 double out[ARRAY_SIZE];
 double ref[ARRAY_SIZE];
 
+static double
+get_ref_rint (double val)
+{
+  set_rm (FRM_RNE);
+
+  return __builtin_rint (val);
+}
+
 TEST_UNARY_CALL (double, __builtin_rint)
 TEST_ASSERT (double)
 
-TEST_INIT (double, 1.2, 1.0, 1)
-TEST_INIT (double, -1.8, -2.0, 2)
-TEST_INIT (double, 3.0, 3.0, 3)
-TEST_INIT (double, 4503599627370495.5, 4503599627370496.0, 4)
-TEST_INIT (double, 4503599627370497.0, 4503599627370497.0, 5)
-TEST_INIT (double, 0.0, 0.0, 6)
-TEST_INIT (double, -0.0, -0.0, 7)
-TEST_INIT (double, -4503599627370495.5, -4503599627370496.0, 8)
-TEST_INIT (double, -4503599627370496.0, -4503599627370496.0, 9)
+TEST_INIT (double, 1.2, get_ref_rint (1.2), 1)
+TEST_INIT (double, -1.8, get_ref_rint (-1.8), 2)
+TEST_INIT (double, 3.0, get_ref_rint (3.0), 3)
+TEST_INIT (double, 4503599627370495.5, get_ref_rint (4503599627370495.5), 4)
+TEST_INIT (double, 4503599627370497.0, get_ref_rint (4503599627370497.0), 5)
+TEST_INIT (double, 0.0, get_ref_rint (0.0), 6)
+TEST_INIT (double, -0.0, get_ref_rint (-0.0), 7)
+TEST_INIT (double, -4503599627370495.5, get_ref_rint (-4503599627370495.5), 8)
+TEST_INIT (double, -4503599627370496.0, get_ref_rint (-4503599627370496.0), 9)
 
 int
 main ()
 {
-  unsigned fflags_before = get_fflags ();
-
   set_rm (FRM_RNE);
 
   RUN_TEST (double, 1, __builtin_rint, in, out, ref, ARRAY_SIZE);
@@ -38,11 +44,6 @@ main ()
   RUN_TEST (double, 7, __builtin_rint, in, out, ref, ARRAY_SIZE);
   RUN_TEST (double, 8, __builtin_rint, in, out, ref, ARRAY_SIZE);
   RUN_TEST (double, 9, __builtin_rint, in, out, ref, ARRAY_SIZE);
-
-  unsigned fflags_after = get_fflags ();
-
-  if (fflags_before == fflags_after)
-    __builtin_abort ();
 
   return 0;
 }

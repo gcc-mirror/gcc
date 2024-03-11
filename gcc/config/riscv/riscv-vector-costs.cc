@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "ssa.h"
 #include "backend.h"
+#include "tree-data-ref.h"
 
 /* This file should be included last.  */
 #include "riscv-vector-costs.h"
@@ -135,8 +136,9 @@ compute_local_program_points (
 		    || is_gimple_call (gsi_stmt (si))))
 		continue;
 	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
-	      if (STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info))
-		  != undef_vec_info_type)
+	      enum stmt_vec_info_type type
+		= STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
+	      if (type != undef_vec_info_type)
 		{
 		  stmt_point info = {point, gsi_stmt (si)};
 		  program_points.safe_push (info);
@@ -150,6 +152,14 @@ compute_local_program_points (
 	  program_points_per_bb.put (bb, program_points);
 	}
     }
+}
+
+static machine_mode
+get_biggest_mode (machine_mode mode1, machine_mode mode2)
+{
+  unsigned int mode1_size = GET_MODE_BITSIZE (mode1).to_constant ();
+  unsigned int mode2_size = GET_MODE_BITSIZE (mode2).to_constant ();
+  return mode1_size >= mode2_size ? mode1 : mode2;
 }
 
 /* Compute local live ranges of each vectorized variable.
@@ -199,12 +209,12 @@ compute_local_live_ranges (
 	    {
 	      unsigned int point = program_point.point;
 	      gimple *stmt = program_point.stmt;
-	      machine_mode mode = biggest_mode;
 	      tree lhs = gimple_get_lhs (stmt);
 	      if (lhs != NULL_TREE && is_gimple_reg (lhs)
 		  && !POINTER_TYPE_P (TREE_TYPE (lhs)))
 		{
-		  mode = TYPE_MODE (TREE_TYPE (lhs));
+		  biggest_mode = get_biggest_mode (biggest_mode,
+						   TYPE_MODE (TREE_TYPE (lhs)));
 		  bool existed_p = false;
 		  pair &live_range
 		    = live_ranges->get_or_insert (lhs, &existed_p);
@@ -223,7 +233,9 @@ compute_local_live_ranges (
 		     the future.  */
 		  if (is_gimple_val (var) && !POINTER_TYPE_P (TREE_TYPE (var)))
 		    {
-		      mode = TYPE_MODE (TREE_TYPE (var));
+		      biggest_mode
+			= get_biggest_mode (biggest_mode,
+					    TYPE_MODE (TREE_TYPE (var)));
 		      bool existed_p = false;
 		      pair &live_range
 			= live_ranges->get_or_insert (var, &existed_p);
@@ -236,9 +248,6 @@ compute_local_live_ranges (
 			live_range = pair (0, point);
 		    }
 		}
-	      if (GET_MODE_SIZE (mode).to_constant ()
-		  > GET_MODE_SIZE (biggest_mode).to_constant ())
-		biggest_mode = mode;
 	    }
 	  if (dump_enabled_p ())
 	    for (hash_map<tree, pair>::iterator iter = live_ranges->begin ();
@@ -289,9 +298,7 @@ max_number_of_live_regs (const basic_block bb,
   unsigned int i;
   unsigned int live_point = 0;
   auto_vec<unsigned int> live_vars_vec;
-  live_vars_vec.safe_grow (max_point + 1, true);
-  for (i = 0; i < live_vars_vec.length (); ++i)
-    live_vars_vec[i] = 0;
+  live_vars_vec.safe_grow_cleared (max_point + 1, true);
   for (hash_map<tree, pair>::iterator iter = live_ranges.begin ();
        iter != live_ranges.end (); ++iter)
     {
@@ -360,6 +367,31 @@ get_current_lmul (class loop *loop)
   return loop_autovec_infos.get (loop)->current_lmul;
 }
 
+/* Get STORE value.  */
+static tree
+get_store_value (gimple *stmt)
+{
+  if (is_gimple_call (stmt) && gimple_call_internal_p (stmt))
+    {
+      if (gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
+	return gimple_call_arg (stmt, 3);
+      else
+	gcc_unreachable ();
+    }
+  else
+    return gimple_assign_rhs1 (stmt);
+}
+
+/* Return true if it is non-contiguous load/store.  */
+static bool
+non_contiguous_memory_access_p (stmt_vec_info stmt_info)
+{
+  enum stmt_vec_info_type type
+    = STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
+  return ((type == load_vec_info_type || type == store_vec_info_type)
+	  && !adjacent_dr_p (STMT_VINFO_DATA_REF (stmt_info)));
+}
+
 /* Update the live ranges according PHI.
 
    Loop:
@@ -395,13 +427,15 @@ update_local_live_ranges (
   unsigned int nbbs = loop->num_nodes;
   unsigned int i, j;
   gphi_iterator psi;
+  gimple_stmt_iterator si;
   for (i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[i];
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Update local program points for bb %d:\n", bb->index);
-      for (psi = gsi_start_phis (bbs[i]); !gsi_end_p (psi); gsi_next (&psi))
+			 "Update local program points for bb %d:\n",
+			 bbs[i]->index);
+      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
 	{
 	  gphi *phi = psi.phi ();
 	  stmt_vec_info stmt_info = vinfo->lookup_stmt (phi);
@@ -413,12 +447,23 @@ update_local_live_ranges (
 	    {
 	      edge e = gimple_phi_arg_edge (phi, j);
 	      tree def = gimple_phi_arg_def (phi, j);
-	      auto *live_ranges = live_ranges_per_bb.get (e->src);
+	      auto *live_ranges = live_ranges_per_bb.get (bb);
+	      auto *live_range = live_ranges->get (def);
+	      if (live_range && flow_bb_inside_loop_p (loop, e->src))
+		{
+		  unsigned int start = (*live_range).first;
+		  (*live_range).first = 0;
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_NOTE, vect_location,
+				     "Update %T start point from %d to %d:\n",
+				     def, start, (*live_range).first);
+		}
+	      live_ranges = live_ranges_per_bb.get (e->src);
 	      if (!program_points_per_bb.get (e->src))
 		continue;
 	      unsigned int max_point
 		= (*program_points_per_bb.get (e->src)).length () - 1;
-	      auto *live_range = live_ranges->get (def);
+	      live_range = live_ranges->get (def);
 	      if (!live_range)
 		continue;
 
@@ -428,6 +473,43 @@ update_local_live_ranges (
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "Update %T end point from %d to %d:\n", def,
 				 end, (*live_range).second);
+	    }
+	}
+      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+	{
+	  if (!(is_gimple_assign (gsi_stmt (si))
+		|| is_gimple_call (gsi_stmt (si))))
+	    continue;
+	  stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
+	  enum stmt_vec_info_type type
+	    = STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
+	  if (non_contiguous_memory_access_p (stmt_info))
+	    {
+	      /* For non-adjacent load/store STMT, we will potentially
+		 convert it into:
+
+		   1. MASK_LEN_GATHER_LOAD (..., perm indice).
+		   2. Continguous load/store + VEC_PERM (..., perm indice)
+
+		We will be likely using one more vector variable.  */
+	      unsigned int max_point
+		= (*program_points_per_bb.get (bb)).length () - 1;
+	      auto *live_ranges = live_ranges_per_bb.get (bb);
+	      bool existed_p = false;
+	      tree var = type == load_vec_info_type
+			   ? gimple_get_lhs (gsi_stmt (si))
+			   : get_store_value (gsi_stmt (si));
+	      tree sel_type = build_nonstandard_integer_type (
+		TYPE_PRECISION (TREE_TYPE (var)), 1);
+	      tree sel = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+				     get_identifier ("vect_perm"), sel_type);
+	      pair &live_range = live_ranges->get_or_insert (sel, &existed_p);
+	      gcc_assert (!existed_p);
+	      live_range = pair (0, max_point);
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Add perm indice %T, start = 0, end = %d\n",
+				 sel, max_point);
 	    }
 	}
     }
@@ -445,10 +527,6 @@ costs::preferred_new_lmul_p (const vector_costs *uncast_other) const
   auto this_loop_vinfo = as_a<loop_vec_info> (this->m_vinfo);
   auto other_loop_vinfo = as_a<loop_vec_info> (other->m_vinfo);
   class loop *loop = LOOP_VINFO_LOOP (this_loop_vinfo);
-
-  if (!LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (this_loop_vinfo)
-      && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (other_loop_vinfo))
-    return false;
 
   if (loop_autovec_infos.get (loop) && loop_autovec_infos.get (loop)->end_p)
     return false;
@@ -482,6 +560,15 @@ costs::preferred_new_lmul_p (const vector_costs *uncast_other) const
   hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
   machine_mode biggest_mode
     = compute_local_live_ranges (program_points_per_bb, live_ranges_per_bb);
+
+  /* If we can use simple VLS modes to handle NITERS element.
+     We don't need to use VLA modes with partial vector auto-vectorization.  */
+  if (LOOP_VINFO_NITERS_KNOWN_P (this_loop_vinfo)
+      && known_le (tree_to_poly_int64 (LOOP_VINFO_NITERS (this_loop_vinfo))
+		     * GET_MODE_SIZE (biggest_mode).to_constant (),
+		   (int) RVV_M8 * BYTES_PER_RISCV_VECTOR)
+      && pow2p_hwi (LOOP_VINFO_INT_NITERS (this_loop_vinfo)))
+    return vector_costs::better_main_loop_than_p (other);
 
   /* Update live ranges according to PHI.  */
   update_local_live_ranges (other->m_vinfo, program_points_per_bb,

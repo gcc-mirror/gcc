@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-reorder-blocks" } */
 /* { dg-skip-if "limited code space" { pdp11-*-* } } */
-/* { dg-timeout-factor 2.0 { target hppa*-*-* } } */
+/* { dg-timeout-factor 4.0 { target hppa*-*-* } } */
 
 void abort ();
 

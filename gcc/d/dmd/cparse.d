@@ -231,6 +231,9 @@ final class CParser(AST) : Parser!AST
                     }
                     goto Lexp;  // function call
 
+                case TOK.semicolon:
+                    goto Lexp;
+
                 default:
                 {
                     /* If tokens look like a declaration, assume it is one
@@ -501,7 +504,7 @@ final class CParser(AST) : Parser!AST
             auto condition = cparseExpression();
             check(TOK.rightParenthesis);
             auto _body = cparseStatement(ParseStatementFlags.scope_);
-            s = new AST.SwitchStatement(loc, condition, _body, false);
+            s = new AST.SwitchStatement(loc, null, condition, _body, false, token.loc);
             break;
         }
 
@@ -626,7 +629,7 @@ final class CParser(AST) : Parser!AST
 
                 default:
                     // ImportC extensions: parse as a D asm block.
-                    s = parseAsm();
+                    s = parseAsm(compileEnv.masm);
                     break;
             }
             break;
@@ -3114,12 +3117,13 @@ final class CParser(AST) : Parser!AST
             }
 
             Identifier id;
+            const paramLoc = token.loc;
             auto t = cparseDeclarator(DTR.xparameter, tspec, id, specifier);
             if (token.value == TOK.__attribute__)
                 cparseGnuAttributes(specifier);
             if (specifier.mod & MOD.xconst)
                 t = toConst(t);
-            auto param = new AST.Parameter(specifiersToSTC(LVL.parameter, specifier),
+            auto param = new AST.Parameter(paramLoc, specifiersToSTC(LVL.parameter, specifier),
                                            t, id, null, null);
             parameters.push(param);
             if (token.value == TOK.rightParenthesis || token.value == TOK.endOfFile)
@@ -3297,8 +3301,10 @@ final class CParser(AST) : Parser!AST
                 nextToken();
             else
             {
-                error("extended-decl-modifier expected");
-                break;
+                error("extended-decl-modifier expected after `__declspec(`, saw `%s` instead", token.toChars());
+                nextToken();
+                if (token.value != TOK.rightParenthesis)
+                    break;
             }
         }
     }

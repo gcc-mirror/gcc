@@ -275,8 +275,8 @@ extern bool emit_push_insn (rtx, machine_mode, tree, rtx, unsigned int,
 			    int, rtx, poly_int64, rtx, rtx, int, rtx, bool);
 
 /* Extract the accessible bit-range from a COMPONENT_REF.  */
-extern void get_bit_range (poly_uint64_pod *, poly_uint64_pod *, tree,
-			   poly_int64_pod *, tree *);
+extern void get_bit_range (poly_uint64 *, poly_uint64 *, tree,
+			   poly_int64 *, tree *);
 
 /* Expand an assignment that stores the value of FROM into TO.  */
 extern void expand_assignment (tree, tree, bool);

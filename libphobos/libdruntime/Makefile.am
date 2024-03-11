@@ -186,9 +186,9 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/gc/impl/manual/gc.d core/internal/gc/impl/proto/gc.d \
 	core/internal/gc/os.d core/internal/gc/pooltable.d \
 	core/internal/gc/proxy.d core/internal/hash.d core/internal/lifetime.d \
-	core/internal/moving.d core/internal/parseoptions.d \
-	core/internal/postblit.d core/internal/qsort.d \
-	core/internal/spinlock.d core/internal/string.d \
+	core/internal/moving.d core/internal/newaa.d \
+	core/internal/parseoptions.d core/internal/postblit.d \
+	core/internal/qsort.d core/internal/spinlock.d core/internal/string.d \
 	core/internal/switch_.d core/internal/traits.d core/internal/utf.d \
 	core/internal/util/array.d core/internal/util/math.d core/lifetime.d \
 	core/math.d core/memory.d core/runtime.d core/simd.d \

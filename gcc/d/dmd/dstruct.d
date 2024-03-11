@@ -105,6 +105,7 @@ extern (C++) void semanticTypeInfo(Scope* sc, Type t)
         if (!sc) // inline may request TypeInfo.
         {
             Scope scx;
+            scx.eSink = global.errorSink;
             scx._module = sd.getModule();
             getTypeInfoType(sd.loc, t, &scx);
             sd.requestTypeInfo = true;
@@ -272,7 +273,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         {
             // .stringof is always defined (but may be hidden by some other symbol)
             if(ident != Id.stringof && !(flags & IgnoreErrors) && semanticRun < PASS.semanticdone)
-                error("is forward referenced when looking for `%s`", ident.toChars());
+                .error(loc, "%s `%s` is forward referenced when looking for `%s`", kind, toPrettyChars, ident.toChars());
             return null;
         }
 

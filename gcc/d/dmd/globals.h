@@ -96,6 +96,46 @@ struct Output
     int bufferLines;    // number of lines written to the buffer
 };
 
+/// Command line state related to printing uasage about other switches
+struct Help
+{
+    d_bool manual;       // open browser on compiler manual
+    d_bool usage;        // print usage and exit
+    // print help of switch:
+    d_bool mcpu;         // -mcpu
+    d_bool transition;   // -transition
+    d_bool check;        // -check
+    d_bool checkAction;  // -checkaction
+    d_bool revert;       // -revert
+    d_bool preview;      // -preview
+    d_bool externStd;    // -extern-std
+    d_bool hc;           // -HC
+};
+
+struct Verbose
+{
+    d_bool verbose;           // verbose compile
+    d_bool showColumns;       // print character (column) numbers in diagnostics
+    d_bool tls;               // identify thread local variables
+    d_bool templates;         // collect and list statistics on template instantiations
+    // collect and list statistics on template instantiations origins.
+    // TODO: make this an enum when we want to list other kinds of instances
+    d_bool templatesListInstances;
+    d_bool gc;                 // identify gc usage
+    d_bool field;              // identify non-mutable field variables
+    d_bool complex = true;     // identify complex/imaginary type usage
+    d_bool vin;                // identify 'in' parameters
+    d_bool showGaggedErrors;   // print gagged errors anyway
+    d_bool printErrorContext;  // print errors with the error context (the error line in the source file)
+    d_bool logo;               // print compiler logo
+    d_bool color;              // use ANSI colors in console output
+    d_bool cov;                // generate code coverage data
+    MessageStyle messageStyle; // style of file/line annotations on messages
+    unsigned errorLimit;
+    unsigned errorSupplementLimit; // Limit the number of supplemental messages for each error (0 means unlimited)
+    unsigned errorSupplementCount();
+};
+
 // Put command line switches in here
 struct Param
 {
@@ -103,24 +143,13 @@ struct Param
     d_bool multiobj;      // break one object file into multiple ones
     d_bool trace;         // insert profiling hooks
     d_bool tracegc;       // instrument calls to 'new'
-    d_bool verbose;       // verbose compile
     d_bool vcg_ast;       // write-out codegen-ast
-    d_bool showColumns;   // print character (column) numbers in diagnostics
-    d_bool vtls;          // identify thread local variables
-    d_bool vtemplates;    // collect and list statistics on template instantiations
-    d_bool vtemplatesListInstances; // collect and list statistics on template instantiations origins
-    d_bool vgc;           // identify gc usage
-    d_bool vfield;        // identify non-mutable field variables
-    d_bool vcomplex;      // identify complex/imaginary type usage
-    d_bool vin;           // identify 'in' parameters
     Diagnostic useDeprecated;
     d_bool useUnitTests;  // generate unittest code
     d_bool useInline;     // inline expand functions
     d_bool release;       // build release version
     d_bool preservePaths; // true means don't strip path from source file
     Diagnostic warnings;
-    d_bool obsolete;      // warn about use of obsolete features
-    d_bool color;         // use ANSI colors in console output
     d_bool cov;           // generate code coverage data
     unsigned char covPercent;   // 0..100 code coverage percentage required
     d_bool ctfe_cov;      // generate coverage data for ctfe
@@ -134,19 +163,9 @@ struct Param
     d_bool allInst;       // generate code for all template instantiations
     d_bool bitfields;         // support C style bit fields
     CppStdRevision cplusplus;  // version of C++ name mangling to support
-    d_bool showGaggedErrors;  // print gagged errors anyway
-    d_bool printErrorContext;  // print errors with the error context (the error line in the source file)
-    d_bool manual;            // open browser on compiler manual
-    d_bool usage;             // print usage and exit
-    d_bool mcpuUsage;         // print help on -mcpu switch
-    d_bool transitionUsage;   // print help on -transition switch
-    d_bool checkUsage;        // print help on -check switch
-    d_bool checkActionUsage;  // print help on -checkaction switch
-    d_bool revertUsage;       // print help on -revert switch
-    d_bool previewUsage;      // print help on -preview switch
-    d_bool externStdUsage;    // print help on -extern-std switch
-    d_bool hcUsage;           // print help on -HC switch
-    d_bool logo;              // print logo;
+
+    Help help;
+    Verbose v;
 
     // Options for `-preview=/-revert=`
     FeatureState useDIP25;       // implement https://wiki.dlang.org/DIP25
@@ -181,9 +200,6 @@ struct Param
 
     CHECKACTION checkAction;       // action to take when bounds, asserts or switch defaults are violated
 
-    unsigned errorLimit;
-    unsigned errorSupplementLimit; // Limit the number of supplemental messages for each error (0 means unlimited)
-
     DString  argv0;    // program name
     Array<const char *> modFileAliasStrings; // array of char*'s of -I module filename alias strings
     Array<const char *> *imppath;     // array of char*'s of where to look for import modules
@@ -202,13 +218,7 @@ struct Param
     Output moduleDeps;        // Generate `.deps` module dependencies
 
     unsigned debuglevel;   // debug level
-    Array<const char *> *debugids;     // debug identifiers
-
     unsigned versionlevel; // version level
-    Array<const char *> *versionids;   // version identifiers
-
-
-    MessageStyle messageStyle;  // style of file/line annotations on messages
 
     d_bool run;           // run resulting executable
     Strings runargs;    // arguments for executable
@@ -265,7 +275,6 @@ struct CompileEnv
     bool previewIn;
     bool ddocOutput;
     bool shortenedMethods;
-    bool obsolete;
 };
 
 struct Global
@@ -277,6 +286,7 @@ struct Global
     Array<const char *> *path;        // Array of char*'s which form the import lookup path
     Array<const char *> *filePath;    // Array of char*'s which form the file import lookup path
 
+    char datetime[26];       /// string returned by ctime()
     CompileEnv compileEnv;
 
     Param params;
@@ -296,6 +306,7 @@ struct Global
 
     FileManager* fileManager;
     ErrorSink* errorSink;       // where the error messages go
+    ErrorSink* errorSinkNull;   // where the error messages disappear
 
     FileName (*preprocess)(FileName, const Loc&, bool&, OutBuffer&);
 
@@ -358,8 +369,8 @@ struct Loc
 {
 private:
     unsigned _linnum;
-    unsigned short _charnum;
-    unsigned short fileIndex;
+    unsigned _charnum;
+    unsigned fileIndex;
 public:
     static void set(bool showColumns, MessageStyle messageStyle);
 

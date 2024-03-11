@@ -51,7 +51,7 @@ struct CompileEnv
     bool previewIn;          /// `in` means `[ref] scope const`, accepts rvalues
     bool ddocOutput;         /// collect embedded documentation comments
     bool shortenedMethods = true;   /// allow => in normal function declarations
-    bool obsolete;           /// warn on use of legacy code
+    bool masm;               /// use MASM inline asm syntax
 }
 
 /***********************************************************
@@ -484,6 +484,12 @@ class Lexer
                     goto default;
                 wysiwygStringConstant(t);
                 return;
+            case 'x':
+                if (p[1] != '"')
+                    goto case_ident;
+                p++;
+                t.value = hexStringConstant(t);
+                return;
             case 'q':
                 if (Ccompile)
                     goto case_ident;
@@ -526,7 +532,7 @@ class Lexer
             //case 'u':
             case 'v':
             case 'w':
-            case 'x':
+                /*case 'x':*/
             case 'y':
             case 'z':
             case 'A':
@@ -1476,6 +1482,85 @@ class Lexer
         }
     }
 
+    /**************************************
+     * Lex hex strings:
+     *      x"0A ae 34FE BD"
+     */
+    final TOK hexStringConstant(Token* t)
+    {
+        Loc start = loc();
+        uint n = 0;
+        uint v = ~0; // dead assignment, needed to suppress warning
+        p++;
+        stringbuffer.setsize(0);
+        while (1)
+        {
+            dchar c = *p++;
+            switch (c)
+            {
+            case ' ':
+            case '\t':
+            case '\v':
+            case '\f':
+                continue; // skip white space
+            case '\r':
+                if (*p == '\n')
+                    continue; // ignore '\r' if followed by '\n'
+                // Treat isolated '\r' as if it were a '\n'
+                goto case '\n';
+            case '\n':
+                endOfLine();
+                continue;
+            case 0:
+            case 0x1A:
+                error("unterminated string constant starting at %s", start.toChars());
+                t.setString();
+                // decrement `p`, because it needs to point to the next token (the 0 or 0x1A character is the TOK.endOfFile token).
+                p--;
+                return TOK.hexadecimalString;
+            case '"':
+                if (n & 1)
+                {
+                    error("odd number (%d) of hex characters in hex string", n);
+                    stringbuffer.writeByte(v);
+                }
+                t.setString(stringbuffer);
+                t.postfix = 'h';
+                stringPostfix(t);
+                return TOK.hexadecimalString;
+            default:
+                if (c >= '0' && c <= '9')
+                    c -= '0';
+                else if (c >= 'a' && c <= 'f')
+                    c -= 'a' - 10;
+                else if (c >= 'A' && c <= 'F')
+                    c -= 'A' - 10;
+                else if (c & 0x80)
+                {
+                    p--;
+                    const u = decodeUTF();
+                    p++;
+                    if (u == PS || u == LS)
+                        endOfLine();
+                    else
+                        error("non-hex character \\u%04x in hex string", u);
+                }
+                else
+                    error("non-hex character '%c' in hex string", c);
+                if (n & 1)
+                {
+                    v = (v << 4) | c;
+                    stringbuffer.writeByte(v);
+                }
+                else
+                    v = c;
+                n++;
+                break;
+            }
+        }
+        assert(0); // see bug 15731
+    }
+
     /**
     Lex a delimited string. Some examples of delimited strings are:
     ---
@@ -2122,9 +2207,14 @@ class Lexer
                 if (base == 2)
                     goto Ldone; // if ".identifier" or ".unicode"
                 goto Lreal; // otherwise as part of a floating point literal
+
+            case 'i':
+                if (Ccompile)
+                    goto Ldone;
+                goto Lreal;
+
             case 'p':
             case 'P':
-            case 'i':
             Lreal:
                 p = start;
                 return inreal(t);
@@ -2317,7 +2407,13 @@ class Lexer
             decimal  = 2, // decimal
             unsigned = 4, // u or U suffix
             long_    = 8, // l or L suffix
-            llong    = 0x10 // ll or LL
+            llong    = 0x10, // ll or LL
+
+            // Microsoft extensions
+            i8       = 0x20,
+            i16      = 0x40,
+            i32      = 0x80,
+            i64      = 0x100,
         }
         FLAGS flags = (base == 10) ? FLAGS.decimal : FLAGS.octalhex;
         bool err;
@@ -2340,6 +2436,37 @@ class Lexer
                     {
                         f = FLAGS.long_ | FLAGS.llong;
                         ++p;
+                    }
+                    break;
+
+                case 'i':
+                case 'I':
+                    if (p[1] == '8')
+                    {
+                        f = FLAGS.i8;
+                        ++p;
+                    }
+                    else if (p[1] == '1' && p[2] == '6')
+                    {
+                        f = FLAGS.i16;
+                        p += 2;
+                    }
+                    else if (p[1] == '3' && p[2] == '2')
+                    {
+                        f = FLAGS.i32;
+                        p += 2;
+                    }
+                    else if (p[1] == '6' && p[2] == '4')
+                    {
+                        f = FLAGS.i64;
+                        p += 2;
+                    }
+                    else
+                        break Lsuffixes;
+                    if (p[1] >= '0' && p[1] <= '9' && !err)
+                    {
+                        error("invalid integer suffix");
+                        err = true;
                     }
                     break;
 
@@ -2473,6 +2600,34 @@ class Lexer
             case FLAGS.octalhex | FLAGS.long_ | FLAGS.unsigned | FLAGS.llong:
             case FLAGS.decimal  | FLAGS.long_ | FLAGS.unsigned | FLAGS.llong:
                 result = TOK.uns64Literal;
+                break;
+
+            case FLAGS.octalhex | FLAGS.i8:
+            case FLAGS.octalhex | FLAGS.i16:
+            case FLAGS.octalhex | FLAGS.i32:
+            case FLAGS.octalhex | FLAGS.unsigned | FLAGS.i8:
+            case FLAGS.octalhex | FLAGS.unsigned | FLAGS.i16:
+            case FLAGS.octalhex | FLAGS.unsigned | FLAGS.i32:
+            case FLAGS.decimal  | FLAGS.unsigned | FLAGS.i8:
+            case FLAGS.decimal  | FLAGS.unsigned | FLAGS.i16:
+            case FLAGS.decimal  | FLAGS.unsigned | FLAGS.i32:
+                result = TOK.uns32Literal;
+                break;
+
+            case FLAGS.decimal | FLAGS.i8:
+            case FLAGS.decimal | FLAGS.i16:
+            case FLAGS.decimal | FLAGS.i32:
+                result = TOK.int32Literal;
+                break;
+
+            case FLAGS.octalhex | FLAGS.i64:
+            case FLAGS.octalhex | FLAGS.unsigned | FLAGS.i64:
+            case FLAGS.decimal  | FLAGS.unsigned | FLAGS.i64:
+                result = TOK.uns64Literal;
+                break;
+
+            case FLAGS.decimal | FLAGS.i64:
+                result = TOK.int64Literal;
                 break;
 
             default:

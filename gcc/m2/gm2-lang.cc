@@ -131,7 +131,7 @@ gm2_langhook_init (void)
 
   if (M2Options_GetPPOnly ())
     {
-      /* preprocess the file here.  */
+      /* Preprocess the file here.  */
       gm2_langhook_parse_file ();
       return false; /* Finish now, no further compilation.  */
     }
@@ -234,21 +234,52 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 	      building_cpp_command = true;
 	    }
 	  M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
-			      && !(option->flags & CL_SEPARATE));
-	  break;
-	case OPT_M:
-	case OPT_MM:
-	  gcc_checking_assert (building_cpp_command);
-	  M2Options_SetPPOnly (value);
-	  /* This is a preprocessor command.  */
-	  M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
-			      && !(option->flags & CL_SEPARATE));
+			    && !(option->flags & CL_SEPARATE));
 	  break;
 
-	/* We can only use MQ when the command line is either PP-only, or
+	case OPT_M:
+	  /* Output a rule suitable for make describing the dependencies of the
+	     main source file.  */
+	  if (in_cpp_args)
+	    {
+	      gcc_checking_assert (building_cpp_command);
+	      /* This is a preprocessor command.  */
+	      M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+				&& !(option->flags & CL_SEPARATE));
+	    }
+	  M2Options_SetPPOnly (value);
+	  M2Options_SetM (value);
+	  break;
+
+	case OPT_MM:
+	  if (in_cpp_args)
+	    {
+	      gcc_checking_assert (building_cpp_command);
+	      /* This is a preprocessor command.  */
+	      M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+				&& !(option->flags & CL_SEPARATE));
+	    }
+	  M2Options_SetPPOnly (value);
+	  M2Options_SetMM (value);
+	  break;
+
+	case OPT_MF:
+	  if (!in_cpp_args)
+	    M2Options_SetMF (arg);
+	  break;
+
+	case OPT_MP:
+	  M2Options_SetMP (value);
+	  break;
+
+	/* We can only use MQ and MT when the command line is either PP-only, or
 	   when there is a MD/MMD on it.  */
 	case OPT_MQ:
 	  M2Options_SetMQ (arg);
+	  break;
+
+	case OPT_MT:
+	  M2Options_SetMT (arg);
 	  break;
 
 	case OPT_o:
@@ -266,14 +297,23 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 	     For now skip all plugins to avoid fails with the m2 one.  */
 	  break;
 
-	/* Preprocessor arguments with a following filename, we add these
-	   back to the main file preprocess line, but not to dependents
-	   TODO Handle MF.  */
+	/* Preprocessor arguments with a following filename.  */
 	case OPT_MD:
-	  M2Options_SetMD (arg);
+	  M2Options_SetMD (value);
+	  if (value)
+	    {
+	      M2Options_SetM (true);
+	      M2Options_SetMF (arg);
+	    }
 	  break;
+
 	case OPT_MMD:
-	  M2Options_SetMMD (arg);
+	  M2Options_SetMMD (value);
+	  if (value)
+	    {
+	      M2Options_SetMM (true);
+	      M2Options_SetMF (arg);
+	    }
 	  break;
 
 	/* Modula 2 claimed options we pass to the preprocessor.  */
@@ -744,7 +784,7 @@ gm2_langhook_post_options (const char **pfilename)
   if (allow_libraries)
     add_m2_import_paths (flibs);
 
- /* Returning false means that the backend should be used.  */
+  /* Returning false means that the backend should be used.  */
   return M2Options_GetPPOnly ();
 }
 

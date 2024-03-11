@@ -14,6 +14,7 @@ module dmd.sideeffect;
 import dmd.astenums;
 import dmd.declaration;
 import dmd.dscope;
+import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
@@ -299,7 +300,7 @@ bool discardValue(Expression e)
                     }
                     else
                         s = ce.e1.toChars();
-                    e.warning("calling `%s` without side effects discards return value of type `%s`; prepend a `cast(void)` if intentional", s, e.type.toChars());
+                    warning(e.loc, "calling `%s` without side effects discards return value of type `%s`; prepend a `cast(void)` if intentional", s, e.type.toChars());
                 }
             }
         }
@@ -368,12 +369,12 @@ bool discardValue(Expression e)
         BinExp tmp = e.isBinExp();
         assert(tmp);
 
-        e.error("the result of the equality expression `%s` is discarded", e.toChars());
+        error(e.loc, "the result of the equality expression `%s` is discarded", e.toChars());
         bool seenSideEffect = false;
         foreach(expr; [tmp.e1, tmp.e2])
         {
             if (hasSideEffect(expr)) {
-                expr.errorSupplemental("note that `%s` may have a side effect", expr.toChars());
+                errorSupplemental(expr.loc, "note that `%s` may have a side effect", expr.toChars());
                 seenSideEffect |= true;
             }
         }
@@ -381,7 +382,7 @@ bool discardValue(Expression e)
     default:
         break;
     }
-    e.error("`%s` has no effect", e.toChars());
+    error(e.loc, "`%s` has no effect", e.toChars());
     return true;
 }
 

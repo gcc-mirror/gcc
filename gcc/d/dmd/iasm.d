@@ -64,6 +64,7 @@ extern(C++) Statement asmSemantic(AsmStatement s, Scope *sc)
             return statementSemantic(se, sc);
         }
         auto ias = new InlineAsmStatement(s.loc, s.tokens);
+        ias.caseSensitive = s.caseSensitive;
         return inlineAsmSemantic(ias, sc);
     }
     else version (IN_GCC)

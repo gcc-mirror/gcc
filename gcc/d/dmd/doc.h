@@ -13,4 +13,5 @@
 class Module;
 class ErrorSink;
 
-void gendocfile(Module *m, ErrorSink *eSink);
+void gendocfile(Module *m, const char *ddoctext_ptr, size_t ddoctext_length,
+                const char *datetime, ErrorSink *eSink, OutBuffer &outbuf);

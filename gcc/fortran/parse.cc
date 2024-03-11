@@ -833,18 +833,18 @@ check_omp_allocate_stmt (locus *loc)
 		      &n->expr->where, gfc_ascii_statement (ST_OMP_ALLOCATE));
 	  return false;
 	}
+      /* Procedure pointers are not allocatable; hence, we do not regard them as
+	 pointers here - and reject them later in gfc_resolve_omp_allocate.  */
       bool alloc_ptr;
       if (n->sym->ts.type == BT_CLASS && n->sym->attr.class_ok)
 	alloc_ptr = (CLASS_DATA (n->sym)->attr.allocatable
 		     || CLASS_DATA (n->sym)->attr.class_pointer);
       else
-	alloc_ptr = (n->sym->attr.allocatable || n->sym->attr.pointer
-		     || n->sym->attr.proc_pointer);
+	alloc_ptr = n->sym->attr.allocatable || n->sym->attr.pointer;
       if (alloc_ptr
 	  || (n->sym->ns && n->sym->ns->proc_name
 	      && (n->sym->ns->proc_name->attr.allocatable
-		  || n->sym->ns->proc_name->attr.pointer
-		  || n->sym->ns->proc_name->attr.proc_pointer)))
+		  || n->sym->ns->proc_name->attr.pointer)))
 	has_allocatable = true;
       else
 	has_non_allocatable = true;
@@ -5814,7 +5814,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 {
   gfc_statement st, omp_end_st, first_st;
   gfc_code *cp, *np;
-  gfc_state_data s;
+  gfc_state_data s, s2;
 
   accept_statement (omp_st);
 
@@ -5915,13 +5915,21 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       gfc_notify_std (GFC_STD_F2008, "BLOCK construct at %C");
 
       my_ns = gfc_build_block_ns (gfc_current_ns);
-      gfc_current_ns = my_ns;
-      my_parent = my_ns->parent;
-
       new_st.op = EXEC_BLOCK;
       new_st.ext.block.ns = my_ns;
       new_st.ext.block.assoc = NULL;
       accept_statement (ST_BLOCK);
+
+      push_state (&s2, COMP_BLOCK, my_ns->proc_name);
+      gfc_current_ns = my_ns;
+      my_parent = my_ns->parent;
+      if (omp_st == ST_OMP_SECTIONS
+	  || omp_st == ST_OMP_PARALLEL_SECTIONS)
+	{
+	  np = new_level (cp);
+	  np->op = cp->op;
+	}
+
       first_st = next_statement ();
       st = parse_spec (first_st);
     }
@@ -5937,6 +5945,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       case ST_OMP_TEAMS_LOOP:
 	{
 	  gfc_state_data *stk = gfc_state_stack->previous;
+	  if (stk->state == COMP_OMP_STRICTLY_STRUCTURED_BLOCK)
+	    stk = stk->previous;
 	  stk->tail->ext.omp_clauses->target_first_st_is_teams = true;
 	  break;
 	}
@@ -6035,8 +6045,10 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       else if (block_construct && st == ST_END_BLOCK)
 	{
 	  accept_statement (st);
+	  gfc_current_ns->code = gfc_state_stack->head;
 	  gfc_current_ns = my_parent;
-	  pop_state ();
+	  pop_state ();  /* Inner BLOCK */
+	  pop_state ();  /* Outer COMP_OMP_STRICTLY_STRUCTURED_BLOCK */
 
 	  st = next_statement ();
 	  if (st == omp_end_st)

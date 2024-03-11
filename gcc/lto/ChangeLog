@@ -1,3 +1,7 @@
+2023-09-30  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Make create_fdas_for_lto1 target not .PHONY
+
 2023-09-19  Thomas Schwinge  <thomas@codesourcery.com>
 	    Pan Li  <pan2.li@intel.com>
 

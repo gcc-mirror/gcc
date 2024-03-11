@@ -5,30 +5,6 @@
 #include "def.h"
 
 /*
-** mov0:
-**	flw\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	fsw\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov0 (float *in, float *out)
-{
-  v1sf v = *(v1sf*)in;
-  *(v1sf*)out = v;
-}
-
-/*
-** mov1:
-**	fld\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	fsd\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov1 (float *in, float *out)
-{
-  v2sf v = *(v2sf*)in;
-  *(v2sf*)out = v;
-}
-
-/*
 ** mov2:
 **	vsetivli\s+zero,\s*4,\s*e32,\s*mf2,\s*t[au],\s*m[au]
 **	vle32\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)

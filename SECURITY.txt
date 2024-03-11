@@ -1,0 +1,205 @@
+What is a GCC security bug?
+===========================
+
+    A security bug is one that threatens the security of a system or
+    network, or might compromise the security of data stored on it.
+    In the context of GCC, there are multiple ways in which this might
+    happen and some common scenarios are detailed below.
+
+    If you're reporting a security issue and feel like it does not fit
+    into any of the descriptions below, you're encouraged to reach out
+    through the GCC bugzilla or, if needed, privately, by following the
+    instructions in the last two sections of this document.
+
+Compiler drivers, programs, libgccjit and support libraries
+-----------------------------------------------------------
+
+    The compiler driver processes source code, invokes other programs
+    such as the assembler and linker and generates the output result,
+    which may be assembly code or machine code.  Compiling untrusted
+    sources can result in arbitrary code execution and unconstrained
+    resource consumption in the compiler. As a result, compilation of
+    such code should be done inside a sandboxed environment to ensure
+    that it does not compromise the host environment.
+
+    The libgccjit library can, despite the name, be used both for
+    ahead-of-time compilation and for just-in-compilation.  In both
+    cases, it can be used to translate input representations (such as
+    source code) in the application context; in the latter case, the
+    generated code is also run in the application context.
+
+    Limitations that apply to the compiler driver apply here too in
+    terms of trusting inputs and it is recommended that both the
+    compilation *and* execution context of the code are appropriately
+    sandboxed to contain the effects of any bugs in libgccjit, the
+    application code using it, or its generated code to the sandboxed
+    environment.
+
+    Libraries such as libiberty, libcc1 and libcpp are not distributed
+    for runtime support and have similar challenges to compiler drivers.
+    While they are expected to be robust against arbitrary input, they
+    should only be used with trusted inputs when linked into the
+    compiler.
+
+    Libraries such as zlib that are bundled with GCC to build it will be
+    treated the same as the compiler drivers and programs as far as
+    security coverage is concerned.  However, if you find an issue in
+    these libraries independent of their use in GCC, you should reach
+    out to their upstream projects to report them.
+
+    As a result, the only case for a potential security issue in the
+    compiler is when it generates vulnerable application code for
+    trusted input source code that is conforming to the relevant
+    programming standard or extensions documented as supported by GCC
+    and the algorithm expressed in the source code does not have the
+    vulnerability.  The output application code could be considered
+    vulnerable if it produces an actual vulnerability in the target
+    application, for example:
+
+    - The application dereferences an invalid memory location despite
+      the application sources being valid.
+    - The application reads from or writes to a valid but incorrect
+      memory location, resulting in an information integrity issue or an
+      information leak.
+    - The application ends up running in an infinite loop or with
+      severe degradation in performance despite the input sources having
+      no such issue, resulting in a Denial of Service.  Note that
+      correct but non-performant code is not a security issue candidate,
+      this only applies to incorrect code that may result in performance
+      degradation severe enough to amount to a denial of service.
+    - The application crashes due to the generated incorrect code,
+      resulting in a Denial of Service.
+
+Language runtime libraries
+--------------------------
+
+    GCC also builds and distributes libraries that are intended to be
+    used widely to implement runtime support for various programming
+    languages.  These include the following:
+
+    * libada
+    * libatomic
+    * libbacktrace
+    * libcc1
+    * libcody
+    * libcpp
+    * libdecnumber
+    * libffi
+    * libgcc
+    * libgfortran
+    * libgm2
+    * libgo
+    * libgomp
+    * libitm
+    * libobjc
+    * libphobos
+    * libquadmath
+    * libssp
+    * libstdc++
+
+    These libraries are intended to be used in arbitrary contexts and, as
+    a result, bugs in these libraries may be evaluated for security
+    impact.  However, some of these libraries, e.g. libgo, libphobos,
+    etc.  are not maintained in the GCC project, due to which the GCC
+    project may not be the correct point of contact for them.  You are
+    encouraged to look at README files within those library directories
+    to locate the canonical security contact point for those projects
+    and include them in the report.  Once the issue is fixed in the
+    upstream project, the fix will be synced into GCC in a future
+    release.
+
+    Most security vulnerabilities in these runtime libraries arise when
+    an application uses functionality in a specific way.  As a result,
+    not all bugs qualify as security relevant.  The following guidelines
+    can help with the decision:
+
+    - Buffer overflows and integer overflows should be treated as
+      security issues if it is conceivable that the data triggering them
+      can come from an untrusted source.
+    - Bugs that cause memory corruption which is likely exploitable
+      should be treated as security bugs.
+    - Information disclosure can be security bugs, especially if
+      exposure through applications can be determined.
+    - Memory leaks and races are security bugs if they cause service
+      breakage.
+    - Stack overflow through unbounded alloca calls or variable-length
+      arrays are security bugs if it is conceivable that the data
+      triggering the overflow could come from an untrusted source.
+    - Stack overflow through deep recursion and other crashes are
+      security bugs if they cause service breakage.
+    - Bugs that cripple the whole system (so that it doesn't even boot
+      or does not run most applications) are not security bugs because
+      they will not be exploitable in practice, due to general system
+      instability.
+
+Diagnostic libraries
+--------------------
+
+    Libraries like libvtv and the sanitizers are intended to be used in
+    diagnostic cases and not intended for use in sensitive environments.
+    As a result, bugs in these libraries will not be considered security
+    sensitive.
+
+GCC plugins
+-----------
+
+    It should be noted that GCC may execute arbitrary code loaded by a
+    user through the GCC plugin mechanism or through system preloading
+    mechanism.  Such custom code should be vetted by the user for safety,
+    as bugs exposed through such code will not be considered security
+    issues.
+
+Security features implemented in GCC
+------------------------------------
+
+    GCC implements a number of security features that reduce the impact
+    of security issues in applications, such as -fstack-protector,
+    -fstack-clash-protection, _FORTIFY_SOURCE and so on.  A failure of
+    these features to function perfectly in all situations is not an
+    exploitable vulnerability in itself since it does not affect the
+    correctness of programs.  Further, they're dependent on heuristics
+    and may not always have full coverage for protection.
+
+    Similarly, GCC may transform code in a way that the correctness of
+    the expressed algorithm is preserved, but supplementary properties
+    that are not specifically expressible in a high-level language
+    are not preserved. Examples of such supplementary properties
+    include absence of sensitive data in the program's address space
+    after an attempt to wipe it, or data-independent timing of code.
+    When the source code attempts to express such properties, failure
+    to preserve them in resulting machine code is not a security issue
+    in GCC.
+
+Reporting private security bugs
+===============================
+
+    *All bugs reported in the GCC Bugzilla are public.*
+
+    In order to report a private security bug that is not immediately
+    public, please contact one of the downstream distributions with
+    security teams.  The following teams have volunteered to handle
+    such bugs:
+
+      Debian:  security@debian.org
+      Red Hat: secalert@redhat.com
+      SUSE:    security@suse.de
+      AdaCore: product-security@adacore.com
+
+    Please report the bug to just one of these teams.  It will be shared
+    with other teams as necessary.
+
+    The team contacted will take care of details such as vulnerability
+    rating and CVE assignment (http://cve.mitre.org/about/).  It is likely
+    that the team will ask to file a public bug because the issue is
+    sufficiently minor and does not warrant an embargo.  An embargo is not
+    a requirement for being credited with the discovery of a security
+    vulnerability.
+
+Reporting public security bugs
+==============================
+
+    It is expected that critical security bugs will be rare, and that most
+    security bugs can be reported in GCC, thus making
+    them public immediately.  The system can be found here:
+
+      https://gcc.gnu.org/bugzilla/

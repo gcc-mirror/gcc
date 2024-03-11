@@ -73,8 +73,8 @@ public:
 private:
   DISABLE_COPY_AND_ASSIGN (irange_storage);
   static size_t size (const irange &r);
-  const unsigned char *lengths_address () const;
-  unsigned char *write_lengths_address ();
+  const unsigned short *lengths_address () const;
+  unsigned short *write_lengths_address ();
   friend void gt_ggc_mx_irange_storage (void *);
   friend void gt_pch_p_14irange_storage (void *, void *,
 					      gt_pointer_operator, void *);
@@ -97,7 +97,7 @@ private:
   // Another variable-length part of the structure following the HWIs.
   // This is the length of each wide_int in m_val.
   //
-  // unsigned char m_len[];
+  // unsigned short m_len[];
 
   irange_storage (const irange &r);
 };

@@ -279,6 +279,7 @@ public:
     ObjcClassDeclaration objc;          // Data for a class declaration that is needed for the Objective-C integration
     Symbol *cpp_type_info_ptr_sym;      // cached instance of class Id.cpp_type_info_ptr
 
+    void classError(const char* fmt, const char* arg);
     static ClassDeclaration *create(const Loc &loc, Identifier *id, BaseClasses *baseclasses, Dsymbols *members, bool inObject);
     const char *toPrettyChars(bool QualifyTypes = false) override;
     ClassDeclaration *syntaxCopy(Dsymbol *s) override;

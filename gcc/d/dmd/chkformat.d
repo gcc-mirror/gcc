@@ -15,7 +15,7 @@ import core.stdc.ctype : isdigit;
 
 import dmd.astenums;
 import dmd.cond;
-import dmd.errors;
+import dmd.errorsink;
 import dmd.expression;
 import dmd.globals;
 import dmd.identifier;
@@ -53,6 +53,7 @@ import dmd.target;
  *      format = format string
  *      args = arguments to match with format string
  *      isVa_list = if a "v" function (format check only)
+ *      eSink = where the error messages go
  *
  * Returns:
  *      `true` if errors occurred
@@ -60,7 +61,8 @@ import dmd.target;
  * C99 7.19.6.1
  * https://www.cplusplus.com/reference/cstdio/printf/
  */
-bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expression[] args, bool isVa_list)
+public
+bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expression[] args, bool isVa_list, ErrorSink eSink)
 {
     //printf("checkPrintFormat('%.*s')\n", cast(int)format.length, format.ptr);
     size_t n;    // index in args
@@ -87,7 +89,7 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
         {
             // format check only
             if (fmt == Format.error)
-                deprecation(loc, "format specifier `\"%.*s\"` is invalid", cast(int)slice.length, slice.ptr);
+                eSink.deprecation(loc, "format specifier `\"%.*s\"` is invalid", cast(int)slice.length, slice.ptr);
             continue;
         }
 
@@ -96,7 +98,7 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
             if (n == args.length)
             {
                 if (args.length < (n + 1))
-                    deprecation(loc, "more format specifiers than %d arguments", cast(int)n);
+                    eSink.deprecation(loc, "more format specifiers than %d arguments", cast(int)n);
                 else
                     skip = true;
                 return null;
@@ -106,7 +108,7 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
 
         void errorMsg(const char* prefix, Expression arg, const char* texpect, Type tactual)
         {
-            deprecation(arg.loc, "%sargument `%s` for format specification `\"%.*s\"` must be `%s`, not `%s`",
+            eSink.deprecation(arg.loc, "%sargument `%s` for format specification `\"%.*s\"` must be `%s`, not `%s`",
                   prefix ? prefix : "", arg.toChars(), cast(int)slice.length, slice.ptr, texpect, tactual.toChars());
         }
 
@@ -178,7 +180,7 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
                     else
                         errorMsg(null, e, (c_longsize == 4 ? "int" : "long"), t);
                     if (t.isintegral() && t.size() != c_longsize)
-                        errorSupplemental(e.loc, "C `long` is %d bytes on your system", c_longsize);
+                        eSink.errorSupplemental(e.loc, "C `long` is %d bytes on your system", c_longsize);
                 }
                 break;
 
@@ -226,7 +228,7 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
                 break;
 
             case Format.n:      // pointer to int
-                if (!(t.ty == Tpointer && tnext.ty == Tint32))
+                if (!(t.ty == Tpointer && tnext.ty == Tint32 && tnext.isMutable()))
                     errorMsg(null, e, "int*", t);
                 break;
 
@@ -286,7 +288,7 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
                 break;
 
             case Format.error:
-                deprecation(loc, "format specifier `\"%.*s\"` is invalid", cast(int)slice.length, slice.ptr);
+                eSink.deprecation(loc, "format specifier `\"%.*s\"` is invalid", cast(int)slice.length, slice.ptr);
                 break;
 
             case Format.GNU_m:
@@ -327,6 +329,7 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
  *      format = format string
  *      args = arguments to match with format string
  *      isVa_list = if a "v" function (format check only)
+ *      eSink = where the error messages go
  *
  * Returns:
  *      `true` if errors occurred
@@ -334,7 +337,8 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
  * C99 7.19.6.2
  * https://www.cplusplus.com/reference/cstdio/scanf/
  */
-bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expression[] args, bool isVa_list)
+public
+bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expression[] args, bool isVa_list, ErrorSink eSink)
 {
     size_t n = 0;
     for (size_t i = 0; i < format.length;)
@@ -357,7 +361,7 @@ bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expres
         {
             // format check only
             if (fmt == Format.error)
-                deprecation(loc, "format specifier `\"%.*s\"` is invalid", cast(int)slice.length, slice.ptr);
+                eSink.deprecation(loc, "format specifier `\"%.*s\"` is invalid", cast(int)slice.length, slice.ptr);
             continue;
         }
 
@@ -366,7 +370,7 @@ bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expres
             if (n == args.length)
             {
                 if (!asterisk)
-                    deprecation(loc, "more format specifiers than %d arguments", cast(int)n);
+                    eSink.deprecation(loc, "more format specifiers than %d arguments", cast(int)n);
                 return null;
             }
             return args[n++];
@@ -374,7 +378,7 @@ bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expres
 
         void errorMsg(const char* prefix, Expression arg, const char* texpect, Type tactual)
         {
-            deprecation(arg.loc, "%sargument `%s` for format specification `\"%.*s\"` must be `%s`, not `%s`",
+            eSink.deprecation(arg.loc, "%sargument `%s` for format specification `\"%.*s\"` must be `%s`, not `%s`",
                   prefix ? prefix : "", arg.toChars(), cast(int)slice.length, slice.ptr, texpect, tactual.toChars());
         }
 
@@ -512,7 +516,7 @@ bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expres
                 break;
 
             case Format.error:
-                deprecation(loc, "format specifier `\"%.*s\"` is invalid", cast(int)slice.length, slice.ptr);
+                eSink.deprecation(loc, "format specifier `\"%.*s\"` is invalid", cast(int)slice.length, slice.ptr);
                 break;
 
             case Format.GNU_m:
@@ -522,6 +526,8 @@ bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expres
     }
     return false;
 }
+
+/*****************************************************************************************************/
 
 private:
 

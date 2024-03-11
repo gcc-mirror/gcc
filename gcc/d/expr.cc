@@ -2050,6 +2050,9 @@ public:
     tree result = get_decl_tree (e->var);
     TREE_USED (result) = 1;
 
+    if (e->var->isFuncDeclaration ())
+      result = maybe_reject_intrinsic (result);
+
     if (declaration_reference_p (e->var))
       gcc_assert (POINTER_TYPE_P (TREE_TYPE (result)));
     else
@@ -2535,13 +2538,13 @@ public:
       {
 	/* Copy the string contents to a null terminated string.  */
 	dinteger_t length = (e->len * e->sz);
-	char *string = XALLOCAVEC (char, length + 1);
+	char *string = XALLOCAVEC (char, length + e->sz);
+	memset (string, 0, length + e->sz);
 	if (length > 0)
 	  memcpy (string, e->string, length);
-	string[length] = '\0';
 
 	/* String value and type includes the null terminator.  */
-	tree value = build_string (length, string);
+	tree value = build_string (length + e->sz, string);
 	TREE_TYPE (value) = make_array_type (tb->nextOf (), length + 1);
 	value = build_address (value);
 
@@ -2725,6 +2728,15 @@ public:
 
   void visit (AssocArrayLiteralExp *e) final override
   {
+    if (e->lowering != NULL)
+      {
+	/* When an associative array literal gets lowered, it's converted into a
+	   struct literal suitable for static initialization.  */
+	gcc_assert (this->constp_);
+	this->result_ = build_expr (e->lowering, this->constp_, true);
+	return ;
+      }
+
     /* Want the mutable type for typeinfo reference.  */
     Type *tb = e->type->toBasetype ()->mutableOf ();
 

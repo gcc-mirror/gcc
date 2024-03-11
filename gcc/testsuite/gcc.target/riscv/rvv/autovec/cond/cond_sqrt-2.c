@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-march=rv64gcv_zvfh -mabi=lp64d --param riscv-autovec-preference=scalable -fno-vect-cost-model -ffast-math" } */
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 #define DEF_LOOP(TYPE, OP)                                                     \
   void __attribute__ ((noipa))                                                 \

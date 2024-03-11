@@ -129,6 +129,13 @@ struct rect
   size<CoordinateSystem> m_size;
 };
 
+template <typename CoordinateSystem>
+rect<CoordinateSystem> operator+ (rect<CoordinateSystem> r,
+				  coord<CoordinateSystem> offset)
+{
+  return rect<CoordinateSystem> (r.m_top_left + offset, r.m_size);
+}
+
 template <typename ElementType, typename SizeType, typename CoordType>
 class array2
 {

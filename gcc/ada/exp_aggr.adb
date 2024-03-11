@@ -173,8 +173,11 @@ package body Exp_Aggr is
    ------------------------------------------------------
 
    function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean;
-   --  True if N is an aggregate (possibly qualified or converted) that is
-   --  being returned from a build-in-place function.
+   --  True if N is an aggregate (possibly qualified or a dependent expression
+   --  of a conditional expression, and possibly recursively so) that is being
+   --  returned from a build-in-place function. Such qualified and conditional
+   --  expressions are transparent for this purpose because an enclosing return
+   --  is propagated resp. distributed into these expressions by the expander.
 
    function Build_Record_Aggr_Code
      (N   : Node_Id;
@@ -8463,7 +8466,11 @@ package body Exp_Aggr is
       P : Node_Id := Parent (N);
 
    begin
-      while Nkind (P) = N_Qualified_Expression loop
+      while Nkind (P) in N_Case_Expression
+                       | N_Case_Expression_Alternative
+                       | N_If_Expression
+                       | N_Qualified_Expression
+      loop
          P := Parent (P);
       end loop;
 

@@ -58,4 +58,4 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vec_stmt_relevant_p: stmt live but not relevant" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vec_stmt_relevant_p: stmt live but not relevant(?:(?!failed)(?!Re-trying).)*succeeded" 1 "vect" } } */

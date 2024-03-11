@@ -29,6 +29,7 @@
 
 #define F7_MANT_BYTES 7
 #define F7_MANT_BITS (8 * F7_MANT_BYTES)
+#define F7_SIZEOF (1 + F7_MANT_BYTES + 2)
 
 /*  Using the following GCC features:
     --  Unnamed structs / unions (GNU-C)
@@ -36,7 +37,7 @@
     --  Inline asm
     --  Setting assembler names by means of __asm (GNU-C).
     --  Attributes: alias, always_inline, const, noinline, unused,
-                    progmem, pure, weak, warning
+		    progmem, weak, warning
     --  GCC built-ins: __builtin_abort, __builtin_constant_p
     --  AVR built-ins: __builtin_avr_bitsr, __builtin_avr_rbits
 */
@@ -47,6 +48,11 @@
        --  f7_t.is_nan (NaN)
        --  f7_t.is_inf (+Inf or -Inf)
        --  f7_t.sign (negative or -Inf).
+       --  _plusx: This flag is used by f7_horner.  Is is set in some
+	   polynomial coefficients from libf7-const.def to indicate that
+	   the respective polynomial has a leading coefficient of 1.
+	   The flag is set in the second-highest coefficient, and the leading
+	   coefficient is omitted.
 
    B)  The flags that are returned by f7_classify().  This are the
        flags from A) together with
@@ -56,6 +62,7 @@
 #define F7_FLAGNO_sign  0
 #define F7_FLAGNO_zero  1
 #define F7_FLAGNO_nan   2
+#define F7_FLAGNO_plusx 3
 #define F7_FLAGNO_inf   7
 
 #define F7_HAVE_Inf 1
@@ -64,6 +71,7 @@
 #define F7_FLAG_sign            (1 << F7_FLAGNO_sign)
 #define F7_FLAG_zero            (1 << F7_FLAGNO_zero)
 #define F7_FLAG_nan             (1 << F7_FLAGNO_nan)
+#define F7_FLAG_plusx           (1 << F7_FLAGNO_plusx)
 #define F7_FLAG_inf   (F7_HAVE_Inf << F7_FLAGNO_inf)
 
 // Flags that might be set in f7_t.flags.
@@ -105,7 +113,6 @@ extern "C" {
 #define F7_INLINE   inline __attribute__((__always_inline__))
 #define F7_NOINLINE __attribute__((__noinline__))
 #define F7_WEAK     __attribute__((__weak__))
-#define F7_PURE     __attribute__((__pure__))
 #define F7_UNUSED   __attribute__((__unused__))
 #define F7_CONST    __attribute__((__const__))
 
@@ -143,7 +150,7 @@ typedef uint64_t f7_double_t;
 #define F7_MANT_HI2(X) \
   (*(uint16_t*) & (X)->mant[F7_MANT_BYTES - 2])
 
-static F7_INLINE F7_PURE
+static F7_INLINE
 uint8_t f7_classify (const f7_t *aa)
 {
   extern void f7_classify_asm (void);
@@ -354,14 +361,14 @@ f7_t* f7_abs (f7_t *cc, const f7_t *aa)
 }
 
 
-F7_PURE extern int8_t f7_cmp (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_lt_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_le_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_gt_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_ge_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_ne_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_eq_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_unord_impl (const f7_t*, const f7_t*);
+extern int8_t f7_cmp (const f7_t*, const f7_t*);
+extern bool f7_lt_impl (const f7_t*, const f7_t*);
+extern bool f7_le_impl (const f7_t*, const f7_t*);
+extern bool f7_gt_impl (const f7_t*, const f7_t*);
+extern bool f7_ge_impl (const f7_t*, const f7_t*);
+extern bool f7_ne_impl (const f7_t*, const f7_t*);
+extern bool f7_eq_impl (const f7_t*, const f7_t*);
+extern bool f7_unord_impl (const f7_t*, const f7_t*);
 
 static F7_INLINE
 bool f7_lt (const f7_t *aa, const f7_t *bb)
@@ -534,14 +541,14 @@ extern f7_t* f7_set_u32 (f7_t*, uint32_t);
 extern void f7_set_float (f7_t*, float);
 extern void f7_set_pdouble (f7_t*, const f7_double_t*);
 
-F7_PURE extern int16_t f7_get_s16 (const f7_t*);
-F7_PURE extern int32_t f7_get_s32 (const f7_t*);
-F7_PURE extern int64_t f7_get_s64 (const f7_t*);
-F7_PURE extern uint16_t f7_get_u16 (const f7_t*);
-F7_PURE extern uint32_t f7_get_u32 (const f7_t*);
-F7_PURE extern uint64_t f7_get_u64 (const f7_t*);
-F7_PURE extern float f7_get_float (const f7_t*);
-F7_PURE extern f7_double_t f7_get_double (const f7_t*);
+extern int16_t f7_get_s16 (const f7_t*);
+extern int32_t f7_get_s32 (const f7_t*);
+extern int64_t f7_get_s64 (const f7_t*);
+extern uint16_t f7_get_u16 (const f7_t*);
+extern uint32_t f7_get_u32 (const f7_t*);
+extern uint64_t f7_get_u64 (const f7_t*);
+extern float f7_get_float (const f7_t*);
+extern f7_double_t f7_get_double (const f7_t*);
 
 #if USE_LPM == 1
   #define F7_PGMSPACE     __attribute__((__progmem__))
@@ -600,6 +607,7 @@ extern void f7_sin (f7_t*, const f7_t*);
 extern void f7_cos (f7_t*, const f7_t*);
 extern void f7_tan (f7_t*, const f7_t*);
 extern void f7_atan (f7_t*, const f7_t*);
+extern void f7_atan2 (f7_t*, const f7_t*, const f7_t*);
 extern void f7_asin (f7_t*, const f7_t*);
 extern void f7_acos (f7_t*, const f7_t*);
 extern void f7_tanh (f7_t*, const f7_t*);
@@ -611,7 +619,6 @@ extern void f7_exp10 (f7_t*, const f7_t*);
 extern void f7_pow10 (f7_t*, const f7_t*);
 
 // Just prototypes, not implemented yet.
-extern void f7_atan2 (f7_t*, const f7_t*, const f7_t*);
 extern long f7_lrint (const f7_t*);
 extern long f7_lround (const f7_t*);
 
@@ -632,10 +639,10 @@ extern void f7_horner (f7_t*, const f7_t*, uint8_t, const f7_t *coeff, f7_t*);
 extern void f7_mul_noround (f7_t*, const f7_t*, const f7_t*);
 extern void f7_clr_mant_lsbs (f7_t*, const f7_t*, uint8_t) F7ASM(f7_clr_mant_lsbs_asm);
 
-F7_PURE extern int8_t f7_cmp_unordered (const f7_t*, const f7_t*, bool);
-F7_PURE extern int8_t f7_cmp_abs (const f7_t*, const f7_t*);
+extern int8_t f7_cmp_unordered (const f7_t*, const f7_t*, bool);
+extern int8_t f7_cmp_abs (const f7_t*, const f7_t*);
 
-F7_PURE extern bool f7_abscmp_msb_ge (const f7_t*, uint8_t msb, int16_t expo);
+extern bool f7_abscmp_msb_ge (const f7_t*, uint8_t msb, int16_t expo);
 extern void f7_addsub (f7_t*, const f7_t*, const f7_t*, bool neg_b);
 extern void f7_madd_msub (f7_t*, const f7_t*, const f7_t*, const f7_t*, bool);
 extern void f7_madd (f7_t*, const f7_t*, const f7_t*, const f7_t*);

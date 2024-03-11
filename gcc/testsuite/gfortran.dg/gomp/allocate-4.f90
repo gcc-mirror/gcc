@@ -33,13 +33,13 @@ integer(kind=omp_allocator_handle_kind), intent(in) :: my_alloc
 
 !stack variables:
 integer :: a,b,c(n),d(5),e(2)
-!$omp allocate(a)   ! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" }
+!$omp allocate(a)
 !$omp allocate ( b , c ) align ( 32) allocator (my_alloc)
 !$omp allocate (d) align( 128 )
 !$omp allocate(   e ) allocator( omp_high_bw_mem_alloc )
 
 !saved vars
-integer, save :: k,l,m(5),r(2)
+integer, save :: k,l,m(5),r(2)  ! { dg-error "Sorry, !.OMP allocate for variable 'k' at .1. with SAVE attribute not yet implemented" }
 !$omp allocate(k)  align(16) , allocator (omp_large_cap_mem_alloc)
 !$omp allocate ( l ) allocator (omp_large_cap_mem_alloc) , align ( 32)
 !$omp allocate (m) align( 128 ),allocator( omp_high_bw_mem_alloc )

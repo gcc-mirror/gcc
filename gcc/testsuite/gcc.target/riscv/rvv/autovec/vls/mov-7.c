@@ -5,18 +5,6 @@
 #include "def.h"
 
 /*
-** mov0:
-**	ld\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	sd\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov0 (int64_t *in, int64_t *out)
-{
-  v1di v = *(v1di*)in;
-  *(v1di*)out = v;
-}
-
-/*
 ** mov1:
 **	vsetivli\s+zero,\s*2,\s*e64,\s*m1,\s*t[au],\s*m[au]
 **	vle64\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)

@@ -108,20 +108,18 @@ enum aarch64_key_type {
   AARCH64_KEY_B
 };
 
-/* Load pair policy type.  */
-enum aarch64_ldp_policy {
-  LDP_POLICY_DEFAULT,
-  LDP_POLICY_ALWAYS,
-  LDP_POLICY_NEVER,
-  LDP_POLICY_ALIGNED
-};
-
-/* Store pair policy type.  */
-enum aarch64_stp_policy {
-  STP_POLICY_DEFAULT,
-  STP_POLICY_ALWAYS,
-  STP_POLICY_NEVER,
-  STP_POLICY_ALIGNED
+/* An enum specifying how to handle load and store pairs using
+   a fine-grained policy:
+   - LDP_STP_POLICY_DEFAULT: Use the policy defined in the tuning structure.
+   - LDP_STP_POLICY_ALIGNED: Emit ldp/stp if the source pointer is aligned
+   to at least double the alignment of the type.
+   - LDP_STP_POLICY_ALWAYS: Emit ldp/stp regardless of alignment.
+   - LDP_STP_POLICY_NEVER: Do not emit ldp/stp.  */
+enum aarch64_ldp_stp_policy {
+  AARCH64_LDP_STP_POLICY_DEFAULT,
+  AARCH64_LDP_STP_POLICY_ALIGNED,
+  AARCH64_LDP_STP_POLICY_ALWAYS,
+  AARCH64_LDP_STP_POLICY_NEVER
 };
 
 #endif

@@ -2864,15 +2864,15 @@ common_handle_option (struct gcc_options *opts,
       break;
  
     case OPT_fdiagnostics_show_caret:
-      dc->show_caret = value;
+      dc->m_source_printing.enabled = value;
       break;
 
     case OPT_fdiagnostics_show_labels:
-      dc->show_labels_p = value;
+      dc->m_source_printing.show_labels_p = value;
       break;
 
     case OPT_fdiagnostics_show_line_numbers:
-      dc->show_line_numbers_p = value;
+      dc->m_source_printing.show_line_numbers_p = value;
       break;
 
     case OPT_fdiagnostics_color_:
@@ -2936,7 +2936,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_minimum_margin_width_:
-      dc->min_margin_width = value;
+      dc->m_source_printing.min_margin_width = value;
       break;
 
     case OPT_fdump_:

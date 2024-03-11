@@ -6991,7 +6991,7 @@ print_operand_address (FILE *file, rtx mem)
 void
 print_operand (FILE *file, rtx x, int code)
 {
-  int xcode = x ? GET_CODE (x) : 0;
+  rtx_code xcode = x ? GET_CODE (x) : UNKNOWN;
   bool invert = false;
   switch (code)
     {

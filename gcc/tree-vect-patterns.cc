@@ -2944,7 +2944,7 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
   /* Check the operands.  */
   unsigned int nops = gimple_num_ops (last_stmt) - first_op;
   auto_vec <vect_unpromoted_value, 3> unprom (nops);
-  unprom.quick_grow (nops);
+  unprom.quick_grow_cleared (nops);
   unsigned int min_precision = 0;
   bool single_use_p = false;
   for (unsigned int i = 0; i < nops; ++i)

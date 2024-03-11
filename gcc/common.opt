@@ -1252,6 +1252,10 @@ fcprop-registers
 Common Var(flag_cprop_registers) Optimization
 Perform a register copy-propagation optimization pass.
 
+ffold-mem-offsets
+Target Bool Var(flag_fold_mem_offsets) Init(1)
+Fold instructions calculating memory offsets to the memory access instruction if possible.
+
 fcrossjumping
 Common Var(flag_crossjumping) Optimization
 Perform cross-jumping optimization.

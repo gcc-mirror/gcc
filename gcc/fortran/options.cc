@@ -555,9 +555,12 @@ gfc_handle_fpe_option (const char *arg, bool trap)
 	pos++;
 
       result = 0;
-      if (!trap && strncmp ("none", arg, pos) == 0)
+      if (strncmp ("none", arg, pos) == 0)
 	{
-	  gfc_option.fpe_summary = 0;
+	  if (trap)
+	    gfc_option.fpe = 0;
+	  else
+	    gfc_option.fpe_summary = 0;
 	  arg += pos;
 	  pos = 0;
 	  continue;
@@ -586,7 +589,7 @@ gfc_handle_fpe_option (const char *arg, bool trap)
 	      break;
 	    }
 	  }
-      if (!result && !trap)
+      if (!result && trap)
 	gfc_fatal_error ("Argument to %<-ffpe-trap%> is not valid: %s", arg);
       else if (!result)
 	gfc_fatal_error ("Argument to %<-ffpe-summary%> is not valid: %s", arg);

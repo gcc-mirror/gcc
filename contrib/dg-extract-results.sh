@@ -271,7 +271,7 @@ cat $SUM_FILES \
 
 # Write the begining of the combined summary file.
 
-head -n 2 $FIRST_SUM
+head -n 3 $FIRST_SUM
 echo
 echo "		=== $TOOL tests ==="
 echo

@@ -1312,20 +1312,6 @@ do {							\
 /* Defined to also emit an .align in elfos.h.  We don't want that.  */
 #undef ASM_OUTPUT_CASE_LABEL
 
-/* ADDR_DIFF_VECs are in the text section and thus can affect the
-   current alignment.  */
-#define ASM_OUTPUT_CASE_END(FILE, NUM, JUMPTABLE)       \
-  do                                                    \
-    {                                                   \
-      if (GET_CODE (PATTERN (JUMPTABLE)) == ADDR_DIFF_VEC \
-	  && ((GET_MODE_SIZE (as_a <scalar_int_mode>	\
-			      (GET_MODE (PATTERN (JUMPTABLE)))) \
-	       * XVECLEN (PATTERN (JUMPTABLE), 1) + 1)	\
-	      & 2))					\
-      arc_toggle_unalign ();				\
-    }                                                   \
-  while (0)
-
 #define JUMP_ALIGN(LABEL) (arc_size_opt_level < 2 ? 2 : 0)
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL) \
   (JUMP_ALIGN(LABEL) \
@@ -1346,8 +1332,6 @@ do {							\
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
 do { \
   if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); \
-  if ((LOG)  > 1) \
-    arc_clear_unalign (); \
 } while (0)
 
 /*  ASM_OUTPUT_ALIGNED_DECL_LOCAL (STREAM, DECL, NAME, SIZE, ALIGNMENT)

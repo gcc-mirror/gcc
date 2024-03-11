@@ -5,54 +5,6 @@
 #include "def.h"
 
 /*
-** mov0:
-**	lbu\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	sb\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov0 (int8_t *in, int8_t *out)
-{
-  v1qi v = *(v1qi*)in;
-  *(v1qi*)out = v;
-}
-
-/*
-** mov1:
-**	lhu\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	sh\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov1 (int8_t *in, int8_t *out)
-{
-  v2qi v = *(v2qi*)in;
-  *(v2qi*)out = v;
-}
-
-/*
-** mov2:
-**	lw\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	sw\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov2 (int8_t *in, int8_t *out)
-{
-  v4qi v = *(v4qi*)in;
-  *(v4qi*)out = v;
-}
-
-/*
-** mov3:
-**	ld\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	sd\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov3 (int8_t *in, int8_t *out)
-{
-  v8qi v = *(v8qi*)in;
-  *(v8qi*)out = v;
-}
-
-/*
 ** mov4:
 **	vsetivli\s+zero,\s*16,\s*e8,\s*mf8,\s*t[au],\s*m[au]
 **	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)

@@ -23,7 +23,6 @@
 
 module dmd.cppmangle;
 
-import core.stdc.string;
 import core.stdc.stdio;
 
 import dmd.arraytypes;
@@ -46,7 +45,6 @@ import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.root.string;
 import dmd.target;
-import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
 
@@ -485,7 +483,7 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("internal compiler error: C++ `%s` template value parameter is not supported", tv.valType.toChars());
+                .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template value parameter is not supported", ti.kind, ti.toPrettyChars, tv.valType.toChars());
                 fatal();
             }
         }
@@ -520,13 +518,13 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("internal compiler error: C++ `%s` template alias parameter is not supported", o.toChars());
+                .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template alias parameter is not supported", ti.kind, ti.toPrettyChars, o.toChars());
                 fatal();
             }
         }
         else if (tp.isTemplateThisParameter())
         {
-            ti.error("internal compiler error: C++ `%s` template this parameter is not supported", o.toChars());
+            .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template this parameter is not supported", ti.kind, ti.toPrettyChars, o.toChars());
             fatal();
         }
         else
@@ -575,7 +573,7 @@ private final class CppMangleVisitor : Visitor
                     Type t = isType((*ti.tiargs)[j]);
                     if (t is null)
                     {
-                        ti.error("internal compiler error: C++ `%s` template value parameter is not supported", (*ti.tiargs)[j].toChars());
+                        .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template value parameter is not supported", ti.kind, ti.toPrettyChars, (*ti.tiargs)[j].toChars());
                         fatal();
                     }
                     t.accept(this);
@@ -1013,7 +1011,7 @@ private final class CppMangleVisitor : Visitor
         // fake mangling for fields to fix https://issues.dlang.org/show_bug.cgi?id=16525
         if (!(d.storage_class & (STC.extern_ | STC.field | STC.gshared)))
         {
-            d.error("internal compiler error: C++ static non-`__gshared` non-`extern` variables not supported");
+            .error(d.loc, "%s `%s` internal compiler error: C++ static non-`__gshared` non-`extern` variables not supported", d.kind, d.toPrettyChars);
             fatal();
         }
         Dsymbol p = d.toParent();

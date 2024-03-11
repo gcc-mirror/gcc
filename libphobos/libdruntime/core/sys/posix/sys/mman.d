@@ -382,6 +382,8 @@ version (linux)
         private enum DEFAULTS = true;
     else version (PPC_Any)
         private enum DEFAULTS = true;
+    else version (LoongArch64)
+        private enum DEFAULTS = true;
     else
         static assert(0, "unimplemented");
 

@@ -17,6 +17,7 @@
 
       program test
       real*8 x(1024),y(1024),a
+      a = 0.0
       do i=1,1024
         x(i) = i
         y(i) = i+1

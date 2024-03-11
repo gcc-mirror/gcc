@@ -390,6 +390,30 @@ version (linux)
         enum SIGUSR2    = 12;
         enum SIGURG     = 23;
     }
+    else version (LoongArch64)
+    {
+        //SIGABRT (defined in core.stdc.signal)
+        enum SIGALRM    = 14;
+        enum SIGBUS     = 7;
+        enum SIGCHLD    = 17;
+        enum SIGCONT    = 18;
+        //SIGFPE (defined in core.stdc.signal)
+        enum SIGHUP     = 1;
+        //SIGILL (defined in core.stdc.signal)
+        //SIGINT (defined in core.stdc.signal)
+        enum SIGKILL    = 9;
+        enum SIGPIPE    = 13;
+        enum SIGQUIT    = 3;
+        //SIGSEGV (defined in core.stdc.signal)
+        enum SIGSTOP    = 19;
+        //SIGTERM (defined in core.stdc.signal)
+        enum SIGTSTP    = 20;
+        enum SIGTTIN    = 21;
+        enum SIGTTOU    = 22;
+        enum SIGUSR1    = 10;
+        enum SIGUSR2    = 12;
+        enum SIGURG     = 23;
+    }
     else
         static assert(0, "unimplemented");
 }
@@ -1750,6 +1774,16 @@ version (linux)
         enum SIGXCPU    = 24;
         enum SIGXFSZ    = 25;
     }
+    else version (LoongArch64)
+    {
+        enum SIGPOLL    = 29;
+        enum SIGPROF    = 27;
+        enum SIGSYS     = 31;
+        enum SIGTRAP    = 5;
+        enum SIGVTALRM  = 26;
+        enum SIGXCPU    = 24;
+        enum SIGXFSZ    = 25;
+    }
     else
         static assert(0, "unimplemented");
 
@@ -2390,11 +2424,23 @@ version (CRuntime_Glibc)
     //ucontext_t (defined in core.sys.posix.ucontext)
     //mcontext_t (defined in core.sys.posix.ucontext)
 
-    struct stack_t
+    version (MIPS_Any)
     {
-        void*   ss_sp;
-        int     ss_flags;
-        size_t  ss_size;
+        struct stack_t
+        {
+            void*   ss_sp;
+            size_t  ss_size;
+            int     ss_flags;
+        }
+    }
+    else
+    {
+        struct stack_t
+        {
+            void*   ss_sp;
+            int     ss_flags;
+            size_t  ss_size;
+        }
     }
 
     struct sigstack
@@ -2760,7 +2806,7 @@ else version (CRuntime_UClibc)
     enum MINSIGSTKSZ    = 2048;
     enum SIGSTKSZ       = 8192;
 
-    version (MIPS32)
+    version (MIPS_Any)
     {
         struct stack_t
         {

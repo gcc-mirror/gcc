@@ -4581,6 +4581,7 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
   if (!INTEGRAL_TYPE_P (type) || !TYPE_UNSIGNED (type))
     return false;
 
+  auto_vec<gimple *, 2> temp_stmts;
   if (code != BIT_IOR_EXPR && code != BIT_XOR_EXPR)
     {
       /* If overflow flag is ignored on the MSB limb, we can end up with
@@ -4615,26 +4616,29 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 	      rhs[0] = gimple_assign_rhs1 (g);
 	      tree &r = rhs[2] ? rhs[3] : rhs[2];
 	      r = r2;
+	      temp_stmts.quick_push (g);
 	    }
 	  else
 	    break;
 	}
-      while (TREE_CODE (rhs[1]) == SSA_NAME && !rhs[3])
-	{
-	  gimple *g = SSA_NAME_DEF_STMT (rhs[1]);
-	  if (has_single_use (rhs[1])
-	      && is_gimple_assign (g)
-	      && gimple_assign_rhs_code (g) == PLUS_EXPR)
-	    {
-	      rhs[1] = gimple_assign_rhs1 (g);
-	      if (rhs[2])
-		rhs[3] = gimple_assign_rhs2 (g);
-	      else
-		rhs[2] = gimple_assign_rhs2 (g);
-	    }
-	  else
-	    break;
-	}
+      for (int i = 1; i <= 2; ++i)
+	while (rhs[i] && TREE_CODE (rhs[i]) == SSA_NAME && !rhs[3])
+	  {
+	    gimple *g = SSA_NAME_DEF_STMT (rhs[i]);
+	    if (has_single_use (rhs[i])
+		&& is_gimple_assign (g)
+		&& gimple_assign_rhs_code (g) == PLUS_EXPR)
+	      {
+		rhs[i] = gimple_assign_rhs1 (g);
+		if (rhs[2])
+		  rhs[3] = gimple_assign_rhs2 (g);
+		else
+		  rhs[2] = gimple_assign_rhs2 (g);
+		temp_stmts.quick_push (g);
+	      }
+	    else
+	      break;
+	  }
       /* If there are just 3 addends or one minuend and two subtrahends,
 	 check for UADDC or USUBC being pattern recognized earlier.
 	 Say r = op1 + op2 + ovf1 + ovf2; where the (ovf1 + ovf2) part
@@ -5039,7 +5043,17 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
   g = gimple_build_assign (ilhs, IMAGPART_EXPR,
 			   build1 (IMAGPART_EXPR, TREE_TYPE (ilhs), nlhs));
   if (rhs[2])
-    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+    {
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      /* Remove some further statements which can't be kept in the IL because
+	 they can use SSA_NAMEs whose setter is going to be removed too.  */
+      while (temp_stmts.length ())
+	{
+	  g = temp_stmts.pop ();
+	  gsi2 = gsi_for_stmt (g);
+	  gsi_remove (&gsi2, true);
+	}
+    }
   else
     gsi_replace (gsi, g, true);
   /* Remove some statements which can't be kept in the IL because they

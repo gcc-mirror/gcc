@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 #define DEF_LOOP(OLD_TYPE, NEW_TYPE)                                           \
   void __attribute__ ((noipa))                                                 \

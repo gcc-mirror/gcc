@@ -30,4 +30,4 @@ unsigned int main1 ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_widen_sum_hi_to_si } } } */
-/* { dg-final { scan-tree-dump-times "vect_recog_widen_sum_pattern: detected" 1 "vect" { target vect_widen_sum_hi_to_si } } } */
+/* { dg-final { scan-tree-dump-times "vect_recog_widen_sum_pattern: detected(?:(?!failed)(?!Re-trying).)*succeeded" 1 "vect" { target vect_widen_sum_hi_to_si } } } */

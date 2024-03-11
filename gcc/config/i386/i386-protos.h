@@ -64,6 +64,8 @@ extern bool symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
 extern bool x86_extended_QIreg_mentioned_p (rtx_insn *);
 extern bool x86_extended_reg_mentioned_p (rtx);
+extern bool x86_extended_rex2reg_mentioned_p (rtx);
+extern bool x86_evex_reg_mentioned_p (rtx [], int);
 extern bool x86_maybe_negate_const_int (rtx *, machine_mode);
 extern machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 
@@ -78,6 +80,9 @@ extern bool ix86_expand_set_or_cpymem (rtx, rtx, rtx, rtx, rtx, rtx,
 				       rtx, rtx, rtx, rtx, bool);
 extern bool ix86_expand_cmpstrn_or_cmpmem (rtx, rtx, rtx, rtx, rtx, bool);
 
+extern enum reg_class ix86_insn_base_reg_class (rtx_insn *);
+extern bool ix86_regno_ok_for_insn_base_p (int, rtx_insn *);
+extern enum reg_class ix86_insn_index_reg_class (rtx_insn *);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern bool legitimate_pic_address_disp_p (rtx);

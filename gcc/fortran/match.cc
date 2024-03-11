@@ -5541,6 +5541,7 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
 		       bool free_mem_traits_space)
 {
   gfc_omp_namelist *n;
+  gfc_expr *last_allocator = NULL;
 
   for (; name; name = n)
     {
@@ -5552,7 +5553,13 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
       if (free_ns)
 	gfc_free_namespace (name->u2.ns);
       else if (free_align_allocator)
-	gfc_free_expr (name->u2.allocator);
+	{
+	  if (last_allocator != name->u2.allocator)
+	    {
+	      last_allocator = name->u2.allocator;
+	      gfc_free_expr (name->u2.allocator);
+	    }
+	}
       else if (free_mem_traits_space)
 	{ }  /* name->u2.traits_sym: shall not call gfc_free_symbol here. */
       else if (name->u2.udr)

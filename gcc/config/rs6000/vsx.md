@@ -2233,10 +2233,9 @@
 ;; Copy sign
 (define_insn "vsx_copysign<mode>3"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=wa")
-	(unspec:VSX_F
-	 [(match_operand:VSX_F 1 "vsx_register_operand" "wa")
-	  (match_operand:VSX_F 2 "vsx_register_operand" "wa")]
-	 UNSPEC_COPYSIGN))]
+	(copysign:VSX_F
+	 (match_operand:VSX_F 1 "vsx_register_operand" "wa")
+	 (match_operand:VSX_F 2 "vsx_register_operand" "wa")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcpsgn<sd>p %x0,%x2,%x1"
   [(set_attr "type" "<VStype_simple>")])

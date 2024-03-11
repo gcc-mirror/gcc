@@ -1,5 +1,5 @@
 /**
- * Provide the root object that classes in dmd inherit from.
+ * Provide the root object that AST classes in dmd inherit from.
  *
  * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:   Walter Bright, https://www.digitalmars.com
@@ -10,10 +10,6 @@
  */
 
 module dmd.root.rootobject;
-
-import core.stdc.stdio;
-
-import dmd.common.outbuffer;
 
 /***********************************************************
  */

@@ -101,5 +101,33 @@ protected:
   gori_compute m_gori;
 };
 
+// DOM based ranger for fast VRP.
+// This must be processed in DOM order, and does only basic range operations.
 
+class dom_ranger : public range_query
+{
+public:
+  dom_ranger ();
+  ~dom_ranger ();
+
+  virtual bool range_of_expr (vrange &r, tree expr, gimple *s = NULL) override;
+  virtual bool range_on_edge (vrange &r, edge e, tree expr) override;
+  virtual bool range_of_stmt (vrange &r, gimple *s, tree name = NULL) override;
+
+  bool edge_range (vrange &r, edge e, tree name);
+  void range_in_bb (vrange &r, basic_block bb, tree name);
+
+  void pre_bb (basic_block bb);
+  void post_bb (basic_block bb);
+protected:
+  DISABLE_COPY_AND_ASSIGN (dom_ranger);
+  void maybe_push_edge (edge e, bool edge_0);
+  ssa_cache m_global;
+  gimple_outgoing_range m_out;
+  vec<ssa_lazy_cache *> m_freelist;
+  vec<ssa_lazy_cache *> m_e0;
+  vec<ssa_lazy_cache *> m_e1;
+  bitmap m_pop_list;
+  range_tracer tracer;
+};
 #endif // GCC_GIMPLE_RANGE_H

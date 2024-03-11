@@ -1018,25 +1018,26 @@ VAR
    type,
    align    : CARDINAL ;
 BEGIN
-   PopT(alignment) ;
-   IF alignment=MakeKey('bytealignment')
+   PopT (alignment) ;
+   IF alignment = MakeKey ('bytealignment')
    THEN
-      PopT(align) ;
-      PopT(type) ;
-      IF align#NulSym
+      PopT (align) ;
+      PopT (type) ;
+      IF align # NulSym
       THEN
-         IF IsRecord(type) OR IsRecordField(type) OR IsType(type) OR IsArray(type) OR IsPointer(type)
+         IF IsRecord (type) OR IsRecordField (type) OR IsType (type) OR
+            IsArray (type) OR IsPointer( type) OR IsSubrange (type)
          THEN
-            PutAlignment(type, align)
+            PutAlignment (type, align)
          ELSE
-            MetaError1('not allowed to add an alignment attribute to type {%1ad}', type)
+            MetaError1 ('not allowed to add an alignment attribute to type {%1ad}', type)
          END
       END
-   ELSIF alignment#NulName
+   ELSIF alignment # NulName
    THEN
-      WriteFormat1('unknown type alignment attribute, %a', alignment)
+      WriteFormat1 ('unknown type alignment attribute, %a', alignment)
    ELSE
-      PopT(type)
+      PopT (type)
    END
 END BuildTypeAlignment ;
 

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail136.d(10): Error: found `"EF BB BF"` when expecting `;` following statement
+fail_compilation\fail136.d(10): Error: `"\xef\xbb\xbf"` has no effect
 ---
 */
 

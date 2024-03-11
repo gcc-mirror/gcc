@@ -1,3 +1,83 @@
+2023-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111840
+	* parser.cc (cp_parser_simple_declaration): Do cp_parser_error
+	for FUNCTION_DECLs.
+
+2023-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111660
+	* cp-gimplify.cc (cp_fold_immediate_r) <case COND_EXPR>: Don't
+	handle it here.
+	(cp_fold_r): Handle COND_EXPR here.
+
+2023-10-17  Jason Merrill  <jason@redhat.com>
+
+	* mangle.cc (abi_check): New.
+	(write_prefix, write_unqualified_name, write_discriminator)
+	(write_type, write_member_name, write_expression)
+	(write_template_arg, write_template_param): Use it.
+	(start_mangling): Assign from {}.
+	* cp-tree.h: Update comment.
+
+2023-10-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constexpr.cc (cxx_eval_dynamic_cast_fn): Add missing
+	auto_diagnostic_group.
+	(cxx_eval_call_expression): Likewise.
+	(diag_array_subscript): Likewise.
+	(outside_lifetime_error): Likewise.
+	(potential_constant_expression_1): Likewise.
+
+2023-10-16  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_fold_expression): Track location range.
+	* semantics.cc (finish_unary_fold_expr)
+	(finish_left_unary_fold_expr, finish_right_unary_fold_expr)
+	(finish_binary_fold_expr): Add location parm.
+	* constraint.cc (finish_shorthand_constraint): Pass it.
+	* pt.cc (convert_generic_types_to_packs): Likewise.
+	* cp-tree.h: Adjust.
+
+2023-10-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111272
+	* constexpr.cc (explain_invalid_constexpr_fn): Also check the body of
+	a constructor in C++14 and up.
+
+2023-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* module.cc (trees_out::start, trees_in::start): Remove
+	TREE_INT_CST_OFFSET_NUNITS handling.
+
+2023-10-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109422
+	* mangle.cc (write_template_param): Also mangle level.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* module.cc (module_state::read_location): Update for renaming of
+	get_combined_adhoc_loc.
+
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (print_instantiation_partial_context_line): Call
+	diagnostic_show_locus.
+
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for "m_" prefixes to text_info fields.
+
+2023-09-30  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Make create_fdas_for_cc1plus target not .PHONY
+
+2023-09-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* constexpr.cc (cxx_fold_indirect_ref): Remove unused variables.
+
 2023-09-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/111357

@@ -50,10 +50,8 @@ fur_source::fur_source (range_query *q)
 {
   if (q)
     m_query = q;
-  else if (cfun)
-    m_query = get_range_query (cfun);
   else
-    m_query = get_global_range_query ();
+    m_query = get_range_query (cfun);
   m_gori = NULL;
 }
 

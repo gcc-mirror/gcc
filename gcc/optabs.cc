@@ -533,15 +533,13 @@ expand_subword_shift (scalar_int_mode op1_mode, optab binoptab,
 	 has unknown behavior.  Do a single shift first, then shift by the
 	 remainder.  It's OK to use ~OP1 as the remainder if shift counts
 	 are truncated to the mode size.  */
-      carries = expand_binop (word_mode, reverse_unsigned_shift,
-			      outof_input, const1_rtx, 0, unsignedp, methods);
-      if (shift_mask == BITS_PER_WORD - 1)
-	{
-	  tmp = immed_wide_int_const
-	    (wi::minus_one (GET_MODE_PRECISION (op1_mode)), op1_mode);
-	  tmp = simplify_expand_binop (op1_mode, xor_optab, op1, tmp,
-				       0, true, methods);
-	}
+      carries = simplify_expand_binop (word_mode, reverse_unsigned_shift,
+				       outof_input, const1_rtx, 0,
+				       unsignedp, methods);
+      if (carries == const0_rtx)
+	tmp = const0_rtx;
+      else if (shift_mask == BITS_PER_WORD - 1)
+	tmp = expand_unop (op1_mode, one_cmpl_optab, op1, 0, true);
       else
 	{
 	  tmp = immed_wide_int_const (wi::shwi (BITS_PER_WORD - 1,
@@ -552,22 +550,29 @@ expand_subword_shift (scalar_int_mode op1_mode, optab binoptab,
     }
   if (tmp == 0 || carries == 0)
     return false;
-  carries = expand_binop (word_mode, reverse_unsigned_shift,
-			  carries, tmp, 0, unsignedp, methods);
+  if (carries != const0_rtx && tmp != const0_rtx)
+    carries = simplify_expand_binop (word_mode, reverse_unsigned_shift,
+				     carries, tmp, 0, unsignedp, methods);
   if (carries == 0)
     return false;
 
-  /* Shift INTO_INPUT logically by OP1.  This is the last use of INTO_INPUT
-     so the result can go directly into INTO_TARGET if convenient.  */
-  tmp = expand_binop (word_mode, unsigned_shift, into_input, op1,
-		      into_target, unsignedp, methods);
-  if (tmp == 0)
-    return false;
+  if (into_input != const0_rtx)
+    {
+      /* Shift INTO_INPUT logically by OP1.  This is the last use of
+	 INTO_INPUT so the result can go directly into INTO_TARGET if
+	 convenient.  */
+      tmp = simplify_expand_binop (word_mode, unsigned_shift, into_input,
+				   op1, into_target, unsignedp, methods);
+      if (tmp == 0)
+	return false;
 
-  /* Now OR in the bits carried over from OUTOF_INPUT.  */
-  if (!force_expand_binop (word_mode, ior_optab, tmp, carries,
-			   into_target, unsignedp, methods))
-    return false;
+      /* Now OR in the bits carried over from OUTOF_INPUT.  */
+      if (!force_expand_binop (word_mode, ior_optab, tmp, carries,
+			       into_target, unsignedp, methods))
+	return false;
+    }
+  else
+    emit_move_insn (into_target, carries);
 
   /* Use a standard word_mode shift for the out-of half.  */
   if (outof_target != 0)

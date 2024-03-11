@@ -1,3 +1,8 @@
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.cc (jit_langhook_init): Update for change to
+	diagnostic_context callbacks.
+
 2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* jit-playback.cc: Change spelling to macOS.

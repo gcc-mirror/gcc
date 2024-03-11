@@ -31423,7 +31423,9 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
 	{
 	  tree id = unpack_concept_check (constr);
 	  TREE_VEC_ELT (TREE_OPERAND (id, 1), 0) = t;
-	  tree fold = finish_left_unary_fold_expr (constr, TRUTH_ANDIF_EXPR);
+	  location_t loc = DECL_SOURCE_LOCATION (TYPE_NAME (t));
+	  tree fold = finish_left_unary_fold_expr (loc, constr,
+						   TRUTH_ANDIF_EXPR);
 	  TEMPLATE_PARM_CONSTRAINTS (node) = fold;
 
 	  /* If there was a constraint, we also need to replace that in

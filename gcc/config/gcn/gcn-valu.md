@@ -457,23 +457,21 @@
    (set_attr "length" "4,8")])
 
 (define_insn "mov<mode>_exec"
-  [(set (match_operand:V_1REG 0 "nonimmediate_operand"	 "=v, v, v, v, v, m")
+  [(set (match_operand:V_1REG 0 "nonimmediate_operand")
 	(vec_merge:V_1REG
-	  (match_operand:V_1REG 1 "general_operand"	 "vA, B, v,vA, m, v")
-	  (match_operand:V_1REG 2 "gcn_alu_or_unspec_operand"
-							 "U0,U0,vA,vA,U0,U0")
-	  (match_operand:DI 3 "register_operand"	 " e, e,cV,Sv, e, e")))
-   (clobber (match_scratch:<VnDI> 4			 "=X, X, X, X,&v,&v"))]
+	  (match_operand:V_1REG 1 "general_operand")
+	  (match_operand:V_1REG 2 "gcn_alu_or_unspec_operand")
+	  (match_operand:DI 3 "register_operand")))
+   (clobber (match_scratch:<VnDI> 4))]
   "!MEM_P (operands[0]) || REG_P (operands[1])"
-  "@
-   v_mov_b32\t%0, %1
-   v_mov_b32\t%0, %1
-   v_cndmask_b32\t%0, %2, %1, vcc
-   v_cndmask_b32\t%0, %2, %1, %3
-   #
-   #"
-  [(set_attr "type" "vop1,vop1,vop2,vop3a,*,*")
-   (set_attr "length" "4,8,4,8,16,16")])
+  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length]
+  [v,vA,U0,e ,X ;vop1 ,4 ] v_mov_b32\t%0, %1
+  [v,B ,U0,e ,X ;vop1 ,8 ] v_mov_b32\t%0, %1
+  [v,v ,vA,cV,X ;vop2 ,4 ] v_cndmask_b32\t%0, %2, %1, vcc
+  [v,vA,vA,Sv,X ;vop3a,8 ] v_cndmask_b32\t%0, %2, %1, %3
+  [v,m ,U0,e ,&v;*    ,16] #
+  [m,v ,U0,e ,&v;*    ,16] #
+  })
 
 ; This variant does not accept an unspec, but does permit MEM
 ; read/modify/write which is necessary for maskstore.
@@ -644,19 +642,18 @@
 ;   flat_load v, vT
 
 (define_insn "mov<mode>_sgprbase"
-  [(set (match_operand:V_1REG 0 "nonimmediate_operand" "= v, v, v, m")
+  [(set (match_operand:V_1REG 0 "nonimmediate_operand")
 	(unspec:V_1REG
-	  [(match_operand:V_1REG 1 "general_operand"   " vA,vB, m, v")]
+	  [(match_operand:V_1REG 1 "general_operand")]
 	  UNSPEC_SGPRBASE))
-   (clobber (match_operand:<VnDI> 2 "register_operand"  "=&v,&v,&v,&v"))]
+   (clobber (match_operand:<VnDI> 2 "register_operand"))]
   "lra_in_progress || reload_completed"
-  "@
-   v_mov_b32\t%0, %1
-   v_mov_b32\t%0, %1
-   #
-   #"
-  [(set_attr "type" "vop1,vop1,*,*")
-   (set_attr "length" "4,8,12,12")])
+  {@ [cons: =0, 1, =2; attrs: type, length]
+  [v,vA,&v;vop1,4 ] v_mov_b32\t%0, %1
+  [v,vB,&v;vop1,8 ] ^
+  [v,m ,&v;*   ,12] #
+  [m,v ,&v;*   ,12] #
+  })
 
 (define_insn "mov<mode>_sgprbase"
   [(set (match_operand:V_2REG 0 "nonimmediate_operand" "= v, v, m")
@@ -676,17 +673,17 @@
    (set_attr "length" "8,12,12")])
 
 (define_insn "mov<mode>_sgprbase"
-  [(set (match_operand:V_4REG 0 "nonimmediate_operand" "= v, v, m")
+  [(set (match_operand:V_4REG 0 "nonimmediate_operand")
 	(unspec:V_4REG
-	  [(match_operand:V_4REG 1 "general_operand"   "vDB, m, v")]
+	  [(match_operand:V_4REG 1 "general_operand")]
 	  UNSPEC_SGPRBASE))
-   (clobber (match_operand:<VnDI> 2 "register_operand"  "=&v,&v,&v"))]
+   (clobber (match_operand:<VnDI> 2 "register_operand"))]
   "lra_in_progress || reload_completed"
-  "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
-   #
-   #"
-  [(set_attr "type" "vmult,*,*")
-   (set_attr "length" "8,12,12")])
+  {@ [cons: =0, 1, =2; attrs: type, length]
+  [v,vDB,&v;vmult,8 ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
+  [v,m  ,&v;*    ,12] #
+  [m,v  ,&v;*    ,12] #
+  })
 
 ; reload_in was once a standard name, but here it's only referenced by
 ; gcn_secondary_reload.  It allows a reload with a scratch register.

@@ -34,72 +34,6 @@ FROM SYSTEM IMPORT ADDRESS ;
 FROM DynamicStrings IMPORT String ;
 FROM m2linemap IMPORT location_t ;
 
-EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
-                 SetCheckAll, SetVerboseUnbounded, SetQuiet, SetCpp, GetCpp,
-                 (* SetMakeall, SetMakeall0, SetIncludePath, *) SetAutoInit,
-                 SetUnboundedByReference,
-                 SetSearchPath, SetISO, SetPIM, SetPIM2, SetPIM3, SetPIM4,
-                 SetPositiveModFloor, SetCompilerDebugging, SetExceptions,
-                 SetStyle, SetPedantic, SetPedanticParamNames, SetPedanticCast,
-                 SetExtendedOpaque, SetXCode, SetQuadDebugging, SetSources,
-                 SetDumpSystemExports,
-                 SetSwig, SetOptimizing, SetForcedLocation,
-                 SetCC1Quiet, SetWholeProgram, SetDebugTraceQuad, SetDebugTraceAPI,
-                 SetVerbose, SetM2g, GetM2g,
-		 GetISO, GetPIM, GetPIM2, GetPIM3, GetPIM4,
-		 GetPositiveModFloor,
-		 SetFloatValueCheck, GetFloatValueCheck,
-		 SetWholeValueCheck, GetWholeValueCheck,
-                 SetLowerCaseKeywords,
-                 SetIndex, SetRange, SetWholeDiv, SetStrictTypeChecking,
-                 Setc, Getc, SetPPOnly, GetPPOnly,
-                 SetUselist, GetUselist, GetUselistFilename,
-                 SetShared,
-
-                 Iso, Pim, Pim2, Pim3, Pim4,
-                 PPonly, cflag,
-                 PositiveModFloorDiv,
-                 Pedantic, Verbose, Statistics,
-                 UnboundedByReference, VerboseUnbounded,
-                 Profiling, Coding, Optimizing,
-                 OptimizeBasicBlock, OptimizeUncalledProcedures,
-                 OptimizeCommonSubExpressions,
-                 StyleChecking, WholeProgram,
-                 NilChecking,
-                 WholeDivChecking, WholeValueChecking,
-                 IndexChecking, RangeChecking,
-                 ReturnChecking, CaseElseChecking,
-                 AutoInit,
-                 VariantValueChecking, CaseEnumChecking,
-                 UnusedVariableChecking, UnusedParameterChecking,
-                 UninitVariableChecking, SetUninitVariableChecking,
-                 UninitVariableConditionalChecking,
-                 SetUnusedVariableChecking, SetUnusedParameterChecking,
-                 Quiet, LineDirectives, StrictTypeChecking,
-                 CPreProcessor, Xcode, ExtendedOpaque,
-                 LowerCaseKeywords,
-                 PedanticParamNames, PedanticCast,
-      	       	 DisplayQuadruples, DebugTraceQuad, DebugTraceAPI,
-                 CompilerDebugging, GenerateDebugging, GenerateLineDebug,
-                 DumpSystemExports, GenerateSwig, Exceptions,
-                 OverrideLocation, FinaliseOptions,
-                 DebugBuiltins, setdefextension, setmodextension,
-                 SetStatistics, SetWall,
-                 SetSaveTemps, SetSaveTempsDir, SaveTemps, GetSaveTempsDir,
-                 SetDumpDir, GetDumpDir, GenModuleList,
-                 CppArg, CppCommandLine, CppRemember,
-		 SetDebugFunctionLineNumbers, DebugFunctionLineNumbers,
-		 SetGenerateStatementNote, GenerateStatementNote,
-                 ScaffoldDynamic, ScaffoldStatic,
-                 SetScaffoldDynamic, SetScaffoldStatic,
-                 SetScaffoldMain, ScaffoldMain,
-                 SetRuntimeModuleOverride, GetRuntimeModuleOverride,
-                 SetGenModuleList, GetGenModuleFilename, SharedFlag,
-                 SetB, GetB, SetMD, GetMD, SetMMD, GetMMD, SetObj, GetObj,
-                 GetMQ, SetMQ, SetM2Prefix, GetM2Prefix,
-                 SetM2PathName, GetM2PathName, SetCaseEnumChecking,
-                 SetDebugBuiltins ;
-
 
 VAR
    PPonly,                       (* -E/M/MM present? - preprocessing only    *)
@@ -191,6 +125,48 @@ VAR
 
 
 (*
+   SetM - set the MFlag.
+*)
+
+PROCEDURE SetM (value: BOOLEAN) ;
+
+
+(*
+   GetM - set the MFlag.
+*)
+
+PROCEDURE GetM () : BOOLEAN ;
+
+
+(*
+   SetMM - set the MMFlag.
+*)
+
+PROCEDURE SetMM (value: BOOLEAN) ;
+
+
+(*
+   GetMM - set the MMFlag.
+*)
+
+PROCEDURE GetMM () : BOOLEAN ;
+
+
+(*
+   SetMF - assigns MFarg to the filename from arg.
+*)
+
+PROCEDURE SetMF (arg: ADDRESS) ;
+
+
+(*
+   GetMF - returns MFarg or NIL if never set.
+*)
+
+PROCEDURE GetMF () : ADDRESS ;
+
+
+(*
    SetM2Prefix - assign arg to M2Prefix.
 *)
 
@@ -231,6 +207,7 @@ PROCEDURE SetPPOnly (value: BOOLEAN) ;
 
 PROCEDURE GetPPOnly () : BOOLEAN ;
 
+
 (*
    Setc - set the cflag (compile only flag -c) to value.
 *)
@@ -251,52 +228,90 @@ PROCEDURE Getc () : BOOLEAN ;
 
 PROCEDURE SetB (arg: ADDRESS) ;
 
+
 (*
    GetB - returns argument to the -B option as a string or NIL if it were never set.
 *)
 
 PROCEDURE GetB () : ADDRESS ;
 
+
 (*
-   SetMD - assigns MD file to arg.
+   SetMD - set the MDFlag to value.
 *)
 
-PROCEDURE SetMD (arg: ADDRESS) ;
+PROCEDURE SetMD (value: BOOLEAN) ;
+
 
 (*
-   GetMD - returns the filename set for MD or NIL if it was never set.
+   GetMD - return the MDFlag.
 *)
 
-PROCEDURE GetMD () : ADDRESS ;
+PROCEDURE GetMD () : BOOLEAN ;
 
 
 (*
-   SetMMD - assigns MMD file to arg.
+   SetMMD - set the MMDFlag to value.
 *)
 
-PROCEDURE SetMMD (arg: ADDRESS) ;
+PROCEDURE SetMMD (value: BOOLEAN) ;
+
 
 (*
-   GetMMD - returns the filename set for MMD or NIL if it was never set.
+   GetMMD - return the MMDFlag.
 *)
 
-PROCEDURE GetMMD () : ADDRESS ;
+PROCEDURE GetMMD () : BOOLEAN ;
+
 
 (*
-   SetMQ - assigns MQ file to arg.
+   SetMQ - adds a quoted target arg to the DepTarget sentence.
 *)
 
 PROCEDURE SetMQ (arg: ADDRESS) ;
 
+
 (*
-   GetMQ - returns the filename set for MQ or NIL if it was never set.
+   GetMQ - returns a C string containing all the -MQ arg values.
 *)
 
 PROCEDURE GetMQ () : ADDRESS ;
 
+
 (*
-   SetScaffoldDynamic - set the -fscaffold-dynamic flag.
+   SetMT - adds a target arg to the DepTarget sentence.
 *)
+
+PROCEDURE SetMT (arg: ADDRESS) ;
+
+
+(*
+   GetMT - returns a C string containing all the -MT arg values.
+*)
+
+PROCEDURE GetMT () : ADDRESS ;
+
+
+(*
+   GetDepTarget - returns the DepTarget as a C string.
+*)
+
+PROCEDURE GetDepTarget () : ADDRESS ;
+
+
+(*
+   SetMP - set the MPflag to value.
+*)
+
+PROCEDURE SetMP (value: BOOLEAN) ;
+
+
+(*
+   GetMP - get the MPflag.
+*)
+
+PROCEDURE GetMP () : BOOLEAN ;
+
 
 (*
    SetObj - assigns given object file to arg.
@@ -309,6 +324,7 @@ PROCEDURE SetObj (arg: ADDRESS) ;
 *)
 
 PROCEDURE GetObj () : ADDRESS ;
+
 
 (*
    SetScaffoldDynamic - set the -fscaffold-dynamic flag.
@@ -892,6 +908,7 @@ PROCEDURE SetSaveTempsDir (arg: ADDRESS) ;
 *)
 
 PROCEDURE GetSaveTempsDir () : String ;
+
 
 (*
    SetDumpDir - Specify dump dir.

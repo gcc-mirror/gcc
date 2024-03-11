@@ -173,7 +173,7 @@ public:
             Identifier id = Identifier.generateId("__o");
 
             Statement handler = new PeelStatement(sexception);
-            if (sexception.blockExit(fd, false) & BE.fallthru)
+            if (sexception.blockExit(fd, null) & BE.fallthru)
             {
                 auto ts = new ThrowStatement(Loc.initial, new IdentifierExp(Loc.initial, id));
                 ts.internalThrow = true;
@@ -744,7 +744,7 @@ extern (C++) class FuncDeclaration : Declaration
 
                     if (exactvi >= 0)
                     {
-                        error("cannot determine overridden function");
+                        .error(loc, "%s `%s` cannot determine overridden function", kind, toPrettyChars);
                         return exactvi;
                     }
                     exactvi = vi;
@@ -1057,7 +1057,7 @@ extern (C++) class FuncDeclaration : Declaration
                 OutBuffer thisBuf, funcBuf;
                 MODMatchToBuffer(&thisBuf, tthis.mod, tf.mod);
                 MODMatchToBuffer(&funcBuf, tf.mod, tthis.mod);
-                .error(loc, "%smethod %s is not callable using a %sobject",
+                .error(loc, "%smethod %s is not callable using a %sobject", kind, toPrettyChars,
                     funcBuf.peekChars(), this.toPrettyChars(), thisBuf.peekChars());
             }
         }
@@ -1311,7 +1311,7 @@ extern (C++) class FuncDeclaration : Declaration
     final const(char)* toFullSignature()
     {
         OutBuffer buf;
-        functionToBufferWithIdent(type.toTypeFunction(), &buf, toChars(), isStatic);
+        functionToBufferWithIdent(type.toTypeFunction(), buf, toChars(), isStatic);
         return buf.extractChars();
     }
 
@@ -1696,7 +1696,7 @@ extern (C++) class FuncDeclaration : Declaration
 
     extern (D) final void printGCUsage(const ref Loc loc, const(char)* warn)
     {
-        if (!global.params.vgc)
+        if (!global.params.v.gc)
             return;
 
         Module m = getModule();
@@ -2240,13 +2240,13 @@ extern (C++) class FuncDeclaration : Declaration
 
         if (setGC(loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", this))
         {
-            error("is `@nogc` yet allocates closure for `%s()` with the GC", toChars());
+            .error(loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", kind, toPrettyChars, toChars());
             if (global.gag)     // need not report supplemental errors
                 return true;
         }
         else if (!global.params.useGC)
         {
-            error("is `-betterC` yet allocates closure for `%s()` with the GC", toChars());
+            .error(loc, "%s `%s` is `-betterC` yet allocates closure for `%s()` with the GC", kind, toPrettyChars, toChars());
             if (global.gag)     // need not report supplemental errors
                 return true;
         }
@@ -2279,8 +2279,11 @@ extern (C++) class FuncDeclaration : Declaration
                                 break LcheckAncestorsOfANestedRef;
                         }
                         a.push(f);
-                        .errorSupplemental(f.loc, "`%s` closes over variable `%s` at %s",
-                            f.toPrettyChars(), v.toChars(), v.loc.toChars());
+                        .errorSupplemental(f.loc, "%s `%s` closes over variable `%s`",
+                            f.kind, f.toPrettyChars(), v.toChars());
+                        if (v.ident != Id.This)
+                            .errorSupplemental(v.loc, "`%s` declared here", v.toChars());
+
                         break LcheckAncestorsOfANestedRef;
                     }
                 }
@@ -2367,7 +2370,7 @@ extern (C++) class FuncDeclaration : Declaration
             vresult.dsymbolSemantic(sc);
 
             if (!sc.insert(vresult))
-                error("out result %s is already defined", vresult.toChars());
+                .error(loc, "%s `%s` out result %s is already defined", kind, toPrettyChars, vresult.toChars());
             assert(vresult.parent == this);
         }
     }
@@ -2657,7 +2660,7 @@ extern (C++) class FuncDeclaration : Declaration
             auto fparams = new Parameters();
             if (canBuildResultVar())
             {
-                Parameter p = new Parameter(STC.ref_ | STC.const_, f.nextOf(), Id.result, null, null);
+                Parameter p = new Parameter(loc, STC.ref_ | STC.const_, f.nextOf(), Id.result, null, null);
                 fparams.push(p);
             }
             auto fo = cast(TypeFunction)(originalType ? originalType : f);
@@ -2874,7 +2877,7 @@ extern (C++) class FuncDeclaration : Declaration
             }
 
             if (tf.parameterList.varargs || nparams >= 2 || argerr)
-                error("parameter list must be empty or accept one parameter of type `string[]`");
+                .error(loc, "%s `%s` parameter list must be empty or accept one parameter of type `string[]`", kind, toPrettyChars);
         }
 
         else if (linkage == LINK.c)
@@ -2909,7 +2912,7 @@ extern (C++) class FuncDeclaration : Declaration
 
             if (argerr)
             {
-                error("parameters must match one of the following signatures");
+                .error(loc, "%s `%s` parameters must match one of the following signatures", kind, toPrettyChars);
                 loc.errorSupplemental("`main()`");
                 loc.errorSupplemental("`main(int argc, char** argv)`");
                 loc.errorSupplemental("`main(int argc, char** argv, char** environ)` [POSIX extension]");
@@ -2922,7 +2925,7 @@ extern (C++) class FuncDeclaration : Declaration
         retType = retType.toBasetype();
 
         if (retType.ty != Tint32 && retType.ty != Tvoid && retType.ty != Tnoreturn)
-            error("must return `int`, `void` or `noreturn`, not `%s`", tf.nextOf().toChars());
+            .error(loc, "%s `%s` must return `int`, `void` or `noreturn`, not `%s`", kind, toPrettyChars, tf.nextOf().toChars());
     }
 
     /***********************************************
@@ -3107,7 +3110,7 @@ extern (D) int overloadApply(Dsymbol fstart, scope int delegate(Dsymbol) dg, Sco
                 }
                 else
                 {
-                    d.error("is aliased to a function");
+                    .error(d.loc, "%s `%s` is aliased to a function", d.kind, d.toPrettyChars);
                     break;
                 }
                 next = fa.overnext;
@@ -3146,7 +3149,7 @@ extern (D) int overloadApply(Dsymbol fstart, scope int delegate(Dsymbol) dg, Sco
             }
             else
             {
-                d.error("is aliased to a function");
+                .error(d.loc, "%s `%s` is aliased to a function", d.kind, d.toPrettyChars);
                 break;
                 // BUG: should print error message?
             }
@@ -3340,14 +3343,14 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         s = fd = td.funcroot;
 
     OutBuffer tiargsBuf;
-    arrayObjectsToBuffer(&tiargsBuf, tiargs);
+    arrayObjectsToBuffer(tiargsBuf, tiargs);
 
     OutBuffer fargsBuf;
     fargsBuf.writeByte('(');
-    argExpTypesToCBuffer(&fargsBuf, fargs);
+    argExpTypesToCBuffer(fargsBuf, fargs);
     fargsBuf.writeByte(')');
     if (tthis)
-        tthis.modToBuffer(&fargsBuf);
+        tthis.modToBuffer(fargsBuf);
 
     // The call is ambiguous
     if (m.lastf && m.nextf)
@@ -3388,7 +3391,7 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
                    td.kind(), td.parent.toPrettyChars(), td.ident.toChars(),
                    tiargsBuf.peekChars(), fargsBuf.peekChars());
 
-            if (!global.gag || global.params.showGaggedErrors)
+            if (!global.gag || global.params.v.showGaggedErrors)
                 printCandidates(loc, td, sc.isDeprecated());
             return null;
         }
@@ -3427,7 +3430,7 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         {
             .error(loc, "none of the overloads of `%s` are callable using a %sobject",
                    fd.ident.toChars(), thisBuf.peekChars());
-            if (!global.gag || global.params.showGaggedErrors)
+            if (!global.gag || global.params.v.showGaggedErrors)
                 printCandidates(loc, fd, sc.isDeprecated());
             return null;
         }
@@ -3458,7 +3461,7 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
     {
         .error(loc, "none of the overloads of `%s` are callable using argument types `%s`",
                fd.toChars(), fargsBuf.peekChars());
-        if (!global.gag || global.params.showGaggedErrors)
+        if (!global.gag || global.params.v.showGaggedErrors)
             printCandidates(loc, fd, sc.isDeprecated());
         return null;
     }
@@ -3468,7 +3471,7 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
            tf.modToChars(), fargsBuf.peekChars());
 
     // re-resolve to check for supplemental message
-    if (!global.gag || global.params.showGaggedErrors)
+    if (!global.gag || global.params.v.showGaggedErrors)
     {
         if (tthis)
         {
@@ -3511,9 +3514,7 @@ private void printCandidates(Decl)(const ref Loc loc, Decl declaration, bool sho
 if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
 {
     // max num of overloads to print (-v or -verror-supplements overrides this).
-    const int DisplayLimit = !global.params.verbose ?
-                                (global.params.errorSupplementLimit ? global.params.errorSupplementLimit : int.max)
-                                : int.max;
+    const uint DisplayLimit = global.params.v.errorSupplementCount();
     const(char)* constraintsTip;
     // determine if the first candidate was printed
     int printed;
@@ -3577,7 +3578,7 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
     });
     int skipped = 0;
     overloadApply(declaration, (s) {
-        if (global.params.verbose || printed < DisplayLimit)
+        if (global.params.v.verbose || printed < DisplayLimit)
         {
             if (matchSymbol(s, true, count == 1))
                 printed++;
@@ -4623,7 +4624,7 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         {
             if (!gag)
             {
-                if (!sc.isDeprecated() && global.params.obsolete)
+                version (none) // disable obsolete warning
                     warning(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
             }
         }

@@ -5533,6 +5533,8 @@ static cp_expr
 cp_parser_fold_expression (cp_parser *parser, tree expr1)
 {
   cp_id_kind pidk;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+  const cp_token *token = nullptr;
 
   // Left fold.
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -5540,6 +5542,7 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
       if (expr1)
 	return error_mark_node;
       cp_lexer_consume_token (parser->lexer);
+      token = cp_lexer_peek_token (parser->lexer);
       int op = cp_parser_fold_operator (parser);
       if (op == ERROR_MARK)
         {
@@ -5551,10 +5554,11 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
 					     false, &pidk);
       if (expr == error_mark_node)
         return error_mark_node;
-      return finish_left_unary_fold_expr (expr, op);
+      loc = make_location (token->location, loc, parser->lexer);
+      return finish_left_unary_fold_expr (loc, expr, op);
     }
 
-  const cp_token* token = cp_lexer_peek_token (parser->lexer);
+  token = cp_lexer_peek_token (parser->lexer);
   int op = cp_parser_fold_operator (parser);
   if (op == ERROR_MARK)
     {
@@ -5585,7 +5589,10 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
 
   // Right fold.
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
-    return finish_right_unary_fold_expr (expr1, op);
+    {
+      loc = make_location (token->location, loc, parser->lexer);
+      return finish_right_unary_fold_expr (loc, expr1, op);
+    }
 
   if (cp_lexer_next_token_is_not (parser->lexer, token->type))
     {
@@ -5598,7 +5605,8 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
   tree expr2 = cp_parser_cast_expression (parser, false, false, false, &pidk);
   if (expr2 == error_mark_node)
     return error_mark_node;
-  return finish_binary_fold_expr (expr1, expr2, op);
+  loc = make_location (token->location, loc, parser->lexer);
+  return finish_binary_fold_expr (loc, expr1, expr2, op);
 }
 
 /* Parse a primary-expression.
@@ -15661,6 +15669,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 					maybe_range_for_decl,
 					&init_loc,
 					&auto_result);
+      const bool fndecl_p = TREE_CODE (decl) == FUNCTION_DECL;
       /* If an error occurred while parsing tentatively, exit quickly.
 	 (That usually happens when in the body of a function; each
 	 statement is treated as a declaration-statement until proven
@@ -15674,16 +15683,13 @@ cp_parser_simple_declaration (cp_parser* parser,
 	     init-declarator, they shall all form declarations of
 	     variables.  */
 	  if (auto_function_declaration == NULL_TREE)
-	    auto_function_declaration
-	      = TREE_CODE (decl) == FUNCTION_DECL ? decl : error_mark_node;
-	  else if (TREE_CODE (decl) == FUNCTION_DECL
-		   || auto_function_declaration != error_mark_node)
+	    auto_function_declaration = fndecl_p ? decl : error_mark_node;
+	  else if (fndecl_p || auto_function_declaration != error_mark_node)
 	    {
 	      error_at (decl_specifiers.locations[ds_type_spec],
 			"non-variable %qD in declaration with more than one "
 			"declarator with placeholder type",
-			TREE_CODE (decl) == FUNCTION_DECL
-			? decl : auto_function_declaration);
+			fndecl_p ? decl : auto_function_declaration);
 	      auto_function_declaration = error_mark_node;
 	    }
 	}
@@ -15755,7 +15761,9 @@ cp_parser_simple_declaration (cp_parser* parser,
 	  /* If we have already issued an error message we don't need
 	     to issue another one.  */
 	  if ((decl != error_mark_node
-	       && DECL_INITIAL (decl) != error_mark_node)
+	       /* grokfndecl sets DECL_INITIAL to error_mark_node for
+		  functions.  */
+	       && (fndecl_p || DECL_INITIAL (decl) != error_mark_node))
 	      || cp_parser_uncommitted_to_tentative_parse_p (parser))
 	    cp_parser_error (parser, "expected %<,%> or %<;%>");
 	  /* Skip tokens until we reach the end of the statement.  */

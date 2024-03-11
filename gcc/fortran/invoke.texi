@@ -1294,7 +1294,8 @@ Specify a list of floating point exception traps to enable.  On most
 systems, if a floating point exception occurs and the trap for that
 exception is enabled, a SIGFPE signal will be sent and the program
 being aborted, producing a core file useful for debugging.  @var{list}
-is a (possibly empty) comma-separated list of the following
+is a (possibly empty) comma-separated list of either @samp{none} (to
+clear the set of exceptions to be trapped), or of the following
 exceptions: @samp{invalid} (invalid floating point operation, such as
 @code{SQRT(-1.0)}), @samp{zero} (division by zero), @samp{overflow}
 (overflow in a floating point operation), @samp{underflow} (underflow
@@ -1314,7 +1315,8 @@ If the option is used more than once in the command line, the lists will
 be joined: '@code{ffpe-trap=}@var{list1} @code{ffpe-trap=}@var{list2}'
 is equivalent to @code{ffpe-trap=}@var{list1},@var{list2}.
 
-Note that once enabled an exception cannot be disabled (no negative form).
+Note that once enabled an exception cannot be disabled (no negative form),
+except by clearing all traps by specifying @samp{none}.
 
 Many, if not most, floating point operations incur loss of precision
 due to rounding, and hence the @code{ffpe-trap=inexact} is likely to

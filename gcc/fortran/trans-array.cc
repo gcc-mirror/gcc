@@ -82,6 +82,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gfortran.h"
 #include "gimple-expr.h"
+#include "tree-iterator.h"
+#include "stringpool.h"  /* Required by "attribs.h".  */
+#include "attribs.h" /* For lookup_attribute.  */
 #include "trans.h"
 #include "fold-const.h"
 #include "constructor.h"
@@ -6770,6 +6773,15 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
 	 gimplifier to allocate storage, and all that good stuff.  */
       tmp = fold_build1_loc (input_location, DECL_EXPR, TREE_TYPE (decl), decl);
       gfc_add_expr_to_block (&init, tmp);
+      if (sym->attr.omp_allocate)
+	{
+	  /* Save location of size calculation to ensure GOMP_alloc is placed
+	     after it.  */
+	  tree omp_alloc = lookup_attribute ("omp allocate",
+					     DECL_ATTRIBUTES (decl));
+	  TREE_CHAIN (TREE_CHAIN (TREE_VALUE (omp_alloc)))
+	    = build_tree_list (NULL_TREE, tsi_stmt (tsi_last (init.head)));
+	}
     }
 
   if (onstack)
@@ -6798,8 +6810,22 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
       gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
       return;
     }
+  if (sym->attr.omp_allocate)
+    {
+      /* The size is the number of elements in the array, so multiply by the
+	 size of an element to get the total size.  */
+      tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
+      size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
+			      size, fold_convert (gfc_array_index_type, tmp));
+      size = gfc_evaluate_now (size, &init);
 
-  if (flag_stack_arrays)
+      tree omp_alloc = lookup_attribute ("omp allocate",
+					 DECL_ATTRIBUTES (decl));
+      TREE_CHAIN (TREE_CHAIN (TREE_VALUE (omp_alloc)))
+	= build_tree_list (size, NULL_TREE);
+      space = NULL_TREE;
+    }
+  else if (flag_stack_arrays)
     {
       gcc_assert (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE);
       space = build_decl (gfc_get_location (&sym->declared_at),
@@ -9320,6 +9346,12 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
       gfc_add_expr_to_block (&fnblock, tmp);
     }
 
+  /* Still having a descriptor array of rank == 0 here, indicates an
+     allocatable coarrays.  Dereference it correctly.  */
+  if (GFC_DESCRIPTOR_TYPE_P (decl_type))
+    {
+      decl = build_fold_indirect_ref (gfc_conv_array_data (decl));
+    }
   /* Otherwise, act on the components or recursively call self to
      act on a chain of components.  */
   for (c = der_type->components; c; c = c->next)
@@ -11507,7 +11539,11 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
     {
       int rank;
       rank = sym->as ? sym->as->rank : 0;
-      tmp = gfc_deallocate_alloc_comp (sym->ts.u.derived, descriptor, rank);
+      tmp = gfc_deallocate_alloc_comp (sym->ts.u.derived, descriptor, rank,
+				       (sym->attr.codimension
+					&& flag_coarray == GFC_FCOARRAY_LIB)
+				       ? GFC_STRUCTURE_CAF_MODE_IN_COARRAY
+				       : 0);
       gfc_add_expr_to_block (&cleanup, tmp);
     }
 
@@ -11521,9 +11557,11 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 					NULL_TREE, NULL_TREE, true, e,
 					sym->attr.codimension
 					? GFC_CAF_COARRAY_DEREGISTER
-					: GFC_CAF_COARRAY_NOCOARRAY);
+					: GFC_CAF_COARRAY_NOCOARRAY,
+					NULL_TREE, gfc_finish_block (&cleanup));
       if (e)
 	gfc_free_expr (e);
+      gfc_init_block (&cleanup);
       gfc_add_expr_to_block (&cleanup, tmp);
     }
 

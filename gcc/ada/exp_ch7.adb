@@ -4529,7 +4529,7 @@ package body Exp_Ch7 is
 
          Push_Scope (Trans_Scop);
          Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped := Context;
-         Set_Scope_Is_Transient;
+         Scope_Stack.Table (Scope_Stack.Last).Is_Transient := True;
 
          --  The transient scope must also manage the secondary stack
 

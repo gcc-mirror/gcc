@@ -123,6 +123,9 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_SM3_SET OPTION_MASK_ISA2_SM3
 #define OPTION_MASK_ISA2_SHA512_SET OPTION_MASK_ISA2_SHA512
 #define OPTION_MASK_ISA2_SM4_SET OPTION_MASK_ISA2_SM4
+#define OPTION_MASK_ISA2_APX_F_SET OPTION_MASK_ISA2_APX_F
+#define OPTION_MASK_ISA2_EVEX512_SET OPTION_MASK_ISA2_EVEX512
+#define OPTION_MASK_ISA2_USER_MSR_SET OPTION_MASK_ISA2_USER_MSR
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -309,6 +312,9 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_SM3_UNSET OPTION_MASK_ISA2_SM3
 #define OPTION_MASK_ISA2_SHA512_UNSET OPTION_MASK_ISA2_SHA512
 #define OPTION_MASK_ISA2_SM4_UNSET OPTION_MASK_ISA2_SM4
+#define OPTION_MASK_ISA2_APX_F_UNSET OPTION_MASK_ISA2_APX_F
+#define OPTION_MASK_ISA2_EVEX512_UNSET OPTION_MASK_ISA2_EVEX512
+#define OPTION_MASK_ISA2_USER_MSR_UNSET OPTION_MASK_ISA2_USER_MSR
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -1341,6 +1347,47 @@ ix86_handle_option (struct gcc_options *opts,
 	}
       return true;
 
+    case OPT_mapxf:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_APX_F_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_APX_F_SET;
+	  opts->x_ix86_apx_features = apx_all;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_APX_F_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_APX_F_UNSET;
+	  opts->x_ix86_apx_features = apx_none;
+	}
+      return true;
+
+    case OPT_mevex512:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_EVEX512_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_EVEX512_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_EVEX512_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_EVEX512_UNSET;
+	}
+      return true;
+
+    case OPT_musermsr:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_USER_MSR_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_USER_MSR_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_USER_MSR_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_USER_MSR_UNSET;
+	}
+      return true;
+
     case OPT_mfma:
       if (value)
 	{
@@ -2030,6 +2077,7 @@ const char *const processor_names[] =
   "tremont",
   "sierraforest",
   "grandridge",
+  "clearwaterforest",
   "knl",
   "knm",
   "skylake",
@@ -2047,6 +2095,7 @@ const char *const processor_names[] =
   "graniterapids-d",
   "arrowlake",
   "arrowlake-s",
+  "pantherlake",
   "intel",
   "lujiazui",
   "geode",
@@ -2179,6 +2228,8 @@ const pta processor_alias_table[] =
     M_CPU_SUBTYPE (INTEL_COREI7_ARROWLAKE_S), P_PROC_AVX2},
   {"lunarlake", PROCESSOR_ARROWLAKE_S, CPU_HASWELL, PTA_ARROWLAKE_S,
     M_CPU_SUBTYPE (INTEL_COREI7_ARROWLAKE_S), P_PROC_AVX2},
+  {"pantherlake", PROCESSOR_PANTHERLAKE, CPU_HASWELL, PTA_PANTHERLAKE,
+    M_CPU_SUBTYPE (INTEL_COREI7_PANTHERLAKE), P_PROC_AVX2},
   {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL,
     M_CPU_TYPE (INTEL_BONNELL), P_PROC_SSSE3},
   {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL,
@@ -2199,6 +2250,8 @@ const pta processor_alias_table[] =
     M_CPU_SUBTYPE (INTEL_SIERRAFOREST), P_PROC_AVX2},
   {"grandridge", PROCESSOR_GRANDRIDGE, CPU_HASWELL, PTA_GRANDRIDGE,
     M_CPU_TYPE (INTEL_GRANDRIDGE), P_PROC_AVX2},
+  {"clearwaterforest", PROCESSOR_CLEARWATERFOREST, CPU_HASWELL,
+    PTA_CLEARWATERFOREST, M_CPU_TYPE (INTEL_CLEARWATERFOREST), P_PROC_AVX2},
   {"knl", PROCESSOR_KNL, CPU_SLM, PTA_KNL,
     M_CPU_TYPE (INTEL_KNL), P_PROC_AVX512F},
   {"knm", PROCESSOR_KNM, CPU_SLM, PTA_KNM,

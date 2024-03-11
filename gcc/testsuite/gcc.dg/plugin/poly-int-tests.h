@@ -4839,11 +4839,11 @@ test_num_coeffs_extra ()
 {
   /* Test the most common POD types.  */
   test_unsigned<N, unsigned short, HOST_WIDE_INT,
-		poly_int_pod<N, unsigned short> > ();
+		poly_int<N, unsigned short> > ();
   test_signed<N, HOST_WIDE_INT, HOST_WIDE_INT,
-	      poly_int_pod<N, HOST_WIDE_INT> > ();
+	      poly_int<N, HOST_WIDE_INT> > ();
   test_unsigned<N, unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-		poly_int_pod<N, unsigned HOST_WIDE_INT> > ();
+		poly_int<N, unsigned HOST_WIDE_INT> > ();
 
   /* Test some coefficient types that weren't covered in the core tests.  */
   test_signed<N, int, HOST_WIDE_INT,

@@ -949,7 +949,8 @@ copy_loop_before (class loop *loop, bool redirect_lc_phi_defs)
   edge preheader = loop_preheader_edge (loop);
 
   initialize_original_copy_tables ();
-  res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, NULL, preheader);
+  res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, single_exit (loop), NULL,
+						NULL, preheader, NULL, false);
   gcc_assert (res != NULL);
 
   /* When a not last partition is supposed to keep the LC PHIs computed
@@ -1574,6 +1575,7 @@ find_single_drs (class loop *loop, struct graph *rdg, const bitmap &partition_st
 
   basic_block bb_ld = NULL;
   basic_block bb_st = NULL;
+  edge exit = single_exit (loop);
 
   if (single_ld)
     {
@@ -1589,6 +1591,14 @@ find_single_drs (class loop *loop, struct graph *rdg, const bitmap &partition_st
       bb_ld = gimple_bb (DR_STMT (single_ld));
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_ld))
 	return false;
+
+      /* The data reference must also be executed before possibly exiting
+	 the loop as otherwise we'd for example unconditionally execute
+	 memset (ptr, 0, n) which even with n == 0 implies ptr is non-NULL.  */
+      if (bb_ld != loop->header
+	  && (!exit
+	      || !dominated_by_p (CDI_DOMINATORS, exit->src, bb_ld)))
+	return false;
     }
 
   if (single_st)
@@ -1603,6 +1613,12 @@ find_single_drs (class loop *loop, struct graph *rdg, const bitmap &partition_st
 	 loop.  */
       bb_st = gimple_bb (DR_STMT (single_st));
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_st))
+	return false;
+
+      /* And before exiting the loop.  */
+      if (bb_st != loop->header
+	  && (!exit
+	      || !dominated_by_p (CDI_DOMINATORS, exit->src, bb_st)))
 	return false;
     }
 

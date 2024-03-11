@@ -14,13 +14,14 @@ module dmd.root.filename;
 import core.stdc.ctype;
 import core.stdc.errno;
 import core.stdc.string;
+
+import dmd.common.file;
+import dmd.common.outbuffer;
+
 import dmd.root.array;
 import dmd.root.file;
-import dmd.common.outbuffer;
-import dmd.common.file;
 import dmd.root.port;
 import dmd.root.rmem;
-import dmd.root.rootobject;
 import dmd.root.string;
 
 version (Posix)

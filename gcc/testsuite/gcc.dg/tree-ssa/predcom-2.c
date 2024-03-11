@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details-blocks -fno-tree-pre" } */
-/* { dg-additional-options "-fno-tree-vectorize" { target amdgcn-*-* } } */
+/* { dg-additional-options "-fno-tree-vectorize" { target amdgcn-*-* riscv*-*-* } } */
 
 void abort (void);
 

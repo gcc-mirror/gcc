@@ -151,6 +151,13 @@
 (define_register_constraint "zmvr" "(TARGET_ZFA || TARGET_XTHEADFMV) ? GR_REGS : NO_REGS"
   "An integer register for  ZFA or XTheadFmv.")
 
+;; CORE-V Constraints
+(define_constraint "CVP2"
+  "Checking for CORE-V ALU clip if ival plus 1 is a power of 2"
+  (and (match_code "const_int")
+       (and (match_test "IN_RANGE (ival, 0, 1073741823)")
+            (match_test "exact_log2 (ival + 1) != -1"))))
+
 ;; Vector constraints.
 
 (define_register_constraint "vr" "TARGET_VECTOR ? V_REGS : NO_REGS"

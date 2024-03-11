@@ -40,5 +40,8 @@ set CFLAGS "-march=$gcc_march -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.C]] \
 	"" $CFLAGS
 
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[C\]]] \
+        "" $CFLAGS
+
 # All done.
 dg-finish

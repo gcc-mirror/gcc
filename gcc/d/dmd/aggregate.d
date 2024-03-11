@@ -31,6 +31,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.func;
 import dmd.globals;
+import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
@@ -213,7 +214,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
 
         if (!members)
         {
-            error(loc, "unknown size");
+            .error(loc, "%s `%s` unknown size", kind, toPrettyChars);
             return false;
         }
 
@@ -243,7 +244,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     Lfail:
         // There's unresolvable forward reference.
         if (type != Type.terror)
-            error(loc, "no size because of forward reference");
+            error(loc, "%s `%s` no size because of forward reference", kind, toPrettyChars);
         // Don't cache errors from speculative semantic, might be resolvable later.
         // https://issues.dlang.org/show_bug.cgi?id=16574
         if (!global.gag)
@@ -337,7 +338,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
                 else if (v2._init && i < j)
                 {
                     .error(v2.loc, "union field `%s` with default initialization `%s` must be before field `%s`",
-                        v2.toChars(), v2._init.toChars(), vd.toChars());
+                        v2.toChars(), dmd.hdrgen.toChars(v2._init), vd.toChars());
                     errors = true;
                 }
             }
@@ -452,7 +453,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
                     assert(!vx._init.isVoidInitializer());
                     if (vx.inuse)   // https://issues.dlang.org/show_bug.cgi?id=18057
                     {
-                        vx.error(loc, "recursive initialization of field");
+                        .error(loc, "%s `%s` recursive initialization of field", vx.kind(), vx.toPrettyChars());
                         errors = true;
                     }
                     else
@@ -753,7 +754,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
                   s.isTemplateDeclaration() ||
                   s.isOverloadSet()))
             {
-                s.error("is not a constructor; identifiers starting with `__` are reserved for the implementation");
+                .error(s.loc, "%s `%s` is not a constructor; identifiers starting with `__` are reserved for the implementation", s.kind(), s.toPrettyChars());
                 errors = true;
                 s = null;
             }

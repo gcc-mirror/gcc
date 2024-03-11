@@ -49,9 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_LIBGCC_SDATA_SECTION ".sdata"
 
-/* Driver native functions for SPEC processing in the GCC driver.  */
-#include "loongarch-driver.h"
-
 /* This definition replaces the formerly used 'm' constraint with a
    different constraint letter in order to avoid changing semantics of
    the 'm' constraint when accepting new address formats in
@@ -1060,11 +1057,6 @@ typedef struct {
    to a multiple of 2**LOG bytes.  */
 
 #define ASM_OUTPUT_ALIGN(STREAM, LOG) fprintf (STREAM, "\t.align\t%d\n", (LOG))
-
-/* "nop" instruction 54525952 (andi $r0,$r0,0) is
-   used for padding.  */
-#define ASM_OUTPUT_ALIGN_WITH_NOP(STREAM, LOG) \
-  fprintf (STREAM, "\t.align\t%d,54525952,4\n", (LOG))
 
 /* This is how to output an assembler line to advance the location
    counter by SIZE bytes.  */

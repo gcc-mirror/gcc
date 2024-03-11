@@ -166,7 +166,7 @@ static class lra_elim_table self_elim_table;
 /* Offsets should be used to restore original offsets for eliminable
    hard register which just became not eliminable.  Zero,
    otherwise.  */
-static poly_int64_pod self_elim_offsets[FIRST_PSEUDO_REGISTER];
+static poly_int64 self_elim_offsets[FIRST_PSEUDO_REGISTER];
 
 /* Map: hard regno -> RTL presentation.	 RTL presentations of all
    potentially eliminable hard registers are stored in the map.	 */
@@ -1294,14 +1294,14 @@ init_elim_table (void)
      will cause, e.g., gen_rtx_REG (Pmode, STACK_POINTER_REGNUM) to
      equal stack_pointer_rtx.  We depend on this. Threfore we switch
      off that we are in LRA temporarily.  */
-  lra_in_progress = 0;
+  lra_in_progress = false;
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       ep->from_rtx = gen_rtx_REG (Pmode, ep->from);
       ep->to_rtx = gen_rtx_REG (Pmode, ep->to);
       eliminable_reg_rtx[ep->from] = ep->from_rtx;
     }
-  lra_in_progress = 1;
+  lra_in_progress = true;
 }
 
 /* Function for initialization of elimination once per function.  It

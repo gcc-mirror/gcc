@@ -2739,34 +2739,48 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	      }
 	  break;
 	case OMP_LIST_ALLOCATE:
-	  for (; n != NULL; n = n->next)
-	    if (n->sym->attr.referenced)
-	      {
-		tree t = gfc_trans_omp_variable (n->sym, false);
-		if (t != error_mark_node)
-		  {
-		    tree node = build_omp_clause (input_location,
-						  OMP_CLAUSE_ALLOCATE);
-		    OMP_CLAUSE_DECL (node) = t;
-		    if (n->u2.allocator)
-		      {
-			tree allocator_;
-			gfc_init_se (&se, NULL);
-			gfc_conv_expr (&se, n->u2.allocator);
-			allocator_ = gfc_evaluate_now (se.expr, block);
-			OMP_CLAUSE_ALLOCATE_ALLOCATOR (node) = allocator_;
-		      }
-		    if (n->u.align)
-		      {
-			tree align_;
-			gfc_init_se (&se, NULL);
-			gfc_conv_expr (&se, n->u.align);
-			align_ = gfc_evaluate_now (se.expr, block);
-			OMP_CLAUSE_ALLOCATE_ALIGN (node) = align_;
-		      }
-		    omp_clauses = gfc_trans_add_clause (node, omp_clauses);
-		  }
-	      }
+	  {
+	    tree allocator_ = NULL_TREE;
+	    gfc_expr *alloc_expr = NULL;
+	    for (; n != NULL; n = n->next)
+	      if (n->sym->attr.referenced)
+		{
+		  tree t = gfc_trans_omp_variable (n->sym, false);
+		  if (t != error_mark_node)
+		    {
+		      tree node = build_omp_clause (input_location,
+						    OMP_CLAUSE_ALLOCATE);
+		      OMP_CLAUSE_DECL (node) = t;
+		      if (n->u2.allocator)
+			{
+			  if (alloc_expr != n->u2.allocator)
+			    {
+			      gfc_init_se (&se, NULL);
+			      gfc_conv_expr (&se, n->u2.allocator);
+			      gfc_add_block_to_block (block, &se.pre);
+			      allocator_ = gfc_evaluate_now (se.expr, block);
+			      gfc_add_block_to_block (block, &se.post);
+			    }
+			  OMP_CLAUSE_ALLOCATE_ALLOCATOR (node) = allocator_;
+			}
+		      alloc_expr = n->u2.allocator;
+		      if (n->u.align)
+			{
+			  tree align_;
+			  gfc_init_se (&se, NULL);
+			  gfc_conv_expr (&se, n->u.align);
+			  gcc_assert (CONSTANT_CLASS_P (se.expr)
+				      && se.pre.head == NULL
+				      && se.post.head == NULL);
+			  align_ = se.expr;
+			  OMP_CLAUSE_ALLOCATE_ALIGN (node) = align_;
+			}
+		      omp_clauses = gfc_trans_add_clause (node, omp_clauses);
+		    }
+		}
+	      else
+		alloc_expr = n->u2.allocator;
+	    }
 	  break;
 	case OMP_LIST_LINEAR:
 	  {
@@ -7184,11 +7198,14 @@ gfc_trans_omp_sections (gfc_code *code, gfc_omp_clauses *clauses)
 static tree
 gfc_trans_omp_single (gfc_code *code, gfc_omp_clauses *clauses)
 {
-  tree omp_clauses = gfc_trans_omp_clauses (NULL, clauses, code->loc);
+  stmtblock_t block;
+  gfc_start_block (&block);
+  tree omp_clauses = gfc_trans_omp_clauses (&block, clauses, code->loc);
   tree stmt = gfc_trans_omp_code (code->block->next, true);
   stmt = build2_loc (gfc_get_location (&code->loc), OMP_SINGLE, void_type_node,
 		     stmt, omp_clauses);
-  return stmt;
+  gfc_add_expr_to_block (&block, stmt);
+  return gfc_finish_block (&block);
 }
 
 static tree

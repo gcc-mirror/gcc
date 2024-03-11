@@ -721,4 +721,12 @@ PROCEDURE ConstantExpressionWarning (value: Tree) ;
 PROCEDURE BuildAddAddress (location: location_t; op1, op2: Tree) : Tree ;
 
 
+(*
+   calcNbits - return the smallest number of bits required to
+               represent: min..max.
+*)
+
+PROCEDURE calcNbits (location: location_t; min, max: Tree) : Tree ;
+
+
 END m2expr.

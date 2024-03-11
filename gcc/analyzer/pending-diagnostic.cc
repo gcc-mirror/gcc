@@ -96,15 +96,10 @@ evdesc::event_desc::formatted_print (const char *fmt, ...) const
 
   pp_show_color (pp) = m_colorize;
 
-  text_info ti;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   va_list ap;
   va_start (ap, fmt);
-  ti.format_spec = _(fmt);
-  ti.args_ptr = &ap;
-  ti.err_no = 0;
-  ti.x_data = NULL;
-  ti.m_richloc = &rich_loc;
+  text_info ti (_(fmt), &ap, 0, nullptr, &rich_loc);
   pp_format (pp, &ti);
   pp_output_formatted_text (pp);
   va_end (ap);

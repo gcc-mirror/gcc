@@ -2975,9 +2975,9 @@ auto joiner(RoR, Separator)(RoR r, Separator sep)
     static assert(isInputRange!(ElementType!RoR), "The ElementyType of RoR '"
             , ElementType!(RoR).stringof, "' must be an InputRange "
             , "(isInputRange!(ElementType!(", RoR.stringof , "))).");
-    static assert(isForwardRange!Separator, "The type of the Seperator '"
-            , Seperator.stringof, "' must be a ForwardRange (isForwardRange!("
-            , Seperator.stringof, ")).");
+    static assert(isForwardRange!Separator, "The type of the Separator '"
+            , Separator.stringof, "' must be a ForwardRange (isForwardRange!("
+            , Separator.stringof, ")).");
     static assert(is(ElementType!Separator : ElementType!(ElementType!RoR))
             , "The type of the elements of the separator range does not match "
             , "the type of the elements that are joined. Separator type '"

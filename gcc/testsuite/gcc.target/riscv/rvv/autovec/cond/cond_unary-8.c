@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-march=rv64gcv_zvfh -mabi=lp64d --param riscv-autovec-preference=scalable -fno-vect-cost-model" } */
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 #define abs(A) ((A) < 0 ? -(A) : (A))
 #define neg(A) (-(A))
