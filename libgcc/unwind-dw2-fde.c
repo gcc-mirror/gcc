@@ -48,6 +48,7 @@ typedef __UINTPTR_TYPE__ uintptr_type;
 #include "unwind-dw2-btree.h"
 
 static struct btree registered_frames;
+static struct btree registered_objects;
 static bool in_shutdown;
 
 static void
@@ -58,6 +59,7 @@ release_registered_frames (void)
   /* Release the b-tree and all frames. Frame releases that happen later are
    * silently ignored */
   btree_destroy (&registered_frames);
+  btree_destroy (&registered_objects);
   in_shutdown = true;
 }
 
@@ -103,6 +105,21 @@ static __gthread_mutex_t object_mutex;
 #endif
 #endif
 
+#ifdef ATOMIC_FDE_FAST_PATH
+// Register the pc range for a given object in the lookup structure.
+static void
+register_pc_range_for_object (uintptr_type begin, struct object *ob)
+{
+  // Register the object itself to know the base pointer on deregistration.
+  btree_insert (&registered_objects, begin, 1, ob);
+
+  // Register the frame in the b-tree
+  uintptr_type range[2];
+  get_pc_range (ob, range);
+  btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
+}
+#endif
+
 /* Called from crtbegin.o to register the unwind info for an object.  */
 
 void
@@ -124,13 +141,7 @@ __register_frame_info_bases (const void *begin, struct object *ob,
 #endif
 
 #ifdef ATOMIC_FDE_FAST_PATH
-  // Register the object itself to know the base pointer on deregistration.
-  btree_insert (&registered_frames, (uintptr_type) begin, 1, ob);
-
-  // Register the frame in the b-tree
-  uintptr_type range[2];
-  get_pc_range (ob, range);
-  btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
+  register_pc_range_for_object ((uintptr_type) begin, ob);
 #else
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
@@ -178,13 +189,7 @@ __register_frame_info_table_bases (void *begin, struct object *ob,
   ob->s.b.encoding = DW_EH_PE_omit;
 
 #ifdef ATOMIC_FDE_FAST_PATH
-  // Register the object itself to know the base pointer on deregistration.
-  btree_insert (&registered_frames, (uintptr_type) begin, 1, ob);
-
-  // Register the frame in the b-tree
-  uintptr_type range[2];
-  get_pc_range (ob, range);
-  btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
+  register_pc_range_for_object ((uintptr_type) begin, ob);
 #else
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
@@ -232,7 +237,7 @@ __deregister_frame_info_bases (const void *begin)
 
 #ifdef ATOMIC_FDE_FAST_PATH
   // Find the originally registered object to get the base pointer.
-  ob = btree_remove (&registered_frames, (uintptr_type) begin);
+  ob = btree_remove (&registered_objects, (uintptr_type) begin);
 
   // Remove the corresponding PC range.
   if (ob)
@@ -240,7 +245,7 @@ __deregister_frame_info_bases (const void *begin)
       uintptr_type range[2];
       get_pc_range (ob, range);
       if (range[0] != range[1])
-    btree_remove (&registered_frames, range[0]);
+	btree_remove (&registered_frames, range[0]);
     }
 
   // Deallocate the sort array if any.
