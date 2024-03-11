@@ -104,7 +104,6 @@ FROM P2SymBuild IMPORT P2StartBuildProgramModule,
                        BuildVarientSelector,
                        StartBuildVarientFieldRecord,
                        EndBuildVarientFieldRecord,
-                       BuildNulName,
                        StartBuildArray,
                        EndBuildArray,
                        BuildFieldArray, BuildArrayComma,
@@ -861,17 +860,21 @@ CaseLabelList := CaseLabels { "," CaseLabels } =:
 
 CaseLabels := ConstExpression [ ".." ConstExpression ] =:
 
-SetType :=                                                                 % VAR ispacked: BOOLEAN ; %
+SetType :=                                                                 % VAR ispacked: BOOLEAN ;
+                                                                                 setpos  : CARDINAL ; %
+                                                                           % setpos := GetTokenNo () %
                                                                            % ispacked := FALSE %
            ( "SET"                                                         % ispacked := FALSE %
                    | "PACKEDSET"                                           % ispacked := TRUE %
                                  ) "OF"                                    % BuildNulName %
-                                        SimpleType                         % BuildSetType (ispacked) %
+                                        SimpleType                         % BuildSetType (setpos, ispacked) %
          =:
 
 
-PointerType := "POINTER" "TO"                                              % BuildNulName %
-                              Type                                         % BuildPointerType %
+PointerType :=                                                             % VAR pointerpos: CARDINAL ; %
+                                                                           % pointerpos := GetTokenNo () %
+               "POINTER" "TO"                                              % BuildNulName %
+                              Type                                         % BuildPointerType (pointerpos) %
              =:
 
 ProcedureType := "PROCEDURE"                                               % BuildProcedureType ; %

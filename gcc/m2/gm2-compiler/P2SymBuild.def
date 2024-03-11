@@ -887,7 +887,7 @@ PROCEDURE BuildNoReturnAttribute (procedureSym: CARDINAL) ;
                       |------------|              |-------------|
 *)
 
-PROCEDURE BuildPointerType ;
+PROCEDURE BuildPointerType (pointerpos: CARDINAL) ;
 
 
 (*
@@ -906,7 +906,7 @@ PROCEDURE BuildPointerType ;
                   |------------|              |-------------|
 *)
 
-PROCEDURE BuildSetType (ispacked: BOOLEAN) ;
+PROCEDURE BuildSetType (setpos: CARDINAL; ispacked: BOOLEAN) ;
 
 
 (*

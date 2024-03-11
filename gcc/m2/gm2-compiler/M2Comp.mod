@@ -30,7 +30,8 @@ FROM M2Search IMPORT FindSourceDefFile, FindSourceModFile ;
 FROM M2Code IMPORT Code ;
 
 FROM M2LexBuf IMPORT OpenSource, CloseSource, ResetForNewPass, currenttoken, GetToken,
-                     ReInitialize, currentstring, GetTokenNo ;
+                     ReInitialize, currentstring, GetTokenNo, BuiltinTokenNo,
+                     UnknownTokenNo ;
 
 FROM M2FileName IMPORT CalculateFileName ;
 FROM M2Preprocess IMPORT PreprocessModule, MakeSaveTempsFileNameExt, OnExitDelete ;
@@ -289,31 +290,73 @@ END compile ;
 
 
 (*
-   ExamineCompilationUnit - opens the source file to obtain the module name and kind of module.
+   ExamineHeader - examines up until the ';', '[' or eof and determines if the source file
+                   is a program, implementation/definition module.
 *)
 
-PROCEDURE ExamineCompilationUnit (VAR name: ADDRESS; VAR isdefimp: BOOLEAN) ;
-VAR
-   Message: String ;
+PROCEDURE ExamineHeader (VAR name: ADDRESS; VAR isdefimp, module: BOOLEAN) ;
 BEGIN
-   isdefimp := FALSE ;   (* default to program module *)
-   (* stop if we see eof, ';' or '[' *)
-   WHILE (currenttoken#eoftok) AND (currenttoken#semicolontok) AND (currenttoken#lsbratok) DO
-      IF (currenttoken=implementationtok) OR (currenttoken=definitiontok)
+   (* Stop if we see one of eof ';' '['.  *)
+   WHILE (currenttoken#eoftok) AND
+         (currenttoken#semicolontok) AND (currenttoken#lsbratok) DO
+      IF name = NIL
       THEN
-         isdefimp := TRUE ;
-         GetToken
-      END ;
-      IF currenttoken=identtok
-      THEN
-         name := currentstring ;
-         RETURN
+         IF (currenttoken=implementationtok) OR (currenttoken=definitiontok)
+         THEN
+            isdefimp := TRUE ;
+            GetToken
+         END ;
+         IF currenttoken=moduletok
+         THEN
+            module := TRUE ;
+            GetToken ;
+            IF currenttoken=identtok
+            THEN
+               name := currentstring
+            END
+         END ;
       END ;
       GetToken
    END ;
-   Message := MetaString0 (InitString ('no {%kMODULE} name found')) ;
-   m2flex.M2Error (string (Message)) ;
-   exit (1)
+END ExamineHeader ;
+
+
+(*
+   ExamineCompilationUnit - opens the source file to obtain the module name and kind of module.
+*)
+
+PROCEDURE ExamineCompilationUnit () : CARDINAL ;
+VAR
+   Message : String ;
+   name    : ADDRESS ;
+   module,
+   isdefimp: BOOLEAN ;
+BEGIN
+   name := NIL ;
+   isdefimp := FALSE ;   (* default to program module *)
+   module := FALSE ;  (* Seen module keyword?  *)
+   ExamineHeader (name, isdefimp, module) ;
+   IF name = NIL
+   THEN
+      IF module
+      THEN
+         Message := MetaString0 (InitString ('no {%kMODULE} keyword seen'))
+      ELSE
+         Message := MetaString0 (InitString ('no module ident seen'))
+      END ;
+      m2flex.M2Error (string (Message)) ;
+      exit (1)
+   ELSE
+      (* The token used is will be overwritten when P0 is underway.
+         At this point we are determining the module kind and the tokens
+         read will be discarded (see ReInitialize below).  *)
+      IF isdefimp
+      THEN
+         RETURN MakeImplementationSource (BuiltinTokenNo, makekey (name))
+      ELSE
+         RETURN MakeProgramSource (BuiltinTokenNo, makekey (name))
+      END
+   END
 END ExamineCompilationUnit ;
 
 
@@ -324,17 +367,14 @@ END ExamineCompilationUnit ;
 
 PROCEDURE PeepInto (s: String) ;
 VAR
-   name    : ADDRESS ;
-   isdefimp: BOOLEAN ;
+   mainModule: CARDINAL ;
 BEGIN
    IF OpenSource (s)
    THEN
-      ExamineCompilationUnit (name, isdefimp) ;
-      IF isdefimp
+      mainModule := ExamineCompilationUnit () ;
+      IF mainModule # NulSym
       THEN
-         SetMainModule (MakeImplementationSource (GetTokenNo (), makekey (name)))
-      ELSE
-         SetMainModule (MakeProgramSource (GetTokenNo (), makekey (name)))
+         SetMainModule (mainModule)
       END ;
       CloseSource ;
       ReInitialize

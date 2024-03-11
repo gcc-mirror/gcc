@@ -26,7 +26,7 @@ FROM libc IMPORT strlen ;
 FROM NameKey IMPORT Name, MakeKey, makekey, KeyToCharStar, NulName, LengthKey, WriteKey ;
 FROM StrLib IMPORT StrEqual ;
 FROM M2Debug IMPORT Assert, WriteDebug ;
-FROM M2LexBuf IMPORT UnknownTokenNo, GetTokenNo ;
+FROM M2LexBuf IMPORT UnknownTokenNo, GetTokenNo, MakeVirtual2Tok ;
 FROM M2Error IMPORT InternalError, WriteFormat1, WriteFormat2, WriteFormat0, ErrorStringAt, ErrorStringAt2 ;
 FROM M2MetaError IMPORT MetaError1, MetaError2, MetaErrorsT2, MetaErrors1, MetaErrors2, MetaErrorString1 ;
 FROM DynamicStrings IMPORT String, InitString, InitStringCharStar, Mark, Slice, ConCat, KillString, string ;
@@ -2130,25 +2130,27 @@ END BuildNoReturnAttribute ;
                       |------------|              |-------------|
 *)
 
-PROCEDURE BuildPointerType ;
+PROCEDURE BuildPointerType (pointerpos: CARDINAL) ;
 VAR
-   tok      : CARDINAL ;
+   combined,
+   namepos,
+   typepos  : CARDINAL ;
    name     : Name ;
    Type,
    PtrToType: CARDINAL ;
 BEGIN
-   PopTtok(Type, tok) ;
-   PopT(name) ;
-   name := CheckAnonymous(name) ;
+   PopTtok (Type, typepos) ;
+   PopTtok (name, namepos) ;
+   name := CheckAnonymous (name) ;
 
-   PtrToType := MakePointer(tok, name) ;
-   PutPointer(PtrToType, Type) ;
+   combined := MakeVirtual2Tok (pointerpos, typepos) ;
+   PtrToType := MakePointer (combined, name) ;
+   PutPointer (PtrToType, Type) ;
    CheckForExportedImplementation(PtrToType) ;   (* May be an exported hidden type *)
-   PushTtok(name, tok) ;
+   PushTtok (name, namepos) ;
    Annotate("%1n|%3d||pointer type name") ;
-   PushTtok(PtrToType, tok) ;
+   PushTtok(PtrToType, combined) ;
    Annotate("%1s(%1d)|%3d||pointer type")
-
 END BuildPointerType ;
 
 
@@ -2168,21 +2170,24 @@ END BuildPointerType ;
                   |------------|              |-------------|
 *)
 
-PROCEDURE BuildSetType (ispacked: BOOLEAN) ;
+PROCEDURE BuildSetType (setpos: CARDINAL; ispacked: BOOLEAN) ;
 VAR
-   tok    : CARDINAL ;
-   name   : Name ;
+   combined,
+   namepos,
+   typepos : CARDINAL ;
+   name    : Name ;
    Type,
-   SetType: CARDINAL ;
+   SetType : CARDINAL ;
 BEGIN
-   PopTtok(Type, tok) ;
-   PopT(name) ;
-   SetType := MakeSet (tok, name) ;
+   PopTtok (Type, typepos) ;
+   PopTtok (name, namepos) ;
+   combined := MakeVirtual2Tok (setpos, typepos) ;
+   SetType := MakeSet (combined, name) ;
    CheckForExportedImplementation(SetType) ;   (* May be an exported hidden type *)
    PutSet(SetType, Type, ispacked) ;
-   PushT(name) ;
+   PushTtok (name, namepos) ;
    Annotate("%1n||set type name") ;
-   PushTtok (SetType, tok) ;
+   PushTtok (SetType, combined) ;
    Annotate ("%1s(%1d)|%3d||set type|token no")
 END BuildSetType ;
 

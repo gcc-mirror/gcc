@@ -398,10 +398,8 @@ VAR
 BEGIN
    IF AtTokenNo = UnknownTokenNo
    THEN
-      (* this could be used as a useful debugging hook as the front end
-         has forgotten the token no.  This can occur if a complex record
-         structure or array is used for example.  *)
-      AtTokenNo := GetTokenNo ()
+      (* This could be used as a useful debugging hook as the front end
+         has forgotten the token no.  *)
    END ;
    NEW(e) ;
    WITH e^ DO
