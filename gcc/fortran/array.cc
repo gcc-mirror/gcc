@@ -2600,6 +2600,13 @@ gfc_array_dimen_size (gfc_expr *array, int dimen, mpz_t *result)
     case EXPR_FUNCTION:
       for (ref = array->ref; ref; ref = ref->next)
 	{
+	  /* Ultimate component is a procedure pointer.  */
+	  if (ref->type == REF_COMPONENT
+	      && !ref->next
+	      && ref->u.c.component->attr.function
+	      && IS_PROC_POINTER (ref->u.c.component))
+	    return false;
+
 	  if (ref->type != REF_ARRAY)
 	    continue;
 
