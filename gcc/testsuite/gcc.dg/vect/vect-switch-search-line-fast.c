@@ -14,4 +14,5 @@ const unsigned char *search_line_fast2 (const unsigned char *s,
   return s;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { ilp32 } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { ! ilp32 } } } } */

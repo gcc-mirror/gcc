@@ -3,7 +3,7 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target mmap } */
 
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
 
 #include <sys/mman.h>
 #include <unistd.h>

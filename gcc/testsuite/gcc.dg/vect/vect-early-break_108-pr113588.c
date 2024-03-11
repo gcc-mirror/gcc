@@ -3,7 +3,7 @@
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_int } */
 
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
 
 int foo (const char *s, unsigned long n)
 {

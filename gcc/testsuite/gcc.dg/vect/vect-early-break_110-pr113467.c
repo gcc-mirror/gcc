@@ -2,7 +2,7 @@
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_long_long } */
 
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
 
 #include "tree-vect.h"
 #include <stdint.h>

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-cunroll-blocks-details" } */
+/* { dg-options "-O3 -fdump-tree-cunroll-blocks-details -fno-tree-vectorize" } */
 struct a {int a[100];};
 void
 t(struct a *a)

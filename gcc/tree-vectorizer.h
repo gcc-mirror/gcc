@@ -1278,6 +1278,11 @@ public:
   poly_uint64 target_alignment;
   /* If true the alignment of base_decl needs to be increased.  */
   bool base_misaligned;
+
+  /* Set by early break vectorization when this DR needs peeling for alignment
+     for correctness.  */
+  bool need_peeling_for_alignment;
+
   tree base_decl;
 
   /* Stores current vectorized loop's offset.  To be added to the DR's

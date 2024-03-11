@@ -3128,12 +3128,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   int estimated_vf;
   int prolog_peeling = 0;
   bool vect_epilogues = loop_vinfo->epilogue_vinfo != NULL;
-  /* We currently do not support prolog peeling if the target alignment is not
-     known at compile time.  'vect_gen_prolog_loop_niters' depends on the
-     target alignment being constant.  */
-  dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-  if (dr_info && !DR_TARGET_ALIGNMENT (dr_info).is_constant ())
-    return NULL;
 
   if (!vect_use_loop_mask_for_alignment_p (loop_vinfo))
     prolog_peeling = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
