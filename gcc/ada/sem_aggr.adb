@@ -2873,9 +2873,9 @@ package body Sem_Aggr is
             --  No others clause present
 
             else
-               --  Special processing if others allowed and not present. This
-               --  means that the bounds of the aggregate come from the index
-               --  constraint (and the length must match).
+               --  Special processing if others allowed and not present. In
+               --  this case, the bounds of the aggregate come from the
+               --  choices (RM 4.3.3 (27)).
 
                if Others_Allowed then
                   Get_Index_Bounds (Index_Constr, Aggr_Low, Aggr_High);
@@ -2890,30 +2890,28 @@ package body Sem_Aggr is
                      return False;
                   end if;
 
-                  --  If others allowed, and no others present, then the array
-                  --  should cover all index values. If it does not, we will
-                  --  get a length check warning, but there is two cases where
-                  --  an additional warning is useful:
+                  --  If there is an applicable index constraint and others is
+                  --  not present, then sliding is allowed and only a length
+                  --  check will be performed. However, additional warnings are
+                  --  useful if the index type is an enumeration type, as
+                  --  sliding is dubious in this case. We emit two kinds of
+                  --  warnings:
+                  --
+                  --    1. If the length is wrong then there are missing
+                  --       components; we issue appropriate warnings about
+                  --       these missing components. They are only warnings,
+                  --       since the aggregate is fine, it's just the wrong
+                  --       length. We skip this check for standard character
+                  --       types (since there are no literals and it is too
+                  --       much trouble to concoct them), and also if any of
+                  --       the bounds have values that are not known at compile
+                  --       time.
+                  --
+                  --    2. If the length is right but the bounds do not match,
+                  --       we issue a warning, as we consider sliding dubious
+                  --       when the index type is an enumeration type.
 
-                  --  If we have no positional components, and the length is
-                  --  wrong (which we can tell by others being allowed with
-                  --  missing components), and the index type is an enumeration
-                  --  type, then issue appropriate warnings about these missing
-                  --  components. They are only warnings, since the aggregate
-                  --  is fine, it's just the wrong length. We skip this check
-                  --  for standard character types (since there are no literals
-                  --  and it is too much trouble to concoct them), and also if
-                  --  any of the bounds have values that are not known at
-                  --  compile time.
-
-                  --  Another case warranting a warning is when the length
-                  --  is right, but as above we have an index type that is
-                  --  an enumeration, and the bounds do not match. This is a
-                  --  case where dubious sliding is allowed and we generate a
-                  --  warning that the bounds do not match.
-
-                  if No (Expressions (N))
-                    and then Nkind (Index) = N_Range
+                  if Nkind (Index) = N_Range
                     and then Is_Enumeration_Type (Etype (Index))
                     and then not Is_Standard_Character_Type (Etype (Index))
                     and then Compile_Time_Known_Value (Aggr_Low)
