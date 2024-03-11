@@ -30791,6 +30791,14 @@ package body Sem_Util is
                               return False;
                            end if;
 
+                           --  Handle constants introduced by side-effect
+                           --  removal, e.g. by validity checks.
+
+                           if not Comes_From_Source (Obj) then
+                              return
+                                Is_Known_On_Entry (Expression (Parent (Obj)));
+                           end if;
+
                            --  return False if not "all views are constant".
                            if Is_Immutably_Limited_Type (Obj_Typ)
                              or Needs_Finalization (Obj_Typ)
