@@ -47,6 +47,11 @@ struct GTY(()) pt_solution
      includes memory at address NULL.  */
   unsigned int null : 1;
 
+  /* Nonzero if the points-to set includes a readonly object like a
+     STRING_CST that does not have an underlying declaration but will
+     end up in the constant pool.  */
+  unsigned int const_pool : 1;
+
   /* Nonzero if the vars bitmap includes a variable included in 'nonlocal'.  */
   unsigned int vars_contains_nonlocal : 1;
   /* Nonzero if the vars bitmap includes a variable included in 'escaped'.  */

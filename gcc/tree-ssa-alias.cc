@@ -484,9 +484,27 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
 	}
       return !pt_solution_includes (&pi->pt, obj1);
     }
-
-  /* ???  We'd like to handle ptr1 != NULL and ptr1 != ptr2
-     but those require pt.null to be conservatively correct.  */
+  else if (TREE_CODE (ptr1) == SSA_NAME)
+    {
+      struct ptr_info_def *pi1 = SSA_NAME_PTR_INFO (ptr1);
+      if (!pi1
+	  || pi1->pt.vars_contains_restrict
+	  || pi1->pt.vars_contains_interposable)
+	return false;
+      if (integer_zerop (ptr2) && !pi1->pt.null)
+	return true;
+      if (TREE_CODE (ptr2) == SSA_NAME)
+	{
+	  struct ptr_info_def *pi2 = SSA_NAME_PTR_INFO (ptr2);
+	  if (!pi2
+	      || pi2->pt.vars_contains_restrict
+	      || pi2->pt.vars_contains_interposable)
+	    return false;
+	  if ((!pi1->pt.null || !pi2->pt.null)
+	      && (!pi1->pt.const_pool || !pi2->pt.const_pool))
+	    return !pt_solutions_intersect (&pi1->pt, &pi2->pt);
+	}
+    }
 
   return false;
 }
@@ -636,6 +654,9 @@ dump_points_to_solution (FILE *file, struct pt_solution *pt)
   if (pt->null)
     fprintf (file, ", points-to NULL");
 
+  if (pt->const_pool)
+    fprintf (file, ", points-to const-pool");
+
   if (pt->vars)
     {
       fprintf (file, ", points-to vars: ");
@@ -643,7 +664,8 @@ dump_points_to_solution (FILE *file, struct pt_solution *pt)
       if (pt->vars_contains_nonlocal
 	  || pt->vars_contains_escaped
 	  || pt->vars_contains_escaped_heap
-	  || pt->vars_contains_restrict)
+	  || pt->vars_contains_restrict
+	  || pt->vars_contains_interposable)
 	{
 	  const char *comma = "";
 	  fprintf (file, " (");

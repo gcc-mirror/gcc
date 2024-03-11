@@ -822,6 +822,8 @@ pp_points_to_solution (pretty_printer *buffer, const pt_solution *pt)
     pp_string (buffer, "unit-escaped ");
   if (pt->null)
     pp_string (buffer, "null ");
+  if (pt->const_pool)
+    pp_string (buffer, "const-pool ");
   if (pt->vars
       && !bitmap_empty_p (pt->vars))
     {
@@ -838,7 +840,8 @@ pp_points_to_solution (pretty_printer *buffer, const pt_solution *pt)
       if (pt->vars_contains_nonlocal
 	  || pt->vars_contains_escaped
 	  || pt->vars_contains_escaped_heap
-	  || pt->vars_contains_restrict)
+	  || pt->vars_contains_restrict
+	  || pt->vars_contains_interposable)
 	{
 	  const char *comma = "";
 	  pp_string (buffer, " (");

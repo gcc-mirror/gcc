@@ -6799,8 +6799,7 @@ find_what_var_points_to (tree fndecl, varinfo_t orig_vi)
 	  else if (vi->id == nonlocal_id)
 	    pt->nonlocal = 1;
 	  else if (vi->id == string_id)
-	    /* Nobody cares - STRING_CSTs are read-only entities.  */
-	    ;
+	    pt->const_pool = 1;
 	  else if (vi->id == anything_id
 		   || vi->id == integer_id)
 	    pt->anything = 1;
@@ -6956,6 +6955,7 @@ pt_solution_ior_into (struct pt_solution *dest, struct pt_solution *src)
   dest->escaped |= src->escaped;
   dest->ipa_escaped |= src->ipa_escaped;
   dest->null |= src->null;
+  dest->const_pool |= src->const_pool ;
   dest->vars_contains_nonlocal |= src->vars_contains_nonlocal;
   dest->vars_contains_escaped |= src->vars_contains_escaped;
   dest->vars_contains_escaped_heap |= src->vars_contains_escaped_heap;
@@ -8128,7 +8128,7 @@ make_pass_build_ealias (gcc::context *ctxt)
 
 /* IPA PTA solutions for ESCAPED.  */
 struct pt_solution ipa_escaped_pt
-  = { true, false, false, false, false,
+  = { true, false, false, false, false, false,
       false, false, false, false, false, NULL };
 
 /* Associate node with varinfo DATA. Worker for
