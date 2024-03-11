@@ -22868,18 +22868,19 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die, bool reverse)
 
   if (type_die == NULL || reverse)
     {
+      dw_die_ref scope_die = scope_die_for (type, context_die);
+
       /* The DIE with DW_AT_endianity is placed right after the naked DIE.  */
       if (reverse)
 	{
 	  gcc_assert (type_die);
 	  dw_die_ref after_die = type_die;
 	  type_die = new_die_raw (DW_TAG_enumeration_type);
-	  add_child_die_after (context_die, type_die, after_die);
+	  add_child_die_after (scope_die, type_die, after_die);
 	}
       else
 	{
-	  type_die = new_die (DW_TAG_enumeration_type,
-			      scope_die_for (type, context_die), type);
+	  type_die = new_die (DW_TAG_enumeration_type, scope_die, type);
 	  equate_type_number_to_die (type, type_die);
 	}
       add_name_attribute (type_die, type_tag (type));
