@@ -6092,10 +6092,10 @@ start_decl (const cp_declarator *declarator,
     {
       /* A function-scope decl of some namespace-scope decl.  */
       DECL_LOCAL_DECL_P (decl) = true;
-      if (named_module_purview_p ())
+      if (named_module_attach_p ())
 	error_at (declarator->id_loc,
-		  "block-scope extern declaration %q#D not permitted"
-		  " in module purview", decl);
+		  "block-scope extern declaration %q#D must not be"
+		  " attached to a named module", decl);
     }
 
   /* Enter this declaration into the symbol table.  Don't push the plain
@@ -18907,10 +18907,10 @@ grokmethod (cp_decl_specifier_seq *declspecs,
   check_template_shadow (fndecl);
 
   /* p1779 ABI-Isolation makes inline not a default for in-class
-     definitions in named module purview.  If the user explicitly
+     definitions attached to a named module.  If the user explicitly
      made it inline, grokdeclarator will already have done the right
      things.  */
-  if ((!named_module_purview_p ()
+  if ((!named_module_attach_p ()
        || flag_module_implicit_inline
       /* Lambda's operator function remains inline.  */
        || LAMBDA_TYPE_P (DECL_CONTEXT (fndecl)))

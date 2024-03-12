@@ -7381,6 +7381,8 @@ inline bool module_attach_p ()
 
 inline bool named_module_purview_p ()
 { return named_module_p () && module_purview_p (); }
+inline bool named_module_attach_p ()
+{ return named_module_p () && module_attach_p (); }
 
 /* We're currently exporting declarations.  */
 inline bool module_exporting_p ()
