@@ -3584,10 +3584,11 @@ package Einfo is
 --       tasks implementing such interface.
 
 --    Materialize_Entity
---       Defined in all entities. Set only for renamed obects which should be
+--       Defined in all entities. Set mostly for renamed objects that should be
 --       materialized for debugging purposes. This means that a memory location
 --       containing the renamed address should be allocated. This is needed so
---       that the debugger can find the entity.
+--       that the debugger can find the entity. Also set on types built in the
+--       case of unanalyzed packages referenced through a limited_with clause.
 
 --    May_Inherit_Delayed_Rep_Aspects
 --       Defined in all entities for types and subtypes. Set if the type is
